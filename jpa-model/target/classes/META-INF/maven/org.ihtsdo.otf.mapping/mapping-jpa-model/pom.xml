@@ -1,0 +1,89 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Module Metadata -->
+    <parent>
+        <groupId>org.ihtsdo.otf.mapping</groupId>
+        <artifactId>mapping-parent</artifactId>
+        <version>0.0.1</version>
+    </parent>
+    
+    <artifactId>mapping-jpa-model</artifactId>
+    <name>OTF RF2 Model JPA implementation</name>
+    <description>JPA implementation of model for OTF RF2 data objects</description>
+
+    <!-- Project Properties -->
+    <properties>
+ 
+    </properties>
+
+    <!-- Declare Project Dependency Versions -->
+    <dependencies>
+
+        <!-- Model interfaces. -->
+        <dependency>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- JPA dependencies -->
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.0-api</artifactId>
+            <version>${org.hibernate.javax.persistence.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.transaction</groupId>
+            <artifactId>jta</artifactId>
+            <version>${javax.transaction.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+        <!-- TODO: Uncomment these as needed.
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search</artifactId>
+            <version>${hibernate.search.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-envers</artifactId>
+            <version>${hibernate.envers.version}</version>
+        </dependency>
+        -->
+        <!-- Hibernate + JPA + MySQL. -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>${hibernate.entitymanager.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate.validator.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.connector.java.version}</version>
+        </dependency>
+        <dependency>
+ 			<groupId>org.slf4j</groupId>
+ 			<artifactId>slf4j-log4j12</artifactId>
+ 			<version>${slf4j.log4j12.version}</version>
+		</dependency>
+        
+        
+    </dependencies>
+
+
+    <!-- Standard build profile, no special configuration needed -->
+    <build>
+    </build>
+
+</project>

@@ -1,0 +1,5 @@
+org\ihtsdo\otf\mapping\helpers\JpaTest.class
+org\ihtsdo\otf\mapping\jpa\ConceptJpa.class
+org\ihtsdo\otf\mapping\jpa\AbstractComponent.class
+org\ihtsdo\otf\mapping\jpa\RelationshipJpa.class
+org\ihtsdo\otf\mapping\jpa\DescriptionJpa.class

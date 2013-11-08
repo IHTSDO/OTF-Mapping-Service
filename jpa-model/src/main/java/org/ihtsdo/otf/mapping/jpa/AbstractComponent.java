@@ -1,0 +1,176 @@
+package org.ihtsdo.otf.mapping.jpa;
+
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.ihtsdo.otf.mapping.model.Component;
+
+/**
+ * Abstract implementation of {@link Component} for use with JPA.
+ */
+@MappedSuperclass
+public abstract class AbstractComponent implements Component {
+
+	/** The id. */
+	@Id
+	private Long id;
+
+	/** The effective time. */
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date effectiveTime;
+
+	/** The active. */
+	@Column(nullable = false)
+	private boolean active;
+
+	/** The module id. */
+	@Column(nullable = false)
+	private Long moduleId;
+
+	/** The terminology. */
+	// TODO: @Field(index = Index.UN_TOKENIZED, store = Store.NO)
+	@Column(nullable = false)
+	private String terminology;
+	
+	/** The terminology version. */
+	// TODO: @Field(index = Index.UN_TOKENIZED, store = Store.NO)
+	@Column(nullable = false)
+	private String terminologyVersion;
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Long getId() {
+		return this.id;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public abstract String toString();
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public Date getEffectiveTime() {
+		return effectiveTime;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setEffectiveTime(Date effectiveTime) {
+		this.effectiveTime = effectiveTime;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public boolean isActive() {
+		return active;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public Long getModuleId() {
+		return moduleId;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setModuleId(Long moduleId) {
+		this.moduleId = moduleId;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof AbstractComponent))
+			return false;
+		AbstractComponent other = (AbstractComponent) obj;
+		if (id == null) {
+			if (other.getId() != null)
+				return false;
+		} else if (!id.equals(other.getId()))
+			return false;
+		return true;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public String getTerminologyVersion() {
+		return terminologyVersion;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setTerminologyVersion(String terminologyVersion) {
+		this.terminologyVersion = terminologyVersion;
+	}
+	/**
+     * {@inheritDoc}
+     */
+	@Override
+	public String getTerminology() {
+		return terminology;
+	}
+	/**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setTerminology(String terminology) {
+		this.terminology = terminology;
+	}
+
+}
