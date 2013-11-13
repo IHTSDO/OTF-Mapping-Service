@@ -1,0 +1,163 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.mapping</groupId>
+    <artifactId>mapping-parent</artifactId>
+    <version>0.0.1</version>
+    <relativePath>../..</relativePath>
+  </parent>
+
+  <artifactId>mapping-admin-updatedb</artifactId>
+  <name>OTF RF2 Admin Update Db</name>
+  <description>OTF RF2 Administrator Tool to Update the Database</description>
+  <packaging>pom</packaging>
+
+  <!-- Declare Project Dependency Versions -->
+  <dependencies>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-admin-mojo</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- Model interfaces. -->
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-jpa-model</artifactId>
+    </dependency>
+
+    <!-- JPA dependencies -->
+    <dependency>
+      <groupId>org.hibernate.javax.persistence</groupId>
+      <artifactId>hibernate-jpa-2.0-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.transaction</groupId>
+      <artifactId>jta</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+    </dependency>
+    <!-- TODO: Uncomment these as needed.
+      <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-search</artifactId>
+      </dependency>
+      <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-envers</artifactId>
+      </dependency>
+    -->
+    <!-- Hibernate + JPA + MySQL. -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-entitymanager</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+    </dependency>
+
+  </dependencies>
+
+  <profiles>
+    <profile>
+      <id>dev</id>
+      <build>
+        <resources>
+          <resource>
+            <directory>${project.build.directory}/generated-sources</directory>
+          </resource>
+        </resources>
+        <plugins>
+          <!-- Unpack the filters.properties files -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>unpack</id>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>unpack</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.ihtsdo.otf.mapping</groupId>
+                      <artifactId>mapping-config</artifactId>
+                      <version>${project.version}</version>
+                      <type>zip</type>
+                    </artifactItem>
+                  </artifactItems>
+                  <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- filter and copy persistence.xml to the target/generated-sources/META-INF
+            dir -->
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-resources</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/generated-sources/META-INF</outputDirectory>
+                  <filters>
+                    <filter>${project.build.directory}/generated-sources/resources/filters.properties.dev</filter>
+                  </filters>
+                  <resources>
+                    <resource>
+                      <directory>src/main/resources/META-INF</directory>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>updatedb</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>updatedb</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

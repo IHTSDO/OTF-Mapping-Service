@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<persistence version="2.0"
+    xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+    <!--  use transaction-type RESOURCE_LOCAL because we do not have a container -->
+    <persistence-unit name="MappingServiceDS" transaction-type="RESOURCE_LOCAL">
+    
+        <!-- JPA persistence provider. -->
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+
+        <properties>
+        
+            <!-- Log formatted Hibernate SQL with comments.
+            -->
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql" value="true" />
+            <property name="hibernate.use_sql_comments" value="true" />
+            
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+
+            <!-- JDBC properties. -->
+            <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
+            <property name="javax.persistence.jdbc.url" value=${mysql.url} />
+            <property name="javax.persistence.jdbc.user" value=${mysql.user} />
+            <property name="javax.persistence.jdbc.password" value=${mysql.pwd} />
+
+        </properties>
+    </persistence-unit>
+</persistence>

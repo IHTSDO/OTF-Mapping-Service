@@ -1,4 +1,4 @@
-org\ihtsdo\otf\mapping\pojo\DescriptionImpl.class
 org\ihtsdo\otf\mapping\pojo\AbstractComponent.class
 org\ihtsdo\otf\mapping\pojo\RelationshipImpl.class
 org\ihtsdo\otf\mapping\pojo\ConceptImpl.class
+org\ihtsdo\otf\mapping\pojo\DescriptionImpl.class

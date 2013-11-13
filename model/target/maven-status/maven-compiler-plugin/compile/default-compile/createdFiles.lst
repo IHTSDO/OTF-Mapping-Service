@@ -1,4 +1,4 @@
 org\ihtsdo\otf\mapping\model\Component.class
-org\ihtsdo\otf\mapping\model\Description.class
 org\ihtsdo\otf\mapping\model\Concept.class
+org\ihtsdo\otf\mapping\model\Description.class
 org\ihtsdo\otf\mapping\model\Relationship.class

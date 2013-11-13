@@ -1,0 +1,63 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.mapping</groupId>
+    <artifactId>mapping-parent</artifactId>
+    <version>0.0.1</version>
+    <relativePath>../..</relativePath>
+  </parent>
+
+  <artifactId>mapping-admin-loader</artifactId>
+  <name>OTF RF2 Admin RF2 Loader</name>
+  <description>OTF RF2 Administrator Tool to Load RF2 data</description>
+  <packaging>pom</packaging>
+
+  <!-- Declare Project Dependency Versions -->
+  <dependencies>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-admin-mojo</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- Model interfaces. -->
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-jpa-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.ihtsdo.otf.mapping</groupId>
+        <artifactId>mapping-admin-mojo</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>load-rf2-snapshot</id>
+            <phase>package</phase>
+            <goals>
+              <goal>load-rf2-snapshot</goal>
+            </goals>
+            <configuration>
+              <coreInputDir>C:\workspace-mapping-services2-juno\mapping-services-project\usext-mini-data\src\main\resources\org\ihtsdo</coreInputDir>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
