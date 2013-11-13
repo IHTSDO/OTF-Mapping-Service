@@ -64,7 +64,7 @@ import org.ihtsdo.otf.mapping.model.Relationship;
  * 
  * @phase process-resources
  */
-public class RF2SnapshotLoader extends AbstractMojo {
+public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	/**
 	 * Core input directory.
@@ -172,10 +172,10 @@ public class RF2SnapshotLoader extends AbstractMojo {
 	private EntityManager manager;
 
 	/**
-	 * Instantiates a {@link RF2SnapshotLoader} from the specified parameters.
+	 * Instantiates a {@link RF2SnapshotLoaderMojo} from the specified parameters.
 	 * 
 	 */
-	public RF2SnapshotLoader() {
+	public RF2SnapshotLoaderMojo() {
 	}
 
 	/*

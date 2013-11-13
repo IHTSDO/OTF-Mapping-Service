@@ -82,7 +82,12 @@
 
   <profiles>
     <profile>
-      <id>dev</id>
+      <id>run</id>
+      <activation>
+        <property>
+          <name>run.config</name>
+        </property>
+      </activation>
       <build>
         <resources>
           <resource>
@@ -129,7 +134,7 @@
                 <configuration>
                   <outputDirectory>${project.build.directory}/generated-sources/META-INF</outputDirectory>
                   <filters>
-                    <filter>${project.build.directory}/generated-sources/resources/filters.properties.dev</filter>
+                    <filter>${project.build.directory}/generated-sources/resources/filters.properties.${run.config}</filter>
                   </filters>
                   <resources>
                     <resource>
