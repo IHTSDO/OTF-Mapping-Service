@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -172,6 +171,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	/** The date format. */
 	private SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+	
+	/** The version. */
+	private String version = "";
 
 	/** The manager. */
 	private EntityManager manager;
@@ -192,11 +194,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	public void execute() throws MojoFailureException {
 		try {
 
-			getLog().info("  Testing RF2SnapshotLoader.java");
+			getLog().info("  In RF2SnapshotLoader.java");
 			
       Properties  properties = new Properties();
-      properties.load(new FileInputStream(propertiesFile));
+      FileInputStream propertiesInputStream = new FileInputStream(propertiesFile);
+      properties.load(propertiesInputStream);
       String coreInputDirString = properties.getProperty("loader.input.data");
+      propertiesInputStream.close();
       coreInputDir = new File(coreInputDirString);
       
       
@@ -205,6 +209,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			manager = factory.createEntityManager();
 
 			openInputFiles();
+			getVersion();
+			
 			EntityTransaction tx = manager.getTransaction();
 			try {
 				// TODO: truncate all the tables that we are going to use first
@@ -251,8 +257,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				concept.setActive(st.nextToken().equals("1") ? true : false);
 				concept.setModuleId(Long.valueOf(st.nextToken()));
 				concept.setDefinitionStatusId(Long.valueOf(st.nextToken()));
-				concept.setTerminology("testTerminology");
-				concept.setTerminologyVersion("testVersion");
+				concept.setTerminology("SNOMEDCT");
+				concept.setTerminologyVersion(version);
 				concept.setDefaultPreferredName("testDefaultPreferredName");
 
 				manager.persist(concept);
@@ -267,9 +273,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 */
 	private void loadComponents() throws Exception {
 
-		int counter = 0;
 		String line = "";
-		while ((line = coreRelInput.readLine()) != null && counter < 20) {
+		while ((line = coreRelInput.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
 			Relationship relationship = new RelationshipJpa();
 			String firstToken = st.nextToken();
@@ -285,18 +290,16 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				relationship.setRelationshipGroup(Integer.valueOf(st.nextToken())); // relationshipGroup
 				relationship.setTypeId(Long.valueOf(st.nextToken())); // typeId
 				relationship.setCharacteristicTypeId(Long.valueOf("1")); // characteristicTypeId
-				relationship.setTerminology("testTerminology");
-				relationship.setTerminologyVersion("testVersion");
+				relationship.setTerminology("SNOMEDCT");
+				relationship.setTerminologyVersion(version);
 				relationship.setModifierId(Long.valueOf("2"));
 			
 			  manager.persist(relationship);
-			  counter++;
 			}
 		}
 
 		// keep concepts from extension descriptions
-		counter = 0;
-		while ((line = coreDescInput.readLine()) != null && counter < 20) {
+		while ((line = coreDescInput.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
 			Description description = new DescriptionJpa();
 			String firstToken = st.nextToken();
@@ -311,11 +314,10 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				description.setTypeId(Long.valueOf(st.nextToken()));
 				description.setTerm(st.nextToken());
 				description.setCaseSignificanceId(Long.valueOf(st.nextToken()));
-				description.setTerminology("testTerminology");
-				description.setTerminologyVersion("testVersion");
+				description.setTerminology("SNOMEDCT");
+				description.setTerminologyVersion(version);
 
 				manager.persist(description);
-				counter++;
 			}
 		}
 	}
@@ -530,6 +532,17 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		if (coreTextDefinitionInputFile != null)
 			coreTextDefinitionInput =
 					new BufferedReader(new FileReader(coreTextDefinitionInputFile));
+	}
+	
+	/**
+	 * Returns the version of the input files.
+	 *
+	 * @return the version
+	 */
+	private void getVersion() {
+		int index = coreConceptInputFile.getName().indexOf(".txt");
+		version = coreConceptInputFile.getName().substring(index - 8, index);
+		getLog().info("Version " + version);
 	}
 
 	/**

@@ -51,16 +51,12 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search</artifactId>
       </dependency>
-      <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-envers</artifactId>
-      </dependency>
     -->
     <!-- Hibernate + JPA + MySQL. -->
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
-    </dependency>
+    </dependency> 
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-validator</artifactId>

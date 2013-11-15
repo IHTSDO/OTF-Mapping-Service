@@ -24,15 +24,13 @@
     <hibernate.version>3.6.0.Final</hibernate.version>
     <org.hibernate.javax.persistence.version>1.0.1.Final</org.hibernate.javax.persistence.version>
     <javax.transaction.version>1.1</javax.transaction.version>
-    <hibernate.envers.version>3.6.0.Final</hibernate.envers.version>
-    <hibernate.search.version>3.3.0.Final</hibernate.search.version>
+    <hibernate.search.version>4.3.0.Final</hibernate.search.version>
     <hibernate.entitymanager.version>3.6.0.Final</hibernate.entitymanager.version>
     <hibernate.validator.version>4.1.0.Final</hibernate.validator.version>
     <mysql.connector.java.version>5.1.26</mysql.connector.java.version>
     <slf4j.log4j12.version>1.7.5</slf4j.log4j12.version>
     <maven.plugin.api.version>3.1.1</maven.plugin.api.version>
     <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
-    <sct.data.version>20130131.0</sct.data.version>
   </properties>
 
   <dependencyManagement>
@@ -70,11 +68,6 @@
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-search</artifactId>
         <version>${hibernate.search.version}</version>
-        </dependency>
-        <dependency>
-        <groupId>org.hibernate</groupId>
-        <artifactId>hibernate-envers</artifactId>
-        <version>${hibernate.envers.version}</version>
         </dependency>
       -->
       <!-- Hibernate + JPA + MySQL. -->
