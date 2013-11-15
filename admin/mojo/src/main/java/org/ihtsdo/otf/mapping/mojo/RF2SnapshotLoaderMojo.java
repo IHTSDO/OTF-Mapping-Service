@@ -18,9 +18,11 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 import javax.persistence.EntityManager;
@@ -53,7 +55,7 @@ import org.ihtsdo.otf.mapping.model.Relationship;
  *             <goal>load-rf2-snapshot</goal>
  *           </goals>
  *           <configuration>
- *             <coreInputDir>${project.build.directory}/generated-sources/org/ihtsdo</coreInputDir>
+ *             <propertiesFile>${project.build.directory}/generated-sources/org/ihtsdo</propertiesFile>
  *           </configuration>
  *         </execution>
  *       </executions>
@@ -67,12 +69,15 @@ import org.ihtsdo.otf.mapping.model.Relationship;
 public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	/**
-	 * Core input directory.
+	 * Properties file.
 	 * 
 	 * @parameter 
 	 *            expression="${project.build.directory}/generated-sources/org/ihtsdo"
 	 * @required
 	 */
+	private File propertiesFile;
+	
+	/** Core input directory. */
 	private File coreInputDir;
 
 	/** The core rel input file. */
@@ -188,7 +193,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		try {
 
 			getLog().info("  Testing RF2SnapshotLoader.java");
-
+			
+      Properties  properties = new Properties();
+      properties.load(new FileInputStream(propertiesFile));
+      String coreInputDirString = properties.getProperty("loader.input.data");
+      coreInputDir = new File(coreInputDirString);
+      
+      
 			EntityManagerFactory factory =
 					Persistence.createEntityManagerFactory("MappingServiceDS");
 			manager = factory.createEntityManager();
@@ -201,9 +212,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				loadConcepts();
 				tx.commit();
 
-				/**tx.begin();
+				tx.begin();
 				loadComponents();
-				tx.commit();*/
+				tx.commit(); 
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -230,8 +241,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	private void loadConcepts() throws Exception {
 
 		String line = "";
-
-		while ((line = coreConceptInput.readLine()) != null) {
+		while ((line = coreConceptInput.readLine()) != null ) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
 			Concept concept = new ConceptJpa();
 			String firstToken = st.nextToken();
@@ -257,8 +267,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 */
 	private void loadComponents() throws Exception {
 
+		int counter = 0;
 		String line = "";
-		while ((line = coreRelInput.readLine()) != null) {
+		while ((line = coreRelInput.readLine()) != null && counter < 20) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
 			Relationship relationship = new RelationshipJpa();
 			String firstToken = st.nextToken();
@@ -276,13 +287,16 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				relationship.setCharacteristicTypeId(Long.valueOf("1")); // characteristicTypeId
 				relationship.setTerminology("testTerminology");
 				relationship.setTerminologyVersion("testVersion");
-			}
+				relationship.setModifierId(Long.valueOf("2"));
 			
-			manager.persist(relationship);
+			  manager.persist(relationship);
+			  counter++;
+			}
 		}
 
 		// keep concepts from extension descriptions
-		while ((line = coreDescInput.readLine()) != null) {
+		counter = 0;
+		while ((line = coreDescInput.readLine()) != null && counter < 20) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
 			Description description = new DescriptionJpa();
 			String firstToken = st.nextToken();
@@ -293,12 +307,16 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				description.setModuleId(Long.valueOf(st.nextToken()));
 				String conceptId = st.nextToken(); // conceptId
 				description.setConcept(getConcept(conceptId));
-				description.setLanguageCode("testLanguageCode");
+				description.setLanguageCode(st.nextToken());
+				description.setTypeId(Long.valueOf(st.nextToken()));
+				description.setTerm(st.nextToken());
+				description.setCaseSignificanceId(Long.valueOf(st.nextToken()));
 				description.setTerminology("testTerminology");
 				description.setTerminologyVersion("testVersion");
-			}
 
-			manager.persist(description);
+				manager.persist(description);
+				counter++;
+			}
 		}
 	}
 
@@ -309,11 +327,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 * @return the concept
 	 */
 	private Concept getConcept(String conceptId) {
-		List<ConceptJpa> concepts =
-				manager.createQuery(
-						"Select a From ConceptJpa a where a.id = " + conceptId,
-						ConceptJpa.class).getResultList();
-		return concepts.get(0);
+		return manager.find( ConceptJpa.class, Long.valueOf(conceptId));
 	}
 
 	/**
