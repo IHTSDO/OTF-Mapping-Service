@@ -28,6 +28,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import javax.persistence.Query;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -213,7 +214,19 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			
 			EntityTransaction tx = manager.getTransaction();
 			try {
-				// TODO: truncate all the tables that we are going to use first
+				// truncate all the tables that we are going to use first
+				tx.begin();				
+				Query query = manager.createQuery("DELETE From ConceptJpa c");
+				int deleteRecords=query.executeUpdate();
+				getLog().info("concept records deleted: " + deleteRecords);
+				query = manager.createQuery("DELETE From DescriptionJpa d");
+				deleteRecords=query.executeUpdate();
+				getLog().info("description records deleted: " + deleteRecords);
+				query = manager.createQuery("DELETE From RelationshipJpa r");
+				deleteRecords=query.executeUpdate();
+				getLog().info("relationship records deleted: " + deleteRecords);
+				tx.commit();
+				
 				tx.begin();
 				loadConcepts();
 				tx.commit();
