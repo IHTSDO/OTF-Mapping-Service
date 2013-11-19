@@ -15,30 +15,6 @@
   <description>OTF RF2 Administrator Tool to Load RF2 data</description>
   <packaging>pom</packaging>
 
-  <!-- Declare Project Dependency Versions -->
-  <dependencies>
-    <dependency>
-      <groupId>org.ihtsdo.otf.mapping</groupId>
-      <artifactId>mapping-admin-mojo</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <!-- Model interfaces. -->
-    <dependency>
-      <groupId>org.ihtsdo.otf.mapping</groupId>
-      <artifactId>mapping-model</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ihtsdo.otf.mapping</groupId>
-      <artifactId>mapping-jpa-model</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-    </dependency>
-
-
-  </dependencies>
 
   <profiles>
     <profile>
@@ -49,12 +25,8 @@
         </property>
       </activation>
       <build>
-        <resources>
-          <resource>
-            <directory>${project.build.directory}/generated-sources</directory>
-          </resource>
-        </resources>
         <plugins>
+
           <!-- Unpack the filters.properties files -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -75,13 +47,12 @@
                       <type>zip</type>
                     </artifactItem>
                   </artifactItems>
-                  <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+                  <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
                 </configuration>
               </execution>
             </executions>
           </plugin>
-          <!-- filter and copy persistence.xml to the target/generated-sources/META-INF
-            dir -->
+          <!-- filter and copy persistence.xml -->
           <plugin>
             <artifactId>maven-resources-plugin</artifactId>
             <executions>
@@ -92,13 +63,13 @@
                   <goal>copy-resources</goal>
                 </goals>
                 <configuration>
-                  <outputDirectory>${project.build.directory}/generated-sources/META-INF</outputDirectory>
+                  <outputDirectory>${project.build.directory}/config</outputDirectory>
                   <filters>
-                    <filter>${project.build.directory}/generated-sources/resources/filters.properties.${run.config}</filter>
+                    <filter>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</filter>
                   </filters>
                   <resources>
                     <resource>
-                      <directory>src/main/resources/META-INF</directory>
+                      <directory>src/main/config</directory>
                       <filtering>true</filtering>
                     </resource>
                   </resources>
@@ -106,11 +77,42 @@
               </execution>
             </executions>
           </plugin>
-          
+
+          <!-- Build a .jar file -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>2.4</version>
+            <executions>
+              <execution>
+                <phase>test</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration>
+                  <classesDirectory>${project.build.directory}/config</classesDirectory>
+                  <includes>
+                    <include>**/*</include>
+                  </includes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Execute the mojo -->
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.ihtsdo.otf.mapping</groupId>
+                <artifactId>mapping-admin-loader-config</artifactId>
+                <version>${project.version}</version>
+                <scope>system</scope>
+                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+              </dependency>
+            </dependencies>
             <executions>
               <execution>
                 <id>load-rf2-snapshot</id>
@@ -119,7 +121,7 @@
                   <goal>load-rf2-snapshot</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-sources/resources/filters.properties.${run.config}</propertiesFile>
+                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                 </configuration>
               </execution>
             </executions>
