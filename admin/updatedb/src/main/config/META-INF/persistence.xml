@@ -8,6 +8,8 @@
     
         <!-- JPA persistence provider. -->
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
+
+        <!-- List managed classes -->
         <class>org.ihtsdo.otf.mapping.jpa.AbstractComponent</class>
         <class>org.ihtsdo.otf.mapping.jpa.ConceptJpa</class>
         <class>org.ihtsdo.otf.mapping.jpa.DescriptionJpa</class>
