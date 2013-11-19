@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <!-- Module Metadata -->
@@ -21,12 +21,12 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hibernate.version>3.6.0.Final</hibernate.version>
+    <hibernate.version>4.1.0.Final</hibernate.version>
     <org.hibernate.javax.persistence.version>1.0.1.Final</org.hibernate.javax.persistence.version>
     <javax.transaction.version>1.1</javax.transaction.version>
     <hibernate.search.version>4.3.0.Final</hibernate.search.version>
-    <hibernate.entitymanager.version>3.6.0.Final</hibernate.entitymanager.version>
-    <hibernate.validator.version>4.1.0.Final</hibernate.validator.version>
+    <hibernate.entitymanager.version>4.1.0.Final</hibernate.entitymanager.version>
+    <hibernate.validator.version>5.0.1.Final</hibernate.validator.version>
     <mysql.connector.java.version>5.1.26</mysql.connector.java.version>
     <slf4j.log4j12.version>1.7.5</slf4j.log4j12.version>
     <maven.plugin.api.version>3.1.1</maven.plugin.api.version>

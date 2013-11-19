@@ -8,7 +8,11 @@
     
         <!-- JPA persistence provider. -->
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-
+        <class>org.ihtsdo.otf.mapping.jpa.AbstractComponent</class>
+        <class>org.ihtsdo.otf.mapping.jpa.ConceptJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.DescriptionJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.RelationshipJpa</class>
+        
         <properties>
         
             <!-- Log formatted Hibernate SQL with comments.
