@@ -17,10 +17,10 @@ import org.apache.maven.plugin.MojoFailureException;
  *       <version>${project.version}</version>
  *       <executions>
  *         <execution>
- *           <id>update-db</id>
+ *           <id>updatedb</id>
  *           <phase>package</phase>
  *           <goals>
- *             <goal>update-db</goal>
+ *             <goal>updatedb</goal>
  *           </goals>
  *         </execution>
  *       </executions>

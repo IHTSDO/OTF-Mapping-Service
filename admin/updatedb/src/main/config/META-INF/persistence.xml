@@ -8,6 +8,8 @@
     
         <!-- JPA persistence provider. -->
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
+
+        <!-- List managed classes -->
         <class>org.ihtsdo.otf.mapping.jpa.AbstractComponent</class>
         <class>org.ihtsdo.otf.mapping.jpa.ConceptJpa</class>
         <class>org.ihtsdo.otf.mapping.jpa.DescriptionJpa</class>
@@ -22,7 +24,7 @@
             <property name="hibernate.use_sql_comments" value="true" />
             
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
-            <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
 
             <!-- JDBC properties. -->
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
