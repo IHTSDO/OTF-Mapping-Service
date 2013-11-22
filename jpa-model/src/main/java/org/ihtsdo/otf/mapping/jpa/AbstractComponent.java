@@ -19,11 +19,7 @@ public abstract class AbstractComponent implements Component {
 
 	/** The id. */
 	@Id
-	@GeneratedValue //(strategy=GenerationType.TABLE) //TODO Look into this
-	/* If this doesn't work:
-	 * try: @GeneratedValue(strategy=GenerationType.TABLE)
-	 * also try: strategy=auto (probably the default from @GeneratedValue)
-	 */
+	@GeneratedValue 
 	private Long id;
 
 	/** The effective time. */

@@ -327,7 +327,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				concept.setDefaultPreferredName("testDefaultPreferredName");
 
 				manager.persist(concept);
-				conceptCache.put(firstToken + concept.getTerminology() + concept.getTerminologyVersion(), concept); //TODO Reinstate with correct terminology
+				conceptCache.put(firstToken + concept.getTerminology() + concept.getTerminologyVersion(), concept);
 				
 				//if (++i%1000 == 0) {getLog().info(".");}
 				i++;
@@ -402,7 +402,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				description.setConcept(getConcept(conceptId, description.getTerminology(), description.getTerminologyVersion()));
 	
 				manager.persist(description);
-				descriptionCache.put(firstToken + description.getTerminology() + description.getTerminologyVersion(), description); //TODO Reinstate with correct terminology
+				descriptionCache.put(firstToken + description.getTerminology() + description.getTerminologyVersion(), description); 
 				
 				//if (++i%1000 == 0) {getLog().info("."); }
 				i++;
@@ -412,12 +412,10 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	}
 	
 	/**
-	 * Load RefSets.
+	 * Load RefSets: simple, simple_map, complex_map, attribute_value, language
 	 * 
 	 * @throws Exception the exception
 	 */
-
-	// TODO Seriously needs some error checking :)
 	private void loadRefSets() throws Exception {
 		
 		String line = "";
@@ -451,7 +449,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 				manager.persist(simpleRefSetMember);
 				
-				//if (++i%1000 == 0) {getLog().info("."); }
 				i++;
 			}
 		}
@@ -487,7 +484,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 				manager.persist(attributeValueRefSetMember);
 				
-				//if (++i%1000 == 0) {getLog().info("."); }
 				i++;
 			}
 		}
@@ -523,7 +519,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				
 				manager.persist(simpleMapRefSetMember);	
 				
-				//if (++i%1000 == 0) {getLog().info("."); }
 				i++;
 			}
 		}
@@ -569,8 +564,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setConcept(getConcept(firstToken, complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion())); 
 
 				manager.persist(complexMapRefSetMember);
-				
-				//if (++i%1000 == 0) {getLog().info("."); }
+
 				i++;
 			}
 		}	
