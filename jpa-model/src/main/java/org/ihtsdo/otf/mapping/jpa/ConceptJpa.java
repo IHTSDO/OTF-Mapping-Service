@@ -9,6 +9,8 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
@@ -19,6 +21,7 @@ import org.ihtsdo.otf.mapping.model.Relationship;
  */
 @Entity
 @Table(name = "concepts")
+@XmlRootElement(name="concept")
 public class ConceptJpa extends AbstractComponent implements Concept {
 
 	/** The definition status id. */
@@ -67,6 +70,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the descriptions
 	 */
 	@Override
+	@XmlElement(type=DescriptionJpa.class)
     public Set<Description> getDescriptions() {
 		return descriptions;
 	}
@@ -116,6 +120,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the relationships
 	 */
 	@Override
+	@XmlElement(type=RelationshipJpa.class)
     public Set<Relationship> getRelationships() {
 		return relationships;
 	}
@@ -136,6 +141,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the inverse relationships
 	 */
 	@Override
+	@XmlElement(type=RelationshipJpa.class)
     public Set<Relationship> getInverseRelationships() {
 		return inverseRelationships;
 	}

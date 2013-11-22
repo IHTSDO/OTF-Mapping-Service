@@ -9,6 +9,7 @@
         <!-- JPA persistence provider. -->
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
 
+        
         <properties>
         
             <!-- Log formatted Hibernate SQL with comments.

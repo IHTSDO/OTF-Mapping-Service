@@ -5,7 +5,14 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
 
@@ -14,6 +21,7 @@ import org.ihtsdo.otf.mapping.model.Description;
  */
 @Entity
 @Table(name = "descriptions")
+@XmlRootElement(name="description")
 public class DescriptionJpa extends AbstractComponent implements Description {
 
 	/** The language code. */
@@ -142,8 +150,11 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	 * @return the concept
 	 */
 	@Override
-    public Concept getConcept() {
-		return concept;
+	@XmlIDREF
+	@XmlAttribute
+	@JsonIgnore
+    public ConceptJpa getConcept() {
+		return (ConceptJpa) concept;
 	}
 
 	/**

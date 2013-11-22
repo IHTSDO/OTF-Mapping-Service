@@ -5,6 +5,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlRootElement;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Relationship;
@@ -14,6 +18,7 @@ import org.ihtsdo.otf.mapping.model.Relationship;
  */
 @Entity
 @Table(name = "relationships")
+@XmlRootElement(name="relationship")
 public class RelationshipJpa extends AbstractComponent implements Relationship {
 
 	/** The source concept. */
@@ -123,12 +128,13 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	 * Returns the source concept.
 	 *
 	 * @return the source concept
-	@XmlAttribute
-	@XmlIDREF
 	 */
 	@Override
-    public Concept getSourceConcept() {
-		return sourceConcept;
+	@XmlIDREF
+	@XmlAttribute
+	@JsonIgnore
+    public ConceptJpa getSourceConcept() {
+		return (ConceptJpa) sourceConcept;
 	}
 
 	/**
@@ -147,8 +153,11 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	 * @return the destination concept
 	 */
 	@Override
-    public Concept getDestinationConcept() {
-		return destinationConcept;
+	@XmlIDREF
+	@XmlAttribute
+	@JsonIgnore
+    public ConceptJpa getDestinationConcept() {
+		return (ConceptJpa) destinationConcept;
 	}
 
 	/**

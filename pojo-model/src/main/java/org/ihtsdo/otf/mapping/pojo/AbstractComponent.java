@@ -24,7 +24,7 @@ public abstract class AbstractComponent implements Component {
 
 	/** The terminology version. */
 	private String terminologyVersion;
-
+		
     /**
      * {@inheritDoc}
      */
