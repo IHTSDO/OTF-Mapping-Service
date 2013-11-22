@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
@@ -18,6 +19,11 @@ public abstract class AbstractComponent implements Component {
 
 	/** The id. */
 	@Id
+	@GeneratedValue //(strategy=GenerationType.TABLE) //TODO Look into this
+	/* If this doesn't work:
+	 * try: @GeneratedValue(strategy=GenerationType.TABLE)
+	 * also try: strategy=auto (probably the default from @GeneratedValue)
+	 */
 	private Long id;
 
 	/** The effective time. */
@@ -33,12 +39,14 @@ public abstract class AbstractComponent implements Component {
 	private Long moduleId;
 
 	/** The terminology. */
-	// TODO: @Field(index = Index.UN_TOKENIZED, store = Store.NO)
 	@Column(nullable = false)
 	private String terminology;
 	
+	/** The terminology id */
+	@Column(nullable = false)
+	private String terminologyId;
+	
 	/** The terminology version. */
-	// TODO: @Field(index = Index.UN_TOKENIZED, store = Store.NO)
 	@Column(nullable = false)
 	private String terminologyVersion;
 
@@ -57,12 +65,6 @@ public abstract class AbstractComponent implements Component {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-    /**
-     * {@inheritDoc}
-     */
-	@Override
-	public abstract String toString();
 
     /**
      * {@inheritDoc}
@@ -173,4 +175,33 @@ public abstract class AbstractComponent implements Component {
 		this.terminology = terminology;
 	}
 
+	/**
+     * {@inheritDoc}
+     */
+	@Override
+	public String getTerminologyId() {
+		return terminologyId;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setTerminologyId(String terminologyId) {
+		this.terminologyId = terminologyId;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	 public String toString() {
+		 
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+				 this.getModuleId(); // end of basic component fields
+	 }
 }

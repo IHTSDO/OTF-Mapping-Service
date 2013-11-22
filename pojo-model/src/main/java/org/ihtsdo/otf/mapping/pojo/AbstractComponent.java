@@ -21,6 +21,12 @@ public abstract class AbstractComponent implements Component {
 
 	/** The module id. */
 	private Long moduleId;
+	
+	/** The terminology field */
+	private String terminology;
+	
+	/** The terminology id */
+	private String terminologyId;
 
 	/** The terminology version. */
 	private String terminologyVersion;
@@ -135,4 +141,50 @@ public abstract class AbstractComponent implements Component {
 	public void setTerminologyVersion(String terminologyVersion) {
 		this.terminologyVersion = terminologyVersion;
 	}
+	
+	/**
+     * {@inheritDoc}
+     */
+	@Override
+	public String getTerminology() {
+		return terminology;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setTerminology(String terminology) {
+		this.terminology = terminology;
+	}
+	
+	/**
+     * {@inheritDoc}
+     */
+	@Override
+	public String getTerminologyId() {
+		return terminologyId;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setTerminologyId(String terminologyId) {
+		this.terminologyId = terminologyId;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	 public String toString() {
+		 
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+				 this.getModuleId(); // end of basic component fields
+	 }
 }
