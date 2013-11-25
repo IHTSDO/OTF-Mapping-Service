@@ -8,7 +8,10 @@
     
         <!-- JPA persistence provider. -->
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-
+        <class>org.ihtsdo.otf.mapping.jpa.AbstractComponent</class>
+        <class>org.ihtsdo.otf.mapping.jpa.ConceptJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.DescriptionJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.RelationshipJpa</class>
         
         <properties>
         
@@ -23,9 +26,9 @@
 
             <!-- JDBC properties. -->
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
-            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://127.0.0.1:3306/mappingservicedb" />
-            <property name="javax.persistence.jdbc.user" value="root" />
-            <property name="javax.persistence.jdbc.password" value="rootpwd" />
+            <property name="javax.persistence.jdbc.url" value="${mysql.url}" />
+            <property name="javax.persistence.jdbc.user" value="${mysql.user}" />
+            <property name="javax.persistence.jdbc.password" value="${mysql.pwd}" />
 
         </properties>
     </persistence-unit>
