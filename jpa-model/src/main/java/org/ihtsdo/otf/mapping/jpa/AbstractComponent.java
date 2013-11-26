@@ -3,12 +3,11 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.model.Component;
 
@@ -20,6 +19,7 @@ public abstract class AbstractComponent implements Component {
 
 	/** The id. */
 	@Id
+	@GeneratedValue 
 	private Long id;
 
 	/** The effective time. */
@@ -35,32 +35,21 @@ public abstract class AbstractComponent implements Component {
 	private Long moduleId;
 
 	/** The terminology. */
-	// TODO: @Field(index = Index.UN_TOKENIZED, store = Store.NO)
 	@Column(nullable = false)
 	private String terminology;
 	
+	/** The terminology id */
+	@Column(nullable = false)
+	private String terminologyId;
+	
 	/** The terminology version. */
-	// TODO: @Field(index = Index.UN_TOKENIZED, store = Store.NO)
 	@Column(nullable = false)
 	private String terminologyVersion;
 
-
-	/**
-	 * Returns the id.
-	 * The @XmlID annotation cannot be used on a variable of type Long,
-	 * therefore we add an additional method that returns type String for the XML
-	 * @return the id
-	 */
-	@XmlID
-	public String getID() {
-		return id.toString();
-	}
-	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	@XmlTransient
 	public Long getId() {
 		return this.id;
 	}
@@ -72,12 +61,6 @@ public abstract class AbstractComponent implements Component {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-    /**
-     * {@inheritDoc}
-     */
-	@Override
-	public abstract String toString();
 
     /**
      * {@inheritDoc}
@@ -188,4 +171,33 @@ public abstract class AbstractComponent implements Component {
 		this.terminology = terminology;
 	}
 
+	/**
+     * {@inheritDoc}
+     */
+	@Override
+	public String getTerminologyId() {
+		return terminologyId;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setTerminologyId(String terminologyId) {
+		this.terminologyId = terminologyId;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	 public String toString() {
+		 
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+				 this.getModuleId(); // end of basic component fields
+	 }
 }

@@ -12,12 +12,19 @@
         <class>org.ihtsdo.otf.mapping.jpa.ConceptJpa</class>
         <class>org.ihtsdo.otf.mapping.jpa.DescriptionJpa</class>
         <class>org.ihtsdo.otf.mapping.jpa.RelationshipJpa</class>
-        
+        <class>org.ihtsdo.otf.mapping.jpa.AbstractRefSetMember</class>
+        <class>org.ihtsdo.otf.mapping.jpa.AbstractConceptRefSetMember</class>
+        <class>org.ihtsdo.otf.mapping.jpa.AbstractDescriptionRefSetMember</class>
+        <class>org.ihtsdo.otf.mapping.jpa.AttributeValueRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.ComplexMapRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.LanguageRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.SimpleMapRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.SimpleRefSetMemberJpa</class>
         <properties>
         
             <!-- Log formatted Hibernate SQL with comments.
             -->
-            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.show_sql" value="false" />
             <property name="hibernate.format_sql" value="true" />
             <property name="hibernate.use_sql_comments" value="true" />
             

@@ -90,5 +90,26 @@ public interface Component {
 	 * @param terminologyVersion the terminology version
 	 */
 	public void setTerminologyVersion(String terminologyVersion);
+	
+	/**
+	 * Returns the terminology id.
+	 *
+	 * @return the terminology id
+	 */
+	public String getTerminologyId();
+
+	/**
+	 * Sets the terminology id.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	public void setTerminologyId(String terminologyId);
+	
+	/**
+	 * Returns a string of comma-separated fields of this object.
+	 *
+	 * @return a string of comma-separated fields
+	 */
+	public String toString();
 
 }

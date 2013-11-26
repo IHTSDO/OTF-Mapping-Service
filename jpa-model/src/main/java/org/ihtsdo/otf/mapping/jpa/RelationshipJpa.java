@@ -5,10 +5,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlRootElement;
-import org.codehaus.jackson.annotate.JsonIgnore;
+import javax.persistence.UniqueConstraint;
 
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Relationship;
@@ -17,8 +14,7 @@ import org.ihtsdo.otf.mapping.model.Relationship;
  * Concrete implementation of {@link Relationship} for use with JPA.
  */
 @Entity
-@Table(name = "relationships")
-@XmlRootElement(name="relationship")
+@Table(name = "relationships", uniqueConstraints=@UniqueConstraint(columnNames={"terminologyId", "terminology", "terminologyVersion"}))
 public class RelationshipJpa extends AbstractComponent implements Relationship {
 
 	/** The source concept. */
@@ -46,23 +42,6 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	/** The relationship group. */
 	@Column(nullable = true)
 	private Integer relationshipGroup;
-
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see gov.nih.nlm.rqs.entity.AbstractComponent#toString()
-	 */
-	@Override
-	public String toString() {
-		return (getSourceConcept() == null ? null : getSourceConcept()
-				.getId())
-				+ " "
-				+ getTypeId()
-				+ " "
-				+ (getDestinationConcept() == null ? null : getDestinationConcept()
-						.getId());
-	}
 
 	/**
 	 * Returns the type id.
@@ -128,13 +107,12 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	 * Returns the source concept.
 	 *
 	 * @return the source concept
+	@XmlAttribute
+	@XmlIDREF
 	 */
 	@Override
-	@XmlIDREF
-	@XmlAttribute
-	@JsonIgnore
-    public ConceptJpa getSourceConcept() {
-		return (ConceptJpa) sourceConcept;
+    public Concept getSourceConcept() {
+		return sourceConcept;
 	}
 
 	/**
@@ -153,11 +131,8 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	 * @return the destination concept
 	 */
 	@Override
-	@XmlIDREF
-	@XmlAttribute
-	@JsonIgnore
-    public ConceptJpa getDestinationConcept() {
-		return (ConceptJpa) destinationConcept;
+    public Concept getDestinationConcept() {
+		return destinationConcept;
 	}
 
 	/**
@@ -190,5 +165,26 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 		this.relationshipGroup = relationshipGroup;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	 public String toString() {
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+				 this.getModuleId() + "," +// end of basic component fields
+				 
+				 (this.getSourceConcept() == null ? null : this.getSourceConcept().getId()) + "," +
+				 (this.getDestinationConcept() == null ? null : this.getDestinationConcept().getId()) + "," +
+				 this.getRelationshipGroup() + "," +
+				 this.getTypeId() + "," +	
+				 this.getCharacteristicTypeId() + "," +
+				 this.getModifierId(); // end of relationship fields
+				 
+	 }
  
 }
