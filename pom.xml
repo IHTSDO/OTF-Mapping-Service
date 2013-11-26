@@ -78,13 +78,11 @@
         <artifactId>hibernate-core</artifactId>
         <version>${hibernate.version}</version>
       </dependency>
-      <!-- TODO: Uncomment these as needed.
         <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-search</artifactId>
         <version>${hibernate.search.version}</version>
         </dependency>
-      -->
       <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-entitymanager</artifactId>

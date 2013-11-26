@@ -43,12 +43,10 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
     </dependency>
-    <!-- TODO: Uncomment these as needed.
-      <dependency>
+    <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search</artifactId>
-      </dependency>
-    -->
+    </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>

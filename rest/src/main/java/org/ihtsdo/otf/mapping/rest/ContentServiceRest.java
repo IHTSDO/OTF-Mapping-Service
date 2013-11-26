@@ -1,5 +1,7 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.util.List;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -47,6 +49,22 @@ public class ContentServiceRest {
 	@Produces({MediaType.APPLICATION_XML})
 	public Concept getConceptForIdXml(@PathParam("id") Long id) {
 		return contentServiceJpa.getConceptForId(id);
+
+	}
+	
+	/**
+	 * Returns the concept for id.
+	 *
+	 * @param id the id
+	 * @return the concept for id
+	 */
+	@GET
+	@Path("/concepts/xml/{string}")
+	@Produces({MediaType.APPLICATION_XML})
+	public Concept getConceptForString(@PathParam("string") String searchString) {
+		List<Concept> results = contentServiceJpa.getConcepts(searchString);
+		System.out.println("results size " + results.size());
+		return (results != null && results.size() != 0) ? results.get(0) : null;
 
 	}
 

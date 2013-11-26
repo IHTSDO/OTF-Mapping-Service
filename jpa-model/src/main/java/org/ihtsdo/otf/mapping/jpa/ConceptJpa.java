@@ -12,6 +12,11 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
 import org.ihtsdo.otf.mapping.model.Relationship;
@@ -21,7 +26,8 @@ import org.ihtsdo.otf.mapping.model.Relationship;
  */
 @Entity
 @Table(name = "concepts")
-@XmlRootElement(name="concept")
+@Indexed
+@XmlRootElement
 public class ConceptJpa extends AbstractComponent implements Concept {
 
 	/** The definition status id. */
@@ -162,6 +168,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the default preferred name
 	 */
     @Override
+  	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.YES)
     public String getDefaultPreferredName() {
     	return defaultPreferredName;
 	}	

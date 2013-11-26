@@ -10,6 +10,11 @@ import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.Component;
 
 /**
@@ -35,12 +40,10 @@ public abstract class AbstractComponent implements Component {
 	private Long moduleId;
 
 	/** The terminology. */
-	// TODO: @Field(index = Index.UN_TOKENIZED, store = Store.NO)
 	@Column(nullable = false)
 	private String terminology;
 	
 	/** The terminology version. */
-	// TODO: @Field(index = Index.UN_TOKENIZED, store = Store.NO)
 	@Column(nullable = false)
 	private String terminologyVersion;
 
@@ -162,6 +165,7 @@ public abstract class AbstractComponent implements Component {
      * {@inheritDoc}
      */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	public String getTerminologyVersion() {
 		return terminologyVersion;
 	}
@@ -177,6 +181,7 @@ public abstract class AbstractComponent implements Component {
      * {@inheritDoc}
      */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	public String getTerminology() {
 		return terminology;
 	}

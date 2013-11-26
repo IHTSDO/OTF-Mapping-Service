@@ -6,13 +6,15 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
 
@@ -21,7 +23,7 @@ import org.ihtsdo.otf.mapping.model.Description;
  */
 @Entity
 @Table(name = "descriptions")
-@XmlRootElement(name="description")
+@XmlRootElement
 public class DescriptionJpa extends AbstractComponent implements Description {
 
 	/** The language code. */
@@ -33,7 +35,6 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	private Long typeId;
 
 	/** The term. */
-	// TODO: @Field(index = Index.TOKENIZED, store = Store.NO)
 	@Column(nullable = false, length = 256)
 	private String term;
 
@@ -110,6 +111,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	 * @return the term
 	 */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
     public String getTerm() {
 		return term;
 	}
