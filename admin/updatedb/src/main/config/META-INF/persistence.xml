@@ -14,6 +14,14 @@
         <class>org.ihtsdo.otf.mapping.jpa.ConceptJpa</class>
         <class>org.ihtsdo.otf.mapping.jpa.DescriptionJpa</class>
         <class>org.ihtsdo.otf.mapping.jpa.RelationshipJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.AbstractRefSetMember</class>
+        <class>org.ihtsdo.otf.mapping.jpa.AbstractConceptRefSetMember</class>
+        <class>org.ihtsdo.otf.mapping.jpa.AbstractDescriptionRefSetMember</class>
+        <class>org.ihtsdo.otf.mapping.jpa.AttributeValueRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.ComplexMapRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.LanguageRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.SimpleMapRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.SimpleRefSetMemberJpa</class>
 
         <properties>
         
@@ -24,7 +32,7 @@
             <property name="hibernate.use_sql_comments" value="true" />
             
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
 
             <!-- JDBC properties. -->
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />

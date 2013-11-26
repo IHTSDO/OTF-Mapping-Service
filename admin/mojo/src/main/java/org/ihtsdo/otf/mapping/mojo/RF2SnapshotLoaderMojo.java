@@ -21,23 +21,37 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.jpa.AttributeValueRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.jpa.DescriptionJpa;
+import org.ihtsdo.otf.mapping.jpa.LanguageRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.jpa.RelationshipJpa;
+import org.ihtsdo.otf.mapping.jpa.SimpleMapRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.jpa.SimpleRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.model.AttributeValueRefSetMember;
+import org.ihtsdo.otf.mapping.model.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
+import org.ihtsdo.otf.mapping.model.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.model.Relationship;
+import org.ihtsdo.otf.mapping.model.SimpleMapRefSetMember;
+import org.ihtsdo.otf.mapping.model.SimpleRefSetMember;
 
 /**
  * Goal which loads an RF2 Snapshot of SNOMED CT data into a database.
@@ -178,6 +192,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	/** The manager. */
 	private EntityManager manager;
+	
+	private Map<String, Concept> conceptCache = new HashMap<>();
+	private Map<String, Description> descriptionCache = new HashMap<>();
 
 	/**
 	 * Instantiates a {@link RF2SnapshotLoaderMojo} from the specified parameters.
@@ -189,6 +206,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see org.apache.maven.plugin.Mojo#execute()
+	 */
+	/* (non-Javadoc)
 	 * @see org.apache.maven.plugin.Mojo#execute()
 	 */
 	@Override
@@ -204,29 +224,54 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
       propertiesInputStream.close();
       coreInputDir = new File(coreInputDirString);
       
-      
+      	
 			EntityManagerFactory factory =
 					Persistence.createEntityManagerFactory("MappingServiceDS");
 			manager = factory.createEntityManager();
 
+
 			openInputFiles();
+
 			getVersion();
+			
 			
 			EntityTransaction tx = manager.getTransaction();
 			try {
+				
+			
 				// truncate all the tables that we are going to use first
 				tx.begin();				
-				Query query = manager.createQuery("DELETE From ConceptJpa c");
+				
+				// truncate RefSets
+				Query query = manager.createQuery("DELETE From SimpleRefSetMemberJpa rs");
 				int deleteRecords=query.executeUpdate();
-				getLog().info("concept records deleted: " + deleteRecords);
+				getLog().info("simple_ref_set records deleted: " + deleteRecords);
+				query = manager.createQuery("DELETE From SimpleMapRefSetMemberJpa rs");
+				deleteRecords=query.executeUpdate();
+				getLog().info("simple_map_ref_set records deleted: " + deleteRecords);
+				query = manager.createQuery("DELETE From ComplexMapRefSetMemberJpa rs");
+				deleteRecords=query.executeUpdate();
+				getLog().info("complex_map_ref_set records deleted: " + deleteRecords);
+				query = manager.createQuery("DELETE From AttributeValueRefSetMemberJpa rs");
+				deleteRecords=query.executeUpdate();
+				getLog().info("attribute_value_ref_set records deleted: " + deleteRecords);
+				query = manager.createQuery("DELETE From LanguageRefSetMemberJpa rs");
+				deleteRecords=query.executeUpdate();
+				getLog().info("language_ref_set records deleted: " + deleteRecords);
+				
+				// Truncate Terminology Elements
 				query = manager.createQuery("DELETE From DescriptionJpa d");
 				deleteRecords=query.executeUpdate();
 				getLog().info("description records deleted: " + deleteRecords);
 				query = manager.createQuery("DELETE From RelationshipJpa r");
 				deleteRecords=query.executeUpdate();
 				getLog().info("relationship records deleted: " + deleteRecords);
-				tx.commit();
+				query = manager.createQuery("DELETE From ConceptJpa c");
+				deleteRecords=query.executeUpdate();
+				getLog().info("concept records deleted: " + deleteRecords);
 				
+				tx.commit();
+			
 				tx.begin();
 				loadConcepts();
 				tx.commit();
@@ -235,12 +280,15 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				loadComponents();
 				tx.commit(); 
 				
+				tx.begin();
+				loadRefSets();
+				tx.commit();
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 				tx.rollback();
 			}
 
-			System.out.println(".. done");
 			manager.close();
 			factory.close();
 
@@ -260,12 +308,16 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	private void loadConcepts() throws Exception {
 
 		String line = "";
+		int i = 0;
+		
+		getLog().info("Loading Concepts...");
+		
 		while ((line = coreConceptInput.readLine()) != null ) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
 			Concept concept = new ConceptJpa();
 			String firstToken = st.nextToken();
 			if (!firstToken.equals("id")) { // header
-				concept.setId(Long.valueOf(firstToken));
+				concept.setTerminologyId(firstToken);
 				concept.setEffectiveTime(dt.parse(st.nextToken()));
 				concept.setActive(st.nextToken().equals("1") ? true : false);
 				concept.setModuleId(Long.valueOf(st.nextToken()));
@@ -275,8 +327,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				concept.setDefaultPreferredName("testDefaultPreferredName");
 
 				manager.persist(concept);
+				conceptCache.put(firstToken + concept.getTerminology() + concept.getTerminologyVersion(), concept);
+				
+				//if (++i%1000 == 0) {getLog().info(".");}
+				i++;
 			}
 		}
+		getLog().info(Integer.toString(i) + " Concepts loaded.");
 	}
 
 	/**
@@ -287,62 +344,342 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	private void loadComponents() throws Exception {
 
 		String line = "";
+		
+		getLog().info("Loading Relationships...");
+		int i = 0;
 		while ((line = coreRelInput.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
 			Relationship relationship = new RelationshipJpa();
 			String firstToken = st.nextToken();
 			if (!firstToken.equals("id")) { // header
-				relationship.setId(Long.valueOf(firstToken));
+				relationship.setTerminologyId(firstToken);
 				relationship.setEffectiveTime(dt.parse(st.nextToken()));
 				relationship.setActive(st.nextToken().equals("1") ? true : false); // active
 				relationship.setModuleId(Long.valueOf(st.nextToken())); // moduleId
 				String source = st.nextToken(); // sourceId
-				relationship.setSourceConcept(getConcept(source));
 				String target = st.nextToken(); // destinationId
-				relationship.setDestinationConcept(getConcept(target));
+				;
 				relationship.setRelationshipGroup(Integer.valueOf(st.nextToken())); // relationshipGroup
 				relationship.setTypeId(Long.valueOf(st.nextToken())); // typeId
 				relationship.setCharacteristicTypeId(Long.valueOf("1")); // characteristicTypeId
 				relationship.setTerminology("SNOMEDCT");
 				relationship.setTerminologyVersion(version);
 				relationship.setModifierId(Long.valueOf("2"));
+				
+				relationship.setSourceConcept(getConcept(source, relationship.getTerminology(), relationship.getTerminologyVersion()));
+				relationship.setDestinationConcept(getConcept(target, relationship.getTerminology(), relationship.getTerminologyVersion()));
 			
 			  manager.persist(relationship);
+			  
+			 // if (++i%1000 == 0) {getLog().info("."); }
+			  i++;
 			}
 		}
-
+		getLog().info(Integer.toString(i) + " Relationships loaded.");
+		
+		getLog().info("Loading Descriptions...");
+		i = 0;
+		
 		// keep concepts from extension descriptions
 		while ((line = coreDescInput.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
 			Description description = new DescriptionJpa();
 			String firstToken = st.nextToken();
 			if (!firstToken.equals("id")) { // header
-				description.setId(Long.valueOf(firstToken));
+				description.setTerminologyId(firstToken);
 				description.setEffectiveTime(dt.parse(st.nextToken()));
 				description.setActive(st.nextToken().equals("1") ? true : false);
 				description.setModuleId(Long.valueOf(st.nextToken()));
 				String conceptId = st.nextToken(); // conceptId
-				description.setConcept(getConcept(conceptId));
+				
 				description.setLanguageCode(st.nextToken());
 				description.setTypeId(Long.valueOf(st.nextToken()));
 				description.setTerm(st.nextToken());
 				description.setCaseSignificanceId(Long.valueOf(st.nextToken()));
 				description.setTerminology("SNOMEDCT");
 				description.setTerminologyVersion(version);
-
+				
+				description.setConcept(getConcept(conceptId, description.getTerminology(), description.getTerminologyVersion()));
+	
 				manager.persist(description);
+				descriptionCache.put(firstToken + description.getTerminology() + description.getTerminologyVersion(), description); 
+				
+				//if (++i%1000 == 0) {getLog().info("."); }
+				i++;
 			}
 		}
+		getLog().info(Integer.toString(i) + " Descriptions loaded.");
+	}
+	
+	/**
+	 * Load RefSets: simple, simple_map, complex_map, attribute_value, language
+	 * 
+	 * @throws Exception the exception
+	 */
+	private void loadRefSets() throws Exception {
+		
+		String line = "";
+		int i = 0;
+		
+		// load Simple RefSets (Content)
+		getLog().info("Loading Simple RefSets...");
+		while ((line = coreSimpleRefsetInput.readLine()) != null) {
+			StringTokenizer st = new StringTokenizer(line, "\t");
+			SimpleRefSetMember simpleRefSetMember = new SimpleRefSetMemberJpa();
+			String firstToken = st.nextToken();
+			if (!firstToken.equals("id")) { // header
+				
+				// Universal RefSet attributes
+				simpleRefSetMember.setTerminologyId(firstToken); 
+				simpleRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
+				simpleRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
+				simpleRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
+				simpleRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
+				firstToken = st.nextToken(); // referencedComponentId
+				
+				// SimpleRefSetMember unique attributes
+				// NONE
+				
+				// Terminology attributes
+				simpleRefSetMember.setTerminology("SNOMEDCT");
+				simpleRefSetMember.setTerminologyVersion(version);
+				
+				// Retrieve Concept
+				simpleRefSetMember.setConcept(getConcept(firstToken, simpleRefSetMember.getTerminology(), simpleRefSetMember.getTerminologyVersion())); 
+
+				manager.persist(simpleRefSetMember);
+				
+				i++;
+			}
+		}
+		
+		getLog().info(Integer.toString(i) + " Simple RefSets loaded.");
+
+		// load AttributeValue RefSets (Content)
+		getLog().info("Loading AttributeValue RefSets...");
+		
+		while ((line = coreAttributeValueInput.readLine()) != null) {
+			StringTokenizer st = new StringTokenizer(line, "\t");
+			AttributeValueRefSetMember attributeValueRefSetMember = new AttributeValueRefSetMemberJpa();
+			String firstToken = st.nextToken();
+			if (!firstToken.equals("id")) { // header
+				
+				// Universal RefSet attributes
+				attributeValueRefSetMember.setTerminologyId(firstToken);
+				attributeValueRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
+				attributeValueRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
+				attributeValueRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
+				attributeValueRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
+				firstToken = st.nextToken(); // referencedComponentId
+				
+				// AttributeValueRefSetMember unique attributes
+				attributeValueRefSetMember.setValueId(Long.valueOf(st.nextToken()));
+				
+				// Terminology attributes
+				attributeValueRefSetMember.setTerminology("SNOMEDCT");
+				attributeValueRefSetMember.setTerminologyVersion(version);
+				
+				// Retrieve concept
+				attributeValueRefSetMember.setConcept(getConcept(firstToken, attributeValueRefSetMember.getTerminology(), attributeValueRefSetMember.getTerminologyVersion())); 
+
+				manager.persist(attributeValueRefSetMember);
+				
+				i++;
+			}
+		}
+		getLog().info(Integer.toString(i) + " AttributeValue RefSets loaded.");
+		
+		// load SimpleMap RefSets (Crossmap)
+		getLog().info("Loading SimpleMap RefSets...");
+		i = 0;
+		
+		while ((line = coreSimpleMapInput.readLine()) != null) {
+			StringTokenizer st = new StringTokenizer(line, "\t");
+			SimpleMapRefSetMember simpleMapRefSetMember = new SimpleMapRefSetMemberJpa();
+			String firstToken = st.nextToken();
+			if (!firstToken.equals("id")) { // header
+				
+				// Universal RefSet attributes
+				simpleMapRefSetMember.setTerminologyId(firstToken);
+				simpleMapRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
+				simpleMapRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
+				simpleMapRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
+				simpleMapRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
+				firstToken = st.nextToken(); // referencedComponentId
+				
+				// SimpleMap unique attributes
+				simpleMapRefSetMember.setMapTarget(st.nextToken());
+				
+				// Terminology attributes
+				simpleMapRefSetMember.setTerminology("SNOMEDCT");
+				simpleMapRefSetMember.setTerminologyVersion(version);
+				
+				// Retrieve concept	
+				simpleMapRefSetMember.setConcept(getConcept(firstToken, simpleMapRefSetMember.getTerminology(), simpleMapRefSetMember.getTerminologyVersion())); 
+				
+				manager.persist(simpleMapRefSetMember);	
+				
+				i++;
+			}
+		}
+		
+		getLog().info(Integer.toString(i) + " SimpleMap RefSets loaded.");
+
+		// load ComplexMap RefSets (Crossmap)
+		getLog().info("Loading ComplexMap RefSets...");
+		i = 0;
+		
+		while ((line = coreComplexMapInput.readLine()) != null) {
+			StringTokenizer st = new StringTokenizer(line, "\t");
+			ComplexMapRefSetMember complexMapRefSetMember = new ComplexMapRefSetMemberJpa();
+			String firstToken = st.nextToken();
+			if (!firstToken.equals("id")) { // header
+				
+				// Universal RefSet attributes
+				complexMapRefSetMember.setTerminologyId(firstToken);
+				complexMapRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
+				complexMapRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
+				complexMapRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
+				complexMapRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));; // conceptId
+				firstToken = st.nextToken(); // referencedComponentId
+				
+				// ComplexMap unique attributes
+				complexMapRefSetMember.setMapGroup(Integer.parseInt(st.nextToken()));
+				complexMapRefSetMember.setMapPriority(Integer.parseInt(st.nextToken()));
+				complexMapRefSetMember.setMapRule(st.nextToken());
+				complexMapRefSetMember.setMapAdvice(st.nextToken());
+				complexMapRefSetMember.setMapTarget(st.nextToken());
+				complexMapRefSetMember.setMapRelationId(Long.valueOf(st.nextToken()));
+				
+				// ComplexMap unique attributes NOT set by file (mapBlock elements)
+				complexMapRefSetMember.setMapBlock(1); // default value
+				complexMapRefSetMember.setMapBlockRule(null); // no default
+				complexMapRefSetMember.setMapBlockAdvice(null); // no default
+				
+				// Terminology attributes
+				complexMapRefSetMember.setTerminology("SNOMEDCT");
+				complexMapRefSetMember.setTerminologyVersion(version);
+				
+				// Retrieve Concept
+				complexMapRefSetMember.setConcept(getConcept(firstToken, complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion())); 
+
+				manager.persist(complexMapRefSetMember);
+
+				i++;
+			}
+		}	
+		getLog().info(Integer.toString(i) + " ComplexMap RefSets loaded.");
+		
+		// load Language RefSet (Language)
+		getLog().info("Loading Language RefSets...");
+		i = 0;
+		
+		while ((line = coreLanguageInput.readLine()) != null) {
+			StringTokenizer st = new StringTokenizer(line, "\t");
+			LanguageRefSetMember languageRefSetMember = new LanguageRefSetMemberJpa();
+			String firstToken = st.nextToken();
+			if (!firstToken.equals("id")) { // header
+				
+				// Universal RefSet attributes
+				languageRefSetMember.setTerminologyId(firstToken);
+				languageRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
+				languageRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
+				languageRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
+				languageRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
+				firstToken = st.nextToken(); // referencedComponentId
+				
+				// Language unique attributes
+				languageRefSetMember.setAcceptabilityId(Long.valueOf(st.nextToken()));
+				
+				// Terminology attributes
+				languageRefSetMember.setTerminology("SNOMEDCT");
+				languageRefSetMember.setTerminologyVersion(version);
+				
+				// Retrieve concept
+				languageRefSetMember.setDescription(getDescription(firstToken, languageRefSetMember.getTerminology(), languageRefSetMember.getTerminologyVersion())); 
+
+				manager.persist(languageRefSetMember);
+				
+				//if (++i%1000 == 0) {getLog().info("."); }
+				i++;
+			} 
+		}
+		getLog().info(Integer.toString(i) + " Language RefSets loaded.");
 	}
 
+	
 	/**
 	 * Returns the concept.
 	 * 
 	 * @param conceptId the concept id
 	 * @return the concept
 	 */
-	private Concept getConcept(String conceptId) {
-		return manager.find( ConceptJpa.class, Long.valueOf(conceptId));
+
+	/** 
+	 * Returns the Concept associated with a RefSetMember's referencedComponentId
+	 * @param referencedComponentId
+	 * @return the Concept associated with a RefSetMember's referenceComponentId
+	 * @throws Exception
+	 */
+	private Concept getConcept(String terminologyId, String terminology, String terminologyVersion ) throws Exception {
+		
+		if (conceptCache.containsKey(terminologyId + terminology + terminologyVersion)) {
+			return conceptCache.get(terminologyId + terminology + terminologyVersion);
+		}
+		
+		Query query = manager.createQuery("select c from ConceptJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		
+		/*
+		 * Try to retrieve the single expected result
+		 * If zero or more than one result are returned, log error and set result to null
+		 */
+		try {
+			query.setParameter("terminologyId", terminologyId);
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+
+			Concept c = (Concept) query.getSingleResult();
+
+			conceptCache.put(terminologyId + terminology + terminologyVersion, c);
+			
+			return c;
+			
+		} catch (NoResultException e) {
+			getLog().info("Concept query for terminologyId = " + terminologyId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned no results!");
+			return null;		
+		} catch (NonUniqueResultException e) {
+			getLog().info("Concept query for terminologyId = " + terminologyId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned multiple results!");
+			return null;
+		}	
+	}
+	
+	private Description getDescription(String terminologyId, String terminology, String terminologyVersion ) throws Exception {
+		
+		if (descriptionCache.containsKey(terminologyId + terminology + terminologyVersion)) {
+			return descriptionCache.get(terminologyId + terminology + terminologyVersion);
+		}
+		
+		Query query = manager.createQuery("select d from DescriptionJpa d where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		
+		
+		try {
+			query.setParameter("terminologyId", terminologyId);
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+
+			Description d = (Description) query.getSingleResult();
+
+			descriptionCache.put(terminologyId + terminology + terminologyVersion, d);
+			
+			return d;
+			
+		} catch (NoResultException e) {
+			getLog().info("Description query for terminologyId = " + terminologyId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned no results!");
+			return null;		
+		} catch (NonUniqueResultException e) {
+			getLog().info("Description query for terminologyId = " + terminologyId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned multiple results!");
+			return null;
+		}	
 	}
 
 	/**
@@ -548,9 +885,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	}
 	
 	/**
-	 * Returns the version of the input files.
-	 *
-	 * @return the version
+	 * Sets and logs the version based on Concept input filename
 	 */
 	private void getVersion() {
 		int index = coreConceptInputFile.getName().indexOf(".txt");

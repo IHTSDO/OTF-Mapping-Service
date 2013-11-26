@@ -29,19 +29,6 @@ public class RelationshipImpl extends AbstractComponent implements Relationship 
 	/** The terminology. */
 	private String terminology;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return (getSourceConcept() == null ? null : getSourceConcept()
-				.getId())
-				+ " "
-				+ getTypeId()
-				+ " "
-				+ (getDestinationConcept() == null ? null : getDestinationConcept()
-						.getId());
-	}
 
 	/**
 	 * Returns the type id.
@@ -178,4 +165,25 @@ public class RelationshipImpl extends AbstractComponent implements Relationship 
 	public void setTerminology(String terminology) {
 		this.terminology = terminology;
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	 public String toString() {
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+				 this.getModuleId() + "," +// end of basic component fields
+				 
+				 (this.getSourceConcept() == null ? null : this.getSourceConcept().getId()) + "," +
+				 (this.getDestinationConcept() == null ? null : this.getDestinationConcept().getId()) + "," +
+				 this.getRelationshipGroup() + "," +
+				 this.getTypeId() + "," +	
+				 this.getCharacteristicTypeId() + "," +
+				 this.getModifierId(); // end of relationship fields
+				 
+	 }
 }
