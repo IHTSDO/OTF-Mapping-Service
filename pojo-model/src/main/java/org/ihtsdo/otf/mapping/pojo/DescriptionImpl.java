@@ -1,7 +1,11 @@
 package org.ihtsdo.otf.mapping.pojo;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
+import org.ihtsdo.otf.mapping.model.LanguageRefSetMember;
 
 /**
  * Concrete implementation of {@link Description}.
@@ -25,6 +29,9 @@ public class DescriptionImpl extends AbstractComponent implements Description {
 
 	/** The terminology. */
 	private String terminology;
+	
+	/** The language RefSet members */
+	private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<LanguageRefSetMember>();
 
 	/**
 	 * Instantiates an empty {@link Description}.
@@ -36,7 +43,7 @@ public class DescriptionImpl extends AbstractComponent implements Description {
 	/**
 	 * Instantiates a {@link Description} from the specified parameters.
 	 *
-	 * @param type the type
+	 * @param typeId the typeId
 	 */
 	public DescriptionImpl(Long typeId) {
 		this.typeId = typeId;
@@ -75,7 +82,7 @@ public class DescriptionImpl extends AbstractComponent implements Description {
 	/**
 	 * Sets the type id.
 	 *
-	 * @param type the type id
+	 * @param typeId the type id
 	 */
 	@Override
     public void setTypeId(Long typeId) {
@@ -146,15 +153,6 @@ public class DescriptionImpl extends AbstractComponent implements Description {
      * {@inheritDoc}
      */
 	@Override
-	public String toString() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-    /**
-     * {@inheritDoc}
-     */
-	@Override
 	public String getTerminology() {
 		return terminology;
 	}
@@ -166,4 +164,46 @@ public class DescriptionImpl extends AbstractComponent implements Description {
 	public void setTerminology(String terminology) {
 		this.terminology = terminology;
 	}
+	
+	/**
+	 * Returns the set of SimpleRefSetMembers
+	 *
+	 * @return the set of SimpleRefSetMembers
+	 */
+	@Override
+	public Set<LanguageRefSetMember> getLanguageRefSetMembers() {
+		return this.languageRefSetMembers;
+	}
+
+	/**
+	 * Sets the set of LanguageRefSetMembers
+	 *
+	 * @param languageRefSetMembers the set of LanguageRefSetMembers
+	 */
+	@Override
+	public void setLanguageRefSetMembers(Set<LanguageRefSetMember> languageRefSetMembers) {
+		this.languageRefSetMembers = languageRefSetMembers;
+	}
+	
+	/**
+	 * Adds a LanguageRefSetMember to the set of LanguageRefSetMembers
+	 *
+	 * @param languageRefSetMember the LanguageRefSetMembers to be added
+	 */
+	@Override
+	public void addLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) {
+		languageRefSetMember.setDescription(this);
+		this.languageRefSetMembers.add(languageRefSetMember);
+	}
+	
+	/**
+	 * Removes a LanguageRefSetMember from the set of LanguageRefSetMembers
+	 *
+	 * @param languageRefSetMember the LanguageRefSetMember to be removed
+	*/
+	@Override
+	public void removeLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) {
+		this.languageRefSetMembers.remove(languageRefSetMember);
+	}
+
 }

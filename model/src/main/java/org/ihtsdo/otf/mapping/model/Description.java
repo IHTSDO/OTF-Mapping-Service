@@ -1,10 +1,16 @@
 package org.ihtsdo.otf.mapping.model;
 
+import java.util.Set;
+
 /**
  * Represents a description of a concept in a terminology.
  */
 public interface Description extends Component {
 
+	/* Add method
+	 * getLanguageRefSetMembers
+	 */
+	
 	/**
 	 * Returns the language code.
 	 *
@@ -29,7 +35,7 @@ public interface Description extends Component {
 	/**
 	 * Sets the type id.
 	 *
-	 * @param type the type id
+	 * @param typeId the type id
 	 */
 	public void setTypeId(Long typeId);
 
@@ -74,4 +80,40 @@ public interface Description extends Component {
 	 * @param concept the concept
 	 */
 	public void setConcept(Concept concept);
+	
+	/**
+	 * Base method for returning LanguageValueRefSetMember of this Concept
+	 * @return the LanguageValueRefSetMember of this Concept
+	 */
+	
+	/**
+	 * Returns the set of LanguageRefSetMembers
+	 *
+	 * @return the set of LanguageRefSetMembers
+	 */
+	public Set<LanguageRefSetMember> getLanguageRefSetMembers();
+
+	/**
+	 * Sets the set of LanguageRefSetMembers
+	 *
+	 * @param languageRefSetMembers the set of LanguageRefSetMembers
+	 */
+	public void setLanguageRefSetMembers(Set<LanguageRefSetMember> languageRefSetMembers);
+	
+	/**
+	 * Adds a LanguageRefSetMember to the set of LanguageRefSetMembers
+	 *
+	 * @param languageRefSetMember the LanguageRefSetMembers to be added
+	 */
+	public void addLanguageRefSetMember(LanguageRefSetMember languageRefSetMember);
+	
+	/**
+	 * Removes a LanguageRefSetMember from the set of LanguageRefSetMembers
+	 *
+	 * @param languageRefSetMember the LanguageRefSetMember to be removed
+	*/
+	public void removeLanguageRefSetMember(LanguageRefSetMember languageRefSetMember);
+	
+	
+	
 }

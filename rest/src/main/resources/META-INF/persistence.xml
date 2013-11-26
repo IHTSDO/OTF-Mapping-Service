@@ -12,7 +12,14 @@
         <class>org.ihtsdo.otf.mapping.jpa.ConceptJpa</class>
         <class>org.ihtsdo.otf.mapping.jpa.DescriptionJpa</class>
         <class>org.ihtsdo.otf.mapping.jpa.RelationshipJpa</class>
-        
+        <class>org.ihtsdo.otf.mapping.jpa.AbstractRefSetMember</class>
+        <class>org.ihtsdo.otf.mapping.jpa.AbstractConceptRefSetMember</class>
+        <class>org.ihtsdo.otf.mapping.jpa.AbstractDescriptionRefSetMember</class>
+        <class>org.ihtsdo.otf.mapping.jpa.AttributeValueRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.ComplexMapRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.LanguageRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.SimpleMapRefSetMemberJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.SimpleRefSetMemberJpa</class>    
         <properties>
         
             <!-- Log formatted Hibernate SQL with comments.
@@ -26,7 +33,7 @@
 
             <property name="hibernate.search.default.directory_provider"
               value="filesystem" />
-            <property name="hibernate.search.default.indexBase" value="${user.home}/mapping/lucene/indexes" />
+            <property name="hibernate.search.default.indexBase" value="C:\\Users\\Deborah/mapping/lucene/indexes" />
 
             <!-- JDBC properties. -->
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />

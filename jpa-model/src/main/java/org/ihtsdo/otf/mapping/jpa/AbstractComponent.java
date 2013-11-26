@@ -3,12 +3,12 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
@@ -25,6 +25,7 @@ public abstract class AbstractComponent implements Component {
 
 	/** The id. */
 	@Id
+	@GeneratedValue 
 	private Long id;
 
 	/** The effective time. */
@@ -43,10 +44,13 @@ public abstract class AbstractComponent implements Component {
 	@Column(nullable = false)
 	private String terminology;
 	
+	/** The terminology id */
+	@Column(nullable = false)
+	private String terminologyId;
+	
 	/** The terminology version. */
 	@Column(nullable = false)
 	private String terminologyVersion;
-
 
 	/**
 	 * Returns the id.
@@ -56,14 +60,13 @@ public abstract class AbstractComponent implements Component {
 	 */
 	@XmlID
 	public String getID() {
-		return id.toString();
+		return terminologyId.toString();
 	}
 	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	@XmlTransient
 	public Long getId() {
 		return this.id;
 	}
@@ -75,12 +78,6 @@ public abstract class AbstractComponent implements Component {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-    /**
-     * {@inheritDoc}
-     */
-	@Override
-	public abstract String toString();
 
     /**
      * {@inheritDoc}
@@ -193,4 +190,33 @@ public abstract class AbstractComponent implements Component {
 		this.terminology = terminology;
 	}
 
+	/**
+     * {@inheritDoc}
+     */
+	@Override
+	public String getTerminologyId() {
+		return terminologyId;
+	}
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setTerminologyId(String terminologyId) {
+		this.terminologyId = terminologyId;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	 public String toString() {
+		 
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+				 this.getModuleId(); // end of basic component fields
+	 }
 }

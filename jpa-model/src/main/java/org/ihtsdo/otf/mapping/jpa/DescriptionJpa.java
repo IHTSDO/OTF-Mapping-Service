@@ -1,15 +1,20 @@
 package org.ihtsdo.otf.mapping.jpa;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
@@ -17,12 +22,13 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
+import org.ihtsdo.otf.mapping.model.LanguageRefSetMember;
 
 /**
  * Concrete implementation of {@link Description} for use with JPA.
  */
 @Entity
-@Table(name = "descriptions")
+@Table(name = "descriptions", uniqueConstraints=@UniqueConstraint(columnNames={"terminologyId", "terminology", "terminologyVersion"}))
 @XmlRootElement
 public class DescriptionJpa extends AbstractComponent implements Description {
 
@@ -47,6 +53,10 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 			CascadeType.PERSIST, CascadeType.MERGE
 	}, targetEntity=ConceptJpa.class)
 	private Concept concept;
+	
+	/** The language RefSet members */
+	@OneToMany(mappedBy = "description", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=LanguageRefSetMemberJpa.class)
+	private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<LanguageRefSetMember>();
 
     
 	/**
@@ -152,11 +162,8 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	 * @return the concept
 	 */
 	@Override
-	@XmlIDREF
-	@XmlAttribute
-	@JsonIgnore
-    public ConceptJpa getConcept() {
-		return (ConceptJpa) concept;
+    public Concept getConcept() {
+		return concept;
 	}
 
 	/**
@@ -168,15 +175,66 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     public void setConcept(Concept concept) {
 		this.concept = concept;
 	}
+	
+	/**
+	 * Returns the set of SimpleRefSetMembers
+	 *
+	 * @return the set of SimpleRefSetMembers
+	 */
+	@Override
+	public Set<LanguageRefSetMember> getLanguageRefSetMembers() {
+		return this.languageRefSetMembers;
+	}
 
+	/**
+	 * Sets the set of LanguageRefSetMembers
+	 *
+	 * @param languageRefSetMembers the set of LanguageRefSetMembers
+	 */
+	@Override
+	public void setLanguageRefSetMembers(Set<LanguageRefSetMember> languageRefSetMembers) {
+		this.languageRefSetMembers = languageRefSetMembers;
+	}
+	
+	/**
+	 * Adds a LanguageRefSetMember to the set of LanguageRefSetMembers
+	 *
+	 * @param languageRefSetMember the LanguageRefSetMembers to be added
+	 */
+	@Override
+	public void addLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) {
+		languageRefSetMember.setDescription(this);
+		this.languageRefSetMembers.add(languageRefSetMember);
+	}
+	
+	/**
+	 * Removes a LanguageRefSetMember from the set of LanguageRefSetMembers
+	 *
+	 * @param languageRefSetMember the LanguageRefSetMember to be removed
+	*/
+	@Override
+	public void removeLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) {
+		this.languageRefSetMembers.remove(languageRefSetMember);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public String toString() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	 public String toString() {
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+				 this.getModuleId() + "," + // end of basic component fields
+				 
+				 (this.getConcept() == null ? null : getConcept().getId()) + "," +
+				 this.getLanguageCode() + "," +
+				 this.getTypeId() + "," +
+				 this.getTerm() + "," +
+				 this.getCaseSignificanceId(); // end of basic description fields
+	 }
 
 
 }

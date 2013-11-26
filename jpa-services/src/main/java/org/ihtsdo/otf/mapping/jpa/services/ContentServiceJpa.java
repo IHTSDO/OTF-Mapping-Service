@@ -90,12 +90,13 @@ public class ContentServiceJpa implements ContentService {
 	FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
   try {
       // This will ensure that index for already inserted data is created.
-      fullTextEntityManager.createIndexer().startAndWait();
+      //fullTextEntityManager.createIndexer().startAndWait();
       // Add some more record, lucene will index every new object inserted, removed or updated.
       // addMoreRecords(entityManager);
       // Search for Book
       QueryBuilder qb = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(ConceptJpa.class).get();
       org.apache.lucene.search.Query query = qb.keyword().onFields("defaultPreferredName").matching(searchString).createQuery();
+
       Query jpaQuery = fullTextEntityManager.createFullTextQuery(query, ConceptJpa.class);
       System.out.println("query " + query.toString());
       
