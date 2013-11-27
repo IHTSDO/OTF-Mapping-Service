@@ -21,7 +21,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -33,6 +36,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -193,14 +197,20 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	/** The manager. */
 	private EntityManager manager;
 	
-	private Map<String, Concept> conceptCache = new HashMap<>();
-	private Map<String, Description> descriptionCache = new HashMap<>();
-
+	private Map<String, Concept> conceptCache = new HashMap<>(); // used to speed Concept assignment to ConceptRefSetMembers
+	private Map<String, Description> descriptionCache = new HashMap<>(); // speeds Description assignment to DescriptionRefSetMembers
+	private Map<Long, List<Description>> descriptionListCache = new HashMap<>();
+	private Map<Long, List<LanguageRefSetMember>> languageListCache = new HashMap<>();
+	
+	/** Efficiency testing */
+	private long startTime;
+	
 	/**
 	 * Instantiates a {@link RF2SnapshotLoaderMojo} from the specified parameters.
 	 * 
 	 */
 	public RF2SnapshotLoaderMojo() {
+
 	}
 
 	/*
@@ -277,11 +287,20 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				tx.commit();
 
 				tx.begin();
-				loadComponents();
+				loadDescriptions();
 				tx.commit(); 
 				
+				//tx.begin();
+				//loadRelationships();
+				//tx.commit(); 
+				
 				tx.begin();
-				loadRefSets();
+				loadLanguageRefSets();
+				//loadRefSets();
+				tx.commit();
+				
+				tx.begin();
+				setDefaultPreferredNames();
 				tx.commit();
 				
 			} catch (Exception e) {
@@ -300,6 +319,10 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		}
 	}
 
+	private Long getElapsedTime() {
+		return (System.nanoTime() - startTime) / 1000000000;
+	}
+	
 	/**
 	 * Load concepts.
 	 * 
@@ -311,6 +334,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		int i = 0;
 		
 		getLog().info("Loading Concepts...");
+		startTime = System.nanoTime();
 		
 		while ((line = coreConceptInput.readLine()) != null ) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
@@ -333,7 +357,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				i++;
 			}
 		}
-		getLog().info(Integer.toString(i) + " Concepts loaded.");
+		getLog().info(Integer.toString(i) + " Concepts loaded in " + getElapsedTime() + "s");
 	}
 
 	/**
@@ -341,12 +365,14 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 * 
 	 * @throws Exception the exception
 	 */
-	private void loadComponents() throws Exception {
+	private void loadRelationships() throws Exception {
 
 		String line = "";
+		int i = 0;
 		
 		getLog().info("Loading Relationships...");
-		int i = 0;
+		startTime = System.nanoTime();
+		
 		while ((line = coreRelInput.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
 			Relationship relationship = new RelationshipJpa();
@@ -375,10 +401,18 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			  i++;
 			}
 		}
-		getLog().info(Integer.toString(i) + " Relationships loaded.");
+		getLog().info(Integer.toString(i) + " Relationships loadedin " + getElapsedTime().toString() + "s");
+
+	}
+	
+	private void loadDescriptions() throws Exception {
 		
 		getLog().info("Loading Descriptions...");
-		i = 0;
+		startTime = System.nanoTime();
+		String line = "";
+		int i = 0;
+		Concept concept; 
+		List<Description> description_list;
 		
 		// keep concepts from extension descriptions
 		while ((line = coreDescInput.readLine()) != null) {
@@ -399,16 +433,90 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				description.setTerminology("SNOMEDCT");
 				description.setTerminologyVersion(version);
 				
-				description.setConcept(getConcept(conceptId, description.getTerminology(), description.getTerminologyVersion()));
-	
+				
+				concept = getConcept(conceptId, description.getTerminology(), description.getTerminologyVersion());
+				description.setConcept(concept);
+				
 				manager.persist(description);
+				
+				// add to cache for easy retrieval in getRefSets
 				descriptionCache.put(firstToken + description.getTerminology() + description.getTerminologyVersion(), description); 
+				
+				// For setDefaultPreferredNames, insert this Description into appropriate List
+				if (descriptionListCache.containsKey(concept.getId())) {					// use auto-generated Id
+					//getLog().info("Found key " + concept.getId().toString() + " for list of size " + Integer.toString(descriptionListCache.get(concept.getId()).size()));
+					description_list = descriptionListCache.get(concept.getId());			// retrieve existing list
+					description_list.add(description);									// add description
+					descriptionListCache.put(concept.getId(), description_list);			// save amended list
+				} else {
+					description_list = new ArrayList<Description>(Arrays.asList(description));							// instantiate new list
+					descriptionListCache.put(concept.getId(), description_list);			// put the single-element list
+				}
+				
 				
 				//if (++i%1000 == 0) {getLog().info("."); }
 				i++;
 			}
 		}
-		getLog().info(Integer.toString(i) + " Descriptions loaded.");
+		getLog().info(Integer.toString(i) + " Descriptions loaded in " + getElapsedTime().toString() + "s");
+		getLog().info(Integer.toString(descriptionListCache.size()) + " Description lists constructed");
+
+	}
+	
+	private void loadLanguageRefSets() throws Exception {
+
+		// load Language RefSet (Language)
+		getLog().info("Loading Language RefSets...");
+		startTime = System.nanoTime();
+		int i = 0;
+		String line = "";
+		Description description;
+		List<LanguageRefSetMember> language_list;
+		
+		while ((line = coreLanguageInput.readLine()) != null) {
+			StringTokenizer st = new StringTokenizer(line, "\t");
+			LanguageRefSetMember languageRefSetMember = new LanguageRefSetMemberJpa();
+			String firstToken = st.nextToken();
+			if (!firstToken.equals("id")) { // header
+				
+				// Universal RefSet attributes
+				languageRefSetMember.setTerminologyId(firstToken);
+				languageRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
+				languageRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
+				languageRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
+				languageRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
+				firstToken = st.nextToken(); // referencedComponentId
+				
+				// Language unique attributes
+				languageRefSetMember.setAcceptabilityId(Long.valueOf(st.nextToken()));
+				
+				// Terminology attributes
+				languageRefSetMember.setTerminology("SNOMEDCT");
+				languageRefSetMember.setTerminologyVersion(version);
+				
+				// Retrieve and set description
+				description = getDescription(firstToken, languageRefSetMember.getTerminology(), languageRefSetMember.getTerminologyVersion()); 
+				languageRefSetMember.setDescription(description);
+				manager.persist(languageRefSetMember);
+				
+				// Update languageListCache for use by setDefaultPreferredNames
+				// For setDefaultPreferredNames, insert this Description into appropriate List
+				if (languageListCache.containsKey(description.getId())) {				// use auto-generated id
+					language_list = languageListCache.get(description.getId());			// retrieve existing list
+					language_list.add(languageRefSetMember);							// add description
+					languageListCache.put(description.getId(), language_list);			// save amended list
+				} else {
+					language_list = new ArrayList<LanguageRefSetMember>(Arrays.asList(languageRefSetMember));				// instantiate new list
+					languageListCache.put(description.getId(), language_list);			// put the single-element list
+				}
+				
+				//if (++i%1000 == 0) {getLog().info("."); }
+				i++;
+			} 
+		}
+		getLog().info(Integer.toString(i) + " Language RefSets loaded in " + getElapsedTime().toString() + "s");
+		getLog().info(Integer.toString(languageListCache.size()) + " LanguageRefSet lists constructed");
+
 	}
 	
 	/**
@@ -416,6 +524,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 * 
 	 * @throws Exception the exception
 	 */
+	
 	private void loadRefSets() throws Exception {
 		
 		String line = "";
@@ -423,6 +532,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		
 		// load Simple RefSets (Content)
 		getLog().info("Loading Simple RefSets...");
+		startTime = System.nanoTime();
+		
 		while ((line = coreSimpleRefsetInput.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
 			SimpleRefSetMember simpleRefSetMember = new SimpleRefSetMemberJpa();
@@ -453,10 +564,12 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			}
 		}
 		
-		getLog().info(Integer.toString(i) + " Simple RefSets loaded.");
+		getLog().info(Integer.toString(i) + " Simple RefSets loaded in " + getElapsedTime().toString() + "s");
+
 
 		// load AttributeValue RefSets (Content)
 		getLog().info("Loading AttributeValue RefSets...");
+		startTime = System.nanoTime();
 		
 		while ((line = coreAttributeValueInput.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
@@ -487,10 +600,12 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				i++;
 			}
 		}
-		getLog().info(Integer.toString(i) + " AttributeValue RefSets loaded.");
+		getLog().info(Integer.toString(i) + " AttributeValue RefSets loaded in " + getElapsedTime().toString() + "s");
+
 		
 		// load SimpleMap RefSets (Crossmap)
 		getLog().info("Loading SimpleMap RefSets...");
+		startTime = System.nanoTime();
 		i = 0;
 		
 		while ((line = coreSimpleMapInput.readLine()) != null) {
@@ -523,10 +638,12 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			}
 		}
 		
-		getLog().info(Integer.toString(i) + " SimpleMap RefSets loaded.");
+		getLog().info(Integer.toString(i) + " SimpleMap RefSets loaded in " + getElapsedTime().toString() + "s");
+
 
 		// load ComplexMap RefSets (Crossmap)
 		getLog().info("Loading ComplexMap RefSets...");
+		startTime = System.nanoTime();
 		i = 0;
 		
 		while ((line = coreComplexMapInput.readLine()) != null) {
@@ -568,10 +685,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				i++;
 			}
 		}	
-		getLog().info(Integer.toString(i) + " ComplexMap RefSets loaded.");
+		getLog().info(Integer.toString(i) + " ComplexMap RefSets loaded in " + getElapsedTime().toString() + "s");
+
+		
 		
 		// load Language RefSet (Language)
 		getLog().info("Loading Language RefSets...");
+		startTime = System.nanoTime();
 		i = 0;
 		
 		while ((line = coreLanguageInput.readLine()) != null) {
@@ -604,9 +724,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				i++;
 			} 
 		}
-		getLog().info(Integer.toString(i) + " Language RefSets loaded.");
+		getLog().info(Integer.toString(i) + " Language RefSets loaded in " + getElapsedTime().toString() + "s");
 	}
-
 	
 	/**
 	 * Returns the concept.
@@ -680,6 +799,86 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			getLog().info("Description query for terminologyId = " + terminologyId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned multiple results!");
 			return null;
 		}	
+	}
+	
+	/**
+	 * Sets default preferred name for all concepts.
+	 * 
+	 * @throws Exception if something goes wrong
+	 */
+	private void setDefaultPreferredNames() throws Exception {
+		
+		startTime = System.nanoTime();
+		
+		String defaultPreferredName = "";
+		List<LanguageRefSetMember> language_list;
+		List<Description> description_list;
+	
+		int i = 0;
+		
+		// Parameters for selecting defaultPreferredName
+		Long typeId = Long.valueOf("900000000000013009");
+		Long refSetId = Long.valueOf("900000000000509007");
+		Long acceptabilityId = Long.valueOf("900000000000548007");
+			
+		for (Concept concept : conceptCache.values()) {
+			
+			defaultPreferredName = "";
+		
+			// check if a description list is associated with this concept
+			if (descriptionListCache.containsKey(concept.getId())) {
+				
+				// get description list associated with this concept
+				description_list = descriptionListCache.get(concept.getId());
+					
+				// for each description
+				for (Description description : description_list) {
+						
+					// check if a language refset list is associated with this description
+					if (languageListCache.containsKey(description.getId())) {
+						
+						// get language refset list associated with this description
+						language_list = languageListCache.get(description.getId());
+					
+						// for each language refset member, check for preferred name
+						for (LanguageRefSetMember language : language_list) {
+								
+							// Check if this language refset member meets criteria
+							if(description.getTypeId().equals(typeId) && 
+									language.getRefSetId().equals(refSetId) && 
+									language.getAcceptabilityId().equals(acceptabilityId)) { 
+								
+								// check for multiple results
+								if (!defaultPreferredName.isEmpty()) {
+									throw new MojoFailureException("Unexpected exception in setting default preferred names: Multiple results found!");
+								} else {
+									defaultPreferredName = description.getTerm();
+								}
+							}
+						}
+					}
+				}
+			}
+				
+			// check if a preferred name was found, throw exception if not (indicates no match)
+			if (defaultPreferredName.isEmpty()) {
+				
+				throw new MojoFailureException("Unexpected exception in setting default preferred names: No result found!");
+			
+			} else {	
+				
+				// set the default preferred name based on unique result
+				concept.setDefaultPreferredName(defaultPreferredName);
+			}
+			// Commented out while testing
+			manager.persist(concept);
+			
+			i++;
+		
+		}
+		
+		getLog().info(Integer.toString(i) + " default preferred names set in " + getElapsedTime().toString() + "s");
+
 	}
 
 	/**
