@@ -24,6 +24,9 @@ import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
 import org.ihtsdo.otf.mapping.model.LanguageRefSetMember;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 /**
  * Concrete implementation of {@link Description} for use with JPA.
  */
@@ -52,10 +55,12 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	@ManyToOne(cascade = {
 			CascadeType.PERSIST, CascadeType.MERGE
 	}, targetEntity=ConceptJpa.class)
+	@JsonBackReference
 	private Concept concept;
 	
 	/** The language RefSet members */
 	@OneToMany(mappedBy = "description", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=LanguageRefSetMemberJpa.class)
+	@JsonManagedReference
 	private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<LanguageRefSetMember>();
 
     

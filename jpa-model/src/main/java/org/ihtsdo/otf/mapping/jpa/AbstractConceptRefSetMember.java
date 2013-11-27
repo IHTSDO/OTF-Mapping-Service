@@ -9,6 +9,8 @@ import javax.xml.bind.annotation.XmlIDREF;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.ConceptRefSetMember;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 /**
  * Abstract implementation of {@link ConceptRefSetMember}.
  */
@@ -20,7 +22,7 @@ public abstract class AbstractConceptRefSetMember extends AbstractRefSetMember
 	@ManyToOne(cascade = {
 			   CascadeType.PERSIST, CascadeType.MERGE
 			 }, targetEntity=ConceptJpa.class)
-
+  @JsonBackReference
 	private Concept concept;
 
 	/**

@@ -10,8 +10,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Relationship;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 /**
  * Concrete implementation of {@link Relationship} for use with JPA.
@@ -27,12 +30,14 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	@ManyToOne(cascade = {
 			CascadeType.PERSIST, CascadeType.MERGE
 	}, targetEntity = ConceptJpa.class)
+	@JsonBackReference
 	private Concept sourceConcept;
 
 	/** The destination concept. */
 	@ManyToOne(cascade = {
 			CascadeType.PERSIST, CascadeType.MERGE
 	}, targetEntity = ConceptJpa.class)
+	@JsonBackReference
 	private Concept destinationConcept;
 
 	/** The type id. */

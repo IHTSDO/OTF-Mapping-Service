@@ -3,6 +3,8 @@ package org.ihtsdo.otf.mapping.jpa;
 import org.ihtsdo.otf.mapping.model.Description;
 import org.ihtsdo.otf.mapping.model.DescriptionRefSetMember;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.CascadeType;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
@@ -21,6 +23,7 @@ public abstract class AbstractDescriptionRefSetMember extends
 	@ManyToOne(cascade = {
 			   CascadeType.PERSIST, CascadeType.MERGE
 			 }, targetEntity=DescriptionJpa.class)
+	@JsonBackReference
 	private Description description;
 
 	/**

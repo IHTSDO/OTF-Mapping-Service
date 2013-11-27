@@ -26,13 +26,15 @@ import org.ihtsdo.otf.mapping.model.Relationship;
 import org.ihtsdo.otf.mapping.model.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.model.SimpleRefSetMember;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 /**
  * Concrete implementation of {@link Concept} for use with JPA.
  */
 @Entity
 @Table(name = "concepts", uniqueConstraints=@UniqueConstraint(columnNames={"terminologyId", "terminology", "terminologyVersion"}))
 @Indexed
-@XmlRootElement
+@XmlRootElement(name="concept")
 
 public class ConceptJpa extends AbstractComponent implements Concept {
 
@@ -42,30 +44,37 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
 	/** The descriptions. */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=DescriptionJpa.class)
+	@JsonManagedReference
 	private Set<Description> descriptions = new HashSet<Description>();
 
 	/** The relationships. */
 	@OneToMany(mappedBy = "sourceConcept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=RelationshipJpa.class)
+	@JsonManagedReference
 	private Set<Relationship> relationships = new HashSet<Relationship>();
 
 	/** The inverse relationships. */
 	@OneToMany(mappedBy = "destinationConcept", fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=RelationshipJpa.class)
+	@JsonManagedReference
 	private Set<Relationship> inverseRelationships = new HashSet<Relationship>();
 	
 	/** The simple RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=SimpleRefSetMemberJpa.class)
+	@JsonManagedReference
 	private Set<SimpleRefSetMember> simpleRefSetMembers = new HashSet<SimpleRefSetMember>();
 
 	/** The simpleMap RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=SimpleMapRefSetMemberJpa.class)
+	@JsonManagedReference
 	private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = new HashSet<SimpleMapRefSetMember>();
 
 	/** The complexMap RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=ComplexMapRefSetMemberJpa.class)
+	@JsonManagedReference
 	private Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<ComplexMapRefSetMember>();
 	
 	/** The attributeValue RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=AttributeValueRefSetMemberJpa.class)
+	@JsonManagedReference
 	private Set<AttributeValueRefSetMember> attributeValueRefSetMembers = new HashSet<AttributeValueRefSetMember>();
 
 	/** The default preferred name. */

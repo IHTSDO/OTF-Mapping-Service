@@ -61,10 +61,14 @@
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
 
-   <!--  JSON annotations -->
-   <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-core-asl</artifactId>
+    <!-- JSON annotations -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-jaxb-annotations</artifactId>
     </dependency>
   </dependencies>
 
