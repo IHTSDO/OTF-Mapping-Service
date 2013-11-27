@@ -169,7 +169,8 @@ public class RelationshipImpl extends AbstractComponent implements Relationship 
 	/**
 	 * {@inheritDoc}
 	 */
-	 public String toString() {
+	 @Override
+	public String toString() {
 		 return this.getId() + "," +
 				 this.getTerminology() + "," +
 				 this.getTerminologyId() + "," +

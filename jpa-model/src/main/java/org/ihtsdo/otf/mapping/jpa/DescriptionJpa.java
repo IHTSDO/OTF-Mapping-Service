@@ -12,13 +12,13 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
@@ -162,8 +162,10 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	 * @return the concept
 	 */
 	@Override
-    public Concept getConcept() {
-		return concept;
+	@XmlIDREF
+	@XmlAttribute
+    public ConceptJpa getConcept() {
+		return (ConceptJpa)concept;
 	}
 
 	/**
@@ -182,6 +184,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	 * @return the set of SimpleRefSetMembers
 	 */
 	@Override
+	@XmlElement(type=LanguageRefSetMemberJpa.class)
 	public Set<LanguageRefSetMember> getLanguageRefSetMembers() {
 		return this.languageRefSetMembers;
 	}
@@ -220,7 +223,8 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	/**
 	 * {@inheritDoc}
 	 */
-	 public String toString() {
+	 @Override
+	public String toString() {
 		 return this.getId() + "," +
 				 this.getTerminology() + "," +
 				 this.getTerminologyId() + "," +

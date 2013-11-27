@@ -347,7 +347,8 @@ public class ConceptImpl extends AbstractComponent implements Concept {
 	/**
 	 * {@inheritDoc}
 	 */
-	 public String toString() {
+	 @Override
+	public String toString() {
 		 
 		 return this.getId() + "," +
 				 this.getTerminology() + "," +

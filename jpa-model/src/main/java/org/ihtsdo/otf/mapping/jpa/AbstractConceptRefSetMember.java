@@ -3,6 +3,8 @@ package org.ihtsdo.otf.mapping.jpa;
 import javax.persistence.CascadeType;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlIDREF;
 
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.ConceptRefSetMember;
@@ -25,8 +27,10 @@ public abstract class AbstractConceptRefSetMember extends AbstractRefSetMember
      * {@inheritDoc}
      */
 	@Override
-	public Concept getConcept() {
-		return this.concept;
+	@XmlIDREF
+	@XmlAttribute
+	public ConceptJpa getConcept() {
+		return (ConceptJpa)this.concept;
 	}
 
 	/**

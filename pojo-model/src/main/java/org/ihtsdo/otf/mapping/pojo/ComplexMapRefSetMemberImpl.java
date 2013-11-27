@@ -38,6 +38,7 @@ public class ComplexMapRefSetMemberImpl extends AbstractConceptRefSetMember
 	/** returns the mapBlock
 	 * @return the mapBlock
 	 */
+	@Override
 	public int getMapBlock() {
 		return this.mapBlock;
 	}
@@ -45,6 +46,7 @@ public class ComplexMapRefSetMemberImpl extends AbstractConceptRefSetMember
 	/** sets the mapBlock
 	 * @param mapBlock the mapBlock
 	 */
+	@Override
 	public void setMapBlock(int mapBlock) {
 		this.mapBlock = mapBlock;
 	}
@@ -52,6 +54,7 @@ public class ComplexMapRefSetMemberImpl extends AbstractConceptRefSetMember
 	/** returns the mapBlockRule
 	 * @return the mapBlockRule
 	 */
+	@Override
 	public String getMapBlockRule() {
 		return this.mapBlockRule;
 	}
@@ -59,6 +62,7 @@ public class ComplexMapRefSetMemberImpl extends AbstractConceptRefSetMember
 	/** sets the mapBlockRule
 	 * @paran the mapBlockRule
 	 */
+	@Override
 	public void setMapBlockRule(String mapBlockRule) {
 		this.mapBlockRule = mapBlockRule;
 	}
@@ -66,6 +70,7 @@ public class ComplexMapRefSetMemberImpl extends AbstractConceptRefSetMember
 	/** returns the mapBlockAdvice
 	 * @return the mapBlockAdvice
 	 */
+	@Override
 	public String getMapBlockAdvice() {
 		return this.mapBlockAdvice;
 	}
@@ -73,6 +78,7 @@ public class ComplexMapRefSetMemberImpl extends AbstractConceptRefSetMember
 	/** sets the mapBlockAdvice
 	 * @param mapBlockAdvice the mapBlockAdvice
 	 */
+	@Override
 	public void setMapBlockAdvice(String mapBlockAdvice) {
 		this.mapBlockAdvice = mapBlockAdvice;
 	}

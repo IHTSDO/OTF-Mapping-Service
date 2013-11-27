@@ -10,15 +10,16 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.ihtsdo.otf.mapping.model.AttributeValueRefSetMember;
-import org.ihtsdo.otf.mapping.model.ComplexMapRefSetMember;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.mapping.model.AttributeValueRefSetMember;
+import org.ihtsdo.otf.mapping.model.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
 import org.ihtsdo.otf.mapping.model.Relationship;
@@ -97,6 +98,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the descriptions
 	 */
 	@Override
+	@XmlElement(type=DescriptionJpa.class)
     public Set<Description> getDescriptions() {
 		return descriptions;
 	}
@@ -138,6 +140,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the relationships
 	 */
 	@Override
+	@XmlElement(type=RelationshipJpa.class)
     public Set<Relationship> getRelationships() {
 		return relationships;
 	}
@@ -158,6 +161,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the inverse relationships
 	 */
 	@Override
+	@XmlElement(type=RelationshipJpa.class)
     public Set<Relationship> getInverseRelationships() {
 		return inverseRelationships;
 	}
@@ -179,6 +183,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the set of SimpleRefSetMembers
 	 */
 	@Override
+	@XmlElement(type=SimpleRefSetMemberJpa.class)
 	public Set<SimpleRefSetMember> getSimpleRefSetMembers() {
 		return this.simpleRefSetMembers;
 	}
@@ -220,6 +225,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the set of SimpleMapRefSetMembers
 	 */
 	@Override
+	@XmlElement(type=SimpleMapRefSetMemberJpa.class)
 	public Set<SimpleMapRefSetMember> getSimpleMapRefSetMembers() {
 		return this.simpleMapRefSetMembers;
 	}
@@ -261,6 +267,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the set of ComplexMapRefSetMembers
 	 */
 	@Override
+	@XmlElement(type=ComplexMapRefSetMemberJpa.class)
 	public Set<ComplexMapRefSetMember> getComplexMapRefSetMembers() {
 		return this.complexMapRefSetMembers;
 	}
@@ -302,6 +309,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the set of AttributeValueRefSetMembers
 	 */
 	@Override
+	@XmlElement(type=AttributeValueRefSetMemberJpa.class)
 	public Set<AttributeValueRefSetMember> getAttributeValueRefSetMembers() {
 		return this.attributeValueRefSetMembers;
 	}

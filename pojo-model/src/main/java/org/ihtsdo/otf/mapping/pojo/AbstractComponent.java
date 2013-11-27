@@ -177,7 +177,8 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * {@inheritDoc}
 	 */
-	 public String toString() {
+	 @Override
+	public String toString() {
 		 
 		 return this.getId() + "," +
 				 this.getTerminology() + "," +

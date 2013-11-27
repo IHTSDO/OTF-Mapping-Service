@@ -6,6 +6,8 @@ import org.ihtsdo.otf.mapping.model.DescriptionRefSetMember;
 import javax.persistence.CascadeType;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlIDREF;
 
 /**
  * Abstract implementation of {@link DescriptionRefSetMember}.
@@ -25,8 +27,10 @@ public abstract class AbstractDescriptionRefSetMember extends
      * {@inheritDoc}
      */
 	@Override
-	public Description getDescription() {
-		return this.description;
+	@XmlIDREF
+	@XmlAttribute
+	public DescriptionJpa getDescription() {
+		return (DescriptionJpa)this.description;
 	}
 
 	/**
