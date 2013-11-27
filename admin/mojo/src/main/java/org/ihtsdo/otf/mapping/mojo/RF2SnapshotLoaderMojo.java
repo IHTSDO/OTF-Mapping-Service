@@ -285,18 +285,17 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				tx.begin();
 				loadConcepts();
 				tx.commit();
+				
+				tx.begin();
+				loadRelationships();
+				tx.commit();
 
 				tx.begin();
 				loadDescriptions();
 				tx.commit(); 
 				
-				//tx.begin();
-				//loadRelationships();
-				//tx.commit(); 
-				
 				tx.begin();
-				loadLanguageRefSets();
-				//loadRefSets();
+				loadRefSets();
 				tx.commit();
 				
 				tx.begin();
@@ -361,7 +360,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	}
 
 	/**
-	 * Load components.
+	 * Load relationships.
 	 * 
 	 * @throws Exception the exception
 	 */
@@ -405,6 +404,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	}
 	
+	/**
+	 * Load descriptions.
+	 * 
+	 * @throws Exception the exception
+	 */
 	private void loadDescriptions() throws Exception {
 		
 		getLog().info("Loading Descriptions...");
@@ -460,62 +464,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		}
 		getLog().info(Integer.toString(i) + " Descriptions loaded in " + getElapsedTime().toString() + "s");
 		getLog().info(Integer.toString(descriptionListCache.size()) + " Description lists constructed");
-
-	}
-	
-	private void loadLanguageRefSets() throws Exception {
-
-		// load Language RefSet (Language)
-		getLog().info("Loading Language RefSets...");
-		startTime = System.nanoTime();
-		int i = 0;
-		String line = "";
-		Description description;
-		List<LanguageRefSetMember> language_list;
-		
-		while ((line = coreLanguageInput.readLine()) != null) {
-			StringTokenizer st = new StringTokenizer(line, "\t");
-			LanguageRefSetMember languageRefSetMember = new LanguageRefSetMemberJpa();
-			String firstToken = st.nextToken();
-			if (!firstToken.equals("id")) { // header
-				
-				// Universal RefSet attributes
-				languageRefSetMember.setTerminologyId(firstToken);
-				languageRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
-				languageRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
-				languageRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
-				languageRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
-				firstToken = st.nextToken(); // referencedComponentId
-				
-				// Language unique attributes
-				languageRefSetMember.setAcceptabilityId(Long.valueOf(st.nextToken()));
-				
-				// Terminology attributes
-				languageRefSetMember.setTerminology("SNOMEDCT");
-				languageRefSetMember.setTerminologyVersion(version);
-				
-				// Retrieve and set description
-				description = getDescription(firstToken, languageRefSetMember.getTerminology(), languageRefSetMember.getTerminologyVersion()); 
-				languageRefSetMember.setDescription(description);
-				manager.persist(languageRefSetMember);
-				
-				// Update languageListCache for use by setDefaultPreferredNames
-				// For setDefaultPreferredNames, insert this Description into appropriate List
-				if (languageListCache.containsKey(description.getId())) {				// use auto-generated id
-					language_list = languageListCache.get(description.getId());			// retrieve existing list
-					language_list.add(languageRefSetMember);							// add description
-					languageListCache.put(description.getId(), language_list);			// save amended list
-				} else {
-					language_list = new ArrayList<LanguageRefSetMember>(Arrays.asList(languageRefSetMember));				// instantiate new list
-					languageListCache.put(description.getId(), language_list);			// put the single-element list
-				}
-				
-				//if (++i%1000 == 0) {getLog().info("."); }
-				i++;
-			} 
-		}
-		getLog().info(Integer.toString(i) + " Language RefSets loaded in " + getElapsedTime().toString() + "s");
-		getLog().info(Integer.toString(languageListCache.size()) + " LanguageRefSet lists constructed");
 
 	}
 	
@@ -692,7 +640,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		// load Language RefSet (Language)
 		getLog().info("Loading Language RefSets...");
 		startTime = System.nanoTime();
-		i = 0;
+		Description description;
+		List<LanguageRefSetMember> language_list;
 		
 		while ((line = coreLanguageInput.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
@@ -715,16 +664,29 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				languageRefSetMember.setTerminology("SNOMEDCT");
 				languageRefSetMember.setTerminologyVersion(version);
 				
-				// Retrieve concept
-				languageRefSetMember.setDescription(getDescription(firstToken, languageRefSetMember.getTerminology(), languageRefSetMember.getTerminologyVersion())); 
-
+				// Retrieve and set description
+				description = getDescription(firstToken, languageRefSetMember.getTerminology(), languageRefSetMember.getTerminologyVersion()); 
+				languageRefSetMember.setDescription(description);
 				manager.persist(languageRefSetMember);
+				
+				// Update languageListCache for use by setDefaultPreferredNames
+				// For setDefaultPreferredNames, insert this Description into appropriate List
+				if (languageListCache.containsKey(description.getId())) {				// use auto-generated id
+					language_list = languageListCache.get(description.getId());			// retrieve existing list
+					language_list.add(languageRefSetMember);							// add description
+					languageListCache.put(description.getId(), language_list);			// save amended list
+				} else {
+					language_list = new ArrayList<LanguageRefSetMember>(Arrays.asList(languageRefSetMember));				// instantiate new list
+					languageListCache.put(description.getId(), language_list);			// put the single-element list
+				}
 				
 				//if (++i%1000 == 0) {getLog().info("."); }
 				i++;
 			} 
 		}
 		getLog().info(Integer.toString(i) + " Language RefSets loaded in " + getElapsedTime().toString() + "s");
+		getLog().info(Integer.toString(languageListCache.size()) + " LanguageRefSet lists constructed");
+
 	}
 	
 	/**
@@ -732,13 +694,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 * 
 	 * @param conceptId the concept id
 	 * @return the concept
-	 */
-
-	/** 
-	 * Returns the Concept associated with a RefSetMember's referencedComponentId
-	 * @param referencedComponentId
-	 * @return the Concept associated with a RefSetMember's referenceComponentId
-	 * @throws Exception
 	 */
 	private Concept getConcept(String terminologyId, String terminology, String terminologyVersion ) throws Exception {
 		
@@ -772,6 +727,12 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		}	
 	}
 	
+	/**
+	 * Returns the description.
+	 * 
+	 * @param descriptionId the description id
+	 * @return the description
+	 */
 	private Description getDescription(String terminologyId, String terminology, String terminologyVersion ) throws Exception {
 		
 		if (descriptionCache.containsKey(terminologyId + terminology + terminologyVersion)) {
@@ -808,6 +769,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 */
 	private void setDefaultPreferredNames() throws Exception {
 		
+		getLog().info("Setting default preferred names for all Concepts...");
 		startTime = System.nanoTime();
 		
 		String defaultPreferredName = "";
