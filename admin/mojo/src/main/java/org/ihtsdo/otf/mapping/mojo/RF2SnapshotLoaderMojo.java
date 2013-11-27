@@ -36,7 +36,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -95,6 +94,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 */
 	private File propertiesFile;
 	
+	/** String for core input directory */
+	private String coreInputDirString;
+	
 	/** Core input directory. */
 	private File coreInputDir;
 
@@ -121,6 +123,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	/** The core complex map input file. */
 	private File coreComplexMapInputFile = null;
+	
+	/** The core complex map input file. */
+	private File coreExtendedMapInputFile = null;
 
 	/** The core simple map input file. */
 	private File coreSimpleMapInputFile = null;
@@ -157,6 +162,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	/** The core complex map input. */
 	private BufferedReader coreComplexMapInput = null;
+	
+	/** The core extended map input. */
+	private BufferedReader coreExtendedMapInput = null;
 
 	/** The core simple map input. */
 	private BufferedReader coreSimpleMapInput = null;
@@ -193,6 +201,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	
 	/** The version. */
 	private String version = "";
+	
+	/** the defaultPreferredNames values */
+	private Long dpnTypeId;
+	private Long dpnRefSetId;
+	private Long dpnAcceptabilityId;
 
 	/** The manager. */
 	private EntityManager manager;
@@ -227,21 +240,32 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 			getLog().info("  In RF2SnapshotLoader.java");
 			
-      Properties  properties = new Properties();
-      FileInputStream propertiesInputStream = new FileInputStream(propertiesFile);
-      properties.load(propertiesInputStream);
-      String coreInputDirString = properties.getProperty("loader.input.data");
-      propertiesInputStream.close();
-      coreInputDir = new File(coreInputDirString);
-      
-      	
+					
+		    // load Properties file
+			Properties  properties = new Properties();
+			FileInputStream propertiesInputStream = new FileInputStream(propertiesFile);
+			properties.load(propertiesInputStream);
+		     
+			// set the input directory
+			coreInputDirString = properties.getProperty("loader.input.data");
+			coreInputDir = new File(coreInputDirString);
+		     
+			// set the parameters for determining defaultPreferredNames
+			dpnTypeId = Long.valueOf(properties.getProperty("loader.defaultPreferredNames.typeId"));      
+			dpnRefSetId = Long.valueOf(properties.getProperty("loader.defaultPreferredNames.refSetId"));
+			dpnAcceptabilityId = Long.valueOf(properties.getProperty("loader.defaultPreferredNames.acceptabilityId"));
+
+			// close the Properties file
+			propertiesInputStream.close();
+			      
+      	    // create Entitymanager
 			EntityManagerFactory factory =
 					Persistence.createEntityManagerFactory("MappingServiceDS");
 			manager = factory.createEntityManager();
 
 
+			// Preparation
 			openInputFiles();
-
 			getVersion();
 			
 			
@@ -282,22 +306,52 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				
 				tx.commit();
 			
+				// load Concepts
 				tx.begin();
 				loadConcepts();
 				tx.commit();
 				
+				// load Relationships
 				tx.begin();
 				loadRelationships();
 				tx.commit();
 
+				// load Descriptions
 				tx.begin();
 				loadDescriptions();
 				tx.commit(); 
 				
+				// load SimpleRefSets
 				tx.begin();
-				loadRefSets();
+				loadSimpleRefSets();
 				tx.commit();
 				
+				// load SimpleMapRefSets
+				tx.begin();
+				loadSimpleMapRefSets();
+				tx.commit();
+				
+				// load ComplexMapRefSets
+				tx.begin();
+				loadComplexMapRefSets();
+				tx.commit();
+				
+				// load ExtendedMapRefSets
+				tx.begin();
+				loadExtendedMapRefSets();
+				tx.commit();
+				
+				// load AttributeValueRefSets
+				tx.begin();
+				loadAttributeValueRefSets();
+				tx.commit();
+				
+				// load LanguageRefSets
+				tx.begin();
+				loadLanguageRefSets();
+				tx.commit();
+				
+				// set the defaultPreferredName attribute for Concepts
 				tx.begin();
 				setDefaultPreferredNames();
 				tx.commit();
@@ -307,9 +361,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				tx.rollback();
 			}
 
+			// Clean-up
 			manager.close();
 			factory.close();
-
 			closeAllFiles();
 
 		} catch (Throwable e) {
@@ -317,7 +371,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			throw new MojoFailureException("Unexpected exception:", e);
 		}
 	}
-
+	
+	// Used for debugging/efficiency monitoring
 	private Long getElapsedTime() {
 		return (System.nanoTime() - startTime) / 1000000000;
 	}
@@ -400,7 +455,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			  i++;
 			}
 		}
-		getLog().info(Integer.toString(i) + " Relationships loadedin " + getElapsedTime().toString() + "s");
+		getLog().info(Integer.toString(i) + " Relationships loaded in " + getElapsedTime().toString() + "s");
 
 	}
 	
@@ -448,12 +503,14 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				
 				// For setDefaultPreferredNames, insert this Description into appropriate List
 				if (descriptionListCache.containsKey(concept.getId())) {					// use auto-generated Id
-					//getLog().info("Found key " + concept.getId().toString() + " for list of size " + Integer.toString(descriptionListCache.get(concept.getId()).size()));
+					
 					description_list = descriptionListCache.get(concept.getId());			// retrieve existing list
-					description_list.add(description);									// add description
+					description_list.add(description);										// add description
 					descriptionListCache.put(concept.getId(), description_list);			// save amended list
+				
 				} else {
-					description_list = new ArrayList<Description>(Arrays.asList(description));							// instantiate new list
+				
+					description_list = new ArrayList<Description>(Arrays.asList(description));  // instantiate new list
 					descriptionListCache.put(concept.getId(), description_list);			// put the single-element list
 				}
 				
@@ -468,52 +525,17 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	}
 	
 	/**
-	 * Load RefSets: simple, simple_map, complex_map, attribute_value, language
+	 * Load AttributeRefSets (Content)
 	 * 
 	 * @throws Exception the exception
 	 */
 	
-	private void loadRefSets() throws Exception {
+
+	private void loadAttributeValueRefSets() throws Exception {
 		
 		String line = "";
 		int i = 0;
-		
-		// load Simple RefSets (Content)
-		getLog().info("Loading Simple RefSets...");
-		startTime = System.nanoTime();
-		
-		while ((line = coreSimpleRefsetInput.readLine()) != null) {
-			StringTokenizer st = new StringTokenizer(line, "\t");
-			SimpleRefSetMember simpleRefSetMember = new SimpleRefSetMemberJpa();
-			String firstToken = st.nextToken();
-			if (!firstToken.equals("id")) { // header
-				
-				// Universal RefSet attributes
-				simpleRefSetMember.setTerminologyId(firstToken); 
-				simpleRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
-				simpleRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
-				simpleRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
-				simpleRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
-				firstToken = st.nextToken(); // referencedComponentId
-				
-				// SimpleRefSetMember unique attributes
-				// NONE
-				
-				// Terminology attributes
-				simpleRefSetMember.setTerminology("SNOMEDCT");
-				simpleRefSetMember.setTerminologyVersion(version);
-				
-				// Retrieve Concept
-				simpleRefSetMember.setConcept(getConcept(firstToken, simpleRefSetMember.getTerminology(), simpleRefSetMember.getTerminologyVersion())); 
-
-				manager.persist(simpleRefSetMember);
-				
-				i++;
-			}
-		}
-		
-		getLog().info(Integer.toString(i) + " Simple RefSets loaded in " + getElapsedTime().toString() + "s");
-
+		String conceptId = "";
 
 		// load AttributeValue RefSets (Content)
 		getLog().info("Loading AttributeValue RefSets...");
@@ -531,7 +553,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				attributeValueRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
 				attributeValueRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
 				attributeValueRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
-				firstToken = st.nextToken(); // referencedComponentId
+				conceptId = st.nextToken(); // referencedComponentId
 				
 				// AttributeValueRefSetMember unique attributes
 				attributeValueRefSetMember.setValueId(Long.valueOf(st.nextToken()));
@@ -540,8 +562,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				attributeValueRefSetMember.setTerminology("SNOMEDCT");
 				attributeValueRefSetMember.setTerminologyVersion(version);
 				
-				// Retrieve concept
-				attributeValueRefSetMember.setConcept(getConcept(firstToken, attributeValueRefSetMember.getTerminology(), attributeValueRefSetMember.getTerminologyVersion())); 
+				// Retrieve concept -- firstToken is referencedComponentId
+				attributeValueRefSetMember.setConcept(getConcept(conceptId, attributeValueRefSetMember.getTerminology(), attributeValueRefSetMember.getTerminologyVersion())); 
 
 				manager.persist(attributeValueRefSetMember);
 				
@@ -549,12 +571,70 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			}
 		}
 		getLog().info(Integer.toString(i) + " AttributeValue RefSets loaded in " + getElapsedTime().toString() + "s");
-
+	}
+	
+	/**
+	 * Load SimpleRefSets (Content)
+	 * 
+	 * @throws Exception the exception
+	 */
+	
+	private void loadSimpleRefSets() throws Exception {
 		
-		// load SimpleMap RefSets (Crossmap)
+		String line = "";
+		int i = 0;
+		String conceptId = "";
+		
+		// load Simple RefSets (Content)
+		getLog().info("Loading Simple RefSets...");
+		startTime = System.nanoTime();
+		
+		while ((line = coreSimpleRefsetInput.readLine()) != null) {
+			StringTokenizer st = new StringTokenizer(line, "\t");
+			SimpleRefSetMember simpleRefSetMember = new SimpleRefSetMemberJpa();
+			String firstToken = st.nextToken();
+			if (!firstToken.equals("id")) { // header
+				
+				// Universal RefSet attributes
+				simpleRefSetMember.setTerminologyId(firstToken); 
+				simpleRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
+				simpleRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
+				simpleRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
+				simpleRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
+				conceptId = st.nextToken(); // referencedComponentId
+				
+				// SimpleRefSetMember unique attributes
+				// NONE
+				
+				// Terminology attributes
+				simpleRefSetMember.setTerminology("SNOMEDCT");
+				simpleRefSetMember.setTerminologyVersion(version);
+				
+				// Retrieve Concept -- firstToken is referencedComonentId
+				simpleRefSetMember.setConcept(getConcept(conceptId, simpleRefSetMember.getTerminology(), simpleRefSetMember.getTerminologyVersion())); 
+
+				manager.persist(simpleRefSetMember);
+				
+				i++;
+			}
+		}
+		
+		getLog().info(Integer.toString(i) + " Simple RefSets loaded in " + getElapsedTime().toString() + "s");
+	}
+
+	/**
+	 * Load SimpleMapRefSets (Crossmap)
+	 * 
+	 * @throws Exception the exception
+	 */
+	private void loadSimpleMapRefSets() throws Exception {
+		
+		String line = "";
+		int i = 0;
+		String conceptId = "";
+
 		getLog().info("Loading SimpleMap RefSets...");
 		startTime = System.nanoTime();
-		i = 0;
 		
 		while ((line = coreSimpleMapInput.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
@@ -568,7 +648,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				simpleMapRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
 				simpleMapRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
 				simpleMapRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
-				firstToken = st.nextToken(); // referencedComponentId
+				conceptId = st.nextToken(); // referencedComponentId
 				
 				// SimpleMap unique attributes
 				simpleMapRefSetMember.setMapTarget(st.nextToken());
@@ -577,8 +657,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				simpleMapRefSetMember.setTerminology("SNOMEDCT");
 				simpleMapRefSetMember.setTerminologyVersion(version);
 				
-				// Retrieve concept	
-				simpleMapRefSetMember.setConcept(getConcept(firstToken, simpleMapRefSetMember.getTerminology(), simpleMapRefSetMember.getTerminologyVersion())); 
+				// Retrieve concept	 -- firstToken is referencedComponentId
+				simpleMapRefSetMember.setConcept(getConcept(conceptId, simpleMapRefSetMember.getTerminology(), simpleMapRefSetMember.getTerminologyVersion())); 
 				
 				manager.persist(simpleMapRefSetMember);	
 				
@@ -587,9 +667,19 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		}
 		
 		getLog().info(Integer.toString(i) + " SimpleMap RefSets loaded in " + getElapsedTime().toString() + "s");
+	}
+	
+	/**
+	 * Load ComplexMapRefSets (Crossmap)
+	 * 
+	 * @throws Exception the exception
+	 */
+	private void loadComplexMapRefSets() throws Exception {
 
-
-		// load ComplexMap RefSets (Crossmap)
+		String line = "";
+		int i = 0;
+		String conceptId = "";
+		
 		getLog().info("Loading ComplexMap RefSets...");
 		startTime = System.nanoTime();
 		i = 0;
@@ -606,7 +696,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
 				complexMapRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
 				complexMapRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));; // conceptId
-				firstToken = st.nextToken(); // referencedComponentId
+				conceptId = st.nextToken(); // referencedComponentId
 				
 				// ComplexMap unique attributes
 				complexMapRefSetMember.setMapGroup(Integer.parseInt(st.nextToken()));
@@ -626,7 +716,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setTerminologyVersion(version);
 				
 				// Retrieve Concept
-				complexMapRefSetMember.setConcept(getConcept(firstToken, complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion())); 
+				complexMapRefSetMember.setConcept(getConcept(conceptId, complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion())); 
 
 				manager.persist(complexMapRefSetMember);
 
@@ -635,13 +725,81 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		}	
 		getLog().info(Integer.toString(i) + " ComplexMap RefSets loaded in " + getElapsedTime().toString() + "s");
 
+	}
+	/**
+	 * Load ExtendedMapRefSets (Crossmap)
+	 * 
+	 * @throws Exception the exception
+	 */
+
+	// NOTE: ExtendedMap RefSets are loaded into ComplexMapRefSetMember
+	//       where mapRelationId = 	mapCategoryId
+	private void loadExtendedMapRefSets() throws Exception {
+		
+		String line = "";
+		int i = 0;
+		String conceptId = "";
 		
 		
+		getLog().info("Loading ExtendedMap RefSets...");
+		startTime = System.nanoTime();
+		i = 0;
+		
+		while ((line = coreComplexMapInput.readLine()) != null) {
+			StringTokenizer st = new StringTokenizer(line, "\t");
+			ComplexMapRefSetMember complexMapRefSetMember = new ComplexMapRefSetMemberJpa();
+			String firstToken = st.nextToken();
+			if (!firstToken.equals("id")) { // header
+				
+				// Universal RefSet attributes
+				complexMapRefSetMember.setTerminologyId(firstToken);
+				complexMapRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
+				complexMapRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
+				complexMapRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
+				complexMapRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));; // conceptId
+				conceptId = st.nextToken(); // referencedComponentId
+				
+				// ComplexMap unique attributes
+				complexMapRefSetMember.setMapGroup(Integer.parseInt(st.nextToken()));
+				complexMapRefSetMember.setMapPriority(Integer.parseInt(st.nextToken()));
+				complexMapRefSetMember.setMapRule(st.nextToken());
+				complexMapRefSetMember.setMapAdvice(st.nextToken());
+				complexMapRefSetMember.setMapTarget(st.nextToken());
+				firstToken = st.nextToken(); // unused, this field ignored for ExtendedMap
+				complexMapRefSetMember.setMapRelationId(Long.valueOf(st.nextToken()));
+				
+				// ComplexMap unique attributes NOT set by file (mapBlock elements)
+				complexMapRefSetMember.setMapBlock(1); // default value
+				complexMapRefSetMember.setMapBlockRule(null); // no default
+				complexMapRefSetMember.setMapBlockAdvice(null); // no default
+				
+				// Terminology attributes
+				complexMapRefSetMember.setTerminology("SNOMEDCT");
+				complexMapRefSetMember.setTerminologyVersion(version);
+				
+				// Retrieve Concept
+				complexMapRefSetMember.setConcept(getConcept(conceptId, complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion())); 
+
+				manager.persist(complexMapRefSetMember);
+
+				i++;
+			}
+		}	
+		getLog().info(Integer.toString(i) + " ExtendedMap RefSets loaded in " + getElapsedTime().toString() + "s");
+	}
+	
+	private void loadLanguageRefSets() throws Exception {
+			
+		String line = "";
+		int i = 0;
+		String conceptId = "";
+		Description description;
+		List<LanguageRefSetMember> language_list;
+				
 		// load Language RefSet (Language)
 		getLog().info("Loading Language RefSets...");
 		startTime = System.nanoTime();
-		Description description;
-		List<LanguageRefSetMember> language_list;
+		
 		
 		while ((line = coreLanguageInput.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
@@ -655,7 +813,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				languageRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
 				languageRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
 				languageRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
-				firstToken = st.nextToken(); // referencedComponentId
+				conceptId = st.nextToken(); // referencedComponentId
 				
 				// Language unique attributes
 				languageRefSetMember.setAcceptabilityId(Long.valueOf(st.nextToken()));
@@ -665,7 +823,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				languageRefSetMember.setTerminologyVersion(version);
 				
 				// Retrieve and set description
-				description = getDescription(firstToken, languageRefSetMember.getTerminology(), languageRefSetMember.getTerminologyVersion()); 
+				description = getDescription(conceptId, languageRefSetMember.getTerminology(), languageRefSetMember.getTerminologyVersion()); 
 				languageRefSetMember.setDescription(description);
 				manager.persist(languageRefSetMember);
 				
@@ -777,12 +935,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		List<Description> description_list;
 	
 		int i = 0;
-		
-		// Parameters for selecting defaultPreferredName
-		Long typeId = Long.valueOf("900000000000013009");
-		Long refSetId = Long.valueOf("900000000000509007");
-		Long acceptabilityId = Long.valueOf("900000000000548007");
-			
+
+		// for each concept in cache			
 		for (Concept concept : conceptCache.values()) {
 			
 			defaultPreferredName = "";
@@ -793,7 +947,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				// get description list associated with this concept
 				description_list = descriptionListCache.get(concept.getId());
 					
-				// for each description
+				// for each description associated with this concept
 				for (Description description : description_list) {
 						
 					// check if a language refset list is associated with this description
@@ -802,13 +956,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						// get language refset list associated with this description
 						language_list = languageListCache.get(description.getId());
 					
-						// for each language refset member, check for preferred name
+						// for each language refset member associated with this description
 						for (LanguageRefSetMember language : language_list) {
-								
+							
 							// Check if this language refset member meets criteria
-							if(description.getTypeId().equals(typeId) && 
-									language.getRefSetId().equals(refSetId) && 
-									language.getAcceptabilityId().equals(acceptabilityId)) { 
+							if(description.getTypeId().equals(dpnTypeId) && 
+									language.getRefSetId().equals(dpnRefSetId) && 
+									language.getAcceptabilityId().equals(dpnAcceptabilityId)) { 
 								
 								// check for multiple results
 								if (!defaultPreferredName.isEmpty()) {
@@ -832,7 +986,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				// set the default preferred name based on unique result
 				concept.setDefaultPreferredName(defaultPreferredName);
 			}
-			// Commented out while testing
+
 			manager.persist(concept);
 			
 			i++;
@@ -968,7 +1122,20 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						+ coreAttributeValueInputFile.toString() + " "
 						+ coreAttributeValueInputFile.exists());
 
-		coreCrossmapInputDir = new File(coreRefsetInputDir, "/Crossmap/");
+		// TODO: Find a more elegant solution
+		// Check which data set we're using, assuming that all sets are in the same root folder
+		// On PG's machine, this is SnomedCT_Release_INT_20130731, which contains:
+		// -> RF2Release: the full RF2 release -> map content is in "Map"
+		// -> usext-mini-data: the truncated dataset -> map content is in "Crossmap"
+
+		if (coreInputDirString.contains("mini-data")) {
+			coreCrossmapInputDir = new File(coreRefsetInputDir, "/Crossmap/");
+		} else if (coreInputDirString.contains("RF2Release")) {
+			coreCrossmapInputDir = new File(coreRefsetInputDir, "/Map/");
+		} else {
+			throw new MojoFailureException("Cannot identify crossmap folder from dataset file structure!");
+		}
+		
 		getLog().info(
 				"  Crossmap Input Dir = " + coreCrossmapInputDir.toString() + " "
 						+ coreCrossmapInputDir.exists());
@@ -978,6 +1145,20 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (coreComplexMapInputFile != null)
 					throw new MojoFailureException("Multiple Complex Map Files!");
 				coreComplexMapInputFile = f;
+			}
+		}
+		if (coreComplexMapInputFile != null) {
+			getLog().info(
+					"  Core Complex Map Input File = "
+							+ coreComplexMapInputFile.toString() + " "
+							+ coreComplexMapInputFile.exists());
+		}
+		
+		for (File f : coreCrossmapInputDir.listFiles()) {
+			if (f.getName().contains("ExtendedMap")) {
+				if (coreExtendedMapInputFile != null)
+					throw new MojoFailureException("Multiple Extended Map Files!");
+				coreExtendedMapInputFile = f;
 			}
 		}
 		if (coreComplexMapInputFile != null) {
@@ -1034,6 +1215,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		if (coreComplexMapInputFile != null)
 			coreComplexMapInput =
 					new BufferedReader(new FileReader(coreComplexMapInputFile));
+		if (coreExtendedMapInputFile != null)
+			coreExtendedMapInput =
+					new BufferedReader(new FileReader(coreExtendedMapInputFile));
 		coreSimpleMapInput =
 				new BufferedReader(new FileReader(coreSimpleMapInputFile));
 		coreLanguageInput =
@@ -1067,6 +1251,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		coreAssociationReferenceInput.close();
 		coreAttributeValueInput.close();
 		if (coreComplexMapInput != null)
+			coreComplexMapInput.close();
+		if (coreExtendedMapInput != null)
 			coreComplexMapInput.close();
 		coreSimpleMapInput.close();
 		coreLanguageInput.close();
