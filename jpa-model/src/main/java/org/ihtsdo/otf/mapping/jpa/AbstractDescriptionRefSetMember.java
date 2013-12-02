@@ -1,16 +1,18 @@
 package org.ihtsdo.otf.mapping.jpa;
 
-import org.ihtsdo.otf.mapping.model.Description;
-import org.ihtsdo.otf.mapping.model.DescriptionRefSetMember;
-
 import javax.persistence.CascadeType;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
+
+import org.hibernate.envers.Audited;
+import org.ihtsdo.otf.mapping.model.Description;
+import org.ihtsdo.otf.mapping.model.DescriptionRefSetMember;
 
 /**
  * Abstract implementation of {@link DescriptionRefSetMember}.
  */
 @MappedSuperclass
+@Audited
 public abstract class AbstractDescriptionRefSetMember extends
 		AbstractRefSetMember implements DescriptionRefSetMember {
 	

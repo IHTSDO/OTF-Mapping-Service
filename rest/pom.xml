@@ -45,6 +45,11 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
     </dependency>
+    <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-envers</artifactId>
+        <version>4.0.1.Final</version>
+    </dependency>
     <!-- TODO: Uncomment these as needed.
       <dependency>
       <groupId>org.hibernate</groupId>

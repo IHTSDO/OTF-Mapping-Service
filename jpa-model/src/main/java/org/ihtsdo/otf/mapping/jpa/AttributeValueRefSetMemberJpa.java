@@ -1,15 +1,18 @@
 package org.ihtsdo.otf.mapping.jpa;
 
-import org.ihtsdo.otf.mapping.model.AttributeValueRefSetMember;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
+import org.hibernate.envers.Audited;
+import org.ihtsdo.otf.mapping.model.AttributeValueRefSetMember;
 
 /**
  * Concrete implementation of {@link AttributeValueRefSetMember}.
  */
 @Entity
 @Table(name = "attribute_value_refset_members")
+@Audited
 public class AttributeValueRefSetMemberJpa extends
 		AbstractConceptRefSetMember implements AttributeValueRefSetMember {
 

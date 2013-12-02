@@ -4,6 +4,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 
+import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.ConceptRefSetMember;
 
@@ -11,6 +12,7 @@ import org.ihtsdo.otf.mapping.model.ConceptRefSetMember;
  * Abstract implementation of {@link ConceptRefSetMember}.
  */
 @MappedSuperclass
+@Audited
 public abstract class AbstractConceptRefSetMember extends AbstractRefSetMember
 		implements ConceptRefSetMember {
 	

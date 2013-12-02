@@ -12,6 +12,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
 import org.ihtsdo.otf.mapping.model.LanguageRefSetMember;
@@ -21,6 +22,7 @@ import org.ihtsdo.otf.mapping.model.LanguageRefSetMember;
  */
 @Entity
 @Table(name = "descriptions", uniqueConstraints=@UniqueConstraint(columnNames={"terminologyId", "terminology", "terminologyVersion"}))
+@Audited
 public class DescriptionJpa extends AbstractComponent implements Description {
 
 	/** The language code. */

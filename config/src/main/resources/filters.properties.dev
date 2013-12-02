@@ -1,6 +1,7 @@
 mysql.url=jdbc:mysql://127.0.0.1:3306/mappingservicedb
 mysql.user=root
 mysql.pwd=rootpwd
+loader.input.data2=C:\\Users\\Patrick\\WCI\\SnomedCT_Release_INT_20130731\\usext-mini-data\\
 loader.input.data=C:\\Users\\Patrick\\WCI\\SnomedCT_Release_INT_20130731\\RF2Release\\Snapshot\\
 loader.defaultPreferredNames.typeId=900000000000013009
 loader.defaultPreferredNames.refSetId=900000000000509007

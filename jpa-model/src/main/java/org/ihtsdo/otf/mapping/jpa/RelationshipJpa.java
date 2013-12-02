@@ -7,6 +7,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Relationship;
 
@@ -15,6 +16,7 @@ import org.ihtsdo.otf.mapping.model.Relationship;
  */
 @Entity
 @Table(name = "relationships", uniqueConstraints=@UniqueConstraint(columnNames={"terminologyId", "terminology", "terminologyVersion"}))
+@Audited
 public class RelationshipJpa extends AbstractComponent implements Relationship {
 
 	/** The source concept. */

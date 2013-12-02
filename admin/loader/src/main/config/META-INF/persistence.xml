@@ -36,8 +36,7 @@
             <property name="javax.persistence.jdbc.url" value="${mysql.url}" />
             <property name="javax.persistence.jdbc.user" value="${mysql.user}" />
             <property name="javax.persistence.jdbc.password" value="${mysql.pwd}" />
- 
- 
+   
 
         </properties>
     </persistence-unit>

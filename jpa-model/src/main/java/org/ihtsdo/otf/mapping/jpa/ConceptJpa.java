@@ -11,6 +11,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.AttributeValueRefSetMember;
 import org.ihtsdo.otf.mapping.model.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.model.Concept;
@@ -24,8 +25,7 @@ import org.ihtsdo.otf.mapping.model.SimpleRefSetMember;
  */
 @Entity
 @Table(name = "concepts", uniqueConstraints=@UniqueConstraint(columnNames={"terminologyId", "terminology", "terminologyVersion"}))
-
-
+@Audited
 public class ConceptJpa extends AbstractComponent implements Concept {
 
 	/** The definition status id. */

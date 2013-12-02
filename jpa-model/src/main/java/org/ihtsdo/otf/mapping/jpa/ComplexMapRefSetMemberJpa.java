@@ -1,15 +1,18 @@
 package org.ihtsdo.otf.mapping.jpa;
 
-import org.ihtsdo.otf.mapping.model.ComplexMapRefSetMember;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
+import org.hibernate.envers.Audited;
+import org.ihtsdo.otf.mapping.model.ComplexMapRefSetMember;
 
 /**
  * Concrete implementation of {@link ComplexMapRefSetMember}.
  */
 @Entity
 @Table (name = "complex_map_refset_members")
+@Audited
 public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
 		implements ComplexMapRefSetMember {
 

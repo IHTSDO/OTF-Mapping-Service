@@ -9,11 +9,13 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.Component;
 
 /**
  * Abstract implementation of {@link Component} for use with JPA.
  */
+@Audited
 @MappedSuperclass
 public abstract class AbstractComponent implements Component {
 
