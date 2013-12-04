@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa;
 
+import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.model.Description;
 import org.ihtsdo.otf.mapping.model.DescriptionRefSetMember;
 
@@ -24,6 +25,7 @@ public abstract class AbstractDescriptionRefSetMember extends
 			   CascadeType.PERSIST, CascadeType.MERGE
 			 }, targetEntity=DescriptionJpa.class)
 	@JsonBackReference
+	@ContainedIn
 	private Description description;
 
 	/**

@@ -17,8 +17,11 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
@@ -32,6 +35,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
  */
 @Entity
 @Table(name = "descriptions", uniqueConstraints=@UniqueConstraint(columnNames={"terminologyId", "terminology", "terminologyVersion"}))
+@Indexed
 @XmlRootElement
 public class DescriptionJpa extends AbstractComponent implements Description {
 
@@ -56,11 +60,13 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 			CascadeType.PERSIST, CascadeType.MERGE
 	}, targetEntity=ConceptJpa.class)
 	@JsonBackReference
+	@ContainedIn
 	private Concept concept;
 	
 	/** The language RefSet members */
 	@OneToMany(mappedBy = "description", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=LanguageRefSetMemberJpa.class)
 	@JsonManagedReference
+	@IndexedEmbedded(targetElement=LanguageRefSetMemberJpa.class)
 	private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<LanguageRefSetMember>();
 
     
@@ -106,6 +112,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	 * @return the type
 	 */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
     public Long getTypeId() {
 		return typeId;
 	}

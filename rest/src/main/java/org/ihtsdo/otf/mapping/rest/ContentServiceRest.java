@@ -60,11 +60,14 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concepts/xml/{string}")
-	@Produces({MediaType.APPLICATION_XML})
-	public Concept getConceptForString(@PathParam("string") String searchString) {
-		List<Concept> results = contentServiceJpa.getConcepts(searchString);
+	public String getConceptForString(@PathParam("string") String searchString) {
+		List<String> results = contentServiceJpa.getConcepts(searchString);
 		System.out.println("results size " + results.size());
-		return (results != null && results.size() != 0) ? results.get(0) : null;
+		StringBuffer sb = new StringBuffer();
+		for (String s : results) {
+		  sb.append(s).append("\n");
+		}
+		return sb.toString();
 
 	}
 

@@ -20,5 +20,5 @@ public interface ContentService {
 	 * @param searchString the search string
 	 * @return the concept
 	 */
-	public List<Concept> getConcepts(String searchString);
+	public List<String> getConcepts(String searchString);
 }

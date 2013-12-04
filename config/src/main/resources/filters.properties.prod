@@ -1,4 +1,4 @@
 mysql.url=jdbc:mysql://127.0.0.1:3306/mappingservicedb
 mysql.user=root
 mysql.pwd=rootpwd
-loader.input.data=C:\\workspace-mapping-services2-juno\\mapping-services-project\\usext-mini-data\\src\\main\\resources\\org\\ihtsdo
+loader.input.data=C:\\SNOMED Data\\SnomedCT_Release_INT_20130731\\RF2Release\\Snapshot

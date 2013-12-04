@@ -6,6 +6,7 @@ import javax.persistence.MappedSuperclass;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 
+import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.ConceptRefSetMember;
 
@@ -23,6 +24,7 @@ public abstract class AbstractConceptRefSetMember extends AbstractRefSetMember
 			   CascadeType.PERSIST, CascadeType.MERGE
 			 }, targetEntity=ConceptJpa.class)
   @JsonBackReference
+  @ContainedIn
 	private Concept concept;
 
 	/**

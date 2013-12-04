@@ -163,7 +163,7 @@ public abstract class AbstractComponent implements Component {
 	 * {@inheritDoc}
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTerminologyVersion() {
 		return terminologyVersion;
 	}
@@ -180,7 +180,7 @@ public abstract class AbstractComponent implements Component {
 	 * {@inheritDoc}
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTerminology() {
 		return terminology;
 	}
@@ -197,7 +197,7 @@ public abstract class AbstractComponent implements Component {
 	 * {@inheritDoc}
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTerminologyId() {
 		return terminologyId;
 	}

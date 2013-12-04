@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Relationship;
 
@@ -31,6 +31,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 			CascadeType.PERSIST, CascadeType.MERGE
 	}, targetEntity = ConceptJpa.class)
 	@JsonBackReference
+	@ContainedIn
 	private Concept sourceConcept;
 
 	/** The destination concept. */
@@ -38,6 +39,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 			CascadeType.PERSIST, CascadeType.MERGE
 	}, targetEntity = ConceptJpa.class)
 	@JsonBackReference
+	@ContainedIn
 	private Concept destinationConcept;
 
 	/** The type id. */
