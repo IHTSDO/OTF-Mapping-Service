@@ -11,11 +11,25 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.ContainedIn;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Description;
 import org.ihtsdo.otf.mapping.model.LanguageRefSetMember;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 /**
  * Concrete implementation of {@link Description} for use with JPA.
@@ -23,6 +37,8 @@ import org.ihtsdo.otf.mapping.model.LanguageRefSetMember;
 @Entity
 @Table(name = "descriptions", uniqueConstraints=@UniqueConstraint(columnNames={"terminologyId", "terminology", "terminologyVersion"}))
 @Audited
+@Indexed
+@XmlRootElement
 public class DescriptionJpa extends AbstractComponent implements Description {
 
 	/** The language code. */
@@ -45,10 +61,14 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	@ManyToOne(cascade = {
 			CascadeType.PERSIST, CascadeType.MERGE
 	}, targetEntity=ConceptJpa.class)
+	@JsonBackReference
+	@ContainedIn
 	private Concept concept;
 	
 	/** The language RefSet members */
 	@OneToMany(mappedBy = "description", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=LanguageRefSetMemberJpa.class)
+	@JsonManagedReference
+	@IndexedEmbedded(targetElement=LanguageRefSetMemberJpa.class)
 	private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<LanguageRefSetMember>();
 
     
@@ -94,6 +114,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	 * @return the type
 	 */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
     public Long getTypeId() {
 		return typeId;
 	}
@@ -114,6 +135,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	 * @return the term
 	 */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
     public String getTerm() {
 		return term;
 	}
@@ -154,8 +176,10 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	 * @return the concept
 	 */
 	@Override
-    public Concept getConcept() {
-		return concept;
+	@XmlIDREF
+	@XmlAttribute
+    public ConceptJpa getConcept() {
+		return (ConceptJpa)concept;
 	}
 
 	/**
@@ -174,6 +198,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	 * @return the set of SimpleRefSetMembers
 	 */
 	@Override
+	@XmlElement(type=LanguageRefSetMemberJpa.class)
 	public Set<LanguageRefSetMember> getLanguageRefSetMembers() {
 		return this.languageRefSetMembers;
 	}
@@ -212,9 +237,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public String toString() {
-		 return this.getId() + "," +
+	 public String toString() {		 return this.getId() + "," +
 				 this.getTerminology() + "," +
 				 this.getTerminologyId() + "," +
 				 this.getTerminologyVersion() + "," +

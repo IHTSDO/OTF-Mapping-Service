@@ -3,10 +3,15 @@ package org.ihtsdo.otf.mapping.jpa;
 import javax.persistence.CascadeType;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlIDREF;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.ConceptRefSetMember;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 /**
  * Abstract implementation of {@link ConceptRefSetMember}.
@@ -20,15 +25,18 @@ public abstract class AbstractConceptRefSetMember extends AbstractRefSetMember
 	@ManyToOne(cascade = {
 			   CascadeType.PERSIST, CascadeType.MERGE
 			 }, targetEntity=ConceptJpa.class)
-
+  @JsonBackReference
+  @ContainedIn
 	private Concept concept;
 
 	/**
      * {@inheritDoc}
      */
 	@Override
-	public Concept getConcept() {
-		return this.concept;
+	@XmlIDREF
+	@XmlAttribute
+	public ConceptJpa getConcept() {
+		return (ConceptJpa)this.concept;
 	}
 
 	/**

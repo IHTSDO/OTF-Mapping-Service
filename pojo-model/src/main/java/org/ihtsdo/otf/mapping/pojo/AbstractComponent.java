@@ -174,4 +174,18 @@ public abstract class AbstractComponent implements Component {
 		this.terminologyId = terminologyId;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	 @Override
+	public String toString() {
+		 
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+				 this.getModuleId(); // end of basic component fields
+	 }
 }

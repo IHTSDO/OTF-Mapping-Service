@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.ihtsdo.otf.mapping.model.RefSetMember;
 
 /**

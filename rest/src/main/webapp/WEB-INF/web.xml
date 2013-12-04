@@ -10,12 +10,12 @@
     <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
     <init-param>
       <param-name>com.sun.jersey.config.property.packages</param-name>
-      <param-value>org.ihtsdo.otf.mapping.rest;org.ihtsdo.otf.mapping.model;org.ihtsdo.otf.mapping.jpa</param-value>
+      <param-value>com.fasterxml.jackson.jaxrs.json;org.ihtsdo.otf.mapping.rest;org.ihtsdo.otf.mapping.model;org.ihtsdo.otf.mapping.jpa</param-value>
     </init-param>
-    <init-param>
+    <!-- <init-param>
       <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
       <param-value>true</param-value>
-    </init-param>
+    </init-param> -->
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>

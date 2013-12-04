@@ -1,8 +1,16 @@
 package org.ihtsdo.otf.mapping.jpa;
 
+import org.hibernate.search.annotations.ContainedIn;
+import org.ihtsdo.otf.mapping.model.Description;
+import org.ihtsdo.otf.mapping.model.DescriptionRefSetMember;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.CascadeType;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlIDREF;
 
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.Description;
@@ -21,14 +29,18 @@ public abstract class AbstractDescriptionRefSetMember extends
 	@ManyToOne(cascade = {
 			   CascadeType.PERSIST, CascadeType.MERGE
 			 }, targetEntity=DescriptionJpa.class)
+	@JsonBackReference
+	@ContainedIn
 	private Description description;
 
 	/**
      * {@inheritDoc}
      */
 	@Override
-	public Description getDescription() {
-		return this.description;
+	@XmlIDREF
+	@XmlAttribute
+	public DescriptionJpa getDescription() {
+		return (DescriptionJpa)this.description;
 	}
 
 	/**
