@@ -400,7 +400,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		getLog().info("Loading Descriptions...");
 		i = 0;
 
-		// keep concepts from extension descriptions
 		while ((line = coreDescInput.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, "\t");
 			Description description = new DescriptionJpa();
