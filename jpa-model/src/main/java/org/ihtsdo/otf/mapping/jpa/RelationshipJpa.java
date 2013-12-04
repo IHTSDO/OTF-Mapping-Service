@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.Relationship;
@@ -24,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 		"terminologyId", "terminology", "terminologyVersion"
 }))
 @XmlRootElement(name="relationship")
+@Audited
 public class RelationshipJpa extends AbstractComponent implements Relationship {
 
 	/** The source concept. */

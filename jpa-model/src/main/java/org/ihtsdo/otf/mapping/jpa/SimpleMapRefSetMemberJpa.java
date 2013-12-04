@@ -1,14 +1,17 @@
 package org.ihtsdo.otf.mapping.jpa;
 
-import org.ihtsdo.otf.mapping.model.SimpleMapRefSetMember;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
+import org.hibernate.envers.Audited;
+import org.ihtsdo.otf.mapping.model.SimpleMapRefSetMember;
 /**
  * Concrete implementation of {@link SimpleMapRefSetMember}.
  */
 @Entity
 @Table ( name = "simple_map_refset_members")
+@Audited
 public class SimpleMapRefSetMemberJpa extends AbstractConceptRefSetMember
 		implements SimpleMapRefSetMember {
 	

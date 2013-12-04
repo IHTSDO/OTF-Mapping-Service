@@ -12,10 +12,15 @@ import javax.persistence.MappedSuperclass;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 
+import org.hibernate.envers.Audited;
+import org.ihtsdo.otf.mapping.model.Description;
+import org.ihtsdo.otf.mapping.model.DescriptionRefSetMember;
+
 /**
  * Abstract implementation of {@link DescriptionRefSetMember}.
  */
 @MappedSuperclass
+@Audited
 public abstract class AbstractDescriptionRefSetMember extends
 		AbstractRefSetMember implements DescriptionRefSetMember {
 	

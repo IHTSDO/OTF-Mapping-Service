@@ -1,15 +1,18 @@
 package org.ihtsdo.otf.mapping.jpa;
 
-import org.ihtsdo.otf.mapping.model.LanguageRefSetMember;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
+import org.hibernate.envers.Audited;
+import org.ihtsdo.otf.mapping.model.LanguageRefSetMember;
 
 /**
  * Concrete implementation of {@link LanguageRefSetMember}.
  */
 @Entity
 @Table (name = "language_refset_members")
+@Audited
 public class LanguageRefSetMemberJpa extends AbstractDescriptionRefSetMember
 		implements LanguageRefSetMember {
 	

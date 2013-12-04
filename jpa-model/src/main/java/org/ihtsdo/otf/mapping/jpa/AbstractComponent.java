@@ -11,6 +11,7 @@ import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
@@ -20,6 +21,7 @@ import org.ihtsdo.otf.mapping.model.Component;
 /**
  * Abstract implementation of {@link Component} for use with JPA.
  */
+@Audited
 @MappedSuperclass
 public abstract class AbstractComponent implements Component {
 

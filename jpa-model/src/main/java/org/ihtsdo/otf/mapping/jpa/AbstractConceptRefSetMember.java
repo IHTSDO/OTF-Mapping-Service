@@ -6,6 +6,7 @@ import javax.persistence.MappedSuperclass;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 
+import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.model.ConceptRefSetMember;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
  * Abstract implementation of {@link ConceptRefSetMember}.
  */
 @MappedSuperclass
+@Audited
 public abstract class AbstractConceptRefSetMember extends AbstractRefSetMember
 		implements ConceptRefSetMember {
 	
