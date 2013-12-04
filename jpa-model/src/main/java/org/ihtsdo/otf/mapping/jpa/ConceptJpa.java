@@ -354,7 +354,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * {@inheritDoc}
 	 */
 	@Override
-	 public String toString() {
+	public String toString() {
 		 
 		 return this.getId() + "," +
 				 this.getTerminology() + "," +

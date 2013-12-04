@@ -26,5 +26,21 @@ public class SimpleMapRefSetMemberImpl extends AbstractConceptRefSetMember
 	public void setMapTarget(String mapTarget) {
 		this.mapTarget = mapTarget;
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
 
+				 (this.getConcept() == null ? null : this.getConcept().getTerminologyId()) + "," +
+				 this.getMapTarget();
+			
+	}
 }

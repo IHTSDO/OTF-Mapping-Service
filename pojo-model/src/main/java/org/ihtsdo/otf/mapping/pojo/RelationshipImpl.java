@@ -178,8 +178,8 @@ public class RelationshipImpl extends AbstractComponent implements Relationship 
 				 this.isActive() + "," +
 				 this.getModuleId() + "," +// end of basic component fields
 				 
-				 (this.getSourceConcept() == null ? null : this.getSourceConcept().getId()) + "," +
-				 (this.getDestinationConcept() == null ? null : this.getDestinationConcept().getId()) + "," +
+				 (this.getSourceConcept() == null ? null : this.getSourceConcept().getTerminologyId()) + "," +
+				 (this.getDestinationConcept() == null ? null : this.getDestinationConcept().getTerminologyId()) + "," +
 				 this.getRelationshipGroup() + "," +
 				 this.getTypeId() + "," +	
 				 this.getCharacteristicTypeId() + "," +

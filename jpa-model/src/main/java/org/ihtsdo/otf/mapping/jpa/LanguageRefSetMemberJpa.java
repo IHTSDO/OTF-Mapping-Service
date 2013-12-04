@@ -37,11 +37,20 @@ public class LanguageRefSetMemberJpa extends AbstractDescriptionRefSetMember
 
 	}
 	
-	 /**
-     * {@inheritDoc}
-     */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
-		return String.valueOf(getRefSetId());
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+				 this.getModuleId() + "," + // end of basic component fields
+				 
+				 (this.getDescription() == null ? null : getDescription().getTerminologyId()) + "," +
+				 this.getAcceptabilityId();
 	}
 }

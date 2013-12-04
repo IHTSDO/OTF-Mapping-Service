@@ -15,12 +15,19 @@ import org.ihtsdo.otf.mapping.model.SimpleRefSetMember;
 public class SimpleRefSetMemberJpa extends AbstractConceptRefSetMember
 		implements SimpleRefSetMember {
 	
-	 /**
-     * {@inheritDoc}
-     */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
-		return String.valueOf(getRefSetId());
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+	
+				 (this.getConcept() == null ? null : this.getConcept().getTerminologyId());
 	}
 
 }
