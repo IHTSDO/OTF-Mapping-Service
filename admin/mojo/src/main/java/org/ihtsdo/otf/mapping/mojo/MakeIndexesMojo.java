@@ -3,37 +3,44 @@ package org.ihtsdo.otf.mapping.mojo;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import org.hibernate.CacheMode;
-import org.hibernate.search.FullTextFilter;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.jpa.Search;
-import org.hibernate.search.store.DirectoryProvider;
-
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.hibernate.CacheMode;
 import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.jpa.ConceptJpa;
 
 /**
- * Goal which updates the db to sync it with the model via JPA.
+ * Goal which makes lucene indexes based on hibernate-search annotations.
  * 
  * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>makeIndexes</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>makeIndexes</goal>
- *           </goals>
- *         </execution>
- *       </executions>
- *     </plugin>
+ *      <plugin>
+ *         <groupId>org.ihtsdo.otf.mapping</groupId>
+ *         <artifactId>mapping-admin-mojo</artifactId>
+ *         <version>${project.version}</version>
+ *         <dependencies>
+ *           <dependency>
+ *             <groupId>org.ihtsdo.otf.mapping</groupId>
+ *             <artifactId>mapping-admin-lucene-config</artifactId>
+ *             <version>${project.version}</version>
+ *             <scope>system</scope>
+ *             <systemPath>${project.build.directory}/mapping-admin-lucene-${project.version}.jar</systemPath>
+ *           </dependency>
+ *         </dependencies>
+ *         <executions>
+ *           <execution>
+ *             <id>makeindexes</id>
+ *             <phase>package</phase>
+ *             <goals>
+ *               <goal>makeindexes</goal>
+ *             </goals>
+ *             <configuration>
+ *               <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+ *             </configuration>
+ *           </execution>
+ *         </executions>
+ *       </plugin>
  * </pre>
  * 
  * @goal makeindexes
