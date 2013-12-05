@@ -205,5 +205,24 @@ public class DescriptionImpl extends AbstractComponent implements Description {
 	public void removeLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) {
 		this.languageRefSetMembers.remove(languageRefSetMember);
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	 public String toString() {
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+				 this.getModuleId() + "," +// end of basic component fields
+				 
+				 (this.getConcept() == null ? null : this.getConcept().getTerminologyId()) + "," +
+				 this.getTypeId() + "," +	
+				 this.getTerm() + "," +
+				 this.getCaseSignificanceId();
+	 }
+
 
 }

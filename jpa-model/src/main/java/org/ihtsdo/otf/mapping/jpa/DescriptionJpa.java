@@ -237,9 +237,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	/**
 	 * {@inheritDoc}
 	 */
-	 @Override
-	public String toString() {
-		 return this.getId() + "," +
+	 public String toString() {		 return this.getId() + "," +
 				 this.getTerminology() + "," +
 				 this.getTerminologyId() + "," +
 				 this.getTerminologyVersion() + "," +
@@ -247,7 +245,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 				 this.isActive() + "," +
 				 this.getModuleId() + "," + // end of basic component fields
 				 
-				 (this.getConcept() == null ? null : getConcept().getId()) + "," +
+				 (this.getConcept() == null ? null : getConcept().getTerminologyId()) + "," +
 				 this.getLanguageCode() + "," +
 				 this.getTypeId() + "," +
 				 this.getTerm() + "," +

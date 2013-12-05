@@ -46,11 +46,11 @@
       <artifactId>hibernate-core</artifactId>
     </dependency>
     <dependency>
-        <groupId>org.hibernate</groupId>
-        <artifactId>hibernate-envers</artifactId>
-        <version>4.0.1.Final</version>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-envers</artifactId>
+      <version>4.0.1.Final</version>
     </dependency>
-      <dependency>
+    <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search</artifactId>
     </dependency>
@@ -111,6 +111,10 @@
     <dependency>
       <groupId>asm</groupId>
       <artifactId>asm</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.wordnik</groupId>
+      <artifactId>swagger-jersey-jaxrs_2.10</artifactId>
     </dependency>
   </dependencies>
 

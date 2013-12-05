@@ -27,4 +27,22 @@ public class LanguageRefSetMemberImpl extends AbstractDescriptionRefSetMember
 		this.acceptabilityId = acceptabilityId;
 
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	 public String toString() {
+		 
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+				 this.getModuleId() + "," + // end of basic component fields
+				 
+				(this.getDescription() == null ? null : this.getDescription().getTerminologyId());
+				
+	 }
 }

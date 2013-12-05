@@ -37,11 +37,19 @@ public class AttributeValueRefSetMemberJpa extends
 	}
 	
 	/**
-    * {@inheritDoc}
-    */
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
-		return String.valueOf(getRefSetId());
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+
+ 				 (this.getConcept() == null ? null : this.getConcept().getTerminologyId()) + "," +
+ 				 this.getValueId();
 	}
 
 

@@ -38,7 +38,7 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
 	private int mapPriority;
 	
 	/** the map rule */
-	@Column (nullable = false)
+	@Column (nullable = true)
 	private String mapRule;
 	
 	/** the map advice */
@@ -198,12 +198,29 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
 		this.mapRelationId = mapRelationId;
 	}
 	
-	 /**
-     * {@inheritDoc}
-     */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
-		return String.valueOf(getRefSetId());
+		 return this.getId() + "," +
+				 this.getTerminology() + "," +
+				 this.getTerminologyId() + "," +
+				 this.getTerminologyVersion() + "," +
+				 this.getEffectiveTime() + "," +
+				 this.isActive() + "," +
+
+				 (this.getConcept() == null ? null : this.getConcept().getTerminologyId()) + "," +
+				 Integer.toString(this.getMapGroup()) + "," +
+				 Integer.toString(this.getMapPriority()) + "," +
+				 this.getMapRule() + "," +
+				 this.getMapAdvice() + "," +
+				 this.getMapTarget() + "," +
+				 this.getMapRelationId() + "," +
+				 
+ 				 Integer.toString(this.getMapBlock()) + "," +
+				 this.getMapBlockRule() + "," +
+				 this.getMapBlockAdvice();
 	}
 
 }
