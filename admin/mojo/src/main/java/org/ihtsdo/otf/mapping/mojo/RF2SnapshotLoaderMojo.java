@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -1490,7 +1489,7 @@ private void loadSimpleRefSets() throws Exception {
 	while ((line = simple_refsets_by_concept.readLine()) != null) {
 		
 		String fields[] = line.split("\t");
-		SimpleMapRefSetMember simpleRefSetMember = new SimpleMapRefSetMemberJpa();
+		SimpleRefSetMember simpleRefSetMember = new SimpleRefSetMemberJpa();
 		
 		if (!fields[0].equals("id")) { // header
 			

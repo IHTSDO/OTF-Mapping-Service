@@ -38,6 +38,7 @@
               value="filesystem" />
             <property name="hibernate.search.default.indexBase" value="${user.home}/mapping/lucene/indexes" />
 
+
             <!-- JDBC properties. -->
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
             <property name="javax.persistence.jdbc.url" value="${mysql.url}" />
