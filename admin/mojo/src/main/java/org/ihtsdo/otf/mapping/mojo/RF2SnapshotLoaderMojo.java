@@ -759,8 +759,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			query.setParameter("terminologyVersion", terminologyVersion);
 
 			Description d = (Description) query.getSingleResult();
-			
-			getLog().info("query for " + terminologyId);
 
 			descriptionCache.put(terminologyId + terminology + terminologyVersion, d.getId());
 			
