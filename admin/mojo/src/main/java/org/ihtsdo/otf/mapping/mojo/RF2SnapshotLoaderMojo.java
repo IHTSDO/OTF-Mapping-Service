@@ -45,22 +45,22 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
-import org.ihtsdo.otf.mapping.jpa.AttributeValueRefSetMemberJpa;
-import org.ihtsdo.otf.mapping.jpa.ComplexMapRefSetMemberJpa;
-import org.ihtsdo.otf.mapping.jpa.ConceptJpa;
-import org.ihtsdo.otf.mapping.jpa.DescriptionJpa;
-import org.ihtsdo.otf.mapping.jpa.LanguageRefSetMemberJpa;
-import org.ihtsdo.otf.mapping.jpa.RelationshipJpa;
-import org.ihtsdo.otf.mapping.jpa.SimpleMapRefSetMemberJpa;
-import org.ihtsdo.otf.mapping.jpa.SimpleRefSetMemberJpa;
-import org.ihtsdo.otf.mapping.model.AttributeValueRefSetMember;
-import org.ihtsdo.otf.mapping.model.ComplexMapRefSetMember;
-import org.ihtsdo.otf.mapping.model.Concept;
-import org.ihtsdo.otf.mapping.model.Description;
-import org.ihtsdo.otf.mapping.model.LanguageRefSetMember;
-import org.ihtsdo.otf.mapping.model.Relationship;
-import org.ihtsdo.otf.mapping.model.SimpleMapRefSetMember;
-import org.ihtsdo.otf.mapping.model.SimpleRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Description;
+import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.Relationship;
+import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.jpa.AttributeValueRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 
 /**
  * Goal which loads an RF2 Snapshot of SNOMED CT data into a database.
