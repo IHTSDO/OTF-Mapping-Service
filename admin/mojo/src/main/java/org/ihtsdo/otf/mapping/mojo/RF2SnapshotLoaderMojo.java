@@ -273,6 +273,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		FileInputStream propertiesInputStream = null;
 		try {
 			
 			startTimeOrig = System.nanoTime();
@@ -282,12 +283,15 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					
 		    // load Properties file
 			Properties  properties = new Properties();
-			FileInputStream propertiesInputStream = new FileInputStream(propertiesFile);
+			propertiesInputStream = new FileInputStream(propertiesFile);
 			properties.load(propertiesInputStream);
 		     
 			// set the input directory
 			coreInputDirString = properties.getProperty("loader.input.data");
 			coreInputDir = new File(coreInputDirString);
+			if (!coreInputDir.exists()) {
+				throw new MojoFailureException("Specified loader.input.data directory does not exist: " + coreInputDirString);
+			}
 		     
 			// set the parameters for determining defaultPreferredNames
 			dpnTypeId = Long.valueOf(properties.getProperty("loader.defaultPreferredNames.typeId"));      
@@ -459,6 +463,12 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);
+		} finally {
+			try {
+				propertiesInputStream.close();
+			} catch (IOException e) {
+				// do nothing
+			}
 		}
 	}
 	/**
@@ -1648,7 +1658,7 @@ private void loadExtendedMapRefSets() throws Exception {
 			// set Concept
 			complexMapRefSetMember.setConcept(getConcept(fields[5], complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion()));
 			
-			getLog().info(complexMapRefSetMember.toString());
+			getLog().debug(complexMapRefSetMember.toString());
 			manager.persist(complexMapRefSetMember);
 			
 			i++;
