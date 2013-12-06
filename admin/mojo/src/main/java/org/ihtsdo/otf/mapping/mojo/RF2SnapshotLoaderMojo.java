@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -248,11 +247,10 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	/** The envers audit manager */
 	private AuditReader reader;
 	
-	// TODO: caching for older version, replace with manager.find
+	/** hash sets for faster loading */
     private Map<String, Concept> conceptCache = new HashMap<>(); // used to speed Concept assignment to ConceptRefSetMembers
 	private Map<String, Long> descriptionCache = new HashMap<>(); // speeds Description assignment to DescriptionRefSetMembers
 	
-
 	/** Efficiency testing */
 	private long startTime, startTimeOrig;
 	int i;
@@ -312,6 +310,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			getVersion();
 			
 			// Prepare sorted input files
+			sorted_files = new File(coreInputDir, "/RF2-sorted-temp/");
 			getLog().info("Sorting Files...");
 			startTime = System.nanoTime();
 			prepareSortedFiles();
@@ -389,13 +388,14 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					getLog().info(Integer.toString(i) + " Language RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
 				
+				// contain all the rest in single transaction to minimize envers versioning
+				tx.begin();
+				
 				 // load Relationships
 				if (relationships_by_source_concept != null) {
 					getLog().info("Loading Relationships...");
 					startTime = System.nanoTime();
-					tx.begin();
 					loadRelationships();
-					tx.commit();
 					getLog().info(Integer.toString(i) + " Relationships loaded in " + getElapsedTime().toString() + "s");
 				}
 
@@ -403,9 +403,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (simple_refsets_by_concept != null) {
 					getLog().info("Loading Simple RefSets...");
 					startTime = System.nanoTime();
-					tx.begin();
 					loadSimpleRefSets();
-					tx.commit();
 					getLog().info(Integer.toString(i) + " Simple RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
 				
@@ -413,32 +411,23 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (simple_map_refsets_by_concept != null) {
 					getLog().info("Loading SimpleMap RefSets...");
 					startTime = System.nanoTime();
-					tx.begin();
 					loadSimpleMapRefSets();
-					tx.commit();
 					getLog().info(Integer.toString(i) + " SimpleMap RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
 				
-
 				// load ComplexMapRefSets
 				if (complex_map_refsets_by_concept != null) {
 					getLog().info("Loading ComplexMap RefSets...");
 					startTime = System.nanoTime();
-					tx.begin();
 					loadComplexMapRefSets();
-					tx.commit();
 					getLog().info(Integer.toString(i) + " ComplexMap RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
-	
-				
 				
 				// load ExtendedMapRefSets
 				if (extended_map_refsets_by_concept != null) {
 					getLog().info("Loading ExtendedMap RefSets...");
 					startTime = System.nanoTime();
-					tx.begin();
 					loadExtendedMapRefSets();
-					tx.commit();
 					getLog().info(Integer.toString(i) + " ExtendedMap RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
 				
@@ -446,11 +435,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (attribute_refsets_by_concept != null) {
 					getLog().info("Loading AttributeValue RefSets...");	
 					startTime = System.nanoTime();
-					tx.begin();
 					loadAttributeValueRefSets();
-					tx.commit();
 					getLog().info(Integer.toString(i) + " AttributeValue RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
+				
+				getLog().info("Committing...");
+				
+				tx.commit();
 				
 				getLog().info("Total elapsed time for run: " + getTotalElapsedTimeStr());
 				
@@ -463,6 +454,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			manager.close();
 			factory.close();
 			closeAllSortedFiles();
+			// deleteSortedFiles(sorted_files);
 
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -523,8 +515,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		// ******************** //
 		// Initial file set up  //
 		// ******************** //
-		
-		sorted_files 							= new File(coreInputDir, "/RF2-sorted-temp/");
 		
 		// delete any existing temporary files
 		deleteSortedFiles(sorted_files);
@@ -1490,7 +1480,7 @@ private void loadSimpleRefSets() throws Exception {
 	while ((line = simple_refsets_by_concept.readLine()) != null) {
 		
 		String fields[] = line.split("\t");
-		SimpleMapRefSetMember simpleRefSetMember = new SimpleMapRefSetMemberJpa();
+		SimpleRefSetMember simpleRefSetMember = new SimpleRefSetMemberJpa();
 		
 		if (!fields[0].equals("id")) { // header
 			
