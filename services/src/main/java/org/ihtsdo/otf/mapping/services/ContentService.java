@@ -2,7 +2,7 @@ package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
 
-import org.ihtsdo.otf.mapping.model.Concept;
+import org.ihtsdo.otf.mapping.rf2.Concept;
 
 public interface ContentService {
 	

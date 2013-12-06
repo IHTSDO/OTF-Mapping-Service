@@ -9,7 +9,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.hibernate.CacheMode;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.jpa.ConceptJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 
 /**
  * Goal which makes lucene indexes based on hibernate-search annotations.

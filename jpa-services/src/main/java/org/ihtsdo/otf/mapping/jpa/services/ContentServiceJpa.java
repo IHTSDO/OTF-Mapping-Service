@@ -23,10 +23,10 @@ import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.jpa.AbstractComponent;
-import org.ihtsdo.otf.mapping.jpa.ConceptJpa;
-import org.ihtsdo.otf.mapping.jpa.DescriptionJpa;
-import org.ihtsdo.otf.mapping.model.Concept;
+import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent;
+import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 public class ContentServiceJpa implements ContentService {

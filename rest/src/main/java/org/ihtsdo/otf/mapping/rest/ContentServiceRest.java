@@ -9,7 +9,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.model.Concept;
+import org.ihtsdo.otf.mapping.rf2.Concept;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
