@@ -23,7 +23,9 @@ import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.jpa.AbstractComponent;
 import org.ihtsdo.otf.mapping.jpa.ConceptJpa;
+import org.ihtsdo.otf.mapping.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.model.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
@@ -87,8 +89,6 @@ public class ContentServiceJpa implements ContentService {
 	@Override
 	public Concept getConcept(Long conceptId) {
 		manager = factory.createEntityManager();
-		//Concept cpt = manager.find(ConceptJpa.class, conceptId);
-		//manager.detach(cpt);
 		javax.persistence.Query query = manager.createQuery("select c from ConceptJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
 		
 		/*
@@ -106,7 +106,7 @@ public class ContentServiceJpa implements ContentService {
 
 			Concept c = (Concept) query.getSingleResult();
 
-			System.out.println("Returning cid... " + ((c != null) ? c.getId().toString() : "null"));
+			System.out.println("Returning cid... " + ((c != null) ? c.getTerminologyId().toString() : "null"));
 			return c;
 			
 		} catch (NoResultException e) {
@@ -116,8 +116,6 @@ public class ContentServiceJpa implements ContentService {
 			System.out.println("Concept query for terminologyId = " + conceptId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned multiple results!");
 			return null;
 		}	
-		//manager.close();
-		//return cpt;
 	}
 
 	/*
@@ -153,10 +151,13 @@ public class ContentServiceJpa implements ContentService {
 
 				FullTextQuery fullTextQuery =
 						fullTextEntityManager.createFullTextQuery(luceneQuery);
-				List<ConceptJpa> results = fullTextQuery.getResultList();
+				List<AbstractComponent> results = fullTextQuery.getResultList();
 				List<String> conceptIds = new ArrayList<String>();
-				for (ConceptJpa s : results) {
-					conceptIds.add(s.getTerminologyId());
+				for (AbstractComponent s : results) {
+					if (s instanceof ConceptJpa)
+					  conceptIds.add(s.getTerminologyId());
+					else if (s instanceof DescriptionJpa) 
+						conceptIds.add(((DescriptionJpa)s).getConcept().getTerminologyId());
 				}
 				return conceptIds;
 

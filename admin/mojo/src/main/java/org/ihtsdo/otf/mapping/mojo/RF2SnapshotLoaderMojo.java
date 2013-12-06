@@ -355,7 +355,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				getLog().info("concept records deleted: " + deleteRecords);
 				
 				tx.commit();
-	
+			
 				// load Concepts
 				if (concepts_by_concept != null) {
 					startTime = System.nanoTime();
@@ -419,6 +419,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					getLog().info(Integer.toString(i) + " SimpleMap RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
 				
+
 				// load ComplexMapRefSets
 				if (complex_map_refsets_by_concept != null) {
 					getLog().info("Loading ComplexMap RefSets...");
@@ -428,6 +429,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					tx.commit();
 					getLog().info(Integer.toString(i) + " ComplexMap RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
+	
+				
 				
 				// load ExtendedMapRefSets
 				if (extended_map_refsets_by_concept != null) {
@@ -557,9 +560,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		
 		sort_RF2_files();	
 		
-		// **************** //
-		// Open files       //
-		// **************** //
+		// ************************* //
+		// Test and open files       //
+		// ************************* //
 		
 		// Concepts
 		try {
@@ -631,6 +634,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			getLog().info("Could not open " + extended_map_refsets_by_concept_file.toString());
 		}
 	}
+	
+
+	
 	/**
 	 * Sorts all files by concept or referencedComponentId
 	 * 
@@ -638,141 +644,56 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 */
 	private void sort_RF2_files() throws Exception {
 		
-		Comparator<String> comp;
-		
 		// ****************//
 		// Components      //
 		// ****************//
 		
-		// Concepts sorted on Id, first field
-		comp = new Comparator<String>() {
-				public int compare(String s1, String s2) {
-					String v1[] = s1.split("\t");
-					String v2[] = s2.split("\t"); 
-					return v1[0].compareTo(v2[0]);
-				}
-		};	
-		getLog().info("Sorting " + coreConceptInputFile.toString() + " by concept into " + concepts_by_concept_file.toString());
-		sort(coreConceptInputFile.toString(), concepts_by_concept_file.toString(), comp);
+		sort_RF2_file(coreConceptInputFile, concepts_by_concept_file, 0);
+		sort_RF2_file(coreDescriptionInputFile, descriptions_by_description_file, 0);
+		sort_RF2_file(coreDescriptionInputFile, descriptions_by_concept_file, 4);
+		sort_RF2_file(coreRelInputFile, relationships_by_source_concept_file, 4);
+		sort_RF2_file(coreRelInputFile, relationships_by_dest_concept_file, 5);
 		
-		// Descriptions sorted on Id, first field
-		comp = new Comparator<String>() {
-			public int compare(String s1, String s2) {
-				String v1[] = s1.split("\t");
-				String v2[] = s2.split("\t"); 
-				return v1[0].compareTo(v2[0]);
-			}
-		};
-		getLog().info("Sorting " + coreDescriptionInputFile.toString() + " by description into " + descriptions_by_description_file.toString());
-		sort(coreDescriptionInputFile.toString(), descriptions_by_description_file.toString(), comp);
+		// ****************//
+		// RefSets         //
+		// ****************//
+		sort_RF2_file(coreAttributeValueInputFile, attribute_refsets_by_concept_file, 5);
+		sort_RF2_file(coreSimpleRefsetInputFile, simple_refsets_by_concept_file, 5);
+		sort_RF2_file(coreSimpleMapInputFile, simple_map_refsets_by_concept_file, 5);
+		sort_RF2_file(coreComplexMapInputFile, complex_map_refsets_by_concept_file, 5);
+		sort_RF2_file(coreExtendedMapInputFile, extended_map_refsets_by_concept_file, 5);
+		sort_RF2_file(coreLanguageInputFile, language_refsets_by_description_file, 4);
 		
-		// Descriptions sorted on conceptId, fifth field
-		comp = new Comparator<String>() {
-			public int compare(String s1, String s2) {
-				String v1[] = s1.split("\t");
-				String v2[] = s2.split("\t"); 
-				return v1[4].compareTo(v2[4]);
-			}
-		};
-		getLog().info("Sorting " + coreDescriptionInputFile.toString() + " by concept into " + descriptions_by_concept_file.toString());
-		sort(coreDescriptionInputFile.toString(), descriptions_by_concept_file.toString(), comp);
-				
-		// Relationships sorted by source conceptId, fifth field
-		comp = new Comparator<String>() {
-			public int compare(String s1, String s2) {
-				String v1[] = s1.split("\t");
-				String v2[] = s2.split("\t"); 
-				return v1[4].compareTo(v2[4]);
-			}
-		};
-		sort(coreRelInputFile.toString(), relationships_by_source_concept_file.toString(), comp);
-		
-		
-		 // Relationships sorted by destination conceptId, sixth field
-		comp = new Comparator<String>() {
-			public int compare(String s1, String s2) {
-				String v1[] = s1.split("\t");
-				String v2[] = s2.split("\t"); 
-				return v1[5].compareTo(v2[5]);
-			}
-		};
-		sort(coreRelInputFile.toString(), relationships_by_dest_concept_file.toString(), comp);
-		
-		
-		// ******************//
-		// Component RefSets //
-		// ******************//
-		// Attribute value refsets are sorted on referencedComponentId, sixth field
-		comp = new Comparator<String>() {
-				public int compare(String s1, String s2) {
-					String v1[] = s1.split("\t");
-					String v2[] = s2.split("\t"); 
-					return v1[5].compareTo(v2[5]);
-				}
-		};
-		getLog().info("Sorting " + coreAttributeValueInputFile.toString() + " by concept into " + attribute_refsets_by_concept_file.toString());
-		sort(coreAttributeValueInputFile.toString(), attribute_refsets_by_concept_file.toString(), comp);
-		
-		// Simple refsets are sorted on referencedComponentId, sixth field
-		comp = new Comparator<String>() {
-				public int compare(String s1, String s2) {
-					String v1[] = s1.split("\t");
-					String v2[] = s2.split("\t"); 
-					return v1[5].compareTo(v2[5]);
-				}
-		};
-		getLog().info("Sorting " + coreSimpleRefsetInputFile.toString() + " by concept into " + simple_refsets_by_concept_file.toString());
-		sort(coreSimpleRefsetInputFile.toString(), simple_refsets_by_concept_file.toString(), comp);
-		
-		// Simple map refsets are sorted on referencedComponentId, sixth field
-		comp = new Comparator<String>() {
-				public int compare(String s1, String s2) {
-					String v1[] = s1.split("\t");
-					String v2[] = s2.split("\t"); 
-					return v1[5].compareTo(v2[5]);
-				}
-		};
-		getLog().info("Sorting " + coreSimpleMapInputFile.toString() + " by concept into " + simple_map_refsets_by_concept_file.toString());
-		sort(coreSimpleMapInputFile.toString(), simple_map_refsets_by_concept_file.toString(), comp);
-		
-		// Complex map refsets are sorted on referencedComponentId, sixth field
-		comp = new Comparator<String>() {
-				public int compare(String s1, String s2) {
-					String v1[] = s1.split("\t");
-					String v2[] = s2.split("\t"); 
-					return v1[5].compareTo(v2[5]);
-				}
-		};
-		getLog().info("Sorting " + coreComplexMapInputFile.toString() + " by concept into " + complex_map_refsets_by_concept_file.toString());
-		sort(coreComplexMapInputFile.toString(), complex_map_refsets_by_concept_file.toString(), comp);
-		
-		// Extended map refsets are sorted on referencedComponentId, sixth field
-		comp = new Comparator<String>() {
-				public int compare(String s1, String s2) {
-					String v1[] = s1.split("\t");
-					String v2[] = s2.split("\t"); 
-					return v1[5].compareTo(v2[5]);
-				}
-		};
-		getLog().info("Sorting " + coreExtendedMapInputFile.toString() + " by concept into " + extended_map_refsets_by_concept_file.toString());
-		sort(coreExtendedMapInputFile.toString(), extended_map_refsets_by_concept_file.toString(), comp);
-	
-		// *********************//
-		// Description RefSets  //
-		// *********************//
-		
-		// Language RefSets sorted on DescriptionId
-		comp = new Comparator<String>() {
-			public int compare(String s1, String s2) {
-				String v1[] = s1.split("\t");
-				String v2[] = s2.split("\t"); 
-				return v1[4].compareTo(v2[4]);
-			}
-		};
-		sort(coreLanguageInputFile.toString(), language_refsets_by_description_file.toString(), comp);
 		
 	}
 	
+	
+	/**
+	 * Helper function for sorting an individual file with colum comparator
+	 * @param file_in the input file to be sorted
+	 * @param file_out the resulting sorted file
+	 * @param sort_column the column ([0, 1, ...] to compare by
+	 * @throws Exception the exception
+	 */
+	private void sort_RF2_file(File file_in, File file_out, final int sort_column) throws Exception {
+		
+		Comparator<String> comp;
+		
+		comp = new Comparator<String>() {
+			public int compare(String s1, String s2) {
+				String v1[] = s1.split("\t");
+				String v2[] = s2.split("\t"); 
+				return v1[sort_column].compareTo(v2[sort_column]);
+			}
+		};	
+		
+		try {
+			getLog().info("Sorting " + file_in.toString() + "  into " + file_out.toString() + " by column " + Integer.toString(sort_column));
+			sort(file_in.toString(), file_out.toString(), comp);
+		} catch (Exception e) {
+		}
+		
+	}
 	
 	
 	/**
@@ -1119,15 +1040,15 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 * @throws Exception if something goes wrong
 	 */	
 	private void closeAllSortedFiles() throws Exception {
-		 concepts_by_concept.close();
-		descriptions_by_description.close();
-		relationships_by_source_concept.close();
-		language_refsets_by_description.close();
-		attribute_refsets_by_concept.close();
-		simple_refsets_by_concept.close(); 
-		simple_map_refsets_by_concept.close(); 
-		complex_map_refsets_by_concept.close();
-		extended_map_refsets_by_concept.close();
+		if (concepts_by_concept != null) {concepts_by_concept.close();}
+		if (descriptions_by_description != null) {descriptions_by_description.close();}
+		if (relationships_by_source_concept != null) {relationships_by_source_concept.close();}
+		if (language_refsets_by_description != null) {language_refsets_by_description.close();}
+		if (attribute_refsets_by_concept != null) {attribute_refsets_by_concept.close();}
+		if (simple_refsets_by_concept != null) {simple_refsets_by_concept.close(); }
+		if (simple_map_refsets_by_concept != null) {simple_map_refsets_by_concept.close(); }
+		if (complex_map_refsets_by_concept != null) {complex_map_refsets_by_concept.close();}
+		if (extended_map_refsets_by_concept!= null) {extended_map_refsets_by_concept.close();}
 	}
 	
 	/**
@@ -1404,23 +1325,22 @@ private void loadConcepts() throws Exception {
 	
 	while ((line = concepts_by_concept.readLine()) != null ) {
 		
-		StringTokenizer st = new StringTokenizer(line, "\t");
+		String fields[] = line.split("\t");
 		Concept concept = new ConceptJpa();
-		String firstToken = st.nextToken();
 		
-		if (!firstToken.equals("id")) { // header
-			concept.setTerminologyId(firstToken);
-			concept.setEffectiveTime(dt.parse(st.nextToken()));
-			concept.setActive(st.nextToken().equals("1") ? true : false);
-			concept.setModuleId(Long.valueOf(st.nextToken()));
-			concept.setDefinitionStatusId(Long.valueOf(st.nextToken()));
+		if (!fields[0].equals("id")) { // header
+			concept.setTerminologyId(fields[0]);
+			concept.setEffectiveTime(dt.parse(fields[1]));
+			concept.setActive(fields[2].equals("1") ? true : false);
+			concept.setModuleId(Long.valueOf(fields[3]));
+			concept.setDefinitionStatusId(Long.valueOf(fields[4]));
 			concept.setTerminology("SNOMEDCT");
 			concept.setTerminologyVersion(version);
 			concept.setDefaultPreferredName("null");
 
 			manager.persist(concept);
 			
-			conceptCache.put(new String(firstToken  + concept.getTerminology() + concept.getTerminologyVersion()), concept);
+			conceptCache.put(new String(fields[0]  + concept.getTerminology() + concept.getTerminologyVersion()), concept);
 			
 			i++;
 		}
@@ -1440,27 +1360,24 @@ private void loadRelationships() throws Exception {
 	
 	while ((line = relationships_by_source_concept.readLine()) != null) {
 		
-		StringTokenizer st = new StringTokenizer(line, "\t");
+		String fields[] = line.split("\t");
 		Relationship relationship = new RelationshipJpa();
-		String firstToken = st.nextToken();
 		
-		if (!firstToken.equals("id")) { // header
-			relationship.setTerminologyId(firstToken);
-			relationship.setEffectiveTime(dt.parse(st.nextToken()));
-			relationship.setActive(st.nextToken().equals("1") ? true : false); // active
-			relationship.setModuleId(Long.valueOf(st.nextToken())); // moduleId
-			String source = st.nextToken(); // sourceId
-			String target = st.nextToken(); // destinationId
+		if (!fields[0].equals("id")) { // header
+			relationship.setTerminologyId(fields[0]);
+			relationship.setEffectiveTime(dt.parse(fields[1]));
+			relationship.setActive(fields[2].equals("1") ? true : false); // active
+			relationship.setModuleId(Long.valueOf(fields[3])); // moduleId
 			
-			relationship.setRelationshipGroup(Integer.valueOf(st.nextToken())); // relationshipGroup
-			relationship.setTypeId(Long.valueOf(st.nextToken())); // typeId
+			relationship.setRelationshipGroup(Integer.valueOf(fields[6])); // relationshipGroup
+			relationship.setTypeId(Long.valueOf(fields[7])); // typeId
 			relationship.setCharacteristicTypeId(Long.valueOf("1")); // characteristicTypeId
 			relationship.setTerminology("SNOMEDCT");
 			relationship.setTerminologyVersion(version);
 			relationship.setModifierId(Long.valueOf("2"));
 			
-			relationship.setSourceConcept(getConcept(source, relationship.getTerminology(), relationship.getTerminologyVersion()));
-			relationship.setDestinationConcept(getConcept(target, relationship.getTerminology(), relationship.getTerminologyVersion()));
+			relationship.setSourceConcept(getConcept(fields[4], relationship.getTerminology(), relationship.getTerminologyVersion()));
+			relationship.setDestinationConcept(getConcept(fields[5], relationship.getTerminology(), relationship.getTerminologyVersion()));
 		
 			manager.persist(relationship);
 			
@@ -1482,38 +1399,33 @@ private void loadDescriptions() throws Exception {
 	
 	String line = "";
 	i = 0;
-	Concept concept; 
 	
 	// keep concepts from extension descriptions
 	while ((line = descriptions_by_description.readLine()) != null) {
 		
-		StringTokenizer st = new StringTokenizer(line, "\t");
+		String fields[] = line.split("\t");
 		Description description = new DescriptionJpa();
-		String firstToken = st.nextToken();
 		
-		if (!firstToken.equals("id")) { // header
+		if (!fields[0].equals("id")) { // header
 			
-			description.setTerminologyId(firstToken);
-			description.setEffectiveTime(dt.parse(st.nextToken()));
-			description.setActive(st.nextToken().equals("1") ? true : false);
-			description.setModuleId(Long.valueOf(st.nextToken()));
-			String conceptId = st.nextToken(); // conceptId
+			description.setTerminologyId(fields[0]);
+			description.setEffectiveTime(dt.parse(fields[1]));
+			description.setActive(fields[2].equals("1") ? true : false);
+			description.setModuleId(Long.valueOf(fields[3]));
 			
-			description.setLanguageCode(st.nextToken());
-			description.setTypeId(Long.valueOf(st.nextToken()));
-			description.setTerm(st.nextToken());
-			description.setCaseSignificanceId(Long.valueOf(st.nextToken()));
+			description.setLanguageCode(fields[5]);
+			description.setTypeId(Long.valueOf(fields[6]));
+			description.setTerm(fields[7]);
+			description.setCaseSignificanceId(Long.valueOf(fields[8]));
 			description.setTerminology("SNOMEDCT");
 			description.setTerminologyVersion(version);
 			
-			
-			concept = getConcept(conceptId, description.getTerminology(), description.getTerminologyVersion());
-			description.setConcept(concept);
+			description.setConcept(getConcept(fields[4], description.getTerminology(), description.getTerminologyVersion()));
 			
 			manager.persist(description);
 			
 			// add to index
-			descriptionCache.put(firstToken + description.getTerminology() + description.getTerminologyVersion(), description.getId()); 
+			descriptionCache.put(fields[0] + description.getTerminology() + description.getTerminologyVersion(), description.getId()); 
 		
 			i++;
 		}
@@ -1531,33 +1443,31 @@ private void loadAttributeValueRefSets() throws Exception {
 	
 	String line = "";
 	i = 0;
-	String conceptId = "";
-	
+		
 	while ((line = attribute_refsets_by_concept.readLine()) != null) {
 		
-		StringTokenizer st = new StringTokenizer(line, "\t");
+		String fields[] = line.split("\t");
 		AttributeValueRefSetMember attributeValueRefSetMember = new AttributeValueRefSetMemberJpa();
-		String firstToken = st.nextToken();
 		
-		if (!firstToken.equals("id")) { // header
+		if (!fields[0].equals("id")) { // header
 			
 			// Universal RefSet attributes
-			attributeValueRefSetMember.setTerminologyId(firstToken);
-			attributeValueRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
-			attributeValueRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
-			attributeValueRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
-			attributeValueRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
-			conceptId = st.nextToken(); // referencedComponentId
+			attributeValueRefSetMember.setTerminologyId(fields[0]);
+			attributeValueRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+			attributeValueRefSetMember.setActive(fields[2].equals("1") ? true : false);
+			attributeValueRefSetMember.setModuleId(Long.valueOf(fields[3]));
+			attributeValueRefSetMember.setRefSetId(Long.valueOf(fields[4]));
+			
 			
 			// AttributeValueRefSetMember unique attributes
-			attributeValueRefSetMember.setValueId(Long.valueOf(st.nextToken()));
+			attributeValueRefSetMember.setValueId(Long.valueOf(fields[6]));
 			
 			// Terminology attributes
 			attributeValueRefSetMember.setTerminology("SNOMEDCT");
 			attributeValueRefSetMember.setTerminologyVersion(version);
 			
 			// Retrieve concept -- firstToken is referencedComponentId
-			attributeValueRefSetMember.setConcept(getConcept(conceptId, attributeValueRefSetMember.getTerminology(), attributeValueRefSetMember.getTerminologyVersion())); 
+			attributeValueRefSetMember.setConcept(getConcept(fields[5], attributeValueRefSetMember.getTerminology(), attributeValueRefSetMember.getTerminologyVersion())); 
 
 			manager.persist(attributeValueRefSetMember);
 			
@@ -1576,25 +1486,20 @@ private void loadSimpleRefSets() throws Exception {
 	
 	String line = "";
 	i = 0;
-	String conceptId = "";
-	
-	
-	
+		
 	while ((line = simple_refsets_by_concept.readLine()) != null) {
 		
-		StringTokenizer st = new StringTokenizer(line, "\t");
-		SimpleRefSetMember simpleRefSetMember = new SimpleRefSetMemberJpa();
-		String firstToken = st.nextToken();
+		String fields[] = line.split("\t");
+		SimpleMapRefSetMember simpleRefSetMember = new SimpleMapRefSetMemberJpa();
 		
-		if (!firstToken.equals("id")) { // header
+		if (!fields[0].equals("id")) { // header
 			
 			// Universal RefSet attributes
-			simpleRefSetMember.setTerminologyId(firstToken); 
-			simpleRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
-			simpleRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
-			simpleRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
-			simpleRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
-			conceptId = st.nextToken(); // referencedComponentId
+			simpleRefSetMember.setTerminologyId(fields[0]); 
+			simpleRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+			simpleRefSetMember.setActive(fields[2].equals("1") ? true : false);
+			simpleRefSetMember.setModuleId(Long.valueOf(fields[3]));
+			simpleRefSetMember.setRefSetId(Long.valueOf(fields[4]));
 			
 			// SimpleRefSetMember unique attributes
 			// NONE
@@ -1604,7 +1509,7 @@ private void loadSimpleRefSets() throws Exception {
 			simpleRefSetMember.setTerminologyVersion(version);
 			
 			// Retrieve Concept -- firstToken is referencedComonentId
-			simpleRefSetMember.setConcept(getConcept(conceptId, simpleRefSetMember.getTerminology(), simpleRefSetMember.getTerminologyVersion())); 
+			simpleRefSetMember.setConcept(getConcept(fields[5], simpleRefSetMember.getTerminology(), simpleRefSetMember.getTerminologyVersion())); 
 
 			manager.persist(simpleRefSetMember);
 			
@@ -1622,33 +1527,30 @@ private void loadSimpleMapRefSets() throws Exception {
 	
 	String line = "";
 	i = 0;
-	String conceptId = "";
 	
 	while ((line = simple_map_refsets_by_concept.readLine()) != null) {
 		
-		StringTokenizer st = new StringTokenizer(line, "\t");
+		String fields[] = line.split("\t");
 		SimpleMapRefSetMember simpleMapRefSetMember = new SimpleMapRefSetMemberJpa();
-		String firstToken = st.nextToken();
 		
-		if (!firstToken.equals("id")) { // header
+		if (!fields[0].equals("id")) { // header
 			
 			// Universal RefSet attributes
-			simpleMapRefSetMember.setTerminologyId(firstToken);
-			simpleMapRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
-			simpleMapRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
-			simpleMapRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
-			simpleMapRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
-			conceptId = st.nextToken(); // referencedComponentId
+			simpleMapRefSetMember.setTerminologyId(fields[0]);
+			simpleMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+			simpleMapRefSetMember.setActive(fields[2].equals("1") ? true : false);
+			simpleMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
+			simpleMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));
 			
 			// SimpleMap unique attributes
-			simpleMapRefSetMember.setMapTarget(st.nextToken());
+			simpleMapRefSetMember.setMapTarget(fields[6]);
 			
 			// Terminology attributes
 			simpleMapRefSetMember.setTerminology("SNOMEDCT");
 			simpleMapRefSetMember.setTerminologyVersion(version);
 			
 			// Retrieve concept	 -- firstToken is referencedComponentId
-			simpleMapRefSetMember.setConcept(getConcept(conceptId, simpleMapRefSetMember.getTerminology(), simpleMapRefSetMember.getTerminologyVersion())); 
+			simpleMapRefSetMember.setConcept(getConcept(fields[5], simpleMapRefSetMember.getTerminology(), simpleMapRefSetMember.getTerminologyVersion())); 
 			
 			manager.persist(simpleMapRefSetMember);	
 			
@@ -1666,41 +1568,28 @@ private void loadComplexMapRefSets() throws Exception {
 
 	String line = "";
 	i = 0;
-	String conceptId = "";
 
 	
 	while ((line = complex_map_refsets_by_concept.readLine()) != null) {
 		
-	
-		StringTokenizer st = new StringTokenizer(line, "\t");
+		String fields[] = line.split("\t");
 		ComplexMapRefSetMember complexMapRefSetMember = new ComplexMapRefSetMemberJpa();
-		String firstToken = st.nextToken();
 		
-		if (!firstToken.equals("id")) { // header
+		if (!fields[0].equals("id")) { // header
 			
-			// Universal RefSet attributes
-			complexMapRefSetMember.setTerminologyId(firstToken);
-			complexMapRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
-			complexMapRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
-			complexMapRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
-			complexMapRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));; // conceptId
-			conceptId = st.nextToken(); // referencedComponentId
+			complexMapRefSetMember.setTerminologyId(fields[0]);
+			complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+			complexMapRefSetMember.setActive(fields[2].equals("1") ? true : false);
+			complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
+			complexMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));; // conceptId
 			
 			// ComplexMap unique attributes
-			complexMapRefSetMember.setMapGroup(Integer.parseInt(st.nextToken()));
-			String s = st.nextToken();
-			System.out.println("map priority:" + s);
-			complexMapRefSetMember.setMapPriority(Integer.parseInt(s));
-			s = st.nextToken();
-			System.out.println("map rule:" + s);
-			complexMapRefSetMember.setMapRule(s);
-			s = st.nextToken();
-			System.out.println("map advice:" + s);
-			complexMapRefSetMember.setMapAdvice(s);
-			s = st.nextToken();
-			System.out.println("map target:" + s);
-			complexMapRefSetMember.setMapTarget(s);
-			complexMapRefSetMember.setMapRelationId(Long.valueOf(st.nextToken()));
+			complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
+			complexMapRefSetMember.setMapPriority(Integer.parseInt(fields[7]));
+			complexMapRefSetMember.setMapRule(fields[8]);
+			complexMapRefSetMember.setMapAdvice(fields[9]);
+			complexMapRefSetMember.setMapTarget(fields[10]);
+			complexMapRefSetMember.setMapRelationId(Long.valueOf(fields[11]));
 			
 			// ComplexMap unique attributes NOT set by file (mapBlock elements)
 			complexMapRefSetMember.setMapBlock(1); // default value
@@ -1711,9 +1600,10 @@ private void loadComplexMapRefSets() throws Exception {
 			complexMapRefSetMember.setTerminology("SNOMEDCT");
 			complexMapRefSetMember.setTerminologyVersion(version);
 			
-			// Retrieve Concept
-			complexMapRefSetMember.setConcept(getConcept(conceptId, complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion())); 
-
+			// set Concept
+			complexMapRefSetMember.setConcept(getConcept(fields[5], complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion()));
+			
+			getLog().info(complexMapRefSetMember.toString());
 			manager.persist(complexMapRefSetMember);
 			
 			i++;
@@ -1734,33 +1624,27 @@ private void loadExtendedMapRefSets() throws Exception {
 	
 	String line = "";
 	i = 0;
-	String conceptId = "";
 	
 	while ((line = extended_map_refsets_by_concept.readLine()) != null) {
-		
-
-		StringTokenizer st = new StringTokenizer(line, "\t");
-		ComplexMapRefSetMember complexMapRefSetMember = new ComplexMapRefSetMemberJpa();
-		String firstToken = st.nextToken();
-		
-		if (!firstToken.equals("id")) { // header
 			
-			// Universal RefSet attributes
-			complexMapRefSetMember.setTerminologyId(firstToken);
-			complexMapRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
-			complexMapRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
-			complexMapRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
-			complexMapRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));; // conceptId
-			conceptId = st.nextToken(); // referencedComponentId
+		String fields[] = line.split("\t");
+		ComplexMapRefSetMember complexMapRefSetMember = new ComplexMapRefSetMemberJpa();
+		
+		if (!fields[0].equals("id")) { // header
+			
+			complexMapRefSetMember.setTerminologyId(fields[0]);
+			complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+			complexMapRefSetMember.setActive(fields[2].equals("1") ? true : false);
+			complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
+			complexMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));; // conceptId
 			
 			// ComplexMap unique attributes
-			complexMapRefSetMember.setMapGroup(Integer.parseInt(st.nextToken()));
-			complexMapRefSetMember.setMapPriority(Integer.parseInt(st.nextToken()));
-			complexMapRefSetMember.setMapRule(st.nextToken());
-			complexMapRefSetMember.setMapAdvice(st.nextToken());
-			complexMapRefSetMember.setMapTarget(st.nextToken());
-			firstToken = st.nextToken(); // unused, this field ignored for ExtendedMap
-			complexMapRefSetMember.setMapRelationId(Long.valueOf(st.nextToken()));
+			complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
+			complexMapRefSetMember.setMapPriority(Integer.parseInt(fields[7]));
+			complexMapRefSetMember.setMapRule(fields[8]);
+			complexMapRefSetMember.setMapAdvice(fields[9]);
+			complexMapRefSetMember.setMapTarget(fields[10]);
+			complexMapRefSetMember.setMapRelationId(Long.valueOf(fields[12]));
 			
 			// ComplexMap unique attributes NOT set by file (mapBlock elements)
 			complexMapRefSetMember.setMapBlock(1); // default value
@@ -1771,14 +1655,17 @@ private void loadExtendedMapRefSets() throws Exception {
 			complexMapRefSetMember.setTerminology("SNOMEDCT");
 			complexMapRefSetMember.setTerminologyVersion(version);
 			
-			// Retrieve Concept
-			complexMapRefSetMember.setConcept(getConcept(conceptId, complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion())); 
-
+			// set Concept
+			complexMapRefSetMember.setConcept(getConcept(fields[5], complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion()));
+			
+			getLog().info(complexMapRefSetMember.toString());
 			manager.persist(complexMapRefSetMember);
 			
 			i++;
+
 		}
 	}	
+	
 }
 
 private void loadLanguageRefSets() throws Exception {
@@ -1791,29 +1678,27 @@ private void loadLanguageRefSets() throws Exception {
 		
 	while ((line = language_refsets_by_description.readLine()) != null) {
 		
-		StringTokenizer st = new StringTokenizer(line, "\t");
+		String fields[] = line.split("\t");
 		LanguageRefSetMember languageRefSetMember = new LanguageRefSetMemberJpa();
-		String firstToken = st.nextToken();
 		
-		if (!firstToken.equals("id")) { // header
+		if (!fields[0].equals("id")) { // header
 			
 			// Universal RefSet attributes
-			languageRefSetMember.setTerminologyId(firstToken);
-			languageRefSetMember.setEffectiveTime(dt.parse(st.nextToken()));
-			languageRefSetMember.setActive(st.nextToken().equals("1") ? true : false);
-			languageRefSetMember.setModuleId(Long.valueOf(st.nextToken()));
-			languageRefSetMember.setRefSetId(Long.valueOf(st.nextToken()));
-			firstToken = st.nextToken(); // referencedComponentId
+			languageRefSetMember.setTerminologyId(fields[0]);
+			languageRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+			languageRefSetMember.setActive(fields[2].equals("1") ? true : false);
+			languageRefSetMember.setModuleId(Long.valueOf(fields[3]));
+			languageRefSetMember.setRefSetId(Long.valueOf(fields[4]));
 			
 			// Language unique attributes
-			languageRefSetMember.setAcceptabilityId(Long.valueOf(st.nextToken()));
+			languageRefSetMember.setAcceptabilityId(Long.valueOf(fields[6]));
 			
 			// Terminology attributes
 			languageRefSetMember.setTerminology("SNOMEDCT");
 			languageRefSetMember.setTerminologyVersion(version);
 			
 			// Set the description
-			description = getDescription(firstToken, languageRefSetMember.getTerminology(), languageRefSetMember.getTerminologyVersion()); 
+			description = getDescription(fields[5], languageRefSetMember.getTerminology(), languageRefSetMember.getTerminologyVersion()); 
 			languageRefSetMember.setDescription(description);
 			manager.persist(languageRefSetMember);
 			
