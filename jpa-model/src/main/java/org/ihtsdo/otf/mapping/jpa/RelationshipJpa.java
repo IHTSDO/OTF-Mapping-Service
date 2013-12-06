@@ -29,17 +29,13 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 public class RelationshipJpa extends AbstractComponent implements Relationship {
 
 	/** The source concept. */
-	@ManyToOne(cascade = {
-			CascadeType.PERSIST, CascadeType.MERGE
-	}, targetEntity = ConceptJpa.class)
+	@ManyToOne(targetEntity = ConceptJpa.class)
 	@JsonBackReference
 	@ContainedIn
 	private Concept sourceConcept;
 
 	/** The destination concept. */
-	@ManyToOne(cascade = {
-			CascadeType.PERSIST, CascadeType.MERGE
-	}, targetEntity = ConceptJpa.class)
+	@ManyToOne(targetEntity = ConceptJpa.class)
 	@JsonBackReference
 	@ContainedIn
 	private Concept destinationConcept;

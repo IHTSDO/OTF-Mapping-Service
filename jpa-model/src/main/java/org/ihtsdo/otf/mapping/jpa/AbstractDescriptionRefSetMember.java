@@ -24,11 +24,11 @@ import org.ihtsdo.otf.mapping.model.DescriptionRefSetMember;
 public abstract class AbstractDescriptionRefSetMember extends
 		AbstractRefSetMember implements DescriptionRefSetMember {
 	
-	
-	/** The Description associated with this element */
+	@ManyToOne(targetEntity=DescriptionJpa.class)
+/*	*//** The Description associated with this element *//*
 	@ManyToOne(cascade = {
 			   CascadeType.PERSIST, CascadeType.MERGE
-			 }, targetEntity=DescriptionJpa.class)
+			 }, targetEntity=DescriptionJpa.class)*/
 	@JsonBackReference
 	@ContainedIn
 	private Description description;

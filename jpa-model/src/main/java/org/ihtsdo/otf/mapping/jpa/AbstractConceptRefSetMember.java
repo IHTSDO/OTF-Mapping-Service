@@ -22,9 +22,10 @@ public abstract class AbstractConceptRefSetMember extends AbstractRefSetMember
 		implements ConceptRefSetMember {
 	
 	/** The Concept associated with this element */
-	@ManyToOne(cascade = {
+	@ManyToOne(targetEntity=ConceptJpa.class)
+	/*@ManyToOne(cascade = {
 			   CascadeType.PERSIST, CascadeType.MERGE
-			 }, targetEntity=ConceptJpa.class)
+			 }, targetEntity=ConceptJpa.class)*/
   @JsonBackReference
   @ContainedIn
 	private Concept concept;
