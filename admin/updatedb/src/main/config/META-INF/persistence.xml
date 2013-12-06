@@ -22,7 +22,11 @@
         <class>org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa</class>
         <class>org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa</class>
         <class>org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa</class>
-
+        <class>org.ihtsdo.otf.mapping.jpa.MapProjectJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.MapLeadJpa</class>
+        
+        
         <properties>
         
             <!-- Log formatted Hibernate SQL with comments.
