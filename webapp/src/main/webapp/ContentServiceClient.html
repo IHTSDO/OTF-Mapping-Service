@@ -20,9 +20,9 @@ $(document).ready(function(){
   		var lol = $('#cid_text');
 		var value = "json";
   		value = $("input:radio[name=return_type]").val();	
-        	window.alert("http://localhost:8080/mapping-rest/content/concepts/" + lol.val());
+        	window.alert("http://localhost:8080/mapping-rest/content/concepts/xml/" + lol.val());
   		
-        	$("#div1").load("http://localhost:8080/mapping-rest/content/concepts/"  + lol.val());
+        	$("#div1").load("http://localhost:8080/mapping-rest/content/concepts/xml/"  + lol.val());
 	    $(this).hide();
   });
 });
