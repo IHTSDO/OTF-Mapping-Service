@@ -33,7 +33,7 @@
             <property name="hibernate.use_sql_comments" value="true" />
             
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
-            <property name="hibernate.hbm2ddl.auto" value="none"/>
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
             
             <property name="hibernate.jdbc.batch_size" value = "100"/>
             <property name="hibernate.jdbc.default_batch_fetch_size" value = "100" />
@@ -44,9 +44,9 @@
 			
             <!-- JDBC properties. -->
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
-            <property name="javax.persistence.jdbc.url" value="${mysql.url}" />
-            <property name="javax.persistence.jdbc.user" value="${mysql.user}" />
-            <property name="javax.persistence.jdbc.password" value="${mysql.pwd}" />
+            <property name="javax.persistence.jdbc.url" value="${mysql.test.url}" />
+            <property name="javax.persistence.jdbc.user" value="${mysql.test.user}" />
+            <property name="javax.persistence.jdbc.password" value="${mysql.test.pwd}" />
             
    
 

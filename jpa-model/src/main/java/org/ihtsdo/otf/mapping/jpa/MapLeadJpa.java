@@ -35,6 +35,10 @@ public class MapLeadJpa implements MapLead {
 	@Column(nullable = false, length = 25)
 	private String name;
 	
+	/** The email. */
+	@Column(nullable = false)
+	private String email;
+	
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapLead#getId()
 	 */
@@ -83,6 +87,19 @@ public class MapLeadJpa implements MapLead {
 		this.name = name;
 	}
 
+	@Override
+	public String getEmail() {
+		return email;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapLead#setEmail(java.lang.String)
+	 */
+	@Override
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -91,8 +108,8 @@ public class MapLeadJpa implements MapLead {
 		 
 		 return this.getId() + "," +
 				 this.getUserName() + "," +
+				 this.getEmail() + "," +
 				 this.getName();
 	 }
-
 
 }

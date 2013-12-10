@@ -35,6 +35,10 @@ public class MapSpecialistJpa implements MapSpecialist {
 	@Column(nullable = false, length = 25)
 	private String name;
 	
+	/** The email. */
+	@Column(nullable = false)
+	private String email;
+	
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#getId()
 	 */
@@ -82,7 +86,24 @@ public class MapSpecialistJpa implements MapSpecialist {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#getEmail()
+	 */
+	@Override
+	public String getEmail() {
+		return email;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#setEmail(java.lang.String)
+	 */
+	@Override
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -91,8 +112,7 @@ public class MapSpecialistJpa implements MapSpecialist {
 		 
 		 return this.getId() + "," +
 				 this.getUserName() + "," +
+				 this.getEmail() + "," +
 				 this.getName();
 	 }
-
-
 }

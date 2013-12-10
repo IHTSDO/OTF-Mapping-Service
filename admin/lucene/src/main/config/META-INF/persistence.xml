@@ -23,6 +23,7 @@
         <class>org.ihtsdo.otf.mapping.jpa.MapProjectJpa</class>
         <class>org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa</class>
         <class>org.ihtsdo.otf.mapping.jpa.MapLeadJpa</class>
+        <class>org.ihtsdo.otf.mapping.jpa.MapAdviceJpa</class>
         
         <properties>
         
