@@ -7,7 +7,7 @@ package org.ihtsdo.otf.mapping.model;
  *
  * @author ${author}
  */
-public interface MapLead  {
+public interface MapAdvice  {
 	
 	/**
 	 * Returns the id.
@@ -23,19 +23,21 @@ public interface MapLead  {
 	 */
 	public void setId(Long id);
 	
+
 	/**
-	 * Returns the user name.
+	 * Returns the description.
 	 *
-	 * @return the user name
+	 * @return the description
 	 */
-	public String getUserName();
+	public String getDescription();
 	
+
 	/**
-	 * Sets the user name.
+	 * Sets the description.
 	 *
-	 * @param username the user name
+	 * @param description the description
 	 */
-	public void setUserName(String username);
+	public void setDescription(String description);
 	
 	/**
 	 * Returns the name.
@@ -50,19 +52,5 @@ public interface MapLead  {
 	 * @param name the name
 	 */
 	public void setName(String name);
-	
-	/**
-	 * Returns the email.
-	 *
-	 * @return the email
-	 */
-	public String getEmail();
-	
-	/**
-	 * Sets the email.
-	 *
-	 * @param email the email
-	 */
-	public void setEmail(String email);
 
 }

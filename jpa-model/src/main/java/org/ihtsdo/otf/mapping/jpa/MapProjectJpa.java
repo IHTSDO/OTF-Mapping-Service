@@ -3,8 +3,10 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -21,6 +23,7 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
@@ -44,6 +47,31 @@ public class MapProjectJpa implements MapProject {
 	@Id
 	@GeneratedValue
 	private Long id;
+	
+
+	/** The name. */
+	@Column(nullable = false)
+	private String name;
+
+	/** Indicates whether there is block structure for map records of this project. */
+	@Column(unique = false, nullable = false)
+	private boolean blockStructure = false;
+
+	/** Indicates whether there is group structure for map records of this project. */
+	@Column(unique = false, nullable = false)
+	private boolean groupStructure = false;
+
+	/** Indicates if the map project has been published. */
+	@Column(unique = false, nullable = false)
+	private boolean published = false;
+
+	/** The allowable map advices for this MapProject. */
+	@OneToMany(targetEntity=MapAdviceJpa.class)
+	@JsonManagedReference
+	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
+
+	/** The ref set id. */
+	private Long refSetId;
 	
 	/** The source terminology. */
 	@Column(nullable = false)
@@ -71,7 +99,6 @@ public class MapProjectJpa implements MapProject {
 	@OneToMany(targetEntity=MapSpecialistJpa.class)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapSpecialistJpa.class)
-	//@JoinColumn(name="ID", referencedColumnName="ID")
 	private Set<MapSpecialist> mapSpecialists = new HashSet<MapSpecialist>();
 	
 	/* (non-Javadoc)
@@ -231,15 +258,93 @@ public class MapProjectJpa implements MapProject {
 	@Override
 	public String toString() {
 		 
-		 return this.getId() + "," +
+		 return this.getId() + "," + this.getName() + "," +
+		     this.getRefSetId() + "," +
 				 this.getSourceTerminology() + "," +
 				 this.getSourceTerminologyVersion() + "," +
 				 this.getDestinationTerminology() + "," +
 				 this.getDestinationTerminologyVersion() + "," +
+				 this.isBlockStructure() + "," +
+				 this.isGroupStructure() + "," +
+				 this.isPublished() + "," + 
+				 this.getMapAdvices() == null ? "" : this.getMapAdvices().toString() + "," +
 				 this.getMapLeads() == null ? "" : this.getMapLeads().toString() + "," +
 				 this.getMapSpecialists() == null ? "" : this.getMapSpecialists().toString();
 				 
 	 }
+
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)		
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public boolean isBlockStructure() {
+		return blockStructure;
+	}
+
+	@Override
+	public void setBlockStructure(boolean blockStructure) {
+		this.blockStructure = blockStructure;
+	}
+
+	@Override
+	public boolean isGroupStructure() {
+		return groupStructure;
+	}
+
+	@Override
+	public void setGroupStructure(boolean groupStructure) {
+		this.groupStructure = groupStructure;
+	}
+
+	@Override
+	public boolean isPublished() {
+		return published;
+	}
+
+	@Override
+	public void setPublished(boolean published) {
+		this.published = published;
+	}
+
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)	
+	public Long getRefSetId() {
+		return refSetId;
+	}
+
+	@Override
+	public void setRefSetId(Long refSetId) {
+		this.refSetId = refSetId;
+	}
+
+	@Override
+	@XmlElement(type=MapAdviceJpa.class)
+	public Set<MapAdvice> getMapAdvices() {
+		return mapAdvices;
+	}
+
+	@Override
+	public void setMapAdvices(Set<MapAdvice> mapAdvices) {
+		this.mapAdvices = mapAdvices;
+	}
+
+	@Override
+	public void addMapAdvice(MapAdvice mapAdvice) {
+		mapAdvices.add(mapAdvice);
+	}
+
+	@Override
+	public void removeMapAdvice(MapAdvice mapAdvice) {
+		mapAdvices.remove(mapAdvice);
+	}
 
 
 }

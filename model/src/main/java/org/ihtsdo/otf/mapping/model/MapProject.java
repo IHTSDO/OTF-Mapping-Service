@@ -2,9 +2,11 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a map project.
  *
+ * @author ${author}
  */
 public interface MapProject  {
 
@@ -21,6 +23,104 @@ public interface MapProject  {
 	 * @param id the id
 	 */
 	public void setId(Long id);
+	
+	/**
+	 * Returns the name.
+	 *
+	 * @return the name
+	 */
+	public String getName();
+	
+	/**
+	 * Sets the name.
+	 *
+	 * @param name the name
+	 */
+	public void setName(String name);
+	
+	/**
+	 * Indicates whether there is block structure for map records of this project.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isBlockStructure();
+	
+	/**
+	 * Sets whether there is block structure for map records of this project.
+	 *
+	 * @param blockStructure the block structure
+	 */
+	public void setBlockStructure(boolean blockStructure);
+	
+	/**
+	 * Indicates whether there is group structure for map records of this project.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isGroupStructure();
+	
+	/**
+	 * Sets whether there is group structure for map records of this project.
+	 *
+	 * @param groupStructure the group structure
+	 */
+	public void setGroupStructure(boolean groupStructure);
+	
+	/**
+	 * Indicates whether or not published is the case.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isPublished();
+	
+	/**
+	 * Sets the published.
+	 *
+	 * @param published the published
+	 */
+	public void setPublished(boolean published);
+	
+	/**
+	 * Returns the ref set id.
+	 *
+	 * @return the ref set id
+	 */
+	public Long getRefSetId();
+	
+	/**
+	 * Sets the ref set id.
+	 *
+	 * @param refSetId the ref set id
+	 */
+	public void setRefSetId(Long refSetId);
+	
+	/**
+	 * Returns the set of allowable map advices.
+	 *
+	 * @return the map advices
+	 */
+	public Set<MapAdvice> getMapAdvices();
+	
+	/**
+	 * Sets the set of allowable map advices.
+	 *
+	 * @param mapAdvices the map advices
+	 */
+	public void setMapAdvices(Set<MapAdvice> mapAdvices);
+	
+	/**
+	 * Adds an allowable map advice.
+	 *
+	 * @param mapAdvice the map advice
+	 */
+	public void addMapAdvice(MapAdvice mapAdvice);
+	
+	/**
+	 * Removes an allowable map advice.
+	 *
+	 * @param mapAdvice the map advice
+	 */
+	public void removeMapAdvice(MapAdvice mapAdvice);
 	
 	/**
 	 * Returns the map leads.

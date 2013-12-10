@@ -4,6 +4,9 @@
 mysql.url=jdbc:mysql://127.0.0.1:3306/mappingservicedb
 mysql.user=root
 mysql.pwd=rootpwd
+mysql.test.url=jdbc:mysql://127.0.0.1:3306/mappingservicedbtest
+mysql.test.user=root
+mysql.test.pwd=rootpwd
 
 #
 # Path to loader dta

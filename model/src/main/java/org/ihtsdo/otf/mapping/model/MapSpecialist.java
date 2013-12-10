@@ -49,4 +49,18 @@ public interface MapSpecialist  {
 	 */
 	public void setName(String name);
 
+	/**
+	 * Returns the email.
+	 *
+	 * @return the email
+	 */
+	public String getEmail();
+	
+	/**
+	 * Sets the email.
+	 *
+	 * @param email the email
+	 */
+	public void setEmail(String email);
+
 }

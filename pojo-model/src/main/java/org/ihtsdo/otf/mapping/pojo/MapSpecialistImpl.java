@@ -4,6 +4,7 @@ import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
 /**
  * Reference implementation of {@link MapSpecialist}.
+ *
  */
 public class MapSpecialistImpl implements MapSpecialist {
 
@@ -15,6 +16,9 @@ public class MapSpecialistImpl implements MapSpecialist {
 	
 	/** The name. */
 	private String name;
+	
+	/** The email. */
+	private String email;
 	
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#getId()
@@ -62,6 +66,22 @@ public class MapSpecialistImpl implements MapSpecialist {
 	@Override
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#getEmail()
+	 */
+	@Override
+	public String getEmail() {
+		return email;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#setEmail(java.lang.String)
+	 */
+	@Override
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 }
