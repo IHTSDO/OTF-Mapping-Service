@@ -44,9 +44,9 @@
 
             <!-- JDBC properties. -->
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
-            <property name="javax.persistence.jdbc.url" value="${mysql.url}" />
-            <property name="javax.persistence.jdbc.user" value="${mysql.user}" />
-            <property name="javax.persistence.jdbc.password" value="${mysql.pwd}" />
+            <property name="javax.persistence.jdbc.url" value="${mysql.main.url}" />
+            <property name="javax.persistence.jdbc.user" value="${mysql.main.user}" />
+            <property name="javax.persistence.jdbc.password" value="${mysql.main.pwd}" />
 
         </properties>
     </persistence-unit>

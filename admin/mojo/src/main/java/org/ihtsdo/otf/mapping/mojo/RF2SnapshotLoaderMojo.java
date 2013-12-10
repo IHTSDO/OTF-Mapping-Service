@@ -287,10 +287,10 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			properties.load(propertiesInputStream);
 		     
 			// set the input directory
-			coreInputDirString = properties.getProperty("loader.input.data");
+			coreInputDirString = properties.getProperty("loader.main.input.data");
 			coreInputDir = new File(coreInputDirString);
 			if (!coreInputDir.exists()) {
-				throw new MojoFailureException("Specified loader.input.data directory does not exist: " + coreInputDirString);
+				throw new MojoFailureException("Specified loader.main.input.data directory does not exist: " + coreInputDirString);
 			}
 		     
 			// set the parameters for determining defaultPreferredNames
