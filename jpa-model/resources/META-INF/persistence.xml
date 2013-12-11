@@ -40,7 +40,7 @@
 
             <property name="hibernate.search.default.directory_provider"
               value="filesystem" />
-            <property name="hibernate.search.default.indexBase" value="C:\\Users\\Deborah/mapping/lucene/indexes" />
+            <property name="hibernate.search.default.indexBase" value="C:\\Users\\Patrick/mapping/lucene/indexes" />
 			
             <!-- JDBC properties. -->
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
