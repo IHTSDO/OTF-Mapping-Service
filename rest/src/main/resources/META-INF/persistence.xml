@@ -19,10 +19,11 @@
         <class>org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa</class>
         <class>org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa</class>
         <class>org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa</class>
-        <class>org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa</class>  
+        <class>org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa</class>   
         <class>org.ihtsdo.otf.mapping.jpa.MapProjectJpa</class>
         <class>org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa</class>
-        <class>org.ihtsdo.otf.mapping.jpa.MapLeadJpa</class>  
+        <class>org.ihtsdo.otf.mapping.jpa.MapLeadJpa</class> 
+        <class>org.ihtsdo.otf.mapping.jpa.MapAdviceJpa</class>
         <properties>
         
             <!-- Log formatted Hibernate SQL with comments.
@@ -36,7 +37,7 @@
 
             <property name="hibernate.search.default.directory_provider"
               value="filesystem" />
-            <property name="hibernate.search.default.indexBase" value="C:\\Users\\Deborah/mapping/lucene/indexes" />
+            <property name="hibernate.search.default.indexBase" value="C:\\Users\\Brian Carlsen/mapping/lucene/indexes" />
 
             <!-- JDBC properties. -->
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
