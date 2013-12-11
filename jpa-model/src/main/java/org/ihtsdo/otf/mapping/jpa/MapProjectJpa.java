@@ -187,7 +187,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getSourceTerminology()
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)	
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
 	public String getSourceTerminology() {
 		return sourceTerminology;
 	}
@@ -204,7 +204,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getDestinationTerminology()
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)	
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
 	public String getDestinationTerminology() {
 		return destinationTerminology;
 	}
@@ -252,26 +252,6 @@ public class MapProjectJpa implements MapProject {
 		this.destinationTerminologyVersion = destinationTerminologyVersion;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		 
-		 return this.getId() + "," + this.getName() + "," +
-		     this.getRefSetId() + "," +
-				 this.getSourceTerminology() + "," +
-				 this.getSourceTerminologyVersion() + "," +
-				 this.getDestinationTerminology() + "," +
-				 this.getDestinationTerminologyVersion() + "," +
-				 this.isBlockStructure() + "," +
-				 this.isGroupStructure() + "," +
-				 this.isPublished() + "," + 
-				 this.getMapAdvices() == null ? "" : this.getMapAdvices().toString() + "," +
-				 this.getMapLeads() == null ? "" : this.getMapLeads().toString() + "," +
-				 this.getMapSpecialists() == null ? "" : this.getMapSpecialists().toString();
-				 
-	 }
 
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)		
@@ -345,6 +325,27 @@ public class MapProjectJpa implements MapProject {
 	public void removeMapAdvice(MapAdvice mapAdvice) {
 		mapAdvices.remove(mapAdvice);
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		 
+		 return this.getId() + "," + this.getName() + "," +
+		     this.getRefSetId() + "," +
+				 this.getSourceTerminology() + "," +
+				 this.getSourceTerminologyVersion() + "," +
+				 this.getDestinationTerminology() + "," +
+				 this.getDestinationTerminologyVersion() + "," +
+				 this.isBlockStructure() + "," +
+				 this.isGroupStructure() + "," +
+				 this.isPublished() + "," + 
+				 this.getMapAdvices() == null ? "" : this.getMapAdvices().toString() + "," +
+				 this.getMapLeads() == null ? "" : this.getMapLeads().toString() + "," +
+				 this.getMapSpecialists() == null ? "" : this.getMapSpecialists().toString();
+				 
+	 }
 
 
 }
