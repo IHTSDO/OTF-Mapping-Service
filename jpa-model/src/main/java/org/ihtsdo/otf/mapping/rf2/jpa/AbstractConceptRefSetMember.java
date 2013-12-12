@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
-import javax.persistence.CascadeType;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.xml.bind.annotation.XmlAttribute;

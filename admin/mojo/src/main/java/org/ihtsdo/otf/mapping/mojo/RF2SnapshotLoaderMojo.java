@@ -244,9 +244,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	/** The manager. */
 	private EntityManager manager;
 	
-	/** The envers audit manager */
-	private AuditReader reader;
-	
 	/** hash sets for faster loading */
     private Map<String, Concept> conceptCache = new HashMap<>(); // used to speed Concept assignment to ConceptRefSetMembers
 	private Map<String, Long> descriptionCache = new HashMap<>(); // speeds Description assignment to DescriptionRefSetMembers
@@ -305,9 +302,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			EntityManagerFactory factory =
 					Persistence.createEntityManagerFactory("MappingServiceDS");
 			manager = factory.createEntityManager();
-			
-			// create the audit reader
-			reader = AuditReaderFactory.get( manager );
 
 			// Preparation
 			openInputFiles();	

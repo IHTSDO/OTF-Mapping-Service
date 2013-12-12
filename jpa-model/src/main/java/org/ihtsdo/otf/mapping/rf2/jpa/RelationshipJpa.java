@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
