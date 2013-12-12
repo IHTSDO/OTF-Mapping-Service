@@ -7,6 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
@@ -85,13 +86,13 @@ public class MapProjectJpa implements MapProject {
 	private String destinationTerminologyVersion;
 	
 	/** The map leads. */
-	@OneToMany(targetEntity=MapLeadJpa.class)
+	@ManyToMany(targetEntity=MapLeadJpa.class)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapLeadJpa.class)
 	private Set<MapLead> mapLeads = new HashSet<MapLead>();
 	
 	/** The map specialists. */
-	@OneToMany(targetEntity=MapSpecialistJpa.class)
+	@ManyToMany(targetEntity=MapSpecialistJpa.class)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapSpecialistJpa.class)
 	private Set<MapSpecialist> mapSpecialists = new HashSet<MapSpecialist>();
