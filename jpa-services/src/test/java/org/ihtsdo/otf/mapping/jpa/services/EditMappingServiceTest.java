@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
@@ -257,22 +258,21 @@ public class EditMappingServiceTest {
 			
 		}
 		
-		// TODO:  Resolve errors in MappingServiceJpa
-	/*	// Test retrieval of projects by specialist
+		// Test retrieval of projects by specialist
 		for (MapSpecialist m : specialists) {
 			System.out.println("Projects for specialist " + m.getId().toString() + ", " + m.getName());
 			for (MapProject p : service.getMapProjectsForMapSpecialist(m)) {
 				System.out.println("-> " + p.getId().toString() + ", " + p.getName());
 			}
-		}*/
-		/*
+		}
+		
 		// Test retrieval of projects by lead
 		for (MapLead m : leads) {
 			System.out.println("Projects for lead " + m.getId().toString() + ", " + m.getName());
 			for (MapProject p : service.getMapProjectsForMapLead(m)) {
 				System.out.println("-> " + p.getId().toString() + ", " + p.getName());
 			}
-		}*/
+		}
 	}
 	/*
 	
