@@ -63,7 +63,7 @@ public class MapProjectJpa implements MapProject {
 	private boolean published = false;
 
 	/** The allowable map advices for this MapProject. */
-	@OneToMany(targetEntity=MapAdviceJpa.class)
+	@OneToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
 	@JsonManagedReference
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 

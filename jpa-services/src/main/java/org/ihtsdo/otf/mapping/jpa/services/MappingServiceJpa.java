@@ -39,9 +39,6 @@ public class MappingServiceJpa implements MappingService {
 
 	/** The factory. */
 	private EntityManagerFactory factory;
-
-	/** The manager. */
-	private EntityManager manager;
 	
 	/** The indexed field names. */
 	private Set<String> fieldNames;
@@ -51,7 +48,7 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public MappingServiceJpa() {
 		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
-		manager = factory.createEntityManager();;
+		EntityManager manager = factory.createEntityManager();;
 		fieldNames = new HashSet<String>();
 
 		FullTextEntityManager fullTextEntityManager =
@@ -108,11 +105,13 @@ public class MappingServiceJpa implements MappingService {
 	*/
 	public MapProject getMapProject(Long id) {
 		MapProject m = null;
-		manager = factory.createEntityManager();
-
+		EntityManager manager = factory.createEntityManager();
+		
+		javax.persistence.Query query = manager.createQuery("select m from MapProjectJpa m where id = :id");
+		query.setParameter("id", id);
 		try {
 			
-			m = manager.find(MapProjectJpa.class, id);
+			m = (MapProject) query.getSingleResult();
 		} catch (Exception e) {
 			System.out.println("Could not find map project for id = " + id.toString());
 		}
@@ -129,7 +128,8 @@ public class MappingServiceJpa implements MappingService {
 	public MapProject getMapProject(String name) {
 		
 		MapProject m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
+		
 		javax.persistence.Query query = manager.createQuery("select m from MapProjectJpa m where name = :name");
 		query.setParameter("name", name);
 		
@@ -163,7 +163,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapProject> getMapProjects() {
 		
 		List<MapProject> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		
 		// construct query
 		javax.persistence.Query query = manager.createQuery("select m from MapProjectJpa m");
@@ -190,7 +190,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapProject> findMapProjects(String query) {
 
 		List<MapProject> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
 		try {
@@ -243,7 +243,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapSpecialist> getMapSpecialists() {
 		
 		List<MapSpecialist> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		javax.persistence.Query query = manager.createQuery("select m from MapSpecialistJpa m");
 		
 		// Try query
@@ -264,30 +264,21 @@ public class MappingServiceJpa implements MappingService {
 	*/
 	public List<MapProject> getMapProjectsForMapSpecialist(MapSpecialist mapSpecialist) {
 		
-		List<MapProject> mp_list;
+		List<MapProject> mp_list = getMapProjects();
 		List<MapProject> mp_list_return = new ArrayList<MapProject>();
-		Set<MapSpecialist> ms_set; 
-		manager = factory.createEntityManager();
-		
-		
-		mp_list = getMapProjects();
-		
-		
-		System.out.println("getMapProjectsForMapSpecialist: found " + Integer.toString(mp_list.size()));
 		
 		// iterate and check for presence of mapSpecialist
 		for (MapProject mp : mp_list ) {
-			System.out.println("Retrieving specialists for " + mp.getName());
-			 ms_set = mp.getMapSpecialists();
-			
-			// if this map project does not contain mapSpecialist, remove from list
-			if (ms_set.contains(mapSpecialist)) {
-				mp_list.add(mp);
-			}
-		}
 		
-		// TODO: Manager is closed after last call, make this local instantiation (should happen everywhere)
-		manager.close();
+			Set<MapSpecialist> ms_set = mp.getMapSpecialists();
+			 
+			 for (MapSpecialist ms : ms_set) {
+					if (ms.isEqual(mapSpecialist)) {
+						mp_list_return.add(mp);
+					}
+			 }
+		}
+			
 		return mp_list_return;
 	}
 	
@@ -300,7 +291,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapSpecialist> findMapSpecialists(String query) {
 
 		List<MapSpecialist> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
@@ -354,7 +345,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapLead> getMapLeads() {
 		
 		List<MapLead> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		javax.persistence.Query query = manager.createQuery("select m from MapLeadJpa m");
 		
 		// Try query
@@ -375,24 +366,20 @@ public class MappingServiceJpa implements MappingService {
 	*/
 	public List<MapProject> getMapProjectsForMapLead(MapLead mapLead) {
 		
-		List<MapProject> mp_list = null;
-		Set<MapLead> ml_list = null; 
-		manager = factory.createEntityManager();
-		
-		// retrieve all map projects
-		mp_list = getMapProjects();
-		
+		List<MapProject> mp_list = getMapProjects();
+		List<MapProject> mp_list_return = new ArrayList<MapProject>();
+	
 		// iterate and check for presence of mapSpecialist
 		for (MapProject mp : mp_list) {
-			 ml_list = mp.getMapLeads();
+			Set<MapLead> ml_set = mp.getMapLeads();
 			
-			// if this map project does not contain mapSpecialist, remove from list
-			if (! ml_list.contains(mapLead)) {
-				mp_list.remove(mp);
+			for (MapLead ml : ml_set) {
+				if (ml.isEqual(mapLead)) {
+					mp_list_return.add(mp);
+				}
 			}
 		}
-		manager.close();
-		return mp_list;
+		return mp_list_return;
 	}
 	
 	/**
@@ -404,7 +391,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapLead> findMapLeads(String query) {
 		
 		List<MapLead> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
 		try {
@@ -437,6 +424,7 @@ public class MappingServiceJpa implements MappingService {
 			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
 		}
 		
+		manager.close();
 		return m;
 	}
 	

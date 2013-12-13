@@ -83,5 +83,18 @@ public class MapSpecialistImpl implements MapSpecialist {
 	public void setEmail(String email) {
 		this.email = email;
 	}
+	
+	/**
+	 * Tests equality with another map specialist
+	 * @param mapSpecialist the map specialist to be compared
+	 * @return boolean equality
+	 */
+	@Override
+	public boolean isEqual(MapSpecialist mapSpecialist) {
+		return (this.id.compareTo(mapSpecialist.getId()) == 0 &&
+				this.name.equals(mapSpecialist.getName())) &&
+				this.userName.equals(mapSpecialist.getUserName()) &&
+				this.email.equals(mapSpecialist.getEmail()) ? true : false;
+	}
 
 }
