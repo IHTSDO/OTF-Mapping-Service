@@ -62,5 +62,12 @@ public interface MapSpecialist  {
 	 * @param email the email
 	 */
 	public void setEmail(String email);
+	
+	/**
+	 * Tests equality with another MapSpecialist
+	 * @param mapSpecialist the map specialist to compare to
+	 * @return the boolean equality
+	 */
+	public boolean isEqual(MapSpecialist mapSpecialist);
 
 }

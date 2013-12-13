@@ -30,8 +30,6 @@ public class EditMappingServiceJpa implements EditMappingService {
 	/** The factory. */
 	private EntityManagerFactory factory;
 
-	/** The manager. */
-	private EntityManager manager;
 	
 	/** The transaction. */
 	private EntityTransaction tx;
@@ -49,8 +47,7 @@ public class EditMappingServiceJpa implements EditMappingService {
 		
 		// move these to the methods themselves
 		// for lucene searches, need to do full reinstantiation of the indexReader
-		manager = factory.createEntityManager();
-		tx = manager.getTransaction();
+		EntityManager manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager =
 				org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
 		IndexReaderAccessor indexReaderAccessor =
@@ -91,7 +88,7 @@ public class EditMappingServiceJpa implements EditMappingService {
 	 */
 	public void addMapProject(MapProject mapProject) {
 		try {
-			manager = factory.createEntityManager();
+			EntityManager manager = factory.createEntityManager();
 			tx = manager.getTransaction();
 			tx.begin();
 			manager.persist(mapProject);
@@ -111,8 +108,8 @@ public class EditMappingServiceJpa implements EditMappingService {
 	public void updateMapProject(MapProject mapProject) {
 		
 		try {
-			manager = factory.createEntityManager();
-			tx = manager.getTransaction();
+			EntityManager manager = factory.createEntityManager();
+			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
 			manager.merge(mapProject);
 			tx.commit();
@@ -128,8 +125,8 @@ public class EditMappingServiceJpa implements EditMappingService {
 	 */
 	public void removeMapProject(Long mapProjectId) {
 		try {
-			manager = factory.createEntityManager();
-			tx = manager.getTransaction();
+			EntityManager manager = factory.createEntityManager();
+			EntityTransaction tx = manager.getTransaction();
 			MapProject mp = manager.find(MapProjectJpa.class, mapProjectId);
 			tx.begin();
 			manager.remove(mp);
@@ -146,8 +143,8 @@ public class EditMappingServiceJpa implements EditMappingService {
 	 */
 	public void addMapSpecialist(MapSpecialist mapSpecialist) {
 		try {
-			manager = factory.createEntityManager();
-			tx = manager.getTransaction();
+			EntityManager manager = factory.createEntityManager();
+			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
 			manager.persist(mapSpecialist);
 			tx.commit();
@@ -164,10 +161,10 @@ public class EditMappingServiceJpa implements EditMappingService {
 	 */
 	public void updateMapSpecialist(MapSpecialist mapSpecialist) {
 		
-		// TODO: Make sure this will work
+		// TODO: Make sure merge will work
 		try {
-			manager = factory.createEntityManager();
-			tx = manager.getTransaction();
+			EntityManager manager = factory.createEntityManager();
+			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
 			manager.merge(mapSpecialist);
 			tx.commit();
@@ -183,8 +180,8 @@ public class EditMappingServiceJpa implements EditMappingService {
 	 */
 	public void removeMapSpecialist(Long mapSpecialistId) {
 		try {
-			manager = factory.createEntityManager();
-			tx = manager.getTransaction();
+			EntityManager manager = factory.createEntityManager();
+			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
 			MapSpecialist mp = manager.find(MapSpecialistJpa.class, mapSpecialistId);
 			manager.remove(mp);
@@ -201,8 +198,8 @@ public class EditMappingServiceJpa implements EditMappingService {
 	 */
 	public void addMapLead(MapLead mapLead) {
 		try {
-			manager = factory.createEntityManager();
-			tx = manager.getTransaction();
+			EntityManager manager = factory.createEntityManager();
+			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
 			manager.persist(mapLead);
 			tx.commit();
@@ -220,8 +217,8 @@ public class EditMappingServiceJpa implements EditMappingService {
 	public void updateMapLead(MapLead mapLead) {
 		
 		try {
-			manager = factory.createEntityManager();
-			tx = manager.getTransaction();
+			EntityManager manager = factory.createEntityManager();
+			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
 			manager.merge(mapLead);
 			tx.commit();
@@ -238,8 +235,8 @@ public class EditMappingServiceJpa implements EditMappingService {
 	public void removeMapLead(Long mapLeadId) {
 		
 		try {
-			manager = factory.createEntityManager();
-			tx = manager.getTransaction();
+			EntityManager manager = factory.createEntityManager();
+			EntityTransaction tx = manager.getTransaction();
 			MapLead mp = manager.find(MapLeadJpa.class, mapLeadId);
 			tx.begin();
 			manager.remove(mp);
