@@ -4,7 +4,6 @@ import org.hibernate.search.annotations.ContainedIn;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import javax.persistence.CascadeType;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.xml.bind.annotation.XmlAttribute;
