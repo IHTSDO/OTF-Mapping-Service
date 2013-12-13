@@ -86,5 +86,19 @@ public class MapLeadImpl implements MapLead {
 	public void setEmail(String email) {
 		this.email = email;
 	}
+	
+	/**
+	 * Tests equality with another map specialist
+	 * @param mapLead the map specialist to be compared
+	 * @return boolean equality
+	 */
+	@Override
+	public boolean isEqual(MapLead mapLead) {
+		return ((this.id.compareTo(mapLead.getId()) == 0) &&
+				 this.name.equals(mapLead.getName())) &&
+				 this.userName.equals(mapLead.getUserName()) &&
+				 this.email.equals(mapLead.getEmail())
+						 ? true : false;
+	}
 
 }

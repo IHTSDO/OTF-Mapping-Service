@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.rest;
+/*package org.ihtsdo.otf.mapping.rest;
 
 
 import javax.ws.rs.GET;
@@ -43,3 +43,4 @@ public class HelloService {
   // ContentService
   // one method to return json
 }
+*/

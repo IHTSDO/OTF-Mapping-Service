@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,9 +39,6 @@ public class MappingServiceJpa implements MappingService {
 
 	/** The factory. */
 	private EntityManagerFactory factory;
-
-	/** The manager. */
-	private EntityManager manager;
 	
 	/** The indexed field names. */
 	private Set<String> fieldNames;
@@ -50,7 +48,7 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public MappingServiceJpa() {
 		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
-		manager = factory.createEntityManager();;
+		EntityManager manager = factory.createEntityManager();;
 		fieldNames = new HashSet<String>();
 
 		FullTextEntityManager fullTextEntityManager =
@@ -107,11 +105,13 @@ public class MappingServiceJpa implements MappingService {
 	*/
 	public MapProject getMapProject(Long id) {
 		MapProject m = null;
-		manager = factory.createEntityManager();
-
+		EntityManager manager = factory.createEntityManager();
+		
+		javax.persistence.Query query = manager.createQuery("select m from MapProjectJpa m where id = :id");
+		query.setParameter("id", id);
 		try {
 			
-			m = manager.find(MapProjectJpa.class, id);
+			m = (MapProject) query.getSingleResult();
 		} catch (Exception e) {
 			System.out.println("Could not find map project for id = " + id.toString());
 		}
@@ -128,7 +128,8 @@ public class MappingServiceJpa implements MappingService {
 	public MapProject getMapProject(String name) {
 		
 		MapProject m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
+		
 		javax.persistence.Query query = manager.createQuery("select m from MapProjectJpa m where name = :name");
 		query.setParameter("name", name);
 		
@@ -162,7 +163,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapProject> getMapProjects() {
 		
 		List<MapProject> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		
 		// construct query
 		javax.persistence.Query query = manager.createQuery("select m from MapProjectJpa m");
@@ -189,7 +190,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapProject> findMapProjects(String query) {
 
 		List<MapProject> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
 		try {
@@ -242,7 +243,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapSpecialist> getMapSpecialists() {
 		
 		List<MapSpecialist> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		javax.persistence.Query query = manager.createQuery("select m from MapSpecialistJpa m");
 		
 		// Try query
@@ -261,30 +262,24 @@ public class MappingServiceJpa implements MappingService {
 	* @param mapSpecialist the map specialist
 	* @return a List of MapProjects
 	*/
-	@SuppressWarnings("unchecked")
 	public List<MapProject> getMapProjectsForMapSpecialist(MapSpecialist mapSpecialist) {
 		
-		List<MapProject> m = null;
-		manager = factory.createEntityManager();
+		List<MapProject> mp_list = getMapProjects();
+		List<MapProject> mp_list_return = new ArrayList<MapProject>();
 		
-		// TODO: Figure out pathing errors with non-mapped table
-		javax.persistence.Query query = manager.createQuery(
-
-				"SELECT p FROM MapProjectJpa as p " +
-				"INNER JOIN map_projects_map_specialists as s " +
-				"WITH p.id = s.map_projects_id " +
-				"WHERE s.mapSpecialists_id = :mapSpecialistId");	
+		// iterate and check for presence of mapSpecialist
+		for (MapProject mp : mp_list ) {
 		
-		query.setParameter("mapSpecialistId", mapSpecialist.getId());
-				
-		// Try query
-		try {
-			m = (List<MapProject>) query.getResultList();
-		} catch (Exception e) {
-				
+			Set<MapSpecialist> ms_set = mp.getMapSpecialists();
+			 
+			 for (MapSpecialist ms : ms_set) {
+					if (ms.isEqual(mapSpecialist)) {
+						mp_list_return.add(mp);
+					}
+			 }
 		}
-		manager.close();
-		return m;
+			
+		return mp_list_return;
 	}
 	
 	/** 
@@ -296,7 +291,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapSpecialist> findMapSpecialists(String query) {
 
 		List<MapSpecialist> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
@@ -350,7 +345,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapLead> getMapLeads() {
 		
 		List<MapLead> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		javax.persistence.Query query = manager.createQuery("select m from MapLeadJpa m");
 		
 		// Try query
@@ -369,31 +364,22 @@ public class MappingServiceJpa implements MappingService {
 	* @param mapLead the map lead
 	* @return a List of MapProjects
 	*/
-	@SuppressWarnings("unchecked")
 	public List<MapProject> getMapProjectsForMapLead(MapLead mapLead) {
 		
-		List<MapProject> m = null;
-		manager = factory.createEntityManager();
-		
-		// TODO: Figure out pathing errors with non-mapped table
-		javax.persistence.Query query = manager.createQuery(
-
-				"SELECT p FROM MapProjectJpa as p " +
-				"INNER JOIN map_projects_map_leads as l " +
-				"WITH p.id = l.map_projects_id " +
-				"WHERE l.mapSpecialists_id = :mapSpecialistId");
-		
-		query.setParameter("mapSpecialists_id", mapLead.getId());
-		
-		// Try query
-		try {
-			m = (List<MapProject>) query.getResultList();
-		} catch (Exception e) {
-						
+		List<MapProject> mp_list = getMapProjects();
+		List<MapProject> mp_list_return = new ArrayList<MapProject>();
+	
+		// iterate and check for presence of mapSpecialist
+		for (MapProject mp : mp_list) {
+			Set<MapLead> ml_set = mp.getMapLeads();
+			
+			for (MapLead ml : ml_set) {
+				if (ml.isEqual(mapLead)) {
+					mp_list_return.add(mp);
+				}
+			}
 		}
-		
-		manager.close();
-		return m;
+		return mp_list_return;
 	}
 	
 	/**
@@ -405,7 +391,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapLead> findMapLeads(String query) {
 		
 		List<MapLead> m = null;
-		manager = factory.createEntityManager();
+		EntityManager manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
 		try {
@@ -438,6 +424,7 @@ public class MappingServiceJpa implements MappingService {
 			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
 		}
 		
+		manager.close();
 		return m;
 	}
 	

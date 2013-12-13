@@ -11,12 +11,15 @@ import org.ihtsdo.otf.mapping.jpa.services.EditMappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.EditMappingService;
 
+import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * The Mapping Service for editing (add/update/remove) Map objects
  */
+@Path("/mapping")
+@Api(value = "/", description = "Operations supporting Map objects.")
 public class EditMappingServiceRest {
 
 	/** The mapping service jpa. */
@@ -46,7 +49,7 @@ public class EditMappingServiceRest {
 	 * @return Response the response
 	 */
 	@PUT
-	@Path("/mapping/project/id/{id:[0-9][0-9]*}")
+	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Add a project", notes = "Adds a MapProject", response = MapProject.class)
 	public Response addMapProject(@ApiParam(value = "Id of map project to add", required = true) @PathParam("id") Long mapProjectId,
 							  @ApiParam(value = "The map project to add", required = true) MapProject mapProject) { 
@@ -67,7 +70,7 @@ public class EditMappingServiceRest {
 	 * @return Response the response
 	 */
 	@POST
-	@Path("/mapping/project/id/{id:[0-9][0-9]*}")
+	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Update a map project", notes = "Updates a map project", response = MapProject.class)
 	public Response updateMapProject(@ApiParam(value = "Id of map project to update", required = true) @PathParam("id") Long mapProjectId,
 							  @ApiParam(value = "The map project to update", required = true) MapProject mapProject) { 
@@ -87,8 +90,7 @@ public class EditMappingServiceRest {
 	 * @return Response the response
 	 */
 	@DELETE
-	@Path("/mapping/project/id/{id:[0-9][0-9]*}")
-	//@Consumes()
+	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Removes a map project", notes = "Removes a map project", response = MapProject.class)
 	public Response removeMapProject(@ApiParam(value = "Id of map project to remove", required = true) @PathParam("id") Long mapProjectId) { 
 

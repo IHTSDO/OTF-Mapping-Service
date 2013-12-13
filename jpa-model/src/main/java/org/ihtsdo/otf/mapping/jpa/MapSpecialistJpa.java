@@ -115,4 +115,16 @@ public class MapSpecialistJpa implements MapSpecialist {
 				 this.getEmail() + "," +
 				 this.getName();
 	 }
+	
+	/**
+	 * Tests equality with another map specialist
+	 * @param mapSpecialist the map specialist to be compared
+	 * @return boolean equality
+	 */
+	public boolean isEqual(MapSpecialist mapSpecialist) {	
+		return (this.id.compareTo(mapSpecialist.getId()) == 0 &&
+				this.name.equals(mapSpecialist.getName())) &&
+				this.userName.equals(mapSpecialist.getUserName()) &&
+				this.email.equals(mapSpecialist.getEmail()) ? true : false;
+	}
 }

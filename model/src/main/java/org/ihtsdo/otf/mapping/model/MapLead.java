@@ -64,5 +64,12 @@ public interface MapLead  {
 	 * @param email the email
 	 */
 	public void setEmail(String email);
+	
+	/**
+	 * Tests equality with another map lead
+	 * @param mapLead the map lead to be compared
+	 * @return boolean equality
+	 */
+	public boolean isEqual(MapLead mapLead);
 
 }
