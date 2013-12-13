@@ -31,7 +31,7 @@
   </servlet> 
   <servlet-mapping>
     <servlet-name>Jersey REST Service</servlet-name>
-    <url-pattern>/mapping/*</url-pattern>
+    <url-pattern>/*</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>JerseyJaxrsConfig</servlet-name>
