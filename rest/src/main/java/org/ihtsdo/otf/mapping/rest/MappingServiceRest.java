@@ -20,9 +20,9 @@ import com.wordnik.swagger.annotations.ApiParam;
 /**
  * The Mapping Services REST package
  */
-@Path("/")
-@Api(value = "/", description = "Operations supporting Map objects.")
-@Produces({"application/json", "application/xml"})
+@Path("/mapping")
+@Api(value = "/mapping", description = "Operations supporting Map objects.")
+@Produces({MediaType.APPLICATION_JSON})
 public class MappingServiceRest {
 	
 	/** The mapping service jpa. */
@@ -50,7 +50,7 @@ public class MappingServiceRest {
 	 * @return the mapProject
 	 */
 	@GET
-	@Path("/project/id/json/{id:[0-9][0-9]*}")
+	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find project by id", notes = "Returns a MapProject in json given a project id.", response = MapProject.class)
 	@Produces({MediaType.APPLICATION_JSON})
 	public MapProject getMapProjectForIdJson(@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) { 
@@ -76,7 +76,7 @@ public class MappingServiceRest {
 	 * @return the mapProject
 	 */
 	@GET
-	@Path("/project/id/xml/{id:[0-9][0-9]*}")
+	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find project by id", notes = "Returns a MapProject as xml given a project id.", response = MapProject.class)
 	@Produces({MediaType.APPLICATION_XML})
 	public MapProject getMapProjectForIdXml(@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) { 
