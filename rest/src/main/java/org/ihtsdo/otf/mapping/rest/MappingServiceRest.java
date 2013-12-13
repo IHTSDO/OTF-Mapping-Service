@@ -92,7 +92,7 @@ public class MappingServiceRest {
 	@GET
 	@Path("/mapping/project/name/{name}")
 	@ApiOperation(value = "Find project by name", notes = "Returns a MapProject as JSON given a project name.", response = MapProject.class)
-	@Produces({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML})
 	public MapProject getMapProjectForNameXML(@ApiParam(value = "Name of map project to fetch", required = true) @PathParam("name") String mapProjectName) { 
 		return mappingServiceJpa.getMapProject(mapProjectName);
 	}
@@ -201,26 +201,26 @@ public class MappingServiceRest {
 	 * @param mapSpecialist the map specialist
 	 * @return the map projects
 	 */
-	@GET
+	/**@GET
 	@Path("mapping/specialist/id/projects")
 	@ApiOperation(value = "Find all map specialists", notes = "Returns all MapSpecialists as Json")
 	@Produces({MediaType.APPLICATION_JSON})
 	public List<MapProject> getMapProjectsForSpecialistJson(MapSpecialist mapSpecialist) {
 		return mappingServiceJpa.getMapProjectsForMapSpecialist(mapSpecialist);
-	}
+	} */
 	
 	/**
 	 * Returns all projects for a map specialist in JSON format
 	 * @param mapSpecialist the map specialist
 	 * @return the map projects
 	 */
-	@GET
+	/**@GET
 	@Path("mapping/specialist/id/projects")
 	@ApiOperation(value = "Find all map specialists", notes = "Returns all MapSpecialists as Json")
 	@Produces({MediaType.APPLICATION_XML})
 	public List<MapProject> getMapProjectsForSpecialistXML(MapSpecialist mapSpecialist) {
 		return mappingServiceJpa.getMapProjectsForMapSpecialist(mapSpecialist);
-	}
+	} */
 	
 	//////////////////////////////////////////////////////////////
 	// MapSpecialist: findMapSpecialist
@@ -237,7 +237,7 @@ public class MappingServiceRest {
 	@Path("/mapping/specialist/query/{String}")
 	@ApiOperation(value = "Find specialists by query", notes = "Returns map specialists for a query as JSON")
 	@Produces({MediaType.APPLICATION_JSON})
-	public List<MapSpecialist> getMapspecialistsForQueryJson(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
+	public List<MapSpecialist> getMapSpecialistsForQueryJson(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
 		return mappingServiceJpa.findMapSpecialists(query);
 	}
 	
@@ -296,26 +296,26 @@ public class MappingServiceRest {
 	* @param mapLead the map lead
 	* @return the map projects
 	*/
-	@GET
+	/**@GET
 	@Path("mapping/lead/id/projects")
 	@ApiOperation(value = "Find all map leads", notes = "Returns all MapLeads as Json")
 	@Produces({MediaType.APPLICATION_JSON})
 	public List<MapProject> getMapProjectsForLeadJson(MapLead mapLead) {
 	return mappingServiceJpa.getMapProjectsForMapLead(mapLead);
-	}
+	} */
 	
 	/**
 	* Returns all projects for a map lead in JSON format
 	* @param mapLead the map lead
 	* @return the map projects
 	*/
-	@GET
+	/**@GET
 	@Path("mapping/lead/id/projects")
 	@ApiOperation(value = "Find all map leads", notes = "Returns all MapLeads as Json")
 	@Produces({MediaType.APPLICATION_XML})
 	public List<MapProject> getMapProjectsForLeadXML(MapLead mapLead) {
 	return mappingServiceJpa.getMapProjectsForMapLead(mapLead);
-	}
+	} */
 	
 	//////////////////////////////////////////////////////////////
 	// MapLead: findMapLead
@@ -332,7 +332,7 @@ public class MappingServiceRest {
 	@Path("/mapping/lead/query/{String}")
 	@ApiOperation(value = "Find leads by query", notes = "Returns map leads for a query as JSON")
 	@Produces({MediaType.APPLICATION_JSON})
-	public List<MapLead> getMapleadsForQueryJson(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
+	public List<MapLead> getMapLeadsForQueryJson(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
 	return mappingServiceJpa.findMapLeads(query);
 	}
 	
