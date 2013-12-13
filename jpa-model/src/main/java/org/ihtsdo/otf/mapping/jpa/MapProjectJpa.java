@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
@@ -86,13 +87,13 @@ public class MapProjectJpa implements MapProject {
 	private String destinationTerminologyVersion;
 	
 	/** The map leads. */
-	@ManyToMany(targetEntity=MapLeadJpa.class)
+	@ManyToMany(targetEntity=MapLeadJpa.class, fetch=FetchType.EAGER)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapLeadJpa.class)
 	private Set<MapLead> mapLeads = new HashSet<MapLead>();
 	
 	/** The map specialists. */
-	@ManyToMany(targetEntity=MapSpecialistJpa.class)
+	@ManyToMany(targetEntity=MapSpecialistJpa.class, fetch=FetchType.EAGER)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapSpecialistJpa.class)
 	private Set<MapSpecialist> mapSpecialists = new HashSet<MapSpecialist>();

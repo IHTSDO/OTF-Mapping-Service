@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -261,30 +262,33 @@ public class MappingServiceJpa implements MappingService {
 	* @param mapSpecialist the map specialist
 	* @return a List of MapProjects
 	*/
-	@SuppressWarnings("unchecked")
 	public List<MapProject> getMapProjectsForMapSpecialist(MapSpecialist mapSpecialist) {
 		
-		List<MapProject> m = null;
+		List<MapProject> mp_list;
+		List<MapProject> mp_list_return = new ArrayList<MapProject>();
+		Set<MapSpecialist> ms_set; 
 		manager = factory.createEntityManager();
 		
-		// TODO: Figure out pathing errors with non-mapped table
-		javax.persistence.Query query = manager.createQuery(
-
-				"SELECT p FROM MapProjectJpa as p " +
-				"INNER JOIN map_projects_map_specialists as s " +
-				"WITH p.id = s.map_projects_id " +
-				"WHERE s.mapSpecialists_id = :mapSpecialistId");	
 		
-		query.setParameter("mapSpecialistId", mapSpecialist.getId());
-				
-		// Try query
-		try {
-			m = (List<MapProject>) query.getResultList();
-		} catch (Exception e) {
-				
+		mp_list = getMapProjects();
+		
+		
+		System.out.println("getMapProjectsForMapSpecialist: found " + Integer.toString(mp_list.size()));
+		
+		// iterate and check for presence of mapSpecialist
+		for (MapProject mp : mp_list ) {
+			System.out.println("Retrieving specialists for " + mp.getName());
+			 ms_set = mp.getMapSpecialists();
+			
+			// if this map project does not contain mapSpecialist, remove from list
+			if (ms_set.contains(mapSpecialist)) {
+				mp_list.add(mp);
+			}
 		}
+		
+		// TODO: Manager is closed after last call, make this local instantiation (should happen everywhere)
 		manager.close();
-		return m;
+		return mp_list_return;
 	}
 	
 	/** 
@@ -369,31 +373,26 @@ public class MappingServiceJpa implements MappingService {
 	* @param mapLead the map lead
 	* @return a List of MapProjects
 	*/
-	@SuppressWarnings("unchecked")
 	public List<MapProject> getMapProjectsForMapLead(MapLead mapLead) {
 		
-		List<MapProject> m = null;
+		List<MapProject> mp_list = null;
+		Set<MapLead> ml_list = null; 
 		manager = factory.createEntityManager();
 		
-		// TODO: Figure out pathing errors with non-mapped table
-		javax.persistence.Query query = manager.createQuery(
-
-				"SELECT p FROM MapProjectJpa as p " +
-				"INNER JOIN map_projects_map_leads as l " +
-				"WITH p.id = l.map_projects_id " +
-				"WHERE l.mapSpecialists_id = :mapSpecialistId");
+		// retrieve all map projects
+		mp_list = getMapProjects();
 		
-		query.setParameter("mapSpecialists_id", mapLead.getId());
-		
-		// Try query
-		try {
-			m = (List<MapProject>) query.getResultList();
-		} catch (Exception e) {
-						
+		// iterate and check for presence of mapSpecialist
+		for (MapProject mp : mp_list) {
+			 ml_list = mp.getMapLeads();
+			
+			// if this map project does not contain mapSpecialist, remove from list
+			if (! ml_list.contains(mapLead)) {
+				mp_list.remove(mp);
+			}
 		}
-		
 		manager.close();
-		return m;
+		return mp_list;
 	}
 	
 	/**
