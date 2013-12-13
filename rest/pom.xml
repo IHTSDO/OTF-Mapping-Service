@@ -179,6 +179,34 @@
               </execution>
             </executions>
           </plugin>
+          
+      <!-- filter and copy persistence.xml for test case environment -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>src/test/resources</outputDirectory>
+              <filters>
+                <!-- Always assume "dev" configuration for running test -->
+                <filter>${project.build.directory}/generated-resources/resources/filters.properties.dev</filter>
+              </filters>
+              <resources>
+                <resource>
+                  <directory>src/test/config</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
         </plugins>
       </build>
     </profile>
