@@ -52,16 +52,26 @@ public class MapProjectJpaTest {
 	/** The audit history reader. */
 	private static AuditReader reader;
 	
-	private static MapProjectJpa mapProject;
+	/** The mapping to ICD10CM. */
+	private static MapProjectJpa mapProject1;
+	
+	/** The mapping to ICD9CM. */
+	private static MapProjectJpa mapProject3;
 
 	/** The test ref set id. */
 	private static Long testRefSetId = new Long("123456789");
+	
+	/** The test ref set id for the mapping to ICD9CM. */
+	private static Long testRefSetId3 = new Long("345678912");
 
-	/** The test name. */
+	/** The test name for the mapping to ICD10CM. */
 	private static String testName = "SNOMEDCT to ICD10CM Mapping";
 
 	/** The updated test name. */
 	private static String testName2 = "Updated SNOMEDCT to ICD10CM Mapping";
+	
+	/** The test name for the mapping to ICD9CM. */
+	private static String testName3 = "SNOMEDCT to ICD9CM Mapping";
 	
 	/** The test source terminology. */
 	private static String testSourceTerminology = "SNOMEDCT";
@@ -72,6 +82,9 @@ public class MapProjectJpaTest {
 	/** The test destination terminology. */
 	private static String testDestinationTerminology = "ICD10CM";
 
+	/** The test destination terminology for the mapping to ICD9CM. */
+	private static String testDestinationTerminology3 = "ICD9CM";
+	
 	/** The test destination terminology version. */
 	private static String testDestinationTerminologyVersion = "2010";
 
@@ -96,6 +109,9 @@ public class MapProjectJpaTest {
 		manager = factory.createEntityManager();
 		fullTextEntityManager = Search.getFullTextEntityManager(manager);
 
+		fullTextEntityManager.purgeAll(MapProjectJpa.class);
+		fullTextEntityManager.flushToIndexes();
+		
 		// load test objects
 		EntityTransaction tx = manager.getTransaction();
 		try {
@@ -109,7 +125,7 @@ public class MapProjectJpaTest {
 		}
 
 		// create indexes
-		try {
+		/**try {
 			FullTextEntityManager fullTextEntityManager =
 					Search.getFullTextEntityManager(manager);
 			fullTextEntityManager.purgeAll(ConceptJpa.class);
@@ -121,7 +137,7 @@ public class MapProjectJpaTest {
 		} catch (Throwable e) {
 			e.printStackTrace();
 			fail("Indexing failed.");
-		}
+		}*/
 		
 		// create audit reader for history records
 		reader = AuditReaderFactory.get( manager );
@@ -135,7 +151,7 @@ public class MapProjectJpaTest {
 
 		EntityTransaction tx = manager.getTransaction();
 		try {
-			System.out.println("Testing load of MapProjects...");
+			System.out.println("testMapProjectLoad()...");
 
 			tx.begin();
 			confirmLoad();
@@ -156,42 +172,59 @@ public class MapProjectJpaTest {
 	 */
 	private static void loadMapProjects() throws Exception {
 
-		mapProject = new MapProjectJpa();
+		// create initial map project mapping to ICD10CM
+		mapProject1 = new MapProjectJpa();
 
-		mapProject.setName(testName);
-		mapProject.setRefSetId(testRefSetId);
-		mapProject.setSourceTerminology(testSourceTerminology);
-		mapProject.setSourceTerminologyVersion(testSourceTerminologyVersion);
-		mapProject.setDestinationTerminology(testDestinationTerminology);
-		mapProject
+		mapProject1.setName(testName);
+		mapProject1.setRefSetId(testRefSetId);
+		mapProject1.setSourceTerminology(testSourceTerminology);
+		mapProject1.setSourceTerminologyVersion(testSourceTerminologyVersion);
+		mapProject1.setDestinationTerminology(testDestinationTerminology);
+		mapProject1
 				.setDestinationTerminologyVersion(testDestinationTerminologyVersion);
-		mapProject.setBlockStructure(testBlockStructure);
-		mapProject.setGroupStructure(testGroupStructure);
-		mapProject.setPublished(testPublished);
-		manager.persist(mapProject);
+		mapProject1.setBlockStructure(testBlockStructure);
+		mapProject1.setGroupStructure(testGroupStructure);
+		mapProject1.setPublished(testPublished);
+		manager.persist(mapProject1);
+		
+		// create secondary map project mapping to ICD9CM
+		mapProject3 = new MapProjectJpa();
+
+		mapProject3.setName(testName3);
+		mapProject3.setRefSetId(testRefSetId3);
+		mapProject3.setSourceTerminology(testSourceTerminology);
+		mapProject3.setSourceTerminologyVersion(testSourceTerminologyVersion);
+		mapProject3.setDestinationTerminology(testDestinationTerminology3);
+		mapProject3
+				.setDestinationTerminologyVersion(testDestinationTerminologyVersion);
+		mapProject3.setBlockStructure(testBlockStructure);
+		mapProject3.setGroupStructure(testGroupStructure);
+		mapProject3.setPublished(testPublished);
+		manager.persist(mapProject3);
 
 		MapLeadJpa mapLeadBrian = new MapLeadJpa();
 		mapLeadBrian.setName("Brian");
 		mapLeadBrian.setUserName("bcarlsen");
 		mapLeadBrian.setEmail("***REMOVED***");
 		manager.persist(mapLeadBrian);
-		mapProject.addMapLead(mapLeadBrian);
+		mapProject1.addMapLead(mapLeadBrian);
 
 		MapLeadJpa mapLeadRory = new MapLeadJpa();
 		mapLeadRory.setName("Rory");
 		mapLeadRory.setUserName("rda");
 		mapLeadRory.setEmail("***REMOVED***");
 		manager.persist(mapLeadRory);
-		mapProject.addMapLead(mapLeadRory);
+		mapProject1.addMapLead(mapLeadRory);
 
 		MapSpecialistJpa mapSpecialistDeborah = new MapSpecialistJpa();
 		mapSpecialistDeborah.setName("Deborah");
 		mapSpecialistDeborah.setUserName("dshapiro");
 		mapSpecialistDeborah.setEmail("***REMOVED***");
 		manager.persist(mapSpecialistDeborah);
-		mapProject.addMapSpecialist(mapSpecialistDeborah);
+		mapProject1.addMapSpecialist(mapSpecialistDeborah);
 
-		
+	  // test adding same map lead to multiple projects
+		//mapProject3.addMapLead(mapLeadBrian);		
 
 	}
 
@@ -228,21 +261,23 @@ public class MapProjectJpaTest {
 	@Test
 	public void testMapProjectIndex() {
 
-		System.out.println("Testing indexes...");
+		System.out.println("testMapProjectIndex()...");
 
 		try {
 			SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 
 			QueryParser queryParser =
 					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(ConceptJpa.class));
+							searchFactory.getAnalyzer(MapProjectJpa.class));
 
 			// test index on refSetId
 			Query luceneQuery = queryParser.parse("refSetId:" + testRefSetId);
 			FullTextQuery fullTextQuery =
 					fullTextEntityManager.createFullTextQuery(luceneQuery);
 			List<MapProject> results = fullTextQuery.getResultList();
+			System.out.println("results.size() " + results.size());
 			for (MapProject mapProject : results) {
+				System.out.println("mapProject.getName() " + mapProject.getName());
 				assertEquals(mapProject.getName(), testName);
 			}
 			assertTrue("results.size() " + results.size(), results.size() > 0);
@@ -251,11 +286,12 @@ public class MapProjectJpaTest {
 			luceneQuery = queryParser.parse("name:" + testName);
 			fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
 			results = fullTextQuery.getResultList();
+			System.out.println("results.size() " + results.size());
 			for (MapProject mapProject : results) {
 				assertEquals(mapProject.getRefSetId(), testRefSetId);
 			}
 			assertTrue("results.size() " + results.size(), results.size() > 0);
-
+      
 			// test index on source terminology version
 			luceneQuery =
 					queryParser.parse("sourceTerminologyVersion:"
@@ -263,7 +299,7 @@ public class MapProjectJpaTest {
 			fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
 			results = fullTextQuery.getResultList();
 			for (MapProject mapProject : results) {
-				assertEquals(mapProject.getRefSetId(), testRefSetId);
+				assertEquals(mapProject.getSourceTerminology(), testSourceTerminology);
 			}
 			assertTrue("results.size() " + results.size(), results.size() > 0);
 
@@ -295,7 +331,7 @@ public class MapProjectJpaTest {
 			fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
 			results = fullTextQuery.getResultList();
 			for (MapProject mapProject : results) {
-				assertEquals(mapProject.getRefSetId(), testRefSetId);
+				assertEquals(mapProject.getSourceTerminologyVersion(), testSourceTerminologyVersion);
 			}
 			assertTrue("results.size() " + results.size(), results.size() > 0);
 
@@ -309,6 +345,9 @@ public class MapProjectJpaTest {
 	 */
 	@Test
 	public void testMapProjectAuditReader() {
+		
+		System.out.println("testMapProjectAuditReader()...");
+
 		// report initial number of revisions on MapProject object
 		List<Number> revNumbers = reader.getRevisions(MapProjectJpa.class, 1L);
 		assertTrue(revNumbers.size() == 1);
@@ -316,16 +355,16 @@ public class MapProjectJpaTest {
 		
 		// make a change to MapProject
 		EntityTransaction tx = manager.getTransaction();
+		MapSpecialistJpa mapSpecialistPatrick = new MapSpecialistJpa();
 		try {
 			tx.begin();
-			MapSpecialistJpa mapSpecialistPatrick = new MapSpecialistJpa();
 			mapSpecialistPatrick.setName("Patrick");
 			mapSpecialistPatrick.setUserName("pgranvold");
 			mapSpecialistPatrick.setEmail("***REMOVED***");
 			manager.persist(mapSpecialistPatrick);
-			mapProject.setName(testName2);
-			manager.persist(mapProject);
-			mapProject.addMapSpecialist(mapSpecialistPatrick);
+			mapProject1.setName(testName2);
+			manager.persist(mapProject1);
+			mapProject1.addMapSpecialist(mapSpecialistPatrick);
 			tx.commit();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -342,8 +381,9 @@ public class MapProjectJpaTest {
 		tx = manager.getTransaction();
 		try {
 			tx.begin();			
-			mapProject.setName(testName);
-			manager.persist(mapProject);
+			mapProject1.setName(testName);
+			mapProject1.removeMapSpecialist(mapSpecialistPatrick);
+			manager.persist(mapProject1);
 			tx.commit();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -355,7 +395,7 @@ public class MapProjectJpaTest {
 	/**
 	 * Clean up.
 	 */
-	@AfterClass
+	/**@AfterClass
 	public static void cleanUp() {	
 		EntityTransaction tx = manager.getTransaction();
 	
@@ -398,6 +438,6 @@ public class MapProjectJpaTest {
 		}
 		manager.close();
 		factory.close();
-	}
+	} */
 
 }
