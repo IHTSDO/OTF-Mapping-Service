@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.rest;
+/*package org.ihtsdo.otf.mapping.rest;
 
 
 import java.util.List;
@@ -10,23 +10,23 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 
-/**
+*//**
  * The Class MapProjectJpaTest.
  * 
  * Provides test cases
  * 1. confirm MapProject data load returns expected data
  * 2. confirms indexed fields are indexed
  * 3. confirms MapProject is audited and changes are logged in audit table
- */
+ *//*
 public class MappingServiceRestTest {
 
-	/** The edit mapping service */
+	*//** The edit mapping service *//*
 	private static MappingServiceRest service = new MappingServiceRest();
 
-	/**
+	*//**
 	 * Creates db tables, load test objects and create indexes to prepare for test
 	 * cases.
-	 */
+	 *//*
 	@BeforeClass
 	public static void init() {
 		
@@ -35,10 +35,10 @@ public class MappingServiceRestTest {
 	}
 	
 	
-	/** 
+	*//** 
 	 * Test retrieval of existing database elements
 	 * @throws Exception the exception
-	 */
+	 *//*
 	@Test
 	public void testRetrieveElements() throws Exception {
 		System.out.println("Testing element add...");
@@ -58,7 +58,7 @@ public class MappingServiceRestTest {
 			service.getMapProjectForNameJson(m.getName());
 		}
 		
-/*		// retrieve projects by specialist
+		// retrieve projects by specialist
 		for (MapSpecialist m : specialists) {
 			service.getMapProjectsForSpecialistJson(m);
 		}
@@ -66,7 +66,7 @@ public class MappingServiceRestTest {
 		// retrieve projects by lead
 		for (MapLead m : leads) {
 			service.getMapProjectsForLeadJson(m);
-		}*/
+		}
 		
 		
 		
@@ -74,3 +74,4 @@ public class MappingServiceRestTest {
 	
 	
 }
+*/

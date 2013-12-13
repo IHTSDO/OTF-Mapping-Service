@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
@@ -27,9 +26,9 @@ import org.junit.Test;
 public class EditMappingServiceTest {
 
 	/** The edit mapping service */
-	private static EditMappingServiceJpa editService = new EditMappingServiceJpa();
+	private static EditMappingServiceJpa editService;
 	
-	private static MappingServiceJpa service = new MappingServiceJpa();
+	private static MappingServiceJpa service;
 
 	/**
 	 * Creates db tables, load test objects and create indexes to prepare for test
@@ -40,6 +39,8 @@ public class EditMappingServiceTest {
 		
 		System.out.println("Initializing EditMappingServiceJpa");
 
+		service = new MappingServiceJpa();
+		editService = new EditMappingServiceJpa();
 	}
 	
 	/**
@@ -145,7 +146,7 @@ public class EditMappingServiceTest {
 		specialists.add(mapSpecialist);
 		
 		MapProject mapProject = new MapProjectJpa();
-		mapProject.setName("Project Foo");
+		mapProject.setName("ProjectFoo");
 		mapProject.setRefSetId(new Long("5781349"));
 		mapProject.setSourceTerminology("SNOMEDCT");
 		mapProject.setSourceTerminologyVersion("20130731");
@@ -159,7 +160,7 @@ public class EditMappingServiceTest {
 		projects.add(mapProject);
 		
 		mapProject = new MapProjectJpa();
-		mapProject.setName("Project Bar");
+		mapProject.setName("ProjectBar");
 		mapProject.setRefSetId(new Long("5781347179"));
 		mapProject.setSourceTerminology("SNOMEDCT");
 		mapProject.setSourceTerminologyVersion("20130731");
@@ -173,7 +174,7 @@ public class EditMappingServiceTest {
 		projects.add(mapProject);
 		
 		mapProject = new MapProjectJpa();
-		mapProject.setName("Project WUNDERBAR");
+		mapProject.setName("ProjectWUNDERBAR");
 		mapProject.setRefSetId(new Long("5235669"));
 		mapProject.setSourceTerminology("SNOMEDCT");
 		mapProject.setSourceTerminologyVersion("20130731");
@@ -188,7 +189,7 @@ public class EditMappingServiceTest {
 		projects.add(mapProject);
 		
 		mapProject = new MapProjectJpa();
-		mapProject.setName("Chinchilla Apocalypse");
+		mapProject.setName("ChinchillaApocalypse");
 		mapProject.setRefSetId(new Long("46381358"));
 		mapProject.setSourceTerminology("Chinchilla Docility");
 		mapProject.setSourceTerminologyVersion("20131201");

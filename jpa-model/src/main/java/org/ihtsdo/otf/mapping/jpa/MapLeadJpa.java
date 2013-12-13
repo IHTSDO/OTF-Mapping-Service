@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Indexed;
 import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
 /**
  * The Class MapLeadJpa.
@@ -111,5 +112,19 @@ public class MapLeadJpa implements MapLead {
 				 this.getEmail() + "," +
 				 this.getName();
 	 }
+	
+
+	/**
+	 * Tests equality with another map specialist
+	 * @param mapLead the map specialist to be compared
+	 * @return boolean equality
+	 */
+	public boolean isEqual(MapLead mapLead) {
+		return ((this.id.compareTo(mapLead.getId()) == 0) &&
+				 this.name.equals(mapLead.getName())) &&
+				 this.userName.equals(mapLead.getUserName()) &&
+				 this.email.equals(mapLead.getEmail())
+						 ? true : false;
+	}
 
 }
