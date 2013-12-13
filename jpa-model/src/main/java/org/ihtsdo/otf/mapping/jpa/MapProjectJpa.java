@@ -3,19 +3,16 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.hibernate.annotations.Target;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
@@ -27,7 +24,6 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
-import org.ihtsdo.otf.mapping.rf2.jpa.AttributeValueRefSetMemberJpa;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -90,13 +86,13 @@ public class MapProjectJpa implements MapProject {
 	private String destinationTerminologyVersion;
 	
 	/** The map leads. */
-	@OneToMany(targetEntity=MapLeadJpa.class)
+	@ManyToMany(targetEntity=MapLeadJpa.class)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapLeadJpa.class)
 	private Set<MapLead> mapLeads = new HashSet<MapLead>();
 	
 	/** The map specialists. */
-	@OneToMany(targetEntity=MapSpecialistJpa.class)
+	@ManyToMany(targetEntity=MapSpecialistJpa.class)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapSpecialistJpa.class)
 	private Set<MapSpecialist> mapSpecialists = new HashSet<MapSpecialist>();
