@@ -332,7 +332,7 @@ public class MappingServiceRest {
 	@Path("/mapping/lead/query/{String}")
 	@ApiOperation(value = "Find leads by query", notes = "Returns map leads for a query as JSON")
 	@Produces({MediaType.APPLICATION_JSON})
-	public List<MapLead> getMapleadsForQueryJson(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
+	public List<MapLead> getMapLeadsForQueryJson(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
 	return mappingServiceJpa.findMapLeads(query);
 	}
 	
