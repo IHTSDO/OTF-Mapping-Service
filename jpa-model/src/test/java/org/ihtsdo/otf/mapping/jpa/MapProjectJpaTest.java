@@ -224,7 +224,7 @@ public class MapProjectJpaTest {
 		mapProject1.addMapSpecialist(mapSpecialistDeborah);
 
 	  // test adding same map lead to multiple projects
-		//mapProject3.addMapLead(mapLeadBrian);		
+		mapProject3.addMapLead(mapLeadBrian);		
 
 	}
 
