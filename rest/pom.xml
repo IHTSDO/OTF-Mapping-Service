@@ -151,7 +151,13 @@
                   <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
                 </configuration>
               </execution>
-    
+            </executions>
+          </plugin>
+          <!-- filter and copy persistence.xml -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
               <execution>
                 <id>copy-resources</id>
                 <phase>process-sources</phase>
