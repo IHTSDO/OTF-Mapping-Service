@@ -80,7 +80,14 @@ public class SampledataMojo extends AbstractMojo {
 
 			EntityManagerFactory factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 			manager = factory.createEntityManager();
+			EntityTransaction tx = manager.getTransaction();
+			tx.begin();
+			manager.createQuery("delete from MapSpecialistJpa").executeUpdate();
+			manager.createQuery("delete from MapLeadJpa").executeUpdate();
+			manager.createQuery("delete from MapProjectJpa").executeUpdate();
+			tx.commit();
 
+			
 			/** The lists */
 			List<MapProject> projects = new ArrayList<MapProject>();
 		    List<MapSpecialist> specialists = new ArrayList<MapSpecialist>();
@@ -115,6 +122,19 @@ public class SampledataMojo extends AbstractMojo {
 			mapSpecialist.setUserName("rda");
 			mapSpecialist.setEmail("***REMOVED***");
 			specialists.add(mapSpecialist);
+
+
+			tx.begin();
+			for (MapSpecialist m : specialists) {
+				System.out.println("Adding map specialist " + m.getName());
+				manager.persist(m);
+			}
+			
+			for (MapLead m : leads) {
+				System.out.println("Adding map lead " + m.getName());
+				manager.persist(m);
+			}
+			tx.commit();
 			
 			MapProject mapProject = new MapProjectJpa();
 			mapProject.setName("SNOMED to ICD10");
@@ -163,21 +183,11 @@ public class SampledataMojo extends AbstractMojo {
 			mapProject.addMapSpecialist(specialists.get(1));
 			projects.add(mapProject);
 			
-			EntityTransaction tx = manager.getTransaction();
+			
 			tx.begin();
-			for (MapSpecialist m : specialists) {
-				System.out.println("Adding map specialist " + m.getName());
-				manager.persist(m);
-			}
-			
-			for (MapLead m : leads) {
-				System.out.println("Adding map lead " + m.getName());
-				manager.persist(m);
-			}
-			
 			for (MapProject m : projects) {
 				System.out.println("Adding map project " + m.getName());
-				manager.persist(m);
+				manager.merge(m);
 			}
 			tx.commit();
 			System.out.println(".. done loading sample data");
