@@ -9,7 +9,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -44,7 +43,6 @@ public class MapProjectJpa implements MapProject {
 	@Id
 	@GeneratedValue
 	private Long id;
-	
 
 	/** The name. */
 	@Column(nullable = false)
@@ -63,8 +61,9 @@ public class MapProjectJpa implements MapProject {
 	private boolean published = false;
 
 	/** The allowable map advices for this MapProject. */
-	@OneToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
 	@JsonManagedReference
+	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 
 	/** The ref set id. */

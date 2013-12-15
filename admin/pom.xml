@@ -20,5 +20,6 @@
     <module>updatedb</module>
     <module>lucene</module>
     <module>loader</module>
+    <module>sampledata</module>
   </modules>
 </project>
