@@ -19,11 +19,12 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <skipTests>true</skipTests>
-    
+
     <!-- Set maven plugin versions -->
     <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
     <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
     <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
+    <maven.war.plugin.version>2.4</maven.war.plugin.version>
 
     <!-- Set third-party dependency versions -->
     <hibernate.version>4.1.0.Final</hibernate.version>
@@ -43,6 +44,26 @@
     <jackson-2.version>2.3.0</jackson-2.version>
     <swagger.version>1.3.0</swagger.version>
     <junit.version>4.11</junit.version>
+
+    <!-- List of managed classes for persistence.xml files -->
+    <managed.classes.list>
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.AbstractRefSetMember&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.AbstractDescriptionRefSetMember&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.AttributeValueRefSetMemberJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapProjectJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapLeadJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapAdviceJpa&lt;/class&gt;
+     </managed.classes.list>
 
   </properties>
 
@@ -223,6 +244,13 @@
             <skipTests>${skipTests}</skipTests>
           </configuration>
         </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>${maven.war.plugin.version}</version>
+        </plugin>
+
       </plugins>
     </pluginManagement>
   </build>
