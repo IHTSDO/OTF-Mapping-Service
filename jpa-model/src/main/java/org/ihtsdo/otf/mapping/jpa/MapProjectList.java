@@ -11,7 +11,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 /**
  * Container for map projects.
  */
-@XmlRootElement(name = "MapProjectList")
+@XmlRootElement(name = "mapProjectList")
 public class MapProjectList {
 
 	/** The map projects. */

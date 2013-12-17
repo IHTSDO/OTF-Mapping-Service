@@ -36,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Table(name = "map_projects")
 @Audited
 @Indexed
-@XmlRootElement
+@XmlRootElement(name="mapProject")
 public class MapProjectJpa implements MapProject {
 
 	/** The id. */
