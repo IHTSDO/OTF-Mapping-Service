@@ -1,6 +1,8 @@
 package org.ihtsdo.otf.mapping.jpa;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -53,7 +55,24 @@ public class MapProjectList {
 	public void setMapProjects(List<MapProject> mapProjects) {
 		this.mapProjects = new ArrayList<MapProject>();
 		this.mapProjects.addAll(mapProjects);
+		
+		
 	}
+	
+	/**
+	 * Sorts the map projects alphabetically by name
+	 */
+	public void sortMapProjects() {
+	
+		Collections.sort(this.mapProjects,
+			new Comparator<MapProject>() {
+				@Override
+				public int compare(MapProject o1, MapProject o2) {
+					return o1.getName().compareTo(o2.getName());
+				}
+
+			});
+}
 
 	/**
 	 * Gets the map projects.
