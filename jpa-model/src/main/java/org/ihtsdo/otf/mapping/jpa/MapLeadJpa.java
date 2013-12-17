@@ -20,7 +20,7 @@ import org.ihtsdo.otf.mapping.model.MapSpecialist;
 @Table(name = "map_leads")
 @Audited
 @Indexed
-@XmlRootElement
+@XmlRootElement(name="mapLead")
 public class MapLeadJpa implements MapLead {
 
 	/** The id. */

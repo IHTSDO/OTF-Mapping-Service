@@ -38,7 +38,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Table(name = "descriptions", uniqueConstraints=@UniqueConstraint(columnNames={"terminologyId", "terminology", "terminologyVersion"}))
 @Audited
 @Indexed
-@XmlRootElement
+@XmlRootElement(name="description")
 public class DescriptionJpa extends AbstractComponent implements Description {
 
 	/** The language code. */

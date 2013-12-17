@@ -19,7 +19,7 @@ import org.ihtsdo.otf.mapping.model.MapSpecialist;
 @Table(name = "map_specialists")
 @Audited
 @Indexed
-@XmlRootElement
+@XmlRootElement(name="mapSpecialist")
 public class MapSpecialistJpa implements MapSpecialist {
 
 	/** The id. */
