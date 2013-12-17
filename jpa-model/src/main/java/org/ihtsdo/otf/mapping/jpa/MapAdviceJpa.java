@@ -27,7 +27,7 @@ public class MapAdviceJpa implements MapAdvice {
 	private Long id;
 	
 	/** The name. */
-	@Column(nullable = false, unique = true, length = 25)
+	@Column(nullable = false, unique = true, length = 255)
 	private String name;
 	
 	/** The description. */
