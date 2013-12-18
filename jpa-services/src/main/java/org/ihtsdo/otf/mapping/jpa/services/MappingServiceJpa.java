@@ -240,8 +240,15 @@ public class MappingServiceJpa implements MappingService {
 		EntityManager manager = factory.createEntityManager();
 		EntityTransaction tx = manager.getTransaction();
 		try {
+			// first, remove the leads and specialists from this project
 			tx.begin();
 			MapProject mp = manager.find(MapProjectJpa.class, mapProjectId);
+			mp.setMapLeads(null);
+			mp.setMapSpecialists(null);
+			tx.commit();
+			
+			// now remove the project
+			tx.begin();
 			manager.remove(mp);
 			tx.commit();
 		} catch (Exception e) {
@@ -427,23 +434,23 @@ public class MappingServiceJpa implements MappingService {
 		EntityTransaction tx = manager.getTransaction();
 		// retrieve this map specialist
 		
-		MapSpecialist ml = manager.find(MapSpecialistJpa.class, mapSpecialistId);
+		MapSpecialist ms = manager.find(MapSpecialistJpa.class, mapSpecialistId);
 
 		// retrieve all projects on which this specialist appears
-		List<MapProject> projects = getMapProjectsForMapSpecialist(ml);
+		List<MapProject> projects = getMapProjectsForMapSpecialist(ms);
 		
 		try {
 			// remove specialist from all these projects
 			tx.begin();
 			for (MapProject mp : projects) {
-				mp.removeMapSpecialist(ml);
+				mp.removeMapSpecialist(ms);
 				manager.merge(mp);
 			}
 			tx.commit();
 
 			// remove specialist
 			tx.begin();
-			manager.remove(ml);
+			manager.remove(ms);
 			tx.commit();
 			
 		} catch (Exception e) {
