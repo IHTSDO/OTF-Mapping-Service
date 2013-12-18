@@ -36,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Table(name = "map_projects")
 @Audited
 @Indexed
-@XmlRootElement
+@XmlRootElement(name="mapProject")
 public class MapProjectJpa implements MapProject {
 
 	/** The id. */
@@ -143,8 +143,13 @@ public class MapProjectJpa implements MapProject {
 	 */
 	@Override
 	public void removeMapLead(MapLead mapLead) {
-		mapLeads.remove(mapLead);
+		MapLead m_remove = new MapLeadJpa();
+		for (MapLead m : this.mapLeads) {
+			if (m.equals(mapLead)) { m_remove = m; }
+		}
+		mapLeads.remove(m_remove);
 	}
+	
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapSpecialists()
@@ -176,7 +181,11 @@ public class MapProjectJpa implements MapProject {
 	 */
 	@Override
 	public void removeMapSpecialist(MapSpecialist mapSpecialist) {
-		mapSpecialists.remove(mapSpecialist);
+		MapSpecialist m_remove = new MapSpecialistJpa();
+		for (MapSpecialist m : this.mapSpecialists) {
+			if (m.equals(mapSpecialist)) { m_remove = m; }
+		}
+		mapSpecialists.remove(m_remove);
 	}
 
 	/* (non-Javadoc)
@@ -250,7 +259,7 @@ public class MapProjectJpa implements MapProject {
 
 
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)		
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)		
 	public String getName() {
 		return name;
 	}

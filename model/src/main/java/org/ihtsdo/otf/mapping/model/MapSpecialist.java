@@ -68,6 +68,6 @@ public interface MapSpecialist  {
 	 * @param mapSpecialist the map specialist to compare to
 	 * @return the boolean equality
 	 */
-	public boolean isEqual(MapSpecialist mapSpecialist);
+	public boolean equals(MapSpecialist mapSpecialist);
 
 }
