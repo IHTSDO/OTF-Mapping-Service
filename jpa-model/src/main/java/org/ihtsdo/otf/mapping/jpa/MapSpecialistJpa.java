@@ -121,7 +121,15 @@ public class MapSpecialistJpa implements MapSpecialist {
 	 * @param mapSpecialist the map specialist to be compared
 	 * @return boolean equality
 	 */
-	public boolean isEqual(MapSpecialist mapSpecialist) {	
+	@Override
+	public boolean equals(MapSpecialist mapSpecialist) {	
+		
+		if (mapSpecialist == this) {
+            return true;
+        }
+        if (mapSpecialist == null || mapSpecialist.getClass() != this.getClass()) {
+            return false;
+        }
 		return (this.id.compareTo(mapSpecialist.getId()) == 0 &&
 				this.name.equals(mapSpecialist.getName())) &&
 				this.userName.equals(mapSpecialist.getUserName()) &&
