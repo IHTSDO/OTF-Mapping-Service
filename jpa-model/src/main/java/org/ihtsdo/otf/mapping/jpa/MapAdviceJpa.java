@@ -18,7 +18,7 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 @Table(name = "map_advices")
 @Audited
 @Indexed
-@XmlRootElement
+@XmlRootElement(name="mapAdvice")
 public class MapAdviceJpa implements MapAdvice {
 
 	/** The id. */

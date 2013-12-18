@@ -16,7 +16,6 @@ import javax.persistence.Persistence;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
-import org.hibernate.CacheMode;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.search.SearchFactory;
@@ -24,19 +23,16 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
 /**
  * The Class MapProjectJpaTest.
  * 
- * Provides test cases
- * 1. confirm MapProject data load returns expected data
- * 2. confirms indexed fields are indexed
- * 3. confirms MapProject is audited and changes are logged in audit table
+ * Provides test cases 1. confirm MapProject data load returns expected data 2.
+ * confirms indexed fields are indexed 3. confirms MapProject is audited and
+ * changes are logged in audit table
  */
 public class MapProjectJpaTest {
 
@@ -48,19 +44,19 @@ public class MapProjectJpaTest {
 
 	/** The full text entity manager. */
 	private static FullTextEntityManager fullTextEntityManager;
-	
+
 	/** The audit history reader. */
 	private static AuditReader reader;
-	
+
 	/** The mapping to ICD10CM. */
 	private static MapProjectJpa mapProject1;
-	
+
 	/** The mapping to ICD9CM. */
 	private static MapProjectJpa mapProject3;
 
 	/** The test ref set id. */
 	private static Long testRefSetId = new Long("123456789");
-	
+
 	/** The test ref set id for the mapping to ICD9CM. */
 	private static Long testRefSetId3 = new Long("345678912");
 
@@ -69,24 +65,33 @@ public class MapProjectJpaTest {
 
 	/** The updated test name. */
 	private static String testName2 = "Updated SNOMEDCT to ICD10CM Mapping";
-	
+
 	/** The test name for the mapping to ICD9CM. */
 	private static String testName3 = "SNOMEDCT to ICD9CM Mapping";
-	
+
 	/** The test source terminology. */
 	private static String testSourceTerminology = "SNOMEDCT";
 
+	/** The test source terminology for the mapping to ICD9CM. */
+	private static String testSourceTerminology3 = "SNOMEDCT9";
+
 	/** The test source terminology version. */
 	private static String testSourceTerminologyVersion = "20130731";
+
+	/** The test source terminology version for the mapping to ICD9CM. */
+	private static String testSourceTerminologyVersion3 = "20130131";
 
 	/** The test destination terminology. */
 	private static String testDestinationTerminology = "ICD10CM";
 
 	/** The test destination terminology for the mapping to ICD9CM. */
 	private static String testDestinationTerminology3 = "ICD9CM";
-	
+
 	/** The test destination terminology version. */
 	private static String testDestinationTerminologyVersion = "2010";
+
+	/** The test destination terminology version for the mapping to ICD9CM. */
+	private static String testDestinationTerminologyVersion3 = "2009";
 
 	/** The test block structure. */
 	private static boolean testBlockStructure = true;
@@ -111,7 +116,7 @@ public class MapProjectJpaTest {
 
 		fullTextEntityManager.purgeAll(MapProjectJpa.class);
 		fullTextEntityManager.flushToIndexes();
-		
+
 		// load test objects
 		EntityTransaction tx = manager.getTransaction();
 		try {
@@ -125,22 +130,20 @@ public class MapProjectJpaTest {
 		}
 
 		// create indexes
-		/**try {
-			FullTextEntityManager fullTextEntityManager =
-					Search.getFullTextEntityManager(manager);
-			fullTextEntityManager.purgeAll(ConceptJpa.class);
-			fullTextEntityManager.flushToIndexes();
-			fullTextEntityManager.createIndexer(ConceptJpa.class)
-					.batchSizeToLoadObjects(25).cacheMode(CacheMode.NORMAL)
-					.threadsToLoadObjects(5).threadsForSubsequentFetching(20)
-					.startAndWait();
-		} catch (Throwable e) {
-			e.printStackTrace();
-			fail("Indexing failed.");
-		}*/
-		
+		/**
+		 * try { FullTextEntityManager fullTextEntityManager =
+		 * Search.getFullTextEntityManager(manager);
+		 * fullTextEntityManager.purgeAll(ConceptJpa.class);
+		 * fullTextEntityManager.flushToIndexes();
+		 * fullTextEntityManager.createIndexer(ConceptJpa.class)
+		 * .batchSizeToLoadObjects(25).cacheMode(CacheMode.NORMAL)
+		 * .threadsToLoadObjects(5).threadsForSubsequentFetching(20)
+		 * .startAndWait(); } catch (Throwable e) { e.printStackTrace();
+		 * fail("Indexing failed."); }
+		 */
+
 		// create audit reader for history records
-		reader = AuditReaderFactory.get( manager );
+		reader = AuditReaderFactory.get(manager);
 	}
 
 	/**
@@ -186,17 +189,17 @@ public class MapProjectJpaTest {
 		mapProject1.setGroupStructure(testGroupStructure);
 		mapProject1.setPublished(testPublished);
 		manager.persist(mapProject1);
-		
+
 		// create secondary map project mapping to ICD9CM
 		mapProject3 = new MapProjectJpa();
 
 		mapProject3.setName(testName3);
 		mapProject3.setRefSetId(testRefSetId3);
-		mapProject3.setSourceTerminology(testSourceTerminology);
-		mapProject3.setSourceTerminologyVersion(testSourceTerminologyVersion);
+		mapProject3.setSourceTerminology(testSourceTerminology3);
+		mapProject3.setSourceTerminologyVersion(testSourceTerminologyVersion3);
 		mapProject3.setDestinationTerminology(testDestinationTerminology3);
 		mapProject3
-				.setDestinationTerminologyVersion(testDestinationTerminologyVersion);
+				.setDestinationTerminologyVersion(testDestinationTerminologyVersion3);
 		mapProject3.setBlockStructure(testBlockStructure);
 		mapProject3.setGroupStructure(testGroupStructure);
 		mapProject3.setPublished(testPublished);
@@ -223,8 +226,8 @@ public class MapProjectJpaTest {
 		manager.persist(mapSpecialistDeborah);
 		mapProject1.addMapSpecialist(mapSpecialistDeborah);
 
-	  // test adding same map lead to multiple projects
-		mapProject3.addMapLead(mapLeadBrian);		
+		// test adding same map lead to multiple projects
+		mapProject3.addMapLead(mapLeadBrian);
 
 	}
 
@@ -275,23 +278,20 @@ public class MapProjectJpaTest {
 			FullTextQuery fullTextQuery =
 					fullTextEntityManager.createFullTextQuery(luceneQuery);
 			List<MapProject> results = fullTextQuery.getResultList();
-			System.out.println("results.size() " + results.size());
 			for (MapProject mapProject : results) {
-				System.out.println("mapProject.getName() " + mapProject.getName());
 				assertEquals(mapProject.getName(), testName);
 			}
 			assertTrue("results.size() " + results.size(), results.size() > 0);
 
 			// test index on name
-			luceneQuery = queryParser.parse("name:" + testName);
+			luceneQuery = queryParser.parse("name:\"" + testName3 + "\"");
 			fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
 			results = fullTextQuery.getResultList();
-			System.out.println("results.size() " + results.size());
 			for (MapProject mapProject : results) {
-				assertEquals(mapProject.getRefSetId(), testRefSetId);
+				assertEquals(mapProject.getRefSetId(), testRefSetId3);
 			}
 			assertTrue("results.size() " + results.size(), results.size() > 0);
-      
+
 			// test index on source terminology version
 			luceneQuery =
 					queryParser.parse("sourceTerminologyVersion:"
@@ -299,7 +299,7 @@ public class MapProjectJpaTest {
 			fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
 			results = fullTextQuery.getResultList();
 			for (MapProject mapProject : results) {
-				assertEquals(mapProject.getSourceTerminology(), testSourceTerminology);
+				assertEquals(mapProject.getRefSetId(), testRefSetId);
 			}
 			assertTrue("results.size() " + results.size(), results.size() > 0);
 
@@ -331,7 +331,8 @@ public class MapProjectJpaTest {
 			fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
 			results = fullTextQuery.getResultList();
 			for (MapProject mapProject : results) {
-				assertEquals(mapProject.getSourceTerminologyVersion(), testSourceTerminologyVersion);
+				assertEquals(mapProject.getSourceTerminologyVersion(),
+						testSourceTerminologyVersion);
 			}
 			assertTrue("results.size() " + results.size(), results.size() > 0);
 
@@ -339,20 +340,21 @@ public class MapProjectJpaTest {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Test map project audit reader history.
 	 */
 	@Test
 	public void testMapProjectAuditReader() {
-		
+
 		System.out.println("testMapProjectAuditReader()...");
 
 		// report initial number of revisions on MapProject object
 		List<Number> revNumbers = reader.getRevisions(MapProjectJpa.class, 1L);
 		assertTrue(revNumbers.size() == 1);
-		System.out.println("MapProject: " + 1L + " - Versions: " + revNumbers.toString());
-		
+		System.out.println("MapProject: " + 1L + " - Versions: "
+				+ revNumbers.toString());
+
 		// make a change to MapProject
 		EntityTransaction tx = manager.getTransaction();
 		MapSpecialistJpa mapSpecialistPatrick = new MapSpecialistJpa();
@@ -371,16 +373,17 @@ public class MapProjectJpaTest {
 			tx.rollback();
 			fail("Failure to modify mapProject records.");
 		}
-		
+
 		// report incremented number of revisions on MapProject object
 		revNumbers = reader.getRevisions(MapProjectJpa.class, 1L);
 		assertTrue(revNumbers.size() == 2);
-		System.out.println("MapProject: " + 1L + " - Versions: " + revNumbers.toString());
-	
+		System.out.println("MapProject: " + 1L + " - Versions: "
+				+ revNumbers.toString());
+
 		// revert change to MapProject
 		tx = manager.getTransaction();
 		try {
-			tx.begin();			
+			tx.begin();
 			mapProject1.setName(testName);
 			mapProject1.removeMapSpecialist(mapSpecialistPatrick);
 			manager.persist(mapProject1);
@@ -395,14 +398,15 @@ public class MapProjectJpaTest {
 	/**
 	 * Clean up.
 	 */
-	/**@AfterClass
-	public static void cleanUp() {	
+	@AfterClass
+	public static void cleanUp() {
 		EntityTransaction tx = manager.getTransaction();
-	
+
 		// truncate tables
 		try {
-			tx.begin();	
-			javax.persistence.Query query = manager.createNativeQuery("DELETE FROM map_projects_map_advices");
+			tx.begin();
+			javax.persistence.Query query =
+					manager.createNativeQuery("DELETE FROM map_projects_map_advices");
 			query.executeUpdate();
 			query = manager.createNativeQuery("DELETE FROM map_advices");
 			query.executeUpdate();
@@ -410,21 +414,26 @@ public class MapProjectJpaTest {
 			query.executeUpdate();
 			query = manager.createNativeQuery("DELETE FROM map_leads");
 			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_projects_map_specialists");
+			query =
+					manager.createNativeQuery("DELETE FROM map_projects_map_specialists");
 			query.executeUpdate();
 			query = manager.createNativeQuery("DELETE FROM map_specialists");
 			query.executeUpdate();
 			query = manager.createNativeQuery("DELETE FROM map_projects");
 			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_projects_map_advices_aud");
+			query =
+					manager.createNativeQuery("DELETE FROM map_projects_map_advices_aud");
 			query.executeUpdate();
 			query = manager.createNativeQuery("DELETE FROM map_advices_aud");
 			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_projects_map_leads_aud");
+			query =
+					manager.createNativeQuery("DELETE FROM map_projects_map_leads_aud");
 			query.executeUpdate();
 			query = manager.createNativeQuery("DELETE FROM map_leads_aud");
 			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_projects_map_specialists_aud");
+			query =
+					manager
+							.createNativeQuery("DELETE FROM map_projects_map_specialists_aud");
 			query.executeUpdate();
 			query = manager.createNativeQuery("DELETE FROM map_specialists_aud");
 			query.executeUpdate();
@@ -438,6 +447,6 @@ public class MapProjectJpaTest {
 		}
 		manager.close();
 		factory.close();
-	} */
+	}
 
 }

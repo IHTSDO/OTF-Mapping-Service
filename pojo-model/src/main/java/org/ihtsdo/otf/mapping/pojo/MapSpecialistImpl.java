@@ -90,7 +90,7 @@ public class MapSpecialistImpl implements MapSpecialist {
 	 * @return boolean equality
 	 */
 	@Override
-	public boolean isEqual(MapSpecialist mapSpecialist) {
+	public boolean equals(MapSpecialist mapSpecialist) {
 		return (this.id.compareTo(mapSpecialist.getId()) == 0 &&
 				this.name.equals(mapSpecialist.getName())) &&
 				this.userName.equals(mapSpecialist.getUserName()) &&
