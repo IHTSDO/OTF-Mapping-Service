@@ -63,6 +63,8 @@
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapLeadJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapAdviceJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MappingRevisionEntity&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MappingRevisionListener&lt;/class&gt;
      </managed.classes.list>
 
   </properties>

@@ -10,7 +10,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Indexed;
 import org.ihtsdo.otf.mapping.model.MapLead;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
 /**
  * The Class MapLeadJpa.
@@ -114,29 +113,57 @@ public class MapLeadJpa implements MapLead {
 	 }
 	
 
-	/**
-	 * Tests equality with an object
-	 * @param o the object to be compared
-	 * @return boolean equality
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
-	public boolean equals(Object o) {
-		
-		if (o == this) {
-	        return true;
-        }
-        if (o == null || o.getClass() != this.getClass()) {
-            return false;
-        }
-        
-        MapLead m = (MapLead) o;
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((userName == null) ? 0 : userName.hashCode());
+		return result;
+	}
 
-
-		return ((this.id.compareTo(m.getId()) == 0) &&
-				 this.name.equals(m.getName())) &&
-				 this.userName.equals(m.getUserName()) &&
-				 this.email.equals(m.getEmail())
-						 ? true : false;
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		MapLeadJpa other = (MapLeadJpa) obj;
+		if (email == null) {
+			if (other.email != null) {
+				return false;
+			}
+		} else if (!email.equals(other.email)) {
+			return false;
+		}
+		if (name == null) {
+			if (other.name != null) {
+				return false;
+			}
+		} else if (!name.equals(other.name)) {
+			return false;
+		}
+		if (userName == null) {
+			if (other.userName != null) {
+				return false;
+			}
+		} else if (!userName.equals(other.userName)) {
+			return false;
+		}
+		return true;
 	}
 
 }
