@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
 
+import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
@@ -25,14 +26,28 @@ public interface MappingService {
 	public MapProject getMapProject(Long id);
 	
 	/**
-	 * Return map project by project name
-	 * @param name the project name
-	 * @return the MapProject
+	 * Return map specialist for auto-generated id
+	 * @param id the auto-generated id
+	 * @return the MapLead
 	 */
-	public MapProject getMapProject(String name);
+	public MapLead getMapLead(Long id);
 	
 	/**
-	 * Retrieve all map projects
+	 * Return map lead for auto-generated id
+	 * @param id the auto-generated id
+	 * @return the mapSpecialist
+	 */
+	public MapSpecialist getMapSpecialist(Long id);
+	
+	/**
+	 * Return map advice for auto-generated id
+	 * @param id the auto-generated id
+	 * @return the mapAdvice
+	 */
+	public MapAdvice getMapAdvice(Long id);
+	
+	/**
+	 * Returns all map projects
 	 * @return a List of MapProjects
 	 */
 	public List<MapProject> getMapProjects();
@@ -49,12 +64,11 @@ public interface MappingService {
 	 */
 	public List<MapLead> getMapLeads();
 	
-	// TODO: Update this once MapAdvice is implemented
 	/**
 	 * Retrieve all map advice
 	 * @return a List of MapAdvices
 	 */
-	public List<String> getMapAdvice();
+	public List<MapAdvice> getMapAdvices();
 	
 	/**
 	 * Retrieve all map projects assigned to a particular map specialist
@@ -94,4 +108,11 @@ public interface MappingService {
 	 * @return the List of MapProjects
 	 */
 	public List<MapLead> findMapLeads(String query);
+	
+	/**
+	 * Query for MapAdvices
+	 * @param query the query
+	 * @return the List of MapAdvices
+	 */
+	public List<MapAdvice> findMapAdvices(String query);
 }
