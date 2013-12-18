@@ -70,6 +70,6 @@ public interface MapLead  {
 	 * @param mapLead the map lead to be compared
 	 * @return boolean equality
 	 */
-	public boolean isEqual(MapLead mapLead);
+	public boolean equals(Object o);
 
 }

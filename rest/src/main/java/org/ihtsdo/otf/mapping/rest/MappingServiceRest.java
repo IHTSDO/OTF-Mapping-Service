@@ -122,10 +122,10 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Find projects by query", notes = "Returns map projects for a query in either JSON or XML format", response = MapProjectList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectList getMapProjectsForQuery(
-			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
+			@ApiParam(value = "lucene search string", required = true) @PathParam("String") String query) {
 		MapProjectList mapProjects = new MapProjectList();
 		mapProjects.setMapProjects(mappingServiceJpa.findMapProjects(query));
-		mapProjects.sortMapProjects();		
+		//mapProjects.sortMapProjects();		
 		return mapProjects;
 	}
 	
