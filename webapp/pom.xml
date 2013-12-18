@@ -12,6 +12,7 @@
     <artifactId>mapping-webapp</artifactId>
     <name>OTF RF2 Webapp</name>
     <description>OTF RF2 webapp</description>
+    <packaging>war</packaging>
     
     <!-- Declare Project Dependency Versions -->
     <dependencies>

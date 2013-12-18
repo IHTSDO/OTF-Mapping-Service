@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Map Projects</title>
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+
+<script type="text/javascript" src="js/main.js"></script>
+</head>
+<body ng-app="" ng-controller="SecondCtrl">
+
+  <div>
+    <div>
+      <h1>{{data.message + " world2"}}</h1>
+      <div ng-repeat="mapProject in mapProjects">
+        {{mapProject.name}} <br> 
+        source: {{mapProject.sourceTerminology}}
+        {{mapProject.sourceTerminologyVersion}} <br> 
+        destination: {{mapProject.destinationTerminology}}
+        {{mapProject.destinationTerminologyVersion}} <br> 
+        refSetId: {{mapProject.refSetId}} <br> 
+        <p ng-show="mapProject.mapLeads.length != 0">Leads</p>
+        <ul>
+          <li ng-repeat="(id, lead) in mapProject.mapLeads">
+            <a href="#/lead/{{id}}">{{lead.name}}</a>
+          </li>
+        </ul> 
+        <p ng-show="mapProject.mapSpecialists.length != 0">Specialists</p>
+        <ul>
+          <li ng-repeat="(id, specialist) in mapProject.mapSpecialists">
+            <a href="#/specialist/{{id}}">{{specialist.name}}</a>
+          </li>
+        </ul>
+        <p ng-show="mapProject.mapAdvices.length != 0">Advice</p>
+        <ul>
+          <li ng-repeat="(id, advice in mapProject.mapAdvices">
+            <a href="#/advice/{{id}}">{{advice.name}}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <h1>Map Projects</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Source Terminology</th>
+          <th>Source Version</th>
+          <th>Destination Terminology</th>
+          <th>Destination Version</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="mapProject in mapProjects">
+          <td><a href="#/name/{{id}}">{{mapProject.name}}</a></td>
+          <td>{{mapProject.sourceTerminology}}</td>
+          <td>{{mapProject.sourceTerminologyVersion}}</td>
+          <td>{{mapProject.destinationTerminology}}</td>
+          <td>{{mapProject.destinationTerminologyVersion}}</td>
+
+        </tr>
+      </tbody>
+
+    </table>
+
+  </div>
+  </div>
+  <script type="text/javascript" src="lib/angular/angular-resource.min.js"></script>
+  <script type="text/javascript" src="lib/angular/angular.min.js"></script>
+</body>
+</html>
