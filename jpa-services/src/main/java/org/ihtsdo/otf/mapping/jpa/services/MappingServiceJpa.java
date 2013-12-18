@@ -7,8 +7,7 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import org.apache.lucene.index.FieldInfo;
@@ -25,6 +24,7 @@ import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
+import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
@@ -84,18 +84,15 @@ public class MappingServiceJpa implements MappingService {
 		}
 	}
 	
-	
-	//////////////////////////////
-	// Basic retrieval services //
-	//////////////////////////////
-	
-	
 	////////////////////////////////////
 	// MapProject
 	// - getMapProjects
 	// - getMapProject(Long id)
 	// - getMapProject(String name)
 	// - findMapProjects(String query)
+	// - addMapProject(MapProject mapProject)
+	// - updateMapProject(MapProject mapProject)
+	// - removeMapProject(MapProject mapProject)
 	////////////////////////////////////
 	
 	/**
@@ -119,41 +116,6 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 		
 	}
-	
-	/**
-	* Return map project by project name
-	* @param name the project name
-	* @return the MapProject
-	*/
-	public MapProject getMapProject(String name) {
-		
-		MapProject m = null;
-		EntityManager manager = factory.createEntityManager();
-		
-		javax.persistence.Query query = manager.createQuery("select m from MapProjectJpa m where name = :name");
-		query.setParameter("name", name);
-		
-		//  Try to retrieve the single expected result
-		try {
-			m = (MapProject) query.getSingleResult();
-		
-		// no results
-		} catch (NoResultException e) {
-			System.out.println("Could not find project for name = " + name);
-
-		// multiple results
-		} catch (NonUniqueResultException e) {
-			System.out.println("Multiple results for name = " + name + " -> Query: " + query.toString());
-
-		} catch (Exception e) {
-			System.out.println("Exception for name = " + name + " -> Query: " + query.toString());
-			e.printStackTrace();
-		}
-		
-		manager.close();
-		return m;
-	}
-	
 		
 	/**
 	* Retrieve all map projects
@@ -228,11 +190,73 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 	}
 	
+	/**
+	 * Add a map project
+	 * @param mapProject the map project
+	 */
+	public void addMapProject(MapProject mapProject) {
+		EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		try {
+			tx.begin();
+			manager.persist(mapProject);
+			tx.commit();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		} finally {
+			manager.close();
+		}
+		
+	}
+	
+	/**
+	 * Update a map project
+	 * @param mapProject the changed map project
+	 */
+	public void updateMapProject(MapProject mapProject) {
+		EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		try {		
+			tx.begin();
+			manager.merge(mapProject);
+			tx.commit();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		} finally {
+			manager.close();
+		}
+	}
+	
+	/**
+	 * Remove (delete) a map project
+	 * @param mapProjectId the map project to be removed
+	 */
+	public void removeMapProject(Long mapProjectId) {
+		EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		try {
+			tx.begin();
+			MapProject mp = manager.find(MapProjectJpa.class, mapProjectId);
+			manager.remove(mp);
+			tx.commit();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		} finally {
+			manager.close();
+		}
+	}
+	
 	/////////////////////////////////////////////////////////////////
 	// MapSpecialist
 	// - getMapSpecialists() 
 	// - getMapProjectsForSpecialist(MapSpecialist mapSpecialist)
 	// - findMapSpecialists(String query)
+	// - addMapSpecialist(MapSpecialist mapSpecialist)
+	// - updateMapSpecialist(MapSpecialist mapSpecialist)
+	// - removeMapSpecialist(Long id)
 	/////////////////////////////////////////////////////////////////
 	
 	/**
@@ -255,6 +279,27 @@ public class MappingServiceJpa implements MappingService {
 		
 		manager.close();
 		return m;
+	}
+	
+	/**
+	* Return map specialist for auto-generated id
+	* @param id the auto-generated id
+	* @return the MapSpecialist
+	*/
+	public MapSpecialist getMapSpecialist(Long id) {
+		MapSpecialist m = null;
+		EntityManager manager = factory.createEntityManager();
+		
+		javax.persistence.Query query = manager.createQuery("select m from MapSpecialistJpa m where id = :id");
+		query.setParameter("id", id);
+		try {
+			m = (MapSpecialist) query.getSingleResult();
+		} catch (Exception e) {
+			System.out.println("Could not find map specialist for id = " + id.toString());
+		}
+		manager.close();
+		return m;
+		
 	}
 	
 	/**
@@ -330,11 +375,74 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 	}
 	
+	/**
+	 * Add a map specialist
+	 * @param mapSpecialist the map specialist
+	 */
+	public void addMapSpecialist(MapSpecialist mapSpecialist) {
+		EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		try {
+			tx.begin();
+			manager.persist(mapSpecialist);
+			tx.commit();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		} finally {
+			manager.close();
+		}
+		
+	}
+	
+	/**
+	 * Update a map specialist
+	 * @param mapSpecialist the changed map specialist
+	 */
+	public void updateMapSpecialist(MapSpecialist mapSpecialist) {
+		
+		EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		try {
+			tx.begin();
+			manager.merge(mapSpecialist);
+			tx.commit();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		} finally {
+			manager.close();
+		}
+	}
+	
+	/**
+	 * Remove (delete) a map specialist
+	 * @param mapSpecialistId the map specialist to be removed
+	 */
+	public void removeMapSpecialist(Long mapSpecialistId) {
+		EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		try {
+			tx.begin();
+			MapSpecialist mp = manager.find(MapSpecialistJpa.class, mapSpecialistId);
+			manager.remove(mp);
+			tx.commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			manager.close();
+		}
+	}
+	
+	
 	/////////////////////////////////////////////////////
 	// MapLead
 	// - getMapLeads() 
 	// - getMapProjectsForLead(mapSpecialist)
-	// - findMapSpecialists(String query)
+	// - findMapSpecialists(query)
+	// - addMapLead(mapLead)
+	// - updateMapLead(mapLead)
+	// - removeMapLead(id)
 	/////////////////////////////////////////////////////
 	
 	/**
@@ -344,19 +452,41 @@ public class MappingServiceJpa implements MappingService {
 	@SuppressWarnings("unchecked")
 	public List<MapLead> getMapLeads() {
 		
-		List<MapLead> m = null;
+		List<MapLead> mapLeads = new ArrayList<MapLead>();
+		
 		EntityManager manager = factory.createEntityManager();
 		javax.persistence.Query query = manager.createQuery("select m from MapLeadJpa m");
 		
 		// Try query
 		try {
-			m = (List<MapLead>) query.getResultList();
+			mapLeads = (List<MapLead>) query.getResultList();
 		} catch (Exception e) {
-			
+			e.printStackTrace();
 		}
 		
 		manager.close();
+		return mapLeads;
+	}
+	
+	/**
+	* Return map lead for auto-generated id
+	* @param id the auto-generated id
+	* @return the MapLead
+	*/
+	public MapLead getMapLead(Long id) {
+		MapLead m = null;
+		EntityManager manager = factory.createEntityManager();
+		
+		javax.persistence.Query query = manager.createQuery("select m from MapLeadJpa m where id = :id");
+		query.setParameter("id", id);
+		try {
+			m = (MapLead) query.getSingleResult();
+		} catch (Exception e) {
+			System.out.println("Could not find map lead for id = " + id.toString());
+		}
+		manager.close();
 		return m;
+		
 	}
 	
 	/**
@@ -428,6 +558,84 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 	}
 	
-	// TODO: Update this
-	public List<String> getMapAdvice() { return null; }
+	/**
+	 * Add a map lead
+	 * @param mapLead the map lead
+	 */
+	public void addMapLead(MapLead mapLead) {
+		try {
+			EntityManager manager = factory.createEntityManager();
+			EntityTransaction tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(mapLead);
+			tx.commit();
+			manager.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	/**
+	 * Update a map lead
+	 * @param mapLead the changed map lead
+	 */
+	public void updateMapLead(MapLead mapLead) {
+		EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		try {
+			tx.begin();
+			manager.merge(mapLead);
+			tx.commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			manager.close();
+		}
+	}
+	
+	/**
+	 * Remove (delete) a map lead
+	 * @param mapLeadId the map lead to be removed
+	 */
+	public void removeMapLead(Long mapLeadId) {
+		EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		try {
+			// delete related records from map_projects_map_leads
+			
+			MapLead mp = manager.find(MapLeadJpa.class, mapLeadId);
+			tx.begin();
+			manager.remove(mp);
+			tx.commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			manager.close();
+		}
+	}
+	
+	////////////////////////////////////
+	// MapAdvice
+	// - getMapAdvices
+	// - getMapAdvice(Long id)
+	// - findMapAdvices(String query)
+	////////////////////////////////////
+	
+	public List<MapAdvice> getMapAdvices() {
+		return null;
+	}
+	
+	public MapAdvice getMapAdvice(Long id) {
+		return null;
+	}
+	
+	public List<MapAdvice> findMapAdvices(String query) {
+		return null;
+	}
+
+	
+	
+	
+	
 }
