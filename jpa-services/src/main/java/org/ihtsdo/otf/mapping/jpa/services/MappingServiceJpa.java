@@ -158,6 +158,8 @@ public class MappingServiceJpa implements MappingService {
 		try {
 			SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 			Query luceneQuery;
+			
+			System.out.println("Entered try with query: " + query);
 		
 			// construct luceneQuery based on URL format
 			if (query.indexOf(':') == -1) { // no fields indicated
@@ -175,17 +177,18 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
+			System.out.println("Constructed luceneQuery");
+			
 			m = (List<MapProject>) fullTextEntityManager.createFullTextQuery(luceneQuery)
 														.getResultList();
+			
+			System.out.println("Returning " + Integer.toString(m.size()) + " projects");
 			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
 		}
-		
-		manager.close();
 		
 		return m;
 	}
@@ -237,8 +240,15 @@ public class MappingServiceJpa implements MappingService {
 		EntityManager manager = factory.createEntityManager();
 		EntityTransaction tx = manager.getTransaction();
 		try {
+			// first, remove the leads and specialists from this project
 			tx.begin();
 			MapProject mp = manager.find(MapProjectJpa.class, mapProjectId);
+			mp.setMapLeads(null);
+			mp.setMapSpecialists(null);
+			tx.commit();
+			
+			// now remove the project
+			tx.begin();
 			manager.remove(mp);
 			tx.commit();
 		} catch (Exception e) {
@@ -422,12 +432,29 @@ public class MappingServiceJpa implements MappingService {
 	public void removeMapSpecialist(Long mapSpecialistId) {
 		EntityManager manager = factory.createEntityManager();
 		EntityTransaction tx = manager.getTransaction();
+		// retrieve this map specialist
+		
+		MapSpecialist ms = manager.find(MapSpecialistJpa.class, mapSpecialistId);
+
+		// retrieve all projects on which this specialist appears
+		List<MapProject> projects = getMapProjectsForMapSpecialist(ms);
+		
 		try {
+			// remove specialist from all these projects
 			tx.begin();
-			MapSpecialist mp = manager.find(MapSpecialistJpa.class, mapSpecialistId);
-			manager.remove(mp);
+			for (MapProject mp : projects) {
+				mp.removeMapSpecialist(ms);
+				manager.merge(mp);
+			}
 			tx.commit();
+
+			// remove specialist
+			tx.begin();
+			manager.remove(ms);
+			tx.commit();
+			
 		} catch (Exception e) {
+			System.out.println("Failed to remove map specialist " + Long.toString(mapSpecialistId));
 			e.printStackTrace();
 		} finally {
 			manager.close();
@@ -601,18 +628,34 @@ public class MappingServiceJpa implements MappingService {
 	public void removeMapLead(Long mapLeadId) {
 		EntityManager manager = factory.createEntityManager();
 		EntityTransaction tx = manager.getTransaction();
+		// retrieve this map specialist
+		
+		MapLead ml = manager.find(MapLeadJpa.class, mapLeadId);
+
+		// retrieve all projects on which this lead appears
+		List<MapProject> projects = getMapProjectsForMapLead(ml);
+		
 		try {
-			// delete related records from map_projects_map_leads
-			
-			MapLead mp = manager.find(MapLeadJpa.class, mapLeadId);
+			// remove lead from all these projects
 			tx.begin();
-			manager.remove(mp);
+			for (MapProject mp : projects) {
+				mp.removeMapLead(ml);
+				manager.merge(mp);	
+			}
 			tx.commit();
+
+			// remove lead
+			tx.begin();
+			manager.remove(ml);
+			tx.commit();
+			
 		} catch (Exception e) {
+			System.out.println("Failed to remove map lead " + Long.toString(mapLeadId));
 			e.printStackTrace();
 		} finally {
 			manager.close();
 		}
+		
 	}
 	
 	////////////////////////////////////

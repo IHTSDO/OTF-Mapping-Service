@@ -75,14 +75,20 @@ public class MappingServiceTest {
 	/**
 	 * Close services after complete
 	 */
-	/*@AfterClass
+	//@AfterClass
 	public static void cleanup() {
 		
 		System.out.println("Cleaning up EditMappingServiceJpa");
 		
+		// close service
+		service.close();
+		
+		// create new database connection
+		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+		manager = factory.createEntityManager();
 		EntityTransaction tx = manager.getTransaction();
 		
-		// truncate tables
+		// remove remaining test data
 		try {
 			javax.persistence.Query query;	
 			tx.begin();	
@@ -110,6 +116,8 @@ public class MappingServiceTest {
 			
 			tx.commit();
 			
+			System.out.println("Cleanup complete");
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			tx.rollback();
@@ -118,7 +126,7 @@ public class MappingServiceTest {
 		
 		manager.close();
 		factory.close();
-	}*/
+	}
 	
 	private static void fail(String string) {
 		
@@ -412,8 +420,7 @@ public class MappingServiceTest {
 	 * Further test propagation of removal of lead/specialist on project
 	 * @throws Exception
 	 */
-	// TODO: This still needs some way to handle the map_projects_map_[leads/specialists] constraints
-	//@Test
+	@Test
 	public void testRemoveElements() throws Exception {
 		System.out.println("Testing element remove...");
 		
@@ -426,46 +433,46 @@ public class MappingServiceTest {
 		MapSpecialist specialist_removed = specialists.get(0);
 		MapLead lead_removed = leads.get(0);
 		
-		// test delete and envers audit of map specialist
+		// test delete of lead
 		try {
-			service.removeMapSpecialist(specialist_removed.getId());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Failed to remove map specialist");
-		}
-		
-		try {
+			System.out.println("Testing lead removal...");
 			service.removeMapLead(lead_removed.getId());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Failed to remove map lead");
 		}
 		
+		// test delete
+		if (service.getMapLead(lead_removed.getId()) != null) {
+			fail("Remove lead reported success, but lead still present in database!");
+		}
+		
+		
+		// test delete of specialist
 		try {
+			System.out.println("Testing specialist removal...");
+			service.removeMapSpecialist(specialist_removed.getId());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Failed to remove map specialist");
+		}
+		
+		if (service.getMapSpecialist(specialist_removed.getId()) != null) {
+			fail("Remove specialist reported success, but specialist still present in database!");
+		}
+		
+		// test delete of project
+		try {
+			System.out.println("Testing project removal...");
 			service.removeMapProject(project_removed.getId());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Failed to remove map project");
 		}
 		
-		// TODO Check expected audit results and add checks
-		
-		// check if specialist / lead delete propagates through project
-		
-		MapProject project = service.getMapProject(new Long(1)); // originally two leads and specialists on this project
-	
-		if (project.getMapSpecialists().size() != 1) {
-			fail("Removal of map specialist did not remove specialist from project");
-		} else if (!project.getMapSpecialists().contains(specialist_removed)) {
-			fail("Removal of map specialist resulted in wrong specialist being removed ");
+		if (service.getMapProject(project_removed.getId()) != null) {
+			fail("Remove project reported success, but project still present in database!");
 		}
-		
-		if (project.getMapLeads().size() != 1) {
-			fail("Removal of map lead did not remove specialist from project");
-		} else if (project.getMapLeads().contains(lead_removed)) {
-			fail("Removal of map lead resulted in wrong lead being removed");
-		}
-		
 		
 	}
 	

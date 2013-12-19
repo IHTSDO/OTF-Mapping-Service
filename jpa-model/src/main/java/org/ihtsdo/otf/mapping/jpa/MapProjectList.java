@@ -54,7 +54,9 @@ public class MapProjectList {
 	 */
 	public void setMapProjects(List<MapProject> mapProjects) {
 		this.mapProjects = new ArrayList<MapProject>();
-		this.mapProjects.addAll(mapProjects);
+		if (mapProjects != null) {
+			this.mapProjects.addAll(mapProjects);
+		}
 		
 		
 	}
