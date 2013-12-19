@@ -343,5 +343,111 @@ public class MapProjectJpa implements MapProject {
 				 
 	 }
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (blockStructure ? 1231 : 1237);
+		result =
+				prime
+						* result
+						+ ((destinationTerminology == null) ? 0 : destinationTerminology
+								.hashCode());
+		result =
+				prime
+						* result
+						+ ((destinationTerminologyVersion == null) ? 0
+								: destinationTerminologyVersion.hashCode());
+		result = prime * result + (groupStructure ? 1231 : 1237);
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result =
+				prime * result + ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
+		result = prime * result + ((mapLeads == null) ? 0 : mapLeads.hashCode());
+		result =
+				prime * result
+						+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + (published ? 1231 : 1237);
+		result = prime * result + ((refSetId == null) ? 0 : refSetId.hashCode());
+		result =
+				prime * result
+						+ ((sourceTerminology == null) ? 0 : sourceTerminology.hashCode());
+		result =
+				prime
+						* result
+						+ ((sourceTerminologyVersion == null) ? 0
+								: sourceTerminologyVersion.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MapProjectJpa other = (MapProjectJpa) obj;
+		if (blockStructure != other.blockStructure)
+			return false;
+		if (destinationTerminology == null) {
+			if (other.destinationTerminology != null)
+				return false;
+		} else if (!destinationTerminology.equals(other.destinationTerminology))
+			return false;
+		if (destinationTerminologyVersion == null) {
+			if (other.destinationTerminologyVersion != null)
+				return false;
+		} else if (!destinationTerminologyVersion
+				.equals(other.destinationTerminologyVersion))
+			return false;
+		if (groupStructure != other.groupStructure)
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (mapAdvices == null) {
+			if (other.mapAdvices != null)
+				return false;
+		} else if (!mapAdvices.equals(other.mapAdvices))
+			return false;
+		if (mapLeads == null) {
+			if (other.mapLeads != null)
+				return false;
+		} else if (!mapLeads.equals(other.mapLeads))
+			return false;
+		if (mapSpecialists == null) {
+			if (other.mapSpecialists != null)
+				return false;
+		} else if (!mapSpecialists.equals(other.mapSpecialists))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (published != other.published)
+			return false;
+		if (refSetId == null) {
+			if (other.refSetId != null)
+				return false;
+		} else if (!refSetId.equals(other.refSetId))
+			return false;
+		if (sourceTerminology == null) {
+			if (other.sourceTerminology != null)
+				return false;
+		} else if (!sourceTerminology.equals(other.sourceTerminology))
+			return false;
+		if (sourceTerminologyVersion == null) {
+			if (other.sourceTerminologyVersion != null)
+				return false;
+		} else if (!sourceTerminologyVersion.equals(other.sourceTerminologyVersion))
+			return false;
+		return true;
+	}
+
 
 }
