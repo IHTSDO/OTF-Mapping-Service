@@ -143,8 +143,16 @@ public class MapProjectJpa implements MapProject {
 	 */
 	@Override
 	public void removeMapLead(MapLead mapLead) {
+		/*MapLead m_remove = new MapLeadJpa();
+		for (MapLead m : this.mapLeads) {
+			if (m.equals(mapLead)) { m_remove = m; }
+		}
+		
+		mapLeads.remove(m_remove);*/
+		
 		mapLeads.remove(mapLead);
 	}
+	
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapSpecialists()
@@ -176,6 +184,11 @@ public class MapProjectJpa implements MapProject {
 	 */
 	@Override
 	public void removeMapSpecialist(MapSpecialist mapSpecialist) {
+		/*MapSpecialist m_remove = new MapSpecialistJpa();
+		for (MapSpecialist m : this.mapSpecialists) {
+			if (m.equals(mapSpecialist)) { m_remove = m; }
+		}
+		mapSpecialists.remove(m_remove);*/
 		mapSpecialists.remove(mapSpecialist);
 	}
 
