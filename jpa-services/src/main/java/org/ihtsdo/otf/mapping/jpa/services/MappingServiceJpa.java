@@ -68,7 +68,9 @@ public class MappingServiceJpa implements MappingService {
 				indexReaderAccessor.close(indexReader);
 			}
 		}
-		manager.close();
+		
+		if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
+		if (manager.isOpen()) { manager.close(); }
 		//System.out.println("ended init " + fieldNames.toString());
 	}
 	
@@ -112,7 +114,9 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			System.out.println("Could not find map project for id = " + id.toString());
 		}
-		manager.close();
+		
+		if (manager.isOpen()) { manager.close(); }
+		
 		return m;
 		
 	}
@@ -138,7 +142,8 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 		
-		manager.close();
+		if (manager.isOpen()) { manager.close(); }
+		
 		return m;
 	}
 	
@@ -158,8 +163,6 @@ public class MappingServiceJpa implements MappingService {
 		try {
 			SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 			Query luceneQuery;
-			
-			System.out.println("Entered try with query: " + query);
 		
 			// construct luceneQuery based on URL format
 			if (query.indexOf(':') == -1) { // no fields indicated
@@ -177,18 +180,14 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			System.out.println("Constructed luceneQuery");
-			
 			m = (List<MapProject>) fullTextEntityManager.createFullTextQuery(luceneQuery)
-														.getResultList();
-			
-			System.out.println("Returning " + Integer.toString(m.size()) + " projects");
-			
-			
+														.getResultList();		
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
 		}
+		
+		if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
+		if (manager.isOpen()) { manager.close(); }
 		
 		return m;
 	}
@@ -207,9 +206,9 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			
 			e.printStackTrace();
-		} finally {
-			manager.close();
 		}
+		
+		if (manager.isOpen()) { manager.close(); }
 		
 	}
 	
@@ -227,9 +226,9 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			
 			e.printStackTrace();
-		} finally {
-			manager.close();
 		}
+		
+		if (manager.isOpen()) { manager.close(); }
 	}
 	
 	/**
@@ -254,9 +253,9 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			
 			e.printStackTrace();
-		} finally {
-			manager.close();
 		}
+		
+		if (manager.isOpen()) { manager.close(); }
 	}
 	
 	/////////////////////////////////////////////////////////////////
@@ -287,7 +286,8 @@ public class MappingServiceJpa implements MappingService {
 
 		}
 		
-		manager.close();
+		if (manager.isOpen()) { manager.close(); }
+		
 		return m;
 	}
 	
@@ -307,7 +307,9 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			System.out.println("Could not find map specialist for id = " + id.toString());
 		}
-		manager.close();
+		
+		if (manager.isOpen()) { manager.close(); }
+		
 		return m;
 		
 	}
@@ -377,11 +379,11 @@ public class MappingServiceJpa implements MappingService {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
 		}
 		
-		manager.close();
+		if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
+		if (manager.isOpen()) { manager.close(); }
+		
 		return m;
 	}
 	
@@ -399,9 +401,9 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			
 			e.printStackTrace();
-		} finally {
-			manager.close();
 		}
+		
+		if (manager.isOpen()) { manager.close(); }
 		
 	}
 	
@@ -420,9 +422,9 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			
 			e.printStackTrace();
-		} finally {
-			manager.close();
 		}
+		
+		if (manager.isOpen()) { manager.close(); }
 	}
 	
 	/**
@@ -456,9 +458,9 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			System.out.println("Failed to remove map specialist " + Long.toString(mapSpecialistId));
 			e.printStackTrace();
-		} finally {
-			manager.close();
 		}
+		
+		if (manager.isOpen()) { manager.close(); }
 	}
 	
 	
@@ -491,7 +493,8 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 		
-		manager.close();
+		if (manager.isOpen()) { manager.close(); }
+		
 		return mapLeads;
 	}
 	
@@ -511,7 +514,9 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			System.out.println("Could not find map lead for id = " + id.toString());
 		}
-		manager.close();
+	
+		if (manager.isOpen()) { manager.close(); }
+		
 		return m;
 		
 	}
@@ -577,11 +582,11 @@ public class MappingServiceJpa implements MappingService {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
-		}
+		} 
 		
-		manager.close();
+		if (manager.isOpen()) { manager.close(); }
+		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
+		
 		return m;
 	}
 	
@@ -590,9 +595,9 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapLead the map lead
 	 */
 	public void addMapLead(MapLead mapLead) {
+		EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
 		try {
-			EntityManager manager = factory.createEntityManager();
-			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
 			manager.persist(mapLead);
 			tx.commit();
@@ -600,6 +605,8 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		if (manager.isOpen()) { manager.close(); }
 		
 	}
 	
@@ -616,9 +623,9 @@ public class MappingServiceJpa implements MappingService {
 			tx.commit();
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			manager.close();
 		}
+		
+		if (manager.isOpen()) { manager.close(); }
 	}
 	
 	/**
@@ -652,9 +659,9 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			System.out.println("Failed to remove map lead " + Long.toString(mapLeadId));
 			e.printStackTrace();
-		} finally {
-			manager.close();
 		}
+		
+		if (manager.isOpen()) { manager.close(); }
 		
 	}
 	
@@ -676,6 +683,123 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapAdvice> findMapAdvices(String query) {
 		return null;
 	}
+	
+	////////////////////////////////////
+	// MapAdvice
+	// - getMapAdvices
+	// - getMapAdvice(Long id)
+	// - findMapAdvices(String query)
+	////////////////////////////////////
+    public MapRecord getMapRecord(Long id) {
+    	MapLead m = null;
+		EntityManager manager = factory.createEntityManager();
+		
+		try {
+			m = manager.find(MapRecord.class, mapRecordId);
+		} catch (Exception e) {
+			System.out.println("Could not find map record for id = " + id.toString());
+		}
+	
+		if (manager.isOpen()) { manager.close(); }
+		
+		return m;
+    }
+    
+  /*  public List<MapRecord> getMapRecords(mapProjectId, sortingInfo, pageSize, page#) {
+    	///project/id/12345/records?sort=sortkey&pageSize=100&page=1
+    	return null;
+    }*/
+    
+    public List<MapRecord> findMapRecords(String query) {
+    	
+    	List<MapRecord> m = null;
+		EntityManager manager = factory.createEntityManager();
+		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
+		
+		try {
+				SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			Query luceneQuery;
+		
+			// construct luceneQuery based on URL format
+			if (query.indexOf(':') == -1) { // no fields indicated
+				MultiFieldQueryParser queryParser =
+						new MultiFieldQueryParser(Version.LUCENE_36,
+								fieldNames.toArray(new String[0]),
+								searchFactory.getAnalyzer(MapRecordJpa.class));
+				queryParser.setAllowLeadingWildcard(false);
+				luceneQuery = queryParser.parse(query);
+		
+			
+			} else { // field:value
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+						searchFactory.getAnalyzer(MapRecordJpa.class));
+				luceneQuery = queryParser.parse(query);
+			}
+			
+			m = (List<MapLead>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+														.getResultList();
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		if (manager.isOpen()) { manager.close(); }
+		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
+		
+		return m;
+    }
+    
+    public void addMapRecord(MapRecord mapRecord) {
+    	EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		
+		try {
+			tx.begin();
+			manager.persist(mapRecord);
+			tx.commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+			
+		if (manager.isOpen()) { manager.close(); }
+    }
+    
+    public void updateMapRecord(MapRecord mapRecord) {
+    	EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		try {
+			tx.begin();
+			manager.merge(mapRecord);
+			tx.commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		if (manager.isOpen()) { manager.close(); }
+    }
+    
+    public void removeMapRecord(Long id) {
+    	EntityManager manager = factory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		
+		// find the map record		
+		MapRecord m = manager.find(MapRecord.class, id);
+		
+		try {
+			// delete the map record
+			tx.begin();
+			manager.remove(m);
+			tx.commit();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		if (manager.isOpen()) { manager.close(); }
+		
+    }
+
 
 	
 	

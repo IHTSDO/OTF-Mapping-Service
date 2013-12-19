@@ -96,6 +96,22 @@ public class MappingServiceRest {
 		mapSpecialists.sortMapSpecialists();
 		return mapSpecialists;
 	}
+	
+	/**
+	 * Returns all map records in either JSON or XML format
+	 * 
+	 * @return the map records
+	 */
+	@GET
+	@Path("/record/records/")
+	@ApiOperation(value = "Find all map records", notes = "Returns all MapRecords in either JSON or XML format", response = MapRecordList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecords() {
+		MapRecordList mapRecords = new MapRecordList();
+		mapRecords.setMapRecords(mappingServiceJpa.getMapRecords());
+		mapRecords.sortMapRecords();
+		return mapRecords;
+	}
 
 	/**
 	 * Returns the project for a given id (auto-generated) in JSON format
@@ -193,6 +209,38 @@ public class MappingServiceRest {
 		return mapLeads;
 	}
 	
+	/**
+	 * Returns the specialist for a given id (auto-generated) in JSON format
+	 * 
+	 * @param mapSpecialistId the mapSpecialistId
+	 * @return the mapSpecialist
+	 */
+	@GET
+	@Path("/specialist/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find specialist by id", notes = "Returns a MapSpecialist given a specialist id in either JSON or XML format", response = MapSpecialist.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapSpecialist getMapSpecialistForId(
+			@ApiParam(value = "Id of map specialist to fetch", required = true) @PathParam("id") Long mapSpecialistId) {
+		return mappingServiceJpa.getMapSpecialist(mapSpecialistId);
+	}
+	
+	/**
+	 * Returns all map records for a lucene query
+	 * @param query the string query
+	 * @return the map records
+	 */
+	@GET
+	@Path("/record/query/{String}")
+	@ApiOperation(value = "Find records by query", notes = "Returns map records for a query in either JSON or XML format", response = MapRecordList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecordsForQuery(
+			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
+		MapRecordList mapRecords = new MapRecordList();
+		mapRecords.setMapRecords(mappingServiceJpa.findMapRecords(query));
+		mapRecords.sortMapRecords();		
+		return mapRecords;
+	}
+	
 	// ///////////////////////////////////////////////////
 	// MapProject:  Add (@PUT) functions
 	// - addMapProject
@@ -256,6 +304,26 @@ public class MappingServiceRest {
 
 		try {
 			mappingServiceJpa.addMapSpecialist(mapSpecialist);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * Adds a map record
+	 * @param mapRecordId the id of the map record, used for path
+	 * @param mapRecord the map record to be added
+	 * @return Response the response
+	 */
+	@PUT
+	@Path("/record/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Add a map record", notes = "Adds a MapRecord", response = MapRecord.class)
+	public Response addMapRecord(@ApiParam(value = "Id of map record to add", required = true) @PathParam("id") Long mapRecordId,
+							  @ApiParam(value = "The map record to add", required = true) MapRecord mapRecord) { 
+
+		try {
+			mappingServiceJpa.addMapRecord(mapRecord);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -331,6 +399,26 @@ public class MappingServiceRest {
 		return null;
 	}
 	
+	/**
+	 * Updates a map record
+	 * @param mapRecordId the id of the map record, used for path
+	 * @param mapRecord the map record to be added
+	 * @return Response the response
+	 */
+	@POST
+	@Path("/record/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Update a map record", notes = "Updates a map record", response = MapRecord.class)
+	public Response updateMapRecord(@ApiParam(value = "Id of map record to update", required = true) @PathParam("id") Long mapRecordId,
+							  @ApiParam(value = "The map record to update", required = true) MapRecord mapRecord) { 
+
+		try {
+			mappingServiceJpa.updateMapRecord(mapRecord);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	/////////////////////////////////////////////////////
 	// MapProject:  Removal (@DELETE) functions
 	// - removeMapProject
@@ -380,7 +468,20 @@ public class MappingServiceRest {
 		return null;
 	}
 	
-	// TODO: Add map advice section
+	/**
+	 * Removes a map record
+	 * @param mapRecordId the id of the map record to be deleted
+	 * @return Response the response
+	 */
+	@DELETE
+	@Path("/record/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Removes a map record", notes = "Removes a map record", response = MapRecord.class)
+	public Response removeMapRecord(@ApiParam(value = "Id of map record to remove", required = true) @PathParam("id") Long mapRecordId) { 
+
+		mappingServiceJpa. removeMapRecord(mapRecordId);
+		return null;
+	}
+
 
 	
 	
