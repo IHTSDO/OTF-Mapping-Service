@@ -105,7 +105,7 @@ mapProjectAppControllers.controller('MapSpecialistListCtrl',
 
 
 // not functioning, projectId is undefined for some reason
-mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', '$routeParams', 
+mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$routeParams',
    function ($scope, $http, $routeParams) {
 	  $scope.projectId = $routeParams.projectId;
 	  $http({
