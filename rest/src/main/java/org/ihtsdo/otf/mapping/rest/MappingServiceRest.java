@@ -114,6 +114,24 @@ public class MappingServiceRest {
 		mapRecords.sortMapRecords();
 		return mapRecords;
 	}
+	
+	/**
+	 * Returns all map projects for a map lead in either JSON or XML format
+	 * @param mapLeadId the map lead
+	 * @return the map projects
+	 */
+	@GET
+	@Path("/lead/id/{id:[0-9][0-9]*}/projects")
+	@ApiOperation(value = "Find all projects for map lead", notes = "Returns a MapLead's MapProjects in either JSON or XML format", response = MapProjectList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapProjectList getMapProjectsForLead(
+			@ApiParam(value = "Id of map lead to fetch projects for", required = true) @PathParam("id") Long mapLeadId) { 
+		MapProjectList mapProjects = new MapProjectList();	
+		MapLead mapLead = mappingServiceJpa.getMapLead(mapLeadId);
+		mapProjects.setMapProjects(mappingServiceJpa.getMapProjectsForMapLead(mapLead));
+		mapProjects.sortMapProjects();
+		return mapProjects;
+	}
 
 	/**
 	 * Returns the project for a given id (auto-generated) in JSON format

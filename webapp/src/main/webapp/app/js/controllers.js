@@ -1,15 +1,11 @@
 'use strict';
 
-/*  */
-
-var mapProjectApp = angular.module('mapProjectApp', []);
+var mapProjectAppControllers = angular.module('mapProjectAppControllers', ['ui.bootstrap']);
 
 var root = "http://localhost:8080/mapping-rest/mapping/";
  
-mapProjectApp.controller('MapProjectListCtrl', 
+mapProjectAppControllers.controller('MapProjectListCtrl', 
   function ($scope, $http) {
-
-    
       $http({
         url: root + "project/projects",
         dataType: "json",
@@ -20,20 +16,99 @@ mapProjectApp.controller('MapProjectListCtrl',
       }).success(function(data) {
         $scope.projects = data.mapProjects;
       }).error(function(error) {
+    	  $scope.error = "Error";
     });
  
     $scope.orderProp = 'id';	
   });
 
-mapProjectApp.controller('MapProjectDetailCtrl', 
+mapProjectAppControllers.controller('MapRecordListCtrl', 
   function ($scope, $http) {
-
-     $scope.getProject = function() {
-    	 
-      $scope.showProject = true;
-      $scope.showProjectsQuery = false;
-  
       $http({
+        url: root + "record/records",
+        dataType: "json",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).success(function(data) {
+        $scope.records = data.mapRecords;
+      }).error(function(error) {
+    	$scope.error = "Error";
+    });
+ 
+    $scope.orderProp = 'id';	
+  });
+
+mapProjectAppControllers.controller('MapLeadListCtrl', 
+  function ($scope, $http) {
+      $http({
+        url: root + "lead/leads",
+        dataType: "json",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).success(function(data) {
+        $scope.leads = data.mapLeads;
+      }).error(function(error) {
+    	  $scope.error = "Error";
+      });
+      
+      $scope.getProjects = function(id) {
+          $http({
+             url: root + "lead/id/" + id + "/projects",
+             dataType: "json",
+             method: "GET",
+             headers: {
+               "Content-Type": "application/json"
+             }
+           }).success(function(data) {
+             $scope.projects = data.mapProjects;
+           }).error(function(error) {
+         	  $scope.error = "Error";
+           });
+      };
+      
+    $scope.toggleEdit = function() {
+    	if($scope.editMode == false) {
+    		$scope.editMode = true;
+    		$scope.editModeValue = 'Stop Editing';
+    	} else {
+    		$scope.editMode = false;
+    		$scope.editModeValue = 'Edit';
+    	}
+    };
+ 
+    $scope.editMode = false;
+    $scope.editModeValue = 'Edit';
+    $scope.orderProp = 'id';	
+  });
+
+mapProjectAppControllers.controller('MapSpecialistListCtrl', 
+  function ($scope, $http) {
+      $http({
+        url: root + "specialist/specialists",
+        dataType: "json",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).success(function(data) {
+        $scope.specialists = data.mapSpecialists;
+      }).error(function(error) {
+    	  $scope.error = "Error";
+    });
+ 
+    $scope.orderProp = 'id';	
+  });
+
+
+// not functioning, projectId is undefined for some reason
+mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', '$routeParams', 
+   function ($scope, $http, $routeParams) {
+	  $scope.projectId = $routeParams.projectId;
+	  $http({
         url: root + "project/id/" + $scope.projectId,
         dataType: "json",
         method: "GET",
@@ -42,49 +117,7 @@ mapProjectApp.controller('MapProjectDetailCtrl',
         }
       }).success(function(data) {
         $scope.project = data;
-        $scope.error = "";
       }).error(function(error) {
-    	$scope.error = "getProject() failed for id " + $scope.projectId;
-      });   
-    };
-    
-    $scope.getProjectsByQuery = function() {
-    	  
-        $http({
-          url: root + "project/query/" + $scope.projectQuery,
-          dataType: "xml",
-          method: "GET",
-          headers: {
-            "Content-Type": "application/xml"
-          }
-        }).success(function(data) {
-          $scope.project = data;
-          $scope.showProject = false;
-          $scope.showProjectsQuery = true;
+    });
 
-        }).error(function(error) {
-        });   
-      };
-   
-    $scope.showProject = false;
-    $scope.showProjectsQuery = false;
-    $scope.orderProp = 'id';	
-});
-
-
-//projectApp.controller('MapProjectCtrl', ['$scope', '$routeParams', '$http',
-//  function($scope, $routeParams, $http) {
-//    $http({
-//      url: root.concat("project/id/" + $routeParams.id),
-//      dataType: "json",
-//      method: "GET",
-//      headers: {
-//        "Content-Type": "application/json"
-//      }
-//    }).success(function(data) {
-//        $scope.project = data;
-//    });
-//  }]);
-
-
-
+}]);
