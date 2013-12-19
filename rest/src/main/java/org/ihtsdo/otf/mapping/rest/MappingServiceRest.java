@@ -12,10 +12,12 @@ import javax.ws.rs.core.Response;
 
 import org.ihtsdo.otf.mapping.jpa.MapLeadList;
 import org.ihtsdo.otf.mapping.jpa.MapProjectList;
+import org.ihtsdo.otf.mapping.jpa.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
 import com.wordnik.swagger.annotations.Api;
@@ -210,18 +212,18 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns the specialist for a given id (auto-generated) in JSON format
+	 * Returns the record for a given id (auto-generated) in JSON format
 	 * 
-	 * @param mapSpecialistId the mapSpecialistId
-	 * @return the mapSpecialist
+	 * @param mapRecordId the mapRecordId
+	 * @return the mapRecord
 	 */
 	@GET
-	@Path("/specialist/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find specialist by id", notes = "Returns a MapSpecialist given a specialist id in either JSON or XML format", response = MapSpecialist.class)
+	@Path("/record/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find record by id", notes = "Returns a MapRecord given a record id in either JSON or XML format", response = MapRecord.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapSpecialist getMapSpecialistForId(
-			@ApiParam(value = "Id of map specialist to fetch", required = true) @PathParam("id") Long mapSpecialistId) {
-		return mappingServiceJpa.getMapSpecialist(mapSpecialistId);
+	public MapRecord getMapRecordForId(
+			@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
+		return mappingServiceJpa.getMapRecord(mapRecordId);
 	}
 	
 	/**
