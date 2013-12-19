@@ -318,7 +318,7 @@ public class MappingServiceJpa implements MappingService {
 			Set<MapSpecialist> ms_set = mp.getMapSpecialists();
 			 
 			 for (MapSpecialist ms : ms_set) {
-					if (ms.isEqual(mapSpecialist)) {
+					if (ms.equals(mapSpecialist)) {
 						mp_list_return.add(mp);
 					}
 			 }
@@ -504,7 +504,7 @@ public class MappingServiceJpa implements MappingService {
 			Set<MapLead> ml_set = mp.getMapLeads();
 			
 			for (MapLead ml : ml_set) {
-				if (ml.isEqual(mapLead)) {
+				if (ml.equals(mapLead)) {
 					mp_list_return.add(mp);
 				}
 			}
