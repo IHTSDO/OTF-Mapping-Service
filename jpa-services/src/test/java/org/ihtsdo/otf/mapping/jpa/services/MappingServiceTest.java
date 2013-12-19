@@ -75,7 +75,7 @@ public class MappingServiceTest {
 	/**
 	 * Close services after complete
 	 */
-	@AfterClass
+	//@AfterClass
 	public static void cleanup() {
 		
 		System.out.println("Cleaning up EditMappingServiceJpa");
@@ -435,8 +435,8 @@ public class MappingServiceTest {
 		
 		// test delete of lead
 		try {
+			System.out.println("Testing lead removal...");
 			service.removeMapLead(lead_removed.getId());
-			System.out.println("Lead removal successful!");
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Failed to remove map lead");
@@ -450,8 +450,8 @@ public class MappingServiceTest {
 		
 		// test delete of specialist
 		try {
+			System.out.println("Testing specialist removal...");
 			service.removeMapSpecialist(specialist_removed.getId());
-			System.out.println("Specialist removal successful!");
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Failed to remove map specialist");
@@ -463,8 +463,8 @@ public class MappingServiceTest {
 		
 		// test delete of project
 		try {
+			System.out.println("Testing project removal...");
 			service.removeMapProject(project_removed.getId());
-			System.out.println("Project removal successful!");
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Failed to remove map project");

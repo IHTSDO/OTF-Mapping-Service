@@ -1,46 +1,23 @@
-package org.ihtsdo.otf.mapping.jpa;
+package org.ihtsdo.otf.mapping.pojo;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.xml.bind.annotation.XmlRootElement;
+import org.ihtsdo.otf.mapping.model.MapUser;
 
-import org.hibernate.envers.Audited;
-import org.hibernate.search.annotations.Indexed;
-import org.ihtsdo.otf.mapping.model.MapLead;
-
-/**
- * The Class MapLeadJpa.
- *
- */
-@Entity
-@Table(name = "map_leads")
-@Audited
-@Indexed
-@XmlRootElement(name="mapLead")
-public class MapLeadJpa implements MapLead {
+public abstract class MapUserImpl implements MapUser {
 
 	/** The id. */
-	@Id
-	@GeneratedValue
 	private Long id;
 	
 	/** The user name. */
-	@Column(nullable = false, unique = true, length = 25)
 	private String userName;
 	
 	/** The name. */
-	@Column(nullable = false, length = 25)
 	private String name;
 	
 	/** The email. */
-	@Column(nullable = false)
 	private String email;
 	
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapLead#getId()
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#getId()
 	 */
 	@Override
 	public Long getId() {
@@ -48,7 +25,7 @@ public class MapLeadJpa implements MapLead {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapLead#setId(java.lang.Long)
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#setId(java.lang.Long)
 	 */
 	@Override
 	public void setId(Long id) {
@@ -56,7 +33,7 @@ public class MapLeadJpa implements MapLead {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapLead#getUserName()
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#getUserName()
 	 */
 	@Override
 	public String getUserName() {
@@ -64,7 +41,7 @@ public class MapLeadJpa implements MapLead {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapLead#setUserName(java.lang.String)
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#setUserName(java.lang.String)
 	 */
 	@Override
 	public void setUserName(String username) {
@@ -72,7 +49,7 @@ public class MapLeadJpa implements MapLead {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapLead#getName()
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#getName()
 	 */
 	@Override
 	public String getName() {
@@ -80,37 +57,28 @@ public class MapLeadJpa implements MapLead {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapLead#setName(java.lang.String)
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#setName(java.lang.String)
 	 */
 	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#getEmail()
+	 */
 	@Override
 	public String getEmail() {
 		return email;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapLead#setEmail(java.lang.String)
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#setEmail(java.lang.String)
 	 */
 	@Override
 	public void setEmail(String email) {
 		this.email = email;
 	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		 
-		 return this.getId() + "," +
-				 this.getUserName() + "," +
-				 this.getEmail() + "," +
-				 this.getName();
-	 }
 
 	@Override
 	public int hashCode() {
@@ -131,7 +99,7 @@ public class MapLeadJpa implements MapLead {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MapLeadJpa other = (MapLeadJpa) obj;
+		MapUserImpl other = (MapUserImpl) obj;
 		if (email == null) {
 			if (other.email != null)
 				return false;
@@ -154,7 +122,12 @@ public class MapLeadJpa implements MapLead {
 			return false;
 		return true;
 	}
-	
 
+	@Override
+	public String toString() {
+		return "MapUserImpl [id=" + id + ", userName=" + userName + ", name="
+				+ name + ", email=" + email + "]";
+	}
+	
 
 }
