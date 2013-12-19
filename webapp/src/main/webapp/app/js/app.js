@@ -1,17 +1,47 @@
 'use strict';
 
 
-// Declare app level module which depends on filters, and services
-/**angular.module('myApp', [
-  'ngRoute',
-  'myApp.filters',
-  'myApp.services',
-  'myApp.directives',
-  'myApp.controllers'
-]).
-config(['$routeProvider', function($routeProvider) {
-  $routeProvider.when('/view1', {templateUrl: 'partials/partial1.html', controller: 'MyCtrl1'});
-  $routeProvider.when('/view2', {templateUrl: 'partials/partial2.html', controller: 'MyCtrl2'});
-  $routeProvider.otherwise({redirectTo: '/view1'});
-}]);*/
-var mapProjectNgApp = angular.module('mapProjectNgApp', []);
+// Declare app level module
+var mapProjectApp = angular.module('mapProjectApp', [
+                                                     'ngRoute',
+                                                     'mapProjectAppControllers'
+                                                   ]);
+
+mapProjectApp.config(['$routeProvider',
+   function($routeProvider) {
+	  
+	  $routeProvider.when('/project/projects', {
+		  templateUrl: 'partials/project-list.html', 
+		  controller: 'MapProjectListCtrl'
+	  });
+	  
+  	  $routeProvider.when('/lead/leads', {
+  		  templateUrl: 'partials/lead-list.html',
+  		  controller: 'MapLeadListCtrl'
+	  });
+  	  
+	  $routeProvider.when('/specialist/specialists', {
+		  templateUrl: 'partials/specialist-list.html',
+		  controller: 'MapSpecialistListCtrl'
+	  });
+	  
+	  $routeProvider.when('/record/records', {
+		  templateUrl: 'partials/record-list.html',
+	      controller: 'MapRecordListCtrl'
+	  });
+	  
+	  $routeProvider.when('/advice/advices', {
+		  templateUrl: 'partials/advice-list.html',
+	      controller: 'MapAdviceListCtrl'
+	  });
+	  
+	  // non functional at the moment
+	  $routeProvider.when('/project/id/:projectId', {
+  		  templateUrl: 'partials/project-detail.html', 
+  		  controller: 'MapProjectDetailCtrl'
+  	  });
+	  	  
+	  $routeProvider.otherwise({
+	      redirectTo: '/'
+	  });
+   }]);
