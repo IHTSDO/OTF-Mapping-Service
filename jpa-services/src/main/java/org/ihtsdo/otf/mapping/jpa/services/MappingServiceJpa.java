@@ -23,10 +23,12 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
@@ -362,7 +364,7 @@ public class MappingServiceJpa implements MappingService {
 				MultiFieldQueryParser queryParser =
 						new MultiFieldQueryParser(Version.LUCENE_36,
 								fieldNames.toArray(new String[0]),
-								searchFactory.getAnalyzer(MapLeadJpa.class));
+								searchFactory.getAnalyzer(MapSpecialistJpa.class));
 				queryParser.setAllowLeadingWildcard(false);
 				luceneQuery = queryParser.parse(query);
 		
@@ -685,17 +687,46 @@ public class MappingServiceJpa implements MappingService {
 	}
 	
 	////////////////////////////////////
-	// MapAdvice
-	// - getMapAdvices
-	// - getMapAdvice(Long id)
-	// - findMapAdvices(String query)
+	// MapRecord
 	////////////////////////////////////
+	
+	/**
+	* Retrieve all map records
+	* @return a List of MapRecords
+	*/
+	@SuppressWarnings("unchecked")
+	public List<MapRecord> getMapRecords() {
+		
+		List<MapRecord> m = null;
+		EntityManager manager = factory.createEntityManager();
+		
+		// construct query
+		javax.persistence.Query query = manager.createQuery("select m from MapRecordJpa m");
+		
+		// Try query
+		try {
+			m = (List<MapRecord>) query.getResultList();
+		} catch (Exception e) {
+			System.out.println("MappingServiceJpa.getMapRecords(): Could not retrieve map records.");
+			e.printStackTrace();
+		}
+		
+		if (manager.isOpen()) { manager.close(); }
+		
+		return m;
+	}
+	
+	/** 
+	 * Retrieve map record for given id
+	 * @param id the map record id
+	 * @return the map record
+	 */
     public MapRecord getMapRecord(Long id) {
-    	MapLead m = null;
+    	MapRecord m = null;
 		EntityManager manager = factory.createEntityManager();
 		
 		try {
-			m = manager.find(MapRecord.class, mapRecordId);
+			m = manager.find(MapRecord.class, id);
 		} catch (Exception e) {
 			System.out.println("Could not find map record for id = " + id.toString());
 		}
@@ -710,6 +741,12 @@ public class MappingServiceJpa implements MappingService {
     	return null;
     }*/
     
+    /**
+     * Retrieve map records for a lucene query
+     * @param query the lucene query string
+     * @return a list of map records
+     */
+    @SuppressWarnings("unchecked")
     public List<MapRecord> findMapRecords(String query) {
     	
     	List<MapRecord> m = null;
@@ -736,7 +773,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			m = (List<MapLead>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+			m = (List<MapRecord>) fullTextEntityManager.createFullTextQuery(luceneQuery)
 														.getResultList();
 			
 			
@@ -750,6 +787,10 @@ public class MappingServiceJpa implements MappingService {
 		return m;
     }
     
+    /**
+     * Add a map record
+     * @param mapRecord the map record to be added
+     */
     public void addMapRecord(MapRecord mapRecord) {
     	EntityManager manager = factory.createEntityManager();
 		EntityTransaction tx = manager.getTransaction();
@@ -765,6 +806,10 @@ public class MappingServiceJpa implements MappingService {
 		if (manager.isOpen()) { manager.close(); }
     }
     
+    /**
+     * Update a map record
+     * @param mapRecord the map record to be updated
+     */
     public void updateMapRecord(MapRecord mapRecord) {
     	EntityManager manager = factory.createEntityManager();
 		EntityTransaction tx = manager.getTransaction();
@@ -779,6 +824,10 @@ public class MappingServiceJpa implements MappingService {
 		if (manager.isOpen()) { manager.close(); }
     }
     
+    /**
+     * Remove (delete) a map record by id
+     * @param id the id of the map record to be removed
+     */
     public void removeMapRecord(Long id) {
     	EntityManager manager = factory.createEntityManager();
 		EntityTransaction tx = manager.getTransaction();
@@ -792,7 +841,6 @@ public class MappingServiceJpa implements MappingService {
 			manager.remove(m);
 			tx.commit();
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
