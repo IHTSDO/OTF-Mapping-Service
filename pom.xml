@@ -60,9 +60,17 @@
         &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapProjectJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapUserJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapLeadJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapEntryJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapNoteJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapBlockJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapGroupJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapRecordJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapAdviceJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MappingRevisionEntity&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MappingRevisionListener&lt;/class&gt;
      </managed.classes.list>
 
   </properties>

@@ -8,19 +8,19 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
-import org.hibernate.search.annotations.Indexed;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 
+// TODO: Auto-generated Javadoc
 /**
- * The Class MapSpecialistJpa.
+ * The Class MapUserJpa.
  *
+ * @author ${author}
  */
 @Entity
-@Table(name = "map_specialists")
+@Table(name = "map_users")
 @Audited
-@Indexed
-@XmlRootElement(name="mapSpecialist")
-public class MapSpecialistJpa implements MapSpecialist {
+@XmlRootElement(name="mapUser")
+public abstract class MapUserJpa implements MapUser {
 
 	/** The id. */
 	@Id
@@ -40,7 +40,7 @@ public class MapSpecialistJpa implements MapSpecialist {
 	private String email;
 	
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#getId()
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#getId()
 	 */
 	@Override
 	public Long getId() {
@@ -48,7 +48,7 @@ public class MapSpecialistJpa implements MapSpecialist {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#setId(java.lang.Long)
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#setId(java.lang.Long)
 	 */
 	@Override
 	public void setId(Long id) {
@@ -56,7 +56,7 @@ public class MapSpecialistJpa implements MapSpecialist {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#getUserName()
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#getUserName()
 	 */
 	@Override
 	public String getUserName() {
@@ -64,7 +64,7 @@ public class MapSpecialistJpa implements MapSpecialist {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#setUserName(java.lang.String)
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#setUserName(java.lang.String)
 	 */
 	@Override
 	public void setUserName(String username) {
@@ -72,7 +72,7 @@ public class MapSpecialistJpa implements MapSpecialist {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#getName()
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#getName()
 	 */
 	@Override
 	public String getName() {
@@ -80,16 +80,15 @@ public class MapSpecialistJpa implements MapSpecialist {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#setName(java.lang.String)
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#setName(java.lang.String)
 	 */
 	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
 
-
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#getEmail()
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#getEmail()
 	 */
 	@Override
 	public String getEmail() {
@@ -97,7 +96,7 @@ public class MapSpecialistJpa implements MapSpecialist {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#setEmail(java.lang.String)
+	 * @see org.ihtsdo.otf.mapping.model.MapUser#setEmail(java.lang.String)
 	 */
 	@Override
 	public void setEmail(String email) {
@@ -116,6 +115,9 @@ public class MapSpecialistJpa implements MapSpecialist {
 				 this.getName();
 	 }
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -132,37 +134,35 @@ public class MapSpecialistJpa implements MapSpecialist {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
-		MapSpecialistJpa other = (MapSpecialistJpa) obj;
+		MapUserJpa other = (MapUserJpa) obj;
 		if (email == null) {
-			if (other.email != null) {
+			if (other.email != null)
 				return false;
-			}
-		} else if (!email.equals(other.email)) {
+		} else if (!email.equals(other.email))
 			return false;
-		}
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
 		if (name == null) {
-			if (other.name != null) {
+			if (other.name != null)
 				return false;
-			}
-		} else if (!name.equals(other.name)) {
+		} else if (!name.equals(other.name))
 			return false;
-		}
 		if (userName == null) {
-			if (other.userName != null) {
+			if (other.userName != null)
 				return false;
-			}
-		} else if (!userName.equals(other.userName)) {
+		} else if (!userName.equals(other.userName))
 			return false;
-		}
 		return true;
 	}
+
+
 }
