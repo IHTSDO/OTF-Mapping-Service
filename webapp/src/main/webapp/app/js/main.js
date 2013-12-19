@@ -1,6 +1,6 @@
 
 function SecondCtrl($scope, $http) {
-	$http({method: 'GET', url: 'http://localhost:8080/mapping-rest/bac/project/projects'}).
+	$http({method: 'GET', url: 'http://localhost:8080/mapping-rest/mapping/project/projects'}).
 	success(function(response) {
 		$scope.mapProjects = response.mapProjects;
     	$scope.data = {message: "success"}; 
