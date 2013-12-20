@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -35,6 +36,19 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @XmlRootElement(name = "mapGroup")
 public class MapGroupJpa implements MapGroup {
 
+	public MapGroupJpa() {
+	}
+
+	public MapGroupJpa(Long id, List<MapEntry> mapEntries, MapRecord mapRecord,
+			MapBlock mapBlock, int indexMapPriority) {
+		super();
+		this.id = id;
+		this.mapEntries = mapEntries;
+		this.mapRecord = mapRecord;
+		this.mapBlock = mapBlock;
+		this.indexMapPriority = indexMapPriority;
+	}
+
 	/** The id. */
 	@Id
 	@GeneratedValue
@@ -43,7 +57,7 @@ public class MapGroupJpa implements MapGroup {
 	/** The map entries. */
 	@OneToMany(targetEntity=MapEntryJpa.class, cascade = CascadeType.ALL, fetch=FetchType.LAZY)
 	@JsonManagedReference
-	private List<MapEntry> mapEntries;
+	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
 
 	/** The map record. */
 	@ManyToOne(targetEntity=MapRecordJpa.class)
