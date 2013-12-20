@@ -12,10 +12,12 @@ import javax.ws.rs.core.Response;
 
 import org.ihtsdo.otf.mapping.jpa.MapLeadList;
 import org.ihtsdo.otf.mapping.jpa.MapProjectList;
+import org.ihtsdo.otf.mapping.jpa.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
 import com.wordnik.swagger.annotations.Api;
@@ -95,6 +97,40 @@ public class MappingServiceRest {
 		mapSpecialists.setMapSpecialists(mappingServiceJpa.getMapSpecialists());
 		mapSpecialists.sortMapSpecialists();
 		return mapSpecialists;
+	}
+	
+	/**
+	 * Returns all map records in either JSON or XML format
+	 * 
+	 * @return the map records
+	 */
+	@GET
+	@Path("/record/records/")
+	@ApiOperation(value = "Find all map records", notes = "Returns all MapRecords in either JSON or XML format", response = MapRecordList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecords() {
+		MapRecordList mapRecords = new MapRecordList();
+		mapRecords.setMapRecords(mappingServiceJpa.getMapRecords());
+		mapRecords.sortMapRecords();
+		return mapRecords;
+	}
+	
+	/**
+	 * Returns all map projects for a map lead in either JSON or XML format
+	 * @param mapLeadId the map lead
+	 * @return the map projects
+	 */
+	@GET
+	@Path("/lead/id/{id:[0-9][0-9]*}/projects")
+	@ApiOperation(value = "Find all projects for map lead", notes = "Returns a MapLead's MapProjects in either JSON or XML format", response = MapProjectList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapProjectList getMapProjectsForLead(
+			@ApiParam(value = "Id of map lead to fetch projects for", required = true) @PathParam("id") Long mapLeadId) { 
+		MapProjectList mapProjects = new MapProjectList();	
+		MapLead mapLead = mappingServiceJpa.getMapLead(mapLeadId);
+		mapProjects.setMapProjects(mappingServiceJpa.getMapProjectsForMapLead(mapLead));
+		mapProjects.sortMapProjects();
+		return mapProjects;
 	}
 
 	/**
@@ -193,6 +229,38 @@ public class MappingServiceRest {
 		return mapLeads;
 	}
 	
+	/**
+	 * Returns the record for a given id (auto-generated) in JSON format
+	 * 
+	 * @param mapRecordId the mapRecordId
+	 * @return the mapRecord
+	 */
+	@GET
+	@Path("/record/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find record by id", notes = "Returns a MapRecord given a record id in either JSON or XML format", response = MapRecord.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecord getMapRecordForId(
+			@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
+		return mappingServiceJpa.getMapRecord(mapRecordId);
+	}
+	
+	/**
+	 * Returns all map records for a lucene query
+	 * @param query the string query
+	 * @return the map records
+	 */
+	@GET
+	@Path("/record/query/{String}")
+	@ApiOperation(value = "Find records by query", notes = "Returns map records for a query in either JSON or XML format", response = MapRecordList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecordsForQuery(
+			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
+		MapRecordList mapRecords = new MapRecordList();
+		mapRecords.setMapRecords(mappingServiceJpa.findMapRecords(query));
+		mapRecords.sortMapRecords();		
+		return mapRecords;
+	}
+	
 	// ///////////////////////////////////////////////////
 	// MapProject:  Add (@PUT) functions
 	// - addMapProject
@@ -256,6 +324,26 @@ public class MappingServiceRest {
 
 		try {
 			mappingServiceJpa.addMapSpecialist(mapSpecialist);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * Adds a map record
+	 * @param mapRecordId the id of the map record, used for path
+	 * @param mapRecord the map record to be added
+	 * @return Response the response
+	 */
+	@PUT
+	@Path("/record/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Add a map record", notes = "Adds a MapRecord", response = MapRecord.class)
+	public Response addMapRecord(@ApiParam(value = "Id of map record to add", required = true) @PathParam("id") Long mapRecordId,
+							  @ApiParam(value = "The map record to add", required = true) MapRecord mapRecord) { 
+
+		try {
+			mappingServiceJpa.addMapRecord(mapRecord);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -331,6 +419,26 @@ public class MappingServiceRest {
 		return null;
 	}
 	
+	/**
+	 * Updates a map record
+	 * @param mapRecordId the id of the map record, used for path
+	 * @param mapRecord the map record to be added
+	 * @return Response the response
+	 */
+	@POST
+	@Path("/record/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Update a map record", notes = "Updates a map record", response = MapRecord.class)
+	public Response updateMapRecord(@ApiParam(value = "Id of map record to update", required = true) @PathParam("id") Long mapRecordId,
+							  @ApiParam(value = "The map record to update", required = true) MapRecord mapRecord) { 
+
+		try {
+			mappingServiceJpa.updateMapRecord(mapRecord);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	/////////////////////////////////////////////////////
 	// MapProject:  Removal (@DELETE) functions
 	// - removeMapProject
@@ -380,7 +488,20 @@ public class MappingServiceRest {
 		return null;
 	}
 	
-	// TODO: Add map advice section
+	/**
+	 * Removes a map record
+	 * @param mapRecordId the id of the map record to be deleted
+	 * @return Response the response
+	 */
+	@DELETE
+	@Path("/record/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Removes a map record", notes = "Removes a map record", response = MapRecord.class)
+	public Response removeMapRecord(@ApiParam(value = "Id of map record to remove", required = true) @PathParam("id") Long mapRecordId) { 
+
+		mappingServiceJpa. removeMapRecord(mapRecordId);
+		return null;
+	}
+
 
 	
 	

@@ -138,7 +138,6 @@ public class MapSpecialistJpa implements MapSpecialist {
 		return result;
 	}
 
-
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
