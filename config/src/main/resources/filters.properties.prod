@@ -2,14 +2,17 @@
 # MySQL Config information
 #
 mysql.main.url=jdbc:mysql://127.0.0.1:3306/mappingservicedb
-mysql.main.user=root
-mysql.main.pwd=rootpwd
+mysql.main.user=otf
+mysql.main.pwd=otfpwd
+mysql.test.url=jdbc:mysql://127.0.0.1:3306/mappingservicedbtest
+mysql.test.user=otf
+mysql.test.pwd=otfpwd
 
 #
 # Path to loader dta
 #   this directory must have Refset/ and Terminology/ directories
 #
-loader.main.input.data=C:\\data\\SnomedCT_Release_INT_20130731\\RF2Release\\Snapshot
+loader.main.input.data=/mnt/projects/data
 
 #
 # Loader settings for preferred name
