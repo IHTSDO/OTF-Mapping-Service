@@ -60,13 +60,13 @@ public class MapGroupJpa implements MapGroup {
 	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
 
 	/** The map record. */
-	@ManyToOne(targetEntity=MapRecordJpa.class)
+	@ManyToOne(targetEntity=MapRecordJpa.class, optional=false)
 	@JsonBackReference
 	@ContainedIn
 	private MapRecord mapRecord;
 	
 	/** The map block. */
-	@ManyToOne(targetEntity=MapBlockJpa.class)
+	@ManyToOne(targetEntity=MapBlockJpa.class, optional=true)
 	@JsonBackReference
 	@ContainedIn
 	private MapBlock mapBlock;

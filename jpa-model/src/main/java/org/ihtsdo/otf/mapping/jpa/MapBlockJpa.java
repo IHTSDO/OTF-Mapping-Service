@@ -39,7 +39,7 @@ public class MapBlockJpa implements MapBlock {
 	@GeneratedValue
 	private Long id;
 
-	@ManyToOne(targetEntity=MapRecordJpa.class)
+	@ManyToOne(targetEntity=MapRecordJpa.class, optional=false)
 	@JsonBackReference
 	@ContainedIn
 	private MapRecord mapRecord;

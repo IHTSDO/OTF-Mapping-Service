@@ -20,29 +20,25 @@ import org.ihtsdo.otf.mapping.rf2.DescriptionRefSetMember;
 @Audited
 public abstract class AbstractDescriptionRefSetMember extends
 		AbstractRefSetMember implements DescriptionRefSetMember {
-	
-	@ManyToOne(targetEntity=DescriptionJpa.class, optional=false)
-/*	*//** The Description associated with this element *//*
-	@ManyToOne(cascade = {
-			   CascadeType.PERSIST, CascadeType.MERGE
-			 }, targetEntity=DescriptionJpa.class)*/
+
+	@ManyToOne(targetEntity = DescriptionJpa.class, optional = false)
 	@JsonBackReference
 	@ContainedIn
 	private Description description;
 
 	/**
-     * {@inheritDoc}
-     */
+	 * {@inheritDoc}
+	 */
 	@Override
 	@XmlIDREF
 	@XmlAttribute
 	public DescriptionJpa getDescription() {
-		return (DescriptionJpa)this.description;
+		return (DescriptionJpa) this.description;
 	}
 
 	/**
-     * {@inheritDoc}
-     */
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setDescription(Description description) {
 		this.description = description;
