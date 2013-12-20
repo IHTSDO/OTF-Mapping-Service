@@ -14,13 +14,22 @@ import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
+import org.ihtsdo.otf.mapping.jpa.MapBlockJpa;
+import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
+import org.ihtsdo.otf.mapping.jpa.MapGroupJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapBlock;
+import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapGroup;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 
 /**
  * Goal which updates the db to sync it with the model via JPA.
@@ -341,8 +350,90 @@ public class SampledataMojo extends AbstractMojo {
 				manager.merge(m);
 			}
 			tx.commit();
-			Logger.getLogger(this.getClass()).info(
-					".. done loading sample data");
+			
+		// Load map records from complex map refset members
+			long prevConceptId = -1;
+			long prevBlockId = -1;
+			long prevGroupId = -1;
+			MapRecord mapRecord = null;
+			MapBlock mapBlock = null;
+			MapGroup mapGroup = null;
+			
+			javax.persistence.Query query = manager.createQuery("select r from ComplexMapRefSetMemberJpa r order by r.concept.id");
+			System.out.println("complex refset member size " + query.getResultList().size());
+			
+			for (Object member : query.getResultList()) {
+				ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember)member;
+				/**if(refSetMember.getMapRule().matches("IFA \\d* | .* |") &&
+						!(refSetMember.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")) &&
+						!(refSetMember.getMapRule().matches("IFA \\d* | .* | [<>]"))){
+					System.out.println(refSetMember.getMapRule());
+					continue;
+				}*/
+				if (refSetMember.getConcept() == null)
+					continue;
+				if (!refSetMember.getConcept().getTerminologyId().equals(new Long(prevConceptId).toString())) {
+					if (mapRecord != null) {
+						tx.begin();
+						manager.persist(mapRecord);
+						tx.commit();
+					}
+					mapRecord = new MapRecordJpa();
+					if (refSetMember.getConcept() != null) {
+					  mapRecord.setConceptId(refSetMember.getConcept().getTerminologyId());
+					
+					mapBlock = new MapBlockJpa();
+					mapBlock.setIndex(refSetMember.getMapBlock());
+					prevBlockId = refSetMember.getMapBlock();
+					mapRecord.addMapBlock(mapBlock);
+					
+					mapGroup = new MapGroupJpa();
+					mapGroup.setIndex(refSetMember.getMapGroup());
+					prevGroupId = refSetMember.getMapGroup();
+					mapRecord.addMapGroup(mapGroup);
+				}
+				if (refSetMember.getMapBlock() != prevBlockId) {
+					mapBlock = new MapBlockJpa();
+					mapBlock.setIndex(refSetMember.getMapBlock());
+					prevBlockId = refSetMember.getMapBlock();
+					mapRecord.addMapBlock(mapBlock);
+				}
+			  if (refSetMember.getMapGroup() != prevGroupId) {
+						mapGroup = new MapGroupJpa();
+						mapGroup.setIndex(refSetMember.getMapGroup());
+						prevGroupId = refSetMember.getMapGroup();
+						mapRecord.addMapGroup(mapGroup);
+						if (mapBlock != null)
+						  mapBlock.addMapGroup(mapGroup);
+				}
+			  MapEntry mapEntry = new MapEntryJpa();
+			  mapEntry.setTarget(refSetMember.getMapTarget());
+			  mapEntry.setMapRecord(mapRecord);
+			  mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
+			  mapEntry.setRule(refSetMember.getMapRule());
+			  MapAdvice mapAdvice = new MapAdviceJpa();
+			  // TODO: find the correct advice and add it
+			  mapRecord.addMapEntry(mapEntry);
+				
+			}
+		/**	
+		 * //for (ComplexMapRefSetMember member : select r from ComplexMapRefSetMember order by r.concept.terminologyid, r.mapblock, r.mapgroup, r.mappriority
+			
+		 * -- Skip entries where the rule matches “IFA \d* | .* |”
+			   * unless gender rule - the advice contains “MAP IS CONTEXT DEPENDENT FOR GENDER”
+			   * unless age rule – the rule matches “IFA \d* | .* | [<>]”
+
+			   -- whenever concept id changes, make a new map record, map block, map group
+			      * if (mapRecord != null) manager.persist(mapRecord).
+			   -- whenever mapblock changes, make a new mapblock, add it to the current map record
+			   -- whenever mapgroup chagnes, make a new group, add it to the current block and map record
+			   -- always make a new entry, add it to the current group and mapRecord
+
+			** also need to handle "advice"*/
+			}
+
+			
+			System.out.println(".. done loading sample data");
 			manager.close();
 			factory.close();
 		} catch (Throwable e) {
