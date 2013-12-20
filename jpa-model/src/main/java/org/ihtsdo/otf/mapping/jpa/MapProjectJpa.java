@@ -97,6 +97,30 @@ public class MapProjectJpa implements MapProject {
 	@IndexedEmbedded(targetElement=MapSpecialistJpa.class)
 	private Set<MapSpecialist> mapSpecialists = new HashSet<MapSpecialist>();
 	
+	public MapProjectJpa() {
+	}
+
+	public MapProjectJpa(Long id, String name, boolean blockStructure,
+			boolean groupStructure, boolean published, Set<MapAdvice> mapAdvices,
+			Long refSetId, String sourceTerminology, String sourceTerminologyVersion,
+			String destinationTerminology, String destinationTerminologyVersion,
+			Set<MapLead> mapLeads, Set<MapSpecialist> mapSpecialists) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.blockStructure = blockStructure;
+		this.groupStructure = groupStructure;
+		this.published = published;
+		this.mapAdvices = mapAdvices;
+		this.refSetId = refSetId;
+		this.sourceTerminology = sourceTerminology;
+		this.sourceTerminologyVersion = sourceTerminologyVersion;
+		this.destinationTerminology = destinationTerminology;
+		this.destinationTerminologyVersion = destinationTerminologyVersion;
+		this.mapLeads = mapLeads;
+		this.mapSpecialists = mapSpecialists;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getId()
 	 */

@@ -32,6 +32,16 @@ public class MapAdviceJpa implements MapAdvice {
 	@Column(nullable = false, unique = true)
 	private String description;
 	
+	public MapAdviceJpa() {
+	}
+
+	public MapAdviceJpa(Long id, String name, String description) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.description = description;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getId()
 	 */
