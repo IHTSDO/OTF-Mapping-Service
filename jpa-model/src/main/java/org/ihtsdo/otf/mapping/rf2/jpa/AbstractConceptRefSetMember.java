@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
+import javax.persistence.Column;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -21,7 +22,7 @@ public abstract class AbstractConceptRefSetMember extends AbstractRefSetMember
 		implements ConceptRefSetMember {
 	
 	/** The Concept associated with this element */
-	@ManyToOne(targetEntity=ConceptJpa.class)
+	@ManyToOne(targetEntity=ConceptJpa.class, optional=false)
 	/*@ManyToOne(cascade = {
 			   CascadeType.PERSIST, CascadeType.MERGE
 			 }, targetEntity=ConceptJpa.class)*/
