@@ -21,7 +21,7 @@ import org.ihtsdo.otf.mapping.rf2.DescriptionRefSetMember;
 public abstract class AbstractDescriptionRefSetMember extends
 		AbstractRefSetMember implements DescriptionRefSetMember {
 	
-	@ManyToOne(targetEntity=DescriptionJpa.class)
+	@ManyToOne(targetEntity=DescriptionJpa.class, optional=false)
 /*	*//** The Description associated with this element *//*
 	@ManyToOne(cascade = {
 			   CascadeType.PERSIST, CascadeType.MERGE
