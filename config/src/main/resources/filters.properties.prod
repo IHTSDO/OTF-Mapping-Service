@@ -12,7 +12,7 @@ mysql.test.pwd=otfpwd
 # Path to loader dta
 #   this directory must have Refset/ and Terminology/ directories
 #
-loader.main.input.data=/mnt/projects/data
+loader.main.input.data=/mnt/projects/data/RF2Release
 
 #
 # Loader settings for preferred name
