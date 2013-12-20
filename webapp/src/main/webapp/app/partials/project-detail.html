@@ -1,0 +1,15 @@
+<!--  partial for displaying project :projectId -->
+<h3>Project: {{project.name}}</h3></p>
+<p></p>
+<p>Source Terminology: {{project.sourceTerminology}}, v. {{project.sourceTerminologyVersion}}</p>
+<p>Destination Terminology: {{project.destinationTerminology}}, v. {{project.destinationTerminologyVersion}}</p>
+<p>Ref Set Id: {{project.refSetId}}
+<p>Map Leads:</p>
+<ul><li ng-repeat="lead in project.mapLeads"><a href="mailto:{{lead.email}}">{{lead.name}}</a></li></ul>
+<p>
+<p>Map Specialists:</p>
+<ul><li ng-repeat="specialist in project.mapSpecialists"><a href="mailto:{{specialist.email}}">{{specialist.name}}</a></li></ul>
+<p>
+<p>Published: {{project.published}}</p>
+<p>Block Structure: {{project.blockStructure}}</p>
+<p>Group Structure: {{project.groupStructure}}</p>
