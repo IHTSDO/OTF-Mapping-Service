@@ -1,5 +1,5 @@
 <!-- Partial for project list -->
-Search Project Names: <input ng-model="query">
+Search Project: <input ng-model="query">
 
 <accordion>
     <accordion-group ng-repeat="project in projects | filter:query | orderBy:orderProp">
@@ -13,10 +13,11 @@ Search Project Names: <input ng-model="query">
 		<p>
 		<p>Map Specialists:</p>
 		<ul><li ng-repeat="specialist in project.mapSpecialists"><a href="mailto:{{specialist.email}}">{{specialist.name}}</a></li></ul>
-		<p>
+		<p>Map Advices:</p>
+		<ul><li ng-repeat="advice in project.mapAdvices">{{advice.name}}</li></ul>
+		<p>Published: {{project.published}}</p>
 		<p>Block Structure: {{project.blockStructure}}</p>
 		<p>Group Structure: {{project.groupStructure}}</p>
-		<p>Published: {{project.published}}</p>
    	</accordion-group>
 </accordion>
 
