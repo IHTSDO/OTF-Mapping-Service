@@ -343,9 +343,8 @@ public class SampledataMojo extends AbstractMojo {
 			mapProject.setBlockStructure(false);
 			mapProject.setGroupStructure(false);
 			mapProject.setPublished(false);
-			mapProject.addMapLead(leads.get(1));
-			mapProject.addMapSpecialist(specialists.get(0));
-			mapProject.addMapSpecialist(specialists.get(1));
+			mapProject.addMapLead(leads.get(2));
+			mapProject.addMapSpecialist(specialists.get(3));
 			for (String s : icpcAdviceValues) {
 				mapProject.addMapAdvice(mapAdviceValueMap.get(s));
 			}
