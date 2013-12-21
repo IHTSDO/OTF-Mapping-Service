@@ -16,6 +16,7 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -96,10 +97,10 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 * @required
 	 */
 	private File propertiesFile;
-
+	
 	/** String for core input directory */
 	private String coreInputDirString;
-
+	
 	/** Core input directory. */
 	private File coreInputDir;
 
@@ -126,7 +127,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	/** The core complex map input file. */
 	private File coreComplexMapInputFile = null;
-
+	
 	/** The core complex map input file. */
 	private File coreExtendedMapInputFile = null;
 
@@ -165,7 +166,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	/** The core complex map input. */
 	private BufferedReader coreComplexMapInput = null;
-
+	
 	/** The core extended map input. */
 	private BufferedReader coreExtendedMapInput = null;
 
@@ -198,37 +199,41 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	/** The core metadata input dir. */
 	private File coreMetadataInputDir = null;
-
+	
 	// directory for sorted files
 	private File sorted_files;
-
+	
 	// filenames for sorted files
-	private File concepts_by_concept_file, descriptions_by_concept_file,
-			descriptions_by_description_file,
-			relationships_by_source_concept_file,
-			relationships_by_dest_concept_file,
-			language_refsets_by_description_file,
-			attribute_refsets_by_concept_file, simple_refsets_by_concept_file,
-			simple_map_refsets_by_concept_file,
-			complex_map_refsets_by_concept_file,
-			extended_map_refsets_by_concept_file;
-
+	private File concepts_by_concept_file,
+		descriptions_by_concept_file, descriptions_by_description_file,
+		relationships_by_source_concept_file, relationships_by_dest_concept_file,
+		language_refsets_by_description_file,
+		attribute_refsets_by_concept_file,
+		simple_refsets_by_concept_file, 
+		simple_map_refsets_by_concept_file, 
+		complex_map_refsets_by_concept_file,
+		extended_map_refsets_by_concept_file;
+	
 	// buffered readers for sorted files
-	private BufferedReader concepts_by_concept, descriptions_by_description,
-			relationships_by_source_concept, language_refsets_by_description,
-			attribute_refsets_by_concept, simple_refsets_by_concept,
-			simple_map_refsets_by_concept, complex_map_refsets_by_concept,
-			extended_map_refsets_by_concept;
-
+	private BufferedReader concepts_by_concept,
+		descriptions_by_description,
+		relationships_by_source_concept,
+		language_refsets_by_description,
+		attribute_refsets_by_concept,
+		simple_refsets_by_concept, 
+		simple_map_refsets_by_concept, 
+		complex_map_refsets_by_concept,
+		extended_map_refsets_by_concept;
+	
 	// hashmap used for determioning defaultPreferredNames during file loads
 	Map<String, String> defaultPreferredNames = new HashMap<String, String>();
 
 	/** The date format. */
 	private SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
-
+	
 	/** The version. */
 	private String version = "";
-
+	
 	/** the defaultPreferredNames values */
 	private Long dpnTypeId;
 	private Long dpnRefSetId;
@@ -236,27 +241,17 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	/** The manager. */
 	private EntityManager manager;
-
+	
 	/** hash sets for faster loading */
-	private Map<String, Concept> conceptCache = new HashMap<>(); // used to
-																	// speed
-																	// Concept
-																	// assignment
-																	// to
-																	// ConceptRefSetMembers
-	private Map<String, Long> descriptionCache = new HashMap<>(); // speeds
-																	// Description
-																	// assignment
-																	// to
-																	// DescriptionRefSetMembers
-
+    private Map<String, Concept> conceptCache = new HashMap<>(); // used to speed Concept assignment to ConceptRefSetMembers
+	private Map<String, Long> descriptionCache = new HashMap<>(); // speeds Description assignment to DescriptionRefSetMembers
+	
 	/** Efficiency testing */
 	private long startTime, startTimeOrig;
 	int i;
-
+	
 	/**
-	 * Instantiates a {@link RF2SnapshotLoaderMojo} from the specified
-	 * parameters.
+	 * Instantiates a {@link RF2SnapshotLoaderMojo} from the specified parameters.
 	 * 
 	 */
 	public RF2SnapshotLoaderMojo() {
@@ -268,112 +263,94 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 * 
 	 * @see org.apache.maven.plugin.Mojo#execute()
 	 */
-	/*
-	 * (non-Javadoc)
-	 * 
+	/* (non-Javadoc)
 	 * @see org.apache.maven.plugin.Mojo#execute()
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
 		FileInputStream propertiesInputStream = null;
 		try {
-
+			
 			startTimeOrig = System.nanoTime();
 
 			getLog().info("  In RF2SnapshotLoader.java");
-
-			// load Properties file
-			Properties properties = new Properties();
+			
+					
+		    // load Properties file
+			Properties  properties = new Properties();
 			propertiesInputStream = new FileInputStream(propertiesFile);
 			properties.load(propertiesInputStream);
-
+		     
 			// set the input directory
-			coreInputDirString = properties
-					.getProperty("loader.main.input.data");
+			coreInputDirString = properties.getProperty("loader.main.input.data");
 			coreInputDir = new File(coreInputDirString);
 			if (!coreInputDir.exists()) {
-				throw new MojoFailureException(
-						"Specified loader.main.input.data directory does not exist: "
-								+ coreInputDirString);
+				throw new MojoFailureException("Specified loader.main.input.data directory does not exist: " + coreInputDirString);
 			}
-
+		     
 			// set the parameters for determining defaultPreferredNames
-			dpnTypeId = Long.valueOf(properties
-					.getProperty("loader.defaultPreferredNames.typeId"));
-			dpnRefSetId = Long.valueOf(properties
-					.getProperty("loader.defaultPreferredNames.refSetId"));
-			dpnAcceptabilityId = Long
-					.valueOf(properties
-							.getProperty("loader.defaultPreferredNames.acceptabilityId"));
+			dpnTypeId = Long.valueOf(properties.getProperty("loader.defaultPreferredNames.typeId"));      
+			dpnRefSetId = Long.valueOf(properties.getProperty("loader.defaultPreferredNames.refSetId"));
+			dpnAcceptabilityId = Long.valueOf(properties.getProperty("loader.defaultPreferredNames.acceptabilityId"));
 
 			// close the Properties file
 			propertiesInputStream.close();
-
-			// create Entitymanager
-			EntityManagerFactory factory = Persistence
-					.createEntityManagerFactory("MappingServiceDS");
+			      
+      	    // create Entitymanager
+			EntityManagerFactory factory =
+					Persistence.createEntityManagerFactory("MappingServiceDS");
 			manager = factory.createEntityManager();
 
 			// Preparation
-			openInputFiles();
+			openInputFiles();	
 			getVersion();
-
+			
 			// Prepare sorted input files
 			sorted_files = new File(coreInputDir, "/RF2-sorted-temp/");
 			getLog().info("Sorting Files...");
 			startTime = System.nanoTime();
 			prepareSortedFiles();
 			getLog().info("Files sorted in " + getElapsedTime() + "s");
-
+			
 			closeAllInputFiles();
-
+			
+			
 			EntityTransaction tx = manager.getTransaction();
 			try {
-
+				
 				// truncate all the tables that we are going to use first
-				tx.begin();
-
+				tx.begin();				
+				
 				// truncate RefSets
-				Query query = manager
-						.createQuery("DELETE From SimpleRefSetMemberJpa rs");
-				int deleteRecords = query.executeUpdate();
-				getLog().info(
-						"simple_ref_set records deleted: " + deleteRecords);
-				query = manager
-						.createQuery("DELETE From SimpleMapRefSetMemberJpa rs");
-				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"simple_map_ref_set records deleted: " + deleteRecords);
-				query = manager
-						.createQuery("DELETE From ComplexMapRefSetMemberJpa rs");
-				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"complex_map_ref_set records deleted: " + deleteRecords);
-				query = manager
-						.createQuery("DELETE From AttributeValueRefSetMemberJpa rs");
-				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"attribute_value_ref_set records deleted: "
-								+ deleteRecords);
-				query = manager
-						.createQuery("DELETE From LanguageRefSetMemberJpa rs");
-				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"language_ref_set records deleted: " + deleteRecords);
-
+				Query query = manager.createQuery("DELETE From SimpleRefSetMemberJpa rs");
+				int deleteRecords=query.executeUpdate();
+				getLog().info("simple_ref_set records deleted: " + deleteRecords);
+				query = manager.createQuery("DELETE From SimpleMapRefSetMemberJpa rs");
+				deleteRecords=query.executeUpdate();
+				getLog().info("simple_map_ref_set records deleted: " + deleteRecords);
+				query = manager.createQuery("DELETE From ComplexMapRefSetMemberJpa rs");
+				deleteRecords=query.executeUpdate();
+				getLog().info("complex_map_ref_set records deleted: " + deleteRecords);
+				query = manager.createQuery("DELETE From AttributeValueRefSetMemberJpa rs");
+				deleteRecords=query.executeUpdate();
+				getLog().info("attribute_value_ref_set records deleted: " + deleteRecords);
+				query = manager.createQuery("DELETE From LanguageRefSetMemberJpa rs");
+				deleteRecords=query.executeUpdate();
+				getLog().info("language_ref_set records deleted: " + deleteRecords);
+				
 				// Truncate Terminology Elements
 				query = manager.createQuery("DELETE From DescriptionJpa d");
-				deleteRecords = query.executeUpdate();
+				deleteRecords=query.executeUpdate();
 				getLog().info("description records deleted: " + deleteRecords);
 				query = manager.createQuery("DELETE From RelationshipJpa r");
-				deleteRecords = query.executeUpdate();
+				deleteRecords=query.executeUpdate();
 				getLog().info("relationship records deleted: " + deleteRecords);
 				query = manager.createQuery("DELETE From ConceptJpa c");
-				deleteRecords = query.executeUpdate();
+				deleteRecords=query.executeUpdate();
 				getLog().info("concept records deleted: " + deleteRecords);
-
+				
 				tx.commit();
-
+			
 				// load Concepts
 				if (concepts_by_concept != null) {
 					startTime = System.nanoTime();
@@ -381,53 +358,41 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					tx.begin();
 					loadConcepts();
 					tx.commit();
-					getLog().info(
-							Integer.toString(i) + " Concepts loaded in "
-									+ getElapsedTime() + "s");
+					getLog().info(Integer.toString(i) + " Concepts loaded in " + getElapsedTime() + "s");
 				}
 
-				// List<Number> revNumbers =
-				// reader.getRevisions(ConceptJpa.class, testconcept.getId());
-				// getLog().info("concept: " + testconcept.getTerminologyId() +
-				// " - Versions: " + revNumbers.toString());
-
+				//List<Number> revNumbers = reader.getRevisions(ConceptJpa.class, testconcept.getId());
+				//getLog().info("concept: " + testconcept.getTerminologyId() + " - Versions: " + revNumbers.toString());
+						
 				// load Descriptions
 				if (descriptions_by_description != null) {
 					getLog().info("Loading Descriptions...");
 					startTime = System.nanoTime();
 					tx.begin();
 					loadDescriptions();
-					tx.commit();
-					getLog().info(
-							Integer.toString(i) + " Descriptions loaded in "
-									+ getElapsedTime().toString() + "s");
+					tx.commit(); 
+					getLog().info(Integer.toString(i) + " Descriptions loaded in " + getElapsedTime().toString() + "s");
 				}
 
-				// load Language RefSet (Language)
+				// load Language RefSet (Language)	
 				if (language_refsets_by_description != null) {
 					getLog().info("Loading Language RefSets...");
 					startTime = System.nanoTime();
 					tx.begin();
 					loadLanguageRefSets();
 					tx.commit();
-					getLog().info(
-							Integer.toString(i)
-									+ " Language RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+					getLog().info(Integer.toString(i) + " Language RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
-
-				// contain all the rest in single transaction to minimize envers
-				// versioning
+				
+				// contain all the rest in single transaction to minimize envers versioning
 				tx.begin();
-
-				// load Relationships
+				
+				 // load Relationships
 				if (relationships_by_source_concept != null) {
 					getLog().info("Loading Relationships...");
 					startTime = System.nanoTime();
 					loadRelationships();
-					getLog().info(
-							Integer.toString(i) + " Relationships loaded in "
-									+ getElapsedTime().toString() + "s");
+					getLog().info(Integer.toString(i) + " Relationships loaded in " + getElapsedTime().toString() + "s");
 				}
 
 				// load Simple RefSets (Content)
@@ -435,63 +400,47 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					getLog().info("Loading Simple RefSets...");
 					startTime = System.nanoTime();
 					loadSimpleRefSets();
-					getLog().info(
-							Integer.toString(i) + " Simple RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+					getLog().info(Integer.toString(i) + " Simple RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
-
+				
 				// load SimpleMapRefSets
 				if (simple_map_refsets_by_concept != null) {
 					getLog().info("Loading SimpleMap RefSets...");
 					startTime = System.nanoTime();
 					loadSimpleMapRefSets();
-					getLog().info(
-							Integer.toString(i)
-									+ " SimpleMap RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+					getLog().info(Integer.toString(i) + " SimpleMap RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
-
+				
 				// load ComplexMapRefSets
 				if (complex_map_refsets_by_concept != null) {
 					getLog().info("Loading ComplexMap RefSets...");
 					startTime = System.nanoTime();
 					loadComplexMapRefSets();
-					getLog().info(
-							Integer.toString(i)
-									+ " ComplexMap RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+					getLog().info(Integer.toString(i) + " ComplexMap RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
-
+				
 				// load ExtendedMapRefSets
 				if (extended_map_refsets_by_concept != null) {
 					getLog().info("Loading ExtendedMap RefSets...");
 					startTime = System.nanoTime();
 					loadExtendedMapRefSets();
-					getLog().info(
-							Integer.toString(i)
-									+ " ExtendedMap RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+					getLog().info(Integer.toString(i) + " ExtendedMap RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
-
+				
 				// load AttributeValue RefSets (Content)
 				if (attribute_refsets_by_concept != null) {
-					getLog().info("Loading AttributeValue RefSets...");
+					getLog().info("Loading AttributeValue RefSets...");	
 					startTime = System.nanoTime();
 					loadAttributeValueRefSets();
-					getLog().info(
-							Integer.toString(i)
-									+ " AttributeValue RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+					getLog().info(Integer.toString(i) + " AttributeValue RefSets loaded in " + getElapsedTime().toString() + "s");
 				}
-
+				
 				getLog().info("Committing...");
-
+				
 				tx.commit();
-
-				getLog().info(
-						"Total elapsed time for run: "
-								+ getTotalElapsedTimeStr());
-
+				
+				getLog().info("Total elapsed time for run: " + getTotalElapsedTimeStr());
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 				tx.rollback();
@@ -514,37 +463,37 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			}
 		}
 	}
-
 	/**
 	 * 
 	 * @param file
 	 */
 	public static void deleteSortedFiles(File file) {
-
+	
 		// Check if file is directory/folder
-		if (file.isDirectory()) {
+		if(file.isDirectory()) {
 			// Get all files in the folder
-			File[] files = file.listFiles();
-
-			for (int i = 0; i < files.length; i++) {
+			File[] files=file.listFiles();
+		
+			for(int i=0;i<files.length;i++) {
 				// Delete each file in the folder
 				deleteSortedFiles(files[i]);
 			}
 			// Delete the folder
 			file.delete();
-		} else {
+		}
+		else {
 			// Delete the file if it is not a folder
 			file.delete();
 		}
 	}
-
+	
 	// Used for debugging/efficiency monitoring
 	private Long getElapsedTime() {
 		return (System.nanoTime() - startTime) / 1000000000;
 	}
-
+	
 	private String getTotalElapsedTimeStr() {
-
+	
 		Long resultnum = (System.nanoTime() - startTimeOrig) / 1000000000;
 		String result = resultnum.toString() + "s";
 		resultnum = resultnum / 60;
@@ -552,271 +501,213 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		resultnum = resultnum / 60;
 		result = result + " / " + resultnum.toString() + "h";
 		return result;
-
+		
 	}
-
+	
 	/**
 	 * File management for sorted files; calls sort_RF2_Files
 	 * 
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
-	// *************************************************************************************
-	// //
-	//
-	// *************************************************************************************
-	// //
+	// ************************************************************************************* //
+	// 
+	// ************************************************************************************* //
 	private void prepareSortedFiles() throws Exception {
-
+		
 		// ******************** //
-		// Initial file set up //
+		// Initial file set up  //
 		// ******************** //
-
+		
 		// delete any existing temporary files
 		deleteSortedFiles(sorted_files);
-
+		
 		// test whether file/folder still exists (i.e. delete error)
-		if (sorted_files.exists()) {
-			throw new MojoFailureException(
-					"Could not delete existing sorted files folder "
-							+ sorted_files.toString());
+		if ( sorted_files.exists()) {
+			throw new MojoFailureException("Could not delete existing sorted files folder " + sorted_files.toString());
 		}
-
+		
 		// attempt to make sorted files directory
 		if (sorted_files.mkdir()) {
-			getLog().info(
-					"Creating new sorted files folder "
-							+ sorted_files.toString());
+			getLog().info("Creating new sorted files folder " + sorted_files.toString());
 		} else {
-			throw new MojoFailureException(
-					"Could not create temporary sorted file folder "
-							+ sorted_files.toString());
+			throw new MojoFailureException("Could not create temporary sorted file folder " + sorted_files.toString());
 		}
-
-		concepts_by_concept_file = new File(sorted_files,
-				"concepts_by_concept.sort");
-		descriptions_by_concept_file = new File(sorted_files,
-				"descriptions_by_concept.sort");
-		descriptions_by_description_file = new File(sorted_files,
-				"descriptions_by_description.sort");
-		relationships_by_source_concept_file = new File(sorted_files,
-				"relationship_by_source_concept.sort");
-		relationships_by_dest_concept_file = new File(sorted_files,
-				"relationship_by_dest_concept.sort");
-		language_refsets_by_description_file = new File(sorted_files,
-				"language_refsets_by_description.sort");
-		attribute_refsets_by_concept_file = new File(sorted_files,
-				"attribute_refsets_by_concept.sort");
-		simple_refsets_by_concept_file = new File(sorted_files,
-				"simple_refsets_by_concept.sort");
-		simple_map_refsets_by_concept_file = new File(sorted_files,
-				"simple_map_refsets_by_concept.sort");
-		complex_map_refsets_by_concept_file = new File(sorted_files,
-				"complex_map_refsets_by_concept.sort");
-		extended_map_refsets_by_concept_file = new File(sorted_files,
-				"extended_map_refsets_by_concept.sort");
-
+		
+		concepts_by_concept_file 				= new File(sorted_files, "concepts_by_concept.sort");
+		descriptions_by_concept_file 			= new File(sorted_files, "descriptions_by_concept.sort");
+		descriptions_by_description_file 		= new File(sorted_files, "descriptions_by_description.sort");
+		relationships_by_source_concept_file	= new File(sorted_files, "relationship_by_source_concept.sort");
+		relationships_by_dest_concept_file 	    = new File(sorted_files, "relationship_by_dest_concept.sort");
+		language_refsets_by_description_file	= new File(sorted_files, "language_refsets_by_description.sort");
+		attribute_refsets_by_concept_file		= new File(sorted_files, "attribute_refsets_by_concept.sort");
+		simple_refsets_by_concept_file			= new File(sorted_files, "simple_refsets_by_concept.sort");
+		simple_map_refsets_by_concept_file		= new File(sorted_files, "simple_map_refsets_by_concept.sort");
+		complex_map_refsets_by_concept_file		= new File(sorted_files, "complex_map_refsets_by_concept.sort");
+		extended_map_refsets_by_concept_file    = new File(sorted_files, "extended_map_refsets_by_concept.sort");
+		
+		
 		// **************** //
-		// Initial sorting //
+		// Initial sorting  //
 		// **************** //
-
-		sort_RF2_files();
-
+		
+		sort_RF2_files();	
+		
 		// ************************* //
-		// Test and open files //
+		// Test and open files       //
 		// ************************* //
-
+		
 		// Concepts
 		try {
-			concepts_by_concept = new BufferedReader(new FileReader(
-					concepts_by_concept_file));
+			concepts_by_concept				= new BufferedReader(new FileReader(concepts_by_concept_file));
 		} catch (Exception e) {
-			getLog().info(
-					"Could not open " + concepts_by_concept_file.toString());
+			getLog().info("Could not open " + concepts_by_concept_file.toString());
 			concepts_by_concept_file = null;
 		}
-
+		
 		// Relationships by source concept
 		try {
-			relationships_by_source_concept = new BufferedReader(
-					new FileReader(relationships_by_source_concept_file));
+			relationships_by_source_concept				= new BufferedReader(new FileReader(relationships_by_source_concept_file));
 		} catch (Exception e) {
-			getLog().info(
-					"Could not open "
-							+ relationships_by_source_concept_file.toString());
+			getLog().info("Could not open " + relationships_by_source_concept_file.toString());
 			relationships_by_source_concept_file = null;
 		}
-
+		
+		
 		// Attenpt to open files and load first Description / RefSet Member
 		try {
-			descriptions_by_description = new BufferedReader(new FileReader(
-					descriptions_by_description_file));
+			descriptions_by_description					= new BufferedReader(new FileReader(descriptions_by_description_file));
 		} catch (Exception e) {
-			getLog().info(
-					"Could not open "
-							+ descriptions_by_description_file.toString());
+			getLog().info("Could not open " + descriptions_by_description_file.toString());
 		}
-
+		
 		try {
-			language_refsets_by_description = new BufferedReader(
-					new FileReader(language_refsets_by_description_file));
+			language_refsets_by_description				= new BufferedReader(new FileReader(language_refsets_by_description_file));
 		} catch (Exception e) {
-			getLog().info(
-					"Could not open "
-							+ language_refsets_by_description_file.toString());
+			getLog().info("Could not open " + language_refsets_by_description_file.toString());
 		}
-
+		
+		
 		// ******************************************************* //
-		// Component RefSet Members //
+		// Component RefSet Members                                //
 		// ******************************************************* //
-
+		
 		// Attribute Value
 		try {
-			attribute_refsets_by_concept = new BufferedReader(new FileReader(
-					attribute_refsets_by_concept_file));
-		} catch (Exception e) {
-			getLog().info(
-					"Could not open "
-							+ attribute_refsets_by_concept_file.toString());
+			attribute_refsets_by_concept 				= new BufferedReader(new FileReader(attribute_refsets_by_concept_file));
+		} catch(Exception e) {
+			getLog().info("Could not open " + attribute_refsets_by_concept_file.toString());
 		}
-
+		
 		// Simple
 		try {
-			simple_refsets_by_concept = new BufferedReader(new FileReader(
-					simple_refsets_by_concept_file));
-		} catch (Exception e) {
-			getLog().info(
-					"Could not open "
-							+ simple_refsets_by_concept_file.toString());
+			simple_refsets_by_concept 					= new BufferedReader(new FileReader(simple_refsets_by_concept_file));
+		} catch(Exception e) {
+			getLog().info("Could not open " + simple_refsets_by_concept_file.toString());
 		}
-
+			
 		// Simple Map
 		try {
-			simple_map_refsets_by_concept = new BufferedReader(new FileReader(
-					simple_map_refsets_by_concept_file));
-		} catch (Exception e) {
-			getLog().info(
-					"Could not open "
-							+ simple_map_refsets_by_concept_file.toString());
+			simple_map_refsets_by_concept 				= new BufferedReader(new FileReader(simple_map_refsets_by_concept_file));
+		} catch(Exception e) {
+			getLog().info("Could not open " + simple_map_refsets_by_concept_file.toString());
 		}
-
+		
 		// Complex map
 		try {
-			complex_map_refsets_by_concept = new BufferedReader(new FileReader(
-					complex_map_refsets_by_concept_file));
+			complex_map_refsets_by_concept 				= new BufferedReader(new FileReader(complex_map_refsets_by_concept_file));
 		} catch (Exception e) {
-			getLog().info(
-					"Could not open "
-							+ complex_map_refsets_by_concept_file.toString());
+			getLog().info("Could not open " + complex_map_refsets_by_concept_file.toString());
 		}
-
+		
 		// Extended map
 		try {
-			extended_map_refsets_by_concept = new BufferedReader(
-					new FileReader(extended_map_refsets_by_concept_file));
+			extended_map_refsets_by_concept				= new BufferedReader(new FileReader(extended_map_refsets_by_concept_file));
 		} catch (Exception e) {
-			getLog().info(
-					"Could not open "
-							+ extended_map_refsets_by_concept_file.toString());
+			getLog().info("Could not open " + extended_map_refsets_by_concept_file.toString());
 		}
 	}
+	
 
+	
 	/**
 	 * Sorts all files by concept or referencedComponentId
 	 * 
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	private void sort_RF2_files() throws Exception {
-
+		
 		// ****************//
-		// Components //
+		// Components      //
 		// ****************//
-
+		
 		sort_RF2_file(coreConceptInputFile, concepts_by_concept_file, 0);
-		sort_RF2_file(coreDescriptionInputFile,
-				descriptions_by_description_file, 0);
+		sort_RF2_file(coreDescriptionInputFile, descriptions_by_description_file, 0);
 		sort_RF2_file(coreDescriptionInputFile, descriptions_by_concept_file, 4);
 		sort_RF2_file(coreRelInputFile, relationships_by_source_concept_file, 4);
 		sort_RF2_file(coreRelInputFile, relationships_by_dest_concept_file, 5);
-
+		
 		// ****************//
-		// RefSets //
+		// RefSets         //
 		// ****************//
-		sort_RF2_file(coreAttributeValueInputFile,
-				attribute_refsets_by_concept_file, 5);
-		sort_RF2_file(coreSimpleRefsetInputFile,
-				simple_refsets_by_concept_file, 5);
-		sort_RF2_file(coreSimpleMapInputFile,
-				simple_map_refsets_by_concept_file, 5);
-		sort_RF2_file(coreComplexMapInputFile,
-				complex_map_refsets_by_concept_file, 5);
-		sort_RF2_file(coreExtendedMapInputFile,
-				extended_map_refsets_by_concept_file, 5);
-		sort_RF2_file(coreLanguageInputFile,
-				language_refsets_by_description_file, 4);
-
+		sort_RF2_file(coreAttributeValueInputFile, attribute_refsets_by_concept_file, 5);
+		sort_RF2_file(coreSimpleRefsetInputFile, simple_refsets_by_concept_file, 5);
+		sort_RF2_file(coreSimpleMapInputFile, simple_map_refsets_by_concept_file, 5);
+		sort_RF2_file(coreComplexMapInputFile, complex_map_refsets_by_concept_file, 5);
+		sort_RF2_file(coreExtendedMapInputFile, extended_map_refsets_by_concept_file, 5);
+		sort_RF2_file(coreLanguageInputFile, language_refsets_by_description_file, 4);
+		
+		
 	}
-
+	
+	
 	/**
 	 * Helper function for sorting an individual file with colum comparator
-	 * 
-	 * @param file_in
-	 *            the input file to be sorted
-	 * @param file_out
-	 *            the resulting sorted file
-	 * @param sort_column
-	 *            the column ([0, 1, ...] to compare by
-	 * @throws Exception
-	 *             the exception
+	 * @param file_in the input file to be sorted
+	 * @param file_out the resulting sorted file
+	 * @param sort_column the column ([0, 1, ...] to compare by
+	 * @throws Exception the exception
 	 */
-	private void sort_RF2_file(File file_in, File file_out,
-			final int sort_column) throws Exception {
-
+	private void sort_RF2_file(File file_in, File file_out, final int sort_column) throws Exception {
+		
 		Comparator<String> comp;
-
+		
 		comp = new Comparator<String>() {
-			@Override
 			public int compare(String s1, String s2) {
 				String v1[] = s1.split("\t");
-				String v2[] = s2.split("\t");
+				String v2[] = s2.split("\t"); 
 				return v1[sort_column].compareTo(v2[sort_column]);
 			}
-		};
-
-		getLog().info(
-				"Sorting " + file_in.toString() + "  into "
-						+ file_out.toString() + " by column "
-						+ Integer.toString(sort_column));
-		sort(file_in.toString(), file_out.toString(), comp);
-
+		};	
+		
+		try {
+			getLog().info("Sorting " + file_in.toString() + "  into " + file_out.toString() + " by column " + Integer.toString(sort_column));
+			sort(file_in.toString(), file_out.toString(), comp);
+		} catch (Exception e) {
+		}
+		
 	}
-
+	
+	
 	/**
 	 * Returns the concept.
 	 * 
-	 * @param conceptId
-	 *            the concept id
+	 * @param conceptId the concept id
 	 * @return the concept
 	 */
-	private Concept getConcept(String terminologyId, String terminology,
-			String terminologyVersion) throws Exception {
-
-		if (conceptCache.containsKey(terminologyId + terminology
-				+ terminologyVersion)) {
-
+	private Concept getConcept(String terminologyId, String terminology, String terminologyVersion ) throws Exception {
+		
+		if (conceptCache.containsKey(terminologyId + terminology + terminologyVersion)) {
+			
 			// uses hibernate first-level cache
-			return conceptCache.get(terminologyId + terminology
-					+ terminologyVersion);
+			return conceptCache.get(terminologyId + terminology + terminologyVersion);
 		}
-
-		Query query = manager
-				.createQuery("select c from ConceptJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
-
-		// Try to retrieve the single expected result
-		// If zero or more than one result are returned, log error and set
-		// result to null
-
+		
+		Query query = manager.createQuery("select c from ConceptJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		
+		
+		//  Try to retrieve the single expected result
+		//  If zero or more than one result are returned, log error and set result to null
+		 
 		try {
 			query.setParameter("terminologyId", terminologyId);
 			query.setParameter("terminology", terminology);
@@ -824,51 +715,36 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 			Concept c = (Concept) query.getSingleResult();
 
-			conceptCache.put(terminologyId + terminology + terminologyVersion,
-					c);
-
+			conceptCache.put(terminologyId + terminology + terminologyVersion, c);
+			
 			return c;
-
+			
 		} catch (NoResultException e) {
-			getLog().info(
-					"Concept query for terminologyId = " + terminologyId
-							+ ", terminology = " + terminology
-							+ ", terminologyVersion = " + terminologyVersion
-							+ " returned no results!");
-			return null;
+			getLog().info("Concept query for terminologyId = " + terminologyId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned no results!");
+			return null;		
 		} catch (NonUniqueResultException e) {
-			getLog().info(
-					"Concept query for terminologyId = " + terminologyId
-							+ ", terminology = " + terminology
-							+ ", terminologyVersion = " + terminologyVersion
-							+ " returned multiple results!");
+			getLog().info("Concept query for terminologyId = " + terminologyId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned multiple results!");
 			return null;
-		}
-
+		}	
+			
 	}
-
+	
 	/**
 	 * Returns the description.
 	 * 
-	 * @param descriptionId
-	 *            the description id
+	 * @param descriptionId the description id
 	 * @return the description
 	 */
-	private Description getDescription(String terminologyId,
-			String terminology, String terminologyVersion) throws Exception {
-
-		if (descriptionCache.containsKey(terminologyId + terminology
-				+ terminologyVersion)) {
+	private Description getDescription(String terminologyId, String terminology, String terminologyVersion ) throws Exception {
+		
+		if (descriptionCache.containsKey(terminologyId + terminology + terminologyVersion)) {
 			// uses hibernate first-level cache
-			return manager.find(
-					DescriptionJpa.class,
-					descriptionCache.get(terminologyId + terminology
-							+ terminologyVersion));
+			return manager.find(DescriptionJpa.class, descriptionCache.get(terminologyId + terminology + terminologyVersion));
 		}
-
-		Query query = manager
-				.createQuery("select d from DescriptionJpa d where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
-
+		
+		Query query = manager.createQuery("select d from DescriptionJpa d where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		
+		
 		try {
 			query.setParameter("terminologyId", terminologyId);
 			query.setParameter("terminology", terminology);
@@ -876,47 +752,36 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 			Description d = (Description) query.getSingleResult();
 
-			descriptionCache.put(terminologyId + terminology
-					+ terminologyVersion, d.getId());
-
+			descriptionCache.put(terminologyId + terminology + terminologyVersion, d.getId());
+			
 			return d;
-
+			
 		} catch (NoResultException e) {
-			getLog().info(
-					"Description query for terminologyId = " + terminologyId
-							+ ", terminology = " + terminology
-							+ ", terminologyVersion = " + terminologyVersion
-							+ " returned no results!");
-			return null;
+			getLog().info("Description query for terminologyId = " + terminologyId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned no results!");
+			return null;		
 		} catch (NonUniqueResultException e) {
-			getLog().info(
-					"Description query for terminologyId = " + terminologyId
-							+ ", terminology = " + terminology
-							+ ", terminologyVersion = " + terminologyVersion
-							+ " returned multiple results!");
+			getLog().info("Description query for terminologyId = " + terminologyId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned multiple results!");
 			return null;
-		}
+		}	
 	}
 
 	/**
 	 * Opens input files.
 	 * 
-	 * @throws Exception
-	 *             if something goes wrong
+	 * @throws Exception if something goes wrong
 	 */
 	private void openInputFiles() throws Exception {
 
 		// CORE
 		coreTerminologyInputDir = new File(coreInputDir, "/Terminology/");
 		getLog().info(
-				"  Core Input Dir = " + coreTerminologyInputDir.toString()
-						+ " " + coreTerminologyInputDir.exists());
+				"  Core Input Dir = " + coreTerminologyInputDir.toString() + " "
+						+ coreTerminologyInputDir.exists());
 
 		for (File f : coreTerminologyInputDir.listFiles()) {
 			if (f.getName().contains("sct2_Relationship_")) {
 				if (coreRelInputFile != null)
-					throw new MojoFailureException(
-							"Multiple Relationships Files!");
+					throw new MojoFailureException("Multiple Relationships Files!");
 				coreRelInputFile = f;
 			}
 		}
@@ -927,15 +792,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		for (File f : coreTerminologyInputDir.listFiles()) {
 			if (f.getName().contains("sct2_StatedRelationship_")) {
 				if (coreStatedRelInputFile != null)
-					throw new MojoFailureException(
-							"Multiple Stated Relationships Files!");
+					throw new MojoFailureException("Multiple Stated Relationships Files!");
 				coreStatedRelInputFile = f;
 			}
 		}
 		getLog().info(
-				"  Core Stated Rel Input File = "
-						+ coreStatedRelInputFile.toString() + " "
-						+ coreStatedRelInputFile.exists());
+				"  Core Stated Rel Input File = " + coreStatedRelInputFile.toString()
+						+ " " + coreStatedRelInputFile.exists());
 
 		for (File f : coreTerminologyInputDir.listFiles()) {
 			if (f.getName().contains("sct2_Concept_")) {
@@ -945,15 +808,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			}
 		}
 		getLog().info(
-				"  Core Concept Input File = "
-						+ coreConceptInputFile.toString() + " "
+				"  Core Concept Input File = " + coreConceptInputFile.toString() + " "
 						+ coreConceptInputFile.exists());
 
 		for (File f : coreTerminologyInputDir.listFiles()) {
 			if (f.getName().contains("sct2_Description_")) {
 				if (coreDescriptionInputFile != null)
-					throw new MojoFailureException(
-							"Multiple Description Files!");
+					throw new MojoFailureException("Multiple Description Files!");
 				coreDescriptionInputFile = f;
 			}
 		}
@@ -970,15 +831,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			}
 		}
 		getLog().info(
-				"  Core Identifier Input File = "
-						+ coreIdentifierInputFile.toString() + " "
-						+ coreIdentifierInputFile.exists());
+				"  Core Identifier Input File = " + coreIdentifierInputFile.toString()
+						+ " " + coreIdentifierInputFile.exists());
 
 		for (File f : coreTerminologyInputDir.listFiles()) {
 			if (f.getName().contains("sct2_TextDefinition_")) {
 				if (coreTextDefinitionInputFile != null)
-					throw new MojoFailureException(
-							"Multiple TextDefinition Files!");
+					throw new MojoFailureException("Multiple TextDefinition Files!");
 				coreTextDefinitionInputFile = f;
 			}
 		}
@@ -997,8 +856,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		for (File f : coreContentInputDir.listFiles()) {
 			if (f.getName().contains("Refset_Simple")) {
 				if (coreSimpleRefsetInputFile != null)
-					throw new MojoFailureException(
-							"Multiple Simple Refset Files!");
+					throw new MojoFailureException("Multiple Simple Refset Files!");
 				coreSimpleRefsetInputFile = f;
 			}
 		}
@@ -1023,8 +881,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		for (File f : coreContentInputDir.listFiles()) {
 			if (f.getName().contains("Refset_Attribute")) {
 				if (coreAttributeValueInputFile != null)
-					throw new MojoFailureException(
-							"Multiple Attribute Value Files!");
+					throw new MojoFailureException("Multiple Attribute Value Files!");
 				coreAttributeValueInputFile = f;
 			}
 		}
@@ -1033,33 +890,15 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						+ coreAttributeValueInputFile.toString() + " "
 						+ coreAttributeValueInputFile.exists());
 
-<<<<<<< HEAD
 		coreCrossmapInputDir = new File(coreRefsetInputDir, "/Map/");
-=======
-		// Choose map folder based on mini or full dataset
-		// -> RF2Release: the full RF2 release -> map content is in "Map"
-		// -> usext-mini-data: the truncated dataset -> map content is in
-		// "Crossmap"
-
-		if (coreInputDirString.contains("mini-data")) {
-			coreCrossmapInputDir = new File(coreRefsetInputDir, "/Crossmap/");
-		} else if (coreInputDirString.contains("RF2Release")) {
-			coreCrossmapInputDir = new File(coreRefsetInputDir, "/Map/");
-		} else {
-			throw new MojoFailureException(
-					"Cannot identify crossmap folder from dataset file structure!");
-		}
-
->>>>>>> fe26fd2ef04c43bbf733090ff51229f4a31710a9
 		getLog().info(
-				"  Crossmap Input Dir = " + coreCrossmapInputDir.toString()
-						+ " " + coreCrossmapInputDir.exists());
+				"  Crossmap Input Dir = " + coreCrossmapInputDir.toString() + " "
+						+ coreCrossmapInputDir.exists());
 
 		for (File f : coreCrossmapInputDir.listFiles()) {
 			if (f.getName().contains("ComplexMap")) {
 				if (coreComplexMapInputFile != null)
-					throw new MojoFailureException(
-							"Multiple Complex Map Files!");
+					throw new MojoFailureException("Multiple Complex Map Files!");
 				coreComplexMapInputFile = f;
 			}
 		}
@@ -1069,12 +908,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 							+ coreComplexMapInputFile.toString() + " "
 							+ coreComplexMapInputFile.exists());
 		}
-
+		
 		for (File f : coreCrossmapInputDir.listFiles()) {
 			if (f.getName().contains("ExtendedMap")) {
 				if (coreExtendedMapInputFile != null)
-					throw new MojoFailureException(
-							"Multiple Extended Map Files!");
+					throw new MojoFailureException("Multiple Extended Map Files!");
 				coreExtendedMapInputFile = f;
 			}
 		}
@@ -1093,14 +931,12 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			}
 		}
 		getLog().info(
-				"  Core Simple Map Input File = "
-						+ coreSimpleMapInputFile.toString() + " "
-						+ coreSimpleMapInputFile.exists());
+				"  Core Simple Map Input File = " + coreSimpleMapInputFile.toString()
+						+ " " + coreSimpleMapInputFile.exists());
 
 		coreLanguageInputDir = new File(coreRefsetInputDir, "/Language/");
 		getLog().info(
-				"  Core Language Input Dir = "
-						+ coreLanguageInputDir.toString() + " "
+				"  Core Language Input Dir = " + coreLanguageInputDir.toString() + " "
 						+ coreLanguageInputDir.exists());
 
 		for (File f : coreLanguageInputDir.listFiles()) {
@@ -1111,46 +947,43 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			}
 		}
 		getLog().info(
-				"  Core Language Input File = "
-						+ coreLanguageInputFile.toString() + " "
-						+ coreLanguageInputFile.exists());
+				"  Core Language Input File = " + coreLanguageInputFile.toString()
+						+ " " + coreLanguageInputFile.exists());
 
 		coreMetadataInputDir = new File(coreRefsetInputDir, "/Metadata/");
 		getLog().info(
-				"  Core Metadata Input Dir = "
-						+ coreMetadataInputDir.toString() + " "
+				"  Core Metadata Input Dir = " + coreMetadataInputDir.toString() + " "
 						+ coreMetadataInputDir.exists());
 
 		coreRelInput = new BufferedReader(new FileReader(coreRelInputFile));
-		coreStatedRelInput = new BufferedReader(new FileReader(
-				coreStatedRelInputFile));
-		coreConceptInput = new BufferedReader(new FileReader(
-				coreConceptInputFile));
-		coreDescInput = new BufferedReader(new FileReader(
-				coreDescriptionInputFile));
-		coreSimpleRefsetInput = new BufferedReader(new FileReader(
-				coreSimpleRefsetInputFile));
-		coreAssociationReferenceInput = new BufferedReader(new FileReader(
-				coreAssociationReferenceInputFile));
-		coreAttributeValueInput = new BufferedReader(new FileReader(
-				coreAttributeValueInputFile));
+		coreStatedRelInput =
+				new BufferedReader(new FileReader(coreStatedRelInputFile));
+		coreConceptInput = new BufferedReader(new FileReader(coreConceptInputFile));
+		coreDescInput =
+				new BufferedReader(new FileReader(coreDescriptionInputFile));
+		coreSimpleRefsetInput =
+				new BufferedReader(new FileReader(coreSimpleRefsetInputFile));
+		coreAssociationReferenceInput =
+				new BufferedReader(new FileReader(coreAssociationReferenceInputFile));
+		coreAttributeValueInput =
+				new BufferedReader(new FileReader(coreAttributeValueInputFile));
 		if (coreComplexMapInputFile != null)
-			coreComplexMapInput = new BufferedReader(new FileReader(
-					coreComplexMapInputFile));
+			coreComplexMapInput =
+					new BufferedReader(new FileReader(coreComplexMapInputFile));
 		if (coreExtendedMapInputFile != null)
-			coreExtendedMapInput = new BufferedReader(new FileReader(
-					coreExtendedMapInputFile));
-		coreSimpleMapInput = new BufferedReader(new FileReader(
-				coreSimpleMapInputFile));
-		coreLanguageInput = new BufferedReader(new FileReader(
-				coreLanguageInputFile));
-		coreIdentifierInput = new BufferedReader(new FileReader(
-				coreIdentifierInputFile));
+			coreExtendedMapInput =
+					new BufferedReader(new FileReader(coreExtendedMapInputFile));
+		coreSimpleMapInput =
+				new BufferedReader(new FileReader(coreSimpleMapInputFile));
+		coreLanguageInput =
+				new BufferedReader(new FileReader(coreLanguageInputFile));
+		coreIdentifierInput =
+				new BufferedReader(new FileReader(coreIdentifierInputFile));
 		if (coreTextDefinitionInputFile != null)
-			coreTextDefinitionInput = new BufferedReader(new FileReader(
-					coreTextDefinitionInputFile));
+			coreTextDefinitionInput =
+					new BufferedReader(new FileReader(coreTextDefinitionInputFile));
 	}
-
+	
 	/**
 	 * Sets and logs the version based on Concept input filename
 	 */
@@ -1162,9 +995,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	/**
 	 * Closes all files.
-	 * 
-	 * @throws Exception
-	 *             if something goes wrong
+	 * @throws Exception if something goes wrong
 	 */
 	private void closeAllInputFiles() throws Exception {
 		coreRelInput.close();
@@ -1184,577 +1015,531 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		if (coreTextDefinitionInput != null)
 			coreTextDefinitionInput.close();
 	}
-
+	
 	/**
 	 * Closes all sorted temporary files.
-	 * 
-	 * @throws Exception
-	 *             if something goes wrong
-	 */
+	 * @throws Exception if something goes wrong
+	 */	
 	private void closeAllSortedFiles() throws Exception {
-		if (concepts_by_concept != null) {
-			concepts_by_concept.close();
-		}
-		if (descriptions_by_description != null) {
-			descriptions_by_description.close();
-		}
-		if (relationships_by_source_concept != null) {
-			relationships_by_source_concept.close();
-		}
-		if (language_refsets_by_description != null) {
-			language_refsets_by_description.close();
-		}
-		if (attribute_refsets_by_concept != null) {
-			attribute_refsets_by_concept.close();
-		}
-		if (simple_refsets_by_concept != null) {
-			simple_refsets_by_concept.close();
-		}
-		if (simple_map_refsets_by_concept != null) {
-			simple_map_refsets_by_concept.close();
-		}
-		if (complex_map_refsets_by_concept != null) {
-			complex_map_refsets_by_concept.close();
-		}
-		if (extended_map_refsets_by_concept != null) {
-			extended_map_refsets_by_concept.close();
-		}
+		if (concepts_by_concept != null) {concepts_by_concept.close();}
+		if (descriptions_by_description != null) {descriptions_by_description.close();}
+		if (relationships_by_source_concept != null) {relationships_by_source_concept.close();}
+		if (language_refsets_by_description != null) {language_refsets_by_description.close();}
+		if (attribute_refsets_by_concept != null) {attribute_refsets_by_concept.close();}
+		if (simple_refsets_by_concept != null) {simple_refsets_by_concept.close(); }
+		if (simple_map_refsets_by_concept != null) {simple_map_refsets_by_concept.close(); }
+		if (complex_map_refsets_by_concept != null) {complex_map_refsets_by_concept.close();}
+		if (extended_map_refsets_by_concept!= null) {extended_map_refsets_by_concept.close();}
 	}
-
+	
 	/**
-	 * 
-	 * Sort the specified file using the specified {@link Comparator} and
-	 * optionally sort uniquely.
-	 * 
-	 * @param filename
-	 *            the file to sort
-	 * @param fileout
-	 *            the destination sorted file
-	 * @param comp
-	 *            the {@link Comparator}
-	 * @throws IOException
-	 *             if failed to sort
-	 */
 
-	public static void sort(String filename, String fileout,
-			Comparator<String> comp) throws IOException {
+	   * Sort the specified file using the specified {@link Comparator} and
+	   * optionally sort uniquely.
+	   * @param filename the file to sort
+	   * @param fileout the destination sorted file
+	   * @param comp the {@link Comparator}
+	   * @throws IOException if failed to sort
+	   */
 
-		//
-		// Vars
-		//
-		List<String> lines = null;
-		List<File> files1 = new ArrayList<File>();
-		List<File> files2 = new ArrayList<File>();
-		String line;
-		final File orig_file = new File(filename).getAbsoluteFile();
-		final File dest_file = new File(fileout).getAbsoluteFile();
-		final File sortdir = new File(dest_file.getParent());
+	  public static void sort(String filename, String fileout, Comparator<String> comp) throws IOException {
 
-		//
-		// Open file
-		//
-		final BufferedReader in = new BufferedReader(new FileReader(orig_file));
-		//
+	    //
+	    // Vars
+	    //
+	    List<String> lines = null;
+	    List<File> files1 = new ArrayList<File>();
+	    List<File> files2 = new ArrayList<File>();
+	    String line;
+	    final File orig_file = new File(filename).getAbsoluteFile();
+	    final File dest_file = new File(fileout).getAbsoluteFile();
+	    final File sortdir = new File(dest_file.getParent());
+	  
+	    //
+	    // Open file
+	    //
+	    final BufferedReader in = new BufferedReader(new FileReader(orig_file));
+	    //
+	    
+	    // Break input file into files with max size of 16MB and then sort it
+	    //
 
-		// Break input file into files with max size of 16MB and then sort it
-		//
+	    int size_so_far = 0;
+	    final int segment_size = 32*1024*1024;
+	    
+	    // get and save header
+	    String header_line = in.readLine(); //
+	    
+	    while ( (line = in.readLine()) != null) {
 
-		int size_so_far = 0;
-		final int segment_size = 32 * 1024 * 1024;
+	      if (size_so_far == 0) {
 
-		// get and save header
-		String header_line = in.readLine(); //
+	        lines = new ArrayList<String>(10000);
 
-		while ((line = in.readLine()) != null) {
+	      }
 
-			if (size_so_far == 0) {
+	      lines.add(line);
+	      size_so_far += line.length();
 
-				lines = new ArrayList<String>(10000);
+	      if (size_so_far > segment_size) {
+	    	  
+	    	 
 
-			}
+	        sortHelper( (String[]) lines.toArray(new String[0]), files1, comp, sortdir);
 
-			lines.add(line);
-			size_so_far += line.length();
+	        size_so_far = 0;
+	      }
+	    }
 
-			if (size_so_far > segment_size) {
+	    //
+	    // If there are left-over lines, create final tmp file
+	    //
+	    if (lines != null && lines.size() != 0 && size_so_far <= segment_size) {
+	      sortHelper( (String[]) lines.toArray(new String[0]), files1, comp, sortdir);
+	    }
+	    
 
-				sortHelper(lines.toArray(new String[0]), files1,
-						comp, sortdir);
+	    
 
-				size_so_far = 0;
-			}
-		}
+	    //
+	    // Calculations for pm
+	    //
+	    int total_files = files1.size();
+	    int tmp = total_files;
 
-		//
-		// If there are left-over lines, create final tmp file
-		//
-		if (lines != null && lines.size() != 0 && size_so_far <= segment_size) {
-			sortHelper(lines.toArray(new String[0]), files1, comp,
-					sortdir);
-		}
+	    while (tmp > 1) {
 
-		//
-		// Calculations for pm
-		//
-		int total_files = files1.size();
-		int tmp = total_files;
+	      tmp = (int) Math.ceil(tmp / 2.0);
+	      total_files += tmp;
 
-		while (tmp > 1) {
+	    }
+	    //
+	    // Merge sorted files
+	    //
+	    tmp = 0;
+	    
+	    while (files1.size() > 1) {
 
-			tmp = (int) Math.ceil(tmp / 2.0);
-			total_files += tmp;
+	      for (int i = 0; i < files1.size(); i += 2) {
 
-		}
-		//
-		// Merge sorted files
-		//
-		tmp = 0;
+	        tmp += 2;
 
-		while (files1.size() > 1) {
 
-			for (int i = 0; i < files1.size(); i += 2) {
+	        if (files1.size() == i + 1) {
+	          files2.add(files1.get(i));
+	          break;
+	        } else {
+	          final File f = mergeSortedFiles( (File) files1.get(i),
+	                                    (File) files1.get(i + 1),
+	                                    comp, sortdir, header_line);
 
-				tmp += 2;
+	          files2.add(f);
 
-				if (files1.size() == i + 1) {
-					files2.add(files1.get(i));
-					break;
-				} else {
-					final File f = mergeSortedFiles(files1.get(i),
-							files1.get(i + 1), comp, sortdir,
-							header_line);
+	          ( (File) files1.get(i)).delete();
+	          ( (File) files1.get(i + 1)).delete();
+	        }
+	      }
 
-					files2.add(f);
+	      files1 = new ArrayList<File>(files2);
+	      files2.clear();
+	    }
 
-					files1.get(i).delete();
-					files1.get(i + 1).delete();
-				}
-			}
+	    // rename file
 
-			files1 = new ArrayList<File>(files2);
-			files2.clear();
-		}
+	    if (files1.size() > 0) {
+	      ( (File) files1.get(0)).renameTo(dest_file);
+	    }
+	    
+	    // close input file
+	    in.close();
 
-		// rename file
 
-		if (files1.size() > 0) {
-			files1.get(0).renameTo(dest_file);
-		}
 
-		// close input file
-		in.close();
+	  }
 
-	}
 
-	/**
-	 * Helper function to perform sort operations.
-	 * 
-	 * @param lines
-	 *            the lines to sort
-	 * @param all_tmp_files
-	 *            the list of files
-	 * @param comp
-	 *            the comparator
-	 * @param sortdir
-	 *            the sort dir
-	 * @param unique
-	 *            whether or not to sort unique
-	 * @param bom_present
-	 *            indicates if a Byte Order Mark was present on file
-	 * @throws IOException
-	 */
-	private static void sortHelper(String[] lines, List<File> all_tmp_files,
-			Comparator<String> comp, File sortdir) throws IOException {
 
-		//
-		// Create temp file
-		//
-		final File f = File.createTempFile("t+~", ".tmp", sortdir);
+	  /**
+	   * Helper function to perform sort operations.
+	   * @param lines the lines to sort
+	   * @param all_tmp_files the list of files
+	   * @param comp the comparator
+	   * @param sortdir the sort dir
+	   * @param unique whether or not to sort unique
+	   * @param bom_present indicates if a Byte Order Mark was present on file
+	   * @throws IOException
+	   */
+	  private static void sortHelper(String[] lines, List<File> all_tmp_files, Comparator<String> comp, File sortdir) throws
+	      IOException {
 
-		//
-		// Sort data for this segment
-		//
-		Arrays.sort(lines, comp);
+	    //
+	    // Create temp file
+	    //
+	    final File f = File.createTempFile("t+~", ".tmp", sortdir);
 
-		//
-		// Write lines to file f
-		//
-		final BufferedWriter out = new BufferedWriter(new FileWriter(f));
+	    //
+	    // Sort data for this segment
+	    //
+	    Arrays.sort(lines, comp);
 
-		for (int i = 0; i < lines.length; i++) {
-			final String line = lines[i];
-			out.write(line);
-			out.newLine();
-			// out.flush();
+	    //
+	    // Write lines to file f
+	    //
+	    final BufferedWriter out =
+	        new BufferedWriter(new FileWriter(f));
 
-		}
+	    for (int i = 0; i < lines.length; i++) {
+	      final String line = lines[i];
+	        out.write(line);
+	        out.newLine();
+	        //out.flush();
 
-		out.flush();
-		out.close();
-		all_tmp_files.add(f);
-	}
+	    }
 
-	/**
-	 * Merge-sort two files.
-	 * 
-	 * @return the sorted {@link File}
-	 * @param files1
-	 *            the first set of files
-	 * @param files2
-	 *            the second set of files
-	 * @param comp
-	 *            the comparator
-	 * @param dir
-	 *            the sort dir
-	 * @param unique
-	 *            whether or not to sort unique
-	 * @param bom_present
-	 *            indicates if a Byte Order Mark was present on file
-	 * @throws IOException
-	 */
-	private static File mergeSortedFiles(File files1, File files2,
-			Comparator<String> comp, File dir, String header_line)
-			throws IOException {
-		final BufferedReader in1 = new BufferedReader(new FileReader(files1));
+	    out.flush();
+	    out.close();
+	    all_tmp_files.add(f);
+	  }
 
-		final BufferedReader in2 = new BufferedReader(new FileReader(files2));
 
-		final File out_file = File.createTempFile("t+~", ".tmp", dir);
 
-		final BufferedWriter out = new BufferedWriter(new FileWriter(out_file));
+	  /**
+	   * Merge-sort two files.
+	   * @return the sorted {@link File}
+	   * @param files1 the first set of files
+	   * @param files2 the second set of files
+	   * @param comp the comparator
+	   * @param dir the sort dir
+	   * @param unique whether or not to sort unique
+	   * @param bom_present indicates if a Byte Order Mark was present on file
+	   * @throws IOException
+	   */
+	  private static File mergeSortedFiles(File files1, File files2,
+	                                       Comparator<String> comp, File dir,
+	                                       String header_line
+	                                       ) throws IOException {
+	    final BufferedReader in1 =
+	        new BufferedReader(new FileReader(files1));
 
-		String line1 = in1.readLine();
-		String line2 = in2.readLine();
-		String line = null;
+	    final BufferedReader in2 =
+	        new BufferedReader(new FileReader(files2));
 
-		if (!header_line.isEmpty()) {
-			line = header_line;
-			out.write(line);
-			out.newLine();
-			System.out.println("Wrote header line: " + line);
-		}
-		{
-			System.out.println("No header line: " + line);
-		}
+	    final File out_file = File.createTempFile("t+~", ".tmp", dir);
 
-		while (line1 != null || line2 != null) {
+	    final BufferedWriter out =
+	        new BufferedWriter(new FileWriter(out_file));
 
-			if (line1 == null) {
-				line = line2;
-				line2 = in2.readLine();
+	 
+	    
+	    String line1 = in1.readLine();
+	    String line2 = in2.readLine();
+	    String line = null;
+	    
+	    if (!header_line.isEmpty()) {
+	    	line = header_line;
+	    	out.write(line);
+	    	out.newLine();
+	    	System.out.println("Wrote header line: " + line);
+	    } {
+	    	System.out.println("No header line: " + line);
+	    }
+	   
 
-			} else if (line2 == null) {
+	    while (line1 != null || line2 != null) {
 
-				line = line1;
-				line1 = in1.readLine();
+	      if (line1 == null) {
+	        line = line2;
+	        line2 = in2.readLine();
 
-			} else if (comp.compare(line1, line2) < 0) {
+	      } else if (line2 == null) {
 
-				line = line1;
-				line1 = in1.readLine();
+	        line = line1;
+	        line1 = in1.readLine();
 
-			} else {
+	      } else if (comp.compare(line1, line2) < 0) {
 
-				line = line2;
-				line2 = in2.readLine();
+	        line = line1;
+	        line1 = in1.readLine();
 
-			}
+	      } else {
 
-			out.write(line);
-			out.newLine();
+	        line = line2;
+	        line2 = in2.readLine();
 
-		}
+	      }
 
-		out.flush();
-		out.close();
-		in1.close();
-		in2.close();
+          out.write(line);
+          out.newLine();
 
-		return out_file;
+	    }
 
-	}
+	    out.flush();
+	    out.close();
+	    in1.close();
+	    in2.close();
 
+	    return out_file;
+
+	  }
+	  
 	/**
 	 * Sorting tool: Currently unused
-	 * 
-	 * @param file_in
-	 *            the input file
-	 * @param column
-	 *            (unused)
+	 * @param file_in the input file
+	 * @param column (unused)
 	 * @return file_in the input file
 	 */
-	@SuppressWarnings("static-method")
-	public String sort_entries(String file_in, int column) {
+	  public String sort_entries(String file_in, int column) {
+			
+			return file_in;
+		}
 
-		return file_in;
-	}
 
-	/**
-	 * Load concepts.
-	 * 
-	 * @throws Exception
-	 *             the exception
-	 */
-	private void loadConcepts() throws Exception {
+/**
+ * Load concepts.
+ * 
+ * @throws Exception the exception
+ */
+private void loadConcepts() throws Exception {
 
-		String line = "";
-		i = 0;
+	String line = "";
+	i = 0;
+	
+	while ((line = concepts_by_concept.readLine()) != null ) {
+		
+		String fields[] = line.split("\t");
+		Concept concept = new ConceptJpa();
+		
+		if (!fields[0].equals("id")) { // header
+			concept.setTerminologyId(fields[0]);
+			concept.setEffectiveTime(dt.parse(fields[1]));
+			concept.setActive(fields[2].equals("1") ? true : false);
+			concept.setModuleId(Long.valueOf(fields[3]));
+			concept.setDefinitionStatusId(Long.valueOf(fields[4]));
+			concept.setTerminology("SNOMEDCT");
+			concept.setTerminologyVersion(version);
+			concept.setDefaultPreferredName("null");
 
-		while ((line = concepts_by_concept.readLine()) != null) {
+			manager.persist(concept);
+			
+			conceptCache.put(new String(fields[0]  + concept.getTerminology() + concept.getTerminologyVersion()), concept);
+			
+			i++;
+		}
+	}	
+}
 
-			String fields[] = line.split("\t");
-			Concept concept = new ConceptJpa();
 
-			if (!fields[0].equals("id")) { // header
-				concept.setTerminologyId(fields[0]);
-				concept.setEffectiveTime(dt.parse(fields[1]));
-				concept.setActive(fields[2].equals("1") ? true : false);
-				concept.setModuleId(Long.valueOf(fields[3]));
-				concept.setDefinitionStatusId(Long.valueOf(fields[4]));
-				concept.setTerminology("SNOMEDCT");
-				concept.setTerminologyVersion(version);
-				concept.setDefaultPreferredName("null");
+/**
+ * Load relationships.
+ * 
+ * @throws Exception the exception
+ */
+private void loadRelationships() throws Exception {
 
-				manager.persist(concept);
-
-				conceptCache.put(
-						new String(fields[0] + concept.getTerminology()
-								+ concept.getTerminologyVersion()), concept);
-
-				i++;
-			}
+	String line = "";
+	i = 0;
+	
+	while ((line = relationships_by_source_concept.readLine()) != null) {
+		
+		String fields[] = line.split("\t");
+		Relationship relationship = new RelationshipJpa();
+		
+		if (!fields[0].equals("id")) { // header
+			relationship.setTerminologyId(fields[0]);
+			relationship.setEffectiveTime(dt.parse(fields[1]));
+			relationship.setActive(fields[2].equals("1") ? true : false); // active
+			relationship.setModuleId(Long.valueOf(fields[3])); // moduleId
+			
+			relationship.setRelationshipGroup(Integer.valueOf(fields[6])); // relationshipGroup
+			relationship.setTypeId(Long.valueOf(fields[7])); // typeId
+			relationship.setCharacteristicTypeId(Long.valueOf("1")); // characteristicTypeId
+			relationship.setTerminology("SNOMEDCT");
+			relationship.setTerminologyVersion(version);
+			relationship.setModifierId(Long.valueOf("2"));
+			
+			relationship.setSourceConcept(getConcept(fields[4], relationship.getTerminology(), relationship.getTerminologyVersion()));
+			relationship.setDestinationConcept(getConcept(fields[5], relationship.getTerminology(), relationship.getTerminologyVersion()));
+		
+			manager.persist(relationship);
+			
+			i++;
 		}
 	}
+}
 
-	/**
-	 * Load relationships.
-	 * 
-	 * @throws Exception
-	 *             the exception
-	 */
-	private void loadRelationships() throws Exception {
 
-		String line = "";
-		i = 0;
 
-		while ((line = relationships_by_source_concept.readLine()) != null) {
 
-			String fields[] = line.split("\t");
-			Relationship relationship = new RelationshipJpa();
-
-			if (!fields[0].equals("id")) { // header
-				relationship.setTerminologyId(fields[0]);
-				relationship.setEffectiveTime(dt.parse(fields[1]));
-				relationship.setActive(fields[2].equals("1") ? true : false); // active
-				relationship.setModuleId(Long.valueOf(fields[3])); // moduleId
-
-				relationship.setRelationshipGroup(Integer.valueOf(fields[6])); // relationshipGroup
-				relationship.setTypeId(Long.valueOf(fields[7])); // typeId
-				relationship.setCharacteristicTypeId(Long.valueOf("1")); // characteristicTypeId
-				relationship.setTerminology("SNOMEDCT");
-				relationship.setTerminologyVersion(version);
-				relationship.setModifierId(Long.valueOf("2"));
-
-				relationship.setSourceConcept(getConcept(fields[4],
-						relationship.getTerminology(),
-						relationship.getTerminologyVersion()));
-				relationship.setDestinationConcept(getConcept(fields[5],
-						relationship.getTerminology(),
-						relationship.getTerminologyVersion()));
-
-				manager.persist(relationship);
-
-				i++;
-			}
+/**
+ * Load descriptions.
+ * 
+ * @throws Exception the exception
+ */
+private void loadDescriptions() throws Exception {
+	
+	
+	String line = "";
+	i = 0;
+	
+	// keep concepts from extension descriptions
+	while ((line = descriptions_by_description.readLine()) != null) {
+		
+		String fields[] = line.split("\t");
+		Description description = new DescriptionJpa();
+		
+		if (!fields[0].equals("id")) { // header
+			
+			description.setTerminologyId(fields[0]);
+			description.setEffectiveTime(dt.parse(fields[1]));
+			description.setActive(fields[2].equals("1") ? true : false);
+			description.setModuleId(Long.valueOf(fields[3]));
+			
+			description.setLanguageCode(fields[5]);
+			description.setTypeId(Long.valueOf(fields[6]));
+			description.setTerm(fields[7]);
+			description.setCaseSignificanceId(Long.valueOf(fields[8]));
+			description.setTerminology("SNOMEDCT");
+			description.setTerminologyVersion(version);
+			
+			description.setConcept(getConcept(fields[4], description.getTerminology(), description.getTerminologyVersion()));
+			
+			manager.persist(description);
+			
+			// add to index
+			descriptionCache.put(fields[0] + description.getTerminology() + description.getTerminologyVersion(), description.getId()); 
+		
+			i++;
 		}
 	}
+}
 
-	/**
-	 * Load descriptions.
-	 * 
-	 * @throws Exception
-	 *             the exception
-	 */
-	private void loadDescriptions() throws Exception {
+/**
+ * Load AttributeRefSets (Content)
+ * 
+ * @throws Exception the exception
+ */
 
-		String line = "";
-		i = 0;
 
-		// keep concepts from extension descriptions
-		while ((line = descriptions_by_description.readLine()) != null) {
+private void loadAttributeValueRefSets() throws Exception {
+	
+	String line = "";
+	i = 0;
+		
+	while ((line = attribute_refsets_by_concept.readLine()) != null) {
+		
+		String fields[] = line.split("\t");
+		AttributeValueRefSetMember attributeValueRefSetMember = new AttributeValueRefSetMemberJpa();
+		
+		if (!fields[0].equals("id")) { // header
+			
+			// Universal RefSet attributes
+			attributeValueRefSetMember.setTerminologyId(fields[0]);
+			attributeValueRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+			attributeValueRefSetMember.setActive(fields[2].equals("1") ? true : false);
+			attributeValueRefSetMember.setModuleId(Long.valueOf(fields[3]));
+			attributeValueRefSetMember.setRefSetId(Long.valueOf(fields[4]));
+			
+			
+			// AttributeValueRefSetMember unique attributes
+			attributeValueRefSetMember.setValueId(Long.valueOf(fields[6]));
+			
+			// Terminology attributes
+			attributeValueRefSetMember.setTerminology("SNOMEDCT");
+			attributeValueRefSetMember.setTerminologyVersion(version);
+			
+			// Retrieve concept -- firstToken is referencedComponentId
+			attributeValueRefSetMember.setConcept(getConcept(fields[5], attributeValueRefSetMember.getTerminology(), attributeValueRefSetMember.getTerminologyVersion())); 
 
-			String fields[] = line.split("\t");
-			Description description = new DescriptionJpa();
+			manager.persist(attributeValueRefSetMember);
+			
+			i++;
+		}
+	}	
+}
 
-			if (!fields[0].equals("id")) { // header
+/**
+ * Load SimpleRefSets (Content)
+ * 
+ * @throws Exception the exception
+ */
 
-				description.setTerminologyId(fields[0]);
-				description.setEffectiveTime(dt.parse(fields[1]));
-				description.setActive(fields[2].equals("1") ? true : false);
-				description.setModuleId(Long.valueOf(fields[3]));
+private void loadSimpleRefSets() throws Exception {
+	
+	String line = "";
+	i = 0;
+		
+	while ((line = simple_refsets_by_concept.readLine()) != null) {
+		
+		String fields[] = line.split("\t");
+		SimpleRefSetMember simpleRefSetMember = new SimpleRefSetMemberJpa();
+		
+		if (!fields[0].equals("id")) { // header
+			
+			// Universal RefSet attributes
+			simpleRefSetMember.setTerminologyId(fields[0]); 
+			simpleRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+			simpleRefSetMember.setActive(fields[2].equals("1") ? true : false);
+			simpleRefSetMember.setModuleId(Long.valueOf(fields[3]));
+			simpleRefSetMember.setRefSetId(Long.valueOf(fields[4]));
+			
+			// SimpleRefSetMember unique attributes
+			// NONE
+			
+			// Terminology attributes
+			simpleRefSetMember.setTerminology("SNOMEDCT");
+			simpleRefSetMember.setTerminologyVersion(version);
+			
+			// Retrieve Concept -- firstToken is referencedComonentId
+			simpleRefSetMember.setConcept(getConcept(fields[5], simpleRefSetMember.getTerminology(), simpleRefSetMember.getTerminologyVersion())); 
 
-				description.setLanguageCode(fields[5]);
-				description.setTypeId(Long.valueOf(fields[6]));
-				description.setTerm(fields[7]);
-				description.setCaseSignificanceId(Long.valueOf(fields[8]));
-				description.setTerminology("SNOMEDCT");
-				description.setTerminologyVersion(version);
-
-				description.setConcept(getConcept(fields[4],
-						description.getTerminology(),
-						description.getTerminologyVersion()));
-
-				manager.persist(description);
-
-				// add to index
-				descriptionCache.put(fields[0] + description.getTerminology()
-						+ description.getTerminologyVersion(),
-						description.getId());
-
-				i++;
-			}
+			manager.persist(simpleRefSetMember);
+			
+			i++;
 		}
 	}
+}
 
-	/**
-	 * Load AttributeRefSets (Content)
-	 * 
-	 * @throws Exception
-	 *             the exception
-	 */
-
-	private void loadAttributeValueRefSets() throws Exception {
-
-		String line = "";
-		i = 0;
-
-		while ((line = attribute_refsets_by_concept.readLine()) != null) {
-
-			String fields[] = line.split("\t");
-			AttributeValueRefSetMember attributeValueRefSetMember = new AttributeValueRefSetMemberJpa();
-
-			if (!fields[0].equals("id")) { // header
-
-				// Universal RefSet attributes
-				attributeValueRefSetMember.setTerminologyId(fields[0]);
-				attributeValueRefSetMember
-						.setEffectiveTime(dt.parse(fields[1]));
-				attributeValueRefSetMember
-						.setActive(fields[2].equals("1") ? true : false);
-				attributeValueRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				attributeValueRefSetMember.setRefSetId(Long.valueOf(fields[4]));
-
-				// AttributeValueRefSetMember unique attributes
-				attributeValueRefSetMember.setValueId(Long.valueOf(fields[6]));
-
-				// Terminology attributes
-				attributeValueRefSetMember.setTerminology("SNOMEDCT");
-				attributeValueRefSetMember.setTerminologyVersion(version);
-
-				// Retrieve concept -- firstToken is referencedComponentId
-				attributeValueRefSetMember.setConcept(getConcept(fields[5],
-						attributeValueRefSetMember.getTerminology(),
-						attributeValueRefSetMember.getTerminologyVersion()));
-
-				manager.persist(attributeValueRefSetMember);
-
-				i++;
-			}
+/**
+ * Load SimpleMapRefSets (Crossmap)
+ * 
+ * @throws Exception the exception
+ */
+private void loadSimpleMapRefSets() throws Exception {
+	
+	String line = "";
+	i = 0;
+	
+	while ((line = simple_map_refsets_by_concept.readLine()) != null) {
+		
+		String fields[] = line.split("\t");
+		SimpleMapRefSetMember simpleMapRefSetMember = new SimpleMapRefSetMemberJpa();
+		
+		if (!fields[0].equals("id")) { // header
+			
+			// Universal RefSet attributes
+			simpleMapRefSetMember.setTerminologyId(fields[0]);
+			simpleMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+			simpleMapRefSetMember.setActive(fields[2].equals("1") ? true : false);
+			simpleMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
+			simpleMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));
+			
+			// SimpleMap unique attributes
+			simpleMapRefSetMember.setMapTarget(fields[6]);
+			
+			// Terminology attributes
+			simpleMapRefSetMember.setTerminology("SNOMEDCT");
+			simpleMapRefSetMember.setTerminologyVersion(version);
+			
+			// Retrieve concept	 -- firstToken is referencedComponentId
+			simpleMapRefSetMember.setConcept(getConcept(fields[5], simpleMapRefSetMember.getTerminology(), simpleMapRefSetMember.getTerminologyVersion())); 
+			
+			manager.persist(simpleMapRefSetMember);	
+			
+			i++;
 		}
 	}
+}
 
-	/**
-	 * Load SimpleRefSets (Content)
-	 * 
-	 * @throws Exception
-	 *             the exception
-	 */
-
-	private void loadSimpleRefSets() throws Exception {
-
-		String line = "";
-		i = 0;
-
-		while ((line = simple_refsets_by_concept.readLine()) != null) {
-
-			String fields[] = line.split("\t");
-			SimpleRefSetMember simpleRefSetMember = new SimpleRefSetMemberJpa();
-
-			if (!fields[0].equals("id")) { // header
-
-				// Universal RefSet attributes
-				simpleRefSetMember.setTerminologyId(fields[0]);
-				simpleRefSetMember.setEffectiveTime(dt.parse(fields[1]));
-				simpleRefSetMember.setActive(fields[2].equals("1") ? true
-						: false);
-				simpleRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				simpleRefSetMember.setRefSetId(Long.valueOf(fields[4]));
-
-				// SimpleRefSetMember unique attributes
-				// NONE
-
-				// Terminology attributes
-				simpleRefSetMember.setTerminology("SNOMEDCT");
-				simpleRefSetMember.setTerminologyVersion(version);
-
-				// Retrieve Concept -- firstToken is referencedComonentId
-				simpleRefSetMember.setConcept(getConcept(fields[5],
-						simpleRefSetMember.getTerminology(),
-						simpleRefSetMember.getTerminologyVersion()));
-
-				manager.persist(simpleRefSetMember);
-
-				i++;
-			}
-		}
-	}
-
-	/**
-	 * Load SimpleMapRefSets (Crossmap)
-	 * 
-	 * @throws Exception
-	 *             the exception
-	 */
-	private void loadSimpleMapRefSets() throws Exception {
-
-		String line = "";
-		i = 0;
-
-		while ((line = simple_map_refsets_by_concept.readLine()) != null) {
-
-			String fields[] = line.split("\t");
-			SimpleMapRefSetMember simpleMapRefSetMember = new SimpleMapRefSetMemberJpa();
-
-			if (!fields[0].equals("id")) { // header
-
-				// Universal RefSet attributes
-				simpleMapRefSetMember.setTerminologyId(fields[0]);
-				simpleMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
-				simpleMapRefSetMember.setActive(fields[2].equals("1") ? true
-						: false);
-				simpleMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				simpleMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));
-
-				// SimpleMap unique attributes
-				simpleMapRefSetMember.setMapTarget(fields[6]);
-
-				// Terminology attributes
-				simpleMapRefSetMember.setTerminology("SNOMEDCT");
-				simpleMapRefSetMember.setTerminologyVersion(version);
-
-				// Retrieve concept -- firstToken is referencedComponentId
-				simpleMapRefSetMember.setConcept(getConcept(fields[5],
-						simpleMapRefSetMember.getTerminology(),
-						simpleMapRefSetMember.getTerminologyVersion()));
-
-				manager.persist(simpleMapRefSetMember);
-
-				i++;
-			}
-		}
-	}
-
-<<<<<<< HEAD
 /**
  * Load ComplexMapRefSets (Crossmap)
  * 
@@ -1802,68 +1587,17 @@ private void loadComplexMapRefSets() throws Exception {
 			manager.persist(complexMapRefSetMember);
 			
 			i++;
-=======
-	/**
-	 * Load ComplexMapRefSets (Crossmap)
-	 * 
-	 * @throws Exception
-	 *             the exception
-	 */
-	private void loadComplexMapRefSets() throws Exception {
 
-		String line = "";
-		i = 0;
-
-		while ((line = complex_map_refsets_by_concept.readLine()) != null) {
-
-			String fields[] = line.split("\t");
-			ComplexMapRefSetMember complexMapRefSetMember = new ComplexMapRefSetMemberJpa();
->>>>>>> fe26fd2ef04c43bbf733090ff51229f4a31710a9
-
-			if (!fields[0].equals("id")) { // header
-
-				complexMapRefSetMember.setTerminologyId(fields[0]);
-				complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
-				complexMapRefSetMember.setActive(fields[2].equals("1") ? true
-						: false);
-				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				complexMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));
-				 // conceptId
-
-				// ComplexMap unique attributes
-				complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
-				complexMapRefSetMember.setMapPriority(Integer
-						.parseInt(fields[7]));
-				complexMapRefSetMember.setMapRule(fields[8]);
-				complexMapRefSetMember.setMapAdvice(fields[9]);
-				complexMapRefSetMember.setMapTarget(fields[10]);
-				complexMapRefSetMember.setMapRelationId(Long
-						.valueOf(fields[11]));
-
-				// ComplexMap unique attributes NOT set by file (mapBlock
-				// elements)
-				complexMapRefSetMember.setMapBlock(1); // default value
-				complexMapRefSetMember.setMapBlockRule(null); // no default
-				complexMapRefSetMember.setMapBlockAdvice(null); // no default
-
-				// Terminology attributes
-				complexMapRefSetMember.setTerminology("SNOMEDCT");
-				complexMapRefSetMember.setTerminologyVersion(version);
-
-				// set Concept
-				complexMapRefSetMember.setConcept(getConcept(fields[5],
-						complexMapRefSetMember.getTerminology(),
-						complexMapRefSetMember.getTerminologyVersion()));
-
-				getLog().info(complexMapRefSetMember.toString());
-				manager.persist(complexMapRefSetMember);
-
-				i++;
-
-			}
 		}
+	}	
+	
+}
+/**
+ * Load ExtendedMapRefSets (Crossmap)
+ * 
+ * @throws Exception the exception
+ */
 
-<<<<<<< HEAD
 // NOTE: ExtendedMap RefSets are loaded into ComplexMapRefSetMember
 //       where mapRelationId = 	mapCategoryId
 private void loadExtendedMapRefSets() throws Exception {
@@ -1904,137 +1638,75 @@ private void loadExtendedMapRefSets() throws Exception {
 			// set Concept
 			complexMapRefSetMember.setConcept(getConcept(fields[5], complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion()));
 			
+
 			manager.persist(complexMapRefSetMember);
 			
 			i++;
-=======
-	}
 
-	/**
-	 * Load ExtendedMapRefSets (Crossmap)
-	 * 
-	 * @throws Exception
-	 *             the exception
-	 */
-
-	// NOTE: ExtendedMap RefSets are loaded into ComplexMapRefSetMember
-	// where mapRelationId = mapCategoryId
-	private void loadExtendedMapRefSets() throws Exception {
-
-		String line = "";
-		i = 0;
-
-		while ((line = extended_map_refsets_by_concept.readLine()) != null) {
-
-			String fields[] = line.split("\t");
-			ComplexMapRefSetMember complexMapRefSetMember = new ComplexMapRefSetMemberJpa();
-
-			if (!fields[0].equals("id")) { // header
->>>>>>> fe26fd2ef04c43bbf733090ff51229f4a31710a9
-
-				complexMapRefSetMember.setTerminologyId(fields[0]);
-				complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
-				complexMapRefSetMember.setActive(fields[2].equals("1") ? true
-						: false);
-				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				complexMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));
-				 // conceptId
-
-				// ComplexMap unique attributes
-				complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
-				complexMapRefSetMember.setMapPriority(Integer
-						.parseInt(fields[7]));
-				complexMapRefSetMember.setMapRule(fields[8]);
-				complexMapRefSetMember.setMapAdvice(fields[9]);
-				complexMapRefSetMember.setMapTarget(fields[10]);
-				complexMapRefSetMember.setMapRelationId(Long
-						.valueOf(fields[12]));
-
-				// ComplexMap unique attributes NOT set by file (mapBlock
-				// elements)
-				complexMapRefSetMember.setMapBlock(1); // default value
-				complexMapRefSetMember.setMapBlockRule(null); // no default
-				complexMapRefSetMember.setMapBlockAdvice(null); // no default
-
-				// Terminology attributes
-				complexMapRefSetMember.setTerminology("SNOMEDCT");
-				complexMapRefSetMember.setTerminologyVersion(version);
-
-				// set Concept
-				complexMapRefSetMember.setConcept(getConcept(fields[5],
-						complexMapRefSetMember.getTerminology(),
-						complexMapRefSetMember.getTerminologyVersion()));
-
-				getLog().debug(complexMapRefSetMember.toString());
-				manager.persist(complexMapRefSetMember);
-
-				i++;
-
-			}
 		}
+	}	
+	
+}
 
-	}
-
-	private void loadLanguageRefSets() throws Exception {
-
-		String line = "";
-		i = 0;
-		Concept concept;
-		Description description = new DescriptionJpa();
-		description.setTerminologyId("-1");
-
-		while ((line = language_refsets_by_description.readLine()) != null) {
-
-			String fields[] = line.split("\t");
-			LanguageRefSetMember languageRefSetMember = new LanguageRefSetMemberJpa();
-
-			if (!fields[0].equals("id")) { // header
-
-				// Universal RefSet attributes
-				languageRefSetMember.setTerminologyId(fields[0]);
-				languageRefSetMember.setEffectiveTime(dt.parse(fields[1]));
-				languageRefSetMember.setActive(fields[2].equals("1") ? true
-						: false);
-				languageRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				languageRefSetMember.setRefSetId(Long.valueOf(fields[4]));
-
-				// Language unique attributes
-				languageRefSetMember
-						.setAcceptabilityId(Long.valueOf(fields[6]));
-
-				// Terminology attributes
-				languageRefSetMember.setTerminology("SNOMEDCT");
-				languageRefSetMember.setTerminologyVersion(version);
-
-				// Set the description
-				description = getDescription(fields[5],
-						languageRefSetMember.getTerminology(),
-						languageRefSetMember.getTerminologyVersion());
-				languageRefSetMember.setDescription(description);
-				manager.persist(languageRefSetMember);
-
-				// check if this language refset and description form the
-				// defaultPreferredName
-				if (description.getTypeId().equals(dpnTypeId)
-						&& languageRefSetMember.getRefSetId().equals(
-								dpnRefSetId)
-						&& languageRefSetMember.getAcceptabilityId().equals(
-								dpnAcceptabilityId)) {
-
+private void loadLanguageRefSets() throws Exception {
+		
+	String line = "";
+	i = 0;
+	Concept concept;
+	Description description = new DescriptionJpa();
+	description.setTerminologyId("-1");
+		
+	while ((line = language_refsets_by_description.readLine()) != null) {
+		
+		String fields[] = line.split("\t");
+		LanguageRefSetMember languageRefSetMember = new LanguageRefSetMemberJpa();
+		
+		if (!fields[0].equals("id")) { // header
+			
+			// Universal RefSet attributes
+			languageRefSetMember.setTerminologyId(fields[0]);
+			languageRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+			languageRefSetMember.setActive(fields[2].equals("1") ? true : false);
+			languageRefSetMember.setModuleId(Long.valueOf(fields[3]));
+			languageRefSetMember.setRefSetId(Long.valueOf(fields[4]));
+			
+			// Language unique attributes
+			languageRefSetMember.setAcceptabilityId(Long.valueOf(fields[6]));
+			
+			// Terminology attributes
+			languageRefSetMember.setTerminology("SNOMEDCT");
+			languageRefSetMember.setTerminologyVersion(version);
+			
+			// Set the description
+			description = getDescription(fields[5], languageRefSetMember.getTerminology(), languageRefSetMember.getTerminologyVersion()); 
+			languageRefSetMember.setDescription(description);
+			manager.persist(languageRefSetMember);
+			
+			// check if this language refset and description form the defaultPreferredName
+			if(description.getTypeId().equals(dpnTypeId) && 
+					languageRefSetMember.getRefSetId().equals(dpnRefSetId) && 
+					languageRefSetMember.getAcceptabilityId().equals(dpnAcceptabilityId)) {
+				
 					concept = description.getConcept();
-
+					
 					if (!concept.getDefaultPreferredName().equals("null")) {
-						getLog().info(
-								"Multiple default preferred names for concept "
-										+ concept.getTerminologyId());
+						getLog().info("Multiple default preferred names for concept " + concept.getTerminologyId());
 					}
-
+					
 					concept.setDefaultPreferredName(description.getTerm());
 					manager.persist(concept);
-				}
-
-				i++;
 			}
+			
+			i++;
 		}
 	}
 }
+}
+			
+			
+	
+			
+			
+
+
+

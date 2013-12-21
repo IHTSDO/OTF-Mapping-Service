@@ -29,7 +29,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.SearchResult;
-import org.ihtsdo.otf.mapping.services.SearchResultList;
 
 public class ContentServiceJpa implements ContentService {
 
@@ -128,7 +127,7 @@ public class ContentServiceJpa implements ContentService {
 	 * )
 	 */
 	@Override
-	public SearchResultList getConcepts(String searchString) {
+	public List<Concept> getConcepts(String searchString) {
 		manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager =
 				Search.getFullTextEntityManager(manager);
@@ -154,7 +153,7 @@ public class ContentServiceJpa implements ContentService {
 				FullTextQuery fullTextQuery =
 						fullTextEntityManager.createFullTextQuery(luceneQuery);
 				List<AbstractComponent> results = fullTextQuery.getResultList();
-				List<SearchResult> components = new ArrayList<SearchResult>();
+				List<Concept> components = new ArrayList<Concept>();
 				for (AbstractComponent s : results) {
 					if (s instanceof ConceptJpa) {
 						//components.add(new SearchResultJpa(((ConceptJpa) s).getId(), ((ConceptJpa) s).getDefaultPreferredName()));

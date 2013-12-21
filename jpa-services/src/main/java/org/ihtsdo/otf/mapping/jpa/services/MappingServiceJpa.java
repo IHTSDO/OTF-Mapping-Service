@@ -26,7 +26,11 @@ import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapBlock;
+import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapGroup;
 import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
@@ -39,7 +43,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  */
 public class MappingServiceJpa implements MappingService {
 
-	/** The factory. */
+		/** The factory. */
 	private EntityManagerFactory factory;
 	
 	/** The indexed field names. */
@@ -847,6 +851,43 @@ public class MappingServiceJpa implements MappingService {
 		if (manager.isOpen()) { manager.close(); }
 		
     }
+    
+    // TODO Fill in and put in appropriate places
+    /* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapEntrys(java.lang.String)
+	 */
+	@Override
+	public List<MapEntry> findMapEntrys(String query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapBlocks(java.lang.String)
+	 */
+	@Override
+	public List<MapBlock> findMapBlocks(String query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapGroups(java.lang.String)
+	 */
+	@Override
+	public List<MapGroup> findMapGroups(String query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapNotes(java.lang.String)
+	 */
+	@Override
+	public List<MapNote> findMapNotes(String query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 
 	
