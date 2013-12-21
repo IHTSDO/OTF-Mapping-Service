@@ -28,6 +28,8 @@ import org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.SearchResult;
+import org.ihtsdo.otf.mapping.services.SearchResultList;
 
 public class ContentServiceJpa implements ContentService {
 
@@ -126,7 +128,7 @@ public class ContentServiceJpa implements ContentService {
 	 * )
 	 */
 	@Override
-	public List<String> getConcepts(String searchString) {
+	public SearchResultList getConcepts(String searchString) {
 		manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager =
 				Search.getFullTextEntityManager(manager);
@@ -152,14 +154,16 @@ public class ContentServiceJpa implements ContentService {
 				FullTextQuery fullTextQuery =
 						fullTextEntityManager.createFullTextQuery(luceneQuery);
 				List<AbstractComponent> results = fullTextQuery.getResultList();
-				List<String> conceptIds = new ArrayList<String>();
+				List<SearchResult> components = new ArrayList<SearchResult>();
 				for (AbstractComponent s : results) {
-					if (s instanceof ConceptJpa)
-					  conceptIds.add(s.getTerminologyId());
-					else if (s instanceof DescriptionJpa) 
-						conceptIds.add(((DescriptionJpa)s).getConcept().getTerminologyId());
+					if (s instanceof ConceptJpa) {
+						//components.add(new SearchResultJpa(((ConceptJpa) s).getId(), ((ConceptJpa) s).getDefaultPreferredName()));
+					} else if (s instanceof DescriptionJpa) {
+						//components.add(new SearchResultJpa(((DescriptionJpa) s).getId(), ((DescriptionJpa) s).getTerm()));
+					}
 				}
-				return conceptIds;
+				
+				return components;
 
 		} catch (Exception e) {
 			e.printStackTrace();

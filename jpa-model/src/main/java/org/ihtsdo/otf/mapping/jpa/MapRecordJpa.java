@@ -28,6 +28,9 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+/**
+ * The Map Record Jpa object
+ */
 @Entity
 @Table(name = "map_records")
 @Audited

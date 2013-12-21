@@ -26,6 +26,9 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+/**
+ * The Map Block Jpa object
+ */
 @Entity
 @Table(name = "map_blocks")
 @Audited

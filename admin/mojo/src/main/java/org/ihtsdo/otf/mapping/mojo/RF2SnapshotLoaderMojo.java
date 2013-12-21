@@ -890,18 +890,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						+ coreAttributeValueInputFile.toString() + " "
 						+ coreAttributeValueInputFile.exists());
 
-		// Choose map folder based on mini or full dataset
-		// -> RF2Release: the full RF2 release -> map content is in "Map"
-		// -> usext-mini-data: the truncated dataset -> map content is in "Crossmap"
-
-		if (coreInputDirString.contains("mini-data")) {
-			coreCrossmapInputDir = new File(coreRefsetInputDir, "/Crossmap/");
-		} else if (coreInputDirString.contains("RF2Release")) {
-			coreCrossmapInputDir = new File(coreRefsetInputDir, "/Map/");
-		} else {
-			throw new MojoFailureException("Cannot identify crossmap folder from dataset file structure!");
-		}
-		
+		coreCrossmapInputDir = new File(coreRefsetInputDir, "/Map/");
 		getLog().info(
 				"  Crossmap Input Dir = " + coreCrossmapInputDir.toString() + " "
 						+ coreCrossmapInputDir.exists());
@@ -1594,8 +1583,7 @@ private void loadComplexMapRefSets() throws Exception {
 			
 			// set Concept
 			complexMapRefSetMember.setConcept(getConcept(fields[5], complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion()));
-			
-			getLog().info(complexMapRefSetMember.toString());
+
 			manager.persist(complexMapRefSetMember);
 			
 			i++;
@@ -1650,7 +1638,6 @@ private void loadExtendedMapRefSets() throws Exception {
 			// set Concept
 			complexMapRefSetMember.setConcept(getConcept(fields[5], complexMapRefSetMember.getTerminology(), complexMapRefSetMember.getTerminologyVersion()));
 			
-			getLog().debug(complexMapRefSetMember.toString());
 			manager.persist(complexMapRefSetMember);
 			
 			i++;
