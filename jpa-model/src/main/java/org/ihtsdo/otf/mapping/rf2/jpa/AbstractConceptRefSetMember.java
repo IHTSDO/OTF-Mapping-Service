@@ -19,29 +19,26 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 @Audited
 public abstract class AbstractConceptRefSetMember extends AbstractRefSetMember
 		implements ConceptRefSetMember {
-	
+
 	/** The Concept associated with this element */
-	@ManyToOne(targetEntity=ConceptJpa.class)
-	/*@ManyToOne(cascade = {
-			   CascadeType.PERSIST, CascadeType.MERGE
-			 }, targetEntity=ConceptJpa.class)*/
-  @JsonBackReference
-  @ContainedIn
+	@ManyToOne(targetEntity = ConceptJpa.class, optional = false)
+	@JsonBackReference
+	@ContainedIn
 	private Concept concept;
 
 	/**
-     * {@inheritDoc}
-     */
+	 * {@inheritDoc}
+	 */
 	@Override
 	@XmlIDREF
 	@XmlAttribute
 	public ConceptJpa getConcept() {
-		return (ConceptJpa)this.concept;
+		return (ConceptJpa) this.concept;
 	}
 
 	/**
-     * {@inheritDoc}
-     */
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setConcept(Concept concept) {
 		this.concept = concept;

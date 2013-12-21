@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -48,21 +49,35 @@ public class MapRecordJpa implements MapRecord {
 	
 	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=MapBlockJpa.class)
 	@JsonManagedReference
-	private List<MapBlock> mapBlocks;
+	private List<MapBlock> mapBlocks = new ArrayList<MapBlock>();
 	
 	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=MapGroupJpa.class)
 	@JsonManagedReference
-	private List<MapGroup> mapGroups;
+	private List<MapGroup> mapGroups = new ArrayList<MapGroup>();
 	
 	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=MapEntryJpa.class)
 	@JsonManagedReference
-	private List<MapEntry> mapEntries;
+	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
 	
 	@ManyToMany(targetEntity=MapNoteJpa.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapNoteJpa.class)
-	private List<MapNote> notes;
+	private List<MapNote> notes = new ArrayList<MapNote>();
 	
+
+	public MapRecordJpa() {
+	}
+
+	public MapRecordJpa(Long id, String conceptId, List<MapBlock> mapBlocks,
+			List<MapGroup> mapGroups, List<MapEntry> mapEntries, List<MapNote> notes) {
+		super();
+		this.id = id;
+		this.conceptId = conceptId;
+		this.mapBlocks = mapBlocks;
+		this.mapGroups = mapGroups;
+		this.mapEntries = mapEntries;
+		this.notes = notes;
+	}
 
 	@Override
 	public Long getId() {

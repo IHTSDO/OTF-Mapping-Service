@@ -58,7 +58,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	private Long caseSignificanceId;
 
 	/** The concept. */
-	@ManyToOne(targetEntity=ConceptJpa.class)
+	@ManyToOne(targetEntity=ConceptJpa.class, optional=false)
 	@JsonBackReference
 	@ContainedIn
 	private Concept concept;

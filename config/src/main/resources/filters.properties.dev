@@ -21,3 +21,9 @@ loader.main.input.data=C:\\data\\usext-mini-data\\src\\main\\resources\\org\\iht
 loader.defaultPreferredNames.typeId=900000000000013009
 loader.defaultPreferredNames.refSetId=900000000000509007
 loader.defaultPreferredNames.acceptabilityId=900000000000548007
+
+#
+# Webapp base URL
+#
+base.url=http://localhost:8080
+

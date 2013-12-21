@@ -1,5 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -40,7 +42,7 @@ public class MapBlockJpa implements MapBlock {
 	@GeneratedValue
 	private Long id;
 
-	@ManyToOne(targetEntity=MapRecordJpa.class)
+	@ManyToOne(targetEntity=MapRecordJpa.class, optional=false)
 	@JsonBackReference
 	@ContainedIn
 	private MapRecord mapRecord;
@@ -48,22 +50,37 @@ public class MapBlockJpa implements MapBlock {
 	/** The map entries. */
 	@OneToMany(targetEntity=MapGroupJpa.class, cascade = CascadeType.ALL, fetch=FetchType.LAZY)
 	@JsonManagedReference
-	private List<MapGroup> mapGroups;
+	private List<MapGroup> mapGroups = new ArrayList<MapGroup>();
 
 	/** The index (map priority). */
 	@Column(nullable = false)
 	private int indexMapPriority;
 
 	/** The rule. */
-	@Column(nullable = false, length = 50)
+	@Column(nullable = true, length = 50)
 	private String rule;
 	
 	/** The map advices. */
 	@ManyToMany(targetEntity=MapAdviceJpa.class, cascade = CascadeType.ALL, fetch=FetchType.LAZY)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
-	private Set<MapAdvice> mapAdvices;
+	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 	
+	
+	public MapBlockJpa() {
+	}
+
+	public MapBlockJpa(Long id, MapRecord mapRecord, List<MapGroup> mapGroups,
+			int indexMapPriority, String rule, Set<MapAdvice> mapAdvices) {
+		super();
+		this.id = id;
+		this.mapRecord = mapRecord;
+		this.mapGroups = mapGroups;
+		this.indexMapPriority = indexMapPriority;
+		this.rule = rule;
+		this.mapAdvices = mapAdvices;
+	}
+
 	@Override
 	public Long getId() {
 		return id;
