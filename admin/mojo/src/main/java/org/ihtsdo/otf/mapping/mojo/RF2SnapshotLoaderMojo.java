@@ -892,7 +892,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 		coreCrossmapInputDir = new File(coreRefsetInputDir, "/Map/");
 		getLog().info(
-				"  Crossmap Input Dir = " + coreCrossmapInputDir.toString() + " "
+				"  Core Crossmap Input Dir = " + coreCrossmapInputDir.toString() + " "
 						+ coreCrossmapInputDir.exists());
 
 		for (File f : coreCrossmapInputDir.listFiles()) {
