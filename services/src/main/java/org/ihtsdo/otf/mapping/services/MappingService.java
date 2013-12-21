@@ -3,8 +3,13 @@ package org.ihtsdo.otf.mapping.services;
 import java.util.List;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapBlock;
+import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapGroup;
 import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
 /**
@@ -93,61 +98,61 @@ public interface MappingService {
 	 * @param query the query
 	 * @return the list of MapProject
 	 */
-	public SearchResultList findMapProjects(String query);
+	public List<MapProject> findMapProjects(String query);
 	
 	/** 
 	 * Query for MapSpecialists
 	 * @param query the query
 	 * @return the List of MapProjects
 	 */
-	public SearchResultList findMapSpecialists(String query);
+	public List<MapSpecialist> findMapSpecialists(String query);
 	
 	/**
 	 * Query for MapLeads
 	 * @param query the query
 	 * @return the List of MapProjects
 	 */
-	public SearchResultList findMapLeads(String query);
+	public List<MapLead> findMapLeads(String query);
 	
 	/**
 	 * Query for MapAdvices
 	 * @param query the query
 	 * @return the List of MapAdvices
 	 */
-	public SearchResultList findMapAdvices(String query);
+	public List<MapAdvice> findMapAdvices(String query);
 	
 	/**
 	 * Query for MapRecords
 	 * @param query the query
 	 * @return the List of MapRecords
 	 */
-	public SearchResultList findMapRecords(String query);
+	public List<MapRecord> findMapRecords(String query);
 	
 	/**
 	 * Query for MapEntrys
 	 * @param query the query
 	 * @return the List of MapEntrys
 	 */
-	public SearchResultList findMapEntrys(String query);
+	public List<MapEntry> findMapEntrys(String query);
 	
 	/**
 	 * Query for MapBlocks
 	 * @param query the query
 	 * @return the List of MapBlocks
 	 */
-	public SearchResultList findMapBlocks(String query);
+	public List<MapBlock> findMapBlocks(String query);
 	
 	/**
 	 * Query for MapGroups
 	 * @param query the query
 	 * @return the List of MapGroups
 	 */
-	public SearchResultList findMapGroups(String query);
+	public List<MapGroup> findMapGroups(String query);
 	
 	/**
 	 * Query for MapNotes
 	 * @param query the query
 	 * @return the List of MapNotes
 	 */
-	public SearchResultList findMapNotes(String query);
+	public List<MapNote> findMapNotes(String query);
 }
