@@ -2,7 +2,7 @@
 
 var mapProjectAppControllers = angular.module('mapProjectAppControllers', ['ui.bootstrap']);
 
-var root = "http://localhost:8080/mapping-rest/mapping/";
+var root = "${base.url}/mapping-rest/mapping/";
  
 mapProjectAppControllers.controller('MapProjectListCtrl', 
   function ($scope, $http) {
