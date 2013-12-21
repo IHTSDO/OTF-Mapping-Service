@@ -93,26 +93,61 @@ public interface MappingService {
 	 * @param query the query
 	 * @return the list of MapProject
 	 */
-	public List<MapProject> findMapProjects(String query);
+	public SearchResultList findMapProjects(String query);
 	
 	/** 
 	 * Query for MapSpecialists
 	 * @param query the query
 	 * @return the List of MapProjects
 	 */
-	public List<MapSpecialist> findMapSpecialists(String query);
+	public SearchResultList findMapSpecialists(String query);
 	
 	/**
 	 * Query for MapLeads
 	 * @param query the query
 	 * @return the List of MapProjects
 	 */
-	public List<MapLead> findMapLeads(String query);
+	public SearchResultList findMapLeads(String query);
 	
 	/**
 	 * Query for MapAdvices
 	 * @param query the query
 	 * @return the List of MapAdvices
 	 */
-	public List<MapAdvice> findMapAdvices(String query);
+	public SearchResultList findMapAdvices(String query);
+	
+	/**
+	 * Query for MapRecords
+	 * @param query the query
+	 * @return the List of MapRecords
+	 */
+	public SearchResultList findMapRecords(String query);
+	
+	/**
+	 * Query for MapEntrys
+	 * @param query the query
+	 * @return the List of MapEntrys
+	 */
+	public SearchResultList findMapEntrys(String query);
+	
+	/**
+	 * Query for MapBlocks
+	 * @param query the query
+	 * @return the List of MapBlocks
+	 */
+	public SearchResultList findMapBlocks(String query);
+	
+	/**
+	 * Query for MapGroups
+	 * @param query the query
+	 * @return the List of MapGroups
+	 */
+	public SearchResultList findMapGroups(String query);
+	
+	/**
+	 * Query for MapNotes
+	 * @param query the query
+	 * @return the List of MapNotes
+	 */
+	public SearchResultList findMapNotes(String query);
 }

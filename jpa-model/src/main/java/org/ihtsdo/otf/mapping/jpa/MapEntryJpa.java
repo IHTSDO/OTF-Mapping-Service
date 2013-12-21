@@ -30,6 +30,9 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+/**
+ * The Map Entry Jpa object
+ */
 @Entity
 @Table(name = "map_entries")
 @Audited

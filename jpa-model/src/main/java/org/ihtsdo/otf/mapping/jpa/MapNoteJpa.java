@@ -16,6 +16,9 @@ import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
+/**
+ * The Map Note Jpa object
+ */
 @Entity
 @Table(name = "map_notes")
 @Audited

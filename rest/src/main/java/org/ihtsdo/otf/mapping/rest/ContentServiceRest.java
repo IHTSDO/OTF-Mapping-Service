@@ -59,13 +59,14 @@ public class ContentServiceRest {
 
 	}
 	
+	// TODO: Fix this
 	/**
 	 * Returns the concept for id.
 	 *
 	 * @param id the id
 	 * @return the concept for id
 	 */
-	@GET
+	/*@GET
 	@Path("/concepts/xml/{string}")
 	@ApiOperation(value = "Find concepts by search query", notes = "Returns concepts that are related to search query.", response = String.class)
 	public String getConceptForString(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
@@ -81,6 +82,6 @@ public class ContentServiceRest {
 		}
 		return sb.toString();
 
-	}
+	}*/
 
 }

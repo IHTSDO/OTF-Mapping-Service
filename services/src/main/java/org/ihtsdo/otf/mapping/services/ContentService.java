@@ -1,9 +1,11 @@
 package org.ihtsdo.otf.mapping.services;
 
-import java.util.List;
-
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
+/**
+ * The interface for the content service
+ *
+ */
 public interface ContentService {
 	
 	/**
@@ -20,5 +22,5 @@ public interface ContentService {
 	 * @param searchString the search string
 	 * @return the concept
 	 */
-	public List<String> getConcepts(String searchString);
+	public SearchResultList getConcepts(String searchString);
 }
