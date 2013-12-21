@@ -22,6 +22,18 @@ import org.ihtsdo.otf.mapping.model.MapLead;
 @XmlRootElement(name="mapLead")
 public class MapLeadJpa implements MapLead {
 
+	public MapLeadJpa() {
+		super();
+	}
+
+	public MapLeadJpa(Long id, String userName, String name, String email) {
+		super();
+		this.id = id;
+		this.userName = userName;
+		this.name = name;
+		this.email = email;
+	}
+
 	/** The id. */
 	@Id
 	@GeneratedValue

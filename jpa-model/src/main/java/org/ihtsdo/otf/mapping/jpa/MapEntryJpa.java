@@ -1,5 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -44,7 +46,7 @@ public class MapEntryJpa implements MapEntry {
 	@GeneratedValue
 	private Long id;
 	
-	@ManyToOne(targetEntity=MapRecordJpa.class)
+	@ManyToOne(targetEntity=MapRecordJpa.class, optional=false)
 	@JsonBackReference
 	@ContainedIn
 	private MapRecord mapRecord;
@@ -52,7 +54,7 @@ public class MapEntryJpa implements MapEntry {
 	/** The map notes. */
 	@ManyToMany(targetEntity=MapNoteJpa.class, cascade = CascadeType.ALL, fetch=FetchType.EAGER)
 	@JsonManagedReference
-	private List<MapNote> mapNotes;
+	private List<MapNote> mapNotes = new ArrayList<MapNote>();
 
 	/** The target. */
 	@Column(nullable = false)
@@ -62,10 +64,10 @@ public class MapEntryJpa implements MapEntry {
 	@ManyToMany(targetEntity=MapAdviceJpa.class, cascade = CascadeType.ALL, fetch=FetchType.EAGER)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
-	private Set<MapAdvice> mapAdvices;
+	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 
 	/** The rule. */
-	@Column(nullable = false, length = 50)
+	@Column(nullable = true, length = 50)
 	private String rule;
 
 	/** The index (map priority). */
@@ -75,6 +77,23 @@ public class MapEntryJpa implements MapEntry {
 	/** The relation id. */
 	@Column(nullable = false, length = 25)
 	private String relationId;
+
+	public MapEntryJpa() {
+	}
+
+	public MapEntryJpa(Long id, MapRecord mapRecord, List<MapNote> mapNotes,
+			String target, Set<MapAdvice> mapAdvices, String rule,
+			int indexMapPriority, String relationId) {
+		super();
+		this.id = id;
+		this.mapRecord = mapRecord;
+		this.mapNotes = mapNotes;
+		this.target = target;
+		this.mapAdvices = mapAdvices;
+		this.rule = rule;
+		this.indexMapPriority = indexMapPriority;
+		this.relationId = relationId;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getId()

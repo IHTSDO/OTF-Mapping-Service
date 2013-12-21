@@ -44,6 +44,17 @@ public class MapNoteJpa implements MapNote {
 	private Date timestamp;
 	
 	
+	public MapNoteJpa() {
+	}
+
+	public MapNoteJpa(Long id, MapUser user, String note, Date timestamp) {
+		super();
+		this.id = id;
+		this.user = user;
+		this.note = note;
+		this.timestamp = timestamp;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapNote#getId()
 	 */

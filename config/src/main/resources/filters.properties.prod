@@ -2,14 +2,17 @@
 # MySQL Config information
 #
 mysql.main.url=jdbc:mysql://127.0.0.1:3306/mappingservicedb
-mysql.main.user=root
-mysql.main.pwd=rootpwd
+mysql.main.user=otf
+mysql.main.pwd=otfpwd
+mysql.test.url=jdbc:mysql://127.0.0.1:3306/mappingservicedbtest
+mysql.test.user=otf
+mysql.test.pwd=otfpwd
 
 #
 # Path to loader dta
 #   this directory must have Refset/ and Terminology/ directories
 #
-loader.main.input.data=C:\\data\\SnomedCT_Release_INT_20130731\\RF2Release\\Snapshot
+loader.main.input.data=/mnt/projects/data/RF2Release
 
 #
 # Loader settings for preferred name
@@ -17,3 +20,8 @@ loader.main.input.data=C:\\data\\SnomedCT_Release_INT_20130731\\RF2Release\\Snap
 loader.defaultPreferredNames.typeId=900000000000013009
 loader.defaultPreferredNames.refSetId=900000000000509007
 loader.defaultPreferredNames.acceptabilityId=900000000000548007
+
+#
+# Webapp base URL
+#
+base.url=http://mapping.snomedtools.org

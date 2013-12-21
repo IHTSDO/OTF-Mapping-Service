@@ -39,6 +39,17 @@ public class MapSpecialistJpa implements MapSpecialist {
 	@Column(nullable = false)
 	private String email;
 	
+	public MapSpecialistJpa() {
+	}
+
+	public MapSpecialistJpa(Long id, String userName, String name, String email) {
+		super();
+		this.id = id;
+		this.userName = userName;
+		this.name = name;
+		this.email = email;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#getId()
 	 */
