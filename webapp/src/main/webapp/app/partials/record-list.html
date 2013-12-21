@@ -1,5 +1,9 @@
+Note (1/20/13):  displaying map records has not been fully tested.
+<p>
 <!-- Partial for record list -->
-Search Record Names: <input ng-model="query">
+<p>Filter Results: <input ng-model="query"></p>
+
+
 
 <accordion>
     <accordion-group ng-repeat="record in records | filter:query | orderBy:orderProp">
