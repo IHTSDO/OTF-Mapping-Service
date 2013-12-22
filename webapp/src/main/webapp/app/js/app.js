@@ -9,6 +9,10 @@ var mapProjectApp = angular.module('mapProjectApp', [
 
 mapProjectApp.config(['$routeProvider',
    function($routeProvider) {
+	
+      //////////////////////////////
+	  // MAPPING SERVICES
+	  //////////////////////////////
 	  
 	  $routeProvider.when('/project/projects', {
 		  templateUrl: 'partials/project-list.html', 
@@ -35,19 +39,35 @@ mapProjectApp.config(['$routeProvider',
 	      controller: 'MapAdviceListCtrl'
 	  });
 	  
-	  // non functional at the moment
 	  $routeProvider.when('/project/id/:projectId', {
   		  templateUrl: 'partials/project-detail.html', 
   		  controller: 'MapProjectDetailCtrl'
   	  });
 	  
-	// non functional at the moment
 	  $routeProvider.when('/record/id/:recordId', {
   		  templateUrl: 'partials/record-detail.html', 
   		  controller: 'MapRecordDetailCtrl'
   	  });
 	  
+	  //////////////////////////////
+	  // CONTENT SERVICES
+	  //////////////////////////////
+	  
+	  $routeProvider.when('/concept/concepts', {
+		  templateUrl: 'partials/concept-list.html',
+		  controller: 'ConceptListCtrl'
+	  });
+	  
+	  $routeProvider.when('/concept/id/:conceptId', {
+  		  templateUrl: 'partials/concept-detail.html', 
+  		  controller: 'ConceptDetailCtrl'
+  	  });
+	  
+	  $routeProvider.when('/', {
+		  templateUrl: 'partials/home.html'
+	  });
+	  
 	  $routeProvider.otherwise({
-	      redirectTo: '/'
+	      redirectTo: 'partials/error.html'
 	  });
    }]);

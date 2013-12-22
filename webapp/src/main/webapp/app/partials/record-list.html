@@ -7,13 +7,11 @@ Note (1/20/13):  displaying map records has not been fully tested.
 
 <accordion>
     <accordion-group ng-repeat="record in records | filter:query | orderBy:orderProp">
-    	<accordion-heading><h3>{{record.name}}</h3></accordion-heading>
-    	<p></p>
-		<p>Concept Id: {{record.conceptId}}
+    	<accordion-heading><h3>Concept ID: {{record.conceptId}}</h3></accordion-heading>
 		
 		<p>Map Entries:</p>
-		<table>
-		<thead><tr><th>Target</th><th>Rule</th><th>Index</th><th>Relation Id</th></tr></thead>
+		<table cellpadding="5">
+		<thead><tr><th>Target</th><th>Rule</th><th>Index</th><th>RelationId</th></tr></thead>
 		<tbody>
 		<tr ng-repeat="entry in record.mapEntries">
 			<td>{{entry.target}}</td>
@@ -23,7 +21,7 @@ Note (1/20/13):  displaying map records has not been fully tested.
 		</tr>
 		</tbody>
 		</table>
-
+		<p>
 		<p>Notes:</p>
 		<ul><li ng-repeat="note in record.notes">{{note.note}}</li></ul>
    	</accordion-group>
