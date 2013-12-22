@@ -11,27 +11,6 @@ Note (1/20/13):  displaying map records has not been fully tested.
     	<p></p>
 		<p>Concept Id: {{record.conceptId}}
 		
-		<p>Map Blocks:</p>
-		<table>
-		<thead><tr><th>Index</th><th>Rule</th></tr></thead>
-		<tbody>
-		<tr ng-repeat="block in record.mapBlocks">
-			<td>{{block.indexMapPriority}}</td>
-			<td>{{block.rule}}</td>
-		</tr>
-		</tbody>
-		</table>
-		
-		<p>Map Groups:</p>
-		<table>
-		<thead><tr><th>Index</th></thead>
-		<tbody>
-		<tr ng-repeat="group in record.mapGroups">
-			<td>{{group.indexMapPriority}}</td>
-		</tr>
-		</tbody>
-		</table>
-		
 		<p>Map Entries:</p>
 		<table>
 		<thead><tr><th>Target</th><th>Rule</th><th>Index</th><th>Relation Id</th></tr></thead>

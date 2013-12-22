@@ -3,9 +3,7 @@ package org.ihtsdo.otf.mapping.services;
 import java.util.List;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
-import org.ihtsdo.otf.mapping.model.MapBlock;
 import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapGroup;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -134,25 +132,6 @@ public interface MappingService {
 	 * @return the List of MapEntrys
 	 */
 	public List<MapEntry> findMapEntrys(String query);
-	
-	/**
-	 * Query for MapBlocks
-	 * @param query the query
-	 * @return the List of MapBlocks
-	 */
-	public List<MapBlock> findMapBlocks(String query);
-	
-	/**
-	 * Query for MapGroups
-	 * @param query the query
-	 * @return the List of MapGroups
-	 */
-	public List<MapGroup> findMapGroups(String query);
-	
-	/**
-	 * Query for MapNotes
-	 * @param query the query
-	 * @return the List of MapNotes
-	 */
+
 	public List<MapNote> findMapNotes(String query);
 }

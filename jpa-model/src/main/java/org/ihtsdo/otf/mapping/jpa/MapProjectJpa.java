@@ -11,7 +11,9 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -125,8 +127,14 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getId()
 	 */
 	@Override
+	@XmlTransient
 	public Long getId() {
 		return id;
+	}
+	
+	@XmlID
+	public String getID() {
+		return id.toString();
 	}
 
 	/* (non-Javadoc)

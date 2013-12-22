@@ -121,3 +121,21 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$routePa
     });
 
 }]);
+
+//not functioning, recordId is undefined for some reason
+mapRecordAppControllers.controller('MapRecordDetailCtrl', ['$scope', '$routeParams',
+   function ($scope, $http, $routeParams) {
+	  $scope.recordId = $routeParams.recordId;
+	  $http({
+        url: root + "record/id/" + $scope.recordId,
+        dataType: "json",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).success(function(data) {
+        $scope.record = data;
+      }).error(function(error) {
+    });
+
+}]);

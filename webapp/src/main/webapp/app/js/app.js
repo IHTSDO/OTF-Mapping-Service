@@ -40,7 +40,13 @@ mapProjectApp.config(['$routeProvider',
   		  templateUrl: 'partials/project-detail.html', 
   		  controller: 'MapProjectDetailCtrl'
   	  });
-	  	  
+	  
+	// non functional at the moment
+	  $routeProvider.when('/record/id/:recordId', {
+  		  templateUrl: 'partials/record-detail.html', 
+  		  controller: 'MapRecordDetailCtrl'
+  	  });
+	  
 	  $routeProvider.otherwise({
 	      redirectTo: '/'
 	  });
