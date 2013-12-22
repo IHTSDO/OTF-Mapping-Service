@@ -1,0 +1,13 @@
+<!--  partial for displaying project :projectId -->
+
+<em>Note:</em> 
+
+<p>This page returns a limited number of concepts to demonstrate the retrieval process.  The current test data contains 5,937 concepts, of which 50 are shown here.</p>
+<p>Click any concept below to view the full details of that concept (<strong>Warning:</strong> as of 12/22/2013, this process may be very slow on the EC2 server!).</p>
+
+
+Concepts:
+
+<ul>
+<li ng-repeat="concept in concepts"><a href="index.html#/concept/id/{{concept.terminologyId}}">{{concept.terminologyId}}</a></li>
+</ul>
