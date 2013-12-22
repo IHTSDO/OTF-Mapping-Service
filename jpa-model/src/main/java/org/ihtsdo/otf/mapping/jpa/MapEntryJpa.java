@@ -19,6 +19,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -71,7 +72,7 @@ public class MapEntryJpa implements MapEntry {
 	private String target;
 	
 	/** The rule. */
-	@Column(nullable = true, length = 50)
+	@Column(nullable = true, length = 4000)
 	private String rule;
 
 	/** The index (map priority). */
@@ -103,6 +104,7 @@ public class MapEntryJpa implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getId()
 	 */
 	@Override
+	@XmlTransient
 	public Long getId() {
 		return id;
 	}
@@ -224,6 +226,7 @@ public class MapEntryJpa implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getIndex()
 	 */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
 	public int getIndex() {
 		return indexMapPriority;
 	}
