@@ -80,6 +80,35 @@ public class ContentServiceJpa implements ContentService {
 		return getConcept(id);
 
 	}
+	
+	public List<Concept> getConceptsLimited(int n_concepts) {
+		manager = factory.createEntityManager();
+		javax.persistence.Query query = manager.createQuery("select terminologyId from ConceptJpa c");
+	
+	
+		try {
+			query.setMaxResults(n_concepts);
+			
+			List<String> concept_ids = (List<String>) query.getResultList();
+			
+			List<Concept> concepts = new ArrayList<Concept>();
+			
+			for (String concept_id : concept_ids) {
+				Concept c = new ConceptJpa();
+				c.setTerminologyId(concept_id);
+				concepts.add(c);
+			}
+			
+			
+			System.out.println("Returning " + Integer.toString(concept_ids.size()) + " concept ids");
+			return concepts;
+			
+		} catch (Exception e) {
+			System.out.println("Could not retrieve limited number of concepts");
+			return null;
+			// TODO Auto-generated stub
+		}
+	}
 
 	/*
 	 * (non-Javadoc)

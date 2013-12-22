@@ -23,6 +23,7 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -34,7 +35,6 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
-import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -703,6 +703,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapRecord> getMapRecords() {
 		
 		List<MapRecord> m = null;
+		List<MapRecord> m_return = new ArrayList<MapRecord>();
 		EntityManager manager = factory.createEntityManager();
 		
 		// construct query
@@ -716,9 +717,47 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 		
+		
+		System.out.println("Constructing valid map records for " + Integer.toString(m.size()) + " results");;
+		
+		for (MapRecord mr : m) {
+			
+			MapRecord mr_new = new MapRecordJpa();
+			mr_new.setId(mr.getId());
+			mr_new.setConceptId(mr.getConceptId());
+			
+			List<MapEntry> mapEntries = new ArrayList<MapEntry>();
+			
+			for (MapEntry me : mr.getMapEntries()) {
+				
+				MapEntry me_new = new MapEntryJpa();
+				
+				me_new.setId(me.getId());
+				me_new.setMapRecord(me.getMapRecord());
+				me_new.setAdvices(me.getAdvices());
+				me_new.setTarget(me.getTarget());
+				me_new.setAdvices(me.getAdvices());
+				me_new.setRule(me.getRule());
+				me_new.setIndex(me.getIndex());
+				me_new.setRelationId(me.getRelationId());
+				
+				// TODO: Fix notes
+				me_new.setNotes(null);
+				
+				mapEntries.add(me_new);
+			}
+			
+			mr_new.setMapEntries(mapEntries);
+		
+			m_return.add(mr_new);
+		}
+		
+		manager.clear();
+		
+		
 		if (manager.isOpen()) { manager.close(); }
 		
-		return m;
+		return m_return;
 	}
 	
 	/** 
