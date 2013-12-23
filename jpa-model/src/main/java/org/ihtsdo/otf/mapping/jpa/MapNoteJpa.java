@@ -6,16 +6,22 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
+/**
+ * The Map Note Jpa object
+ */
 @Entity
 @Table(name = "map_notes")
 @Audited
@@ -28,7 +34,7 @@ public class MapNoteJpa implements MapNote {
 	private Long id;
 	
 	/** The user. */
-	@OneToOne(targetEntity=MapUserJpa.class)
+	@ManyToOne(targetEntity=MapUserJpa.class)
 	private MapUser user;
 	
 	/** The note. */
@@ -56,10 +62,16 @@ public class MapNoteJpa implements MapNote {
 	 * @see org.ihtsdo.otf.mapping.model.MapNote#getId()
 	 */
 	@Override
+	@XmlTransient
 	public Long getId() {
 		return id;
 	}
-
+	
+	@XmlID
+	public String getID() {
+		return id.toString();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapNote#setId(java.lang.Long)
 	 */
@@ -72,8 +84,9 @@ public class MapNoteJpa implements MapNote {
 	 * @see org.ihtsdo.otf.mapping.model.MapNote#getUser()
 	 */
 	@Override
-	public MapUser getUser() {
-		return user;
+	@XmlElement(type=MapUserJpa.class)
+	public MapUserJpa getUser() {
+		return (MapUserJpa) user;
 	}
 
 	/* (non-Javadoc)

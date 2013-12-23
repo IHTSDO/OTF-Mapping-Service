@@ -14,8 +14,12 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -32,6 +36,9 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+/**
+ * The Map Entry Jpa object
+ */
 @Entity
 @Table(name = "map_entries")
 @Audited
@@ -49,13 +56,10 @@ public class MapEntryJpa implements MapEntry {
 	private MapRecord mapRecord;
 
 	/** The map notes. */
-	@ManyToMany(targetEntity=MapNoteJpa.class, cascade = CascadeType.ALL, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapNoteJpa.class, cascade = CascadeType.ALL, fetch=FetchType.LAZY)
 	@JsonManagedReference
+	@IndexedEmbedded(targetElement=MapNoteJpa.class) // just added this PG
 	private List<MapNote> mapNotes = new ArrayList<MapNote>();
-
-	/** The target. */
-	@Column(nullable = false)
-	private String target;
 
 	/** The map advices. */
 	@ManyToMany(targetEntity=MapAdviceJpa.class, cascade = CascadeType.ALL, fetch=FetchType.EAGER)
@@ -63,8 +67,12 @@ public class MapEntryJpa implements MapEntry {
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 
+	/** The target. */
+	@Column(nullable = false)
+	private String target;
+	
 	/** The rule. */
-	@Column(nullable = true, length = 50)
+	@Column(nullable = true, length = 4000)
 	private String rule;
 
 	/** The index (map priority). */
@@ -96,8 +104,14 @@ public class MapEntryJpa implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getId()
 	 */
 	@Override
+	@XmlTransient
 	public Long getId() {
 		return id;
+	}
+	
+	@XmlID
+	public String getID() {
+		return id.toString();
 	}
 
 	/* (non-Javadoc)
@@ -212,6 +226,7 @@ public class MapEntryJpa implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getIndex()
 	 */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
 	public int getIndex() {
 		return indexMapPriority;
 	}
@@ -242,8 +257,10 @@ public class MapEntryJpa implements MapEntry {
 	}
 
 	@Override
-	public MapRecord getMapRecord() {
-		return mapRecord;
+	@XmlIDREF
+	@XmlAttribute
+	public MapRecordJpa getMapRecord() {
+		return (MapRecordJpa) mapRecord;
 	}
 
 	@Override
@@ -319,10 +336,10 @@ public class MapEntryJpa implements MapEntry {
 
 	@Override
 	public String toString() {
-		return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord + ", mapNotes="
+		return ""; /*MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord + ", mapNotes="
 				+ mapNotes + ", target=" + target + ", mapAdvices=" + mapAdvices
 				+ ", rule=" + rule + ", indexMapPriority=" + indexMapPriority
-				+ ", relationId=" + relationId + "]";
+				+ ", relationId=" + relationId + "]";*/ // TODO Changed this due to stack overflow error, testing output
 	}
 	
 	

@@ -9,10 +9,12 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -21,14 +23,14 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
-import org.ihtsdo.otf.mapping.model.MapBlock;
 import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapGroup;
-import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+/**
+ * The Map Record Jpa object
+ */
 @Entity
 @Table(name = "map_records")
 @Audited
@@ -44,43 +46,51 @@ public class MapRecordJpa implements MapRecord {
 	@Column(nullable = false)
 	private String conceptId;
 	
-	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=MapBlockJpa.class)
+	/*@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=MapBlockJpa.class)
 	@JsonManagedReference
 	private List<MapBlock> mapBlocks = new ArrayList<MapBlock>();
 	
 	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=MapGroupJpa.class)
 	@JsonManagedReference
 	private List<MapGroup> mapGroups = new ArrayList<MapGroup>();
+	*/
 	
-	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=MapEntryJpa.class)
+	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapEntryJpa.class)
 	@JsonManagedReference
+	@IndexedEmbedded(targetElement=MapEntryJpa.class)
 	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
 	
-	@ManyToMany(targetEntity=MapNoteJpa.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	/*@ManyToMany(targetEntity=MapNoteJpa.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapNoteJpa.class)
 	private List<MapNote> notes = new ArrayList<MapNote>();
-	
+	*/
 
 	public MapRecordJpa() {
 	}
 
-	public MapRecordJpa(Long id, String conceptId, List<MapBlock> mapBlocks,
-			List<MapGroup> mapGroups, List<MapEntry> mapEntries, List<MapNote> notes) {
+	public MapRecordJpa(Long id, String conceptId, List<MapEntry> mapEntries) { // , List<MapNote> notes) {
 		super();
 		this.id = id;
 		this.conceptId = conceptId;
-		this.mapBlocks = mapBlocks;
-		this.mapGroups = mapGroups;
+		//this.mapBlocks = mapBlocks;
+		//this.mapGroups = mapGroups;
 		this.mapEntries = mapEntries;
-		this.notes = notes;
+		//this.notes = notes;
 	}
 
 	@Override
+	@XmlTransient
 	public Long getId() {
 		return id;
 	}
+	
+	@XmlID
+	public String getID() {
+		return id.toString();
+	}
 
+	
 	@Override
 	public void setId(Long id) {
 		this.id = id;
@@ -97,7 +107,8 @@ public class MapRecordJpa implements MapRecord {
 		this.conceptId = conceptId;
 	}
 
-	@Override
+	/*@Override
+	@XmlElement(type=MapBlockJpa.class)
 	public List<MapBlock> getMapBlocks() {
 		return mapBlocks;
 	}
@@ -118,6 +129,7 @@ public class MapRecordJpa implements MapRecord {
 	}
 
 	@Override
+	@XmlElement(type=MapGroupJpa.class)
 	public List<MapGroup> getMapGroups() {
 		return mapGroups;
 	}
@@ -135,9 +147,10 @@ public class MapRecordJpa implements MapRecord {
 	@Override
 	public void removeMapGroup(MapGroup mapGroup) {
 		mapGroups.remove(mapGroup);
-	}
+	}*/
 
-	@Override
+	/*@Override
+	@XmlElement(type=MapNoteJpa.class)
 	public List<MapNote> getNotes() {
 		return notes;
 	}
@@ -155,9 +168,10 @@ public class MapRecordJpa implements MapRecord {
 	@Override
 	public void removeNote(MapNote note) {
 		notes.remove(note);
-	}
+	}*/
 
 	@Override
+	@XmlElement(type=MapEntryJpa.class)
 	public List<MapEntry> getMapEntries() {
 		return mapEntries;
 	}
@@ -180,67 +194,67 @@ public class MapRecordJpa implements MapRecord {
 		mapEntries.remove(mapEntry);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
+		result = prime * result
+				+ ((conceptId == null) ? 0 : conceptId.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((mapBlocks == null) ? 0 : mapBlocks.hashCode());
-		result =
-				prime * result + ((mapEntries == null) ? 0 : mapEntries.hashCode());
-		result = prime * result + ((mapGroups == null) ? 0 : mapGroups.hashCode());
-		result = prime * result + ((notes == null) ? 0 : notes.hashCode());
+		result = prime * result
+				+ ((mapEntries == null) ? 0 : mapEntries.hashCode());
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		MapRecordJpa other = (MapRecordJpa) obj;
 		if (conceptId == null) {
-			if (other.conceptId != null)
+			if (other.conceptId != null) {
 				return false;
-		} else if (!conceptId.equals(other.conceptId))
+			}
+		} else if (!conceptId.equals(other.conceptId)) {
 			return false;
+		}
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
-		} else if (!id.equals(other.id))
+			}
+		} else if (!id.equals(other.id)) {
 			return false;
-		if (mapBlocks == null) {
-			if (other.mapBlocks != null)
-				return false;
-		} else if (!mapBlocks.equals(other.mapBlocks))
-			return false;
+		}
 		if (mapEntries == null) {
-			if (other.mapEntries != null)
+			if (other.mapEntries != null) {
 				return false;
-		} else if (!mapEntries.equals(other.mapEntries))
+			}
+		} else if (!mapEntries.equals(other.mapEntries)) {
 			return false;
-		if (mapGroups == null) {
-			if (other.mapGroups != null)
-				return false;
-		} else if (!mapGroups.equals(other.mapGroups))
-			return false;
-		if (notes == null) {
-			if (other.notes != null)
-				return false;
-		} else if (!notes.equals(other.notes))
-			return false;
+		}
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
-		return "MapRecordImpl [id=" + id + ", conceptId=" + conceptId
-				+ ", mapBlocks=" + mapBlocks + ", mapGroups=" + mapGroups
-				+ ", mapNotes=" + notes + ", mapEntries=" + mapEntries + "]";
+		return "MapRecordJpa [id=" + id + ", conceptId=" + conceptId
+				+ ", mapEntries=" + mapEntries + "]";
 	}
 
 }

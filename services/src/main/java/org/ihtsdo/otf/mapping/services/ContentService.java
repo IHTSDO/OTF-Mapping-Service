@@ -4,6 +4,10 @@ import java.util.List;
 
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
+/**
+ * The interface for the content service
+ *
+ */
 public interface ContentService {
 	
 	/**
@@ -20,5 +24,5 @@ public interface ContentService {
 	 * @param searchString the search string
 	 * @return the concept
 	 */
-	public List<String> getConcepts(String searchString);
+	public List<Concept> getConcepts(String searchString);
 }

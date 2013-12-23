@@ -2,12 +2,20 @@
 
 var mapProjectAppControllers = angular.module('mapProjectAppControllers', ['ui.bootstrap']);
 
-var root = "${base.url}/mapping-rest/mapping/";
- 
+var root_mapping = "${base.url}/mapping-rest/mapping/";
+var root_content = "${base.url}/mapping-rest/content/";
+	
+
+
+	
+//////////////////////////////
+// CONTENT SERVICES
+//////////////////////////////	
+	
 mapProjectAppControllers.controller('MapProjectListCtrl', 
   function ($scope, $http) {
       $http({
-        url: root + "project/projects",
+        url: root_mapping + "project/projects",
         dataType: "json",
         method: "GET",
         headers: {
@@ -25,7 +33,7 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 mapProjectAppControllers.controller('MapRecordListCtrl', 
   function ($scope, $http) {
       $http({
-        url: root + "record/records",
+        url: root_mapping + "record/records",
         dataType: "json",
         method: "GET",
         headers: {
@@ -43,7 +51,7 @@ mapProjectAppControllers.controller('MapRecordListCtrl',
 mapProjectAppControllers.controller('MapLeadListCtrl', 
   function ($scope, $http) {
       $http({
-        url: root + "lead/leads",
+        url: root_mapping + "lead/leads",
         dataType: "json",
         method: "GET",
         headers: {
@@ -57,7 +65,7 @@ mapProjectAppControllers.controller('MapLeadListCtrl',
       
       $scope.getProjects = function(id) {
           $http({
-             url: root + "lead/id/" + id + "/projects",
+             url: root_mapping + "lead/id/" + id + "/projects",
              dataType: "json",
              method: "GET",
              headers: {
@@ -88,7 +96,7 @@ mapProjectAppControllers.controller('MapLeadListCtrl',
 mapProjectAppControllers.controller('MapSpecialistListCtrl', 
   function ($scope, $http) {
       $http({
-        url: root + "specialist/specialists",
+        url: root_mapping + "specialist/specialists",
         dataType: "json",
         method: "GET",
         headers: {
@@ -103,13 +111,30 @@ mapProjectAppControllers.controller('MapSpecialistListCtrl',
     $scope.orderProp = 'id';	
   });
 
+mapProjectAppControllers.controller('ConceptListCtrl', 
+		  function ($scope, $http) {
+			      $http({
+			        url: root_content + "concept/concepts",
+			        dataType: "json",
+			        method: "GET",
+			        headers: {
+			          "Content-Type": "application/json"
+			        }
+			      }).success(function(data) {
+			        $scope.concepts = data.concepts;
+			      }).error(function(error) {
+			    	  $scope.error = "Error";
+			    });
+			 
+			    $scope.orderProp = 'id';	
+			  });
 
-// not functioning, projectId is undefined for some reason
-mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$routeParams',
+
+mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', '$routeParams',
    function ($scope, $http, $routeParams) {
 	  $scope.projectId = $routeParams.projectId;
 	  $http({
-        url: root + "project/id/" + $scope.projectId,
+        url: root_mapping + "project/id/" + $scope.projectId,
         dataType: "json",
         method: "GET",
         headers: {
@@ -121,3 +146,46 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$routePa
     });
 
 }]);
+
+mapProjectAppControllers.controller('ConceptDetailCtrl', ['$scope', '$http', '$routeParams',
+     function ($scope, $http, $routeParams) {
+	  $scope.status = "Loading...";
+      $scope.statusnote = "This process has not been optimized, and may be particularly slow on the EC2 server (mapping.snomedtools.org).";
+  	  $scope.conceptId = $routeParams.conceptId;
+  	  $http({
+          url: "${base.url}/mapping-rest/content/concept/id/" + $scope.conceptId,
+          dataType: "json",
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }).success(function(data) {
+          $scope.status = "Load complete!";
+          $scope.statusnote = "";
+          $scope.concept = data;
+        }).error(function(error) {
+        	$scope.status = "Load error!"
+            $scope.statusnote = "";
+        	console.print("Error in conceptdetailctrol");
+      });
+
+  }]);
+
+mapProjectAppControllers.controller('MapRecordDetailCtrl', ['$scope', '$http', '$routeParams',
+   function ($scope, $http, $routeParams) {
+	  $scope.recordId = $routeParams.recordId;
+	  $http({
+        url: root_mapping + "record/id/" + $scope.recordId,
+        dataType: "json",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).success(function(data) {
+        $scope.record = data;
+      }).error(function(error) {
+    });
+
+}]);
+
+

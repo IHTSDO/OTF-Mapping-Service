@@ -3,8 +3,11 @@ package org.ihtsdo.otf.mapping.services;
 import java.util.List;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
 /**
@@ -115,4 +118,20 @@ public interface MappingService {
 	 * @return the List of MapAdvices
 	 */
 	public List<MapAdvice> findMapAdvices(String query);
+	
+	/**
+	 * Query for MapRecords
+	 * @param query the query
+	 * @return the List of MapRecords
+	 */
+	public List<MapRecord> findMapRecords(String query);
+	
+	/**
+	 * Query for MapEntrys
+	 * @param query the query
+	 * @return the List of MapEntrys
+	 */
+	public List<MapEntry> findMapEntrys(String query);
+
+	public List<MapNote> findMapNotes(String query);
 }

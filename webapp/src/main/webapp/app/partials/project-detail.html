@@ -10,6 +10,8 @@
 <p>Map Specialists:</p>
 <ul><li ng-repeat="specialist in project.mapSpecialists"><a href="mailto:{{specialist.email}}">{{specialist.name}}</a></li></ul>
 <p>
+<p>Map Advices:</p>
+<table><tr ng-repeat"advice in project.mapAdvices"><td>{{advice.name}}</td><td>{{advice.description}}</td></tr></table>
 <p>Published: {{project.published}}</p>
 <p>Block Structure: {{project.blockStructure}}</p>
 <p>Group Structure: {{project.groupStructure}}</p>

@@ -8,6 +8,8 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Persistence;
 
 import org.apache.lucene.index.FieldInfo;
@@ -21,12 +23,15 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
@@ -39,7 +44,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  */
 public class MappingServiceJpa implements MappingService {
 
-	/** The factory. */
+		/** The factory. */
 	private EntityManagerFactory factory;
 	
 	/** The indexed field names. */
@@ -698,6 +703,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapRecord> getMapRecords() {
 		
 		List<MapRecord> m = null;
+		List<MapRecord> m_return = new ArrayList<MapRecord>();
 		EntityManager manager = factory.createEntityManager();
 		
 		// construct query
@@ -711,9 +717,47 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 		
+		
+		System.out.println("Constructing valid map records for " + Integer.toString(m.size()) + " results");;
+		
+		for (MapRecord mr : m) {
+			
+			MapRecord mr_new = new MapRecordJpa();
+			mr_new.setId(mr.getId());
+			mr_new.setConceptId(mr.getConceptId());
+			
+			List<MapEntry> mapEntries = new ArrayList<MapEntry>();
+			
+			for (MapEntry me : mr.getMapEntries()) {
+				
+				MapEntry me_new = new MapEntryJpa();
+				
+				me_new.setId(me.getId());
+				me_new.setMapRecord(me.getMapRecord());
+				me_new.setAdvices(me.getAdvices());
+				me_new.setTarget(me.getTarget());
+				me_new.setAdvices(me.getAdvices());
+				me_new.setRule(me.getRule());
+				me_new.setIndex(me.getIndex());
+				me_new.setRelationId(me.getRelationId());
+				
+				// TODO: Fix notes
+				me_new.setNotes(null);
+				
+				mapEntries.add(me_new);
+			}
+			
+			mr_new.setMapEntries(mapEntries);
+		
+			m_return.add(mr_new);
+		}
+		
+		manager.clear();
+		
+		
 		if (manager.isOpen()) { manager.close(); }
 		
-		return m;
+		return m_return;
 	}
 	
 	/** 
@@ -722,18 +766,49 @@ public class MappingServiceJpa implements MappingService {
 	 * @return the map record
 	 */
     public MapRecord getMapRecord(Long id) {
-    	MapRecord m = null;
+    	
+    	EntityManager manager = factory.createEntityManager();
+		javax.persistence.Query query = manager.createQuery("select r from MapRecordJpa r where id = :id");
+		
+		/*
+		 * Try to retrieve the single expected result
+		 * If zero or more than one result are returned, log error and set result to null
+		 */
+
+		try {
+			
+			query.setParameter("id", id);
+			
+			MapRecord r = (MapRecord) query.getSingleResult();
+
+			System.out.println("Returning record_id... " + ((r != null) ? r.getId().toString() : "null"));
+			return r;
+			
+		} catch (NoResultException e) {
+			System.out.println("MapRecord query for id = " + id  + " returned no results!");
+			return null;		
+		} catch (NonUniqueResultException e) {
+			System.out.println("MapRecord query for id = " + id  + " returned multiple results!");
+			return null;
+		}	
+    	
+    	
+    /*	MapRecord m = null;
 		EntityManager manager = factory.createEntityManager();
 		
 		try {
-			m = manager.find(MapRecord.class, id);
+			m = manager.find(MapRecordJpa.class, id);
 		} catch (Exception e) {
 			System.out.println("Could not find map record for id = " + id.toString());
 		}
+		
+		// retrieve lazily-fetched items
+		m.setMapEntries(m.getMapEntries());
+		// m.setNotes(m.getNotes());
 	
 		if (manager.isOpen()) { manager.close(); }
 		
-		return m;
+		return m;*/
     }
     
   /*  public List<MapRecord> getMapRecords(mapProjectId, sortingInfo, pageSize, page#) {
@@ -847,6 +922,25 @@ public class MappingServiceJpa implements MappingService {
 		if (manager.isOpen()) { manager.close(); }
 		
     }
+    
+    // TODO Fill in and put in appropriate places
+    /* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapEntrys(java.lang.String)
+	 */
+	@Override
+	public List<MapEntry> findMapEntrys(String query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapNotes(java.lang.String)
+	 */
+	@Override
+	public List<MapNote> findMapNotes(String query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 
 	
