@@ -5,9 +5,15 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 
 /**
@@ -29,7 +35,7 @@ public class MapAdviceJpa implements MapAdvice {
 	private String name;
 	
 	/** The description. */
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false, unique = true, length = 255)
 	private String description;
 	
 	public MapAdviceJpa() {
@@ -46,8 +52,14 @@ public class MapAdviceJpa implements MapAdvice {
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getId()
 	 */
 	@Override
+	@XmlTransient
 	public Long getId() {
 		return id;
+	}
+	
+	@XmlID
+	public String getID() {
+		return id.toString();
 	}
 
 	/* (non-Javadoc)
@@ -62,6 +74,7 @@ public class MapAdviceJpa implements MapAdvice {
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getDescription()
 	 */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	public String getDescription() {
 		return description;
 	}
@@ -78,6 +91,7 @@ public class MapAdviceJpa implements MapAdvice {
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getName()
 	 */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	public String getName() {
 		return name;
 	}

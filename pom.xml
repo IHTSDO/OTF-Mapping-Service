@@ -65,8 +65,6 @@
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapLeadJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapEntryJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapNoteJpa&lt;/class&gt;
-        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapBlockJpa&lt;/class&gt;
-        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapGroupJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapRecordJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapAdviceJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MappingRevisionEntity&lt;/class&gt;

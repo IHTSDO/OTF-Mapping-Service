@@ -2,9 +2,9 @@ package org.ihtsdo.otf.mapping.pojo;
 
 import java.util.List;
 
-import org.ihtsdo.otf.mapping.model.MapBlock;
+
 import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapGroup;
+
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
@@ -22,12 +22,6 @@ public class MapRecordImpl implements MapRecord {
 	
 	/** The concept id. */
 	private String conceptId;
-	
-	/** The map blocks. */
-	private List<MapBlock> mapBlocks;
-	
-	/** The map groups. */
-	private List<MapGroup> mapGroups;
 	
 	/** The notes. */
 	private List<MapNote> notes;
@@ -67,69 +61,70 @@ public class MapRecordImpl implements MapRecord {
 		this.conceptId = conceptId;
 	}
 
+	// TODO: Removed map group and map block from model, update/rethink/etc.
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapBlocks()
-	 */
+	 
 	@Override
 	public List<MapBlock> getMapBlocks() {
 		return mapBlocks;
 	}
 
-	/* (non-Javadoc)
+	 (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapBlocks(java.util.List)
-	 */
+	 
 	@Override
 	public void setMapBlocks(List<MapBlock> mapBlocks) {
 		this.mapBlocks = mapBlocks;
 	}
 
-	/* (non-Javadoc)
+	 (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addMapBlock(org.ihtsdo.otf.mapping.model.MapBlock)
-	 */
+	 
 	@Override
 	public void addMapBlock(MapBlock mapBlock) {
 		mapBlocks.add(mapBlock);
 	}
 
-	/* (non-Javadoc)
+	 (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeMapBlock(org.ihtsdo.otf.mapping.model.MapBlock)
-	 */
+	 
 	@Override
 	public void removeMapBlock(MapBlock mapBlock) {
 		mapBlocks.remove(mapBlock);
 	}
 
-	/* (non-Javadoc)
+	 (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapGroups()
-	 */
+	 
 	@Override
 	public List<MapGroup> getMapGroups() {
 		return mapGroups;
 	}
 
-	/* (non-Javadoc)
+	 (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapGroups(java.util.List)
-	 */
+	 
 	@Override
 	public void setMapGroups(List<MapGroup> mapGroups) {
 		this.mapGroups = mapGroups;
 	}
 
-	/* (non-Javadoc)
+	 (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addMapGroup(org.ihtsdo.otf.mapping.model.MapGroup)
-	 */
+	 
 	@Override
 	public void addMapGroup(MapGroup mapGroup) {
 		mapGroups.add(mapGroup);
 	}
 
-	/* (non-Javadoc)
+	 (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeMapGroup(org.ihtsdo.otf.mapping.model.MapGroup)
-	 */
+	 
 	@Override
 	public void removeMapGroup(MapGroup mapGroup) {
 		mapGroups.remove(mapGroup);
-	}
+	}*/
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getNotes()
@@ -202,12 +197,11 @@ public class MapRecordImpl implements MapRecord {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
+		result = prime * result
+				+ ((conceptId == null) ? 0 : conceptId.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((mapBlocks == null) ? 0 : mapBlocks.hashCode());
-		result =
-				prime * result + ((mapEntries == null) ? 0 : mapEntries.hashCode());
-		result = prime * result + ((mapGroups == null) ? 0 : mapGroups.hashCode());
+		result = prime * result
+				+ ((mapEntries == null) ? 0 : mapEntries.hashCode());
 		result = prime * result + ((notes == null) ? 0 : notes.hashCode());
 		return result;
 	}
@@ -217,43 +211,44 @@ public class MapRecordImpl implements MapRecord {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		MapRecordImpl other = (MapRecordImpl) obj;
 		if (conceptId == null) {
-			if (other.conceptId != null)
+			if (other.conceptId != null) {
 				return false;
-		} else if (!conceptId.equals(other.conceptId))
+			}
+		} else if (!conceptId.equals(other.conceptId)) {
 			return false;
+		}
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
-		} else if (!id.equals(other.id))
+			}
+		} else if (!id.equals(other.id)) {
 			return false;
-		if (mapBlocks == null) {
-			if (other.mapBlocks != null)
-				return false;
-		} else if (!mapBlocks.equals(other.mapBlocks))
-			return false;
+		}
 		if (mapEntries == null) {
-			if (other.mapEntries != null)
+			if (other.mapEntries != null) {
 				return false;
-		} else if (!mapEntries.equals(other.mapEntries))
+			}
+		} else if (!mapEntries.equals(other.mapEntries)) {
 			return false;
-		if (mapGroups == null) {
-			if (other.mapGroups != null)
-				return false;
-		} else if (!mapGroups.equals(other.mapGroups))
-			return false;
+		}
 		if (notes == null) {
-			if (other.notes != null)
+			if (other.notes != null) {
 				return false;
-		} else if (!notes.equals(other.notes))
+			}
+		} else if (!notes.equals(other.notes)) {
 			return false;
+		}
 		return true;
 	}
 
@@ -263,8 +258,7 @@ public class MapRecordImpl implements MapRecord {
 	@Override
 	public String toString() {
 		return "MapRecordImpl [id=" + id + ", conceptId=" + conceptId
-				+ ", mapBlocks=" + mapBlocks + ", mapGroups=" + mapGroups
-				+ ", mapNotes=" + notes + ", mapEntries=" + mapEntries + "]";
+				+ ", notes=" + notes + ", mapEntries=" + mapEntries + "]";
 	}
 
 }

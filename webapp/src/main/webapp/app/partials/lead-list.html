@@ -1,5 +1,5 @@
 <!-- Partial for record list -->
-Search Leads by Name: <input ng-model="query">
+Filter Results: <input ng-model="query">
 
 <p ng-show="editMode==false"></p>
 <accordion>
@@ -22,9 +22,9 @@ Search Leads by Name: <input ng-model="query">
     	<p>User Name: {{lead.userName}}</span>
 		<p>Email: <a href="mailto:{{lead.email}}">{{lead.email}}</a></p>
 		<p>
-		<p>Projects: <input type="button" value="Get Projects" ng-click="getProjects( lead.id )"></p>
+		<!-- <p>Projects: <input type="button" value="Get Projects" ng-click="getProjects( lead.id )"></p>
 		<ul><li ng-repeat="project in projects">{{project.id}}, {{project.name}}</ul></li>
-		<input ng-show="editMode==false" type="button" value="{{editModeValue}}" ng-click="toggleEdit()">
+		<input ng-show="editMode==false" type="button" value="{{editModeValue}}" ng-click="toggleEdit()"> -->
 		</div>
    	</accordion-group>
 </accordion>

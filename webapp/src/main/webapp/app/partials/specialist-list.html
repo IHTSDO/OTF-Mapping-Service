@@ -1,5 +1,5 @@
 <!-- Partial for record list -->
-Search Specialists by Name: <input ng-model="query">
+Filter Results: <input ng-model="query">
 
 <accordion>
     <accordion-group ng-repeat="specialist in specialists | filter:query | orderBy:orderProp">
