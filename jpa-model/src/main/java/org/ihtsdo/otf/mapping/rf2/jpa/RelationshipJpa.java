@@ -181,6 +181,17 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	}
 
 	/**
+	 * Returns the destination concept preferred name. Used for XML/JSON serialization.
+	 * 
+	 * @return the destination concept preferred name
+	 */
+	@XmlElement
+	public String getDestinationConceptPreferredName() {
+		return destinationConcept != null ? destinationConcept
+				.getDefaultPreferredName() : null;
+	}
+
+	/**
 	 * Returns the relationship group.
 	 * 
 	 * @return the relationship group
