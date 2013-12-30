@@ -27,3 +27,7 @@ loader.defaultPreferredNames.acceptabilityId=900000000000548007
 #
 base.url=http://localhost:8080
 
+#
+# JPA debugging settings
+#
+show.sql=false
