@@ -1352,10 +1352,10 @@ private void loadRelationships() throws Exception {
 			
 			relationship.setRelationshipGroup(Integer.valueOf(fields[6])); // relationshipGroup
 			relationship.setTypeId(Long.valueOf(fields[7])); // typeId
-			relationship.setCharacteristicTypeId(Long.valueOf("1")); // characteristicTypeId
+			relationship.setCharacteristicTypeId(Long.valueOf(fields[8])); // characteristicTypeId
 			relationship.setTerminology("SNOMEDCT");
 			relationship.setTerminologyVersion(version);
-			relationship.setModifierId(Long.valueOf("2"));
+			relationship.setModifierId(Long.valueOf(Long.valueOf(fields[9])));
 			
 			relationship.setSourceConcept(getConcept(fields[4], relationship.getTerminology(), relationship.getTerminologyVersion()));
 			relationship.setDestinationConcept(getConcept(fields[5], relationship.getTerminology(), relationship.getTerminologyVersion()));
