@@ -13,7 +13,7 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 /**
  * Container for map projects.
  */
-@XmlRootElement(name = "MapAdviceList")
+@XmlRootElement(name = "mapAdviceList")
 public class MapAdviceList {
 
 	/** The map projects. */
@@ -79,7 +79,7 @@ public class MapAdviceList {
 	 * 
 	 * @return the map projects
 	 */
-	@XmlElement(type=MapAdviceJpa.class)
+	@XmlElement(type=MapAdviceJpa.class, name="mapAdvice")
 	public List<MapAdvice> getMapAdvices() {
 		return mapAdvices;
 	}

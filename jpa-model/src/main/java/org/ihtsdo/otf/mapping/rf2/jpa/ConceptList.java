@@ -81,7 +81,7 @@ public class ConceptList {
 	 * 
 	 * @return the map projects
 	 */
-	@XmlElement(type=ConceptJpa.class)
+	@XmlElement(type=ConceptJpa.class, name="concept")
 	public List<Concept> getConcepts() {
 		return Concepts;
 	}

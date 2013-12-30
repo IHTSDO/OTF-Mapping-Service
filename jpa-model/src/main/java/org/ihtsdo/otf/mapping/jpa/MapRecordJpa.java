@@ -171,7 +171,7 @@ public class MapRecordJpa implements MapRecord {
 	}*/
 
 	@Override
-	@XmlElement(type=MapEntryJpa.class)
+	@XmlElement(type=MapEntryJpa.class, name="mapEntry")
 	public List<MapEntry> getMapEntries() {
 		return mapEntries;
 	}

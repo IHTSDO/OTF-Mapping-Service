@@ -81,7 +81,7 @@ public class MapProjectList {
 	 * 
 	 * @return the map projects
 	 */
-	@XmlElement(type=MapProjectJpa.class)
+	@XmlElement(type=MapProjectJpa.class, name="mapProject")
 	public List<MapProject> getMapProjects() {
 		return mapProjects;
 	}

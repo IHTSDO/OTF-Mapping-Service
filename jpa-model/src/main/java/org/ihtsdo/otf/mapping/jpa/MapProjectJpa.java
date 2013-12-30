@@ -149,7 +149,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapLeads()
 	 */
 	@Override
-	@XmlElement(type=MapLeadJpa.class)
+	@XmlElement(type=MapLeadJpa.class, name="mapLead")
 	public Set<MapLead> getMapLeads() {
 		return mapLeads;
 	}
@@ -190,7 +190,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapSpecialists()
 	 */
 	@Override
-	@XmlElement(type=MapSpecialistJpa.class)
+	@XmlElement(type=MapSpecialistJpa.class, name="mapSpecialist")
 	public Set<MapSpecialist> getMapSpecialists() {
 		return mapSpecialists;
 	}
@@ -347,7 +347,7 @@ public class MapProjectJpa implements MapProject {
 	}
 
 	@Override
-	@XmlElement(type=MapAdviceJpa.class)
+	@XmlElement(type=MapAdviceJpa.class, name="mapAdvice")
 	public Set<MapAdvice> getMapAdvices() {
 		return mapAdvices;
 	}

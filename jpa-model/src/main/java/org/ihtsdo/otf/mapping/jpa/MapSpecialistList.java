@@ -79,7 +79,7 @@ public class MapSpecialistList {
 	 * 
 	 * @return the map projects
 	 */
-	@XmlElement(type=MapSpecialistJpa.class)
+	@XmlElement(type=MapSpecialistJpa.class, name="mapSpecialist")
 	public List<MapSpecialist> getMapSpecialists() {
 		return mapSpecialists;
 	}

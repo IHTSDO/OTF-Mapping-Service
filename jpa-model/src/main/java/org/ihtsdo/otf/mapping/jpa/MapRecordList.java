@@ -81,7 +81,7 @@ public class MapRecordList {
 	 * 
 	 * @return the map records
 	 */
-	@XmlElement(type=MapRecordJpa.class)
+	@XmlElement(type=MapRecordJpa.class, name="mapRecord")
 	public List<MapRecord> getMapRecords() {
 		return mapRecords;
 	}
