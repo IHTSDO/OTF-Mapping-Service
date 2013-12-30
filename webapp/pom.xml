@@ -80,7 +80,7 @@
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
           <filters>
-            <filter>target/generated-resources/resources/filters.properties.${default.run.config}</filter>
+            <filter>${project.build.directory}/generated-resources/resources/filters.properties.${default.run.config}</filter>
           </filters>
           <webResources>
             <resource>

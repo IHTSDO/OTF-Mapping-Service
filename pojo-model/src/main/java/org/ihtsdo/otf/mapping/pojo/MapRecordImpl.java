@@ -8,12 +8,10 @@ import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapRecord}.
- * Includes hibernate tags for MEME database.
+ * Includes hibernate tags for persistence
  *
- * @author ${author}
  */
 public class MapRecordImpl implements MapRecord {
 	
@@ -129,7 +127,6 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getNotes()
 	 */
-	@Override
 	public List<MapNote> getNotes() {
 		return notes;
 	}
@@ -137,7 +134,6 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setNotes(java.util.List)
 	 */
-	@Override
 	public void setNotes(List<MapNote> notes) {
 		this.notes = notes;
 	}
@@ -145,7 +141,6 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addNote(org.ihtsdo.otf.mapping.model.MapNote)
 	 */
-	@Override
 	public void addNote(MapNote note) {
 		notes.add(note);
 	}
@@ -153,7 +148,6 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeNote(org.ihtsdo.otf.mapping.model.MapNote)
 	 */
-	@Override
 	public void removeNote(MapNote note) {
 		notes.remove(note);
 	}
@@ -161,7 +155,6 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapEntries()
 	 */
-	@Override
 	public List<MapEntry> getMapEntries() {
 		return mapEntries;
 	}
