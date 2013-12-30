@@ -28,7 +28,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.SearchResult;
 
 public class ContentServiceJpa implements ContentService {
 

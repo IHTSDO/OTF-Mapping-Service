@@ -126,7 +126,7 @@ public class MapEntryJpa implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getNotes()
 	 */
 	@Override
-	@XmlElement(type=MapNoteJpa.class)
+	@XmlElement(type=MapNoteJpa.class, name="note")
 	public List<MapNote> getNotes() {
 		return mapNotes;
 	}
@@ -176,7 +176,7 @@ public class MapEntryJpa implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getAdvices()
 	 */
 	@Override
-	@XmlElement(type=MapAdviceJpa.class)
+	@XmlElement(type=MapAdviceJpa.class, name="mapAdvice")
 	public Set<MapAdvice> getAdvices() {
 		return mapAdvices;
 	}

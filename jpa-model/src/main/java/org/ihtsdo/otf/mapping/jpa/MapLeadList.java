@@ -13,7 +13,7 @@ import org.ihtsdo.otf.mapping.model.MapLead;
 /**
  * Container for map projects.
  */
-@XmlRootElement(name = "MapLeadList")
+@XmlRootElement(name = "mapLeadList")
 public class MapLeadList {
 
 	/** The map projects. */
@@ -79,7 +79,7 @@ public class MapLeadList {
 	 * 
 	 * @return the map projects
 	 */
-	@XmlElement(type=MapLeadJpa.class)
+	@XmlElement(type=MapLeadJpa.class, name="mapLead")
 	public List<MapLead> getMapLeads() {
 		return mapLeads;
 	}

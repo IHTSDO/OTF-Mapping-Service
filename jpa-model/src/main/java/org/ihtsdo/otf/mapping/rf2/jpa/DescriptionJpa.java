@@ -11,10 +11,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -28,17 +27,15 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 /**
  * Concrete implementation of {@link Description} for use with JPA.
  */
 @Entity
-@Table(name = "descriptions", uniqueConstraints=@UniqueConstraint(columnNames={"terminologyId", "terminology", "terminologyVersion"}))
+@Table(name = "descriptions", uniqueConstraints = @UniqueConstraint(columnNames = {
+		"terminologyId", "terminology", "terminologyVersion" }))
 @Audited
 @Indexed
-@XmlRootElement(name="description")
+@XmlRootElement(name = "description")
 public class DescriptionJpa extends AbstractComponent implements Description {
 
 	/** The language code. */
@@ -58,18 +55,15 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	private Long caseSignificanceId;
 
 	/** The concept. */
-	@ManyToOne(targetEntity=ConceptJpa.class, optional=false)
-	@JsonBackReference
+	@ManyToOne(targetEntity = ConceptJpa.class, optional = false)
 	@ContainedIn
 	private Concept concept;
-	
+
 	/** The language RefSet members */
-	@OneToMany(mappedBy = "description", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=LanguageRefSetMemberJpa.class)
-	@JsonManagedReference
-	@IndexedEmbedded(targetElement=LanguageRefSetMemberJpa.class)
+	@OneToMany(mappedBy = "description", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = LanguageRefSetMemberJpa.class)
+	@IndexedEmbedded(targetElement = LanguageRefSetMemberJpa.class)
 	private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<LanguageRefSetMember>();
 
-    
 	/**
 	 * Instantiates an empty {@link Description}.
 	 */
@@ -79,8 +73,9 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 
 	/**
 	 * Instantiates a {@link Description} from the specified parameters.
-	 *
-	 * @param type the type
+	 * 
+	 * @param type
+	 *            the type
 	 */
 	public DescriptionJpa(Long type) {
 		this.typeId = type;
@@ -88,167 +83,196 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 
 	/**
 	 * Returns the language code.
-	 *
+	 * 
 	 * @return the language code
 	 */
 	@Override
-    public String getLanguageCode() {
+	public String getLanguageCode() {
 		return languageCode;
 	}
 
 	/**
 	 * Sets the language code.
-	 *
-	 * @param languageCode the language code
+	 * 
+	 * @param languageCode
+	 *            the language code
 	 */
 	@Override
-    public void setLanguageCode(String languageCode) {
+	public void setLanguageCode(String languageCode) {
 		this.languageCode = languageCode;
 	}
 
 	/**
 	 * Returns the type.
-	 *
+	 * 
 	 * @return the type
 	 */
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-    public Long getTypeId() {
+	public Long getTypeId() {
 		return typeId;
 	}
 
 	/**
 	 * Sets the type.
-	 *
-	 * @param type the type
+	 * 
+	 * @param type
+	 *            the type
 	 */
 	@Override
-    public void setTypeId(Long type) {
+	public void setTypeId(Long type) {
 		this.typeId = type;
 	}
 
 	/**
 	 * Returns the term.
-	 *
+	 * 
 	 * @return the term
 	 */
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-    public String getTerm() {
+	public String getTerm() {
 		return term;
 	}
 
 	/**
 	 * Sets the term.
-	 *
-	 * @param term the term
+	 * 
+	 * @param term
+	 *            the term
 	 */
 	@Override
-    public void setTerm(String term) {
+	public void setTerm(String term) {
 		this.term = term;
 	}
 
 	/**
 	 * Returns the case significance id.
-	 *
+	 * 
 	 * @return the case significance id
 	 */
 	@Override
-    public Long getCaseSignificanceId() {
+	public Long getCaseSignificanceId() {
 		return caseSignificanceId;
 	}
 
 	/**
 	 * Sets the case significance id.
-	 *
-	 * @param caseSignificanceId the case significance id
+	 * 
+	 * @param caseSignificanceId
+	 *            the case significance id
 	 */
 	@Override
-    public void setCaseSignificanceId(Long caseSignificanceId) {
+	public void setCaseSignificanceId(Long caseSignificanceId) {
 		this.caseSignificanceId = caseSignificanceId;
 	}
 
 	/**
 	 * Returns the concept.
-	 *
+	 * 
 	 * @return the concept
 	 */
+	@XmlTransient
 	@Override
-	@XmlIDREF
-	@XmlAttribute
-    public ConceptJpa getConcept() {
-		return (ConceptJpa)concept;
+	public Concept getConcept() {
+		return this.concept;
 	}
 
 	/**
 	 * Sets the concept.
-	 *
-	 * @param concept the concept
+	 * 
+	 * @param concept
+	 *            the concept
 	 */
 	@Override
-    public void setConcept(Concept concept) {
+	public void setConcept(Concept concept) {
 		this.concept = concept;
 	}
-	
+
+	/**
+	 * Returns the concept id. Used for XML/JSON serialization.
+	 * 
+	 * @return the concept id
+	 */
+	@XmlElement
+	public String getConceptId() {
+		return concept != null ? concept.getTerminologyId() : null;
+	}
+
 	/**
 	 * Returns the set of SimpleRefSetMembers
-	 *
+	 * 
 	 * @return the set of SimpleRefSetMembers
 	 */
+	@XmlElement(type = LanguageRefSetMemberJpa.class, name="languageRefSetMember")
 	@Override
-	@XmlElement(type=LanguageRefSetMemberJpa.class)
 	public Set<LanguageRefSetMember> getLanguageRefSetMembers() {
 		return this.languageRefSetMembers;
 	}
 
 	/**
 	 * Sets the set of LanguageRefSetMembers
-	 *
-	 * @param languageRefSetMembers the set of LanguageRefSetMembers
+	 * 
+	 * @param languageRefSetMembers
+	 *            the set of LanguageRefSetMembers
 	 */
 	@Override
-	public void setLanguageRefSetMembers(Set<LanguageRefSetMember> languageRefSetMembers) {
+	public void setLanguageRefSetMembers(
+			Set<LanguageRefSetMember> languageRefSetMembers) {
 		this.languageRefSetMembers = languageRefSetMembers;
 	}
-	
+
 	/**
 	 * Adds a LanguageRefSetMember to the set of LanguageRefSetMembers
-	 *
-	 * @param languageRefSetMember the LanguageRefSetMembers to be added
+	 * 
+	 * @param languageRefSetMember
+	 *            the LanguageRefSetMembers to be added
 	 */
 	@Override
-	public void addLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) {
+	public void addLanguageRefSetMember(
+			LanguageRefSetMember languageRefSetMember) {
 		languageRefSetMember.setDescription(this);
 		this.languageRefSetMembers.add(languageRefSetMember);
 	}
-	
+
 	/**
 	 * Removes a LanguageRefSetMember from the set of LanguageRefSetMembers
-	 *
-	 * @param languageRefSetMember the LanguageRefSetMember to be removed
-	*/
+	 * 
+	 * @param languageRefSetMember
+	 *            the LanguageRefSetMember to be removed
+	 */
 	@Override
-	public void removeLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) {
+	public void removeLanguageRefSetMember(
+			LanguageRefSetMember languageRefSetMember) {
 		this.languageRefSetMembers.remove(languageRefSetMember);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
-	 public String toString() {		 return this.getId() + "," +
-				 this.getTerminology() + "," +
-				 this.getTerminologyId() + "," +
-				 this.getTerminologyVersion() + "," +
-				 this.getEffectiveTime() + "," +
-				 this.isActive() + "," +
-				 this.getModuleId() + "," + // end of basic component fields
-				 
-				 (this.getConcept() == null ? null : getConcept().getTerminologyId()) + "," +
-				 this.getLanguageCode() + "," +
-				 this.getTypeId() + "," +
-				 this.getTerm() + "," +
-				 this.getCaseSignificanceId(); // end of basic description fields
-	 }
+	@Override
+	public String toString() {
+		return this.getId()
+				+ ","
+				+ this.getTerminology()
+				+ ","
+				+ this.getTerminologyId()
+				+ ","
+				+ this.getTerminologyVersion()
+				+ ","
+				+ this.getEffectiveTime()
+				+ ","
+				+ this.isActive()
+				+ ","
+				+ this.getModuleId()
+				+ ","
+				+ // end of basic component fields
 
+				(this.getConcept() == null ? null : getConcept()
+						.getTerminologyId()) + "," + this.getLanguageCode()
+				+ "," + this.getTypeId() + "," + this.getTerm() + ","
+				+ this.getCaseSignificanceId(); // end of basic description
+												// fields
+	}
 
 }
