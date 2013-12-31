@@ -370,6 +370,10 @@ public class SampledataMojo extends AbstractMojo {
 									"r.mapBlock, r.mapGroup, r.mapPriority");
 			System.out.println("complex refset member size "
 					+ query.getResultList().size());
+			
+			// Added to speed up process
+			tx.begin();
+			int i = 0; // for progress tracking
 
 			for (Object member : query.getResultList()) {
 				ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
@@ -389,9 +393,9 @@ public class SampledataMojo extends AbstractMojo {
 					mapRecord = new MapRecordJpa();
 					mapRecord.setConceptId(refSetMember.getConcept().getTerminologyId());
 
-					tx.begin();
+					//tx.begin();
 					manager.persist(mapRecord);
-					tx.commit();
+					//tx.commit();
 
 					/*mapBlock = new MapBlockJpa();
 					mapBlock.setIndex(refSetMember.getMapBlock());
@@ -407,9 +411,9 @@ public class SampledataMojo extends AbstractMojo {
 				}
 
 				if (mapRecord != null && !mapRecord.getConceptId().equals("")) {
-					tx.begin();
+					//tx.begin();
 					manager.persist(mapRecord);
-					tx.commit();
+					//tx.commit();
 				}
 
 			/*	if (refSetMember.getMapBlock() != prevBlockId) {
@@ -441,8 +445,15 @@ public class SampledataMojo extends AbstractMojo {
 							.addAdvice(mapAdviceValueMap.get(refSetMember.getMapAdvice()));
 				}
 				mapRecord.addMapEntry(mapEntry);
+				
+				if (++i % 1000 == 0) {System.out.println(Integer.toString(i) + " map records processed");}
 
 			}
+			
+			// Commit all map records
+			System.out.println("Committing...");
+			tx.commit();
+			System.out.println("Complete.");
 			/**
 			 * //for (ComplexMapRefSetMember member : select r from
 			 * ComplexMapRefSetMember order by r.concept.id, r.mapblock,
