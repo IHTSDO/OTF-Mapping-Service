@@ -622,7 +622,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		sort_RF2_files();
 
 		// ************************* //
-		// Test and open files //
+		// Test and open files 		 //
 		// ************************* //
 
 		// Concepts
@@ -1253,6 +1253,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 		if (files1.size() > 0) {
 			((File) files1.get(0)).renameTo(dest_file);
+		}
+		
+		// if no files, create an empty file
+		else {
+			dest_file.createNewFile();
 		}
 
 		// close input file
