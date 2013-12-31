@@ -1,10 +1,9 @@
 package org.ihtsdo.otf.mapping.pojo;
 
 import java.util.List;
-
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.model.MapEntry;
-
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
@@ -22,7 +21,7 @@ public class MapRecordImpl implements MapRecord {
 	private String conceptId;
 	
 	/** The notes. */
-	private List<MapNote> notes;
+	private Set<MapNote> mapNotes;
 	
 	/** The map entries. */
 	private List<MapEntry> mapEntries;
@@ -33,6 +32,11 @@ public class MapRecordImpl implements MapRecord {
 	@Override
 	public Long getId() {
 		return id;
+	}
+	
+	@Override
+	public String getObjectId() {
+		return id.toString();
 	}
 
 	/* (non-Javadoc)
@@ -59,97 +63,34 @@ public class MapRecordImpl implements MapRecord {
 		this.conceptId = conceptId;
 	}
 
-	// TODO: Removed map group and map block from model, update/rethink/etc.
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapBlocks()
-	 
-	@Override
-	public List<MapBlock> getMapBlocks() {
-		return mapBlocks;
-	}
-
-	 (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapBlocks(java.util.List)
-	 
-	@Override
-	public void setMapBlocks(List<MapBlock> mapBlocks) {
-		this.mapBlocks = mapBlocks;
-	}
-
-	 (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addMapBlock(org.ihtsdo.otf.mapping.model.MapBlock)
-	 
-	@Override
-	public void addMapBlock(MapBlock mapBlock) {
-		mapBlocks.add(mapBlock);
-	}
-
-	 (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeMapBlock(org.ihtsdo.otf.mapping.model.MapBlock)
-	 
-	@Override
-	public void removeMapBlock(MapBlock mapBlock) {
-		mapBlocks.remove(mapBlock);
-	}
-
-	 (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapGroups()
-	 
-	@Override
-	public List<MapGroup> getMapGroups() {
-		return mapGroups;
-	}
-
-	 (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapGroups(java.util.List)
-	 
-	@Override
-	public void setMapGroups(List<MapGroup> mapGroups) {
-		this.mapGroups = mapGroups;
-	}
-
-	 (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addMapGroup(org.ihtsdo.otf.mapping.model.MapGroup)
-	 
-	@Override
-	public void addMapGroup(MapGroup mapGroup) {
-		mapGroups.add(mapGroup);
-	}
-
-	 (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeMapGroup(org.ihtsdo.otf.mapping.model.MapGroup)
-	 
-	@Override
-	public void removeMapGroup(MapGroup mapGroup) {
-		mapGroups.remove(mapGroup);
-	}*/
+	
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getNotes()
 	 */
-	public List<MapNote> getNotes() {
-		return notes;
+	public Set<MapNote> getMapNotes() {
+		return mapNotes;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setNotes(java.util.List)
 	 */
-	public void setNotes(List<MapNote> notes) {
-		this.notes = notes;
+	public void setMapNotes(Set<MapNote> mapNotes) {
+		this.mapNotes = mapNotes;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addNote(org.ihtsdo.otf.mapping.model.MapNote)
 	 */
-	public void addNote(MapNote note) {
-		notes.add(note);
+	public void addMapNote(MapNote mapNote) {
+		mapNotes.add(mapNote);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeNote(org.ihtsdo.otf.mapping.model.MapNote)
 	 */
-	public void removeNote(MapNote note) {
-		notes.remove(note);
+	public void removeMapNote(MapNote mapNote) {
+		mapNotes.remove(mapNote);
 	}
 
 	/* (non-Javadoc)
@@ -195,7 +136,7 @@ public class MapRecordImpl implements MapRecord {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((mapEntries == null) ? 0 : mapEntries.hashCode());
-		result = prime * result + ((notes == null) ? 0 : notes.hashCode());
+		result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
 		return result;
 	}
 
@@ -235,11 +176,11 @@ public class MapRecordImpl implements MapRecord {
 		} else if (!mapEntries.equals(other.mapEntries)) {
 			return false;
 		}
-		if (notes == null) {
-			if (other.notes != null) {
+		if (mapNotes == null) {
+			if (other.mapNotes != null) {
 				return false;
 			}
-		} else if (!notes.equals(other.notes)) {
+		} else if (!mapNotes.equals(other.mapNotes)) {
 			return false;
 		}
 		return true;
@@ -251,7 +192,7 @@ public class MapRecordImpl implements MapRecord {
 	@Override
 	public String toString() {
 		return "MapRecordImpl [id=" + id + ", conceptId=" + conceptId
-				+ ", notes=" + notes + ", mapEntries=" + mapEntries + "]";
+				+ ", mapNotes=" + mapNotes + ", mapEntries=" + mapEntries + "]";
 	}
 
 }

@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.pojo;
 
-import java.util.List;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
@@ -21,7 +20,7 @@ public class MapEntryImpl implements MapEntry {
 	private Long id;
 
 	/** The map notes. */
-	private List<MapNote> mapNotes;
+	private Set<MapNote> mapNotes;
 
 	/** The target. */
 	private String target;
@@ -33,7 +32,7 @@ public class MapEntryImpl implements MapEntry {
 	private String rule;
 
 	/** The index. */
-	private int index;
+	private int indexMapPriority;
 
 	/** The relation id. */
 	private String relationId;
@@ -61,7 +60,7 @@ public class MapEntryImpl implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getNotes()
 	 */
 	@Override
-	public List<MapNote> getNotes() {
+	public Set<MapNote> getNotes() {
 		return mapNotes;
 	}
 
@@ -69,8 +68,8 @@ public class MapEntryImpl implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setNotes(java.util.List)
 	 */
 	@Override
-	public void setNotes(List<MapNote> notes) {
-		this.mapNotes = notes;
+	public void setNotes(Set<MapNote> mapNotes) {
+		this.mapNotes = mapNotes;
 	}
 
 	/* (non-Javadoc)
@@ -154,19 +153,19 @@ public class MapEntryImpl implements MapEntry {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getIndex()
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getIndexMapPriority()
 	 */
 	@Override
-	public int getIndex() {
-		return index;
+	public int getIndexMapPriority() {
+		return indexMapPriority;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setIndex(java.lang.String)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setIndexMapPriority(java.lang.String)
 	 */
 	@Override
-	public void setIndex(int index) {
-		this.index = index;
+	public void setIndexMapPriority(int indexMapPriority) {
+		this.indexMapPriority = indexMapPriority;
 	}
 
 	/* (non-Javadoc)
@@ -210,13 +209,15 @@ public class MapEntryImpl implements MapEntry {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + index;
-		result =
-				prime * result + ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
-		result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
-		result = prime * result + ((mapRecord == null) ? 0 : mapRecord.hashCode());
-		result =
-				prime * result + ((relationId == null) ? 0 : relationId.hashCode());
+		result = prime * result + indexMapPriority;
+		result = prime * result
+				+ ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
+		result = prime * result
+				+ ((mapNotes == null) ? 0 : mapNotes.hashCode());
+		result = prime * result
+				+ ((mapRecord == null) ? 0 : mapRecord.hashCode());
+		result = prime * result
+				+ ((relationId == null) ? 0 : relationId.hashCode());
 		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
 		result = prime * result + ((target == null) ? 0 : target.hashCode());
 		return result;
@@ -227,50 +228,68 @@ public class MapEntryImpl implements MapEntry {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		MapEntryImpl other = (MapEntryImpl) obj;
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
-		} else if (!id.equals(other.id))
+			}
+		} else if (!id.equals(other.id)) {
 			return false;
-		if (index != other.index)
+		}
+		if (indexMapPriority != other.indexMapPriority) {
 			return false;
+		}
 		if (mapAdvices == null) {
-			if (other.mapAdvices != null)
+			if (other.mapAdvices != null) {
 				return false;
-		} else if (!mapAdvices.equals(other.mapAdvices))
+			}
+		} else if (!mapAdvices.equals(other.mapAdvices)) {
 			return false;
+		}
 		if (mapNotes == null) {
-			if (other.mapNotes != null)
+			if (other.mapNotes != null) {
 				return false;
-		} else if (!mapNotes.equals(other.mapNotes))
+			}
+		} else if (!mapNotes.equals(other.mapNotes)) {
 			return false;
+		}
 		if (mapRecord == null) {
-			if (other.mapRecord != null)
+			if (other.mapRecord != null) {
 				return false;
-		} else if (!mapRecord.equals(other.mapRecord))
+			}
+		} else if (!mapRecord.equals(other.mapRecord)) {
 			return false;
+		}
 		if (relationId == null) {
-			if (other.relationId != null)
+			if (other.relationId != null) {
 				return false;
-		} else if (!relationId.equals(other.relationId))
+			}
+		} else if (!relationId.equals(other.relationId)) {
 			return false;
+		}
 		if (rule == null) {
-			if (other.rule != null)
+			if (other.rule != null) {
 				return false;
-		} else if (!rule.equals(other.rule))
+			}
+		} else if (!rule.equals(other.rule)) {
 			return false;
+		}
 		if (target == null) {
-			if (other.target != null)
+			if (other.target != null) {
 				return false;
-		} else if (!target.equals(other.target))
+			}
+		} else if (!target.equals(other.target)) {
 			return false;
+		}
 		return true;
 	}
 
@@ -280,8 +299,8 @@ public class MapEntryImpl implements MapEntry {
 	@Override
 	public String toString() {
 		return "MapEntryImpl [id=" + id + ", mapNotes=" + mapNotes + ", target="
-				+ target + ", mapAdvices=" + mapAdvices + ", rule=" + rule + ", index="
-				+ index + ", relationId=" + relationId + ", mapRecord=" + mapRecord
+				+ target + ", mapAdvices=" + mapAdvices + ", rule=" + rule + ", indexMapPriority="
+				+ indexMapPriority + ", relationId=" + relationId + ", mapRecord=" + mapRecord
 				+ "]";
 	}
 

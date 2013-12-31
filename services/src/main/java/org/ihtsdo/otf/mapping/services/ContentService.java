@@ -21,8 +21,19 @@ public interface ContentService {
 	/**
 	 * Returns the concept.
 	 *
-	 * @param searchString the search string
+	 * @param conceptId the concept id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminologyVersion
 	 * @return the concept
 	 */
-	public List<Concept> getConcepts(String searchString);
+	public Concept getConcept(Long conceptId, String terminology, String terminologyVersion);
+	
+	/**
+	 * Returns the concept.
+	 *
+	 * @param searchString the search string
+	 * @return the concept
+	 * @throws Exception if anything goes wrong
+	 */
+	public List<Concept> getConcepts(String searchString) throws Exception;
 }

@@ -1,7 +1,9 @@
 package org.ihtsdo.otf.mapping.jpa;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -9,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
@@ -24,9 +27,9 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 /**
  * The Map Record Jpa object
@@ -46,37 +49,31 @@ public class MapRecordJpa implements MapRecord {
 	@Column(nullable = false)
 	private String conceptId;
 	
-	/*@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=MapBlockJpa.class)
-	@JsonManagedReference
-	private List<MapBlock> mapBlocks = new ArrayList<MapBlock>();
-	
-	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=MapGroupJpa.class)
-	@JsonManagedReference
-	private List<MapGroup> mapGroups = new ArrayList<MapGroup>();
-	*/
-	
 	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapEntryJpa.class)
-	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapEntryJpa.class)
 	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
 	
-	/*@ManyToMany(targetEntity=MapNoteJpa.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JsonManagedReference
+	@ManyToMany(targetEntity=MapNoteJpa.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapNoteJpa.class)
-	private List<MapNote> notes = new ArrayList<MapNote>();
-	*/
+	private Set<MapNote> mapNotes = new HashSet<MapNote>();
+	
 
+	/** Default constructor */
 	public MapRecordJpa() {
 	}
 
-	public MapRecordJpa(Long id, String conceptId, List<MapEntry> mapEntries) { // , List<MapNote> notes) {
+	/**
+	 * Full constructor
+	 * @param id the id
+	 * @param conceptId the concept id
+	 * @param mapEntries the map entries
+	 */
+	public MapRecordJpa(Long id, String conceptId, List<MapEntry> mapEntries) { // , List<MapNote> mapNotes) {
 		super();
 		this.id = id;
 		this.conceptId = conceptId;
-		//this.mapBlocks = mapBlocks;
-		//this.mapGroups = mapGroups;
 		this.mapEntries = mapEntries;
-		//this.notes = notes;
+		//this.mapNotes = mapNotes;
 	}
 
 	@Override
@@ -85,8 +82,9 @@ public class MapRecordJpa implements MapRecord {
 		return id;
 	}
 	
+	@Override
 	@XmlID
-	public String getID() {
+	public String getObjectId() {
 		return id.toString();
 	}
 
@@ -107,68 +105,26 @@ public class MapRecordJpa implements MapRecord {
 		this.conceptId = conceptId;
 	}
 
-	/*@Override
-	@XmlElement(type=MapBlockJpa.class)
-	public List<MapBlock> getMapBlocks() {
-		return mapBlocks;
+	@Override
+	@XmlElement(type=MapNoteJpa.class, name="mapNote")
+	public Set<MapNote> getMapNotes() {
+		return mapNotes;
 	}
 
 	@Override
-	public void setMapBlocks(List<MapBlock> mapBlocks) {
-		this.mapBlocks = mapBlocks;
+	public void setMapNotes(Set<MapNote> mapNotes) {
+		this.mapNotes = mapNotes;
 	}
 
 	@Override
-	public void addMapBlock(MapBlock mapBlock) {
-		mapBlocks.add(mapBlock);
+	public void addMapNote(MapNote mapNote) {
+		mapNotes.add(mapNote);
 	}
 
 	@Override
-	public void removeMapBlock(MapBlock mapBlock) {
-		mapBlocks.remove(mapBlock);
+	public void removeMapNote(MapNote mapNote) {
+		mapNotes.remove(mapNote);
 	}
-
-	@Override
-	@XmlElement(type=MapGroupJpa.class)
-	public List<MapGroup> getMapGroups() {
-		return mapGroups;
-	}
-
-	@Override
-	public void setMapGroups(List<MapGroup> mapGroups) {
-		this.mapGroups = mapGroups;
-	}
-
-	@Override
-	public void addMapGroup(MapGroup mapGroup) {
-		mapGroups.add(mapGroup);
-	}
-
-	@Override
-	public void removeMapGroup(MapGroup mapGroup) {
-		mapGroups.remove(mapGroup);
-	}*/
-
-	/*@Override
-	@XmlElement(type=MapNoteJpa.class)
-	public List<MapNote> getNotes() {
-		return notes;
-	}
-
-	@Override
-	public void setNotes(List<MapNote> notes) {
-		this.notes = notes;
-	}
-
-	@Override
-	public void addNote(MapNote note) {
-		notes.add(note);
-	}
-
-	@Override
-	public void removeNote(MapNote note) {
-		notes.remove(note);
-	}*/
 
 	@Override
 	@XmlElement(type=MapEntryJpa.class, name="mapEntry")

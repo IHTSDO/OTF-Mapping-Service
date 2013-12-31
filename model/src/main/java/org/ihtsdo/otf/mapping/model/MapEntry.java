@@ -1,13 +1,9 @@
 package org.ihtsdo.otf.mapping.model;
 
-import java.util.List;
 import java.util.Set;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface MapEntry.
- *
- * @author ${author}
  */
 public interface MapEntry {
 	
@@ -30,14 +26,14 @@ public interface MapEntry {
 	 *
 	 * @return the notes
 	 */
-	public List<MapNote> getNotes();
+	public Set<MapNote> getNotes();
 	
 	/**
 	 * Sets the notes.
 	 *
 	 * @param notes the notes
 	 */
-	public void setNotes(List<MapNote> notes);
+	public void setNotes(Set<MapNote> notes);
 	
 	/**
 	 * Adds the note.
@@ -114,14 +110,14 @@ public interface MapEntry {
 	 *
 	 * @return the index
 	 */
-	public int getIndex();
+	public int getIndexMapPriority();
 	
 	/**
 	 * Sets the index, the map priority.
 	 *
 	 * @param index the index
 	 */
-	public void setIndex(int index);
+	public void setIndexMapPriority(int index);
 	
 	/**
 	 * Returns the relation id.

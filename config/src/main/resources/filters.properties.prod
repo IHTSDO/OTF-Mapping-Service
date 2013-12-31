@@ -25,3 +25,8 @@ loader.defaultPreferredNames.acceptabilityId=900000000000548007
 # Webapp base URL
 #
 base.url=http://mapping.snomedtools.org
+
+#
+# JPA debugging settings
+#
+show.sql=false
