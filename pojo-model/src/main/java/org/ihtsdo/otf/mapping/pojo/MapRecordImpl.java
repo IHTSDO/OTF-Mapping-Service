@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
 /**
@@ -25,6 +26,9 @@ public class MapRecordImpl implements MapRecord {
 	
 	/** The map entries. */
 	private List<MapEntry> mapEntries;
+	
+	/** The map principles */
+	private Set<MapPrinciple> mapPrinciples;
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getId()
@@ -122,6 +126,26 @@ public class MapRecordImpl implements MapRecord {
 	@Override
 	public void removeMapEntry(MapEntry mapEntry) {
 		mapEntries.remove(mapEntry);
+	}
+	
+	@Override
+	public Set<MapPrinciple> getMapPrinciples() {
+		return mapPrinciples;
+	}
+
+	@Override
+	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
+		this.mapPrinciples = mapPrinciples;
+	}
+
+	@Override
+	public void addMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.add(mapPrinciple);
+	}
+
+	@Override
+	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.remove(mapPrinciple);
 	}
 
 	/* (non-Javadoc)

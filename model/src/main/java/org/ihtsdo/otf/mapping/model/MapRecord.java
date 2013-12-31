@@ -101,5 +101,33 @@ public interface MapRecord {
 	 */
 	public void removeMapEntry(MapEntry mapEntry);
 	
+	/**
+	 * Returns the set of allowable map principles.
+	 *
+	 * @return the map principles
+	 */
+	public Set<MapPrinciple> getMapPrinciples();
+	
+	/**
+	 * Sets the set of allowable map principles.
+	 *
+	 * @param mapAdvices the map principles
+	 */
+	public void setMapPrinciples(Set<MapPrinciple> mapAdvices);
+	
+	/**
+	 * Adds an allowable map principle.
+	 *
+	 * @param mapAdvice the map principle
+	 */
+	public void addMapPrinciple(MapPrinciple mapAdvice);
+	
+	/**
+	 * Removes an allowable map principle.
+	 *
+	 * @param mapAdvice the map principle
+	 */
+	public void removeMapPrinciple(MapPrinciple mapAdvice);
+	
 	
 }

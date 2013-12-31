@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.services;
 
-import java.util.List;
-
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 /**
@@ -32,8 +30,8 @@ public interface ContentService {
 	 * Returns the concept.
 	 *
 	 * @param searchString the search string
-	 * @return the concept
+	 * @return the search results for the search string
 	 * @throws Exception if anything goes wrong
 	 */
-	public List<Concept> getConcepts(String searchString) throws Exception;
+	public SearchResultList findConcepts(String searchString) throws Exception;
 }
