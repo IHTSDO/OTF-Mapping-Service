@@ -47,9 +47,17 @@ public class MapNoteJpa implements MapNote {
 	private Date timestamp;
 	
 	
+	/** Default constructor */
 	public MapNoteJpa() {
 	}
 
+	/** 
+	 * Constructor
+	 * @param id the id
+	 * @param user the user
+	 * @param note the note
+	 * @param timestamp the timestamp
+	 */
 	public MapNoteJpa(Long id, MapUser user, String note, Date timestamp) {
 		super();
 		this.id = id;
@@ -67,8 +75,12 @@ public class MapNoteJpa implements MapNote {
 		return id;
 	}
 	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
 	@XmlID
-	public String getID() {
+	public String getObjectId() {
 		return id.toString();
 	}
 	

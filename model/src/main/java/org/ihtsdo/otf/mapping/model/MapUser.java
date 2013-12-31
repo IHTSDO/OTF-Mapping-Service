@@ -1,5 +1,9 @@
 package org.ihtsdo.otf.mapping.model;
 
+/**
+ * The interface for MapUser
+ *
+ */
 public interface MapUser {
 	/**
 	 * Returns the id.

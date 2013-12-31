@@ -38,9 +38,17 @@ public class MapAdviceJpa implements MapAdvice {
 	@Column(nullable = false, unique = true, length = 255)
 	private String description;
 	
+	/** Default constructor */
 	public MapAdviceJpa() {
+		// empty
 	}
 
+	/**
+	 * Constructor
+	 * @param id the id
+	 * @param name the name
+	 * @param description the description
+	 */
 	public MapAdviceJpa(Long id, String name, String description) {
 		super();
 		this.id = id;
@@ -57,8 +65,12 @@ public class MapAdviceJpa implements MapAdvice {
 		return id;
 	}
 	
+	/**
+	 * Return id as string
+	 * @return the id in string form
+	 */
 	@XmlID
-	public String getID() {
+	public String getObjectId() {
 		return id.toString();
 	}
 

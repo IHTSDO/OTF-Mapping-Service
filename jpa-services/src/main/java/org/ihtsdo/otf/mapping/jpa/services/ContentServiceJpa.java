@@ -108,13 +108,7 @@ public class ContentServiceJpa implements ContentService {
 			// TODO Auto-generated stub
 		}
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.ContentService#getConcept(java.lang.Long)
-	 */
+	
 	@Override
 	public Concept getConcept(Long conceptId) {
 		manager = factory.createEntityManager();
@@ -151,9 +145,46 @@ public class ContentServiceJpa implements ContentService {
 	 * (non-Javadoc)
 	 * 
 	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getConcept(java.lang.Long)
+	 */
+	@Override
+	public Concept getConcept(Long conceptId, String terminology, String terminologyVersion) {
+		manager = factory.createEntityManager();
+		javax.persistence.Query query = manager.createQuery("select c from ConceptJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		
+		/*
+		 * Try to retrieve the single expected result
+		 * If zero or more than one result are returned, log error and set result to null
+		 */
+
+		try {
+			
+			query.setParameter("terminologyId", conceptId.toString());
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+
+			Concept c = (Concept) query.getSingleResult();
+
+			System.out.println("Returning cid... " + ((c != null) ? c.getTerminologyId().toString() : "null"));
+			return c;
+			
+		} catch (NoResultException e) {
+			System.out.println("Concept query for terminologyId = " + conceptId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned no results!");
+			return null;		
+		} catch (NonUniqueResultException e) {
+			System.out.println("Concept query for terminologyId = " + conceptId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned multiple results!");
+			return null;
+		}	
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
 	 * org.ihtsdo.otf.mapping.services.ContentService#getConcepts(java.lang.String
 	 * )
 	 */
+	// TODO Fix this
 	@Override
 	public List<Concept> getConcepts(String searchString) {
 		manager = factory.createEntityManager();
