@@ -1,5 +1,7 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -45,6 +47,31 @@ public class SearchResultList {
 	public void setSearchResults(List<SearchResult> searchResults) {
 		this.searchResults = searchResults;
 	}
+	
+	public void sortResultsById() {
+		
+		Collections.sort(
+				searchResults, 
+				new Comparator<SearchResult>() {
+					public int compare(SearchResult sr1, SearchResult sr2) {
+						return sr1.getId().compareTo(sr2.getId());
+					}
+				}
+		);
+	}
+	
+	public void sortResultsByDescription() {
+		
+		Collections.sort(
+				searchResults, 
+				new Comparator<SearchResult>() {
+					public int compare(SearchResult sr1, SearchResult sr2) {
+						return sr1.getDescription().compareTo(sr2.getDescription());
+					}
+				}
+		);
+	}
+
 	
 	
 
