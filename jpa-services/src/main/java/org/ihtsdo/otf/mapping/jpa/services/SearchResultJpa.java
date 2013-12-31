@@ -9,7 +9,7 @@ import org.ihtsdo.otf.mapping.services.SearchResult;
  * @author Patrick
  *
  */
-@XmlRootElement
+@XmlRootElement(name = "searchResult")
 public class SearchResultJpa implements SearchResult {
 	
 	private Long id;

@@ -4,6 +4,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -64,6 +65,8 @@ public class ContentServiceRest {
 		return contentServiceJpa.getConceptForId(id);
 	}
 	
+	
+	
 	/**
 	 * Returns the concept for id, terminology, terminology version
 	 *
@@ -80,6 +83,8 @@ public class ContentServiceRest {
 			@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
 			@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "Concept terminology version", required = true) @PathParam("terminologyVersion") String terminologyVersion) {
+		
+		WebApplicationException w = new WebApplicationException();
 		return contentServiceJpa.getConcept(id, terminology, terminologyVersion);
 	}
 
@@ -90,7 +95,7 @@ public class ContentServiceRest {
 	 * @return the concept for id
 	 */
 	@GET
-	@Path("/concepts/{string}")
+	@Path("/concept/query/{string}")
 	@ApiOperation(value = "Find concepts by search query", notes = "Returns concepts that are related to search query.", response = String.class)
 	public SearchResultList findConcepts(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
 		try {

@@ -182,16 +182,22 @@ public class MappingServiceJpa implements MappingService {
 			
 			} else { // field:value
 				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
-						searchFactory.getAnalyzer(MapLeadJpa.class));
+						searchFactory.getAnalyzer(MapProjectJpa.class));
 				luceneQuery = queryParser.parse(query);
 			}
 			
 			List<MapProject> m = (List<MapProject>) fullTextEntityManager.createFullTextQuery(luceneQuery)
 														.getResultList();	
 			
+			System.out.println(Integer.toString(m.size()) + " map projects retrieved");
+			
 			for (MapProject mp : m) {
-				s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getName()));
-				
+				System.out.println("Object class: " + mp.getClass().toString());
+				if (mp instanceof MapProject) {
+					
+					s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getName()));
+					System.out.println("Added project " + m.get(0).getName());
+				} 
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -930,43 +936,7 @@ public class MappingServiceJpa implements MappingService {
 			System.out.println("MappingServiceJpa.getMapRecordsForConceptId(): Could not retrieve map records.");
 			e.printStackTrace();
 		}
-		
-		
-		System.out.println("Constructing valid map records for " + Integer.toString(m.size()) + " results");;
-		
-		for (MapRecord mr : m) {
-			
-			MapRecord mr_new = new MapRecordJpa();
-			mr_new.setId(mr.getId());
-			mr_new.setConceptId(mr.getConceptId());
-			
-			List<MapEntry> mapEntries = new ArrayList<MapEntry>();
-			
-			for (MapEntry me : mr.getMapEntries()) {
-				
-				MapEntry me_new = me;
-				/*
-				me_new.setId(me.getId());
-				me_new.setMapRecord(me.getMapRecord());
-				me_new.setAdvices(me.getAdvices());
-				me_new.setTarget(me.getTarget());
-				me_new.setAdvices(me.getAdvices());
-				me_new.setRule(me.getRule());
-				me_new.setIndex(me.getIndex());
-				me_new.setRelationId(me.getRelationId());
-				*/
-				// TODO: Fix notes
-				me_new.setNotes(null);
-				
-				mapEntries.add(me_new);
-			}
-			
-			mr_new.setMapEntries(mapEntries);
-		
-			m_return.add(mr_new);
-		}
-		
-		manager.clear();
+	
 		if (manager.isOpen()) { manager.close(); }
 		
 		return m_return;

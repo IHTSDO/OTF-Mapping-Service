@@ -70,4 +70,12 @@ mapProjectApp.config(['$routeProvider',
 	  $routeProvider.otherwise({
 	      redirectTo: 'partials/error.html'
 	  });
+	  
+	  //////////////////////////////
+	  // QUERY SERVICES
+	  //////////////////////////////
+	  $routeProvider.when('/concept/query', {
+  		  templateUrl: 'partials/concept-query-detail.html', 
+  		  controller: 'ConceptQueryCtrl'
+  	  });
    }]);
