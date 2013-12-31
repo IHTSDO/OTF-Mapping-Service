@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.model;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * The Interface MapRecord.
@@ -14,6 +15,13 @@ public interface MapRecord {
 	 * @return the id
 	 */
 	public Long getId();
+	
+	/**
+	 * Returns the id in string form
+	 *
+	 * @return the id in string form
+	 */
+	public String getObjectId();
 	
 	/**
 	 * Sets the id.
@@ -37,90 +45,33 @@ public interface MapRecord {
 	public void setConceptId(String conceptId);
 	
 	
-	// TODO: Removed map block and map group elements from model, update/rethink/etc.
 	/**
-	 * Returns the map blocks.
+	 * Returns the map notes.
 	 *
-	 * @return the map blocks
-	 *//*
-	public List<MapBlock> getMapBlocks();
+	 * @return the map notes
+	 */
+    public Set<MapNote> getMapNotes();
 	
-	*//**
-	 * Sets the map blocks.
-	 *
-	 * @param mapBlocks the map blocks
-	 *//*
-	public void setMapBlocks(List<MapBlock> mapBlocks);
-	
-	*//**
-	 * Adds the map block.
-	 *
-	 * @param mapBlock the map block
-	 *//*
-	public void addMapBlock(MapBlock mapBlock);
-	
-	*//**
-	 * Removes the map block.
-	 *
-	 * @param mapBlock the map block
-	 *//*
-	public void removeMapBlock(MapBlock mapBlock);
-	
-	*//**
-	 * Returns the map groups.
-	 *
-	 * @return the map groups
-	 *//*
-	public List<MapGroup> getMapGroups();
-	
-	*//**
-	 * Sets the map groups.
-	 *
-	 * @param mapGroups the map groups
-	 *//*
-	public void setMapGroups(List<MapGroup> mapGroups);
-	
-	*//**
-	 * Adds the map group.
-	 *
-	 * @param mapGroup the map group
-	 *//*
-	public void addMapGroup(MapGroup mapGroup);
-	
-	*//**
-	 * Removes the map group.
-	 *
-	 * @param mapGroup the map group
-	 *//*
-	public void removeMapGroup(MapGroup mapGroup);*/
-	/*
-  *//**
-   * Returns the map notes.
-   *
-   * @return the map notes
-   *//*
-  public List<MapNote> getNotes();
-	
-	*//**
+	/**
 	 * Sets the map notes.
 	 *
 	 * @param mapNotes the map notes
-	 *//*
-	public void setNotes(List<MapNote> notes);
+	 */
+	public void setMapNotes(Set<MapNote> mapNotes);
 	
-	*//**
+	/**
 	 * Adds the map note.
 	 *
 	 * @param mapNote the map note
-	 *//*
-	public void addNote(MapNote note);
+	 */
+	public void addMapNote(MapNote mapNote);
 	
-	*//**
+	/**
 	 * Removes the map note.
 	 *
 	 * @param mapNote the map note
-	 *//*
-	public void removeNote(MapNote note);*/
+	 */
+	public void removeMapNote(MapNote mapNote);
 	
 	/**
 	 * Returns the map entries.

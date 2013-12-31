@@ -1,17 +1,91 @@
 <!--  partial for displaying project :projectId -->
-<h3>Project: {{project.name}}</h3></p>
-<p></p>
+
+<p>{{errorProject}}</p>
+<h3>Project: {{project.name}}</h3>
 <p>Source Terminology: {{project.sourceTerminology}}, v. {{project.sourceTerminologyVersion}}</p>
 <p>Destination Terminology: {{project.destinationTerminology}}, v. {{project.destinationTerminologyVersion}}</p>
 <p>Ref Set Id: {{project.refSetId}}
-<p>Map Leads:</p>
-<ul><li ng-repeat="lead in project.mapLeads"><a href="mailto:{{lead.email}}">{{lead.name}}</a></li></ul>
-<p>
-<p>Map Specialists:</p>
-<ul><li ng-repeat="specialist in project.mapSpecialists"><a href="mailto:{{specialist.email}}">{{specialist.name}}</a></li></ul>
-<p>
-<p>Map Advices:</p>
-<table><tr ng-repeat"advice in project.mapAdvices"><td>{{advice.name}}</td><td>{{advice.description}}</td></tr></table>
 <p>Published: {{project.published}}</p>
 <p>Block Structure: {{project.blockStructure}}</p>
 <p>Group Structure: {{project.groupStructure}}</p>
+
+<accordion close-others="false">
+<accordion-group heading="Map Leads">
+<ul><li ng-repeat="lead in project.mapLead"><a href="mailto:{{lead.email}}">{{lead.name}}</a></li></ul>
+</accordion-group>
+
+<accordion-group heading="Map Specialists">
+<ul><li ng-repeat="specialist in project.mapSpecialist"><a href="mailto:{{specialist.email}}">{{specialist.name}}</a></li></ul>
+</accordion-group>
+
+<accordion-group heading="Map Advices">
+<table><tr ng-repeat="advice in project.mapAdvice"><td>{{advice.name}}</td><td>{{advice.description}}</td></tr></table>
+</accordion-group>
+
+<accordion-group heading="Map Records and Entries">
+<p>{{errorRecords}}</p>
+<div ng-repeat="record in records">Record {{record.ID}} has the following Map Entries:
+		
+		<table cellpadding="5">
+		<thead><tr><th>Target</th><th>Rule</th><th>Index</th><th>RelationId</th></tr></thead>
+		<tbody>
+		<tr ng-repeat="entry in record.mapEntry">
+			<td>{{entry.target}}</td>
+			<td>{{entry.rule}}</td>
+			<td>{{entry.index}}</td>
+			<td>{{entry.relationId}}</td>
+		</tr>
+		</tbody>
+		</table>
+		<p></p>
+		<p>Notes:</p>
+		<ul><li ng-repeat="note in record.mapNote">{{note.note}}</li></ul>
+</div>
+</accordion-group>
+
+<accordion-group heading="RF2 Concept">
+<p>{{errorConcept}}</p>
+<h4>Preferred Name: {{concept.defaultPreferredName}}</h4>
+<p>
+<p>Terminology: {{concept.terminology}}, v. {{concept.terminologyVersion}}</p>
+<p>Active: {{concept.active}}</p>
+<p>Effective Time: {{concept.effectiveTime}} (<em>Needs reformat to proper date</em>)</p>
+<p>Module Id: {{concept.moduleId}}</p>
+<p>Status Id: {{concept.definitionStatusId}}</p>
+
+<h4>Descriptions:</h4>
+<p>
+<ul>
+<li ng-repeat="description in concept.description">
+<p>Id: {{description.terminologyId}}
+<p>Terminology: {{description.terminology}}, v. {{description.terminologyVersion}}</p>
+<p>Active: {{description.active}}</p>
+<p>Case Significance Id: {{description.caseSignificanceId}}
+<p>Language Code: {{description.languageCode}}
+<p>
+<p>Language RefSets for this Description:
+<ul>
+<li ng-repeat="refset in description.languageRefSetMember">
+<p>Id: {{refset.terminologyId}}</p>
+<p>RefSet Id: {{refset.refSetId}}</p>
+<p>Acceptability Id: {{refset.acceptabilityId}}</p>
+</li>
+</ul>
+</li>
+</ul>
+
+<h4>Relationships:</h4>
+<p>
+<ul>
+<li ng-repeat="rel in concept.relationship">
+<p>Id: {{rel.terminologyId}}</p>
+<p>Active: {{rel.active}}</p>
+<p>Destination Concept: {{rel.destinationConceptId}} - {{rel.destinationConceptPreferredName}}</p>
+<p>Characteristic Type Id: {{rel.characteristicTypeId}}</p>
+<p>Modifier Id: {{rel.modifierId}}</p>
+<p>Type Id: {{rel.typeId}}</p>
+<p>Relationship Group: {{rel.relationshipGroup}}</p>
+</li>
+</ul>
+</accordion-group>
+</accordion>

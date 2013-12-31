@@ -2,6 +2,10 @@ package org.ihtsdo.otf.mapping.pojo;
 
 import org.ihtsdo.otf.mapping.model.MapUser;
 
+/**
+ * Class for map users, parent of MapLead, MapSpecialist
+ *
+ */
 public abstract class MapUserImpl implements MapUser {
 
 	/** The id. */

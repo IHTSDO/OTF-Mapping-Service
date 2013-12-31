@@ -245,6 +245,23 @@ public class MappingServiceRest {
 	}
 	
 	/**
+	 * Returns the records for a given concept id
+	 * 
+	 * @param conceptId the concept id
+	 * @return the mapRecords
+	 */
+	@GET
+	@Path("/record/conceptId/{String}")
+	@ApiOperation(value = "Find records by concept id", notes = "Returns MapRecords given a concept id in either JSON or XML format", response = MapRecord.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecordsForConceptId(
+			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("String") String conceptId) {
+		MapRecordList mapRecords = new MapRecordList();
+		mapRecords.setMapRecords(mappingServiceJpa.getMapRecordsForConceptId(conceptId));
+		return mapRecords;
+	}
+	
+	/**
 	 * Returns all map records for a lucene query
 	 * @param query the string query
 	 * @return the map records

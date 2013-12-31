@@ -133,5 +133,10 @@ public interface MappingService {
 	 */
 	public List<MapEntry> findMapEntrys(String query);
 
+	/**
+	 * Query for Map Notes
+	 * @param query the query
+	 * @return the List of MapNotes
+	 */
 	public List<MapNote> findMapNotes(String query);
 }

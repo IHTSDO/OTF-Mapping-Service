@@ -1,29 +1,24 @@
 <!-- Partial for project list -->
 Filter Results: <input ng-model="query">
 
-<accordion ng-bind-html-unsafe="highlight:query">
-    <accordion-group ng-repeat="project in projects | filter:query | orderBy:orderProp">
-    	<accordion-heading><h3>{{project.name}}</h3></accordion-heading>
+<accordion>
+    <accordion-group ng-repeat="project in projects | filter:query"> <!--  | orderBy:orderProp"> -->
+    	<accordion-heading><h3>{{project.objectId}}: {{project.name}}</h3></accordion-heading>
+
     	<p></p>
 		<p>Source Terminology: {{project.sourceTerminology}}, v. {{project.sourceTerminologyVersion}}</p>
 		<p>Destination Terminology: {{project.destinationTerminology}}, v. {{project.destinationTerminologyVersion}}</p>
-		<p>Ref Set Id: {{project.refSetId}}
+		<p>RefSet Id: {{project.refSetId}}
 		<p>Published: {{project.published}}</p>
 		<p>Block Structure: {{project.blockStructure}}</p>
 		<p>Group Structure: {{project.groupStructure}}</p>
-		<p>Map Leads:</p>
-		<ul><li ng-repeat="lead in project.mapLeads"><a href="mailto:{{lead.email}}">{{lead.name}}</a></li></ul>
-		<p>
-		<p>Map Specialists:</p>
-		<ul><li ng-repeat="specialist in project.mapSpecialists"><a href="mailto:{{specialist.email}}">{{specialist.name}}</a></li></ul>
-		<p>Map Advices:</p>
-		<ul><li ng-repeat="advice in project.mapAdvices">{{advice.name}}</li></ul>
 		
+		<p></p>
+		<p><a href="index.html#/project/id/{{project.objectId}}">View full details</a></p>	
    	</accordion-group>
 </accordion>
 
 {{error}}
-
 
 
 
