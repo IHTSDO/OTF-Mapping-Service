@@ -39,9 +39,17 @@ public class MapSpecialistJpa implements MapSpecialist {
 	@Column(nullable = false)
 	private String email;
 	
+	/** Default constructor */
 	public MapSpecialistJpa() {
 	}
 
+	/**
+	 * Full constructor
+	 * @param id the id
+	 * @param userName the username
+	 * @param name the full name
+	 * @param email the email
+	 */
 	public MapSpecialistJpa(Long id, String userName, String name, String email) {
 		super();
 		this.id = id;

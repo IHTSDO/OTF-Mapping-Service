@@ -2,9 +2,6 @@
 <p>{{statusnote}}</p>
 
 <p>
-<p> <em>Note</em>: A few tweaks are required for this page, and are noted <em>in italics</em> where appropriate.
-
-<p>
 <h3>Concept Id: {{concept.terminologyId}}</h3>
 <p></p>
 <h4>Preferred Name: {{concept.defaultPreferredName}}</h4>
@@ -18,7 +15,7 @@
 <h4>Descriptions:</h4>
 <p>
 <ul>
-<li ng-repeat="description in concept.descriptions">
+<li ng-repeat="description in concept.description">
 <p>Id: {{description.terminologyId}}
 <p>Terminology: {{description.terminology}}, v. {{description.terminologyVersion}}</p>
 <p>Active: {{description.active}}</p>
@@ -27,7 +24,7 @@
 <p>
 <p>Language RefSets for this Description:
 <ul>
-<li ng-repeat="refset in description.languageRefSetMembers">
+<li ng-repeat="refset in description.languageRefSetMember">
 <p>Id: {{refset.terminologyId}}</p>
 <p>RefSet Id: {{refset.refSetId}}</p>
 <p>Acceptability Id: {{refset.acceptabilityId}}</p>
@@ -39,45 +36,13 @@
 <h4>Relationships:</h4>
 <p>
 <ul>
-<li ng-repeat="rel in concept.inverseRelationships">
+<li ng-repeat="rel in concept.relationship">
 <p>Id: {{rel.terminologyId}}</p>
 <p>Active: {{rel.active}}</p>
-<p>Destination Concept: {{rel.sourceConcept}} <em>BUG: Empty field will be fixed</em></p>
+<p>Destination Concept: {{rel.destinationConceptId}} - {{rel.destinationConceptPreferredName}}</p>
 <p>Characteristic Type Id: {{rel.characteristicTypeId}}</p>
 <p>Modifier Id: {{rel.modifierId}}</p>
 <p>Type Id: {{rel.typeId}}</p>
 <p>Relationship Group: {{rel.relationshipGroup}}</p>
 </li>
 </ul>
-
-<h4>Inverse Relationships</h4>
-<p>
-<ul>
-<li ng-repeat="rel in concept.inverseRelationships">
-<p>Id: {{rel.terminologyId}}</p>
-<p>Active: {{rel.active}}</p>
-<p>Source Concept: {{rel.sourceConcept}} <em>BUG: Empty field will be fixed</em></p>
-<p>Characteristic Type Id: {{rel.characteristicTypeId}}</p>
-<p>Modifier Id: {{rel.modifierId}}</p>
-<p>Type Id: {{rel.typeId}}</p>
-<p>Relationship Group: {{rel.relationshipGroup}}</p>
-</li>
-</ul>
-
-<h4>SimpleMap RefSets</h4>
-<p>
-<ul>
-<li ng-repeat="refset in concept.simpleMapRefSetMembers">
-<p>Id: {{refset.terminologyId}}</p>
-<p>Active: {{refset.active}}</p>
-<p>RefSet Id: {{refset.refSetId}}</p>
-<p>Map Target: {{refset.mapTarget}}</p>
-</ul>
-
-<h4>ComplexMapRefSets</h4>
-<em>Not yet implemented</em>
-<p>
-
-<h4>AttributeValueRefSets</h4>
-<em>Not yet implemented</em>
-<p>

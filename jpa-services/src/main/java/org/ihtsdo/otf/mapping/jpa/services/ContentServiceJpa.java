@@ -11,6 +11,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Persistence;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
@@ -68,7 +69,6 @@ public class ContentServiceJpa implements ContentService {
 		System.out.println("ended init " + fieldNames.toString());
 	}
 
-
 	/**
 	 * Returns the concept for id.
 	 * 
@@ -79,42 +79,30 @@ public class ContentServiceJpa implements ContentService {
 		return getConcept(id);
 
 	}
-	
+
 	public List<Concept> getConceptsLimited(int n_concepts) {
 		manager = factory.createEntityManager();
-		javax.persistence.Query query = manager.createQuery("select terminologyId from ConceptJpa c");
-	
-	
-		try {
-			query.setMaxResults(n_concepts);
-			
-			List<String> concept_ids = (List<String>) query.getResultList();
-			
-			List<Concept> concepts = new ArrayList<Concept>();
-			
-			for (String concept_id : concept_ids) {
-				Concept c = new ConceptJpa();
-				c.setTerminologyId(concept_id);
-				concepts.add(c);
-			}
-			
-			
-			System.out.println("Returning " + Integer.toString(concept_ids.size()) + " concept ids");
-			return concepts;
-			
-		} catch (Exception e) {
-			System.out.println("Could not retrieve limited number of concepts");
-			return null;
-			// TODO Auto-generated stub
-		}
-	}
+		javax.persistence.Query query =
+				manager.createQuery("select terminologyId from ConceptJpa c");
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.ContentService#getConcept(java.lang.Long)
-	 */
+		query.setMaxResults(n_concepts);
+
+		List<String> concept_ids = (List<String>) query.getResultList();
+
+		List<Concept> concepts = new ArrayList<Concept>();
+
+		for (String concept_id : concept_ids) {
+			Concept c = new ConceptJpa();
+			c.setTerminologyId(concept_id);
+			concepts.add(c);
+		}
+
+		System.out.println("Returning " + Integer.toString(concept_ids.size())
+				+ " concept ids");
+		return concepts;
+
+	}
+	
 	@Override
 	public Concept getConcept(Long conceptId) {
 		manager = factory.createEntityManager();
@@ -151,11 +139,51 @@ public class ContentServiceJpa implements ContentService {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.ihtsdo.otf.mapping.services.ContentService#getConcepts(java.lang.String
-	 * )
+	 * org.ihtsdo.otf.mapping.services.ContentService#getConcept(java.lang.Long)
 	 */
 	@Override
-	public List<Concept> getConcepts(String searchString) {
+	public Concept getConcept(Long conceptId, String terminology, String terminologyVersion) {
+		manager = factory.createEntityManager();
+		javax.persistence.Query query =
+				manager
+						.createQuery("select c from ConceptJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+
+		/*
+		 * Try to retrieve the single expected result If zero or more than one
+		 * result are returned, log error and set result to null
+		 */
+
+		try {
+
+			query.setParameter("terminologyId", conceptId.toString());
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+
+			Concept c = (Concept) query.getSingleResult();
+
+			System.out.println("Returning cid... "
+					+ ((c != null) ? c.getTerminologyId().toString() : "null"));
+			return c;
+
+		} catch (NoResultException e) {
+			// log result and return null
+			Logger.getLogger(this.getClass()).info(
+					"Concept query for terminologyId = " + conceptId + ", terminology = "
+							+ terminology + ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!");
+			return null;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#getConcepts(java.lang.
+	 * String )
+	 */
+	// TODO Fix this
+	@Override
+	public List<Concept> getConcepts(String searchString) throws Exception {
 		manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager =
 				Search.getFullTextEntityManager(manager);
@@ -170,7 +198,8 @@ public class ContentServiceJpa implements ContentService {
 								searchFactory.getAnalyzer(ConceptJpa.class));
 				queryParser.setAllowLeadingWildcard(false);
 				luceneQuery = queryParser.parse(searchString);
-			// index field is indicated in the URL with a ':' separating field and value
+				// index field is indicated in the URL with a ':' separating
+				// field and value
 			} else {
 				QueryParser queryParser =
 						new QueryParser(Version.LUCENE_36, "summary",
@@ -178,30 +207,30 @@ public class ContentServiceJpa implements ContentService {
 				luceneQuery = queryParser.parse(searchString);
 			}
 
-				FullTextQuery fullTextQuery =
-						fullTextEntityManager.createFullTextQuery(luceneQuery);
-				List<AbstractComponent> results = fullTextQuery.getResultList();
-				List<Concept> components = new ArrayList<Concept>();
-				for (AbstractComponent s : results) {
-					if (s instanceof ConceptJpa) {
-						//components.add(new SearchResultJpa(((ConceptJpa) s).getId(), ((ConceptJpa) s).getDefaultPreferredName()));
-					} else if (s instanceof DescriptionJpa) {
-						//components.add(new SearchResultJpa(((DescriptionJpa) s).getId(), ((DescriptionJpa) s).getTerm()));
-					}
+			FullTextQuery fullTextQuery =
+					fullTextEntityManager.createFullTextQuery(luceneQuery);
+			List<AbstractComponent> results = fullTextQuery.getResultList();
+			List<Concept> components = new ArrayList<Concept>();
+			for (AbstractComponent s : results) {
+				if (s instanceof ConceptJpa) {
+					// components.add(new SearchResultJpa(((ConceptJpa)
+					// s).getId(), ((ConceptJpa) s).getDefaultPreferredName()));
+				} else if (s instanceof DescriptionJpa) {
+					// components.add(new SearchResultJpa(((DescriptionJpa)
+					// s).getId(), ((DescriptionJpa) s).getTerm()));
 				}
-				
-				return components;
+			}
+
+			return components;
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw e;
 		} finally {
 			if (fullTextEntityManager != null) {
 				fullTextEntityManager.close();
 			}
 			fullTextEntityManager = null;
 		}
-		return null;
 	}
 
-	
 }

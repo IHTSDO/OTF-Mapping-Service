@@ -22,12 +22,12 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
           "Content-Type": "application/json"
         }
       }).success(function(data) {
-        $scope.projects = data.mapProjects;
+    	  $scope.projects = data.mapProject;
       }).error(function(error) {
     	  $scope.error = "Error";
     });
  
-    $scope.orderProp = 'id';	
+   /* $scope.orderProp = 'id';	*/
   });
 
 mapProjectAppControllers.controller('MapRecordListCtrl', 
@@ -40,7 +40,7 @@ mapProjectAppControllers.controller('MapRecordListCtrl',
           "Content-Type": "application/json"
         }
       }).success(function(data) {
-        $scope.records = data.mapRecords;
+        $scope.records = data.mapRecord;
       }).error(function(error) {
     	$scope.error = "Error";
     });
@@ -58,7 +58,7 @@ mapProjectAppControllers.controller('MapLeadListCtrl',
           "Content-Type": "application/json"
         }
       }).success(function(data) {
-        $scope.leads = data.mapLeads;
+        $scope.leads = data.mapLead;
       }).error(function(error) {
     	  $scope.error = "Error";
       });
@@ -72,7 +72,7 @@ mapProjectAppControllers.controller('MapLeadListCtrl',
                "Content-Type": "application/json"
              }
            }).success(function(data) {
-             $scope.projects = data.mapProjects;
+             $scope.projects = data.mapProject;
            }).error(function(error) {
          	  $scope.error = "Error";
            });
@@ -103,7 +103,7 @@ mapProjectAppControllers.controller('MapSpecialistListCtrl',
           "Content-Type": "application/json"
         }
       }).success(function(data) {
-        $scope.specialists = data.mapSpecialists;
+        $scope.specialists = data.mapSpecialist;
       }).error(function(error) {
     	  $scope.error = "Error";
     });
@@ -121,7 +121,7 @@ mapProjectAppControllers.controller('ConceptListCtrl',
 			          "Content-Type": "application/json"
 			        }
 			      }).success(function(data) {
-			        $scope.concepts = data.concepts;
+			        $scope.concepts = data.concept;
 			      }).error(function(error) {
 			    	  $scope.error = "Error";
 			    });
@@ -130,21 +130,63 @@ mapProjectAppControllers.controller('ConceptListCtrl',
 			  });
 
 
+// TODO Add test for coming from project list page (i.e. pass the project to this controller)
 mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', '$routeParams',
    function ($scope, $http, $routeParams) {
+	
 	  $scope.projectId = $routeParams.projectId;
-	  $http({
+	  
+	  $scope.errorProject = "";
+	  $scope.errorConcept = "";
+	  $scope.errorRecords = "";
+	  
+	  // retrieve project information
+	 $http({
         url: root_mapping + "project/id/" + $scope.projectId,
         dataType: "json",
         method: "GET",
         headers: {
           "Content-Type": "application/json"
-        }
+        }	
       }).success(function(data) {
         $scope.project = data;
+        $scope.errorProject = "Project retrieved";
       }).error(function(error) {
-    });
-
+    	  $scope.errorProject = "Could not retrieve project"; 
+     
+      }).then(function(data) {
+ 		 
+    	  // retrieve any concept associated with this project
+    	  $http({
+    		  url: root_content + "concept/id/" + $scope.project.refSetId,
+    		  dataType: "json",
+    		  method: "GET",
+    		  headers: {
+    			  "Content-Type": "application/json"
+    		  }
+    	  }).success(function(data) {
+    		  $scope.concept = data;
+    	  }).error(function(error) {
+    		  $scope.errorRecord = "Error retrieving concept";
+    	  });
+      }).then(function(data) {
+  		 
+    	  // retrieve any map records associated with this project
+    	  $http({
+    		  url: root_mapping + "record/conceptId/" + $scope.project.refSetId,
+    		  dataType: "json",
+    		  method: "GET",
+    		  headers: {
+    			  "Content-Type": "application/json"
+    		  }
+    	  }).success(function(data) {
+    		  $scope.records = data.mapRecord;
+    	  }).error(function(error) {
+    		  $scope.errorRecord = "Error retrieving map records";
+    	  });
+      });
+    	  
+	  
 }]);
 
 mapProjectAppControllers.controller('ConceptDetailCtrl', ['$scope', '$http', '$routeParams',
@@ -164,7 +206,7 @@ mapProjectAppControllers.controller('ConceptDetailCtrl', ['$scope', '$http', '$r
           $scope.statusnote = "";
           $scope.concept = data;
         }).error(function(error) {
-        	$scope.status = "Load error!"
+        	$scope.status = "Load error!";
             $scope.statusnote = "";
         	console.print("Error in conceptdetailctrol");
       });

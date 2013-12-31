@@ -27,8 +27,6 @@ import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 
 /**
  * The Class MapProjectJpa.
@@ -64,7 +62,6 @@ public class MapProjectJpa implements MapProject {
 
 	/** The allowable map advices for this MapProject. */
 	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
-	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 
@@ -89,19 +86,34 @@ public class MapProjectJpa implements MapProject {
 	
 	/** The map leads. */
 	@ManyToMany(targetEntity=MapLeadJpa.class, fetch=FetchType.EAGER)
-	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapLeadJpa.class)
 	private Set<MapLead> mapLeads = new HashSet<MapLead>();
 	
 	/** The map specialists. */
 	@ManyToMany(targetEntity=MapSpecialistJpa.class, fetch=FetchType.EAGER)
-	@JsonManagedReference
 	@IndexedEmbedded(targetElement=MapSpecialistJpa.class)
 	private Set<MapSpecialist> mapSpecialists = new HashSet<MapSpecialist>();
 	
+	/** Default constructor */
 	public MapProjectJpa() {
 	}
 
+	/**
+	 * Full constructor
+	 * @param id the id
+	 * @param name the project name
+	 * @param blockStructure the blockstructure (boolean)
+	 * @param groupStructure the group structure (boolean)
+	 * @param published is published (boolean)
+	 * @param mapAdvices the map advices
+	 * @param refSetId the ref set id
+	 * @param sourceTerminology the source terminology
+	 * @param sourceTerminologyVersion the source terminology version
+	 * @param destinationTerminology the destination terminology
+	 * @param destinationTerminologyVersion the destination terminology vresion
+	 * @param mapLeads the map leads
+	 * @param mapSpecialists the map specialists
+	 */
 	public MapProjectJpa(Long id, String name, boolean blockStructure,
 			boolean groupStructure, boolean published, Set<MapAdvice> mapAdvices,
 			Long refSetId, String sourceTerminology, String sourceTerminologyVersion,
@@ -132,8 +144,12 @@ public class MapProjectJpa implements MapProject {
 		return id;
 	}
 	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
 	@XmlID
-	public String getID() {
+	public String getObjectId() {
 		return id.toString();
 	}
 

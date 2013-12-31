@@ -14,6 +14,9 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
+/**
+ * The REST services for content components
+ */
 @Path("/content")
 @Api(value = "/content", description = "Operations to retrieve RF2 content.")
 @Produces({"application/json", "application/xml"})
@@ -31,9 +34,7 @@ public class ContentServiceRest {
 	
 	/**
 	 * Returns a limited number of concepts
-	 *
-	 * @param id the id
-	 * @return the concept for id
+	 * @return the concepts
 	 */
 	@GET
 	@Path("/concept/concepts")
@@ -60,6 +61,25 @@ public class ContentServiceRest {
 	public Concept getConceptForId(@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id) {
 		return contentServiceJpa.getConceptForId(id);
 	}
+	
+	/**
+	 * Returns the concept for id.
+	 *
+	 * @param id the id
+	 * @param terminology the concept terminology
+	 * @param terminologyVersion the concept terminology version
+	 * @return the concept
+	 */
+	@GET
+	@Path("/concept/{terminology}/{terminologyVersion}/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find concept by id", notes = "Returns a concept in either xml json given a concept id.", response = Concept.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public Concept getConceptForId(
+			@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
+			@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
+			@ApiParam(value = "Concept terminology version", required = true) @PathParam("terminologyVersion") String terminologyVersion) {
+		return contentServiceJpa.getConcept(id, terminology, terminologyVersion);
+	}
 
 	// TODO: Fix this
 	/**
@@ -69,7 +89,7 @@ public class ContentServiceRest {
 	 * @return the concept for id
 	 */
 	/*@GET
-	@Path("/concepts/xml/{string}")
+	@Path("/concepts/{string}")
 	@ApiOperation(value = "Find concepts by search query", notes = "Returns concepts that are related to search query.", response = String.class)
 	public String getConceptForString(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
 		List<String> results = contentServiceJpa.getConcepts(searchString);

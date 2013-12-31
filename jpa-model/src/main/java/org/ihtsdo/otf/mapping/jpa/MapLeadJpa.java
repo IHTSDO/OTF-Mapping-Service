@@ -22,10 +22,17 @@ import org.ihtsdo.otf.mapping.model.MapLead;
 @XmlRootElement(name="mapLead")
 public class MapLeadJpa implements MapLead {
 
+	/** Default constructor */
 	public MapLeadJpa() {
 		super();
 	}
 
+	/** Constructor
+	 * @param id the id
+	 * @param userName the username
+	 * @param name the name
+	 * @param email the email
+	 */
 	public MapLeadJpa(Long id, String userName, String name, String email) {
 		super();
 		this.id = id;
