@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -24,6 +25,7 @@ import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
@@ -60,11 +62,6 @@ public class MapProjectJpa implements MapProject {
 	@Column(unique = false, nullable = false)
 	private boolean published = false;
 
-	/** The allowable map advices for this MapProject. */
-	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
-	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
-	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
-
 	/** The ref set id. */
 	private Long refSetId;
 	
@@ -93,6 +90,16 @@ public class MapProjectJpa implements MapProject {
 	@ManyToMany(targetEntity=MapSpecialistJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapSpecialistJpa.class)
 	private Set<MapSpecialist> mapSpecialists = new HashSet<MapSpecialist>();
+	
+	/** The allowable map principles for this MapProject. */
+	@ManyToMany(targetEntity=MapPrincipleJpa.class, cascade = CascadeType.ALL, fetch=FetchType.EAGER)
+	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
+	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
+
+	/** The allowable map advices for this MapProject. */
+	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
+	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
+	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 	
 	/** Default constructor */
 	public MapProjectJpa() {
@@ -191,13 +198,6 @@ public class MapProjectJpa implements MapProject {
 	 */
 	@Override
 	public void removeMapLead(MapLead mapLead) {
-		/*MapLead m_remove = new MapLeadJpa();
-		for (MapLead m : this.mapLeads) {
-			if (m.equals(mapLead)) { m_remove = m; }
-		}
-		
-		mapLeads.remove(m_remove);*/
-		
 		mapLeads.remove(mapLead);
 	}
 	
@@ -232,11 +232,6 @@ public class MapProjectJpa implements MapProject {
 	 */
 	@Override
 	public void removeMapSpecialist(MapSpecialist mapSpecialist) {
-		/*MapSpecialist m_remove = new MapSpecialistJpa();
-		for (MapSpecialist m : this.mapSpecialists) {
-			if (m.equals(mapSpecialist)) { m_remove = m; }
-		}
-		mapSpecialists.remove(m_remove);*/
 		mapSpecialists.remove(mapSpecialist);
 	}
 
@@ -381,6 +376,27 @@ public class MapProjectJpa implements MapProject {
 	@Override
 	public void removeMapAdvice(MapAdvice mapAdvice) {
 		mapAdvices.remove(mapAdvice);
+	}
+	
+	@Override
+	@XmlElement(type=MapPrincipleJpa.class, name="mapPrinciple")
+	public Set<MapPrinciple> getMapPrinciples() {
+		return mapPrinciples;
+	}
+
+	@Override
+	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
+		this.mapPrinciples = mapPrinciples;
+	}
+
+	@Override
+	public void addMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.add(mapPrinciple);
+	}
+
+	@Override
+	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.remove(mapPrinciple);
 	}
 
 	/**

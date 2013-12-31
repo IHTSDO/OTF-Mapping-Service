@@ -9,6 +9,7 @@ import javax.ws.rs.core.MediaType;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptList;
+import org.ihtsdo.otf.mapping.services.SearchResultList;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -34,6 +35,7 @@ public class ContentServiceRest {
 	
 	/**
 	 * Returns a limited number of concepts
+	 * FOR TESTING PURPOSES ONLY
 	 * @return the concepts
 	 */
 	@GET
@@ -63,7 +65,7 @@ public class ContentServiceRest {
 	}
 	
 	/**
-	 * Returns the concept for id.
+	 * Returns the concept for id, terminology, terminology version
 	 *
 	 * @param id the id
 	 * @param terminology the concept terminology
@@ -81,29 +83,23 @@ public class ContentServiceRest {
 		return contentServiceJpa.getConcept(id, terminology, terminologyVersion);
 	}
 
-	// TODO: Fix this
 	/**
-	 * Returns the concept for id.
+	 * Returns the concept for search string
 	 *
-	 * @param id the id
+	 * @param searchString the lucene search string
 	 * @return the concept for id
 	 */
-	/*@GET
+	@GET
 	@Path("/concepts/{string}")
 	@ApiOperation(value = "Find concepts by search query", notes = "Returns concepts that are related to search query.", response = String.class)
-	public String getConceptForString(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
-		List<String> results = contentServiceJpa.getConcepts(searchString);
-		if (results == null || results.size() == 0) {
-			System.out.println("0 results");
-			return "none";
+	public SearchResultList findConcepts(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
+		try {
+			return contentServiceJpa.findConcepts(searchString);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block -- for BAC
+			e.printStackTrace();
+			return null;
 		}
-		System.out.println("results size " + results.size());
-		StringBuffer sb = new StringBuffer();
-		for (String s : results) {
-		  sb.append(s).append("\n");
-		}
-		return sb.toString();
-
-	}*/
+	}
 
 }

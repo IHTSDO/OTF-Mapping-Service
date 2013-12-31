@@ -3,9 +3,7 @@ package org.ihtsdo.otf.mapping.services;
 import java.util.List;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
-import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
-import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
@@ -87,6 +85,17 @@ public interface MappingService {
 	 */
 	public List<MapProject> getMapProjectsForMapLead(MapLead mapLead);
 	
+	/**
+	 * Retrieve all map records
+	 * @return a List of MapRecords
+	 */
+	public List<MapRecord> getMapRecords();
+	
+	/**
+	 * Retrieve all map records associated with a given concept id
+	 * @return a List of MapRecords
+	 */
+	
 	////////////////////
 	// Query services //
 	////////////////////
@@ -96,47 +105,47 @@ public interface MappingService {
 	 * @param query the query
 	 * @return the list of MapProject
 	 */
-	public List<MapProject> findMapProjects(String query);
+	public SearchResultList findMapProjects(String query);
 	
 	/** 
 	 * Query for MapSpecialists
 	 * @param query the query
 	 * @return the List of MapProjects
 	 */
-	public List<MapSpecialist> findMapSpecialists(String query);
+	public SearchResultList findMapSpecialists(String query);
 	
 	/**
 	 * Query for MapLeads
 	 * @param query the query
 	 * @return the List of MapProjects
 	 */
-	public List<MapLead> findMapLeads(String query);
+	public SearchResultList findMapLeads(String query);
 	
 	/**
 	 * Query for MapAdvices
 	 * @param query the query
 	 * @return the List of MapAdvices
 	 */
-	public List<MapAdvice> findMapAdvices(String query);
+	public SearchResultList findMapAdvices(String query);
 	
 	/**
 	 * Query for MapRecords
 	 * @param query the query
 	 * @return the List of MapRecords
 	 */
-	public List<MapRecord> findMapRecords(String query);
+	public SearchResultList findMapRecords(String query);
 	
 	/**
 	 * Query for MapEntrys
 	 * @param query the query
 	 * @return the List of MapEntrys
 	 */
-	public List<MapEntry> findMapEntrys(String query);
+	public SearchResultList findMapEntrys(String query);
 
 	/**
 	 * Query for Map Notes
 	 * @param query the query
 	 * @return the List of MapNotes
 	 */
-	public List<MapNote> findMapNotes(String query);
+	public SearchResultList findMapNotes(String query);
 }

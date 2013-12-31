@@ -27,6 +27,7 @@ import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
 /**
@@ -48,7 +49,7 @@ public class MapEntryJpa implements MapEntry {
 	private MapRecord mapRecord;
 
 	/** The map notes. */
-	@ManyToMany(targetEntity=MapNoteJpa.class, cascade = CascadeType.ALL, fetch=FetchType.LAZY)
+	@ManyToMany(targetEntity=MapNoteJpa.class, cascade = CascadeType.ALL, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapNoteJpa.class)
 	private Set<MapNote> mapNotes = new HashSet<MapNote>();
 
@@ -56,6 +57,11 @@ public class MapEntryJpa implements MapEntry {
 	@ManyToMany(targetEntity=MapAdviceJpa.class, cascade = CascadeType.ALL, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
+	
+	/** The map principles. */
+	@ManyToMany(targetEntity=MapPrincipleJpa.class, cascade = CascadeType.ALL, fetch=FetchType.EAGER)
+	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
+	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 
 	/** The target. */
 	@Column(nullable = false)
@@ -209,6 +215,27 @@ public class MapEntryJpa implements MapEntry {
 	@Override
 	public void removeAdvice(MapAdvice mapAdvice) {
 		mapAdvices.remove(mapAdvice);
+	}
+	
+	@Override
+	@XmlElement(type=MapPrincipleJpa.class, name="mapPrinciple")
+	public Set<MapPrinciple> getMapPrinciples() {
+		return mapPrinciples;
+	}
+
+	@Override
+	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
+		this.mapPrinciples = mapPrinciples;
+	}
+
+	@Override
+	public void addMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.add(mapPrinciple);
+	}
+
+	@Override
+	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.remove(mapPrinciple);
 	}
 
 	/* (non-Javadoc)

@@ -23,7 +23,6 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -31,11 +30,11 @@ import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
-import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.SearchResultList;
 
 /**
  * 
@@ -161,9 +160,9 @@ public class MappingServiceJpa implements MappingService {
 	* @return the list of MapProject
 	*/
 	@SuppressWarnings("unchecked")
-	public List<MapProject> findMapProjects(String query) {
+	public SearchResultList findMapProjects(String query) {
 
-		List<MapProject> m = null;
+		SearchResultList s = new SearchResultListJpa();
 		EntityManager manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
@@ -187,8 +186,13 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			m = (List<MapProject>) fullTextEntityManager.createFullTextQuery(luceneQuery)
-														.getResultList();		
+			List<MapProject> m = (List<MapProject>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+														.getResultList();	
+			
+			for (MapProject mp : m) {
+				s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getName()));
+				
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -196,7 +200,7 @@ public class MappingServiceJpa implements MappingService {
 		if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
 		if (manager.isOpen()) { manager.close(); }
 		
-		return m;
+		return s;
 	}
 	
 	/**
@@ -352,9 +356,9 @@ public class MappingServiceJpa implements MappingService {
 	* @return the List of MapProjects
 	*/
 	@SuppressWarnings("unchecked")
-	public List<MapSpecialist> findMapSpecialists(String query) {
+	public SearchResultList findMapSpecialists(String query) {
 
-		List<MapSpecialist> m = null;
+		SearchResultList s =new SearchResultListJpa();
 		EntityManager manager = factory.createEntityManager();
 		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
@@ -380,8 +384,12 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			m = (List<MapSpecialist>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+			List<MapSpecialist> m = (List<MapSpecialist>) fullTextEntityManager.createFullTextQuery(luceneQuery)
 														.getResultList();
+			
+			for (MapSpecialist ms : m) {
+				s.addSearchResult(new SearchResultJpa(ms.getId(), ms.getName()));
+			}
 			
 			
 		} catch (Exception e) {
@@ -391,7 +399,7 @@ public class MappingServiceJpa implements MappingService {
 		if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
 		if (manager.isOpen()) { manager.close(); }
 		
-		return m;
+		return s;
 	}
 	
 	/**
@@ -557,9 +565,9 @@ public class MappingServiceJpa implements MappingService {
 	* @return the List of MapProjects
 	*/
 	@SuppressWarnings("unchecked")
-	public List<MapLead> findMapLeads(String query) {
+	public SearchResultList findMapLeads(String query) {
 		
-		List<MapLead> m = null;
+		SearchResultList s = new SearchResultListJpa();
 		EntityManager manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
@@ -583,8 +591,12 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			m = (List<MapLead>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+			List<MapLead> m = (List<MapLead>) fullTextEntityManager.createFullTextQuery(luceneQuery)
 														.getResultList();
+			
+			for (MapLead ml : m) {
+				s.addSearchResult(new SearchResultJpa(ml.getId(), ml.getName()));
+			}
 			
 			
 		} catch (Exception e) {
@@ -594,7 +606,7 @@ public class MappingServiceJpa implements MappingService {
 		if (manager.isOpen()) { manager.close(); }
 		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
 		
-		return m;
+		return s;
 	}
 	
 	/**
@@ -679,6 +691,10 @@ public class MappingServiceJpa implements MappingService {
 	// - findMapAdvices(String query)
 	////////////////////////////////////
 	
+	/*
+	 * NOT YET IMPLEMENTED 
+    */
+	
 	public List<MapAdvice> getMapAdvices() {
 		return null;
 	}
@@ -687,7 +703,7 @@ public class MappingServiceJpa implements MappingService {
 		return null;
 	}
 	
-	public List<MapAdvice> findMapAdvices(String query) {
+	public SearchResultList findMapAdvices(String query) {
 		return null;
 	}
 	
@@ -703,7 +719,6 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapRecord> getMapRecords() {
 		
 		List<MapRecord> m = null;
-		List<MapRecord> m_return = new ArrayList<MapRecord>();
 		EntityManager manager = factory.createEntityManager();
 		
 		// construct query
@@ -717,49 +732,9 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 		
-		
-		System.out.println("Constructing valid map records for " + Integer.toString(m.size()) + " results");;
-		
-		for (MapRecord mr : m) {
-			
-			MapRecord mr_new = new MapRecordJpa();
-			mr_new.setId(mr.getId());
-			mr_new.setConceptId(mr.getConceptId());
-			
-			List<MapEntry> mapEntries = new ArrayList<MapEntry>();
-			
-			for (MapEntry me : mr.getMapEntries()) {
-				
-				MapEntry me_new = me;
-				/*
-				me_new.setId(me.getId());
-				me_new.setMapRecord(me.getMapRecord());
-				me_new.setAdvices(me.getAdvices());
-				me_new.setTarget(me.getTarget());
-				me_new.setAdvices(me.getAdvices());
-				me_new.setRule(me.getRule());
-				me_new.setIndex(me.getIndex());
-				me_new.setRelationId(me.getRelationId());
-				*/
-				// TODO: Fix notes
-				me_new.setNotes(null);
-				
-				mapEntries.add(me_new);
-			}
-			
-			mr_new.setMapEntries(mapEntries);
-		
-			m_return.add(mr_new);
-		}
-		
-
-		manager.clear();
-		
-		
 		if (manager.isOpen()) { manager.close(); }
 		
-		return m_return;
-		
+		return m;
 	}
 	
 	/** 
@@ -793,24 +768,6 @@ public class MappingServiceJpa implements MappingService {
 			System.out.println("MapRecord query for id = " + id  + " returned multiple results!");
 			return null;
 		}	
-    	
-    	
-    /*	MapRecord m = null;
-		EntityManager manager = factory.createEntityManager();
-		
-		try {
-			m = manager.find(MapRecordJpa.class, id);
-		} catch (Exception e) {
-			System.out.println("Could not find map record for id = " + id.toString());
-		}
-		
-		// retrieve lazily-fetched items
-		m.setMapEntries(m.getMapEntries());
-		// m.setNotes(m.getNotes());
-	
-		if (manager.isOpen()) { manager.close(); }
-		
-		return m;*/
     }
     
   /*  public List<MapRecord> getMapRecords(mapProjectId, sortingInfo, pageSize, page#) {
@@ -824,9 +781,9 @@ public class MappingServiceJpa implements MappingService {
      * @return a list of map records
      */
     @SuppressWarnings("unchecked")
-    public List<MapRecord> findMapRecords(String query) {
+    public SearchResultList findMapRecords(String query) {
     	
-    	List<MapRecord> m = null;
+    	SearchResultList s = new SearchResultListJpa();
 		EntityManager manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
@@ -850,8 +807,12 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			m = (List<MapRecord>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+			List<MapRecord> m = (List<MapRecord>) fullTextEntityManager.createFullTextQuery(luceneQuery)
 														.getResultList();
+			
+			for (MapRecord mr : m) {
+				s.addSearchResult(new SearchResultJpa(mr.getId(), mr.getConceptId()));
+			}
 			
 			
 		} catch (Exception e) {
@@ -861,7 +822,7 @@ public class MappingServiceJpa implements MappingService {
 		if (manager.isOpen()) { manager.close(); }
 		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
 		
-		return m;
+		return s;
     }
     
     /**
@@ -930,7 +891,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapEntrys(java.lang.String)
 	 */
 	@Override
-	public List<MapEntry> findMapEntrys(String query) {
+	public SearchResultList findMapEntrys(String query) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -939,7 +900,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapNotes(java.lang.String)
 	 */
 	@Override
-	public List<MapNote> findMapNotes(String query) {
+	public SearchResultList findMapNotes(String query) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -948,6 +909,11 @@ public class MappingServiceJpa implements MappingService {
 	// Service for retrieving all project details
     ////////////////////////////////////////////////
 	
+	/**
+	 * Retrieve map records for a given concept id
+	 * @param conceptId the concept id
+	 * @return the list of map records
+	 */
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId) {
 		List<MapRecord> m = null;
 		List<MapRecord> m_return = new ArrayList<MapRecord>();
