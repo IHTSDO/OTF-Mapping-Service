@@ -9,7 +9,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
@@ -91,146 +90,6 @@ public class SampledataMojo extends AbstractMojo {
 				Persistence.createEntityManagerFactory("MappingServiceDS");
 		manager = factory.createEntityManager();
 		EntityTransaction tx = manager.getTransaction();
-
-		
-		
-		/*// truncate the tables -- don't want to have to rerun loader for refsets
-		tx.begin();
-		try {
-			java.persistence.Query query;
-			int deleteRecords;
-			getLog().info("Removing table constraints");
-			
-			// truncate RefSets
-
-
-			
-			
-			 * Dependencies:
-			 * map_advices: (none)
-			 * map_blocks: map_advices (1), map_groups (3)
-			 * map_entries: map_advices (1), map_notes (1)
-			 * map_groups: map_entries (2)
-			 * map_notes: (none)
-			 * map_projects: map_advices (1), map_leads (1), map_specialists (1)
-			 * map_records: map_notes (1)
-			 * map_leads: (none)
-			 * map_specialists: (none)
-			 * map_users: (none)
-			 * 
-			 
-			
-			
-			
-			// projects - remove all linked elements	
-			query = manager.createQuery("SELECT m from MapProjectJpa m");
-			List <MapProject> mplist = (List<MapProject>) query.getResultList();
-			
-			for (MapProject m : mplist) {
-				
-				m.setMapLeads(null);
-				m.setMapSpecialists(null);
-				m.setMapAdvices(null);
-				
-				manager.merge(m);
-			}
-			
-			
-			// map groups -- remove constraints
-			query = manager.createQuery("SELECT m from MapGroupJpa m");
-			List <MapGroup> mglist = (List<MapGroup>) query.getResultList();
-			
-			for (MapGroup m : mglist) {
-				
-				m.setMapEntries(null);	
-				
-				manager.merge(m);
-			}
-			
-			// map entries -- remove constraints
-			query = manager.createQuery("SELECT m from MapEntryJpa m");
-			List <MapEntry> malist = (List<MapEntry>) query.getResultList();
-			
-			for (MapEntry m : malist) {
-				
-				manager.merge(m);
-			}
-			
-			// map blocks -- remove constraints
-			query = manager.createQuery("SELECT m from MapBlockJpa m");
-			List <MapBlock> mblist = (List<MapBlock>) query.getResultList();
-			
-			for (MapBlock m : mblist) {
-				
-				m.setMapAdvices(null);
-				m.setMapGroups(null);
-				
-				manager.merge(m);
-			}
-			
-			query = manager.createQuery("SELECT m from MapEntryJpa m");
-			List <MapEntry> melist = (List<MapEntry>) query.getResultList();
-			
-			for (MapEntry m : melist) {
-				
-				m.setAdvices(null);
-				m.setNotes(null);
-				
-				manager.merge(m);
-			}
-			
-			query = manager.createQuery("SELECT m from MapRecordJpa m");
-			List<MapRecord> mrlist = (List<MapRecord>) query.getResultList();
-			
-			for (MapRecord m : mrlist) {
-				m.setMapBlocks(null);
-				m.setMapEntries(null);
-				m.setMapGroups(null);
-				m.setNotes(null);
-				
-				manager.merge(m);
-			}
-			
-			tx.commit();
-		} catch ( Exception e ) {
-		}
-		try {
-			tx.begin();
-			
-			getLog().info("Constraints removed, truncating tables");
-
-			// delete from unconstrained tables		
-			query = manager.createQuery("DELETE From MapRecordJpa rs"); // NOTE: This should cascade
-			deleteRecords=query.executeUpdate();
-			
-			query = manager.createQuery("DELETE From MapSpecialistJpa rs");
-			deleteRecords=query.executeUpdate();
-			
-			query = manager.createQuery("DELETE From MapLeadJpa rs");
-			deleteRecords=query.executeUpdate();
-			
-			query = manager.createQuery("DELETE From MapUserJpa rs");
-			deleteRecords=query.executeUpdate();
-			
-			query = manager.createQuery("DELETE From MapProjectJpa rs");
-			deleteRecords=query.executeUpdate();
-						
-			query = manager.createQuery("DELETE From MapNoteJpa rs");
-			deleteRecords=query.executeUpdate();
-			
-			// second set of dependencies
-			query = manager.createQuery("DELETE From MapEntryJpa rs");
-			deleteRecords=query.executeUpdate();
-			
-			query = manager.createQuery("DELETE From MapProjectJpa rs");
-			deleteRecords=query.executeUpdate();
-			
-			query = manager.createQuery("DELETE From MapGroupJpa rs");
-			deleteRecords=query.executeUpdate();
-			
-			query = manager.createQuery("DELETE From MapBlockJpa rs");
-			deleteRecords=query.executeUpdate();*/
-
 			
 		try {
 			
@@ -503,8 +362,6 @@ public class SampledataMojo extends AbstractMojo {
 
 			// Load map records from complex map refset members
 			long prevConceptId = -1;
-			long prevBlockId = -1;
-			long prevGroupId = -1;
 			MapRecord mapRecord = null;
 
 			javax.persistence.Query  query =

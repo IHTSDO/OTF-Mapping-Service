@@ -13,6 +13,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Persistence;
 
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
@@ -103,11 +104,14 @@ public class MapProjectJpaTest {
 	private static boolean testPublished = false;
 
 	/**
-	 * Creates db tables, load test objects and create indexes to prepare for test
-	 * cases.
+	 * Creates db tables, load test objects and create indexes to prepare for
+	 * test cases.
+	 * 
+	 * @throws Exception
+	 *             if anything goes wrong
 	 */
 	@BeforeClass
-	public static void init() {
+	public static void init() throws Exception {
 
 		// create Entitymanager
 		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
@@ -119,15 +123,10 @@ public class MapProjectJpaTest {
 
 		// load test objects
 		EntityTransaction tx = manager.getTransaction();
-		try {
-			tx.begin();
-			loadMapProjects();
-			tx.commit();
-		} catch (Exception e) {
-			e.printStackTrace();
-			tx.rollback();
-			fail("Failure to load mapProject records.");
-		}
+
+		tx.begin();
+		loadMapProjects();
+		tx.commit();
 
 		// create indexes
 		/**
@@ -153,25 +152,19 @@ public class MapProjectJpaTest {
 	public void testMapProjectLoad() {
 
 		EntityTransaction tx = manager.getTransaction();
-		try {
-			System.out.println("testMapProjectLoad()...");
+		System.out.println("testMapProjectLoad()...");
 
-			tx.begin();
-			confirmLoad();
-			tx.commit();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			tx.rollback();
-			fail("Failure to confirm load of mapProject records.");
-		}
+		tx.begin();
+		confirmLoad();
+		tx.commit();
 
 	}
 
 	/**
 	 * Load map projects.
 	 * 
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	private static void loadMapProjects() throws Exception {
 
@@ -235,110 +228,96 @@ public class MapProjectJpaTest {
 	 * Confirm load.
 	 */
 	private void confirmLoad() {
-		javax.persistence.Query query =
-				manager
-						.createQuery("select m from MapProjectJpa m where refSetId = :refSetId");
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapProjectJpa m where refSetId = :refSetId");
 
 		// Try to retrieve the single expected result
-		// If zero or more than one result are returned, log error and set result to
+		// If zero or more than one result are returned, log error and set
+		// result to
 		// null
+		query.setParameter("refSetId", testRefSetId);
 
-		try {
-			query.setParameter("refSetId", testRefSetId);
+		MapProject mapProject = (MapProject) query.getSingleResult();
+		assertEquals(mapProject.getRefSetId(), testRefSetId);
 
-			MapProject mapProject = (MapProject) query.getSingleResult();
-			assertEquals(mapProject.getRefSetId(), testRefSetId);
-
-		} catch (NoResultException e) {
-			fail("Concept query for refSetId = " + testRefSetId
-					+ " returned no results!");
-		} catch (NonUniqueResultException e) {
-			fail("Concept query for refSetId = " + testRefSetId
-					+ " returned multiple results!");
-		}
 	}
 
 	/**
 	 * Test map project indexes.
+	 * 
+	 * @throws ParseException
+	 *             if lucene fails to parse query
 	 */
 	@Test
-	public void testMapProjectIndex() {
+	public void testMapProjectIndex() throws ParseException {
 
 		System.out.println("testMapProjectIndex()...");
 
-		try {
-			SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 
-			QueryParser queryParser =
-					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(MapProjectJpa.class));
+		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+				searchFactory.getAnalyzer(MapProjectJpa.class));
 
-			// test index on refSetId
-			Query luceneQuery = queryParser.parse("refSetId:" + testRefSetId);
-			FullTextQuery fullTextQuery =
-					fullTextEntityManager.createFullTextQuery(luceneQuery);
-			List<MapProject> results = fullTextQuery.getResultList();
-			for (MapProject mapProject : results) {
-				assertEquals(mapProject.getName(), testName);
-			}
-			assertTrue("results.size() " + results.size(), results.size() > 0);
-
-			// test index on name
-			luceneQuery = queryParser.parse("name:\"" + testName3 + "\"");
-			fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
-			results = fullTextQuery.getResultList();
-			for (MapProject mapProject : results) {
-				assertEquals(mapProject.getRefSetId(), testRefSetId3);
-			}
-			assertTrue("results.size() " + results.size(), results.size() > 0);
-
-			// test index on source terminology version
-			luceneQuery =
-					queryParser.parse("sourceTerminologyVersion:"
-							+ testSourceTerminologyVersion);
-			fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
-			results = fullTextQuery.getResultList();
-			for (MapProject mapProject : results) {
-				assertEquals(mapProject.getRefSetId(), testRefSetId);
-			}
-			assertTrue("results.size() " + results.size(), results.size() > 0);
-
-			// test index on destination terminology version
-			luceneQuery =
-					queryParser.parse("destinationTerminologyVersion:"
-							+ testDestinationTerminologyVersion);
-			fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
-			results = fullTextQuery.getResultList();
-			for (MapProject mapProject : results) {
-				assertEquals(mapProject.getRefSetId(), testRefSetId);
-			}
-			assertTrue("results.size() " + results.size(), results.size() > 0);
-
-			// test index on destination terminology
-			luceneQuery =
-					queryParser.parse("destinationTerminology:"
-							+ testDestinationTerminology);
-			fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
-			results = fullTextQuery.getResultList();
-			for (MapProject mapProject : results) {
-				assertEquals(mapProject.getRefSetId(), testRefSetId);
-			}
-			assertTrue("results.size() " + results.size(), results.size() > 0);
-
-			// test index on source terminology
-			luceneQuery =
-					queryParser.parse("sourceTerminology:" + testSourceTerminology);
-			fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
-			results = fullTextQuery.getResultList();
-			for (MapProject mapProject : results) {
-				assertEquals(mapProject.getSourceTerminologyVersion(),
-						testSourceTerminologyVersion);
-			}
-			assertTrue("results.size() " + results.size(), results.size() > 0);
-
-		} catch (Exception e) {
-			e.printStackTrace();
+		// test index on refSetId
+		Query luceneQuery = queryParser.parse("refSetId:" + testRefSetId);
+		FullTextQuery fullTextQuery = fullTextEntityManager
+				.createFullTextQuery(luceneQuery);
+		List<MapProject> results = fullTextQuery.getResultList();
+		for (MapProject mapProject : results) {
+			assertEquals(mapProject.getName(), testName);
 		}
+		assertTrue("results.size() " + results.size(), results.size() > 0);
+
+		// test index on name
+		luceneQuery = queryParser.parse("name:\"" + testName3 + "\"");
+		fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
+		results = fullTextQuery.getResultList();
+		for (MapProject mapProject : results) {
+			assertEquals(mapProject.getRefSetId(), testRefSetId3);
+		}
+		assertTrue("results.size() " + results.size(), results.size() > 0);
+
+		// test index on source terminology version
+		luceneQuery = queryParser.parse("sourceTerminologyVersion:"
+				+ testSourceTerminologyVersion);
+		fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
+		results = fullTextQuery.getResultList();
+		for (MapProject mapProject : results) {
+			assertEquals(mapProject.getRefSetId(), testRefSetId);
+		}
+		assertTrue("results.size() " + results.size(), results.size() > 0);
+
+		// test index on destination terminology version
+		luceneQuery = queryParser.parse("destinationTerminologyVersion:"
+				+ testDestinationTerminologyVersion);
+		fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
+		results = fullTextQuery.getResultList();
+		for (MapProject mapProject : results) {
+			assertEquals(mapProject.getRefSetId(), testRefSetId);
+		}
+		assertTrue("results.size() " + results.size(), results.size() > 0);
+
+		// test index on destination terminology
+		luceneQuery = queryParser.parse("destinationTerminology:"
+				+ testDestinationTerminology);
+		fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
+		results = fullTextQuery.getResultList();
+		for (MapProject mapProject : results) {
+			assertEquals(mapProject.getRefSetId(), testRefSetId);
+		}
+		assertTrue("results.size() " + results.size(), results.size() > 0);
+
+		// test index on source terminology
+		luceneQuery = queryParser.parse("sourceTerminology:"
+				+ testSourceTerminology);
+		fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
+		results = fullTextQuery.getResultList();
+		for (MapProject mapProject : results) {
+			assertEquals(mapProject.getSourceTerminologyVersion(),
+					testSourceTerminologyVersion);
+		}
+		assertTrue("results.size() " + results.size(), results.size() > 0);
+
 	}
 
 	/**
@@ -358,21 +337,15 @@ public class MapProjectJpaTest {
 		// make a change to MapProject
 		EntityTransaction tx = manager.getTransaction();
 		MapSpecialistJpa mapSpecialistPatrick = new MapSpecialistJpa();
-		try {
-			tx.begin();
-			mapSpecialistPatrick.setName("Patrick");
-			mapSpecialistPatrick.setUserName("pgranvold");
-			mapSpecialistPatrick.setEmail("pgranvold@westcoastinformatics.com");
-			manager.persist(mapSpecialistPatrick);
-			mapProject1.setName(testName2);
-			manager.persist(mapProject1);
-			mapProject1.addMapSpecialist(mapSpecialistPatrick);
-			tx.commit();
-		} catch (Exception e) {
-			e.printStackTrace();
-			tx.rollback();
-			fail("Failure to modify mapProject records.");
-		}
+		tx.begin();
+		mapSpecialistPatrick.setName("Patrick");
+		mapSpecialistPatrick.setUserName("pgranvold");
+		mapSpecialistPatrick.setEmail("pgranvold@westcoastinformatics.com");
+		manager.persist(mapSpecialistPatrick);
+		mapProject1.setName(testName2);
+		manager.persist(mapProject1);
+		mapProject1.addMapSpecialist(mapSpecialistPatrick);
+		tx.commit();
 
 		// report incremented number of revisions on MapProject object
 		revNumbers = reader.getRevisions(MapProjectJpa.class, 1L);
@@ -382,17 +355,12 @@ public class MapProjectJpaTest {
 
 		// revert change to MapProject
 		tx = manager.getTransaction();
-		try {
-			tx.begin();
-			mapProject1.setName(testName);
-			mapProject1.removeMapSpecialist(mapSpecialistPatrick);
-			manager.persist(mapProject1);
-			tx.commit();
-		} catch (Exception e) {
-			e.printStackTrace();
-			tx.rollback();
-			fail("Failure to revert mapProject records.");
-		}
+		tx.begin();
+		mapProject1.setName(testName);
+		mapProject1.removeMapSpecialist(mapSpecialistPatrick);
+		manager.persist(mapProject1);
+		tx.commit();
+
 	}
 
 	/**
@@ -403,48 +371,42 @@ public class MapProjectJpaTest {
 		EntityTransaction tx = manager.getTransaction();
 
 		// truncate tables
-		try {
-			tx.begin();
-			javax.persistence.Query query =
-					manager.createNativeQuery("DELETE FROM map_projects_map_advices");
-			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_advices");
-			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_projects_map_leads");
-			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_leads");
-			query.executeUpdate();
-			query =
-					manager.createNativeQuery("DELETE FROM map_projects_map_specialists");
-			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_specialists");
-			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_projects");
-			query.executeUpdate();
-			query =
-					manager.createNativeQuery("DELETE FROM map_projects_map_advices_aud");
-			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_advices_aud");
-			query.executeUpdate();
-			query =
-					manager.createNativeQuery("DELETE FROM map_projects_map_leads_aud");
-			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_leads_aud");
-			query.executeUpdate();
-			query =
-					manager
-							.createNativeQuery("DELETE FROM map_projects_map_specialists_aud");
-			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_specialists_aud");
-			query.executeUpdate();
-			query = manager.createNativeQuery("DELETE FROM map_projects_aud");
-			query.executeUpdate();
-			tx.commit();
-		} catch (Exception e) {
-			e.printStackTrace();
-			tx.rollback();
-			fail("Failure to detach mapProject.");
-		}
+		tx.begin();
+		javax.persistence.Query query = manager
+				.createNativeQuery("DELETE FROM map_projects_map_advices");
+		query.executeUpdate();
+		query = manager.createNativeQuery("DELETE FROM map_advices");
+		query.executeUpdate();
+		query = manager.createNativeQuery("DELETE FROM map_projects_map_leads");
+		query.executeUpdate();
+		query = manager.createNativeQuery("DELETE FROM map_leads");
+		query.executeUpdate();
+		query = manager
+				.createNativeQuery("DELETE FROM map_projects_map_specialists");
+		query.executeUpdate();
+		query = manager.createNativeQuery("DELETE FROM map_specialists");
+		query.executeUpdate();
+		query = manager.createNativeQuery("DELETE FROM map_projects");
+		query.executeUpdate();
+		query = manager
+				.createNativeQuery("DELETE FROM map_projects_map_advices_aud");
+		query.executeUpdate();
+		query = manager.createNativeQuery("DELETE FROM map_advices_aud");
+		query.executeUpdate();
+		query = manager
+				.createNativeQuery("DELETE FROM map_projects_map_leads_aud");
+		query.executeUpdate();
+		query = manager.createNativeQuery("DELETE FROM map_leads_aud");
+		query.executeUpdate();
+		query = manager
+				.createNativeQuery("DELETE FROM map_projects_map_specialists_aud");
+		query.executeUpdate();
+		query = manager.createNativeQuery("DELETE FROM map_specialists_aud");
+		query.executeUpdate();
+		query = manager.createNativeQuery("DELETE FROM map_projects_aud");
+		query.executeUpdate();
+		tx.commit();
+
 		manager.close();
 		factory.close();
 	}
