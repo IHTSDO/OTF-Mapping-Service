@@ -28,7 +28,6 @@ import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
-import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
 
@@ -48,8 +47,11 @@ public class MapRecordJpa implements MapRecord {
 	private Long id;
 	
 	@Column(nullable = false)
+	private Long mapProjectId;
+
+	@Column(nullable = false)
 	private String conceptId;
-	
+
 	/** The map records */
 	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapEntryJpa.class)
 	@IndexedEmbedded(targetElement=MapEntryJpa.class)
@@ -101,7 +103,17 @@ public class MapRecordJpa implements MapRecord {
 	public void setId(Long id) {
 		this.id = id;
 	}
+	
+	@Override
+	public Long getMapProjectId() {
+		return mapProjectId;
+	}
 
+	@Override
+	public void setMapProjectId(Long mapProjectId) {
+		this.mapProjectId = mapProjectId;
+	}
+	
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getConceptId() {
