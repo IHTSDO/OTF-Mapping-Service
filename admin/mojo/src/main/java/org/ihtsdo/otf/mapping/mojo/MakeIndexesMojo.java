@@ -9,6 +9,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.hibernate.CacheMode;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 
 /**
@@ -69,11 +71,12 @@ public class MakeIndexesMojo extends AbstractMojo {
 
 		try {
 
-			getLog().info("  Testing MakeIndexes.java");
+			getLog().info("  Starting MakeIndexes.java");
 			EntityManagerFactory factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 
 			manager = factory.createEntityManager();
 			
+			getLog().info("  Creating indexes for ConceptJpa");
 			FullTextEntityManager fullTextEntityManager = Search
 					.getFullTextEntityManager(manager);
 			fullTextEntityManager.purgeAll(ConceptJpa.class);
@@ -82,8 +85,21 @@ public class MakeIndexesMojo extends AbstractMojo {
 					.batchSizeToLoadObjects(25).cacheMode(CacheMode.NORMAL)
 					.threadsToLoadObjects(5).threadsForSubsequentFetching(20)
 					.startAndWait();
-			
-			System.out.println(".. done");
+			getLog().info("  Creating indexes for MapProjectJpa");
+			fullTextEntityManager.purgeAll(MapProjectJpa.class);
+			fullTextEntityManager.flushToIndexes();
+			fullTextEntityManager.createIndexer(MapProjectJpa.class)
+					.batchSizeToLoadObjects(25).cacheMode(CacheMode.NORMAL)
+					.threadsToLoadObjects(5).threadsForSubsequentFetching(20)
+					.startAndWait();
+			getLog().info("  Creating indexes for MapRecordJpa");
+			fullTextEntityManager.purgeAll(MapRecordJpa.class);
+			fullTextEntityManager.flushToIndexes();
+			fullTextEntityManager.createIndexer(MapRecordJpa.class)
+					.batchSizeToLoadObjects(25).cacheMode(CacheMode.NORMAL)
+					.threadsToLoadObjects(5).threadsForSubsequentFetching(20)
+					.startAndWait();			
+			getLog().info("  Completing MakeIndexes.java");
 			manager.close();
 			factory.close();
 		} catch (Throwable e) {
