@@ -23,6 +23,7 @@ public interface ContentService {
 	 *
 	 * @param searchString the search string
 	 * @return the concept
+	 * @throws Exception if anything goes wrong
 	 */
-	public List<Concept> getConcepts(String searchString);
+	public List<Concept> getConcepts(String searchString) throws Exception;
 }
