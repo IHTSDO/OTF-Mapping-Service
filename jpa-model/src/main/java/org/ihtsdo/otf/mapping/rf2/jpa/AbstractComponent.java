@@ -153,7 +153,6 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * {@inheritDoc}
 	 */
-	@XmlID
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTerminologyVersion() {
@@ -188,6 +187,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * {@inheritDoc}
 	 */
+	@XmlID
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTerminologyId() {
