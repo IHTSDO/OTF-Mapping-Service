@@ -18,9 +18,12 @@ public class MapRecordImpl implements MapRecord {
 	/** The id. */
 	private Long id;
 	
+	/** The map project id. */
+	private Long mapProjectId;
+
 	/** The concept id. */
 	private String conceptId;
-	
+
 	/** The notes. */
 	private Set<MapNote> mapNotes;
 	
@@ -51,6 +54,23 @@ public class MapRecordImpl implements MapRecord {
 		this.id = id;
 	}
 
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapProjectId()
+	 */
+	@Override
+	public Long getMapProjectId() {
+		return mapProjectId;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapProjectId(java.lang.Long)
+	 */
+	@Override
+	public void setMapProjectId(Long mapProjectId) {
+		this.mapProjectId = mapProjectId;
+		
+	}
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getConceptId()
 	 */
@@ -218,5 +238,6 @@ public class MapRecordImpl implements MapRecord {
 		return "MapRecordImpl [id=" + id + ", conceptId=" + conceptId
 				+ ", mapNotes=" + mapNotes + ", mapEntries=" + mapEntries + "]";
 	}
+
 
 }

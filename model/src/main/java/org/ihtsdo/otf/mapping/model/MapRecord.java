@@ -31,6 +31,20 @@ public interface MapRecord {
 	public void setId(Long id);
 	
 	/**
+	 * Returns the map project id.
+	 *
+	 * @return the map project id
+	 */
+	public Long getMapProjectId();
+
+	/**
+	 * Sets the map project id.
+	 *
+	 * @param mapProjectId the map project id
+	 */
+	public void setMapProjectId(Long mapProjectId);
+	
+	/**
 	 * Returns the concept id.
 	 *
 	 * @return the concept id
