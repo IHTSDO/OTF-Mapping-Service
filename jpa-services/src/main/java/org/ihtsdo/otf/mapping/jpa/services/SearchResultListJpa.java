@@ -1,9 +1,11 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.mapping.services.SearchResult;
@@ -14,37 +16,28 @@ import org.ihtsdo.otf.mapping.services.SearchResultList;
  * @author Patrick
  *
  */
-@XmlRootElement
+@XmlRootElement(name = "searchResultsList")
 public class SearchResultListJpa implements SearchResultList {
-
-	/** The number of results in this list */
-	private Long count;
 	
 	/** The results */
-	private List<SearchResult> searchResults;
+	private List<SearchResult> searchResults = new ArrayList<SearchResult>();
 
 	/** The default constructor */
 	public SearchResultListJpa() {
-		// left empty
 	}
 	
 	/**
 	 * @return the count
 	 */
-	public Long getCount() {
-		return count;
-	}
-
-	/**
-	 * @param count the count to set
-	 */
-	public void setCount(Long count) {
-		this.count = count;
+	@XmlElement(name = "count")
+	public int getCount() {
+		return searchResults.size();
 	}
 
 	/**
 	 * @return the searchResults
 	 */
+	@XmlElement(name = "searchResults")
 	public List<SearchResult> getSearchResults() {
 		return searchResults;
 	}
@@ -102,22 +95,15 @@ public class SearchResultListJpa implements SearchResultList {
 		);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((count == null) ? 0 : count.hashCode());
 		result = prime * result
 				+ ((searchResults == null) ? 0 : searchResults.hashCode());
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -130,13 +116,6 @@ public class SearchResultListJpa implements SearchResultList {
 			return false;
 		}
 		SearchResultListJpa other = (SearchResultListJpa) obj;
-		if (count == null) {
-			if (other.count != null) {
-				return false;
-			}
-		} else if (!count.equals(other.count)) {
-			return false;
-		}
 		if (searchResults == null) {
 			if (other.searchResults != null) {
 				return false;
@@ -147,13 +126,10 @@ public class SearchResultListJpa implements SearchResultList {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
-		return "SearchResultListJpa [count=" + count + ", searchResults="
-				+ searchResults + "]";
+		return "SearchResultListJpa [searchResults=" + searchResults
+				+ ", getCount()=" + getCount() + "]";
 	}
 
 	
