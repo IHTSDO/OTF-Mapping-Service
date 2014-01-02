@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
 /**
@@ -17,14 +18,20 @@ public class MapRecordImpl implements MapRecord {
 	/** The id. */
 	private Long id;
 	
+	/** The map project id. */
+	private Long mapProjectId;
+
 	/** The concept id. */
 	private String conceptId;
-	
+
 	/** The notes. */
 	private Set<MapNote> mapNotes;
 	
 	/** The map entries. */
 	private List<MapEntry> mapEntries;
+	
+	/** The map principles */
+	private Set<MapPrinciple> mapPrinciples;
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getId()
@@ -47,6 +54,23 @@ public class MapRecordImpl implements MapRecord {
 		this.id = id;
 	}
 
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapProjectId()
+	 */
+	@Override
+	public Long getMapProjectId() {
+		return mapProjectId;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapProjectId(java.lang.Long)
+	 */
+	@Override
+	public void setMapProjectId(Long mapProjectId) {
+		this.mapProjectId = mapProjectId;
+		
+	}
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getConceptId()
 	 */
@@ -123,6 +147,26 @@ public class MapRecordImpl implements MapRecord {
 	public void removeMapEntry(MapEntry mapEntry) {
 		mapEntries.remove(mapEntry);
 	}
+	
+	@Override
+	public Set<MapPrinciple> getMapPrinciples() {
+		return mapPrinciples;
+	}
+
+	@Override
+	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
+		this.mapPrinciples = mapPrinciples;
+	}
+
+	@Override
+	public void addMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.add(mapPrinciple);
+	}
+
+	@Override
+	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.remove(mapPrinciple);
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -194,5 +238,6 @@ public class MapRecordImpl implements MapRecord {
 		return "MapRecordImpl [id=" + id + ", conceptId=" + conceptId
 				+ ", mapNotes=" + mapNotes + ", mapEntries=" + mapEntries + "]";
 	}
+
 
 }

@@ -5,9 +5,9 @@ import java.util.Set;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapEntry}.
  * Includes hibernate tags for MEME database.
@@ -27,6 +27,9 @@ public class MapEntryImpl implements MapEntry {
 
 	/** The map advices. */
 	private Set<MapAdvice> mapAdvices;
+	
+	/** The map principles. */
+	private Set<MapPrinciple> mapPrinciples;
 
 	/** The rule. */
 	private String rule;
@@ -134,6 +137,26 @@ public class MapEntryImpl implements MapEntry {
 	@Override
 	public void removeAdvice(MapAdvice mapAdvice) {
 		mapAdvices.remove(mapAdvice);
+	}
+	
+	@Override
+	public Set<MapPrinciple> getMapPrinciples() {
+		return mapPrinciples;
+	}
+
+	@Override
+	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
+		this.mapPrinciples = mapPrinciples;
+	}
+
+	@Override
+	public void addMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.add(mapPrinciple);
+	}
+
+	@Override
+	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.remove(mapPrinciple);
 	}
 
 	/* (non-Javadoc)

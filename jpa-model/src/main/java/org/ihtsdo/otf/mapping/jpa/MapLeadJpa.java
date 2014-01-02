@@ -18,7 +18,6 @@ import org.ihtsdo.otf.mapping.model.MapLead;
 @Entity
 @Table(name = "map_leads")
 @Audited
-@Indexed
 @XmlRootElement(name="mapLead")
 public class MapLeadJpa implements MapLead {
 

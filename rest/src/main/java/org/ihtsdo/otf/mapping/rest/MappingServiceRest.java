@@ -19,6 +19,7 @@ import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.services.SearchResultList;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -157,12 +158,10 @@ public class MappingServiceRest {
 	@Path("/project/query/{String}")
 	@ApiOperation(value = "Find projects by query", notes = "Returns map projects for a query in either JSON or XML format", response = MapProjectList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapProjectList getMapProjectsForQuery(
+	public SearchResultList findMapProjects(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("String") String query) {
-		MapProjectList mapProjects = new MapProjectList();
-		mapProjects.setMapProjects(mappingServiceJpa.findMapProjects(query));
-		//mapProjects.sortMapProjects();		
-		return mapProjects;
+		return mappingServiceJpa.findMapProjects(query);
+		
 	}
 	
 	/**
@@ -189,12 +188,9 @@ public class MappingServiceRest {
 	@Path("/specialist/query/{String}")
 	@ApiOperation(value = "Find specialists by query", notes = "Returns map specialists for a query in either JSON or XML format", response = MapSpecialistList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapSpecialistList getMapSpecialistsForQuery(
+	public SearchResultList findMapSpecialists(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-		MapSpecialistList mapSpecialists = new MapSpecialistList();
-		mapSpecialists.setMapSpecialists(mappingServiceJpa.findMapSpecialists(query));
-		mapSpecialists.sortMapSpecialists();		
-		return mapSpecialists;
+		return mappingServiceJpa.findMapSpecialists(query);
 	}
 	
 	/**
@@ -221,12 +217,9 @@ public class MappingServiceRest {
 	@Path("/lead/query/{String}")
 	@ApiOperation(value = "Find leads by query", notes = "Returns map leads for a query in either JSON or XML format", response = MapLeadList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapLeadList getMapLeadsForQuery(
+	public SearchResultList findMapLeads(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-		MapLeadList mapLeads = new MapLeadList();
-		mapLeads.setMapLeads(mappingServiceJpa.findMapLeads(query));
-		mapLeads.sortMapLeads();		
-		return mapLeads;
+		return mappingServiceJpa.findMapLeads(query);
 	}
 	
 	/**
@@ -270,12 +263,9 @@ public class MappingServiceRest {
 	@Path("/record/query/{String}")
 	@ApiOperation(value = "Find records by query", notes = "Returns map records for a query in either JSON or XML format", response = MapRecordList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecordList getMapRecordsForQuery(
+	public SearchResultList findMapRecords(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-		MapRecordList mapRecords = new MapRecordList();
-		mapRecords.setMapRecords(mappingServiceJpa.findMapRecords(query));
-		mapRecords.sortMapRecords();		
-		return mapRecords;
+		return mappingServiceJpa.findMapRecords(query);
 	}
 	
 	// ///////////////////////////////////////////////////
@@ -284,8 +274,6 @@ public class MappingServiceRest {
 	// - addMapSpecialist
 	// - addMapLead
 	// ///////////////////////////////////////////////////
-	
-	// TODO: Decide parameters for Responses
 	
 	/**
 	 * Adds a map project
@@ -374,7 +362,6 @@ public class MappingServiceRest {
 	// - updateMapLead
 	/////////////////////////////////////////////////////
 	
-	// TODO: Decide parameters for Responses
 	
 	/**
 	 * Updates a map project
