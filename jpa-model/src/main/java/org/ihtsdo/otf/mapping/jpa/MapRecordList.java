@@ -85,5 +85,15 @@ public class MapRecordList {
 	public List<MapRecord> getMapRecords() {
 		return mapRecords;
 	}
+	
+	/**
+	 * Return the count as an xml element
+	 * @return the number of objects in the list
+	 */
+	@XmlElement(name = "count")
+	public int getCount() {
+		return mapRecords.size();
+	}
+	
 
 }

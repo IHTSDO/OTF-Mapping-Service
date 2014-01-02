@@ -85,5 +85,14 @@ public class MapProjectList {
 	public List<MapProject> getMapProjects() {
 		return mapProjects;
 	}
+	
+	/**
+	 * Return the count as an xml element
+	 * @return the number of objects in the list
+	 */
+	@XmlElement(name = "count")
+	public int getCount() {
+		return mapProjects.size();
+	}
 
 }

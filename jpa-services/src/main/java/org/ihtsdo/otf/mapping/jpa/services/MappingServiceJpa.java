@@ -23,13 +23,16 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
+import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
@@ -891,7 +894,103 @@ public class MappingServiceJpa implements MappingService {
 		if (manager.isOpen()) { manager.close(); }
 		
     }
+    
 
+    // TODO Fill in and put in appropriate places
+    /* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapEntrys(java.lang.String)
+	 */
+	@Override
+	public SearchResultList findMapEntrys(String query) {
+		SearchResultList s = new SearchResultListJpa();
+		EntityManager manager = factory.createEntityManager();
+		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
+		
+		try {
+				SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			Query luceneQuery;
+		
+			// construct luceneQuery based on URL format
+			if (query.indexOf(':') == -1) { // no fields indicated
+				MultiFieldQueryParser queryParser =
+						new MultiFieldQueryParser(Version.LUCENE_36,
+								fieldNames.toArray(new String[0]),
+								searchFactory.getAnalyzer(MapEntryJpa.class));
+				queryParser.setAllowLeadingWildcard(false);
+				luceneQuery = queryParser.parse(query);
+		
+			
+			} else { // field:value
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+						searchFactory.getAnalyzer(MapEntryJpa.class));
+				luceneQuery = queryParser.parse(query);
+			}
+			
+			List<MapEntry> m = (List<MapEntry>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+														.getResultList();
+			
+			for (MapEntry me : m) {
+				s.addSearchResult(new SearchResultJpa(me.getId(), "", me.getMapRecord().getId().toString()));
+			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		if (manager.isOpen()) { manager.close(); }
+		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
+		
+		return s;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapNotes(java.lang.String)
+	 */
+	@Override
+	public SearchResultList findMapNotes(String query) {
+		SearchResultList s = new SearchResultListJpa();
+		EntityManager manager = factory.createEntityManager();
+		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
+		
+		try {
+				SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			Query luceneQuery;
+		
+			// construct luceneQuery based on URL format
+			if (query.indexOf(':') == -1) { // no fields indicated
+				MultiFieldQueryParser queryParser =
+						new MultiFieldQueryParser(Version.LUCENE_36,
+								fieldNames.toArray(new String[0]),
+								searchFactory.getAnalyzer(MapNoteJpa.class));
+				queryParser.setAllowLeadingWildcard(false);
+				luceneQuery = queryParser.parse(query);
+		
+			
+			} else { // field:value
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+						searchFactory.getAnalyzer(MapNoteJpa.class));
+				luceneQuery = queryParser.parse(query);
+			}
+			
+			List<MapNote> m = (List<MapNote>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+														.getResultList();
+			
+			for (MapNote me : m) {
+				s.addSearchResult(new SearchResultJpa(me.getId(), "", me.getNote()));
+			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		if (manager.isOpen()) { manager.close(); }
+		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
+		
+		return s;
+	}
+	
 	////////////////////////////////////////////////
 	// Service for retrieving all project details
     ////////////////////////////////////////////////
