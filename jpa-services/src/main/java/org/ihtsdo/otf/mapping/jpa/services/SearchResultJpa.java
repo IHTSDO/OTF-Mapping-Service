@@ -13,6 +13,7 @@ import org.ihtsdo.otf.mapping.services.SearchResult;
 public class SearchResultJpa implements SearchResult {
 	
 	private Long id;
+	private String terminologyId;
 	private String description;
 	
 	/**
@@ -27,8 +28,9 @@ public class SearchResultJpa implements SearchResult {
 	 * @param id the id
 	 * @param description the description
 	 */
-	public SearchResultJpa(Long id, String description) {
+	public SearchResultJpa(Long id, String terminologyId, String description) {
 		this.id = id;
+		this.terminologyId = terminologyId;
 		this.description = description;
 	}
 
@@ -48,6 +50,25 @@ public class SearchResultJpa implements SearchResult {
 	 */
 	@Override
 	public void setId(Long id) {
+		this.id = id;
+		
+	}
+	
+	/**
+	 * Returns the id
+	 * @return the id
+	 */
+	@Override
+	public String getTerminologyId() {
+		return this.terminologyId;
+	}
+
+	/**
+	 * Sets the id
+	 * @param id the id
+	 */
+	@Override
+	public void setTerminologyId(Long id) {
 		this.id = id;
 		
 	}

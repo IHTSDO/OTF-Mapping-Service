@@ -16,6 +16,16 @@ public interface SearchResult {
 	 * @param id the id to set
 	 */
 	public void setId(Long id);
+	
+	/**
+	 * @return the terminologyId
+	 */
+	public String getTerminologyId();
+
+	/**
+	 * @param terminologyId the terminologyId to set
+	 */
+	public void setTerminologyId(Long terminologyId);
 
 	/**
 	 * @return the description

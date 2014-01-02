@@ -17,7 +17,7 @@ import org.ihtsdo.otf.mapping.model.MapEntry;
 public class MapEntryList {
 
 	/** The map entrys. */
-	private List<MapEntry> MapEntrys = new ArrayList<MapEntry>();
+	private List<MapEntry> mapEntrys = new ArrayList<MapEntry>();
 
 	/**
 	 * Instantiates a new map entry list.
@@ -33,7 +33,7 @@ public class MapEntryList {
 	 *            the map entry
 	 */
 	public void addMapEntry(MapEntry MapEntry) {
-		MapEntrys.add(MapEntry);
+		mapEntrys.add(MapEntry);
 	}
 
 	/**
@@ -43,18 +43,18 @@ public class MapEntryList {
 	 *            the map entry
 	 */
 	public void removeMapEntry(MapEntry MapEntry) {
-		MapEntrys.remove(MapEntry);
+		mapEntrys.remove(MapEntry);
 	}
 
 	/**
 	 * Sets the map entrys.
 	 * 
-	 * @param MapEntrys
+	 * @param mapEntrys
 	 *            the new map entrys
 	 */
-	public void setMapEntrys(List<MapEntry> MapEntrys) {
-		this.MapEntrys = new ArrayList<MapEntry>();
-		this.MapEntrys.addAll(MapEntrys);
+	public void setmapEntrys(List<MapEntry> mapEntrys) {
+		this.mapEntrys = new ArrayList<MapEntry>();
+		this.mapEntrys.addAll(mapEntrys);
 		
 		
 	}
@@ -62,9 +62,9 @@ public class MapEntryList {
 	/**
 	 * Sorts the map entrys alphabetically by name
 	 */
-	public void sortMapEntrys() {
+	public void sortmapEntrys() {
 	
-		Collections.sort(this.MapEntrys,
+		Collections.sort(this.mapEntrys,
 			new Comparator<MapEntry>() {
 				@Override
 				public int compare(MapEntry o1, MapEntry o2) {
@@ -80,8 +80,17 @@ public class MapEntryList {
 	 * @return the map entrys
 	 */
 	@XmlElement(type=MapEntryJpa.class, name="MapEntry")
-	public List<MapEntry> getMapEntrys() {
-		return MapEntrys;
+	public List<MapEntry> getmapEntrys() {
+		return mapEntrys;
+	}
+	
+	/**
+	 * Return the count as an xml element
+	 * @return the number of objects in the list
+	 */
+	@XmlElement(name = "count")
+	public int getCount() {
+		return mapEntrys.size();
 	}
 
 }

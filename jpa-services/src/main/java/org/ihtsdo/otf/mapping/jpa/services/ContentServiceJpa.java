@@ -180,26 +180,12 @@ public class ContentServiceJpa implements ContentService {
 			FullTextQuery fullTextQuery =
 					fullTextEntityManager.createFullTextQuery(luceneQuery);
 			
-			// TODO: Is this sort of search what we want to enable?
-			/*List<AbstractComponent> results = fullTextQuery.getResultList();
-			
-			List<Concept> components = new ArrayList<Concept>();
-			
-			
-			for (AbstractComponent s : results) {
-				if (s instanceof ConceptJpa) {
-					// components.add(new SearchResultJpa(((ConceptJpa)
-					// s).getId(), ((ConceptJpa) s).getDefaultPreferredName()));
-				} else if (s instanceof DescriptionJpa) {
-					// components.add(new SearchResultJpa(((DescriptionJpa)
-					// s).getId(), ((DescriptionJpa) s).getTerm()));
-				}
-			}*/
-			
 			List<Concept> concepts = fullTextQuery.getResultList();
 			
+			System.out.println("Found " + Integer.toString(concepts.size()) + " concepts for query");
+			
 			for (Concept c : concepts) {
-				results.addSearchResult(new SearchResultJpa(c.getId(), c.getDefaultPreferredName()));
+				results.addSearchResult(new SearchResultJpa(c.getId(), c.getTerminologyId(), c.getDefaultPreferredName()));
 			}
 
 			return results;

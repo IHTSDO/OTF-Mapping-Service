@@ -25,7 +25,7 @@ import org.ihtsdo.otf.mapping.rf2.Component;
 @MappedSuperclass
 public abstract class AbstractComponent implements Component {
 
-	/** The id. - for XML, the ID must be a String */
+	/** The id. */
 	@Id
 	@GeneratedValue
 	private Long id;
@@ -46,7 +46,7 @@ public abstract class AbstractComponent implements Component {
 	@Column(nullable = false)
 	private String terminology;
 
-	/** The terminology id - for XML, the ID must be a String */
+	/** The terminology id */
 	@Column(nullable = false)
 	private String terminologyId;
 
@@ -55,10 +55,21 @@ public abstract class AbstractComponent implements Component {
 	private String terminologyVersion;
 
 	/**
+	 * Returns the id. The @XmlID annotation cannot be used on a variable of type
+	 * Long, therefore we add an additional method that returns type String for
+	 * the XML
+	 * @return the id
+	 */
+	@XmlID
+	public String getID() {
+		return terminologyId.toString();
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
-	@XmlTransient
 	@Override
+	@XmlTransient
 	public Long getId() {
 		return this.id;
 	}
@@ -171,7 +182,6 @@ public abstract class AbstractComponent implements Component {
 	 * {@inheritDoc}
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	public String getTerminology() {
 		return terminology;
 	}
@@ -187,8 +197,8 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * {@inheritDoc}
 	 */
-	@XmlID
 	@Override
+	@XmlID
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTerminologyId() {
 		return terminologyId;
@@ -209,8 +219,8 @@ public abstract class AbstractComponent implements Component {
 	public String toString() {
 
 		return this.getId() + "," + this.getTerminology() + ","
-				+ this.getTerminologyId() + "," + this.getTerminologyVersion()
-				+ "," + this.getEffectiveTime() + "," + this.isActive() + ","
+				+ this.getTerminologyId() + "," + this.getTerminologyVersion() + ","
+				+ this.getEffectiveTime() + "," + this.isActive() + ","
 				+ this.getModuleId(); // end of basic component fields
 	}
 }
