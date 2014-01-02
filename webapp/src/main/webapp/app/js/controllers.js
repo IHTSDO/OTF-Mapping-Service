@@ -182,13 +182,17 @@ mapProjectAppControllers.controller('ConceptDetailCtrl', ['$scope', '$http', '$r
 // Query Services
 //////////////////////////////	
 
-mapProjectAppControllers.controller('ConceptQueryCtrl', ['$scope', '$http', '$routeParams',
+mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routeParams',
    function ($scope, $http, $routeParams) {
 	
 	$scope.searchConceptsStatus = "No concept query executed.";
 	$scope.searchProjectsStatus = "No project query executed.";
+	$scope.searchRecordsStatus = "No record query executed.";
 	
 	$scope.searchConcepts = function(id) {
+		
+	  $scope.searchConceptsStatus = "Searching...";
+		
 	  $http({
         url: root_content + "concept/query/" + $scope.queryConcept,
         dataType: "json",
@@ -201,7 +205,7 @@ mapProjectAppControllers.controller('ConceptQueryCtrl', ['$scope', '$http', '$ro
         $scope.searchConceptsStatus= $scope.conceptResults.count + " results found:";
        
       }).error(function(error) {
-    	  $scope.searchConceptsStatus = "Could not retrieve concepts. <p>Error: " + error;
+    	$scope.searchConceptsStatus = "Could not retrieve concepts. <p>Error: " + error;
       });
 	};
 	
@@ -211,6 +215,9 @@ mapProjectAppControllers.controller('ConceptQueryCtrl', ['$scope', '$http', '$ro
 	};
 	
 	$scope.searchProjects = function(id) {
+		
+	  $scope.searchProjectsStatus = "Searching...";
+	  
 	  $http({
         url: root_mapping + "project/query/" + $scope.queryProject,
         dataType: "json",
@@ -225,9 +232,34 @@ mapProjectAppControllers.controller('ConceptQueryCtrl', ['$scope', '$http', '$ro
     	$scope.searchProjectsStatus = "Could not retrieve projects. <p>Error:" + error; 
       });
 	};
+	
 	$scope.resetProjects = function(id) {
 		$scope.projectResults = "";
 		$scope.searchProjectsStatus = "No concept query executed";
+	};
+	
+	$scope.searchRecords = function(id) {
+		
+	  $scope.searchRecordsStatus = "Searching...";
+	  
+	  $http({
+        url: root_mapping + "record/query/" + $scope.queryRecord,
+        dataType: "json",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }	
+      }).success(function(data) {
+        $scope.recordResults = data;
+        $scope.searchRecordsStatus= $scope.recordResults.count + " results found:";
+      }).error(function(error) {
+    	$scope.searchRecordsStatus = "Could not retrieve records. <p>Error:" + error; 
+      });
+	};
+	
+	$scope.resetRecords = function(id) {
+		$scope.recordResults = "";
+		$scope.searchRecordsStatus = "No concept query executed";
 	};
 }]);
   
@@ -280,7 +312,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
   		 
     	  // retrieve any map records associated with this project
     	  $http({
-    		  url: root_mapping + "record/conceptId/" + $scope.project.refSetId,
+    		  url: root_mapping + "record/projectId/" + $scope.project.objectId,
     		  dataType: "json",
     		  method: "GET",
     		  headers: {

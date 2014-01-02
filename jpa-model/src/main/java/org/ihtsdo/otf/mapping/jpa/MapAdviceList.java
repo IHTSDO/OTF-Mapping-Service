@@ -83,5 +83,14 @@ public class MapAdviceList {
 	public List<MapAdvice> getMapAdvices() {
 		return mapAdvices;
 	}
+	
+	/**
+	 * Return the count as an xml element
+	 * @return the number of objects in the list
+	 */
+	@XmlElement(name = "count")
+	public int getCount() {
+		return mapAdvices.size();
+	}
 
 }

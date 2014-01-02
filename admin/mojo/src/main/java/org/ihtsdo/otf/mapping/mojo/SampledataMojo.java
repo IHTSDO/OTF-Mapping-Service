@@ -14,9 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
-//import org.ihtsdo.otf.mapping.jpa.MapBlockJpa; TODO: Removed these elements, update/rethink/etc.
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
-//import org.ihtsdo.otf.mapping.jpa.MapGroupJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -28,6 +26,8 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
+//import org.ihtsdo.otf.mapping.jpa.MapBlockJpa; TODO: Removed these elements, update/rethink/etc.
+//import org.ihtsdo.otf.mapping.jpa.MapGroupJpa;
 
 /**
  * Goal which updates the db to sync it with the model via JPA.
@@ -359,19 +359,39 @@ public class SampledataMojo extends AbstractMojo {
 			refSetIdToMapProjectIdMap.put(mapProject.getRefSetId(), mapProjectId);
 			projects.add(mapProject);
 
+			// Set to assign map records to a project
+			Map<Long, Long> projectRefSetIdMap = new HashMap<Long, Long>();
+			
 			tx.begin();
 			for (MapProject m : projects) {
+				
+				
+				
+				
 				Logger.getLogger(this.getClass()).info(
 						"Adding map project " + m.getName());
 				manager.merge(m);
 			}
 			tx.commit();
+			
+			javax.persistence.Query  query = manager.createQuery("select r from MapProjectJpa r");
+			
+			projects = (List<MapProject>) query.getResultList();
+			
+			int i = 0;
+			for (MapProject m : projects) {
+
+				i++;
+				// <RefSetId, ProjectId>
+				projectRefSetIdMap.put(m.getRefSetId(), m.getId());
+				System.out.println(m.getRefSetId() + ", " + m.getId().toString());
+			}
 
 			// Load map records from complex map refset members
 			long prevConceptId = -1;
 			MapRecord mapRecord = null;
 
-		  javax.persistence.Query  query =
+		  query =
 					manager
 							.createQuery("select r from ComplexMapRefSetMemberJpa r order by r.concept.id, " +
 									"r.mapBlock, r.mapGroup, r.mapPriority");
@@ -380,9 +400,10 @@ public class SampledataMojo extends AbstractMojo {
 			
 			// Added to speed up process
 			tx.begin();
-			int i = 0; // for progress tracking
+			i = 0; // for progress tracking
 
 			for (Object member : query.getResultList()) {
+				
 				ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
 				
 				if(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|") &&
@@ -394,33 +415,37 @@ public class SampledataMojo extends AbstractMojo {
 				}
 				
 				
+				
+				// if no concept for this ref set member, skip
 				if (refSetMember.getConcept() == null)
 					continue;
+				
+				// if different concept than previous ref set member, create new mapRecord
 				if (!refSetMember.getConcept().getTerminologyId()
 						.equals(new Long(prevConceptId).toString())) {
-
+					
 					mapRecord = new MapRecordJpa();
 					mapRecord.setConceptId(refSetMember.getConcept().getTerminologyId());
-					if (!refSetIdToMapProjectIdMap.containsKey(refSetMember.getRefSetId())) {
-						System.out.println("refsetid not in map: " + refSetMember.getRefSetId() + " " + refSetMember.getConcept().getTerminologyId());
-					  // if not in map, fake the refsetId so that required mapProjectId can be set
-						refSetMember.setRefSetId(new Long("447562003"));
-					}
-					mapRecord.setMapProjectId(refSetIdToMapProjectIdMap.get(refSetMember.getRefSetId()));
-
-					manager.persist(mapRecord);
-
-				}
-
-				if (mapRecord != null && !mapRecord.getConceptId().equals("")) {
+					
+					// if this refSet terminology id in project map, set the project id
+					if (projectRefSetIdMap.containsKey(refSetMember.getRefSetId())) {
+						mapRecord.setMapProjectId(projectRefSetIdMap.get(refSetMember.getRefSetId()));
+					} 
+				
+					// set the previous concept to this concept
+					prevConceptId = new Long(refSetMember.getConcept().getTerminologyId());
+					
+					// persist the record
 					manager.persist(mapRecord);
 				}
 
+				// add map entry to record
 				MapEntry mapEntry = new MapEntryJpa();
 				mapEntry.setTarget(refSetMember.getMapTarget());
 				mapEntry.setMapRecord(mapRecord);
 				mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
 				mapEntry.setRule(refSetMember.getMapRule());
+				
 				// find the correct advice and add it
 				if (mapAdviceValueMap.containsKey(refSetMember.getMapAdvice())) {
 					mapEntry
@@ -428,7 +453,9 @@ public class SampledataMojo extends AbstractMojo {
 				}
 				mapRecord.addMapEntry(mapEntry);
 				
-				if (++i % 100 == 0) {System.out.println(Integer.toString(i) + " map records processed");}
+				manager.merge(mapRecord);
+				
+				if (++i % 1000 == 0) {System.out.println(Integer.toString(i) + " map records processed");}
 
 			}
 			
