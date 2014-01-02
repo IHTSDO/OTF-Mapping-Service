@@ -23,13 +23,16 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
+import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
@@ -195,7 +198,7 @@ public class MappingServiceJpa implements MappingService {
 				System.out.println("Object class: " + mp.getClass().toString());
 				if (mp instanceof MapProject) {
 					
-					s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getName()));
+					s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId().toString(),mp.getName()));
 					System.out.println("Added project " + m.get(0).getName());
 				} 
 			}
@@ -394,7 +397,7 @@ public class MappingServiceJpa implements MappingService {
 														.getResultList();
 			
 			for (MapSpecialist ms : m) {
-				s.addSearchResult(new SearchResultJpa(ms.getId(), ms.getName()));
+				s.addSearchResult(new SearchResultJpa(ms.getId(), "", ms.getName()));
 			}
 			
 			
@@ -601,7 +604,7 @@ public class MappingServiceJpa implements MappingService {
 														.getResultList();
 			
 			for (MapLead ml : m) {
-				s.addSearchResult(new SearchResultJpa(ml.getId(), ml.getName()));
+				s.addSearchResult(new SearchResultJpa(ml.getId(), "", ml.getName()));
 			}
 			
 			
@@ -817,7 +820,7 @@ public class MappingServiceJpa implements MappingService {
 														.getResultList();
 			
 			for (MapRecord mr : m) {
-				s.addSearchResult(new SearchResultJpa(mr.getId(), mr.getConceptId()));
+				s.addSearchResult(new SearchResultJpa(mr.getId(), "", mr.getConceptId()));
 			}
 			
 			
@@ -892,14 +895,53 @@ public class MappingServiceJpa implements MappingService {
 		
     }
     
+
     // TODO Fill in and put in appropriate places
     /* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapEntrys(java.lang.String)
 	 */
 	@Override
 	public SearchResultList findMapEntrys(String query) {
-		// TODO Auto-generated method stub
-		return null;
+		SearchResultList s = new SearchResultListJpa();
+		EntityManager manager = factory.createEntityManager();
+		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
+		
+		try {
+				SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			Query luceneQuery;
+		
+			// construct luceneQuery based on URL format
+			if (query.indexOf(':') == -1) { // no fields indicated
+				MultiFieldQueryParser queryParser =
+						new MultiFieldQueryParser(Version.LUCENE_36,
+								fieldNames.toArray(new String[0]),
+								searchFactory.getAnalyzer(MapEntryJpa.class));
+				queryParser.setAllowLeadingWildcard(false);
+				luceneQuery = queryParser.parse(query);
+		
+			
+			} else { // field:value
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+						searchFactory.getAnalyzer(MapEntryJpa.class));
+				luceneQuery = queryParser.parse(query);
+			}
+			
+			List<MapEntry> m = (List<MapEntry>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+														.getResultList();
+			
+			for (MapEntry me : m) {
+				s.addSearchResult(new SearchResultJpa(me.getId(), "", me.getMapRecord().getId().toString()));
+			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		if (manager.isOpen()) { manager.close(); }
+		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
+		
+		return s;
 	}
 
 	/* (non-Javadoc)
@@ -907,8 +949,46 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	@Override
 	public SearchResultList findMapNotes(String query) {
-		// TODO Auto-generated method stub
-		return null;
+		SearchResultList s = new SearchResultListJpa();
+		EntityManager manager = factory.createEntityManager();
+		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
+		
+		try {
+				SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			Query luceneQuery;
+		
+			// construct luceneQuery based on URL format
+			if (query.indexOf(':') == -1) { // no fields indicated
+				MultiFieldQueryParser queryParser =
+						new MultiFieldQueryParser(Version.LUCENE_36,
+								fieldNames.toArray(new String[0]),
+								searchFactory.getAnalyzer(MapNoteJpa.class));
+				queryParser.setAllowLeadingWildcard(false);
+				luceneQuery = queryParser.parse(query);
+		
+			
+			} else { // field:value
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+						searchFactory.getAnalyzer(MapNoteJpa.class));
+				luceneQuery = queryParser.parse(query);
+			}
+			
+			List<MapNote> m = (List<MapNote>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+														.getResultList();
+			
+			for (MapNote me : m) {
+				s.addSearchResult(new SearchResultJpa(me.getId(), "", me.getNote()));
+			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		if (manager.isOpen()) { manager.close(); }
+		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
+		
+		return s;
 	}
 	
 	////////////////////////////////////////////////
@@ -922,7 +1002,6 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId) {
 		List<MapRecord> m = null;
-		List<MapRecord> m_return = new ArrayList<MapRecord>();
 		EntityManager manager = factory.createEntityManager();
 		
 		// construct query
@@ -939,7 +1018,33 @@ public class MappingServiceJpa implements MappingService {
 	
 		if (manager.isOpen()) { manager.close(); }
 		
-		return m_return;
+		return m;
+	}
+	
+	/**
+	 * Retrieve map records for a given concept id
+	 * @param conceptId the concept id
+	 * @return the list of map records
+	 */
+	public List<MapRecord> getMapRecordsForMapProjectId(String mapProjectId) {
+		List<MapRecord> m = null;
+		EntityManager manager = factory.createEntityManager();
+		
+		// construct query
+		javax.persistence.Query query = manager.createQuery("select m from MapRecordJpa m where mapProjectId = :mapProjectId");
+		
+		// Try query
+		try {
+			query.setParameter("mapProjectId", new Long(mapProjectId));
+			m = (List<MapRecord>) query.getResultList();
+		} catch (Exception e) {
+			System.out.println("MappingServiceJpa.getMapRecordsFormapProjectId(): Could not retrieve map records for project id " + mapProjectId);
+			e.printStackTrace();
+		}
+	
+		if (manager.isOpen()) { manager.close(); }
+		
+		return m;
 	}
 
 

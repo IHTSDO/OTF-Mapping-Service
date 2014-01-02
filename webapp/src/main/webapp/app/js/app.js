@@ -75,7 +75,7 @@ mapProjectApp.config(['$routeProvider',
 	  // QUERY SERVICES
 	  //////////////////////////////
 	  $routeProvider.when('/concept/query', {
-  		  templateUrl: 'partials/concept-query-detail.html', 
-  		  controller: 'ConceptQueryCtrl'
+  		  templateUrl: 'partials/query-partial.html', 
+  		  controller: 'QueryCtrl'
   	  });
    }]);

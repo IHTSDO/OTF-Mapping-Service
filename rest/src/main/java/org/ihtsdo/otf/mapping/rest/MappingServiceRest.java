@@ -255,6 +255,23 @@ public class MappingServiceRest {
 	}
 	
 	/**
+	 * Returns the records for a given concept id
+	 * 
+	 * @param projectId the projectId
+	 * @return the mapRecords
+	 */
+	@GET
+	@Path("/record/projectId/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find records by project id", notes = "Returns MapRecords given a project id in either JSON or XML format", response = MapRecord.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecordsForMapProjectId(
+			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") String projectId) {
+		MapRecordList mapRecords = new MapRecordList();
+		mapRecords.setMapRecords(mappingServiceJpa.getMapRecordsForMapProjectId(projectId));
+		return mapRecords;
+	}
+	
+	/**
 	 * Returns all map records for a lucene query
 	 * @param query the string query
 	 * @return the map records

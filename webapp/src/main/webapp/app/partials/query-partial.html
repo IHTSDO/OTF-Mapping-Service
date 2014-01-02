@@ -1,0 +1,38 @@
+<h3>Search Concepts</h3>
+
+<input ng-model = "queryConcept">
+<input type="button" value="Search" ng-click="searchConcepts()">
+<input type="button" value="Reset" ng-click="resetConcepts()">
+<p>Example: <em>terminologyId:"102287002"</em>
+
+<p></p>
+<p>{{searchConceptsStatus}}</p>
+<ul>
+<li ng-repeat = "searchResult in conceptResults.searchResults"><a href="index.html#/concept/id/{{searchResult.terminologyId}}">{{searchResult.description}}</a></li>
+</ul>
+
+<h3>Search Projects</h3>
+
+<input ng-model = "queryProject">
+<input type="button" value="Search" ng-click="searchProjects()">
+<input type="button" value="Reset" ng-click="resetProjects()">
+<p>Example: <em>destinationTerminology:"ICD9CM"</em>
+
+<p></p>
+<p>{{searchProjectsStatus}}</p>
+<ul>
+<li ng-repeat = "searchResult in projectResults.searchResults"><a href="index.html#/project/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
+</ul>
+
+<h3>Search Records</h3>
+
+<input ng-model = "queryRecord">
+<input type="button" value="Search" ng-click="searchRecords()">
+<input type="button" value="Reset" ng-click="resetRecords()">
+<p>Example: <em>TBD</em>
+
+<p></p>
+<p>{{searchRecordsStatus}}</p>
+<ul>
+<li ng-repeat = "searchResult in projectResults.searchResults"><a href="index.html#/record/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
+</ul>
