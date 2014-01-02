@@ -37,7 +37,7 @@ public class SearchResultListJpa implements SearchResultList {
 	/**
 	 * @return the searchResults
 	 */
-	@XmlElement(name = "searchResults")
+	@XmlElement(type=SearchResultJpa.class, name = "searchResults")
 	public List<SearchResult> getSearchResults() {
 		return searchResults;
 	}

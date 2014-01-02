@@ -84,4 +84,12 @@ public class MapSpecialistList {
 		return mapSpecialists;
 	}
 
+	/**
+	 * Return the count as an xml element
+	 * @return the number of objects in the list
+	 */
+	@XmlElement(name = "count")
+	public int getCount() {
+		return mapSpecialists.size();
+	}
 }
