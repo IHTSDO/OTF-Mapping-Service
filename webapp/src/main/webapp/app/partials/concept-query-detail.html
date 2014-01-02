@@ -1,0 +1,25 @@
+<h3>Search Concepts</h3>
+
+<input ng-model = "queryConcept">
+<input type="button" value="Search" ng-click="searchConcepts()">
+<input type="button" value="Reset" ng-click="resetConcepts()">
+<p>Example: <em>terminologyId:"102287002"</em>
+
+<p></p>
+<p>{{searchConceptsStatus}}</p>
+<ul>
+<li ng-repeat = "searchResult in conceptResults.searchResults"><a href="concept/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
+</ul>
+
+<h3>Search Projects</h3>
+
+<input ng-model = "queryProject">
+<input type="button" value="Search" ng-click="searchProjects()">
+<input type="button" value="Reset" ng-click="resetProjects()">
+<p>Example: <em>destinationTerminology:"ICD9CM"</em>
+
+<p></p>
+<p>{{searchProjectsStatus}}</p>
+<ul>
+<li ng-repeat = "searchResult in projectResults.searchResults"><a href="project/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
+</ul>

@@ -280,7 +280,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
   		 
     	  // retrieve any map records associated with this project
     	  $http({
-    		  url: root_mapping + "record/conceptId/" + $scope.project.refSetId,
+    		  url: root_mapping + "record/projectId/" + $scope.project.objectId,
     		  dataType: "json",
     		  method: "GET",
     		  headers: {

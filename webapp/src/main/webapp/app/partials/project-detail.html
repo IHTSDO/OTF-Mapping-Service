@@ -19,12 +19,12 @@
 </accordion-group>
 
 <accordion-group heading="Map Advices">
-<table><tr ng-repeat="advice in project.mapAdvice"><td>{{advice.name}}</td><td>{{advice.description}}</td></tr></table>
+<table><tr ng-repeat="advice in project.mapAdvice"><td>{{advice.description}}</td></tr></table>
 </accordion-group>
 
 <accordion-group heading="Map Records and Entries">
 <p>{{errorRecords}}</p>
-<div ng-repeat="record in records">Record {{record.ID}} has the following Map Entries:
+<div ng-repeat="record in records">Record {{record.ID}} for concept {{record.conceptId}}
 		
 		<table cellpadding="5">
 		<thead><tr><th>Target</th><th>Rule</th><th>Index</th><th>RelationId</th></tr></thead>
@@ -32,7 +32,7 @@
 		<tr ng-repeat="entry in record.mapEntry">
 			<td>{{entry.target}}</td>
 			<td>{{entry.rule}}</td>
-			<td>{{entry.index}}</td>
+			<td>{{entry.indexMapPriority}}</td>
 			<td>{{entry.relationId}}</td>
 		</tr>
 		</tbody>
@@ -40,6 +40,7 @@
 		<p></p>
 		<p>Notes:</p>
 		<ul><li ng-repeat="note in record.mapNote">{{note.note}}</li></ul>
+		<hr>
 </div>
 </accordion-group>
 
