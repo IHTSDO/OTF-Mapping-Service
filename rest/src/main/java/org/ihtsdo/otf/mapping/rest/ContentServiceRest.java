@@ -71,13 +71,6 @@ public class ContentServiceRest {
 		return contentServiceJpa.getConceptForId(id);
 	}
 
-	// TODO: Fix this
-	/**
-	 * Returns the concept for id.
-	 *
-	 * @param id the id
-	 * @return the concept for id
-	 */
 	/**
 	 * Returns all map projects for a lucene query
 	 * @param query the string query
