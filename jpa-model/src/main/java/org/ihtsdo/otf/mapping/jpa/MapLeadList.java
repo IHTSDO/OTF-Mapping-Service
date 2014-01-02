@@ -83,5 +83,14 @@ public class MapLeadList {
 	public List<MapLead> getMapLeads() {
 		return mapLeads;
 	}
+	
+	/**
+	 * Return the count as an xml element
+	 * @return the number of objects in the list
+	 */
+	@XmlElement(name = "count")
+	public int getCount() {
+		return mapLeads.size();
+	}
 
 }
