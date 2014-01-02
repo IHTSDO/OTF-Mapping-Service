@@ -1,10 +1,12 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -21,28 +23,38 @@ import com.wordnik.swagger.annotations.ApiParam;
  */
 @Path("/content")
 @Api(value = "/content", description = "Operations to retrieve RF2 content.")
-@Produces({"application/json", "application/xml"})
+@Produces({
+		"application/json", "application/xml"
+})
 public class ContentServiceRest {
-	
+
+	/** The terminology versions. */
+	private Map<String, String> terminologyLatestVersions = null;
+
 	/** The content service jpa. */
 	private ContentServiceJpa contentServiceJpa;
-	
+
 	/**
 	 * Instantiates an empty {@link ContentServiceRest}.
 	 */
 	public ContentServiceRest() {
 		contentServiceJpa = new ContentServiceJpa();
+
+		// TODO: wire this to metadata service (getTerminologyLatestVesrions)
+		terminologyLatestVersions = new HashMap<String, String>();
+		terminologyLatestVersions.put("SNOMED", "20130131");
 	}
-	
+
 	/**
-	 * Returns a limited number of concepts
-	 * FOR TESTING PURPOSES ONLY
+	 * Returns a limited number of concepts FOR TESTING PURPOSES ONLY
 	 * @return the concepts
 	 */
 	@GET
 	@Path("/concept/concepts")
 	@ApiOperation(value = "Find limited number of concepts", notes = "Returns a list of concepts", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
 	public ConceptList getConceptLimited() {
 		ConceptList concepts = new ConceptList();
 		concepts.setConcepts(contentServiceJpa.getConceptsLimited(50));
@@ -50,26 +62,37 @@ public class ContentServiceRest {
 		return concepts;
 	}
 
-
 	/**
 	 * Returns the concept for id.
-	 *
+	 * 
 	 * @param id the id
 	 * @return the concept for id
 	 */
 	@GET
 	@Path("/concept/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find concept by id", notes = "Returns a concept in either xml json given a concept id.", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Concept getConceptForId(@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id) {
-		return contentServiceJpa.getConceptForId(id);
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public Concept getConceptForId(
+		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id) {
+		Concept result = null;
+		try {
+			result = contentServiceJpa.getConcept(id);
+		} catch (Exception e) {
+			// do nothing, try alternative search
+		}
+		if (result == null) {
+			return contentServiceJpa.getConcept(id, "SNOMED",
+					terminologyLatestVersions.get("SNOMED"));
+		} else {
+			return result;
+		}
 	}
-	
-	
-	
+
 	/**
 	 * Returns the concept for id, terminology, terminology version
-	 *
+	 * 
 	 * @param id the id
 	 * @param terminology the concept terminology
 	 * @param terminologyVersion the concept terminology version
@@ -77,27 +100,49 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/{terminology}/{terminologyVersion}/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find concept by id", notes = "Returns a concept in either xml json given a concept id.", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Find concept by id, terminology, version", notes = "Returns a concept in either xml json given a concept id, terminology, and version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
 	public Concept getConceptForId(
-			@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
-			@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "Concept terminology version", required = true) @PathParam("terminologyVersion") String terminologyVersion) {
-		
-		WebApplicationException w = new WebApplicationException();
+		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
+		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
+		@ApiParam(value = "Concept terminology version", required = true) @PathParam("terminologyVersion") String terminologyVersion) {
 		return contentServiceJpa.getConcept(id, terminology, terminologyVersion);
 	}
 
 	/**
+	 * Returns the concept for id, terminology. Looks in the latest version of the
+	 * terminology.
+	 * 
+	 * @param id the id
+	 * @param terminology the concept terminology
+	 * @return the concept
+	 */
+	@GET
+	@Path("/concept/{terminology}/{terminologyVersion}/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public Concept getConceptForId(
+		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
+		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology) {
+		return contentServiceJpa.getConcept(id, terminology,
+				terminologyLatestVersions.get(terminology));
+	}
+
+	/**
 	 * Returns the concept for search string
-	 *
+	 * 
 	 * @param searchString the lucene search string
 	 * @return the concept for id
 	 */
 	@GET
 	@Path("/concept/query/{string}")
 	@ApiOperation(value = "Find concepts by search query", notes = "Returns concepts that are related to search query.", response = String.class)
-	public SearchResultList findConcepts(@ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
+	public SearchResultList findConcepts(
+		@ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
 		try {
 			return contentServiceJpa.findConcepts(searchString);
 		} catch (Exception e) {
