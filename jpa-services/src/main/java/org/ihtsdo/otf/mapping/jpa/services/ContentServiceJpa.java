@@ -71,17 +71,6 @@ public class ContentServiceJpa implements ContentService {
 		System.out.println("ended init " + fieldNames.toString());
 	}
 
-	/**
-	 * Returns the concept for id.
-	 * 
-	 * @param id the id
-	 * @return the concept for id
-	 */
-	public Concept getConceptForId(Long id) {
-		return getConcept(id);
-
-	}
-
 	/** 
 	 * Retrieves a limited number of concepts
 	 * FOR TESTING PURPOSES ONLY
@@ -114,33 +103,7 @@ public class ContentServiceJpa implements ContentService {
 	@Override
 	public Concept getConcept(Long conceptId) {
 		manager = factory.createEntityManager();
-		javax.persistence.Query query = manager.createQuery("select c from ConceptJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
-		
-		/*
-		 * Try to retrieve the single expected result
-		 * If zero or more than one result are returned, log error and set result to null
-		 */
-
-		String terminology = "SNOMEDCT";
-		String terminologyVersion = "20130131";
-		try {
-			
-			query.setParameter("terminologyId", conceptId.toString());
-			query.setParameter("terminology", terminology);
-			query.setParameter("terminologyVersion", terminologyVersion);
-
-			Concept c = (Concept) query.getSingleResult();
-
-			System.out.println("Returning cid... " + ((c != null) ? c.getTerminologyId().toString() : "null"));
-			return c;
-			
-		} catch (NoResultException e) {
-			System.out.println("Concept query for terminologyId = " + conceptId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned no results!");
-			return null;		
-		} catch (NonUniqueResultException e) {
-			System.out.println("Concept query for terminologyId = " + conceptId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned multiple results!");
-			return null;
-		}	
+		return manager.find(ConceptJpa.class, conceptId);
 	}
 
 	/**
