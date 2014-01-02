@@ -236,7 +236,7 @@ public class ContentServiceJpa implements ContentService {
 			List<Concept> concepts = fullTextQuery.getResultList();
 			
 			for (Concept c : concepts) {
-				results.addSearchResult(new SearchResultJpa(c.getId(), c.getDefaultPreferredName()));
+				results.addSearchResult(new SearchResultJpa(c.getId(), c.getTerminologyId(), c.getDefaultPreferredName()));
 			}
 
 			return results;

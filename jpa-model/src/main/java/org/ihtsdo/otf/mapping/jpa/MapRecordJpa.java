@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -36,7 +37,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
  * The Map Record Jpa object
  */
 @Entity
-@Table(name = "map_records")
+@Table(name = "map_records", uniqueConstraints=@UniqueConstraint(columnNames={"mapProjectId", "id"}))
 @Audited
 @Indexed
 @XmlRootElement(name="mapRecord")
@@ -47,7 +48,7 @@ public class MapRecordJpa implements MapRecord {
 	@GeneratedValue
 	private Long id;
 	
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private Long mapProjectId;
 
 	@Column(nullable = false)

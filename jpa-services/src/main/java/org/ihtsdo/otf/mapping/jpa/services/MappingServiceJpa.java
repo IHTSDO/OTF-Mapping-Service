@@ -195,7 +195,7 @@ public class MappingServiceJpa implements MappingService {
 				System.out.println("Object class: " + mp.getClass().toString());
 				if (mp instanceof MapProject) {
 					
-					s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getName()));
+					s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId().toString(),mp.getName()));
 					System.out.println("Added project " + m.get(0).getName());
 				} 
 			}
@@ -394,7 +394,7 @@ public class MappingServiceJpa implements MappingService {
 														.getResultList();
 			
 			for (MapSpecialist ms : m) {
-				s.addSearchResult(new SearchResultJpa(ms.getId(), ms.getName()));
+				s.addSearchResult(new SearchResultJpa(ms.getId(), "", ms.getName()));
 			}
 			
 			
@@ -601,7 +601,7 @@ public class MappingServiceJpa implements MappingService {
 														.getResultList();
 			
 			for (MapLead ml : m) {
-				s.addSearchResult(new SearchResultJpa(ml.getId(), ml.getName()));
+				s.addSearchResult(new SearchResultJpa(ml.getId(), "", ml.getName()));
 			}
 			
 			
@@ -817,7 +817,7 @@ public class MappingServiceJpa implements MappingService {
 														.getResultList();
 			
 			for (MapRecord mr : m) {
-				s.addSearchResult(new SearchResultJpa(mr.getId(), mr.getConceptId()));
+				s.addSearchResult(new SearchResultJpa(mr.getId(), "", mr.getConceptId()));
 			}
 			
 			
@@ -891,26 +891,7 @@ public class MappingServiceJpa implements MappingService {
 		if (manager.isOpen()) { manager.close(); }
 		
     }
-    
-    // TODO Fill in and put in appropriate places
-    /* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapEntrys(java.lang.String)
-	 */
-	@Override
-	public SearchResultList findMapEntrys(String query) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapNotes(java.lang.String)
-	 */
-	@Override
-	public SearchResultList findMapNotes(String query) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
 	////////////////////////////////////////////////
 	// Service for retrieving all project details
     ////////////////////////////////////////////////
@@ -922,7 +903,6 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId) {
 		List<MapRecord> m = null;
-		List<MapRecord> m_return = new ArrayList<MapRecord>();
 		EntityManager manager = factory.createEntityManager();
 		
 		// construct query
@@ -939,7 +919,33 @@ public class MappingServiceJpa implements MappingService {
 	
 		if (manager.isOpen()) { manager.close(); }
 		
-		return m_return;
+		return m;
+	}
+	
+	/**
+	 * Retrieve map records for a given concept id
+	 * @param conceptId the concept id
+	 * @return the list of map records
+	 */
+	public List<MapRecord> getMapRecordsForMapProjectId(String mapProjectId) {
+		List<MapRecord> m = null;
+		EntityManager manager = factory.createEntityManager();
+		
+		// construct query
+		javax.persistence.Query query = manager.createQuery("select m from MapRecordJpa m where mapProjectId = :mapProjectId");
+		
+		// Try query
+		try {
+			query.setParameter("mapProjectId", new Long(mapProjectId));
+			m = (List<MapRecord>) query.getResultList();
+		} catch (Exception e) {
+			System.out.println("MappingServiceJpa.getMapRecordsFormapProjectId(): Could not retrieve map records for project id " + mapProjectId);
+			e.printStackTrace();
+		}
+	
+		if (manager.isOpen()) { manager.close(); }
+		
+		return m;
 	}
 
 
