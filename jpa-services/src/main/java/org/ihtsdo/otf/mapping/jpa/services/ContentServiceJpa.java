@@ -25,11 +25,13 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.SearchResultList;
 
+/**
+ * The Content Services for the Jpa model
+ */
 public class ContentServiceJpa implements ContentService {
 
 	/** The factory. */
@@ -80,6 +82,12 @@ public class ContentServiceJpa implements ContentService {
 
 	}
 
+	/** 
+	 * Retrieves a limited number of concepts
+	 * FOR TESTING PURPOSES ONLY
+	 * @param n_concepts the number of concepts
+	 * @return the list of concepts
+	 */
 	public List<Concept> getConceptsLimited(int n_concepts) {
 		manager = factory.createEntityManager();
 		javax.persistence.Query query =
@@ -135,11 +143,8 @@ public class ContentServiceJpa implements ContentService {
 		}	
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.ContentService#getConcept(java.lang.Long)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Concept getConcept(Long conceptId, String terminology, String terminologyVersion) {
@@ -178,12 +183,14 @@ public class ContentServiceJpa implements ContentService {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.ihtsdo.otf.mapping.services.ContentService#getConcepts(java.lang.
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#findConcepts(java.lang.
 	 * String )
 	 */
-	// TODO Fix this
 	@Override
-	public List<Concept> getConcepts(String searchString) throws Exception {
+	public SearchResultList findConcepts(String searchString) throws Exception {
+		
+		SearchResultList results = new SearchResultListJpa();
+		
 		manager = factory.createEntityManager();
 		FullTextEntityManager fullTextEntityManager =
 				Search.getFullTextEntityManager(manager);
@@ -209,8 +216,13 @@ public class ContentServiceJpa implements ContentService {
 
 			FullTextQuery fullTextQuery =
 					fullTextEntityManager.createFullTextQuery(luceneQuery);
-			List<AbstractComponent> results = fullTextQuery.getResultList();
+			
+			// TODO: Is this sort of search what we want to enable?
+			/*List<AbstractComponent> results = fullTextQuery.getResultList();
+			
 			List<Concept> components = new ArrayList<Concept>();
+			
+			
 			for (AbstractComponent s : results) {
 				if (s instanceof ConceptJpa) {
 					// components.add(new SearchResultJpa(((ConceptJpa)
@@ -219,10 +231,15 @@ public class ContentServiceJpa implements ContentService {
 					// components.add(new SearchResultJpa(((DescriptionJpa)
 					// s).getId(), ((DescriptionJpa) s).getTerm()));
 				}
+			}*/
+			
+			List<Concept> concepts = fullTextQuery.getResultList();
+			
+			for (Concept c : concepts) {
+				results.addSearchResult(new SearchResultJpa(c.getId(), c.getDefaultPreferredName()));
 			}
 
-			return components;
-
+			return results;
 		} catch (Exception e) {
 			throw e;
 		} finally {

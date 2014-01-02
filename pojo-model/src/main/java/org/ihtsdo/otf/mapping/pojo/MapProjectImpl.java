@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
@@ -39,6 +40,9 @@ public class MapProjectImpl implements MapProject {
 
 	/** The allowable map advices for this MapProject. */
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
+	
+	/** The allowable map principles for this MapProject */
+	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 
 	/** The ref set id. */
 	private Long refSetId;
@@ -356,6 +360,26 @@ public class MapProjectImpl implements MapProject {
 	@Override
 	public void removeMapAdvice(MapAdvice mapAdvice) {
 		this.mapAdvices.remove(mapAdvice);
+	}
+	
+	@Override
+	public Set<MapPrinciple> getMapPrinciples() {
+		return mapPrinciples;
+	}
+
+	@Override
+	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
+		this.mapPrinciples = mapPrinciples;
+	}
+
+	@Override
+	public void addMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.add(mapPrinciple);
+	}
+
+	@Override
+	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
+		mapPrinciples.remove(mapPrinciple);
 	}
 
 	/* (non-Javadoc)

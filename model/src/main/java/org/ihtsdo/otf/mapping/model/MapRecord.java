@@ -31,6 +31,20 @@ public interface MapRecord {
 	public void setId(Long id);
 	
 	/**
+	 * Returns the map project id.
+	 *
+	 * @return the map project id
+	 */
+	public Long getMapProjectId();
+
+	/**
+	 * Sets the map project id.
+	 *
+	 * @param mapProjectId the map project id
+	 */
+	public void setMapProjectId(Long mapProjectId);
+	
+	/**
 	 * Returns the concept id.
 	 *
 	 * @return the concept id
@@ -100,6 +114,34 @@ public interface MapRecord {
 	 * @param mapEntry the map entry
 	 */
 	public void removeMapEntry(MapEntry mapEntry);
+	
+	/**
+	 * Returns the set of allowable map principles.
+	 *
+	 * @return the map principles
+	 */
+	public Set<MapPrinciple> getMapPrinciples();
+	
+	/**
+	 * Sets the set of allowable map principles.
+	 *
+	 * @param mapAdvices the map principles
+	 */
+	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples);
+	
+	/**
+	 * Adds an allowable map principle.
+	 *
+	 * @param mapAdvice the map principle
+	 */
+	public void addMapPrinciple(MapPrinciple mapPrinciple);
+	
+	/**
+	 * Removes an allowable map principle.
+	 *
+	 * @param mapAdvice the map principle
+	 */
+	public void removeMapPrinciple(MapPrinciple mapPrinciple);
 	
 	
 }

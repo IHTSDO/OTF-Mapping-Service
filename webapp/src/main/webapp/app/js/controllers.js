@@ -9,7 +9,7 @@ var root_content = "${base.url}/mapping-rest/content/";
 
 	
 //////////////////////////////
-// CONTENT SERVICES
+// Mapping Services
 //////////////////////////////	
 	
 mapProjectAppControllers.controller('MapProjectListCtrl', 
@@ -111,6 +111,30 @@ mapProjectAppControllers.controller('MapSpecialistListCtrl',
     $scope.orderProp = 'id';	
   });
 
+mapProjectAppControllers.controller('MapRecordDetailCtrl', ['$scope', '$http', '$routeParams',
+    function ($scope, $http, $routeParams) {
+ 	  $scope.recordId = $routeParams.recordId;
+ 	  $http({
+         url: root_mapping + "record/id/" + $scope.recordId,
+         dataType: "json",
+         method: "GET",
+         headers: {
+           "Content-Type": "application/json"
+         }
+       }).success(function(data) {
+         $scope.record = data;
+       }).error(function(error) {
+     });
+
+ }]);
+
+
+
+
+//////////////////////////////
+// Content Services
+//////////////////////////////	
+
 mapProjectAppControllers.controller('ConceptListCtrl', 
 		  function ($scope, $http) {
 			      $http({
@@ -128,6 +152,89 @@ mapProjectAppControllers.controller('ConceptListCtrl',
 			 
 			    $scope.orderProp = 'id';	
 			  });
+
+
+mapProjectAppControllers.controller('ConceptDetailCtrl', ['$scope', '$http', '$routeParams',
+     function ($scope, $http, $routeParams) {
+	  $scope.status = "Loading...";
+      $scope.statusnote = "This process has not been optimized, and may be particularly slow on the EC2 server (mapping.snomedtools.org).";
+  	  $scope.conceptId = $routeParams.conceptId;
+  	  $http({
+          url: "${base.url}/mapping-rest/content/concept/id/" + $scope.conceptId,
+          dataType: "json",
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }).success(function(data) {
+          $scope.status = "Load complete!";
+          $scope.statusnote = "";
+          $scope.concept = data;
+        }).error(function(error) {
+        	$scope.status = "Load error!";
+            $scope.statusnote = "";
+        	console.print("Error in conceptdetailctrol");
+      });
+
+  }]);
+
+//////////////////////////////
+// Query Services
+//////////////////////////////	
+
+mapProjectAppControllers.controller('ConceptQueryCtrl', ['$scope', '$http', '$routeParams',
+   function ($scope, $http, $routeParams) {
+	
+	$scope.searchConceptsStatus = "No concept query executed.";
+	$scope.searchProjectsStatus = "No project query executed.";
+	
+	$scope.searchConcepts = function(id) {
+	  $http({
+        url: root_content + "concept/query/" + $scope.queryConcept,
+        dataType: "json",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }	
+      }).success(function(data) {
+        $scope.conceptResults = data;
+        $scope.searchConceptsStatus= $scope.conceptResults.count + " results found:";
+       
+      }).error(function(error) {
+    	  $scope.searchConceptsStatus = "Could not retrieve concepts. <p>Error: " + error;
+      });
+	};
+	
+	$scope.resetConcepts = function(id) {
+		$scope.conceptResults = "";
+		$scope.searchConceptsStatus = "No concept query executed";
+	};
+	
+	$scope.searchProjects = function(id) {
+	  $http({
+        url: root_mapping + "project/query/" + $scope.queryProject,
+        dataType: "json",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }	
+      }).success(function(data) {
+        $scope.projectResults = data;
+        $scope.searchProjectsStatus= $scope.projectResults.count + " results found:";
+      }).error(function(error) {
+    	$scope.searchProjectsStatus = "Could not retrieve projects. <p>Error:" + error; 
+      });
+	};
+	$scope.resetProjects = function(id) {
+		$scope.projectResults = "";
+		$scope.searchProjectsStatus = "No concept query executed";
+	};
+}]);
+  
+//////////////////////////////
+// Specialized Services
+//////////////////////////////	
+
 
 
 // TODO Add test for coming from project list page (i.e. pass the project to this controller)
@@ -189,45 +296,6 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	  
 }]);
 
-mapProjectAppControllers.controller('ConceptDetailCtrl', ['$scope', '$http', '$routeParams',
-     function ($scope, $http, $routeParams) {
-	  $scope.status = "Loading...";
-      $scope.statusnote = "This process has not been optimized, and may be particularly slow on the EC2 server (mapping.snomedtools.org).";
-  	  $scope.conceptId = $routeParams.conceptId;
-  	  $http({
-          url: "${base.url}/mapping-rest/content/concept/id/" + $scope.conceptId,
-          dataType: "json",
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        }).success(function(data) {
-          $scope.status = "Load complete!";
-          $scope.statusnote = "";
-          $scope.concept = data;
-        }).error(function(error) {
-        	$scope.status = "Load error!";
-            $scope.statusnote = "";
-        	console.print("Error in conceptdetailctrol");
-      });
 
-  }]);
-
-mapProjectAppControllers.controller('MapRecordDetailCtrl', ['$scope', '$http', '$routeParams',
-   function ($scope, $http, $routeParams) {
-	  $scope.recordId = $routeParams.recordId;
-	  $http({
-        url: root_mapping + "record/id/" + $scope.recordId,
-        dataType: "json",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }).success(function(data) {
-        $scope.record = data;
-      }).error(function(error) {
-    });
-
-}]);
 
 
