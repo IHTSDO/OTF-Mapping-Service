@@ -5,34 +5,45 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Concrete implementation of {@link Relationship} for use with JPA.
  */
 @Entity
 @Table(name = "relationships", uniqueConstraints = @UniqueConstraint(columnNames = {
-		"terminologyId", "terminology", "terminologyVersion" }))
-@XmlRootElement(name = "relationship")
+		"terminologyId", "terminology", "terminologyVersion"
+}))
+@XmlRootElement(name="relationship")
 @Audited
+@XmlAccessorType(XmlAccessType.FIELD)
 public class RelationshipJpa extends AbstractComponent implements Relationship {
 
 	/** The source concept. */
-	@XmlTransient
-	@ManyToOne(targetEntity = ConceptJpa.class, optional = false)
+	@ManyToOne(targetEntity = ConceptJpa.class, optional=false)
+	@JsonBackReference
+	@XmlIDREF
+	@XmlElement(type = ConceptJpa.class)
 	@ContainedIn
 	private Concept sourceConcept;
 
 	/** The destination concept. */
-	@XmlTransient
-	@ManyToOne(targetEntity = ConceptJpa.class, optional = false)
+	@ManyToOne(targetEntity = ConceptJpa.class, optional=false)
+	@JsonBackReference
+	@XmlIDREF
+	@XmlElement(type = ConceptJpa.class)
 	@ContainedIn
 	private Concept destinationConcept;
 
@@ -51,6 +62,17 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	/** The relationship group. */
 	@Column(nullable = true)
 	private Integer relationshipGroup;
+	
+	/** Testing Json object management */
+	@XmlElement
+	private String getSourceId() {
+		return sourceConcept.getTerminologyId();
+	}
+	
+	@XmlElement	
+	private String getDestinationId() {
+		return destinationConcept.getTerminologyId();
+	}
 
 	/**
 	 * Returns the type id.
@@ -65,8 +87,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	/**
 	 * Sets the type id.
 	 * 
-	 * @param typeId
-	 *            the type id
+	 * @param typeId the type id
 	 */
 	@Override
 	public void setTypeId(Long typeId) {
@@ -86,8 +107,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	/**
 	 * Sets the characteristic type id.
 	 * 
-	 * @param characteristicTypeId
-	 *            the characteristic type id
+	 * @param characteristicTypeId the characteristic type id
 	 */
 	@Override
 	public void setCharacteristicTypeId(Long characteristicTypeId) {
@@ -107,8 +127,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	/**
 	 * Sets the modifier id.
 	 * 
-	 * @param modifierId
-	 *            the modifier id
+	 * @param modifierId the modifier id
 	 */
 	@Override
 	public void setModifierId(Long modifierId) {
@@ -120,17 +139,15 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	 * 
 	 * @return the source concept
 	 */
-	@XmlTransient
 	@Override
-	public Concept getSourceConcept() {
-		return this.sourceConcept;
+	public ConceptJpa getSourceConcept() {
+		return (ConceptJpa)sourceConcept;
 	}
 
 	/**
 	 * Sets the source concept.
 	 * 
-	 * @param sourceConcept
-	 *            the source concept
+	 * @param sourceConcept the source concept
 	 */
 	@Override
 	public void setSourceConcept(Concept sourceConcept) {
@@ -138,57 +155,23 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	}
 
 	/**
-	 * Returns the source concept id. Used for XML/JSON serialization.
-	 * 
-	 * @return the source concept id
-	 */
-	@XmlElement
-	public String getSourceConceptId() {
-		return sourceConcept != null ? sourceConcept.getTerminologyId() : null;
-	}
-
-	/**
 	 * Returns the destination concept.
 	 * 
 	 * @return the destination concept
 	 */
-	@XmlTransient
 	@Override
-	public Concept getDestinationConcept() {
-		return this.destinationConcept;
+	public ConceptJpa getDestinationConcept() {
+		return (ConceptJpa)destinationConcept;
 	}
 
 	/**
 	 * Sets the destination concept.
 	 * 
-	 * @param destinationConcept
-	 *            the destination concept
+	 * @param destinationConcept the destination concept
 	 */
 	@Override
 	public void setDestinationConcept(Concept destinationConcept) {
 		this.destinationConcept = destinationConcept;
-	}
-
-	/**
-	 * Returns the destination concept id. Used for XML/JSON serialization.
-	 * 
-	 * @return the destination concept id
-	 */
-	@XmlElement
-	public String getDestinationConceptId() {
-		return destinationConcept != null ? destinationConcept
-				.getTerminologyId() : null;
-	}
-
-	/**
-	 * Returns the destination concept preferred name. Used for XML/JSON serialization.
-	 * 
-	 * @return the destination concept preferred name
-	 */
-	@XmlElement
-	public String getDestinationConceptPreferredName() {
-		return destinationConcept != null ? destinationConcept
-				.getDefaultPreferredName() : null;
 	}
 
 	/**
@@ -204,8 +187,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	/**
 	 * Sets the relationship group.
 	 * 
-	 * @param relationshipGroup
-	 *            the relationship group
+	 * @param relationshipGroup the relationship group
 	 */
 	@Override
 	public void setRelationshipGroup(Integer relationshipGroup) {
@@ -233,16 +215,15 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 				+ ","
 				+ // end of basic component fields
 
-				(this.getSourceConcept() == null ? null : this
-						.getSourceConcept().getId())
+				(this.getSourceConcept() == null ? null : this.getSourceConcept()
+						.getId())
 				+ ","
 				+ (this.getDestinationConcept() == null ? null : this
 						.getDestinationConcept().getId()) + ","
 				+ this.getRelationshipGroup() + "," + this.getTypeId() + ","
-				+ this.getCharacteristicTypeId() + "," + this.getModifierId(); // end
-																				// of
-																				// relationship
-																				// fields
+				+ this.getCharacteristicTypeId() + "," + this.getModifierId(); // end of
+																																				// relationship
+																																				// fields
 
 	}
 

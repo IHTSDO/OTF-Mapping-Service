@@ -8,7 +8,6 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
-import org.hibernate.search.annotations.Indexed;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
 /**
