@@ -90,13 +90,10 @@ public class SampledataMojo extends AbstractMojo {
 				Persistence.createEntityManagerFactory("MappingServiceDS");
 		manager = factory.createEntityManager();
 		EntityTransaction tx = manager.getTransaction();
-			
+		
+
 		try {
-			
-			
-			
-			
-			
+					
 			getLog().info("Load Sample data");
 
 			// ASSUMPTION: Database is unloaded, starting fresh
@@ -296,6 +293,7 @@ public class SampledataMojo extends AbstractMojo {
 			tx.commit();
 
 			// Add map projects
+			Map<Long, Long> refSetIdToMapProjectIdMap = new HashMap<Long, Long>();
 			MapProject mapProject = new MapProjectJpa();
 			mapProject.setName("SNOMED to ICD10");
 			mapProject.setRefSetId(new Long("447562003"));
@@ -314,6 +312,9 @@ public class SampledataMojo extends AbstractMojo {
 			for (String s : icd10AdviceValues) {
 				mapProject.addMapAdvice(mapAdviceValueMap.get(s));
 			}
+			Long mapProjectId = new Long("1");
+			mapProject.setId(mapProjectId);
+			refSetIdToMapProjectIdMap.put(mapProject.getRefSetId(), mapProjectId);
 			projects.add(mapProject);
 
 			mapProject = new MapProjectJpa();
@@ -333,6 +334,9 @@ public class SampledataMojo extends AbstractMojo {
 			for (String s : icd9cmAdviceValues) {
 				mapProject.addMapAdvice(mapAdviceValueMap.get(s));
 			}
+			mapProjectId = new Long("2");
+			mapProject.setId(mapProjectId);
+			refSetIdToMapProjectIdMap.put(mapProject.getRefSetId(), mapProjectId);
 			projects.add(mapProject);
 
 			mapProject = new MapProjectJpa();
@@ -350,6 +354,9 @@ public class SampledataMojo extends AbstractMojo {
 			for (String s : icpcAdviceValues) {
 				mapProject.addMapAdvice(mapAdviceValueMap.get(s));
 			}
+			mapProjectId = new Long("3");
+			mapProject.setId(mapProjectId);
+			refSetIdToMapProjectIdMap.put(mapProject.getRefSetId(), mapProjectId);
 			projects.add(mapProject);
 
 			// Set to assign map records to a project
@@ -384,7 +391,7 @@ public class SampledataMojo extends AbstractMojo {
 			long prevConceptId = -1;
 			MapRecord mapRecord = null;
 
-			query =
+		  query =
 					manager
 							.createQuery("select r from ComplexMapRefSetMemberJpa r order by r.concept.id, " +
 									"r.mapBlock, r.mapGroup, r.mapPriority");
@@ -398,14 +405,16 @@ public class SampledataMojo extends AbstractMojo {
 			for (Object member : query.getResultList()) {
 				
 				ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
-				// TODO: add back this section and test with full data
-				/**
-				 * if(refSetMember.getMapRule().matches("IFA \\d* | .* |") &&
-				 * !(refSetMember
-				 * .getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")) &&
-				 * !(refSetMember.getMapRule().matches("IFA \\d* | .* | [<>]"))){
-				 * System.out.println(refSetMember.getMapRule()); continue; }
-				 */
+				
+				if(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|") &&
+			    !(refSetMember.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")) &&
+			    !(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]"))){
+				  System.out.println("skipping refSetMember: " + refSetMember.getConcept().getTerminologyId() + " : " + 
+				    refSetMember.getMapRule() + " : " + refSetMember.getMapAdvice()); 
+				  continue; 
+				}
+				
+				
 				
 				// if no concept for this ref set member, skip
 				if (refSetMember.getConcept() == null)
@@ -454,24 +463,6 @@ public class SampledataMojo extends AbstractMojo {
 			System.out.println("Committing...");
 			tx.commit();
 			System.out.println("Complete.");
-			/**
-			 * //for (ComplexMapRefSetMember member : select r from
-			 * ComplexMapRefSetMember order by r.concept.id, r.mapblock,
-			 * r.mapgroup, r.mappriority
-			 * 
-			 * -- Skip entries where the rule matches “IFA \d* | .* |” unless gender
-			 * rule - the advice contains “MAP IS CONTEXT DEPENDENT FOR GENDER” unless
-			 * age rule – the rule matches “IFA \d* | .* | [<>]”
-			 * 
-			 * -- whenever concept id changes, make a new map record, map block, map
-			 * group if (mapRecord != null) manager.persist(mapRecord). -- whenever
-			 * mapblock changes, make a new mapblock, add it to the current map record
-			 * -- whenever mapgroup chagnes, make a new group, add it to the current
-			 * block and map record -- always make a new entry, add it to the current
-			 * group and mapRecord
-			 * 
-			 ** also need to handle "advice"
-			 */
 
 			System.out.println(".. done loading sample data");
 			manager.close();

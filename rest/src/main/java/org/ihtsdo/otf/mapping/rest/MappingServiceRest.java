@@ -59,7 +59,7 @@ public class MappingServiceRest {
 	 */
 	@GET
 	@Path("/project/projects")
-	@ApiOperation(value = "Find all projects", notes = "Returns all MapProjects in either JSON or XML format", response = MapProjectList.class)
+	@ApiOperation(value = "Get all projects", notes = "Returns all MapProjects in either JSON or XML format", response = MapProjectList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectList getMapProjects() {
 		MapProjectList mapProjects = new MapProjectList();	
@@ -75,7 +75,7 @@ public class MappingServiceRest {
 	 */
 	@GET
 	@Path("/lead/leads/")
-	@ApiOperation(value = "Find all map leads", notes = "Returns all MapLeads in either JSON or XML format", response = MapLeadList.class)
+	@ApiOperation(value = "Get all leads", notes = "Returns all MapLeads in either JSON or XML format", response = MapLeadList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapLeadList getMapLeads() {
 		MapLeadList mapLeads = new MapLeadList();
@@ -91,7 +91,7 @@ public class MappingServiceRest {
 	 */
 	@GET
 	@Path("/specialist/specialists/")
-	@ApiOperation(value = "Find all map specialists", notes = "Returns all MapSpecialists in either JSON or XML format", response = MapSpecialistList.class)
+	@ApiOperation(value = "Get all specialists", notes = "Returns all MapSpecialists in either JSON or XML format", response = MapSpecialistList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapSpecialistList getMapSpecialists() {
 		MapSpecialistList mapSpecialists = new MapSpecialistList();
@@ -107,7 +107,7 @@ public class MappingServiceRest {
 	 */
 	@GET
 	@Path("/record/records/")
-	@ApiOperation(value = "Find all map records", notes = "Returns all MapRecords in either JSON or XML format", response = MapRecordList.class)
+	@ApiOperation(value = "Get all records", notes = "Returns all MapRecords in either JSON or XML format", response = MapRecordList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecordList getMapRecords() {
 		MapRecordList mapRecords = new MapRecordList();
@@ -123,7 +123,7 @@ public class MappingServiceRest {
 	 */
 	@GET
 	@Path("/lead/id/{id:[0-9][0-9]*}/projects")
-	@ApiOperation(value = "Find all projects for map lead", notes = "Returns a MapLead's MapProjects in either JSON or XML format", response = MapProjectList.class)
+	@ApiOperation(value = "Find all projects for lead", notes = "Returns a MapLead's MapProjects in either JSON or XML format", response = MapProjectList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectList getMapProjectsForLead(
 			@ApiParam(value = "Id of map lead to fetch projects for", required = true) @PathParam("id") Long mapLeadId) { 
@@ -320,7 +320,7 @@ public class MappingServiceRest {
 	 */
 	@PUT
 	@Path("/lead/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Add a map lead", notes = "Adds a MapLead", response = MapLead.class)
+	@ApiOperation(value = "Add a lead", notes = "Adds a MapLead", response = MapLead.class)
 	public Response addMapLead(@ApiParam(value = "Id of map lead to add", required = true) @PathParam("id") Long mapLeadId,
 							  @ApiParam(value = "The map lead to add", required = true) MapLead mapLead) { 
 
@@ -340,7 +340,7 @@ public class MappingServiceRest {
 	 */
 	@PUT
 	@Path("/specialist/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Add a map specialist", notes = "Adds a MapSpecialist", response = MapSpecialist.class)
+	@ApiOperation(value = "Add a specialist", notes = "Adds a MapSpecialist", response = MapSpecialist.class)
 	public Response addMapSpecialist(@ApiParam(value = "Id of map specialist to add", required = true) @PathParam("id") Long mapSpecialistId,
 							  @ApiParam(value = "The map specialist to add", required = true) MapSpecialist mapSpecialist) { 
 
@@ -360,7 +360,7 @@ public class MappingServiceRest {
 	 */
 	@PUT
 	@Path("/record/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Add a map record", notes = "Adds a MapRecord", response = MapRecord.class)
+	@ApiOperation(value = "Add a record", notes = "Adds a MapRecord", response = MapRecord.class)
 	public Response addMapRecord(@ApiParam(value = "Id of map record to add", required = true) @PathParam("id") Long mapRecordId,
 							  @ApiParam(value = "The map record to add", required = true) MapRecord mapRecord) { 
 
@@ -388,7 +388,7 @@ public class MappingServiceRest {
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Update a map project", notes = "Updates a map project", response = MapProject.class)
+	@ApiOperation(value = "Update a project", notes = "Updates a map project", response = MapProject.class)
 	public Response updateMapProject(@ApiParam(value = "Id of map project to update", required = true) @PathParam("id") Long mapProjectId,
 							  @ApiParam(value = "The map project to update", required = true) MapProject mapProject) { 
 
@@ -408,7 +408,7 @@ public class MappingServiceRest {
 	 */
 	@POST
 	@Path("/lead/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Update a map lead", notes = "Updates a map lead", response = MapLead.class)
+	@ApiOperation(value = "Update a lead", notes = "Updates a map lead", response = MapLead.class)
 	public Response updateMapLead(@ApiParam(value = "Id of map lead to update", required = true) @PathParam("id") Long mapLeadId,
 							  @ApiParam(value = "The map lead to update", required = true) MapLead mapLead) { 
 
@@ -428,7 +428,7 @@ public class MappingServiceRest {
 	 */
 	@POST
 	@Path("/specialist/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Update a map specialist", notes = "Updates a map specialist", response = MapSpecialist.class)
+	@ApiOperation(value = "Update a specialist", notes = "Updates a map specialist", response = MapSpecialist.class)
 	public Response updateMapSpecialist(@ApiParam(value = "Id of map specialist to update", required = true) @PathParam("id") Long mapSpecialistId,
 							  @ApiParam(value = "The map specialist to update", required = true) MapSpecialist mapSpecialist) { 
 
@@ -448,7 +448,7 @@ public class MappingServiceRest {
 	 */
 	@POST
 	@Path("/record/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Update a map record", notes = "Updates a map record", response = MapRecord.class)
+	@ApiOperation(value = "Update a record", notes = "Updates a map record", response = MapRecord.class)
 	public Response updateMapRecord(@ApiParam(value = "Id of map record to update", required = true) @PathParam("id") Long mapRecordId,
 							  @ApiParam(value = "The map record to update", required = true) MapRecord mapRecord) { 
 
@@ -474,7 +474,7 @@ public class MappingServiceRest {
 	 */
 	@DELETE
 	@Path("/project/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Removes a map project", notes = "Removes a map project", response = MapProject.class)
+	@ApiOperation(value = "Remove a project", notes = "Removes a map project", response = MapProject.class)
 	public Response removeMapProject(@ApiParam(value = "Id of map project to remove", required = true) @PathParam("id") Long mapProjectId) { 
 
 		mappingServiceJpa. removeMapProject(mapProjectId);
@@ -488,7 +488,7 @@ public class MappingServiceRest {
 	 */
 	@DELETE
 	@Path("/lead/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Removes a map lead", notes = "Removes a map lead", response = MapLead.class)
+	@ApiOperation(value = "Remove a lead", notes = "Removes a map lead", response = MapLead.class)
 	public Response removeMapLead(@ApiParam(value = "Id of map lead to remove", required = true) @PathParam("id") Long mapLeadId) { 
 
 		mappingServiceJpa. removeMapLead(mapLeadId);
@@ -502,7 +502,7 @@ public class MappingServiceRest {
 	 */
 	@DELETE
 	@Path("/specialist/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Removes a map specialist", notes = "Removes a map specialist", response = MapSpecialist.class)
+	@ApiOperation(value = "Remove a specialist", notes = "Removes a map specialist", response = MapSpecialist.class)
 	public Response removeMapSpecialist(@ApiParam(value = "Id of map specialist to remove", required = true) @PathParam("id") Long mapSpecialistId) { 
 
 		mappingServiceJpa. removeMapSpecialist(mapSpecialistId);
@@ -516,7 +516,7 @@ public class MappingServiceRest {
 	 */
 	@DELETE
 	@Path("/record/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Removes a map record", notes = "Removes a map record", response = MapRecord.class)
+	@ApiOperation(value = "Remove a record", notes = "Removes a map record", response = MapRecord.class)
 	public Response removeMapRecord(@ApiParam(value = "Id of map record to remove", required = true) @PathParam("id") Long mapRecordId) { 
 
 		mappingServiceJpa. removeMapRecord(mapRecordId);
