@@ -82,22 +82,23 @@ public class MakeIndexesMojo extends AbstractMojo {
 			fullTextEntityManager.purgeAll(ConceptJpa.class);
 			fullTextEntityManager.flushToIndexes();
 			fullTextEntityManager.createIndexer(ConceptJpa.class)
-					.batchSizeToLoadObjects(25).cacheMode(CacheMode.NORMAL)
-					.threadsToLoadObjects(5).threadsForSubsequentFetching(20)
+					.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+					.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
 					.startAndWait();
+			
 			getLog().info("  Creating indexes for MapProjectJpa");
 			fullTextEntityManager.purgeAll(MapProjectJpa.class);
 			fullTextEntityManager.flushToIndexes();
 			fullTextEntityManager.createIndexer(MapProjectJpa.class)
-					.batchSizeToLoadObjects(25).cacheMode(CacheMode.NORMAL)
-					.threadsToLoadObjects(5).threadsForSubsequentFetching(20)
+					.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+					.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
 					.startAndWait();
 			getLog().info("  Creating indexes for MapRecordJpa");
 			fullTextEntityManager.purgeAll(MapRecordJpa.class);
 			fullTextEntityManager.flushToIndexes();
 			fullTextEntityManager.createIndexer(MapRecordJpa.class)
-					.batchSizeToLoadObjects(25).cacheMode(CacheMode.NORMAL)
-					.threadsToLoadObjects(5).threadsForSubsequentFetching(20)
+					.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+					.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
 					.startAndWait();			
 			getLog().info("  Completing MakeIndexes.java");
 			manager.close();
