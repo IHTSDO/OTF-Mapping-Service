@@ -50,8 +50,8 @@ public class MapPrincipleJpa implements MapPrinciple {
 	 * Return the id
 	 * @return the id
 	 */
-	@Override
 	@XmlTransient
+	@Override
 	public Long getId() {
 		return this.id;
 	}

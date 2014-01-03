@@ -224,6 +224,7 @@ public class MapProjectJpaTest {
 	/**
 	 * Confirm load.
 	 */
+	@SuppressWarnings("static-method")
 	private void confirmLoad() {
 		javax.persistence.Query query = manager
 				.createQuery("select m from MapProjectJpa m where refSetId = :refSetId");
@@ -245,6 +246,9 @@ public class MapProjectJpaTest {
 	 * @throws ParseException
 	 *             if lucene fails to parse query
 	 */
+	@SuppressWarnings({
+			"static-method", "unchecked"
+	})
 	@Test
 	public void testMapProjectIndex() throws ParseException {
 
@@ -320,6 +324,7 @@ public class MapProjectJpaTest {
 	/**
 	 * Test map project audit reader history.
 	 */
+	@SuppressWarnings("static-method")
 	@Test
 	public void testMapProjectAuditReader() {
 

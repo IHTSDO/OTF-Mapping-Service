@@ -69,8 +69,8 @@ public class MapNoteJpa implements MapNote {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapNote#getId()
 	 */
-	@Override
 	@XmlTransient
+	@Override
 	public Long getId() {
 		return id;
 	}

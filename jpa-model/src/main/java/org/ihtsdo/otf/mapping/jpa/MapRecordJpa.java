@@ -88,8 +88,8 @@ public class MapRecordJpa implements MapRecord {
 		//this.mapNotes = mapNotes;
 	}
 
-	@Override
 	@XmlTransient
+	@Override
 	public Long getId() {
 		return id;
 	}

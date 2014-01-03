@@ -18,10 +18,13 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
+/**
+ * REST implementation for content service
+ */
 @Path("/content")
 @Api(value = "/content", description = "Operations to retrieve RF2 content.")
 @Produces({
-		"application/json", "application/xml"
+	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
 public class ContentServiceRest {
 
@@ -43,14 +46,13 @@ public class ContentServiceRest {
 	}
 
 	/**
-	 * Returns a limited number of concepts
+	 * Returns a limited number of concepts.
 	 *
-	 * @param id the id
 	 * @return the concept for id
 	 */
 	@GET
 	@Path("/concept/concepts")
-	@ApiOperation(value = "Find limited number of concepts", notes = "Returns a list of concepts", response = Concept.class)
+	@ApiOperation(value = "Find limited number of concepts", notes = "Returns a list of concepts for testing purposes only", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -90,8 +92,8 @@ public class ContentServiceRest {
 	}
 
 	/**
-	 * Returns the concept for id, terminology, terminology version
-	 * 
+	 * Returns the concept for id, terminology, terminology version.
+	 *
 	 * @param id the id
 	 * @param terminology the concept terminology
 	 * @param terminologyVersion the concept terminology version
@@ -132,8 +134,8 @@ public class ContentServiceRest {
 	}
 
 	/**
-	 * Returns the concept for search string
-	 * 
+	 * Returns the concept for search string.
+	 *
 	 * @param searchString the lucene search string
 	 * @return the concept for id
 	 */

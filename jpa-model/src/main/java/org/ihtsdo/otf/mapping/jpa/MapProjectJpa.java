@@ -145,8 +145,8 @@ public class MapProjectJpa implements MapProject {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getId()
 	 */
-	@Override
 	@XmlTransient
+	@Override
 	public Long getId() {
 		return id;
 	}

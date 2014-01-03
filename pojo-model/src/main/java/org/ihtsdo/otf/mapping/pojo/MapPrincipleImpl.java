@@ -33,6 +33,7 @@ public class MapPrincipleImpl implements MapPrinciple {
 	 * Return the id
 	 * @return the id
 	 */
+	@Override
 	public Long getId() {
 		return this.id;
 	}

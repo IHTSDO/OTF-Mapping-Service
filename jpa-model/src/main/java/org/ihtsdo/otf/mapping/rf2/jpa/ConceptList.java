@@ -13,7 +13,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 /**
  * Container for map projects.
  */
-@XmlRootElement(name = "ConceptList")
+@XmlRootElement(name = "conceptList")
 public class ConceptList {
 
 	/** The map projects. */

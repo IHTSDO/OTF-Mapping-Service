@@ -8,8 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -55,17 +53,6 @@ public abstract class AbstractComponent implements Component {
 	/** The terminology version. */
 	@Column(nullable = false)
 	private String terminologyVersion;
-
-	/**
-	 * Returns the id. The @XmlID annotation cannot be used on a variable of type
-	 * Long, therefore we add an additional method that returns type String for
-	 * the XML
-	 * @return the id
-	 */
-	//@XmlID
-	public String getID() {
-		return terminologyId.toString();
-	}
 
 	/**
 	 * {@inheritDoc}

@@ -279,7 +279,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 			startTimeOrig = System.nanoTime();
 
-			getLog().info("  In RF2SnapshotLoader.java");
+			getLog().info("Start loading RF2 data ...");
 
 			// load Properties file
 			Properties properties = new Properties();
@@ -319,10 +319,10 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 			// Prepare sorted input files
 			sorted_files = new File(coreInputDir, "/RF2-sorted-temp/");
-			getLog().info("Sorting Files...");
+			getLog().info("    Sorting Files");
 			startTime = System.nanoTime();
 			prepareSortedFiles();
-			getLog().info("Files sorted in " + getElapsedTime() + "s");
+			getLog().info("    Files sorted in " + getElapsedTime() + "s");
 
 			closeAllInputFiles();
 
@@ -337,51 +337,51 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						.createQuery("DELETE From SimpleRefSetMemberJpa rs");
 				int deleteRecords = query.executeUpdate();
 				getLog().info(
-						"simple_ref_set records deleted: " + deleteRecords);
+						"    simple_ref_set records deleted: " + deleteRecords);
 				query = manager
 						.createQuery("DELETE From SimpleMapRefSetMemberJpa rs");
 				deleteRecords = query.executeUpdate();
 				getLog().info(
-						"simple_map_ref_set records deleted: " + deleteRecords);
+						"    simple_map_ref_set records deleted: " + deleteRecords);
 				query = manager
 						.createQuery("DELETE From ComplexMapRefSetMemberJpa rs");
 				deleteRecords = query.executeUpdate();
 				getLog().info(
-						"complex_map_ref_set records deleted: " + deleteRecords);
+						"    complex_map_ref_set records deleted: " + deleteRecords);
 				query = manager
 						.createQuery("DELETE From AttributeValueRefSetMemberJpa rs");
 				deleteRecords = query.executeUpdate();
 				getLog().info(
-						"attribute_value_ref_set records deleted: "
+						"    attribute_value_ref_set records deleted: "
 								+ deleteRecords);
 				query = manager
 						.createQuery("DELETE From LanguageRefSetMemberJpa rs");
 				deleteRecords = query.executeUpdate();
 				getLog().info(
-						"language_ref_set records deleted: " + deleteRecords);
+						"    language_ref_set records deleted: " + deleteRecords);
 
 				// Truncate Terminology Elements
 				query = manager.createQuery("DELETE From DescriptionJpa d");
 				deleteRecords = query.executeUpdate();
-				getLog().info("description records deleted: " + deleteRecords);
+				getLog().info("    description records deleted: " + deleteRecords);
 				query = manager.createQuery("DELETE From RelationshipJpa r");
 				deleteRecords = query.executeUpdate();
-				getLog().info("relationship records deleted: " + deleteRecords);
+				getLog().info("    relationship records deleted: " + deleteRecords);
 				query = manager.createQuery("DELETE From ConceptJpa c");
 				deleteRecords = query.executeUpdate();
-				getLog().info("concept records deleted: " + deleteRecords);
+				getLog().info("    concept records deleted: " + deleteRecords);
 
 				tx.commit();
 
 				// load Concepts
 				if (concepts_by_concept != null) {
 					startTime = System.nanoTime();
-					getLog().info("Loading Concepts...");
+					getLog().info("    Loading Concepts...");
 					tx.begin();
 					loadConcepts();
 					tx.commit();
 					getLog().info(
-							Integer.toString(i) + " Concepts loaded in "
+							"      " + Integer.toString(i) + " Concepts loaded in "
 									+ getElapsedTime() + "s");
 				}
 
@@ -392,25 +392,25 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 				// load Descriptions
 				if (descriptions_by_description != null) {
-					getLog().info("Loading Descriptions...");
+					getLog().info("    Loading Descriptions...");
 					startTime = System.nanoTime();
 					tx.begin();
 					loadDescriptions();
 					tx.commit();
 					getLog().info(
-							Integer.toString(i) + " Descriptions loaded in "
+							"      " + Integer.toString(i) + " Descriptions loaded in "
 									+ getElapsedTime().toString() + "s");
 				}
 
 				// load Language RefSet (Language)
 				if (language_refsets_by_description != null) {
-					getLog().info("Loading Language RefSets...");
+					getLog().info("    Loading Language RefSets...");
 					startTime = System.nanoTime();
 					tx.begin();
 					loadLanguageRefSets();
 					tx.commit();
 					getLog().info(
-							Integer.toString(i)
+							"      "+ Integer.toString(i)
 									+ " Language RefSets loaded in "
 									+ getElapsedTime().toString() + "s");
 				}
@@ -421,75 +421,76 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 				// load Relationships
 				if (relationships_by_source_concept != null) {
-					getLog().info("Loading Relationships...");
+					getLog().info("    Loading Relationships...");
 					startTime = System.nanoTime();
 					loadRelationships();
 					getLog().info(
-							Integer.toString(i) + " Relationships loaded in "
+							"      " + Integer.toString(i) + " Relationships loaded in "
 									+ getElapsedTime().toString() + "s");
 				}
 
 				// load Simple RefSets (Content)
 				if (simple_refsets_by_concept != null) {
-					getLog().info("Loading Simple RefSets...");
+					getLog().info("    Loading Simple RefSets...");
 					startTime = System.nanoTime();
 					loadSimpleRefSets();
 					getLog().info(
-							Integer.toString(i) + " Simple RefSets loaded in "
+							"      " + Integer.toString(i) + " Simple RefSets loaded in "
 									+ getElapsedTime().toString() + "s");
 				}
 
 				// load SimpleMapRefSets
 				if (simple_map_refsets_by_concept != null) {
-					getLog().info("Loading SimpleMap RefSets...");
+					getLog().info("    Loading SimpleMap RefSets...");
 					startTime = System.nanoTime();
 					loadSimpleMapRefSets();
 					getLog().info(
-							Integer.toString(i)
+							"      " + Integer.toString(i)
 									+ " SimpleMap RefSets loaded in "
 									+ getElapsedTime().toString() + "s");
 				}
 
 				// load ComplexMapRefSets
 				if (complex_map_refsets_by_concept != null) {
-					getLog().info("Loading ComplexMap RefSets...");
+					getLog().info("    Loading ComplexMap RefSets...");
 					startTime = System.nanoTime();
 					loadComplexMapRefSets();
 					getLog().info(
-							Integer.toString(i)
+							"      " + Integer.toString(i)
 									+ " ComplexMap RefSets loaded in "
 									+ getElapsedTime().toString() + "s");
 				}
 
 				// load ExtendedMapRefSets
 				if (extended_map_refsets_by_concept != null) {
-					getLog().info("Loading ExtendedMap RefSets...");
+					getLog().info("    Loading ExtendedMap RefSets...");
 					startTime = System.nanoTime();
 					loadExtendedMapRefSets();
 					getLog().info(
-							Integer.toString(i)
+							"      " + Integer.toString(i)
 									+ " ExtendedMap RefSets loaded in "
 									+ getElapsedTime().toString() + "s");
 				}
 
 				// load AttributeValue RefSets (Content)
 				if (attribute_refsets_by_concept != null) {
-					getLog().info("Loading AttributeValue RefSets...");
+					getLog().info("    Loading AttributeValue RefSets...");
 					startTime = System.nanoTime();
 					loadAttributeValueRefSets();
 					getLog().info(
-							Integer.toString(i)
+							"      " + Integer.toString(i)
 									+ " AttributeValue RefSets loaded in "
 									+ getElapsedTime().toString() + "s");
 				}
 
-				getLog().info("Committing...");
+				getLog().info("    Committing...");
 
 				tx.commit();
 
 				getLog().info(
-						"Total elapsed time for run: "
+						"    Total elapsed time for run: "
 								+ getTotalElapsedTimeStr());
+				getLog().info("done ...");
 
 			} catch (Exception e) {
 				tx.rollback();
@@ -719,6 +720,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		Comparator<String> comp;
 
 		comp = new Comparator<String>() {
+			@Override
 			public int compare(String s1, String s2) {
 				String v1[] = s1.split("\t");
 				String v2[] = s2.split("\t");
@@ -727,7 +729,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		};
 
 		getLog().info(
-				"Sorting " + file_in.toString() + "  into "
+				"      Sorting " + file_in.toString() + "  into "
 						+ file_out.toString() + " by column "
 						+ Integer.toString(sort_column));
 		sort(file_in.toString(), file_out.toString(), comp);
@@ -1192,7 +1194,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 			if (size_so_far > segment_size) {
 
-				sortHelper((String[]) lines.toArray(new String[0]), files1,
+				sortHelper(lines.toArray(new String[0]), files1,
 						comp, sortdir);
 
 				size_so_far = 0;
@@ -1203,7 +1205,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		// If there are left-over lines, create final tmp file
 		//
 		if (lines != null && lines.size() != 0 && size_so_far <= segment_size) {
-			sortHelper((String[]) lines.toArray(new String[0]), files1, comp,
+			sortHelper(lines.toArray(new String[0]), files1, comp,
 					sortdir);
 		}
 
@@ -1234,14 +1236,14 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					files2.add(files1.get(i));
 					break;
 				} else {
-					final File f = mergeSortedFiles((File) files1.get(i),
-							(File) files1.get(i + 1), comp, sortdir,
+					final File f = mergeSortedFiles(files1.get(i),
+							files1.get(i + 1), comp, sortdir,
 							header_line);
 
 					files2.add(f);
 
-					((File) files1.get(i)).delete();
-					((File) files1.get(i + 1)).delete();
+					files1.get(i).delete();
+					files1.get(i + 1).delete();
 				}
 			}
 
@@ -1252,7 +1254,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		// rename file
 
 		if (files1.size() > 0) {
-			((File) files1.get(0)).renameTo(dest_file);
+			files1.get(0).renameTo(dest_file);
 		}
 		
 		// if no files, create an empty file
@@ -1350,10 +1352,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			line = header_line;
 			out.write(line);
 			out.newLine();
-			System.out.println("Wrote header line: " + line);
-		}
-		{
-			System.out.println("No header line: " + line);
 		}
 
 		while (line1 != null || line2 != null) {
@@ -1402,6 +1400,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 *            (unused)
 	 * @return file_in the input file
 	 */
+	@SuppressWarnings("static-method")
 	public String sort_entries(String file_in, int column) {
 
 		return file_in;
@@ -1697,7 +1696,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						: false);
 				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
 				complexMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));
-				; // conceptId
+				// conceptId
 
 				// ComplexMap unique attributes
 				complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
@@ -1760,7 +1759,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						: false);
 				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
 				complexMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));
-				; // conceptId
+				// conceptId
 
 				// ComplexMap unique attributes
 				complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));

@@ -17,7 +17,7 @@ import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 
 /**
- * The Class MapAdviceJpa.
+ * JPA enabled map advice
  */
 @Entity
 @Table(name = "map_advices")
@@ -38,13 +38,16 @@ public class MapAdviceJpa implements MapAdvice {
 	@Column(nullable = false, unique = true, length = 255)
 	private String description;
 	
-	/** Default constructor */
+	/**
+	 * Instantiates an empty {@link MapAdviceJpa}.
+	 */
 	public MapAdviceJpa() {
 		// empty
 	}
 
 	/**
-	 * Constructor
+	 * Instantiates a {@link MapAdviceJpa} from the specified parameters.
+	 *
 	 * @param id the id
 	 * @param name the name
 	 * @param description the description
@@ -59,14 +62,15 @@ public class MapAdviceJpa implements MapAdvice {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getId()
 	 */
-	@Override
 	@XmlTransient
+	@Override
 	public Long getId() {
 		return id;
 	}
 	
 	/**
-	 * Return id as string
+	 * Return id as string.
+	 *
 	 * @return the id in string form
 	 */
 	@XmlID
@@ -85,8 +89,8 @@ public class MapAdviceJpa implements MapAdvice {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getDescription()
 	 */
-	@Override
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	@Override
 	public String getDescription() {
 		return description;
 	}
@@ -102,12 +106,15 @@ public class MapAdviceJpa implements MapAdvice {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getName()
 	 */
-	@Override
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setName(java.lang.String)
+	 */
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setName(java.lang.String)
 	 */
@@ -116,6 +123,9 @@ public class MapAdviceJpa implements MapAdvice {
 		this.name = name;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -127,6 +137,9 @@ public class MapAdviceJpa implements MapAdvice {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
