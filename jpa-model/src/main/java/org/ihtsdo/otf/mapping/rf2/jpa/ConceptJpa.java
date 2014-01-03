@@ -62,35 +62,35 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	private Set<Relationship> relationships = new HashSet<Relationship>();
 
 	/** The inverse relationships. */
-	@OneToMany(mappedBy = "destinationConcept", fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=RelationshipJpa.class)
+	@OneToMany(mappedBy = "destinationConcept", fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=RelationshipJpa.class)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=RelationshipJpa.class)
 	@XmlElement(type=RelationshipJpa.class)
 	private Set<Relationship> inverseRelationships = new HashSet<Relationship>();
 	
 	/** The simple RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=SimpleRefSetMemberJpa.class)
+	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=SimpleRefSetMemberJpa.class)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=SimpleRefSetMemberJpa.class)
 	@XmlElement(type=SimpleRefSetMemberJpa.class)
 	private Set<SimpleRefSetMember> simpleRefSetMembers = new HashSet<SimpleRefSetMember>();
 
 	/** The simpleMap RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=SimpleMapRefSetMemberJpa.class)
+	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=SimpleMapRefSetMemberJpa.class)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=SimpleMapRefSetMemberJpa.class)
 	@XmlElement(type=SimpleMapRefSetMemberJpa.class)
 	private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = new HashSet<SimpleMapRefSetMember>();
 
 	/** The complexMap RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=ComplexMapRefSetMemberJpa.class)
+	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=ComplexMapRefSetMemberJpa.class)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=ComplexMapRefSetMemberJpa.class)
 	@XmlElement(type=ComplexMapRefSetMemberJpa.class)
 	private Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<ComplexMapRefSetMember>();
 	
 	/** The attributeValue RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=AttributeValueRefSetMemberJpa.class)
+	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=AttributeValueRefSetMemberJpa.class)
 	@JsonManagedReference
 	@IndexedEmbedded(targetElement=AttributeValueRefSetMemberJpa.class)
 	@XmlElement(type=AttributeValueRefSetMemberJpa.class)

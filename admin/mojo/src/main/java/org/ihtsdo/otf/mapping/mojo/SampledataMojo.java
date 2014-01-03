@@ -378,10 +378,9 @@ public class SampledataMojo extends AbstractMojo {
 			
 			projects = (List<MapProject>) query.getResultList();
 			
-			int i = 0;
+			
 			for (MapProject m : projects) {
 
-				i++;
 				// <RefSetId, ProjectId>
 				projectRefSetIdMap.put(m.getRefSetId(), m.getId());
 				System.out.println(m.getRefSetId() + ", " + m.getId().toString());
@@ -400,7 +399,7 @@ public class SampledataMojo extends AbstractMojo {
 			
 			// Added to speed up process
 			tx.begin();
-			i = 0; // for progress tracking
+			int i = 0;// for progress tracking
 
 			for (Object member : query.getResultList()) {
 				
