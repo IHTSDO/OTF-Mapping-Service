@@ -13,7 +13,7 @@ import org.ihtsdo.otf.mapping.model.MapEntry;
 /**
  * Container for map entrys.
  */
-@XmlRootElement(name = "MapEntryList")
+@XmlRootElement(name = "mapEntryList")
 public class MapEntryList {
 
 	/** The map entrys. */
@@ -79,7 +79,7 @@ public class MapEntryList {
 	 * 
 	 * @return the map entrys
 	 */
-	@XmlElement(type=MapEntryJpa.class, name="MapEntry")
+	@XmlElement(type=MapEntryJpa.class, name="mapEntry")
 	public List<MapEntry> getmapEntrys() {
 		return mapEntrys;
 	}

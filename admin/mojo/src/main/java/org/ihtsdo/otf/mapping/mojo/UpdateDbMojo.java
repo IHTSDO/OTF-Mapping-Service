@@ -62,17 +62,14 @@ public class UpdateDbMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
-
 		try {
-
-			getLog().info("  Testing UpdateDbMojo.java");
-
+			getLog().info("Start updating database schema...");
 			EntityManagerFactory factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 			manager = factory.createEntityManager();
-
-			System.out.println(".. done");
 			manager.close();
 			factory.close();
+			getLog().info(".. done");
+
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);

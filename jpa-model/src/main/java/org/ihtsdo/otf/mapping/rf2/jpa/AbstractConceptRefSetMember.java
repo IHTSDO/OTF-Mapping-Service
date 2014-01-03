@@ -6,7 +6,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
-import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.ConceptRefSetMember;
 
@@ -20,7 +19,6 @@ public abstract class AbstractConceptRefSetMember extends AbstractRefSetMember
 
 	/** The Concept associated with this element */
 	@ManyToOne(targetEntity = ConceptJpa.class, optional = false)
-	@ContainedIn
 	private Concept concept;
 
 	/**

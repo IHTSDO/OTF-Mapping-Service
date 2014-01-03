@@ -16,7 +16,7 @@ import org.ihtsdo.otf.mapping.services.SearchResultList;
  * @author Patrick
  *
  */
-@XmlRootElement(name = "searchResultsList")
+@XmlRootElement(name = "searchResultList")
 public class SearchResultListJpa implements SearchResultList {
 	
 	/** The results */
@@ -37,7 +37,7 @@ public class SearchResultListJpa implements SearchResultList {
 	/**
 	 * @return the searchResults
 	 */
-	@XmlElement(type=SearchResultJpa.class, name = "searchResults")
+	@XmlElement(type=SearchResultJpa.class, name = "searchResult")
 	public List<SearchResult> getSearchResults() {
 		return searchResults;
 	}

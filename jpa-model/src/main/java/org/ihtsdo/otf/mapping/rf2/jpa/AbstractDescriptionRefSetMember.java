@@ -19,6 +19,8 @@ public abstract class AbstractDescriptionRefSetMember extends
 		AbstractRefSetMember implements DescriptionRefSetMember {
 
 	@ManyToOne(targetEntity = DescriptionJpa.class, optional = false)
+	// NOTE: this may apply only to LanguageRefSetMember given how
+	// description uses @IndexedEmbedded
 	@ContainedIn
 	private Description description;
 

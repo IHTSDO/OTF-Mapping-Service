@@ -31,7 +31,8 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
 /**
- * The Map Entry Jpa object
+ * The Map Entry Jpa object.
+ *
  */
 @Entity
 @Table(name = "map_entries")
@@ -44,6 +45,7 @@ public class MapEntryJpa implements MapEntry {
 	@GeneratedValue
 	private Long id;
 	
+	/** The map record. */
 	@ManyToOne(targetEntity=MapRecordJpa.class, optional=false)
 	@ContainedIn
 	private MapRecord mapRecord;
@@ -79,12 +81,16 @@ public class MapEntryJpa implements MapEntry {
 	@Column(nullable = false, length = 25)
 	private String relationId;
 
-	/** default constructor */
+	/**
+	 * default constructor.
+	 */
 	public MapEntryJpa() {
 		// empty
 	}
 
-	/** Constructor 
+	/**
+	 * Constructor.
+	 *
 	 * @param id the id
 	 * @param mapRecord the map record
 	 * @param mapNotes the map notes
@@ -111,14 +117,15 @@ public class MapEntryJpa implements MapEntry {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getId()
 	 */
-	@Override
 	@XmlTransient
+	@Override
 	public Long getId() {
 		return id;
 	}
 	
 	/**
-	 * Returns the id in string form
+	 * Returns the id in string form.
+	 *
 	 * @return the id in string form
 	 */
 	@XmlID
@@ -135,35 +142,35 @@ public class MapEntryJpa implements MapEntry {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getNotes()
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapNotes()
 	 */
 	@Override
 	@XmlElement(type=MapNoteJpa.class, name="mapNote")
-	public Set<MapNote> getNotes() {
+	public Set<MapNote> getMapNotes() {
 		return mapNotes;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setNotes(java.util.List)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapNotes(java.util.Set)
 	 */
 	@Override
-	public void setNotes(Set<MapNote> notes) {
+	public void setMapNotes(Set<MapNote> notes) {
 		this.mapNotes = notes;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#addNote(org.ihtsdo.otf.mapping.model.MapNote)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#addMapNote(org.ihtsdo.otf.mapping.model.MapNote)
 	 */
 	@Override
-	public void addNote(MapNote note) {
+	public void addMapNote(MapNote note) {
 		mapNotes.add(note);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#removeNote(org.ihtsdo.otf.mapping.model.MapNote)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#removeMapNote(org.ihtsdo.otf.mapping.model.MapNote)
 	 */
 	@Override
-	public void removeNote(MapNote note) {
+	public void removeMapNote(MapNote note) {
 		mapNotes.remove(note);
 	}
 
@@ -185,54 +192,66 @@ public class MapEntryJpa implements MapEntry {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getAdvices()
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapAdvices()
 	 */
-	@Override
 	@XmlElement(type=MapAdviceJpa.class, name="mapAdvice")
-	public Set<MapAdvice> getAdvices() {
+	@Override
+	public Set<MapAdvice> getMapAdvices() {
 		return mapAdvices;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setAdvices(java.util.Set)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapAdvices(java.util.Set)
 	 */
 	@Override
-	public void setAdvices(Set<MapAdvice> mapAdvices) {
+	public void setMapAdvices(Set<MapAdvice> mapAdvices) {
 		this.mapAdvices = mapAdvices;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#addAdvice(org.ihtsdo.otf.mapping.model.MapAdvice)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#addMapAdvice(org.ihtsdo.otf.mapping.model.MapAdvice)
 	 */
 	@Override
-	public void addAdvice(MapAdvice mapAdvice) {
+	public void addMapAdvice(MapAdvice mapAdvice) {
 		mapAdvices.add(mapAdvice);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#removeAdvice(org.ihtsdo.otf.mapping.model.MapAdvice)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#removeMapAdvice(org.ihtsdo.otf.mapping.model.MapAdvice)
 	 */
 	@Override
-	public void removeAdvice(MapAdvice mapAdvice) {
+	public void removeMapAdvice(MapAdvice mapAdvice) {
 		mapAdvices.remove(mapAdvice);
 	}
 	
-	@Override
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapPrinciples()
+	 */
 	@XmlElement(type=MapPrincipleJpa.class, name="mapPrinciple")
+	@Override
 	public Set<MapPrinciple> getMapPrinciples() {
 		return mapPrinciples;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapPrinciples(java.util.Set)
+	 */
 	@Override
 	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
 		this.mapPrinciples = mapPrinciples;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#addMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
+	 */
 	@Override
 	public void addMapPrinciple(MapPrinciple mapPrinciple) {
 		mapPrinciples.add(mapPrinciple);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#removeMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
+	 */
 	@Override
 	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
 		mapPrinciples.remove(mapPrinciple);
@@ -289,26 +308,36 @@ public class MapEntryJpa implements MapEntry {
 		this.relationId = relationId;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapRecord()
+	 */
 	@XmlTransient
 	@Override
 	public MapRecord getMapRecord() {
 		return this.mapRecord;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapRecord(org.ihtsdo.otf.mapping.model.MapRecord)
+	 */
 	@Override
 	public void setMapRecord(MapRecord mapRecord) {
 		this.mapRecord = mapRecord;
 	}
 	
 	/**
-	 * Return the map record id in string form
-	 * @return the map record id in string form
+	 * Returns the map record id.
+	 *
+	 * @return the map record id
 	 */
-	@XmlElement(name = "mapRecordId")
+	@XmlElement
 	public String getMapRecordId() {
 		return mapRecord != null ? mapRecord.getObjectId() : null;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -326,6 +355,9 @@ public class MapEntryJpa implements MapEntry {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -375,6 +407,9 @@ public class MapEntryJpa implements MapEntry {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return ""; /*MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord + ", mapNotes="

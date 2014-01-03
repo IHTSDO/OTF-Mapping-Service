@@ -5,10 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -26,7 +23,6 @@ import org.ihtsdo.otf.mapping.rf2.Relationship;
 }))
 @XmlRootElement(name="relationship")
 @Audited
-@XmlAccessorType(XmlAccessType.FIELD)
 public class RelationshipJpa extends AbstractComponent implements Relationship {
 
 	/** The source concept. */
@@ -36,7 +32,6 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 
 	/** The destination concept. */
 	@ManyToOne(targetEntity = ConceptJpa.class, optional=false)
-	@ContainedIn
 	private Concept destinationConcept;
 
 	/** The type id. */
@@ -55,17 +50,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	@Column(nullable = true)
 	private Integer relationshipGroup;
 	
-	/** Testing Json object management */
-	@XmlElement
-	private String getSourceId() {
-		return sourceConcept.getTerminologyId();
-	}
 	
-	@XmlElement	
-	private String getDestinationId() {
-		return destinationConcept.getTerminologyId();
-	}
-
 	/**
 	 * Returns the type id.
 	 * 
@@ -133,8 +118,8 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	 */
 	@XmlTransient
 	@Override
-	public ConceptJpa getSourceConcept() {
-		return (ConceptJpa)sourceConcept;
+	public Concept getSourceConcept() {
+		return sourceConcept;
 	}
 
 	/**
@@ -147,6 +132,12 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 		this.sourceConcept = sourceConcept;
 	}
 
+	/** For serialization */
+	@XmlElement
+	private String getSourceConceptId() {
+		return sourceConcept.getTerminologyId();
+	}
+
 	/**
 	 * Returns the destination concept.
 	 * 
@@ -154,8 +145,8 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	 */
 	@XmlTransient
 	@Override
-	public ConceptJpa getDestinationConcept() {
-		return (ConceptJpa)destinationConcept;
+	public Concept getDestinationConcept() {
+		return this.destinationConcept;
 	}
 
 	/**
@@ -167,6 +158,22 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	public void setDestinationConcept(Concept destinationConcept) {
 		this.destinationConcept = destinationConcept;
 	}
+
+	/** For serialization */
+	@XmlElement	
+	private String getDestinationConceptId() {
+		return destinationConcept.getTerminologyId();
+	}
+
+
+	/**
+   * Returns the destination concept preferred name. Used for XML/JSON serialization.
+ * @return the destination concept preferred name
+ */
+@XmlElement
+public String getDestinationConceptPreferredName() {
+    return destinationConcept != null ? destinationConcept.getDefaultPreferredName() : null;
+}
 
 	/**
 	 * Returns the relationship group.
