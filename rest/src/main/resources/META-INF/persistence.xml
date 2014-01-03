@@ -47,7 +47,7 @@
 
             <property name="hibernate.search.default.directory_provider"
               value="filesystem" />
-            <property name="hibernate.search.default.indexBase" value="C:\\Users\\Patrick/mapping/lucene/indexes" />
+            <property name="hibernate.search.default.indexBase" value="C:\\Users\\Brian Carlsen/mapping/lucene/indexes" />
             <property name="hibernate.search.lucene_version" value="LUCENE_36" />
 
             <!-- JDBC properties. -->
