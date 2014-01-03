@@ -129,6 +129,7 @@ public class MapEntryJpa implements MapEntry {
 	 * @return the id in string form
 	 */
 	@XmlID
+	@XmlElement
 	public String getObjectId() {
 		return id.toString();
 	}

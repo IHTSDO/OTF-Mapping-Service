@@ -80,6 +80,7 @@ public class MapNoteJpa implements MapNote {
 	 * @return the id in string form
 	 */
 	@XmlID
+	@XmlElement
 	public String getObjectId() {
 		return id.toString();
 	}

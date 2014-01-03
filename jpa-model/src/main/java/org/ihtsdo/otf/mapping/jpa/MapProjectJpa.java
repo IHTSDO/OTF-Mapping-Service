@@ -156,6 +156,7 @@ public class MapProjectJpa implements MapProject {
 	 * @return the id in string form
 	 */
 	@XmlID
+	@XmlElement
 	public String getObjectId() {
 		return id.toString();
 	}
