@@ -189,7 +189,6 @@ public abstract class AbstractComponent implements Component {
 	 */
 	@Override
 	@XmlID
-	@XmlElement(name="objectId")
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTerminologyId() {
 		return terminologyId;
