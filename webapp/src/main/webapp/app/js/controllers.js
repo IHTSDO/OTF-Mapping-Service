@@ -205,7 +205,7 @@ mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routePara
         $scope.searchConceptsStatus= $scope.conceptResults.count + " results found:";
        
       }).error(function(error) {
-    	$scope.searchConceptsStatus = "Could not retrieve concepts. <p>Error: " + error;
+    	$scope.searchConceptsStatus = "Could not retrieve concepts.";
       });
 	};
 	
@@ -229,7 +229,7 @@ mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routePara
         $scope.projectResults = data;
         $scope.searchProjectsStatus= $scope.projectResults.count + " results found:";
       }).error(function(error) {
-    	$scope.searchProjectsStatus = "Could not retrieve projects. <p>Error:" + error; 
+    	$scope.searchProjectsStatus = "Could not retrieve projects." 
       });
 	};
 	
@@ -251,9 +251,9 @@ mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routePara
         }	
       }).success(function(data) {
         $scope.recordResults = data;
-        $scope.searchRecordsStatus= $scope.recordResults.count + " results found:";
+        $scope.searchRecordsStatus= $scope.recordResults.count + " results found, listing by Concept ID:";
       }).error(function(error) {
-    	$scope.searchRecordsStatus = "Could not retrieve records. <p>Error:" + error; 
+    	$scope.searchRecordsStatus = "Could not retrieve records."; 
       });
 	};
 	

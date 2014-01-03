@@ -39,7 +39,7 @@
 <li ng-repeat="rel in concept.relationships">
 <p>Id: {{rel.terminologyId}}</p>
 <p>Active: {{rel.active}}</p>
-<p>Destination Concept: {{rel.destinationConceptId}} - {{rel.destinationConceptPreferredName}}</p>
+<p>Destination Concept: <a href="index.html#/concept/id/{{rel.destinationId}}">{{rel.destinationId}}</a></p>
 <p>Characteristic Type Id: {{rel.characteristicTypeId}}</p>
 <p>Modifier Id: {{rel.modifierId}}</p>
 <p>Type Id: {{rel.typeId}}</p>

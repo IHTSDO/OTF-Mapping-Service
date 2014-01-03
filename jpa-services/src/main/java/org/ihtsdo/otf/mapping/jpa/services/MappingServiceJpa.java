@@ -189,18 +189,13 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapProject> m = (List<MapProject>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+			List<MapProject> m = (List<MapProject>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapProjectJpa.class)
 														.getResultList();	
 			
 			System.out.println(Integer.toString(m.size()) + " map projects retrieved");
 			
 			for (MapProject mp : m) {
-				System.out.println("Object class: " + mp.getClass().toString());
-				if (mp instanceof MapProject) {
-					
-					s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId().toString(),mp.getName()));
-					System.out.println("Added project " + m.get(0).getName());
-				} 
+				s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId().toString(),mp.getName()));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -393,7 +388,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapSpecialist> m = (List<MapSpecialist>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+			List<MapSpecialist> m = (List<MapSpecialist>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapSpecialistJpa.class)
 														.getResultList();
 			
 			for (MapSpecialist ms : m) {
@@ -600,7 +595,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapLead> m = (List<MapLead>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+			List<MapLead> m = (List<MapLead>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapLeadJpa.class)
 														.getResultList();
 			
 			for (MapLead ml : m) {
@@ -816,7 +811,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapRecord> m = (List<MapRecord>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+			List<MapRecord> m = (List<MapRecord>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapRecordJpa.class)
 														.getResultList();
 			
 			for (MapRecord mr : m) {
@@ -926,7 +921,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapEntry> m = (List<MapEntry>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+			List<MapEntry> m = (List<MapEntry>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapEntryJpa.class)
 														.getResultList();
 			
 			for (MapEntry me : m) {
@@ -973,7 +968,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapNote> m = (List<MapNote>) fullTextEntityManager.createFullTextQuery(luceneQuery)
+			List<MapNote> m = (List<MapNote>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapNoteJpa.class)
 														.getResultList();
 			
 			for (MapNote me : m) {

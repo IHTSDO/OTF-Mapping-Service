@@ -1,7 +1,9 @@
 <!--  partial for displaying project :projectId -->
 
-<p>{{errorProject}}</p>
+<em>Note (1/2/2013):</em> Retrieval has not been fully optimized.  Retrieval of map records may be slow, particularly on the EC2 deployment machine.
+<p></p>
 <h3>Project: {{project.name}}</h3>
+<p></p>
 <p>Source Terminology: {{project.sourceTerminology}}, v. {{project.sourceTerminologyVersion}}</p>
 <p>Destination Terminology: {{project.destinationTerminology}}, v. {{project.destinationTerminologyVersion}}</p>
 <p>Ref Set Id: {{project.refSetId}}
@@ -26,7 +28,7 @@
 <p>{{errorRecords}}</p>
 <div ng-repeat="record in records">Record {{record.ID}} for concept {{record.conceptId}}
 		
-		<table cellpadding="5">
+		<table border="1" cellpadding="5">
 		<thead><tr><th>Target</th><th>Rule</th><th>Index</th><th>RelationId</th></tr></thead>
 		<tbody>
 		<tr ng-repeat="entry in record.mapEntry">

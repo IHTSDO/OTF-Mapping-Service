@@ -277,7 +277,7 @@ public class MappingServiceRest {
 	 * @return the map records
 	 */
 	@GET
-	@Path("/record/query/{String}")
+	@Path("/record/query/{string}")
 	@ApiOperation(value = "Find records by query", notes = "Returns map records for a query in either JSON or XML format", response = MapRecordList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapRecords(
