@@ -1,22 +1,30 @@
 <h3>Search Concepts</h3>
 
+<form>
 <input ng-model = "queryConcept">
-<input type="button" value="Search" ng-click="searchConcepts()">
-<input type="button" value="Reset" ng-click="resetConcepts()">
-<p>Example: <em>terminologyId:"102287002"</em>
+<button type="submit" ng-click="searchConcepts()">Search</button>
+<button type="reset" ng-click="resetConcepts()">Reset</button>
+<p>Example: (by name) <em>ossification</em>, <em>headache</em>, (by Concept ID) <em>102287002</em></p>
+</form>
+
 
 <p></p>
 <p>{{searchConceptsStatus}}</p>
 <ul>
-<li ng-repeat = "searchResult in conceptResults.searchResults"><a href="index.html#/concept/id/{{searchResult.terminologyId}}">{{searchResult.description}}</a></li>
+<li ng-repeat = "searchResult in conceptResults.searchResults"><a href="index.html#/concept/id/{{searchResult.terminologyId}}">{{searchResult.terminologyId}}</a> - {{searchResult.description}}</li>
 </ul>
+
+<hr>
 
 <h3>Search Projects</h3>
 
+<form>
 <input ng-model = "queryProject">
-<input type="button" value="Search" ng-click="searchProjects()">
-<input type="button" value="Reset" ng-click="resetProjects()">
-<p>Example: <em>destinationTerminology:"ICD9CM"</em>
+<button type="submit" ng-click="searchProjects()">Search</button>
+<button type="reset" ng-click="resetProjects()">Reset</button>
+<p>Examples: (by terminology) <em>ICD9CM</em>, (by Ref Set ID) </em>447562003</em></p>
+</form>
+
 
 <p></p>
 <p>{{searchProjectsStatus}}</p>
@@ -24,15 +32,19 @@
 <li ng-repeat = "searchResult in projectResults.searchResults"><a href="index.html#/project/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
 </ul>
 
+<hr>
+
 <h3>Search Records</h3>
 
+<form>
 <input ng-model = "queryRecord">
-<input type="button" value="Search" ng-click="searchRecords()">
-<input type="button" value="Reset" ng-click="resetRecords()">
-<p>Example: <em>TBD</em>
+<button type="submit" ng-click="searchRecords()">Search</button>
+<button type="reset" ng-click="resetRecords()">Reset</button>
+<p>Examples: (by map entry Target) <em>520.1</em>, (by map entry Rule) <em>ifa</em></em></p>
+</form>
 
 <p></p>
 <p>{{searchRecordsStatus}}</p>
 <ul>
-<li ng-repeat = "searchResult in projectResults.searchResults"><a href="index.html#/record/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
+<li ng-repeat = "searchResult in recordResults.searchResults"><a href="index.html#/record/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
 </ul>

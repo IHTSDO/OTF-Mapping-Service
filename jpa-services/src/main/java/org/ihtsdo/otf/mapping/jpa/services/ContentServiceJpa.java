@@ -178,7 +178,7 @@ public class ContentServiceJpa implements ContentService {
 			}
 
 			FullTextQuery fullTextQuery =
-					fullTextEntityManager.createFullTextQuery(luceneQuery);
+					fullTextEntityManager.createFullTextQuery(luceneQuery, ConceptJpa.class);
 			
 			List<Concept> concepts = fullTextQuery.getResultList();
 			

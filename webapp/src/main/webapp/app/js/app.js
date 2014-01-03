@@ -34,6 +34,11 @@ mapProjectApp.config(['$routeProvider',
 	      controller: 'MapRecordListCtrl'
 	  });
 	  
+	  $routeProvider.when('/record/id/:recordId', {
+		  templateUrl: 'partials/record-detail.html',
+	      controller: 'MapRecordDetailCtrl'
+	  });
+	  
 	  $routeProvider.when('/advice/advices', {
 		  templateUrl: 'partials/advice-list.html',
 	      controller: 'MapAdviceListCtrl'
