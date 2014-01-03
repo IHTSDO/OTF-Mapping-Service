@@ -57,17 +57,6 @@ public abstract class AbstractComponent implements Component {
 	private String terminologyVersion;
 
 	/**
-	 * Returns the id. The @XmlID annotation cannot be used on a variable of type
-	 * Long, therefore we add an additional method that returns type String for
-	 * the XML
-	 * @return the id
-	 */
-	//@XmlID
-	public String getID() {
-		return terminologyId.toString();
-	}
-
-	/**
 	 * {@inheritDoc}
 	 */
 	@Override

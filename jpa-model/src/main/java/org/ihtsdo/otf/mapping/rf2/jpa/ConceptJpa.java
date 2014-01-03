@@ -10,10 +10,9 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -30,8 +29,6 @@ import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 /**
  * Concrete implementation of {@link Concept} for use with JPA.
  */
@@ -40,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Audited
 @Indexed
 @XmlRootElement(name="concept")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class ConceptJpa extends AbstractComponent implements Concept {
 
 	/** The definition status id. */
@@ -49,51 +45,37 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
 	/** The descriptions. */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=DescriptionJpa.class)
-	@JsonManagedReference
 	@IndexedEmbedded(targetElement=DescriptionJpa.class)
-	@XmlElement(type=DescriptionJpa.class)
 	private Set<Description> descriptions = new HashSet<Description>();
 
 	/** The relationships. */
 	@OneToMany(mappedBy = "sourceConcept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=RelationshipJpa.class)
-	@JsonManagedReference
 	@IndexedEmbedded(targetElement=RelationshipJpa.class)
-	@XmlElement(type=RelationshipJpa.class)
 	private Set<Relationship> relationships = new HashSet<Relationship>();
 
 	/** The inverse relationships. */
 	@OneToMany(mappedBy = "destinationConcept", fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=RelationshipJpa.class)
-	@JsonManagedReference
 	@IndexedEmbedded(targetElement=RelationshipJpa.class)
-	@XmlElement(type=RelationshipJpa.class)
 	private Set<Relationship> inverseRelationships = new HashSet<Relationship>();
 	
 	/** The simple RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=SimpleRefSetMemberJpa.class)
-	@JsonManagedReference
 	@IndexedEmbedded(targetElement=SimpleRefSetMemberJpa.class)
-	@XmlElement(type=SimpleRefSetMemberJpa.class)
 	private Set<SimpleRefSetMember> simpleRefSetMembers = new HashSet<SimpleRefSetMember>();
 
 	/** The simpleMap RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=SimpleMapRefSetMemberJpa.class)
-	@JsonManagedReference
 	@IndexedEmbedded(targetElement=SimpleMapRefSetMemberJpa.class)
-	@XmlElement(type=SimpleMapRefSetMemberJpa.class)
 	private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = new HashSet<SimpleMapRefSetMember>();
 
 	/** The complexMap RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=ComplexMapRefSetMemberJpa.class)
-	@JsonManagedReference
 	@IndexedEmbedded(targetElement=ComplexMapRefSetMemberJpa.class)
-	@XmlElement(type=ComplexMapRefSetMemberJpa.class)
 	private Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<ComplexMapRefSetMember>();
 	
 	/** The attributeValue RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=AttributeValueRefSetMemberJpa.class)
-	@JsonManagedReference
 	@IndexedEmbedded(targetElement=AttributeValueRefSetMemberJpa.class)
-	@XmlElement(type=AttributeValueRefSetMemberJpa.class)
 	private Set<AttributeValueRefSetMember> attributeValueRefSetMembers = new HashSet<AttributeValueRefSetMember>();
 
 	/** The default preferred name. */
@@ -126,7 +108,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the descriptions
 	 */
 	@Override
-	
+	@XmlElement(type=DescriptionJpa.class)
     public Set<Description> getDescriptions() {
 		return descriptions;
 	}
@@ -168,7 +150,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the relationships
 	 */
 	@Override
-	
+	@XmlElement(type=RelationshipJpa.class)
     public Set<Relationship> getRelationships() {
 		return relationships;
 	}
@@ -189,7 +171,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the inverse relationships
 	 */
 	@Override
-	
+	@XmlTransient
     public Set<Relationship> getInverseRelationships() {
 		return inverseRelationships;
 	}
@@ -211,7 +193,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the set of SimpleRefSetMembers
 	 */
 	@Override
-	
+	@XmlTransient
 	public Set<SimpleRefSetMember> getSimpleRefSetMembers() {
 		return this.simpleRefSetMembers;
 	}
@@ -253,7 +235,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the set of SimpleMapRefSetMembers
 	 */
 	@Override
-	
+	@XmlTransient
 	public Set<SimpleMapRefSetMember> getSimpleMapRefSetMembers() {
 		return this.simpleMapRefSetMembers;
 	}
@@ -295,7 +277,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the set of ComplexMapRefSetMembers
 	 */
 	@Override
-	
+	@XmlTransient
 	public Set<ComplexMapRefSetMember> getComplexMapRefSetMembers() {
 		return this.complexMapRefSetMembers;
 	}
@@ -337,7 +319,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	 * @return the set of AttributeValueRefSetMembers
 	 */
 	@Override
-	
+	@XmlTransient
 	public Set<AttributeValueRefSetMember> getAttributeValueRefSetMembers() {
 		return this.attributeValueRefSetMembers;
 	}
