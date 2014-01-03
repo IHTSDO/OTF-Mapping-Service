@@ -61,6 +61,7 @@ public class MapPrincipleJpa implements MapPrinciple {
 	 * @return the id in string form
 	 */
 	@XmlID
+	@XmlElement
 	public String getObjectId() {
 		return id.toString();
 	}

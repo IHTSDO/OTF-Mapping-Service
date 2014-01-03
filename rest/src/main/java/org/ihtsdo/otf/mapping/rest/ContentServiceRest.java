@@ -7,6 +7,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -42,7 +43,7 @@ public class ContentServiceRest {
 
 		// TODO: wire this to metadata service (getTerminologyLatestVesrions)
 		terminologyLatestVersions = new HashMap<String, String>();
-		terminologyLatestVersions.put("SNOMED", "20130131");
+		terminologyLatestVersions.put("SNOMEDCT", "20130131");
 	}
 
 	/**
@@ -84,24 +85,24 @@ public class ContentServiceRest {
 			// do nothing, try alternative search
 		}
 		if (result == null) {
-			return contentServiceJpa.getConcept(id, "SNOMED",
-					terminologyLatestVersions.get("SNOMED"));
+			return contentServiceJpa.getConcept(id, "SNOMEDCT",
+					terminologyLatestVersions.get("SNOMEDCT"));
 		} else {
 			return result;
 		}
 	}
 
 	/**
-	 * Returns the concept for id, terminology, terminology version.
-	 *
+	 * Returns the concept for id, terminology. Looks in the latest version of the
+	 * terminology.
+	 * 
 	 * @param id the id
 	 * @param terminology the concept terminology
-	 * @param terminologyVersion the concept terminology version
 	 * @return the concept
 	 */
 	@GET
-	@Path("/concept/id/json/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find concept by id, terminology, version", notes = "Returns a concept in either xml json given a concept id, terminology, and version.", response = Concept.class)
+	@Path("/concept/{terminology}/current/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -109,8 +110,10 @@ public class ContentServiceRest {
 		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("terminologyVersion") String terminologyVersion) {
-		return contentServiceJpa.getConcept(id, terminology, terminologyVersion);
+		return contentServiceJpa.getConcept(id, terminology,
+				terminologyVersion);
 	}
+	
 
 	/**
 	 * Returns the concept for id, terminology. Looks in the latest version of the
@@ -132,7 +135,7 @@ public class ContentServiceRest {
 		return contentServiceJpa.getConcept(id, terminology,
 				terminologyLatestVersions.get(terminology));
 	}
-
+	
 	/**
 	 * Returns the concept for search string.
 	 *
@@ -142,14 +145,12 @@ public class ContentServiceRest {
 	@GET
 	@Path("/concept/query/{string}")
 	@ApiOperation(value = "Find concepts by search query", notes = "Returns concepts that are related to search query.", response = String.class)
-	public SearchResultList findConcepts(
+	public SearchResultList findConcepts (
 		@ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
-		try {
-			return contentServiceJpa.findConcepts(searchString);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block -- for BAC
-			e.printStackTrace();
-			return null;
-		}
+			try {
+				return contentServiceJpa.findConcepts(searchString);
+			} catch (Exception e) {
+				throw new WebApplicationException(e);
+			}
 	}
 }

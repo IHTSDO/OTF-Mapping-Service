@@ -96,6 +96,7 @@ public class MapRecordJpa implements MapRecord {
 	
 	@Override
 	@XmlID
+	@XmlElement
 	public String getObjectId() {
 		return id.toString();
 	}
