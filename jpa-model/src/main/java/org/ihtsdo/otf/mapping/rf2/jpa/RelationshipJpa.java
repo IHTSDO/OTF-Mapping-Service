@@ -10,14 +10,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Concrete implementation of {@link Relationship} for use with JPA.
@@ -33,17 +31,11 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 
 	/** The source concept. */
 	@ManyToOne(targetEntity = ConceptJpa.class, optional=false)
-	@JsonBackReference
-	@XmlIDREF
-	@XmlElement(type = ConceptJpa.class)
 	@ContainedIn
 	private Concept sourceConcept;
 
 	/** The destination concept. */
 	@ManyToOne(targetEntity = ConceptJpa.class, optional=false)
-	@JsonBackReference
-	@XmlIDREF
-	@XmlElement(type = ConceptJpa.class)
 	@ContainedIn
 	private Concept destinationConcept;
 
@@ -139,6 +131,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	 * 
 	 * @return the source concept
 	 */
+	@XmlTransient
 	@Override
 	public ConceptJpa getSourceConcept() {
 		return (ConceptJpa)sourceConcept;
@@ -159,6 +152,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	 * 
 	 * @return the destination concept
 	 */
+	@XmlTransient
 	@Override
 	public ConceptJpa getDestinationConcept() {
 		return (ConceptJpa)destinationConcept;

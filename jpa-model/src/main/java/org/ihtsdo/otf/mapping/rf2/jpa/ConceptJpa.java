@@ -14,6 +14,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -30,16 +31,16 @@ import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 /**
  * Concrete implementation of {@link Concept} for use with JPA.
  */
 @Entity
-@Table(name = "concepts", uniqueConstraints=@UniqueConstraint(columnNames={"terminologyId", "terminology", "terminologyVersion"}))
+@Table(name = "concepts", uniqueConstraints = @UniqueConstraint(columnNames = {
+		"terminologyId", "terminology", "terminologyVersion"
+}))
 @Audited
 @Indexed
-@XmlRootElement(name="concept")
+@XmlRootElement(name = "concept")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ConceptJpa extends AbstractComponent implements Concept {
 
@@ -48,48 +49,45 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	private Long definitionStatusId;
 
 	/** The descriptions. */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=DescriptionJpa.class)
-	@JsonManagedReference
-	@IndexedEmbedded(targetElement=DescriptionJpa.class)
-	@XmlElement(type=DescriptionJpa.class)
+	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = DescriptionJpa.class)
+	@IndexedEmbedded(targetElement = DescriptionJpa.class)
+	@XmlElement(type = DescriptionJpa.class)
 	private Set<Description> descriptions = new HashSet<Description>();
 
 	/** The relationships. */
-	@OneToMany(mappedBy = "sourceConcept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=RelationshipJpa.class)
-	@JsonManagedReference
-	@IndexedEmbedded(targetElement=RelationshipJpa.class)
-	@XmlElement(type=RelationshipJpa.class)
+	@OneToMany(mappedBy = "sourceConcept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = RelationshipJpa.class)
+	@IndexedEmbedded(targetElement = RelationshipJpa.class)
+	@XmlElement(type = RelationshipJpa.class)
 	private Set<Relationship> relationships = new HashSet<Relationship>();
 
 	/** The inverse relationships. */
-	@OneToMany(mappedBy = "destinationConcept", orphanRemoval = true, targetEntity=RelationshipJpa.class)
-	@JsonManagedReference
-	@XmlElement(type=RelationshipJpa.class)
+	@OneToMany(mappedBy = "destinationConcept", orphanRemoval = true, targetEntity = RelationshipJpa.class)
+	@XmlElement(type = RelationshipJpa.class)
 	private Set<Relationship> inverseRelationships = new HashSet<Relationship>();
-	
+
 	/** The simple RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=SimpleRefSetMemberJpa.class)
-	@JsonManagedReference
-	@XmlElement(type=SimpleRefSetMemberJpa.class)
-	private Set<SimpleRefSetMember> simpleRefSetMembers = new HashSet<SimpleRefSetMember>();
+	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = SimpleRefSetMemberJpa.class)
+	@XmlTransient
+	private Set<SimpleRefSetMember> simpleRefSetMembers =
+			new HashSet<SimpleRefSetMember>();
 
 	/** The simpleMap RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=SimpleMapRefSetMemberJpa.class)
-	@JsonManagedReference
-	@XmlElement(type=SimpleMapRefSetMemberJpa.class)
-	private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = new HashSet<SimpleMapRefSetMember>();
+	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = SimpleMapRefSetMemberJpa.class)
+	@XmlTransient
+	private Set<SimpleMapRefSetMember> simpleMapRefSetMembers =
+			new HashSet<SimpleMapRefSetMember>();
 
 	/** The complexMap RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=ComplexMapRefSetMemberJpa.class)
-	@JsonManagedReference
-	@XmlElement(type=ComplexMapRefSetMemberJpa.class)
-	private Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<ComplexMapRefSetMember>();
-	
+	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = ComplexMapRefSetMemberJpa.class)
+	@XmlTransient
+	private Set<ComplexMapRefSetMember> complexMapRefSetMembers =
+			new HashSet<ComplexMapRefSetMember>();
+
 	/** The attributeValue RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=AttributeValueRefSetMemberJpa.class)
-	@JsonManagedReference
-	@XmlElement(type=AttributeValueRefSetMemberJpa.class)
-	private Set<AttributeValueRefSetMember> attributeValueRefSetMembers = new HashSet<AttributeValueRefSetMember>();
+	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = AttributeValueRefSetMemberJpa.class)
+	@XmlTransient
+	private Set<AttributeValueRefSetMember> attributeValueRefSetMembers =
+			new HashSet<AttributeValueRefSetMember>();
 
 	/** The default preferred name. */
 	@Column(nullable = false, length = 256)
@@ -97,133 +95,128 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
 	/**
 	 * Returns the definition status id.
-	 *
+	 * 
 	 * @return the definition status id
 	 */
 	@Override
-    public Long getDefinitionStatusId() {
+	public Long getDefinitionStatusId() {
 		return definitionStatusId;
 	}
 
 	/**
 	 * Sets the definition status id.
-	 *
+	 * 
 	 * @param definitionStatusId the definition status id
 	 */
 	@Override
-    public void setDefinitionStatusId(Long definitionStatusId) {
+	public void setDefinitionStatusId(Long definitionStatusId) {
 		this.definitionStatusId = definitionStatusId;
 	}
 
 	/**
 	 * Returns the descriptions.
-	 *
+	 * 
 	 * @return the descriptions
 	 */
 	@Override
-	
-    public Set<Description> getDescriptions() {
+	public Set<Description> getDescriptions() {
 		return descriptions;
 	}
 
 	/**
 	 * Sets the descriptions.
-	 *
+	 * 
 	 * @param descriptions the descriptions
 	 */
 	@Override
-    public void setDescriptions(Set<Description> descriptions) {
+	public void setDescriptions(Set<Description> descriptions) {
 		this.descriptions = descriptions;
 	}
 
 	/**
 	 * Adds the description.
-	 *
+	 * 
 	 * @param description the description
 	 */
 	@Override
-    public void addDescription(Description description) {
+	public void addDescription(Description description) {
 		description.setConcept(this);
 		this.descriptions.add(description);
 	}
 
 	/**
 	 * Removes the description.
-	 *
+	 * 
 	 * @param description the description
 	 */
 	@Override
-    public void removeDescription(Description description) {
+	public void removeDescription(Description description) {
 		this.descriptions.remove(description);
 	}
 
 	/**
 	 * Returns the relationships.
-	 *
+	 * 
 	 * @return the relationships
 	 */
 	@Override
-	
-    public Set<Relationship> getRelationships() {
+	public Set<Relationship> getRelationships() {
 		return relationships;
 	}
 
 	/**
 	 * Sets the relationships.
-	 *
+	 * 
 	 * @param relationships the relationships
 	 */
 	@Override
-    public void setRelationships(Set<Relationship> relationships) {
+	public void setRelationships(Set<Relationship> relationships) {
 		this.relationships = relationships;
 	}
 
 	/**
 	 * Returns the inverse relationships.
-	 *
+	 * 
 	 * @return the inverse relationships
 	 */
 	@Override
-	
-    public Set<Relationship> getInverseRelationships() {
+	public Set<Relationship> getInverseRelationships() {
 		return inverseRelationships;
 	}
 
 	/**
 	 * Sets the inverse relationships.
-	 *
+	 * 
 	 * @param inverseRelationships the inverse relationships
 	 */
 	@Override
-    public void setInverseRelationships(Set<Relationship> inverseRelationships) {
+	public void setInverseRelationships(Set<Relationship> inverseRelationships) {
 		this.inverseRelationships = inverseRelationships;
 	}
-	
 
 	/**
 	 * Returns the set of SimpleRefSetMembers
-	 *
+	 * 
 	 * @return the set of SimpleRefSetMembers
 	 */
 	@Override
-	
 	public Set<SimpleRefSetMember> getSimpleRefSetMembers() {
 		return this.simpleRefSetMembers;
 	}
 
 	/**
 	 * Sets the set of SimpleRefSetMembers
-	 *
+	 * 
 	 * @param simpleRefSetMembers the set of SimpleRefSetMembers
 	 */
 	@Override
 	public void setSimpleRefSetMembers(Set<SimpleRefSetMember> simpleRefSetMembers) {
 		this.simpleRefSetMembers = simpleRefSetMembers;
 	}
-	
+
 	/**
 	 * Adds a SimpleRefSetMember to the set of SimpleRefSetMembers
-	 *
+	 * 
 	 * @param simpleRefSetMember the SimpleRefSetMembers to be added
 	 */
 	@Override
@@ -231,179 +224,188 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 		simpleRefSetMember.setConcept(this);
 		this.simpleRefSetMembers.add(simpleRefSetMember);
 	}
-	
+
 	/**
 	 * Removes a SimpleRefSetMember from the set of SimpleRefSetMembers
-	 *
+	 * 
 	 * @param simpleRefSetMember the SimpleRefSetMember to be removed
-	*/
+	 */
 	@Override
 	public void removeSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember) {
 		this.simpleRefSetMembers.remove(simpleRefSetMember);
 	}
-	
+
 	/**
 	 * Returns the set of SimpleMapRefSetMembers
-	 *
+	 * 
 	 * @return the set of SimpleMapRefSetMembers
 	 */
 	@Override
-	
 	public Set<SimpleMapRefSetMember> getSimpleMapRefSetMembers() {
 		return this.simpleMapRefSetMembers;
 	}
 
 	/**
 	 * Sets the set of SimpleMapRefSetMembers
-	 *
+	 * 
 	 * @param simpleMapRefSetMembers the set of SimpleMapRefSetMembers
 	 */
 	@Override
-	public void setSimpleMapRefSetMembers(Set<SimpleMapRefSetMember> simpleMapRefSetMembers) {
+	public void setSimpleMapRefSetMembers(
+		Set<SimpleMapRefSetMember> simpleMapRefSetMembers) {
 		this.simpleMapRefSetMembers = simpleMapRefSetMembers;
 	}
-	
+
 	/**
 	 * Adds a SimpleMapRefSetMember to the set of SimpleMapRefSetMembers
-	 *
+	 * 
 	 * @param simpleMapRefSetMember the SimpleMapRefSetMembers to be added
 	 */
 	@Override
-	public void addSimpleMapRefSetMember(SimpleMapRefSetMember simpleMapRefSetMember) {
+	public void addSimpleMapRefSetMember(
+		SimpleMapRefSetMember simpleMapRefSetMember) {
 		simpleMapRefSetMember.setConcept(this);
 		this.simpleMapRefSetMembers.add(simpleMapRefSetMember);
 	}
-	
+
 	/**
 	 * Removes a SimpleMapRefSetMember from the set of SimpleMapRefSetMembers
-	 *
+	 * 
 	 * @param simpleMapRefSetMember the SimpleMapRefSetMember to be removed
-	*/
+	 */
 	@Override
-	public void removeSimpleMapRefSetMember(SimpleMapRefSetMember simpleMapRefSetMember) {
+	public void removeSimpleMapRefSetMember(
+		SimpleMapRefSetMember simpleMapRefSetMember) {
 		this.simpleMapRefSetMembers.remove(simpleMapRefSetMember);
 	}
-	
+
 	/**
 	 * Returns the set of ComplexMapRefSetMembers
-	 *
+	 * 
 	 * @return the set of ComplexMapRefSetMembers
 	 */
 	@Override
-	
 	public Set<ComplexMapRefSetMember> getComplexMapRefSetMembers() {
 		return this.complexMapRefSetMembers;
 	}
 
 	/**
 	 * Sets the set of ComplexMapRefSetMembers
-	 *
+	 * 
 	 * @param complexMapRefSetMembers the set of ComplexMapRefSetMembers
 	 */
 	@Override
-	public void setComplexMapRefSetMembers(Set<ComplexMapRefSetMember> complexMapRefSetMembers) {
+	public void setComplexMapRefSetMembers(
+		Set<ComplexMapRefSetMember> complexMapRefSetMembers) {
 		this.complexMapRefSetMembers = complexMapRefSetMembers;
 	}
-	
+
 	/**
 	 * Adds a ComplexMapRefSetMember to the set of ComplexMapRefSetMembers
-	 *
+	 * 
 	 * @param complexMapRefSetMember the complexMapRefSetMembers to be added
 	 */
 	@Override
-	public void addComplexMapRefSetMember(ComplexMapRefSetMember complexMapRefSetMember) {
+	public void addComplexMapRefSetMember(
+		ComplexMapRefSetMember complexMapRefSetMember) {
 		complexMapRefSetMember.setConcept(this);
 		this.complexMapRefSetMembers.add(complexMapRefSetMember);
 	}
-	
+
 	/**
 	 * Removes a ComplexMapRefSetMember from the set of ComplexMapRefSetMembers
-	 *
+	 * 
 	 * @param complexMapRefSetMember the ComplexMapRefSetMember to be removed
-	*/
+	 */
 	@Override
-	public void removeComplexMapRefSetMember(ComplexMapRefSetMember complexMapRefSetMember) {
+	public void removeComplexMapRefSetMember(
+		ComplexMapRefSetMember complexMapRefSetMember) {
 		this.complexMapRefSetMembers.remove(complexMapRefSetMember);
 	}
-	
+
 	/**
 	 * Returns the set of AttributeValueRefSetMembers
-	 *
+	 * 
 	 * @return the set of AttributeValueRefSetMembers
 	 */
 	@Override
-	
 	public Set<AttributeValueRefSetMember> getAttributeValueRefSetMembers() {
 		return this.attributeValueRefSetMembers;
 	}
 
 	/**
 	 * Sets the set of AttributeValueRefSetMembers
-	 *
+	 * 
 	 * @param attributeValueRefSetMembers the set of AttributeValueRefSetMembers
 	 */
 	@Override
-	public void setAttributeValueRefSetMembers(Set<AttributeValueRefSetMember> attributeValueRefSetMembers) {
+	public void setAttributeValueRefSetMembers(
+		Set<AttributeValueRefSetMember> attributeValueRefSetMembers) {
 		this.attributeValueRefSetMembers = attributeValueRefSetMembers;
 	}
-	
+
 	/**
 	 * Adds a AttributeValueRefSetMember to the set of AttributeValueRefSetMembers
-	 *
-	 * @param attributeValueRefSetMember the AttributeValueRefSetMembers to be added
+	 * 
+	 * @param attributeValueRefSetMember the AttributeValueRefSetMembers to be
+	 *          added
 	 */
 	@Override
-	public void addAttributeValueRefSetMember(AttributeValueRefSetMember attributeValueRefSetMember) {
+	public void addAttributeValueRefSetMember(
+		AttributeValueRefSetMember attributeValueRefSetMember) {
 		attributeValueRefSetMember.setConcept(this);
 		this.attributeValueRefSetMembers.add(attributeValueRefSetMember);
 	}
-	
+
 	/**
-	 * Removes a AttributeValueRefSetMember from the set of AttributeValueRefSetMembers
-	 *
-	 * @param attributeValueRefSetMember the AttributeValueRefSetMember to be removed
-	*/
+	 * Removes a AttributeValueRefSetMember from the set of
+	 * AttributeValueRefSetMembers
+	 * 
+	 * @param attributeValueRefSetMember the AttributeValueRefSetMember to be
+	 *          removed
+	 */
 	@Override
-	public void removeAttributeValueRefSetMember(AttributeValueRefSetMember attributeValueRefSetMember) {
+	public void removeAttributeValueRefSetMember(
+		AttributeValueRefSetMember attributeValueRefSetMember) {
 		this.attributeValueRefSetMembers.remove(attributeValueRefSetMember);
 	}
 
 	/**
 	 * Returns the default preferred name.
-	 *
+	 * 
 	 * @return the default preferred name
 	 */
-    @Override
-  	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.YES)
-    public String getDefaultPreferredName() {
-    	return defaultPreferredName;
-	}	
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.YES)
+	public String getDefaultPreferredName() {
+		return defaultPreferredName;
+	}
 
 	/**
 	 * Sets the default preferred name.
-	 *
+	 * 
 	 * @param defaultPreferredName the default preferred name
 	 */
 	@Override
 	public void setDefaultPreferredName(String defaultPreferredName) {
 		this.defaultPreferredName = defaultPreferredName;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public String toString() {
-		 
-		 return this.getId() + "," +
-				 this.getTerminology() + "," +
-				 this.getTerminologyId() + "," +
-				 this.getTerminologyVersion() + "," +
-				 this.getEffectiveTime() + "," +
-				 this.isActive() + "," +
-				 this.getModuleId() + "," + // end of basic component fields
-				 
-				 this.getDefinitionStatusId() + "," +
-				 this.getDefaultPreferredName(); // end of basic concept fields
-	 }
+
+		return this.getId() + "," + this.getTerminology() + ","
+				+ this.getTerminologyId() + "," + this.getTerminologyVersion() + ","
+				+ this.getEffectiveTime() + "," + this.isActive() + ","
+				+ this.getModuleId() + "," + // end of basic component fields
+
+				this.getDefinitionStatusId() + "," + this.getDefaultPreferredName(); // end
+																																							// of
+																																							// basic
+																																							// concept
+																																							// fields
+	}
 }
