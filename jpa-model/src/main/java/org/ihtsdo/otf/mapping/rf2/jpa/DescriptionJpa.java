@@ -34,7 +34,6 @@ import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 @Table(name = "descriptions", uniqueConstraints = @UniqueConstraint(columnNames = {
 		"terminologyId", "terminology", "terminologyVersion" }))
 @Audited
-@Indexed
 @XmlRootElement(name = "description")
 public class DescriptionJpa extends AbstractComponent implements Description {
 
