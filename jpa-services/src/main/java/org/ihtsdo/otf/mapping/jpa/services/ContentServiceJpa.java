@@ -25,6 +25,7 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.SearchResultList;
@@ -143,6 +144,48 @@ public class ContentServiceJpa implements ContentService {
 		}
 	}
 
+	/**
+	 * Returns the descendants.
+	 *
+	 * @param conceptId the concept id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param descendantResultSet the descendant result set
+	 */
+	public void getDescendants(Long conceptId, String terminology, String terminologyVersion, Set<Concept> descendantResultSet) {
+		manager = factory.createEntityManager();
+		Set<Concept> children = new HashSet<Concept>();
+		
+		javax.persistence.Query query =
+				manager
+						.createQuery("select r from RelationshipJpa r where destinationConcept.terminologyId = :destinationTerminologyId");
+
+		try {
+
+			query.setParameter("destinationTerminologyId", conceptId.toString());
+			
+			List<Relationship> relationshipList =  query.getResultList();
+
+			for (Relationship rel : relationshipList) {
+				System.out.println("Child of " + conceptId.toString() + " is " + rel.getSourceConcept().getTerminologyId());				
+				children.add(rel.getSourceConcept());				
+			}
+			for(Concept child : children) {
+				if (child.getTerminology().equals(terminology) && child.getTerminologyVersion().equals(terminologyVersion) ) {
+					descendantResultSet.add(child);
+					getDescendants(new Long(child.getTerminologyId()), terminology, terminologyVersion, descendantResultSet);
+				}
+			}
+
+		} catch (NoResultException e) {
+			// log result and return null
+			Logger.getLogger(this.getClass()).info(
+					"Descendants query for terminologyId = " + conceptId + ", terminology = "
+							+ terminology + ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!");
+		}
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
