@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -24,8 +25,11 @@ import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.ConceptList;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.SearchResultList;
 
@@ -235,5 +239,78 @@ public class ContentServiceJpa implements ContentService {
 			fullTextEntityManager = null;
 		}
 	}
+	
+	/**
+	 * Find unmapped descendants for a concept
+	 * @return
+	 */
+	public List<Concept> getDescendantConcepts(Long terminologyId, String terminology, String terminologyVersion) {
+		
+		List<Concept> concepts = new ArrayList<Concept>();
+		Iterator<Concept> it_concept = concepts.iterator();
+		
+		// get the concept and add it as first element of concept list
+		concepts.add(getConcept(terminologyId, terminology, terminologyVersion));
+
+		// get all concepts associated with this concept via relationships
+		Iterator<Concept> it = concepts.iterator();
+		
+		while (it.hasNext()) {
+			
+			// retrieve this concept
+			Concept c = (Concept) it.next();
+			
+			// relationship sets
+			Set<Relationship> relationships = c.getRelationships();
+			Set<Relationship> inv_relationships = c.getInverseRelationships();
+			
+			// iterators for relationship sets
+			Iterator<Relationship> it_rel = relationships.iterator();
+			Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
+			
+			// iterate over relationships
+			while (it_rel.hasNext()) {
+				
+				// get destination concept
+				Concept c_rel = ((Relationship) it_rel.next()).getDestinationConcept();
+				
+				// if concept list does not contain this concept, add to list
+				if (!concepts.contains(c_rel)) {
+					concepts.add(c_rel);
+				}
+			}
+			
+			// iterate over inverse relationships
+			while (it_inv_rel.hasNext()) {
+				
+				// get destination concept
+				Concept c_rel = ((Relationship) it_inv_rel.next()).getSourceConcept();
+				
+				// if concept list does not contain this concept, add to list
+				if (!concepts.contains(c_rel)) {
+					concepts.add(c_rel);
+				}
+			}
+			
+		}
+		
+		return concepts;
+	}
+	
+	//////////////////////////////////////////
+	// Other Services
+	//////////////////////////////////////////
+	
+	public SearchResultList findUnmappedDescendants(MapProject mapProject) {
+	
+		SearchResultList results = new SearchResultListJpa();
+		
+		
+		
+		
+	
+	return results;
+	}
+
 
 }

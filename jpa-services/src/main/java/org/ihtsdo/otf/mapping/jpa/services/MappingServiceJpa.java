@@ -23,6 +23,7 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
@@ -38,7 +39,6 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SearchResultList;
-
 /**
  * 
  * The class for MappingServiceJpa
@@ -688,29 +688,7 @@ public class MappingServiceJpa implements MappingService {
 		
 	}
 	
-	////////////////////////////////////
-	// MapAdvice
-	// - getMapAdvices
-	// - getMapAdvice(Long id)
-	// - findMapAdvices(String query)
-	////////////////////////////////////
-	
-	/*
-	 * NOT YET IMPLEMENTED 
-    */
-	
-	public List<MapAdvice> getMapAdvices() {
-		return null;
-	}
-	
-	public MapAdvice getMapAdvice(Long id) {
-		return null;
-	}
-	
-	public SearchResultList findMapAdvices(String query) {
-		return null;
-	}
-	
+
 	////////////////////////////////////
 	// MapRecord
 	////////////////////////////////////
@@ -891,10 +869,17 @@ public class MappingServiceJpa implements MappingService {
     }
     
 
-    // TODO Fill in and put in appropriate places
-    /* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapEntrys(java.lang.String)
-	 */
+    
+	
+	////////////////////////////////////
+	// Other query services
+	////////////////////////////////////
+	
+    /**
+     * Service for finding MapEntrys by string query
+     * @param query the query string
+     * @return the search result list
+     */
 	@Override
 	public SearchResultList findMapEntrys(String query) {
 		SearchResultList s = new SearchResultListJpa();
@@ -938,10 +923,61 @@ public class MappingServiceJpa implements MappingService {
 		
 		return s;
 	}
+    
+	/**
+     * Service for finding MapAdvices by string query
+     * @param query the query string
+     * @return the search result list
+     */
+	public SearchResultList findMapAdvices(String query) {
+		SearchResultList s = new SearchResultListJpa();
+		EntityManager manager = factory.createEntityManager();
+		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
+		
+		try {
+				SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			Query luceneQuery;
+		
+			// construct luceneQuery based on URL format
+			if (query.indexOf(':') == -1) { // no fields indicated
+				MultiFieldQueryParser queryParser =
+						new MultiFieldQueryParser(Version.LUCENE_36,
+								fieldNames.toArray(new String[0]),
+								searchFactory.getAnalyzer(MapAdviceJpa.class));
+				queryParser.setAllowLeadingWildcard(false);
+				luceneQuery = queryParser.parse(query);
+		
+			
+			} else { // field:value
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+						searchFactory.getAnalyzer(MapAdviceJpa.class));
+				luceneQuery = queryParser.parse(query);
+			}
+			
+			List<MapAdvice> m = (List<MapAdvice>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapNoteJpa.class)
+														.getResultList();
+			
+			for (MapAdvice ma : m) {
+				s.addSearchResult(new SearchResultJpa(ma.getId(), "", ma.getName()));
+			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		if (manager.isOpen()) { manager.close(); }
+		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
+		
+		return s;
+	}
+	
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMapNotes(java.lang.String)
-	 */
+	/**
+     * Service for finding MapNote by string query
+     * @param query the query string
+     * @return the search result list
+     */
 	@Override
 	public SearchResultList findMapNotes(String query) {
 		SearchResultList s = new SearchResultListJpa();
@@ -1018,7 +1054,7 @@ public class MappingServiceJpa implements MappingService {
 	
 	/**
 	 * Retrieve map records for a given concept id
-	 * @param conceptId the concept id
+	 * @param mapProjectId the concept id
 	 * @return the list of map records
 	 */
 	public List<MapRecord> getMapRecordsForMapProjectId(String mapProjectId) {
@@ -1042,6 +1078,7 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 	}
 
+	
 
 	
 	
