@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.mapping.services.SearchResult;
@@ -41,6 +42,7 @@ public class SearchResultJpa implements SearchResult {
 	 * @return the id
 	 */
 	@Override
+	@XmlElement(name = "id")
 	public Long getId() {
 		return this.id;
 	}
@@ -60,6 +62,7 @@ public class SearchResultJpa implements SearchResult {
 	 * @return the id
 	 */
 	@Override
+	@XmlElement(name = "terminologyId")
 	public String getTerminologyId() {
 		return this.terminologyId;
 	}
@@ -79,6 +82,7 @@ public class SearchResultJpa implements SearchResult {
 	 * @return the description
 	 */
 	@Override
+	@XmlElement(name = "description")
 	public String getDescription() {
 		return this.description;
 	}
@@ -92,10 +96,9 @@ public class SearchResultJpa implements SearchResult {
 		this.description = description;
 		
 	}
+	
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -103,12 +106,11 @@ public class SearchResultJpa implements SearchResult {
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((terminologyId == null) ? 0 : terminologyId.hashCode());
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -135,6 +137,15 @@ public class SearchResultJpa implements SearchResult {
 		} else if (!id.equals(other.id)) {
 			return false;
 		}
+		if (terminologyId == null) {
+			if (other.terminologyId != null) {
+				return false;
+			}
+		} else if (!terminologyId.equals(other.terminologyId)) {
+			return false;
+		}
+		
+		
 		return true;
 	}
 

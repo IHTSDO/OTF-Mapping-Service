@@ -15,7 +15,7 @@
 <h4>Descriptions:</h4>
 <p>
 <ul>
-<li ng-repeat="description in concept.descriptions">
+<li ng-repeat="description in concept.description">
 <p>Id: {{description.terminologyId}}
 <p>Terminology: {{description.terminology}}, v. {{description.terminologyVersion}}</p>
 <p>Active: {{description.active}}</p>
@@ -24,7 +24,7 @@
 <p>
 <p>Language RefSets for this Description:
 <ul>
-<li ng-repeat="refset in descriptions.languageRefSetMember">
+<li ng-repeat="refset in description.languageRefSetMember">
 <p>Id: {{refset.terminologyId}}</p>
 <p>RefSet Id: {{refset.refSetId}}</p>
 <p>Acceptability Id: {{refset.acceptabilityId}}</p>
@@ -36,7 +36,7 @@
 <h4>Relationships:</h4>
 <p>
 <ul>
-<li ng-repeat="rel in concept.relationships">
+<li ng-repeat="rel in concept.relationship">
 <p>Id: {{rel.terminologyId}}</p>
 <p>Active: {{rel.active}}</p>
 <p>Destination Concept: <a href="index.html#/concept/id/{{rel.destinationId}}">{{rel.destinationId}}</a></p>

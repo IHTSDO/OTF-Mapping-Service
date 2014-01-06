@@ -154,4 +154,25 @@ public class ContentServiceRest {
 				throw new WebApplicationException(e);
 			}
 	}
+	
+	/**
+	 * Returns the descendants of a concept as mapped by relationships and inverse relationships
+	 * @param id the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the search result list
+	 */
+	@GET
+	@Path("/concept/{terminology}/{version}/id/{id:[0-9][0-9]*}/descendants")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public SearchResultList getConceptDescendants(
+		@ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("id") Long id,
+		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
+		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
+		return contentServiceJpa.getConceptDescendants(id, terminology,
+				terminologyVersion);
+	}
 }

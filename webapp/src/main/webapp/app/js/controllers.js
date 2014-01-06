@@ -262,6 +262,34 @@ mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routePara
 		$scope.searchRecordsStatus = "No concept query executed";
 	};
 }]);
+
+
+mapProjectAppControllers.controller('QueryConceptCtrl', ['$scope', '$http', '$routeParams',
+   function ($scope, $http, $routeParams) {
+	
+	$scope.query = $routeParams.query;
+	$scope.searchConceptsStatus = "Searching concepts for query: " + $routeParams.query;
+	
+	$http({
+      url: root_content + "concept/query/" + $routeParams.query,
+      dataType: "json",
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }	
+    }).success(function(data) {
+      $scope.conceptResults = data;
+      $scope.searchConceptsStatus= $scope.conceptResults.count + " results found:";
+   
+    }).error(function(error) {
+    	$scope.searchConceptsStatus = "Could not retrieve concepts.";
+    });
+    	$scope.resetConcepts = function(id) {
+		$scope.conceptResults = "";
+		$scope.searchConceptsStatus = "No concept query executed";
+	};
+	
+}]);
   
 //////////////////////////////
 // Specialized Services
