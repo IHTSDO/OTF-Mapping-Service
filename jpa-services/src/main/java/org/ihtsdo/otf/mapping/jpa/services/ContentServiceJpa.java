@@ -75,17 +75,6 @@ public class ContentServiceJpa implements ContentService {
 		System.out.println("ended init " + fieldNames.toString());
 	}
 
-	/**
-	 * Returns the concept for id.
-	 * 
-	 * @param id the id
-	 * @return the concept for id
-	 */
-	public Concept getConceptForId(Long id) {
-		return getConcept(id);
-
-	}
-
 	/** 
 	 * Retrieves a limited number of concepts
 	 * FOR TESTING PURPOSES ONLY
@@ -118,33 +107,7 @@ public class ContentServiceJpa implements ContentService {
 	@Override
 	public Concept getConcept(Long conceptId) {
 		manager = factory.createEntityManager();
-		javax.persistence.Query query = manager.createQuery("select c from ConceptJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
-		
-		/*
-		 * Try to retrieve the single expected result
-		 * If zero or more than one result are returned, log error and set result to null
-		 */
-
-		String terminology = "SNOMEDCT";
-		String terminologyVersion = "20130131";
-		try {
-			
-			query.setParameter("terminologyId", conceptId.toString());
-			query.setParameter("terminology", terminology);
-			query.setParameter("terminologyVersion", terminologyVersion);
-
-			Concept c = (Concept) query.getSingleResult();
-
-			System.out.println("Returning cid... " + ((c != null) ? c.getTerminologyId().toString() : "null"));
-			return c;
-			
-		} catch (NoResultException e) {
-			System.out.println("Concept query for terminologyId = " + conceptId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned no results!");
-			return null;		
-		} catch (NonUniqueResultException e) {
-			System.out.println("Concept query for terminologyId = " + conceptId + ", terminology = " + terminology + ", terminologyVersion = " + terminologyVersion + " returned multiple results!");
-			return null;
-		}	
+		return manager.find(ConceptJpa.class, conceptId);
 	}
 
 	/**
@@ -184,6 +147,48 @@ public class ContentServiceJpa implements ContentService {
 		}
 	}
 
+	/**
+	 * Returns the descendants.
+	 *
+	 * @param conceptId the concept id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param descendantResultSet the descendant result set
+	 */
+	public void getDescendants(Long conceptId, String terminology, String terminologyVersion, Set<Concept> descendantResultSet) {
+		manager = factory.createEntityManager();
+		Set<Concept> children = new HashSet<Concept>();
+		
+		javax.persistence.Query query =
+				manager
+						.createQuery("select r from RelationshipJpa r where destinationConcept.terminologyId = :destinationTerminologyId");
+
+		try {
+
+			query.setParameter("destinationTerminologyId", conceptId.toString());
+			
+			List<Relationship> relationshipList =  query.getResultList();
+
+			for (Relationship rel : relationshipList) {
+				System.out.println("Child of " + conceptId.toString() + " is " + rel.getSourceConcept().getTerminologyId());				
+				children.add(rel.getSourceConcept());				
+			}
+			for(Concept child : children) {
+				if (child.getTerminology().equals(terminology) && child.getTerminologyVersion().equals(terminologyVersion) ) {
+					descendantResultSet.add(child);
+					getDescendants(new Long(child.getTerminologyId()), terminology, terminologyVersion, descendantResultSet);
+				}
+			}
+
+		} catch (NoResultException e) {
+			// log result and return null
+			Logger.getLogger(this.getClass()).info(
+					"Descendants query for terminologyId = " + conceptId + ", terminology = "
+							+ terminology + ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!");
+		}
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

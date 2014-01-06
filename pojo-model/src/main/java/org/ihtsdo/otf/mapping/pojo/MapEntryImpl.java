@@ -63,7 +63,7 @@ public class MapEntryImpl implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getNotes()
 	 */
 	@Override
-	public Set<MapNote> getNotes() {
+	public Set<MapNote> getMapNotes() {
 		return mapNotes;
 	}
 
@@ -71,7 +71,7 @@ public class MapEntryImpl implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setNotes(java.util.List)
 	 */
 	@Override
-	public void setNotes(Set<MapNote> mapNotes) {
+	public void setMapNotes(Set<MapNote> mapNotes) {
 		this.mapNotes = mapNotes;
 	}
 
@@ -79,7 +79,7 @@ public class MapEntryImpl implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#addNote(org.ihtsdo.otf.mapping.model.MapNote)
 	 */
 	@Override
-	public void addNote(MapNote note) {
+	public void addMapNote(MapNote note) {
 		mapNotes.add(note);
 	}
 
@@ -87,7 +87,7 @@ public class MapEntryImpl implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#removeNote(org.ihtsdo.otf.mapping.model.MapNote)
 	 */
 	@Override
-	public void removeNote(MapNote note) {
+	public void removeMapNote(MapNote note) {
 		mapNotes.remove(note);
 	}
 
@@ -111,7 +111,7 @@ public class MapEntryImpl implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getAdvices()
 	 */
 	@Override
-	public Set<MapAdvice> getAdvices() {
+	public Set<MapAdvice> getMapAdvices() {
 		return mapAdvices;
 	}
 
@@ -119,7 +119,7 @@ public class MapEntryImpl implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setAdvices(java.util.Set)
 	 */
 	@Override
-	public void setAdvices(Set<MapAdvice> mapAdvices) {
+	public void setMapAdvices(Set<MapAdvice> mapAdvices) {
 		this.mapAdvices = mapAdvices;
 	}
 
@@ -127,7 +127,7 @@ public class MapEntryImpl implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#addAdvice(org.ihtsdo.otf.mapping.model.MapAdvice)
 	 */
 	@Override
-	public void addAdvice(MapAdvice mapAdvice) {
+	public void addMapAdvice(MapAdvice mapAdvice) {
 		mapAdvices.add(mapAdvice);
 	}
 
@@ -135,7 +135,7 @@ public class MapEntryImpl implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#removeAdvice(org.ihtsdo.otf.mapping.model.MapAdvice)
 	 */
 	@Override
-	public void removeAdvice(MapAdvice mapAdvice) {
+	public void removeMapAdvice(MapAdvice mapAdvice) {
 		mapAdvices.remove(mapAdvice);
 	}
 	

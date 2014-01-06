@@ -20,7 +20,6 @@ import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -59,7 +58,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 	private Concept concept;
 
 	/** The language RefSet members */
-	@OneToMany(mappedBy = "description", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = LanguageRefSetMemberJpa.class)
+	@OneToMany(mappedBy = "description", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = LanguageRefSetMemberJpa.class)
 	@IndexedEmbedded(targetElement = LanguageRefSetMemberJpa.class)
 	private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<LanguageRefSetMember>();
 

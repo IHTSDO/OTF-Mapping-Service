@@ -27,14 +27,11 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 
 	/** The source concept. */
 	@ManyToOne(targetEntity = ConceptJpa.class, optional=false)
-	@XmlTransient
 	@ContainedIn
 	private Concept sourceConcept;
 
 	/** The destination concept. */
 	@ManyToOne(targetEntity = ConceptJpa.class, optional=false)
-	@XmlTransient
-	@ContainedIn
 	private Concept destinationConcept;
 
 	/** The type id. */
@@ -53,28 +50,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	@Column(nullable = true)
 	private Integer relationshipGroup;
 	
-	/** For serialization */
-	@XmlElement
-	private String getSourceId() {
-		return sourceConcept.getTerminologyId();
-	}
 	
-	/** For serialization */
-	@XmlElement	
-	private String getDestinationId() {
-		return destinationConcept.getTerminologyId();
-	}
-	
-	/**
-     * Returns the destination concept preferred name. Used for XML/JSON serialization.
-	 * @return the destination concept preferred name
-	 */
-	@XmlElement
-	public String getDestinationConceptPreferredName() {
-	    return destinationConcept != null ? destinationConcept.getDefaultPreferredName() : null;
-	}
-	
-
 	/**
 	 * Returns the type id.
 	 * 
@@ -140,8 +116,8 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	 * 
 	 * @return the source concept
 	 */
-	@Override
 	@XmlTransient
+	@Override
 	public Concept getSourceConcept() {
 		return sourceConcept;
 	}
@@ -156,13 +132,19 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 		this.sourceConcept = sourceConcept;
 	}
 
+	/** For serialization */
+	@XmlElement
+	private String getSourceConceptId() {
+		return sourceConcept.getTerminologyId();
+	}
+
 	/**
 	 * Returns the destination concept.
 	 * 
 	 * @return the destination concept
 	 */
-	@Override
 	@XmlTransient
+	@Override
 	public Concept getDestinationConcept() {
 		return this.destinationConcept;
 	}
@@ -176,6 +158,22 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 	public void setDestinationConcept(Concept destinationConcept) {
 		this.destinationConcept = destinationConcept;
 	}
+
+	/** For serialization */
+	@XmlElement	
+	private String getDestinationConceptId() {
+		return destinationConcept.getTerminologyId();
+	}
+
+
+	/**
+   * Returns the destination concept preferred name. Used for XML/JSON serialization.
+ * @return the destination concept preferred name
+ */
+@XmlElement
+public String getDestinationConceptPreferredName() {
+    return destinationConcept != null ? destinationConcept.getDefaultPreferredName() : null;
+}
 
 	/**
 	 * Returns the relationship group.

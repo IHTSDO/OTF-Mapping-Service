@@ -26,28 +26,28 @@ public interface MapEntry {
 	 *
 	 * @return the notes
 	 */
-	public Set<MapNote> getNotes();
+	public Set<MapNote> getMapNotes();
 	
 	/**
 	 * Sets the notes.
 	 *
 	 * @param notes the notes
 	 */
-	public void setNotes(Set<MapNote> notes);
+	public void setMapNotes(Set<MapNote> notes);
 	
 	/**
 	 * Adds the note.
 	 *
 	 * @param note the note
 	 */
-	public void addNote(MapNote note);
+	public void addMapNote(MapNote note);
 	
 	/**
 	 * Removes the note.
 	 *
 	 * @param note the note
 	 */
-	public void removeNote(MapNote note);
+	public void removeMapNote(MapNote note);
 	
 	/**
 	 * Returns the target.
@@ -68,28 +68,28 @@ public interface MapEntry {
 	 *
 	 * @return the advices
 	 */
-	public Set<MapAdvice> getAdvices();
+	public Set<MapAdvice> getMapAdvices();
 	
 	/**
 	 * Sets the advices.
 	 *
 	 * @param mapAdvices the advices
 	 */
-	public void setAdvices(Set<MapAdvice> mapAdvices);
+	public void setMapAdvices(Set<MapAdvice> mapAdvices);
 	
 	/**
 	 * Adds the advice.
 	 *
 	 * @param mapAdvice the map advice
 	 */
-	public void addAdvice(MapAdvice mapAdvice);
+	public void addMapAdvice(MapAdvice mapAdvice);
 	
 	/**
 	 * Removes the advice.
 	 *
 	 * @param mapAdvice the map advice
 	 */
-	public void removeAdvice(MapAdvice mapAdvice);
+	public void removeMapAdvice(MapAdvice mapAdvice);
 	
 	/**
 	 * Returns the rule.
