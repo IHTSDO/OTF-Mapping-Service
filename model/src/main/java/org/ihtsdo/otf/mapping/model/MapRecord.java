@@ -125,21 +125,21 @@ public interface MapRecord {
 	/**
 	 * Sets the set of allowable map principles.
 	 *
-	 * @param mapAdvices the map principles
+	 * @param mapPrinciples the map principles
 	 */
 	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples);
 	
 	/**
 	 * Adds an allowable map principle.
 	 *
-	 * @param mapAdvice the map principle
+	 * @param mapPrinciple the map principle
 	 */
 	public void addMapPrinciple(MapPrinciple mapPrinciple);
 	
 	/**
 	 * Removes an allowable map principle.
 	 *
-	 * @param mapAdvice the map principle
+	 * @param mapPrinciple the map principle
 	 */
 	public void removeMapPrinciple(MapPrinciple mapPrinciple);
 	

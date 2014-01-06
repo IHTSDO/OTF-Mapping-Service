@@ -92,6 +92,7 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getNotes()
 	 */
+	@Override
 	public Set<MapNote> getMapNotes() {
 		return mapNotes;
 	}
@@ -99,6 +100,7 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setNotes(java.util.List)
 	 */
+	@Override
 	public void setMapNotes(Set<MapNote> mapNotes) {
 		this.mapNotes = mapNotes;
 	}
@@ -106,6 +108,7 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addNote(org.ihtsdo.otf.mapping.model.MapNote)
 	 */
+	@Override
 	public void addMapNote(MapNote mapNote) {
 		mapNotes.add(mapNote);
 	}
@@ -113,6 +116,7 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeNote(org.ihtsdo.otf.mapping.model.MapNote)
 	 */
+	@Override
 	public void removeMapNote(MapNote mapNote) {
 		mapNotes.remove(mapNote);
 	}
@@ -120,6 +124,7 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapEntries()
 	 */
+	@Override
 	public List<MapEntry> getMapEntries() {
 		return mapEntries;
 	}

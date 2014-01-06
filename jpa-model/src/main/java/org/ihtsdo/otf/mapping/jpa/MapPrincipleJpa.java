@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -50,8 +51,8 @@ public class MapPrincipleJpa implements MapPrinciple {
 	 * Return the id
 	 * @return the id
 	 */
-	@Override
 	@XmlTransient
+	@Override
 	public Long getId() {
 		return this.id;
 	}
@@ -61,6 +62,7 @@ public class MapPrincipleJpa implements MapPrinciple {
 	 * @return the id in string form
 	 */
 	@XmlID
+	@XmlElement
 	public String getObjectId() {
 		return id.toString();
 	}

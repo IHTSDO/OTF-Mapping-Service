@@ -220,6 +220,7 @@ public class MappingServiceTest {
 	 * 
 	 * @throws Exception
 	 */
+	@SuppressWarnings("static-method")
 	@Test
 	public void testAddElements() throws Exception {
 
@@ -498,6 +499,7 @@ public class MappingServiceTest {
 	 * 
 	 * @throws Exception
 	 */
+	@SuppressWarnings("static-method")
 	@Test
 	public void testRetrieveElements() throws Exception {
 		System.out.println("Testing element retrieval...");
@@ -618,7 +620,8 @@ public class MappingServiceTest {
 	 * 
 	 * @throws Exception
 	 */
-	//@Test
+	@SuppressWarnings("static-method")
+	@Test
 	public void testUpdateElements() throws Exception {
 		System.out.println("Testing element update...");
 
@@ -712,7 +715,8 @@ public class MappingServiceTest {
 	 * 
 	 * @throws Exception
 	 */
-	//@Test
+	@SuppressWarnings("static-method")
+	@Test
 	public void testRemoveElements() throws Exception {
 		System.out.println("Testing element remove...");
 

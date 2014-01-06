@@ -83,6 +83,7 @@ public class SampledataMojo extends AbstractMojo {
 	 * 
 	 * @see org.apache.maven.plugin.Mojo#execute()
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void execute() throws MojoFailureException {
 
@@ -376,14 +377,13 @@ public class SampledataMojo extends AbstractMojo {
 			
 			javax.persistence.Query  query = manager.createQuery("select r from MapProjectJpa r");
 			
-			projects = (List<MapProject>) query.getResultList();
-			
+			projects = query.getResultList();			
 			
 			for (MapProject m : projects) {
 
 				// <RefSetId, ProjectId>
 				projectRefSetIdMap.put(m.getRefSetId(), m.getId());
-				System.out.println(m.getRefSetId() + ", " + m.getId().toString());
+				getLog().debug("    Add entry to map " + m.getRefSetId() + ", " + m.getId().toString());
 			}
 
 			// Load map records from complex map refset members
@@ -394,7 +394,7 @@ public class SampledataMojo extends AbstractMojo {
 					manager
 							.createQuery("select r from ComplexMapRefSetMemberJpa r order by r.concept.id, " +
 									"r.mapBlock, r.mapGroup, r.mapPriority");
-			System.out.println("complex refset member size "
+			getLog().debug("    complex refset member size "
 					+ query.getResultList().size());
 			
 			// Added to speed up process
@@ -408,7 +408,7 @@ public class SampledataMojo extends AbstractMojo {
 				if(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|") &&
 			    !(refSetMember.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")) &&
 			    !(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]"))){
-				  System.out.println("skipping refSetMember: " + refSetMember.getConcept().getTerminologyId() + " : " + 
+				  getLog().debug("    skipping refSetMember: " + refSetMember.getConcept().getTerminologyId() + " : " + 
 				    refSetMember.getMapRule() + " : " + refSetMember.getMapAdvice()); 
 				  continue; 
 				}
@@ -448,7 +448,7 @@ public class SampledataMojo extends AbstractMojo {
 				// find the correct advice and add it
 				if (mapAdviceValueMap.containsKey(refSetMember.getMapAdvice())) {
 					mapEntry
-							.addAdvice(mapAdviceValueMap.get(refSetMember.getMapAdvice()));
+							.addMapAdvice(mapAdviceValueMap.get(refSetMember.getMapAdvice()));
 				}
 				mapRecord.addMapEntry(mapEntry);
 				
@@ -459,11 +459,9 @@ public class SampledataMojo extends AbstractMojo {
 			}
 			
 			// Commit all map records
-			System.out.println("Committing...");
+			getLog().info("     Committing...");
 			tx.commit();
-			System.out.println("Complete.");
-
-			System.out.println(".. done loading sample data");
+			getLog().info("...done");
 			manager.close();
 			factory.close();
 		} catch (Throwable e) {
