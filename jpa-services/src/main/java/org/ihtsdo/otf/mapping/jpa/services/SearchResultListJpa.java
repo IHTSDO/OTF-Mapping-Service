@@ -29,6 +29,7 @@ public class SearchResultListJpa implements SearchResultList {
 	/**
 	 * @return the count
 	 */
+	@Override
 	@XmlElement(name = "count")
 	public int getCount() {
 		return searchResults.size();
@@ -37,6 +38,7 @@ public class SearchResultListJpa implements SearchResultList {
 	/**
 	 * @return the searchResults
 	 */
+	@Override
 	@XmlElement(type=SearchResultJpa.class, name = "searchResult")
 	public List<SearchResult> getSearchResults() {
 		return searchResults;
@@ -45,6 +47,7 @@ public class SearchResultListJpa implements SearchResultList {
 	/**
 	 * @param searchResults the searchResults to set
 	 */
+	@Override
 	public void setSearchResults(List<SearchResult> searchResults) {
 		this.searchResults = searchResults;
 	}
@@ -53,6 +56,7 @@ public class SearchResultListJpa implements SearchResultList {
 	 * Removes a search result
 	 * @param searchResult the search result to remove
 	 */
+	@Override
 	public void removeSearchResult(SearchResult searchResult) {
 		searchResults.remove(searchResult);
 	}
@@ -61,13 +65,25 @@ public class SearchResultListJpa implements SearchResultList {
 	 * Add a search result
 	 * @param searchResult the search result to add
 	 */
+	@Override
 	public void addSearchResult(SearchResult searchResult) {
 		searchResults.add(searchResult);
+	}
+	
+	/** 
+	 * Boolean test if object is in search result list
+	 * @param searchResult the search result to be compared
+	 * @return boolean true/false
+	 */
+	@Override
+	public boolean contains(SearchResult searchResult) {
+		return searchResults.size() == 0 ? false : this.searchResults.contains(searchResult);
 	}
 	
 	/**
 	 * Sorts the SearchResultList numerically by id
 	 */
+	@Override
 	public void sortSearchResultsById() {
 		
 		Collections.sort(
@@ -83,6 +99,7 @@ public class SearchResultListJpa implements SearchResultList {
 	/**
 	 * Sorts the SearchResultList alphabetically by description
 	 */
+	@Override
 	public void sortSearchResultsByDescription() {
 		
 		Collections.sort(

@@ -46,4 +46,11 @@ public interface SearchResultList {
 	 * Sort results by description
 	 */
 	public void sortSearchResultsByDescription();
+
+	/**
+	 * Test if search result is in this list
+	 * @param searchResult the search result
+	 * @return boolean true/false on search result in list
+	 */
+	public boolean contains(SearchResult searchResult);
 }

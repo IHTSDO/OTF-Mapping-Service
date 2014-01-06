@@ -197,6 +197,9 @@ public class MappingServiceJpa implements MappingService {
 			for (MapProject mp : m) {
 				s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId().toString(),mp.getName()));
 			}
+			
+			s.sortSearchResultsById();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -394,6 +397,8 @@ public class MappingServiceJpa implements MappingService {
 			for (MapSpecialist ms : m) {
 				s.addSearchResult(new SearchResultJpa(ms.getId(), "", ms.getName()));
 			}
+			
+			s.sortSearchResultsById();
 			
 			
 		} catch (Exception e) {
@@ -602,6 +607,8 @@ public class MappingServiceJpa implements MappingService {
 				s.addSearchResult(new SearchResultJpa(ml.getId(), "", ml.getName()));
 			}
 			
+			s.sortSearchResultsById();
+			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -797,6 +804,9 @@ public class MappingServiceJpa implements MappingService {
 			}
 			
 			
+			s.sortSearchResultsById();
+			
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} 
@@ -913,6 +923,8 @@ public class MappingServiceJpa implements MappingService {
 				s.addSearchResult(new SearchResultJpa(me.getId(), "", me.getMapRecord().getId().toString()));
 			}
 			
+			s.sortSearchResultsById();
+			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -962,12 +974,16 @@ public class MappingServiceJpa implements MappingService {
 			}
 			
 			
+			s.sortSearchResultsById();
+			
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} 
 		
 		if (manager.isOpen()) { manager.close(); }
 		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
+
 		
 		return s;
 	}
@@ -1011,6 +1027,7 @@ public class MappingServiceJpa implements MappingService {
 				s.addSearchResult(new SearchResultJpa(me.getId(), "", me.getNote()));
 			}
 			
+			s.sortSearchResultsById();
 			
 		} catch (Exception e) {
 			e.printStackTrace();

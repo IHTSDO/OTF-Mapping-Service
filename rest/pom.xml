@@ -17,6 +17,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
+    </dependency>
     <!-- Model interfaces. -->
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
@@ -135,7 +140,7 @@
       </properties>
     </profile>
   </profiles>
-  
+
   <!-- Always build, use dev configuration by default -->
   <build>
     <plugins>
@@ -211,6 +216,28 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <filters>
+            <filter>${project.build.directory}/generated-resources/resources/filters.properties.${default.run.config}</filter>
+          </filters>
+          <webResources>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <!-- enable filtering -->
+              <filtering>true</filtering>
+              <includes>
+                <include>**/web.xml</include>
+                <include>index.html</include>
+              </includes>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
+
     </plugins>
 
   </build>
