@@ -26,6 +26,7 @@ public class SearchResultJpa implements SearchResult {
 	/**
 	 * Constructor
 	 * @param id the id
+	 * @param terminologyId the terminologyId
 	 * @param description the description
 	 */
 	public SearchResultJpa(Long id, String terminologyId, String description) {
