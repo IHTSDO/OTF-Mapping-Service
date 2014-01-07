@@ -156,11 +156,41 @@ public class MappingServiceRest {
 	 */
 	@GET
 	@Path("/project/query/{String}")
-	@ApiOperation(value = "Find projects by query", notes = "Returns map projects for a query in either JSON or XML format", response = MapProjectList.class)
+	@ApiOperation(value = "Find projects by query", notes = "Returns map projects for a query in either JSON or XML format", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapProjects(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("String") String query) {
 		return mappingServiceJpa.findMapProjects(query);
+		
+	}
+	
+	/**
+	 * Returns all descendant concepts associated with a project
+	 * @param query the map project id
+	 * @return the SearchResultList of unmapped descendant concepts
+	 */
+	@GET
+	@Path("/project/id/{id:[0-9][0-9]*}/unmappedDescendants")
+	@ApiOperation(value = "Find projects with unmapped concepts", notes = "Returns unmapped concepts in either JSON or XML format", response = SearchResultList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findUnmappedDescendantsForMapProject(
+			@ApiParam(value = "lucene search string", required = true) @PathParam("id") Long projectId) {
+		return mappingServiceJpa.findUnmappedDescendantsForMapProject(projectId);
+		
+	}
+	
+	/**
+	 * Returns all descendant concepts associated with a project
+	 * @param projectId the map project id
+	 * @return the SearchResultList of descendant concepts
+	 */
+	@GET
+	@Path("/project/id/{id:[0-9][0-9]*}/descendants")
+	@ApiOperation(value = "Find projects with unmapped concepts", notes = "Returns unmapped concepts in either JSON or XML format", response = SearchResultList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findDescendantsForMapProjects(
+			@ApiParam(value = "lucene search string", required = true) @PathParam("id") Long projectId) {
+		return mappingServiceJpa.findUnmappedDescendantsForMapProject(projectId);
 		
 	}
 	
@@ -265,7 +295,7 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Find records by project id", notes = "Returns MapRecords given a project id in either JSON or XML format", response = MapRecord.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecordList getMapRecordsForMapProjectId(
-			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") String projectId) {
+			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long projectId) {
 		MapRecordList mapRecords = new MapRecordList();
 		mapRecords.setMapRecords(mappingServiceJpa.getMapRecordsForMapProjectId(projectId));
 		return mapRecords;

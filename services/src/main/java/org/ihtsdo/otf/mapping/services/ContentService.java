@@ -24,7 +24,7 @@ public interface ContentService {
 	 * @param terminologyVersion the terminologyVersion
 	 * @return the concept
 	 */
-	public Concept getConcept(Long conceptId, String terminology, String terminologyVersion);
+	public Concept getConcept(String terminologyId, String terminology, String terminologyVersion);
 	
 	/**
 	 * Returns the concept.

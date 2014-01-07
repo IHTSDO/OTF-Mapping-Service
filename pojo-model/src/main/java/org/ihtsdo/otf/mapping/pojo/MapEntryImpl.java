@@ -42,6 +42,12 @@ public class MapEntryImpl implements MapEntry {
 	
 	/** The map record. */
 	private MapRecord mapRecord;
+	
+	/** The map group */
+	private int mapGroup;
+	
+	/** The map block */
+	private int mapBlock;
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getId()
@@ -222,6 +228,28 @@ public class MapEntryImpl implements MapEntry {
 	@Override
 	public void setMapRecord(MapRecord mapRecord) {
 		this.mapRecord = mapRecord;
+	}
+	
+	@Override
+	public int getMapGroup() {
+		return this.mapGroup;
+	}
+
+	@Override
+	public void setMapGroup(int mapGroup) {
+		this.mapGroup = mapGroup;
+		
+	}
+
+	@Override
+	public int getMapBlock() {
+		return this.mapBlock;
+	}
+
+	@Override
+	public void setMapBlock(int mapBlock) {
+		this.mapBlock = mapBlock;
+		
 	}
 
 	/* (non-Javadoc)

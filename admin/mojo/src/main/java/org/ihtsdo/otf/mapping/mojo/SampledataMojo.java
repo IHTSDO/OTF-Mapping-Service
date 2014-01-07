@@ -444,6 +444,8 @@ public class SampledataMojo extends AbstractMojo {
 				mapEntry.setMapRecord(mapRecord);
 				mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
 				mapEntry.setRule(refSetMember.getMapRule());
+				mapEntry.setMapGroup(1);
+				mapEntry.setMapBlock(1);
 				
 				// find the correct advice and add it
 				if (mapAdviceValueMap.containsKey(refSetMember.getMapAdvice())) {

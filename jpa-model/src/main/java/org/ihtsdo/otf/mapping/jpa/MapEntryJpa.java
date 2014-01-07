@@ -80,7 +80,14 @@ public class MapEntryJpa implements MapEntry {
 	/** The relation id. */
 	@Column(nullable = false, length = 25)
 	private String relationId;
-
+	
+	/** The index (map priority). */
+	@Column(nullable = false)
+	private int mapBlock;
+	
+	/** The index (map priority). */
+	@Column(nullable = false)
+	private int mapGroup;
 	/**
 	 * default constructor.
 	 */
@@ -334,6 +341,28 @@ public class MapEntryJpa implements MapEntry {
 	@XmlElement
 	public String getMapRecordId() {
 		return mapRecord != null ? mapRecord.getObjectId() : null;
+	}
+	
+	@Override
+	public int getMapGroup() {
+		return this.mapGroup;
+	}
+
+	@Override
+	public void setMapGroup(int mapGroup) {
+		this.mapGroup = mapGroup;
+		
+	}
+
+	@Override
+	public int getMapBlock() {
+		return this.mapBlock;
+	}
+
+	@Override
+	public void setMapBlock(int mapBlock) {
+		this.mapBlock = mapBlock;
+		
 	}
 
 	/* (non-Javadoc)

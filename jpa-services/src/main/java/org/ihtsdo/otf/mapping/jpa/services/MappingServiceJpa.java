@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +39,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.SearchResult;
 import org.ihtsdo.otf.mapping.services.SearchResultList;
 /**
  * 
@@ -47,38 +49,45 @@ import org.ihtsdo.otf.mapping.services.SearchResultList;
 public class MappingServiceJpa implements MappingService {
 
 		/** The factory. */
-	private EntityManagerFactory factory;
+	private static EntityManagerFactory factory;
 	
 	/** The indexed field names. */
-	private Set<String> fieldNames;
+	private static Set<String> fieldNames;
 
 	/**
 	 * Instantiates an empty {@link MappingServiceJpa}.
 	 */
 	public MappingServiceJpa() {
-		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
-		EntityManager manager = factory.createEntityManager();;
-		fieldNames = new HashSet<String>();
-
-		FullTextEntityManager fullTextEntityManager =
-				org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
-		IndexReaderAccessor indexReaderAccessor =
-				fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
-		Set<String> indexedClassNames =
-				fullTextEntityManager.getSearchFactory().getStatistics()
-						.getIndexedClassNames();
-		for (String indexClass : indexedClassNames) {
-			IndexReader indexReader = indexReaderAccessor.open(indexClass);
-			try {
-				for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
-					fieldNames.add(info.name);
+		if (factory == null) {
+			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+		}
+			
+		EntityManager manager = factory.createEntityManager();
+		
+		if (fieldNames == null) {
+			fieldNames = new HashSet<String>();
+	
+			FullTextEntityManager fullTextEntityManager =
+					org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
+			IndexReaderAccessor indexReaderAccessor =
+					fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
+			Set<String> indexedClassNames =
+					fullTextEntityManager.getSearchFactory().getStatistics()
+							.getIndexedClassNames();
+			for (String indexClass : indexedClassNames) {
+				IndexReader indexReader = indexReaderAccessor.open(indexClass);
+				try {
+					for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+						fieldNames.add(info.name);
+					}
+				} finally {
+					indexReaderAccessor.close(indexReader);
 				}
-			} finally {
-				indexReaderAccessor.close(indexReader);
 			}
+			
+			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
 		}
 		
-		if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
 		if (manager.isOpen()) { manager.close(); }
 		//System.out.println("ended init " + fieldNames.toString());
 	}
@@ -1074,7 +1083,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapProjectId the concept id
 	 * @return the list of map records
 	 */
-	public List<MapRecord> getMapRecordsForMapProjectId(String mapProjectId) {
+	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId) {
 		List<MapRecord> m = null;
 		EntityManager manager = factory.createEntityManager();
 		
@@ -1083,7 +1092,7 @@ public class MappingServiceJpa implements MappingService {
 		
 		// Try query
 		try {
-			query.setParameter("mapProjectId", new Long(mapProjectId));
+			query.setParameter("mapProjectId", mapProjectId);
 			m = (List<MapRecord>) query.getResultList();
 		} catch (Exception e) {
 			System.out.println("MappingServiceJpa.getMapRecordsFormapProjectId(): Could not retrieve map records for project id " + mapProjectId);
@@ -1094,6 +1103,181 @@ public class MappingServiceJpa implements MappingService {
 		
 		return m;
 	}
+	
+	//////////////////////////////////////////
+	// Project Descendant Services
+	//////////////////////////////////////////
+	
+	/**
+	 * Dummy routine to find unmapped descendants by map project id
+	 * @param mapProjectId the map project id
+	 * @return the SearchResultList of unmapped descendants
+	 */
+	public SearchResultList findUnmappedDescendantsForMapProject(Long mapProjectId) {
+		
+		return findUnmappedDescendantsForMapProject(getMapProject(mapProjectId));
+	}
+	
+	/**
+	 * Routine to find unmapped descendants of concepts associated with a project
+	 * @param mapProject the mapProject
+	 * @return the SearchResultList of unmapped descendants
+	 */
+	public SearchResultList findUnmappedDescendantsForMapProject(MapProject mapProject) {
+	
+		ContentServiceJpa contentService = new ContentServiceJpa();
+		SearchResultList results = new SearchResultListJpa();
+		
+		// get all records from map records
+		List<MapRecord> records = getMapRecordsForMapProjectId(mapProject.getId());
+		
+		System.out.println("Records: " + Integer.toString(records.size()));
+		
+		// construct map for easy determination of mapped status
+		Set<String> cids = new HashSet<String>();
+		
+		// cycle over records -- any concept with record is by default mapped
+		for (MapRecord r : records) {
+			cids.add(r.getConceptId());
+		}
+		
+		System.out.println("Map size: " + Integer.toString(cids.size()));
+		
+		Iterator<String> cids_iter = cids.iterator();
+		
+		// cycle over all concepts
+		while (cids_iter.hasNext()) {
+			
+			// get descendants
+			// TODO Change typeId to metadata reference
+			String cid = cids_iter.next();
+			
+			System.out.println("Concept " + cid);
+			
+			SearchResultList descendants = contentService.getDescendants(cid, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion(), new Long("116680003"));
+			
+			System.out.println("Found descendants: " + Integer.toString(descendants.getCount()));
+			
+			// cycle over descendants
+			for (SearchResult descendant : descendants.getSearchResults()) {
+				
+				// if already contained in map, do nothing (already mapped)
+				if (!cids.contains(descendant.getTerminologyId())) {
+					
+					// check if a map record exists for this id
+					if (getMapRecordsForConceptId(descendant.getTerminologyId()).size() == 0) {
+						
+						// if not in results list already, add to results list
+						if (!results.contains(descendant)) {
+							results.addSearchResult(descendant);
+						}
+					}
+				}
+			}	
+		}
+		
+		results.sortSearchResultsById();
+		return results;
+		
+		/*
+		// cycle over all records
+		for (Concept c : refset_concepts) {
+
+			// retrieve all descendants for this record's concept
+			SearchResultList concepts = contentService.getDescendants(
+					c.getTerminologyId(),
+					mapProject.getSourceTerminology(),
+					mapProject.getSourceTerminologyVersion(),
+					new Long("116680003")); // TODO Change this to metadata reference
+					
+			// cycle over descendants
+			for (SearchResult concept : concepts.getSearchResults()) {
+				
+				// retrieve map records for this concept
+				List<MapRecord> concept_records = getMapRecordsForConceptId(concept.getId().toString());
+				
+				// check if a map record for this concept exists
+				if (concept_records.size() == 0) {
+					
+					
+					// if not already contained in this list
+					if (results.contains(concept)) {
+						results.addSearchResult(concept);
+					}
+				}
+			}
+		}
+		
+		return results;
+		**/
+		
+		
+	}
+	
+	/**
+	 * Dummy routine to find unmapped descendants by map project id
+	 * @param mapProjectId the map project id
+	 * @return the SearchResultList of unmapped descendants
+	 */
+	public SearchResultList findDescendantsForMapProject(Long mapProjectId) {
+		
+		return findDescendantsForMapProject(getMapProject(mapProjectId));
+	}
+	
+	/**
+	 * Routine to find unmapped descendants of concepts associated with a project
+	 * @param mapProject the mapProject
+	 * @return the SearchResultList of unmapped descendants
+	 */
+	public SearchResultList findDescendantsForMapProject(MapProject mapProject) {
+	
+		ContentServiceJpa contentService = new ContentServiceJpa();
+		SearchResultList results = new SearchResultListJpa();
+		
+		// get all records from map records
+		List<MapRecord> records = getMapRecordsForMapProjectId(mapProject.getId());
+		
+		System.out.println("Records: " + Integer.toString(records.size()));
+		
+		// construct map for easy determination of mapped status
+		Set<String> cids = new HashSet<String>();
+		
+		// cycle over records -- any concept with record is by default mapped
+		for (MapRecord r : records) {
+			cids.add(r.getConceptId());
+		}
+		
+		System.out.println("Map size: " + Integer.toString(cids.size()));
+		
+		Iterator<String> cids_iter = cids.iterator();
+		
+		// cycle over all concepts
+		while (cids_iter.hasNext()) {
+			
+			// get descendants
+			// TODO Change typeId to metadata reference
+			String cid = cids_iter.next();
+			
+			System.out.println("Concept " + cid);
+			
+			SearchResultList descendants = contentService.getDescendants(cid, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion(), new Long("116680003"));
+			
+			System.out.println("Found descendants: " + Integer.toString(descendants.getCount()));
+			
+			// cycle over descendants search result list
+			for (SearchResult descendant : descendants.getSearchResults()) {
+
+				// if not already in results list, add to results list
+				if (!results.contains(descendant)) {
+					results.addSearchResult(descendant);
+				}
+			}
+		}
+		
+		results.sortSearchResultsById();
+		return results;		
+	}
+
 
 	
 
