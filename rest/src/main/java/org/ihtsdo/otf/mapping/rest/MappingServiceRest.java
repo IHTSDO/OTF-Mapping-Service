@@ -20,6 +20,7 @@ import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.services.MappingService;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -34,13 +35,13 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class MappingServiceRest {
 
 	/** The mapping service jpa. */
-	private MappingServiceJpa mappingServiceJpa;
-
+	private MappingServiceJpa mappingService;
+	
 	/**
 	 * Instantiates an empty {@link MappingServiceRest}.
 	 */
 	public MappingServiceRest() {
-		mappingServiceJpa = new MappingServiceJpa();
+
 	}
 	
 	/////////////////////////////////////////////////////
@@ -62,8 +63,10 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Get all projects", notes = "Returns all MapProjects in either JSON or XML format", response = MapProjectList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectList getMapProjects() {
+		
+		MappingService mappingService = new MappingServiceJpa();
 		MapProjectList mapProjects = new MapProjectList();	
-		mapProjects.setMapProjects(mappingServiceJpa.getMapProjects());
+		mapProjects.setMapProjects(mappingService.getMapProjects());
 		mapProjects.sortMapProjects();
 		return mapProjects;
 	}
@@ -79,7 +82,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapLeadList getMapLeads() {
 		MapLeadList mapLeads = new MapLeadList();
-		mapLeads.setMapLeads(mappingServiceJpa.getMapLeads());
+		mapLeads.setMapLeads(mappingService.getMapLeads());
 		mapLeads.sortMapLeads();
 		return mapLeads;
 	}
@@ -95,7 +98,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapSpecialistList getMapSpecialists() {
 		MapSpecialistList mapSpecialists = new MapSpecialistList();
-		mapSpecialists.setMapSpecialists(mappingServiceJpa.getMapSpecialists());
+		mapSpecialists.setMapSpecialists(mappingService.getMapSpecialists());
 		mapSpecialists.sortMapSpecialists();
 		return mapSpecialists;
 	}
@@ -111,7 +114,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecordList getMapRecords() {
 		MapRecordList mapRecords = new MapRecordList();
-		mapRecords.setMapRecords(mappingServiceJpa.getMapRecords());
+		mapRecords.setMapRecords(mappingService.getMapRecords());
 		mapRecords.sortMapRecords();
 		return mapRecords;
 	}
@@ -128,8 +131,8 @@ public class MappingServiceRest {
 	public MapProjectList getMapProjectsForLead(
 			@ApiParam(value = "Id of map lead to fetch projects for", required = true) @PathParam("id") Long mapLeadId) { 
 		MapProjectList mapProjects = new MapProjectList();	
-		MapLead mapLead = mappingServiceJpa.getMapLead(mapLeadId);
-		mapProjects.setMapProjects(mappingServiceJpa.getMapProjectsForMapLead(mapLead));
+		MapLead mapLead = mappingService.getMapLead(mapLeadId);
+		mapProjects.setMapProjects(mappingService.getMapProjectsForMapLead(mapLead));
 		mapProjects.sortMapProjects();
 		return mapProjects;
 	}
@@ -146,7 +149,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProject getMapProjectForId(
 			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
-		return mappingServiceJpa.getMapProject(mapProjectId);
+		return mappingService.getMapProject(mapProjectId);
 	}
 	
 	/**
@@ -160,7 +163,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapProjects(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("String") String query) {
-		return mappingServiceJpa.findMapProjects(query);
+		return mappingService.findMapProjects(query);
 		
 	}
 	
@@ -175,7 +178,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findUnmappedDescendantsForMapProject(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("id") Long projectId) {
-		return mappingServiceJpa.findUnmappedDescendantsForMapProject(projectId);
+		return mappingService.findUnmappedDescendantsForMapProject(projectId);
 		
 	}
 	
@@ -190,7 +193,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findDescendantsForMapProjects(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("id") Long projectId) {
-		return mappingServiceJpa.findUnmappedDescendantsForMapProject(projectId);
+		return mappingService.findUnmappedDescendantsForMapProject(projectId);
 		
 	}
 	
@@ -206,7 +209,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapSpecialist getMapSpecialistForId(
 			@ApiParam(value = "Id of map specialist to fetch", required = true) @PathParam("id") Long mapSpecialistId) {
-		return mappingServiceJpa.getMapSpecialist(mapSpecialistId);
+		return mappingService.getMapSpecialist(mapSpecialistId);
 	}
 	
 	/**
@@ -220,7 +223,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapSpecialists(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-		return mappingServiceJpa.findMapSpecialists(query);
+		return mappingService.findMapSpecialists(query);
 	}
 	
 	/**
@@ -235,7 +238,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapLead getMapLeadForId(
 			@ApiParam(value = "Id of map lead to fetch", required = true) @PathParam("id") Long mapLeadId) {
-		return mappingServiceJpa.getMapLead(mapLeadId);
+		return mappingService.getMapLead(mapLeadId);
 	}
 	
 	/**
@@ -249,7 +252,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapLeads(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-		return mappingServiceJpa.findMapLeads(query);
+		return mappingService.findMapLeads(query);
 	}
 	
 	/**
@@ -264,7 +267,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecord getMapRecordForId(
 			@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
-		return mappingServiceJpa.getMapRecord(mapRecordId);
+		return mappingService.getMapRecord(mapRecordId);
 	}
 	
 	/**
@@ -280,7 +283,7 @@ public class MappingServiceRest {
 	public MapRecordList getMapRecordsForConceptId(
 			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("String") String conceptId) {
 		MapRecordList mapRecords = new MapRecordList();
-		mapRecords.setMapRecords(mappingServiceJpa.getMapRecordsForConceptId(conceptId));
+		mapRecords.setMapRecords(mappingService.getMapRecordsForConceptId(conceptId));
 		return mapRecords;
 	}
 	
@@ -297,7 +300,7 @@ public class MappingServiceRest {
 	public MapRecordList getMapRecordsForMapProjectId(
 			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long projectId) {
 		MapRecordList mapRecords = new MapRecordList();
-		mapRecords.setMapRecords(mappingServiceJpa.getMapRecordsForMapProjectId(projectId));
+		mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId));
 		return mapRecords;
 	}
 	
@@ -312,7 +315,7 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapRecords(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-		return mappingServiceJpa.findMapRecords(query);
+		return mappingService.findMapRecords(query);
 	}
 	
 	// ///////////////////////////////////////////////////
@@ -335,7 +338,7 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map project to add", required = true) MapProject mapProject) { 
 
 		try {
-			mappingServiceJpa.addMapProject(mapProject);
+			mappingService.addMapProject(mapProject);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -355,7 +358,7 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map lead to add", required = true) MapLead mapLead) { 
 
 		try {
-			mappingServiceJpa.addMapLead(mapLead);
+			mappingService.addMapLead(mapLead);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -375,7 +378,7 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map specialist to add", required = true) MapSpecialist mapSpecialist) { 
 
 		try {
-			mappingServiceJpa.addMapSpecialist(mapSpecialist);
+			mappingService.addMapSpecialist(mapSpecialist);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -395,7 +398,7 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map record to add", required = true) MapRecord mapRecord) { 
 
 		try {
-			mappingServiceJpa.addMapRecord(mapRecord);
+			mappingService.addMapRecord(mapRecord);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -423,7 +426,7 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map project to update", required = true) MapProject mapProject) { 
 
 		try {
-			mappingServiceJpa.updateMapProject(mapProject);
+			mappingService.updateMapProject(mapProject);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -443,7 +446,7 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map lead to update", required = true) MapLead mapLead) { 
 
 		try {
-			mappingServiceJpa.updateMapLead(mapLead);
+			mappingService.updateMapLead(mapLead);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -463,7 +466,7 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map specialist to update", required = true) MapSpecialist mapSpecialist) { 
 
 		try {
-			mappingServiceJpa.updateMapSpecialist(mapSpecialist);
+			mappingService.updateMapSpecialist(mapSpecialist);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -483,7 +486,7 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map record to update", required = true) MapRecord mapRecord) { 
 
 		try {
-			mappingServiceJpa.updateMapRecord(mapRecord);
+			mappingService.updateMapRecord(mapRecord);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -507,7 +510,7 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Remove a project", notes = "Removes a map project", response = MapProject.class)
 	public Response removeMapProject(@ApiParam(value = "Id of map project to remove", required = true) @PathParam("id") Long mapProjectId) { 
 
-		mappingServiceJpa. removeMapProject(mapProjectId);
+		mappingService. removeMapProject(mapProjectId);
 		return null;
 	}
 	
@@ -521,7 +524,7 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Remove a lead", notes = "Removes a map lead", response = MapLead.class)
 	public Response removeMapLead(@ApiParam(value = "Id of map lead to remove", required = true) @PathParam("id") Long mapLeadId) { 
 
-		mappingServiceJpa. removeMapLead(mapLeadId);
+		mappingService. removeMapLead(mapLeadId);
 		return null;
 	}
 	
@@ -535,7 +538,7 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Remove a specialist", notes = "Removes a map specialist", response = MapSpecialist.class)
 	public Response removeMapSpecialist(@ApiParam(value = "Id of map specialist to remove", required = true) @PathParam("id") Long mapSpecialistId) { 
 
-		mappingServiceJpa. removeMapSpecialist(mapSpecialistId);
+		mappingService. removeMapSpecialist(mapSpecialistId);
 		return null;
 	}
 	
@@ -549,7 +552,7 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Remove a record", notes = "Removes a map record", response = MapRecord.class)
 	public Response removeMapRecord(@ApiParam(value = "Id of map record to remove", required = true) @PathParam("id") Long mapRecordId) { 
 
-		mappingServiceJpa. removeMapRecord(mapRecordId);
+		mappingService. removeMapRecord(mapRecordId);
 		return null;
 	}
 

@@ -52,11 +52,14 @@ public class ContentServiceJpa implements ContentService {
 	 * Instantiates an empty {@link ContentServiceJpa}.
 	 */
 	public ContentServiceJpa() {
+		
+		// created once
 		if (factory == null) {
 			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 		}
 		
-		
+		// create on each instantiation
+		manager = factory.createEntityManager();
 		
 		if (fieldNames == null) {
 			
@@ -81,14 +84,11 @@ public class ContentServiceJpa implements ContentService {
 			}
 			
 			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
-			
 		}
-			
-		if (manager.isOpen()) { manager.close(); }
-		//System.out.println("ended init " + fieldNames.toString());
 	}
 	
-	public void close() {
+	@Override
+	public void close() throws Exception {
 		if (manager.isOpen()) { manager.close(); }
 	}
 
@@ -139,8 +139,6 @@ public class ContentServiceJpa implements ContentService {
 			if (manager.isOpen()) { manager.close(); }
 			return null;
 		}
-		
-		
 	}
 
 	
@@ -154,7 +152,6 @@ public class ContentServiceJpa implements ContentService {
 	public SearchResultList findConcepts(String searchString) throws Exception {
 		
 		SearchResultList results = new SearchResultListJpa();
-		
 		
 		FullTextEntityManager fullTextEntityManager =
 				Search.getFullTextEntityManager(manager);
@@ -211,71 +208,63 @@ public class ContentServiceJpa implements ContentService {
 	 * @param terminology
 	 * @param terminologyVersion
 	 * @param typeId
-	 * @return
+	 * @return the set of concepts
 	 */
-	
-	// RETURN SET OF CONCEPTS
-	public SearchResultList getDescendants(String terminologyId, String terminology, String terminologyVersion, Long typeId) {
+
+	public Set<Concept> getDescendants(String terminologyId, String terminology, String terminologyVersion, Long typeId) {
 		
 		
-		Queue<Concept> concepts = new LinkedList<Concept>();
-		SearchResultList results= new SearchResultListJpa();
+		Queue<Concept> concept_queue = new LinkedList<Concept>();
+		Set<Concept> concept_set = new HashSet<Concept>();
 		
 		// get the concept and add it as first element of concept list
 		Concept rootConcept = getConcept(terminologyId, terminology, terminologyVersion);
 		
+		// if non-null result, seed the queue with this concept
 		if (rootConcept != null) {
-			concepts.add(getConcept(terminologyId, terminology, terminologyVersion));
+			concept_queue.add(rootConcept);
 		}
 		
 		// while concepts remain to be checked
-		while (!concepts.isEmpty()) {
+		while (!concept_queue.isEmpty()) {
 			
 			// retrieve this concept
-			Concept c = concepts.poll();
-			
-			System.out.println(c.getDefaultPreferredName());
+			Concept c = concept_queue.poll();
 			
 			// if concept is active
 			if (c.isActive()) {
-			
-				// relationship sets
-				Set<Relationship> inv_relationships = c.getInverseRelationships();
 				
-				// iterators for relationship sets
-				Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
-					
-				// iterate over inverse relationships
-				while (it_inv_rel.hasNext()) {
-					
-					// get relationship
-					Relationship rel = it_inv_rel.next();
+				// if concept is already in set, it has already been processed
+				if (!concept_set.contains(c)) {
 				
-					// if relationship is active, typeId equals the provided typeId, and the source concept is active
-					if (rel.isActive() && rel.getTypeId().equals(typeId) && rel.getSourceConcept().isActive()) {
+					// relationship set and iterator
+					Set<Relationship> inv_relationships = c.getInverseRelationships();
+					Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
 						
-						// get destination concept
-						Concept c_rel = rel.getSourceConcept();
+					// iterate over inverse relationships
+					while (it_inv_rel.hasNext()) {
 						
-						// construct search result
-						SearchResult searchResult = new SearchResultJpa(c_rel.getId(), c_rel.getTerminologyId(), c_rel.getDefaultPreferredName());					
-						
-						// if concept list does not contain this concept, add result to list and concept to queue
-						if (!results.contains(searchResult)) {
-							results.addSearchResult(searchResult);
-							concepts.add(c_rel);
+						// get relationship
+						Relationship rel = it_inv_rel.next();
+					
+						// if relationship is active, typeId equals the provided typeId, and the source concept is active
+						if (rel.isActive() && rel.getTypeId().equals(typeId) && rel.getSourceConcept().isActive()) {
+							
+							// get source concept from inverse relationship (i.e. child of concept)
+							Concept c_rel = rel.getSourceConcept();					
+							
+							// if set does not contain the source concept, add it to set and queue
+							if (concept_set.contains(c_rel)) {
+								concept_set.add(c_rel);
+								concept_queue.add(c_rel);
+							}
 						}
 					}
 				}
 			}
 		}
 		
-		// sort results
-		results.sortSearchResultsById();
-		
-		if (manager.isOpen()) { manager.close(); }
-			
-		return results;
+		return concept_set;
 	}
 	
 	public List<Concept> getConceptsForRefSetId(Long refSetId, String terminology, String terminologyVersion) {
@@ -313,7 +302,5 @@ public class ContentServiceJpa implements ContentService {
 		}
 		
 	}
-	
-	public void getDescendants(Concept concept, String terminology, String terminologyVersion, Set<Concept> descendantResultSet) {}
 
 }
