@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.jpa.services;
+package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,8 +6,8 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.ihtsdo.otf.mapping.services.IdNameMap;
-import org.ihtsdo.otf.mapping.services.IdNameMapList;
+import org.ihtsdo.otf.mapping.helpers.IdNameMap;
+import org.ihtsdo.otf.mapping.helpers.IdNameMapList;
 
 /**
  * Container for all of the metadata.

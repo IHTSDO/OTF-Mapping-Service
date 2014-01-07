@@ -1,15 +1,13 @@
-package org.ihtsdo.otf.mapping.jpa.services;
+package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.ihtsdo.otf.mapping.services.IdNameMap;
+import org.ihtsdo.otf.mapping.helpers.IdNameMap;
 
 
-
-// TODO: Auto-generated Javadoc
 /**
  * Container for map entrys.
  *

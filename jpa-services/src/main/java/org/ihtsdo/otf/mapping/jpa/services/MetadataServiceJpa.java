@@ -16,7 +16,8 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.util.ReaderUtil;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
-import org.ihtsdo.otf.mapping.services.IdNameMap;
+import org.ihtsdo.otf.mapping.helpers.IdNameMap;
+import org.ihtsdo.otf.mapping.helpers.IdNameMapJpa;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 // TODO: Auto-generated Javadoc
