@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.services;
+package org.ihtsdo.otf.mapping.helpers;
 
 /**
  * Generic object to contain search results
