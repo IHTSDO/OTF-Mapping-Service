@@ -5,9 +5,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.IdNameMap;
+import org.ihtsdo.otf.mapping.helpers.IdNameMapJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.IdNameMap;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**

@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.services;
+package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.Map;
 

@@ -5,11 +5,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.ihtsdo.otf.mapping.helpers.IdNameMap;
+import org.ihtsdo.otf.mapping.helpers.IdNameMapList;
+import org.ihtsdo.otf.mapping.helpers.IdNameMapListJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordList;
-import org.ihtsdo.otf.mapping.jpa.services.IdNameMapListJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
-import org.ihtsdo.otf.mapping.services.IdNameMap;
-import org.ihtsdo.otf.mapping.services.IdNameMapList;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;

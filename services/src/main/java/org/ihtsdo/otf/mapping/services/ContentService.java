@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.services;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 // TODO: Auto-generated Javadoc

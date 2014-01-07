@@ -2,6 +2,8 @@ package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
 
+import org.ihtsdo.otf.mapping.helpers.IdNameMap;
+
 
 /**
  * Interface for services to retrieve (get) metadata objects.
