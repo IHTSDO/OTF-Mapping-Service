@@ -55,17 +55,17 @@ public class MapRecordJpa implements MapRecord {
 	private String conceptId;
 
 	/** The map records */
-	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapEntryJpa.class)
+	@OneToMany(mappedBy = "mapRecord", fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapEntryJpa.class)
 	@IndexedEmbedded(targetElement=MapEntryJpa.class)
 	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
 	
 	/** The map notes */
-	@ManyToMany(targetEntity=MapNoteJpa.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToMany(targetEntity=MapNoteJpa.class, fetch = FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapNoteJpa.class)
 	private Set<MapNote> mapNotes = new HashSet<MapNote>();
 	
 	/** The map principles. */
-	@ManyToMany(targetEntity=MapPrincipleJpa.class, cascade = CascadeType.ALL, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapPrincipleJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 	

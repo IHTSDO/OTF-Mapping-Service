@@ -41,13 +41,6 @@ public interface MappingService {
 	public MapSpecialist getMapSpecialist(Long id);
 	
 	/**
-	 * Return map advice for auto-generated id
-	 * @param id the auto-generated id
-	 * @return the mapAdvice
-	 */
-	public MapAdvice getMapAdvice(Long id);
-	
-	/**
 	 * Returns all map projects
 	 * @return a List of MapProjects
 	 */
@@ -64,12 +57,6 @@ public interface MappingService {
 	 * @return a List of MapLeads
 	 */
 	public List<MapLead> getMapLeads();
-	
-	/**
-	 * Retrieve all map advice
-	 * @return a List of MapAdvices
-	 */
-	public List<MapAdvice> getMapAdvices();
 	
 	/**
 	 * Retrieve all map projects assigned to a particular map specialist

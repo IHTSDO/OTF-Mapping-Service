@@ -17,6 +17,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
+    </dependency>
     <!-- Model interfaces. -->
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
@@ -135,7 +140,7 @@
       </properties>
     </profile>
   </profiles>
-  
+
   <!-- Always build, use dev configuration by default -->
   <build>
     <plugins>
@@ -232,7 +237,7 @@
           </webResources>
         </configuration>
       </plugin>
-      
+
     </plugins>
 
   </build>
