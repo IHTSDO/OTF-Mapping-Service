@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.naming.directory.SearchResult;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
@@ -26,6 +25,7 @@ import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
@@ -43,7 +43,7 @@ public class ContentServiceJpa implements ContentService {
 	private static EntityManagerFactory factory;
 
 	/** The manager. */
-	private static EntityManager manager;
+	private EntityManager manager;
 
 	/** The indexed field names. */
 	private Set<String> fieldNames;
@@ -56,7 +56,7 @@ public class ContentServiceJpa implements ContentService {
 			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 		}
 		
-		manager = factory.createEntityManager();
+		
 		
 		if (fieldNames == null) {
 			
@@ -87,11 +87,15 @@ public class ContentServiceJpa implements ContentService {
 		if (manager.isOpen()) { manager.close(); }
 		//System.out.println("ended init " + fieldNames.toString());
 	}
+	
+	public void close() {
+		if (manager.isOpen()) { manager.close(); }
+	}
 
 		
 	@Override
 	public Concept getConcept(Long conceptId) {
-		manager = factory.createEntityManager();
+		
 		Concept c = manager.find(ConceptJpa.class, conceptId);
 		if (manager.isOpen()) { manager.close(); }
 		return c;
@@ -102,7 +106,7 @@ public class ContentServiceJpa implements ContentService {
 	 */
 	@Override
 	public Concept getConcept(String terminologyId, String terminology, String terminologyVersion) {
-		manager = factory.createEntityManager();
+		
 		javax.persistence.Query query =
 				manager
 						.createQuery("select c from ConceptJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
@@ -123,7 +127,7 @@ public class ContentServiceJpa implements ContentService {
 			System.out.println("Returning cid... "
 					+ ((c != null) ? c.getTerminologyId().toString() : "null"));
 		
-			if (manager.isOpen()) { manager.close(); }
+			//if (manager.isOpen()) { manager.close(); }
 			return c;
 
 		} catch (NoResultException e) {
@@ -151,7 +155,7 @@ public class ContentServiceJpa implements ContentService {
 		
 		SearchResultList results = new SearchResultListJpa();
 		
-		manager = factory.createEntityManager();
+		
 		FullTextEntityManager fullTextEntityManager =
 				Search.getFullTextEntityManager(manager);
 		try {
@@ -209,6 +213,8 @@ public class ContentServiceJpa implements ContentService {
 	 * @param typeId
 	 * @return
 	 */
+	
+	// RETURN SET OF CONCEPTS
 	public SearchResultList getDescendants(String terminologyId, String terminology, String terminologyVersion, Long typeId) {
 		
 		
@@ -220,8 +226,6 @@ public class ContentServiceJpa implements ContentService {
 		
 		if (rootConcept != null) {
 			concepts.add(getConcept(terminologyId, terminology, terminologyVersion));
-			
-			manager = factory.createEntityManager();
 		}
 		
 		// while concepts remain to be checked
@@ -276,7 +280,7 @@ public class ContentServiceJpa implements ContentService {
 	
 	public List<Concept> getConceptsForRefSetId(Long refSetId, String terminology, String terminologyVersion) {
 		
-		manager = factory.createEntityManager();
+		
 		javax.persistence.Query query =
 				manager
 						.createQuery("select c from ConceptJpa c where refSetId = :refSetId and terminologyVersion = :terminologyVersion and terminology = :terminology");
@@ -309,5 +313,7 @@ public class ContentServiceJpa implements ContentService {
 		}
 		
 	}
+	
+	public void getDescendants(Concept concept, String terminology, String terminologyVersion, Set<Concept> descendantResultSet) {}
 
 }

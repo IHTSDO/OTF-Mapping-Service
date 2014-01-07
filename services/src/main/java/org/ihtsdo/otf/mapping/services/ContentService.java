@@ -14,6 +14,12 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 public interface ContentService {
 	
 	/**
+	 * Closes the manager associated with service
+	 * @exception Exception the exception
+	 */
+	public void close() throws Exception;
+	
+	/**
 	 * Returns the concept.
 	 *
 	 * @param conceptId the concept id

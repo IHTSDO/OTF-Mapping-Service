@@ -10,10 +10,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptList;
-import org.ihtsdo.otf.mapping.services.SearchResultList;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -44,24 +45,6 @@ public class ContentServiceRest {
 		// TODO: wire this to metadata service (getTerminologyLatestVesrions)
 		terminologyLatestVersions = new HashMap<String, String>();
 		terminologyLatestVersions.put("SNOMEDCT", "20130131");
-	}
-
-	/**
-	 * Returns a limited number of concepts.
-	 *
-	 * @return the concept for id
-	 */
-	@GET
-	@Path("/concept/concepts")
-	@ApiOperation(value = "Find limited number of concepts", notes = "Returns a list of concepts for testing purposes only", response = Concept.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public ConceptList getConceptLimited() {
-		ConceptList concepts = new ConceptList();
-		concepts.setConcepts(contentServiceJpa.getConceptsLimited(50));
-		concepts.sortConcepts();
-		return concepts;
 	}
 
 	/**
