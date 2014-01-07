@@ -172,7 +172,7 @@ public class ContentServiceRest {
 		@ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("id") Long id,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
-		return contentServiceJpa.getConceptDescendants(id, terminology,
-				terminologyVersion);
+		return contentServiceJpa.getDescendants(id, terminology,
+				terminologyVersion, new Long("116680003"));
 	}
 }
