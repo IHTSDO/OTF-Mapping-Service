@@ -24,6 +24,10 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
@@ -39,8 +43,6 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.services.MappingService;
-import org.ihtsdo.otf.mapping.services.SearchResult;
-import org.ihtsdo.otf.mapping.services.SearchResultList;
 /**
  * 
  * The class for MappingServiceJpa
@@ -50,6 +52,9 @@ public class MappingServiceJpa implements MappingService {
 
 		/** The factory. */
 	private static EntityManagerFactory factory;
+	
+	/** The manager */
+	private EntityManager manager;
 	
 	/** The indexed field names. */
 	private static Set<String> fieldNames;
@@ -62,7 +67,7 @@ public class MappingServiceJpa implements MappingService {
 			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 		}
 			
-		EntityManager manager = factory.createEntityManager();
+		manager = factory.createEntityManager();
 		
 		if (fieldNames == null) {
 			fieldNames = new HashSet<String>();
@@ -95,13 +100,8 @@ public class MappingServiceJpa implements MappingService {
 	/**
 	 * Close the factory when done with this service
 	 */
-	public void close() {
-		try {
-			factory.close();
-		} catch (Exception e) {
-			System.out.println("Failed to close MappingService!");
-			e.printStackTrace();
-		}
+	public void close() throws Exception {
+		if (manager.isOpen()) { manager.close(); }
 	}
 	
 	////////////////////////////////////
@@ -122,7 +122,6 @@ public class MappingServiceJpa implements MappingService {
 	*/
 	public MapProject getMapProject(Long id) {
 		MapProject m = null;
-		EntityManager manager = factory.createEntityManager();
 		
 		javax.persistence.Query query = manager.createQuery("select m from MapProjectJpa m where id = :id");
 		query.setParameter("id", id);
@@ -147,7 +146,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapProject> getMapProjects() {
 		
 		List<MapProject> m = null;
-		EntityManager manager = factory.createEntityManager();
+		
 		
 		// construct query
 		javax.persistence.Query query = manager.createQuery("select m from MapProjectJpa m");
@@ -175,7 +174,7 @@ public class MappingServiceJpa implements MappingService {
 	public SearchResultList findMapProjects(String query) {
 
 		SearchResultList s = new SearchResultListJpa();
-		EntityManager manager = factory.createEntityManager();
+		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
 		try {
@@ -224,7 +223,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapProject the map project
 	 */
 	public void addMapProject(MapProject mapProject) {
-		EntityManager manager = factory.createEntityManager();
+		
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
@@ -244,7 +243,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapProject the changed map project
 	 */
 	public void updateMapProject(MapProject mapProject) {
-		EntityManager manager = factory.createEntityManager();
+		
 		EntityTransaction tx = manager.getTransaction();
 		try {		
 			tx.begin();
@@ -263,7 +262,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapProjectId the map project to be removed
 	 */
 	public void removeMapProject(Long mapProjectId) {
-		EntityManager manager = factory.createEntityManager();
+		
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			// first, remove the leads and specialists from this project
@@ -303,7 +302,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapSpecialist> getMapSpecialists() {
 		
 		List<MapSpecialist> m = null;
-		EntityManager manager = factory.createEntityManager();
+		
 		javax.persistence.Query query = manager.createQuery("select m from MapSpecialistJpa m");
 		
 		// Try query
@@ -325,7 +324,7 @@ public class MappingServiceJpa implements MappingService {
 	*/
 	public MapSpecialist getMapSpecialist(Long id) {
 		MapSpecialist m = null;
-		EntityManager manager = factory.createEntityManager();
+		
 		
 		javax.persistence.Query query = manager.createQuery("select m from MapSpecialistJpa m where id = :id");
 		query.setParameter("id", id);
@@ -375,7 +374,7 @@ public class MappingServiceJpa implements MappingService {
 	public SearchResultList findMapSpecialists(String query) {
 
 		SearchResultList s =new SearchResultListJpa();
-		EntityManager manager = factory.createEntityManager();
+		
 		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
@@ -425,7 +424,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapSpecialist the map specialist
 	 */
 	public void addMapSpecialist(MapSpecialist mapSpecialist) {
-		EntityManager manager = factory.createEntityManager();
+		
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
@@ -446,7 +445,7 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public void updateMapSpecialist(MapSpecialist mapSpecialist) {
 		
-		EntityManager manager = factory.createEntityManager();
+		
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
@@ -465,7 +464,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapSpecialistId the map specialist to be removed
 	 */
 	public void removeMapSpecialist(Long mapSpecialistId) {
-		EntityManager manager = factory.createEntityManager();
+		
 		EntityTransaction tx = manager.getTransaction();
 		// retrieve this map specialist
 		
@@ -516,7 +515,7 @@ public class MappingServiceJpa implements MappingService {
 		
 		List<MapLead> mapLeads = new ArrayList<MapLead>();
 		
-		EntityManager manager = factory.createEntityManager();
+		
 		javax.persistence.Query query = manager.createQuery("select m from MapLeadJpa m");
 		
 		// Try query
@@ -538,7 +537,7 @@ public class MappingServiceJpa implements MappingService {
 	*/
 	public MapLead getMapLead(Long id) {
 		MapLead m = null;
-		EntityManager manager = factory.createEntityManager();
+		
 		
 		javax.persistence.Query query = manager.createQuery("select m from MapLeadJpa m where id = :id");
 		query.setParameter("id", id);
@@ -586,7 +585,7 @@ public class MappingServiceJpa implements MappingService {
 	public SearchResultList findMapLeads(String query) {
 		
 		SearchResultList s = new SearchResultListJpa();
-		EntityManager manager = factory.createEntityManager();
+		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
 		try {
@@ -634,7 +633,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapLead the map lead
 	 */
 	public void addMapLead(MapLead mapLead) {
-		EntityManager manager = factory.createEntityManager();
+		
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
@@ -654,7 +653,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapLead the changed map lead
 	 */
 	public void updateMapLead(MapLead mapLead) {
-		EntityManager manager = factory.createEntityManager();
+		
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
@@ -672,7 +671,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapLeadId the map lead to be removed
 	 */
 	public void removeMapLead(Long mapLeadId) {
-		EntityManager manager = factory.createEntityManager();
+		
 		EntityTransaction tx = manager.getTransaction();
 		// retrieve this map specialist
 		
@@ -717,7 +716,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapRecord> getMapRecords() {
 		
 		List<MapRecord> m = null;
-		EntityManager manager = factory.createEntityManager();
+		
 		
 		// construct query
 		javax.persistence.Query query = manager.createQuery("select m from MapRecordJpa m");
@@ -742,7 +741,7 @@ public class MappingServiceJpa implements MappingService {
 	 */
     public MapRecord getMapRecord(Long id) {
     	
-    	EntityManager manager = factory.createEntityManager();
+    	
 		javax.persistence.Query query = manager.createQuery("select r from MapRecordJpa r where id = :id");
 		
 		/*
@@ -782,7 +781,7 @@ public class MappingServiceJpa implements MappingService {
     public SearchResultList findMapRecords(String query) {
     	
     	SearchResultList s = new SearchResultListJpa();
-		EntityManager manager = factory.createEntityManager();
+		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
 		try {
@@ -831,7 +830,7 @@ public class MappingServiceJpa implements MappingService {
      * @param mapRecord the map record to be added
      */
     public void addMapRecord(MapRecord mapRecord) {
-    	EntityManager manager = factory.createEntityManager();
+    	
 		EntityTransaction tx = manager.getTransaction();
 		
 		try {
@@ -850,7 +849,7 @@ public class MappingServiceJpa implements MappingService {
      * @param mapRecord the map record to be updated
      */
     public void updateMapRecord(MapRecord mapRecord) {
-    	EntityManager manager = factory.createEntityManager();
+    	
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
@@ -868,7 +867,7 @@ public class MappingServiceJpa implements MappingService {
      * @param id the id of the map record to be removed
      */
     public void removeMapRecord(Long id) {
-    	EntityManager manager = factory.createEntityManager();
+    	
 		EntityTransaction tx = manager.getTransaction();
 		
 		// find the map record		
@@ -902,7 +901,7 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public SearchResultList findMapEntrys(String query) {
 		SearchResultList s = new SearchResultListJpa();
-		EntityManager manager = factory.createEntityManager();
+		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
 		try {
@@ -952,7 +951,7 @@ public class MappingServiceJpa implements MappingService {
      */
 	public SearchResultList findMapAdvices(String query) {
 		SearchResultList s = new SearchResultListJpa();
-		EntityManager manager = factory.createEntityManager();
+		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
 		try {
@@ -1006,7 +1005,7 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public SearchResultList findMapNotes(String query) {
 		SearchResultList s = new SearchResultListJpa();
-		EntityManager manager = factory.createEntityManager();
+		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
 		
 		try {
@@ -1059,7 +1058,7 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId) {
 		List<MapRecord> m = null;
-		EntityManager manager = factory.createEntityManager();
+		
 		
 		// construct query
 		javax.persistence.Query query = manager.createQuery("select m from MapRecordJpa m where conceptId = :conceptId");
@@ -1085,7 +1084,7 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId) {
 		List<MapRecord> m = null;
-		EntityManager manager = factory.createEntityManager();
+		
 		
 		// construct query
 		javax.persistence.Query query = manager.createQuery("select m from MapRecordJpa m where mapProjectId = :mapProjectId");

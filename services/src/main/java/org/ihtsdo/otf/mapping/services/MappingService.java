@@ -15,6 +15,12 @@ import org.ihtsdo.otf.mapping.model.MapSpecialist;
  */
 public interface MappingService {
 	
+	
+	/**
+	 * Closes the manager associated with service
+	 * @exception Exception the exception
+	 */
+	public void close() throws Exception;
 
 	//////////////////////////////
 	// Basic retrieval services //
