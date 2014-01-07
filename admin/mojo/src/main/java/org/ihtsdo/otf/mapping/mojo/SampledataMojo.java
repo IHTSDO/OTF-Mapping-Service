@@ -413,8 +413,6 @@ public class SampledataMojo extends AbstractMojo {
 				  continue; 
 				}
 				
-				
-				
 				// if no concept for this ref set member, skip
 				if (refSetMember.getConcept() == null)
 					continue;
