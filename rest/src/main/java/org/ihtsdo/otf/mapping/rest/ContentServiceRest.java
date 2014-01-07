@@ -85,7 +85,7 @@ public class ContentServiceRest {
 			// do nothing, try alternative search
 		}
 		if (result == null) {
-			return contentServiceJpa.getConcept(id, "SNOMEDCT",
+			return contentServiceJpa.getConcept(id.toString(), "SNOMEDCT",
 					terminologyLatestVersions.get("SNOMEDCT"));
 		} else {
 			return result;
@@ -111,7 +111,7 @@ public class ContentServiceRest {
 		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
-		return contentServiceJpa.getConcept(id, terminology,
+		return contentServiceJpa.getConcept(id.toString(), terminology,
 				terminologyVersion);
 	}
 	
@@ -133,7 +133,7 @@ public class ContentServiceRest {
 	public Concept getConceptForId(
 		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology) {
-		return contentServiceJpa.getConcept(id, terminology,
+		return contentServiceJpa.getConcept(id.toString(), terminology,
 				terminologyLatestVersions.get(terminology));
 	}
 	
@@ -172,7 +172,8 @@ public class ContentServiceRest {
 		@ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("id") Long id,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
-		return contentServiceJpa.getConceptDescendants(id, terminology,
-				terminologyVersion);
+		
+		return contentServiceJpa.getDescendants(id.toString(), terminology,
+				terminologyVersion, new Long("116680003")); // TODO Change this to metadata reference
 	}
 }

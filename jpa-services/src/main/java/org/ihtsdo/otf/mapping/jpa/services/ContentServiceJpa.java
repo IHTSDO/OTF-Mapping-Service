@@ -40,10 +40,10 @@ import org.ihtsdo.otf.mapping.services.SearchResultList;
 public class ContentServiceJpa implements ContentService {
 
 	/** The factory. */
-	private EntityManagerFactory factory;
+	private static EntityManagerFactory factory;
 
 	/** The manager. */
-	private EntityManager manager;
+	private static EntityManager manager;
 
 	/** The indexed field names. */
 	private Set<String> fieldNames;
@@ -52,70 +52,56 @@ public class ContentServiceJpa implements ContentService {
 	 * Instantiates an empty {@link ContentServiceJpa}.
 	 */
 	public ContentServiceJpa() {
-		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
-		manager = factory.createEntityManager();
-		fieldNames = new HashSet<String>();
-
-		FullTextEntityManager fullTextEntityManager =
-				org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
-		IndexReaderAccessor indexReaderAccessor =
-				fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
-		Set<String> indexedClassNames =
-				fullTextEntityManager.getSearchFactory().getStatistics()
-						.getIndexedClassNames();
-		for (String indexClass : indexedClassNames) {
-			IndexReader indexReader = indexReaderAccessor.open(indexClass);
-			try {
-				for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
-					fieldNames.add(info.name);
-				}
-			} finally {
-				indexReaderAccessor.close(indexReader);
-			}
+		if (factory == null) {
+			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 		}
-		System.out.println("ended init " + fieldNames.toString());
-	}
-
-	/** 
-	 * Retrieves a limited number of concepts
-	 * FOR TESTING PURPOSES ONLY
-	 * @param n_concepts the number of concepts
-	 * @return the list of concepts
-	 */
-	public List<Concept> getConceptsLimited(int n_concepts) {
+		
 		manager = factory.createEntityManager();
-		javax.persistence.Query query =
-				manager.createQuery("select terminologyId from ConceptJpa c");
-
-		query.setMaxResults(n_concepts);
-
-		List<String> concept_ids = (List<String>) query.getResultList();
-
-		List<Concept> concepts = new ArrayList<Concept>();
-
-		for (String concept_id : concept_ids) {
-			Concept c = new ConceptJpa();
-			c.setTerminologyId(concept_id);
-			concepts.add(c);
-		}
-
-		System.out.println("Returning " + Integer.toString(concept_ids.size())
-				+ " concept ids");
-		return concepts;
-
-	}
+		
+		if (fieldNames == null) {
+			
+			fieldNames = new HashSet<String>();
 	
+			FullTextEntityManager fullTextEntityManager =
+					org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
+			IndexReaderAccessor indexReaderAccessor =
+					fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
+			Set<String> indexedClassNames =
+					fullTextEntityManager.getSearchFactory().getStatistics()
+							.getIndexedClassNames();
+			for (String indexClass : indexedClassNames) {
+				IndexReader indexReader = indexReaderAccessor.open(indexClass);
+				try {
+					for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+						fieldNames.add(info.name);
+					}
+				} finally {
+					indexReaderAccessor.close(indexReader);
+				}
+			}
+			
+			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
+			
+		}
+			
+		if (manager.isOpen()) { manager.close(); }
+		//System.out.println("ended init " + fieldNames.toString());
+	}
+
+		
 	@Override
 	public Concept getConcept(Long conceptId) {
 		manager = factory.createEntityManager();
-		return manager.find(ConceptJpa.class, conceptId);
+		Concept c = manager.find(ConceptJpa.class, conceptId);
+		if (manager.isOpen()) { manager.close(); }
+		return c;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Concept getConcept(Long conceptId, String terminology, String terminologyVersion) {
+	public Concept getConcept(String terminologyId, String terminology, String terminologyVersion) {
 		manager = factory.createEntityManager();
 		javax.persistence.Query query =
 				manager
@@ -128,7 +114,7 @@ public class ContentServiceJpa implements ContentService {
 
 		try {
 
-			query.setParameter("terminologyId", conceptId.toString());
+			query.setParameter("terminologyId", terminologyId);
 			query.setParameter("terminology", terminology);
 			query.setParameter("terminologyVersion", terminologyVersion);
 
@@ -136,59 +122,23 @@ public class ContentServiceJpa implements ContentService {
 
 			System.out.println("Returning cid... "
 					+ ((c != null) ? c.getTerminologyId().toString() : "null"));
+		
+			if (manager.isOpen()) { manager.close(); }
 			return c;
 
 		} catch (NoResultException e) {
 			// log result and return null
 			Logger.getLogger(this.getClass()).info(
-					"Concept query for terminologyId = " + conceptId + ", terminology = "
+					"Concept query for terminologyId = " + terminologyId + ", terminology = "
 							+ terminology + ", terminologyVersion = " + terminologyVersion
 							+ " returned no results!");
+			if (manager.isOpen()) { manager.close(); }
 			return null;
 		}
-	}
-
-	/**
-	 * Returns the descendants.
-	 *
-	 * @param conceptId the concept id
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
-	 * @param descendantResultSet the descendant result set
-	 */
-	public void getDescendants(Long conceptId, String terminology, String terminologyVersion, Set<Concept> descendantResultSet) {
-		manager = factory.createEntityManager();
-		Set<Concept> children = new HashSet<Concept>();
 		
-		javax.persistence.Query query =
-				manager
-						.createQuery("select r from RelationshipJpa r where destinationConcept.terminologyId = :destinationTerminologyId");
-
-		try {
-
-			query.setParameter("destinationTerminologyId", conceptId.toString());
-			
-			List<Relationship> relationshipList =  query.getResultList();
-
-			for (Relationship rel : relationshipList) {
-				System.out.println("Child of " + conceptId.toString() + " is " + rel.getSourceConcept().getTerminologyId());				
-				children.add(rel.getSourceConcept());				
-			}
-			for(Concept child : children) {
-				if (child.getTerminology().equals(terminology) && child.getTerminologyVersion().equals(terminologyVersion) ) {
-					descendantResultSet.add(child);
-					getDescendants(new Long(child.getTerminologyId()), terminology, terminologyVersion, descendantResultSet);
-				}
-			}
-
-		} catch (NoResultException e) {
-			// log result and return null
-			Logger.getLogger(this.getClass()).info(
-					"Descendants query for terminologyId = " + conceptId + ", terminology = "
-							+ terminology + ", terminologyVersion = " + terminologyVersion
-							+ " returned no results!");
-		}
+		
 	}
+
 	
 	/*
 	 * (non-Javadoc)
@@ -236,11 +186,14 @@ public class ContentServiceJpa implements ContentService {
 			}
 			
 			results.sortSearchResultsById();
+			if (manager.isOpen()) { manager.close(); }
 
 			return results;
 		} catch (Exception e) {
+			
 			throw e;
 		} finally {
+			if (manager.isOpen()) { manager.close(); }
 			if (fullTextEntityManager != null) {
 				fullTextEntityManager.close();
 			}
@@ -256,42 +209,52 @@ public class ContentServiceJpa implements ContentService {
 	 * @param typeId
 	 * @return
 	 */
-	public SearchResultList getDescendants(Long terminologyId, String terminology, String terminologyVersion, Long typeId) {
+	public SearchResultList getDescendants(String terminologyId, String terminology, String terminologyVersion, Long typeId) {
 		
 		
 		Queue<Concept> concepts = new LinkedList<Concept>();
 		SearchResultList results= new SearchResultListJpa();
 		
 		// get the concept and add it as first element of concept list
-		concepts.add(getConcept(terminologyId, terminology, terminologyVersion));
+		Concept rootConcept = getConcept(terminologyId, terminology, terminologyVersion);
 		
+		if (rootConcept != null) {
+			concepts.add(getConcept(terminologyId, terminology, terminologyVersion));
+			
+			manager = factory.createEntityManager();
+		}
+		
+		// while concepts remain to be checked
 		while (!concepts.isEmpty()) {
 			
 			// retrieve this concept
 			Concept c = concepts.poll();
 			
-				if (c.isActive()) {
-				
+			System.out.println(c.getDefaultPreferredName());
+			
+			// if concept is active
+			if (c.isActive()) {
+			
 				// relationship sets
-				Set<Relationship> relationships = c.getRelationships();
 				Set<Relationship> inv_relationships = c.getInverseRelationships();
 				
 				// iterators for relationship sets
 				Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
-				
+					
 				// iterate over inverse relationships
 				while (it_inv_rel.hasNext()) {
 					
 					// get relationship
 					Relationship rel = it_inv_rel.next();
-					
-					if (rel.isActive() && rel.getTypeId().equals(typeId)) {
+				
+					// if relationship is active, typeId equals the provided typeId, and the source concept is active
+					if (rel.isActive() && rel.getTypeId().equals(typeId) && rel.getSourceConcept().isActive()) {
 						
 						// get destination concept
 						Concept c_rel = rel.getSourceConcept();
 						
 						// construct search result
-						SearchResult searchResult= new SearchResultJpa(c_rel.getId(), c_rel.getTerminologyId(), c_rel.getDefaultPreferredName());					
+						SearchResult searchResult = new SearchResultJpa(c_rel.getId(), c_rel.getTerminologyId(), c_rel.getDefaultPreferredName());					
 						
 						// if concept list does not contain this concept, add result to list and concept to queue
 						if (!results.contains(searchResult)) {
@@ -303,21 +266,48 @@ public class ContentServiceJpa implements ContentService {
 			}
 		}
 		
+		// sort results
 		results.sortSearchResultsById();
 		
+		if (manager.isOpen()) { manager.close(); }
+			
 		return results;
 	}
 	
-	//////////////////////////////////////////
-	// Other Services
-	//////////////////////////////////////////
-	
-	public SearchResultList findUnmappedDescendants(MapProject mapProject) {
+	public List<Concept> getConceptsForRefSetId(Long refSetId, String terminology, String terminologyVersion) {
 		
-		SearchResultList results = new SearchResultListJpa();
-	
-	return results;
-	}
+		manager = factory.createEntityManager();
+		javax.persistence.Query query =
+				manager
+						.createQuery("select c from ConceptJpa c where refSetId = :refSetId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		/*
+		 * Try to retrieve the single expected result If zero or more than one
+		 * result are returned, log error and set result to null
+		 */
 
+		try {
+
+			query.setParameter("refSetId", refSetId.toString());
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+
+			List<Concept> cids = query.getResultList();
+			
+			if (manager.isOpen()) { manager.close(); }
+			
+			return cids;
+			
+
+		} catch (NoResultException e) {
+			// log result and return null
+			Logger.getLogger(this.getClass()).info(
+					"Concept query for refSetId = " + refSetId + ", terminology = "
+							+ terminology + ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!");
+			if (manager.isOpen()) { manager.close(); }
+			return null;
+		}
+		
+	}
 
 }

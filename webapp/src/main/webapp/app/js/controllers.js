@@ -5,7 +5,17 @@ var mapProjectAppControllers = angular.module('mapProjectAppControllers', ['ui.b
 var root_mapping = "${base.url}/mapping-rest/mapping/";
 var root_content = "${base.url}/mapping-rest/content/";
 	
+//////////////////////////////
+// Navigation
+//////////////////////////////	
 
+mapProjectAppControllers.controller('MapProjectAppNav',
+	function ($scope) {
+	
+		var changePage = function (newPage) {
+			$location.path = newPage;
+		}
+	});	
 
 	
 //////////////////////////////
@@ -25,7 +35,7 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
     	  $scope.projects = data.mapProject;
       }).error(function(error) {
     	  $scope.error = "Error";
-    });
+      });
  
    /* $scope.orderProp = 'id';	*/
   });
