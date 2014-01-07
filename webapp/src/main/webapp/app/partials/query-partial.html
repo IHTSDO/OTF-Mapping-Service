@@ -1,17 +1,12 @@
 <h3>Search Concepts</h3>
 
-<form>
-<input ng-model = "queryConcept">
-<button type="submit" ng-click="searchConcepts()">Search</button>
-<button type="reset" ng-click="resetConcepts()">Reset</button>
-<p>Example: (by name) <em>ossification</em>, <em>headache</em>, (by Concept ID) <em>102287002</em></p>
-</form>
+
 
 
 <p></p>
 <p>{{searchConceptsStatus}}</p>
 <ul>
-<li ng-repeat = "searchResult in conceptResults.searchResults"><a href="index.html#/concept/id/{{searchResult.terminologyId}}">{{searchResult.terminologyId}}</a> - {{searchResult.description}}</li>
+<li ng-repeat = "searchResult in conceptResults.searchResult"><a href="index.html#/concept/id/{{searchResult.terminologyId}}">{{searchResult.terminologyId}}</a> - {{searchResult.description}}</li>
 </ul>
 
 <hr>
@@ -29,7 +24,7 @@
 <p></p>
 <p>{{searchProjectsStatus}}</p>
 <ul>
-<li ng-repeat = "searchResult in projectResults.searchResults"><a href="index.html#/project/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
+<li ng-repeat = "searchResult in projectResults.searchResult"><a href="index.html#/project/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
 </ul>
 
 <hr>
@@ -46,5 +41,5 @@
 <p></p>
 <p>{{searchRecordsStatus}}</p>
 <ul>
-<li ng-repeat = "searchResult in recordResults.searchResults"><a href="index.html#/record/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
+<li ng-repeat = "searchResult in recordResults.searchResult"><a href="index.html#/record/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
 </ul>

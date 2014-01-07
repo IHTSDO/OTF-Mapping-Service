@@ -2,7 +2,10 @@ package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -23,10 +26,12 @@ import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.SearchResult;
 import org.ihtsdo.otf.mapping.services.SearchResultList;
 
 /**
@@ -229,6 +234,8 @@ public class ContentServiceJpa implements ContentService {
 				results.addSearchResult(new SearchResultJpa(c.getId(), c
 						.getTerminologyId(), c.getDefaultPreferredName()));
 			}
+			
+			results.sortSearchResultsById();
 
 			return results;
 		} catch (Exception e) {
@@ -240,5 +247,77 @@ public class ContentServiceJpa implements ContentService {
 			fullTextEntityManager = null;
 		}
 	}
+	
+	/**
+	 * Find descendant concepts through inverse relationships given a concept and typeId
+	 * @param terminologyId
+	 * @param terminology
+	 * @param terminologyVersion
+	 * @param typeId
+	 * @return
+	 */
+	public SearchResultList getDescendants(Long terminologyId, String terminology, String terminologyVersion, Long typeId) {
+		
+		
+		Queue<Concept> concepts = new LinkedList<Concept>();
+		SearchResultList results= new SearchResultListJpa();
+		
+		// get the concept and add it as first element of concept list
+		concepts.add(getConcept(terminologyId, terminology, terminologyVersion));
+		
+		while (!concepts.isEmpty()) {
+			
+			// retrieve this concept
+			Concept c = concepts.poll();
+			
+				if (c.isActive()) {
+				
+				// relationship sets
+				Set<Relationship> relationships = c.getRelationships();
+				Set<Relationship> inv_relationships = c.getInverseRelationships();
+				
+				// iterators for relationship sets
+				Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
+				
+				// iterate over inverse relationships
+				while (it_inv_rel.hasNext()) {
+					
+					// get relationship
+					Relationship rel = it_inv_rel.next();
+					
+					if (rel.isActive() && rel.getTypeId().equals(typeId)) {
+						
+						// get destination concept
+						Concept c_rel = rel.getSourceConcept();
+						
+						// construct search result
+						SearchResult searchResult= new SearchResultJpa(c_rel.getId(), c_rel.getTerminologyId(), c_rel.getDefaultPreferredName());					
+						
+						// if concept list does not contain this concept, add result to list and concept to queue
+						if (!results.contains(searchResult)) {
+							results.addSearchResult(searchResult);
+							concepts.add(c_rel);
+						}
+					}
+				}
+			}
+		}
+		
+		results.sortSearchResultsById();
+		
+		return results;
+	}
+	
+	//////////////////////////////////////////
+	// Other Services
+	//////////////////////////////////////////
+	
+	public SearchResultList findUnmappedDescendants(MapProject mapProject) {
+		
+		SearchResultList results = new SearchResultListJpa();
+	
+	return results;
+	}
+
 
 }

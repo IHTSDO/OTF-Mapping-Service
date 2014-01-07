@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>OTF Mapping Test WebApp</title>
 
-  <!-- <link rel="stylesheet" href="css/app.css"> -->
+    <!-- <link rel="stylesheet" href="css/app.css"> -->
   <link rel="stylesheet" href="css/bootstrap.css">
 
   <!--  angular includes -->
@@ -17,31 +17,142 @@
   <!-- third-party utility includes  -->
   <script src="js/ui-bootstrap-custom-tpls-0.7.0.js"></script>
 
+<script type="text/javascript" src="js/jquery-1.3.js"></script>
+<script type="text/javascript" src="js/splitter.js"></script>
+
+<style type="text/css" media="all">
+html, body
+{
+	margin: 0;			/* Remove body margin/padding */
+	padding: 0;
+	overflow: hidden;	/* Remove scroll bars on browser window */
+}
+#header { padding: 0px; }
+
+#MySplitter {
+	border: 3px solid #669;
+	min-width: 500px;	/* Splitter can't be too thin ... */
+	min-height: 300px;	/* ... or too flat */
+	height: 100%;
+}
+#LeftPane {
+	width: 150px;
+	min-width: 100px;
+	max-width: 300px;
+	padding-top: 5px;
+}
+
+#RightPane {
+	padding: 5px;
+}
+
+#TopPane {				/* Top nested in right pane */
+	height: 150px;		/* Initial height */
+	min-height: 75px;	/* Minimum height */
+}
+#BottomPane {
+	background: #eef;
+	min-height: 100px;
+}
+
+/* Splitbar styles; these are the default class names */
+
+.ui-state-default { background-color: #88c }
+.ui-state-hover { background-color: #bbf }
+.ui-state-highlight { background-color: #68f }
+.ui-state-error { background-color: #eaa }
+
+.splitter-pane {
+	overflow: auto;
+}
+.splitter-bar-vertical {
+	width: 6px;
+	background-image: url(img/vgrabber.gif);
+	background-repeat: no-repeat;
+	background-position: center;
+}
+.splitter-bar-vertical-docked {
+	width: 6px;
+	background-image: url(img/vdockbar-trans.gif);
+	background-repeat: no-repeat;
+	background-position: center;
+}
+.splitter-bar-horizontal {
+	height: 6px;
+	background-image: url(img/hgrabber.gif);
+	background-repeat: no-repeat;
+	background-position: center;
+}
+.splitter-bar-horizontal-docked {
+	height: 6px;
+	background-image: url(img/hdockbar-trans.gif);
+	background-repeat: no-repeat;
+	background-position: center;
+}
+.splitter-bar.ui-state-highlight {
+	opacity: 0.7;
+}
+.splitter-iframe-hide {
+	visibility: hidden;
+}
+
+#button { width:100px; height:100px;}
+</style>
+<script type="text/javascript">
+$().ready(function() {
+	// Vertical splitter. Set min/max/starting sizes for the left pane.
+	$("#MySplitter").splitter({
+		splitVertical: true,
+		outline: true,
+		sizeLeft: true,
+		resizeTo: window,
+		accessKey: "I"
+	});
+	/* // Horizontal splitter, nested in the right pane of the vertical splitter.
+	$("#RightPane").splitter({
+		splitHorizontal: true,
+		sizeTop: true,
+		accessKey: "H"
+	}); */
+
+});
+</script>
 
 <script>
     function visitPage(url){
-    	window.location=url;
+        window.location = url;
     }
   </script>
 </head>
-
-<body style="padding-left:25px">
+<body>
 
 <div id="header">
 	<img src="img/ihtsdo_logo.png">
 </div>
 
 
-<button onclick="visitPage('index.html#')">Home</button>
-<button onclick="visitPage('index.html#/project/projects')">Projects</button>
-<button onclick="visitPage('index.html#/lead/leads')">Leads</button>
-<button onclick="visitPage('index.html#/specialist/specialists')">Specialists</button>
-<button onclick="visitPage('index.html#/concept/query')">Search</button>
-<hr>	
+<div id="MySplitter">
 
-
-<div ng-view></div>
- 
+ 	 <div id="LeftPane" align=center>
+		<button style="width:100px;height:35px" onclick="visitPage('index.html#')">Home</button><br>
+		<button style="width:100px;height:35px;" onclick="visitPage('index.html#/project/projects')">Projects</button><br>
+		<button style="width:100px;height:35px" onclick="visitPage('index.html#/lead/leads')">Leads</button><br>
+		<button style="width:100px;height:35px" onclick="visitPage('index.html#/specialist/specialists')">Specialists</button><br>
+		<button style="width:100px;" onclick="visitPage('index.html#/concept/query')">Search MapObjects</button><br>
+		<hr>	
+		<form>
+		<input ng-model = "queryConcept">
+		<button type="submit" ng-click="visitPage('index.html#/concept/query/{{queryConcept}}">Search</button>
+		<button type="reset" ng-click="resetConcepts()">Reset</button>
+		<p>Example: (by name) <em>ossification</em>, <em>headache</em>, (by Concept ID) <em>102287002</em></p>
+		</form>
+ 	 </div> <!-- #LeftPane -->
+  
+ 	 <div id="RightPane">
+ 	 <div ng-view></div>
+ 	 </div> <!-- #RightPane -->
+  
+</div> <!-- #MySplitter -->
 
 </body>
 </html>
