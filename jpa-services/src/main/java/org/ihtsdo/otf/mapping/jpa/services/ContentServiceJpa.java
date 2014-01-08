@@ -46,9 +46,7 @@ public class ContentServiceJpa implements ContentService {
 	private EntityManager manager;
 
 	/** The indexed field names. */
-	private Set<String> fieldNames;
-	
-	private FullTextEntityManager fullTextEntityManager;
+	private static Set<String> fieldNames;
 
 	/**
 	 * Instantiates an empty {@link ContentServiceJpa}.
@@ -67,7 +65,7 @@ public class ContentServiceJpa implements ContentService {
 			
 			fieldNames = new HashSet<String>();
 	
-			fullTextEntityManager =
+			FullTextEntityManager fullTextEntityManager =
 					org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
 			IndexReaderAccessor indexReaderAccessor =
 					fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
@@ -84,7 +82,11 @@ public class ContentServiceJpa implements ContentService {
 					indexReaderAccessor.close(indexReader);
 				}
 			}
-
+			
+			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
+			
+			// closing fullTextEntityManager closes manager as well, recreate
+			manager = factory.createEntityManager();
 		}
 	}
 	
@@ -98,7 +100,6 @@ public class ContentServiceJpa implements ContentService {
 	public Concept getConcept(Long conceptId) {
 		
 		Concept c = manager.find(ConceptJpa.class, conceptId);
-		if (manager.isOpen()) { manager.close(); }
 		return c;
 	}
 
@@ -128,7 +129,6 @@ public class ContentServiceJpa implements ContentService {
 			System.out.println("Returning cid... "
 					+ ((c != null) ? c.getTerminologyId().toString() : "null"));
 		
-			//if (manager.isOpen()) { manager.close(); }
 			return c;
 
 		} catch (NoResultException e) {
@@ -137,7 +137,6 @@ public class ContentServiceJpa implements ContentService {
 					"Concept query for terminologyId = " + terminologyId + ", terminology = "
 							+ terminology + ", terminologyVersion = " + terminologyVersion
 							+ " returned no results!");
-			if (manager.isOpen()) { manager.close(); }
 			return null;
 		}
 	}
@@ -188,19 +187,12 @@ public class ContentServiceJpa implements ContentService {
 			}
 			
 			results.sortSearchResultsById();
-			if (manager.isOpen()) { manager.close(); }
 
 			return results;
 		} catch (Exception e) {
 			
 			throw e;
-		} finally {
-			if (manager.isOpen()) { manager.close(); }
-			if (fullTextEntityManager != null) {
-				fullTextEntityManager.close();
-			}
-			fullTextEntityManager = null;
-		}
+		} 
 	}
 	
 	/**
@@ -255,7 +247,7 @@ public class ContentServiceJpa implements ContentService {
 							Concept c_rel = rel.getSourceConcept();					
 							
 							// if set does not contain the source concept, add it to set and queue
-							if (!concept_set.contains(c_rel)) {
+							if (concept_set.contains(c_rel)) {
 								concept_set.add(c_rel);
 								concept_queue.add(c_rel);
 							}
@@ -287,8 +279,6 @@ public class ContentServiceJpa implements ContentService {
 
 			List<Concept> cids = query.getResultList();
 			
-			if (manager.isOpen()) { manager.close(); }
-			
 			return cids;
 			
 
@@ -298,7 +288,6 @@ public class ContentServiceJpa implements ContentService {
 					"Concept query for refSetId = " + refSetId + ", terminology = "
 							+ terminology + ", terminologyVersion = " + terminologyVersion
 							+ " returned no results!");
-			if (manager.isOpen()) { manager.close(); }
 			return null;
 		}
 		

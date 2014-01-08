@@ -70,6 +70,10 @@ public class MappingServiceRest {
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
+		
+			//if (! mappingService.isFactoryOpen()) { System.out.println("REST: service manager not open"); }
+			//if (! mappingService.isManagerOpen()) { System.out.println("REST: service manager not open"); }
+			
 			MapProjectList mapProjects = new MapProjectList();	
 			mapProjects.setMapProjects(mappingService.getMapProjects());
 			mapProjects.sortMapProjects();
