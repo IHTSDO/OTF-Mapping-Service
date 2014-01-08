@@ -2,8 +2,11 @@
 
 var mapProjectAppControllers = angular.module('mapProjectAppControllers', ['ui.bootstrap']);
 
-var root_mapping = "${base.url}/mapping-rest/mapping/";
-var root_content = "${base.url}/mapping-rest/content/";
+var root_url = "${base.url}/mapping-rest/";
+
+var root_mapping = root_url + "mapping/";
+var root_content = root_url + "content/";
+var root_metadata = root_url + "metadata/";
 	
 //////////////////////////////
 // Navigation
@@ -368,6 +371,34 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
     	  
 	  
 }]);
+
+//////////////////////////////
+//Metadata Services
+//////////////////////////////	
+
+mapProjectAppControllers.controller('MetadataCtrl', 
+		['$scope', '$http',
+                                                             
+		function ($scope, $http) {
+			
+			$scope.errorMetadata = "";
+			
+			// retrieve any concept associated with this project
+	    	 $http({
+	    		  url: root_metadata + "all/",
+	    		  dataType: "json",
+	    		  method: "GET",
+	    		  headers: {
+	    			  "Content-Type": "application/json"
+	    		  }
+	    	  }).success(function(data) {
+	    		  $scope.data = data.metadata;
+	    	  }).error(function(error) {
+	    		  $scope.errorMetadata = "Error retrieving concept";
+	    	  });
+		}]);
+			
+		
 
 
 

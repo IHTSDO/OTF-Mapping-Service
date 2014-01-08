@@ -84,8 +84,12 @@ mapProjectApp.config(['$routeProvider',
   		  controller: 'QueryCtrl'
   	  });
 	  
-	  $routeProvider.when('/concept/query/:query', {
-	  	templateUrl: 'partials/query-concept.html', 
-		  controller: 'QueryConceptCtrl'
+	  //////////////////////////////
+	  // MAPPING SERVICES
+	  //////////////////////////////
+	  $routeProvider.when('/metadata', {
+	  	templateUrl: 'partials/metadata-detail.html', 
+		  controller: 'MetadataCtrl'
 	  });
+	  
    }]);
