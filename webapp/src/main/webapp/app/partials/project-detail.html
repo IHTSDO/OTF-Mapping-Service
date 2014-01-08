@@ -24,9 +24,9 @@
 <table><tr ng-repeat="advice in project.mapAdvice"><td>{{advice.description}}</td></tr></table>
 </accordion-group>
 
-<accordion-group heading="Map Records ({{records.length}})">
+<accordion-group heading="Map Records ({{records.length}}) {{statusRecordLoad}}">
 <p>{{errorRecords}}</p>
-<div ng-repeat="record in records">Record {{record.ID}} for concept {{record.conceptId}}
+<div ng-repeat="record in records">Record {{record.ID}} for concept <a href="index.html#/concept/id/{{record.conceptId}}">{{record.conceptId}}</a>
 		
 		<table border="1" cellpadding="5">
 		<thead><tr><th>Target</th><th>Rule</th><th>Index</th><th>RelationId</th></tr></thead>
@@ -85,7 +85,7 @@
 <li ng-repeat="rel in concept.relationship">
 <p>Id: {{rel.terminologyId}}</p>
 <p>Active: {{rel.active}}</p>
-<p>Destination Concept: {{rel.destinationConceptId}} - {{rel.destinationConceptPreferredName}}</p>
+<p>Destination Concept: <a href="index.html#/concept/id/{{rel.destinationConceptId}}">{{rel.destinationConceptId}} - {{rel.destinationConceptPreferredName}}</a></p>
 <p>Characteristic Type Id: {{rel.characteristicTypeId}}</p>
 <p>Modifier Id: {{rel.modifierId}}</p>
 <p>Type Id: {{rel.typeId}}</p>

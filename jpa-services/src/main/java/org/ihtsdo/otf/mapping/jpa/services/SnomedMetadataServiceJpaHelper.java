@@ -123,8 +123,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	  // find all active descendants of 447250001
 		ContentService contentService = new ContentServiceJpa();
 	  Set<Concept> descendants = new HashSet<Concept>();
-	  Concept rootConcept = contentService.getConcept(new Long("447250001"), terminology, version);
-	  contentService.getDescendants(rootConcept, terminology, version, descendants);
+	//  Concept rootConcept = contentService.getConcept(new Long("447250001"), terminology, version);
+	 // contentService.getDescendants(rootConcept, terminology, version, descendants);
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {

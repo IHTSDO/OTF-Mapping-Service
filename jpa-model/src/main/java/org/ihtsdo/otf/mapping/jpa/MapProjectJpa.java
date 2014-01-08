@@ -92,12 +92,12 @@ public class MapProjectJpa implements MapProject {
 	private Set<MapSpecialist> mapSpecialists = new HashSet<MapSpecialist>();
 	
 	/** The allowable map principles for this MapProject. */
-	@ManyToMany(targetEntity=MapPrincipleJpa.class, cascade = CascadeType.ALL, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapPrincipleJpa.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 
 	/** The allowable map advices for this MapProject. */
-	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapAdviceJpa.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 	

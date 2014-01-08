@@ -59,6 +59,9 @@ public class MappingServiceJpa implements MappingService {
 	/** The manager */
 	private EntityManager manager;
 	
+	/** The full text entity manager */
+    private	FullTextEntityManager fullTextEntityManager;
+	
 	/** The indexed field names. */
 	private static Set<String> fieldNames;
 
@@ -75,10 +78,11 @@ public class MappingServiceJpa implements MappingService {
 		// created on each instantiation
 		manager = factory.createEntityManager();
 		
+		// fieldNames created once
 		if (fieldNames == null) {
 			fieldNames = new HashSet<String>();
 	
-			FullTextEntityManager fullTextEntityManager =
+			fullTextEntityManager =
 					org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
 			IndexReaderAccessor indexReaderAccessor =
 					fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
@@ -96,7 +100,11 @@ public class MappingServiceJpa implements MappingService {
 				}
 			}
 			
+			
 			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
+			
+			// closing fullTextEntityManager also closes manager, recreate
+			manager = factory.createEntityManager();
 		}
 	}
 	
@@ -107,6 +115,13 @@ public class MappingServiceJpa implements MappingService {
 		if (manager.isOpen()) { manager.close(); }
 	}
 	
+	public boolean isManagerOpen() {
+		return this.manager.isOpen();
+	}
+	
+	public boolean isFactoryOpen() {
+		return this.factory.isOpen();
+	}
 	////////////////////////////////////
 	// MapProject
 	// - getMapProjects
@@ -147,6 +162,8 @@ public class MappingServiceJpa implements MappingService {
 	@SuppressWarnings("unchecked")
 	public List<MapProject> getMapProjects() {
 		
+		
+		if (!manager.isOpen()) { System.out.println("Feh"); }
 		
 		List<MapProject> m = null;
 			
