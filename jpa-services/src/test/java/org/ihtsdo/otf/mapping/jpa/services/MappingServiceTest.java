@@ -78,9 +78,6 @@ public class MappingServiceTest {
 
 		System.out.println("Cleaning up EditMappingServiceJpa");
 
-		// close service
-		service.close();
-
 		// create new database connection
 		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 		manager = factory.createEntityManager();

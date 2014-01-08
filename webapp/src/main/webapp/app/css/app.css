@@ -1,13 +1,16 @@
 /* CSS file for OTF Mapping WebApp */
 
-/* Splitter css */
+/* Splitter CSS */
 html, body
 {
 	margin: 0;			/* Remove body margin/padding */
 	padding: 0;
 	overflow: hidden;	/* Remove scroll bars on browser window */
 }
-#header { padding: 1em; }
+#header { 
+	padding: 0px;
+	min-height: 100px;
+}
 
 #MySplitter {
 	border: 3px solid #669;
@@ -19,7 +22,13 @@ html, body
 	width: 150px;
 	min-width: 100px;
 	max-width: 300px;
+	padding-top: 5px;
 }
+
+#RightPane {
+	padding: 5px;
+}
+
 #TopPane {				/* Top nested in right pane */
 	height: 150px;		/* Initial height */
 	min-height: 75px;	/* Minimum height */
@@ -41,25 +50,21 @@ html, body
 }
 .splitter-bar-vertical {
 	width: 6px;
-	background-image: url(img/vgrabber.gif);
 	background-repeat: no-repeat;
 	background-position: center;
 }
 .splitter-bar-vertical-docked {
-	width: 10px;
-	background-image: url(img/vdockbar-trans.gif);
+	width: 6px;
 	background-repeat: no-repeat;
 	background-position: center;
 }
 .splitter-bar-horizontal {
 	height: 6px;
-	background-image: url(img/hgrabber.gif);
 	background-repeat: no-repeat;
 	background-position: center;
 }
 .splitter-bar-horizontal-docked {
-	height: 10px;
-	background-image: url(img/hdockbar-trans.gif);
+	height: 6px;
 	background-repeat: no-repeat;
 	background-position: center;
 }
@@ -70,4 +75,5 @@ html, body
 	visibility: hidden;
 }
 
+#button { width:100px; height:100px;}
 /* END Splitter CSS */

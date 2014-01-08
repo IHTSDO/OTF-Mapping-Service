@@ -120,6 +120,30 @@ public interface MapEntry {
 	public void setIndexMapPriority(int index);
 	
 	/**
+	 * Gets the map group
+	 * @return the map group
+	 */
+	public int getMapGroup();
+	
+	/**
+	 * Sets the map group
+	 * @param mapGroup the map group
+	 */
+	public void setMapGroup(int mapGroup);
+	
+	/**
+	 * Gets the map block
+	 * @return the map block
+	 */
+	public int getMapBlock();
+	
+	/**
+	 * Sets the map block
+	 * @param mapBlock the map block
+	 */
+	public void setMapBlock(int mapBlock);
+	
+	/**
 	 * Returns the relation id.
 	 *
 	 * @return the relation id
