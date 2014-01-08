@@ -62,14 +62,15 @@ public class ContentServiceRest {
 		try {
 			ContentService contentService = new ContentServiceJpa();
 			Concept c = contentService.getConcept(id);
-			contentService.close(); // TODO Add this to all methods
+			
 
+			// if a terminology Id passed incorrectly, search appropriately
 			if (c == null) {
-				return contentService.getConcept(id.toString(), "SNOMEDCT",
+				c = contentService.getConcept(id.toString(), "SNOMEDCT",
 						terminologyLatestVersions.get("SNOMEDCT"));
-			} else {
-				return c;
-			}
+			} 
+			contentService.close();
+			return c;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		} 

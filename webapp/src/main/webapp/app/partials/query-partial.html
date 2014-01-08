@@ -2,9 +2,9 @@
 
 <form>
 	<input ng-model = "queryConcept">
-	<button onclick="visitPage('index.html#/project/projects')">Search</button>
+	<button type="submit" ng-click="searchConcepts()">Search</button>
 	<button type="reset" ng-click="resetConcepts()">Reset</button>
-	Example: (by name) <em>ossification</em>, <em>headache</em>, (by Concept ID) <em>102287002</em>
+	<p>Examples: (by name) <em>ossification</em>, <em>plas*~0.8</em>, (by Concept ID) <em>102287002</em></p>
 </form>
 
 
@@ -14,7 +14,7 @@
 <li ng-repeat = "searchResult in conceptResults.searchResult"><a href="index.html#/concept/id/{{searchResult.terminologyId}}">{{searchResult.terminologyId}}</a> - {{searchResult.description}}</li>
 </ul>
 
-<hr>
+<hr style="width:99%">
 
 <h3>Search Projects</h3>
 
@@ -22,7 +22,7 @@
 <input ng-model = "queryProject">
 <button type="submit" ng-click="searchProjects()">Search</button>
 <button type="reset" ng-click="resetProjects()">Reset</button>
-<p>Examples: (by terminology) <em>ICD9CM</em>, (by Ref Set ID) </em>447562003</em></p>
+<p>Examples: (by terminology) <em>ICD10</em>, (by Ref Set ID) </em>447562003</em></p>
 </form>
 
 
@@ -32,7 +32,7 @@
 <li ng-repeat = "searchResult in projectResults.searchResult"><a href="index.html#/project/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
 </ul>
 
-<hr>
+<hr style="width:99%">
 
 <h3>Search Records</h3>
 
@@ -48,3 +48,18 @@
 <ul>
 <li ng-repeat = "searchResult in recordResults.searchResult"><a href="index.html#/record/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
 </ul>
+
+<hr style="width:99%">
+
+<h3>Search Options</h3>
+<ul>
+<li>Phrase searching: "" (e.g. "truncal structure")</li>
+<li>Boolean operators:  AND/&&, OR/||, NOT/! (e.g. <em>epilepsy AND childhood</em>, <em>heart || liver</em>)</li>
+<li>Wildcard searching: *  (e.g. <em>SNO*</em>, <em>head*</em>)</li>
+<li>Inclusion/Exclusion: +/- (e.g. <em>headache -benign</em>, <em>foreign +material</em>)</li>
+<li>Grouping: () (e.g. <em>structure AND (liver OR bone)</em>)</li>
+<li>Fuzzy searching: ~ (e.g. <em>plasm~</em> may return plasm, phase, class, etc.) 
+<p>[Optional: add number 0-1 to improve precision, e.g. <em>plasm~0.4</em> for imprecise matches, <em>plasm~0.9</em> for very precise matches. Default is 0.5.])</p></li>
+</ul>
+
+Restrictions:  empty searches or full wildcard searches (e.g. <em>*</em>) will return no results.

@@ -195,13 +195,13 @@ mapProjectAppControllers.controller('ConceptDetailCtrl', ['$scope', '$http', '$r
 mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routeParams',
    function ($scope, $http, $routeParams) {
 	
-	$scope.searchConceptsStatus = "No concept query executed.";
-	$scope.searchProjectsStatus = "No project query executed.";
-	$scope.searchRecordsStatus = "No record query executed.";
+	$scope.searchConceptsStatus = "";
+	$scope.searchProjectsStatus = "";
+	$scope.searchRecordsStatus = "";
 	
 	$scope.searchConcepts = function(id) {
 		
-	  $scope.searchConceptsStatus = "Searching...";
+	  $scope.searchConceptsStatus = "[Searching...]";
 		
 	  $http({
         url: root_content + "concept/query/" + $scope.queryConcept,
@@ -221,12 +221,12 @@ mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routePara
 	
 	$scope.resetConcepts = function(id) {
 		$scope.conceptResults = "";
-		$scope.searchConceptsStatus = "No concept query executed";
+		$scope.searchConceptsStatus = "";
 	};
 	
 	$scope.searchProjects = function(id) {
 		
-	  $scope.searchProjectsStatus = "Searching...";
+	  $scope.searchProjectsStatus = "[Searching...]";
 	  
 	  $http({
         url: root_mapping + "project/query/" + $scope.queryProject,
@@ -245,12 +245,12 @@ mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routePara
 	
 	$scope.resetProjects = function(id) {
 		$scope.projectResults = "";
-		$scope.searchProjectsStatus = "No concept query executed";
+		$scope.searchProjectsStatus = "";
 	};
 	
 	$scope.searchRecords = function(id) {
 		
-	  $scope.searchRecordsStatus = "Searching...";
+	  $scope.searchRecordsStatus = "[Searching...]";
 	  
 	  $http({
         url: root_mapping + "record/query/" + $scope.queryRecord,
@@ -269,7 +269,7 @@ mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routePara
 	
 	$scope.resetRecords = function(id) {
 		$scope.recordResults = "";
-		$scope.searchRecordsStatus = "No concept query executed";
+		$scope.searchRecordsStatus = "";
 	};
 }]);
 
@@ -296,7 +296,7 @@ mapProjectAppControllers.controller('QueryConceptCtrl', ['$scope', '$http', '$ro
     });
     	$scope.resetConcepts = function(id) {
 		$scope.conceptResults = "";
-		$scope.searchConceptsStatus = "No concept query executed";
+		$scope.searchConceptsStatus = "[No concept query executed]";
 	};
 	
 }]);
@@ -316,6 +316,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	  $scope.errorProject = "";
 	  $scope.errorConcept = "";
 	  $scope.errorRecords = "";
+	  $scope.statusRecordLoad = "";
 	  
 	  // retrieve project information
 	 $http({
@@ -328,6 +329,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
       }).success(function(data) {
         $scope.project = data;
         $scope.errorProject = "Project retrieved";
+        $scope.statusRecordLoad = "[Loading...]";
       }).error(function(error) {
     	  $scope.errorProject = "Could not retrieve project"; 
      
@@ -358,6 +360,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
     		  }
     	  }).success(function(data) {
     		  $scope.records = data.mapRecord;
+    		  $scope.statusRecordLoad = "";
     	  }).error(function(error) {
     		  $scope.errorRecord = "Error retrieving map records";
     	  });
