@@ -108,8 +108,21 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	@Override
 	public IdNameMap getAttributeValueRefSets(String terminology,
 		String version) {
-		// TODO Auto-generated method stub
-		return null;
+		IdNameMap map = new IdNameMapJpa();
+
+	  // find all active descendants of 900000000000480006
+		ContentService contentService = new ContentServiceJpa();
+	  Set<Concept> descendants = new HashSet<Concept>();
+	  Concept rootConcept = contentService.getConcept(new Long("900000000000480006"), terminology, version);
+	  contentService.getDescendants(rootConcept, terminology, version, descendants);
+
+	  for (Concept descendant : descendants) {
+	  	if (descendant.isActive()) {
+	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName());
+	  	}
+	  }
+	  return map;
 	}
 
 	/* (non-Javadoc)
@@ -118,7 +131,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	@Override
 	public IdNameMap getComplexMapRefSets(String terminology,
 		String version) {
-		IdNameMapJpa map = new IdNameMapJpa();
+		IdNameMap map = new IdNameMapJpa();
 
 	  // find all active descendants of 447250001
 		ContentService contentService = new ContentServiceJpa();
@@ -141,8 +154,21 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	 */
 	@Override
 	public IdNameMap getLanguageRefSets(String terminology, String version) {
-		// TODO Auto-generated method stub
-		return null;
+		IdNameMap map = new IdNameMapJpa();
+
+	  // find all active descendants of 900000000000506000
+		ContentService contentService = new ContentServiceJpa();
+	  Set<Concept> descendants = new HashSet<Concept>();
+	  Concept rootConcept = contentService.getConcept(new Long("900000000000506000"), terminology, version);
+	  contentService.getDescendants(rootConcept, terminology, version, descendants);
+
+	  for (Concept descendant : descendants) {
+	  	if (descendant.isActive()) {
+	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName());
+	  	}
+	  }
+	  return map;
 	}
 
 	/* (non-Javadoc)
@@ -151,8 +177,21 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	@Override
 	public IdNameMap getSimpleMapRefSets(String terminology,
 		String version) {
-		// TODO Auto-generated method stub
-		return null;
+		IdNameMap map = new IdNameMapJpa();
+
+	  // find all active descendants of 900000000000496009
+		ContentService contentService = new ContentServiceJpa();
+	  Set<Concept> descendants = new HashSet<Concept>();
+	  Concept rootConcept = contentService.getConcept(new Long("900000000000496009"), terminology, version);
+	  contentService.getDescendants(rootConcept, terminology, version, descendants);
+
+	  for (Concept descendant : descendants) {
+	  	if (descendant.isActive()) {
+	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName());
+	  	}
+	  }
+	  return map;
 	}
 
 	/* (non-Javadoc)
@@ -160,8 +199,21 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	 */
 	@Override
 	public IdNameMap getSimpleRefSets(String terminology, String version) {
-		// TODO Auto-generated method stub
-		return null;
+		IdNameMap map = new IdNameMapJpa();
+
+	  // find all active descendants of 446609009
+		ContentService contentService = new ContentServiceJpa();
+	  Set<Concept> descendants = new HashSet<Concept>();
+	  Concept rootConcept = contentService.getConcept(new Long("446609009"), terminology, version);
+	  contentService.getDescendants(rootConcept, terminology, version, descendants);
+
+	  for (Concept descendant : descendants) {
+	  	if (descendant.isActive()) {
+	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName());
+	  	}
+	  }
+	  return map;
 	}
 
 	/* (non-Javadoc)
@@ -179,8 +231,21 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	@Override
 	public IdNameMap getDefinitionStatuses(String terminology,
 		String version) {
-		// TODO Auto-generated method stub
-		return null;
+		IdNameMap map = new IdNameMapJpa();
+
+	  // find all active descendants of 900000000000444006
+		ContentService contentService = new ContentServiceJpa();
+	  Set<Concept> descendants = new HashSet<Concept>();
+	  Concept rootConcept = contentService.getConcept(new Long("900000000000444006"), terminology, version);
+	  contentService.getDescendants(rootConcept, terminology, version, descendants);
+
+	  for (Concept descendant : descendants) {
+	  	if (descendant.isActive()) {
+	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName());
+	  	}
+	  }
+	  return map;
 	}
 
 	/* (non-Javadoc)
@@ -189,8 +254,21 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	@Override
 	public IdNameMap getDescriptionTypes(String terminology,
 		String version) {
-		// TODO Auto-generated method stub
-		return null;
+		IdNameMap map = new IdNameMapJpa();
+
+	  // find all active descendants of 900000000000446008
+		ContentService contentService = new ContentServiceJpa();
+	  Set<Concept> descendants = new HashSet<Concept>();
+	  Concept rootConcept = contentService.getConcept(new Long("900000000000446008"), terminology, version);
+	  contentService.getDescendants(rootConcept, terminology, version, descendants);
+
+	  for (Concept descendant : descendants) {
+	  	if (descendant.isActive()) {
+	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName());
+	  	}
+	  }
+	  return map;
 	}
 
 	/* (non-Javadoc)
@@ -199,8 +277,21 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	@Override
 	public IdNameMap getCaseSignificances(String terminology,
 		String version) {
-		// TODO Auto-generated method stub
-		return null;
+		IdNameMap map = new IdNameMapJpa();
+
+	  // find all active descendants of 900000000000447004
+		ContentService contentService = new ContentServiceJpa();
+	  Set<Concept> descendants = new HashSet<Concept>();
+	  Concept rootConcept = contentService.getConcept(new Long("900000000000447004"), terminology, version);
+	  contentService.getDescendants(rootConcept, terminology, version, descendants);
+
+	  for (Concept descendant : descendants) {
+	  	if (descendant.isActive()) {
+	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName());
+	  	}
+	  }
+	  return map;
 	}
 
 	/* (non-Javadoc)
@@ -209,8 +300,21 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	@Override
 	public IdNameMap getRelationshipTypes(String terminology,
 		String version) {
-		// TODO Auto-generated method stub
-		return null;
+		IdNameMap map = new IdNameMapJpa();
+
+	  // find all active descendants of 900000000000463007
+		ContentService contentService = new ContentServiceJpa();
+	  Set<Concept> descendants = new HashSet<Concept>();
+	  Concept rootConcept = contentService.getConcept(new Long("900000000000463007"), terminology, version);
+	  contentService.getDescendants(rootConcept, terminology, version, descendants);
+
+	  for (Concept descendant : descendants) {
+	  	if (descendant.isActive()) {
+	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName());
+	  	}
+	  }
+	  return map;
 	}
 
 	/* (non-Javadoc)
@@ -219,8 +323,15 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	@Override
 	public IdNameMap getRelationshipCharacteristicTypes(
 		String terminology, String version) {
-		// TODO Auto-generated method stub
-		return null;
+		IdNameMap map = new IdNameMapJpa();
+
+	  // find all active descendants of 900000000000463007
+		ContentService contentService = new ContentServiceJpa();
+	  Concept rootConcept = contentService.getConcept(new Long("116680003"), terminology, version);
+	  Concept parentConcept = contentService.getParent(rootConcept, terminology, version);
+
+
+	  return map;
 	}
 
 	/* (non-Javadoc)
