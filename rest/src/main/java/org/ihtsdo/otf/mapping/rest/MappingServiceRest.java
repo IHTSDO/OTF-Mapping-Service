@@ -1,5 +1,7 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.util.Set;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -7,6 +9,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -20,6 +23,7 @@ import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -64,11 +68,16 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectList getMapProjects() {
 		
-		MappingService mappingService = new MappingServiceJpa();
-		MapProjectList mapProjects = new MapProjectList();	
-		mapProjects.setMapProjects(mappingService.getMapProjects());
-		mapProjects.sortMapProjects();
-		return mapProjects;
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapProjectList mapProjects = new MapProjectList();	
+			mapProjects.setMapProjects(mappingService.getMapProjects());
+			mapProjects.sortMapProjects();
+			mappingService.close();
+			return mapProjects;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -81,10 +90,17 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Get all leads", notes = "Returns all MapLeads in either JSON or XML format", response = MapLeadList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapLeadList getMapLeads() {
-		MapLeadList mapLeads = new MapLeadList();
-		mapLeads.setMapLeads(mappingService.getMapLeads());
-		mapLeads.sortMapLeads();
-		return mapLeads;
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapLeadList mapLeads = new MapLeadList();
+			mapLeads.setMapLeads(mappingService.getMapLeads());
+			mapLeads.sortMapLeads();
+			mappingService.close();
+			return mapLeads;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -97,10 +113,17 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Get all specialists", notes = "Returns all MapSpecialists in either JSON or XML format", response = MapSpecialistList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapSpecialistList getMapSpecialists() {
-		MapSpecialistList mapSpecialists = new MapSpecialistList();
-		mapSpecialists.setMapSpecialists(mappingService.getMapSpecialists());
-		mapSpecialists.sortMapSpecialists();
-		return mapSpecialists;
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapSpecialistList mapSpecialists = new MapSpecialistList();
+			mapSpecialists.setMapSpecialists(mappingService.getMapSpecialists());
+			mapSpecialists.sortMapSpecialists();
+			mappingService.close();
+			return mapSpecialists;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -113,10 +136,17 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Get all records", notes = "Returns all MapRecords in either JSON or XML format", response = MapRecordList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecordList getMapRecords() {
-		MapRecordList mapRecords = new MapRecordList();
-		mapRecords.setMapRecords(mappingService.getMapRecords());
-		mapRecords.sortMapRecords();
-		return mapRecords;
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecordList mapRecords = new MapRecordList();
+			mapRecords.setMapRecords(mappingService.getMapRecords());
+			mapRecords.sortMapRecords();
+			mappingService.close();
+			return mapRecords;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -130,11 +160,18 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectList getMapProjectsForLead(
 			@ApiParam(value = "Id of map lead to fetch projects for", required = true) @PathParam("id") Long mapLeadId) { 
-		MapProjectList mapProjects = new MapProjectList();	
-		MapLead mapLead = mappingService.getMapLead(mapLeadId);
-		mapProjects.setMapProjects(mappingService.getMapProjectsForMapLead(mapLead));
-		mapProjects.sortMapProjects();
-		return mapProjects;
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapProjectList mapProjects = new MapProjectList();	
+			MapLead mapLead = mappingService.getMapLead(mapLeadId);
+			mapProjects.setMapProjects(mappingService.getMapProjectsForMapLead(mapLead));
+			mapProjects.sortMapProjects();
+			mappingService.close();
+			return mapProjects;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 
 	/**
@@ -149,7 +186,15 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProject getMapProjectForId(
 			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
-		return mappingService.getMapProject(mapProjectId);
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject =  mappingService.getMapProject(mapProjectId);
+			mappingService.close();
+			return mapProject;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -163,7 +208,16 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapProjects(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("String") String query) {
-		return mappingService.findMapProjects(query);
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			SearchResultList searchResultList = mappingService.findMapProjects(query);
+			mappingService.close();
+			return searchResultList;
+			
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 		
 	}
 	
@@ -176,9 +230,17 @@ public class MappingServiceRest {
 	@Path("/project/id/{id:[0-9][0-9]*}/unmappedDescendants")
 	@ApiOperation(value = "Find projects with unmapped concepts", notes = "Returns unmapped concepts in either JSON or XML format", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findUnmappedDescendantsForMapProject(
+	public Set<Concept> findUnmappedDescendantsForMapProject(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("id") Long projectId) {
-		return mappingService.findUnmappedDescendantsForMapProject(projectId);
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			Set<Concept> conceptSet =  mappingService.findUnmappedDescendantsForMapProject(projectId);
+			mappingService.close();
+			return conceptSet;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 		
 	}
 	
@@ -191,9 +253,17 @@ public class MappingServiceRest {
 	@Path("/project/id/{id:[0-9][0-9]*}/descendants")
 	@ApiOperation(value = "Find projects with unmapped concepts", notes = "Returns unmapped concepts in either JSON or XML format", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findDescendantsForMapProjects(
+	public Set<Concept> findDescendantsForMapProjects(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("id") Long projectId) {
-		return mappingService.findUnmappedDescendantsForMapProject(projectId);
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			Set<Concept> conceptSet = mappingService.findUnmappedDescendantsForMapProject(projectId);
+			mappingService.close();
+			return conceptSet;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 		
 	}
 	
@@ -209,7 +279,15 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapSpecialist getMapSpecialistForId(
 			@ApiParam(value = "Id of map specialist to fetch", required = true) @PathParam("id") Long mapSpecialistId) {
-		return mappingService.getMapSpecialist(mapSpecialistId);
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapSpecialist mapSpecialist = mappingService.getMapSpecialist(mapSpecialistId);
+			mappingService.close();
+			return mapSpecialist;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -223,7 +301,15 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapSpecialists(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-		return mappingService.findMapSpecialists(query);
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			SearchResultList searchResultList = mappingService.findMapSpecialists(query);
+			mappingService.close();
+			return searchResultList;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -238,7 +324,15 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapLead getMapLeadForId(
 			@ApiParam(value = "Id of map lead to fetch", required = true) @PathParam("id") Long mapLeadId) {
-		return mappingService.getMapLead(mapLeadId);
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapLead mapLead = mappingService.getMapLead(mapLeadId);
+			mappingService.close();
+			return mapLead;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -252,7 +346,15 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapLeads(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-		return mappingService.findMapLeads(query);
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();	
+			SearchResultList searchResultList = mappingService.findMapLeads(query);		
+			mappingService.close();
+			return searchResultList;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -267,7 +369,15 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecord getMapRecordForId(
 			@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
-		return mappingService.getMapRecord(mapRecordId);
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
+			mappingService.close();
+			return mapRecord;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -282,9 +392,16 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecordList getMapRecordsForConceptId(
 			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("String") String conceptId) {
-		MapRecordList mapRecords = new MapRecordList();
-		mapRecords.setMapRecords(mappingService.getMapRecordsForConceptId(conceptId));
-		return mapRecords;
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();	
+			MapRecordList mapRecords = new MapRecordList();
+			mapRecords.setMapRecords(mappingService.getMapRecordsForConceptId(conceptId));
+			mappingService.close();
+			return mapRecords;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -299,9 +416,16 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecordList getMapRecordsForMapProjectId(
 			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long projectId) {
-		MapRecordList mapRecords = new MapRecordList();
-		mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId));
-		return mapRecords;
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecordList mapRecords = new MapRecordList();
+			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId));
+			mappingService.close();
+			return mapRecords;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -315,7 +439,15 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapRecords(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-		return mappingService.findMapRecords(query);
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			SearchResultList searchResultList = mappingService.findMapRecords(query);
+			mappingService.close();
+			return searchResultList;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	// ///////////////////////////////////////////////////
@@ -338,11 +470,14 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map project to add", required = true) MapProject mapProject) { 
 
 		try {
+			MappingService mappingService = new MappingServiceJpa();
 			mappingService.addMapProject(mapProject);
+			mappingService.close();
+			return null;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new WebApplicationException(e);
 		}
-		return null;
+		
 	}
 	
 	/**
@@ -358,11 +493,14 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map lead to add", required = true) MapLead mapLead) { 
 
 		try {
+			MappingService mappingService = new MappingServiceJpa();
 			mappingService.addMapLead(mapLead);
+			mappingService.close();
+			return null;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new WebApplicationException(e);
 		}
-		return null;
+
 	}
 	
 	/**
@@ -378,11 +516,14 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map specialist to add", required = true) MapSpecialist mapSpecialist) { 
 
 		try {
+			MappingService mappingService = new MappingServiceJpa();
 			mappingService.addMapSpecialist(mapSpecialist);
+			mappingService.close();
+			return null;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new WebApplicationException(e);
 		}
-		return null;
+		
 	}
 	
 	/**
@@ -398,11 +539,14 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map record to add", required = true) MapRecord mapRecord) { 
 
 		try {
+			MappingService mappingService = new MappingServiceJpa();
 			mappingService.addMapRecord(mapRecord);
+			mappingService.close();
+			return null;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new WebApplicationException(e);
 		}
-		return null;
+		
 	}
 	
 	/////////////////////////////////////////////////////
@@ -426,11 +570,14 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map project to update", required = true) MapProject mapProject) { 
 
 		try {
+			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapProject(mapProject);
+			mappingService.close();
+			return null;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new WebApplicationException(e);
 		}
-		return null;
+		
 	}
 	
 	/**
@@ -446,11 +593,13 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map lead to update", required = true) MapLead mapLead) { 
 
 		try {
+			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapLead(mapLead);
+			mappingService.close();
+			return null;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new WebApplicationException(e);
 		}
-		return null;
 	}
 	
 	/**
@@ -466,11 +615,14 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map specialist to update", required = true) MapSpecialist mapSpecialist) { 
 
 		try {
+			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapSpecialist(mapSpecialist);
+			mappingService.close();
+			return null;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new WebApplicationException(e);
 		}
-		return null;
+		
 	}
 	
 	/**
@@ -486,11 +638,14 @@ public class MappingServiceRest {
 							  @ApiParam(value = "The map record to update", required = true) MapRecord mapRecord) { 
 
 		try {
+			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapRecord(mapRecord);
+			mappingService.close();
+			return null;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new WebApplicationException(e);
 		}
-		return null;
+		
 	}
 	
 	/////////////////////////////////////////////////////
@@ -510,8 +665,13 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Remove a project", notes = "Removes a map project", response = MapProject.class)
 	public Response removeMapProject(@ApiParam(value = "Id of map project to remove", required = true) @PathParam("id") Long mapProjectId) { 
 
-		mappingService. removeMapProject(mapProjectId);
-		return null;
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService. removeMapProject(mapProjectId);
+			return null;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -524,8 +684,14 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Remove a lead", notes = "Removes a map lead", response = MapLead.class)
 	public Response removeMapLead(@ApiParam(value = "Id of map lead to remove", required = true) @PathParam("id") Long mapLeadId) { 
 
-		mappingService. removeMapLead(mapLeadId);
-		return null;
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.removeMapLead(mapLeadId);
+			mappingService.close();
+			return null;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -538,8 +704,14 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Remove a specialist", notes = "Removes a map specialist", response = MapSpecialist.class)
 	public Response removeMapSpecialist(@ApiParam(value = "Id of map specialist to remove", required = true) @PathParam("id") Long mapSpecialistId) { 
 
-		mappingService. removeMapSpecialist(mapSpecialistId);
-		return null;
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService. removeMapSpecialist(mapSpecialistId);
+			mappingService.close();
+			return null;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -552,8 +724,14 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Remove a record", notes = "Removes a map record", response = MapRecord.class)
 	public Response removeMapRecord(@ApiParam(value = "Id of map record to remove", required = true) @PathParam("id") Long mapRecordId) { 
 
-		mappingService. removeMapRecord(mapRecordId);
-		return null;
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService. removeMapRecord(mapRecordId);
+			mappingService.close();
+			return null;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 
 
