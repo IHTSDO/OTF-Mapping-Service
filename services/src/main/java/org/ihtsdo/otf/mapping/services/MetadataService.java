@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Map;
 
 import org.ihtsdo.otf.mapping.helpers.IdNameMap;
 
@@ -12,6 +13,13 @@ import org.ihtsdo.otf.mapping.helpers.IdNameMap;
  */
 public interface MetadataService {
 	
+	public void close() throws Exception;
+	
+	public List<String> getTerminologies();
+	public List<String> getVersions(String terminology);
+	public String getLatestVersion(String terminology);
+	public Map<String,String> getTerminologyLatestVersions();
+
 	//////////////////////////////
 	// Basic retrieval services //
 	//////////////////////////////
