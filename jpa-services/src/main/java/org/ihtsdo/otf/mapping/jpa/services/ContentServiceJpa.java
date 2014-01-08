@@ -47,6 +47,8 @@ public class ContentServiceJpa implements ContentService {
 
 	/** The indexed field names. */
 	private Set<String> fieldNames;
+	
+	private FullTextEntityManager fullTextEntityManager;
 
 	/**
 	 * Instantiates an empty {@link ContentServiceJpa}.
@@ -65,7 +67,7 @@ public class ContentServiceJpa implements ContentService {
 			
 			fieldNames = new HashSet<String>();
 	
-			FullTextEntityManager fullTextEntityManager =
+			fullTextEntityManager =
 					org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
 			IndexReaderAccessor indexReaderAccessor =
 					fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
@@ -82,8 +84,7 @@ public class ContentServiceJpa implements ContentService {
 					indexReaderAccessor.close(indexReader);
 				}
 			}
-			
-			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
+
 		}
 	}
 	
@@ -254,7 +255,7 @@ public class ContentServiceJpa implements ContentService {
 							Concept c_rel = rel.getSourceConcept();					
 							
 							// if set does not contain the source concept, add it to set and queue
-							if (concept_set.contains(c_rel)) {
+							if (!concept_set.contains(c_rel)) {
 								concept_set.add(c_rel);
 								concept_queue.add(c_rel);
 							}

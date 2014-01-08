@@ -9,8 +9,10 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.util.ReaderUtil;
@@ -29,7 +31,11 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 public class MetadataServiceJpa implements MetadataService {
 
 	/** The factory. */
-	private EntityManagerFactory factory;
+	private static EntityManagerFactory factory;
+	
+	private FullTextEntityManager fullTextEntityManager;
+	
+	private EntityManager manager;
 
 	/** The indexed field names. */
 	private Set<String> fieldNames;
@@ -46,11 +52,16 @@ public class MetadataServiceJpa implements MetadataService {
 		helperMap.put("SNOMEDCT", new SnomedMetadataServiceJpaHelper());
 		// helperMap.put("ICD10", new Icd10MetadataServiceJpaHelper());
 
-		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
-		EntityManager manager = factory.createEntityManager();
+		// create once
+		if (factory == null) {
+		  factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+		}
+	  // create on each instantiation
+		manager = factory.createEntityManager();
+		
 		fieldNames = new HashSet<String>();
 
-		FullTextEntityManager fullTextEntityManager =
+		fullTextEntityManager =
 				org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
 		IndexReaderAccessor indexReaderAccessor =
 				fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
@@ -68,24 +79,17 @@ public class MetadataServiceJpa implements MetadataService {
 			}
 		}
 
-		fullTextEntityManager.close();
 		
-		if (manager.isOpen()) {
-			manager.close();
-		}
-		// System.out.println("ended init " + fieldNames.toString());
+		Logger.getLogger(this.getClass()).debug("ended init " + fieldNames.toString());
 	}
 
 	/**
 	 * Close the factory when done with this service.
 	 */
-	public void close() {
-		try {
-			factory.close();
-		} catch (Exception e) {
-			System.out.println("Failed to close MetadataService!");
-			e.printStackTrace();
-		}
+	@Override
+	public void close() throws Exception {
+		if (manager.isOpen()) { manager.close(); }
+		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
 	}
 
 	/* (non-Javadoc)
@@ -341,6 +345,106 @@ public class MetadataServiceJpa implements MetadataService {
 			// return an empty map
 			return new IdNameMapJpa();
 		}
+	}
+
+	@Override
+	public List<String> getTerminologies() {
+		
+		javax.persistence.Query query =
+				manager
+						.createQuery("SELECT distinct c.terminology from ConceptJpa c");
+
+		try {
+
+			List<String> terminologies = query.getResultList();		
+			if (manager.isOpen()) { manager.close(); }			
+			return terminologies;			
+
+		} catch (NoResultException e) {
+			// log result and return null
+			Logger.getLogger(this.getClass()).info(
+					"Metadata terminologies query returned no results!");
+			if (manager.isOpen()) { manager.close(); }
+			return null;
+		}
+		
+	}
+
+	@Override
+	public List<String> getVersions(String terminology) {
+		
+		javax.persistence.Query query =
+				manager
+						.createQuery("SELECT distinct c.terminologyVersion from ConceptJpa c where terminology = :terminology");
+
+		try {
+
+			query.setParameter("terminology", terminology);
+			List<String> versions = query.getResultList();		
+			if (manager.isOpen()) { manager.close(); }			
+			return versions;			
+
+		} catch (NoResultException e) {
+			// log result and return null
+			Logger.getLogger(this.getClass()).info(
+					"Metadata versions query for terminology = "
+							+ terminology + " returned no results!");
+			if (manager.isOpen()) { manager.close(); }
+			return null;
+		}
+		
+	}
+
+	@Override
+	public String getLatestVersion(String terminology) {
+		
+		javax.persistence.Query query =
+				manager
+						.createQuery("SELECT max(c.terminologyVersion) from ConceptJpa c where terminology = :terminology");
+
+		try {
+
+			query.setParameter("terminology", terminology);
+			String version = query.getSingleResult().toString();			
+			if (manager.isOpen()) { manager.close(); }		
+			return version;		
+
+		} catch (NoResultException e) {
+			// log result and return null
+			Logger.getLogger(this.getClass()).info(
+					"Metadata latest version query for terminology = "
+							+ terminology + " returned no results!");
+			if (manager.isOpen()) { manager.close(); }
+			return null;
+		}
+	
+	}
+
+	@Override
+	public Map<String, String> getTerminologyLatestVersions() {
+		
+		javax.persistence.Query query =
+				manager
+						.createQuery("SELECT c.terminology, max(c.terminologyVersion) from ConceptJpa c group by c.terminology");
+
+		try {
+
+			List<String> versions = query.getResultList();		
+			if (manager.isOpen()) { manager.close(); }	
+			Map<String, String> map = new HashMap<String, String>();
+			for (String entry : versions) {
+				map.put(entry, entry);
+			}
+			return map;			
+
+		} catch (NoResultException e) {
+			// log result and return null
+			Logger.getLogger(this.getClass()).info(
+					"Metadata latest versions query returned no results!");
+			if (manager.isOpen()) { manager.close(); }
+			return null;
+		}
+
 	}
 
 }
