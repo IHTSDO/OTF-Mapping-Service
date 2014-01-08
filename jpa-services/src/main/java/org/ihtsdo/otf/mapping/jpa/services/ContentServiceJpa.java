@@ -46,7 +46,7 @@ public class ContentServiceJpa implements ContentService {
 	private EntityManager manager;
 
 	/** The indexed field names. */
-	private Set<String> fieldNames;
+	private static Set<String> fieldNames;
 
 	/**
 	 * Instantiates an empty {@link ContentServiceJpa}.
@@ -84,6 +84,9 @@ public class ContentServiceJpa implements ContentService {
 			}
 			
 			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
+			
+			// closing fullTextEntityManager closes manager as well, recreate
+			manager = factory.createEntityManager();
 		}
 	}
 	
@@ -97,7 +100,6 @@ public class ContentServiceJpa implements ContentService {
 	public Concept getConcept(Long conceptId) {
 		
 		Concept c = manager.find(ConceptJpa.class, conceptId);
-		if (manager.isOpen()) { manager.close(); }
 		return c;
 	}
 
@@ -127,7 +129,6 @@ public class ContentServiceJpa implements ContentService {
 			System.out.println("Returning cid... "
 					+ ((c != null) ? c.getTerminologyId().toString() : "null"));
 		
-			//if (manager.isOpen()) { manager.close(); }
 			return c;
 
 		} catch (NoResultException e) {
@@ -136,7 +137,6 @@ public class ContentServiceJpa implements ContentService {
 					"Concept query for terminologyId = " + terminologyId + ", terminology = "
 							+ terminology + ", terminologyVersion = " + terminologyVersion
 							+ " returned no results!");
-			if (manager.isOpen()) { manager.close(); }
 			return null;
 		}
 	}
@@ -187,19 +187,12 @@ public class ContentServiceJpa implements ContentService {
 			}
 			
 			results.sortSearchResultsById();
-			if (manager.isOpen()) { manager.close(); }
 
 			return results;
 		} catch (Exception e) {
 			
 			throw e;
-		} finally {
-			if (manager.isOpen()) { manager.close(); }
-			if (fullTextEntityManager != null) {
-				fullTextEntityManager.close();
-			}
-			fullTextEntityManager = null;
-		}
+		} 
 	}
 	
 	/**
@@ -286,8 +279,6 @@ public class ContentServiceJpa implements ContentService {
 
 			List<Concept> cids = query.getResultList();
 			
-			if (manager.isOpen()) { manager.close(); }
-			
 			return cids;
 			
 
@@ -297,7 +288,6 @@ public class ContentServiceJpa implements ContentService {
 					"Concept query for refSetId = " + refSetId + ", terminology = "
 							+ terminology + ", terminologyVersion = " + terminologyVersion
 							+ " returned no results!");
-			if (manager.isOpen()) { manager.close(); }
 			return null;
 		}
 		

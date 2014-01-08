@@ -427,7 +427,10 @@ public class SampledataMojo extends AbstractMojo {
 					// if this refSet terminology id in project map, set the project id
 					if (projectRefSetIdMap.containsKey(refSetMember.getRefSetId())) {
 						mapRecord.setMapProjectId(projectRefSetIdMap.get(refSetMember.getRefSetId()));
-					} 
+						getLog().info("Adding map record to project " + projectRefSetIdMap.get(refSetMember.getRefSetId()).toString());
+					} else {
+						getLog().info("No map project for this record");
+					}
 				
 					// set the previous concept to this concept
 					prevConceptId = new Long(refSetMember.getConcept().getTerminologyId());
