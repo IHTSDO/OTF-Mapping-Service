@@ -1,13 +1,18 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapNote;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.rf2.Concept;
 
 /**
  * Interface for services to retrieve (get) map objects
@@ -15,6 +20,12 @@ import org.ihtsdo.otf.mapping.model.MapSpecialist;
  */
 public interface MappingService {
 	
+	
+	/**
+	 * Closes the manager associated with service
+	 * @exception Exception the exception
+	 */
+	public void close() throws Exception;
 
 	//////////////////////////////
 	// Basic retrieval services //
@@ -40,6 +51,13 @@ public interface MappingService {
 	 * @return the mapSpecialist
 	 */
 	public MapSpecialist getMapSpecialist(Long id);
+	
+	/**
+	 * Return map record for auto-generated id
+	 * @param id the auto-generated id
+	 * @return the mapRecord
+	 */
+	public MapRecord getMapRecord(Long id);
 	
 	/**
 	 * Returns all map projects
@@ -136,4 +154,79 @@ public interface MappingService {
 	 * @return the List of MapNotes
 	 */
 	public SearchResultList findMapNotes(String query);
+	
+	////////////////////////////
+	// Addition services     ///
+    ////////////////////////////
+	
+	public void addMapSpecialist(MapSpecialist mapSpecialist);
+	
+	public void addMapLead(MapLead mapLead);
+	
+	public void addMapProject(MapProject mapProject);
+	
+	public void addMapRecord(MapRecord mapRecord);
+	
+	public void addMapNote(MapNote mapNote);
+	
+	public void addMapEntry(MapEntry mapEntry);
+	
+	public void addMapPrinciple(MapPrinciple mapPrinciple);
+	
+	public void addMapAdvice(MapAdvice mapAdvice);
+	
+	////////////////////////////
+	// Update services     ///
+	////////////////////////////
+	
+	public void updateMapSpecialist(MapSpecialist mapSpecialist);
+	
+	public void updateMapLead(MapLead mapLead);
+	
+	public void updateMapProject(MapProject mapProject);
+	
+	public void updateMapRecord(MapRecord mapRecord);
+	
+	public void updateMapNote(MapNote mapNote);
+	
+	public void updateMapEntry(MapEntry mapEntry);
+	
+	public void updateMapPrinciple(MapPrinciple mapPrinciple);
+	
+	public void updateMapAdvice(MapAdvice mapAdvice);
+	
+	////////////////////////////
+	//Removal services     ///
+	////////////////////////////
+	
+	public void removeMapSpecialist(Long mapSpecialistId);
+	
+	public void removeMapLead(Long mapLeadId);
+	
+	public void removeMapProject(Long mapProjectId);
+	
+	public void removeMapRecord(Long mapRecordId);
+	
+	public void removeMapNote(Long mapNoteId);
+	
+	public void removeMapEntry(Long mapEntryId);
+	
+	public void removeMapPrinciple(Long mapPrincipleId);
+	
+	public void removeMapAdvice(Long mapAdviceId);
+	
+	
+	///////////////////////////
+	// Other services       ///
+	///////////////////////////
+	
+	public Set<Concept> findUnmappedDescendantsForMapProject(Long mapProjectId);
+	
+	public Set<Concept> findDescendantsForMapProject(Long mapProjectId);
+	
+	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId);
+	
+	public List<MapRecord> getMapRecordsForConceptId(String conceptId);
 }
+	
+	

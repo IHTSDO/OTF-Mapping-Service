@@ -14,6 +14,12 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 public interface ContentService {
 	
 	/**
+	 * Closes the manager associated with service
+	 * @exception Exception the exception
+	 */
+	public void close() throws Exception;
+	
+	/**
 	 * Returns the concept.
 	 *
 	 * @param conceptId the concept id
@@ -29,7 +35,7 @@ public interface ContentService {
 	 * @param terminologyVersion the terminologyVersion
 	 * @return the concept
 	 */
-	public Concept getConcept(Long conceptId, String terminology, String terminologyVersion);
+	public Concept getConcept(String terminologyId, String terminology, String terminologyVersion);
 	
 	/**
 	 * Returns the concept.
@@ -41,13 +47,13 @@ public interface ContentService {
 	public SearchResultList findConcepts(String searchString) throws Exception;
 	
 	/**
-	 * Returns the descendants.
-	 *
-	 * @param concept the concept
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
-	 * @param descendantResultSet the descendant result set
-	 * @return the descendants
+	 * Gets the descendants of a concept
+	 * @param terminologyId
+	 * @param terminology
+	 * @param terminologyVersion
+	 * @param typeId
+	 * @return the set of concepts
 	 */
-	public void getDescendants(Concept concept, String terminology, String terminologyVersion, Set<Concept> descendantResultSet);
+	public Set<Concept> getDescendants(String terminologyId, String terminology, String terminologyVersion, Long typeId);
+	
 }
