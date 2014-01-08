@@ -247,7 +247,7 @@ public class ContentServiceJpa implements ContentService {
 							Concept c_rel = rel.getSourceConcept();					
 							
 							// if set does not contain the source concept, add it to set and queue
-							if (concept_set.contains(c_rel)) {
+							if (!concept_set.contains(c_rel)) {
 								concept_set.add(c_rel);
 								concept_queue.add(c_rel);
 							}
