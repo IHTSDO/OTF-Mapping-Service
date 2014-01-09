@@ -13,6 +13,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.MapLeadList;
 import org.ihtsdo.otf.mapping.jpa.MapProjectList;
@@ -215,7 +216,7 @@ public class MappingServiceRest {
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			SearchResultList searchResultList = mappingService.findMapProjects(query);
+			SearchResultList searchResultList = mappingService.findMapProjects(query, new PfsParameterJpa());
 			mappingService.close();
 			return searchResultList;
 			
@@ -239,7 +240,7 @@ public class MappingServiceRest {
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			Set<Concept> conceptSet =  mappingService.findUnmappedDescendantsForMapProject(projectId);
+			Set<Concept> conceptSet =  mappingService.findUnmappedDescendantsForMapProject(projectId, new PfsParameterJpa());
 			mappingService.close();
 			return conceptSet;
 		} catch (Exception e) {
@@ -262,7 +263,7 @@ public class MappingServiceRest {
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			Set<Concept> conceptSet = mappingService.findUnmappedDescendantsForMapProject(projectId);
+			Set<Concept> conceptSet = mappingService.findUnmappedDescendantsForMapProject(projectId, new PfsParameterJpa());
 			mappingService.close();
 			return conceptSet;
 		} catch (Exception e) {
@@ -308,7 +309,7 @@ public class MappingServiceRest {
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			SearchResultList searchResultList = mappingService.findMapSpecialists(query);
+			SearchResultList searchResultList = mappingService.findMapSpecialists(query, new PfsParameterJpa());
 			mappingService.close();
 			return searchResultList;
 		} catch (Exception e) {
@@ -353,7 +354,7 @@ public class MappingServiceRest {
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();	
-			SearchResultList searchResultList = mappingService.findMapLeads(query);		
+			SearchResultList searchResultList = mappingService.findMapLeads(query, new PfsParameterJpa());		
 			mappingService.close();
 			return searchResultList;
 		} catch (Exception e) {
@@ -446,7 +447,7 @@ public class MappingServiceRest {
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			SearchResultList searchResultList = mappingService.findMapRecords(query);
+			SearchResultList searchResultList = mappingService.findMapRecords(query, new PfsParameterJpa());
 			mappingService.close();
 			return searchResultList;
 		} catch (Exception e) {

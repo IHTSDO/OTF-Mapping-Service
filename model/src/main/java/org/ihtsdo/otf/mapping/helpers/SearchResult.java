@@ -25,7 +25,7 @@ public interface SearchResult {
 	/**
 	 * @param terminologyId the terminologyId to set
 	 */
-	public void setTerminologyId(Long terminologyId);
+	public void setTerminologyId(String terminologyId);
 
 	/**
 	 * @return the description

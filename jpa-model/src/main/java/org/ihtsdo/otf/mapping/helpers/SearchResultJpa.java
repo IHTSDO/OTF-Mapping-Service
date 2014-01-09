@@ -69,11 +69,11 @@ public class SearchResultJpa implements SearchResult {
 
 	/**
 	 * Sets the id
-	 * @param id the id
+	 * @param terminologyId the id
 	 */
 	@Override
-	public void setTerminologyId(Long id) {
-		this.id = id;
+	public void setTerminologyId(String terminologyId) {
+		this.terminologyId = terminologyId;
 		
 	}
 
