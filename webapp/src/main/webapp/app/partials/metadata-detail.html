@@ -1,0 +1,16 @@
+<h3>Metadata</h3>
+
+{{errorMetadata}}
+{{data}}
+<div ng-repeat="idNameMap in idNameMaps">
+	
+	<h4>{{idNameMap.name}}</h4>
+	
+	<table cellpadding=5>
+	<thead><tr>Key</tr><tr>Value</tr></thead>
+	<tr ng-repeat="idNamePair in idNameMap.idNamePair">
+	<td>{{idNamePair.key}}</td><td>{{idNamePair.value}}</td>
+	</tr>
+	</table>
+
+</div>
