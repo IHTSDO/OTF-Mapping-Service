@@ -6,11 +6,14 @@
 	
 	<h4>{{idNameMap.name}}</h4>
 	
-	<table cellpadding=5>
-	<thead><tr>Key</tr><tr>Value</tr></thead>
+	<table class="table table-bordered" cellpadding=5>
+	<tr><th>Id</th><th>Name</th></tr>
+    <tbody>
 	<tr ng-repeat="idNamePair in idNameMap.idNamePair">
-	<td>{{idNamePair.key}}</td><td>{{idNamePair.value}}</td>
+	<td>{{idNamePair.id}}</td><td>{{idNamePair.name}}</td>
 	</tr>
+    </tbody>
 	</table>
+    </br>
 
 </div>

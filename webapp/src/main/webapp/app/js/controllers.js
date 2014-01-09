@@ -385,7 +385,7 @@ mapProjectAppControllers.controller('MetadataCtrl',
 			
 			// retrieve any concept associated with this project
 	    	 $http({
-	    		  url: root_metadata + "all/SNOMED/200130131",
+	    		  url: root_metadata + "all/SNOMEDCT/20130131",
 	    		  dataType: "json",
 	    		  method: "GET",
 	    		  headers: {
