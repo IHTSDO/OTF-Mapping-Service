@@ -1,9 +1,10 @@
 package org.ihtsdo.otf.mapping.helpers;
 
+import java.util.List;
 import java.util.Map;
 
 /**
- * Container for map of ids to default preferred names.
+ * Container for list of ids to default preferred name tuples (IdNamePairs).
  * Used to return metadata in an XML friendly way.
  *
  * @author ${author}
@@ -12,26 +13,25 @@ public interface IdNameMap {
 
 
 	/**
-	 * Returns the id name map.
+	 * Returns the id name pair list.
 	 *
-	 * @return the id name map
+	 * @return the id name pair list
 	 */
-	public Map<Long, String> getIdNameMap();
+	public List<IdNamePair> getIdNamePairList();
 
 	/**
-	 * Sets the id name map.
+	 * Sets the id name pair list.
 	 *
-	 * @param idNameMap the id name map
+	 * @param idNamePairs the id name pairs
 	 */
-	public void setIdNameMap(Map<Long, String> idNameMap);
+	public void setIdNamePairList(List<IdNamePair> idNamePairs);
 	
   /**
-   * Adds the id name map entry.
+   * Adds the id name pair.
    *
-   * @param id the id
-   * @param name the name
+   * @param IdNamePair
    */
-  public void addIdNameMapEntry(Long id, String name);
+  public void addIdNamePair(IdNamePair idNamePair);
 	
 	/**
 	 * Sets the name.
