@@ -25,19 +25,19 @@ public interface MapAdvice  {
 	
 
 	/**
-	 * Returns the description.
+	 * Returns the detail.
 	 *
-	 * @return the description
+	 * @return the detail
 	 */
-	public String getDescription();
+	public String getDetail();
 	
 
 	/**
-	 * Sets the description.
+	 * Sets the detail.
 	 *
-	 * @param description the description
+	 * @param detail the detail
 	 */
-	public void setDescription(String description);
+	public void setDetail(String detail);
 	
 	/**
 	 * Returns the name.

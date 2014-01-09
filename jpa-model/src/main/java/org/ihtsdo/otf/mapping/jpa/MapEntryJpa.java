@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -437,15 +436,14 @@ public class MapEntryJpa implements MapEntry {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
-		return ""; /*MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord + ", mapNotes="
-				+ mapNotes + ", target=" + target + ", mapAdvices=" + mapAdvices
+		return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord
+				+ ", mapNotes=" + mapNotes + ", mapAdvices=" + mapAdvices
+				+ ", mapPrinciples=" + mapPrinciples + ", target=" + target
 				+ ", rule=" + rule + ", indexMapPriority=" + indexMapPriority
-				+ ", relationId=" + relationId + "]";*/ // TODO Changed this due to stack overflow error, testing output
+				+ ", relationId=" + relationId + ", mapBlock=" + mapBlock
+				+ ", mapGroup=" + mapGroup + "]";
 	}
 	
 	
