@@ -385,16 +385,16 @@ mapProjectAppControllers.controller('MetadataCtrl',
 			
 			// retrieve any concept associated with this project
 	    	 $http({
-	    		  url: root_metadata + "all/",
+	    		  url: root_metadata + "all/SNOMED/200130131",
 	    		  dataType: "json",
 	    		  method: "GET",
 	    		  headers: {
 	    			  "Content-Type": "application/json"
 	    		  }
 	    	  }).success(function(data) {
-	    		  $scope.data = data.metadata;
+	    		  $scope.idNameMaps = data.idNameMap;
 	    	  }).error(function(error) {
-	    		  $scope.errorMetadata = "Error retrieving concept";
+	    		  $scope.errorMetadata = "Error retrieving metadata";
 	    	  });
 		}]);
 			
