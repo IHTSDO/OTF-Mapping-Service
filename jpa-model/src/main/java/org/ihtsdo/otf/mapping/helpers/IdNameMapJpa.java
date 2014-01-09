@@ -1,15 +1,18 @@
 package org.ihtsdo.otf.mapping.helpers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.mapping.helpers.IdNameMap;
 
 
 /**
- * Container for map entrys.
+ * Container for id name pairs (id, name metadata tuples).
  *
  * @author ${author}
  */
@@ -18,7 +21,7 @@ public class IdNameMapJpa implements IdNameMap {
 
 
 	/** The entries. */
-	private Map<Long, String> entries = new HashMap<Long, String>();
+	private List<IdNamePair> entries = new ArrayList<IdNamePair>();
 	
 	/** The name. */
 	private String name = "";
@@ -31,32 +34,33 @@ public class IdNameMapJpa implements IdNameMap {
 	}
 
 	/**
-	 * Gets the IdNameMap.
+	 * Gets the List of IdNamePairs.
 	 * 
-	 * @return the id name map
+	 * @return the id name pair list
 	 */
 	@Override
-	public Map<Long, String> getIdNameMap() {
+	@XmlElement(type=IdNamePairJpa.class, name = "idNamePair")
+	public List<IdNamePair> getIdNamePairList() {
 		return entries;
 	}
 
 	/**
 	 * Sets the IdNameMap.
 	 * 
-	 * @param idNameMap
-	 *            the new id name map
+	 * @param idNamePairList
+	 *            the new id name pair list
 	 */
 	@Override
-	public void setIdNameMap(Map<Long, String> idNameMap) {
-		this.entries = idNameMap;
+	public void setIdNamePairList(List<IdNamePair> idNamePairList) {
+		this.entries = idNamePairList;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.IdNameMap#addIdNameMapEntry(java.lang.Long, java.lang.String)
 	 */
 	@Override
-	public void addIdNameMapEntry(Long id, String name) {
-		entries.put(id,  name);
+	public void addIdNamePair(IdNamePair idNamePair) {
+		entries.add(idNamePair);
 	}
 
 	/* (non-Javadoc)
@@ -75,9 +79,6 @@ public class IdNameMapJpa implements IdNameMap {
 		return name;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -87,9 +88,6 @@ public class IdNameMapJpa implements IdNameMap {
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -112,12 +110,10 @@ public class IdNameMapJpa implements IdNameMap {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "IdNameMapJpa [entries=" + entries + ", name=" + name + "]";
 	}
+
 
 }
