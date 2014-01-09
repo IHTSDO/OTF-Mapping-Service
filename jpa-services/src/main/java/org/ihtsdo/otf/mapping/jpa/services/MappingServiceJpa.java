@@ -24,7 +24,7 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
@@ -190,7 +190,7 @@ public class MappingServiceJpa implements MappingService {
 	* @return the list of MapProject
 	*/
 	@SuppressWarnings("unchecked")
-	public SearchResultList findMapProjects(String query) {
+	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter) {
 
 		
 		SearchResultList s = new SearchResultListJpa();
@@ -396,7 +396,7 @@ public class MappingServiceJpa implements MappingService {
 	* @return the List of MapProjects
 	*/
 	@SuppressWarnings("unchecked")
-	public SearchResultList findMapSpecialists(String query) {
+	public SearchResultList findMapSpecialists(String query, PfsParameter pfsParameter) {
 
 		
 		SearchResultList s =new SearchResultListJpa();
@@ -609,7 +609,7 @@ public class MappingServiceJpa implements MappingService {
 	* @return the List of MapProjects
 	*/
 	@SuppressWarnings("unchecked")
-	public SearchResultList findMapLeads(String query) {
+	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter) {
 		
 		
 		SearchResultList s = new SearchResultListJpa();
@@ -809,7 +809,7 @@ public class MappingServiceJpa implements MappingService {
      * @return a list of map records
      */
     @SuppressWarnings("unchecked")
-    public SearchResultList findMapRecords(String query) {
+    public SearchResultList findMapRecords(String query, PfsParameter pfsParameter) {
     	
     	
     	SearchResultList s = new SearchResultListJpa();
@@ -934,7 +934,7 @@ public class MappingServiceJpa implements MappingService {
      * @return the search result list
      */
 	@Override
-	public SearchResultList findMapEntrys(String query) {
+	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter) {
 		SearchResultList s = new SearchResultListJpa();
 		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
@@ -982,7 +982,7 @@ public class MappingServiceJpa implements MappingService {
      * @param query the query string
      * @return the search result list
      */
-	public SearchResultList findMapAdvices(String query) {
+	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter) {
 		SearchResultList s = new SearchResultListJpa();
 		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
@@ -1036,7 +1036,7 @@ public class MappingServiceJpa implements MappingService {
      * @return the search result list
      */
 	@Override
-	public SearchResultList findMapNotes(String query) {
+	public SearchResultList findMapNotes(String query, PfsParameter pfsParameter) {
 		SearchResultList s = new SearchResultListJpa();
 		
 		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
@@ -1145,9 +1145,9 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapProjectId the map project id
 	 * @return the SearchResultList of unmapped descendants
 	 */
-	public Set<Concept> findUnmappedDescendantsForMapProject(Long mapProjectId) {
+	public Set<Concept> findUnmappedDescendantsForMapProject(Long mapProjectId, PfsParameter pfsParameter) {
 		
-		return findUnmappedDescendantsForMapProject(getMapProject(mapProjectId));
+		return findUnmappedDescendantsForMapProject(getMapProject(mapProjectId), pfsParameter);
 	}
 	
 	/**
@@ -1155,7 +1155,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapProject the mapProject
 	 * @return the SearchResultList of unmapped descendants
 	 */
-	public Set<Concept> findUnmappedDescendantsForMapProject(MapProject mapProject) {
+	public Set<Concept> findUnmappedDescendantsForMapProject(MapProject mapProject, PfsParameter pfsParameter) {
 	
 		ContentService contentService = new ContentServiceJpa();
 		Set<Concept> results = new HashSet<Concept>();
@@ -1220,9 +1220,9 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapProjectId the map project id
 	 * @return the SearchResultList of unmapped descendants
 	 */
-	public Set<Concept> findDescendantsForMapProject(Long mapProjectId) {
+	public Set<Concept> findDescendantsForMapProject(Long mapProjectId, PfsParameter pfsParameter) {
 		
-		return findDescendantsForMapProject(getMapProject(mapProjectId));
+		return findDescendantsForMapProject(getMapProject(mapProjectId), pfsParameter);
 	}
 	
 	/**
@@ -1230,7 +1230,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapProject the mapProject
 	 * @return the SearchResultList of unmapped descendants
 	 */
-	public Set<Concept> findDescendantsForMapProject(MapProject mapProject) {
+	public Set<Concept> findDescendantsForMapProject(MapProject mapProject, PfsParameter pfsParameter) {
 	
 		ContentServiceJpa contentService = new ContentServiceJpa();
 		Set<Concept> results = new HashSet<Concept>();
