@@ -280,7 +280,7 @@ public class SampledataMojo extends AbstractMojo {
 			for (String value : adviceValues) {
 				MapAdvice advice = new MapAdviceJpa();
 				advice.setName(value);
-				advice.setDescription(value);
+				advice.setDetail(value);
 				mapAdvices.add(advice);
 			}
 			tx.begin();

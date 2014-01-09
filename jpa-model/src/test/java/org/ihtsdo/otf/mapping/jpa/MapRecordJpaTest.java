@@ -187,12 +187,12 @@ public class MapRecordJpaTest {
 		mapEntry.setRule("RULE");
 		MapAdvice advice = new MapAdviceJpa();
 		advice.setName("ALWAYS Z53.2");
-		advice.setDescription("ALWAYS Z53.2");
+		advice.setDetail("ALWAYS Z53.2");
 		mapEntry.addMapAdvice(advice);
 				
 		Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 		MapPrinciple mapPrinciple = new MapPrincipleJpa();
-		mapPrinciple.setDescription("testMapPrincipleDescription");
+		mapPrinciple.setDetail("testMapPrincipleDescription");
 		mapPrinciple.setName("testMapPrincipleName");
 		mapPrinciple.setSectionRef("testMapPrincipleSectionRef");
 		mapPrinciples.add(mapPrinciple);

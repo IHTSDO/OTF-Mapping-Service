@@ -35,9 +35,9 @@ public class MapAdviceJpa implements MapAdvice {
 	@Column(nullable = false, unique = true, length = 255)
 	private String name;
 	
-	/** The description. */
+	/** The detail. */
 	@Column(nullable = false, unique = true, length = 255)
-	private String description;
+	private String detail;
 	
 	/**
 	 * Instantiates an empty {@link MapAdviceJpa}.
@@ -51,13 +51,13 @@ public class MapAdviceJpa implements MapAdvice {
 	 *
 	 * @param id the id
 	 * @param name the name
-	 * @param description the description
+	 * @param detail the detail
 	 */
-	public MapAdviceJpa(Long id, String name, String description) {
+	public MapAdviceJpa(Long id, String name, String detail) {
 		super();
 		this.id = id;
 		this.name = name;
-		this.description = description;
+		this.detail = detail;
 	}
 
 	/* (non-Javadoc)
@@ -89,20 +89,20 @@ public class MapAdviceJpa implements MapAdvice {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getDescription()
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getDetail()
 	 */
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	@Override
-	public String getDescription() {
-		return description;
+	public String getDetail() {
+		return detail;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setDescription(java.lang.String)
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setDetail(java.lang.String)
 	 */
 	@Override
-	public void setDescription(String description) {
-		this.description = description;
+	public void setDetail(String detail) {
+		this.detail = detail;
 	}
 
 	/* (non-Javadoc)
@@ -133,7 +133,7 @@ public class MapAdviceJpa implements MapAdvice {
 		final int prime = 31;
 		int result = 1;
 		result =
-				prime * result + ((description == null) ? 0 : description.hashCode());
+				prime * result + ((detail == null) ? 0 : detail.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
@@ -151,10 +151,10 @@ public class MapAdviceJpa implements MapAdvice {
 		if (getClass() != obj.getClass())
 			return false;
 		MapAdviceJpa other = (MapAdviceJpa) obj;
-		if (description == null) {
-			if (other.description != null)
+		if (detail == null) {
+			if (other.detail != null)
 				return false;
-		} else if (!description.equals(other.description))
+		} else if (!detail.equals(other.detail))
 			return false;
 		if (id == null) {
 			if (other.id != null)

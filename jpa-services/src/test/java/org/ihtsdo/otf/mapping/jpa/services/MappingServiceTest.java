@@ -407,7 +407,7 @@ public class MappingServiceTest {
 		for (String value : adviceValues) {
 			MapAdvice advice = new MapAdviceJpa();
 			advice.setName(value);
-			advice.setDescription(value);
+			advice.setDetail(value);
 			mapAdvices.add(advice);
 		}
 
@@ -577,7 +577,7 @@ public class MappingServiceTest {
 		
 		// find project (query)
 		results = service.findMapProjects("ICD9CM", new PfsParameterJpa());
-		if (results.getSearchResults().get(0).getDescription().compareTo("SNOMED to ICD9CM") != 0) {
+		if (results.getSearchResults().get(0).getValue().compareTo("SNOMED to ICD9CM") != 0) {
 			fail("Retrieval - findMapProjects(): Could not search by name or terminology");
 		}
 		
@@ -588,13 +588,13 @@ public class MappingServiceTest {
 		
 		// find specialist (query)
 		results = service.findMapSpecialists("rda", new PfsParameterJpa());
-		if (results.getSearchResults().get(0).getDescription().compareTo("Rory Davidson") != 0) {
+		if (results.getSearchResults().get(0).getValue().compareTo("Rory Davidson") != 0) {
 			fail("Retrieval - findMapSpecialist(String query): Could not search by username");
 		}
 		
 		// find lead (query)
 		results = service.findMapLeads("kgi", new PfsParameterJpa());
-		if (results.getSearchResults().get(0).getDescription().compareTo("Kathy Giannangelo") != 0) {
+		if (results.getSearchResults().get(0).getValue().compareTo("Kathy Giannangelo") != 0) {
 			fail("Retrieval - findMapLeads(String query): Could not search by username");
 		}
 		

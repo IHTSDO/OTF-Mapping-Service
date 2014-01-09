@@ -18,8 +18,8 @@ public class MapPrincipleImpl implements MapPrinciple {
 	/** The name */
 	private String name;
 	
-	/** The description */
-	private String description;
+	/** The detail */
+	private String detail;
 	
 	/** The section reference */
 	private String sectionRef;
@@ -56,21 +56,21 @@ public class MapPrincipleImpl implements MapPrinciple {
 	}
 
 	/**
-	 * Get the description
-	 * @return the description
+	 * Get the detail
+	 * @return the detail
 	 */
 	@Override
-	public String getDescription() {
-		return this.description;
+	public String getDetail() {
+		return this.detail;
 	}
 
 	/**
-	 * Set the description
-	 * @param description the description
+	 * Set the detail
+	 * @param detail the detail
 	 */
 	@Override
-	public void setDescription(String description) {
-		this.description = description;
+	public void setDetail(String detail) {
+		this.detail = detail;
 		
 	}
 
@@ -117,7 +117,7 @@ public class MapPrincipleImpl implements MapPrinciple {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
+				+ ((detail == null) ? 0 : detail.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
@@ -137,11 +137,11 @@ public class MapPrincipleImpl implements MapPrinciple {
 			return false;
 		}
 		MapPrincipleImpl other = (MapPrincipleImpl) obj;
-		if (description == null) {
-			if (other.description != null) {
+		if (detail == null) {
+			if (other.detail != null) {
 				return false;
 			}
-		} else if (!description.equals(other.description)) {
+		} else if (!detail.equals(other.detail)) {
 			return false;
 		}
 		if (id == null) {
@@ -171,7 +171,7 @@ public class MapPrincipleImpl implements MapPrinciple {
 	@Override
 	public String toString() {
 		return "MapPrincipleJpa [id=" + id + ", name=" + name
-				+ ", description=" + description + ", sectionRef=" + sectionRef
+				+ ", detail=" + detail + ", sectionRef=" + sectionRef
 				+ "]";
 	}
 

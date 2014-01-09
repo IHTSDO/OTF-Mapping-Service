@@ -15,7 +15,7 @@ public class SearchResultJpa implements SearchResult {
 	
 	private Long id;
 	private String terminologyId;
-	private String description;
+	private String value;
 	
 	/**
 	 * Default constructor
@@ -28,12 +28,12 @@ public class SearchResultJpa implements SearchResult {
 	 * Constructor
 	 * @param id the id
 	 * @param terminologyId the terminologyId
-	 * @param description the description
+	 * @param value the value
 	 */
-	public SearchResultJpa(Long id, String terminologyId, String description) {
+	public SearchResultJpa(Long id, String terminologyId, String value) {
 		this.id = id;
 		this.terminologyId = terminologyId;
-		this.description = description;
+		this.value = value;
 	}
 
 
@@ -78,22 +78,22 @@ public class SearchResultJpa implements SearchResult {
 	}
 
 	/**
-	 * Gets the description
-	 * @return the description
+	 * Gets the value
+	 * @return the value
 	 */
 	@Override
-	@XmlElement(name = "description")
-	public String getDescription() {
-		return this.description;
+	@XmlElement(name = "value")
+	public String getValue() {
+		return this.value;
 	}
 	
 	/**
-	 * Sets the description
-	 * @param description the description
+	 * Sets the value
+	 * @param value the value
 	 */
 	@Override
-	public void setDescription(String description) {
-		this.description = description;
+	public void setValue(String value) {
+		this.value = value;
 		
 	}
 	
@@ -104,7 +104,7 @@ public class SearchResultJpa implements SearchResult {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
+				+ ((value == null) ? 0 : value.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((terminologyId == null) ? 0 : terminologyId.hashCode());
@@ -123,11 +123,11 @@ public class SearchResultJpa implements SearchResult {
 			return false;
 		}
 		SearchResultJpa other = (SearchResultJpa) obj;
-		if (description == null) {
-			if (other.description != null) {
+		if (value == null) {
+			if (other.value != null) {
 				return false;
 			}
-		} else if (!description.equals(other.description)) {
+		} else if (!value.equals(other.value)) {
 			return false;
 		}
 		if (id == null) {
@@ -154,7 +154,7 @@ public class SearchResultJpa implements SearchResult {
 	 */
 	@Override
 	public String toString() {
-		return "SearchResultJpa [id=" + id + ", description=" + description
+		return "SearchResultJpa [id=" + id + ", value=" + value
 				+ "]";
 	}
 
