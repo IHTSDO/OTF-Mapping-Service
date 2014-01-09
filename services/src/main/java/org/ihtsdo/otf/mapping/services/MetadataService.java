@@ -6,6 +6,7 @@ import java.util.Map;
 import org.ihtsdo.otf.mapping.helpers.IdNameMap;
 
 
+// TODO: Auto-generated Javadoc
 /**
  * Interface for services to retrieve (get) metadata objects.
  *
@@ -13,11 +14,41 @@ import org.ihtsdo.otf.mapping.helpers.IdNameMap;
  */
 public interface MetadataService {
 	
+	/**
+	 * Close the service.
+	 *
+	 * @throws Exception the exception
+	 */
 	public void close() throws Exception;
 	
+	/**
+	 * Returns the terminologies.
+	 *
+	 * @return the terminologies
+	 */
 	public List<String> getTerminologies();
+	
+	/**
+	 * Returns the versions.
+	 *
+	 * @param terminology the terminology
+	 * @return the versions
+	 */
 	public List<String> getVersions(String terminology);
+	
+	/**
+	 * Returns the latest version.
+	 *
+	 * @param terminology the terminology
+	 * @return the latest version
+	 */
 	public String getLatestVersion(String terminology);
+	
+	/**
+	 * Returns the terminology latest versions.
+	 *
+	 * @return the terminology latest versions
+	 */
 	public Map<String,String> getTerminologyLatestVersions();
 
 	//////////////////////////////
