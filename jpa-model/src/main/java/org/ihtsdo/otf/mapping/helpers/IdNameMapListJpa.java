@@ -36,7 +36,7 @@ public class IdNameMapListJpa implements IdNameMapList {
 	 * @see org.ihtsdo.otf.mapping.services.IdNameMapList#getIdNameMapList()
 	 */
 	@Override
-	@XmlElement(type=IdNameMapJpa.class, name = "metadata")
+	@XmlElement(type=IdNameMapJpa.class, name = "idNameMap")
 	public List<IdNameMap> getIdNameMapList() {
 		return idNameMapList;
 	}

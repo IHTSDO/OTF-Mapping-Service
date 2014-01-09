@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.IdNameMap;
 import org.ihtsdo.otf.mapping.helpers.IdNameMapJpa;
+import org.ihtsdo.otf.mapping.helpers.IdNamePairJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -106,8 +107,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;
@@ -127,8 +128,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;
@@ -148,8 +149,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;
@@ -169,8 +170,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;
@@ -190,8 +191,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;
@@ -210,8 +211,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;
@@ -230,8 +231,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;
@@ -251,8 +252,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;
@@ -272,8 +273,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;
@@ -293,8 +294,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;
@@ -314,8 +315,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;
@@ -335,8 +336,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;		
@@ -356,8 +357,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 	  for (Concept descendant : descendants) {
 	  	if (descendant.isActive()) {
-	      map.addIdNameMapEntry(new Long(descendant.getTerminologyId()), 
-	    		descendant.getDefaultPreferredName());
+	      map.addIdNamePair(new IdNamePairJpa(new Long(descendant.getTerminologyId()), 
+	    		descendant.getDefaultPreferredName()));
 	  	}
 	  }
 	  return map;		

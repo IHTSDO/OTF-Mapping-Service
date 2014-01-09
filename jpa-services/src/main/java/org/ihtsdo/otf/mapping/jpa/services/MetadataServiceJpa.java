@@ -33,8 +33,10 @@ public class MetadataServiceJpa implements MetadataService {
 	/** The factory. */
 	private static EntityManagerFactory factory;
 	
+	/** The full text entity manager. */
 	private FullTextEntityManager fullTextEntityManager;
 	
+	/** The manager. */
 	private EntityManager manager;
 
 	/** The indexed field names. */
@@ -85,6 +87,8 @@ public class MetadataServiceJpa implements MetadataService {
 
 	/**
 	 * Close the factory when done with this service.
+	 *
+	 * @throws Exception the exception
 	 */
 	@Override
 	public void close() throws Exception {
@@ -347,6 +351,9 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologies()
+	 */
 	@Override
 	public List<String> getTerminologies() {
 		
@@ -370,6 +377,9 @@ public class MetadataServiceJpa implements MetadataService {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String)
+	 */
 	@Override
 	public List<String> getVersions(String terminology) {
 		
@@ -395,6 +405,9 @@ public class MetadataServiceJpa implements MetadataService {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang.String)
+	 */
 	@Override
 	public String getLatestVersion(String terminology) {
 		
@@ -420,6 +433,9 @@ public class MetadataServiceJpa implements MetadataService {
 	
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions()
+	 */
 	@Override
 	public Map<String, String> getTerminologyLatestVersions() {
 		
