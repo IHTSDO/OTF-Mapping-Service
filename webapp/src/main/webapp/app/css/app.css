@@ -5,7 +5,6 @@ html, body
 {
 	margin: 0;			/* Remove body margin/padding */
 	padding: 0;
-	overflow: hidden;	/* Remove scroll bars on browser window */
 }
 #header { 
 	padding: 0px;
@@ -13,7 +12,7 @@ html, body
 }
 
 #MySplitter {
-	border: 3px solid #669;
+	/* border: 3px solid #669; */
 	min-width: 500px;	/* Splitter can't be too thin ... */
 	min-height: 300px;	/* ... or too flat */
 	height: 100%;
@@ -22,11 +21,11 @@ html, body
 	width: 150px;
 	min-width: 100px;
 	max-width: 300px;
-	padding-top: 5px;
+	padding-top: 10px;
 }
 
 #RightPane {
-	padding: 5px;
+	padding: 10px;
 }
 
 #TopPane {				/* Top nested in right pane */
@@ -49,22 +48,22 @@ html, body
 	overflow: auto;
 }
 .splitter-bar-vertical {
-	width: 6px;
+	width: 3px;
 	background-repeat: no-repeat;
 	background-position: center;
 }
 .splitter-bar-vertical-docked {
-	width: 6px;
+	width: 36px;
 	background-repeat: no-repeat;
 	background-position: center;
 }
 .splitter-bar-horizontal {
-	height: 6px;
+	height: 3px;
 	background-repeat: no-repeat;
 	background-position: center;
 }
 .splitter-bar-horizontal-docked {
-	height: 6px;
+	height: 3px;
 	background-repeat: no-repeat;
 	background-position: center;
 }
@@ -74,6 +73,4 @@ html, body
 .splitter-iframe-hide {
 	visibility: hidden;
 }
-
-#button { width:100px; height:100px;}
 /* END Splitter CSS */
