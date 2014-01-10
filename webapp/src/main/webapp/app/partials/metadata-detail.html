@@ -1,19 +1,31 @@
 <h3>Metadata</h3>
 
-{{errorMetadata}}
-{{data}}
-<div ng-repeat="idNameMap in idNameMaps">
-	
-	<h4>{{idNameMap.name}}</h4>
-	
-	<table class="table table-bordered" cellpadding=5>
-	<tr><th>Id</th><th>Name</th></tr>
-    <tbody>
-	<tr ng-repeat="idNamePair in idNameMap.idNamePair">
-	<td>{{idNamePair.id}}</td><td>{{idNamePair.name}}</td>
-	</tr>
-    </tbody>
-	</table>
-    </br>
+{{errorMetadata}} {{data}}
 
-</div>
+<accordion> <accordion-group
+  ng-repeat="idNameMap in idNameMaps | filter:query  | orderBy:idNameMap.name">
+<accordion-heading>
+<h3>{{idNameMap.name}}</h3>
+</accordion-heading>
+
+<p></p>
+<table class="table table-bordered" cellpadding=5>
+  <tr>
+    <th width="40%">Id</th>
+    <th width="60%">Name</th>
+  </tr>
+  <tbody>
+    <tr ng-repeat="idNamePair in idNameMap.idNamePair">
+      <td width="40%">{{idNamePair.id}}</td>
+      <td width="60%">{{idNamePair.name}}</td>
+    </tr>
+  </tbody>
+</table>
+<p></p>
+</accordion-group> </accordion>
+
+<p></p>
+<p>{{searchTerminologyStatus}}</p>
+<ul>
+<li ng-repeat = "searchResult in terminologyResults.searchResult">  {{searchResult.description}}</li>
+</ul>

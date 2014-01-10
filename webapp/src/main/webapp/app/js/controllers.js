@@ -394,8 +394,25 @@ mapProjectAppControllers.controller('MetadataCtrl',
 	    	  }).success(function(data) {
 	    		  $scope.idNameMaps = data.idNameMap;
 	    	  }).error(function(error) {
-	    		  $scope.errorMetadata = "Error retrieving metadata";
+	    		  $scope.errorMetadata = "Error retrieving all metadata";
+	    	  
+		}).then(function(data) {
+	  		 
+	    	  // retrieve any map records associated with this project
+	    	  $http({
+	    		  url: root_metadata + "all/terminologies/",
+	    		  dataType: "json",
+	    		  method: "GET",
+	    		  headers: {
+	    			  "Content-Type": "application/json"
+	    		  }
+	    	  }).success(function(data) {
+	    	        $scope.terminologyResults = data;
+	    	        $scope.searchTerminologyStatus= $scope.terminologyResults.count + " results found:";
+	    	  }).error(function(error) {
+	    		  $scope.searchTerminologyStatus = "Error retrieving metadata terminologies";
 	    	  });
+	      });
 		}]);
 			
 		
