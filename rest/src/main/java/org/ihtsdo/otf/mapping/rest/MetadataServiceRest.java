@@ -9,8 +9,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
-import org.ihtsdo.otf.mapping.helpers.IdNameMapList;
-import org.ihtsdo.otf.mapping.helpers.IdNameMapListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -42,7 +40,7 @@ public class MetadataServiceRest {
 	 * @param version the version
 	 * @return the all metadata
 	 */
-	@GET
+	/**@GET
 	@Path("/all/{terminology}/{version}")
 	@ApiOperation(value = "Get all metadata", notes = "Returns all metadata in either JSON or XML format", response = IdNameMapList.class)
 	@Produces({
@@ -55,15 +53,15 @@ public class MetadataServiceRest {
 		 @PathParam("version") String version) {
 		try {
 			MetadataService metadataService = new MetadataServiceJpa();
-			IdNameMapList idNameMapList = new IdNameMapListJpa();
-			idNameMapList.setIdNameMapList(metadataService.getAllMetadata(terminology,
+			KeyValuePairLists keyValuePairLists = new KeyValuePairListsJpa();
+			keyValuePairLists.setIdNameMapList(metadataService.getAllMetadata(terminology,
 					version));
 			metadataService.close();
-			return idNameMapList;
+			return keyValuePairLists;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
-	}
+	}*/
 
 	/**
 	 * Returns the versions.

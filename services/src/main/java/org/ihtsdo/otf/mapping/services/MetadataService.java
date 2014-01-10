@@ -3,10 +3,7 @@ package org.ihtsdo.otf.mapping.services;
 import java.util.List;
 import java.util.Map;
 
-import org.ihtsdo.otf.mapping.helpers.IdNameMap;
 
-
-// TODO: Auto-generated Javadoc
 /**
  * Interface for services to retrieve (get) metadata objects.
  *
@@ -59,9 +56,9 @@ public interface MetadataService {
 	 *
 	 * @param terminology the terminology
 	 * @param version the version
-	 * @return the all metadata
+	 * @return all metadata
 	 */
-	public List<IdNameMap> getAllMetadata(String terminology, String version);
+	public Map<String, Map<Long, String>> getAllMetadata(String terminology, String version);
 	
 	/**
 	 * Returns the modules.
@@ -70,7 +67,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the modules
 	 */
-	public IdNameMap getModules(String terminology, String version);
+	public Map<Long, String> getModules(String terminology, String version);
 	
 	/**
 	 * Returns the attribute value ref sets.
@@ -79,7 +76,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the attribute value ref sets
 	 */
-	public IdNameMap getAttributeValueRefSets(String terminology, String version);
+	public Map<Long, String> getAttributeValueRefSets(String terminology, String version);
 
 	/**
 	 * Returns the complex map ref sets.
@@ -88,7 +85,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the complex map ref sets
 	 */
-	public IdNameMap getComplexMapRefSets(String terminology, String version);
+	public Map<Long, String> getComplexMapRefSets(String terminology, String version);
 
 	/**
 	 * Returns the language refsets.
@@ -97,7 +94,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the language refsets
 	 */
-	public IdNameMap getLanguageRefSets(String terminology, String version);
+	public Map<Long, String> getLanguageRefSets(String terminology, String version);
 	
 	/**
 	 * Returns the simple map refsets.
@@ -106,7 +103,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the simple map refsets
 	 */
-	public IdNameMap getSimpleMapRefSets(String terminology, String version);
+	public Map<Long, String> getSimpleMapRefSets(String terminology, String version);
 	
 	/**
 	 * Returns the simple refsets.
@@ -115,7 +112,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the simple refsets
 	 */
-	public IdNameMap getSimpleRefSets(String terminology, String version);
+	public Map<Long, String> getSimpleRefSets(String terminology, String version);
 	
 	/**
 	 * Returns the map relations.
@@ -124,7 +121,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the map relations
 	 */
-	public IdNameMap getMapRelations(String terminology, String version);
+	public Map<Long, String> getMapRelations(String terminology, String version);
 	
 	/**
 	 * Returns the definition statuses.
@@ -133,7 +130,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the definition statuses
 	 */
-	public IdNameMap getDefinitionStatuses(String terminology, String version);
+	public Map<Long, String> getDefinitionStatuses(String terminology, String version);
  
 	/**
 	 * Returns the description types.
@@ -142,7 +139,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the description types
 	 */
-	public IdNameMap getDescriptionTypes(String terminology, String version);
+	public Map<Long, String> getDescriptionTypes(String terminology, String version);
   
 	/**
 	 * Returns the case significances.
@@ -151,7 +148,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the case significances
 	 */
-	public IdNameMap getCaseSignificances(String terminology, String version);
+	public Map<Long, String> getCaseSignificances(String terminology, String version);
   
 	/**
 	 * Returns the relationship types.
@@ -160,7 +157,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the relationship types
 	 */
-	public IdNameMap getRelationshipTypes(String terminology, String version);
+	public Map<Long, String> getRelationshipTypes(String terminology, String version);
   
 	/**
 	 * Returns the relationship characteristic types.
@@ -169,7 +166,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the relationship characteristic types
 	 */
-	public IdNameMap getRelationshipCharacteristicTypes(String terminology, String version);
+	public Map<Long, String> getRelationshipCharacteristicTypes(String terminology, String version);
   
 	/**
 	 * Returns the relationship modifiers.
@@ -178,7 +175,7 @@ public interface MetadataService {
 	 * @param version the version
 	 * @return the relationship modifiers
 	 */
-	public IdNameMap getRelationshipModifiers(String terminology, String version);
+	public Map<Long, String> getRelationshipModifiers(String terminology, String version);
 	
 	
 }

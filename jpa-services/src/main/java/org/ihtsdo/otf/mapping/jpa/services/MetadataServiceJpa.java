@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,8 +17,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.util.ReaderUtil;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
-import org.ihtsdo.otf.mapping.helpers.IdNameMap;
-import org.ihtsdo.otf.mapping.helpers.IdNameMapJpa;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 // TODO: Auto-generated Javadoc
@@ -100,73 +97,60 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getAllMetadata(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public List<IdNameMap> getAllMetadata(String terminology, String version) {
-		List<IdNameMap> idNameMapList = new ArrayList<IdNameMap>();
-		IdNameMap modulesIdNameMap = getModules(terminology, version);
+	public Map<String, Map<Long, String>> getAllMetadata(String terminology, String version) {
+		Map<String, Map<Long, String>> idNameMapList = new HashMap<String, Map<Long, String>>();
+		Map<Long, String> modulesIdNameMap = getModules(terminology, version);
 		if (modulesIdNameMap != null) {
-			modulesIdNameMap.setName("modules");
-			idNameMapList.add(modulesIdNameMap);
+			idNameMapList.put("modules", modulesIdNameMap);
 		}
-		IdNameMap atvIdNameMap = getAttributeValueRefSets(terminology, version);
+		Map<Long, String> atvIdNameMap = getAttributeValueRefSets(terminology, version);
 		if (atvIdNameMap != null) {
-			atvIdNameMap.setName("attributeValueRefSets");
-			idNameMapList.add(atvIdNameMap);
+			idNameMapList.put("attributeValueRefSets", atvIdNameMap);
 		}
-		IdNameMap csIdNameMap = getCaseSignificances(terminology, version);
+		Map<Long, String> csIdNameMap = getCaseSignificances(terminology, version);
 		if (csIdNameMap != null) {
-			csIdNameMap.setName("caseSignificances");
-			idNameMapList.add(csIdNameMap);
+			idNameMapList.put("caseSignificances", csIdNameMap);
 		}
-		IdNameMap cmIdNameMap = getComplexMapRefSets(terminology, version);
+		Map<Long, String> cmIdNameMap = getComplexMapRefSets(terminology, version);
 		if (cmIdNameMap != null) {
-			cmIdNameMap.setName("complexMapRefSets");
-			idNameMapList.add(cmIdNameMap);
+			idNameMapList.put("caseSignificances", cmIdNameMap);
 		}
-		IdNameMap dsIdNameMap = getDefinitionStatuses(terminology, version);
+		Map<Long, String> dsIdNameMap = getDefinitionStatuses(terminology, version);
 		if (dsIdNameMap != null) {
-			dsIdNameMap.setName("definitionStatuses");
-			idNameMapList.add(dsIdNameMap);
+			idNameMapList.put("definitionStatuses", dsIdNameMap);
 		}
-		IdNameMap dtIdNameMap = getDescriptionTypes(terminology, version);
+		Map<Long, String> dtIdNameMap = getDescriptionTypes(terminology, version);
 		if (dtIdNameMap != null) {
-			dtIdNameMap.setName("descriptionTypes");
-			idNameMapList.add(dtIdNameMap);
+			idNameMapList.put("descriptionTypes", dtIdNameMap);
 		}
-		IdNameMap lIdNameMap = getLanguageRefSets(terminology, version);
+		Map<Long, String> lIdNameMap = getLanguageRefSets(terminology, version);
 		if (lIdNameMap != null) {
-			lIdNameMap.setName("languageRefSets");
-			idNameMapList.add(lIdNameMap);
+			idNameMapList.put("languageRefSets", lIdNameMap);
 		}
-		IdNameMap mrIdNameMap = getMapRelations(terminology, version);
+		Map<Long, String> mrIdNameMap = getMapRelations(terminology, version);
 		if (mrIdNameMap != null) {
-			mrIdNameMap.setName("mapRelations");
-			idNameMapList.add(mrIdNameMap);
+			idNameMapList.put("mapRelations", mrIdNameMap);
 		}
-		IdNameMap rctIdNameMap =
+		Map<Long, String> rctIdNameMap =
 				getRelationshipCharacteristicTypes(terminology, version);
 		if (rctIdNameMap != null) {
-			rctIdNameMap.setName("relationshipCharacteristicTypes");
-			idNameMapList.add(rctIdNameMap);
+			idNameMapList.put("relationshipCharacteristicTypes", rctIdNameMap);
 		}
-		IdNameMap rmIdNameMap = getRelationshipModifiers(terminology, version);
+		Map<Long, String> rmIdNameMap = getRelationshipModifiers(terminology, version);
 		if (rmIdNameMap != null) {
-			rmIdNameMap.setName("relationshipModifiers");
-			idNameMapList.add(rmIdNameMap);
+			idNameMapList.put("relationshipModifiers", rmIdNameMap);
 		}
-		IdNameMap rtIdNameMap = getRelationshipTypes(terminology, version);
+		Map<Long, String> rtIdNameMap = getRelationshipTypes(terminology, version);
 		if (rtIdNameMap != null) {
-			rtIdNameMap.setName("relationshipTypes");
-			idNameMapList.add(rtIdNameMap);
+			idNameMapList.put("relationshipTypes", rtIdNameMap);
 		}
-		IdNameMap smIdNameMap = getSimpleMapRefSets(terminology, version);
+		Map<Long, String> smIdNameMap = getSimpleMapRefSets(terminology, version);
 		if (smIdNameMap != null) {
-			smIdNameMap.setName("simpleMapRefSets");
-			idNameMapList.add(smIdNameMap);
+			idNameMapList.put("simpleMapRefSets", smIdNameMap);
 		}
-		IdNameMap sIdNameMap = getSimpleRefSets(terminology, version);
+		Map<Long, String> sIdNameMap = getSimpleRefSets(terminology, version);
 		if (sIdNameMap != null) {
-			sIdNameMap.setName("simpleRefSets");
-			idNameMapList.add(sIdNameMap);
+			idNameMapList.put("simpleRefSets", sIdNameMap);
 		}
 		return idNameMapList;
 	}
@@ -175,12 +159,12 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getModules(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getModules(String terminology, String version) {
+	public Map<Long, String> getModules(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getModules(terminology, version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -188,13 +172,13 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getAttributeValueRefSets(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getAttributeValueRefSets(String terminology, String version) {
+	public Map<Long, String> getAttributeValueRefSets(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getAttributeValueRefSets(terminology,
 					version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -202,13 +186,13 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getComplexMapRefSets(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getComplexMapRefSets(String terminology, String version) {
+	public Map<Long, String> getComplexMapRefSets(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getComplexMapRefSets(terminology,
 					version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -216,13 +200,13 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getLanguageRefSets(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getLanguageRefSets(String terminology, String version) {
+	public Map<Long, String> getLanguageRefSets(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology)
 					.getLanguageRefSets(terminology, version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -230,13 +214,13 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getSimpleMapRefSets(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getSimpleMapRefSets(String terminology, String version) {
+	public Map<Long, String> getSimpleMapRefSets(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getSimpleMapRefSets(terminology,
 					version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -244,12 +228,12 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getSimpleRefSets(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getSimpleRefSets(String terminology, String version) {
+	public Map<Long, String> getSimpleRefSets(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getSimpleRefSets(terminology, version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -257,12 +241,12 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getMapRelations(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getMapRelations(String terminology, String version) {
+	public Map<Long, String> getMapRelations(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getMapRelations(terminology, version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -270,13 +254,13 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getDefinitionStatuses(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getDefinitionStatuses(String terminology, String version) {
+	public Map<Long, String> getDefinitionStatuses(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getDefinitionStatuses(terminology,
 					version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -284,13 +268,13 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getDescriptionTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getDescriptionTypes(String terminology, String version) {
+	public Map<Long, String> getDescriptionTypes(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getDescriptionTypes(terminology,
 					version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -298,13 +282,13 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getCaseSignificances(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getCaseSignificances(String terminology, String version) {
+	public Map<Long, String> getCaseSignificances(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getCaseSignificances(terminology,
 					version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -312,13 +296,13 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getRelationshipTypes(String terminology, String version) {
+	public Map<Long, String> getRelationshipTypes(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipTypes(terminology,
 					version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -326,14 +310,14 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipCharacteristicTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getRelationshipCharacteristicTypes(String terminology,
+	public Map<Long, String> getRelationshipCharacteristicTypes(String terminology,
 		String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipCharacteristicTypes(
 					terminology, version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
@@ -341,13 +325,13 @@ public class MetadataServiceJpa implements MetadataService {
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipModifiers(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public IdNameMap getRelationshipModifiers(String terminology, String version) {
+	public Map<Long, String> getRelationshipModifiers(String terminology, String version) {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipModifiers(terminology,
 					version);
 		} else {
 			// return an empty map
-			return new IdNameMapJpa();
+			return new HashMap<Long, String>();
 		}
 	}
 
