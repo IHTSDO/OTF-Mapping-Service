@@ -4,14 +4,14 @@
 	<input ng-model = "queryConcept">
 	<button type="submit" ng-click="searchConcepts()">Search</button>
 	<button type="reset" ng-click="resetConcepts()">Reset</button>
-	<p>Examples: (by name) <em>ossification</em>, <em>plas*~0.8</em>, (by Concept ID) <em>102287002</em></p>
+	<p>Examples: (by name) <em>ossification</em>, <em>plas*</em>, (by Concept ID) <em>102287002</em></p>
 </form>
 
 
 <p></p>
 <p>{{searchConceptsStatus}}</p>
 <ul>
-<li ng-repeat = "searchResult in conceptResults.searchResult"><a href="index.html#/concept/id/{{searchResult.terminologyId}}">{{searchResult.terminologyId}}</a> - {{searchResult.description}}</li>
+<li ng-repeat = "searchResult in conceptResults.searchResult"><a href="index.html#/concept/id/{{searchResult.terminologyId}}">{{searchResult.terminologyId}}</a> - {{searchResult.value}}</li>
 </ul>
 
 <hr style="width:99%">
@@ -29,7 +29,7 @@
 <p></p>
 <p>{{searchProjectsStatus}}</p>
 <ul>
-<li ng-repeat = "searchResult in projectResults.searchResult"><a href="index.html#/project/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
+<li ng-repeat = "searchResult in projectResults.searchResult"><a href="index.html#/project/id/{{searchResult.id}}">{{searchResult.value}}</a></li>
 </ul>
 
 <hr style="width:99%">
@@ -46,7 +46,7 @@
 <p></p>
 <p>{{searchRecordsStatus}}</p>
 <ul>
-<li ng-repeat = "searchResult in recordResults.searchResult"><a href="index.html#/record/id/{{searchResult.id}}">{{searchResult.description}}</a></li>
+<li ng-repeat = "searchResult in recordResults.searchResult"><a href="index.html#/record/id/{{searchResult.id}}">{{searchResult.value}}</a></li>
 </ul>
 
 <hr style="width:99%">
@@ -55,7 +55,7 @@
 <ul>
 <li>Phrase searching: "" (e.g. "truncal structure")</li>
 <li>Boolean operators:  AND/&&, OR/||, NOT/! (e.g. <em>epilepsy AND childhood</em>, <em>heart || liver</em>)</li>
-<li>Wildcard searching: *  (e.g. <em>SNO*</em>, <em>head*</em>)</li>
+<li>Wildcard searching: *, &  (e.g. <em>SNO*</em>), * for multi-character matching, & for single-character matching</li>
 <li>Inclusion/Exclusion: +/- (e.g. <em>headache -benign</em>, <em>foreign +material</em>)</li>
 <li>Grouping: () (e.g. <em>structure AND (liver OR bone)</em>)</li>
 <li>Fuzzy searching: ~ (e.g. <em>plasm~</em> may return plasm, phase, class, etc.) 

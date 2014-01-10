@@ -85,11 +85,18 @@ mapProjectApp.config(['$routeProvider',
   	  });
 	  
 	  //////////////////////////////
-	  // MAPPING SERVICES
+	  // METADATA SERVICES
 	  //////////////////////////////
 	  $routeProvider.when('/metadata', {
 	  	templateUrl: 'partials/metadata-detail.html', 
 		  controller: 'MetadataCtrl'
 	  });
 	  
+	  //////////////////////////////
+	  // MAP XML TEST SERVICES
+	  //////////////////////////////
+	  $routeProvider.when('/xmltest', {
+		  	templateUrl: 'partials/xmltest-partial.html', 
+			controller: 'XmlTestCtrl'
+	  });	
    }]);
