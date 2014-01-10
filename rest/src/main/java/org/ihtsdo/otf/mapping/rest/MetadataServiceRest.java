@@ -103,7 +103,7 @@ public class MetadataServiceRest {
 			SearchResultList searchResultList = new SearchResultListJpa();
 			for (String version : versions) {
 				SearchResult searchResult = new SearchResultJpa();
-				searchResult.setDescription(version);
+				searchResult.setValue(version);
 				searchResultList.addSearchResult(searchResult);
 			}
 			metadataService.close();
@@ -133,7 +133,7 @@ public class MetadataServiceRest {
 			MetadataService metadataService = new MetadataServiceJpa();
 			String version = metadataService.getLatestVersion(terminology);
 			SearchResult searchResult = new SearchResultJpa();
-			searchResult.setDescription(version);
+			searchResult.setValue(version);
 			metadataService.close();
 			return searchResult;
 		} catch (Exception e) {
@@ -159,7 +159,7 @@ public class MetadataServiceRest {
 			SearchResultList searchResultList = new SearchResultListJpa();
 			for (String term : terminologies) {
 				SearchResult searchResult = new SearchResultJpa();
-				searchResult.setDescription(term);
+				searchResult.setValue(term);
 				searchResultList.addSearchResult(searchResult);
 			}
 			metadataService.close();

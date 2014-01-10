@@ -17,8 +17,8 @@ public class MapAdviceImpl implements MapAdvice {
 	/** The name. */
 	private String name;
 	
-	/** The description. */
-	private String description;
+	/** The detail. */
+	private String detail;
 	
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getId()
@@ -37,19 +37,19 @@ public class MapAdviceImpl implements MapAdvice {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getDescription()
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getDetail()
 	 */
 	@Override
-	public String getDescription() {
-		return description;
+	public String getDetail() {
+		return detail;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setDescription(java.lang.String)
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setDetail(java.lang.String)
 	 */
 	@Override
-	public void setDescription(String description) {
-		this.description = description;
+	public void setDetail(String detail) {
+		this.detail = detail;
 	}
 
 	/* (non-Javadoc)
@@ -76,7 +76,7 @@ public class MapAdviceImpl implements MapAdvice {
 		final int prime = 31;
 		int result = 1;
 		result =
-				prime * result + ((description == null) ? 0 : description.hashCode());
+				prime * result + ((detail == null) ? 0 : detail.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
@@ -94,10 +94,10 @@ public class MapAdviceImpl implements MapAdvice {
 		if (getClass() != obj.getClass())
 			return false;
 		MapAdviceImpl other = (MapAdviceImpl) obj;
-		if (description == null) {
-			if (other.description != null)
+		if (detail == null) {
+			if (other.detail != null)
 				return false;
-		} else if (!description.equals(other.description))
+		} else if (!detail.equals(other.detail))
 			return false;
 		if (id == null) {
 			if (other.id != null)

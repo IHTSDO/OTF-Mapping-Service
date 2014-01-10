@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.services;
 import java.util.List;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -12,6 +13,7 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapXmlTest;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 /**
@@ -111,49 +113,49 @@ public interface MappingService {
 	 * @param query the query
 	 * @return the list of MapProject
 	 */
-	public SearchResultList findMapProjects(String query);
+	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter);
 	
 	/** 
 	 * Query for MapSpecialists
 	 * @param query the query
 	 * @return the List of MapProjects
 	 */
-	public SearchResultList findMapSpecialists(String query);
+	public SearchResultList findMapSpecialists(String query, PfsParameter pfsParameter);
 	
 	/**
 	 * Query for MapLeads
 	 * @param query the query
 	 * @return the List of MapProjects
 	 */
-	public SearchResultList findMapLeads(String query);
+	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter);
 	
 	/**
 	 * Query for MapAdvices
 	 * @param query the query
 	 * @return the List of MapAdvices
 	 */
-	public SearchResultList findMapAdvices(String query);
+	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter);
 	
 	/**
 	 * Query for MapRecords
 	 * @param query the query
 	 * @return the List of MapRecords
 	 */
-	public SearchResultList findMapRecords(String query);
+	public SearchResultList findMapRecords(String query, PfsParameter pfsParameter);
 	
 	/**
 	 * Query for MapEntrys
 	 * @param query the query
 	 * @return the List of MapEntrys
 	 */
-	public SearchResultList findMapEntrys(String query);
+	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter);
 
 	/**
 	 * Query for Map Notes
 	 * @param query the query
 	 * @return the List of MapNotes
 	 */
-	public SearchResultList findMapNotes(String query);
+	public SearchResultList findMapNotes(String query, PfsParameter pfsParameter);
 	
 	////////////////////////////
 	// Addition services     ///
@@ -220,13 +222,19 @@ public interface MappingService {
 	// Other services       ///
 	///////////////////////////
 	
-	public Set<Concept> findUnmappedDescendantsForMapProject(Long mapProjectId);
+	public Set<Concept> findUnmappedDescendantsForMapProject(Long mapProjectId, PfsParameter pfsParameter);
 	
-	public Set<Concept> findDescendantsForMapProject(Long mapProjectId);
+	public Set<Concept> findDescendantsForMapProject(Long mapProjectId, PfsParameter pfsParameter);
 	
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId);
 	
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId);
+	
+	//////////////////
+	// Map Xml Test
+	//////////////////
+	
+	public MapXmlTest getMapXmlTest();
 }
 	
 	

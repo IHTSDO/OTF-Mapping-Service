@@ -100,13 +100,13 @@ public class SearchResultListJpa implements SearchResultList {
 	 * Sorts the SearchResultList alphabetically by description
 	 */
 	@Override
-	public void sortSearchResultsByDescription() {
+	public void sortSearchResultsByValue() {
 		
 		Collections.sort(
 				searchResults, 
 				new Comparator<SearchResult>() {
 					public int compare(SearchResult sr1, SearchResult sr2) {
-						return sr1.getDescription().compareTo(sr2.getDescription());
+						return sr1.getValue().compareTo(sr2.getValue());
 					}
 				}
 		);

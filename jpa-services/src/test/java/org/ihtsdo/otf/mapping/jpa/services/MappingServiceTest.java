@@ -11,6 +11,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
@@ -406,7 +407,7 @@ public class MappingServiceTest {
 		for (String value : adviceValues) {
 			MapAdvice advice = new MapAdviceJpa();
 			advice.setName(value);
-			advice.setDescription(value);
+			advice.setDetail(value);
 			mapAdvices.add(advice);
 		}
 
@@ -575,25 +576,25 @@ public class MappingServiceTest {
 		SearchResultList results = new SearchResultListJpa();
 		
 		// find project (query)
-		results = service.findMapProjects("ICD9CM");
-		if (results.getSearchResults().get(0).getDescription().compareTo("SNOMED to ICD9CM") != 0) {
+		results = service.findMapProjects("ICD9CM", new PfsParameterJpa());
+		if (results.getSearchResults().get(0).getValue().compareTo("SNOMED to ICD9CM") != 0) {
 			fail("Retrieval - findMapProjects(): Could not search by name or terminology");
 		}
 		
-		results = service.findMapProjects("Kathy");
+		results = service.findMapProjects("Kathy", new PfsParameterJpa());
 		if (results.getCount() != 2) {
 			fail("Retrieval - findMapProjects(String query):  Could not search by lead name");
 		}
 		
 		// find specialist (query)
-		results = service.findMapSpecialists("rda");
-		if (results.getSearchResults().get(0).getDescription().compareTo("Rory Davidson") != 0) {
+		results = service.findMapSpecialists("rda", new PfsParameterJpa());
+		if (results.getSearchResults().get(0).getValue().compareTo("Rory Davidson") != 0) {
 			fail("Retrieval - findMapSpecialist(String query): Could not search by username");
 		}
 		
 		// find lead (query)
-		results = service.findMapLeads("kgi");
-		if (results.getSearchResults().get(0).getDescription().compareTo("Kathy Giannangelo") != 0) {
+		results = service.findMapLeads("kgi", new PfsParameterJpa());
+		if (results.getSearchResults().get(0).getValue().compareTo("Kathy Giannangelo") != 0) {
 			fail("Retrieval - findMapLeads(String query): Could not search by username");
 		}
 		

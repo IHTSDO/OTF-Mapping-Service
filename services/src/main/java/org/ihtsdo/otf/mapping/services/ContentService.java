@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.services;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
@@ -44,7 +45,7 @@ public interface ContentService {
 	 * @return the search results for the search string
 	 * @throws Exception if anything goes wrong
 	 */
-	public SearchResultList findConcepts(String searchString) throws Exception;
+	public SearchResultList findConcepts(String searchString, PfsParameter pfsParameter) throws Exception;
 	
 	/**
 	 * Gets the descendants of a concept

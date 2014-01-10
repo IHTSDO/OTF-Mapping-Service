@@ -414,6 +414,24 @@ mapProjectAppControllers.controller('MetadataCtrl',
 	    	  });
 	      });
 		}]);
+
+mapProjectAppControllers.controller('XmlTestCtrl', 
+		  function ($scope, $http) {
+		      $http({
+		        url: root_mapping + "mapXmlTest",
+		        dataType: "json",
+		        method: "GET",
+		        headers: {
+		          "Content-Type": "application/json"
+		        }
+		      }).success(function(data) {
+		    	  $scope.map = data.map;
+		      }).error(function(error) {
+		    	  $scope.error = "Error";
+		      });
+		 
+		   /* $scope.orderProp = 'id';	*/
+		  });
 			
 		
 

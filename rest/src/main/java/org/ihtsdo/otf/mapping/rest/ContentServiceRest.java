@@ -11,6 +11,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
+import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -154,7 +155,7 @@ public class ContentServiceRest {
 		
 		try {
 			ContentService contentService = new ContentServiceJpa();
-			SearchResultList sr = contentService.findConcepts(searchString);
+			SearchResultList sr = contentService.findConcepts(searchString, new PfsParameterJpa());
 			contentService.close();
 			return sr;
 		} catch (Exception e) {
