@@ -20,16 +20,16 @@ public interface MapPrinciple {
 	public void setId(Long id);
 	
 	/**
-	 * Returns the description
-	 * @return the description
+	 * Returns the detail
+	 * @return the detail
 	 */
-	public String getDescription();
+	public String getDetail();
 	
 	/**
-	 * Sets the description
-	 * @param description the description
+	 * Sets the detail
+	 * @param detail the detail
 	 */
-	public void setDescription(String description);
+	public void setDetail(String detail);
 
 	/**
 	 * Returns the name

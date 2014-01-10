@@ -37,7 +37,7 @@ public class MapPrincipleJpa implements MapPrinciple {
 	private String name;
 	
 	@Column(nullable = true, length = 4000)
-	private String description;
+	private String detail;
 	
 	@Column(nullable = true, length = 255)
 	private String sectionRef;
@@ -77,22 +77,22 @@ public class MapPrincipleJpa implements MapPrinciple {
 	}
 
 	/**
-	 * Get the description
-	 * @return the description
+	 * Get the detail
+	 * @return the detail
 	 */
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-	public String getDescription() {
-		return this.description;
+	public String getDetail() {
+		return this.detail;
 	}
 
 	/**
-	 * Set the description
-	 * @param description the description
+	 * Set the detail
+	 * @param detail the detail
 	 */
 	@Override
-	public void setDescription(String description) {
-		this.description = description;
+	public void setDetail(String detail) {
+		this.detail = detail;
 		
 	}
 
@@ -141,7 +141,7 @@ public class MapPrincipleJpa implements MapPrinciple {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
+				+ ((detail == null) ? 0 : detail.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
@@ -161,11 +161,11 @@ public class MapPrincipleJpa implements MapPrinciple {
 			return false;
 		}
 		MapPrincipleJpa other = (MapPrincipleJpa) obj;
-		if (description == null) {
-			if (other.description != null) {
+		if (detail == null) {
+			if (other.detail != null) {
 				return false;
 			}
-		} else if (!description.equals(other.description)) {
+		} else if (!detail.equals(other.detail)) {
 			return false;
 		}
 		if (id == null) {
@@ -195,7 +195,7 @@ public class MapPrincipleJpa implements MapPrinciple {
 	@Override
 	public String toString() {
 		return "MapPrincipleJpa [id=" + id + ", name=" + name
-				+ ", description=" + description + ", sectionRef=" + sectionRef
+				+ ", detail=" + detail + ", sectionRef=" + sectionRef
 				+ "]";
 	}
 

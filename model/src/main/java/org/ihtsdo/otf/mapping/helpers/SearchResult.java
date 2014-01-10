@@ -25,16 +25,16 @@ public interface SearchResult {
 	/**
 	 * @param terminologyId the terminologyId to set
 	 */
-	public void setTerminologyId(Long terminologyId);
+	public void setTerminologyId(String terminologyId);
 
 	/**
-	 * @return the description
+	 * @return the value
 	 */
-	public String getDescription();
+	public String getValue();
 
 	/**
-	 * @param description the description to set
+	 * @param value the value to set
 	 */
-	public void setDescription(String description);
+	public void setValue(String value);
 
 }

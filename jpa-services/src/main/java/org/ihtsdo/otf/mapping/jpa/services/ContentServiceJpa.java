@@ -25,7 +25,7 @@ import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
@@ -149,7 +149,7 @@ public class ContentServiceJpa implements ContentService {
 	 * String )
 	 */
 	@Override
-	public SearchResultList findConcepts(String searchString) throws Exception {
+	public SearchResultList findConcepts(String searchString, PfsParameter pfsParameter) throws Exception {
 		
 		SearchResultList results = new SearchResultListJpa();
 		

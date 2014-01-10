@@ -45,7 +45,7 @@ public interface SearchResultList {
 	/**
 	 * Sort results by description
 	 */
-	public void sortSearchResultsByDescription();
+	public void sortSearchResultsByValue();
 
 	/**
 	 * Test if search result is in this list
