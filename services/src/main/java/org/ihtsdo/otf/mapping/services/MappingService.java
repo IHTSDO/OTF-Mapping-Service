@@ -13,6 +13,7 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapXmlTest;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 /**
@@ -228,6 +229,12 @@ public interface MappingService {
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId);
 	
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId);
+	
+	//////////////////
+	// Map Xml Test
+	//////////////////
+	
+	public MapXmlTest getMapXmlTest();
 }
 	
 	

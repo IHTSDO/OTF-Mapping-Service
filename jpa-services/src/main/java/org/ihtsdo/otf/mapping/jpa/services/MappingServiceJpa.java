@@ -35,6 +35,7 @@ import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
+import org.ihtsdo.otf.mapping.jpa.MapXmlTestJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
@@ -43,6 +44,7 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapXmlTest;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -1317,6 +1319,15 @@ public class MappingServiceJpa implements MappingService {
 	public void removeMapPrinciple(Long mapPrincipleId) { }
 	
 	public void removeMapAdvice(Long mapAdviceId) { }
+	
+	/////////////////////////
+	// XML Adapter Testing
+	/////////////////////////
+	
+	public MapXmlTest getMapXmlTest() {
+		
+		return new MapXmlTestJpa();
+	}
 
 
 	
