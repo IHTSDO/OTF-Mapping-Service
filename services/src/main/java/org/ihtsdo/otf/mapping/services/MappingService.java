@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
-import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -13,7 +12,6 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
-import org.ihtsdo.otf.mapping.model.MapXmlTest;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 /**
@@ -222,19 +220,13 @@ public interface MappingService {
 	// Other services       ///
 	///////////////////////////
 	
-	public Set<Concept> findUnmappedDescendantsForMapProject(Long mapProjectId, PfsParameter pfsParameter);
-	
-	public Set<Concept> findDescendantsForMapProject(Long mapProjectId, PfsParameter pfsParameter);
-	
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId);
 	
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId);
+
+	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
+			String terminology, String terminologyVersion, int threshold) throws Exception;
 	
-	//////////////////
-	// Map Xml Test
-	//////////////////
-	
-	public MapXmlTest getMapXmlTest();
 }
 	
 	

@@ -19,6 +19,7 @@ import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
@@ -26,8 +27,8 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
-//import org.ihtsdo.otf.mapping.jpa.MapBlockJpa; TODO: Removed these elements, update/rethink/etc.
-//import org.ihtsdo.otf.mapping.jpa.MapGroupJpa;
+import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
  * Goal which updates the db to sync it with the model via JPA.
@@ -397,6 +398,9 @@ public class SampledataMojo extends AbstractMojo {
 			getLog().debug("    complex refset member size "
 					+ query.getResultList().size());
 			
+			// instantiate MappingService for getting descendant concepts
+			ContentService contentService = new ContentServiceJpa();
+			
 			// Added to speed up process
 			tx.begin();
 			int i = 0;// for progress tracking
@@ -413,25 +417,33 @@ public class SampledataMojo extends AbstractMojo {
 				  continue; 
 				}
 				
+				// retrieve the concept
+				Concept concept = refSetMember.getConcept();
+				
 				// if no concept for this ref set member, skip
-				if (refSetMember.getConcept() == null)
+				if (concept == null)
 					continue;
 				
 				// if different concept than previous ref set member, create new mapRecord
-				if (!refSetMember.getConcept().getTerminologyId()
+				if (!concept.getTerminologyId()
 						.equals(new Long(prevConceptId).toString())) {
 					
 					mapRecord = new MapRecordJpa();
-					mapRecord.setConceptId(refSetMember.getConcept().getTerminologyId());
+					mapRecord.setConceptId(concept.getTerminologyId());
 					
 					// if this refSet terminology id in project map, set the project id
 					if (projectRefSetIdMap.containsKey(refSetMember.getRefSetId())) {
 						mapRecord.setMapProjectId(projectRefSetIdMap.get(refSetMember.getRefSetId()));
-						getLog().info("Adding map record to project " + projectRefSetIdMap.get(refSetMember.getRefSetId()).toString());
-					} else {
-						getLog().info("No map project for this record");
-					}
+					} 
 				
+					// get the number of descendants
+					mapRecord.setCountDescendantConcepts( new Long(
+							contentService.getDescendants(
+								concept.getTerminologyId(),
+								concept.getTerminology(),
+								concept.getTerminologyVersion(),
+								new Long("116680003")).size()));
+			
 					// set the previous concept to this concept
 					prevConceptId = new Long(refSetMember.getConcept().getTerminologyId());
 					

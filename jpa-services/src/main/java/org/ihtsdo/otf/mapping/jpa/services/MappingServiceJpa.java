@@ -35,7 +35,6 @@ import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
-import org.ihtsdo.otf.mapping.jpa.MapXmlTestJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
@@ -44,8 +43,8 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
-import org.ihtsdo.otf.mapping.model.MapXmlTest;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 /**
@@ -1083,7 +1082,7 @@ public class MappingServiceJpa implements MappingService {
 	}
 	
 	////////////////////////////////////////////////
-	// Service for retrieving all project details
+	// Descendant services
     ////////////////////////////////////////////////
 	
 	/**
@@ -1138,147 +1137,69 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 	}
 	
-	//////////////////////////////////////////
-	// Project Descendant Services
-	//////////////////////////////////////////
-	
 	/**
-	 * Dummy routine to find unmapped descendants by map project id
-	 * @param mapProjectId the map project id
-	 * @return the SearchResultList of unmapped descendants
+	 * Helper function for restful services.  Constructs a basic concept from parameters and calls getUnmappedDescentsForConcept(Concept concept, int thresholdLlc)
+	 * @param terminologyId
+	 * @param terminology
+	 * @param terminologyVersion
+	 * @param thresholdLlc
+	 * @return
+	 * @throws Exception
 	 */
-	public Set<Concept> findUnmappedDescendantsForMapProject(Long mapProjectId, PfsParameter pfsParameter) {
-		
-		return findUnmappedDescendantsForMapProject(getMapProject(mapProjectId), pfsParameter);
+	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId, String terminology, String terminologyVersion, int thresholdLlc) throws Exception {
+		Concept concept = new ConceptJpa();
+		concept.setTerminologyId(terminologyId);
+		concept.setTerminology(terminology);
+		concept.setTerminologyVersion(terminologyVersion);
+		return getUnmappedDescendantsForConcept(concept, thresholdLlc);
 	}
 	
 	/**
-	 * Routine to find unmapped descendants of concepts associated with a project
-	 * @param mapProject the mapProject
-	 * @return the SearchResultList of unmapped descendants
+	 * Given a concept, returns a list of descendant concepts that have no associated map record
+	 * @param concept the root concept
+	 * @param thresholdLlc the maximum number of descendants a concept can have before it is no longer considered a low-level concept (i.e. return an empty list)
+	 * @return the list of unmapped descendant concepts
+	 * @throws Exception 
 	 */
-	public Set<Concept> findUnmappedDescendantsForMapProject(MapProject mapProject, PfsParameter pfsParameter) {
-	
+	public List<Concept> getUnmappedDescendantsForConcept(Concept concept, int thresholdLlc) throws Exception {
+		
+		// declare results list and content service
+		List<Concept> unmappedDescendants = new ArrayList<Concept>();
 		ContentService contentService = new ContentServiceJpa();
-		Set<Concept> results = new HashSet<Concept>();
+				
+		// get descendants and construct iterator
+		Set<Concept> descendants = contentService.getDescendants(concept.getTerminologyId(), concept.getTerminology(), concept.getTerminologyVersion(), new Long("116680003"));
+		Iterator<Concept> descendants_iter = descendants.iterator();
 		
-		// get all records from map records
-		List<MapRecord> records = getMapRecordsForMapProjectId(mapProject.getId());
-		
-		System.out.println("Records: " + Integer.toString(records.size()));
-		
-		// construct map for easy determination of mapped status
-		Set<String> cids = new HashSet<String>();
-		
-		// cycle over records -- any concept with record is by default mapped
-		for (MapRecord r : records) {
-			cids.add(r.getConceptId());
-		}
-		
-		System.out.println("Map size: " + Integer.toString(cids.size()));
-		
-		Iterator<String> cids_iter = cids.iterator();
-		
-		// cycle over all concepts
-		while (cids_iter.hasNext()) {
-			
-			// get descendants
-			// TODO Change typeId to metadata reference
-			String cid = cids_iter.next();
-			
-			System.out.println("Concept " + cid);
-			
-			Set<Concept> descendants = contentService.getDescendants(cid, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion(), new Long("116680003"));
-			
-			System.out.println("Found descendants: " + Integer.toString(descendants.size()));
+		// if size of descendant set is greater than the low-level concept threshold, skip it
+		if (descendants.size() <= thresholdLlc) {
 			
 			// cycle over descendants
-			for (Concept descendant : descendants) {
+			while (descendants_iter.hasNext()) {
 				
-				// if already contained in map, do nothing (already mapped)
-				if (!cids.contains(descendant.getTerminologyId())) {
-					
-					// check if a map record exists for this id
-					if (getMapRecordsForConceptId(descendant.getTerminologyId()).size() == 0) {
-						
-						// if not in results list already, add to results list
-						if (!results.contains(descendant)) {
-							results.add(descendant);
-						}
-					}
-				}
-			}	
-		}
-		
-		return results;
-		
-	
-		
-		
-	}
-	
-	/**
-	 * Dummy routine to find unmapped descendants by map project id
-	 * @param mapProjectId the map project id
-	 * @return the SearchResultList of unmapped descendants
-	 */
-	public Set<Concept> findDescendantsForMapProject(Long mapProjectId, PfsParameter pfsParameter) {
-		
-		return findDescendantsForMapProject(getMapProject(mapProjectId), pfsParameter);
-	}
-	
-	/**
-	 * Routine to find unmapped descendants of concepts associated with a project
-	 * @param mapProject the mapProject
-	 * @return the SearchResultList of unmapped descendants
-	 */
-	public Set<Concept> findDescendantsForMapProject(MapProject mapProject, PfsParameter pfsParameter) {
-	
-		ContentServiceJpa contentService = new ContentServiceJpa();
-		Set<Concept> results = new HashSet<Concept>();
-		
-		// get all records from map records
-		List<MapRecord> records = getMapRecordsForMapProjectId(mapProject.getId());
-		
-		System.out.println("Records: " + Integer.toString(records.size()));
-		
-		// construct map for easy determination of mapped status
-		Set<String> cids = new HashSet<String>();
-		
-		// cycle over records -- any concept with record is by default mapped
-		for (MapRecord r : records) {
-			cids.add(r.getConceptId());
-		}
-		
-		System.out.println("Map size: " + Integer.toString(cids.size()));
-		
-		Iterator<String> cids_iter = cids.iterator();
-		
-		// cycle over all concepts
-		while (cids_iter.hasNext()) {
-			
-			// get descendants
-			String cid = cids_iter.next();
-			
-			System.out.println("Concept " + cid);
-			
-			// TODO Change typeId to metadata reference
-			Set<Concept> descendants = contentService.getDescendants(cid, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion(), new Long("116680003"));
-			
-			System.out.println("Found descendants: " + Integer.toString(descendants.size()));
-			
-			// cycle over descendants search result list
-			for (Concept descendant : descendants) {
-
-				// if not already in results list, add to results list
-				if (!results.contains(descendant)) {
-					results.add(descendant);
+				Concept descendant = descendants_iter.next();
+				
+				// find map records for this id
+				List<MapRecord> conceptRecords = getMapRecordsForConceptId(descendant.getTerminologyId());
+				
+				System.out.println(descendant.getTerminologyId() + " has " + Integer.toString(conceptRecords.size()) + " map records");
+				
+				// if no records found, add to unmapped list
+				if (conceptRecords.size() == 0) {
+					System.out.println("--> Adding to unmapped list");
+					unmappedDescendants.add(descendant);
 				}
 			}
 		}
 		
-		return results;		
+		// force-close the manager
+		if (contentService != null) {
+			contentService.close();
+		}
+		
+		return unmappedDescendants;
 	}
+	
 	
 	////////////////////////////////
 	// Services to be implemented //
@@ -1319,16 +1240,6 @@ public class MappingServiceJpa implements MappingService {
 	public void removeMapPrinciple(Long mapPrincipleId) { }
 	
 	public void removeMapAdvice(Long mapAdviceId) { }
-	
-	/////////////////////////
-	// XML Adapter Testing
-	/////////////////////////
-	
-	public MapXmlTest getMapXmlTest() {
-		
-		return new MapXmlTestJpa();
-	}
-
 
 	
 

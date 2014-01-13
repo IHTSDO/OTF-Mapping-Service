@@ -27,6 +27,14 @@
       <groupId>org.ihtsdo.otf.mapping</groupId>
       <artifactId>mapping-jpa-model</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-services</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-jpa-services</artifactId>
+    </dependency>
 
     <!-- JPA dependencies -->
     <dependency>
