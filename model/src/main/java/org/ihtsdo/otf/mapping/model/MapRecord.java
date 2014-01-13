@@ -58,6 +58,20 @@ public interface MapRecord {
 	 */
 	public void setConceptId(String conceptId);
 	
+	/**
+	 * Returns the number of descendant concepts
+	 *
+	 * @return the number of descendant concepts
+	 */
+	public Long getCountDescendantConcepts();
+	
+	/**
+	 * Sets the number of descendant concepts
+	 *
+	 * @param countDescendantConcepts the number of descendant concepts
+	 */
+	public void setCountDescendantConcepts(Long countDescendantConcepts);
+	
 	
 	/**
 	 * Returns the map notes.

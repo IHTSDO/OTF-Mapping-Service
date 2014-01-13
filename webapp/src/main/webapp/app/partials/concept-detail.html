@@ -9,8 +9,17 @@
 <p>Module Id: {{concept.moduleId}}</p>
 <p>Status Id: {{concept.definitionStatusId}}</p>
 
-<h4>Descriptions:</h4>
-<p>
+<accordion>
+<accordion-group ng-show = "unmappedDescendants.length > 0">
+<accordion-heading><img src="{{baseUrl}}/mapping-webapp/app/img/warning.png">Unmapped Descendants ({{unmappedDescendants.length}})</accordion-heading>
+<ul>
+<li ng-repeat = "concept in unmappedDescendants">
+<a href="index.html#/concept/{{concept.terminology}}/{{concept.terminologyVersion}}/id/{{concept.terminologyId}}">{{concept.terminologyId}}</a> - {{concept.defaultPreferredName}}</p>
+</li>
+</ul>
+</accordion-group>
+
+<accordion-group heading="Descriptions ({{concept.description.length}})">
 <ul>
 <li ng-repeat="description in concept.description">
 <p>Id: {{description.terminologyId}}
@@ -18,7 +27,9 @@
 <p>Active: {{description.active}}</p>
 <p>Case Significance Id: {{description.caseSignificanceId}}
 <p>Language Code: {{description.languageCode}}
+<p>Term: {{description.term}}
 <p>
+
 <!-- <p>Language RefSets for this Description:
 <ul>
 <li ng-repeat="refset in description.languageRefSetMember">
@@ -29,9 +40,9 @@
 </ul> -->
 </li>
 </ul>
+</accordion-group>
 
-<h4>Relationships:</h4>
-<p>
+<accordion-group heading="Relationships ({{concept.relationship.length}})">
 <ul>
 <li ng-repeat="rel in concept.relationship">
 <p>Id: {{rel.terminologyId}}</p>
@@ -43,3 +54,6 @@
 <p>Relationship Group: {{rel.relationshipGroup}}</p>
 </li>
 </ul>
+</accordion-group>
+</accordion>
+

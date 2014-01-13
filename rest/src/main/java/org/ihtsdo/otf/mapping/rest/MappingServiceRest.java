@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import java.util.Set;
-
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -24,8 +22,8 @@ import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
-import org.ihtsdo.otf.mapping.model.MapXmlTest;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.jpa.ConceptList;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -226,52 +224,8 @@ public class MappingServiceRest {
 		}
 		
 	}
-	
-	/**
-	 * Returns all descendant concepts associated with a project
-	 * @param query the map project id
-	 * @return the SearchResultList of unmapped descendant concepts
-	 */
-	@GET
-	@Path("/project/id/{id:[0-9][0-9]*}/unmappedDescendants")
-	@ApiOperation(value = "Find projects with unmapped concepts", notes = "Returns unmapped concepts in either JSON or XML format", response = SearchResultList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Set<Concept> findUnmappedDescendantsForMapProject(
-			@ApiParam(value = "lucene search string", required = true) @PathParam("id") Long projectId) {
-		
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			Set<Concept> conceptSet =  mappingService.findUnmappedDescendantsForMapProject(projectId, new PfsParameterJpa());
-			mappingService.close();
-			return conceptSet;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-		
-	}
-	
-	/**
-	 * Returns all descendant concepts associated with a project
-	 * @param projectId the map project id
-	 * @return the SearchResultList of descendant concepts
-	 */
-	@GET
-	@Path("/project/id/{id:[0-9][0-9]*}/descendants")
-	@ApiOperation(value = "Find projects with unmapped concepts", notes = "Returns unmapped concepts in either JSON or XML format", response = SearchResultList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Set<Concept> findDescendantsForMapProjects(
-			@ApiParam(value = "lucene search string", required = true) @PathParam("id") Long projectId) {
-		
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			Set<Concept> conceptSet = mappingService.findUnmappedDescendantsForMapProject(projectId, new PfsParameterJpa());
-			mappingService.close();
-			return conceptSet;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-		
-	}
+
+
 	
 	/**
 	 * Returns the specialist for a given id (auto-generated) in JSON format
@@ -740,25 +694,42 @@ public class MappingServiceRest {
 		}
 	}
 	
-	//////////////////////
-	// Map Xml Test
-	//////////////////////
+	///////////////////////////
+	// Descendant services
+	///////////////////////////
+	
+	/**
+	 * Given concept information, returns a ConceptList of descendant concepts without associated map records
+	 * @param terminologyId the concept terminology id
+	 * @param terminology the concept terminology
+	 * @param terminologyVersion the concept terminology version
+	 * @param threshold the maximum number of descendants before a concept is no longer considered a low-level concept, and will return an empty list
+	 * @return the ConceptList of unmapped descendants
+	 */
 	@GET
-	@Path("/mapXmlTest")
-	public MapXmlTest getMapXmlTest() {
+	@Path("/concept/{terminology}/{version}/id/{id}/threshold/{threshold:[0-9][0-9]}")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public ConceptList getUnmappedDescendantsForConcept(
+			@ApiParam(value = "concept terminology id", required = true) @PathParam("id") String terminologyId,
+			@ApiParam(value = "concept terminology", required = true) @PathParam("terminology") String terminology,
+			@ApiParam(value = "concept terminology version", required = true) @PathParam("version") String terminologyVersion,
+			@ApiParam(value = "threshold max number of descendants for a low-level concept", required = true) @PathParam("threshold") int threshold) {
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			MapXmlTest mapXmlTest = mappingService.getMapXmlTest();
+			ConceptList concepts = new ConceptList();
+			concepts.setConcepts(mappingService.getUnmappedDescendantsForConcept(terminologyId, terminology, terminologyVersion, threshold));
 			mappingService.close();
-			return mapXmlTest;
+			return concepts;
+			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new WebApplicationException(e);
 		}
-		return null;
 	}
-
+	
 	
 	
 	
