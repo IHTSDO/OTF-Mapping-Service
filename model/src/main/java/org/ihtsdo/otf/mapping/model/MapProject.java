@@ -85,14 +85,28 @@ public interface MapProject  {
 	 *
 	 * @return the ref set id
 	 */
-	public Long getRefSetId();
+	public String getRefSetId();
 	
 	/**
 	 * Sets the ref set id.
 	 *
 	 * @param refSetId the ref set id
 	 */
-	public void setRefSetId(Long refSetId);
+	public void setRefSetId(String refSetId);
+	
+	/**
+	 * Returns the ref set name.
+	 *
+	 * @return the ref set name.
+	 */
+	public String getRefSetName();
+	
+	/**
+	 * Sets the ref set name.
+	 *
+	 * @param refSetName the ref set name
+	 */
+	public void setRefSetName(String refSetName);
 	
 	/**
 	 * Returns the set of allowable map advices.

@@ -24,6 +24,9 @@ public class MapRecordImpl implements MapRecord {
 	/** The concept id. */
 	private String conceptId;
 	
+	/** The concept name. */
+	private String conceptName;
+	
 	/** The number of descendant concepts for the concept id */
 	private Long countDescendantConcepts;
 
@@ -87,6 +90,17 @@ public class MapRecordImpl implements MapRecord {
 	@Override
 	public void setConceptId(String conceptId) {
 		this.conceptId = conceptId;
+	}
+
+	@Override
+	public String getConceptName() {
+		return this.conceptName;
+	}
+
+	@Override
+	public void setConceptName(String conceptName) {
+		this.conceptName = conceptName;
+		
 	}
 
 	@Override

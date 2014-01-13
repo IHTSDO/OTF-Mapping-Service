@@ -295,10 +295,10 @@ public class SampledataMojo extends AbstractMojo {
 			tx.commit();
 
 			// Add map projects
-			Map<Long, Long> refSetIdToMapProjectIdMap = new HashMap<Long, Long>();
+			Map<String, Long> refSetIdToMapProjectIdMap = new HashMap<String, Long>();
 			MapProject mapProject = new MapProjectJpa();
 			mapProject.setName("SNOMED to ICD10");
-			mapProject.setRefSetId(new Long("447562003"));
+			mapProject.setRefSetId("447562003");
 			mapProject.setSourceTerminology("SNOMEDCT");
 			mapProject.setSourceTerminologyVersion("20140131");
 			mapProject.setDestinationTerminology("ICD10");
@@ -321,7 +321,7 @@ public class SampledataMojo extends AbstractMojo {
 
 			mapProject = new MapProjectJpa();
 			mapProject.setName("SNOMED to ICD9CM");
-			mapProject.setRefSetId(new Long("5781347179"));
+			mapProject.setRefSetId("5781347179");
 			mapProject.setSourceTerminology("SNOMEDCT");
 			mapProject.setSourceTerminologyVersion("20140131");
 			mapProject.setDestinationTerminology("ICD9CM");
@@ -343,7 +343,7 @@ public class SampledataMojo extends AbstractMojo {
 
 			mapProject = new MapProjectJpa();
 			mapProject.setName("SNOMED to ICPC - Family Practice/GPF Refset");
-			mapProject.setRefSetId(new Long("5235669"));
+			mapProject.setRefSetId("5235669");
 			mapProject.setSourceTerminology("SNOMEDCT");
 			mapProject.setSourceTerminologyVersion("20130731");
 			mapProject.setDestinationTerminology("ICPC");
@@ -362,21 +362,29 @@ public class SampledataMojo extends AbstractMojo {
 			projects.add(mapProject);
 
 			// Set to assign map records to a project
-			Map<Long, Long> projectRefSetIdMap = new HashMap<Long, Long>();
+			Map<String, Long> projectRefSetIdMap = new HashMap<String, Long>();
 			
 			tx.begin();
+			javax.persistence.Query query; 
 			for (MapProject m : projects) {
-				
-				
-				
 				
 				Logger.getLogger(this.getClass()).info(
 						"Adding map project " + m.getName());
+				
+				// get the refset id name
+				query = manager.createQuery("select r from ConceptJpa r where r.terminologyId = " + m.getRefSetId() );
+				
+				try {
+					m.setRefSetName( ((Concept) query.getSingleResult()).getDefaultPreferredName());
+				} catch (Exception e) {
+					getLog().info("Setting project refSetName to null");
+					m.setRefSetName("Concept not in database");
+				}
 				manager.merge(m);
 			}
 			tx.commit();
 			
-			javax.persistence.Query  query = manager.createQuery("select r from MapProjectJpa r");
+			query = manager.createQuery("select r from MapProjectJpa r");
 			
 			projects = query.getResultList();			
 			
@@ -430,6 +438,8 @@ public class SampledataMojo extends AbstractMojo {
 					
 					mapRecord = new MapRecordJpa();
 					mapRecord.setConceptId(concept.getTerminologyId());
+					mapRecord.setConceptName(concept.getDefaultPreferredName());
+				
 					
 					// if this refSet terminology id in project map, set the project id
 					if (projectRefSetIdMap.containsKey(refSetMember.getRefSetId())) {
@@ -453,7 +463,8 @@ public class SampledataMojo extends AbstractMojo {
 
 				// add map entry to record
 				MapEntry mapEntry = new MapEntryJpa();
-				mapEntry.setTarget(refSetMember.getMapTarget());
+				mapEntry.setTargetId(refSetMember.getMapTarget());
+				mapEntry.setTargetName(null); // TODO: Change this once we have other terminologies loaded
 				mapEntry.setMapRecord(mapRecord);
 				mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
 				mapEntry.setRule(refSetMember.getMapRule());

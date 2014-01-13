@@ -15,6 +15,8 @@ public class SearchResultJpa implements SearchResult {
 	
 	private Long id;
 	private String terminologyId;
+	private String terminology;
+	private String terminologyVersion;
 	private String value;
 	
 	/**
@@ -75,6 +77,27 @@ public class SearchResultJpa implements SearchResult {
 	public void setTerminologyId(String terminologyId) {
 		this.terminologyId = terminologyId;
 		
+	}
+
+		
+	@Override
+	public String getTerminology() {
+		return this.terminology;
+	}
+
+	@Override
+	public void setTerminology(String terminology) {
+		this.terminology = terminology;		
+	}
+
+	@Override
+	public String getTerminologyVersion() {
+		return this.terminologyVersion;
+	}
+
+	@Override
+	public void setTerminologyVersion(String terminologyVersion) {
+		this.terminologyVersion = terminologyVersion;
 	}
 
 	/**

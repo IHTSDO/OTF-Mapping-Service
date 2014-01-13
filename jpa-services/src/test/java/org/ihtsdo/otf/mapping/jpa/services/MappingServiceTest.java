@@ -420,10 +420,10 @@ public class MappingServiceTest {
 		}
 
 		// Add map projects
-		Map<Long, Long> refSetIdToMapProjectIdMap = new HashMap<Long, Long>();
+		Map<String, Long> refSetIdToMapProjectIdMap = new HashMap<String, Long>();
 		MapProject mapProject = new MapProjectJpa();
 		mapProject.setName("SNOMED to ICD10");
-		mapProject.setRefSetId(new Long("447562003"));
+		mapProject.setRefSetId("447562003");
 		mapProject.setSourceTerminology("SNOMEDCT");
 		mapProject.setSourceTerminologyVersion("20140131");
 		mapProject.setDestinationTerminology("ICD10");
@@ -446,7 +446,7 @@ public class MappingServiceTest {
 
 		mapProject = new MapProjectJpa();
 		mapProject.setName("SNOMED to ICD9CM");
-		mapProject.setRefSetId(new Long("5781347179"));
+		mapProject.setRefSetId("5781347179");
 		mapProject.setSourceTerminology("SNOMEDCT");
 		mapProject.setSourceTerminologyVersion("20140131");
 		mapProject.setDestinationTerminology("ICD9CM");
@@ -468,7 +468,7 @@ public class MappingServiceTest {
 
 		mapProject = new MapProjectJpa();
 		mapProject.setName("SNOMED to ICPC - Family Practice/GPF Refset");
-		mapProject.setRefSetId(new Long("5235669"));
+		mapProject.setRefSetId("5235669");
 		mapProject.setSourceTerminology("SNOMEDCT");
 		mapProject.setSourceTerminologyVersion("20130731");
 		mapProject.setDestinationTerminology("ICPC");
@@ -547,7 +547,7 @@ public class MappingServiceTest {
 		// get project (id)
 		MapProject p = service.getMapProject(new Long(2));
 		
-		if (p.getRefSetId().compareTo(new Long("5781347179")) != 0) {
+		if (p.getRefSetId().compareTo("5781347179") != 0) {
 			fail("Retrieval - getMapProject(Long id): refSetId invalid");
 		}
 		

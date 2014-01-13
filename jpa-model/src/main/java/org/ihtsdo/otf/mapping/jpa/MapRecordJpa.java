@@ -55,6 +55,9 @@ public class MapRecordJpa implements MapRecord {
 	private String conceptId;
 	
 	@Column(nullable = false)
+	private String conceptName;
+	
+	@Column(nullable = false)
 	private Long countDescendantConcepts;
 
 	/** The map records */
@@ -131,6 +134,17 @@ public class MapRecordJpa implements MapRecord {
 		this.conceptId = conceptId;
 	}
 	
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+	public String getConceptName() {
+		return this.conceptName;
+	}
+
+	@Override
+	public void setConceptName(String conceptName) {
+		this.conceptName = conceptName;			
+	}
+
 	@Override
 	public Long getCountDescendantConcepts() {
 		return countDescendantConcepts;

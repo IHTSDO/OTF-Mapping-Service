@@ -45,7 +45,10 @@ public class MapProjectImpl implements MapProject {
 	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 
 	/** The ref set id. */
-	private Long refSetId;
+	private String refSetId;
+	
+	/** The ref set name. */
+	private String refSetName;
 
 	/** The source terminology. */
 	private String sourceTerminology;
@@ -402,7 +405,7 @@ public class MapProjectImpl implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getRefSetId()
 	 */
 	@Override
-	public Long getRefSetId() {
+	public String getRefSetId() {
 		return refSetId;
 	}
 
@@ -410,8 +413,19 @@ public class MapProjectImpl implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setRefSetId(java.lang.Long)
 	 */
 	@Override
-	public void setRefSetId(Long refSetId) {
+	public void setRefSetId(String refSetId) {
 		this.refSetId = refSetId;
+	}
+
+	@Override
+	public String getRefSetName() {
+		return this.refSetName;
+	}
+
+	@Override
+	public void setRefSetName(String refSetName) {
+		this.refSetName = refSetName;
+		
 	}
 
 	@Override

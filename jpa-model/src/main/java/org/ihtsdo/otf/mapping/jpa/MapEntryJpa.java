@@ -66,7 +66,11 @@ public class MapEntryJpa implements MapEntry {
 
 	/** The target. */
 	@Column(nullable = false)
-	private String target;
+	private String targetId;
+	
+	/** The target name. */
+	@Column(nullable = true) // TODO Change to false once other terminologies are in
+	private String targetName;
 	
 	/** The rule. */
 	@Column(nullable = true, length = 4000)
@@ -100,20 +104,20 @@ public class MapEntryJpa implements MapEntry {
 	 * @param id the id
 	 * @param mapRecord the map record
 	 * @param mapNotes the map notes
-	 * @param target the target
+	 * @param targetId the targetId
 	 * @param mapAdvices the map advices
 	 * @param rule the rule
 	 * @param indexMapPriority the index map priority
 	 * @param relationId the relation id
 	 */
 	public MapEntryJpa(Long id, MapRecord mapRecord, Set<MapNote> mapNotes,
-			String target, Set<MapAdvice> mapAdvices, String rule,
+			String targetId, Set<MapAdvice> mapAdvices, String rule,
 			int indexMapPriority, String relationId) {
 		super();
 		this.id = id;
 		this.mapRecord = mapRecord;
 		this.mapNotes = mapNotes;
-		this.target = target;
+		this.targetId = targetId;
 		this.mapAdvices = mapAdvices;
 		this.rule = rule;
 		this.indexMapPriority = indexMapPriority;
@@ -186,16 +190,27 @@ public class MapEntryJpa implements MapEntry {
 	 */
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
-	public String getTarget() {
-		return target;
+	public String getTargetId() {
+		return targetId;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setTarget(java.lang.String)
 	 */
 	@Override
-	public void setTarget(String target) {
-		this.target = target;
+	public void setTargetId(String targetId) {
+		this.targetId = targetId;
+	}
+
+	@Override
+	public String getTargetName() {
+		return this.targetName;
+	}
+
+	@Override
+	public void setTargetName(String targetName) {
+		this.targetName = targetName;
+		
 	}
 
 	/* (non-Javadoc)
@@ -380,7 +395,7 @@ public class MapEntryJpa implements MapEntry {
 		result =
 				prime * result + ((relationId == null) ? 0 : relationId.hashCode());
 		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
-		result = prime * result + ((target == null) ? 0 : target.hashCode());
+		result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());
 		return result;
 	}
 
@@ -428,10 +443,10 @@ public class MapEntryJpa implements MapEntry {
 				return false;
 		} else if (!rule.equals(other.rule))
 			return false;
-		if (target == null) {
-			if (other.target != null)
+		if (targetId == null) {
+			if (other.targetId != null)
 				return false;
-		} else if (!target.equals(other.target))
+		} else if (!targetId.equals(other.targetId))
 			return false;
 		return true;
 	}
@@ -440,7 +455,7 @@ public class MapEntryJpa implements MapEntry {
 	public String toString() {
 		return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord
 				+ ", mapNotes=" + mapNotes + ", mapAdvices=" + mapAdvices
-				+ ", mapPrinciples=" + mapPrinciples + ", target=" + target
+				+ ", mapPrinciples=" + mapPrinciples + ", targetId=" + targetId
 				+ ", rule=" + rule + ", indexMapPriority=" + indexMapPriority
 				+ ", relationId=" + relationId + ", mapBlock=" + mapBlock
 				+ ", mapGroup=" + mapGroup + "]";

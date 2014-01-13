@@ -63,7 +63,10 @@ public class MapProjectJpa implements MapProject {
 	private boolean published = false;
 
 	/** The ref set id. */
-	private Long refSetId;
+	private String refSetId;
+	
+	/** The ref set name */
+	private String refSetName;
 	
 	/** The source terminology. */
 	@Column(nullable = false)
@@ -123,7 +126,7 @@ public class MapProjectJpa implements MapProject {
 	 */
 	public MapProjectJpa(Long id, String name, boolean blockStructure,
 			boolean groupStructure, boolean published, Set<MapAdvice> mapAdvices,
-			Long refSetId, String sourceTerminology, String sourceTerminologyVersion,
+			String refSetId, String sourceTerminology, String sourceTerminologyVersion,
 			String destinationTerminology, String destinationTerminologyVersion,
 			Set<MapLead> mapLeads, Set<MapSpecialist> mapSpecialists) {
 		super();
@@ -348,15 +351,28 @@ public class MapProjectJpa implements MapProject {
 	}
 
 	@Override
+	public String getRefSetName() {
+		return this.refSetName;
+	}
+
+	@Override
+	public void setRefSetName(String refSetName) {
+		this.refSetName = refSetName;
+		
+	}
+
+	@Override
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)	
-	public Long getRefSetId() {
+	public String getRefSetId() {
 		return refSetId;
 	}
 
 	@Override
-	public void setRefSetId(Long refSetId) {
+	public void setRefSetId(String refSetId) {
 		this.refSetId = refSetId;
 	}
+	
+	
 
 	@Override
 	@XmlElement(type=MapAdviceJpa.class, name="mapAdvice")

@@ -23,7 +23,10 @@ public class MapEntryImpl implements MapEntry {
 	private Set<MapNote> mapNotes;
 
 	/** The target. */
-	private String target;
+	private String targetId;
+	
+	/** The target name */
+	private String targetName;
 
 	/** The map advices. */
 	private Set<MapAdvice> mapAdvices;
@@ -101,16 +104,27 @@ public class MapEntryImpl implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getTarget()
 	 */
 	@Override
-	public String getTarget() {
-		return target;
+	public String getTargetId() {
+		return targetId;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setTarget(java.lang.String)
 	 */
 	@Override
-	public void setTarget(String target) {
-		this.target = target;
+	public void setTargetId(String targetId) {
+		this.targetId = targetId;
+	}
+
+	@Override
+	public String getTargetName() {
+		return this.targetName;
+	}
+
+	@Override
+	public void setTargetName(String targetName) {
+		this.targetName = targetName;
+		
 	}
 
 	/* (non-Javadoc)
@@ -270,7 +284,7 @@ public class MapEntryImpl implements MapEntry {
 		result = prime * result
 				+ ((relationId == null) ? 0 : relationId.hashCode());
 		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
-		result = prime * result + ((target == null) ? 0 : target.hashCode());
+		result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());
 		return result;
 	}
 
@@ -334,11 +348,11 @@ public class MapEntryImpl implements MapEntry {
 		} else if (!rule.equals(other.rule)) {
 			return false;
 		}
-		if (target == null) {
-			if (other.target != null) {
+		if (targetId == null) {
+			if (other.targetId != null) {
 				return false;
 			}
-		} else if (!target.equals(other.target)) {
+		} else if (!targetId.equals(other.targetId)) {
 			return false;
 		}
 		return true;
@@ -349,8 +363,8 @@ public class MapEntryImpl implements MapEntry {
 	 */
 	@Override
 	public String toString() {
-		return "MapEntryImpl [id=" + id + ", mapNotes=" + mapNotes + ", target="
-				+ target + ", mapAdvices=" + mapAdvices + ", rule=" + rule + ", indexMapPriority="
+		return "MapEntryImpl [id=" + id + ", mapNotes=" + mapNotes + ", targetId="
+				+ targetId + ", mapAdvices=" + mapAdvices + ", rule=" + rule + ", indexMapPriority="
 				+ indexMapPriority + ", relationId=" + relationId + ", mapRecord=" + mapRecord
 				+ "]";
 	}
