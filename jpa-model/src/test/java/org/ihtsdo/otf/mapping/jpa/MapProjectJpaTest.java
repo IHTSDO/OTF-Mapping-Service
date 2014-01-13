@@ -53,10 +53,10 @@ public class MapProjectJpaTest {
 	private static MapProjectJpa mapProject3;
 
 	/** The test ref set id. */
-	private static Long testRefSetId = new Long("123456789");
+	private static String testRefSetId = "123456789";
 
 	/** The test ref set id for the mapping to ICD9CM. */
-	private static Long testRefSetId3 = new Long("345678912");
+	private static String testRefSetId3 = "345678912";
 
 	/** The test name for the mapping to ICD10CM. */
 	private static String testName = "SNOMEDCT to ICD10CM Mapping";
