@@ -377,7 +377,7 @@ public class SampledataMojo extends AbstractMojo {
 				try {
 					m.setRefSetName( ((Concept) query.getSingleResult()).getDefaultPreferredName());
 				} catch (Exception e) {
-					getLog().info("Setting project refSetName to null");
+					getLog().info("No concept in database for this project");
 					m.setRefSetName("Concept not in database");
 				}
 				manager.merge(m);
@@ -442,8 +442,8 @@ public class SampledataMojo extends AbstractMojo {
 				
 					
 					// if this refSet terminology id in project map, set the project id
-					if (projectRefSetIdMap.containsKey(refSetMember.getRefSetId())) {
-						mapRecord.setMapProjectId(projectRefSetIdMap.get(refSetMember.getRefSetId()));
+					if (projectRefSetIdMap.containsKey(refSetMember.getRefSetId().toString())) {
+						mapRecord.setMapProjectId(projectRefSetIdMap.get(refSetMember.getRefSetId().toString()));
 					} 
 				
 					// get the number of descendants
@@ -480,7 +480,7 @@ public class SampledataMojo extends AbstractMojo {
 				
 				manager.merge(mapRecord);
 				
-				if (++i % 1000 == 0) {System.out.println(Integer.toString(i) + " map records processed");}
+				if (++i % 1000 == 0) {getLog().info(Integer.toString(i) + " map records processed");}
 
 			}
 			
