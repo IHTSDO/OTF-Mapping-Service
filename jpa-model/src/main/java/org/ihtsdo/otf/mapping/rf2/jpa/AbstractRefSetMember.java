@@ -16,13 +16,13 @@ public abstract class AbstractRefSetMember extends AbstractComponent implements
 	
 	/** The ref set id */
 	@Column ( nullable = false)
-	Long refSetId;
+	String refSetId;
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Long getRefSetId() {
+	public String getRefSetId() {
 		return this.refSetId;
 	}
 
@@ -30,7 +30,7 @@ public abstract class AbstractRefSetMember extends AbstractComponent implements
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void setRefSetId(Long refSetId) {
+	public void setRefSetId(String refSetId) {
 		this.refSetId = refSetId;
 
 	}
