@@ -127,9 +127,6 @@ public class ContentServiceJpa implements ContentService {
 
 			Concept c = (Concept) query.getSingleResult();
 
-			System.out.println("Returning cid... "
-					+ ((c != null) ? c.getTerminologyId().toString() : "null"));
-		
 			return c;
 
 		} catch (NoResultException e) {
