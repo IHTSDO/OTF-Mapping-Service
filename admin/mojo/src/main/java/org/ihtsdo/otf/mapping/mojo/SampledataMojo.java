@@ -442,8 +442,8 @@ public class SampledataMojo extends AbstractMojo {
 				
 					
 					// if this refSet terminology id in project map, set the project id
-					if (projectRefSetIdMap.containsKey(refSetMember.getRefSetId().toString())) {
-						mapRecord.setMapProjectId(projectRefSetIdMap.get(refSetMember.getRefSetId().toString()));
+					if (projectRefSetIdMap.containsKey(refSetMember.getRefSetId())) {
+						mapRecord.setMapProjectId(projectRefSetIdMap.get(refSetMember.getRefSetId()));
 					} 
 				
 					// get the number of descendants

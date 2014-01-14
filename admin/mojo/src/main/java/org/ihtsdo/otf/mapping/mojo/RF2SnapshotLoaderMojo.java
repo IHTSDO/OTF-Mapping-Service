@@ -1560,7 +1560,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				attributeValueRefSetMember
 						.setActive(fields[2].equals("1") ? true : false);
 				attributeValueRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				attributeValueRefSetMember.setRefSetId(Long.valueOf(fields[4]));
+				attributeValueRefSetMember.setRefSetId(fields[4]);
 
 				// AttributeValueRefSetMember unique attributes
 				attributeValueRefSetMember.setValueId(Long.valueOf(fields[6]));
@@ -1606,7 +1606,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				simpleRefSetMember.setActive(fields[2].equals("1") ? true
 						: false);
 				simpleRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				simpleRefSetMember.setRefSetId(Long.valueOf(fields[4]));
+				simpleRefSetMember.setRefSetId(fields[4]);
 
 				// SimpleRefSetMember unique attributes
 				// NONE
@@ -1651,7 +1651,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				simpleMapRefSetMember.setActive(fields[2].equals("1") ? true
 						: false);
 				simpleMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				simpleMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));
+				simpleMapRefSetMember.setRefSetId(fields[4]);
 
 				// SimpleMap unique attributes
 				simpleMapRefSetMember.setMapTarget(fields[6]);
@@ -1695,7 +1695,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setActive(fields[2].equals("1") ? true
 						: false);
 				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				complexMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));
+				complexMapRefSetMember.setRefSetId(fields[4]);
 				// conceptId
 
 				// ComplexMap unique attributes
@@ -1758,7 +1758,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setActive(fields[2].equals("1") ? true
 						: false);
 				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				complexMapRefSetMember.setRefSetId(Long.valueOf(fields[4]));
+				complexMapRefSetMember.setRefSetId(fields[4]);
 				// conceptId
 
 				// ComplexMap unique attributes
@@ -1816,7 +1816,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				languageRefSetMember.setActive(fields[2].equals("1") ? true
 						: false);
 				languageRefSetMember.setModuleId(Long.valueOf(fields[3]));
-				languageRefSetMember.setRefSetId(Long.valueOf(fields[4]));
+				languageRefSetMember.setRefSetId(fields[4]);
 
 				// Language unique attributes
 				languageRefSetMember
