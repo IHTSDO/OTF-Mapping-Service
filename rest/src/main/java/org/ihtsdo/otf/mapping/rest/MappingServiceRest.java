@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -11,14 +12,17 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.MapLeadList;
+import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectList;
 import org.ihtsdo.otf.mapping.jpa.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
@@ -26,6 +30,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptList;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
+import com.sun.jersey.core.impl.provider.entity.ByteArrayProvider;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -364,6 +369,25 @@ public class MappingServiceRest {
 		}
 	}
 	
+	@GET
+	@Path("record/projectId/{id:[0-9][0-9]*}/nRecords")
+	@ApiOperation(value = "Find the number of records for a project id", notes = "Returns the number of map records for a project id", response = Integer.class)
+	@Produces({ MediaType.TEXT_PLAIN})
+	public String getMapRecordCountForMapProjectId(
+			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long mapProjectId) {
+			
+			
+			try {
+				MappingService mappingService = new MappingServiceJpa();
+				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId);
+				mappingService.close();
+				
+				// Jersey can't handle Long as return type, convert to string
+				return nRecords.toString();
+			} catch (Exception e) {
+				throw new WebApplicationException(e);
+			}
+	}
 	/**
 	 * Returns the records for a given concept id
 	 * 
@@ -382,6 +406,39 @@ public class MappingServiceRest {
 			MapRecordList mapRecords = new MapRecordList();
 			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId));
 			mappingService.close();
+			return mapRecords;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Returns a set of map records for a project based on PFS settings
+	 * 
+	 * @param projectId the projectId
+	 * @return the mapRecords
+	 */
+	@GET
+	@Path("/record/projectId/{id:[0-9][0-9]*}/{nStart:[0-9][0-9]*}-{nMaxResults:[0-9][0-9]*}")
+	@ApiOperation(value = "Find records by project id", notes = "Returns MapRecords given a project id in either JSON or XML format", response = MapRecord.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecordsForMapProjectId(
+			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long projectId,
+			@ApiParam(value = "Start index of records", required = true) @PathParam("nStart") int nStart,
+			@ApiParam(value = "End index of records", required = true) @PathParam("nMaxResults") int nMaxResults) {
+		
+		try {
+			// instantiate the pfs parameters
+			PfsParameter pfs = new PfsParameterJpa();
+			pfs.setStartIndex(nStart);
+			pfs.setMaxResults(nMaxResults);
+			
+			// execute the service call
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecordList mapRecords = new MapRecordList();
+			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId, pfs));
+			mappingService.close();
+			
 			return mapRecords;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
@@ -524,6 +581,7 @@ public class MappingServiceRest {
 	 * @return Response the response
 	 */
 	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Update a project", notes = "Updates a map project", response = MapProject.class)
 	public Response updateMapProject(@ApiParam(value = "Id of map project to update", required = true) @PathParam("id") Long mapProjectId,
@@ -547,6 +605,7 @@ public class MappingServiceRest {
 	 * @return Response the response
 	 */
 	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/lead/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Update a lead", notes = "Updates a map lead", response = MapLead.class)
 	public Response updateMapLead(@ApiParam(value = "Id of map lead to update", required = true) @PathParam("id") Long mapLeadId,
@@ -572,8 +631,11 @@ public class MappingServiceRest {
 	@Path("/specialist/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Update a specialist", notes = "Updates a map specialist", response = MapSpecialist.class)
 	public Response updateMapSpecialist(@ApiParam(value = "Id of map specialist to update", required = true) @PathParam("id") Long mapSpecialistId,
-							  @ApiParam(value = "The map specialist to update", required = true) MapSpecialist mapSpecialist) { 
+							  @ApiParam(value = "The map specialist to update", required = true) ByteArrayProvider element) { 
 
+		System.out.println(element.toString());
+		
+		/*MapSpecialist mapSpecialist = new MapSpecialistJpa();
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapSpecialist(mapSpecialist);
@@ -581,8 +643,8 @@ public class MappingServiceRest {
 			return null;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
-		}
-		
+		}*/
+		return null;
 	}
 	
 	/**
@@ -728,6 +790,55 @@ public class MappingServiceRest {
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
+	}
+	
+	
+
+	@GET
+	@Path("/principle/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find principle by id", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrinciple.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapPrinciple getMapPrincipledForId(
+			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId) {
+		
+		System.out.println("FIRST HI THERE!");
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapPrinciple mapPrinciple = mappingService.getMapPrinciple(mapPrincipleId);
+			mappingService.close();
+			return mapPrinciple;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * @param <MapPrincipleJpa>
+	 * @param mapPrincipleId
+	 * @param mapPrinciple
+	 * @return the response
+	 */
+	@POST
+	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
+	@Path("/principle/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find principle by id", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrincipleJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public Response updatetMapPrincipledForId(
+			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId,
+			@ApiParam(value = "Map Principle to update", required = true) MapPrincipleJpa mapPrinciple) {
+		
+		System.out.println("FIRST HI THERE!");
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.updateMapPrinciple(mapPrinciple);
+			mappingService.close();
+			
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+		return null;
 	}
 	
 	

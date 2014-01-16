@@ -5,7 +5,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
@@ -60,8 +63,15 @@ public class MapSpecialistJpa implements MapSpecialist {
 	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#getId()
 	 */
 	@Override
+	@XmlTransient
 	public Long getId() {
 		return id;
+	}
+	
+	@XmlID
+	@XmlElement
+	public String getObjectId() {
+		return id.toString();
 	}
 
 	/* (non-Javadoc)

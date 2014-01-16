@@ -33,13 +33,16 @@ public class MapPrincipleJpa implements MapPrinciple {
 	@GeneratedValue
 	private Long id;
 	
+	@Column(nullable = true, length = 255)
+	private String principleId;
+
 	@Column(nullable = false, length = 255)
 	private String name;
 	
 	@Column(nullable = true, length = 4000)
 	private String detail;
 	
-	@Column(nullable = true, length = 255)
+	@Column(nullable = true, length = 4000)
 	private String sectionRef;
 	
 	/** Default constructor */
@@ -51,7 +54,6 @@ public class MapPrincipleJpa implements MapPrinciple {
 	 * Return the id
 	 * @return the id
 	 */
-	@XmlTransient
 	@Override
 	public Long getId() {
 		return this.id;
@@ -61,8 +63,7 @@ public class MapPrincipleJpa implements MapPrinciple {
 	 * Returns the id in string form
 	 * @return the id in string form
 	 */
-	@XmlID
-	@XmlElement
+	@XmlTransient
 	public String getObjectId() {
 		return id.toString();
 	}
@@ -74,6 +75,17 @@ public class MapPrincipleJpa implements MapPrinciple {
 	@Override
 	public void setId(Long id) {
 		this.id = id;		
+	}
+	
+
+	@Override
+	public String getPrincipleId() {
+		return this.principleId;
+	}
+
+	@Override
+	public void setPrincipleId(String principleId) {
+		this.principleId = principleId;		
 	}
 
 	/**

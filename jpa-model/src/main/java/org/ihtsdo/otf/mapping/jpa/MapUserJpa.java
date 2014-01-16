@@ -20,8 +20,11 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 @Table(name = "map_users")
 @Audited
 @XmlRootElement(name="mapUser")
-public abstract class MapUserJpa implements MapUser {
+public class MapUserJpa implements MapUser {
 
+	
+	
+	
 	/** The id. */
 	@Id
 	@GeneratedValue
@@ -38,6 +41,9 @@ public abstract class MapUserJpa implements MapUser {
 	/** The email. */
 	@Column(nullable = false)
 	private String email;
+	
+	/** The default constructor */
+	public MapUserJpa() { }
 	
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapUser#getId()
