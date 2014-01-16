@@ -113,7 +113,7 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 		Map<Long, String> cmIdNameMap = getComplexMapRefSets(terminology, version);
 		if (cmIdNameMap != null) {
-			idNameMapList.put("caseSignificances", cmIdNameMap);
+			idNameMapList.put("complexMapRefSets", cmIdNameMap);
 		}
 		Map<Long, String> dsIdNameMap = getDefinitionStatuses(terminology, version);
 		if (dsIdNameMap != null) {
@@ -423,19 +423,19 @@ public class MetadataServiceJpa implements MetadataService {
 	@Override
 	public Map<String, String> getTerminologyLatestVersions() {
 		
-		javax.persistence.Query query =
+		javax.persistence.TypedQuery<Object[]> query =
 				manager
-						.createQuery("SELECT c.terminology, max(c.terminologyVersion) from ConceptJpa c group by c.terminology");
+						.createQuery("SELECT c.terminology, max(c.terminologyVersion) from ConceptJpa c group by c.terminology", Object[].class);
 
 		try {
 
-			List<String> versions = query.getResultList();		
+			List<Object[]> resultList = query.getResultList();
+			Map<String, String> resultMap = new HashMap<String, String>(resultList.size());
+			for (Object[] result : resultList)
+			  resultMap.put((String)result[0], (String)result[1]);	
 			if (manager.isOpen()) { manager.close(); }	
-			Map<String, String> map = new HashMap<String, String>();
-			for (String entry : versions) {
-				map.put(entry, entry);
-			}
-			return map;			
+			
+			return resultMap;			
 
 		} catch (NoResultException e) {
 			// log result and return null
