@@ -26,6 +26,7 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
@@ -126,9 +127,6 @@ public class ContentServiceJpa implements ContentService {
 
 			Concept c = (Concept) query.getSingleResult();
 
-			System.out.println("Returning cid... "
-					+ ((c != null) ? c.getTerminologyId().toString() : "null"));
-		
 			return c;
 
 		} catch (NoResultException e) {
@@ -183,7 +181,13 @@ public class ContentServiceJpa implements ContentService {
 			System.out.println("Found " + Integer.toString(concepts.size()) + " concepts for query");
 			
 			for (Concept c : concepts) {
-				results.addSearchResult(new SearchResultJpa(c.getId(), c.getTerminologyId(), c.getDefaultPreferredName()));
+				SearchResult sr = new SearchResultJpa();
+				sr.setId(c.getId());
+				sr.setTerminologyId(c.getTerminologyId());
+				sr.setTerminology(c.getTerminology());
+				sr.setTerminologyVersion(c.getTerminologyVersion());
+				sr.setValue(c.getDefaultPreferredName());
+				results.addSearchResult(sr);
 			}
 			
 			results.sortSearchResultsById();

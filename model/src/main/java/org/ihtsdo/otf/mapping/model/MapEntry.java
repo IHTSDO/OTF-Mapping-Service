@@ -54,14 +54,28 @@ public interface MapEntry {
 	 *
 	 * @return the target
 	 */
-	public String getTarget();
+	public String getTargetId();
 	
 	/**
 	 * Sets the target.
 	 *
-	 * @param target the target
+	 * @param targetId the target terminology Id
 	 */
-	public void setTarget(String target);
+	public void setTargetId(String targetId);
+	
+	/**
+	 * Returns the target name.
+	 *
+	 * @return the target name
+	 */
+	public String getTargetName();
+	
+	/**
+	 * Sets the target name.
+	 *
+	 * @param targetName the target name
+	 */
+	public void setTargetName(String targetName);
 	
 	/**
 	 * Returns the advices.

@@ -53,6 +53,12 @@ public class MapRecordJpa implements MapRecord {
 
 	@Column(nullable = false)
 	private String conceptId;
+	
+	@Column(nullable = false)
+	private String conceptName;
+	
+	@Column(nullable = false)
+	private Long countDescendantConcepts;
 
 	/** The map records */
 	@OneToMany(mappedBy = "mapRecord", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH},  fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapEntryJpa.class)
@@ -126,6 +132,27 @@ public class MapRecordJpa implements MapRecord {
 	@Override
 	public void setConceptId(String conceptId) {
 		this.conceptId = conceptId;
+	}
+	
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+	public String getConceptName() {
+		return this.conceptName;
+	}
+
+	@Override
+	public void setConceptName(String conceptName) {
+		this.conceptName = conceptName;			
+	}
+
+	@Override
+	public Long getCountDescendantConcepts() {
+		return countDescendantConcepts;
+	}
+
+	@Override
+	public void setCountDescendantConcepts(Long countDescendantConcepts) {
+		this.countDescendantConcepts = countDescendantConcepts;
 	}
 
 	@Override

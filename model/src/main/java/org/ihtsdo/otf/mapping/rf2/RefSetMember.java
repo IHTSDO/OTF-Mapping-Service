@@ -17,13 +17,13 @@ public interface RefSetMember extends Component {
 	 * returns the refSetId
 	 * @return the id
 	 */
-	public Long getRefSetId();
+	public String getRefSetId();
 	
 	/** sets the refSetId
 	 * 
 	 * @param refSetId the reference set id
 	 */
-	public void setRefSetId(Long refSetId);
+	public void setRefSetId(String refSetId);
 	
 	/**
 	 *  returns the referencedComponentId

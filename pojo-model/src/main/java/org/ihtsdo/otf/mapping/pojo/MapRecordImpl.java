@@ -23,6 +23,12 @@ public class MapRecordImpl implements MapRecord {
 
 	/** The concept id. */
 	private String conceptId;
+	
+	/** The concept name. */
+	private String conceptName;
+	
+	/** The number of descendant concepts for the concept id */
+	private Long countDescendantConcepts;
 
 	/** The notes. */
 	private Set<MapNote> mapNotes;
@@ -53,7 +59,6 @@ public class MapRecordImpl implements MapRecord {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapProjectId()
@@ -87,7 +92,26 @@ public class MapRecordImpl implements MapRecord {
 		this.conceptId = conceptId;
 	}
 
-	
+	@Override
+	public String getConceptName() {
+		return this.conceptName;
+	}
+
+	@Override
+	public void setConceptName(String conceptName) {
+		this.conceptName = conceptName;
+		
+	}
+
+	@Override
+	public Long getCountDescendantConcepts() {
+		return countDescendantConcepts;
+	}
+
+	@Override
+	public void setCountDescendantConcepts(Long countDescendantConcepts) {
+		this.countDescendantConcepts = countDescendantConcepts;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getNotes()
