@@ -242,7 +242,7 @@ mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routePara
         $scope.projectResults = data;
         $scope.searchProjectsStatus= $scope.projectResults.count + " results found:";
       }).error(function(error) {
-    	$scope.searchProjectsStatus = "Could not retrieve projects." 
+    	$scope.searchProjectsStatus = "Could not retrieve projects.";
       });
 	};
 	
@@ -377,42 +377,16 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 //////////////////////////////	
 
 mapProjectAppControllers.controller('MetadataCtrl', 
-		['$scope', '$http',
+		['$scope', '$http', '$rootScope',
                                                              
-		function ($scope, $http) {
+		function ($scope, $http, $rootScope) {
 			
-			$scope.errorMetadata = "";
-			
+			$scope.errorMetadata = $rootScope.errorMetadata;
+			$scope.keyValuePairLists = $rootScope.keyValuePairLists;
+			$scope.termVersionPairs = $rootScope.termVersionPairs;
+			$scope.latestTerminologiesStatus = $rootScope.latestTerminologiesStatus;
 			// retrieve any concept associated with this project
-	    	 $http({
-	    		  url: root_metadata + "all/SNOMEDCT/20130131",
-	    		  dataType: "json",
-	    		  method: "GET",
-	    		  headers: {
-	    			  "Content-Type": "application/json"
-	    		  }
-	    	  }).success(function(data) {
-	    		  $scope.idNameMaps = data.idNameMap;
-	    	  }).error(function(error) {
-	    		  $scope.errorMetadata = "Error retrieving all metadata";
-	    	  
-		}).then(function(data) {
-	  		 
-	    	  // retrieve any map records associated with this project
-	    	  $http({
-	    		  url: root_metadata + "all/terminologies/",
-	    		  dataType: "json",
-	    		  method: "GET",
-	    		  headers: {
-	    			  "Content-Type": "application/json"
-	    		  }
-	    	  }).success(function(data) {
-	    	        $scope.terminologyResults = data;
-	    	        $scope.searchTerminologyStatus= $scope.terminologyResults.count + " results found:";
-	    	  }).error(function(error) {
-	    		  $scope.searchTerminologyStatus = "Error retrieving metadata terminologies";
-	    	  });
-	      });
+	    	
 		}]);
 
 mapProjectAppControllers.controller('XmlTestCtrl', 
