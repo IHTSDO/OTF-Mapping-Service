@@ -121,7 +121,7 @@ public class MapRecordJpaTest {
 
 		MapProject mapProject = new MapProjectJpa();
 		mapProject.setName("SNOMED to ICD10");
-		mapProject.setRefSetId(new Long("447562003"));
+		mapProject.setRefSetId("447562003");
 		mapProject.setSourceTerminology("SNOMEDCT");
 		mapProject.setSourceTerminologyVersion("20140131");
 		mapProject.setDestinationTerminology("ICD10");
@@ -181,7 +181,7 @@ public class MapRecordJpaTest {
 		manager.persist(mapRecord1);
 		
 		MapEntry mapEntry = new MapEntryJpa();
-		mapEntry.setTarget("Z53.2");
+		mapEntry.setTargetId("Z53.2");
 		mapEntry.setMapRecord(mapRecord1);
 		mapEntry.setRelationId("447561005");
 		mapEntry.setRule("RULE");

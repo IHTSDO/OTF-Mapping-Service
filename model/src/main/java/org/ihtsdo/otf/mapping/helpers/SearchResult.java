@@ -26,7 +26,27 @@ public interface SearchResult {
 	 * @param terminologyId the terminologyId to set
 	 */
 	public void setTerminologyId(String terminologyId);
+	
+	/**
+	 * @return the terminology
+	 */
+	public String getTerminology();
 
+	/**
+	 * @param terminology the terminology to set
+	 */
+	public void setTerminology(String terminology);
+
+	/**
+	 * @return the terminologyVersion
+	 */
+	public String getTerminologyVersion();
+
+	/**
+	 * @param terminologyVersion the terminologyVersion to set
+	 */
+	public void setTerminologyVersion(String terminologyVersion);
+	
 	/**
 	 * @return the value
 	 */

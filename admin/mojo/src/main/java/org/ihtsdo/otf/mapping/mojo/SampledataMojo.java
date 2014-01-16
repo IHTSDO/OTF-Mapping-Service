@@ -19,6 +19,7 @@ import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
@@ -26,8 +27,8 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
-//import org.ihtsdo.otf.mapping.jpa.MapBlockJpa; TODO: Removed these elements, update/rethink/etc.
-//import org.ihtsdo.otf.mapping.jpa.MapGroupJpa;
+import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
  * Goal which updates the db to sync it with the model via JPA.
@@ -294,10 +295,10 @@ public class SampledataMojo extends AbstractMojo {
 			tx.commit();
 
 			// Add map projects
-			Map<Long, Long> refSetIdToMapProjectIdMap = new HashMap<Long, Long>();
+			Map<String, Long> refSetIdToMapProjectIdMap = new HashMap<String, Long>();
 			MapProject mapProject = new MapProjectJpa();
 			mapProject.setName("SNOMED to ICD10");
-			mapProject.setRefSetId(new Long("447562003"));
+			mapProject.setRefSetId("447562003");
 			mapProject.setSourceTerminology("SNOMEDCT");
 			mapProject.setSourceTerminologyVersion("20140131");
 			mapProject.setDestinationTerminology("ICD10");
@@ -320,7 +321,7 @@ public class SampledataMojo extends AbstractMojo {
 
 			mapProject = new MapProjectJpa();
 			mapProject.setName("SNOMED to ICD9CM");
-			mapProject.setRefSetId(new Long("5781347179"));
+			mapProject.setRefSetId("5781347179");
 			mapProject.setSourceTerminology("SNOMEDCT");
 			mapProject.setSourceTerminologyVersion("20140131");
 			mapProject.setDestinationTerminology("ICD9CM");
@@ -342,7 +343,7 @@ public class SampledataMojo extends AbstractMojo {
 
 			mapProject = new MapProjectJpa();
 			mapProject.setName("SNOMED to ICPC - Family Practice/GPF Refset");
-			mapProject.setRefSetId(new Long("5235669"));
+			mapProject.setRefSetId("5235669");
 			mapProject.setSourceTerminology("SNOMEDCT");
 			mapProject.setSourceTerminologyVersion("20130731");
 			mapProject.setDestinationTerminology("ICPC");
@@ -361,21 +362,29 @@ public class SampledataMojo extends AbstractMojo {
 			projects.add(mapProject);
 
 			// Set to assign map records to a project
-			Map<Long, Long> projectRefSetIdMap = new HashMap<Long, Long>();
+			Map<String, Long> projectRefSetIdMap = new HashMap<String, Long>();
 			
 			tx.begin();
+			javax.persistence.Query query; 
 			for (MapProject m : projects) {
-				
-				
-				
 				
 				Logger.getLogger(this.getClass()).info(
 						"Adding map project " + m.getName());
+				
+				// get the refset id name
+				query = manager.createQuery("select r from ConceptJpa r where r.terminologyId = " + m.getRefSetId() );
+				
+				try {
+					m.setRefSetName( ((Concept) query.getSingleResult()).getDefaultPreferredName());
+				} catch (Exception e) {
+					getLog().info("No concept in database for this project");
+					m.setRefSetName("Concept not in database");
+				}
 				manager.merge(m);
 			}
 			tx.commit();
 			
-			javax.persistence.Query  query = manager.createQuery("select r from MapProjectJpa r");
+			query = manager.createQuery("select r from MapProjectJpa r");
 			
 			projects = query.getResultList();			
 			
@@ -397,6 +406,9 @@ public class SampledataMojo extends AbstractMojo {
 			getLog().debug("    complex refset member size "
 					+ query.getResultList().size());
 			
+			// instantiate MappingService for getting descendant concepts
+			ContentService contentService = new ContentServiceJpa();
+			
 			// Added to speed up process
 			tx.begin();
 			int i = 0;// for progress tracking
@@ -413,25 +425,35 @@ public class SampledataMojo extends AbstractMojo {
 				  continue; 
 				}
 				
+				// retrieve the concept
+				Concept concept = refSetMember.getConcept();
+				
 				// if no concept for this ref set member, skip
-				if (refSetMember.getConcept() == null)
+				if (concept == null)
 					continue;
 				
 				// if different concept than previous ref set member, create new mapRecord
-				if (!refSetMember.getConcept().getTerminologyId()
+				if (!concept.getTerminologyId()
 						.equals(new Long(prevConceptId).toString())) {
 					
 					mapRecord = new MapRecordJpa();
-					mapRecord.setConceptId(refSetMember.getConcept().getTerminologyId());
+					mapRecord.setConceptId(concept.getTerminologyId());
+					mapRecord.setConceptName(concept.getDefaultPreferredName());
+				
 					
 					// if this refSet terminology id in project map, set the project id
 					if (projectRefSetIdMap.containsKey(refSetMember.getRefSetId())) {
 						mapRecord.setMapProjectId(projectRefSetIdMap.get(refSetMember.getRefSetId()));
-						getLog().info("Adding map record to project " + projectRefSetIdMap.get(refSetMember.getRefSetId()).toString());
-					} else {
-						getLog().info("No map project for this record");
-					}
+					} 
 				
+					// get the number of descendants
+					mapRecord.setCountDescendantConcepts( new Long(
+							contentService.getDescendants(
+								concept.getTerminologyId(),
+								concept.getTerminology(),
+								concept.getTerminologyVersion(),
+								new Long("116680003")).size()));
+			
 					// set the previous concept to this concept
 					prevConceptId = new Long(refSetMember.getConcept().getTerminologyId());
 					
@@ -441,7 +463,8 @@ public class SampledataMojo extends AbstractMojo {
 
 				// add map entry to record
 				MapEntry mapEntry = new MapEntryJpa();
-				mapEntry.setTarget(refSetMember.getMapTarget());
+				mapEntry.setTargetId(refSetMember.getMapTarget());
+				mapEntry.setTargetName(null); // TODO: Change this once we have other terminologies loaded
 				mapEntry.setMapRecord(mapRecord);
 				mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
 				mapEntry.setRule(refSetMember.getMapRule());
@@ -457,7 +480,7 @@ public class SampledataMojo extends AbstractMojo {
 				
 				manager.merge(mapRecord);
 				
-				if (++i % 1000 == 0) {System.out.println(Integer.toString(i) + " map records processed");}
+				if (++i % 1000 == 0) {getLog().info(Integer.toString(i) + " map records processed");}
 
 			}
 			

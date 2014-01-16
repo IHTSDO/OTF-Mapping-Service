@@ -9,14 +9,14 @@ public abstract class AbstractRefSetMember extends AbstractComponent implements
 		RefSetMember {
 	
 	/** The ref set id */
-	Long refSetId;
+	String refSetId;
 
 	/**
 	 * Returns the ref set id
 	 * @return the ref set id
 	 */
 	@Override
-	public Long getRefSetId() {
+	public String getRefSetId() {
 		return this.refSetId;
 	}
 
@@ -24,7 +24,7 @@ public abstract class AbstractRefSetMember extends AbstractComponent implements
 	 * @param refSetId the ref set id
 	 */
 	@Override
-	public void setRefSetId(Long refSetId) {
+	public void setRefSetId(String refSetId) {
 		this.refSetId = refSetId;
 
 	}

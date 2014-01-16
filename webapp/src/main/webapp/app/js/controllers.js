@@ -173,7 +173,7 @@ mapProjectAppControllers.controller('ConceptDetailCtrl', ['$scope', '$http', '$r
       $scope.statusnote = "This process has not been optimized, and may be particularly slow on the EC2 server (mapping.snomedtools.org).";
   	  $scope.conceptId = $routeParams.conceptId;
   	  $http({
-          url: "${base.url}/mapping-rest/content/concept/id/" + $scope.conceptId,
+          url: root_content + "concept/" + $routeParams.terminology + "/" + $routeParams.version + "/id/" +  $routeParams.conceptId,
           dataType: "json",
           method: "GET",
           headers: {
@@ -187,7 +187,29 @@ mapProjectAppControllers.controller('ConceptDetailCtrl', ['$scope', '$http', '$r
         	$scope.status = "Load error!";
             $scope.statusnote = "";
         	console.print("Error in conceptdetailctrol");
-      });
+        	
+        // check for unmapped descendants
+        }).then(function(data) {
+        	
+        	$http({
+                url: "${base.url}/mapping-rest/mapping/concept/" + $routeParams.terminology + "/" + $routeParams.version + "/id/" +  $routeParams.conceptId + "/threshold/11",
+                dataType: "json",
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json"
+                }
+              }).success(function(data) {
+            	  $scope.unmappedDescendants = data.concept;     	  
+              }).error(function(error) {
+            	  console.print("Error in unmapped descendants");
+              });
+        	
+        });
+  	  
+  	  $scope.hasUnmappedDescendants = function(id) {
+  		  
+  	  };
+  	    
 
   }]);
 
@@ -393,6 +415,24 @@ mapProjectAppControllers.controller('XmlTestCtrl',
 		  function ($scope, $http) {
 		      $http({
 		        url: root_mapping + "mapXmlTest",
+		        dataType: "json",
+		        method: "GET",
+		        headers: {
+		          "Content-Type": "application/json"
+		        }
+		      }).success(function(data) {
+		    	  $scope.map = data.map;
+		      }).error(function(error) {
+		    	  $scope.error = "Error";
+		      });
+		 
+		   /* $scope.orderProp = 'id';	*/
+		  });
+
+mapProjectAppControllers.controller('NestedXmlTestCtrl', 
+		  function ($scope, $http) {
+		      $http({
+		        url: root_mapping + "nestedMapXmlTest",
 		        dataType: "json",
 		        method: "GET",
 		        headers: {

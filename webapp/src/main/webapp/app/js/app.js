@@ -95,7 +95,13 @@ mapProjectApp.config(['$routeProvider',
 		  controller: 'ConceptListCtrl'
 	  });
 	  
-	  $routeProvider.when('/concept/id/:conceptId', {
+	  // Removed in favor of terminology/version path
+	 /* $routeProvider.when('/concept/id/:conceptId', {
+  		  templateUrl: 'partials/concept-detail.html', 
+  		  controller: 'ConceptDetailCtrl'
+  	  });*/
+	  
+	  $routeProvider.when('/concept/:terminology/:version/id/:conceptId', {
   		  templateUrl: 'partials/concept-detail.html', 
   		  controller: 'ConceptDetailCtrl'
   	  });
@@ -130,5 +136,10 @@ mapProjectApp.config(['$routeProvider',
 	  $routeProvider.when('/xmltest', {
 		  	templateUrl: 'partials/xmltest-partial.html', 
 			controller: 'XmlTestCtrl'
+	  });	
+	  
+	  $routeProvider.when('/nestedxmltest', {
+		  	templateUrl: 'partials/xmltest-partial.html', 
+			controller: 'NestedXmlTestCtrl'
 	  });	
    }]);
