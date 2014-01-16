@@ -20,6 +20,18 @@ public interface MapPrinciple {
 	public void setId(Long id);
 	
 	/**
+	 * Returns the terminology-specified principleId
+	 * @return the principleId
+	 */
+	public String getPrincipleId();
+	
+	/**
+	 * Sets the terminology-specified principleId
+	 * @param principleId the principleId
+	 */
+	public void setPrincipleId(String principleId);
+	
+	/**
 	 * Returns the detail
 	 * @return the detail
 	 */

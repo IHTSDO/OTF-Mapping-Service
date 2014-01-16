@@ -66,7 +66,7 @@ public class MapRecordJpa implements MapRecord {
 	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
 	
 	/** The map notes */	
-	@ManyToMany(targetEntity=MapNoteJpa.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapNoteJpa.class)
 	@IndexedEmbedded(targetElement=MapNoteJpa.class)
 	private Set<MapNote> mapNotes = new HashSet<MapNote>();
 	
