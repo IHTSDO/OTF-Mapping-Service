@@ -55,9 +55,9 @@ mapProjectApp.config(['$routeProvider',
   		  controller: 'MapRecordDetailCtrl'
   	  });
 	  
-	  $routeProvider.when('/principle/id/:principleId', {
-			templateUrl: 'partials/principle-detail.html',
-			controller: 'MapPrincipleDetailCtrl'
+	  $routeProvider.when('/edit-demo', {
+			templateUrl: 'partials/edit-demo.html',
+			controller: 'EditDemoCtrl'
 		});
 		
 	  
