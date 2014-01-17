@@ -1840,8 +1840,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 								dpnRefSetId)
 						&& languageRefSetMember.getAcceptabilityId().equals(
 								dpnAcceptabilityId)) {
-					
-					getLog().info("--> MATCH");
 
 					concept = description.getConcept();
 
@@ -1854,7 +1852,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					}
 
 					concept.setDefaultPreferredName(description.getTerm());
-					getLog().info("--> Setting " + concept.getTerminologyId() + " to " + concept.getDefaultPreferredName());
+		
 					manager.persist(concept);
 				}
 
