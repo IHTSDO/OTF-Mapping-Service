@@ -163,7 +163,7 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl', ['$scope', '$http', '
 
  }]);
 
-mapProjectAppControllers.controller('MapPrincipleDetailCtrl', 
+mapProjectAppControllers.controller('EditDemoCtrl', 
 		['$scope', '$http', '$routeParams',
 		 
    function ($scope, $http, $routeParams) {
@@ -186,7 +186,7 @@ mapProjectAppControllers.controller('MapPrincipleDetailCtrl',
  	  
 		$scope.save = function() {
 			$http({
-				url: root_mapping + "principle/id/" + $routeParams.currentPrinciple,
+				url: root_mapping + "principle/id/" + $scope.currentPrinciple,
 				dataType: "json",
 				method: "POST",
 				data: $scope.principle,

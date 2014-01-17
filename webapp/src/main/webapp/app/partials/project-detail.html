@@ -43,9 +43,9 @@
 <thead>
 	<tr>
 		<th>Concept</th>
-		<th>Concept Name</th>
+		<!-- <th>Concept Name</th> -->
 		<th>Target</th>
-		<th>Target Name</th>
+		<!-- <th>Target Name</th> -->
 		<th>Rule</th>
 		<th>Index</th>
 		<th>RelationId</th>
@@ -69,9 +69,9 @@
 
 	<tr ng-repeat = "entry in record.mapEntry" >
 		<td>{{record.conceptId}}</td>
-		<td>{{record.conceptName}}</td>
+		<!-- <td>{{record.conceptName}}</td> -->
 		<td>{{entry.targetId}}</td>
-		<td>{{entry.targetName}}</td>
+		<!-- <td>{{entry.targetName}}</td> -->
 		<td>{{entry.rule}}</td>
 		<td>{{entry.indexMapPriority}}</td>
 		<td>{{entry.relationId}}</td>
@@ -107,6 +107,7 @@ Dipslaying {{recordsPerPage}} map records per page.
 <ul>
 <li ng-repeat="description in concept.description">
 <p>Id: {{description.terminologyId}}
+<p>Term: {{description.term}}
 <p>Terminology: {{description.terminology}}, v. {{description.terminologyVersion}}</p>
 <p>Active: {{description.active}}</p>
 <p>Case Significance Id: {{description.caseSignificanceId}}
