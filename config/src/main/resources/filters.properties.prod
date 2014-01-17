@@ -15,6 +15,15 @@ mysql.test.pwd=otfpwd
 loader.main.input.data=/mnt/projects/data/RF2Release
 
 #
+# Path to icpc data
+#   this must be a file named icpc.xml
+#
+loader.icpc.input.data=C:\\data\\icpc.xml
+loader.icpc.terminology=ICPC
+loader.icpc.terminology.version=2013
+loader.icpc.effective.time=20130101
+
+#
 # Loader settings for preferred name
 #
 loader.defaultPreferredNames.typeId=900000000000013009
