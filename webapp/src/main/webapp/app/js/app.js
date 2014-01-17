@@ -7,6 +7,38 @@ var mapProjectApp = angular.module('mapProjectApp', [
                                                      'mapProjectAppControllers'
                                                    ]);
 
+mapProjectApp.run(['$http', '$rootScope', function($http, $rootScope) {
+	$http({
+		  url: root_metadata + "terminologies/latest/",
+		  dataType: "json",
+		  method: "GET",
+		  headers: {
+			  "Content-Type": "application/json"
+		  }
+	  }).success(function(response) {
+	      $rootScope.termVersionPairs = response;
+	  }).error(function(error) {
+		  $rootScope.latestTerminologiesStatus = "Error retrieving metadata terminologies";
+	  });
+
+	}]);
+
+mapProjectApp.run(['$http', '$rootScope', function($http, $rootScope) {
+	$http({
+		  url: root_metadata + "all/SNOMEDCT",
+		  dataType: "json",
+		  method: "GET",
+		  headers: {
+			  "Content-Type": "application/json"
+		  }
+	  }).success(function(response) {
+	      $rootScope.keyValuePairLists = response.keyValuePairList;
+	  }).error(function(error) {
+		  $rootScope.errorMetadata = "Error retrieving all metadata";
+	 });
+
+	}]);
+
 mapProjectApp.config(['$routeProvider',
    function($routeProvider) {
 	

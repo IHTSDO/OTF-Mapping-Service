@@ -9,11 +9,21 @@ mysql.test.user=root
 mysql.test.pwd=rootpwd
 
 #
-# Path to loader dta
+# Path to loader data
 #   this directory must have Refset/ and Terminology/ directories
 #
 loader.main.input.data=C:\\data\\usext-mini-data\\src\\main\\resources\\org\\ihtsdo
 # loader.main.input.data=C:\\data\\SnomedCT_Release_INT_20130731\\RF2Release\\Snapshot
+
+#
+# Path to icpc data
+#   this must be a file named icpc.xml
+#
+loader.icpc.input.data=C:\\data\\icpc.xml
+loader.icpc.terminology=ICPC
+loader.icpc.terminology.version=2013
+loader.icpc.effective.time=20130101
+
 
 #
 # Loader settings for preferred name

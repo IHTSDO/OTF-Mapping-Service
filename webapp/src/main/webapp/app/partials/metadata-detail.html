@@ -1,19 +1,30 @@
 <h3>Metadata</h3>
+{{errorMetadata}} {{data}}
+<accordion> <accordion-group
+  ng-repeat="keyValuePairList in keyValuePairLists | filter:query  | orderBy:keyValuePairList.name">
+<accordion-heading>
+<h3>{{keyValuePairList.name}}</h3>
+</accordion-heading>
 
-{{errorMetadata}}
-{{data}}
-<div ng-repeat="idNameMap in idNameMaps">
-	
-	<h4>{{idNameMap.name}}</h4>
-	
-	<table class="table table-bordered" cellpadding=5>
-	<tr><th>Id</th><th>Name</th></tr>
-    <tbody>
-	<tr ng-repeat="idNamePair in idNameMap.idNamePair">
-	<td>{{idNamePair.id}}</td><td>{{idNamePair.name}}</td>
-	</tr>
-    </tbody>
-	</table>
-    </br>
-
-</div>
+<p></p>
+<table class="table table-bordered" cellpadding=5>
+  <tr>
+    <th width="40%">Id</th>
+    <th width="60%">Name</th>
+  </tr>
+  <tbody>
+    <tr ng-repeat="keyValuePair in keyValuePairList.keyValuePair">
+      <td width="40%">{{keyValuePair.key}}</td>
+      <td width="60%">{{keyValuePair.value}}</td>
+    </tr>
+  </tbody>
+</table>
+<p></p>
+</accordion-group> </accordion>
+ 
+<p></p>
+All Terminology Version Results:
+<p>{{latestTerminologiesStatus}}</p>
+<ul>
+<li ng-repeat = "keyValuePair in termVersionPairs.keyValuePair"> {{keyValuePair.key}} {{keyValuePair.value}}</li>
+</ul> 
