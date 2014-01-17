@@ -1832,17 +1832,21 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						languageRefSetMember.getTerminologyVersion());
 				languageRefSetMember.setDescription(description);
 				manager.persist(languageRefSetMember);
-
+				
 				// check if this language refset and description form the
 				// defaultPreferredName
 				if (description.getTypeId().equals(dpnTypeId)
-						&& languageRefSetMember.getRefSetId().equals(
+						&& new Long(languageRefSetMember.getRefSetId()).equals(
 								dpnRefSetId)
 						&& languageRefSetMember.getAcceptabilityId().equals(
 								dpnAcceptabilityId)) {
+					
+					getLog().info("--> MATCH");
 
 					concept = description.getConcept();
 
+					
+					
 					if (!concept.getDefaultPreferredName().equals("null")) {
 						getLog().info(
 								"Multiple default preferred names for concept "
@@ -1850,6 +1854,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					}
 
 					concept.setDefaultPreferredName(description.getTerm());
+					getLog().info("--> Setting " + concept.getTerminologyId() + " to " + concept.getDefaultPreferredName());
 					manager.persist(concept);
 				}
 
