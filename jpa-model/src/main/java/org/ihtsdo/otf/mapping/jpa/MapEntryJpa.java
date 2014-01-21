@@ -388,15 +388,9 @@ public class MapEntryJpa implements MapEntry {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + indexMapPriority;
-		result =
-				prime * result + ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
-		result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
 		result = prime * result + ((mapRecord == null) ? 0 : mapRecord.hashCode());
 		result =
 				prime * result + ((relationId == null) ? 0 : relationId.hashCode());
-		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
 		result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());
 		return result;
 	}
@@ -413,23 +407,6 @@ public class MapEntryJpa implements MapEntry {
 		if (getClass() != obj.getClass())
 			return false;
 		MapEntryJpa other = (MapEntryJpa) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (indexMapPriority != other.indexMapPriority)
-			return false;
-		if (mapAdvices == null) {
-			if (other.mapAdvices != null)
-				return false;
-		} else if (!mapAdvices.equals(other.mapAdvices))
-			return false;
-		if (mapNotes == null) {
-			if (other.mapNotes != null)
-				return false;
-		} else if (!mapNotes.equals(other.mapNotes))
-			return false;
 		if (mapRecord == null) {
 			if (other.mapRecord != null)
 				return false;
@@ -439,11 +416,6 @@ public class MapEntryJpa implements MapEntry {
 			if (other.relationId != null)
 				return false;
 		} else if (!relationId.equals(other.relationId))
-			return false;
-		if (rule == null) {
-			if (other.rule != null)
-				return false;
-		} else if (!rule.equals(other.rule))
 			return false;
 		if (targetId == null) {
 			if (other.targetId != null)
