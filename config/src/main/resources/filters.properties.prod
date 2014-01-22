@@ -24,6 +24,24 @@ loader.icpc.terminology.version=2013
 loader.icpc.effective.time=20130101
 
 #
+# Path to icd9cm data
+#   this must be a file named icd9cm.xml
+#
+loader.icd9cm.input.data=C:\\data\\icd9cm.xml
+loader.icd9cm.terminology=icd9cm
+loader.icd9cm.terminology.version=2013
+loader.icd9cm.effective.time=20130101
+
+#
+# Path to icd10 data
+#   this must be a file named icd10.xml
+#
+loader.icd10.input.data=C:\\data\\icd10.xml
+loader.icd10.terminology=icd10
+loader.icd10.terminology.version=2013
+loader.icd10.effective.time=20130101
+
+#
 # Loader settings for preferred name
 #
 loader.defaultPreferredNames.typeId=900000000000013009
