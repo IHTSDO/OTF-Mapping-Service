@@ -132,11 +132,21 @@
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                 </configuration>
               </execution>
-              <execution>
+             <!-- <execution>
                 <id>load-icpc</id>
                 <phase>package</phase>
                 <goals>
                   <goal>load-icpc</goal>
+                </goals>
+                <configuration>
+                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+                </configuration>
+              </execution> --> 
+              <execution>
+                <id>load-icd10</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-icd10</goal>
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>

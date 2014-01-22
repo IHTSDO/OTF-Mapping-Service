@@ -52,4 +52,35 @@ public class SimpleMapRefSetMemberJpa extends AbstractConceptRefSetMember
 			
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((mapTarget == null) ? 0 : mapTarget.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SimpleMapRefSetMemberJpa other = (SimpleMapRefSetMemberJpa) obj;
+		if (mapTarget == null) {
+			if (other.mapTarget != null)
+				return false;
+		} else if (!mapTarget.equals(other.mapTarget))
+			return false;
+		return true;
+	}
+
 }
