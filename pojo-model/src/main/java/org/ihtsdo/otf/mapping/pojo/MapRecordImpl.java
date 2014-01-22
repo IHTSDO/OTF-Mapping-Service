@@ -3,6 +3,9 @@ package org.ihtsdo.otf.mapping.pojo;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlTransient;
+
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -39,25 +42,42 @@ public class MapRecordImpl implements MapRecord {
 	/** The map principles */
 	private Set<MapPrinciple> mapPrinciples;
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
 	@Override
+	@XmlTransient
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 	
+	/**
+	 * Set the id
+	 * @param id the id
+	 */
+	@Override
+	public void setId(Long id) {
+		this.id = id;		
+	}
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
 	@Override
 	public String getObjectId() {
 		return id.toString();
 	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setId(java.lang.Long)
+	
+	/**
+	 * Sets the object ID from XML String
+	 * @param objectId the object Id as string
 	 */
 	@Override
-	public void setId(Long id) {
-		this.id = id;
+	public void setObjectId(String objectId) {
+		this.id = new Long(objectId);
 	}
 
 	/* (non-Javadoc)
