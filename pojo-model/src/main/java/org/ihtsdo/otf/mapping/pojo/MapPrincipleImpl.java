@@ -15,6 +15,9 @@ public class MapPrincipleImpl implements MapPrinciple {
 	/** The id */
 	private Long id;
 	
+	/** The documented principle id */
+	private String principleId;
+	
 	/** The name */
 	private String name;
 	
@@ -36,6 +39,16 @@ public class MapPrincipleImpl implements MapPrinciple {
 	@Override
 	public Long getId() {
 		return this.id;
+	}
+	
+	@Override
+	public String getPrincipleId() {
+		return this.principleId;
+	}
+	
+	@Override
+	public void setPrincipleId(String principleId) {
+		this.principleId = principleId;
 	}
 	
 	/**

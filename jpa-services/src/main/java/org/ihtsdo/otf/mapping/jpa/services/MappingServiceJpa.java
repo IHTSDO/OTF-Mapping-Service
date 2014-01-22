@@ -112,16 +112,25 @@ public class MappingServiceJpa implements MappingService {
 	/**
 	 * Close the manager when done with this service
 	 */
+	@Override
 	public void close() throws Exception {
 		if (manager.isOpen()) { manager.close(); }
 	}
 	
+	/**
+	 * Returns the status of the manager
+	 * @return true if open, false if not
+	 */
 	public boolean isManagerOpen() {
 		return this.manager.isOpen();
 	}
 	
-	public boolean isFactoryOpen() {
-		return this.factory.isOpen();
+	/**
+	 * Returns the status of the factory
+	 * @return true if factory open, false if not
+	 */
+	public static boolean isFactoryOpen() {
+		return MappingServiceJpa.factory.isOpen();
 	}
 	////////////////////////////////////
 	// MapProject
@@ -139,6 +148,7 @@ public class MappingServiceJpa implements MappingService {
 	* @param id the auto-generated id
 	* @return the MapProject
 	*/
+	@Override
 	public MapProject getMapProject(Long id) {
 		
 		MapProject m = null;
@@ -160,6 +170,7 @@ public class MappingServiceJpa implements MappingService {
 	* Retrieve all map projects
 	* @return a List of MapProjects
 	*/
+	@Override
 	@SuppressWarnings("unchecked")
 	public List<MapProject> getMapProjects() {
 		
@@ -173,7 +184,7 @@ public class MappingServiceJpa implements MappingService {
 		
 		// Try query
 		try {
-			m = (List<MapProject>) query.getResultList();
+			m = query.getResultList();
 		} catch (Exception e) {
 			System.out.println("MappingServiceJpa.getMapProjects(): Could not retrieve map projects.");
 			e.printStackTrace();
@@ -190,6 +201,7 @@ public class MappingServiceJpa implements MappingService {
 	* @param query the query
 	* @return the list of MapProject
 	*/
+	@Override
 	@SuppressWarnings("unchecked")
 	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter) {
 
@@ -218,7 +230,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapProject> m = (List<MapProject>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapProjectJpa.class)
+			List<MapProject> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapProjectJpa.class)
 														.getResultList();	
 			
 			System.out.println(Integer.toString(m.size()) + " map projects retrieved");
@@ -243,6 +255,7 @@ public class MappingServiceJpa implements MappingService {
 	 * Add a map project
 	 * @param mapProject the map project
 	 */
+	@Override
 	public void addMapProject(MapProject mapProject) {
 		
 		
@@ -264,6 +277,7 @@ public class MappingServiceJpa implements MappingService {
 	 * Update a map project
 	 * @param mapProject the changed map project
 	 */
+	@Override
 	public void updateMapProject(MapProject mapProject) {
 		
 		
@@ -284,6 +298,7 @@ public class MappingServiceJpa implements MappingService {
 	 * Remove (delete) a map project
 	 * @param mapProjectId the map project to be removed
 	 */
+	@Override
 	public void removeMapProject(Long mapProjectId) {
 		
 		
@@ -322,6 +337,7 @@ public class MappingServiceJpa implements MappingService {
 	* Retrieve all map specialists
 	* @return a List of MapSpecialists
 	*/
+	@Override
 	@SuppressWarnings("unchecked")
 	public List<MapSpecialist> getMapSpecialists() {
 		
@@ -332,9 +348,9 @@ public class MappingServiceJpa implements MappingService {
 		
 		// Try query
 		try {
-			m = (List<MapSpecialist>) query.getResultList();
+			m = query.getResultList();
 		} catch (Exception e) {
-
+			// Do nothing
 		}
 		
 		
@@ -347,6 +363,7 @@ public class MappingServiceJpa implements MappingService {
 	* @param id the auto-generated id
 	* @return the MapSpecialist
 	*/
+	@Override
 	public MapSpecialist getMapSpecialist(Long id) {
 		
 		
@@ -371,6 +388,7 @@ public class MappingServiceJpa implements MappingService {
 	* @param mapSpecialist the map specialist
 	* @return a List of MapProjects
 	*/
+	@Override
 	public List<MapProject> getMapProjectsForMapSpecialist(MapSpecialist mapSpecialist) {
 		
 		List<MapProject> mp_list = getMapProjects();
@@ -396,6 +414,7 @@ public class MappingServiceJpa implements MappingService {
 	* @param query the query
 	* @return the List of MapProjects
 	*/
+	@Override
 	@SuppressWarnings("unchecked")
 	public SearchResultList findMapSpecialists(String query, PfsParameter pfsParameter) {
 
@@ -425,7 +444,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapSpecialist> m = (List<MapSpecialist>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapSpecialistJpa.class)
+			List<MapSpecialist> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapSpecialistJpa.class)
 														.getResultList();
 			
 			for (MapSpecialist ms : m) {
@@ -449,6 +468,7 @@ public class MappingServiceJpa implements MappingService {
 	 * Add a map specialist
 	 * @param mapSpecialist the map specialist
 	 */
+	@Override
 	public void addMapSpecialist(MapSpecialist mapSpecialist) {
 		
 		
@@ -471,6 +491,7 @@ public class MappingServiceJpa implements MappingService {
 	 * Update a map specialist
 	 * @param mapSpecialist the changed map specialist
 	 */
+	@Override
 	public void updateMapSpecialist(MapSpecialist mapSpecialist) {
 		
 		
@@ -491,6 +512,7 @@ public class MappingServiceJpa implements MappingService {
 	 * Remove (delete) a map specialist
 	 * @param mapSpecialistId the map specialist to be removed
 	 */
+	@Override
 	public void removeMapSpecialist(Long mapSpecialistId) {
 		
 		
@@ -539,6 +561,7 @@ public class MappingServiceJpa implements MappingService {
 	* Retrieve all map leads
 	* @return a List of MapLeads
 	*/
+	@Override
 	@SuppressWarnings("unchecked")
 	public List<MapLead> getMapLeads() {
 		
@@ -549,7 +572,7 @@ public class MappingServiceJpa implements MappingService {
 		
 		// Try query
 		try {
-			mapLeads = (List<MapLead>) query.getResultList();
+			mapLeads = query.getResultList();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -562,6 +585,7 @@ public class MappingServiceJpa implements MappingService {
 	* @param id the auto-generated id
 	* @return the MapLead
 	*/
+	@Override
 	public MapLead getMapLead(Long id) {
 		
 		
@@ -586,6 +610,7 @@ public class MappingServiceJpa implements MappingService {
 	* @param mapLead the map lead
 	* @return a List of MapProjects
 	*/
+	@Override
 	public List<MapProject> getMapProjectsForMapLead(MapLead mapLead) {
 		
 		List<MapProject> mp_list = getMapProjects();
@@ -609,6 +634,7 @@ public class MappingServiceJpa implements MappingService {
 	* @param query the query
 	* @return the List of MapProjects
 	*/
+	@Override
 	@SuppressWarnings("unchecked")
 	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter) {
 		
@@ -637,7 +663,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapLead> m = (List<MapLead>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapLeadJpa.class)
+			List<MapLead> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapLeadJpa.class)
 														.getResultList();
 			
 			for (MapLead ml : m) {
@@ -661,6 +687,7 @@ public class MappingServiceJpa implements MappingService {
 	 * Add a map lead
 	 * @param mapLead the map lead
 	 */
+	@Override
 	public void addMapLead(MapLead mapLead) {
 		
 		
@@ -669,19 +696,17 @@ public class MappingServiceJpa implements MappingService {
 			tx.begin();
 			manager.persist(mapLead);
 			tx.commit();
-			manager.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
-		
 	}
+	
 	
 	/**
 	 * Update a map lead
 	 * @param mapLead the changed map lead
 	 */
+	@Override
 	public void updateMapLead(MapLead mapLead) {
 		
 		
@@ -701,6 +726,7 @@ public class MappingServiceJpa implements MappingService {
 	 * Remove (delete) a map lead
 	 * @param mapLeadId the map lead to be removed
 	 */
+	@Override
 	public void removeMapLead(Long mapLeadId) {
 		
 		
@@ -744,6 +770,7 @@ public class MappingServiceJpa implements MappingService {
 	* Retrieve all map records
 	* @return a List of MapRecords
 	*/
+	@Override
 	@SuppressWarnings("unchecked")
 	public List<MapRecord> getMapRecords() {
 		
@@ -755,7 +782,7 @@ public class MappingServiceJpa implements MappingService {
 		
 		// Try query
 		try {
-			m = (List<MapRecord>) query.getResultList();
+			m = query.getResultList();
 		} catch (Exception e) {
 			System.out.println("MappingServiceJpa.getMapRecords(): Could not retrieve map records.");
 			e.printStackTrace();
@@ -771,7 +798,8 @@ public class MappingServiceJpa implements MappingService {
 	 * @param id the map record id
 	 * @return the map record
 	 */
-    public MapRecord getMapRecord(Long id) {
+    @Override
+	public MapRecord getMapRecord(Long id) {
     	
     	
 		javax.persistence.Query query = manager.createQuery("select r from MapRecordJpa r where id = :id");
@@ -809,7 +837,8 @@ public class MappingServiceJpa implements MappingService {
      * @param query the lucene query string
      * @return a list of map records
      */
-    @SuppressWarnings("unchecked")
+    @Override
+	@SuppressWarnings("unchecked")
     public SearchResultList findMapRecords(String query, PfsParameter pfsParameter) {
     	
     	
@@ -837,7 +866,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapRecord> m = (List<MapRecord>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapRecordJpa.class)
+			List<MapRecord> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapRecordJpa.class)
 														.getResultList();
 			
 			for (MapRecord mr : m) {
@@ -862,7 +891,8 @@ public class MappingServiceJpa implements MappingService {
      * Add a map record
      * @param mapRecord the map record to be added
      */
-    public void addMapRecord(MapRecord mapRecord) {
+    @Override
+	public void addMapRecord(MapRecord mapRecord) {
     	
     	
 		EntityTransaction tx = manager.getTransaction();
@@ -882,7 +912,8 @@ public class MappingServiceJpa implements MappingService {
      * Update a map record
      * @param mapRecord the map record to be updated
      */
-    public void updateMapRecord(MapRecord mapRecord) {
+    @Override
+	public void updateMapRecord(MapRecord mapRecord) {
     	
     	
 		EntityTransaction tx = manager.getTransaction();
@@ -901,7 +932,8 @@ public class MappingServiceJpa implements MappingService {
      * Remove (delete) a map record by id
      * @param id the id of the map record to be removed
      */
-    public void removeMapRecord(Long id) {
+    @Override
+	public void removeMapRecord(Long id) {
     	
     	
 		EntityTransaction tx = manager.getTransaction();
@@ -960,7 +992,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapEntry> m = (List<MapEntry>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapEntryJpa.class)
+			List<MapEntry> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapEntryJpa.class)
 														.getResultList();
 			
 			for (MapEntry me : m) {
@@ -983,6 +1015,7 @@ public class MappingServiceJpa implements MappingService {
      * @param query the query string
      * @return the search result list
      */
+	@Override
 	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter) {
 		SearchResultList s = new SearchResultListJpa();
 		
@@ -1008,7 +1041,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapAdvice> m = (List<MapAdvice>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapNoteJpa.class)
+			List<MapAdvice> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapNoteJpa.class)
 														.getResultList();
 			
 			for (MapAdvice ma : m) {
@@ -1062,7 +1095,7 @@ public class MappingServiceJpa implements MappingService {
 				luceneQuery = queryParser.parse(query);
 			}
 			
-			List<MapNote> m = (List<MapNote>) fullTextEntityManager.createFullTextQuery(luceneQuery, MapNoteJpa.class)
+			List<MapNote> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapNoteJpa.class)
 														.getResultList();
 			
 			for (MapNote me : m) {
@@ -1090,6 +1123,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param conceptId the concept id
 	 * @return the list of map records
 	 */
+	@Override
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId) {
 		List<MapRecord> m = null;
 		
@@ -1100,7 +1134,7 @@ public class MappingServiceJpa implements MappingService {
 		// Try query
 		try {
 			query.setParameter("conceptId", conceptId);
-			m = (List<MapRecord>) query.getResultList();
+			m = query.getResultList();
 		} catch (Exception e) {
 			System.out.println("MappingServiceJpa.getMapRecordsForConceptId(): Could not retrieve map records.");
 			e.printStackTrace();
@@ -1111,12 +1145,41 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 	}
 	
+	@Override
+	public Long getMapRecordCountForMapProjectId(Long mapProjectId) {
+		
+		javax.persistence.Query query = manager.createQuery("select count(m) from MapRecordJpa m where mapProjectId = :mapProjectId");
+		
+		try {
+			query.setParameter("mapProjectId", mapProjectId);
+			return new Long(query.getSingleResult().toString());
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+		}
+		
+		return new Long("-1");
+		
+	}
+	
 	/**
-	 * Retrieve map records for a given concept id
+	 * Helper function:  retrieves all map records for a map project id without paging/filtering/sorting
 	 * @param mapProjectId the concept id
 	 * @return the list of map records
 	 */
+	@Override
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId) {
+		
+		return getMapRecordsForMapProjectId(mapProjectId, null);
+	}
+	
+	/**
+	 * Retrieve map records for a given concept id and paging/filtering/sorting parameters
+	 * @param mapProjectId the concept id
+	 * @param pfs the paging/filtering/sorting parameter object
+	 * @return the list of map records
+	 */
+	@Override
+	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId, PfsParameter pfs) {
 		List<MapRecord> m = null;
 		
 		
@@ -1126,7 +1189,13 @@ public class MappingServiceJpa implements MappingService {
 		// Try query
 		try {
 			query.setParameter("mapProjectId", mapProjectId);
-			m = (List<MapRecord>) query.getResultList();
+			
+			if (pfs != null) {
+				query.setFirstResult(pfs.getStartIndex());
+				query.setMaxResults(pfs.getMaxResults());
+			}
+			
+			m = query.getResultList();
 		} catch (Exception e) {
 			System.out.println("MappingServiceJpa.getMapRecordsFormapProjectId(): Could not retrieve map records for project id " + mapProjectId);
 			e.printStackTrace();
@@ -1146,6 +1215,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @return
 	 * @throws Exception
 	 */
+	@Override
 	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId, String terminology, String terminologyVersion, int thresholdLlc) throws Exception {
 		Concept concept = new ConceptJpa();
 		concept.setTerminologyId(terminologyId);
@@ -1209,37 +1279,145 @@ public class MappingServiceJpa implements MappingService {
 	// Addition services     ///
 	////////////////////////////
 	
-	public void addMapNote(MapNote mapNote) { }
+	/**
+	 * Add a map note
+	 * @param mapNote the map note
+	 */
+	@Override
+	public void addMapNote(MapNote mapNote) {
+
+		EntityTransaction tx = manager.getTransaction();
 	
-	public void addMapEntry(MapEntry mapEntry) { }
+		tx.begin();
+		manager.persist(mapNote);
+		tx.commit();
+		
+	}
 	
-	public void addMapPrinciple(MapPrinciple mapPrinciple) { }
+	@Override
+	public void addMapEntry(MapEntry mapEntry) {
+
+		EntityTransaction tx = manager.getTransaction();
 	
-	public void addMapAdvice(MapAdvice mapAdvice) { }
+		tx.begin();
+		manager.persist(mapEntry);
+		tx.commit();
+		
+	}
+	
+	@Override
+	public void addMapPrinciple(MapPrinciple mapPrinciple) { 
+
+		EntityTransaction tx = manager.getTransaction();
+	
+		tx.begin();
+		manager.persist(mapPrinciple);
+		tx.commit();
+	}
+	
+	@Override
+	public void addMapAdvice(MapAdvice mapAdvice) { 
+
+		EntityTransaction tx = manager.getTransaction();
+	
+		tx.begin();
+		manager.persist(mapAdvice);
+		tx.commit();
+	}
 	
 	////////////////////////////
 	// Update services     ///
 	////////////////////////////
 	
-	public void updateMapNote(MapNote mapNote) { }
+	@Override
+	public void updateMapNote(MapNote mapNote) {
+
+		EntityTransaction tx = manager.getTransaction();
 	
-	public void updateMapEntry(MapEntry mapEntry) { }
+		tx.begin();
+		manager.merge(mapNote);
+		tx.commit();
+	}
 	
-	public void updateMapPrinciple(MapPrinciple mapPrinciple) { }
+	@Override
+	public void updateMapEntry(MapEntry mapEntry) { 
+
+		EntityTransaction tx = manager.getTransaction();
 	
-	public void updateMapAdvice(MapAdvice mapAdvice) { }
+		tx.begin();
+		manager.merge(mapEntry);
+		tx.commit();
+	}
+	
+	@Override
+	public void updateMapPrinciple(MapPrinciple mapPrinciple) { 
+
+		EntityTransaction tx = manager.getTransaction();
+	
+		tx.begin();
+		manager.merge(mapPrinciple);
+		tx.commit();
+		manager.close();
+	}
+	
+	@Override
+	public void updateMapAdvice(MapAdvice mapAdvice) { 
+
+		EntityTransaction tx = manager.getTransaction();
+	
+		tx.begin();
+		manager.merge(mapAdvice);
+		tx.commit();
+		manager.close();
+	}
 	
 	////////////////////////////
 	//Removal services     ///
 	////////////////////////////
 	
-	public void removeMapNote(Long mapNoteId) { }
+	@Override
+	public void removeMapNote(Long mapNoteId) { 
+		
+		MapNote mn = manager.find(MapNoteJpa.class, mapNoteId);
+			
+		// remove MapNote from any associated records
+		
+		// remove MapNote from any associated entries
+
+		EntityTransaction tx = manager.getTransaction();
 	
+		
+	}
+	
+	@Override
 	public void removeMapEntry(Long mapEntryId) { }
 	
+	@Override
 	public void removeMapPrinciple(Long mapPrincipleId) { }
 	
+	@Override
 	public void removeMapAdvice(Long mapAdviceId) { }
+
+	@Override
+	public MapPrinciple getMapPrinciple(Long id) {
+		
+		
+		MapPrinciple m = null;
+				
+		javax.persistence.Query query = manager.createQuery("select m from MapPrincipleJpa m where id = :id");
+		query.setParameter("id", id);
+		try {
+			m = (MapPrinciple) query.getSingleResult();
+			System.out.println("HI there!");
+		} catch (Exception e) {
+			System.out.println("Could not find map principle for id = " + id.toString());
+		}
+	
+		
+		
+		return m;
+		
+	}
 
 	
 

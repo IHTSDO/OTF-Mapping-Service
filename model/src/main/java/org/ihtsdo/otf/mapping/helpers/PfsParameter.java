@@ -13,37 +13,37 @@ public interface PfsParameter {
 	 * Returns the maximum number of results
 	 * @return the maximum number of results
 	 */
-	public Long getMaxResults();
+	public int getMaxResults();
 
 	/**
 	 * Sets the maximum number of results
 	 * @param maxResults the maximum number of results
 	 */
-	public void setMaxResults(Long maxResults);
+	public void setMaxResults(int maxResults);
 
 	/**
 	 * Returns the starting index of a query result subset
 	 * @return the start index
 	 */
-	public Long getStartIndex();
+	public int getStartIndex();
 
 	/**
 	 * Sets the starting index of a query result subset
 	 * @param startIndex the start index
 	 */
-	public void setStartIndex(Long startIndex);
+	public void setStartIndex(int startIndex);
 
 	/**
 	 * Returns the ending index of a query result subset
 	 * @return the end index
 	 */
-	public Long getEndIndex();
+	public int getEndIndex();
 
 	/**
 	 * Sets the ending index of a query results subset
 	 * @param endIndex the end index
 	 */
-	public void setEndIndex(Long endIndex);
+	public void setEndIndex(int endIndex);
 
 	/**
 	 * Returns the filter string

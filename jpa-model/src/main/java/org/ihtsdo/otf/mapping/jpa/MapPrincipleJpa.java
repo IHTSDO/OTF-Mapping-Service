@@ -33,13 +33,16 @@ public class MapPrincipleJpa implements MapPrinciple {
 	@GeneratedValue
 	private Long id;
 	
+	@Column(nullable = true, length = 255)
+	private String principleId;
+
 	@Column(nullable = false, length = 255)
 	private String name;
 	
 	@Column(nullable = true, length = 4000)
 	private String detail;
 	
-	@Column(nullable = true, length = 255)
+	@Column(nullable = true, length = 4000)
 	private String sectionRef;
 	
 	/** Default constructor */
@@ -51,7 +54,6 @@ public class MapPrincipleJpa implements MapPrinciple {
 	 * Return the id
 	 * @return the id
 	 */
-	@XmlTransient
 	@Override
 	public Long getId() {
 		return this.id;
@@ -61,8 +63,7 @@ public class MapPrincipleJpa implements MapPrinciple {
 	 * Returns the id in string form
 	 * @return the id in string form
 	 */
-	@XmlID
-	@XmlElement
+	@XmlTransient
 	public String getObjectId() {
 		return id.toString();
 	}
@@ -74,6 +75,17 @@ public class MapPrincipleJpa implements MapPrinciple {
 	@Override
 	public void setId(Long id) {
 		this.id = id;		
+	}
+	
+
+	@Override
+	public String getPrincipleId() {
+		return this.principleId;
+	}
+
+	@Override
+	public void setPrincipleId(String principleId) {
+		this.principleId = principleId;		
 	}
 
 	/**
@@ -136,59 +148,54 @@ public class MapPrincipleJpa implements MapPrinciple {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((detail == null) ? 0 : detail.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((detail == null) ? 0 : detail.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((sectionRef == null) ? 0 : sectionRef.hashCode());
+		result =
+				prime * result + ((principleId == null) ? 0 : principleId.hashCode());
+		result =
+				prime * result + ((sectionRef == null) ? 0 : sectionRef.hashCode());
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		MapPrincipleJpa other = (MapPrincipleJpa) obj;
 		if (detail == null) {
-			if (other.detail != null) {
+			if (other.detail != null)
 				return false;
-			}
-		} else if (!detail.equals(other.detail)) {
+		} else if (!detail.equals(other.detail))
 			return false;
-		}
-		if (id == null) {
-			if (other.id != null) {
-				return false;
-			}
-		} else if (!id.equals(other.id)) {
-			return false;
-		}
 		if (name == null) {
-			if (other.name != null) {
+			if (other.name != null)
 				return false;
-			}
-		} else if (!name.equals(other.name)) {
+		} else if (!name.equals(other.name))
 			return false;
-		}
+		if (principleId == null) {
+			if (other.principleId != null)
+				return false;
+		} else if (!principleId.equals(other.principleId))
+			return false;
 		if (sectionRef == null) {
-			if (other.sectionRef != null) {
+			if (other.sectionRef != null)
 				return false;
-			}
-		} else if (!sectionRef.equals(other.sectionRef)) {
+		} else if (!sectionRef.equals(other.sectionRef))
 			return false;
-		}
 		return true;
 	}
 
