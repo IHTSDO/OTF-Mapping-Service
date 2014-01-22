@@ -10,13 +10,13 @@ import java.util.Comparator;
 public class PfsParameterJpa implements PfsParameter {
 
 	/** The maximum number of results */
-	private Long maxResults;
+	private int maxResults;
 	
 	/** The start index for queries */
-	private Long startIndex;
+	private int startIndex;
 	
 	/** The end index for queries */
-	private Long endIndex;
+	private int endIndex;
 	
 	/** The filter string */
 	private String filters;
@@ -33,7 +33,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Returns the maximum number of results
 	 * @return the maximum number of results
 	 */
-	public Long getMaxResults() {
+	public int getMaxResults() {
 		return maxResults;
 	}
 
@@ -41,7 +41,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Sets the maximum number of results
 	 * @param maxResults the maximum number of results
 	 */
-	public void setMaxResults(Long maxResults) {
+	public void setMaxResults(int maxResults) {
 		this.maxResults = maxResults;
 	}
 
@@ -49,7 +49,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Returns the starting index of a query result subset
 	 * @return the start index
 	 */
-	public Long getStartIndex() {
+	public int getStartIndex() {
 		return startIndex;
 	}
 
@@ -57,7 +57,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Sets the starting index of a query result subset
 	 * @param startIndex the start index
 	 */
-	public void setStartIndex(Long startIndex) {
+	public void setStartIndex(int startIndex) {
 		this.startIndex = startIndex;
 	}
 
@@ -65,7 +65,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Returns the ending index of a query result subset
 	 * @return the end index
 	 */
-	public Long getEndIndex() {
+	public int getEndIndex() {
 		return endIndex;
 	}
 
@@ -73,7 +73,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Sets the ending index of a query results subset
 	 * @param endIndex the end index
 	 */
-	public void setEndIndex(Long endIndex) {
+	public void setEndIndex(int endIndex) {
 		this.endIndex = endIndex;
 	}
 

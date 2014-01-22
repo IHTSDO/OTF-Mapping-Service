@@ -220,12 +220,24 @@ public interface MappingService {
 	// Other services       ///
 	///////////////////////////
 	
+	public Long getMapRecordCountForMapProjectId(Long mapProjectId);
+	
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId);
 	
+	public List<MapRecord> getMapRecordsForMapProjectId(Long projectId,
+			PfsParameter pfs);
+		
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId);
 
 	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
 			String terminology, String terminologyVersion, int threshold) throws Exception;
+
+	/**
+	 * @param id
+	 * @return
+	 */
+	public MapPrinciple getMapPrinciple(Long id);
+
 	
 }
 	

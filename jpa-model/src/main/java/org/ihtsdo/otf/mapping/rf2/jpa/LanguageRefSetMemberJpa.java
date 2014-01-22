@@ -53,4 +53,37 @@ public class LanguageRefSetMemberJpa extends AbstractDescriptionRefSetMember
 				 (this.getDescription() == null ? null : getDescription().getTerminologyId()) + "," +
 				 this.getAcceptabilityId();
 	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractDescriptionRefSetMember#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result =
+				prime * result
+						+ ((acceptabilityId == null) ? 0 : acceptabilityId.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractDescriptionRefSetMember#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LanguageRefSetMemberJpa other = (LanguageRefSetMemberJpa) obj;
+		if (acceptabilityId == null) {
+			if (other.acceptabilityId != null)
+				return false;
+		} else if (!acceptabilityId.equals(other.acceptabilityId))
+			return false;
+		return true;
+	}
 }

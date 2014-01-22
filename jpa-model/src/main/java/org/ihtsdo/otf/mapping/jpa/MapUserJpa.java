@@ -20,8 +20,11 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 @Table(name = "map_users")
 @Audited
 @XmlRootElement(name="mapUser")
-public abstract class MapUserJpa implements MapUser {
+public class MapUserJpa implements MapUser {
 
+	
+	
+	
 	/** The id. */
 	@Id
 	@GeneratedValue
@@ -38,6 +41,9 @@ public abstract class MapUserJpa implements MapUser {
 	/** The email. */
 	@Column(nullable = false)
 	private String email;
+	
+	/** The default constructor */
+	public MapUserJpa() { }
 	
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapUser#getId()
@@ -123,7 +129,6 @@ public abstract class MapUserJpa implements MapUser {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((email == null) ? 0 : email.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((userName == null) ? 0 : userName.hashCode());
 		return result;
@@ -145,11 +150,6 @@ public abstract class MapUserJpa implements MapUser {
 			if (other.email != null)
 				return false;
 		} else if (!email.equals(other.email))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
 			return false;
 		if (name == null) {
 			if (other.name != null)

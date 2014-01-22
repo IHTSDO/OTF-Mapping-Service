@@ -42,6 +42,7 @@ mapProjectApp.run(['$http', '$rootScope', function($http, $rootScope) {
 mapProjectApp.config(['$routeProvider',
    function($routeProvider) {
 	
+	
       //////////////////////////////
 	  // MAPPING SERVICES
 	  //////////////////////////////
@@ -86,6 +87,12 @@ mapProjectApp.config(['$routeProvider',
   		  controller: 'MapRecordDetailCtrl'
   	  });
 	  
+	  $routeProvider.when('/edit-demo', {
+			templateUrl: 'partials/edit-demo.html',
+			controller: 'EditDemoCtrl'
+		});
+		
+	  
 	  //////////////////////////////
 	  // CONTENT SERVICES
 	  //////////////////////////////
@@ -95,24 +102,13 @@ mapProjectApp.config(['$routeProvider',
 		  controller: 'ConceptListCtrl'
 	  });
 	  
-	  // Removed in favor of terminology/version path
-	 /* $routeProvider.when('/concept/id/:conceptId', {
-  		  templateUrl: 'partials/concept-detail.html', 
-  		  controller: 'ConceptDetailCtrl'
-  	  });*/
 	  
 	  $routeProvider.when('/concept/:terminology/:version/id/:conceptId', {
   		  templateUrl: 'partials/concept-detail.html', 
   		  controller: 'ConceptDetailCtrl'
   	  });
 	  
-	  $routeProvider.when('/', {
-		  templateUrl: 'partials/home.html'
-	  });
 	  
-	  $routeProvider.otherwise({
-	      redirectTo: 'partials/error.html'
-	  });
 	  
 	  //////////////////////////////
 	  // QUERY SERVICES
@@ -130,16 +126,15 @@ mapProjectApp.config(['$routeProvider',
 		  controller: 'MetadataCtrl'
 	  });
 	  
-	  //////////////////////////////
-	  // MAP XML TEST SERVICES
-	  //////////////////////////////
-	  $routeProvider.when('/xmltest', {
-		  	templateUrl: 'partials/xmltest-partial.html', 
-			controller: 'XmlTestCtrl'
-	  });	
+	  ///////////////////////////////
+	  // HOME and ERROR ROUTES
+	  ///////////////////////////////
 	  
-	  $routeProvider.when('/nestedxmltest', {
-		  	templateUrl: 'partials/xmltest-partial.html', 
-			controller: 'NestedXmlTestCtrl'
-	  });	
+	  $routeProvider.when('/', {
+		  templateUrl: 'partials/home.html'
+	  });
+	  
+	  $routeProvider.otherwise({
+	      redirectTo: 'partials/error.html'
+	  });
    }]);

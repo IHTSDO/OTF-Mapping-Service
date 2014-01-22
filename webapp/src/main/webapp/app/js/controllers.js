@@ -17,8 +17,30 @@ mapProjectAppControllers.controller('MapProjectAppNav',
 	
 		var changePage = function (newPage) {
 			$location.path = newPage;
-		}
+		};
 	});	
+
+mapProjectAppControllers.controller('PostTestCtrl',
+	
+	
+	function ($scope, $http) {
+	
+		$scope.data = "";
+		$scope.error = "Error";
+		$http({
+		     url: root_mapping + "lead/id/1",
+		     dataType: "json",
+		     method: "GET",
+		     headers: {
+		       "Content-Type": "application/json"
+	
+		      }
+		}).success(function(data) {
+		  	$scope.data = data.mapProject;
+		}).error(function(error) {
+			$scope.error = "Error";
+		});
+});
 
 	
 //////////////////////////////
@@ -140,6 +162,46 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl', ['$scope', '$http', '
      });
 
  }]);
+
+mapProjectAppControllers.controller('EditDemoCtrl', 
+		['$scope', '$http', '$routeParams',
+		 
+   function ($scope, $http, $routeParams) {
+			
+		$scope.get = function() {
+			$http({
+				url: root_mapping + "principle/id/" + $scope.principleId,
+				dataType: "json",
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$scope.principle = data;
+				$scope.currentPrinciple = $scope.principleId;
+			}).error(function(error) {
+				$scope.error = "ERROR";
+			});
+		};
+ 	  
+		$scope.save = function() {
+			$http({
+				url: root_mapping + "principle/id/" + $scope.currentPrinciple,
+				dataType: "json",
+				method: "POST",
+				data: $scope.principle,
+				headers: {
+					"Content-Type": "application/json"
+				}
+			});
+		};
+		
+		$scope.reset = function() {
+			$scope.principleId = $scope.currentPrinciple;
+	    	$scope.get();
+	    };
+	 
+	}]);
 
 
 
@@ -264,7 +326,7 @@ mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routePara
         $scope.projectResults = data;
         $scope.searchProjectsStatus= $scope.projectResults.count + " results found:";
       }).error(function(error) {
-    	$scope.searchProjectsStatus = "Could not retrieve projects.";
+    	$scope.searchProjectsStatus = "Could not retrieve projects."; 
       });
 	};
 	
@@ -341,7 +403,6 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	  $scope.errorProject = "";
 	  $scope.errorConcept = "";
 	  $scope.errorRecords = "";
-	  $scope.statusRecordLoad = "";
 	  
 	  // retrieve project information
 	 $http({
@@ -354,7 +415,6 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
       }).success(function(data) {
         $scope.project = data;
         $scope.errorProject = "Project retrieved";
-        $scope.statusRecordLoad = "[Loading...]";
       }).error(function(error) {
     	  $scope.errorProject = "Could not retrieve project"; 
      
@@ -374,23 +434,64 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
     		  $scope.errorRecord = "Error retrieving concept";
     	  });
       }).then(function(data) {
-  		 
-    	  // retrieve any map records associated with this project
-    	  $http({
-    		  url: root_mapping + "record/projectId/" + $scope.project.objectId,
-    		  dataType: "json",
-    		  method: "GET",
-    		  headers: {
-    			  "Content-Type": "application/json"
-    		  }
-    	  }).success(function(data) {
-    		  $scope.records = data.mapRecord;
-    		  $scope.statusRecordLoad = "";
-    	  }).error(function(error) {
-    		  $scope.errorRecord = "Error retrieving map records";
-    	  });
-      });
+  
+    	  // set scope variable for total records
+    	  $scope.getNRecords();
     	  
+          // pagination variables
+		  $scope.recordsPerPage = 5;
+		  $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
+
+    	  // load first page
+    	  $scope.changeRecordPage(1);
+    	  
+    	  console.debug($scope.nRecords);
+    	  console.debug($scope.recordsPerPage);
+    	  console.debug($scope.numRecordPages); 
+      });
+    	
+	  
+
+	 // record pagination controls
+	 $scope.changeRecordPage = function(page) {
+		 
+		 var startRecord = (page - 1) * $scope.recordsPerPage + 1;
+	 
+		  // retrieve any map records associated with this project
+		  $http({
+			  url: root_mapping + "record/projectId/" + $scope.project.objectId + "/" + startRecord + "-" + $scope.recordsPerPage,
+			  dataType: "json",
+			  method: "GET",
+			  headers: {
+				  "Content-Type": "application/json"
+			  }
+		  }).success(function(data) {
+			  $scope.records = data.mapRecord;
+			  $scope.statusRecordLoad = "";
+			  $scope.recordPage = page;
+		  }).error(function(error) {
+			  $scope.errorRecord = "Error retrieving map records";
+			  console.debug("changeRecordPage error");
+		  });
+	 };
+	 
+	 $scope.getNRecords = function() {
+		 // retrieve the total number of records associated with this map project
+	   	  $http({
+	   		  url: root_mapping + "record/projectId/" + $scope.project.objectId + "/nRecords",
+	   		  dataType: "json",
+	   		  method: "GET",
+	   		  headers: {
+	   			  "Content-Type": "application/json"
+	   		  }
+	   	  }).success(function(data) {
+	   		  $scope.nRecords = data;
+	   		  
+	   	  }).error(function(error) {
+	   		  $scope.nRecords = 0;
+	   		  console.debug("getNRecords error");
+	   	  });
+	 };
 	  
 }]);
 
@@ -399,55 +500,27 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 //////////////////////////////	
 
 mapProjectAppControllers.controller('MetadataCtrl', 
-		['$scope', '$http', '$rootScope',
+		['$scope', '$http',
                                                              
-		function ($scope, $http, $rootScope) {
+		function ($scope, $http) {
 			
-			$scope.errorMetadata = $rootScope.errorMetadata;
-			$scope.keyValuePairLists = $rootScope.keyValuePairLists;
-			$scope.termVersionPairs = $rootScope.termVersionPairs;
-			$scope.latestTerminologiesStatus = $rootScope.latestTerminologiesStatus;
+			$scope.errorMetadata = "";
+			
 			// retrieve any concept associated with this project
-	    	
+	    	 $http({
+	    		  url: root_metadata + "all/SNOMEDCT/20130131",
+	    		  dataType: "json",
+	    		  method: "GET",
+	    		  headers: {
+	    			  "Content-Type": "application/json"
+	    		  }
+	    	  }).success(function(data) {
+	    		  $scope.idNameMaps = data.idNameMap;
+	    	  }).error(function(error) {
+	    		  $scope.errorMetadata = "Error retrieving metadata";
+	    	  });
 		}]);
 
-mapProjectAppControllers.controller('XmlTestCtrl', 
-		  function ($scope, $http) {
-		      $http({
-		        url: root_mapping + "mapXmlTest",
-		        dataType: "json",
-		        method: "GET",
-		        headers: {
-		          "Content-Type": "application/json"
-		        }
-		      }).success(function(data) {
-		    	  $scope.map = data.map;
-		      }).error(function(error) {
-		    	  $scope.error = "Error";
-		      });
-		 
-		   /* $scope.orderProp = 'id';	*/
-		  });
-
-mapProjectAppControllers.controller('NestedXmlTestCtrl', 
-		  function ($scope, $http) {
-		      $http({
-		        url: root_mapping + "nestedMapXmlTest",
-		        dataType: "json",
-		        method: "GET",
-		        headers: {
-		          "Content-Type": "application/json"
-		        }
-		      }).success(function(data) {
-		    	  $scope.map = data.map;
-		      }).error(function(error) {
-		    	  $scope.error = "Error";
-		      });
-		 
-		   /* $scope.orderProp = 'id';	*/
-		  });
-			
-		
 
 
 

@@ -400,4 +400,37 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 																																							// concept
 																																							// fields
 	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result =
+				prime * result
+						+ ((relationships == null) ? 0 : relationships.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ConceptJpa other = (ConceptJpa) obj;
+		if (relationships == null) {
+			if (other.relationships != null)
+				return false;
+		} else if (!relationships.equals(other.relationships))
+			return false;
+		return true;
+	}
 }

@@ -228,4 +228,60 @@ public String getDestinationConceptPreferredName() {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result =
+				prime
+						* result
+						+ ((destinationConcept == null) ? 0 : destinationConcept.hashCode());
+		result =
+				prime * result
+						+ ((relationshipGroup == null) ? 0 : relationshipGroup.hashCode());
+		result =
+				prime * result
+						+ ((sourceConcept == null) ? 0 : sourceConcept.hashCode());
+		result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RelationshipJpa other = (RelationshipJpa) obj;
+		if (destinationConcept == null) {
+			if (other.destinationConcept != null)
+				return false;
+		} else if (!destinationConcept.equals(other.destinationConcept))
+			return false;
+		if (relationshipGroup == null) {
+			if (other.relationshipGroup != null)
+				return false;
+		} else if (!relationshipGroup.equals(other.relationshipGroup))
+			return false;
+		if (sourceConcept == null) {
+			if (other.sourceConcept != null)
+				return false;
+		} else if (!sourceConcept.equals(other.sourceConcept))
+			return false;
+		if (typeId == null) {
+			if (other.typeId != null)
+				return false;
+		} else if (!typeId.equals(other.typeId))
+			return false;
+		return true;
+	}
+
 }
