@@ -1,5 +1,8 @@
 package org.ihtsdo.otf.mapping.pojo;
 
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlTransient;
+
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 
 // TODO: Auto-generated Javadoc
@@ -20,20 +23,42 @@ public class MapAdviceImpl implements MapAdvice {
 	/** The detail. */
 	private String detail;
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
 	@Override
+	@XmlTransient
 	public Long getId() {
-		return id;
+		return this.id;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setId(java.lang.Long)
+	
+	/**
+	 * Set the id
+	 * @param id the id
 	 */
 	@Override
 	public void setId(Long id) {
-		this.id = id;
+		this.id = id;		
+	}
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
+	@Override
+	public String getObjectId() {
+		return id.toString();
+	}
+	
+	/**
+	 * Sets the object ID from XML String
+	 * @param objectId the object Id as string
+	 */
+	@Override
+	public void setObjectId(String objectId) {
+		this.id = new Long(objectId);
 	}
 
 	/* (non-Javadoc)

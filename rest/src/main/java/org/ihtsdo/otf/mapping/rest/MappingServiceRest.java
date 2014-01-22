@@ -801,8 +801,6 @@ public class MappingServiceRest {
 	public MapPrinciple getMapPrincipledForId(
 			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId) {
 		
-		System.out.println("FIRST HI THERE!");
-		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapPrinciple mapPrinciple = mappingService.getMapPrinciple(mapPrincipleId);
@@ -822,13 +820,11 @@ public class MappingServiceRest {
 	@POST
 	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 	@Path("/principle/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find principle by id", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrincipleJpa.class)
+	@ApiOperation(value = "Update principle by id", notes = "Updates a MapPrinciple from either JSON or XML format", response = MapPrincipleJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Response updatetMapPrincipledForId(
 			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId,
 			@ApiParam(value = "Map Principle to update", required = true) MapPrincipleJpa mapPrinciple) {
-		
-		System.out.println("FIRST HI THERE!");
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();

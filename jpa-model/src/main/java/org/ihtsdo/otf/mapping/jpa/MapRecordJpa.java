@@ -94,23 +94,42 @@ public class MapRecordJpa implements MapRecord {
 		//this.mapNotes = mapNotes;
 	}
 
-	@XmlTransient
+	/**
+	 * Return the id
+	 * @return the id
+	 */
 	@Override
+	@XmlTransient
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 	
+	/**
+	 * Set the id
+	 * @param id the id
+	 */
 	@Override
+	public void setId(Long id) {
+		this.id = id;		
+	}
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
 	@XmlID
-	@XmlElement
+	@Override
 	public String getObjectId() {
 		return id.toString();
 	}
-
 	
+	/**
+	 * Sets the object ID from XML String
+	 * @param objectId the object Id as string
+	 */
 	@Override
-	public void setId(Long id) {
-		this.id = id;
+	public void setObjectId(String objectId) {
+		this.id = new Long(objectId);
 	}
 	
 	@Override

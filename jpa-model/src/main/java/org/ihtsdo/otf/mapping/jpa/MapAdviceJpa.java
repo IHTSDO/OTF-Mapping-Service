@@ -60,32 +60,42 @@ public class MapAdviceJpa implements MapAdvice {
 		this.detail = detail;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
-	@XmlTransient
 	@Override
+	@XmlTransient
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 	
 	/**
-	 * Return id as string.
-	 *
-	 * @return the id in string form
-	 */
-	@XmlID
-	@XmlElement
-	public String getObjectId() {
-		return id.toString();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setId(java.lang.Long)
+	 * Set the id
+	 * @param id the id
 	 */
 	@Override
 	public void setId(Long id) {
-		this.id = id;
+		this.id = id;		
+	}
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
+	@Override
+	public String getObjectId() {
+		return id.toString();
+	}
+	
+	/**
+	 * Sets the object ID from XML String
+	 * @param objectId the object Id as string
+	 */
+	@Override
+	public void setObjectId(String objectId) {
+		this.id = new Long(objectId);
 	}
 
 	/* (non-Javadoc)

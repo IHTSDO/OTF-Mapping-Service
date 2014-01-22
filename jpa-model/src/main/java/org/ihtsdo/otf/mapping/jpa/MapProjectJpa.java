@@ -145,13 +145,23 @@ public class MapProjectJpa implements MapProject {
 		this.mapSpecialists = mapSpecialists;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
-	@XmlTransient
 	@Override
+	@XmlTransient
 	public Long getId() {
-		return id;
+		return this.id;
+	}
+	
+	/**
+	 * Set the id
+	 * @param id the id
+	 */
+	@Override
+	public void setId(Long id) {
+		this.id = id;		
 	}
 	
 	/**
@@ -159,17 +169,18 @@ public class MapProjectJpa implements MapProject {
 	 * @return the id in string form
 	 */
 	@XmlID
-	@XmlElement
+	@Override
 	public String getObjectId() {
 		return id.toString();
 	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#setId(java.lang.Long)
+	
+	/**
+	 * Sets the object ID from XML String
+	 * @param objectId the object Id as string
 	 */
 	@Override
-	public void setId(Long id) {
-		this.id = id;
+	public void setObjectId(String objectId) {
+		this.id = new Long(objectId);
 	}
 
 	/* (non-Javadoc)
