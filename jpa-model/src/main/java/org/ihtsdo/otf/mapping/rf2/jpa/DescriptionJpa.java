@@ -273,4 +273,48 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 												// fields
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result =
+				prime * result + ((languageCode == null) ? 0 : languageCode.hashCode());
+		result = prime * result + ((term == null) ? 0 : term.hashCode());
+		result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DescriptionJpa other = (DescriptionJpa) obj;
+		if (languageCode == null) {
+			if (other.languageCode != null)
+				return false;
+		} else if (!languageCode.equals(other.languageCode))
+			return false;
+		if (term == null) {
+			if (other.term != null)
+				return false;
+		} else if (!term.equals(other.term))
+			return false;
+		if (typeId == null) {
+			if (other.typeId != null)
+				return false;
+		} else if (!typeId.equals(other.typeId))
+			return false;
+		return true;
+	}
+
 }
