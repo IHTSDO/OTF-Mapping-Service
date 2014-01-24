@@ -1,8 +1,10 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,21 +35,24 @@ import org.ihtsdo.otf.mapping.helpers.CreateMetadataHelper;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
+import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+// TODO: Auto-generated Javadoc
 /**
- * Converts Icd10 xml data to RF2 objects.
+ * Converts claml data to RF2 objects.
  * 
- * @goal load-icd10
+ * @goal load-claml
  * @phase process-resources
  */
-public class Icd10LoaderMojo extends AbstractMojo {
+public class ClamlLoaderMojo extends AbstractMojo {
 
 	/** The dt. */
 	private SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
@@ -57,9 +62,6 @@ public class Icd10LoaderMojo extends AbstractMojo {
 
 	/** The effective time. */
 	private String effectiveTime;
-
-	/** The terminology. */
-	private String terminology;
 
 	/** The terminology version. */
 	private String terminologyVersion;
@@ -72,6 +74,13 @@ public class Icd10LoaderMojo extends AbstractMojo {
 	 * @required
 	 */
 	private File propertiesFile;
+	
+	/**
+	 * Name of terminology to be loaded.
+	 * @parameter
+	 * @required
+	 */
+	private String terminology;
 
 	/** The manager. */
 	private EntityManager manager;
@@ -81,6 +90,7 @@ public class Icd10LoaderMojo extends AbstractMojo {
 	/** The concept map. */
 	private Map<String, Concept> conceptMap;
 
+	/** The helper. */
 	private CreateMetadataHelper helper;
 
 	/**
@@ -94,7 +104,7 @@ public class Icd10LoaderMojo extends AbstractMojo {
 		FileInputStream propertiesInputStream = null;
 		try {
 
-			getLog().info("Start loading ICD10 data ...");
+			getLog().info("Start loading " + terminology + " data ...");
 
 			// load Properties file
 			Properties properties = new Properties();
@@ -103,17 +113,17 @@ public class Icd10LoaderMojo extends AbstractMojo {
 			propertiesInputStream.close();
 
 			// set the input directory
-			inputFile = properties.getProperty("loader.icd10.input.data");
+			inputFile = properties.getProperty("loader." + terminology + ".input.data");
 			if (!new File(inputFile).exists()) {
 				throw new MojoFailureException(
-						"Specified loader.icd10.input.data directory does not exist: "
+						"Specified loader." + terminology + ".input.data directory does not exist: "
 								+ inputFile);
 			}
-			effectiveTime = properties.getProperty("loader.icd10.effective.time");
-			terminology = properties.getProperty("loader.icd10.terminology");
-			terminologyVersion =
-					properties.getProperty("loader.icd10.terminology.version");
+			Logger.getLogger(this.getClass()).info("inputFile: " + inputFile);
 
+			// open input file and get effective time and version
+			findVersion();
+			
 			// create Entitymanager
 			EntityManagerFactory emFactory =
 					Persistence.createEntityManagerFactory("MappingServiceDS");
@@ -147,7 +157,7 @@ public class Icd10LoaderMojo extends AbstractMojo {
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new MojoExecutionException(
-					"Conversion of XML to RF2 objects failed", e);
+					"Conversion of Claml to RF2 objects failed", e);
 		}
 
 	}
@@ -194,26 +204,48 @@ public class Icd10LoaderMojo extends AbstractMojo {
 		/** The parent code. */
 		String parentCode = "";
 
+		/** The modifier code. */
 		String modifierCode = "";
 
+		/** The modified by code. */
 		String modifiedByCode = "";
 		
+		/** The exclude modifier code. */
 		String excludeModifierCode = "";
 
+		/** The modifier. */
 		String modifier = "";
 		
+		/** The class usage. */
+		String classUsage = "";
+		
+		/** The reference usage. */
+		String referenceUsage = "";
+		
+		/** The para chars. */
+		String paraChars = "";
+		
+		/** The ref set member counter. */
+		int refSetMemberCounter = 1;
+		
+		/** The fragment list. */
 		List<String> fragmentList = new ArrayList<String>();
 
 		/** The reference indicating a non-isa relationship. */
 		String reference = "";
 
+		/** The current sub classes. */
 		Set<String> currentSubClasses = new HashSet<String>();
 
+		/** The sub class to modifier map. */
 		Map<String, List<String>> subClassToModifierMap =
 				new HashMap<String, List<String>>();
 
+		/** The sub class to exclude modifier map. */
 		Map<String, List<String>> subClassToExcludeModifierMap =
 				new HashMap<String, List<String>>();
+		
+		
 		/**
 		 * The rels map for holding data for relationships that will be built after
 		 * all concepts are created.
@@ -232,6 +264,7 @@ public class Icd10LoaderMojo extends AbstractMojo {
 		/** The rel id counter. */
 		int relIdCounter = 100;
 
+		/** The modifier map. */
 		Map<String, Map<String, Concept>> modifierMap =
 				new HashMap<String, Map<String, Concept>>();
 
@@ -252,15 +285,16 @@ public class Icd10LoaderMojo extends AbstractMojo {
 		public void startElement(String uri, String localName, String qName,
 			Attributes attributes) {
 
-			
-
 			// used to make a concept, code -> terminologyId
-			if (qName.equalsIgnoreCase("class") || qName.equalsIgnoreCase("modifier"))
+			if (qName.equalsIgnoreCase("class") || qName.equalsIgnoreCase("modifier")) {
 				code = attributes.getValue("code");
+				classUsage = attributes.getValue("usage");
+			}
 
 			if (qName.equalsIgnoreCase("modifierclass")) {
 				modifier = attributes.getValue("modifier");
 				modifierCode = attributes.getValue("code");
+				classUsage = attributes.getValue("usage");
 			}
 
 			if (qName.equalsIgnoreCase("modifiedby")) {
@@ -317,7 +351,11 @@ public class Icd10LoaderMojo extends AbstractMojo {
 			
 			if (qName.equalsIgnoreCase("reference")) {
 				fragmentList.add(chars.toString().trim());
+				chars = new StringBuffer();
+				referenceUsage = attributes.getValue("usage");
 			}
+			
+			
 		}
 
 		/*
@@ -332,9 +370,15 @@ public class Icd10LoaderMojo extends AbstractMojo {
 			try {
 				
 				// adding concept/preferred description for modifier class
-				if (qName.equalsIgnoreCase("label") && !modifierCode.equals("")
-						&& rubricKind.equals("preferred")) {
+				// NOTE: non-preferred descriptions still need to be added
+				// to modified classes
+				if (qName.equalsIgnoreCase("label") && !modifierCode.equals("")) {
 					addModifierClass();
+				}
+				
+				// para tags are used in icd9cm descriptions
+				if (qName.equalsIgnoreCase("para")) {
+					paraChars = chars.toString().trim();
 				}
 
 				// adding concept/descriptions for regular class
@@ -353,6 +397,8 @@ public class Icd10LoaderMojo extends AbstractMojo {
 						concept.setTerminologyVersion(terminologyVersion);
 						if (flattenFragmentList().length() != 0)
 							concept.setDefaultPreferredName(flattenFragmentList());
+						else if (chars.toString().trim().equals(""))
+							concept.setDefaultPreferredName(paraChars);
 						else
 							concept.setDefaultPreferredName(chars.toString().trim());
 						if (conceptMap.containsKey(code))
@@ -360,12 +406,11 @@ public class Icd10LoaderMojo extends AbstractMojo {
 						
 						conceptMap.put(code, concept);
 
-
+						// TODO: move persistence of all concepts to endDocument loop
 						manager.persist(concept);	
 					}
 
 					// add description to concept
-					concept = conceptMap.get(code);
 					Description desc = new DescriptionJpa();
 					desc.setTerminologyId(rubricId);
 					desc.setEffectiveTime(dt.parse(effectiveTime));
@@ -376,6 +421,8 @@ public class Icd10LoaderMojo extends AbstractMojo {
 					desc.setTerminologyVersion(terminologyVersion);
 					if (flattenFragmentList().length() != 0)
 						desc.setTerm(flattenFragmentList());
+					else if (chars.toString().trim().equals(""))
+					  desc.setTerm(paraChars);
 					else
 						desc.setTerm(chars.toString().trim());
 					desc.setConcept(concept);
@@ -390,33 +437,37 @@ public class Icd10LoaderMojo extends AbstractMojo {
 						Logger.getLogger(this.getClass()).info(
 								"rubricKind not in metadata " + rubricKind);
 					}
-					/**Set<Description> descriptions = concept.getDescriptions();
-					if (descriptions.size() > 1)
-					  Logger.getLogger(this.getClass()).info("concept " + concept.getTerminologyId() + " description size " + descriptions.size());
-					descriptions.add(desc);
-					concept.setDescriptions(descriptions);*/
+					
 					concept.addDescription(desc);
-					//manager.persist(desc);
 				}
 
-				//if (qName.equalsIgnoreCase("reference")) {
-				//	Logger.getLogger(this.getClass()).info(concept.getTerminologyId() + " chars in end Element " + chars.toString());
-				//}
 				
 				// end of reference tag
-				/**if (qName.equalsIgnoreCase("reference")) {
+				if (qName.equalsIgnoreCase("reference")) {
 					// relationships for this concept will be added at endDocument(),
 					// save relevant data now in relsMap
 					reference = chars.toString();
-					Set<Concept> concepts = new HashSet<Concept>();
-					// check if this reference already has a relationship
-					if (relsMap.containsKey(reference + ":" + rubricKind)) {
-						concepts = relsMap.get(reference + ":" + rubricKind);
-					}
-					concepts.add(concept);
-					relsMap.put(reference + ":" + rubricKind, concepts);
-				}*/
 
+					if (referenceUsage != null && !referenceUsage.equals("")) { /** && 
+							classUsage != null && !classUsage.equals("")) */
+						// check if this reference already has a relationship
+						Set<Concept> concepts = new HashSet<Concept>();
+						if (relsMap.containsKey(reference + ":" + referenceUsage)) {
+							concepts = relsMap.get(reference + ":" + referenceUsage);
+						}
+						concepts.add(concept);
+					  relsMap.put(reference + ":" + referenceUsage, concepts);
+					} else {
+						// check if this reference already has a relationship
+						Set<Concept> concepts = new HashSet<Concept>();
+						if (relsMap.containsKey(reference + ":" + rubricKind)) {
+							concepts = relsMap.get(reference + ":" + rubricKind);
+						}
+						concepts.add(concept);
+						relsMap.put(reference + ":" + rubricKind, concepts);
+					}
+				}
+								
 				// if ending modifierclass, add to modifierMap which is used later
 				// when classes have modifiedBy tags
 				if (qName.equalsIgnoreCase("modifierclass")) {
@@ -439,6 +490,7 @@ public class Icd10LoaderMojo extends AbstractMojo {
 				if (qName.equalsIgnoreCase("class")
 						|| qName.equalsIgnoreCase("modifier")
 						|| qName.equalsIgnoreCase("modifierclass")) {
+					
 					// if relationships for this concept will be added at endDocument(),
 					// save relevant data now in relsMap
 					if (relsNeeded) {
@@ -456,6 +508,21 @@ public class Icd10LoaderMojo extends AbstractMojo {
 					// also check subClassToModifierMap to see if
 					// modifiers need to be created for this concept
 					modifierHelper();
+					
+					// this dagger/asterisk info is being recorded for display purposes later
+					if (classUsage != null && !classUsage.equals("")) {
+						SimpleRefSetMember refSetMember = new SimpleRefSetMemberJpa();
+						refSetMember.setConcept(concept);
+						refSetMember.setActive(true);
+						refSetMember.setEffectiveTime(dt.parse(effectiveTime));
+						refSetMember.setModuleId(new Long(conceptMap.get("defaultModule")
+								.getTerminologyId()));
+						refSetMember.setTerminology(terminology);
+						refSetMember.setTerminologyId(new Integer(refSetMemberCounter++).toString());
+						refSetMember.setTerminologyVersion(terminologyVersion);
+						refSetMember.setRefSetId(conceptMap.get(classUsage).getTerminologyId());
+					  concept.addSimpleRefSetMember(refSetMember);
+					}
 
 					// reset variables
 					code = "";
@@ -467,7 +534,11 @@ public class Icd10LoaderMojo extends AbstractMojo {
 					rubricId = "";
 					concept = new ConceptJpa();
 					currentSubClasses = new HashSet<String>();
+					classUsage = "";
+					referenceUsage = "";
+					paraChars = "";
 				}
+				
 				if (qName.equalsIgnoreCase("label")) {
 					fragmentList = new ArrayList<String>();
 				}
@@ -500,6 +571,10 @@ public class Icd10LoaderMojo extends AbstractMojo {
 					String key = mapEntry.getKey();
 					String parentCode = key.substring(0, key.indexOf(":"));
 					String type = key.substring(key.indexOf(":") + 1);
+					if (type.equals("aster"))
+						type = "dagger-to-asterisk";
+					if (type.equals("dagger"))
+						type = "asterisk-to-dagger";
 					for (Concept childConcept : mapEntry.getValue()) {
 						if (conceptMap.containsKey(parentCode)) {
 							Relationship relationship = new RelationshipJpa();
@@ -524,17 +599,25 @@ public class Icd10LoaderMojo extends AbstractMojo {
 									.getTerminologyId()));
 							relationship.setRelationshipGroup(new Integer(0));
 							Set<Relationship> rels = new HashSet<Relationship>();
+							if (childConcept.getRelationships() != null)
+								rels = childConcept.getRelationships();
 							rels.add(relationship);
 							childConcept.setRelationships(rels);
 						}
 					}
 				}
 				manager.close();
+				
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
 		}
 		
+		/**
+		 * Flatten fragment list.
+		 *
+		 * @return the string
+		 */
 		public String flattenFragmentList() {
 			StringBuffer sb = new StringBuffer();
 			for (String s : fragmentList) {
@@ -543,20 +626,28 @@ public class Icd10LoaderMojo extends AbstractMojo {
 			return sb.toString();
 		}
 		
+		/**
+		 * Adds the modifier class.
+		 *
+		 * @throws Exception the exception
+		 */
 		public void addModifierClass() throws Exception {
 
-			// create modifier concept
-			concept.setTerminologyId(modifier + modifierCode);
-			concept.setEffectiveTime(dt.parse(effectiveTime));
-			concept.setActive(true);
-			concept.setModuleId(new Long(conceptMap.get("defaultModule")
-					.getTerminologyId()));
-			concept.setDefinitionStatusId(new Long(conceptMap.get(
-					"defaultDefinitionStatus").getTerminologyId()));
-			concept.setTerminology(terminology);
-			concept.setTerminologyVersion(terminologyVersion);
-			concept.setDefaultPreferredName(chars.toString());
-			// NOTE: we don't persist these modifier classes
+			// create concept if it doesn't exist
+			if (!conceptMap.containsKey(code)) {
+				concept.setTerminologyId(modifier + modifierCode);
+				concept.setEffectiveTime(dt.parse(effectiveTime));
+				concept.setActive(true);
+				concept.setModuleId(new Long(conceptMap.get("defaultModule")
+						.getTerminologyId()));
+				concept.setDefinitionStatusId(new Long(conceptMap.get(
+						"defaultDefinitionStatus").getTerminologyId()));
+				concept.setTerminology(terminology);
+				concept.setTerminologyVersion(terminologyVersion);
+				concept.setDefaultPreferredName(chars.toString());
+				// NOTE: we don't persist these modifier classes
+				conceptMap.put(code, concept);
+			}
 
 			// add description to concept
 			Description desc = new DescriptionJpa();
@@ -577,7 +668,13 @@ public class Icd10LoaderMojo extends AbstractMojo {
 			concept.addDescription(desc);
 		}
 		
+		/**
+		 * Modifier helper.
+		 *
+		 * @throws Exception the exception
+		 */
 		public void modifierHelper() throws Exception {
+			// if there are modifiedBy tags on THIS concept
 			if (!modifiedByCode.equals("") && currentSubClasses.size() == 0) {
 				if (modifierMap.containsKey(modifiedByCode)) {
 					// for each code on that modifier, create a child and create a
@@ -587,9 +684,15 @@ public class Icd10LoaderMojo extends AbstractMojo {
 						Concept modConcept =
 								modifierMap.get(modifiedByCode).get(mapEntry.getKey());
 						Concept childConcept = new ConceptJpa();
+						String childTerminologyId = concept.getTerminologyId() + mapEntry.getKey();
+						// if more than one '.' in the id, get rid of second
+						/**if (childTerminologyId.indexOf('.') != childTerminologyId.lastIndexOf('.')) {
+							childTerminologyId = childTerminologyId.substring(1,childTerminologyId.lastIndexOf('.') ) + 
+							childTerminologyId.substring(childTerminologyId.lastIndexOf('.') + 1 );
+						} */
 						childConcept =
 								helper.createNewActiveConcept(
-										concept.getTerminologyId() + mapEntry.getKey(),
+										childTerminologyId,
 										terminology,
 										terminologyVersion,
 										concept.getDefaultPreferredName() + " "
@@ -608,15 +711,14 @@ public class Icd10LoaderMojo extends AbstractMojo {
 								terminologyVersion, effectiveTime);
 					}
 				} else {
-					Logger.getLogger(this.getClass()).info(
-							"modifiedByCode not in map " + modifiedByCode);
+					throw new Exception ("modifiedByCode not in map " + modifiedByCode);
 				}
 			}
 			// before we close class, check subClassToModifierMap to see if
 			// modifiers need to be created for this concept
 			if (subClassToModifierMap.containsKey(concept.getTerminologyId())) {
 				Set<String> newChildIds = new HashSet<String>();
-				Logger.getLogger(this.getClass()).info(
+				Logger.getLogger(this.getClass()).debug(
 						"need to add children for "
 								+ concept.getTerminologyId()
 								+ " "
@@ -700,4 +802,27 @@ public class Icd10LoaderMojo extends AbstractMojo {
 	}
 
 
+  /**
+   * Find version.
+   *
+   * @throws Exception the exception
+   */
+  public void findVersion() throws Exception {
+  	BufferedReader br = new BufferedReader(new FileReader(inputFile));
+  	String line = "";
+  	while ((line = br.readLine()) != null) {
+  	   if (line.contains("<Title")) {
+  	  	 int versionIndex = line.indexOf("version=");
+  	  	 if (line.contains("></Title>"))
+  	  	   terminologyVersion = line.substring(versionIndex + 9, line.indexOf("></Title>") -1);
+  	  	 else
+  	  		 terminologyVersion = line.substring(versionIndex + 9, versionIndex + 13);
+  	  	 effectiveTime = terminologyVersion + "0101";
+  	     break;
+  	   }
+  	}
+  	br.close();
+  	Logger.getLogger(this.getClass()).info("terminologyVersion: " + terminologyVersion);
+  	Logger.getLogger(this.getClass()).info("effectiveTime: " + effectiveTime);
+  }
 }
