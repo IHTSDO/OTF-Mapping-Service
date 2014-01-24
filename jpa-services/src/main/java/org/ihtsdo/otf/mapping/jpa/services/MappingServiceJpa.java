@@ -13,6 +13,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Persistence;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
@@ -34,6 +35,7 @@ import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpaTest;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -43,6 +45,7 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
@@ -277,17 +280,20 @@ public class MappingServiceJpa implements MappingService {
 	 *            the map project
 	 */
 	@Override
-	public void addMapProject(MapProject mapProject) {
+	public MapProject addMapProject(MapProject mapProject) {
 
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
 			manager.persist(mapProject);
 			tx.commit();
+			
+			return mapProject;
 		} catch (Exception e) {
 
 			e.printStackTrace();
 		}
+		return null;
 
 	}
 
@@ -1493,6 +1499,195 @@ public class MappingServiceJpa implements MappingService {
 
 		return m;
 
+	}
+	
+	/////////////////////////////////////////
+	/// Services for Map Project Creation
+	/////////////////////////////////////////
+	
+	@Override
+	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) {
+		
+		Logger.getLogger(MappingServiceJpa.class).info("Creating map records for project" + mapProject.getName());
+		
+		List<MapRecord> results = new ArrayList<MapRecord>();
+		
+		// retrieve all complex map ref set members for mapProject
+		javax.persistence.Query query =
+				manager
+						.createQuery("select r from ComplexMapRefSetMemberJpa r where r.refSetId = :refSetId order by r.concept.id, " +
+								"r.mapBlock, r.mapGroup, r.mapPriority");
+		
+		
+		
+		try {
+			query.setParameter("refSetId", mapProject.getRefSetId());
+			
+			// instantiate MappingService for getting descendant concepts
+			ContentService contentService = new ContentServiceJpa();
+			
+			// instantiate other local varibles
+			Long prevConceptId = new Long(-1);
+			MapRecord mapRecord = null;
+			
+			EntityTransaction tx = manager.getTransaction();
+			tx.begin();
+			
+			for (Object member : query.getResultList()) {
+				
+				ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
+				
+				if(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|") &&
+			    !(refSetMember.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")) &&
+			    !(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]"))){
+				 
+				  continue; 
+				}
+				
+				// retrieve the concept
+				Concept concept = refSetMember.getConcept();
+				
+				// if no concept for this ref set member, skip
+				if (concept == null)
+					continue;
+				
+				// if different concept than previous ref set member, create new mapRecord
+				if (!concept.getTerminologyId()
+						.equals(prevConceptId.toString())) {
+					
+					if (!prevConceptId.equals(new Long(-1))) {
+						results.add(mapRecord);
+					}
+					
+					mapRecord = new MapRecordJpa();
+					mapRecord.setConceptId(concept.getTerminologyId());
+					mapRecord.setConceptName(concept.getDefaultPreferredName());
+					
+					// set the map project id
+					mapRecord.setMapProjectId(mapProject.getId());
+				
+					// get the number of descendants
+					mapRecord.setCountDescendantConcepts( new Long(
+							contentService.getDescendants(
+								concept.getTerminologyId(),
+								concept.getTerminology(),
+								concept.getTerminologyVersion(),
+								new Long("116680003")).size()));
+			
+					// set the previous concept to this concept
+					prevConceptId = new Long(refSetMember.getConcept().getTerminologyId());
+					
+					// persist the record
+					manager.persist(mapRecord);
+					
+					if (results.size() % 500 == 0) {Logger.getLogger(MappingServiceJpa.class).info(Integer.toString(results.size()) + " records created");}
+				}
+				/* TODO Commented out until MapRecord addition is verified
+				 * 
+				// check if target is in desired terminology; if so, create entry
+				try {
+					String targetName = (String) manager.createQuery("select c.defaultPreferredName from ConceptJpa c where " +
+									"terminologyId = :terminologyId and " +
+									"terminology = :terminology and " +
+									"terminologyVersion = :terminologyVersion")
+									.setParameter("terminologyId", refSetMember.getMapTarget())
+									.setParameter("terminology", mapProject.getDestinationTerminology())
+									.setParameter("terminologyVersion", mapProject.getDestinationTerminologyVersion())
+									.getSingleResult();
+				
+					MapEntry mapEntry = new MapEntryJpa();
+					mapEntry.setTargetId(refSetMember.getMapTarget());
+					mapEntry.setTargetName(targetName);
+					mapEntry.setMapRecord(mapRecord);
+					mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
+					mapEntry.setRule(refSetMember.getMapRule());
+					mapEntry.setMapGroup(1);
+					mapEntry.setMapBlock(1);
+					
+					mapRecord.addMapEntry(mapEntry);
+					
+					// TODO Add support for advices, principles, notes
+					
+				} catch (Exception e) {
+					// do nothing
+				}*/
+				
+				
+			}
+			
+			tx.commit();
+			
+		} catch (Exception e) {
+			// TODO: Auto-generated try-catch block
+		}
+		return results;
+	}
+	
+	// ONLY FOR TESTING PURPOSES
+	public Long removeMapRecordsForProjectId(Long mapProjectId) {
+	
+		EntityTransaction tx = manager.getTransaction();
+		
+		
+		int nRecords = 0;
+		try {
+			tx.begin();
+			List<MapRecord> records = (List<MapRecord>) manager.createQuery("select m from MapRecordJpa m where m.mapProjectId = :mapProjectId")
+				.setParameter("mapProjectId", mapProjectId)
+				.getResultList();
+			
+			for (MapRecord record : records) {
+				
+				// delete notes
+				for (MapNote note : record.getMapNotes()) {
+					manager.remove(note);
+				}
+				record.setMapNotes(null); // TODO Check if this is necessary
+				
+				// delete entries
+				for (MapEntry entry : record.getMapEntries()) {
+					
+					// delete entry notes
+					for (MapNote entryNote : entry.getMapNotes()) {
+						manager.remove(entryNote);
+					}
+					entry.setMapNotes(null); // TODO Check if this is necessary
+					
+					// remove principles
+					entry.setMapPrinciples(null);
+					
+					// remove advices
+					entry.setMapAdvices(null);
+					
+					// merge entry to remove principle/advice associations
+					manager.merge(entry);
+					
+					// delete entry
+					manager.remove(entry);
+					
+					nRecords++;
+				}
+				
+				// remove principles
+				record.setMapPrinciples(null);
+				
+				// merge record to remove principle associations
+				manager.merge(record);
+				
+				// delete record
+				manager.remove(record);
+			}
+				
+			tx.commit();
+			
+			System.out.println(Integer.toString(nRecords) + " records deleted for map project id = " + mapProjectId.toString());
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new Long(nRecords);
+
+		
 	}
 
 }

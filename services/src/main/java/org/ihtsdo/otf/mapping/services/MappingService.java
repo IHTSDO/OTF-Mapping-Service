@@ -163,7 +163,7 @@ public interface MappingService {
 	
 	public void addMapLead(MapLead mapLead);
 	
-	public void addMapProject(MapProject mapProject);
+	public MapProject addMapProject(MapProject mapProject);
 	
 	public void addMapRecord(MapRecord mapRecord);
 	
@@ -232,11 +232,11 @@ public interface MappingService {
 	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
 			String terminology, String terminologyVersion, int threshold) throws Exception;
 
-	/**
-	 * @param id
-	 * @return
-	 */
 	public MapPrinciple getMapPrinciple(Long id);
+
+	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject);
+
+	public Long removeMapRecordsForProjectId(Long mapProjectId);
 
 	
 }

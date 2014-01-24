@@ -61,7 +61,7 @@ public class MapRecordJpa implements MapRecord {
 	private Long countDescendantConcepts;
 
 	/** The map records */
-	@OneToMany(mappedBy = "mapRecord", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH},  fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapEntryJpa.class)
+	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL,  fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapEntryJpa.class)
 	@IndexedEmbedded(targetElement=MapEntryJpa.class)
 	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
 	
@@ -71,7 +71,7 @@ public class MapRecordJpa implements MapRecord {
 	private Set<MapNote> mapNotes = new HashSet<MapNote>();
 	
 	/** The map principles. */
-	@ManyToMany(targetEntity=MapPrincipleJpa.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapPrincipleJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 	
@@ -99,7 +99,6 @@ public class MapRecordJpa implements MapRecord {
 	 * @return the id
 	 */
 	@Override
-	@XmlTransient
 	public Long getId() {
 		return this.id;
 	}
@@ -121,15 +120,6 @@ public class MapRecordJpa implements MapRecord {
 	@Override
 	public String getObjectId() {
 		return id.toString();
-	}
-	
-	/**
-	 * Sets the object ID from XML String
-	 * @param objectId the object Id as string
-	 */
-	@Override
-	public void setObjectId(String objectId) {
-		this.id = new Long(objectId);
 	}
 	
 	@Override

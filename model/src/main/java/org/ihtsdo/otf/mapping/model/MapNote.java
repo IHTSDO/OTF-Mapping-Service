@@ -29,12 +29,6 @@ public interface MapNote  {
 	public String getObjectId();
 	
 	/**
-	 * Sets the Long id from a string
-	 * @param objectId the object id in string form
-	 */
-	public void setObjectId(String objectId);
-	
-	/**
 	 * Returns the user.
 	 *
 	 * @return the user

@@ -408,9 +408,9 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result =
-				prime * result
-						+ ((relationships == null) ? 0 : relationships.hashCode());
+		/*result =
+				prime * result + 
+						+ ((relationships == null) ? 0 : relationships.hashCode());*/
 		return result;
 	}
 

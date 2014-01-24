@@ -33,6 +33,7 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -81,170 +82,25 @@ public class MapRecordJpaTest {
 		manager = factory.createEntityManager();
 		fullTextEntityManager = Search.getFullTextEntityManager(manager);
 
-		fullTextEntityManager.purgeAll(MapProjectJpa.class);
+		fullTextEntityManager.purgeAll(MapRecordJpa.class);
 		fullTextEntityManager.flushToIndexes();
-
-		// load test objects
-		EntityTransaction tx = manager.getTransaction();
-
-
-		List<MapProject> projects = new ArrayList<>();
-		List<MapSpecialist> specialists = new ArrayList<>();
-		List<MapLead> leads = new ArrayList<>();
-
-		// Add Specialists and Leads
-		MapLeadJpa mapLead = new MapLeadJpa();
-		mapLead.setName("Kathy Giannangelo");
-		mapLead.setUserName("kgi");
-		mapLead.setEmail("kgi@ihtsdo.org");
-		leads.add(mapLead);
-
-		MapSpecialistJpa mapSpecialist = new MapSpecialistJpa();
-		mapSpecialist.setName("Krista Lilly");
-		mapSpecialist.setUserName("kli");
-		mapSpecialist.setEmail("kli@ihtsdo.org");
-		specialists.add(mapSpecialist);
-
-		tx.begin();
-		for (MapSpecialist m : specialists) {
-			Logger.getLogger(MapRecordJpaTest.class).info(
-					"Adding map specialist " + m.getName());
-			manager.persist(m);
-		}
-
-		for (MapLead m : leads) {
-			Logger.getLogger(MapRecordJpaTest.class)
-					.info("Adding map lead " + m.getName());
-			manager.persist(m);
-		}
-		tx.commit();
-
-		MapProject mapProject = new MapProjectJpa();
-		mapProject.setName("SNOMED to ICD10");
-		mapProject.setRefSetId("447562003");
-		mapProject.setSourceTerminology("SNOMEDCT");
-		mapProject.setSourceTerminologyVersion("20140131");
-		mapProject.setDestinationTerminology("ICD10");
-		mapProject.setDestinationTerminologyVersion("2010");
-		mapProject.setBlockStructure(false);
-		mapProject.setGroupStructure(true);
-		mapProject.setPublished(true);
-		mapProject.addMapLead(leads.get(0));
-		mapProject.addMapSpecialist(specialists.get(0));
-		
-		Long mapProjectId = new Long("1");
-		mapProject.setId(mapProjectId);
-		projects.add(mapProject);
-		
-		tx.begin();
-		for (MapProject m : projects) {	
-			Logger.getLogger(MapRecordJpa.class).info(
-					"Adding map project " + m.getName());
-			manager.merge(m);
-		}
-		tx.commit();
-		
-		tx.begin();
-		loadMapRecords();
-		tx.commit();
 
 		// create audit reader for history records
 		reader = AuditReaderFactory.get(manager);
 		
 	}
-
+	
 	/**
-	 * Test map record load.
-	 */
-	@Test
-	public void testMapRecordLoad() {
-
-		EntityTransaction tx = manager.getTransaction();
-		Logger.getLogger(MapRecordJpaTest.class)
-		 .info("testMapRecordLoad()...");
-
-		tx.begin();
-		confirmLoad();
-		tx.commit();
-
-	}
-
-	/**
-	 * Load map records.
-	 * 
-	 * @throws Exception
-	 *             the exception
-	 */
-	private static void loadMapRecords() throws Exception {
-		mapRecord1 = new MapRecordJpa();
-		mapRecord1.setConceptId(conceptId1);
-		manager.persist(mapRecord1);
-		
-		MapEntry mapEntry = new MapEntryJpa();
-		mapEntry.setTargetId("Z53.2");
-		mapEntry.setMapRecord(mapRecord1);
-		mapEntry.setRelationId("447561005");
-		mapEntry.setRule("RULE");
-		MapAdvice advice = new MapAdviceJpa();
-		advice.setName("ALWAYS Z53.2");
-		advice.setDetail("ALWAYS Z53.2");
-		mapEntry.addMapAdvice(advice);
-				
-		Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
-		MapPrinciple mapPrinciple = new MapPrincipleJpa();
-		mapPrinciple.setDetail("testMapPrincipleDescription");
-		mapPrinciple.setName("testMapPrincipleName");
-		mapPrinciple.setSectionRef("testMapPrincipleSectionRef");
-		mapPrinciples.add(mapPrinciple);
-		
-		Set<MapNote> mapNotes = new HashSet<MapNote>();
-		MapNote mapNote = new MapNoteJpa();
-		mapNote.setNote("testMapNote1");
-		mapNote.setTimestamp(new Date(java.lang.System.currentTimeMillis()));
-		mapNote.setUser(mapSpecialist1);
-		mapNotes.add(mapNote);
-		
-		// create initial map record
-		mapRecord1.addMapEntry(mapEntry);
-		mapRecord1.setMapPrinciples(mapPrinciples);
-		mapRecord1.setMapProjectId(new Long("1"));
-		mapRecord1.setMapNotes(mapNotes);
-		manager.merge(mapRecord1);
-	}
-
-	/**
-	 * Confirm load.
-	 */
-	@SuppressWarnings("static-method")
-	private void confirmLoad() {
-		javax.persistence.Query query = manager
-				.createQuery("select m from MapRecordJpa m where conceptId = :conceptId");
-
-		// Try to retrieve the single expected result
-		// If zero or more than one result are returned, log error and set
-		// result to
-		// null
-		query.setParameter("conceptId", conceptId1);
-
-		MapRecord mapRecord = (MapRecord) query.getSingleResult();
-		assertEquals(mapRecord.getConceptId(), conceptId1);
-		assertEquals(mapRecord.getMapProjectId(), new Long("1"));
-		assertEquals(mapRecord.getMapEntries().size(), 1);
-		assertEquals(mapRecord.getConceptId(), conceptId1);
-		
-	}
-
-	/**
-	 * Test map project indexes.
-	 * 
-	 * @throws ParseException
-	 *             if lucene fails to parse query
+	 * Test map record indexes.
+	 * @throws Exception 
 	 */
 	@SuppressWarnings({
 			"static-method", "unchecked"
 	})
 	@Test
-	public void testMapRecordIndex() throws ParseException {
+	public void testMapRecordIndex() throws Exception {
+		
+		addTestData();
 
 		Logger.getLogger(MapRecordJpaTest.class)
 		  .info("testMapRecordIndex()...");
@@ -263,21 +119,26 @@ public class MapRecordJpaTest {
 			assertEquals(mapRecord.getMapProjectId(), new Long("1"));
 		}
 		assertTrue("results.size() " + results.size(), results.size() > 0);
+		
+		removeTestData();
 
 	}
 
 	/**
 	 * Test map project audit reader history.
+	 * @throws Exception 
 	 */
 	@SuppressWarnings("static-method")
 	@Test
-	public void testMapRecordAuditReader() {
+	public void testMapRecordAuditReader() throws Exception {
 
+		addTestData();
+		
 		Logger.getLogger(MapRecordJpaTest.class)
 		 .info("testMapRecordAuditReader()...");
 
 		// report initial number of revisions on MapRecord object
-		List<Number> revNumbers = reader.getRevisions(MapRecordJpa.class, 1L);
+		List<Number> revNumbers = reader.getRevisions(MapRecordJpa.class, new Long(1));
 		assertTrue(revNumbers.size() == 1);
 		Logger.getLogger(MapRecordJpaTest.class)
 		 .info("MapRecord: " + 1L + " - Versions: "
@@ -296,7 +157,7 @@ public class MapRecordJpaTest {
 		tx.commit();
 
 		// report incremented number of revisions on MapProject object
-		revNumbers = reader.getRevisions(MapRecordJpa.class, 1L);
+		revNumbers = reader.getRevisions(MapRecordJpa.class, new Long(1));
 		Logger.getLogger(MapRecordJpaTest.class)
 		 .info("MapRecord: " + 1L + " - Versions: "
 				+ revNumbers.toString());
@@ -309,7 +170,259 @@ public class MapRecordJpaTest {
 		mapRecord1.removeMapNote(mapNoteAddTest);
 		manager.persist(mapRecord1);
 		tx.commit();
+		
+		removeTestData();
 
+	}
+	
+	/**
+	 * Test map record delete functions for both record and mapped relationships
+	 * @throws Exception 
+	 */
+	@SuppressWarnings("static-method")
+	@Test
+	public void confirmMapRecordDelete() throws Exception {
+		
+		Logger.getLogger(MapRecordJpaTest.class)
+		.info("Testing MapRecord delete functions...");
+		
+		addTestData();
+		
+		EntityTransaction tx = manager.getTransaction();
+		Logger.getLogger(MapRecordJpaTest.class)
+		 .info("testMapRecordDelete()...");
+		
+		MapRecord mapRecord = (MapRecord) manager.createQuery("select m from MapRecordJpa m where conceptId = " + conceptId1).getSingleResult();
+		
+		// retrieve id of principle, entry, note
+		Long recordId = mapRecord.getId();
+		Long principleId = mapRecord.getMapPrinciples().iterator().next().getId();
+		Long noteId = mapRecord.getMapEntries().iterator().next().getId();
+		
+		MapEntry entry = mapRecord.getMapEntries().iterator().next();
+		Long entryId = entry.getId();
+		Long entryAdviceId = entry.getMapAdvices().iterator().next().getId();
+		Long entryNoteId = entry.getMapNotes().iterator().next().getId();
+		Long entryPrincipleId = entry.getMapPrinciples().iterator().next().getId();
+		
+		// delete the map record
+		tx.begin();
+		if (manager.contains(mapRecord)) {
+			manager.remove(mapRecord);
+		} else {
+			manager.remove(manager.merge(mapRecord));
+		}
+		
+		tx.commit();
+		
+		// test removal of record
+		assertTrue(manager.find(MapRecordJpa.class, recordId) == null);
+		
+		// test existence of principle (should not have been deleted)
+		assertTrue(manager.find(MapPrincipleJpa.class, principleId) != null);
+		
+		// test existence of entry (should have been deleted)
+		assertTrue(manager.find(MapEntryJpa.class, entryId) == null);
+		
+		// test existence of note (should have been deleted)
+		assertTrue(manager.find(MapNoteJpa.class, noteId) == null);
+		
+		// test existence of entry principle (should not have been deleted)
+		assertTrue(manager.find(MapPrincipleJpa.class, entryPrincipleId) != null);
+		
+		// test existence of entry note (should have been deleted)
+		assertTrue(manager.find(MapNoteJpa.class, entryNoteId) == null);
+				
+		// test existence of entry advice (should not have been deleted)
+		assertTrue(manager.find(MapAdviceJpa.class, entryAdviceId) != null);
+	
+		removeTestData();
+	}
+	
+/**
+ * Tests cascading delete settings from Entry to Note, Principle, Advice
+ * @throws Exception
+ */
+@SuppressWarnings("static-method")
+@Test
+public void confirmMapEntryDelete() throws Exception {
+		
+		Logger.getLogger(MapRecordJpaTest.class)
+		.info("Testing MapEntry delete functions...");
+		
+		addTestData();
+		
+		EntityTransaction tx = manager.getTransaction();
+		
+		MapEntry mapEntry = (MapEntry) manager.createQuery("select m from MapEntryJpa m where id = 1").getSingleResult();
+		
+		// retrieve id of principle, entry, note
+		
+		Long entryId = mapEntry.getId();
+		Long entryAdviceId = mapEntry.getMapAdvices().iterator().next().getId();
+		Long entryNoteId = mapEntry.getMapNotes().iterator().next().getId();
+		Long entryPrincipleId = mapEntry.getMapPrinciples().iterator().next().getId();
+		
+		// delete the map record
+		tx.begin();
+		if (manager.contains(mapEntry)) {
+			manager.remove(mapEntry);
+		} else {
+			manager.remove(manager.merge(mapEntry));
+		}
+		
+		tx.commit();
+		
+		
+		// test existence of entry (should have been deleted)
+		assertTrue(manager.find(MapEntryJpa.class, entryId) == null);
+		
+		// test existence of entry principle (should not have been deleted)
+		assertTrue(manager.find(MapPrincipleJpa.class, entryPrincipleId) != null);
+		
+		// test existence of entry note (should have been deleted)
+		assertTrue(manager.find(MapNoteJpa.class, entryNoteId) == null);
+				
+		// test existence of entry advice (should not have been deleted)
+		assertTrue(manager.find(MapAdviceJpa.class, entryAdviceId) != null);
+		
+		removeTestData();
+	}
+
+
+	/**
+	 * Confirms map record load.
+	 * @throws Exception 
+	 */
+	@Test
+	public void confirmMapRecordLoad() throws Exception {
+		
+		Logger.getLogger(MapRecordJpaTest.class)
+		.info("Testing MapRecord load...");
+		
+		// load data
+		addTestData();
+		
+		// test load of record
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapRecordJpa m where conceptId = :conceptId");
+
+		query.setParameter("conceptId", conceptId1);
+
+		MapRecord mapRecord = (MapRecord) query.getSingleResult();
+		assertEquals(mapRecord.getConceptId(), conceptId1);
+		assertEquals(mapRecord.getMapProjectId(), new Long("1"));
+		assertEquals(mapRecord.getMapEntries().size(), 1);
+		assertEquals(mapRecord.getMapPrinciples().size(), 1);
+		assertEquals(mapRecord.getConceptId(), conceptId1);
+		assertEquals(mapRecord.getCountDescendantConcepts(), new Long(0));
+		assertEquals(mapRecord.getMapNotes().size(), 1);
+		
+		// remove test data
+		removeTestData();
+		
+	}
+
+
+	/**
+	 * Load map records. Called before each unit test
+	 * Creates one mapRecord with:
+	 *  - 1 entry (has 1 principle, 1 advice, 1 note)
+	 *  - 1 principle
+	 *  - 1 note
+	 *  
+	 * @throws Exception
+	 *             the exception
+	 */
+	private static void addTestData() throws Exception {
+		
+		EntityTransaction tx = manager.getTransaction();
+		
+		tx.begin();
+		
+		// create map record
+		mapRecord1 = new MapRecordJpa();
+		mapRecord1.setConceptId(conceptId1);
+		mapRecord1.setConceptName("conceptTestName");
+		mapRecord1.setCountDescendantConcepts(new Long(0));
+		mapRecord1.setMapProjectId(new Long("1"));
+		manager.persist(mapRecord1);
+		
+		// create map entry
+		MapEntry mapEntry = new MapEntryJpa();
+		mapEntry.setTargetId("Z53.2");
+		mapEntry.setMapRecord(mapRecord1);
+		mapEntry.setRelationId("447561005");
+		mapEntry.setRule("RULE");
+		
+		// create map advice and persist (independent object)
+		MapAdvice mapAdvice = new MapAdviceJpa();
+		mapAdvice.setName("ALWAYS Z53.2");
+		mapAdvice.setDetail("ALWAYS Z53.2");
+		manager.persist(mapAdvice);
+		
+		// create map principle and persist (independent object)
+		MapPrinciple mapPrinciple = new MapPrincipleJpa();
+		mapPrinciple.setDetail("testMapPrincipleDescription");
+		mapPrinciple.setName("testMapPrincipleName");
+		mapPrinciple.setSectionRef("testMapPrincipleSectionRef");
+		manager.persist(mapPrinciple);
+		
+		MapNote mapNote = new MapNoteJpa();
+		mapNote.setNote("testMapNote1");
+		mapNote.setTimestamp(new Date(java.lang.System.currentTimeMillis()));
+		mapNote.setUser(mapSpecialist1);
+		
+		// add elements to map entry 
+		mapEntry.addMapPrinciple(mapPrinciple);
+		mapEntry.addMapAdvice(mapAdvice);
+		mapEntry.addMapNote(mapNote);
+		
+		// add elements to map record
+		mapRecord1.addMapEntry(mapEntry);
+		mapRecord1.addMapPrinciple(mapPrinciple);
+		mapRecord1.addMapNote(mapNote);
+		manager.merge(mapRecord1);
+		
+		tx.commit();
+	}
+	
+	/**
+	 * Removes all test data, called after each unit test
+	 */
+	@SuppressWarnings("unchecked")
+	private static void removeTestData() {
+		
+		EntityTransaction tx = manager.getTransaction();
+		
+		tx.begin();
+		
+		// remove map notes
+		for (MapNote m : (List<MapNote>) manager.createQuery("select m from MapNoteJpa m").getResultList()) {
+			manager.remove(m);
+		}
+		
+		// remove map principles
+		for (MapPrinciple m : (List<MapPrinciple>) manager.createQuery("select m from MapPrincipleJpa m").getResultList()) {
+			manager.remove(m);
+		}
+		
+		// remove map advices
+		for (MapAdvice m : (List<MapAdvice>) manager.createQuery("select m from MapAdviceJpa m").getResultList()) {
+			manager.remove(m);
+		}
+		
+		// remove map entries
+		for (MapEntry m : (List<MapEntry>) manager.createQuery("select m from MapEntryJpa m").getResultList()) {
+			manager.remove(m);
+		}
+		
+		// remove map records
+		for (MapRecord m : (List<MapRecord>) manager.createQuery("select m from MapRecordJpa m").getResultList()) {
+			manager.remove(m);
+		}
+		
+		tx.commit();
 	}
 
 	/**
@@ -317,6 +430,8 @@ public class MapRecordJpaTest {
 	 */
 	@AfterClass
 	public static void cleanUp() {
+		
+		removeTestData();
 
 		manager.close();
 		factory.close();
