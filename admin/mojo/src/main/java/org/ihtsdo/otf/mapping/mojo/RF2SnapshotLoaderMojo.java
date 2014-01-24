@@ -1436,7 +1436,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				concept.setActive(fields[2].equals("1") ? true : false);
 				concept.setModuleId(Long.valueOf(fields[3].trim()));
 				concept.setDefinitionStatusId(Long.valueOf(fields[4].trim()));
-				concept.setTerminology("terminology");
+				concept.setTerminology(terminology);
 				concept.setTerminologyVersion(version);
 				concept.setDefaultPreferredName("null");
 

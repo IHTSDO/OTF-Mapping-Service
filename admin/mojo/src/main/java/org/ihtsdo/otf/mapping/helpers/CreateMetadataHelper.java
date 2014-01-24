@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.helpers;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,9 +80,8 @@ public class CreateMetadataHelper {
 		//
 		// RelationshipType	
 		//		isa
-		//		considerRef
-		// 		inclusionRef
-		//  	exclusionRef
+		//		dagger-to-asterisk
+		// 		asterisk-to-dagger
 		//
 		// DefinitionStatus	
 		//		defaultDefinitionStatus
@@ -100,6 +98,9 @@ public class CreateMetadataHelper {
 		// Modifier
 		//		defaultModifier
 		//
+		// Asterisk refset
+		// Dagger refset
+		
 		
 		// 
 		// Make metadata concepts and descriptions
@@ -163,6 +164,16 @@ public class CreateMetadataHelper {
 				terminology, terminologyVersion, "Is a", effectiveTime);		
 		conceptMap.put("isa", isaConcept);
 		manager.persist(isaConcept);
+		
+		Concept asteriskToDaggerConcept = createNewActiveConcept(new Integer(metadataCounter++).toString(),
+				terminology, terminologyVersion, "Asterisk to dagger", effectiveTime);		
+		conceptMap.put("asterisk-to-dagger", asteriskToDaggerConcept);
+		manager.persist(asteriskToDaggerConcept);
+		
+		Concept daggerToAsteriskConcept = createNewActiveConcept(new Integer(metadataCounter++).toString(),
+				terminology, terminologyVersion, "Dagger to asterisk", effectiveTime);		
+		conceptMap.put("dagger-to-asterisk", daggerToAsteriskConcept);
+		manager.persist(daggerToAsteriskConcept);
 
 		Concept exclusionConcept = createNewActiveConcept(new Integer(metadataCounter++).toString(),
 				terminology, terminologyVersion, "Exclusion", effectiveTime);			
@@ -271,7 +282,17 @@ public class CreateMetadataHelper {
 				terminology, terminologyVersion, "Modifier link", effectiveTime);
 		conceptMap.put("modifierlink", modifierlinkConcept);
 		manager.persist(modifierlinkConcept);
+		
+		Concept asteriskRefsetConcept = createNewActiveConcept(new Integer(metadataCounter++).toString(),
+				terminology, terminologyVersion, "Asterisk refset", effectiveTime);
+		conceptMap.put("aster", asteriskRefsetConcept);
+		manager.persist(asteriskRefsetConcept);
 
+		Concept daggerRefsetConcept = createNewActiveConcept(new Integer(metadataCounter++).toString(),
+				terminology, terminologyVersion, "Dagger refset", effectiveTime);
+		conceptMap.put("dagger", daggerRefsetConcept);
+		manager.persist(daggerRefsetConcept);
+		
 		Concept metadataConcept = createNewActiveConcept(new Integer(metadataCounter++).toString(),
 				terminology, terminologyVersion, "Metadata", effectiveTime);
 		conceptMap.put("metadata", metadataConcept);
@@ -280,6 +301,14 @@ public class CreateMetadataHelper {
 		//
 		// Make relationships for metadata
 		//
+		createIsaRelationship(metadataConcept, asteriskRefsetConcept,
+				new Integer(metadataCounter++).toString(), terminology,
+				terminologyVersion, effectiveTime);
+		
+		createIsaRelationship(metadataConcept, daggerRefsetConcept,
+				new Integer(metadataCounter++).toString(), terminology,
+				terminologyVersion, effectiveTime);
+		
 		createIsaRelationship(metadataConcept, descriptionTypeConcept,
 				new Integer(metadataCounter++).toString(), terminology,
 				terminologyVersion, effectiveTime);
