@@ -75,6 +75,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
  *           </goals>
  *           <configuration>
  *             <propertiesFile>${project.build.directory}/generated-sources/org/ihtsdo</propertiesFile>
+ *             <terminology>SNOMEDCT</terminology>
  *           </configuration>
  *         </execution>
  *       </executions>
@@ -95,6 +96,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 * @required
 	 */
 	private File propertiesFile;
+	
+	/**
+	 * Name of terminology to be loaded.
+	 * @parameter
+	 * @required
+	 */
+	private String terminology;
 
 	/** String for core input directory */
 	private String coreInputDirString;
@@ -555,7 +563,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	}
 
-		
 	/**
 	 * File management for sorted files; calls sort_RF2_Files
 	 * 
@@ -1429,7 +1436,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				concept.setActive(fields[2].equals("1") ? true : false);
 				concept.setModuleId(Long.valueOf(fields[3].trim()));
 				concept.setDefinitionStatusId(Long.valueOf(fields[4].trim()));
-				concept.setTerminology("SNOMEDCT");
+				concept.setTerminology("terminology");
 				concept.setTerminologyVersion(version);
 				concept.setDefaultPreferredName("null");
 
@@ -1469,7 +1476,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				relationship.setRelationshipGroup(Integer.valueOf(fields[6].trim())); // relationshipGroup
 				relationship.setTypeId(Long.valueOf(fields[7].trim())); // typeId
 				relationship.setCharacteristicTypeId(Long.valueOf(fields[8].trim())); // characteristicTypeId
-				relationship.setTerminology("SNOMEDCT");
+				relationship.setTerminology(terminology);
 				relationship.setTerminologyVersion(version);
 				relationship
 						.setModifierId(Long.valueOf(fields[9].trim()));
@@ -1516,7 +1523,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				description.setTypeId(Long.valueOf(fields[6].trim()));
 				description.setTerm(fields[7]);
 				description.setCaseSignificanceId(Long.valueOf(fields[8].trim()));
-				description.setTerminology("SNOMEDCT");
+				description.setTerminology(terminology);
 				description.setTerminologyVersion(version);
 
 				description.setConcept(getConcept(fields[4],
@@ -1567,7 +1574,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				attributeValueRefSetMember.setValueId(Long.valueOf(fields[6].trim()));
 
 				// Terminology attributes
-				attributeValueRefSetMember.setTerminology("SNOMEDCT");
+				attributeValueRefSetMember.setTerminology(terminology);
 				attributeValueRefSetMember.setTerminologyVersion(version);
 
 				// Retrieve concept -- firstToken is referencedComponentId
@@ -1613,7 +1620,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				// NONE
 
 				// Terminology attributes
-				simpleRefSetMember.setTerminology("SNOMEDCT");
+				simpleRefSetMember.setTerminology(terminology);
 				simpleRefSetMember.setTerminologyVersion(version);
 
 				// Retrieve Concept -- firstToken is referencedComonentId
@@ -1658,7 +1665,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				simpleMapRefSetMember.setMapTarget(fields[6]);
 
 				// Terminology attributes
-				simpleMapRefSetMember.setTerminology("SNOMEDCT");
+				simpleMapRefSetMember.setTerminology(terminology);
 				simpleMapRefSetMember.setTerminologyVersion(version);
 
 				// Retrieve concept -- firstToken is referencedComponentId
@@ -1716,7 +1723,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setMapBlockAdvice(null); // no default
 
 				// Terminology attributes
-				complexMapRefSetMember.setTerminology("SNOMEDCT");
+				complexMapRefSetMember.setTerminology(terminology);
 				complexMapRefSetMember.setTerminologyVersion(version);
 
 				// set Concept
@@ -1779,7 +1786,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setMapBlockAdvice(null); // no default
 
 				// Terminology attributes
-				complexMapRefSetMember.setTerminology("SNOMEDCT");
+				complexMapRefSetMember.setTerminology(terminology);
 				complexMapRefSetMember.setTerminologyVersion(version);
 
 				// set Concept
@@ -1824,7 +1831,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						.setAcceptabilityId(Long.valueOf(fields[6].trim()));
 
 				// Terminology attributes
-				languageRefSetMember.setTerminology("SNOMEDCT");
+				languageRefSetMember.setTerminology(terminology);
 				languageRefSetMember.setTerminologyVersion(version);
 
 				// Set the description
