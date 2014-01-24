@@ -13,34 +13,23 @@ mysql.test.pwd=rootpwd
 #   this directory must have Refset/ and Terminology/ directories
 #
 loader.main.input.data=C:\\data\\usext-mini-data\\src\\main\\resources\\org\\ihtsdo
-# loader.main.input.data=C:\\data\\SnomedCT_Release_INT_20130731\\RF2Release\\Snapshot
 
 #
 # Path to icpc data
-#   this must be a file named icpc.xml
 #
-loader.icpc.input.data=C:\\data\\icpc.xml
-loader.icpc.terminology=ICPC
-loader.icpc.terminology.version=2013
-loader.icpc.effective.time=20130101
+loader.ICPC.input.data=C:\\data\\icpc.xml
 
 #
 # Path to icd9cm data
-#   this must be a file named icd9cm.xml
 #
-loader.icd9cm.input.data=C:\\data\\icd9cm.xml
-loader.icd9cm.terminology=icd9cm
-loader.icd9cm.terminology.version=2013
-loader.icd9cm.effective.time=20130101
+loader.ICD9CM.input.data=C:\\data\\icd9cm.xml
+
 
 #
 # Path to icd10 data
-#   this must be a file named icd10.xml
 #
-loader.icd10.input.data=C:\\data\\icd10.xml
-loader.icd10.terminology=icd10
-loader.icd10.terminology.version=2013
-loader.icd10.effective.time=20130101
+loader.ICD10.input.data=C:\\data\\icd10.xml
+
 
 #
 # Loader settings for preferred name
