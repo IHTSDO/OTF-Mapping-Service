@@ -40,7 +40,6 @@ public class MapPrincipleImpl implements MapPrinciple {
 	 * @return the id
 	 */
 	@Override
-	@XmlTransient
 	public Long getId() {
 		return this.id;
 	}
@@ -63,15 +62,7 @@ public class MapPrincipleImpl implements MapPrinciple {
 	public String getObjectId() {
 		return id.toString();
 	}
-	
-	/**
-	 * Sets the object ID from XML String
-	 * @param objectId the object Id as string
-	 */
-	@Override
-	public void setObjectId(String objectId) {
-		this.id = new Long(objectId);
-	}
+
 	
 	@Override
 	public String getPrincipleId() {

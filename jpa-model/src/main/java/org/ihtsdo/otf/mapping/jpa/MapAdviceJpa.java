@@ -65,7 +65,6 @@ public class MapAdviceJpa implements MapAdvice {
 	 * @return the id
 	 */
 	@Override
-	@XmlTransient
 	public Long getId() {
 		return this.id;
 	}
@@ -89,14 +88,6 @@ public class MapAdviceJpa implements MapAdvice {
 		return id.toString();
 	}
 	
-	/**
-	 * Sets the object ID from XML String
-	 * @param objectId the object Id as string
-	 */
-	@Override
-	public void setObjectId(String objectId) {
-		this.id = new Long(objectId);
-	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getDetail()
