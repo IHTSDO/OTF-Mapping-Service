@@ -17,6 +17,8 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * JPA enabled map advice
  */
@@ -24,6 +26,7 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 @Table(name = "map_advices")
 @Audited
 @XmlRootElement(name="mapAdvice")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapAdviceJpa implements MapAdvice {
 
 	/** The id. */

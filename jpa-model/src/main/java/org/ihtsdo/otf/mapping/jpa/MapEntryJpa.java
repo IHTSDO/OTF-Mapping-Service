@@ -31,6 +31,8 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * The Map Entry Jpa object.
  *
@@ -39,6 +41,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 @Table(name = "map_entries")
 @Audited
 @XmlRootElement(name="mapEntry")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapEntryJpa implements MapEntry {
 	
 	/** The id. */

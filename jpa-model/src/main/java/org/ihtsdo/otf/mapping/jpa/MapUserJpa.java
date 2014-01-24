@@ -12,6 +12,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class MapUserJpa.
@@ -22,6 +24,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 @Table(name = "map_users")
 @Audited
 @XmlRootElement(name="mapUser")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapUserJpa implements MapUser {
 
 	

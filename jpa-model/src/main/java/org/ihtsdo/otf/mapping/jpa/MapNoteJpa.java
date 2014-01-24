@@ -19,6 +19,8 @@ import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * The Map Note Jpa object
  */
@@ -26,6 +28,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 @Table(name = "map_notes")
 @Audited
 @XmlRootElement(name="mapNote")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapNoteJpa implements MapNote {
 
 	/** The id. */
