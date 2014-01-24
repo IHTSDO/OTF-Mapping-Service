@@ -13,6 +13,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * The Class MapSpecialistJpa.
  *
@@ -21,6 +23,7 @@ import org.ihtsdo.otf.mapping.model.MapSpecialist;
 @Table(name = "map_specialists")
 @Audited
 @XmlRootElement(name="mapSpecialist")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapSpecialistJpa implements MapSpecialist {
 
 	/** The id. */

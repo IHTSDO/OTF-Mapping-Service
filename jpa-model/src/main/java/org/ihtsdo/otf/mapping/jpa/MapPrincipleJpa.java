@@ -16,6 +16,8 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 /**
  * The Map Principle Object for the Jpa Domain
@@ -26,6 +28,7 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 @Table(name = "map_principles")
 @Audited
 @XmlRootElement(name="mapPrinciple")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapPrincipleJpa implements MapPrinciple {
 
 	@Id

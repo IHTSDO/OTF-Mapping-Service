@@ -32,6 +32,8 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 /**
  * The Map Record Jpa object
@@ -41,6 +43,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 @Audited
 @Indexed
 @XmlRootElement(name="mapRecord")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapRecordJpa implements MapRecord {
 
 	/** The id. */
