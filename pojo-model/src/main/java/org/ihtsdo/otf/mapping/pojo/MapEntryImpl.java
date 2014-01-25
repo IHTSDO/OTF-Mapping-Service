@@ -2,6 +2,9 @@ package org.ihtsdo.otf.mapping.pojo;
 
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlTransient;
+
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
@@ -52,21 +55,34 @@ public class MapEntryImpl implements MapEntry {
 	/** The map block */
 	private int mapBlock;
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
 	@Override
 	public Long getId() {
-		return id;
+		return this.id;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setId(java.lang.Long)
+	
+	/**
+	 * Set the id
+	 * @param id the id
 	 */
 	@Override
 	public void setId(Long id) {
-		this.id = id;
+		this.id = id;		
 	}
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
+	@Override
+	public String getObjectId() {
+		return id.toString();
+	}
+
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getNotes()

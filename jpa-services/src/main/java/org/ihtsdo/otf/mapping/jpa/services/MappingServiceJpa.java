@@ -13,6 +13,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Persistence;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
@@ -34,6 +35,7 @@ import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpaTest;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -43,26 +45,28 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+
 /**
  * 
  * The class for MappingServiceJpa
- *
+ * 
  */
 public class MappingServiceJpa implements MappingService {
 
-		/** The factory. */
+	/** The factory. */
 	private static EntityManagerFactory factory;
-	
+
 	/** The manager */
 	private EntityManager manager;
-	
+
 	/** The full text entity manager */
-    private	FullTextEntityManager fullTextEntityManager;
-	
+	private FullTextEntityManager fullTextEntityManager;
+
 	/** The indexed field names. */
 	private static Set<String> fieldNames;
 
@@ -70,69 +74,76 @@ public class MappingServiceJpa implements MappingService {
 	 * Instantiates an empty {@link MappingServiceJpa}.
 	 */
 	public MappingServiceJpa() {
-		
+
 		// created once
 		if (factory == null) {
-			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+			factory = Persistence
+					.createEntityManagerFactory("MappingServiceDS");
 		}
-		
+
 		// created on each instantiation
 		manager = factory.createEntityManager();
-		
+
 		// fieldNames created once
 		if (fieldNames == null) {
 			fieldNames = new HashSet<String>();
-	
-			fullTextEntityManager =
-					org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
-			IndexReaderAccessor indexReaderAccessor =
-					fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
-			Set<String> indexedClassNames =
-					fullTextEntityManager.getSearchFactory().getStatistics()
-							.getIndexedClassNames();
+
+			fullTextEntityManager = org.hibernate.search.jpa.Search
+					.getFullTextEntityManager(manager);
+			IndexReaderAccessor indexReaderAccessor = fullTextEntityManager
+					.getSearchFactory().getIndexReaderAccessor();
+			Set<String> indexedClassNames = fullTextEntityManager
+					.getSearchFactory().getStatistics().getIndexedClassNames();
 			for (String indexClass : indexedClassNames) {
 				IndexReader indexReader = indexReaderAccessor.open(indexClass);
 				try {
-					for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+					for (FieldInfo info : ReaderUtil
+							.getMergedFieldInfos(indexReader)) {
 						fieldNames.add(info.name);
 					}
 				} finally {
 					indexReaderAccessor.close(indexReader);
 				}
 			}
-			
-			
-			if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
-			
+
+			if (fullTextEntityManager != null) {
+				fullTextEntityManager.close();
+			}
+
 			// closing fullTextEntityManager also closes manager, recreate
 			manager = factory.createEntityManager();
 		}
 	}
-	
+
 	/**
 	 * Close the manager when done with this service
 	 */
 	@Override
 	public void close() throws Exception {
-		if (manager.isOpen()) { manager.close(); }
+		if (manager.isOpen()) {
+			manager.close();
+		}
 	}
-	
+
 	/**
 	 * Returns the status of the manager
+	 * 
 	 * @return true if open, false if not
 	 */
 	public boolean isManagerOpen() {
 		return this.manager.isOpen();
 	}
-	
+
 	/**
 	 * Returns the status of the factory
+	 * 
 	 * @return true if factory open, false if not
 	 */
 	public static boolean isFactoryOpen() {
 		return MappingServiceJpa.factory.isOpen();
 	}
-	////////////////////////////////////
+
+	// //////////////////////////////////
 	// MapProject
 	// - getMapProjects
 	// - getMapProject(Long id)
@@ -141,167 +152,181 @@ public class MappingServiceJpa implements MappingService {
 	// - addMapProject(MapProject mapProject)
 	// - updateMapProject(MapProject mapProject)
 	// - removeMapProject(MapProject mapProject)
-	////////////////////////////////////
-	
+	// //////////////////////////////////
+
 	/**
-	* Return map project for auto-generated id
-	* @param id the auto-generated id
-	* @return the MapProject
-	*/
+	 * Return map project for auto-generated id
+	 * 
+	 * @param id
+	 *            the auto-generated id
+	 * @return the MapProject
+	 */
 	@Override
 	public MapProject getMapProject(Long id) {
-		
+
 		MapProject m = null;
-		
-		javax.persistence.Query query = manager.createQuery("select m from MapProjectJpa m where id = :id");
+
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapProjectJpa m where id = :id");
 		query.setParameter("id", id);
 		try {
-			
+
 			m = (MapProject) query.getSingleResult();
 		} catch (Exception e) {
-			System.out.println("Could not find map project for id = " + id.toString());
+			System.out.println("Could not find map project for id = "
+					+ id.toString());
 		}
 
 		return m;
-		
+
 	}
-		
+
 	/**
-	* Retrieve all map projects
-	* @return a List of MapProjects
-	*/
+	 * Retrieve all map projects
+	 * 
+	 * @return a List of MapProjects
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<MapProject> getMapProjects() {
-		
-		
-		if (!manager.isOpen()) { System.out.println("Feh"); }
-		
+
+		if (!manager.isOpen()) {
+			System.out.println("Feh");
+		}
+
 		List<MapProject> m = null;
-			
+
 		// construct query
-		javax.persistence.Query query = manager.createQuery("select m from MapProjectJpa m");
-		
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapProjectJpa m");
+
 		// Try query
 		try {
 			m = query.getResultList();
 		} catch (Exception e) {
-			System.out.println("MappingServiceJpa.getMapProjects(): Could not retrieve map projects.");
+			System.out
+					.println("MappingServiceJpa.getMapProjects(): Could not retrieve map projects.");
 			e.printStackTrace();
 		}
-		
-		
-		
+
 		return m;
 	}
-	
 
 	/**
-	* Query for MapProjects
-	* @param query the query
-	* @return the list of MapProject
-	*/
+	 * Query for MapProjects
+	 * 
+	 * @param query
+	 *            the query
+	 * @return the list of MapProject
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter) {
+	public SearchResultList findMapProjects(String query,
+			PfsParameter pfsParameter) {
 
-		
 		SearchResultList s = new SearchResultListJpa();
-		
-		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
-		
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
 		try {
-			SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			SearchFactory searchFactory = fullTextEntityManager
+					.getSearchFactory();
 			Query luceneQuery;
-		
+
 			// construct luceneQuery based on URL format
 			if (query.indexOf(':') == -1) { // no fields indicated
-				MultiFieldQueryParser queryParser =
-						new MultiFieldQueryParser(Version.LUCENE_36,
-								fieldNames.toArray(new String[0]),
-								searchFactory.getAnalyzer(MapProjectJpa.class));
+				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
+						Version.LUCENE_36, fieldNames.toArray(new String[0]),
+						searchFactory.getAnalyzer(MapProjectJpa.class));
 				queryParser.setAllowLeadingWildcard(false);
 				luceneQuery = queryParser.parse(query);
-		
-			
+
 			} else { // field:value
-				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+						"summary",
 						searchFactory.getAnalyzer(MapProjectJpa.class));
 				luceneQuery = queryParser.parse(query);
 			}
-			
-			List<MapProject> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapProjectJpa.class)
-														.getResultList();	
-			
-			System.out.println(Integer.toString(m.size()) + " map projects retrieved");
-			
+
+			List<MapProject> m = fullTextEntityManager.createFullTextQuery(
+					luceneQuery, MapProjectJpa.class).getResultList();
+
+			System.out.println(Integer.toString(m.size())
+					+ " map projects retrieved");
+
 			for (MapProject mp : m) {
-				s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId().toString(),mp.getName()));
+				s.addSearchResult(new SearchResultJpa(mp.getId(), mp
+						.getRefSetId().toString(), mp.getName()));
 			}
-			
+
 			s.sortSearchResultsById();
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
-		
-		
+
+		if (fullTextEntityManager != null) {
+			fullTextEntityManager.close();
+		}
+
 		return s;
 	}
-	
+
 	/**
 	 * Add a map project
-	 * @param mapProject the map project
+	 * 
+	 * @param mapProject
+	 *            the map project
 	 */
 	@Override
-	public void addMapProject(MapProject mapProject) {
-		
-		
+	public MapProject addMapProject(MapProject mapProject) {
+
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
 			manager.persist(mapProject);
 			tx.commit();
-		} catch (Exception e) {
 			
+			return mapProject;
+		} catch (Exception e) {
+
 			e.printStackTrace();
 		}
-		
-		
-		
+		return null;
+
 	}
-	
+
 	/**
 	 * Update a map project
-	 * @param mapProject the changed map project
+	 * 
+	 * @param mapProject
+	 *            the changed map project
 	 */
 	@Override
 	public void updateMapProject(MapProject mapProject) {
-		
-		
+
 		EntityTransaction tx = manager.getTransaction();
-		try {		
+		try {
 			tx.begin();
 			manager.merge(mapProject);
 			tx.commit();
 		} catch (Exception e) {
-			
+
 			e.printStackTrace();
 		}
-		
-		
+
 	}
-	
+
 	/**
 	 * Remove (delete) a map project
-	 * @param mapProjectId the map project to be removed
+	 * 
+	 * @param mapProjectId
+	 *            the map project to be removed
 	 */
 	@Override
 	public void removeMapProject(Long mapProjectId) {
-		
-		
+
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			// first, remove the leads and specialists from this project
@@ -310,220 +335,227 @@ public class MappingServiceJpa implements MappingService {
 			mp.setMapLeads(null);
 			mp.setMapSpecialists(null);
 			tx.commit();
-			
+
 			// now remove the project
 			tx.begin();
 			manager.remove(mp);
 			tx.commit();
 		} catch (Exception e) {
-			
+
 			e.printStackTrace();
 		}
-		
-		
+
 	}
-	
-	/////////////////////////////////////////////////////////////////
+
+	// ///////////////////////////////////////////////////////////////
 	// MapSpecialist
-	// - getMapSpecialists() 
+	// - getMapSpecialists()
 	// - getMapProjectsForSpecialist(MapSpecialist mapSpecialist)
 	// - findMapSpecialists(String query)
 	// - addMapSpecialist(MapSpecialist mapSpecialist)
 	// - updateMapSpecialist(MapSpecialist mapSpecialist)
 	// - removeMapSpecialist(Long id)
-	/////////////////////////////////////////////////////////////////
-	
+	// ///////////////////////////////////////////////////////////////
+
 	/**
-	* Retrieve all map specialists
-	* @return a List of MapSpecialists
-	*/
+	 * Retrieve all map specialists
+	 * 
+	 * @return a List of MapSpecialists
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<MapSpecialist> getMapSpecialists() {
-		
-		
+
 		List<MapSpecialist> m = null;
-		
-		javax.persistence.Query query = manager.createQuery("select m from MapSpecialistJpa m");
-		
+
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapSpecialistJpa m");
+
 		// Try query
 		try {
 			m = query.getResultList();
 		} catch (Exception e) {
 			// Do nothing
 		}
-		
-		
-		
+
 		return m;
 	}
-	
+
 	/**
-	* Return map specialist for auto-generated id
-	* @param id the auto-generated id
-	* @return the MapSpecialist
-	*/
+	 * Return map specialist for auto-generated id
+	 * 
+	 * @param id
+	 *            the auto-generated id
+	 * @return the MapSpecialist
+	 */
 	@Override
 	public MapSpecialist getMapSpecialist(Long id) {
-		
-		
+
 		MapSpecialist m = null;
-		
-		javax.persistence.Query query = manager.createQuery("select m from MapSpecialistJpa m where id = :id");
+
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapSpecialistJpa m where id = :id");
 		query.setParameter("id", id);
 		try {
 			m = (MapSpecialist) query.getSingleResult();
 		} catch (Exception e) {
-			System.out.println("Could not find map specialist for id = " + id.toString());
+			System.out.println("Could not find map specialist for id = "
+					+ id.toString());
 		}
-		
-		
-		
+
 		return m;
-		
+
 	}
-	
+
 	/**
-	* Retrieve all map projects assigned to a particular map specialist
-	* @param mapSpecialist the map specialist
-	* @return a List of MapProjects
-	*/
+	 * Retrieve all map projects assigned to a particular map specialist
+	 * 
+	 * @param mapSpecialist
+	 *            the map specialist
+	 * @return a List of MapProjects
+	 */
 	@Override
-	public List<MapProject> getMapProjectsForMapSpecialist(MapSpecialist mapSpecialist) {
-		
+	public List<MapProject> getMapProjectsForMapSpecialist(
+			MapSpecialist mapSpecialist) {
+
 		List<MapProject> mp_list = getMapProjects();
 		List<MapProject> mp_list_return = new ArrayList<MapProject>();
-		
+
 		// iterate and check for presence of mapSpecialist
-		for (MapProject mp : mp_list ) {
-		
+		for (MapProject mp : mp_list) {
+
 			Set<MapSpecialist> ms_set = mp.getMapSpecialists();
-			 
-			 for (MapSpecialist ms : ms_set) {
-					if (ms.equals(mapSpecialist)) {
-						mp_list_return.add(mp);
-					}
-			 }
+
+			for (MapSpecialist ms : ms_set) {
+				if (ms.equals(mapSpecialist)) {
+					mp_list_return.add(mp);
+				}
+			}
 		}
-			
+
 		return mp_list_return;
 	}
-	
-	/** 
-	* Query for MapSpecialists
-	* @param query the query
-	* @return the List of MapProjects
-	*/
+
+	/**
+	 * Query for MapSpecialists
+	 * 
+	 * @param query
+	 *            the query
+	 * @return the List of MapProjects
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public SearchResultList findMapSpecialists(String query, PfsParameter pfsParameter) {
+	public SearchResultList findMapSpecialists(String query,
+			PfsParameter pfsParameter) {
 
-		
-		SearchResultList s =new SearchResultListJpa();
-		
-		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
-		
+		SearchResultList s = new SearchResultListJpa();
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
 		try {
-			
-			SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+
+			SearchFactory searchFactory = fullTextEntityManager
+					.getSearchFactory();
 			Query luceneQuery;
-		
+
 			// construct luceneQuery based on URL format
 			if (query.indexOf(':') == -1) { // no fields indicated
-				MultiFieldQueryParser queryParser =
-						new MultiFieldQueryParser(Version.LUCENE_36,
-								fieldNames.toArray(new String[0]),
-								searchFactory.getAnalyzer(MapSpecialistJpa.class));
+				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
+						Version.LUCENE_36, fieldNames.toArray(new String[0]),
+						searchFactory.getAnalyzer(MapSpecialistJpa.class));
 				queryParser.setAllowLeadingWildcard(false);
 				luceneQuery = queryParser.parse(query);
-		
-			
+
 			} else { // field:value
-				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+						"summary",
 						searchFactory.getAnalyzer(MapSpecialistJpa.class));
 				luceneQuery = queryParser.parse(query);
 			}
-			
-			List<MapSpecialist> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapSpecialistJpa.class)
-														.getResultList();
-			
+
+			List<MapSpecialist> m = fullTextEntityManager.createFullTextQuery(
+					luceneQuery, MapSpecialistJpa.class).getResultList();
+
 			for (MapSpecialist ms : m) {
-				s.addSearchResult(new SearchResultJpa(ms.getId(), "", ms.getName()));
+				s.addSearchResult(new SearchResultJpa(ms.getId(), "", ms
+						.getName()));
 			}
-			
+
 			s.sortSearchResultsById();
-			
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		if (fullTextEntityManager != null) { fullTextEntityManager.close(); }
-		
-		
+
+		if (fullTextEntityManager != null) {
+			fullTextEntityManager.close();
+		}
+
 		return s;
 	}
-	
+
 	/**
 	 * Add a map specialist
-	 * @param mapSpecialist the map specialist
+	 * 
+	 * @param mapSpecialist
+	 *            the map specialist
 	 */
 	@Override
 	public void addMapSpecialist(MapSpecialist mapSpecialist) {
-		
-		
+
 		EntityTransaction tx = manager.getTransaction();
-		
+
 		try {
 			tx.begin();
 			manager.persist(mapSpecialist);
 			tx.commit();
 		} catch (Exception e) {
-			
+
 			e.printStackTrace();
 		}
-		
-		
-		
+
 	}
-	
+
 	/**
 	 * Update a map specialist
-	 * @param mapSpecialist the changed map specialist
+	 * 
+	 * @param mapSpecialist
+	 *            the changed map specialist
 	 */
 	@Override
 	public void updateMapSpecialist(MapSpecialist mapSpecialist) {
-		
-		
+
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
 			manager.merge(mapSpecialist);
 			tx.commit();
 		} catch (Exception e) {
-			
+
 			e.printStackTrace();
 		}
-		
-		
+
 	}
-	
+
 	/**
 	 * Remove (delete) a map specialist
-	 * @param mapSpecialistId the map specialist to be removed
+	 * 
+	 * @param mapSpecialistId
+	 *            the map specialist to be removed
 	 */
 	@Override
 	public void removeMapSpecialist(Long mapSpecialistId) {
-		
-		
+
 		EntityTransaction tx = manager.getTransaction();
-		
+
 		// retrieve this map specialist
-		MapSpecialist ms = manager.find(MapSpecialistJpa.class, mapSpecialistId);
+		MapSpecialist ms = manager
+				.find(MapSpecialistJpa.class, mapSpecialistId);
 
 		// retrieve all projects on which this specialist appears
 		List<MapProject> projects = getMapProjectsForMapSpecialist(ms);
-		
+
 		try {
 			// remove specialist from all these projects
 			tx.begin();
@@ -537,89 +569,92 @@ public class MappingServiceJpa implements MappingService {
 			tx.begin();
 			manager.remove(ms);
 			tx.commit();
-			
+
 		} catch (Exception e) {
-			System.out.println("Failed to remove map specialist " + Long.toString(mapSpecialistId));
+			System.out.println("Failed to remove map specialist "
+					+ Long.toString(mapSpecialistId));
 			e.printStackTrace();
 		}
-		
-		
+
 	}
-	
-	
-	/////////////////////////////////////////////////////
+
+	// ///////////////////////////////////////////////////
 	// MapLead
-	// - getMapLeads() 
+	// - getMapLeads()
 	// - getMapProjectsForLead(mapSpecialist)
 	// - findMapSpecialists(query)
 	// - addMapLead(mapLead)
 	// - updateMapLead(mapLead)
 	// - removeMapLead(id)
-	/////////////////////////////////////////////////////
-	
+	// ///////////////////////////////////////////////////
+
 	/**
-	* Retrieve all map leads
-	* @return a List of MapLeads
-	*/
+	 * Retrieve all map leads
+	 * 
+	 * @return a List of MapLeads
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<MapLead> getMapLeads() {
-		
-		
+
 		List<MapLead> mapLeads = new ArrayList<MapLead>();
-				
-		javax.persistence.Query query = manager.createQuery("select m from MapLeadJpa m");
-		
+
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapLeadJpa m");
+
 		// Try query
 		try {
 			mapLeads = query.getResultList();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return mapLeads;
 	}
-	
+
 	/**
-	* Return map lead for auto-generated id
-	* @param id the auto-generated id
-	* @return the MapLead
-	*/
+	 * Return map lead for auto-generated id
+	 * 
+	 * @param id
+	 *            the auto-generated id
+	 * @return the MapLead
+	 */
 	@Override
 	public MapLead getMapLead(Long id) {
-		
-		
+
 		MapLead m = null;
-				
-		javax.persistence.Query query = manager.createQuery("select m from MapLeadJpa m where id = :id");
+
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapLeadJpa m where id = :id");
 		query.setParameter("id", id);
 		try {
 			m = (MapLead) query.getSingleResult();
 		} catch (Exception e) {
-			System.out.println("Could not find map lead for id = " + id.toString());
+			System.out.println("Could not find map lead for id = "
+					+ id.toString());
 		}
-	
-		
-		
+
 		return m;
-		
+
 	}
-	
+
 	/**
-	* Retrieve all map projects assigned to a particular map lead
-	* @param mapLead the map lead
-	* @return a List of MapProjects
-	*/
+	 * Retrieve all map projects assigned to a particular map lead
+	 * 
+	 * @param mapLead
+	 *            the map lead
+	 * @return a List of MapProjects
+	 */
 	@Override
 	public List<MapProject> getMapProjectsForMapLead(MapLead mapLead) {
-		
+
 		List<MapProject> mp_list = getMapProjects();
 		List<MapProject> mp_list_return = new ArrayList<MapProject>();
-	
+
 		// iterate and check for presence of mapSpecialist
 		for (MapProject mp : mp_list) {
 			Set<MapLead> ml_set = mp.getMapLeads();
-			
+
 			for (MapLead ml : ml_set) {
 				if (ml.equals(mapLead)) {
 					mp_list_return.add(mp);
@@ -628,69 +663,72 @@ public class MappingServiceJpa implements MappingService {
 		}
 		return mp_list_return;
 	}
-	
+
 	/**
-	* Query for MapLeads
-	* @param query the query
-	* @return the List of MapProjects
-	*/
+	 * Query for MapLeads
+	 * 
+	 * @param query
+	 *            the query
+	 * @return the List of MapProjects
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter) {
-		
-		
+
 		SearchResultList s = new SearchResultListJpa();
-		
-		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
-		
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
 		try {
-				SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			SearchFactory searchFactory = fullTextEntityManager
+					.getSearchFactory();
 			Query luceneQuery;
-		
+
 			// construct luceneQuery based on URL format
 			if (query.indexOf(':') == -1) { // no fields indicated
-				MultiFieldQueryParser queryParser =
-						new MultiFieldQueryParser(Version.LUCENE_36,
-								fieldNames.toArray(new String[0]),
-								searchFactory.getAnalyzer(MapLeadJpa.class));
+				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
+						Version.LUCENE_36, fieldNames.toArray(new String[0]),
+						searchFactory.getAnalyzer(MapLeadJpa.class));
 				queryParser.setAllowLeadingWildcard(false);
 				luceneQuery = queryParser.parse(query);
-		
-			
+
 			} else { // field:value
-				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
-						searchFactory.getAnalyzer(MapLeadJpa.class));
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+						"summary", searchFactory.getAnalyzer(MapLeadJpa.class));
 				luceneQuery = queryParser.parse(query);
 			}
-			
-			List<MapLead> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapLeadJpa.class)
-														.getResultList();
-			
+
+			List<MapLead> m = fullTextEntityManager.createFullTextQuery(
+					luceneQuery, MapLeadJpa.class).getResultList();
+
 			for (MapLead ml : m) {
-				s.addSearchResult(new SearchResultJpa(ml.getId(), "", ml.getName()));
+				s.addSearchResult(new SearchResultJpa(ml.getId(), "", ml
+						.getName()));
 			}
-			
+
 			s.sortSearchResultsById();
-			
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
-		
-		
-		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
-		
+		}
+
+		if (fullTextEntityManager.isOpen()) {
+			fullTextEntityManager.close();
+		}
+
 		return s;
 	}
-	
+
 	/**
 	 * Add a map lead
-	 * @param mapLead the map lead
+	 * 
+	 * @param mapLead
+	 *            the map lead
 	 */
 	@Override
 	public void addMapLead(MapLead mapLead) {
-		
-		
+
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
@@ -700,16 +738,16 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	/**
 	 * Update a map lead
-	 * @param mapLead the changed map lead
+	 * 
+	 * @param mapLead
+	 *            the changed map lead
 	 */
 	@Override
 	public void updateMapLead(MapLead mapLead) {
-		
-		
+
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
@@ -718,32 +756,32 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
+
 	}
-	
+
 	/**
 	 * Remove (delete) a map lead
-	 * @param mapLeadId the map lead to be removed
+	 * 
+	 * @param mapLeadId
+	 *            the map lead to be removed
 	 */
 	@Override
 	public void removeMapLead(Long mapLeadId) {
-		
-		
+
 		EntityTransaction tx = manager.getTransaction();
-		
-		// retrieve this map lead		
+
+		// retrieve this map lead
 		MapLead ml = manager.find(MapLeadJpa.class, mapLeadId);
 
 		// retrieve all projects on which this lead appears
 		List<MapProject> projects = getMapProjectsForMapLead(ml);
-		
+
 		try {
 			// remove lead from all these projects
 			tx.begin();
 			for (MapProject mp : projects) {
 				mp.removeMapLead(ml);
-				manager.merge(mp);	
+				manager.merge(mp);
 			}
 			tx.commit();
 
@@ -751,171 +789,179 @@ public class MappingServiceJpa implements MappingService {
 			tx.begin();
 			manager.remove(ml);
 			tx.commit();
-			
+
 		} catch (Exception e) {
-			System.out.println("Failed to remove map lead " + Long.toString(mapLeadId));
+			System.out.println("Failed to remove map lead "
+					+ Long.toString(mapLeadId));
 			e.printStackTrace();
 		}
-		
-		
-		
-	}
-	
 
-	////////////////////////////////////
+	}
+
+	// //////////////////////////////////
 	// MapRecord
-	////////////////////////////////////
-	
+	// //////////////////////////////////
+
 	/**
-	* Retrieve all map records
-	* @return a List of MapRecords
-	*/
+	 * Retrieve all map records
+	 * 
+	 * @return a List of MapRecords
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<MapRecord> getMapRecords() {
-		
-		
+
 		List<MapRecord> m = null;
-				
+
 		// construct query
-		javax.persistence.Query query = manager.createQuery("select m from MapRecordJpa m");
-		
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapRecordJpa m");
+
 		// Try query
 		try {
 			m = query.getResultList();
 		} catch (Exception e) {
-			System.out.println("MappingServiceJpa.getMapRecords(): Could not retrieve map records.");
+			System.out
+					.println("MappingServiceJpa.getMapRecords(): Could not retrieve map records.");
 			e.printStackTrace();
 		}
-		
-		
-		
+
 		return m;
 	}
-	
-	/** 
+
+	/**
 	 * Retrieve map record for given id
-	 * @param id the map record id
+	 * 
+	 * @param id
+	 *            the map record id
 	 * @return the map record
 	 */
-    @Override
+	@Override
 	public MapRecord getMapRecord(Long id) {
-    	
-    	
-		javax.persistence.Query query = manager.createQuery("select r from MapRecordJpa r where id = :id");
-		
+
+		javax.persistence.Query query = manager
+				.createQuery("select r from MapRecordJpa r where id = :id");
+
 		/*
-		 * Try to retrieve the single expected result
-		 * If zero or more than one result are returned, log error and set result to null
+		 * Try to retrieve the single expected result If zero or more than one
+		 * result are returned, log error and set result to null
 		 */
 
 		try {
-			
+
 			query.setParameter("id", id);
-			
+
 			MapRecord r = (MapRecord) query.getSingleResult();
 
-			System.out.println("Returning record_id... " + ((r != null) ? r.getId().toString() : "null"));
+			System.out.println("Returning record_id... "
+					+ ((r != null) ? r.getId().toString() : "null"));
 			return r;
-			
+
 		} catch (NoResultException e) {
-			System.out.println("MapRecord query for id = " + id  + " returned no results!");
-			return null;		
-		} catch (NonUniqueResultException e) {
-			System.out.println("MapRecord query for id = " + id  + " returned multiple results!");
+			System.out.println("MapRecord query for id = " + id
+					+ " returned no results!");
 			return null;
-		}	
-    }
-    
-  /*  public List<MapRecord> getMapRecords(mapProjectId, sortingInfo, pageSize, page#) {
-    	///project/id/12345/records?sort=sortkey&pageSize=100&page=1
-    	return null;
-    }*/
-    
-    /**
-     * Retrieve map records for a lucene query
-     * @param query the lucene query string
-     * @return a list of map records
-     */
-    @Override
+		} catch (NonUniqueResultException e) {
+			System.out.println("MapRecord query for id = " + id
+					+ " returned multiple results!");
+			return null;
+		}
+	}
+
+	/*
+	 * public List<MapRecord> getMapRecords(mapProjectId, sortingInfo, pageSize,
+	 * page#) { ///project/id/12345/records?sort=sortkey&pageSize=100&page=1
+	 * return null; }
+	 */
+
+	/**
+	 * Retrieve map records for a lucene query
+	 * 
+	 * @param query
+	 *            the lucene query string
+	 * @return a list of map records
+	 */
+	@Override
 	@SuppressWarnings("unchecked")
-    public SearchResultList findMapRecords(String query, PfsParameter pfsParameter) {
-    	
-    	
-    	SearchResultList s = new SearchResultListJpa();
-		
-		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
-		
+	public SearchResultList findMapRecords(String query,
+			PfsParameter pfsParameter) {
+
+		SearchResultList s = new SearchResultListJpa();
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
 		try {
-				SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			SearchFactory searchFactory = fullTextEntityManager
+					.getSearchFactory();
 			Query luceneQuery;
-		
+
 			// construct luceneQuery based on URL format
 			if (query.indexOf(':') == -1) { // no fields indicated
-				MultiFieldQueryParser queryParser =
-						new MultiFieldQueryParser(Version.LUCENE_36,
-								fieldNames.toArray(new String[0]),
-								searchFactory.getAnalyzer(MapRecordJpa.class));
+				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
+						Version.LUCENE_36, fieldNames.toArray(new String[0]),
+						searchFactory.getAnalyzer(MapRecordJpa.class));
 				queryParser.setAllowLeadingWildcard(false);
 				luceneQuery = queryParser.parse(query);
-		
-			
+
 			} else { // field:value
-				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+						"summary",
 						searchFactory.getAnalyzer(MapRecordJpa.class));
 				luceneQuery = queryParser.parse(query);
 			}
-			
-			List<MapRecord> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapRecordJpa.class)
-														.getResultList();
-			
+
+			List<MapRecord> m = fullTextEntityManager.createFullTextQuery(
+					luceneQuery, MapRecordJpa.class).getResultList();
+
 			for (MapRecord mr : m) {
-				s.addSearchResult(new SearchResultJpa(mr.getId(), "", mr.getConceptId()));
+				s.addSearchResult(new SearchResultJpa(mr.getId(), "", mr
+						.getConceptId()));
 			}
-			
-			
+
 			s.sortSearchResultsById();
-			
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
-		
-		
-		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
-		
+		}
+
+		if (fullTextEntityManager.isOpen()) {
+			fullTextEntityManager.close();
+		}
+
 		return s;
-    }
-    
-    /**
-     * Add a map record
-     * @param mapRecord the map record to be added
-     */
-    @Override
+	}
+
+	/**
+	 * Add a map record
+	 * 
+	 * @param mapRecord
+	 *            the map record to be added
+	 */
+	@Override
 	public void addMapRecord(MapRecord mapRecord) {
-    	
-    	
+
 		EntityTransaction tx = manager.getTransaction();
-		
+
 		try {
 			tx.begin();
 			manager.persist(mapRecord);
 			tx.commit();
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
-			
-		
-    }
-    
-    /**
-     * Update a map record
-     * @param mapRecord the map record to be updated
-     */
-    @Override
+		}
+
+	}
+
+	/**
+	 * Update a map record
+	 * 
+	 * @param mapRecord
+	 *            the map record to be updated
+	 */
+	@Override
 	public void updateMapRecord(MapRecord mapRecord) {
-    	
-    	
+
 		EntityTransaction tx = manager.getTransaction();
 		try {
 			tx.begin();
@@ -924,23 +970,23 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
-    }
-    
-    /**
-     * Remove (delete) a map record by id
-     * @param id the id of the map record to be removed
-     */
-    @Override
+
+	}
+
+	/**
+	 * Remove (delete) a map record by id
+	 * 
+	 * @param id
+	 *            the id of the map record to be removed
+	 */
+	@Override
 	public void removeMapRecord(Long id) {
-    	
-    	
+
 		EntityTransaction tx = manager.getTransaction();
-		
-		// find the map record		
+
+		// find the map record
 		MapRecord m = manager.find(MapRecord.class, id);
-		
+
 		try {
 			// delete the map record
 			tx.begin();
@@ -949,265 +995,285 @@ public class MappingServiceJpa implements MappingService {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		
-		
-		
-    }
-    
 
-    
-	
-	////////////////////////////////////
+	}
+
+	// //////////////////////////////////
 	// Other query services
-	////////////////////////////////////
-	
-    /**
-     * Service for finding MapEntrys by string query
-     * @param query the query string
-     * @return the search result list
-     */
+	// //////////////////////////////////
+
+	/**
+	 * Service for finding MapEntrys by string query
+	 * 
+	 * @param query
+	 *            the query string
+	 * @return the search result list
+	 */
 	@Override
-	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter) {
+	public SearchResultList findMapEntrys(String query,
+			PfsParameter pfsParameter) {
 		SearchResultList s = new SearchResultListJpa();
-		
-		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
-		
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
 		try {
-				SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			SearchFactory searchFactory = fullTextEntityManager
+					.getSearchFactory();
 			Query luceneQuery;
-		
+
 			// construct luceneQuery based on URL format
 			if (query.indexOf(':') == -1) { // no fields indicated
-				MultiFieldQueryParser queryParser =
-						new MultiFieldQueryParser(Version.LUCENE_36,
-								fieldNames.toArray(new String[0]),
-								searchFactory.getAnalyzer(MapEntryJpa.class));
+				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
+						Version.LUCENE_36, fieldNames.toArray(new String[0]),
+						searchFactory.getAnalyzer(MapEntryJpa.class));
 				queryParser.setAllowLeadingWildcard(false);
 				luceneQuery = queryParser.parse(query);
-		
-			
+
 			} else { // field:value
-				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
-						searchFactory.getAnalyzer(MapEntryJpa.class));
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+						"summary", searchFactory.getAnalyzer(MapEntryJpa.class));
 				luceneQuery = queryParser.parse(query);
 			}
-			
-			List<MapEntry> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapEntryJpa.class)
-														.getResultList();
-			
+
+			List<MapEntry> m = fullTextEntityManager.createFullTextQuery(
+					luceneQuery, MapEntryJpa.class).getResultList();
+
 			for (MapEntry me : m) {
-				s.addSearchResult(new SearchResultJpa(me.getId(), "", me.getMapRecord().getId().toString()));
+				s.addSearchResult(new SearchResultJpa(me.getId(), "", me
+						.getMapRecord().getId().toString()));
 			}
-			
-			s.sortSearchResultsById();	
-			
+
+			s.sortSearchResultsById();
+
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
-		
-		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
-		
+		}
+
+		if (fullTextEntityManager.isOpen()) {
+			fullTextEntityManager.close();
+		}
+
 		return s;
 	}
-    
+
 	/**
-     * Service for finding MapAdvices by string query
-     * @param query the query string
-     * @return the search result list
-     */
+	 * Service for finding MapAdvices by string query
+	 * 
+	 * @param query
+	 *            the query string
+	 * @return the search result list
+	 */
 	@Override
-	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter) {
+	public SearchResultList findMapAdvices(String query,
+			PfsParameter pfsParameter) {
 		SearchResultList s = new SearchResultListJpa();
-		
-		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
-		
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
 		try {
-				SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			SearchFactory searchFactory = fullTextEntityManager
+					.getSearchFactory();
 			Query luceneQuery;
-		
+
 			// construct luceneQuery based on URL format
 			if (query.indexOf(':') == -1) { // no fields indicated
-				MultiFieldQueryParser queryParser =
-						new MultiFieldQueryParser(Version.LUCENE_36,
-								fieldNames.toArray(new String[0]),
-								searchFactory.getAnalyzer(MapAdviceJpa.class));
+				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
+						Version.LUCENE_36, fieldNames.toArray(new String[0]),
+						searchFactory.getAnalyzer(MapAdviceJpa.class));
 				queryParser.setAllowLeadingWildcard(false);
 				luceneQuery = queryParser.parse(query);
-		
-			
+
 			} else { // field:value
-				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+						"summary",
 						searchFactory.getAnalyzer(MapAdviceJpa.class));
 				luceneQuery = queryParser.parse(query);
 			}
-			
-			List<MapAdvice> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapNoteJpa.class)
-														.getResultList();
-			
+
+			List<MapAdvice> m = fullTextEntityManager.createFullTextQuery(
+					luceneQuery, MapNoteJpa.class).getResultList();
+
 			for (MapAdvice ma : m) {
-				s.addSearchResult(new SearchResultJpa(ma.getId(), "", ma.getName()));
+				s.addSearchResult(new SearchResultJpa(ma.getId(), "", ma
+						.getName()));
 			}
-			
-			
+
 			s.sortSearchResultsById();
-			
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
-		
-		
-		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
+		}
 
-		
+		if (fullTextEntityManager.isOpen()) {
+			fullTextEntityManager.close();
+		}
+
 		return s;
 	}
-	
 
 	/**
-     * Service for finding MapNote by string query
-     * @param query the query string
-     * @return the search result list
-     */
+	 * Service for finding MapNote by string query
+	 * 
+	 * @param query
+	 *            the query string
+	 * @return the search result list
+	 */
 	@Override
 	public SearchResultList findMapNotes(String query, PfsParameter pfsParameter) {
 		SearchResultList s = new SearchResultListJpa();
-		
-		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(manager);
-		
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
 		try {
-				SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+			SearchFactory searchFactory = fullTextEntityManager
+					.getSearchFactory();
 			Query luceneQuery;
-		
+
 			// construct luceneQuery based on URL format
 			if (query.indexOf(':') == -1) { // no fields indicated
-				MultiFieldQueryParser queryParser =
-						new MultiFieldQueryParser(Version.LUCENE_36,
-								fieldNames.toArray(new String[0]),
-								searchFactory.getAnalyzer(MapNoteJpa.class));
+				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
+						Version.LUCENE_36, fieldNames.toArray(new String[0]),
+						searchFactory.getAnalyzer(MapNoteJpa.class));
 				queryParser.setAllowLeadingWildcard(false);
 				luceneQuery = queryParser.parse(query);
-		
-			
+
 			} else { // field:value
-				QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
-						searchFactory.getAnalyzer(MapNoteJpa.class));
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+						"summary", searchFactory.getAnalyzer(MapNoteJpa.class));
 				luceneQuery = queryParser.parse(query);
 			}
-			
-			List<MapNote> m = fullTextEntityManager.createFullTextQuery(luceneQuery, MapNoteJpa.class)
-														.getResultList();
-			
+
+			List<MapNote> m = fullTextEntityManager.createFullTextQuery(
+					luceneQuery, MapNoteJpa.class).getResultList();
+
 			for (MapNote me : m) {
-				s.addSearchResult(new SearchResultJpa(me.getId(), "", me.getNote()));
+				s.addSearchResult(new SearchResultJpa(me.getId(), "", me
+						.getNote()));
 			}
-			
+
 			s.sortSearchResultsById();
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
-		
-		
-		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
-		
+		}
+
+		if (fullTextEntityManager.isOpen()) {
+			fullTextEntityManager.close();
+		}
+
 		return s;
 	}
-	
-	////////////////////////////////////////////////
+
+	// //////////////////////////////////////////////
 	// Descendant services
-    ////////////////////////////////////////////////
-	
+	// //////////////////////////////////////////////
+
 	/**
 	 * Retrieve map records for a given concept id
-	 * @param conceptId the concept id
+	 * 
+	 * @param conceptId
+	 *            the concept id
 	 * @return the list of map records
 	 */
 	@Override
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId) {
 		List<MapRecord> m = null;
-		
-		
+
 		// construct query
-		javax.persistence.Query query = manager.createQuery("select m from MapRecordJpa m where conceptId = :conceptId");
-		
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapRecordJpa m where conceptId = :conceptId");
+
 		// Try query
 		try {
 			query.setParameter("conceptId", conceptId);
 			m = query.getResultList();
 		} catch (Exception e) {
-			System.out.println("MappingServiceJpa.getMapRecordsForConceptId(): Could not retrieve map records.");
+			System.out
+					.println("MappingServiceJpa.getMapRecordsForConceptId(): Could not retrieve map records.");
 			e.printStackTrace();
 		}
-	
-		
-		
+
 		return m;
 	}
-	
+
 	@Override
 	public Long getMapRecordCountForMapProjectId(Long mapProjectId) {
-		
-		javax.persistence.Query query = manager.createQuery("select count(m) from MapRecordJpa m where mapProjectId = :mapProjectId");
-		
+
+		javax.persistence.Query query = manager
+				.createQuery("select count(m) from MapRecordJpa m where mapProjectId = :mapProjectId");
+
 		try {
 			query.setParameter("mapProjectId", mapProjectId);
 			return new Long(query.getSingleResult().toString());
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 		}
-		
+
 		return new Long("-1");
-		
+
 	}
-	
+
 	/**
-	 * Helper function:  retrieves all map records for a map project id without paging/filtering/sorting
-	 * @param mapProjectId the concept id
+	 * Helper function: retrieves all map records for a map project id without
+	 * paging/filtering/sorting
+	 * 
+	 * @param mapProjectId
+	 *            the concept id
 	 * @return the list of map records
 	 */
 	@Override
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId) {
-		
+
 		return getMapRecordsForMapProjectId(mapProjectId, null);
 	}
-	
+
 	/**
-	 * Retrieve map records for a given concept id and paging/filtering/sorting parameters
-	 * @param mapProjectId the concept id
-	 * @param pfs the paging/filtering/sorting parameter object
+	 * Retrieve map records for a given concept id and paging/filtering/sorting
+	 * parameters
+	 * 
+	 * @param mapProjectId
+	 *            the concept id
+	 * @param pfs
+	 *            the paging/filtering/sorting parameter object
 	 * @return the list of map records
 	 */
 	@Override
-	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId, PfsParameter pfs) {
+	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId,
+			PfsParameter pfs) {
 		List<MapRecord> m = null;
-		
-		
+
 		// construct query
-		javax.persistence.Query query = manager.createQuery("select m from MapRecordJpa m where mapProjectId = :mapProjectId");
-		
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapRecordJpa m where mapProjectId = :mapProjectId");
+
 		// Try query
 		try {
 			query.setParameter("mapProjectId", mapProjectId);
-			
+
 			if (pfs != null) {
 				query.setFirstResult(pfs.getStartIndex());
 				query.setMaxResults(pfs.getMaxResults());
 			}
-			
+
 			m = query.getResultList();
 		} catch (Exception e) {
-			System.out.println("MappingServiceJpa.getMapRecordsFormapProjectId(): Could not retrieve map records for project id " + mapProjectId);
+			System.out
+					.println("MappingServiceJpa.getMapRecordsFormapProjectId(): Could not retrieve map records for project id "
+							+ mapProjectId);
 			e.printStackTrace();
 		}
-	
-		
-		
+
 		return m;
 	}
-	
+
 	/**
-	 * Helper function for restful services.  Constructs a basic concept from parameters and calls getUnmappedDescentsForConcept(Concept concept, int thresholdLlc)
+	 * Helper function for restful services. Constructs a basic concept from
+	 * parameters and calls getUnmappedDescentsForConcept(Concept concept, int
+	 * thresholdLlc)
+	 * 
 	 * @param terminologyId
 	 * @param terminology
 	 * @param terminologyVersion
@@ -1216,44 +1282,59 @@ public class MappingServiceJpa implements MappingService {
 	 * @throws Exception
 	 */
 	@Override
-	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId, String terminology, String terminologyVersion, int thresholdLlc) throws Exception {
+	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
+			String terminology, String terminologyVersion, int thresholdLlc)
+			throws Exception {
 		Concept concept = new ConceptJpa();
 		concept.setTerminologyId(terminologyId);
 		concept.setTerminology(terminology);
 		concept.setTerminologyVersion(terminologyVersion);
 		return getUnmappedDescendantsForConcept(concept, thresholdLlc);
 	}
-	
+
 	/**
-	 * Given a concept, returns a list of descendant concepts that have no associated map record
-	 * @param concept the root concept
-	 * @param thresholdLlc the maximum number of descendants a concept can have before it is no longer considered a low-level concept (i.e. return an empty list)
+	 * Given a concept, returns a list of descendant concepts that have no
+	 * associated map record
+	 * 
+	 * @param concept
+	 *            the root concept
+	 * @param thresholdLlc
+	 *            the maximum number of descendants a concept can have before it
+	 *            is no longer considered a low-level concept (i.e. return an
+	 *            empty list)
 	 * @return the list of unmapped descendant concepts
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public List<Concept> getUnmappedDescendantsForConcept(Concept concept, int thresholdLlc) throws Exception {
-		
+	public List<Concept> getUnmappedDescendantsForConcept(Concept concept,
+			int thresholdLlc) throws Exception {
+
 		// declare results list and content service
 		List<Concept> unmappedDescendants = new ArrayList<Concept>();
 		ContentService contentService = new ContentServiceJpa();
-				
+
 		// get descendants and construct iterator
-		Set<Concept> descendants = contentService.getDescendants(concept.getTerminologyId(), concept.getTerminology(), concept.getTerminologyVersion(), new Long("116680003"));
+		Set<Concept> descendants = contentService.getDescendants(
+				concept.getTerminologyId(), concept.getTerminology(),
+				concept.getTerminologyVersion(), new Long("116680003"));
 		Iterator<Concept> descendants_iter = descendants.iterator();
-		
-		// if size of descendant set is greater than the low-level concept threshold, skip it
+
+		// if size of descendant set is greater than the low-level concept
+		// threshold, skip it
 		if (descendants.size() <= thresholdLlc) {
-			
+
 			// cycle over descendants
 			while (descendants_iter.hasNext()) {
-				
+
 				Concept descendant = descendants_iter.next();
-				
+
 				// find map records for this id
-				List<MapRecord> conceptRecords = getMapRecordsForConceptId(descendant.getTerminologyId());
-				
-				System.out.println(descendant.getTerminologyId() + " has " + Integer.toString(conceptRecords.size()) + " map records");
-				
+				List<MapRecord> conceptRecords = getMapRecordsForConceptId(descendant
+						.getTerminologyId());
+
+				System.out.println(descendant.getTerminologyId() + " has "
+						+ Integer.toString(conceptRecords.size())
+						+ " map records");
+
 				// if no records found, add to unmapped list
 				if (conceptRecords.size() == 0) {
 					System.out.println("--> Adding to unmapped list");
@@ -1261,168 +1342,352 @@ public class MappingServiceJpa implements MappingService {
 				}
 			}
 		}
-		
+
 		// force-close the manager
 		if (contentService != null) {
 			contentService.close();
 		}
-		
+
 		return unmappedDescendants;
 	}
-	
-	
-	////////////////////////////////
+
+	// //////////////////////////////
 	// Services to be implemented //
-	////////////////////////////////
-	
-	////////////////////////////
-	// Addition services     ///
-	////////////////////////////
-	
+	// //////////////////////////////
+
+	// //////////////////////////
+	// Addition services ///
+	// //////////////////////////
+
 	/**
 	 * Add a map note
-	 * @param mapNote the map note
+	 * 
+	 * @param mapNote
+	 *            the map note
 	 */
 	@Override
 	public void addMapNote(MapNote mapNote) {
 
 		EntityTransaction tx = manager.getTransaction();
-	
+
 		tx.begin();
 		manager.persist(mapNote);
 		tx.commit();
-		
+
 	}
-	
+
 	@Override
 	public void addMapEntry(MapEntry mapEntry) {
 
 		EntityTransaction tx = manager.getTransaction();
-	
+
 		tx.begin();
 		manager.persist(mapEntry);
 		tx.commit();
-		
+
 	}
-	
+
 	@Override
-	public void addMapPrinciple(MapPrinciple mapPrinciple) { 
+	public void addMapPrinciple(MapPrinciple mapPrinciple) {
 
 		EntityTransaction tx = manager.getTransaction();
-	
+
 		tx.begin();
 		manager.persist(mapPrinciple);
 		tx.commit();
 	}
-	
+
 	@Override
-	public void addMapAdvice(MapAdvice mapAdvice) { 
+	public void addMapAdvice(MapAdvice mapAdvice) {
 
 		EntityTransaction tx = manager.getTransaction();
-	
+
 		tx.begin();
 		manager.persist(mapAdvice);
 		tx.commit();
 	}
-	
-	////////////////////////////
-	// Update services     ///
-	////////////////////////////
-	
+
+	// //////////////////////////
+	// Update services ///
+	// //////////////////////////
+
 	@Override
 	public void updateMapNote(MapNote mapNote) {
 
 		EntityTransaction tx = manager.getTransaction();
-	
+
 		tx.begin();
 		manager.merge(mapNote);
 		tx.commit();
 	}
-	
+
 	@Override
-	public void updateMapEntry(MapEntry mapEntry) { 
+	public void updateMapEntry(MapEntry mapEntry) {
 
 		EntityTransaction tx = manager.getTransaction();
-	
+
 		tx.begin();
 		manager.merge(mapEntry);
 		tx.commit();
 	}
-	
+
 	@Override
-	public void updateMapPrinciple(MapPrinciple mapPrinciple) { 
+	public void updateMapPrinciple(MapPrinciple mapPrinciple) {
 
 		EntityTransaction tx = manager.getTransaction();
-	
+
 		tx.begin();
 		manager.merge(mapPrinciple);
 		tx.commit();
 		manager.close();
 	}
-	
+
 	@Override
-	public void updateMapAdvice(MapAdvice mapAdvice) { 
+	public void updateMapAdvice(MapAdvice mapAdvice) {
 
 		EntityTransaction tx = manager.getTransaction();
-	
+
 		tx.begin();
 		manager.merge(mapAdvice);
 		tx.commit();
 		manager.close();
 	}
-	
-	////////////////////////////
-	//Removal services     ///
-	////////////////////////////
-	
+
+	// //////////////////////////
+	// Removal services ///
+	// //////////////////////////
+
 	@Override
-	public void removeMapNote(Long mapNoteId) { 
-		
+	public void removeMapNote(Long mapNoteId) {
+
 		MapNote mn = manager.find(MapNoteJpa.class, mapNoteId);
-			
-		// remove MapNote from any associated records
-		
-		// remove MapNote from any associated entries
+
+		// TODO remove MapNote from any associated records
+
+		// TODO remove MapNote from any associated entries
 
 		EntityTransaction tx = manager.getTransaction();
-	
-		
+
 	}
-	
+
 	@Override
-	public void removeMapEntry(Long mapEntryId) { }
-	
+	public void removeMapEntry(Long mapEntryId) {
+	}
+
 	@Override
-	public void removeMapPrinciple(Long mapPrincipleId) { }
-	
+	public void removeMapPrinciple(Long mapPrincipleId) {
+	}
+
 	@Override
-	public void removeMapAdvice(Long mapAdviceId) { }
+	public void removeMapAdvice(Long mapAdviceId) {
+	}
 
 	@Override
 	public MapPrinciple getMapPrinciple(Long id) {
-		
-		
+
 		MapPrinciple m = null;
-				
-		javax.persistence.Query query = manager.createQuery("select m from MapPrincipleJpa m where id = :id");
+
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapPrincipleJpa m where id = :id");
 		query.setParameter("id", id);
 		try {
 			m = (MapPrinciple) query.getSingleResult();
-			System.out.println("HI there!");
 		} catch (Exception e) {
-			System.out.println("Could not find map principle for id = " + id.toString());
+			System.out.println("Could not find map principle for id = "
+					+ id.toString());
 		}
-	
-		
-		
+
 		return m;
+
+	}
+	
+	/////////////////////////////////////////
+	/// Services for Map Project Creation
+	/////////////////////////////////////////
+	
+	@Override
+	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) {
+		
+		Logger.getLogger(MappingServiceJpa.class).info("Creating map records for project" + mapProject.getName());
+		
+		List<MapRecord> results = new ArrayList<MapRecord>();
+		
+		// retrieve all complex map ref set members for mapProject
+		javax.persistence.Query query =
+				manager
+						.createQuery("select r from ComplexMapRefSetMemberJpa r where r.refSetId = :refSetId order by r.concept.id, " +
+								"r.mapBlock, r.mapGroup, r.mapPriority");
+		
+		
+		
+		try {
+			query.setParameter("refSetId", mapProject.getRefSetId());
+			
+			// instantiate MappingService for getting descendant concepts
+			ContentService contentService = new ContentServiceJpa();
+			
+			// instantiate other local varibles
+			Long prevConceptId = new Long(-1);
+			MapRecord mapRecord = null;
+			
+			EntityTransaction tx = manager.getTransaction();
+			tx.begin();
+			
+			for (Object member : query.getResultList()) {
+				
+				ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
+				
+				if(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|") &&
+			    !(refSetMember.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")) &&
+			    !(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]"))){
+				 
+				  continue; 
+				}
+				
+				// retrieve the concept
+				Concept concept = refSetMember.getConcept();
+				
+				// if no concept for this ref set member, skip
+				if (concept == null)
+					continue;
+				
+				// if different concept than previous ref set member, create new mapRecord
+				if (!concept.getTerminologyId()
+						.equals(prevConceptId.toString())) {
+					
+					if (!prevConceptId.equals(new Long(-1))) {
+						results.add(mapRecord);
+					}
+					
+					mapRecord = new MapRecordJpa();
+					mapRecord.setConceptId(concept.getTerminologyId());
+					mapRecord.setConceptName(concept.getDefaultPreferredName());
+					
+					// set the map project id
+					mapRecord.setMapProjectId(mapProject.getId());
+				
+					// get the number of descendants
+					mapRecord.setCountDescendantConcepts( new Long(
+							contentService.getDescendants(
+								concept.getTerminologyId(),
+								concept.getTerminology(),
+								concept.getTerminologyVersion(),
+								new Long("116680003")).size()));
+			
+					// set the previous concept to this concept
+					prevConceptId = new Long(refSetMember.getConcept().getTerminologyId());
+					
+					// persist the record
+					manager.persist(mapRecord);
+					
+					if (results.size() % 500 == 0) {Logger.getLogger(MappingServiceJpa.class).info(Integer.toString(results.size()) + " records created");}
+				}
+				/* TODO Commented out until MapRecord addition is verified
+				 * 
+				// check if target is in desired terminology; if so, create entry
+				try {
+					String targetName = (String) manager.createQuery("select c.defaultPreferredName from ConceptJpa c where " +
+									"terminologyId = :terminologyId and " +
+									"terminology = :terminology and " +
+									"terminologyVersion = :terminologyVersion")
+									.setParameter("terminologyId", refSetMember.getMapTarget())
+									.setParameter("terminology", mapProject.getDestinationTerminology())
+									.setParameter("terminologyVersion", mapProject.getDestinationTerminologyVersion())
+									.getSingleResult();
+				
+					MapEntry mapEntry = new MapEntryJpa();
+					mapEntry.setTargetId(refSetMember.getMapTarget());
+					mapEntry.setTargetName(targetName);
+					mapEntry.setMapRecord(mapRecord);
+					mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
+					mapEntry.setRule(refSetMember.getMapRule());
+					mapEntry.setMapGroup(1);
+					mapEntry.setMapBlock(1);
+					
+					mapRecord.addMapEntry(mapEntry);
+					
+					// TODO Add support for advices, principles, notes
+					
+				} catch (Exception e) {
+					// do nothing
+				}*/
+				
+				
+			}
+			
+			tx.commit();
+			
+		} catch (Exception e) {
+			// TODO: Auto-generated try-catch block
+		}
+		return results;
+	}
+	
+	// ONLY FOR TESTING PURPOSES
+	public Long removeMapRecordsForProjectId(Long mapProjectId) {
+	
+		EntityTransaction tx = manager.getTransaction();
+		
+		
+		int nRecords = 0;
+		try {
+			tx.begin();
+			List<MapRecord> records = (List<MapRecord>) manager.createQuery("select m from MapRecordJpa m where m.mapProjectId = :mapProjectId")
+				.setParameter("mapProjectId", mapProjectId)
+				.getResultList();
+			
+			for (MapRecord record : records) {
+				
+				// delete notes
+				for (MapNote note : record.getMapNotes()) {
+					manager.remove(note);
+				}
+				record.setMapNotes(null); // TODO Check if this is necessary
+				
+				// delete entries
+				for (MapEntry entry : record.getMapEntries()) {
+					
+					// delete entry notes
+					for (MapNote entryNote : entry.getMapNotes()) {
+						manager.remove(entryNote);
+					}
+					entry.setMapNotes(null); // TODO Check if this is necessary
+					
+					// remove principles
+					entry.setMapPrinciples(null);
+					
+					// remove advices
+					entry.setMapAdvices(null);
+					
+					// merge entry to remove principle/advice associations
+					manager.merge(entry);
+					
+					// delete entry
+					manager.remove(entry);
+					
+					nRecords++;
+				}
+				
+				// remove principles
+				record.setMapPrinciples(null);
+				
+				// merge record to remove principle associations
+				manager.merge(record);
+				
+				// delete record
+				manager.remove(record);
+			}
+				
+			tx.commit();
+			
+			System.out.println(Integer.toString(nRecords) + " records deleted for map project id = " + mapProjectId.toString());
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new Long(nRecords);
+
 		
 	}
 
-	
-
-	
-	
-	
-	
 }

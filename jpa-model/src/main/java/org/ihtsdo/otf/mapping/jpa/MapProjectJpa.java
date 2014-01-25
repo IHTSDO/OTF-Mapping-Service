@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -14,7 +13,6 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -29,6 +27,8 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 /**
  * The Class MapProjectJpa.
@@ -39,6 +39,7 @@ import org.ihtsdo.otf.mapping.model.MapSpecialist;
 @Audited
 @Indexed
 @XmlRootElement(name="mapProject")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapProjectJpa implements MapProject {
 
 	/** The id. */
@@ -95,12 +96,12 @@ public class MapProjectJpa implements MapProject {
 	private Set<MapSpecialist> mapSpecialists = new HashSet<MapSpecialist>();
 	
 	/** The allowable map principles for this MapProject. */
-	@ManyToMany(targetEntity=MapPrincipleJpa.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapPrincipleJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 
 	/** The allowable map advices for this MapProject. */
-	@ManyToMany(targetEntity=MapAdviceJpa.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 	
@@ -145,13 +146,22 @@ public class MapProjectJpa implements MapProject {
 		this.mapSpecialists = mapSpecialists;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
-	@XmlTransient
 	@Override
 	public Long getId() {
-		return id;
+		return this.id;
+	}
+	
+	/**
+	 * Set the id
+	 * @param id the id
+	 */
+	@Override
+	public void setId(Long id) {
+		this.id = id;		
 	}
 	
 	/**
@@ -159,17 +169,17 @@ public class MapProjectJpa implements MapProject {
 	 * @return the id in string form
 	 */
 	@XmlID
-	@XmlElement
+	@Override
 	public String getObjectId() {
 		return id.toString();
 	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#setId(java.lang.Long)
+	
+	/**
+	 * Required for 
+	 * @param objectId
 	 */
-	@Override
-	public void setId(Long id) {
-		this.id = id;
+	public void setObjectId(String objectId) {
+		// do nothing
 	}
 
 	/* (non-Javadoc)

@@ -17,6 +17,8 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * JPA enabled map advice
  */
@@ -24,6 +26,7 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 @Table(name = "map_advices")
 @Audited
 @XmlRootElement(name="mapAdvice")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapAdviceJpa implements MapAdvice {
 
 	/** The id. */
@@ -60,33 +63,34 @@ public class MapAdviceJpa implements MapAdvice {
 		this.detail = detail;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
-	@XmlTransient
 	@Override
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 	
 	/**
-	 * Return id as string.
-	 *
-	 * @return the id in string form
-	 */
-	@XmlID
-	@XmlElement
-	public String getObjectId() {
-		return id.toString();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setId(java.lang.Long)
+	 * Set the id
+	 * @param id the id
 	 */
 	@Override
 	public void setId(Long id) {
-		this.id = id;
+		this.id = id;		
 	}
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
+	@Override
+	public String getObjectId() {
+		return id.toString();
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#getDetail()

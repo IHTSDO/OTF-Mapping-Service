@@ -5,7 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -17,6 +16,8 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 /**
  * The Map Principle Object for the Jpa Domain
@@ -27,6 +28,7 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 @Table(name = "map_principles")
 @Audited
 @XmlRootElement(name="mapPrinciple")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapPrincipleJpa implements MapPrinciple {
 
 	@Id
@@ -60,15 +62,6 @@ public class MapPrincipleJpa implements MapPrinciple {
 	}
 	
 	/**
-	 * Returns the id in string form
-	 * @return the id in string form
-	 */
-	@XmlTransient
-	public String getObjectId() {
-		return id.toString();
-	}
-
-	/**
 	 * Set the id
 	 * @param id the id
 	 */
@@ -77,6 +70,15 @@ public class MapPrincipleJpa implements MapPrinciple {
 		this.id = id;		
 	}
 	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
+	@Override
+	public String getObjectId() {
+		return id.toString();
+	}
 
 	@Override
 	public String getPrincipleId() {

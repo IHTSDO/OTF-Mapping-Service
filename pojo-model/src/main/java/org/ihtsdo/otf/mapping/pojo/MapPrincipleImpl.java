@@ -1,6 +1,9 @@
 package org.ihtsdo.otf.mapping.pojo;
 
 
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlTransient;
+
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 
 
@@ -41,6 +44,26 @@ public class MapPrincipleImpl implements MapPrinciple {
 		return this.id;
 	}
 	
+	/**
+	 * Set the id
+	 * @param id the id
+	 */
+	@Override
+	public void setId(Long id) {
+		this.id = id;		
+	}
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
+	@Override
+	public String getObjectId() {
+		return id.toString();
+	}
+
+	
 	@Override
 	public String getPrincipleId() {
 		return this.principleId;
@@ -51,22 +74,6 @@ public class MapPrincipleImpl implements MapPrinciple {
 		this.principleId = principleId;
 	}
 	
-	/**
-	 * Returns the id in string form
-	 * @return the id in string form
-	 */
-	public String getObjectId() {
-		return id.toString();
-	}
-
-	/**
-	 * Set the id
-	 * @param id the id
-	 */
-	@Override
-	public void setId(Long id) {
-		this.id = id;		
-	}
 
 	/**
 	 * Get the detail

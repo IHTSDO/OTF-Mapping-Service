@@ -5,10 +5,14 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapUser;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -20,6 +24,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 @Table(name = "map_users")
 @Audited
 @XmlRootElement(name="mapUser")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapUserJpa implements MapUser {
 
 	
@@ -45,20 +50,32 @@ public class MapUserJpa implements MapUser {
 	/** The default constructor */
 	public MapUserJpa() { }
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapUser#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
 	@Override
 	public Long getId() {
-		return id;
+		return this.id;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapUser#setId(java.lang.Long)
+	
+	/**
+	 * Set the id
+	 * @param id the id
 	 */
 	@Override
 	public void setId(Long id) {
-		this.id = id;
+		this.id = id;		
+	}
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
+	@Override
+	public String getObjectId() {
+		return id.toString();
 	}
 
 	/* (non-Javadoc)

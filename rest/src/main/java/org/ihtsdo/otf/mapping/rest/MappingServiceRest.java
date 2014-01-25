@@ -15,10 +15,14 @@ import javax.ws.rs.core.Response;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadList;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
+import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectList;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordList;
+import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapLead;
@@ -369,6 +373,11 @@ public class MappingServiceRest {
 		}
 	}
 	
+	/**
+	 * Returns the count of records associated with a map project
+	 * @param mapProjectId the map project id
+	 * @return the number of records as a String object
+	 */
 	@GET
 	@Path("record/projectId/{id:[0-9][0-9]*}/nRecords")
 	@ApiOperation(value = "Find the number of records for a project id", notes = "Returns the number of map records for a project id", response = Integer.class)
@@ -390,7 +399,6 @@ public class MappingServiceRest {
 	}
 	/**
 	 * Returns the records for a given concept id
-	 * 
 	 * @param projectId the projectId
 	 * @return the mapRecords
 	 */
@@ -413,19 +421,20 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns a set of map records for a project based on PFS settings
-	 * 
+	 * Returns a delimited page of map records for a project id
 	 * @param projectId the projectId
+	 * @param nStart the first record to return
+	 * @param nMaxResults the number of records to fetch
 	 * @return the mapRecords
 	 */
 	@GET
 	@Path("/record/projectId/{id:[0-9][0-9]*}/{nStart:[0-9][0-9]*}-{nMaxResults:[0-9][0-9]*}")
-	@ApiOperation(value = "Find records by project id", notes = "Returns MapRecords given a project id in either JSON or XML format", response = MapRecord.class)
+	@ApiOperation(value = "Find paged records by project id", notes = "Returns delimited page of MapRecords, e.g. range [nStart: nStart+nMaxRecords-1] given a project id in either JSON or XML format", response = MapRecord.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecordList getMapRecordsForMapProjectId(
 			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long projectId,
 			@ApiParam(value = "Start index of records", required = true) @PathParam("nStart") int nStart,
-			@ApiParam(value = "End index of records", required = true) @PathParam("nMaxResults") int nMaxResults) {
+			@ApiParam(value = "Number of records to fetch", required = true) @PathParam("nMaxResults") int nMaxResults) {
 		
 		try {
 			// instantiate the pfs parameters
@@ -444,6 +453,32 @@ public class MappingServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
+	
+	/**
+	 * Deletes all map records associated with a map project given a project id
+	 * @param mapProjectId the map project id
+	 * @return the number of records deleted
+	 */
+	@DELETE
+	@Path("record/delete/projectId/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Deletes all records for a project id", notes = "Deletes all map records for a project id", response = Integer.class)
+	@Produces({ MediaType.TEXT_PLAIN})
+	public String removeMapRecordsForProjectId(
+			@ApiParam(value = "Project id for which map records are to be deleted", required = true) @PathParam("id") Long mapProjectId) {
+			
+			
+			try {
+				MappingService mappingService = new MappingServiceJpa();
+				Long nRecords = mappingService.removeMapRecordsForProjectId(mapProjectId);
+				mappingService.close();
+				
+				// Jersey can't handle Long as return type, convert to string
+				return nRecords.toString();
+			} catch (Exception e) {
+				throw new WebApplicationException(e);
+			}
+	}
+	
 	
 	/**
 	 * Returns all map records for a lucene query
@@ -476,21 +511,21 @@ public class MappingServiceRest {
 	
 	/**
 	 * Adds a map project
-	 * @param mapProjectId the id of the map project, used for path
 	 * @param mapProject the map project to be added
-	 * @return Response the response
+	 * @return returns the added map project object
 	 */
 	@PUT
-	@Path("/project/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Add a project", notes = "Adds a MapProject", response = MapProject.class)
-	public Response addMapProject(@ApiParam(value = "Id of map project to add", required = true) @PathParam("id") Long mapProjectId,
-							  @ApiParam(value = "The map project to add", required = true) MapProject mapProject) { 
+	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
+	@Path("/project/add")
+	@ApiOperation(value = "Add a project", notes = "Adds a MapProject", response = MapProjectJpa.class)
+	public MapProject addMapProject(@ApiParam(value = "The map project to add. Must be in Json or Xml format", required = true) MapProjectJpa mapProject) { 
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.addMapProject(mapProject);
+			MapProject mp = mappingService.addMapProject(mapProject);
 			mappingService.close();
-			return null;
+						
+			return mp;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -499,15 +534,14 @@ public class MappingServiceRest {
 	
 	/**
 	 * Adds a map lead
-	 * @param mapLeadId the id of the map lead, used for path
 	 * @param mapLead the map lead to be added
 	 * @return Response the response
 	 */
 	@PUT
-	@Path("/lead/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Add a lead", notes = "Adds a MapLead", response = MapLead.class)
-	public Response addMapLead(@ApiParam(value = "Id of map lead to add", required = true) @PathParam("id") Long mapLeadId,
-							  @ApiParam(value = "The map lead to add", required = true) MapLead mapLead) { 
+	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
+	@Path("/lead/add")
+	@ApiOperation(value = "Add a lead", notes = "Adds a MapLead", response = MapLeadJpa.class)
+	public Response addMapLead(@ApiParam(value = "The map lead to add. Must be in Json or Xml format", required = true) MapLeadJpa mapLead) { 
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -522,15 +556,13 @@ public class MappingServiceRest {
 	
 	/**
 	 * Adds a map specialist
-	 * @param mapSpecialistId the id of the map specialist, used for path
 	 * @param mapSpecialist the map specialist to be added
 	 * @return Response the response
 	 */
 	@PUT
-	@Path("/specialist/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Add a specialist", notes = "Adds a MapSpecialist", response = MapSpecialist.class)
-	public Response addMapSpecialist(@ApiParam(value = "Id of map specialist to add", required = true) @PathParam("id") Long mapSpecialistId,
-							  @ApiParam(value = "The map specialist to add", required = true) MapSpecialist mapSpecialist) { 
+	@Path("/specialist/add")
+	@ApiOperation(value = "Add a specialist", notes = "Adds a MapSpecialist", response = MapSpecialistJpa.class)
+	public Response addMapSpecialist(@ApiParam(value = "The map specialist to add", required = true) MapSpecialistJpa mapSpecialist) { 
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -545,15 +577,13 @@ public class MappingServiceRest {
 	
 	/**
 	 * Adds a map record
-	 * @param mapRecordId the id of the map record, used for path
 	 * @param mapRecord the map record to be added
 	 * @return Response the response
 	 */
 	@PUT
-	@Path("/record/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Add a record", notes = "Adds a MapRecord", response = MapRecord.class)
-	public Response addMapRecord(@ApiParam(value = "Id of map record to add", required = true) @PathParam("id") Long mapRecordId,
-							  @ApiParam(value = "The map record to add", required = true) MapRecord mapRecord) { 
+	@Path("/record/add")
+	@ApiOperation(value = "Add a record", notes = "Adds a MapRecord", response = MapRecordJpa.class)
+	public Response addMapRecord( @ApiParam(value = "The map record to add", required = true) MapRecordJpa mapRecord) { 
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -576,17 +606,16 @@ public class MappingServiceRest {
 	
 	/**
 	 * Updates a map project
-	 * @param mapProjectId the id of the map project, used for path
 	 * @param mapProject the map project to be added
 	 * @return Response the response
 	 */
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("/project/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Update a project", notes = "Updates a map project", response = MapProject.class)
-	public Response updateMapProject(@ApiParam(value = "Id of map project to update", required = true) @PathParam("id") Long mapProjectId,
-							  @ApiParam(value = "The map project to update", required = true) MapProject mapProject) { 
+	@Path("/project/update")
+	@ApiOperation(value = "Update a project", notes = "Updates a map project", response = MapProjectJpa.class)
+	public Response updateMapProject(@ApiParam(value = "The map project to update. Must exist in mapping database. Must be in Json or Xml format", required = true) MapProjectJpa mapProject) { 
 
+		System.out.println("-> Update Project");
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapProject(mapProject);
@@ -600,16 +629,14 @@ public class MappingServiceRest {
 	
 	/**
 	 * Updates a map lead
-	 * @param mapLeadId the id of the map lead, used for path
 	 * @param mapLead the map lead to be added
 	 * @return Response the response
 	 */
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("/lead/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Update a lead", notes = "Updates a map lead", response = MapLead.class)
-	public Response updateMapLead(@ApiParam(value = "Id of map lead to update", required = true) @PathParam("id") Long mapLeadId,
-							  @ApiParam(value = "The map lead to update", required = true) MapLead mapLead) { 
+	@Path("/lead/update")
+	@ApiOperation(value = "Update a lead", notes = "Updates a map lead", response = MapLeadJpa.class)
+	public Response updateMapLead( @ApiParam(value = "The map lead to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapLeadJpa mapLead) { 
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -623,19 +650,14 @@ public class MappingServiceRest {
 	
 	/**
 	 * Updates a map specialist
-	 * @param mapSpecialistId the id of the map specialist, used for path
 	 * @param mapSpecialist the map specialist to be added
 	 * @return Response the response
 	 */
 	@POST
-	@Path("/specialist/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Update a specialist", notes = "Updates a map specialist", response = MapSpecialist.class)
-	public Response updateMapSpecialist(@ApiParam(value = "Id of map specialist to update", required = true) @PathParam("id") Long mapSpecialistId,
-							  @ApiParam(value = "The map specialist to update", required = true) ByteArrayProvider element) { 
-
-		System.out.println(element.toString());
-		
-		/*MapSpecialist mapSpecialist = new MapSpecialistJpa();
+	@Path("/specialist/update")
+	@ApiOperation(value = "Update a specialist", notes = "Updates a map specialist", response = MapSpecialistJpa.class)
+	public Response updateMapSpecialist(@ApiParam(value = "The map specialist to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapSpecialistJpa mapSpecialist) { 
+	
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapSpecialist(mapSpecialist);
@@ -643,21 +665,18 @@ public class MappingServiceRest {
 			return null;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
-		}*/
-		return null;
+		}
 	}
 	
 	/**
 	 * Updates a map record
-	 * @param mapRecordId the id of the map record, used for path
 	 * @param mapRecord the map record to be added
 	 * @return Response the response
 	 */
 	@POST
-	@Path("/record/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Update a record", notes = "Updates a map record", response = MapRecord.class)
-	public Response updateMapRecord(@ApiParam(value = "Id of map record to update", required = true) @PathParam("id") Long mapRecordId,
-							  @ApiParam(value = "The map record to update", required = true) MapRecord mapRecord) { 
+	@Path("/record/update")
+	@ApiOperation(value = "Update a record", notes = "Updates a map record", response = MapRecordJpa.class)
+	public Response updateMapRecord(@ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) { 
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -801,8 +820,6 @@ public class MappingServiceRest {
 	public MapPrinciple getMapPrincipledForId(
 			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId) {
 		
-		System.out.println("FIRST HI THERE!");
-		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapPrinciple mapPrinciple = mappingService.getMapPrinciple(mapPrincipleId);
@@ -814,7 +831,7 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * @param <MapPrincipleJpa>
+	 * Updates a map principle
 	 * @param mapPrincipleId
 	 * @param mapPrinciple
 	 * @return the response
@@ -822,13 +839,10 @@ public class MappingServiceRest {
 	@POST
 	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 	@Path("/principle/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find principle by id", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrincipleJpa.class)
+	@ApiOperation(value = "Update principle by id", notes = "Updates a MapPrinciple. Must exist in mapping database. Must be in Json or Xml format", response = MapPrincipleJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Response updatetMapPrincipledForId(
-			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId,
 			@ApiParam(value = "Map Principle to update", required = true) MapPrincipleJpa mapPrinciple) {
-		
-		System.out.println("FIRST HI THERE!");
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -839,6 +853,31 @@ public class MappingServiceRest {
 			throw new WebApplicationException(e);
 		}
 		return null;
+	}
+	
+	/**
+	 * Generates map records based on a map projects metadata.  Requires map project conceptId, source and destination terminologies, source and destination terminology versions be set.
+	 * @param mapProject the map project 
+	 * @return returns a list of map records
+	 */
+	@POST
+	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
+	@Path("/project/record/generate")
+	@ApiOperation(value = "Find map records based on project metadata", notes = "Retrieves map records given project metadata", response = MapRecordList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList createMapRecordsForProject(
+			@ApiParam(value = "Map Principle to update", required = true) MapProjectJpa mapProject) {
+
+		MapRecordList results = new MapRecordList();
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			results.setMapRecords(mappingService.createMapRecordsForMapProject(mapProject));
+			mappingService.close();
+			
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+		return results;
 	}
 	
 	

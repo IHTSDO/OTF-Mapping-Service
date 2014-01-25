@@ -1434,9 +1434,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				concept.setTerminologyId(fields[0]);
 				concept.setEffectiveTime(dt.parse(fields[1]));
 				concept.setActive(fields[2].equals("1") ? true : false);
-				concept.setModuleId(Long.valueOf(fields[3]));
-				concept.setDefinitionStatusId(Long.valueOf(fields[4]));
-				concept.setTerminology("terminology");
+				concept.setModuleId(Long.valueOf(fields[3].trim()));
+				concept.setDefinitionStatusId(Long.valueOf(fields[4].trim()));
+				concept.setTerminology(terminology);
 				concept.setTerminologyVersion(version);
 				concept.setDefaultPreferredName("null");
 
@@ -1471,15 +1471,15 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				relationship.setTerminologyId(fields[0]);
 				relationship.setEffectiveTime(dt.parse(fields[1]));
 				relationship.setActive(fields[2].equals("1") ? true : false); // active
-				relationship.setModuleId(Long.valueOf(fields[3])); // moduleId
+				relationship.setModuleId(Long.valueOf(fields[3].trim())); // moduleId
 
-				relationship.setRelationshipGroup(Integer.valueOf(fields[6])); // relationshipGroup
-				relationship.setTypeId(Long.valueOf(fields[7])); // typeId
-				relationship.setCharacteristicTypeId(Long.valueOf(fields[8])); // characteristicTypeId
+				relationship.setRelationshipGroup(Integer.valueOf(fields[6].trim())); // relationshipGroup
+				relationship.setTypeId(Long.valueOf(fields[7].trim())); // typeId
+				relationship.setCharacteristicTypeId(Long.valueOf(fields[8].trim())); // characteristicTypeId
 				relationship.setTerminology(terminology);
 				relationship.setTerminologyVersion(version);
 				relationship
-						.setModifierId(Long.valueOf(Long.valueOf(fields[9])));
+						.setModifierId(Long.valueOf(fields[9].trim()));
 
 				relationship.setSourceConcept(getConcept(fields[4],
 						relationship.getTerminology(),
@@ -1517,12 +1517,12 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				description.setTerminologyId(fields[0]);
 				description.setEffectiveTime(dt.parse(fields[1]));
 				description.setActive(fields[2].equals("1") ? true : false);
-				description.setModuleId(Long.valueOf(fields[3]));
+				description.setModuleId(Long.valueOf(fields[3].trim()));
 
 				description.setLanguageCode(fields[5]);
-				description.setTypeId(Long.valueOf(fields[6]));
+				description.setTypeId(Long.valueOf(fields[6].trim()));
 				description.setTerm(fields[7]);
-				description.setCaseSignificanceId(Long.valueOf(fields[8]));
+				description.setCaseSignificanceId(Long.valueOf(fields[8].trim()));
 				description.setTerminology(terminology);
 				description.setTerminologyVersion(version);
 
@@ -1567,11 +1567,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						.setEffectiveTime(dt.parse(fields[1]));
 				attributeValueRefSetMember
 						.setActive(fields[2].equals("1") ? true : false);
-				attributeValueRefSetMember.setModuleId(Long.valueOf(fields[3]));
+				attributeValueRefSetMember.setModuleId(Long.valueOf(fields[3].trim()));
 				attributeValueRefSetMember.setRefSetId(fields[4]);
 
 				// AttributeValueRefSetMember unique attributes
-				attributeValueRefSetMember.setValueId(Long.valueOf(fields[6]));
+				attributeValueRefSetMember.setValueId(Long.valueOf(fields[6].trim()));
 
 				// Terminology attributes
 				attributeValueRefSetMember.setTerminology(terminology);
@@ -1613,7 +1613,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				simpleRefSetMember.setEffectiveTime(dt.parse(fields[1]));
 				simpleRefSetMember.setActive(fields[2].equals("1") ? true
 						: false);
-				simpleRefSetMember.setModuleId(Long.valueOf(fields[3]));
+				simpleRefSetMember.setModuleId(Long.valueOf(fields[3].trim()));
 				simpleRefSetMember.setRefSetId(fields[4]);
 
 				// SimpleRefSetMember unique attributes
@@ -1658,7 +1658,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				simpleMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
 				simpleMapRefSetMember.setActive(fields[2].equals("1") ? true
 						: false);
-				simpleMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
+				simpleMapRefSetMember.setModuleId(Long.valueOf(fields[3].trim()));
 				simpleMapRefSetMember.setRefSetId(fields[4]);
 
 				// SimpleMap unique attributes
@@ -1702,19 +1702,19 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
 				complexMapRefSetMember.setActive(fields[2].equals("1") ? true
 						: false);
-				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
+				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3].trim()));
 				complexMapRefSetMember.setRefSetId(fields[4]);
 				// conceptId
 
 				// ComplexMap unique attributes
-				complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
+				complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6].trim()));
 				complexMapRefSetMember.setMapPriority(Integer
-						.parseInt(fields[7]));
+						.parseInt(fields[7].trim()));
 				complexMapRefSetMember.setMapRule(fields[8]);
 				complexMapRefSetMember.setMapAdvice(fields[9]);
 				complexMapRefSetMember.setMapTarget(fields[10]);
 				complexMapRefSetMember.setMapRelationId(Long
-						.valueOf(fields[11]));
+						.valueOf(fields[11].trim()));
 
 				// ComplexMap unique attributes NOT set by file (mapBlock
 				// elements)
@@ -1765,19 +1765,19 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
 				complexMapRefSetMember.setActive(fields[2].equals("1") ? true
 						: false);
-				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
+				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3].trim()));
 				complexMapRefSetMember.setRefSetId(fields[4]);
 				// conceptId
 
 				// ComplexMap unique attributes
-				complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
+				complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6].trim()));
 				complexMapRefSetMember.setMapPriority(Integer
-						.parseInt(fields[7]));
+						.parseInt(fields[7].trim()));
 				complexMapRefSetMember.setMapRule(fields[8]);
 				complexMapRefSetMember.setMapAdvice(fields[9]);
 				complexMapRefSetMember.setMapTarget(fields[10]);
 				complexMapRefSetMember.setMapRelationId(Long
-						.valueOf(fields[12]));
+						.valueOf(fields[12].trim()));
 
 				// ComplexMap unique attributes NOT set by file (mapBlock
 				// elements)
@@ -1823,12 +1823,12 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				languageRefSetMember.setEffectiveTime(dt.parse(fields[1]));
 				languageRefSetMember.setActive(fields[2].equals("1") ? true
 						: false);
-				languageRefSetMember.setModuleId(Long.valueOf(fields[3]));
+				languageRefSetMember.setModuleId(Long.valueOf(fields[3].trim()));
 				languageRefSetMember.setRefSetId(fields[4]);
 
 				// Language unique attributes
 				languageRefSetMember
-						.setAcceptabilityId(Long.valueOf(fields[6]));
+						.setAcceptabilityId(Long.valueOf(fields[6].trim()));
 
 				// Terminology attributes
 				languageRefSetMember.setTerminology(terminology);
