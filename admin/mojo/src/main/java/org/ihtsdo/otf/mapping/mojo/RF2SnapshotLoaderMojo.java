@@ -296,11 +296,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 			// set the input directory
 			coreInputDirString = properties
-					.getProperty("loader.main.input.data");
+					.getProperty("loader.SNOMEDCT.input.data");
 			coreInputDir = new File(coreInputDirString);
 			if (!coreInputDir.exists()) {
 				throw new MojoFailureException(
-						"Specified loader.main.input.data directory does not exist: "
+						"Specified loader.SNOMEDCT.input.data directory does not exist: "
 								+ coreInputDirString);
 			}
 
