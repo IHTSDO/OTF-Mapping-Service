@@ -32,6 +32,8 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 /**
  * The Map Record Jpa object
@@ -41,6 +43,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 @Audited
 @Indexed
 @XmlRootElement(name="mapRecord")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapRecordJpa implements MapRecord {
 
 	/** The id. */
@@ -61,7 +64,7 @@ public class MapRecordJpa implements MapRecord {
 	private Long countDescendantConcepts;
 
 	/** The map records */
-	@OneToMany(mappedBy = "mapRecord", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH},  fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapEntryJpa.class)
+	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL,  fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapEntryJpa.class)
 	@IndexedEmbedded(targetElement=MapEntryJpa.class)
 	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
 	
@@ -71,7 +74,7 @@ public class MapRecordJpa implements MapRecord {
 	private Set<MapNote> mapNotes = new HashSet<MapNote>();
 	
 	/** The map principles. */
-	@ManyToMany(targetEntity=MapPrincipleJpa.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapPrincipleJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 	
@@ -94,23 +97,32 @@ public class MapRecordJpa implements MapRecord {
 		//this.mapNotes = mapNotes;
 	}
 
-	@XmlTransient
+	/**
+	 * Return the id
+	 * @return the id
+	 */
 	@Override
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 	
-	@Override
-	@XmlID
-	@XmlElement
-	public String getObjectId() {
-		return id.toString();
-	}
-
-	
+	/**
+	 * Set the id
+	 * @param id the id
+	 */
 	@Override
 	public void setId(Long id) {
-		this.id = id;
+		this.id = id;		
+	}
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
+	@Override
+	public String getObjectId() {
+		return id.toString();
 	}
 	
 	@Override

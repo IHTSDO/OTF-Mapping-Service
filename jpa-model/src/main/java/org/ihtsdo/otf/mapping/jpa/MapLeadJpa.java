@@ -13,6 +13,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapLead;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * The Class MapLeadJpa.
  *
@@ -21,6 +23,7 @@ import org.ihtsdo.otf.mapping.model.MapLead;
 @Table(name = "map_leads")
 @Audited
 @XmlRootElement(name="mapLead")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapLeadJpa implements MapLead {
 
 	/** Default constructor */
@@ -59,27 +62,32 @@ public class MapLeadJpa implements MapLead {
 	@Column(nullable = false)
 	private String email;
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapLead#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
 	@Override
-	@XmlTransient
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 	
-	@XmlID
-	@XmlElement
-	public String getObjectId() {
-		return id.toString();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapLead#setId(java.lang.Long)
+	/**
+	 * Set the id
+	 * @param id the id
 	 */
 	@Override
 	public void setId(Long id) {
-		this.id = id;
+		this.id = id;		
+	}
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
+	@Override
+	public String getObjectId() {
+		return id.toString();
 	}
 
 	/* (non-Javadoc)

@@ -17,18 +17,18 @@ public interface MapRecord {
 	public Long getId();
 	
 	/**
-	 * Returns the id in string form
-	 *
-	 * @return the id in string form
-	 */
-	public String getObjectId();
-	
-	/**
 	 * Sets the id.
 	 *
 	 * @param id the id
 	 */
 	public void setId(Long id);
+	
+	/**
+	 * Returns the id in string form
+	 * @return the string object id
+	 */
+	public String getObjectId();
+	
 	
 	/**
 	 * Returns the map project id.

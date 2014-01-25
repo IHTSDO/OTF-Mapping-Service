@@ -21,15 +21,14 @@ loader.ICPC.input.data=C:\\data\\icpc.xml
 
 #
 # Path to icd9cm data
+#   this must be a file named icd9cm.xml
 #
 loader.ICD9CM.input.data=C:\\data\\icd9cm.xml
-
 
 #
 # Path to icd10 data
 #
 loader.ICD10.input.data=C:\\data\\icd10.xml
-
 
 #
 # Loader settings for preferred name

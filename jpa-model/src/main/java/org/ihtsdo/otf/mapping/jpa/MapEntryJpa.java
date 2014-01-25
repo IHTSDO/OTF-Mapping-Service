@@ -31,6 +31,8 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * The Map Entry Jpa object.
  *
@@ -39,6 +41,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 @Table(name = "map_entries")
 @Audited
 @XmlRootElement(name="mapEntry")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapEntryJpa implements MapEntry {
 	
 	/** The id. */
@@ -126,34 +129,34 @@ public class MapEntryJpa implements MapEntry {
 		this.relationId = relationId;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
-	@XmlTransient
 	@Override
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 	
 	/**
-	 * Returns the id in string form.
-	 *
-	 * @return the id in string form
-	 */
-	@XmlID
-	@XmlElement
-	public String getObjectId() {
-		return id.toString();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setId(java.lang.Long)
+	 * Set the id
+	 * @param id the id
 	 */
 	@Override
 	public void setId(Long id) {
-		this.id = id;
+		this.id = id;		
 	}
-
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
+	@Override
+	public String getObjectId() {
+		return id.toString();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapNotes()
 	 */

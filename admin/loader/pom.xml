@@ -130,19 +130,31 @@
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                  <terminology>SNOMEDCT</terminology>                
+                </configuration>
+              </execution>
+             <!-- <execution>
+                <id>load-icpc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-icpc</goal>
+                </goals>
+                <configuration>
+                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+                </configuration>
+              </execution> --> 
+              <execution>
+                <id>load-icd10</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-icd10</goal>
+                </goals>
+                <configuration>
+                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                 </configuration>
               </execution>
             </executions>
           </plugin> 
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>ICD10</id>
-      <build>
-        <plugins>
-          <plugin>
+          <!-- <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
@@ -157,88 +169,19 @@
             </dependencies>
             <executions>
               <execution>
-                <id>load-claml</id>
+                <id>load-icpc</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>load-claml</goal>
+                  <goal>load-icpc</goal>
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                  <terminology>ICD10</terminology>
                 </configuration>
               </execution>
             </executions>
-          </plugin>
+          </plugin> -->
         </plugins>
       </build>
     </profile>
-    <profile>
-      <id>ICD9CM</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
-            <executions>
-              <execution>
-                <id>load-claml</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>load-claml</goal>
-                </goals>
-                <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                  <terminology>ICD9CM</terminology>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>ICPC</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
-            <executions>
-              <execution>
-                <id>load-claml</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>load-claml</goal>
-                </goals>
-                <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                  <terminology>ICPC</terminology>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins> 
-      </build>
-    </profile> 
   </profiles>
 </project>

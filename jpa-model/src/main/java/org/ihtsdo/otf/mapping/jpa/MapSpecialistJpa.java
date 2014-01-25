@@ -13,6 +13,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * The Class MapSpecialistJpa.
  *
@@ -21,6 +23,7 @@ import org.ihtsdo.otf.mapping.model.MapSpecialist;
 @Table(name = "map_specialists")
 @Audited
 @XmlRootElement(name="mapSpecialist")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapSpecialistJpa implements MapSpecialist {
 
 	/** The id. */
@@ -59,27 +62,32 @@ public class MapSpecialistJpa implements MapSpecialist {
 		this.email = email;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
 	@Override
-	@XmlTransient
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 	
-	@XmlID
-	@XmlElement
-	public String getObjectId() {
-		return id.toString();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapSpecialist#setId(java.lang.Long)
+	/**
+	 * Set the id
+	 * @param id the id
 	 */
 	@Override
 	public void setId(Long id) {
-		this.id = id;
+		this.id = id;		
+	}
+	
+	/**
+	 * Returns the id in string form
+	 * @return the id in string form
+	 */
+	@XmlID
+	@Override
+	public String getObjectId() {
+		return id.toString();
 	}
 
 	/* (non-Javadoc)

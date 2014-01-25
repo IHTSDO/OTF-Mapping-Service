@@ -19,6 +19,8 @@ import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * The Map Note Jpa object
  */
@@ -26,6 +28,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 @Table(name = "map_notes")
 @Audited
 @XmlRootElement(name="mapNote")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MapNoteJpa implements MapNote {
 
 	/** The id. */
@@ -66,13 +69,22 @@ public class MapNoteJpa implements MapNote {
 		this.timestamp = timestamp;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapNote#getId()
+	/**
+	 * Return the id
+	 * @return the id
 	 */
-	@XmlTransient
 	@Override
 	public Long getId() {
-		return id;
+		return this.id;
+	}
+	
+	/**
+	 * Set the id
+	 * @param id the id
+	 */
+	@Override
+	public void setId(Long id) {
+		this.id = id;		
 	}
 	
 	/**
@@ -80,17 +92,9 @@ public class MapNoteJpa implements MapNote {
 	 * @return the id in string form
 	 */
 	@XmlID
-	@XmlElement
+	@Override
 	public String getObjectId() {
 		return id.toString();
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapNote#setId(java.lang.Long)
-	 */
-	@Override
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	/* (non-Javadoc)

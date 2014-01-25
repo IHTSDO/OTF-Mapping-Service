@@ -90,7 +90,12 @@ mapProjectApp.config(['$routeProvider',
 	  $routeProvider.when('/edit-demo', {
 			templateUrl: 'partials/edit-demo.html',
 			controller: 'EditDemoCtrl'
-		});
+	  });
+	  
+	  $routeProvider.when('/project-create', {
+			templateUrl: 'partials/project-create.html',
+			controller: 'ProjectCreateCtrl'
+	  });
 		
 	  
 	  //////////////////////////////

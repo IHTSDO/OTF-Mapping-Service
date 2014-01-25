@@ -394,6 +394,13 @@ mapProjectAppControllers.controller('QueryConceptCtrl', ['$scope', '$http', '$ro
 
 
 
+mapProjectAppControllers.controller('ProjectCreateCtrl', ['$scope', '$http',,
+   function ($scope, $http) {
+
+	$scope.queryConceptStatus = "[No concept query executed]";
+}]);
+
+
 // TODO Add test for coming from project list page (i.e. pass the project to this controller)
 mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', '$routeParams',
    function ($scope, $http, $routeParams) {

@@ -22,6 +22,13 @@ public interface MapEntry {
 	public void setId(Long id);
 	
 	/**
+	 * Returns the id in string form
+	 * @return the string object id
+	 */
+	public String getObjectId();
+
+	
+	/**
 	 * Returns the notes.
 	 *
 	 * @return the notes
