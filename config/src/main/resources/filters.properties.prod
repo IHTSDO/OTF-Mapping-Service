@@ -12,23 +12,22 @@ mysql.test.pwd=otfpwd
 # Path to loader dta
 #   this directory must have Refset/ and Terminology/ directories
 #
-loader.main.input.data=/home/mnt/projects/data/RF2Release
+loader.SNOMEDCT.input.data=/home/ihtsdo/data/snomedct-20140131-snapshot
 
 #
 # Path to icpc data
 #
-loader.ICPC.input.data=/home/mnt/projects/data/icpc.xml
+loader.ICPC.input.data=/home/ihtsdo/data/icpc.xml
 
 #
 # Path to icd9cm data
 #
-loader.ICD9CM.input.data=/home/mnt/projects/data/icd9cm.xml
-
+loader.ICD9CM.input.data=/home/ihtsdo/data/icd9cm.xml
 
 #
 # Path to icd10 data
 #
-loader.ICD10.input.data=/home/mnt/projects/data/icd10.xml
+loader.ICD10.input.data=/home/ihtsdo/data/icd10.xml
 
 #
 # Loader settings for preferred name
