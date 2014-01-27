@@ -302,11 +302,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 			// set the input directory
 			coreInputDirString = properties
-					.getProperty("loader.main.input.data");
+					.getProperty("loader.SNOMEDCT.input.data");
 			coreInputDir = new File(coreInputDirString);
 			if (!coreInputDir.exists()) {
 				throw new MojoFailureException(
-						"Specified loader.main.input.data directory does not exist: "
+						"Specified loader.SNOMEDCT.input.data directory does not exist: "
 								+ coreInputDirString);
 			}
 
@@ -333,7 +333,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 			// Prepare sorted input files
 			sorted_files = new File(coreInputDir, "/RF2-sorted-temp/");
-			getLog().info("    Sorting Files");
+			getLog().info("Sorting Files");
 			startTime = System.nanoTime();
 			prepareSortedFiles();
 			getLog().info("    Files sorted in " + getElapsedTime() + "s");
@@ -344,6 +344,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			try {
 
 				// truncate all the tables that we are going to use first
+				getLog().info("Deleting existing SNOMEDCT data");
 				tx.begin();
 
 				// truncate RefSets
@@ -428,26 +429,32 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 									+ " Language RefSets loaded in "
 									+ getElapsedTime().toString() + "s");
 				}
+		
+				// description cache no longer required, clear
+				descriptionCache.clear();
 
-				// contain all the rest in single transaction to minimize envers
-				// versioning
-				tx.begin();
+
 
 				// load Relationships
 				if (relationships_by_source_concept != null) {
 					getLog().info("    Loading Relationships...");
 					startTime = System.nanoTime();
+					tx.begin();
 					loadRelationships();
+					tx.commit();
 					getLog().info(
 							"      " + Integer.toString(i) + " Relationships loaded in "
 									+ getElapsedTime().toString() + "s");
 				}
+				
 
 				// load Simple RefSets (Content)
 				if (simple_refsets_by_concept != null) {
 					getLog().info("    Loading Simple RefSets...");
 					startTime = System.nanoTime();
+					tx.begin();
 					loadSimpleRefSets();
+					tx.commit();
 					getLog().info(
 							"      " + Integer.toString(i) + " Simple RefSets loaded in "
 									+ getElapsedTime().toString() + "s");
@@ -457,7 +464,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (simple_map_refsets_by_concept != null) {
 					getLog().info("    Loading SimpleMap RefSets...");
 					startTime = System.nanoTime();
+					tx.begin();
 					loadSimpleMapRefSets();
+					tx.commit();
 					getLog().info(
 							"      " + Integer.toString(i)
 									+ " SimpleMap RefSets loaded in "
@@ -468,7 +477,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (complex_map_refsets_by_concept != null) {
 					getLog().info("    Loading ComplexMap RefSets...");
 					startTime = System.nanoTime();
+					tx.begin();
 					loadComplexMapRefSets();
+					tx.commit();
 					getLog().info(
 							"      " + Integer.toString(i)
 									+ " ComplexMap RefSets loaded in "
@@ -479,7 +490,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (extended_map_refsets_by_concept != null) {
 					getLog().info("    Loading ExtendedMap RefSets...");
 					startTime = System.nanoTime();
+					tx.begin();
 					loadExtendedMapRefSets();
+					tx.commit();
 					getLog().info(
 							"      " + Integer.toString(i)
 									+ " ExtendedMap RefSets loaded in "
@@ -490,16 +503,14 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (attribute_refsets_by_concept != null) {
 					getLog().info("    Loading AttributeValue RefSets...");
 					startTime = System.nanoTime();
+					tx.begin();
 					loadAttributeValueRefSets();
+					tx.commit();
 					getLog().info(
 							"      " + Integer.toString(i)
 									+ " AttributeValue RefSets loaded in "
 									+ getElapsedTime().toString() + "s");
 				}
-
-				getLog().info("    Committing...");
-
-				tx.commit();
 
 				getLog().info(
 						"    Total elapsed time for run: "
@@ -600,11 +611,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		// attempt to make sorted files directory
 		if (sorted_files.mkdir()) {
 			getLog().info(
-					"Creating new sorted files folder "
+					" Creating new sorted files folder "
 							+ sorted_files.toString());
 		} else {
 			throw new MojoFailureException(
-					"Could not create temporary sorted file folder "
+					" Could not create temporary sorted file folder "
 							+ sorted_files.toString());
 		}
 
@@ -1460,7 +1471,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						new String(fields[0] + concept.getTerminology()
 								+ concept.getTerminologyVersion()), concept);
 
-				i++;
+				// 50, same as JDBC batch size
+				if (++i % 50 == 0) {
+					manager.flush();
+					manager.clear();
+				}
 			}
 		}
 	}
@@ -1508,7 +1523,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					relationship.setDestinationConcept(destinationConcept);
 					
 					manager.persist(relationship);
-					i++;
+					// 50, same as JDBC batch size
+					if (++i % 50 == 0) {
+						manager.flush();
+						manager.clear();
+					}
 				} else {
 					if (sourceConcept == null) {
 						log_file_out.write("Relationship " + relationship.getTerminologyId() +
@@ -1569,13 +1588,17 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					descriptionCache.put(fields[0] + description.getTerminology()
 							+ description.getTerminologyVersion(),
 							description.getId());
+					
+					// 50, same as JDBC batch size
+					if (++i % 50 == 0) {
+						manager.flush();
+						manager.clear();
+					}
 				} else {
 					log_file_out.write("Description " + description.getTerminologyId() +
 							" references non-existent concept " + fields[4]);
 					log_file_out.newLine();
 				}
-
-				i++;
 			}
 		}
 	}
@@ -1624,12 +1647,17 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				
 					attributeValueRefSetMember.setConcept(concept);
 					manager.persist(attributeValueRefSetMember);
+					
+					// 50, same as JDBC batch size
+					if (++i % 50 == 0) {
+						manager.flush();
+						manager.clear();
+					}
 				} else {
 					log_file_out.write("attributeValueRefSetMember " + attributeValueRefSetMember.getTerminologyId() +
 							" references non-existent concept " + fields[5]);
 					log_file_out.newLine();
 				}
-				i++;
 			}
 		}
 	}
@@ -1676,13 +1704,17 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (concept != null) {
 					simpleRefSetMember.setConcept(concept);
 					manager.persist(simpleRefSetMember);
+					
+					// 50, same as JDBC batch size
+					if (++i % 50 == 0) {
+						manager.flush();
+						manager.clear();
+					}
 				} else {
 					log_file_out.write("simpleRefSetMember " + simpleRefSetMember.getTerminologyId() +
 							" references non-existent concept " + fields[5]);
 					log_file_out.newLine();
 				}
-				
-				i++;
 			}
 		}
 	}
@@ -1728,13 +1760,17 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (concept != null) {
 					simpleMapRefSetMember.setConcept(concept);
 					manager.persist(simpleMapRefSetMember);
+					
+					// 50, same as JDBC batch size
+					if (++i % 50 == 0) {
+						manager.flush();
+						manager.clear();
+					}
 				} else {
 					log_file_out.write("simpleMapRefSetMember " + simpleMapRefSetMember.getTerminologyId() +
 							" references non-existent concept " + fields[5]);
 					log_file_out.newLine();
 				}
-
-				i++;
 			}
 		}
 	}
@@ -1794,7 +1830,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					complexMapRefSetMember.setConcept(concept);
 					manager.persist(complexMapRefSetMember);
 
-					i++;
+					// 50, same as JDBC batch size
+					if (++i % 50 == 0) {
+						manager.flush();
+						manager.clear();
+					}
 				} else {
 					log_file_out.write("complexMapRefSetMember " + complexMapRefSetMember.getTerminologyId() +
 							" references non-existent concept " + fields[5]);
@@ -1864,7 +1904,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					complexMapRefSetMember.setConcept(concept);
 					manager.persist(complexMapRefSetMember);
 
-					i++;
+					// 50, same as JDBC batch size
+					if (++i % 50 == 0) {
+						manager.flush();
+						manager.clear();
+					}
 				} else {
 					log_file_out.write("complexMapRefSetMember " + complexMapRefSetMember.getTerminologyId() +
 							" references non-existent concept " + fields[5]);
@@ -1929,18 +1973,28 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 							getLog().info(
 									"Multiple default preferred names for concept "
 											+ concept.getTerminologyId());
+							log_file_out.write("Multiple default preferred names for concept " + concept.getTerminologyId() + "\n" +
+												"     " + concept.getDefaultPreferredName() + "\n" +
+												"     "	+ description.getTerm());
 						}
 	
 						concept.setDefaultPreferredName(description.getTerm());
 			
 						manager.persist(concept);
+						
+						
 					}
-	
-					i++;
+					
+					// 50, same as JDBC batch size
+					if (++i % 50 == 0) {
+						manager.flush();
+						manager.clear();
+					}
+					
 					
 				} else {
-					log_file_out.write("languageRefSetMember" + languageRefSetMember.getTerminologyId() +
-							" references non-existent description" + fields[5]);
+					log_file_out.write("languageRefSetMember " + languageRefSetMember.getTerminologyId() +
+							" references non-existent description " + fields[5]);
 					log_file_out.newLine();
 				}
 			}
