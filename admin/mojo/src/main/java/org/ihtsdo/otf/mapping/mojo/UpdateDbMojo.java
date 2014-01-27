@@ -11,20 +11,32 @@ import org.apache.maven.plugin.MojoFailureException;
  * Goal which updates the db to sync it with the model via JPA.
  * 
  * <pre>
- *     <plugin>
- *       <groupId>org.ihtsdo.otf.mapping</groupId>
- *       <artifactId>mapping-admin-mojo</artifactId>
- *       <version>${project.version}</version>
- *       <executions>
- *         <execution>
- *           <id>updatedb</id>
- *           <phase>package</phase>
- *           <goals>
- *             <goal>updatedb</goal>
- *           </goals>
- *         </execution>
- *       </executions>
- *     </plugin>
+ *   <plugin>
+ *      <groupId>org.ihtsdo.otf.mapping</groupId>
+ *      <artifactId>mapping-admin-mojo</artifactId>
+ *      <version>${project.version}</version>
+ *      <dependencies>
+ *        <dependency>
+ *          <groupId>org.ihtsdo.otf.mapping</groupId>
+ *          <artifactId>mapping-admin-updatedb-config</artifactId>
+ *          <version>${project.version}</version>
+ *          <scope>system</scope>
+ *          <systemPath>${project.build.directory}/mapping-admin-updatedb-${project.version}.jar</systemPath>
+ *        </dependency>
+ *      </dependencies>
+ *      <executions>
+ *        <execution>
+ *          <id>updatedb</id>
+ *          <phase>package</phase>
+ *          <goals>
+ *            <goal>updatedb</goal>
+ *          </goals>
+ *          <configuration>
+ *            <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+ *          </configuration>
+ *        </execution>
+ *      </executions>
+ *    </plugin>
  * </pre>
  * 
  * @goal updatedb
@@ -50,17 +62,14 @@ public class UpdateDbMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
-
 		try {
-
-			getLog().info("  Testing UpdateDbMojo.java");
-
+			getLog().info("Start updating database schema...");
 			EntityManagerFactory factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 			manager = factory.createEntityManager();
-
-			System.out.println(".. done");
 			manager.close();
 			factory.close();
+			getLog().info(".. done");
+
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);

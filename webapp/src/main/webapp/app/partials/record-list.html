@@ -1,0 +1,34 @@
+Note (1/20/13):  displaying map records has not been fully tested.
+<p>
+<!-- Partial for record list -->
+<p>Filter Results: <input ng-model="query"></p>
+
+
+
+<accordion>
+    <accordion-group ng-repeat="record in records | filter:query | orderBy:orderProp">
+    	<accordion-heading>Concept ID: {{record.conceptId}}</accordion-heading>
+		
+		
+		<p>Map Entries:</p>
+		
+		<table cellpadding="5">
+		<thead><tr><th>Target</th><th>Rule</th><th>Index</th><th>RelationId</th></tr></thead>
+		<tbody>
+		<tr ng-repeat="entry in record.mapEntry">
+			<td>{{entry.target}}</td>
+			<td>{{entry.rule}}</td>
+			<td>{{entry.index}}</td>
+			<td>{{entry.relationId}}</td>
+		</tr>
+		</tbody>
+		</table>
+		<hr>
+		<p>Notes:</p>
+		<ul><li ng-repeat="note in record.mapNote">{{note.note}}</li></ul>
+   	</accordion-group>
+</accordion>
+
+
+
+

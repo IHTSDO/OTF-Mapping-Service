@@ -1,0 +1,59 @@
+<p>
+<h3>Concept Id: {{concept.terminologyId}}</h3>
+<p></p>
+<h4>Preferred Name: {{concept.defaultPreferredName}}</h4>
+<p>
+<p>Terminology: {{concept.terminology}}, v. {{concept.terminologyVersion}}</p>
+<p>Active: {{concept.active}}</p>
+<p>Effective Time: {{concept.effectiveTime}} (<em>Needs reformat to proper date</em>)</p>
+<p>Module Id: {{concept.moduleId}}</p>
+<p>Status Id: {{concept.definitionStatusId}}</p>
+
+<accordion>
+<accordion-group ng-show = "unmappedDescendants.length > 0">
+<accordion-heading><img src="{{baseUrl}}/mapping-webapp/app/img/warning.png">Unmapped Descendants ({{unmappedDescendants.length}})</accordion-heading>
+<ul>
+<li ng-repeat = "concept in unmappedDescendants">
+<a href="index.html#/concept/{{concept.terminology}}/{{concept.terminologyVersion}}/id/{{concept.terminologyId}}">{{concept.terminologyId}}</a> - {{concept.defaultPreferredName}}</p>
+</li>
+</ul>
+</accordion-group>
+
+<accordion-group heading="Descriptions ({{concept.description.length}})">
+<ul>
+<li ng-repeat="description in concept.description">
+<p>Id: {{description.terminologyId}}
+<p>Terminology: {{description.terminology}}, v. {{description.terminologyVersion}}</p>
+<p>Active: {{description.active}}</p>
+<p>Case Significance Id: {{description.caseSignificanceId}}
+<p>Language Code: {{description.languageCode}}
+<p>Term: {{description.term}}
+<p>
+
+<!-- <p>Language RefSets for this Description:
+<ul>
+<li ng-repeat="refset in description.languageRefSetMember">
+<p>Id: {{refset.terminologyId}}</p>
+<p>RefSet Id: {{refset.refSetId}}</p>
+<p>Acceptability Id: {{refset.acceptabilityId}}</p>
+</li>
+</ul> -->
+</li>
+</ul>
+</accordion-group>
+
+<accordion-group heading="Relationships ({{concept.relationship.length}})">
+<ul>
+<li ng-repeat="rel in concept.relationship">
+<p>Id: {{rel.terminologyId}}</p>
+<p>Active: {{rel.active}}</p>
+<p>Destination Concept: <a href="index.html#/concept/id/{{rel.destinationConceptId}}">{{rel.destinationConceptId}} - {{rel.destinationConceptPreferredName}}</a></p>
+<p>Characteristic Type Id: {{rel.characteristicTypeId}}</p>
+<p>Modifier Id: {{rel.modifierId}}</p>
+<p>Type Id: {{rel.typeId}}</p>
+<p>Relationship Group: {{rel.relationshipGroup}}</p>
+</li>
+</ul>
+</accordion-group>
+</accordion>
+
