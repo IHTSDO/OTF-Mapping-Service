@@ -1,0 +1,66 @@
+<h3>Search Concepts</h3>
+
+<form>
+	<input ng-model = "queryConcept">
+	<button type="submit" ng-click="searchConcepts()">Search</button>
+	<button type="reset" ng-click="resetConcepts()">Reset</button>
+	<p>Examples: (by name) <em>ossification</em>, <em>plas*</em>, (by Concept ID) <em>102287002</em></p>
+</form>
+
+
+<p></p>
+<p>{{searchConceptsStatus}}</p>
+<ul>
+<li ng-repeat = "searchResult in conceptResults.searchResult"><a href="index.html#/concept/SNOMEDCT/20130131/id/{{searchResult.terminologyId}}">{{searchResult.terminologyId}}</a> - {{searchResult.value}}</li>
+</ul>
+
+<hr style="width:99%">
+
+<h3>Search Projects</h3>
+
+<form>
+<input ng-model = "queryProject">
+<button type="submit" ng-click="searchProjects()">Search</button>
+<button type="reset" ng-click="resetProjects()">Reset</button>
+<p>Examples: (by terminology) <em>ICD10</em>, (by Ref Set ID) </em>447562003</em></p>
+</form>
+
+
+<p></p>
+<p>{{searchProjectsStatus}}</p>
+<ul>
+<li ng-repeat = "searchResult in projectResults.searchResult"><a href="index.html#/project/id/{{searchResult.id}}">{{searchResult.value}}</a></li>
+</ul>
+
+<hr style="width:99%">
+
+<h3>Search Records</h3>
+
+<form>
+<input ng-model = "queryRecord">
+<button type="submit" ng-click="searchRecords()">Search</button>
+<button type="reset" ng-click="resetRecords()">Reset</button>
+<p>Examples: (by map entry Target) <em>520.1</em>, (by map entry Rule) <em>ifa</em></em></p>
+</form>
+
+<p></p>
+<p>{{searchRecordsStatus}}</p>
+<ul>
+<li ng-repeat = "searchResult in recordResults.searchResult"><a href="index.html#/record/id/{{searchResult.id}}">{{searchResult.value}}</a></li>
+</ul>
+
+<hr style="width:99%">
+
+<h3>Search Options</h3>
+<ul>
+<li>Phrase searching: "" (e.g. "truncal structure")</li>
+<li>Boolean operators:  AND/&&, OR/||, NOT/! (e.g. <em>epilepsy AND childhood</em>, <em>heart || liver</em>)</li>
+<li>Wildcard searching: *, &  (e.g. <em>SNO*</em>), * for multi-character matching, & for single-character matching</li>
+<li>Inclusion/Exclusion: +/- (e.g. <em>headache -benign</em>, <em>foreign +material</em>)</li>
+<li>Grouping: () (e.g. <em>structure AND (liver OR bone)</em>)</li>
+<li>Fuzzy searching: ~ (e.g. <em>plasm~</em> may return plasm, phase, class, etc.) 
+<p>[Optional: add number 0-1 to improve precision, e.g. <em>plasm~0.4</em> for imprecise matches, <em>plasm~0.9</em> for very precise matches. Default is 0.5.])</p></li>
+</ul>
+
+Restrictions:  empty searches or full wildcard searches (e.g. <em>*</em>) will return no results.
+<hr>

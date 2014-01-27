@@ -1,36 +1,36 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <!-- Module Metadata -->
-    <parent>
-        <groupId>org.ihtsdo.otf.mapping</groupId>
-        <artifactId>mapping-parent</artifactId>
-        <version>0.0.1</version>
-    </parent>
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.mapping</groupId>
+    <artifactId>mapping-parent</artifactId>
+    <version>0.0.1</version>
+  </parent>
 
-    <artifactId>mapping-jpa-services</artifactId>
-    <name>OTF RF2 Mapping Services JPA implementation</name>
-    <description>JPA implementation of OTF RF2 mapping services</description>
-    
-    <!-- Declare Project Dependency Versions -->
-    <dependencies>
+  <artifactId>mapping-jpa-services</artifactId>
+  <name>OTF RF2 Mapping Services JPA implementation</name>
+  <description>JPA implementation of OTF RF2 mapping services</description>
 
-        <!-- Model interfaces. -->
-        <dependency>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-model</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-jpa-model</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-services</artifactId>
-        </dependency>   
-        
-              <!-- JPA dependencies -->
+  <!-- Declare Project Dependency Versions -->
+  <dependencies>
+
+    <!-- Model interfaces. -->
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-jpa-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-services</artifactId>
+    </dependency>
+
+    <!-- JPA dependencies -->
     <dependency>
       <groupId>org.hibernate.javax.persistence</groupId>
       <artifactId>hibernate-jpa-2.0-api</artifactId>
@@ -43,15 +43,17 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
     </dependency>
-    <!-- TODO: Uncomment these as needed.
-      <dependency>
+    <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search</artifactId>
-      </dependency>
-    -->
+    </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-envers</artifactId>
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
@@ -64,11 +66,82 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-    </dependency>     
-    </dependencies>
+    </dependency>
+ 
+  
+  <!-- JSON annotations -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-jaxb-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+  </dependencies>
+  
+  <!-- Prepare the persistence.xml file to be used for test cases -->
+  
+<build>
+  <plugins>
 
-    <!-- Standard build profile, no special configuration needed -->
-    <build>
-    </build>
-
+    <!-- Unpack the filters.properties files -->
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
+      <executions>
+        <execution>
+          <id>unpack</id>
+          <phase>generate-test-sources</phase>
+          <goals>
+            <goal>unpack</goal>
+          </goals>
+          <configuration>
+            <artifactItems>
+              <artifactItem>
+                <groupId>org.ihtsdo.otf.mapping</groupId>
+                <artifactId>mapping-config</artifactId>
+                <version>${project.version}</version>
+                <type>zip</type>
+              </artifactItem>
+            </artifactItems>
+            <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>
+    
+    <!-- filter and copy persistence.xml -->
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-resources-plugin</artifactId>
+      <executions>
+        <execution>
+          <id>copy-resources</id>
+          <phase>generate-test-resources</phase>
+          <goals>
+            <goal>copy-resources</goal>
+          </goals>
+          <configuration>
+            <outputDirectory>src/test/resources</outputDirectory>
+            <filters>
+              <filter>${project.build.directory}/generated-resources/resources/filters.properties.dev</filter>
+            </filters>
+            <resources>
+              <resource>
+                <directory>src/test/config</directory>
+                <filtering>true</filtering>
+              </resource>
+            </resources>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>
+    
+  </plugins>
+</build>
 </project>

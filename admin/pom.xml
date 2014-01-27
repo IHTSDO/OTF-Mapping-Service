@@ -18,7 +18,8 @@
   <modules>
     <module>mojo</module>
     <module>updatedb</module>
-    <!-- <module>lucene</module> -->
+    <module>lucene</module>
     <module>loader</module>
+    <module>sampledata</module>
   </modules>
 </project>

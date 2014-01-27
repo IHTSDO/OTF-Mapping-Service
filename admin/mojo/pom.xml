@@ -27,6 +27,14 @@
       <groupId>org.ihtsdo.otf.mapping</groupId>
       <artifactId>mapping-jpa-model</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-services</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-jpa-services</artifactId>
+    </dependency>
 
     <!-- JPA dependencies -->
     <dependency>
@@ -41,16 +49,17 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
     </dependency>
-    <!-- TODO: Uncomment these as needed.
-      <dependency>
+    <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search</artifactId>
-      </dependency>
-    -->
-    <!-- Hibernate + JPA + MySQL. -->
+    </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
+    </dependency>
+	<dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-envers</artifactId>
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>

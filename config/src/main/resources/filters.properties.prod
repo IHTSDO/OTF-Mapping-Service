@@ -1,4 +1,47 @@
-mysql.url=jdbc:mysql://127.0.0.1:3306/mappingservicedb
-mysql.user=root
-mysql.pwd=rootpwd
-loader.input.data=C:\\workspace-mapping-services2-juno\\mapping-services-project\\usext-mini-data\\src\\main\\resources\\org\\ihtsdo
+#
+# MySQL Config information
+#
+mysql.main.url=jdbc:mysql://127.0.0.1:3306/mappingservicedb
+mysql.main.user=otf
+mysql.main.pwd=otfpwd
+mysql.test.url=jdbc:mysql://127.0.0.1:3306/mappingservicedbtest
+mysql.test.user=otf
+mysql.test.pwd=otfpwd
+
+#
+# Path to loader dta
+#   this directory must have Refset/ and Terminology/ directories
+#
+loader.SNOMEDCT.input.data=/home/ihtsdo/data/snomedct-20140131-snapshot
+
+#
+# Path to icpc data
+#
+loader.ICPC.input.data=/home/ihtsdo/data/icpc.xml
+
+#
+# Path to icd9cm data
+#
+loader.ICD9CM.input.data=/home/ihtsdo/data/icd9cm.xml
+
+#
+# Path to icd10 data
+#
+loader.ICD10.input.data=/home/ihtsdo/data/icd10.xml
+
+#
+# Loader settings for preferred name
+#
+loader.defaultPreferredNames.typeId=900000000000013009
+loader.defaultPreferredNames.refSetId=900000000000509007
+loader.defaultPreferredNames.acceptabilityId=900000000000548007
+
+#
+# Webapp base URL
+#
+base.url=http://mapping.snomedtools.org
+
+#
+# JPA debugging settings
+#
+show.sql=false
