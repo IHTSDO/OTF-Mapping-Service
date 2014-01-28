@@ -10,9 +10,9 @@
     <relativePath>../..</relativePath>
   </parent>
 
-  <artifactId>mapping-admin-loader</artifactId>
-  <name>OTF RF2 Admin RF2 Loader</name>
-  <description>OTF RF2 Administrator Tool to Load RF2 data</description>
+  <artifactId>mapping-admin-remover</artifactId>
+  <name>OTF Admin Terminology Remover</name>
+  <description>OTF Administrator Tool to Remove Terminology data</description>
   <packaging>pom</packaging>
 
 
@@ -108,7 +108,7 @@
           </plugin>
         </plugins>
       </build>
-    </profile>    
+    </profile>
     <!-- Execute the mojo -->
     <profile>
       <id>SNOMEDCT</id>
@@ -121,18 +121,18 @@
             <dependencies>
               <dependency>
                 <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
+                <artifactId>mapping-admin-remover-config</artifactId>
                 <version>${project.version}</version>
                 <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
               </dependency>
             </dependencies>
             <executions>
               <execution>
-                <id>load-rf2-snapshot</id>
+                <id>remove-terminology</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>load-rf2-snapshot</goal>
+                  <goal>remove-terminology</goal>
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
@@ -155,18 +155,18 @@
             <dependencies>
               <dependency>
                 <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
+                <artifactId>mapping-admin-remover-config</artifactId>
                 <version>${project.version}</version>
                 <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
               </dependency>
             </dependencies>
             <executions>
               <execution>
-                <id>load-claml</id>
+                <id>remove-terminology</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>load-claml</goal>
+                  <goal>remove-terminology</goal>
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
@@ -189,18 +189,18 @@
             <dependencies>
               <dependency>
                 <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
+                <artifactId>mapping-admin-remover-config</artifactId>
                 <version>${project.version}</version>
                 <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
               </dependency>
             </dependencies>
             <executions>
               <execution>
-                <id>load-claml</id>
+                <id>remove-terminology</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>load-claml</goal>
+                  <goal>remove-terminology</goal>
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
@@ -223,18 +223,18 @@
             <dependencies>
               <dependency>
                 <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
+                <artifactId>mapping-admin-remover-config</artifactId>
                 <version>${project.version}</version>
                 <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
               </dependency>
             </dependencies>
             <executions>
               <execution>
-                <id>load-claml</id>
+                <id>remove-terminology</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>load-claml</goal>
+                  <goal>remove-terminology</goal>
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
