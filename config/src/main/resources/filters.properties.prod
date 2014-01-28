@@ -37,6 +37,16 @@ loader.defaultPreferredNames.refSetId=900000000000509007
 loader.defaultPreferredNames.acceptabilityId=900000000000548007
 
 #
+# Destination directory for exported data
+#
+export.output.dir=C:\\data\\export
+
+#
+# Input directory for data to import
+#
+import.input.dir=C:\\data\\import
+
+#
 # Webapp base URL
 #
 base.url=http://mapping.snomedtools.org
