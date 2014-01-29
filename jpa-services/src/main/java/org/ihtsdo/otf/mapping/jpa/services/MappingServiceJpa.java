@@ -74,8 +74,8 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public MappingServiceJpa() {
 
-		// created once
-		if (factory == null) {
+		// created once or if the factory has been closed
+		if (factory == null || !factory.isOpen()) {
 			factory = Persistence
 					.createEntityManagerFactory("MappingServiceDS");
 		}
@@ -124,23 +124,6 @@ public class MappingServiceJpa implements MappingService {
 		}
 	}
 
-	/**
-	 * Returns the status of the manager
-	 * 
-	 * @return true if open, false if not
-	 */
-	public boolean isManagerOpen() {
-		return this.manager.isOpen();
-	}
-
-	/**
-	 * Returns the status of the factory
-	 * 
-	 * @return true if factory open, false if not
-	 */
-	public static boolean isFactoryOpen() {
-		return MappingServiceJpa.factory.isOpen();
-	}
 
 	// //////////////////////////////////
 	// MapProject
@@ -188,10 +171,6 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<MapProject> getMapProjects() {
-
-		if (!manager.isOpen()) {
-			System.out.println("Feh");
-		}
 
 		List<MapProject> m = null;
 
@@ -712,10 +691,6 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
-		}
-
 		return s;
 	}
 
@@ -924,10 +899,6 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
-		}
-
 		return s;
 	}
 
@@ -1049,10 +1020,6 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
-		}
-
 		return s;
 	}
 
@@ -1105,10 +1072,6 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
-		}
-
 		return s;
 	}
 
@@ -1157,10 +1120,6 @@ public class MappingServiceJpa implements MappingService {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
 		}
 
 		return s;
