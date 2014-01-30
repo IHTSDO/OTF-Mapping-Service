@@ -7,7 +7,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
-import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -148,13 +147,6 @@ public interface MappingService {
 	 */
 	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter);
 
-	/**
-	 * Query for Map Notes
-	 * @param query the query
-	 * @return the List of MapNotes
-	 */
-	public SearchResultList findMapNotes(String query, PfsParameter pfsParameter);
-	
 	////////////////////////////
 	// Addition services     ///
     ////////////////////////////
@@ -166,8 +158,6 @@ public interface MappingService {
 	public MapProject addMapProject(MapProject mapProject);
 	
 	public void addMapRecord(MapRecord mapRecord);
-	
-	public void addMapNote(MapNote mapNote);
 	
 	public void addMapEntry(MapEntry mapEntry);
 	
@@ -187,8 +177,6 @@ public interface MappingService {
 	
 	public void updateMapRecord(MapRecord mapRecord);
 	
-	public void updateMapNote(MapNote mapNote);
-	
 	public void updateMapEntry(MapEntry mapEntry);
 	
 	public void updateMapPrinciple(MapPrinciple mapPrinciple);
@@ -206,8 +194,6 @@ public interface MappingService {
 	public void removeMapProject(Long mapProjectId);
 	
 	public void removeMapRecord(Long mapRecordId);
-	
-	public void removeMapNote(Long mapNoteId);
 	
 	public void removeMapEntry(Long mapEntryId);
 	
