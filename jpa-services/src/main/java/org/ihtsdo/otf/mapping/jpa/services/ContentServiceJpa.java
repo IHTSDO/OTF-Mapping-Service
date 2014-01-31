@@ -54,8 +54,8 @@ public class ContentServiceJpa implements ContentService {
 	 */
 	public ContentServiceJpa() {
 		
-		// created once
-		if (factory == null) {
+		// created once or if the factory has closed
+		if (factory == null || !factory.isOpen()) {
 			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 		}
 		

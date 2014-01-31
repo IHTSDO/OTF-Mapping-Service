@@ -74,8 +74,8 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public MappingServiceJpa() {
 
-		// created once
-		if (factory == null) {
+		// created once or if the factory has been closed
+		if (factory == null || !factory.isOpen()) {
 			factory = Persistence
 					.createEntityManagerFactory("MappingServiceDS");
 		}
@@ -124,23 +124,6 @@ public class MappingServiceJpa implements MappingService {
 		}
 	}
 
-	/**
-	 * Returns the status of the manager
-	 * 
-	 * @return true if open, false if not
-	 */
-	public boolean isManagerOpen() {
-		return this.manager.isOpen();
-	}
-
-	/**
-	 * Returns the status of the factory
-	 * 
-	 * @return true if factory open, false if not
-	 */
-	public static boolean isFactoryOpen() {
-		return MappingServiceJpa.factory.isOpen();
-	}
 
 	// //////////////////////////////////
 	// MapProject
@@ -188,10 +171,6 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<MapProject> getMapProjects() {
-
-		if (!manager.isOpen()) {
-			System.out.println("Feh");
-		}
 
 		List<MapProject> m = null;
 
@@ -712,10 +691,6 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
-		}
-
 		return s;
 	}
 
@@ -924,10 +899,6 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
-		}
-
 		return s;
 	}
 
@@ -1049,10 +1020,6 @@ public class MappingServiceJpa implements MappingService {
 			e.printStackTrace();
 		}
 
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
-		}
-
 		return s;
 	}
 
@@ -1103,64 +1070,6 @@ public class MappingServiceJpa implements MappingService {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
-		}
-
-		return s;
-	}
-
-	/**
-	 * Service for finding MapNote by string query
-	 * 
-	 * @param query
-	 *            the query string
-	 * @return the search result list
-	 */
-	@Override
-	public SearchResultList findMapNotes(String query, PfsParameter pfsParameter) {
-		SearchResultList s = new SearchResultListJpa();
-
-		FullTextEntityManager fullTextEntityManager = Search
-				.getFullTextEntityManager(manager);
-
-		try {
-			SearchFactory searchFactory = fullTextEntityManager
-					.getSearchFactory();
-			Query luceneQuery;
-
-			// construct luceneQuery based on URL format
-			if (query.indexOf(':') == -1) { // no fields indicated
-				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
-						Version.LUCENE_36, fieldNames.toArray(new String[0]),
-						searchFactory.getAnalyzer(MapNoteJpa.class));
-				queryParser.setAllowLeadingWildcard(false);
-				luceneQuery = queryParser.parse(query);
-
-			} else { // field:value
-				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
-						"summary", searchFactory.getAnalyzer(MapNoteJpa.class));
-				luceneQuery = queryParser.parse(query);
-			}
-
-			List<MapNote> m = fullTextEntityManager.createFullTextQuery(
-					luceneQuery, MapNoteJpa.class).getResultList();
-
-			for (MapNote me : m) {
-				s.addSearchResult(new SearchResultJpa(me.getId(), "", me
-						.getNote()));
-			}
-
-			s.sortSearchResultsById();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
 		}
 
 		return s;
@@ -1358,23 +1267,6 @@ public class MappingServiceJpa implements MappingService {
 	// Addition services ///
 	// //////////////////////////
 
-	/**
-	 * Add a map note
-	 * 
-	 * @param mapNote
-	 *            the map note
-	 */
-	@Override
-	public void addMapNote(MapNote mapNote) {
-
-		EntityTransaction tx = manager.getTransaction();
-
-		tx.begin();
-		manager.persist(mapNote);
-		tx.commit();
-
-	}
-
 	@Override
 	public void addMapEntry(MapEntry mapEntry) {
 
@@ -1411,16 +1303,6 @@ public class MappingServiceJpa implements MappingService {
 	// //////////////////////////
 
 	@Override
-	public void updateMapNote(MapNote mapNote) {
-
-		EntityTransaction tx = manager.getTransaction();
-
-		tx.begin();
-		manager.merge(mapNote);
-		tx.commit();
-	}
-
-	@Override
 	public void updateMapEntry(MapEntry mapEntry) {
 
 		EntityTransaction tx = manager.getTransaction();
@@ -1455,19 +1337,6 @@ public class MappingServiceJpa implements MappingService {
 	// //////////////////////////
 	// Removal services ///
 	// //////////////////////////
-
-	@Override
-	public void removeMapNote(Long mapNoteId) {
-
-		MapNote mn = manager.find(MapNoteJpa.class, mapNoteId);
-
-		// TODO remove MapNote from any associated records
-
-		// TODO remove MapNote from any associated entries
-
-		EntityTransaction tx = manager.getTransaction();
-
-	}
 
 	@Override
 	public void removeMapEntry(Long mapEntryId) {

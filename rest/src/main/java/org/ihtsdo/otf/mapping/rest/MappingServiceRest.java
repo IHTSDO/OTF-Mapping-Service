@@ -267,7 +267,7 @@ public class MappingServiceRest {
 	 * @return the map specialists
 	 */
 	@GET
-	@Path("/specialist/query/{String}")
+	@Path("/specialist/query/{string}")
 	@ApiOperation(value = "Find specialists by query", notes = "Returns map specialists for a query in either JSON or XML format", response = MapSpecialistList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapSpecialists(
@@ -312,7 +312,7 @@ public class MappingServiceRest {
 	 * @return the map leads
 	 */
 	@GET
-	@Path("/lead/query/{String}")
+	@Path("/lead/query/{string}")
 	@ApiOperation(value = "Find leads by query", notes = "Returns map leads for a query in either JSON or XML format", response = MapLeadList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapLeads(
