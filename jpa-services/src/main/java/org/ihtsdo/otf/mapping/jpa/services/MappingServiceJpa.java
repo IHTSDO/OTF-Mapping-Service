@@ -1500,6 +1500,41 @@ public class MappingServiceJpa implements MappingService {
 
 	}
 	
+	@Override
+	public List<MapPrinciple> getMapPrinciples() {
+		List<MapPrinciple> mapPrinciples = new ArrayList<MapPrinciple>();
+
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapPrincipleJpa m");
+
+		// Try query
+		try {
+			mapPrinciples = query.getResultList();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return mapPrinciples;
+
+	}
+
+	@Override
+	public List<MapAdvice> getMapAdvices() {
+		List<MapAdvice> mapAdvices = new ArrayList<MapAdvice>();
+
+		javax.persistence.Query query = manager
+				.createQuery("select m from MapAdviceJpa m");
+
+		// Try query
+		try {
+			mapAdvices = query.getResultList();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return mapAdvices;
+	}
+	
 	/////////////////////////////////////////
 	/// Services for Map Project Creation
 	/////////////////////////////////////////
@@ -1509,26 +1544,17 @@ public class MappingServiceJpa implements MappingService {
 		
 		Logger.getLogger(MappingServiceJpa.class).info("Creating map records for project" + mapProject.getName());
 		
-		List<MapRecord> results = new ArrayList<MapRecord>();
+		Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<ComplexMapRefSetMember>();
 		
 		// retrieve all complex map ref set members for mapProject
 		javax.persistence.Query query =
 				manager
 						.createQuery("select r from ComplexMapRefSetMemberJpa r where r.refSetId = :refSetId order by r.concept.id, " +
 								"r.mapBlock, r.mapGroup, r.mapPriority");
-		
-		
-		
-		try {
+			
+
 			query.setParameter("refSetId", mapProject.getRefSetId());
-			
-			// instantiate MappingService for getting descendant concepts
-			ContentService contentService = new ContentServiceJpa();
-			
-			// instantiate other local varibles
-			Long prevConceptId = new Long(-1);
-			MapRecord mapRecord = null;
-			
+					
 			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
 			
@@ -1538,87 +1564,17 @@ public class MappingServiceJpa implements MappingService {
 				
 				if(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|") &&
 			    !(refSetMember.getMapAdvice().contains("MAP IS CONTEXT DEPENDENT FOR GENDER")) &&
-			    !(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]"))){
-				 
-				  continue; 
-				}
+			    !(refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]")))
+				 continue; 
 				
-				// retrieve the concept
-				Concept concept = refSetMember.getConcept();
-				
-				// if no concept for this ref set member, skip
-				if (concept == null)
-					continue;
-				
-				// if different concept than previous ref set member, create new mapRecord
-				if (!concept.getTerminologyId()
-						.equals(prevConceptId.toString())) {
-					
-					if (!prevConceptId.equals(new Long(-1))) {
-						results.add(mapRecord);
-					}
-					
-					mapRecord = new MapRecordJpa();
-					mapRecord.setConceptId(concept.getTerminologyId());
-					mapRecord.setConceptName(concept.getDefaultPreferredName());
-					
-					// set the map project id
-					mapRecord.setMapProjectId(mapProject.getId());
-				
-					// get the number of descendants
-					mapRecord.setCountDescendantConcepts( new Long(
-							contentService.getDescendants(
-								concept.getTerminologyId(),
-								concept.getTerminology(),
-								concept.getTerminologyVersion(),
-								new Long("116680003")).size()));
-			
-					// set the previous concept to this concept
-					prevConceptId = new Long(refSetMember.getConcept().getTerminologyId());
-					
-					// persist the record
-					manager.persist(mapRecord);
-					
-					if (results.size() % 500 == 0) {Logger.getLogger(MappingServiceJpa.class).info(Integer.toString(results.size()) + " records created");}
-				}
-				/* TODO Commented out until MapRecord addition is verified
-				 * 
-				// check if target is in desired terminology; if so, create entry
-				try {
-					String targetName = (String) manager.createQuery("select c.defaultPreferredName from ConceptJpa c where " +
-									"terminologyId = :terminologyId and " +
-									"terminology = :terminology and " +
-									"terminologyVersion = :terminologyVersion")
-									.setParameter("terminologyId", refSetMember.getMapTarget())
-									.setParameter("terminology", mapProject.getDestinationTerminology())
-									.setParameter("terminologyVersion", mapProject.getDestinationTerminologyVersion())
-									.getSingleResult();
-				
-					MapEntry mapEntry = new MapEntryJpa();
-					mapEntry.setTargetId(refSetMember.getMapTarget());
-					mapEntry.setTargetName(targetName);
-					mapEntry.setMapRecord(mapRecord);
-					mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
-					mapEntry.setRule(refSetMember.getMapRule());
-					mapEntry.setMapGroup(1);
-					mapEntry.setMapBlock(1);
-					
-					mapRecord.addMapEntry(mapEntry);
-					
-					// TODO Add support for advices, principles, notes
-					
-				} catch (Exception e) {
-					// do nothing
-				}*/
-				
-				
+				complexMapRefSetMembers.add(refSetMember);  
 			}
+			
+			List<MapRecord> results = createMapRecordsForMapProject(mapProject, complexMapRefSetMembers);
 			
 			tx.commit();
 			
-		} catch (Exception e) {
-			// TODO: Auto-generated try-catch block
-		}
+
 		return results;
 	}
 	
@@ -1687,6 +1643,95 @@ public class MappingServiceJpa implements MappingService {
 		return new Long(nRecords);
 
 		
+	}
+
+
+	@Override
+	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
+			Set<ComplexMapRefSetMember> complexMapRefSetMembers) {
+		
+		Logger.getLogger(MappingServiceJpa.class).info("Creating map records for project" + mapProject.getName());
+	
+		List<MapRecord> mapRecordResults = new ArrayList<MapRecord>();
+		
+		ContentService contentService = new ContentServiceJpa();
+			
+			// instantiate other local variables
+			Long prevConceptId = new Long(-1);
+			MapRecord mapRecord = null;
+			
+			for (ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
+
+				
+				// retrieve the concept
+				Concept concept = refSetMember.getConcept();
+				
+				// if no concept for this ref set member, skip
+				if (concept == null)
+					continue;
+				
+				// if different concept than previous ref set member, create new mapRecord
+				if (!concept.getTerminologyId()
+						.equals(prevConceptId.toString())) {
+					
+					if (!prevConceptId.equals(new Long(-1))) {
+						mapRecordResults.add(mapRecord);
+					}
+					
+					mapRecord = new MapRecordJpa();
+					mapRecord.setConceptId(concept.getTerminologyId());
+					mapRecord.setConceptName(concept.getDefaultPreferredName());
+					
+					// set the map project id
+					mapRecord.setMapProjectId(mapProject.getId());
+				
+					// get the number of descendants
+					mapRecord.setCountDescendantConcepts( new Long(
+							contentService.getDescendants(
+								concept.getTerminologyId(),
+								concept.getTerminology(),
+								concept.getTerminologyVersion(),
+								new Long("116680003")).size()));
+			
+					// set the previous concept to this concept
+					prevConceptId = new Long(refSetMember.getConcept().getTerminologyId());
+					
+					// persist the record
+					addMapRecord(mapRecord);
+					
+					if (mapRecordResults.size() % 500 == 0) {Logger.getLogger(MappingServiceJpa.class).info(Integer.toString(mapRecordResults.size()) + " records created");}
+				}
+				// check if target is in desired terminology; if so, create entry
+				
+					String targetName = null;
+					if (!refSetMember.getMapTarget().equals(""))
+					  targetName = contentService.getConcept(refSetMember.getMapTarget(), mapProject.getDestinationTerminology(),
+							mapProject.getDestinationTerminologyVersion()).getDefaultPreferredName();
+					
+					MapEntry mapEntry = new MapEntryJpa();
+					mapEntry.setTargetId(refSetMember.getMapTarget());
+					mapEntry.setTargetName(targetName);
+					mapEntry.setMapRecord(mapRecord);
+					mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
+					mapEntry.setRule(refSetMember.getMapRule());
+					mapEntry.setMapGroup(1);
+					mapEntry.setMapBlock(1);
+					
+					mapRecord.addMapEntry(mapEntry);
+					
+					//Add support for advices
+					if (refSetMember.getMapAdvice() != null && !refSetMember.getMapAdvice().equals("")) {
+					  List<MapAdvice> mapAdvices = getMapAdvices();
+					  for (MapAdvice ma : mapAdvices) {
+					  	if (ma.getName().equals(refSetMember.getMapAdvice())) {
+						  	mapEntry.addMapAdvice(ma);
+						  	break;
+						  }
+					  }
+					}
+			}
+					
+		return mapRecordResults;
 	}
 
 }

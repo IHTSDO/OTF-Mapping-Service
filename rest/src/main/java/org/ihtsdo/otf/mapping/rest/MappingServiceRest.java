@@ -15,9 +15,11 @@ import javax.ws.rs.core.Response;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadList;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
+import org.ihtsdo.otf.mapping.jpa.MapPrincipleList;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectList;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -817,7 +819,7 @@ public class MappingServiceRest {
 	@Path("/principle/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find principle by id", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrinciple.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapPrinciple getMapPrincipledForId(
+	public MapPrinciple getMapPrincipleForId(
 			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId) {
 		
 		try {
@@ -825,6 +827,29 @@ public class MappingServiceRest {
 			MapPrinciple mapPrinciple = mappingService.getMapPrinciple(mapPrincipleId);
 			mappingService.close();
 			return mapPrinciple;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+
+	/**
+	 * Returns all map principles in either JSON or XML format
+	 * 
+	 * @return the map principles
+	 */
+	@GET
+	@Path("/principle/principles/")
+	@ApiOperation(value = "Get all principles", notes = "Returns all MapPrinciples in either JSON or XML format", response = MapPrincipleList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapPrincipleList getMapPrinciples() {
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapPrincipleList mapPrinciples = new MapPrincipleList();
+			mapPrinciples.setmapPrinciples(mappingService.getMapPrinciples());
+			mapPrinciples.sortmapPrinciples();
+			mappingService.close();
+			return mapPrinciples;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -853,6 +878,29 @@ public class MappingServiceRest {
 			throw new WebApplicationException(e);
 		}
 		return null;
+	}
+	
+	/**
+	 * Returns all map advices in either JSON or XML format
+	 * 
+	 * @return the map advices
+	 */
+	@GET
+	@Path("/advice/advices/")
+	@ApiOperation(value = "Get all advices", notes = "Returns all MapAdvices in either JSON or XML format", response = MapAdviceList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapAdviceList getMapAdvices() {
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapAdviceList mapAdvices = new MapAdviceList();
+			mapAdvices.setMapAdvices(mappingService.getMapAdvices());
+			mapAdvices.sortMapAdvices();
+			mappingService.close();
+			return mapAdvices;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**

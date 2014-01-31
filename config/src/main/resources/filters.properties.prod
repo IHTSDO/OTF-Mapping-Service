@@ -20,6 +20,11 @@ loader.SNOMEDCT.input.data=/home/ihtsdo/data/snomedct-20140131-snapshot
 loader.ICPC.input.data=/home/ihtsdo/data/icpc.xml
 
 #
+# Path to unpublished icpc data
+#
+loader.ICPC.complexmap.input.data=/home/ihtsdo/data/icpc-rf2-ExtendedMap-mini.txt
+
+#
 # Path to icd9cm data
 #
 loader.ICD9CM.input.data=/home/ihtsdo/data/icd9cm.xml
@@ -28,6 +33,11 @@ loader.ICD9CM.input.data=/home/ihtsdo/data/icd9cm.xml
 # Path to icd10 data
 #
 loader.ICD10.input.data=/home/ihtsdo/data/icd10.xml
+
+#
+# Path to map notes data
+#
+loader.mapnotes.input.data=/home/ihtsdo/data/xder2_sRefset_MapNotesSnapshot_INT_20130731.txt
 
 #
 # Loader settings for preferred name
