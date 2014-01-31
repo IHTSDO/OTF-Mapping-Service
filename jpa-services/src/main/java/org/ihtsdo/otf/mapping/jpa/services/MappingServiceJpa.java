@@ -1409,7 +1409,7 @@ public class MappingServiceJpa implements MappingService {
 	/////////////////////////////////////////
 	
 	@Override
-	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) {
+	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) throws Exception {
 		
 		Logger.getLogger(MappingServiceJpa.class).info("Creating map records for project" + mapProject.getName());
 		
@@ -1517,7 +1517,7 @@ public class MappingServiceJpa implements MappingService {
 
 	@Override
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
-			Set<ComplexMapRefSetMember> complexMapRefSetMembers) {
+			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
 		
 		Logger.getLogger(MappingServiceJpa.class).info("Creating map records for project" + mapProject.getName());
 	
