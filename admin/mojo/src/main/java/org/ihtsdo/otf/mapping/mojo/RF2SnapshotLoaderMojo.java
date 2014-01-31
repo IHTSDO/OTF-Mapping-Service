@@ -928,7 +928,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						+ coreSimpleRefsetInputFile.exists());
 
 		for (File f : coreContentInputDir.listFiles()) {
-			if (f.getName().contains("Refset_Association")) {
+			if (f.getName().contains("AssociationReference")) {
 				if (coreAssociationReferenceInputFile != null)
 					throw new MojoFailureException(
 							"Multiple Association Reference Files!");
@@ -941,7 +941,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						+ coreAssociationReferenceInputFile.exists());
 
 		for (File f : coreContentInputDir.listFiles()) {
-			if (f.getName().contains("Refset_Attribute")) {
+			if (f.getName().contains("AttributeValue")) {
 				if (coreAttributeValueInputFile != null)
 					throw new MojoFailureException(
 							"Multiple Attribute Value Files!");

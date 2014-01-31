@@ -20,6 +20,11 @@ loader.SNOMEDCT.input.data=C:\\data\\usext-mini-data\\src\\main\\resources\\org\
 loader.ICPC.input.data=C:\\data\\icpc.xml
 
 #
+# Path to unpublished icpc data
+#
+loader.ICPC.complexmap.input.data=C:\\data\\icpc-rf2-ExtendedMap-mini.txt
+
+#
 # Path to icd9cm data
 #   this must be a file named icd9cm.xml
 #
@@ -29,6 +34,11 @@ loader.ICD9CM.input.data=C:\\data\\icd9cm.xml
 # Path to icd10 data
 #
 loader.ICD10.input.data=C:\\data\\icd10.xml
+
+#
+# Path to map notes data
+#
+loader.mapnotes.input.data=C:\\data\\xder2_sRefset_MapNotesSnapshot_INT_20130731.txt
 
 #
 # Loader settings for preferred name

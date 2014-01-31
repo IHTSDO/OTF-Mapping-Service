@@ -5,58 +5,55 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
 import org.ihtsdo.otf.mapping.jpa.MapLeadList;
-import org.ihtsdo.otf.mapping.jpa.MapProjectList;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapLead;
-import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
- * Goal which updates the db to sync it with the model via JPA.
+ * Goal which exports project data to text files.
  * 
  * <pre>
- *   <plugin>
- *      <groupId>org.ihtsdo.otf.mapping</groupId>
- *      <artifactId>mapping-admin-mojo</artifactId>
- *      <version>${project.version}</version>
- *      <dependencies>
- *        <dependency>
- *          <groupId>org.ihtsdo.otf.mapping</groupId>
- *          <artifactId>mapping-admin-sampledata-config</artifactId>
- *          <version>${project.version}</version>
- *          <scope>system</scope>
- *          <systemPath>${project.build.directory}/mapping-admin-sampledata-${project.version}.jar</systemPath>
- *        </dependency>
- *      </dependencies>
- *      <executions>
- *        <execution>
- *          <id>sampledata</id>
- *          <phase>package</phase>
- *          <goals>
- *            <goal>sampledata</goal>
- *          </goals>
- *          <configuration>
- *            <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
- *          </configuration>
- *        </execution>
- *      </executions>
- *    </plugin>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.ihtsdo.otf.mapping</groupId>
+                <artifactId>mapping-admin-export-config</artifactId>
+                <version>${project.version}</version>
+                <scope>system</scope>
+                <systemPath>${project.build.directory}/mapping-admin-export-${project.version}.jar</systemPath>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <id>export-project-data</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>export-project-data</goal>
+                </goals>
+                <configuration>
+                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
  * </pre>
  * 
- * @goal export-metadata
+ * @goal export-project-data
  * 
  * @phase process-resources
  */
-public class ExportMetadataMojo extends AbstractMojo {
+public class ExportProjectDataMojo extends AbstractMojo {
 
 	/**
 	 * Properties file.
@@ -70,10 +67,10 @@ public class ExportMetadataMojo extends AbstractMojo {
 	
 
 	/**
-	 * Instantiates a {@link ExportMetadataMojo} from the specified parameters.
+	 * Instantiates a {@link ExportProjectDataMojo} from the specified parameters.
 	 * 
 	 */
-	public ExportMetadataMojo() {
+	public ExportProjectDataMojo() {
 		// Do nothing
 	}
 
@@ -110,7 +107,7 @@ public class ExportMetadataMojo extends AbstractMojo {
 				}
 
 	
-			File specialistsFile = new File(outputDir, "mapSpecialists.txt");
+			File specialistsFile = new File(outputDir, "mapspecialists.txt");
 			// if file doesn't exist, then create it
 			if (!specialistsFile.exists()) {
 				specialistsFile.createNewFile();
@@ -131,6 +128,13 @@ public class ExportMetadataMojo extends AbstractMojo {
 			}
 			BufferedWriter advicesWriter = new BufferedWriter(new FileWriter(advicesFile.getAbsoluteFile()));
 			
+			File principlesFile = new File(outputDir, "mapprinciples.txt");
+			// if file doesn't exist, then create it
+			if (!principlesFile.exists()) {
+				principlesFile.createNewFile();
+			}
+			BufferedWriter principlesWriter = new BufferedWriter(new FileWriter(principlesFile.getAbsoluteFile()));
+			
 			// export to mapspecialists.txt
 			MappingService mappingService = new MappingServiceJpa();
 			MapSpecialistList mapSpecialists = new MapSpecialistList();
@@ -150,26 +154,25 @@ public class ExportMetadataMojo extends AbstractMojo {
 						ml.getEmail() + "\n");
 			}
 			
-			//export to mapAdvices.txt
-			MapProjectList mapProjects = new MapProjectList();
-			mapProjects.setMapProjects(mappingService.getMapProjects());
-			MapAdviceList mapAdvices = new MapAdviceList();
-			for (MapProject mp : mapProjects.getMapProjects()) {
-				Set<MapAdvice> mapAdviceSet = mp.getMapAdvices();
-				for (MapAdvice ma : mapAdviceSet) {
-					mapAdvices.addMapAdvice(ma);
-				  advicesWriter.write(ma.getName() + "\t" + ma.getDetail() + "\t" +
-				  		ma.getId() + "\t" + mp.getName() + "\n");
-				}
+
+			
+			//export to mapadvices.txt and mapprinciples.txt
+			for (MapAdvice ma : mappingService.getMapAdvices()) {
+				advicesWriter.write(ma.getName() + "\t" + ma.getDetail() + "\n");
 			}
+		  for (MapPrinciple ma : mappingService.getMapPrinciples()) {
+		  	String detail = ma.getDetail();
+		  	detail = detail.replace("\n", "<br>").replace("\r", "<br>");
+			  principlesWriter.write(ma.getName() + "|" + detail + "\n");
+		  }				
 			mappingService.close();		
 			
 			
-
 			getLog().info("...done");
 			specialistsWriter.close();
 			leadsWriter.close();
 			advicesWriter.close();
+			principlesWriter.close();
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);

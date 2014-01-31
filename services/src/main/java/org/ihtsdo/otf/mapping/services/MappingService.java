@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -12,6 +13,7 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 /**
@@ -76,6 +78,18 @@ public interface MappingService {
 	 * @return a List of MapLeads
 	 */
 	public List<MapLead> getMapLeads();
+	
+	/**
+	 * Retrieve all map principles
+	 * @return a List of MapPrinciples
+	 */
+	public List<MapPrinciple> getMapPrinciples();
+	
+	/**
+	 * Retrieve all map advices
+	 * @return a List of MapAdvices
+	 */
+	public List<MapAdvice> getMapAdvices();
 	
 	/**
 	 * Retrieve all map projects assigned to a particular map specialist
@@ -235,6 +249,9 @@ public interface MappingService {
 	public MapPrinciple getMapPrinciple(Long id);
 
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject);
+	
+	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
+			Set<ComplexMapRefSetMember> complexMapRefSetMembers);
 
 	public Long removeMapRecordsForProjectId(Long mapProjectId);
 
