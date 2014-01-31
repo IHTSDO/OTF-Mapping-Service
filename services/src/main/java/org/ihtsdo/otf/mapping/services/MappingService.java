@@ -234,10 +234,10 @@ public interface MappingService {
 
 	public MapPrinciple getMapPrinciple(Long id);
 
-	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject);
+	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) throws Exception;
 	
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
-			Set<ComplexMapRefSetMember> complexMapRefSetMembers);
+			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
 
 	public Long removeMapRecordsForProjectId(Long mapProjectId);
 
