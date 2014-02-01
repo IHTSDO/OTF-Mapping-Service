@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.pojo;
 import java.util.Date;
 
 import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapUser;

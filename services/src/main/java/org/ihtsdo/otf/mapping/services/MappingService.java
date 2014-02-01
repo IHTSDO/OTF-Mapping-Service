@@ -122,6 +122,7 @@ public interface MappingService {
 	/**
 	 * Query for MapProjects
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the list of MapProject
 	 */
 	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter);
@@ -129,6 +130,7 @@ public interface MappingService {
 	/** 
 	 * Query for MapSpecialists
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapProjects
 	 */
 	public SearchResultList findMapSpecialists(String query, PfsParameter pfsParameter);
@@ -136,6 +138,7 @@ public interface MappingService {
 	/**
 	 * Query for MapLeads
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapProjects
 	 */
 	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter);
@@ -143,6 +146,7 @@ public interface MappingService {
 	/**
 	 * Query for MapAdvices
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapAdvices
 	 */
 	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter);
@@ -150,6 +154,7 @@ public interface MappingService {
 	/**
 	 * Query for MapRecords
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapRecords
 	 */
 	public SearchResultList findMapRecords(String query, PfsParameter pfsParameter);
@@ -157,6 +162,7 @@ public interface MappingService {
 	/**
 	 * Query for MapEntrys
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapEntrys
 	 */
 	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter);
@@ -165,54 +171,160 @@ public interface MappingService {
 	// Addition services     ///
     ////////////////////////////
 	
+	/**
+	 * Adds the map specialist.
+	 *
+	 * @param mapSpecialist the map specialist
+	 */
 	public void addMapSpecialist(MapSpecialist mapSpecialist);
 	
+	/**
+	 * Adds the map lead.
+	 *
+	 * @param mapLead the map lead
+	 */
 	public void addMapLead(MapLead mapLead);
 	
+	/**
+	 * Adds the map project.
+	 *
+	 * @param mapProject the map project
+	 * @return the map project
+	 */
 	public MapProject addMapProject(MapProject mapProject);
 	
+	/**
+	 * Adds the map record.
+	 *
+	 * @param mapRecord the map record
+	 */
 	public void addMapRecord(MapRecord mapRecord);
 	
+	/**
+	 * Adds the map entry.
+	 *
+	 * @param mapEntry the map entry
+	 */
 	public void addMapEntry(MapEntry mapEntry);
 	
+	/**
+	 * Adds the map principle.
+	 *
+	 * @param mapPrinciple the map principle
+	 */
 	public void addMapPrinciple(MapPrinciple mapPrinciple);
 	
+	/**
+	 * Adds the map advice.
+	 *
+	 * @param mapAdvice the map advice
+	 */
 	public void addMapAdvice(MapAdvice mapAdvice);
 	
 	////////////////////////////
 	// Update services     ///
 	////////////////////////////
 	
+	/**
+	 * Update map specialist.
+	 *
+	 * @param mapSpecialist the map specialist
+	 */
 	public void updateMapSpecialist(MapSpecialist mapSpecialist);
 	
+	/**
+	 * Update map lead.
+	 *
+	 * @param mapLead the map lead
+	 */
 	public void updateMapLead(MapLead mapLead);
 	
+	/**
+	 * Update map project.
+	 *
+	 * @param mapProject the map project
+	 */
 	public void updateMapProject(MapProject mapProject);
 	
+	/**
+	 * Update map record.
+	 *
+	 * @param mapRecord the map record
+	 */
 	public void updateMapRecord(MapRecord mapRecord);
 	
+	/**
+	 * Update map entry.
+	 *
+	 * @param mapEntry the map entry
+	 */
 	public void updateMapEntry(MapEntry mapEntry);
 	
+	/**
+	 * Update map principle.
+	 *
+	 * @param mapPrinciple the map principle
+	 */
 	public void updateMapPrinciple(MapPrinciple mapPrinciple);
 	
+	/**
+	 * Update map advice.
+	 *
+	 * @param mapAdvice the map advice
+	 */
 	public void updateMapAdvice(MapAdvice mapAdvice);
 	
 	////////////////////////////
 	//Removal services     ///
 	////////////////////////////
 	
+	/**
+	 * Removes the map specialist.
+	 *
+	 * @param mapSpecialistId the map specialist id
+	 */
 	public void removeMapSpecialist(Long mapSpecialistId);
 	
+	/**
+	 * Removes the map lead.
+	 *
+	 * @param mapLeadId the map lead id
+	 */
 	public void removeMapLead(Long mapLeadId);
 	
+	/**
+	 * Removes the map project.
+	 *
+	 * @param mapProjectId the map project id
+	 */
 	public void removeMapProject(Long mapProjectId);
 	
+	/**
+	 * Removes the map record.
+	 *
+	 * @param mapRecordId the map record id
+	 */
 	public void removeMapRecord(Long mapRecordId);
 	
+	/**
+	 * Removes the map entry.
+	 *
+	 * @param mapEntryId the map entry id
+	 */
 	public void removeMapEntry(Long mapEntryId);
 	
+	/**
+	 * Removes the map principle.
+	 *
+	 * @param mapPrincipleId the map principle id
+	 */
 	public void removeMapPrinciple(Long mapPrincipleId);
 	
+	/**
+	 * Removes the map advice.
+	 *
+	 * @param mapAdviceId the map advice id
+	 */
 	public void removeMapAdvice(Long mapAdviceId);
 	
 	
@@ -220,25 +332,87 @@ public interface MappingService {
 	// Other services       ///
 	///////////////////////////
 	
+	/**
+	 * Returns the map record count for map project id.
+	 *
+	 * @param mapProjectId the map project id
+	 * @return the map record count for map project id
+	 */
 	public Long getMapRecordCountForMapProjectId(Long mapProjectId);
 	
+	/**
+	 * Returns the map records for map project id.
+	 *
+	 * @param mapProjectId the map project id
+	 * @return the map records for map project id
+	 */
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId);
 	
+	/**
+	 * Returns the map records for map project id.
+	 *
+	 * @param projectId the project id
+	 * @param pfs the pfs
+	 * @return the map records for map project id
+	 */
 	public List<MapRecord> getMapRecordsForMapProjectId(Long projectId,
 			PfsParameter pfs);
 		
+	/**
+	 * Returns the map records for concept id.
+	 *
+	 * @param conceptId the concept id
+	 * @return the map records for concept id
+	 */
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId);
 
+	/**
+	 * Returns the unmapped descendants for concept.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param threshold the threshold
+	 * @return the unmapped descendants for concept
+	 * @throws Exception the exception
+	 */
 	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
 			String terminology, String terminologyVersion, int threshold) throws Exception;
 
+	/**
+	 * Returns the map principle.
+	 *
+	 * @param id the id
+	 * @return the map principle
+	 */
 	public MapPrinciple getMapPrinciple(Long id);
 
+	/**
+	 * Creates the map records for map project.
+	 *
+	 * @param mapProject the map project
+	 * @return the list
+	 * @throws Exception the exception
+	 */
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) throws Exception;
 	
+	/**
+	 * Creates the map records for map project.
+	 *
+	 * @param mapProject the map project
+	 * @param complexMapRefSetMembers the complex map ref set members
+	 * @return the list
+	 * @throws Exception the exception
+	 */
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
 			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
 
+	/**
+	 * Removes the map records for project id.
+	 *
+	 * @param mapProjectId the map project id
+	 * @return the long
+	 */
 	public Long removeMapRecordsForProjectId(Long mapProjectId);
 
 	
