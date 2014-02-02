@@ -122,6 +122,7 @@ public interface MappingService {
 	/**
 	 * Query for MapProjects
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the list of MapProject
 	 */
 	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter) throws Exception;
@@ -129,6 +130,7 @@ public interface MappingService {
 	/** 
 	 * Query for MapSpecialists
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapProjects
 	 */
 	public SearchResultList findMapSpecialists(String query, PfsParameter pfsParameter) throws Exception;
@@ -136,6 +138,7 @@ public interface MappingService {
 	/**
 	 * Query for MapLeads
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapProjects
 	 */
 	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter) throws Exception;
@@ -143,6 +146,7 @@ public interface MappingService {
 	/**
 	 * Query for MapAdvices
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapAdvices
 	 */
 	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter) throws Exception;
@@ -150,6 +154,7 @@ public interface MappingService {
 	/**
 	 * Query for MapRecords
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapRecords
 	 */
 	public SearchResultList findMapRecords(String query, PfsParameter pfsParameter) throws Exception;
@@ -157,6 +162,7 @@ public interface MappingService {
 	/**
 	 * Query for MapEntrys
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapEntrys
 	 */
 	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter) throws Exception;
@@ -224,11 +230,28 @@ public interface MappingService {
 	
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId) throws Exception;
 	
+	/**
+	 * Returns the map records for map project id.
+	 *
+	 * @param projectId the project id
+	 * @param pfs the pfs
+	 * @return the map records for map project id
+	 */
 	public List<MapRecord> getMapRecordsForMapProjectId(Long projectId,
 			PfsParameter pfs) throws Exception;
 		
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId) throws Exception;
 
+	/**
+	 * Returns the unmapped descendants for concept.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param threshold the threshold
+	 * @return the unmapped descendants for concept
+	 * @throws Exception the exception
+	 */
 	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
 			String terminology, String terminologyVersion, int threshold) throws Exception;
 
@@ -236,6 +259,14 @@ public interface MappingService {
 
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) throws Exception;
 	
+	/**
+	 * Creates the map records for map project.
+	 *
+	 * @param mapProject the map project
+	 * @param complexMapRefSetMembers the complex map ref set members
+	 * @return the list
+	 * @throws Exception the exception
+	 */
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
 			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
 

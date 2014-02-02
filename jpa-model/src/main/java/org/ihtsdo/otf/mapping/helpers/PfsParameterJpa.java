@@ -33,6 +33,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Returns the maximum number of results
 	 * @return the maximum number of results
 	 */
+	@Override
 	public int getMaxResults() {
 		return maxResults;
 	}
@@ -41,6 +42,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Sets the maximum number of results
 	 * @param maxResults the maximum number of results
 	 */
+	@Override
 	public void setMaxResults(int maxResults) {
 		this.maxResults = maxResults;
 	}
@@ -49,6 +51,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Returns the starting index of a query result subset
 	 * @return the start index
 	 */
+	@Override
 	public int getStartIndex() {
 		return startIndex;
 	}
@@ -57,6 +60,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Sets the starting index of a query result subset
 	 * @param startIndex the start index
 	 */
+	@Override
 	public void setStartIndex(int startIndex) {
 		this.startIndex = startIndex;
 	}
@@ -65,6 +69,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Returns the ending index of a query result subset
 	 * @return the end index
 	 */
+	@Override
 	public int getEndIndex() {
 		return endIndex;
 	}
@@ -73,6 +78,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Sets the ending index of a query results subset
 	 * @param endIndex the end index
 	 */
+	@Override
 	public void setEndIndex(int endIndex) {
 		this.endIndex = endIndex;
 	}
@@ -81,6 +87,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Returns the filter string
 	 * @return the filter string
 	 */
+	@Override
 	public String getFilters() {
 		return filters;
 	}
@@ -89,6 +96,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Sets the filter string
 	 * @param filters the filter string
 	 */
+	@Override
 	public void setFilters(String filters) {
 		this.filters = filters;
 	}
@@ -97,6 +105,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Returns the sorting comparator
 	 * @return the sorting comparator
 	 */
+	@Override
 	public Comparator<Object> getsortComparator() {
 		return sortComparator;
 	}
@@ -105,6 +114,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Sets the sorting comparator
 	 * @param sortComparator the sorting comparator
 	 */
+	@Override
 	public void setsortComparator(Comparator<Object> sortComparator) {
 		this.sortComparator = sortComparator;
 	}
