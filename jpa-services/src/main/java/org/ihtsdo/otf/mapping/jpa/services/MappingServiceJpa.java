@@ -1411,7 +1411,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject(org.ihtsdo.otf.mapping.model.MapProject)
 	 */
 	@Override
-	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) {
+	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) throws Exception {
 		
 		Logger.getLogger(MappingServiceJpa.class).warn("Creating map records for project" + mapProject.getName());
 		
@@ -1522,7 +1522,7 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	@Override
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
-			Set<ComplexMapRefSetMember> complexMapRefSetMembers) {
+			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
 		
 		Logger.getLogger(MappingServiceJpa.class).warn("Creating map records for project" + mapProject.getName());
 	
