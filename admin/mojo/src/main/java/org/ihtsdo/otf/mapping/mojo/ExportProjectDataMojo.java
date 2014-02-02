@@ -14,6 +14,7 @@ import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
@@ -135,6 +136,14 @@ public class ExportProjectDataMojo extends AbstractMojo {
 			}
 			BufferedWriter principlesWriter = new BufferedWriter(new FileWriter(principlesFile.getAbsoluteFile()));
 			
+			File projectsFile = new File(outputDir, "mapprojects.txt");
+			// if file doesn't exist, then create it
+			if (!projectsFile.exists()) {
+				projectsFile.createNewFile();
+			}
+			BufferedWriter projectsWriter = new BufferedWriter(new FileWriter(projectsFile.getAbsoluteFile()));
+			
+			
 			// export to mapspecialists.txt
 			MappingService mappingService = new MappingServiceJpa();
 			MapSpecialistList mapSpecialists = new MapSpecialistList();
@@ -156,15 +165,54 @@ public class ExportProjectDataMojo extends AbstractMojo {
 			
 
 			
-			//export to mapadvices.txt and mapprinciples.txt
+			//export to mapadvices.txt
 			for (MapAdvice ma : mappingService.getMapAdvices()) {
 				advicesWriter.write(ma.getName() + "\t" + ma.getDetail() + "\n");
 			}
+			
+			// export to mapprinciples.txt
 		  for (MapPrinciple ma : mappingService.getMapPrinciples()) {
 		  	String detail = ma.getDetail();
 		  	detail = detail.replace("\n", "<br>").replace("\r", "<br>");
-			  principlesWriter.write(ma.getName() + "|" + detail + "\n");
+			  principlesWriter.write(ma.getName() + "|" + ma.getPrincipleId() + "|" + ma.getSectionRef() + "|" + detail + "\n");
 		  }				
+		  
+		  // export to mapprojects.txt
+		  for (MapProject mpr : mappingService.getMapProjects()) {
+		  	StringBuffer mapAdvices = new StringBuffer();
+		  	for (MapAdvice ma : mpr.getMapAdvices()) {
+		  		mapAdvices.append(ma.getName()).append(",");
+		  	}
+		  	if (mapAdvices.length() > 1)
+		  	  mapAdvices.deleteCharAt(mapAdvices.length() - 1);
+		  	
+		  	StringBuffer mapPrinciples = new StringBuffer();
+		  	for (MapPrinciple ma : mpr.getMapPrinciples()) {
+		  		mapPrinciples.append(ma.getPrincipleId()).append(",");
+		  	}
+		  	if (mapPrinciples.length() > 1)
+		  	  mapPrinciples.deleteCharAt(mapPrinciples.length() -1);
+		  	
+		  	StringBuffer mprMapLeads = new StringBuffer();
+		  	for (MapLead ma : mpr.getMapLeads()) {
+		  		mprMapLeads.append(ma.getUserName()).append(",");
+		  	}
+		  	if (mprMapLeads.length() > 1)
+		  	  mprMapLeads.deleteCharAt(mprMapLeads.length() -1);
+		  	
+		  	StringBuffer mprMapSpecialists = new StringBuffer();
+		  	for (MapSpecialist ma : mpr.getMapSpecialists()) {
+		  		mprMapSpecialists.append(ma.getUserName()).append(",");
+		  	}
+		  	if (mprMapSpecialists.length() > 1)
+		  	  mprMapSpecialists.deleteCharAt(mprMapSpecialists.length()-1);
+		  	
+		  	projectsWriter.write(mpr.getName() + "\t" + mpr.getRefSetId() + "\t" + mpr.getRefSetName() + "\t" +
+		  												mpr.getObjectId() + "\t" + mpr.getSourceTerminology() + "\t" + mpr.getSourceTerminologyVersion() +
+		  												"\t" + mpr.getDestinationTerminology() + "\t" + mpr.getDestinationTerminologyVersion() + "\t" + 
+		  												mpr.isBlockStructure() + "\t" + mpr.isGroupStructure() + "\t" + mpr.isPublished() + "\t" +
+		  												mapAdvices + "\t" + mapPrinciples + "\t" + mprMapLeads + "\t" + mprMapSpecialists + "\n");
+		  }
 			mappingService.close();		
 			
 			
@@ -173,6 +221,7 @@ public class ExportProjectDataMojo extends AbstractMojo {
 			leadsWriter.close();
 			advicesWriter.close();
 			principlesWriter.close();
+			projectsWriter.close();
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);

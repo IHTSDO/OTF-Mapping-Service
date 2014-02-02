@@ -50,24 +50,32 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
+// TODO: Auto-generated Javadoc
 /**
- * 
- * The class for MappingServiceJpa
- * 
+ * The class for MappingServiceJpa.
+ *
+ * @author ${author}
  */
 public class MappingServiceJpa implements MappingService {
 
 	/** The factory. */
 	private static EntityManagerFactory factory;
 
-	/** The manager */
+	/** The manager. */
 	private EntityManager manager;
 
-	/** The full text entity manager */
+	/** The full text entity manager. */
 	private FullTextEntityManager fullTextEntityManager;
 
 	/** The indexed field names. */
 	private static Set<String> fieldNames;
+	
+	/** The transaction per operation. */
+	private boolean transactionPerOperation = true;
+	
+	/** The transaction entity. */
+	private EntityTransaction tx;
+	
 
 	/**
 	 * Instantiates an empty {@link MappingServiceJpa}.
@@ -82,7 +90,7 @@ public class MappingServiceJpa implements MappingService {
 
 		// created on each instantiation
 		manager = factory.createEntityManager();
-
+		
 		// fieldNames created once
 		if (fieldNames == null) {
 			fieldNames = new HashSet<String>();
@@ -115,7 +123,9 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 	/**
-	 * Close the manager when done with this service
+	 * Close the manager when done with this service.
+	 *
+	 * @throws Exception the exception
 	 */
 	@Override
 	public void close() throws Exception {
@@ -137,10 +147,9 @@ public class MappingServiceJpa implements MappingService {
 	// //////////////////////////////////
 
 	/**
-	 * Return map project for auto-generated id
-	 * 
-	 * @param id
-	 *            the auto-generated id
+	 * Return map project for auto-generated id.
+	 *
+	 * @param id the auto-generated id
 	 * @return the MapProject
 	 */
 	@Override
@@ -151,21 +160,22 @@ public class MappingServiceJpa implements MappingService {
 		javax.persistence.Query query = manager
 				.createQuery("select m from MapProjectJpa m where id = :id");
 		query.setParameter("id", id);
+		
 		try {
-
 			m = (MapProject) query.getSingleResult();
-		} catch (Exception e) {
-			System.out.println("Could not find map project for id = "
-					+ id.toString());
+		} catch (NoResultException e) {
+			Logger.getLogger(this.getClass()).warn(
+					"Map project query for id = " + id+ 
+                                        " returned no results!");
+			return null;
 		}
-
 		return m;
 
 	}
 
 	/**
-	 * Retrieve all map projects
-	 * 
+	 * Retrieve all map projects.
+	 *
 	 * @return a List of MapProjects
 	 */
 	@Override
@@ -179,35 +189,30 @@ public class MappingServiceJpa implements MappingService {
 				.createQuery("select m from MapProjectJpa m");
 
 		// Try query
-		try {
+
 			m = query.getResultList();
-		} catch (Exception e) {
-			System.out
-					.println("MappingServiceJpa.getMapProjects(): Could not retrieve map projects.");
-			e.printStackTrace();
-		}
 
 		return m;
 	}
 
 	/**
-	 * Query for MapProjects
-	 * 
-	 * @param query
-	 *            the query
+	 * Query for MapProjects.
+	 *
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the list of MapProject
+	 * @throws Exception the exception
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public SearchResultList findMapProjects(String query,
-			PfsParameter pfsParameter) {
+			PfsParameter pfsParameter) throws Exception {
 
 		SearchResultList s = new SearchResultListJpa();
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
 
-		try {
 			SearchFactory searchFactory = fullTextEntityManager
 					.getSearchFactory();
 			Query luceneQuery;
@@ -240,9 +245,7 @@ public class MappingServiceJpa implements MappingService {
 
 			s.sortSearchResultsById();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
 
 		if (fullTextEntityManager != null) {
 			fullTextEntityManager.close();
@@ -252,75 +255,75 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 	/**
-	 * Add a map project
-	 * 
-	 * @param mapProject
-	 *            the map project
+	 * Add a map project.
+	 *
+	 * @param mapProject the map project
+	 * @return the map project
 	 */
 	@Override
 	public MapProject addMapProject(MapProject mapProject) {
 
-		EntityTransaction tx = manager.getTransaction();
-		try {
-			tx.begin();
-			manager.persist(mapProject);
-			tx.commit();
-			
-			return mapProject;
-		} catch (Exception e) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+				tx.begin();
+				manager.persist(mapProject);
+				tx.commit();
 
-			e.printStackTrace();
+				return mapProject;
+		} else {
+			 if (!tx.isActive()) {
+		     throw new IllegalStateException (
+		    		 "Error attempting to change data without an active transaction");
+			 }
+			manager.persist(mapProject);
+			return mapProject;
 		}
-		return null;
 
 	}
 
 	/**
-	 * Update a map project
-	 * 
-	 * @param mapProject
-	 *            the changed map project
+	 * Update a map project.
+	 *
+	 * @param mapProject the changed map project
 	 */
 	@Override
 	public void updateMapProject(MapProject mapProject) {
-
-		EntityTransaction tx = manager.getTransaction();
-		try {
-			tx.begin();
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+				tx.begin();
+				manager.merge(mapProject);
+				tx.commit();
+		} else {
 			manager.merge(mapProject);
-			tx.commit();
-		} catch (Exception e) {
-
-			e.printStackTrace();
 		}
 
 	}
 
 	/**
-	 * Remove (delete) a map project
-	 * 
-	 * @param mapProjectId
-	 *            the map project to be removed
+	 * Remove (delete) a map project.
+	 *
+	 * @param mapProjectId the map project to be removed
 	 */
 	@Override
 	public void removeMapProject(Long mapProjectId) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+				// first, remove the leads and specialists from this project
+				tx.begin();
+				MapProject mp = manager.find(MapProjectJpa.class, mapProjectId);
+				mp.setMapLeads(null);
+				mp.setMapSpecialists(null);
+				tx.commit();
 
-		EntityTransaction tx = manager.getTransaction();
-		try {
-			// first, remove the leads and specialists from this project
-			tx.begin();
+				// now remove the project
+				tx.begin();
+				manager.remove(mp);
+				tx.commit();
+		} else {
 			MapProject mp = manager.find(MapProjectJpa.class, mapProjectId);
 			mp.setMapLeads(null);
 			mp.setMapSpecialists(null);
-			tx.commit();
-
-			// now remove the project
-			tx.begin();
 			manager.remove(mp);
-			tx.commit();
-		} catch (Exception e) {
-
-			e.printStackTrace();
 		}
 
 	}
@@ -336,8 +339,8 @@ public class MappingServiceJpa implements MappingService {
 	// ///////////////////////////////////////////////////////////////
 
 	/**
-	 * Retrieve all map specialists
-	 * 
+	 * Retrieve all map specialists.
+	 *
 	 * @return a List of MapSpecialists
 	 */
 	@Override
@@ -350,20 +353,17 @@ public class MappingServiceJpa implements MappingService {
 				.createQuery("select m from MapSpecialistJpa m");
 
 		// Try query
-		try {
+
 			m = query.getResultList();
-		} catch (Exception e) {
-			// Do nothing
-		}
+
 
 		return m;
 	}
 
 	/**
-	 * Return map specialist for auto-generated id
-	 * 
-	 * @param id
-	 *            the auto-generated id
+	 * Return map specialist for auto-generated id.
+	 *
+	 * @param id the auto-generated id
 	 * @return the MapSpecialist
 	 */
 	@Override
@@ -376,9 +376,11 @@ public class MappingServiceJpa implements MappingService {
 		query.setParameter("id", id);
 		try {
 			m = (MapSpecialist) query.getSingleResult();
-		} catch (Exception e) {
-			System.out.println("Could not find map specialist for id = "
-					+ id.toString());
+		} catch (NoResultException e) {
+			Logger.getLogger(this.getClass()).warn(
+					"Map specialist query for id = " + id+ 
+                                        " returned no results!");
+			return null;
 		}
 
 		return m;
@@ -386,10 +388,9 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 	/**
-	 * Retrieve all map projects assigned to a particular map specialist
-	 * 
-	 * @param mapSpecialist
-	 *            the map specialist
+	 * Retrieve all map projects assigned to a particular map specialist.
+	 *
+	 * @param mapSpecialist the map specialist
 	 * @return a List of MapProjects
 	 */
 	@Override
@@ -415,23 +416,23 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 	/**
-	 * Query for MapSpecialists
-	 * 
-	 * @param query
-	 *            the query
+	 * Query for MapSpecialists.
+	 *
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the List of MapProjects
+	 * @throws Exception the exception
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public SearchResultList findMapSpecialists(String query,
-			PfsParameter pfsParameter) {
+			PfsParameter pfsParameter) throws Exception {
 
 		SearchResultList s = new SearchResultListJpa();
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
 
-		try {
 
 			SearchFactory searchFactory = fullTextEntityManager
 					.getSearchFactory();
@@ -462,10 +463,6 @@ public class MappingServiceJpa implements MappingService {
 
 			s.sortSearchResultsById();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 		if (fullTextEntityManager != null) {
 			fullTextEntityManager.close();
 		}
@@ -474,53 +471,47 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 	/**
-	 * Add a map specialist
-	 * 
-	 * @param mapSpecialist
-	 *            the map specialist
+	 * Add a map specialist.
+	 *
+	 * @param mapSpecialist the map specialist
 	 */
 	@Override
 	public void addMapSpecialist(MapSpecialist mapSpecialist) {
 
-		EntityTransaction tx = manager.getTransaction();
-
-		try {
-			tx.begin();
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+				tx.begin();
+				manager.persist(mapSpecialist);
+				tx.commit();
+		} else {
 			manager.persist(mapSpecialist);
-			tx.commit();
-		} catch (Exception e) {
-
-			e.printStackTrace();
 		}
 
 	}
 
 	/**
-	 * Update a map specialist
-	 * 
-	 * @param mapSpecialist
-	 *            the changed map specialist
+	 * Update a map specialist.
+	 *
+	 * @param mapSpecialist the changed map specialist
 	 */
 	@Override
 	public void updateMapSpecialist(MapSpecialist mapSpecialist) {
 
-		EntityTransaction tx = manager.getTransaction();
-		try {
-			tx.begin();
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+				tx.begin();
+				manager.merge(mapSpecialist);
+				tx.commit();
+		} else {
 			manager.merge(mapSpecialist);
-			tx.commit();
-		} catch (Exception e) {
-
-			e.printStackTrace();
 		}
 
 	}
 
 	/**
-	 * Remove (delete) a map specialist
-	 * 
-	 * @param mapSpecialistId
-	 *            the map specialist to be removed
+	 * Remove (delete) a map specialist.
+	 *
+	 * @param mapSpecialistId the map specialist to be removed
 	 */
 	@Override
 	public void removeMapSpecialist(Long mapSpecialistId) {
@@ -528,30 +519,31 @@ public class MappingServiceJpa implements MappingService {
 		EntityTransaction tx = manager.getTransaction();
 
 		// retrieve this map specialist
-		MapSpecialist ms = manager
-				.find(MapSpecialistJpa.class, mapSpecialistId);
+		MapSpecialist ms = manager.find(MapSpecialistJpa.class, mapSpecialistId);
 
 		// retrieve all projects on which this specialist appears
 		List<MapProject> projects = getMapProjectsForMapSpecialist(ms);
 
-		try {
-			// remove specialist from all these projects
-			tx.begin();
+		if (getTransactionPerOperation()) {
+				// remove specialist from all these projects
+				tx.begin();
+				for (MapProject mp : projects) {
+					mp.removeMapSpecialist(ms);
+					manager.merge(mp);
+				}
+				tx.commit();
+
+				// remove specialist
+				tx.begin();
+				manager.remove(ms);
+				tx.commit();
+
+		} else {
 			for (MapProject mp : projects) {
 				mp.removeMapSpecialist(ms);
 				manager.merge(mp);
 			}
-			tx.commit();
-
-			// remove specialist
-			tx.begin();
 			manager.remove(ms);
-			tx.commit();
-
-		} catch (Exception e) {
-			System.out.println("Failed to remove map specialist "
-					+ Long.toString(mapSpecialistId));
-			e.printStackTrace();
 		}
 
 	}
@@ -567,8 +559,8 @@ public class MappingServiceJpa implements MappingService {
 	// ///////////////////////////////////////////////////
 
 	/**
-	 * Retrieve all map leads
-	 * 
+	 * Retrieve all map leads.
+	 *
 	 * @return a List of MapLeads
 	 */
 	@Override
@@ -581,20 +573,17 @@ public class MappingServiceJpa implements MappingService {
 				.createQuery("select m from MapLeadJpa m");
 
 		// Try query
-		try {
+
 			mapLeads = query.getResultList();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
 
 		return mapLeads;
 	}
 
 	/**
-	 * Return map lead for auto-generated id
-	 * 
-	 * @param id
-	 *            the auto-generated id
+	 * Return map lead for auto-generated id.
+	 *
+	 * @param id the auto-generated id
 	 * @return the MapLead
 	 */
 	@Override
@@ -607,9 +596,11 @@ public class MappingServiceJpa implements MappingService {
 		query.setParameter("id", id);
 		try {
 			m = (MapLead) query.getSingleResult();
-		} catch (Exception e) {
-			System.out.println("Could not find map lead for id = "
-					+ id.toString());
+		} catch (NoResultException e) {
+			Logger.getLogger(this.getClass()).warn(
+					"Map lead query for id = " + id+ 
+                                        " returned no results!");
+			return null;
 		}
 
 		return m;
@@ -617,10 +608,9 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 	/**
-	 * Retrieve all map projects assigned to a particular map lead
-	 * 
-	 * @param mapLead
-	 *            the map lead
+	 * Retrieve all map projects assigned to a particular map lead.
+	 *
+	 * @param mapLead the map lead
 	 * @return a List of MapProjects
 	 */
 	@Override
@@ -643,22 +633,22 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 	/**
-	 * Query for MapLeads
-	 * 
-	 * @param query
-	 *            the query
+	 * Query for MapLeads.
+	 *
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the List of MapProjects
+	 * @throws Exception the exception
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter) {
+	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter) throws Exception {
 
 		SearchResultList s = new SearchResultListJpa();
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
 
-		try {
 			SearchFactory searchFactory = fullTextEntityManager
 					.getSearchFactory();
 			Query luceneQuery;
@@ -687,57 +677,50 @@ public class MappingServiceJpa implements MappingService {
 
 			s.sortSearchResultsById();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 		return s;
 	}
 
 	/**
-	 * Add a map lead
-	 * 
-	 * @param mapLead
-	 *            the map lead
+	 * Add a map lead.
+	 *
+	 * @param mapLead the map lead
 	 */
 	@Override
 	public void addMapLead(MapLead mapLead) {
-
-		EntityTransaction tx = manager.getTransaction();
-		try {
-			tx.begin();
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+				tx.begin();
+				manager.persist(mapLead);
+				tx.commit();
+		} else {
 			manager.persist(mapLead);
-			tx.commit();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
 	/**
-	 * Update a map lead
-	 * 
-	 * @param mapLead
-	 *            the changed map lead
+	 * Update a map lead.
+	 *
+	 * @param mapLead the changed map lead
 	 */
 	@Override
 	public void updateMapLead(MapLead mapLead) {
 
-		EntityTransaction tx = manager.getTransaction();
-		try {
-			tx.begin();
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+				tx.begin();
+				manager.merge(mapLead);
+				tx.commit();
+
+		} else {
 			manager.merge(mapLead);
-			tx.commit();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 
 	}
 
 	/**
-	 * Remove (delete) a map lead
-	 * 
-	 * @param mapLeadId
-	 *            the map lead to be removed
+	 * Remove (delete) a map lead.
+	 *
+	 * @param mapLeadId the map lead to be removed
 	 */
 	@Override
 	public void removeMapLead(Long mapLeadId) {
@@ -750,24 +733,26 @@ public class MappingServiceJpa implements MappingService {
 		// retrieve all projects on which this lead appears
 		List<MapProject> projects = getMapProjectsForMapLead(ml);
 
-		try {
-			// remove lead from all these projects
-			tx.begin();
+		if (getTransactionPerOperation()) {
+				// remove lead from all these projects
+				tx.begin();
+				for (MapProject mp : projects) {
+					mp.removeMapLead(ml);
+					manager.merge(mp);
+				}
+				tx.commit();
+
+				// remove lead
+				tx.begin();
+				manager.remove(ml);
+				tx.commit();
+
+		} else {
 			for (MapProject mp : projects) {
 				mp.removeMapLead(ml);
 				manager.merge(mp);
 			}
-			tx.commit();
-
-			// remove lead
-			tx.begin();
 			manager.remove(ml);
-			tx.commit();
-
-		} catch (Exception e) {
-			System.out.println("Failed to remove map lead "
-					+ Long.toString(mapLeadId));
-			e.printStackTrace();
 		}
 
 	}
@@ -777,8 +762,8 @@ public class MappingServiceJpa implements MappingService {
 	// //////////////////////////////////
 
 	/**
-	 * Retrieve all map records
-	 * 
+	 * Retrieve all map records.
+	 *
 	 * @return a List of MapRecords
 	 */
 	@Override
@@ -792,22 +777,15 @@ public class MappingServiceJpa implements MappingService {
 				.createQuery("select m from MapRecordJpa m");
 
 		// Try query
-		try {
 			m = query.getResultList();
-		} catch (Exception e) {
-			System.out
-					.println("MappingServiceJpa.getMapRecords(): Could not retrieve map records.");
-			e.printStackTrace();
-		}
 
 		return m;
 	}
 
 	/**
-	 * Retrieve map record for given id
-	 * 
-	 * @param id
-	 *            the map record id
+	 * Retrieve map record for given id.
+	 *
+	 * @param id the map record id
 	 * @return the map record
 	 */
 	@Override
@@ -849,23 +827,23 @@ public class MappingServiceJpa implements MappingService {
 	 */
 
 	/**
-	 * Retrieve map records for a lucene query
-	 * 
-	 * @param query
-	 *            the lucene query string
+	 * Retrieve map records for a lucene query.
+	 *
+	 * @param query the lucene query string
+	 * @param pfsParameter the pfs parameter
 	 * @return a list of map records
+	 * @throws Exception the exception
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public SearchResultList findMapRecords(String query,
-			PfsParameter pfsParameter) {
+			PfsParameter pfsParameter) throws Exception {
 
 		SearchResultList s = new SearchResultListJpa();
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
 
-		try {
 			SearchFactory searchFactory = fullTextEntityManager
 					.getSearchFactory();
 			Query luceneQuery;
@@ -895,59 +873,52 @@ public class MappingServiceJpa implements MappingService {
 
 			s.sortSearchResultsById();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 		return s;
 	}
 
 	/**
-	 * Add a map record
-	 * 
-	 * @param mapRecord
-	 *            the map record to be added
+	 * Add a map record.
+	 *
+	 * @param mapRecord the map record to be added
 	 */
 	@Override
 	public void addMapRecord(MapRecord mapRecord) {
 
-		EntityTransaction tx = manager.getTransaction();
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
 
-		try {
-			tx.begin();
+				tx.begin();
+				manager.persist(mapRecord);
+				tx.commit();
+		} else {
 			manager.persist(mapRecord);
-			tx.commit();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 
 	}
 
 	/**
-	 * Update a map record
-	 * 
-	 * @param mapRecord
-	 *            the map record to be updated
+	 * Update a map record.
+	 *
+	 * @param mapRecord the map record to be updated
 	 */
 	@Override
 	public void updateMapRecord(MapRecord mapRecord) {
 
-		EntityTransaction tx = manager.getTransaction();
-		try {
-			tx.begin();
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+				tx.begin();
+				manager.merge(mapRecord);
+				tx.commit();
+		} else {
 			manager.merge(mapRecord);
-			tx.commit();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 
 	}
 
 	/**
-	 * Remove (delete) a map record by id
-	 * 
-	 * @param id
-	 *            the id of the map record to be removed
+	 * Remove (delete) a map record by id.
+	 *
+	 * @param id the id of the map record to be removed
 	 */
 	@Override
 	public void removeMapRecord(Long id) {
@@ -956,14 +927,14 @@ public class MappingServiceJpa implements MappingService {
 
 		// find the map record
 		MapRecord m = manager.find(MapRecord.class, id);
+		if (getTransactionPerOperation()) {
+				// delete the map record
+				tx.begin();
+				manager.remove(m);
+				tx.commit();
 
-		try {
-			// delete the map record
-			tx.begin();
+		} else {
 			manager.remove(m);
-			tx.commit();
-		} catch (Exception e1) {
-			e1.printStackTrace();
 		}
 
 	}
@@ -973,21 +944,21 @@ public class MappingServiceJpa implements MappingService {
 	// //////////////////////////////////
 
 	/**
-	 * Service for finding MapEntrys by string query
-	 * 
-	 * @param query
-	 *            the query string
+	 * Service for finding MapEntrys by string query.
+	 *
+	 * @param query the query string
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
+	 * @throws Exception the exception
 	 */
 	@Override
 	public SearchResultList findMapEntrys(String query,
-			PfsParameter pfsParameter) {
+			PfsParameter pfsParameter) throws Exception {
 		SearchResultList s = new SearchResultListJpa();
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
 
-		try {
 			SearchFactory searchFactory = fullTextEntityManager
 					.getSearchFactory();
 			Query luceneQuery;
@@ -1016,29 +987,25 @@ public class MappingServiceJpa implements MappingService {
 
 			s.sortSearchResultsById();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 		return s;
 	}
 
 	/**
-	 * Service for finding MapAdvices by string query
-	 * 
-	 * @param query
-	 *            the query string
+	 * Service for finding MapAdvices by string query.
+	 *
+	 * @param query the query string
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
+	 * @throws Exception the exception
 	 */
 	@Override
 	public SearchResultList findMapAdvices(String query,
-			PfsParameter pfsParameter) {
+			PfsParameter pfsParameter) throws Exception {
 		SearchResultList s = new SearchResultListJpa();
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
 
-		try {
 			SearchFactory searchFactory = fullTextEntityManager
 					.getSearchFactory();
 			Query luceneQuery;
@@ -1068,10 +1035,6 @@ public class MappingServiceJpa implements MappingService {
 
 			s.sortSearchResultsById();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 		return s;
 	}
 
@@ -1080,10 +1043,9 @@ public class MappingServiceJpa implements MappingService {
 	// //////////////////////////////////////////////
 
 	/**
-	 * Retrieve map records for a given concept id
-	 * 
-	 * @param conceptId
-	 *            the concept id
+	 * Retrieve map records for a given concept id.
+	 *
+	 * @param conceptId the concept id
 	 * @return the list of map records
 	 */
 	@Override
@@ -1095,41 +1057,34 @@ public class MappingServiceJpa implements MappingService {
 				.createQuery("select m from MapRecordJpa m where conceptId = :conceptId");
 
 		// Try query
-		try {
-			query.setParameter("conceptId", conceptId);
+		query.setParameter("conceptId", conceptId);
 			m = query.getResultList();
-		} catch (Exception e) {
-			System.out
-					.println("MappingServiceJpa.getMapRecordsForConceptId(): Could not retrieve map records.");
-			e.printStackTrace();
-		}
+		
 
 		return m;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordCountForMapProjectId(java.lang.Long)
+	 */
 	@Override
 	public Long getMapRecordCountForMapProjectId(Long mapProjectId) {
 
 		javax.persistence.Query query = manager
 				.createQuery("select count(m) from MapRecordJpa m where mapProjectId = :mapProjectId");
 
-		try {
+
 			query.setParameter("mapProjectId", mapProjectId);
 			return new Long(query.getSingleResult().toString());
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-		}
-
-		return new Long("-1");
+		
 
 	}
 
 	/**
 	 * Helper function: retrieves all map records for a map project id without
-	 * paging/filtering/sorting
-	 * 
-	 * @param mapProjectId
-	 *            the concept id
+	 * paging/filtering/sorting.
+	 *
+	 * @param mapProjectId the concept id
 	 * @return the list of map records
 	 */
 	@Override
@@ -1140,12 +1095,10 @@ public class MappingServiceJpa implements MappingService {
 
 	/**
 	 * Retrieve map records for a given concept id and paging/filtering/sorting
-	 * parameters
-	 * 
-	 * @param mapProjectId
-	 *            the concept id
-	 * @param pfs
-	 *            the paging/filtering/sorting parameter object
+	 * parameters.
+	 *
+	 * @param mapProjectId the concept id
+	 * @param pfs the paging/filtering/sorting parameter object
 	 * @return the list of map records
 	 */
 	@Override
@@ -1167,11 +1120,11 @@ public class MappingServiceJpa implements MappingService {
 			}
 
 			m = query.getResultList();
-		} catch (Exception e) {
-			System.out
-					.println("MappingServiceJpa.getMapRecordsFormapProjectId(): Could not retrieve map records for project id "
-							+ mapProjectId);
-			e.printStackTrace();
+		} catch (NoResultException e) {
+			Logger.getLogger(this.getClass()).warn(
+					"Map project query for id = " + mapProjectId + 
+                                        " returned no map record results!");
+			return null;
 		}
 
 		return m;
@@ -1181,13 +1134,13 @@ public class MappingServiceJpa implements MappingService {
 	 * Helper function for restful services. Constructs a basic concept from
 	 * parameters and calls getUnmappedDescentsForConcept(Concept concept, int
 	 * thresholdLlc)
-	 * 
-	 * @param terminologyId
-	 * @param terminology
-	 * @param terminologyVersion
-	 * @param thresholdLlc
-	 * @return
-	 * @throws Exception
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param thresholdLlc the threshold llc
+	 * @return the unmapped descendants for concept
+	 * @throws Exception the exception
 	 */
 	@Override
 	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
@@ -1202,16 +1155,14 @@ public class MappingServiceJpa implements MappingService {
 
 	/**
 	 * Given a concept, returns a list of descendant concepts that have no
-	 * associated map record
-	 * 
-	 * @param concept
-	 *            the root concept
-	 * @param thresholdLlc
-	 *            the maximum number of descendants a concept can have before it
-	 *            is no longer considered a low-level concept (i.e. return an
-	 *            empty list)
+	 * associated map record.
+	 *
+	 * @param concept the root concept
+	 * @param thresholdLlc the maximum number of descendants a concept can have before it
+	 * is no longer considered a low-level concept (i.e. return an
+	 * empty list)
 	 * @return the list of unmapped descendant concepts
-	 * @throws Exception
+	 * @throws Exception the exception
 	 */
 	public List<Concept> getUnmappedDescendantsForConcept(Concept concept,
 			int thresholdLlc) throws Exception {
@@ -1267,89 +1218,137 @@ public class MappingServiceJpa implements MappingService {
 	// Addition services ///
 	// //////////////////////////
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#addMapEntry(org.ihtsdo.otf.mapping.model.MapEntry)
+	 */
 	@Override
 	public void addMapEntry(MapEntry mapEntry) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
 
-		EntityTransaction tx = manager.getTransaction();
-
-		tx.begin();
-		manager.persist(mapEntry);
-		tx.commit();
-
+			tx.begin();
+			manager.persist(mapEntry);
+			tx.commit();
+		} else {
+			manager.persist(mapEntry);
+		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#addMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
+	 */
 	@Override
 	public void addMapPrinciple(MapPrinciple mapPrinciple) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
 
-		EntityTransaction tx = manager.getTransaction();
-
-		tx.begin();
-		manager.persist(mapPrinciple);
-		tx.commit();
+			tx.begin();
+			manager.persist(mapPrinciple);
+			tx.commit();
+		} else {
+			manager.persist(mapPrinciple);
+		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#addMapAdvice(org.ihtsdo.otf.mapping.model.MapAdvice)
+	 */
 	@Override
 	public void addMapAdvice(MapAdvice mapAdvice) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
 
-		EntityTransaction tx = manager.getTransaction();
-
-		tx.begin();
-		manager.persist(mapAdvice);
-		tx.commit();
+			tx.begin();
+			manager.persist(mapAdvice);
+			tx.commit();
+		} else {
+			manager.persist(mapAdvice);
+		}
 	}
 
 	// //////////////////////////
 	// Update services ///
 	// //////////////////////////
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#updateMapEntry(org.ihtsdo.otf.mapping.model.MapEntry)
+	 */
 	@Override
 	public void updateMapEntry(MapEntry mapEntry) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
 
-		EntityTransaction tx = manager.getTransaction();
-
-		tx.begin();
-		manager.merge(mapEntry);
-		tx.commit();
+			tx.begin();
+			manager.merge(mapEntry);
+			tx.commit();
+		} else {
+			manager.merge(mapEntry);
+		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#updateMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
+	 */
 	@Override
 	public void updateMapPrinciple(MapPrinciple mapPrinciple) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
 
-		EntityTransaction tx = manager.getTransaction();
-
-		tx.begin();
-		manager.merge(mapPrinciple);
-		tx.commit();
-		manager.close();
+			tx.begin();
+			manager.merge(mapPrinciple);
+			tx.commit();
+			// manager.close();
+		} else {
+			manager.merge(mapPrinciple);
+		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#updateMapAdvice(org.ihtsdo.otf.mapping.model.MapAdvice)
+	 */
 	@Override
 	public void updateMapAdvice(MapAdvice mapAdvice) {
+		if (getTransactionPerOperation()) {
 
-		EntityTransaction tx = manager.getTransaction();
+			EntityTransaction tx = manager.getTransaction();
 
-		tx.begin();
-		manager.merge(mapAdvice);
-		tx.commit();
-		manager.close();
+			tx.begin();
+			manager.merge(mapAdvice);
+			tx.commit();
+			// manager.close();
+		} else {
+			manager.merge(mapAdvice);
+		}
 	}
 
 	// //////////////////////////
 	// Removal services ///
 	// //////////////////////////
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapEntry(java.lang.Long)
+	 */
 	@Override
 	public void removeMapEntry(Long mapEntryId) {
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapPrinciple(java.lang.Long)
+	 */
 	@Override
 	public void removeMapPrinciple(Long mapPrincipleId) {
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapAdvice(java.lang.Long)
+	 */
 	@Override
 	public void removeMapAdvice(Long mapAdviceId) {
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciple(java.lang.Long)
+	 */
 	@Override
 	public MapPrinciple getMapPrinciple(Long id) {
 
@@ -1360,15 +1359,20 @@ public class MappingServiceJpa implements MappingService {
 		query.setParameter("id", id);
 		try {
 			m = (MapPrinciple) query.getSingleResult();
-		} catch (Exception e) {
-			System.out.println("Could not find map principle for id = "
-					+ id.toString());
+		} catch (NoResultException e) {
+			Logger.getLogger(this.getClass()).warn(
+					"Map principle query for id = " + id+ 
+                                        " returned no results!");
+			return null;
 		}
 
 		return m;
 
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciples()
+	 */
 	@Override
 	public List<MapPrinciple> getMapPrinciples() {
 		List<MapPrinciple> mapPrinciples = new ArrayList<MapPrinciple>();
@@ -1377,16 +1381,15 @@ public class MappingServiceJpa implements MappingService {
 				.createQuery("select m from MapPrincipleJpa m");
 
 		// Try query
-		try {
 			mapPrinciples = query.getResultList();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 
 		return mapPrinciples;
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapAdvices()
+	 */
 	@Override
 	public List<MapAdvice> getMapAdvices() {
 		List<MapAdvice> mapAdvices = new ArrayList<MapAdvice>();
@@ -1395,11 +1398,7 @@ public class MappingServiceJpa implements MappingService {
 				.createQuery("select m from MapAdviceJpa m");
 
 		// Try query
-		try {
 			mapAdvices = query.getResultList();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 
 		return mapAdvices;
 	}
@@ -1408,10 +1407,13 @@ public class MappingServiceJpa implements MappingService {
 	/// Services for Map Project Creation
 	/////////////////////////////////////////
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject(org.ihtsdo.otf.mapping.model.MapProject)
+	 */
 	@Override
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) {
 		
-		Logger.getLogger(MappingServiceJpa.class).info("Creating map records for project" + mapProject.getName());
+		Logger.getLogger(MappingServiceJpa.class).warn("Creating map records for project" + mapProject.getName());
 		
 		Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<ComplexMapRefSetMember>();
 		
@@ -1448,13 +1450,15 @@ public class MappingServiceJpa implements MappingService {
 	}
 	
 	// ONLY FOR TESTING PURPOSES
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapRecordsForProjectId(java.lang.Long)
+	 */
 	public Long removeMapRecordsForProjectId(Long mapProjectId) {
 	
 		EntityTransaction tx = manager.getTransaction();
 		
 		
 		int nRecords = 0;
-		try {
 			tx.begin();
 			List<MapRecord> records = (List<MapRecord>) manager.createQuery("select m from MapRecordJpa m where m.mapProjectId = :mapProjectId")
 				.setParameter("mapProjectId", mapProjectId)
@@ -1506,20 +1510,21 @@ public class MappingServiceJpa implements MappingService {
 			
 			System.out.println(Integer.toString(nRecords) + " records deleted for map project id = " + mapProjectId.toString());
 			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		
 		return new Long(nRecords);
 
 		
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject(org.ihtsdo.otf.mapping.model.MapProject, java.util.Set)
+	 */
 	@Override
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
 			Set<ComplexMapRefSetMember> complexMapRefSetMembers) {
 		
-		Logger.getLogger(MappingServiceJpa.class).info("Creating map records for project" + mapProject.getName());
+		Logger.getLogger(MappingServiceJpa.class).warn("Creating map records for project" + mapProject.getName());
 	
 		List<MapRecord> mapRecordResults = new ArrayList<MapRecord>();
 		
@@ -1568,7 +1573,7 @@ public class MappingServiceJpa implements MappingService {
 					// persist the record
 					addMapRecord(mapRecord);
 					
-					if (mapRecordResults.size() % 500 == 0) {Logger.getLogger(MappingServiceJpa.class).info(Integer.toString(mapRecordResults.size()) + " records created");}
+					if (mapRecordResults.size() % 500 == 0) {Logger.getLogger(MappingServiceJpa.class).warn(Integer.toString(mapRecordResults.size()) + " records created");}
 				}
 				// check if target is in desired terminology; if so, create entry
 				
@@ -1602,5 +1607,55 @@ public class MappingServiceJpa implements MappingService {
 					
 		return mapRecordResults;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getTransactionPerOperation()
+	 */
+	@Override
+	public boolean getTransactionPerOperation() {
+		return transactionPerOperation;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#setTransactionPerOperation(boolean)
+	 */
+	@Override
+	public void setTransactionPerOperation(boolean transactionPerOperation) {
+		this.transactionPerOperation = transactionPerOperation;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#beginTransaction()
+	 */
+	@Override
+	public void beginTransaction() {
+
+		if (getTransactionPerOperation())
+			throw new IllegalStateException(
+					"Error attempting to begin a transaction when using transactions per operation mode.");
+		else if (tx.isActive())
+			throw new IllegalStateException(
+					"Error attempting to begin a transaction when there "
+							+ "is already an active transaction");
+		tx = manager.getTransaction();
+		tx.begin();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#commit()
+	 */
+	@Override
+	public void commit() {
+
+		if (getTransactionPerOperation())
+			throw new IllegalStateException(
+					"Error attempting to commit a transaction when using transactions per operation mode.");
+		else if (!tx.isActive())
+			throw new IllegalStateException(
+					"Error attempting to commit a transaction when there "
+							+ "is no active transaction");
+		tx.commit();
+	}
+
 
 }

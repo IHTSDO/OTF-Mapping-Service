@@ -7,13 +7,19 @@ import java.io.FileReader;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
+import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
+import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -118,12 +124,15 @@ public class ImportProjectDataMojo extends AbstractMojo {
 			BufferedReader principlesReader =
 					new BufferedReader(new FileReader(principlesFile));
 
+			File projectsFile = new File(inputDir, "mapprojects.txt");
+			BufferedReader projectsReader =
+					new BufferedReader(new FileReader(projectsFile));
 
 			MappingService mappingService = new MappingServiceJpa();
 			
 			// Add Specialists and Leads
 			String line = "";
-			while ((line = leadsReader.readLine()) != null) {
+   		while ((line = leadsReader.readLine()) != null) {
 				StringTokenizer st = new StringTokenizer(line, "\t");
 				MapLeadJpa mapLead = new MapLeadJpa();
 				mapLead.setName(st.nextToken());
@@ -148,16 +157,81 @@ public class ImportProjectDataMojo extends AbstractMojo {
 				mapAdvice.setName(st.nextToken());
 				mapAdvice.setDetail(st.nextToken());
 				mappingService.addMapAdvice(mapAdvice);
-			}
+			} 
 
 			// Add map principles
 			while ((line = principlesReader.readLine()) != null) {
-				StringTokenizer st = new StringTokenizer(line, "|");
+				String[] fields = line.split("\\|");
 				MapPrincipleJpa mapPrinciple = new MapPrincipleJpa();
-				mapPrinciple.setName(st.nextToken());
-				mapPrinciple.setDetail(st.nextToken());
+				mapPrinciple.setName(fields[0]);
+				mapPrinciple.setPrincipleId(fields[1]);
+				mapPrinciple.setSectionRef(fields[2]);
+				mapPrinciple.setDetail(fields[3]);
 				mappingService.addMapPrinciple(mapPrinciple);
 			}
+
+			// Add map projects
+			while ((line = projectsReader.readLine()) != null) {
+				String[] fields = line.split("\t");
+				MapProjectJpa mapProject = new MapProjectJpa();
+				mapProject.setName(fields[0]);
+				Logger.getLogger(this.getClass()).info("name " + fields[0]);
+				mapProject.setRefSetId(fields[1]);
+				mapProject.setRefSetName(fields[2]);
+				mapProject.setObjectId(fields[3]);
+				mapProject.setSourceTerminology(fields[4]);
+				mapProject.setSourceTerminologyVersion(fields[5]);
+				mapProject.setDestinationTerminology(fields[6]);
+				mapProject.setDestinationTerminologyVersion(fields[7]);
+				mapProject.setBlockStructure(fields[8].equals("true") ? true : false);
+				mapProject.setGroupStructure(fields[9].equals("true") ? true : false);
+				mapProject.setPublished(fields[10].equals("true") ? true : false);
+				
+				String mapAdvices = fields[11];
+				if (!mapAdvices.equals("")) {
+					for (String advice : mapAdvices.split(",")) {
+						for (MapAdvice ml : mappingService.getMapAdvices()) {
+							if (ml.getName().equals(advice))
+								mapProject.addMapAdvice(ml);
+						}
+					}
+				}
+
+				String mapPrinciples = fields[12];
+				if (!mapPrinciples.equals("")) {
+					Logger.getLogger(this.getClass()).info(
+							"mapPrinciples " + mapPrinciples);
+					for (String principle : mapPrinciples.split(",")) {
+						for (MapPrinciple ml : mappingService.getMapPrinciples()) {
+							if (ml.getPrincipleId().equals(principle)) {
+								mapProject.addMapPrinciple(ml);
+								Logger.getLogger(this.getClass()).info(
+										"mapProject " + mapProject.getName() + " "
+												+ ml.getPrincipleId());
+							}
+						}
+					}
+				}
+
+				String mapLeads = fields[13];
+				for(String lead : mapLeads.split(",")) {
+					for (MapLead ml : mappingService.getMapLeads()) {
+						if (ml.getUserName().equals(lead))
+					    mapProject.addMapLead(ml);
+					}
+				}
+				
+				String mapSpecialists = fields[14];
+				for (String specialist : mapSpecialists.split(",")) {
+					for (MapSpecialist ml : mappingService.getMapSpecialists()) {
+						if (ml.getUserName().equals(specialist))
+					    mapProject.addMapSpecialist(ml);
+					}
+				}
+				mappingService.addMapProject(mapProject); 
+			}
+			
+
 			
 			mappingService.close();
 			
@@ -165,6 +239,7 @@ public class ImportProjectDataMojo extends AbstractMojo {
 			leadsReader.close();
 			advicesReader.close();
 			principlesReader.close();
+			projectsReader.close();
 			
 		} catch (Throwable e) {
 			e.printStackTrace();
