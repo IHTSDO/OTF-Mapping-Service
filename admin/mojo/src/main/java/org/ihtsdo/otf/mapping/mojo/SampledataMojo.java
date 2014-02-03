@@ -572,6 +572,7 @@ public class SampledataMojo extends AbstractMojo {
 			MapProject mapProject = new MapProjectJpa();
 			mapProject.setName("SNOMED to ICD10");
 			mapProject.setRefSetId("447562003");
+			mapProject.setRefSetName(mapProject.getName() + " reference set");
 			mapProject.setSourceTerminology("SNOMEDCT");
 			mapProject.setSourceTerminologyVersion("20140131");
 			mapProject.setDestinationTerminology("ICD10");
@@ -600,6 +601,7 @@ public class SampledataMojo extends AbstractMojo {
 			mapProject = new MapProjectJpa();
 			mapProject.setName("SNOMED to ICD9CM");
 			mapProject.setRefSetId("5781347179");
+			mapProject.setRefSetName(mapProject.getName() + " reference set");
 			mapProject.setSourceTerminology("SNOMEDCT");
 			mapProject.setSourceTerminologyVersion("20140131");
 			mapProject.setDestinationTerminology("ICD9CM");
@@ -622,11 +624,12 @@ public class SampledataMojo extends AbstractMojo {
 
 			mapProject = new MapProjectJpa();
 			mapProject.setName("SNOMED to ICPC - Family Practice/GPF Refset");
-			mapProject.setRefSetId("5235669");
+			mapProject.setRefSetId("145099300");
+			mapProject.setRefSetName(mapProject.getName() + " reference set");
 			mapProject.setSourceTerminology("SNOMEDCT");
-			mapProject.setSourceTerminologyVersion("20130731");
+			mapProject.setSourceTerminologyVersion("20140131");
 			mapProject.setDestinationTerminology("ICPC");
-			mapProject.setDestinationTerminologyVersion("2");
+			mapProject.setDestinationTerminologyVersion("2010");
 			mapProject.setBlockStructure(false);
 			mapProject.setGroupStructure(false);
 			mapProject.setPublished(false);

@@ -24,6 +24,11 @@ loader.SNOMEDCT.input.data=C:\\data\\snomedct-20140131-snapshot
 loader.ICPC.input.data=C:\\data\\icpc.xml
 
 #
+# Path to unpublished icpc data
+#
+loader.ICPC.complexmap.input.data=C:\\data\\icpc-rf2-ExtendedMap-mini.txt
+
+#
 # Path to icd9cm data
 #   this must be a file named icd9cm.xml
 #
@@ -35,11 +40,26 @@ loader.ICD9CM.input.data=C:\\data\\icd9cm.xml
 loader.ICD10.input.data=C:\\data\\icd10.xml
 
 #
+# Path to map notes data
+#
+loader.mapnotes.input.data=C:\\data\\xder2_sRefset_MapNotesSnapshot_INT_20130731.txt
+
+#
 # Loader settings for preferred name
 #
 loader.defaultPreferredNames.typeId=900000000000013009
 loader.defaultPreferredNames.refSetId=900000000000509007
 loader.defaultPreferredNames.acceptabilityId=900000000000548007
+
+#
+# Destination directory for exported data
+#
+export.output.dir=C:\\data\\export
+
+#
+# Input directory for data to import
+#
+import.input.dir=C:\\data\\import
 
 #
 # Webapp base URL

@@ -70,7 +70,7 @@ public class MapEntryJpa implements MapEntry {
 	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 
 	/** The target. */
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private String targetId;
 	
 	/** The target name. */

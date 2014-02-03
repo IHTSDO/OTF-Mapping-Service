@@ -89,6 +89,7 @@ public class SearchResultListJpa implements SearchResultList {
 		Collections.sort(
 				searchResults, 
 				new Comparator<SearchResult>() {
+					@Override
 					public int compare(SearchResult sr1, SearchResult sr2) {
 						return sr1.getId().compareTo(sr2.getId());
 					}
@@ -105,6 +106,7 @@ public class SearchResultListJpa implements SearchResultList {
 		Collections.sort(
 				searchResults, 
 				new Comparator<SearchResult>() {
+					@Override
 					public int compare(SearchResult sr1, SearchResult sr2) {
 						return sr1.getValue().compareTo(sr2.getValue());
 					}
