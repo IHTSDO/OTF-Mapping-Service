@@ -175,7 +175,6 @@ public class ImportProjectDataMojo extends AbstractMojo {
 				String[] fields = line.split("\t");
 				MapProjectJpa mapProject = new MapProjectJpa();
 				mapProject.setName(fields[0]);
-				Logger.getLogger(this.getClass()).info("name " + fields[0]);
 				mapProject.setRefSetId(fields[1]);
 				mapProject.setRefSetName(fields[2]);
 				mapProject.setObjectId(fields[3]);
@@ -199,15 +198,10 @@ public class ImportProjectDataMojo extends AbstractMojo {
 
 				String mapPrinciples = fields[12];
 				if (!mapPrinciples.equals("")) {
-					Logger.getLogger(this.getClass()).info(
-							"mapPrinciples " + mapPrinciples);
 					for (String principle : mapPrinciples.split(",")) {
 						for (MapPrinciple ml : mappingService.getMapPrinciples()) {
 							if (ml.getPrincipleId().equals(principle)) {
 								mapProject.addMapPrinciple(ml);
-								Logger.getLogger(this.getClass()).info(
-										"mapProject " + mapProject.getName() + " "
-												+ ml.getPrincipleId());
 							}
 						}
 					}

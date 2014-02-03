@@ -381,7 +381,7 @@ public class MappingServiceRest {
 	 * @return the number of records as a String object
 	 */
 	@GET
-	@Path("record/projectId/{id:[0-9][0-9]*}/nRecords")
+	@Path("/record/projectId/{id:[0-9][0-9]*}/nRecords")
 	@ApiOperation(value = "Find the number of records for a project id", notes = "Returns the number of map records for a project id", response = Integer.class)
 	@Produces({ MediaType.TEXT_PLAIN})
 	public String getMapRecordCountForMapProjectId(
