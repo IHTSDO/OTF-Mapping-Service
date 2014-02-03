@@ -27,9 +27,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import java.util.Properties;
 
 import javax.persistence.EntityManager;
@@ -57,6 +60,8 @@ import org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
+
+import com.google.common.io.Files;
 
 /**
  * Goal which loads an RF2 Snapshot of SNOMED CT data into a database.
@@ -216,8 +221,9 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	private File sorted_files;
 
 	// filenames for sorted files
-	private File concepts_by_concept_file, descriptions_by_concept_file,
-			descriptions_by_description_file,
+	private File concepts_by_concept_file, 
+			
+			descriptions_by_description_file, descriptions_core_by_description_file, descriptions_text_by_description_file,
 			relationships_by_source_concept_file,
 			relationships_by_dest_concept_file,
 			language_refsets_by_description_file,
@@ -233,9 +239,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			simple_map_refsets_by_concept, complex_map_refsets_by_concept,
 			extended_map_refsets_by_concept;
 
-	// hashmap used for determioning defaultPreferredNames during file loads
-	Map<String, String> defaultPreferredNames = new HashMap<String, String>();
-
 	/** The date format. */
 	private SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
 
@@ -250,23 +253,26 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	/** The manager. */
 	private EntityManager manager;
 
-	/** hash sets for faster loading */
+	/** hash sets for retrieving concepts */
 	private Map<String, Concept> conceptCache = new HashMap<>(); // used to
 																	// speed
 																	// Concept
 																	// assignment
 																	// to
 																	// ConceptRefSetMembers
-	private Map<String, Long> descriptionCache = new HashMap<>(); // speeds
-																	// Description
-																	// assignment
-																	// to
-																	// DescriptionRefSetMembers
 
-	/** Efficiency testing */
+	/** hash set for storing default preferred names */
+	Map<Long, String> defaultPreferredNames = new HashMap<Long, String>();
+
+	
+	/** Efficiency testing and committing parameters */
 	private long startTime, startTimeOrig;
-	int i;
-
+	int n_objects; // counter for objects created, reset in each load section
+	int n_commit = 200; // the number of objects to create before committing
+	Runtime runtime;
+	Long memoryMax = new Long(0);
+	Long memoryFree = new Long(0);
+	Long memoryTotal = new Long(0);
 	/**
 	 * Instantiates a {@link RF2SnapshotLoaderMojo} from the specified
 	 * parameters.
@@ -286,10 +292,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 * 
 	 * @see org.apache.maven.plugin.Mojo#execute()
 	 */
+	@SuppressWarnings("null")
 	@Override
 	public void execute() throws MojoFailureException {
 		FileInputStream propertiesInputStream = null;
 		try {
+			
+			runtime = Runtime.getRuntime();
 
 			startTimeOrig = System.nanoTime();
 
@@ -318,6 +327,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			dpnAcceptabilityId = Long
 					.valueOf(properties
 							.getProperty("loader.defaultPreferredNames.acceptabilityId"));
+			
+			// output relevant properties/settings to console
+			getLog().info("Default preferred name settings:");
+			getLog().info(" typeId:          " + dpnTypeId);
+			getLog().info(" refSetId:        " + dpnRefSetId);
+			getLog().info(" acceptabilityId: " + dpnAcceptabilityId);
+			getLog().info("Commit settings: Objects committed in blocks of " + Integer.toString(n_commit) );
 
 			// close the Properties file
 			propertiesInputStream.close();
@@ -326,18 +342,25 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			EntityManagerFactory factory = Persistence
 					.createEntityManagerFactory("MappingServiceDS");
 			manager = factory.createEntityManager();
+			
+			getLog().info(String.valueOf(runtime.totalMemory()) + " total memory");
+			getLog().info(String.valueOf(runtime.freeMemory()) + " free memory");
+			getLog().info(String.valueOf(runtime.maxMemory()) + " max memory");
 
 			// Preparation
 			openInputFiles();
 			getVersion();
+			SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); // format for logging
 
 			// Prepare sorted input files
 			sorted_files = new File(coreInputDir, "/RF2-sorted-temp/");
-			getLog().info("Sorting Files");
+			
+			getLog().info("Preparing input files...");
 			startTime = System.nanoTime();
 			prepareSortedFiles();
-			getLog().info("    Files sorted in " + getElapsedTime() + "s");
-
+			getLog().info("    File preparation complete in " + getElapsedTime() + "s");
+			
+				
 			closeAllInputFiles();
 
 			EntityTransaction tx = manager.getTransaction();
@@ -385,26 +408,82 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				query = manager.createQuery("DELETE From ConceptJpa c");
 				deleteRecords = query.executeUpdate();
 				getLog().info("    concept records deleted: " + deleteRecords);
+		
 
 				tx.commit();
+				
+				getLog().info("Loading RF2 Components");
 
 				// load Concepts
 				if (concepts_by_concept != null) {
-					startTime = System.nanoTime();
+					
 					getLog().info("    Loading Concepts...");
-					tx.begin();
+					
+					startTime = System.nanoTime();
 					loadConcepts();
-					tx.commit();
 					getLog().info(
-							"      " + Integer.toString(i) + " Concepts loaded in "
-									+ getElapsedTime() + "s");
+							"      " + Integer.toString(n_objects) + " Concepts loaded in "
+									+ getElapsedTime() + "s"
+									+ " (Ended at " + ft.format(new Date()) + ")");
+				}
+				
+				// load Descriptions and Language Ref Set Members
+				if(descriptions_by_description != null && language_refsets_by_description != null) {
+					getLog().info("    Loading Descriptions and LanguageRefSets...");
+					startTime = System.nanoTime();
+					//
+					loadDescriptionsAndLanguageRefSets();
+					getLog().info(
+							"      " +" Descriptions and language ref set members loaded in "
+									+ getElapsedTime() + "s"
+									+ " (Ended at " + ft.format(new Date()) + ")");
+					
+					// set default preferred names
+					getLog().info(" Setting default preferred names for all concepts...");
+					startTime = System.nanoTime();
+					tx.begin();
+					Iterator<Concept> concept_iter = conceptCache.values().iterator();
+					n_objects = 0;
+					int n_count = 0;
+					int n_skipped = 0;
+					while (concept_iter.hasNext()) {
+						Concept c_cached = concept_iter.next();
+						
+						Concept c_db = manager.find(ConceptJpa.class, c_cached.getId());
+						if (defaultPreferredNames.get(c_db.getId()) != null) {
+							c_db.setDefaultPreferredName(defaultPreferredNames.get(c_db.getId()));
+						} else {
+							c_db.setDefaultPreferredName("No default preferred name found");
+							n_skipped++;
+						}
+	
+						manager.merge(c_db);
+						
+						if (++n_count % 50000 == 0) {getLog().info(Integer.toString(n_count));}
+						
+						if (++n_objects % n_commit == 0) {
+							manager.flush();
+							manager.clear();
+							tx.commit();
+							tx.begin();
+						}
+					}
+					tx.commit();
+					getLog().info("      " + "Names set in " + getElapsedTime().toString() + "s");
+					getLog().info("      " +  Integer.toString(n_skipped) + " concepts had no default preferred name");
+					defaultPreferredNames.clear();
+				
 				}
 
+				// ************************************************************
+				// OLDER DESCRIPTION / LANGUAGE REF SET CODE WITH CACHING
+				// ************************************************************
+				
 				// List<Number> revNumbers =
 				// reader.getRevisions(ConceptJpa.class, testconcept.getId());
 				// getLog().info("concept: " + testconcept.getTerminologyId() +
 				// " - Versions: " + revNumbers.toString());
-
+/*
 				// load Descriptions
 				if (descriptions_by_description != null) {
 					getLog().info("    Loading Descriptions...");
@@ -414,7 +493,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					tx.commit();
 					getLog().info(
 							"      " + Integer.toString(i) + " Descriptions loaded in "
-									+ getElapsedTime().toString() + "s");
+									+ getElapsedTime().toString() + "s"
+									+ " (Ended at " + ft.format(new Date()) + ")");
 				}
 
 				// load Language RefSet (Language)
@@ -424,14 +504,20 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					tx.begin();
 					loadLanguageRefSets();
 					tx.commit();
+					
+					
 					getLog().info(
-							"      "+ Integer.toString(i)
-									+ " Language RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+							"      "+ Integer.toString(i) + " Language RefSets loaded in "
+									+ getElapsedTime().toString() + "s"
+									+ " (Ended at " + ft.format(new Date()) + ")");
 				}
 		
 				// description cache no longer required, clear
-				descriptionCache.clear();
+				descriptionCache.clear();*/
+				
+				// *****************
+				// END OLD CODE
+				// *****************
 
 
 
@@ -439,12 +525,14 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (relationships_by_source_concept != null) {
 					getLog().info("    Loading Relationships...");
 					startTime = System.nanoTime();
-					tx.begin();
+					
+					
 					loadRelationships();
-					tx.commit();
+					
 					getLog().info(
-							"      " + Integer.toString(i) + " Relationships loaded in "
-									+ getElapsedTime().toString() + "s");
+							"      " + Integer.toString(n_objects) + " Concepts loaded in "
+									+ getElapsedTime() + "s"
+									+ " (Ended at " + ft.format(new Date()) + ")");
 				}
 				
 
@@ -452,64 +540,67 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				if (simple_refsets_by_concept != null) {
 					getLog().info("    Loading Simple RefSets...");
 					startTime = System.nanoTime();
-					tx.begin();
+					
+					
 					loadSimpleRefSets();
-					tx.commit();
+					
 					getLog().info(
-							"      " + Integer.toString(i) + " Simple RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+							"      " + Integer.toString(n_objects) + " Simple Refsets loaded in "
+									+ getElapsedTime() + "s"
+									+ " (Ended at " + ft.format(new Date()) + ")");
 				}
 
 				// load SimpleMapRefSets
 				if (simple_map_refsets_by_concept != null) {
 					getLog().info("    Loading SimpleMap RefSets...");
 					startTime = System.nanoTime();
-					tx.begin();
+					
+					
 					loadSimpleMapRefSets();
-					tx.commit();
 					getLog().info(
-							"      " + Integer.toString(i)
-									+ " SimpleMap RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+							"      " + Integer.toString(n_objects) + " SimpleMap RefSets loaded in "
+									+ getElapsedTime() + "s"
+									+ " (Ended at " + ft.format(new Date()) + ")");
 				}
 
 				// load ComplexMapRefSets
 				if (complex_map_refsets_by_concept != null) {
 					getLog().info("    Loading ComplexMap RefSets...");
 					startTime = System.nanoTime();
-					tx.begin();
+					
+					
 					loadComplexMapRefSets();
-					tx.commit();
 					getLog().info(
-							"      " + Integer.toString(i)
-									+ " ComplexMap RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+							"      " + Integer.toString(n_objects) + " ComplexMap RefSets loaded in "
+									+ getElapsedTime() + "s"
+									+ " (Ended at " + ft.format(new Date()) + ")");
 				}
 
 				// load ExtendedMapRefSets
 				if (extended_map_refsets_by_concept != null) {
 					getLog().info("    Loading ExtendedMap RefSets...");
 					startTime = System.nanoTime();
-					tx.begin();
+					
+
 					loadExtendedMapRefSets();
-					tx.commit();
+					
 					getLog().info(
-							"      " + Integer.toString(i)
-									+ " ExtendedMap RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+							"      " + Integer.toString(n_objects) + " ExtendedMap RefSets loaded in "
+									+ getElapsedTime() + "s"
+									+ " (Ended at " + ft.format(new Date()) + ")");
 				}
 
 				// load AttributeValue RefSets (Content)
 				if (attribute_refsets_by_concept != null) {
 					getLog().info("    Loading AttributeValue RefSets...");
 					startTime = System.nanoTime();
-					tx.begin();
+					
 					loadAttributeValueRefSets();
-					tx.commit();
 					getLog().info(
-							"      " + Integer.toString(i)
+							"      " + Integer.toString(n_objects)
 									+ " AttributeValue RefSets loaded in "
-									+ getElapsedTime().toString() + "s");
+									+ getElapsedTime().toString() + "s"
+									+ " (Ended at " + ft.format(new Date()) + ")");	
 				}
 
 				getLog().info(
@@ -518,7 +609,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				getLog().info("done ...");
 
 			} catch (Exception e) {
-				tx.rollback();
+				e.printStackTrace();
+				
 				throw e;
 			}
 
@@ -565,10 +657,12 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	}
 
 	// Used for debugging/efficiency monitoring
+	@SuppressWarnings("boxing")
 	private Long getElapsedTime() {
 		return (System.nanoTime() - startTime) / 1000000000;
 	}
 
+	@SuppressWarnings("boxing")
 	private String getTotalElapsedTimeStr() {
 
 		Long resultnum = (System.nanoTime() - startTimeOrig) / 1000000000;
@@ -579,6 +673,24 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		result = result + " / " + resultnum.toString() + "h";
 		return result;
 
+	}
+	
+	private long getLastModified(File directory) {
+		File [] files = directory.listFiles();
+		long lastModified = 0;
+
+		for (int j = 0; j < files.length; j++) {
+			if (files[j].isDirectory()) {
+				long tempLastModified = getLastModified(files[j]);
+				if (lastModified < tempLastModified) {
+					lastModified = tempLastModified;
+				}
+			} else if (lastModified < files[j].lastModified()) {
+				lastModified = files[j].lastModified();
+			}
+		}
+		
+		return lastModified;
 	}
 
 	/**
@@ -595,59 +707,76 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	private void prepareSortedFiles() throws Exception {
 
 		// ******************** //
-		// Initial file set up //
+		// Initialize files     //
 		// ******************** //
-
-		// delete any existing temporary files
-		deleteSortedFiles(sorted_files);
-
-		// test whether file/folder still exists (i.e. delete error)
-		if (sorted_files.exists()) {
-			throw new MojoFailureException(
-					"Could not delete existing sorted files folder "
-							+ sorted_files.toString());
-		}
-
-		// attempt to make sorted files directory
-		if (sorted_files.mkdir()) {
-			getLog().info(
-					" Creating new sorted files folder "
-							+ sorted_files.toString());
-		} else {
-			throw new MojoFailureException(
-					" Could not create temporary sorted file folder "
-							+ sorted_files.toString());
-		}
-
+		
 		concepts_by_concept_file = new File(sorted_files,
-				"concepts_by_concept.sort");
-		descriptions_by_concept_file = new File(sorted_files,
-				"descriptions_by_concept.sort");
-		descriptions_by_description_file = new File(sorted_files,
-				"descriptions_by_description.sort");
-		relationships_by_source_concept_file = new File(sorted_files,
-				"relationship_by_source_concept.sort");
-		relationships_by_dest_concept_file = new File(sorted_files,
-				"relationship_by_dest_concept.sort");
-		language_refsets_by_description_file = new File(sorted_files,
-				"language_refsets_by_description.sort");
-		attribute_refsets_by_concept_file = new File(sorted_files,
-				"attribute_refsets_by_concept.sort");
-		simple_refsets_by_concept_file = new File(sorted_files,
-				"simple_refsets_by_concept.sort");
-		simple_map_refsets_by_concept_file = new File(sorted_files,
-				"simple_map_refsets_by_concept.sort");
-		complex_map_refsets_by_concept_file = new File(sorted_files,
-				"complex_map_refsets_by_concept.sort");
-		extended_map_refsets_by_concept_file = new File(sorted_files,
-				"extended_map_refsets_by_concept.sort");
-		log_file = new File(sorted_files, "log_file.txt");
+                "concepts_by_concept.sort");
+        descriptions_by_description_file = new File(sorted_files,
+                "descriptions_by_description.sort");
+        descriptions_core_by_description_file = new File(sorted_files, 
+        		"descriptions_core_by_description.sort");
+        descriptions_text_by_description_file = new File(sorted_files, 
+        		"descriptions_text_by_description.sort");
+        relationships_by_source_concept_file = new File(sorted_files,
+                "relationship_by_source_concept.sort");
+        relationships_by_dest_concept_file = new File(sorted_files,
+                "relationship_by_dest_concept.sort");
+        language_refsets_by_description_file = new File(sorted_files,
+                "language_refsets_by_description.sort");
+        attribute_refsets_by_concept_file = new File(sorted_files,
+                "attribute_refsets_by_concept.sort");
+        simple_refsets_by_concept_file = new File(sorted_files,
+                "simple_refsets_by_concept.sort");
+        simple_map_refsets_by_concept_file = new File(sorted_files,
+                "simple_map_refsets_by_concept.sort");
+        complex_map_refsets_by_concept_file = new File(sorted_files,
+                "complex_map_refsets_by_concept.sort");
+        extended_map_refsets_by_concept_file = new File(sorted_files,
+                "extended_map_refsets_by_concept.sort");
+        log_file = new File(sorted_files, "RF2SnapshotLoader_log.txt");
 
-		// **************** //
-		// Initial sorting //
-		// **************** //
-
-		sort_RF2_files();
+		// *********************** //
+		// Sort files if required  //
+		// *********************** //
+        
+		// if sorted files do not exist OR sorted files are older than last modified input file, sort
+		if (!sorted_files.exists() || getLastModified(sorted_files) < getLastModified(coreInputDir)) {
+			
+			// log reason for sort
+			if (!sorted_files.exists()) {
+				getLog().info("     No sorted files exist -- sorting RF2 files");
+			}
+			else if (getLastModified(sorted_files) < getLastModified(coreInputDir)) {
+				getLog().info("     Sorted files older than input files -- sorting RF2 files");
+			}
+			
+			// delete any existing temporary files
+			deleteSortedFiles(sorted_files);
+	
+			// test whether file/folder still exists (i.e. delete error)
+			if (sorted_files.exists()) {
+				throw new MojoFailureException(
+						"Could not delete existing sorted files folder "
+								+ sorted_files.toString());
+			}
+	
+			// attempt to make sorted files directory
+			if (sorted_files.mkdir()) {
+				getLog().info(
+						" Creating new sorted files folder "
+								+ sorted_files.toString());
+			} else {
+				throw new MojoFailureException(
+						" Could not create temporary sorted file folder "
+								+ sorted_files.toString());
+			}
+	
+			// sort files
+			sort_RF2_files();
+		} else {
+			getLog().info("    Sorted files exist and are up to date.  No sorting required");
+		}
 
 		// ************************* //
 		// Test and open files 		 //
@@ -697,6 +826,12 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		
 		log_file_out = new BufferedWriter(new FileWriter(log_file));
 	}
+	/*
+	private void sort_RF2_files() throws Exception {
+		// core descriptions by description
+		sort_RF2_file(coreDescriptionInputFile,
+						descriptions_core_by_description_file, 0);
+	}*/
 
 	/**
 	 * Sorts all files by concept or referencedComponentId
@@ -711,9 +846,42 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		// ****************//
 
 		sort_RF2_file(coreConceptInputFile, concepts_by_concept_file, 0);
+		
+		// core descriptions by description
 		sort_RF2_file(coreDescriptionInputFile,
-				descriptions_by_description_file, 0);
-		sort_RF2_file(coreDescriptionInputFile, descriptions_by_concept_file, 4);
+				descriptions_core_by_description_file, 0);
+		
+		// if text descriptions file exists, sort and merge
+		if (coreTextDefinitionInputFile != null) {
+			
+			// sort the text definition file
+			sort_RF2_file(coreTextDefinitionInputFile,
+					descriptions_text_by_description_file, 0);
+	
+			// merge the two description files
+			getLog().info("        Merging description files...");
+			File merged_descriptions = 
+				mergeSortedFiles(descriptions_text_by_description_file, 
+					descriptions_core_by_description_file, 
+					new Comparator<String>() {
+						@Override
+						public int compare(String s1, String s2) {
+							String v1[] = s1.split("\t");
+							String v2[] = s2.split("\t");
+							return v1[0].compareTo(v2[0]);
+						}
+					}, 		
+					sorted_files,
+					""); // header line
+			
+			// rename the temporary file
+			Files.move(merged_descriptions, descriptions_by_description_file);
+			
+		} else {
+			// copy the core descriptions file
+			Files.copy(descriptions_core_by_description_file, descriptions_by_description_file);
+		}
+		
 		sort_RF2_file(coreRelInputFile, relationships_by_source_concept_file, 4);
 		sort_RF2_file(coreRelInputFile, relationships_by_dest_concept_file, 5);
 
@@ -731,7 +899,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		sort_RF2_file(coreExtendedMapInputFile,
 				extended_map_refsets_by_concept_file, 5);
 		sort_RF2_file(coreLanguageInputFile,
-				language_refsets_by_description_file, 4);
+				language_refsets_by_description_file, 5);
 
 	}
 
@@ -817,14 +985,14 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		}
 
 	}
-
-	/**
+/*
+	*//**
 	 * Returns the description.
 	 * 
 	 * @param descriptionId
 	 *            the description id
 	 * @return the description
-	 */
+	 *//*
 	private Description getDescription(String terminologyId,
 			String terminology, String terminologyVersion) throws Exception {
 
@@ -862,7 +1030,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			return null;
 		}
 	}
-
+*/
 	/**
 	 * Opens input files.
 	 * 
@@ -1185,6 +1353,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 *             if failed to sort
 	 */
 
+	@SuppressWarnings("null")
 	public static void sort(String filename, String fileout,
 			Comparator<String> comp) throws IOException {
 
@@ -1269,14 +1438,17 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					files2.add(files1.get(i));
 					break;
 				} else {
+
 					final File f = mergeSortedFiles(files1.get(i),
-							files1.get(i + 1), comp, sortdir,
-							header_line);
+					files1.get(i + 1), comp, sortdir,
+					header_line);
 
 					files2.add(f);
-
+	
 					files1.get(i).delete();
 					files1.get(i + 1).delete();
+					
+					// TODO add test to check line-by-line comparator
 				}
 			}
 
@@ -1388,7 +1560,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		}
 
 		while (line1 != null || line2 != null) {
-
+			
+			//System.out.println("Comparing: ");
+			//System.out.println("     " + line1);
+			//System.out.println("     " + line2);
+			
 			if (line1 == null) {
 				line = line2;
 				line2 = in2.readLine();
@@ -1409,10 +1585,13 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				line2 = in2.readLine();
 
 			}
+			
+			// if a header line, do not write
+			if (!line.startsWith("id")) {
 
-			out.write(line);
-			out.newLine();
-
+				out.write(line);
+				out.newLine();
+			}
 		}
 
 		out.flush();
@@ -1424,20 +1603,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 	}
 
-	/**
-	 * Sorting tool: Currently unused
-	 * 
-	 * @param file_in
-	 *            the input file
-	 * @param column
-	 *            (unused)
-	 * @return file_in the input file
-	 */
-	@SuppressWarnings("static-method")
-	public String sort_entries(String file_in, int column) {
-
-		return file_in;
-	}
 
 	/**
 	 * Load concepts.
@@ -1448,7 +1613,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	private void loadConcepts() throws Exception {
 
 		String line = "";
-		i = 0;
+		n_objects = 0;
+		
+		// begin transcation
+		EntityTransaction tx = manager.getTransaction();
+		tx.begin();
 
 		while ((line = concepts_by_concept.readLine()) != null) {
 
@@ -1471,13 +1640,34 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						new String(fields[0] + concept.getTerminology()
 								+ concept.getTerminologyVersion()), concept);
 
-				// 50, same as JDBC batch size
-				if (++i % 50 == 0) {
+				// memory debugging
+				if (n_objects % n_commit == 0) {
+					if (memoryTotal < runtime.totalMemory()) { memoryTotal = runtime.totalMemory(); }
+					if (memoryFree < runtime.freeMemory()) { memoryTotal = runtime.freeMemory(); }
+					if (memoryMax < runtime.maxMemory()) { memoryTotal = runtime.maxMemory(); }
+				}
+				
+				// regularly commit at intervals
+				if (++n_objects % n_commit == 0) { 
+					
 					manager.flush();
 					manager.clear();
+					tx.commit(); 
+					tx.begin(); 
 				}
 			}
 		}
+		
+		// commit any remaining objects
+		tx.commit();
+		
+		// print memory information
+		getLog().info("MEMORY USAGE:");
+		getLog().info(" Total: " + memoryTotal.toString());
+		getLog().info(" Free:  " + memoryFree.toString());
+		getLog().info(" Max:   " + memoryMax.toString());
+		
+		
 	}
 
 	/**
@@ -1489,7 +1679,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	private void loadRelationships() throws Exception {
 
 		String line = "";
-		i = 0;
+		n_objects = 0;
+		
+		// begin transcation
+		EntityTransaction tx = manager.getTransaction();
+		tx.begin();
 
 		while ((line = relationships_by_source_concept.readLine()) != null) {
 
@@ -1523,26 +1717,32 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					relationship.setDestinationConcept(destinationConcept);
 					
 					manager.persist(relationship);
-					// 50, same as JDBC batch size
-					if (++i % 50 == 0) {
+					
+					// regularly commit at intervals
+					if (++n_objects % n_commit == 0) { 
 						manager.flush();
 						manager.clear();
+						tx.commit(); 
+						tx.begin(); 
 					}
 				} else {
 					if (sourceConcept == null) {
 						log_file_out.write("Relationship " + relationship.getTerminologyId() +
-								" references non-existent source concept " + fields[4]);
+								" references non-existent source concept " + fields[4] + "\n");
 						log_file_out.newLine();
 					}
 					if (destinationConcept == null) {
 						log_file_out.write("Relationship " + relationship.getTerminologyId() + 
-								" references non-existent destination concept " + fields[5]);
+								" references non-existent destination concept " + fields[5] + "\n");
 						log_file_out.newLine();
 					}
 					
 				}
 			}
 		}
+		
+		// commit any remaining objects
+		tx.commit();
 	}
 
 	/**
@@ -1551,56 +1751,214 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 * @throws Exception
 	 *             the exception
 	 */
-	private void loadDescriptions() throws Exception {
+	private void loadDescriptionsAndLanguageRefSets() throws Exception {
 
-		String line = "";
-		i = 0;
+		Concept concept;
+		Description description;
+		LanguageRefSetMember language;
+		int n_desc = 0; // counter for descriptions
+		int n_lang = 0; // counter for language ref set members
+		int n_skip = 0; // counter for number of language ref set members skipped
+		
+		// load and persist first description
+		description = getNextDescription();
+		
+		// load first language ref set member
+		language = getNextLanguage();
+		
+		// begin transcation
+		EntityTransaction tx = manager.getTransaction();
+		tx.begin();
 
-		// keep concepts from extension descriptions
-		while ((line = descriptions_by_description.readLine()) != null) {
+		// cycle over descriptions
+		while (!description.getTerminologyId().equals("-1")) { // getNextDescription sets this to -1 if null line
+		
+			// if current language ref set references a lexicographically "lower" String terminologyId, SKIP: description is not in data set
+			while (language.getDescription().getTerminologyId().compareTo(description.getTerminologyId()) < 0 &&
+					!language.getTerminologyId().equals("-1")) {
+				
+				log_file_out.write("     " + "Language Ref Set " + language.getTerminologyId() 
+									+ " references non-existent description " + language.getDescription().getTerminologyId() + "\n");
+				language = getNextLanguage();
+				n_skip++;	
+			}
+			
+			// cycle over language ref sets until new description id found or end of language ref sets found
+			while (language.getDescription().getTerminologyId().equals(description.getTerminologyId()) &&
+					!language.getTerminologyId().equals("-1")) {
+		
+				// set the description
+				language.setDescription(description);
+				description.addLanguageRefSetMember(language);
+				n_lang++;
 
-			String fields[] = line.split("\t");
-			Description description = new DescriptionJpa();
+				//System.out.println("      " + Integer.toString(n_lang) + " - " + language.getDescription().getTerminologyId() + " - " + description.getTerminologyId() + " - " + language.getTerminologyId());
+				
+				// check if this language refset and description form the
+				// defaultPreferredName
+				if (description.getTypeId().equals(dpnTypeId)
+						&& new Long(language.getRefSetId()).equals(
+								dpnRefSetId)
+						&& language.getAcceptabilityId().equals(
+								dpnAcceptabilityId)) {
 
-			if (!fields[0].equals("id")) { // header
-
+					// retrieve the concept for this description
+					concept = description.getConcept();
+					if (defaultPreferredNames.get(concept.getId()) != null) {
+						log_file_out.write("Multiple default preferred names for concept " + concept.getTerminologyId() + "\n"
+										+ "  Existing: " + defaultPreferredNames.get(concept.getId()) + "\n"
+										+ "  Replaced: " + description.getTerm() + "\n");
+					}
+					defaultPreferredNames.put(concept.getId(), description.getTerm());
+					
+				}
+			
+				/// get the next language ref set member
+				language = getNextLanguage();
+			}
+			
+			// persist the description
+			manager.persist(description);
+			
+			// get the next description
+			description = getNextDescription();
+			
+			// increment description count
+			n_desc++;
+			
+			if (n_desc % 100000 == 0) { getLog().info("-> descriptions: " + Integer.toString(n_desc)); }
+			
+			// memory debugging
+			if (n_desc % n_commit == 0) {
+				if (memoryTotal < runtime.totalMemory()) { memoryTotal = runtime.totalMemory(); }
+				if (memoryFree < runtime.freeMemory()) { memoryTotal = runtime.freeMemory(); }
+				if (memoryMax < runtime.maxMemory()) { memoryTotal = runtime.maxMemory(); }
+			}
+			
+			
+			// regularly commit at intervals
+			if (n_desc % n_commit == 0) { 
+				manager.flush();
+				manager.clear();
+				tx.commit(); 
+				tx.begin(); 
+			}
+			
+			}
+		
+		// commit any remaining objects
+		tx.commit();
+		
+		getLog().info("      " + n_desc + " descriptions loaded");
+		getLog().info("      " + n_lang + " language ref sets loaded");
+		getLog().info("      " + n_skip + " language ref sets skipped (no description)");
+		
+		// print memory information
+		getLog().info("MEMORY USAGE:");
+		getLog().info(" Total: " + memoryTotal.toString());
+		getLog().info(" Free:  " + memoryFree.toString());
+		getLog().info(" Max:   " + memoryMax.toString());
+	}
+	
+	private Description getNextDescription() throws Exception {
+		
+		String line, fields[];
+		Description description = new DescriptionJpa();
+		description.setTerminologyId("-1");
+		
+		if ((line = descriptions_by_description.readLine()) != null) {
+			
+			fields = line.split("\t");
+			
+			if (!fields[0].equals("id")) { //header
+				
 				description.setTerminologyId(fields[0]);
 				description.setEffectiveTime(dt.parse(fields[1]));
 				description.setActive(fields[2].equals("1") ? true : false);
 				description.setModuleId(Long.valueOf(fields[3].trim()));
-
+		
 				description.setLanguageCode(fields[5]);
 				description.setTypeId(Long.valueOf(fields[6].trim()));
 				description.setTerm(fields[7]);
 				description.setCaseSignificanceId(Long.valueOf(fields[8].trim()));
 				description.setTerminology(terminology);
 				description.setTerminologyVersion(version);
-
+		
+				// set concept from cache
 				Concept concept = getConcept(fields[4],
 						description.getTerminology(),
 						description.getTerminologyVersion());
-
+		
 				if (concept != null) {
 					description.setConcept(concept);
-					manager.persist(description);
-	
-					// add to index
-					descriptionCache.put(fields[0] + description.getTerminology()
-							+ description.getTerminologyVersion(),
-							description.getId());
-					
-					// 50, same as JDBC batch size
-					if (++i % 50 == 0) {
-						manager.flush();
-						manager.clear();
-					}
 				} else {
 					log_file_out.write("Description " + description.getTerminologyId() +
-							" references non-existent concept " + fields[4]);
+							" references non-existent concept " + fields[4] + "\n");
 					log_file_out.newLine();
 				}
+			// otherwise get next line
+			} else {
+				description = getNextDescription();
 			}
 		}
+		
+		return description;
+	}
+	
+	/** 
+	 * Utility function to return the next line of language ref set files in object form
+	 * @return a partial language ref set member (lacks full description)
+	 * @throws Exception the exception
+	 */
+	private LanguageRefSetMember getNextLanguage() throws Exception {
+		
+		String line, fields[];
+		LanguageRefSetMember languageRefSetMember = new LanguageRefSetMemberJpa();
+		languageRefSetMember.setTerminologyId("-1");
+		
+		
+		
+		// if non-null
+		if ((line = language_refsets_by_description.readLine()) != null) {
+			
+			fields = line.split("\t");
+			
+			if (!fields[0].equals("id")) { // header line
+		
+				// Universal RefSet attributes
+				languageRefSetMember.setTerminologyId(fields[0]);
+				languageRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+				languageRefSetMember.setActive(fields[2].equals("1") ? true
+						: false);
+				languageRefSetMember.setModuleId(Long.valueOf(fields[3].trim()));
+				languageRefSetMember.setRefSetId(fields[4]);
+		
+				// Language unique attributes
+				languageRefSetMember
+						.setAcceptabilityId(Long.valueOf(fields[6].trim()));
+		
+				// Terminology attributes
+				languageRefSetMember.setTerminology(terminology);
+				languageRefSetMember.setTerminologyVersion(version);
+		
+				// Set a dummy description with terminology id only
+				Description description = new DescriptionJpa();
+				description.setTerminologyId(fields[5]);
+				languageRefSetMember.setDescription(description);
+			
+			// if header line, get next record
+			} else {
+				languageRefSetMember = getNextLanguage();
+			}
+			
+		// if null, set a dummy description value to avoid null-pointer exceptions in main loop
+		} else {
+			Description description = new DescriptionJpa();
+			description.setTerminologyId("-1");
+			languageRefSetMember.setDescription(description);
+		}
+		
+		return languageRefSetMember;
 	}
 
 	/**
@@ -1610,10 +1968,15 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	 *             the exception
 	 */
 
+	@SuppressWarnings("boxing")
 	private void loadAttributeValueRefSets() throws Exception {
 
 		String line = "";
-		i = 0;
+		n_objects = 0;
+		
+		// begin transcation
+		EntityTransaction tx = manager.getTransaction();
+		tx.begin();
 
 		while ((line = attribute_refsets_by_concept.readLine()) != null) {
 
@@ -1647,19 +2010,24 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				
 					attributeValueRefSetMember.setConcept(concept);
 					manager.persist(attributeValueRefSetMember);
-					
-					// 50, same as JDBC batch size
-					if (++i % 50 == 0) {
+				
+					// regularly commit at intervals
+					if (++n_objects % n_commit == 0) { 
 						manager.flush();
 						manager.clear();
+						tx.commit(); 
+						tx.begin(); 
 					}
 				} else {
 					log_file_out.write("attributeValueRefSetMember " + attributeValueRefSetMember.getTerminologyId() +
-							" references non-existent concept " + fields[5]);
+							" references non-existent concept " + fields[5] + "\n");
 					log_file_out.newLine();
 				}
 			}
 		}
+		
+		// commit any remaining objects
+		tx.commit();
 	}
 
 	/**
@@ -1672,8 +2040,12 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	private void loadSimpleRefSets() throws Exception {
 
 		String line = "";
-		i = 0;
+		n_objects = 0;
 
+		// begin transcation
+		EntityTransaction tx = manager.getTransaction();
+		tx.begin();
+		
 		while ((line = simple_refsets_by_concept.readLine()) != null) {
 
 			String fields[] = line.split("\t");
@@ -1705,18 +2077,23 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					simpleRefSetMember.setConcept(concept);
 					manager.persist(simpleRefSetMember);
 					
-					// 50, same as JDBC batch size
-					if (++i % 50 == 0) {
+					// regularly commit at intervals
+					if (++n_objects % n_commit == 0) { 
 						manager.flush();
 						manager.clear();
+						tx.commit(); 
+						tx.begin(); 
 					}
 				} else {
 					log_file_out.write("simpleRefSetMember " + simpleRefSetMember.getTerminologyId() +
-							" references non-existent concept " + fields[5]);
+							" references non-existent concept " + fields[5] + "\n");
 					log_file_out.newLine();
 				}
 			}
 		}
+		
+		// commit any remaining objects
+		tx.commit();
 	}
 
 	/**
@@ -1728,7 +2105,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	private void loadSimpleMapRefSets() throws Exception {
 
 		String line = "";
-		i = 0;
+		n_objects = 0;
+		
+		// begin transcation
+		EntityTransaction tx = manager.getTransaction();
+		tx.begin();
 
 		while ((line = simple_map_refsets_by_concept.readLine()) != null) {
 
@@ -1761,18 +2142,23 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					simpleMapRefSetMember.setConcept(concept);
 					manager.persist(simpleMapRefSetMember);
 					
-					// 50, same as JDBC batch size
-					if (++i % 50 == 0) {
+					// regularly commit at intervals
+					if (++n_objects % n_commit == 0) { 
 						manager.flush();
 						manager.clear();
+						tx.commit(); 
+						tx.begin(); 
 					}
 				} else {
 					log_file_out.write("simpleMapRefSetMember " + simpleMapRefSetMember.getTerminologyId() +
-							" references non-existent concept " + fields[5]);
+							" references non-existent concept " + fields[5] + "\n");
 					log_file_out.newLine();
 				}
 			}
 		}
+		
+		// commit any remaining objects
+		tx.commit();
 	}
 
 	/**
@@ -1784,7 +2170,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	private void loadComplexMapRefSets() throws Exception {
 
 		String line = "";
-		i = 0;
+		n_objects = 0;
+		
+		// begin transcation
+		EntityTransaction tx = manager.getTransaction();
+		tx.begin();
 
 		while ((line = complex_map_refsets_by_concept.readLine()) != null) {
 
@@ -1830,19 +2220,24 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					complexMapRefSetMember.setConcept(concept);
 					manager.persist(complexMapRefSetMember);
 
-					// 50, same as JDBC batch size
-					if (++i % 50 == 0) {
+					// regularly commit at intervals
+					if (++n_objects % n_commit == 0) { 
 						manager.flush();
 						manager.clear();
+						tx.commit(); 
+						tx.begin(); 
 					}
 				} else {
 					log_file_out.write("complexMapRefSetMember " + complexMapRefSetMember.getTerminologyId() +
-							" references non-existent concept " + fields[5]);
+							" references non-existent concept " + fields[5] + "\n");
 					log_file_out.newLine();
 				}
 
 			}
 		}
+		
+		// commit any remaining objects
+		tx.commit();
 
 	}
 
@@ -1858,7 +2253,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	private void loadExtendedMapRefSets() throws Exception {
 
 		String line = "";
-		i = 0;
+		n_objects = 0;
+		
+		// begin transcation
+		EntityTransaction tx = manager.getTransaction();
+		tx.begin();
 
 		while ((line = extended_map_refsets_by_concept.readLine()) != null) {
 
@@ -1904,100 +2303,24 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					complexMapRefSetMember.setConcept(concept);
 					manager.persist(complexMapRefSetMember);
 
-					// 50, same as JDBC batch size
-					if (++i % 50 == 0) {
+					// regularly commit at intervals
+					if (++n_objects % n_commit == 0) { 
 						manager.flush();
 						manager.clear();
+						tx.commit(); 
+						tx.begin(); 
 					}
 				} else {
 					log_file_out.write("complexMapRefSetMember " + complexMapRefSetMember.getTerminologyId() +
-							" references non-existent concept " + fields[5]);
+							" references non-existent concept " + fields[5] + "\n");
 					log_file_out.newLine();
 				}
 
 			}
 		}
+		
+		// commit any remaining objects
+		tx.commit();
 
-	}
-
-	private void loadLanguageRefSets() throws Exception {
-
-		String line = "";
-		i = 0;
-		Concept concept;
-		Description description;
-
-		while ((line = language_refsets_by_description.readLine()) != null) {
-
-			String fields[] = line.split("\t");
-			LanguageRefSetMember languageRefSetMember = new LanguageRefSetMemberJpa();
-
-			if (!fields[0].equals("id")) { // header
-
-				// Universal RefSet attributes
-				languageRefSetMember.setTerminologyId(fields[0]);
-				languageRefSetMember.setEffectiveTime(dt.parse(fields[1]));
-				languageRefSetMember.setActive(fields[2].equals("1") ? true
-						: false);
-				languageRefSetMember.setModuleId(Long.valueOf(fields[3].trim()));
-				languageRefSetMember.setRefSetId(fields[4]);
-
-				// Language unique attributes
-				languageRefSetMember
-						.setAcceptabilityId(Long.valueOf(fields[6].trim()));
-
-				// Terminology attributes
-				languageRefSetMember.setTerminology(terminology);
-				languageRefSetMember.setTerminologyVersion(version);
-
-				// Set the description
-				description = getDescription(fields[5],
-						languageRefSetMember.getTerminology(),
-						languageRefSetMember.getTerminologyVersion());
-				
-				if (description != null) {
-					languageRefSetMember.setDescription(description);
-					manager.persist(languageRefSetMember);
-					
-					// check if this language refset and description form the
-					// defaultPreferredName
-					if (description.getTypeId().equals(dpnTypeId)
-							&& new Long(languageRefSetMember.getRefSetId()).equals(
-									dpnRefSetId)
-							&& languageRefSetMember.getAcceptabilityId().equals(
-									dpnAcceptabilityId)) {
-	
-						concept = description.getConcept();
-
-						if (!concept.getDefaultPreferredName().equals("null")) {
-							getLog().info(
-									"Multiple default preferred names for concept "
-											+ concept.getTerminologyId());
-							log_file_out.write("Multiple default preferred names for concept " + concept.getTerminologyId() + "\n" +
-												"     " + concept.getDefaultPreferredName() + "\n" +
-												"     "	+ description.getTerm());
-						}
-	
-						concept.setDefaultPreferredName(description.getTerm());
-			
-						manager.persist(concept);
-						
-						
-					}
-					
-					// 50, same as JDBC batch size
-					if (++i % 50 == 0) {
-						manager.flush();
-						manager.clear();
-					}
-					
-					
-				} else {
-					log_file_out.write("languageRefSetMember " + languageRefSetMember.getTerminologyId() +
-							" references non-existent description " + fields[5]);
-					log_file_out.newLine();
-				}
-			}
-		}
 	}
 }

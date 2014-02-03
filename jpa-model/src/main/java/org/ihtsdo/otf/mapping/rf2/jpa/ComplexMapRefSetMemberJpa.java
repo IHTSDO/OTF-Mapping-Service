@@ -42,7 +42,7 @@ public class ComplexMapRefSetMemberJpa extends AbstractConceptRefSetMember
 	private String mapRule;
 	
 	/** the map advice */
-	@Column (nullable = true)
+	@Column (nullable = true, length = 4000)
 	private String mapAdvice;
 	
 	/** the map target */
