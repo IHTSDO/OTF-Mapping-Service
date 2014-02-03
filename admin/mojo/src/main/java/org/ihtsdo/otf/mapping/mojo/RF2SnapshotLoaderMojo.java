@@ -366,54 +366,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			EntityTransaction tx = manager.getTransaction();
 			try {
 
-				// truncate all the tables that we are going to use first
-				getLog().info("Deleting existing SNOMEDCT data");
-				tx.begin();
-
-				// truncate RefSets
-				Query query = manager
-						.createQuery("DELETE From SimpleRefSetMemberJpa rs");
-				int deleteRecords = query.executeUpdate();
-				getLog().info(
-						"    simple_ref_set records deleted: " + deleteRecords);
-				query = manager
-						.createQuery("DELETE From SimpleMapRefSetMemberJpa rs");
-				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"    simple_map_ref_set records deleted: " + deleteRecords);
-				query = manager
-						.createQuery("DELETE From ComplexMapRefSetMemberJpa rs");
-				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"    complex_map_ref_set records deleted: " + deleteRecords);
-				query = manager
-						.createQuery("DELETE From AttributeValueRefSetMemberJpa rs");
-				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"    attribute_value_ref_set records deleted: "
-								+ deleteRecords);
-				query = manager
-						.createQuery("DELETE From LanguageRefSetMemberJpa rs");
-				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"    language_ref_set records deleted: " + deleteRecords);
-
-				// Truncate Terminology Elements
-				query = manager.createQuery("DELETE From DescriptionJpa d");
-				deleteRecords = query.executeUpdate();
-				getLog().info("    description records deleted: " + deleteRecords);
-				query = manager.createQuery("DELETE From RelationshipJpa r");
-				deleteRecords = query.executeUpdate();
-				getLog().info("    relationship records deleted: " + deleteRecords);
-				query = manager.createQuery("DELETE From ConceptJpa c");
-				deleteRecords = query.executeUpdate();
-				getLog().info("    concept records deleted: " + deleteRecords);
-		
-
-				tx.commit();
-				
-				getLog().info("Loading RF2 Components");
-
 				// load Concepts
 				if (concepts_by_concept != null) {
 					
@@ -1141,7 +1093,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						+ coreSimpleRefsetInputFile.exists());
 
 		for (File f : coreContentInputDir.listFiles()) {
-			if (f.getName().contains("Refset_Association")) {
+			if (f.getName().contains("AssociationReference")) {
 				if (coreAssociationReferenceInputFile != null)
 					throw new MojoFailureException(
 							"Multiple Association Reference Files!");
@@ -1154,7 +1106,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 						+ coreAssociationReferenceInputFile.exists());
 
 		for (File f : coreContentInputDir.listFiles()) {
-			if (f.getName().contains("Refset_Attribute")) {
+			if (f.getName().contains("AttributeValue")) {
 				if (coreAttributeValueInputFile != null)
 					throw new MojoFailureException(
 							"Multiple Attribute Value Files!");

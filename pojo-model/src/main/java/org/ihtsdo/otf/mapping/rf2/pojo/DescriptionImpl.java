@@ -209,7 +209,8 @@ public class DescriptionImpl extends AbstractComponent implements Description {
 	/**
 	 * {@inheritDoc}
 	 */
-	 public String toString() {
+	 @Override
+	public String toString() {
 		 return this.getId() + "," +
 				 this.getTerminology() + "," +
 				 this.getTerminologyId() + "," +

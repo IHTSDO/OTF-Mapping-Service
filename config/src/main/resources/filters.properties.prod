@@ -17,17 +17,27 @@ loader.SNOMEDCT.input.data=/home/ihtsdo/data/snomedct-20140131-snapshot
 #
 # Path to icpc data
 #
-loader.ICPC.input.data=/home/ihtsdo/data/icpc.xml
+loader.ICPC.input.data=/home/ihtsdo/data/icpc-2.xml
+
+#
+# Path to unpublished icpc data
+#
+loader.ICPC.complexmap.input.data=/home/ihtsdo/data/icpc-rf2-ExtendedMap-mini.txt
 
 #
 # Path to icd9cm data
 #
-loader.ICD9CM.input.data=/home/ihtsdo/data/icd9cm.xml
+loader.ICD9CM.input.data=/home/ihtsdo/data/icd9cm-2013.xml
 
 #
 # Path to icd10 data
 #
-loader.ICD10.input.data=/home/ihtsdo/data/icd10.xml
+loader.ICD10.input.data=/home/ihtsdo/data/icd10-2010.xml
+
+#
+# Path to map notes data
+#
+loader.mapnotes.input.data=/home/ihtsdo/data/xder2_sRefset_MapNotesSnapshot_INT_20130731.txt
 
 #
 # Loader settings for preferred name
@@ -35,6 +45,16 @@ loader.ICD10.input.data=/home/ihtsdo/data/icd10.xml
 loader.defaultPreferredNames.typeId=900000000000013009
 loader.defaultPreferredNames.refSetId=900000000000509007
 loader.defaultPreferredNames.acceptabilityId=900000000000548007
+
+#
+# Destination directory for exported data
+#
+export.output.dir=/home/ihtsdo/data/ihtsdo-project-data/export
+
+#
+# Input directory for data to import
+#
+import.input.dir=/home/ihtsdo/data/ihtsdo-project-data/import
 
 #
 # Webapp base URL

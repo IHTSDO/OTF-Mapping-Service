@@ -1,0 +1,198 @@
+<h3>Create a Map Project from RF2 Concept</h3>
+<p></p>
+<tabset>
+<tab heading = "RF2 Concept">
+
+<div ng-show = "conceptSelected != 'null'">
+	<h3>Concept Selected!</h3>
+	
+	<p></p>
+	<h4>Preferred Name: {{conceptSelected.defaultPreferredName}}</h4>
+	<p></p>
+	<p>Terminology: {{conceptSelected.terminology}}, v. {{conceptSelected.terminologyVersion}}</p>
+	<p>Terminology Id: {{conceptSelected.terminologyId}}</p>
+	<p>Active: {{conceptSelected.active}}</p>
+	<p>Effective Time: {{conceptSelected.effectiveTime}} (<em>Needs reformat to proper date</em>)</p>
+	<p>Module Id: {{conceptSelected.moduleId}}</p>
+	<p>Status Id: {{conceptSelected.definitionStatusId}}</p>
+	
+	<accordion>
+	<accordion-group ng-show = "unmappedDescendants.length > 0">
+	<accordion-heading><img src="{{baseUrl}}/mapping-webapp/app/img/warning.png">Unmapped Descendants ({{unmappedDescendants.length}})</accordion-heading>
+	<ul>
+	<li ng-repeat = "concept in unmappedDescendants">
+	<a href="index.html#/concept/{{conceptSelected.terminology}}/{{conceptSelected.terminologyVersion}}/id/{{conceptSelected.terminologyId}}">{{conceptSelected.terminologyId}}</a> - {{conceptSelected.defaultPreferredName}}</p>
+	</li>
+	</ul>
+	</accordion-group>
+	
+	<accordion-group heading="Descriptions ({{conceptSelected.description.length}})">
+	<ul>
+	<li ng-repeat="description in conceptSelected.description">
+	<p>Id: {{description.terminologyId}}
+	<p>Terminology: {{description.terminology}}, v. {{description.terminologyVersion}}</p>
+	<p>Active: {{description.active}}</p>
+	<p>Case Significance Id: {{description.caseSignificanceId}}
+	<p>Language Code: {{description.languageCode}}
+	<p>Term: {{description.term}}
+	<p>
+	
+	<!-- <p>Language RefSets for this Description:
+	<ul>
+	<li ng-repeat="refset in description.languageRefSetMember">
+	<p>Id: {{refset.terminologyId}}</p>
+	<p>RefSet Id: {{refset.refSetId}}</p>
+	<p>Acceptability Id: {{refset.acceptabilityId}}</p>
+	</li>
+	</ul> -->
+	</li>
+	</ul>
+	</accordion-group>
+	
+	<accordion-group heading="Relationships ({{conceptSelected.relationship.length}})">
+	<ul>
+	<li ng-repeat="rel in conceptSelected.relationship">
+	<p>Id: {{rel.terminologyId}}</p>
+	<p>Active: {{rel.active}}</p>
+	<p>Destination Concept: <a href="index.html#/concept/id/{{rel.destinationConceptId}}">{{rel.destinationConceptId}} - {{rel.destinationConceptPreferredName}}</a></p>
+	<p>Characteristic Type Id: {{rel.characteristicTypeId}}</p>
+	<p>Modifier Id: {{rel.modifierId}}</p>
+	<p>Type Id: {{rel.typeId}}</p>
+	<p>Relationship Group: {{rel.relationshipGroup}}</p>
+	</li>
+	</ul>
+	</accordion-group>
+	</accordion>
+	
+<p></p>
+<p>Scroll down to search for different concept.
+<hr>
+<p></p>
+</div>
+	<strong>Search for RefSet Id Concept</strong>
+	<form>
+		<input ng-model = "searchConceptQuery">
+		<button type="submit" ng-click="searchConcepts()">Search</button>
+		<button type="reset" ng-click="resetConcepts()">Reset</button>
+		<p>Examples: (by name) <em>ossification</em>, <em>plas*</em>, (by Concept ID) <em>102287002</em></p>
+	</form>
+	
+	{{searchConceptsStatus}}
+	
+	<div ng-show = "conceptsDisplayed.length > 0">
+	Filter Results: <input ng-model="conceptFilter"> 
+	
+	<p></p>
+	<table cellpadding="5" class="table pure-table">
+		<thead align="left">
+			<tr>
+				<th>Terminology</th>
+				<th>Version</th>
+				<th>Name</th>
+				<th>TerminologyId</th>
+				
+			</tr>
+		</thead>
+		
+		<tbody>
+			
+			<tr ng-repeat = "concept in conceptsDisplayed | filter:conceptFilter">
+				<td><button ng-click="selectConcept(concept)">Select</button></td>
+				<td>{{concept.terminology}}</td>
+				<td>{{concept.terminologyVersion}}</td> 
+				<td>{{concept.terminologyId}}</td>
+				<td>{{concept.value}}</td>
+			</tr>
+		</tbody>
+		
+		<pagination total-items="conceptResults.count" page="conceptPage" max-size="conceptsPerPage" class="pagination-sm" 
+			boundary-links="true" rotate="true" num-pages="numConceptPages"
+			on-select-page="changeConceptPage(page)"></pagination>
+		
+	</table>
+	</div>
+</tab>
+
+<tab heading="Project Parameters">
+	<h3>Set the project parameters</h3>
+	</p>
+	
+	<table>
+	<thead align="left"><tr><th>Field</th><th>Value</th></tr></thead>
+	<tbody>
+		<tr>
+			<td>
+				Destination Terminology:
+			</td>
+			<td>
+				<select ng-model="project.destinationTerminology" ng-change="getTerminologyVersions()">
+					<option ng-repeat="terminology in terminologies">{{terminology.key}}</option>
+				</select>
+			</td>
+			<td show="!project.destinationTerminologyVersion == "">
+				<select ng-model="project.destinationTerminologyVersion">
+					<option ng-repeat="version in terminologyVersions">{{version}}</option>
+				</select>
+			</td>
+				
+		</tr>
+		<tr>
+			<td>Block Structure</td>
+			<td>
+				<select ng-model="project.blockStructure">
+					<option>true</option>
+					<option>false</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>Group Structure</td>
+			<td>
+				<select ng-model="project.groupStructure">
+					<option>true</option>
+					<option>false</option>
+				</select>
+			</td>
+		</tr>
+	</tbody>
+	</table>
+</tab>
+<tab heading="Create Project">
+<h3>Add Map Project</h3>
+<p>Project Name: <input ng-model = "project.name" value="{{project.sourceTerminology}} to {{project.destinationTerminology}}">
+<button ng-show="!addProjectStatus" ng-click="addProject()">Add Project</button>
+<div ng-show="addProjectStatus">Project successfully added!</div>
+
+<hr>
+<h3 ng-show="addProjectError.length > 0">Failed to add map project:</h3>
+<ul><li ng-repeat = "error in addProjectError">{{error}}</li></ul>
+</tab>
+<tab heading="Mapping Entries" ng-show="project.objectId != null">
+<h3>Assign Map Records and Map Entries to this project</h3>
+<p></p>
+<p><button ng-click="getMapEntriesFromDatabase">Populate from database</button></p>
+<p><strong> -- OR --</strong></p>
+<p>Populate from local file:</p>
+<p></p>
+<p><input ng-model="mapEntryFile" value="Populate from local file" type= "file" /></p>
+</tab>
+<tab heading="Map Principles"ng-show="project.objectId != null">
+<h3>Assign allowable map principles</h3>
+<p></p>
+</tab>
+<tab heading="Map Advices" ng-show="project.objectId != null">
+<h3>Assign allowable map advices </h3>
+<p></p>
+</tab>
+<tab heading="Mapping Personnel" ng-show="project.objectId != null">
+	<h3>Assign Map Leads</h3>
+	<p></p>
+	<hr>
+	
+	<h3>Assign Map Specialists</h3>
+	<p></p>
+	<hr>
+</tab>
+
+
+</tabset>

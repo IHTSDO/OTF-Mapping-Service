@@ -8,7 +8,6 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
@@ -22,17 +21,17 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 // TODO: Auto-generated Javadoc
 /**
  * The class for MetadataServiceJpa.
- *
+ * 
  * @author ${author}
  */
 public class MetadataServiceJpa implements MetadataService {
 
 	/** The factory. */
 	private static EntityManagerFactory factory;
-	
+
 	/** The full text entity manager. */
 	private FullTextEntityManager fullTextEntityManager;
-	
+
 	/** The manager. */
 	private EntityManager manager;
 
@@ -53,11 +52,11 @@ public class MetadataServiceJpa implements MetadataService {
 
 		// create once
 		if (factory == null) {
-		  factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 		}
-	  // create on each instantiation
+		// create on each instantiation
 		manager = factory.createEntityManager();
-		
+
 		fieldNames = new HashSet<String>();
 
 		fullTextEntityManager =
@@ -78,32 +77,43 @@ public class MetadataServiceJpa implements MetadataService {
 			}
 		}
 
-		
-		Logger.getLogger(this.getClass()).debug("ended init " + fieldNames.toString());
+		Logger.getLogger(this.getClass()).debug(
+				"ended init " + fieldNames.toString());
 	}
 
 	/**
 	 * Close the factory when done with this service.
-	 *
+	 * 
 	 * @throws Exception the exception
 	 */
 	@Override
 	public void close() throws Exception {
-		if (manager.isOpen()) { manager.close(); }
-		if (fullTextEntityManager.isOpen()) { fullTextEntityManager.close(); }
+		if (manager.isOpen()) {
+			manager.close();
+		}
+		if (fullTextEntityManager.isOpen()) {
+			fullTextEntityManager.close();
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getAllMetadata(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getAllMetadata(java.lang
+	 * .String, java.lang.String)
 	 */
 	@Override
-	public Map<String, Map<Long, String>> getAllMetadata(String terminology, String version) {
-		Map<String, Map<Long, String>> idNameMapList = new HashMap<String, Map<Long, String>>();
+	public Map<String, Map<Long, String>> getAllMetadata(String terminology,
+		String version) throws Exception {
+		Map<String, Map<Long, String>> idNameMapList =
+				new HashMap<String, Map<Long, String>>();
 		Map<Long, String> modulesIdNameMap = getModules(terminology, version);
 		if (modulesIdNameMap != null) {
 			idNameMapList.put("modules", modulesIdNameMap);
 		}
-		Map<Long, String> atvIdNameMap = getAttributeValueRefSets(terminology, version);
+		Map<Long, String> atvIdNameMap =
+				getAttributeValueRefSets(terminology, version);
 		if (atvIdNameMap != null) {
 			idNameMapList.put("attributeValueRefSets", atvIdNameMap);
 		}
@@ -136,7 +146,8 @@ public class MetadataServiceJpa implements MetadataService {
 		if (rctIdNameMap != null) {
 			idNameMapList.put("relationshipCharacteristicTypes", rctIdNameMap);
 		}
-		Map<Long, String> rmIdNameMap = getRelationshipModifiers(terminology, version);
+		Map<Long, String> rmIdNameMap =
+				getRelationshipModifiers(terminology, version);
 		if (rmIdNameMap != null) {
 			idNameMapList.put("relationshipModifiers", rmIdNameMap);
 		}
@@ -155,11 +166,16 @@ public class MetadataServiceJpa implements MetadataService {
 		return idNameMapList;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getModules(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getModules(java.lang.String
+	 * , java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getModules(String terminology, String version) {
+	public Map<Long, String> getModules(String terminology, String version)
+		throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getModules(terminology, version);
 		} else {
@@ -168,11 +184,16 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getAttributeValueRefSets(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getAttributeValueRefSets
+	 * (java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getAttributeValueRefSets(String terminology, String version) {
+	public Map<Long, String> getAttributeValueRefSets(String terminology,
+		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getAttributeValueRefSets(terminology,
 					version);
@@ -182,11 +203,16 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getComplexMapRefSets(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getComplexMapRefSets(java
+	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getComplexMapRefSets(String terminology, String version) {
+	public Map<Long, String> getComplexMapRefSets(String terminology,
+		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getComplexMapRefSets(terminology,
 					version);
@@ -196,11 +222,16 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getLanguageRefSets(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getLanguageRefSets(java
+	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getLanguageRefSets(String terminology, String version) {
+	public Map<Long, String> getLanguageRefSets(String terminology, String version)
+		throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology)
 					.getLanguageRefSets(terminology, version);
@@ -210,11 +241,16 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getSimpleMapRefSets(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getSimpleMapRefSets(java
+	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getSimpleMapRefSets(String terminology, String version) {
+	public Map<Long, String> getSimpleMapRefSets(String terminology,
+		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getSimpleMapRefSets(terminology,
 					version);
@@ -224,11 +260,16 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getSimpleRefSets(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getSimpleRefSets(java.lang
+	 * .String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getSimpleRefSets(String terminology, String version) {
+	public Map<Long, String> getSimpleRefSets(String terminology, String version)
+		throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getSimpleRefSets(terminology, version);
 		} else {
@@ -237,11 +278,16 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getMapRelations(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getMapRelations(java.lang
+	 * .String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getMapRelations(String terminology, String version) {
+	public Map<Long, String> getMapRelations(String terminology, String version)
+		throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getMapRelations(terminology, version);
 		} else {
@@ -250,11 +296,16 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getDefinitionStatuses(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getDefinitionStatuses(java
+	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getDefinitionStatuses(String terminology, String version) {
+	public Map<Long, String> getDefinitionStatuses(String terminology,
+		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getDefinitionStatuses(terminology,
 					version);
@@ -264,11 +315,16 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getDescriptionTypes(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getDescriptionTypes(java
+	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getDescriptionTypes(String terminology, String version) {
+	public Map<Long, String> getDescriptionTypes(String terminology,
+		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getDescriptionTypes(terminology,
 					version);
@@ -278,11 +334,16 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getCaseSignificances(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getCaseSignificances(java
+	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getCaseSignificances(String terminology, String version) {
+	public Map<Long, String> getCaseSignificances(String terminology,
+		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getCaseSignificances(terminology,
 					version);
@@ -292,11 +353,16 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipTypes(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipTypes(java
+	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getRelationshipTypes(String terminology, String version) {
+	public Map<Long, String> getRelationshipTypes(String terminology,
+		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipTypes(terminology,
 					version);
@@ -306,12 +372,15 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipCharacteristicTypes(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MetadataService#
+	 * getRelationshipCharacteristicTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getRelationshipCharacteristicTypes(String terminology,
-		String version) {
+	public Map<Long, String> getRelationshipCharacteristicTypes(
+		String terminology, String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipCharacteristicTypes(
 					terminology, version);
@@ -321,11 +390,16 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipModifiers(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipModifiers
+	 * (java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getRelationshipModifiers(String terminology, String version) {
+	public Map<Long, String> getRelationshipModifiers(String terminology,
+		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipModifiers(terminology,
 					version);
@@ -335,115 +409,98 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologies()
 	 */
 	@Override
 	public List<String> getTerminologies() {
-		
+
 		javax.persistence.Query query =
-				manager
-						.createQuery("SELECT distinct c.terminology from ConceptJpa c");
-
-		try {
-
-			List<String> terminologies = query.getResultList();		
-			if (manager.isOpen()) { manager.close(); }			
-			return terminologies;			
-
-		} catch (NoResultException e) {
-			// log result and return null
-			Logger.getLogger(this.getClass()).info(
-					"Metadata terminologies query returned no results!");
-			if (manager.isOpen()) { manager.close(); }
-			return null;
+				manager.createQuery("SELECT distinct c.terminology from ConceptJpa c");
+		@SuppressWarnings("unchecked")
+		List<String> terminologies = query.getResultList();
+		if (manager.isOpen()) {
+			manager.close();
 		}
-		
+		return terminologies;
+
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String
+	 * )
 	 */
 	@Override
 	public List<String> getVersions(String terminology) {
-		
+
 		javax.persistence.Query query =
 				manager
 						.createQuery("SELECT distinct c.terminologyVersion from ConceptJpa c where terminology = :terminology");
 
-		try {
-
-			query.setParameter("terminology", terminology);
-			List<String> versions = query.getResultList();		
-			if (manager.isOpen()) { manager.close(); }			
-			return versions;			
-
-		} catch (NoResultException e) {
-			// log result and return null
-			Logger.getLogger(this.getClass()).info(
-					"Metadata versions query for terminology = "
-							+ terminology + " returned no results!");
-			if (manager.isOpen()) { manager.close(); }
-			return null;
+		query.setParameter("terminology", terminology);
+		@SuppressWarnings("unchecked")
+		List<String> versions = query.getResultList();
+		if (manager.isOpen()) {
+			manager.close();
 		}
-		
+		return versions;
+
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang
+	 * .String)
 	 */
 	@Override
 	public String getLatestVersion(String terminology) {
-		
+
 		javax.persistence.Query query =
 				manager
 						.createQuery("SELECT max(c.terminologyVersion) from ConceptJpa c where terminology = :terminology");
 
-		try {
-
-			query.setParameter("terminology", terminology);
-			String version = query.getSingleResult().toString();			
-			if (manager.isOpen()) { manager.close(); }		
-			return version;		
-
-		} catch (NoResultException e) {
-			// log result and return null
-			Logger.getLogger(this.getClass()).info(
-					"Metadata latest version query for terminology = "
-							+ terminology + " returned no results!");
-			if (manager.isOpen()) { manager.close(); }
-			return null;
+		query.setParameter("terminology", terminology);
+		String version = query.getSingleResult().toString();
+		if (manager.isOpen()) {
+			manager.close();
 		}
-	
+		return version;
+
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions
+	 * ()
 	 */
 	@Override
 	public Map<String, String> getTerminologyLatestVersions() {
-		
+
 		javax.persistence.TypedQuery<Object[]> query =
 				manager
-						.createQuery("SELECT c.terminology, max(c.terminologyVersion) from ConceptJpa c group by c.terminology", Object[].class);
+						.createQuery(
+								"SELECT c.terminology, max(c.terminologyVersion) from ConceptJpa c group by c.terminology",
+								Object[].class);
 
-		try {
-
-			List<Object[]> resultList = query.getResultList();
-			Map<String, String> resultMap = new HashMap<String, String>(resultList.size());
-			for (Object[] result : resultList)
-			  resultMap.put((String)result[0], (String)result[1]);	
-			if (manager.isOpen()) { manager.close(); }	
-			
-			return resultMap;			
-
-		} catch (NoResultException e) {
-			// log result and return null
-			Logger.getLogger(this.getClass()).info(
-					"Metadata latest versions query returned no results!");
-			if (manager.isOpen()) { manager.close(); }
-			return null;
+		List<Object[]> resultList = query.getResultList();
+		Map<String, String> resultMap =
+				new HashMap<String, String>(resultList.size());
+		for (Object[] result : resultList)
+			resultMap.put((String) result[0], (String) result[1]);
+		if (manager.isOpen()) {
+			manager.close();
 		}
+
+		return resultMap;
 
 	}
 

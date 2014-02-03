@@ -1,17 +1,18 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapLead;
-import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 /**
@@ -36,66 +37,78 @@ public interface MappingService {
 	 * @param id the auto-generated id
 	 * @return the MapProject
 	 */
-	public MapProject getMapProject(Long id);
+	public MapProject getMapProject(Long id) throws Exception;
 	
 	/**
 	 * Return map specialist for auto-generated id
 	 * @param id the auto-generated id
 	 * @return the MapLead
 	 */
-	public MapLead getMapLead(Long id);
+	public MapLead getMapLead(Long id) throws Exception;
 	
 	/**
 	 * Return map lead for auto-generated id
 	 * @param id the auto-generated id
 	 * @return the mapSpecialist
 	 */
-	public MapSpecialist getMapSpecialist(Long id);
+	public MapSpecialist getMapSpecialist(Long id) throws Exception;
 	
 	/**
 	 * Return map record for auto-generated id
 	 * @param id the auto-generated id
 	 * @return the mapRecord
 	 */
-	public MapRecord getMapRecord(Long id);
+	public MapRecord getMapRecord(Long id) throws Exception;
 	
 	/**
 	 * Returns all map projects
 	 * @return a List of MapProjects
 	 */
-	public List<MapProject> getMapProjects();
+	public List<MapProject> getMapProjects() throws Exception;
 	
 	/**
 	 * Retrieve all map specialists
 	 * @return a List of MapSpecialists
 	 */
-	public List<MapSpecialist> getMapSpecialists();
+	public List<MapSpecialist> getMapSpecialists() throws Exception;
 	
 	/**
 	 * Retrieve all map leads
 	 * @return a List of MapLeads
 	 */
-	public List<MapLead> getMapLeads();
+	public List<MapLead> getMapLeads() throws Exception;
+	
+	/**
+	 * Retrieve all map principles
+	 * @return a List of MapPrinciples
+	 */
+	public List<MapPrinciple> getMapPrinciples() throws Exception;
+	
+	/**
+	 * Retrieve all map advices
+	 * @return a List of MapAdvices
+	 */
+	public List<MapAdvice> getMapAdvices() throws Exception;
 	
 	/**
 	 * Retrieve all map projects assigned to a particular map specialist
 	 * @param mapSpecialist the map specialist
 	 * @return a List of MapProjects
 	 */
-	public List<MapProject> getMapProjectsForMapSpecialist(MapSpecialist mapSpecialist);
+	public List<MapProject> getMapProjectsForMapSpecialist(MapSpecialist mapSpecialist) throws Exception;
 	
 	/**
 	 * Retrieve all map projects assigned to a particular map lead
 	 * @param mapLead the map lead
 	 * @return a List of MapProjects
 	 */
-	public List<MapProject> getMapProjectsForMapLead(MapLead mapLead);
+	public List<MapProject> getMapProjectsForMapLead(MapLead mapLead) throws Exception;
 	
 	/**
 	 * Retrieve all map records
 	 * @return a List of MapRecords
 	 */
-	public List<MapRecord> getMapRecords();
+	public List<MapRecord> getMapRecords() throws Exception;
 	
 	/**
 	 * Retrieve all map records associated with a given concept id
@@ -109,136 +122,163 @@ public interface MappingService {
 	/**
 	 * Query for MapProjects
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the list of MapProject
 	 */
-	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter);
+	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/** 
 	 * Query for MapSpecialists
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapProjects
 	 */
-	public SearchResultList findMapSpecialists(String query, PfsParameter pfsParameter);
+	public SearchResultList findMapSpecialists(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/**
 	 * Query for MapLeads
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapProjects
 	 */
-	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter);
+	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/**
 	 * Query for MapAdvices
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapAdvices
 	 */
-	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter);
+	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/**
 	 * Query for MapRecords
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapRecords
 	 */
-	public SearchResultList findMapRecords(String query, PfsParameter pfsParameter);
+	public SearchResultList findMapRecords(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/**
 	 * Query for MapEntrys
 	 * @param query the query
+	 * @param pfsParameter the paging, filtering, sorting parameter
 	 * @return the List of MapEntrys
 	 */
-	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter);
+	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter) throws Exception;
 
-	/**
-	 * Query for Map Notes
-	 * @param query the query
-	 * @return the List of MapNotes
-	 */
-	public SearchResultList findMapNotes(String query, PfsParameter pfsParameter);
-	
 	////////////////////////////
 	// Addition services     ///
     ////////////////////////////
 	
-	public void addMapSpecialist(MapSpecialist mapSpecialist);
+	public void addMapSpecialist(MapSpecialist mapSpecialist) throws Exception;
 	
-	public void addMapLead(MapLead mapLead);
+	public void addMapLead(MapLead mapLead) throws Exception;
 	
-	public MapProject addMapProject(MapProject mapProject);
+	public MapProject addMapProject(MapProject mapProject) throws Exception;
 	
-	public void addMapRecord(MapRecord mapRecord);
+	public void addMapRecord(MapRecord mapRecord) throws Exception;
 	
-	public void addMapNote(MapNote mapNote);
+	public void addMapEntry(MapEntry mapEntry) throws Exception;
 	
-	public void addMapEntry(MapEntry mapEntry);
+	public void addMapPrinciple(MapPrinciple mapPrinciple) throws Exception;
 	
-	public void addMapPrinciple(MapPrinciple mapPrinciple);
-	
-	public void addMapAdvice(MapAdvice mapAdvice);
+	public void addMapAdvice(MapAdvice mapAdvice) throws Exception;
 	
 	////////////////////////////
 	// Update services     ///
 	////////////////////////////
 	
-	public void updateMapSpecialist(MapSpecialist mapSpecialist);
+	public void updateMapSpecialist(MapSpecialist mapSpecialist) throws Exception;
 	
-	public void updateMapLead(MapLead mapLead);
+	public void updateMapLead(MapLead mapLead) throws Exception;
 	
-	public void updateMapProject(MapProject mapProject);
+	public void updateMapProject(MapProject mapProject) throws Exception;
 	
-	public void updateMapRecord(MapRecord mapRecord);
+	public void updateMapRecord(MapRecord mapRecord) throws Exception;
 	
-	public void updateMapNote(MapNote mapNote);
+	public void updateMapEntry(MapEntry mapEntry) throws Exception;
 	
-	public void updateMapEntry(MapEntry mapEntry);
+	public void updateMapPrinciple(MapPrinciple mapPrinciple) throws Exception;
 	
-	public void updateMapPrinciple(MapPrinciple mapPrinciple);
-	
-	public void updateMapAdvice(MapAdvice mapAdvice);
+	public void updateMapAdvice(MapAdvice mapAdvice) throws Exception;
 	
 	////////////////////////////
 	//Removal services     ///
 	////////////////////////////
 	
-	public void removeMapSpecialist(Long mapSpecialistId);
+	public void removeMapSpecialist(Long mapSpecialistId) throws Exception;
 	
-	public void removeMapLead(Long mapLeadId);
+	public void removeMapLead(Long mapLeadId) throws Exception;
 	
-	public void removeMapProject(Long mapProjectId);
+	public void removeMapProject(Long mapProjectId) throws Exception;
 	
-	public void removeMapRecord(Long mapRecordId);
+	public void removeMapRecord(Long mapRecordId) throws Exception;
 	
-	public void removeMapNote(Long mapNoteId);
+	public void removeMapEntry(Long mapEntryId) throws Exception;
 	
-	public void removeMapEntry(Long mapEntryId);
+	public void removeMapPrinciple(Long mapPrincipleId) throws Exception;
 	
-	public void removeMapPrinciple(Long mapPrincipleId);
-	
-	public void removeMapAdvice(Long mapAdviceId);
+	public void removeMapAdvice(Long mapAdviceId) throws Exception;
 	
 	
 	///////////////////////////
 	// Other services       ///
 	///////////////////////////
 	
-	public Long getMapRecordCountForMapProjectId(Long mapProjectId);
+	public Long getMapRecordCountForMapProjectId(Long mapProjectId) throws Exception;
 	
-	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId);
+	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId) throws Exception;
 	
+	/**
+	 * Returns the map records for map project id.
+	 *
+	 * @param projectId the project id
+	 * @param pfs the pfs
+	 * @return the map records for map project id
+	 */
 	public List<MapRecord> getMapRecordsForMapProjectId(Long projectId,
-			PfsParameter pfs);
+			PfsParameter pfs) throws Exception;
 		
-	public List<MapRecord> getMapRecordsForConceptId(String conceptId);
+	public List<MapRecord> getMapRecordsForConceptId(String conceptId) throws Exception;
 
+	/**
+	 * Returns the unmapped descendants for concept.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param threshold the threshold
+	 * @return the unmapped descendants for concept
+	 * @throws Exception the exception
+	 */
 	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
 			String terminology, String terminologyVersion, int threshold) throws Exception;
 
-	public MapPrinciple getMapPrinciple(Long id);
+	public MapPrinciple getMapPrinciple(Long id) throws Exception;
 
-	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject);
-
-	public Long removeMapRecordsForProjectId(Long mapProjectId);
-
+	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) throws Exception;
 	
+	/**
+	 * Creates the map records for map project.
+	 *
+	 * @param mapProject the map project
+	 * @param complexMapRefSetMembers the complex map ref set members
+	 * @return the list
+	 * @throws Exception the exception
+	 */
+	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
+			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
+
+	public Long removeMapRecordsForProjectId(Long mapProjectId) throws Exception;
+
+	public boolean getTransactionPerOperation() throws Exception;
+	
+	public void setTransactionPerOperation(boolean transactionPerOperation) throws Exception;
+	
+	public void beginTransaction() throws Exception;
+	
+	public void commit() throws Exception;
 }
 	
 	
