@@ -1006,6 +1006,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	
 	private String mergeToTempFile(String file1_str, String file2_str, Comparator<String> comp) throws Exception {
 		
+		String newline = System.getProperty("line.separator");
+		
 		File file1 = new File(file1_str).getAbsoluteFile();
 		File file2 = new File(file2_str).getAbsoluteFile();
 		
@@ -1060,7 +1062,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			if (!line.startsWith("id")) {
 	
 				writer.write(line);
-				writer.newLine();
+				writer.write(newline);
 			}
 		}
 			
@@ -2050,6 +2052,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		
 		if ((line = descriptions_by_description.readLine()) != null) {
 			
+			line.replaceAll("\\p{Cntrl}", "");
 			fields = line.split("\t");
 			
 			if (!fields[0].equals("id")) { //header
