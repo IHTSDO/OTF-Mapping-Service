@@ -2106,6 +2106,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		// if non-null
 		if ((line = language_refsets_by_description.readLine()) != null) {
 			
+			line.replaceAll("\\p{Cntrl}", "");
 			fields = line.split("\t");
 			
 			if (!fields[0].equals("id")) { // header line
