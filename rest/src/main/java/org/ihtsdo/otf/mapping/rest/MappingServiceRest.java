@@ -866,7 +866,7 @@ public class MappingServiceRest {
 	@Path("/principle/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Update principle by id", notes = "Updates a MapPrinciple. Must exist in mapping database. Must be in Json or Xml format", response = MapPrincipleJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Response updatetMapPrincipledForId(
+	public Response updateMapPrincipleForId(
 			@ApiParam(value = "Map Principle to update", required = true) MapPrincipleJpa mapPrinciple) {
 		
 		try {
