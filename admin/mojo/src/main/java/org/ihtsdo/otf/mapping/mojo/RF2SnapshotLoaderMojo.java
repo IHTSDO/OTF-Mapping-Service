@@ -2053,7 +2053,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		
 		if ((line = descriptions_by_description.readLine()) != null) {
 			
-			line.replace("\r", "");
+			line.replace("\\r", "");
+			line.replace("\\\\r", "");
 			fields = line.split("\t");
 			
 			if (!fields[0].equals("id")) { //header
@@ -2109,11 +2110,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			
 			//for (int j = 0; j < line.length(); j++) System.out.print(line.charAt(j));
 			
-			line.replace("\r", "");
-			line.replaceAll("\\r", "");
-			line.replaceAll("\r", "");
-			
-			
+			line.replace("\\r", "");
+			line.replace("\\\\r", "");
 			
 			fields = line.split("\t");
 			
