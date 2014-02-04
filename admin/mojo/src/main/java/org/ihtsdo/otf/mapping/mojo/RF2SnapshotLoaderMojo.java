@@ -993,6 +993,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		// write to array
 		File file_temp = File.createTempFile("split_" + file_in.getName() + "_", ".tmp", sorted_files);
 		BufferedWriter writer = new BufferedWriter(new FileWriter(file_temp));
+		
 		for (int i = 0; i < lines.size(); i++) {
 			writer.write(lines.get(i));
 			writer.newLine();
@@ -1062,7 +1063,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			if (!line.startsWith("id")) {
 	
 				writer.write(line);
-				writer.write(newline);
+				writer.newLine();
 			}
 		}
 			
@@ -2052,7 +2053,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		
 		if ((line = descriptions_by_description.readLine()) != null) {
 			
-			line.replaceAll("\\p{Cntrl}", "");
+			line.replaceAll("(\\r||\\n)", "");
 			fields = line.split("\t");
 			
 			if (!fields[0].equals("id")) { //header
@@ -2106,7 +2107,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		// if non-null
 		if ((line = language_refsets_by_description.readLine()) != null) {
 			
-			line.replaceAll("\\p{Cntrl}", "");
+			line.replaceAll("(\\r||\\n)", "");
 			fields = line.split("\t");
 			
 			if (!fields[0].equals("id")) { // header line
