@@ -20,19 +20,20 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import java.util.Properties;
 
 import javax.persistence.EntityManager;
@@ -742,9 +743,11 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		relationships_by_source_concept = new BufferedReader(new FileReader(
 				relationships_by_source_concept_file));
 
+		// Descriptions by description id
 		descriptions_by_description = new BufferedReader(new FileReader(
 				descriptions_by_description_file));
 
+		// Language RefSets by description id
 		language_refsets_by_description = new BufferedReader(new FileReader(
 				language_refsets_by_description_file));
 
@@ -882,10 +885,499 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		};
 
 		getLog().info(
-				"      Sorting " + file_in.toString() + "  into "
+				" Sorting " + file_in.toString() + "  into "
 						+ file_out.toString() + " by column "
 						+ Integer.toString(sort_column));
-		sort(file_in.toString(), file_out.toString(), comp);
+		sort_file(file_in.toString(), file_out.toString(), comp);
+
+	}
+	
+	/** top-level function to sort a file given input file, destination file, and comparator */
+	private void sort_file(String file_in_str, String file_out_str, Comparator<String> comp) throws Exception {
+
+		// call helper function to split the files and sort within each sub-file
+		List<String> split_files = splitFile(file_in_str, comp);
+		
+		getLog().info("  Split files list:");
+		for (int i = 0; i < split_files.size(); i++) {
+			getLog().info("    " + split_files.get(i));
+		}
+
+		// repeatedly call helper function to merge two split files until only one remains
+		while (split_files.size() > 1) {
+			
+			String merged_file = mergeToTempFile(	split_files.get(split_files.size()-1),
+													split_files.get(split_files.size()-2),
+													comp);
+			
+			// remove last two elements of list
+			split_files.remove(split_files.size()-1);
+			split_files.remove(split_files.size()-1);
+			
+			// add merged file to list
+			split_files.add(merged_file);
+		}
+		
+		// rename resultant file (expects only one split file to remain)
+		if (split_files.size() == 1) {
+			
+			File file_sorted = new File(split_files.get(0)).getAbsoluteFile();
+			File file_out = new File(file_out_str).getAbsoluteFile();
+			file_sorted.renameTo(file_out);
+			
+			getLog().info("Moved file " + file_sorted.getName() + " to " + file_out.getName());
+			
+			checkSortedFile(file_out, comp);
+			
+		} else {	
+			getLog().info("Error sorting file, multiple split files remain");
+		}
+	}
+	
+	/**
+	 * Splits a file given a line comparator
+	 * @param file_in_str the String giving the path to the file to be split
+	 * @param comp the comparator function by which to compare lines
+	 * @return a String list of the split filenames
+	 */
+	private List<String> splitFile(String file_in_str, Comparator<String> comp) throws Exception {
+		
+		int current_size = 0;											// counter for current file size
+		int segment_size = 32 * 1024 * 1024;							// maximum split file size (in characters)
+		String line;													// current file line
+		List<String> lines = new ArrayList<String>(10000);				// set of lines to be sorted via Collections.sort
+		List<String> split_files = new ArrayList<String>();
+		
+		// open file
+		File file_in = new File(file_in_str).getAbsoluteFile();
+		BufferedReader reader = new BufferedReader(new FileReader(file_in));
+		
+		// cycle until end of file
+		while ((line = reader.readLine()) != null) {
+			
+			lines.add(line);
+			current_size += line.length();
+			
+			// if above segment size, sort and write the array
+			if (current_size > segment_size) {
+				
+				// sort array
+				Collections.sort(lines, comp);
+			
+				// write file
+				split_files.add(createSplitFile(lines, file_in));
+				
+				// reset line array and size tracker
+				lines.clear();
+				current_size = 0;
+			}
+		}
+		
+		// write remaining lines to file
+		Collections.sort(lines, comp);
+		split_files.add(createSplitFile(lines, file_in));
+		
+		
+		return split_files;
+	}
+	
+	/**
+	 * Creates a temporary file from an array of lines. 
+	 * @param filename 
+	 * @param fileout
+	 * @param comp
+	 * @throws Exception
+	 */
+	private String createSplitFile(List<String> lines, File file_in) throws IOException {
+
+		// write to array
+		File file_temp = File.createTempFile("split_" + file_in.getName() + "_", ".tmp", sorted_files);
+		BufferedWriter writer = new BufferedWriter(new FileWriter(file_temp));
+		for (int i = 0; i < lines.size(); i++) {
+			writer.write(lines.get(i));
+			writer.newLine();
+		}
+		writer.close();
+		
+		getLog().info("  Created split file: " + file_temp.getName());
+		
+		return file_temp.getAbsolutePath();
+	}
+	
+	private String mergeToTempFile(String file1_str, String file2_str, Comparator<String> comp) throws Exception {
+		
+		File file1 = new File(file1_str).getAbsoluteFile();
+		File file2 = new File(file2_str).getAbsoluteFile();
+		
+		BufferedReader reader1 = new BufferedReader(new FileReader(file1));
+		BufferedReader reader2 = new BufferedReader(new FileReader(file2));
+	
+		File file_out = File.createTempFile("merged_", ".tmp", sorted_files);	
+		BufferedWriter writer = new BufferedWriter(new FileWriter(file_out));
+		
+		String line1 = reader1.readLine();
+		String line2 = reader2.readLine();
+		
+		String line; 
+		
+		// debug testing
+		int n_line1 = 0;
+		int n_line2 = 0;
+		
+		getLog().info("   Merging files: " + file1_str + ", " + file2_str + " into " + file_out.getName());
+		
+		// cycle until both files are empty
+		while (! (line1 == null && line2 == null)) {
+		
+			// if first line empty, write second line
+			if (line1 == null) {
+				line = line2;
+				line2 = reader2.readLine();
+				n_line2++;
+			
+			// if second line empty, write first line
+			} else if (line2 == null) {
+				line = line1;
+				line1 = reader1.readLine();
+				n_line1++;
+			
+			// if line 1 precedes line 2
+			} else if (comp.compare(line1,  line2) < 0) {
+				
+				line = line1;
+				line1 = reader1.readLine();
+				n_line1++;
+			
+			// otherwise line 2 precedes or is equal to line 1
+			} else {
+				
+				line = line2;
+				line2 = reader2.readLine();
+				n_line2++;
+			}
+			
+			// if a header line, do not write
+			if (!line.startsWith("id")) {
+	
+				writer.write(line);
+				writer.newLine();
+			}
+		}
+			
+		writer.close();
+		reader1.close();
+		reader2.close();
+		
+		getLog().info("     " + Integer.toString(n_line1) + " lines from file 1 came first");
+		getLog().info("     " + Integer.toString(n_line2) + " lines from file 2 came first");
+
+		return file_out.getAbsolutePath(); 
+	}
+
+	
+	///////////////////////////////
+	/// OLDER SORT FUNCTIONS
+	///////////////////////////////
+	
+	
+	/**
+	 * 
+	 * Sort the specified file using the specified {@link Comparator} and
+	 * optionally sort uniquely.
+	 * 
+	 * @param filename
+	 *            the file to sort
+	 * @param fileout
+	 *            the destination sorted file
+	 * @param comp
+	 *            the {@link Comparator}
+	 * @throws Exception 
+	 */
+
+	@SuppressWarnings("null")
+	public void sort(String filename, String fileout,
+			Comparator<String> comp) throws Exception {
+
+		//
+		// Vars
+		//
+		List<String> lines = null;
+		List<File> files1 = new ArrayList<File>();
+		List<File> files2 = new ArrayList<File>();
+		String line;
+		final File orig_file = new File(filename).getAbsoluteFile();
+		final File dest_file = new File(fileout).getAbsoluteFile();
+		final File sortdir = new File(dest_file.getParent());
+
+		//
+		// Open file
+		//
+		final BufferedReader in = new BufferedReader(new FileReader(orig_file));
+		//
+
+		// Break input file into files with max size of 16MB and then sort it
+		//
+
+		int size_so_far = 0;
+		final int segment_size = 32 * 1024 * 1024;
+
+		// get and save header
+		String header_line = in.readLine(); //
+
+		while ((line = in.readLine()) != null) {
+
+			if (size_so_far == 0) {
+
+				lines = new ArrayList<String>(10000);
+
+			}
+
+			lines.add(line);
+			size_so_far += line.length();
+
+			if (size_so_far > segment_size) {
+
+				sortHelper(lines.toArray(new String[0]), files1,
+						comp, sortdir);
+
+				size_so_far = 0;
+			}
+		}
+
+		//
+		// If there are left-over lines, create final tmp file
+		//
+		if (lines != null && lines.size() != 0 && size_so_far <= segment_size) {
+			sortHelper(lines.toArray(new String[0]), files1, comp,
+					sortdir);
+		}
+
+		//
+		// Calculations for pm
+		//
+		int total_files = files1.size();
+		int tmp = total_files;
+
+		while (tmp > 1) {
+
+			tmp = (int) Math.ceil(tmp / 2.0);
+			total_files += tmp;
+
+		}
+		//
+		// Merge sorted files
+		//
+		tmp = 0;
+
+		// if one file, do not sort
+		while (files1.size() > 1) {
+
+			// cycle over files two at a time
+			for (int i = 0; i < files1.size(); i += 2) {
+
+				if (files1.size() == i + 1) {
+					files2.add(files1.get(i));
+					break;
+				} else {
+
+					final File f = mergeSortedFiles(files1.get(i),
+					files1.get(i + 1), comp, sortdir,
+					header_line);
+
+					files2.add(f);
+	
+					//files1.get(i).delete();
+					//files1.get(i + 1).delete();
+					
+					// TODO add test to check line-by-line comparator
+					if( !checkSortedFile(f, comp)) {
+						getLog().info("FAILED SORT CHECK: " + f.getName());
+					} else getLog().info("Passed sort check: " + f.getName());
+				}
+			}
+
+			files1 = new ArrayList<File>(files2);
+			files2.clear();
+		}
+
+		// rename file
+
+		if (files1.size() > 0) {
+			files1.get(0).renameTo(dest_file);
+		}
+		
+		// if no files, create an empty file
+		else {
+			dest_file.createNewFile();
+		}
+
+		// close input file
+		in.close();
+
+	}
+	
+	private boolean checkSortedFile(File file, Comparator<String> comp) throws Exception {
+		
+
+		String line, prev_line;
+		int n_lines = 0;
+		
+		// open file
+		BufferedReader in = new BufferedReader(new FileReader(file));
+		
+		prev_line = in.readLine();
+		
+		// loop until file empty
+		while ((line = in.readLine()) != null) {
+			
+			// if line fails test, return false
+			if (comp.compare(prev_line, line) > 0) {
+				getLog().info("      SORT FAILED after " + Integer.toString(n_lines) + " lines: " + file.getName());
+				return false;
+			}
+			
+			prev_line = line;
+		}
+					
+		// close file
+		in.close();
+		
+		getLog().info("      Sort successful: " + file.getName());
+		
+		// return true
+		return true;
+	}
+
+	/**
+	 * Helper function to perform sort operations.
+	 * 
+	 * @param lines
+	 *            the lines to sort
+	 * @param all_tmp_files
+	 *            the list of files
+	 * @param comp
+	 *            the comparator
+	 * @param sortdir
+	 *            the sort dir
+	 * @param unique
+	 *            whether or not to sort unique
+	 * @param bom_present
+	 *            indicates if a Byte Order Mark was present on file
+	 * @throws IOException
+	 */
+	private static void sortHelper(String[] lines, List<File> all_tmp_files,
+			Comparator<String> comp, File sortdir) throws IOException {
+
+		//
+		// Create temp file
+		//
+		final File f = File.createTempFile("t+~", ".tmp", sortdir);
+
+		//
+		// Sort data for this segment
+		//
+		Arrays.sort(lines, comp);
+
+		//
+		// Write lines to file f
+		//
+		final BufferedWriter out = new BufferedWriter(new FileWriter(f));
+
+		for (int i = 0; i < lines.length; i++) {
+			final String line = lines[i];
+			out.write(line);
+			out.newLine();
+			// out.flush();
+
+		}
+
+		out.flush();
+		out.close();
+		all_tmp_files.add(f);
+	}
+
+	/**
+	 * Merge-sort two files.
+	 * 
+	 * @return the sorted {@link File}
+	 * @param files1
+	 *            the first set of files
+	 * @param files2
+	 *            the second set of files
+	 * @param comp
+	 *            the comparator
+	 * @param dir
+	 *            the sort dir
+	 * @param unique
+	 *            whether or not to sort unique
+	 * @param bom_present
+	 *            indicates if a Byte Order Mark was present on file
+	 * @throws IOException
+	 */
+	private File mergeSortedFiles(File files1, File files2,
+			Comparator<String> comp, File dir, String header_line)
+			throws IOException {
+		final BufferedReader in1 = new BufferedReader(new FileReader(files1));
+
+		final BufferedReader in2 = new BufferedReader(new FileReader(files2));
+
+		final File out_file = File.createTempFile("t+~", ".tmp", dir);
+
+		final BufferedWriter out = new BufferedWriter(new FileWriter(out_file));
+		
+		getLog().info("Merging files: " + files1.getName() + " - " + files2.getName() + " into " + out_file.getName());
+
+		String line1 = in1.readLine();
+		String line2 = in2.readLine();
+		String line = null;
+
+		if (!header_line.isEmpty()) {
+			line = header_line;
+			out.write(line);
+			out.newLine();
+		}
+
+		while (line1 != null || line2 != null) {
+			
+			//System.out.println("Comparing: ");
+			//System.out.println("     " + line1);
+			//System.out.println("     " + line2);
+			
+			if (line1 == null) {
+				line = line2;
+				line2 = in2.readLine();
+
+			} else if (line2 == null) {
+
+				line = line1;
+				line1 = in1.readLine();
+
+			} else if (comp.compare(line1, line2) < 0) {
+
+				line = line1;
+				line1 = in1.readLine();
+
+			} else {
+
+				line = line2;
+				line2 = in2.readLine();
+
+			}
+			
+			// if a header line, do not write
+			if (!line.startsWith("id")) {
+
+				out.write(line);
+				out.newLine();
+			}
+		}
+
+		out.flush();
+		out.close();
+		in1.close();
+		in2.close();
+
+		return out_file;
 
 	}
 
@@ -1290,270 +1782,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		}
 	}
 
-	/**
-	 * 
-	 * Sort the specified file using the specified {@link Comparator} and
-	 * optionally sort uniquely.
-	 * 
-	 * @param filename
-	 *            the file to sort
-	 * @param fileout
-	 *            the destination sorted file
-	 * @param comp
-	 *            the {@link Comparator}
-	 * @throws IOException
-	 *             if failed to sort
-	 */
-
-	@SuppressWarnings("null")
-	public static void sort(String filename, String fileout,
-			Comparator<String> comp) throws IOException {
-
-		//
-		// Vars
-		//
-		List<String> lines = null;
-		List<File> files1 = new ArrayList<File>();
-		List<File> files2 = new ArrayList<File>();
-		String line;
-		final File orig_file = new File(filename).getAbsoluteFile();
-		final File dest_file = new File(fileout).getAbsoluteFile();
-		final File sortdir = new File(dest_file.getParent());
-
-		//
-		// Open file
-		//
-		final BufferedReader in = new BufferedReader(new FileReader(orig_file));
-		//
-
-		// Break input file into files with max size of 16MB and then sort it
-		//
-
-		int size_so_far = 0;
-		final int segment_size = 32 * 1024 * 1024;
-
-		// get and save header
-		String header_line = in.readLine(); //
-
-		while ((line = in.readLine()) != null) {
-
-			if (size_so_far == 0) {
-
-				lines = new ArrayList<String>(10000);
-
-			}
-
-			lines.add(line);
-			size_so_far += line.length();
-
-			if (size_so_far > segment_size) {
-
-				sortHelper(lines.toArray(new String[0]), files1,
-						comp, sortdir);
-
-				size_so_far = 0;
-			}
-		}
-
-		//
-		// If there are left-over lines, create final tmp file
-		//
-		if (lines != null && lines.size() != 0 && size_so_far <= segment_size) {
-			sortHelper(lines.toArray(new String[0]), files1, comp,
-					sortdir);
-		}
-
-		//
-		// Calculations for pm
-		//
-		int total_files = files1.size();
-		int tmp = total_files;
-
-		while (tmp > 1) {
-
-			tmp = (int) Math.ceil(tmp / 2.0);
-			total_files += tmp;
-
-		}
-		//
-		// Merge sorted files
-		//
-		tmp = 0;
-
-		while (files1.size() > 1) {
-
-			for (int i = 0; i < files1.size(); i += 2) {
-
-				tmp += 2;
-
-				if (files1.size() == i + 1) {
-					files2.add(files1.get(i));
-					break;
-				} else {
-
-					final File f = mergeSortedFiles(files1.get(i),
-					files1.get(i + 1), comp, sortdir,
-					header_line);
-
-					files2.add(f);
-	
-					files1.get(i).delete();
-					files1.get(i + 1).delete();
-					
-					// TODO add test to check line-by-line comparator
-				}
-			}
-
-			files1 = new ArrayList<File>(files2);
-			files2.clear();
-		}
-
-		// rename file
-
-		if (files1.size() > 0) {
-			files1.get(0).renameTo(dest_file);
-		}
-		
-		// if no files, create an empty file
-		else {
-			dest_file.createNewFile();
-		}
-
-		// close input file
-		in.close();
-
-	}
-
-	/**
-	 * Helper function to perform sort operations.
-	 * 
-	 * @param lines
-	 *            the lines to sort
-	 * @param all_tmp_files
-	 *            the list of files
-	 * @param comp
-	 *            the comparator
-	 * @param sortdir
-	 *            the sort dir
-	 * @param unique
-	 *            whether or not to sort unique
-	 * @param bom_present
-	 *            indicates if a Byte Order Mark was present on file
-	 * @throws IOException
-	 */
-	private static void sortHelper(String[] lines, List<File> all_tmp_files,
-			Comparator<String> comp, File sortdir) throws IOException {
-
-		//
-		// Create temp file
-		//
-		final File f = File.createTempFile("t+~", ".tmp", sortdir);
-
-		//
-		// Sort data for this segment
-		//
-		Arrays.sort(lines, comp);
-
-		//
-		// Write lines to file f
-		//
-		final BufferedWriter out = new BufferedWriter(new FileWriter(f));
-
-		for (int i = 0; i < lines.length; i++) {
-			final String line = lines[i];
-			out.write(line);
-			out.newLine();
-			// out.flush();
-
-		}
-
-		out.flush();
-		out.close();
-		all_tmp_files.add(f);
-	}
-
-	/**
-	 * Merge-sort two files.
-	 * 
-	 * @return the sorted {@link File}
-	 * @param files1
-	 *            the first set of files
-	 * @param files2
-	 *            the second set of files
-	 * @param comp
-	 *            the comparator
-	 * @param dir
-	 *            the sort dir
-	 * @param unique
-	 *            whether or not to sort unique
-	 * @param bom_present
-	 *            indicates if a Byte Order Mark was present on file
-	 * @throws IOException
-	 */
-	private static File mergeSortedFiles(File files1, File files2,
-			Comparator<String> comp, File dir, String header_line)
-			throws IOException {
-		final BufferedReader in1 = new BufferedReader(new FileReader(files1));
-
-		final BufferedReader in2 = new BufferedReader(new FileReader(files2));
-
-		final File out_file = File.createTempFile("t+~", ".tmp", dir);
-
-		final BufferedWriter out = new BufferedWriter(new FileWriter(out_file));
-
-		String line1 = in1.readLine();
-		String line2 = in2.readLine();
-		String line = null;
-
-		if (!header_line.isEmpty()) {
-			line = header_line;
-			out.write(line);
-			out.newLine();
-		}
-
-		while (line1 != null || line2 != null) {
-			
-			//System.out.println("Comparing: ");
-			//System.out.println("     " + line1);
-			//System.out.println("     " + line2);
-			
-			if (line1 == null) {
-				line = line2;
-				line2 = in2.readLine();
-
-			} else if (line2 == null) {
-
-				line = line1;
-				line1 = in1.readLine();
-
-			} else if (comp.compare(line1, line2) < 0) {
-
-				line = line1;
-				line1 = in1.readLine();
-
-			} else {
-
-				line = line2;
-				line2 = in2.readLine();
-
-			}
-			
-			// if a header line, do not write
-			if (!line.startsWith("id")) {
-
-				out.write(line);
-				out.newLine();
-			}
-		}
-
-		out.flush();
-		out.close();
-		in1.close();
-		in2.close();
-
-		return out_file;
-
-	}
 
 
 	/**
@@ -1731,6 +1959,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				
 				log_file_out.write("     " + "Language Ref Set " + language.getTerminologyId() 
 									+ " references non-existent description " + language.getDescription().getTerminologyId() + "\n");
+				log_file_out.newLine();
 				language = getNextLanguage();
 				n_skip++;	
 			}
@@ -1757,9 +1986,10 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 					// retrieve the concept for this description
 					concept = description.getConcept();
 					if (defaultPreferredNames.get(concept.getId()) != null) {
-						log_file_out.write("Multiple default preferred names for concept " + concept.getTerminologyId() + "\n"
-										+ "  Existing: " + defaultPreferredNames.get(concept.getId()) + "\n"
-										+ "  Replaced: " + description.getTerm() + "\n");
+						log_file_out.write("Multiple default preferred names for concept " + concept.getTerminologyId()); log_file_out.newLine();
+						log_file_out.write("  " +  "Existing: " + defaultPreferredNames.get(concept.getId())); log_file_out.newLine();
+						log_file_out.write("  " +  "Replaced: " + description.getTerm()); log_file_out.newLine();
+						
 					}
 					defaultPreferredNames.put(concept.getId(), description.getTerm());
 					
