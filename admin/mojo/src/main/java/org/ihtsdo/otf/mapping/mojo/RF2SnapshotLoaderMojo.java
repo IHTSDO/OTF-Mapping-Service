@@ -2112,7 +2112,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			
 			for (int j = 0; j < line.length(); j++) System.out.print(line.charAt(j));
 			
-			line.replaceAll("(\\r||\\n)", "");
+			line.replaceAll("\\r", "");
+			line.replaceAll("\r", "");
 			
 			fields = line.split("\t");
 			
