@@ -2053,8 +2053,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		
 		if ((line = descriptions_by_description.readLine()) != null) {
 			
-			line.replace("\\r", "");
-			line.replace("\\\\r", "");
+			line = line.replaceAll("\r", "");
 			fields = line.split("\t");
 			
 			if (!fields[0].equals("id")) { //header
@@ -2110,8 +2109,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			
 			//for (int j = 0; j < line.length(); j++) System.out.print(line.charAt(j));
 			
-			line.replace("\\r", "");
-			line.replace("\\\\r", "");
+			line = line.replaceAll("\r", "");
 			
 			fields = line.split("\t");
 			
@@ -2172,6 +2170,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 		while ((line = attribute_refsets_by_concept.readLine()) != null) {
 
+			line = line.replaceAll("\r", "");
 			String fields[] = line.split("\t");
 			AttributeValueRefSetMember attributeValueRefSetMember = new AttributeValueRefSetMemberJpa();
 
@@ -2240,6 +2239,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		
 		while ((line = simple_refsets_by_concept.readLine()) != null) {
 
+			line = line.replaceAll("\r", "");
 			String fields[] = line.split("\t");
 			SimpleRefSetMember simpleRefSetMember = new SimpleRefSetMemberJpa();
 
@@ -2305,6 +2305,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 		while ((line = simple_map_refsets_by_concept.readLine()) != null) {
 
+			line = line.replaceAll("\r", "");
 			String fields[] = line.split("\t");
 			SimpleMapRefSetMember simpleMapRefSetMember = new SimpleMapRefSetMemberJpa();
 
@@ -2370,6 +2371,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 		while ((line = complex_map_refsets_by_concept.readLine()) != null) {
 
+			line = line.replaceAll("\r", "");
 			String fields[] = line.split("\t");
 			ComplexMapRefSetMember complexMapRefSetMember = new ComplexMapRefSetMemberJpa();
 
@@ -2453,6 +2455,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 		while ((line = extended_map_refsets_by_concept.readLine()) != null) {
 
+			line = line.replaceAll("\r", "");
 			String fields[] = line.split("\t");
 			ComplexMapRefSetMember complexMapRefSetMember = new ComplexMapRefSetMemberJpa();
 
