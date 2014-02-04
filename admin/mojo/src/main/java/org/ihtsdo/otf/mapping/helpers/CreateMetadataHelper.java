@@ -161,7 +161,7 @@ public class CreateMetadataHelper {
 		// build remainder of metadata hierarchy
 		//
 		Concept isaConcept = createNewActiveConcept(new Integer(metadataCounter++).toString(),
-				terminology, terminologyVersion, "Is a", effectiveTime);		
+				terminology, terminologyVersion, "Isa", effectiveTime);		
 		conceptMap.put("isa", isaConcept);
 		manager.persist(isaConcept);
 		

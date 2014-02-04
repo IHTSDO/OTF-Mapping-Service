@@ -48,7 +48,9 @@ public class MetadataServiceJpa implements MetadataService {
 
 		helperMap = new HashMap<String, MetadataService>();
 		helperMap.put("SNOMEDCT", new SnomedMetadataServiceJpaHelper());
-		// helperMap.put("ICD10", new Icd10MetadataServiceJpaHelper());
+		helperMap.put("ICD10", new ClamlMetadataServiceJpaHelper());
+		helperMap.put("ICD9CM", new ClamlMetadataServiceJpaHelper());
+		helperMap.put("ICPC", new ClamlMetadataServiceJpaHelper());
 
 		// create once
 		if (factory == null) {
