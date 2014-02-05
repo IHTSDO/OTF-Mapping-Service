@@ -42,8 +42,11 @@ loader.mapnotes.input.data=/home/ihtsdo/data/xder2_sRefset_MapNotesSnapshot_INT_
 #
 # Loader settings for preferred name
 #
+# SNOMED CT RF2 SCTID for "Synonym"
 loader.defaultPreferredNames.typeId=900000000000013009
+# SNOMED CT RF2 SCTID for the US English language refset
 loader.defaultPreferredNames.refSetId=900000000000509007
+# SNOMED CT RF2 SCTID for "Preferred"
 loader.defaultPreferredNames.acceptabilityId=900000000000548007
 
 #
