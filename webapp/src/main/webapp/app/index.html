@@ -23,59 +23,17 @@
 <style type="text/css" media="all">
 
 </style>
-<script type="text/javascript">
-$().ready(function() {
-	// Vertical splitter. Set min/max/starting sizes for the left pane.
-	$("#MySplitter").splitter({
-		splitVertical: true,
-		outline: true,
-		sizeLeft: true,
-		resizeTo: window,
-		accessKey: "I"
-	});
-	/* // Horizontal splitter, nested in the right pane of the vertical splitter.
-	$("#RightPane").splitter({
-		splitHorizontal: true,
-		sizeTop: true,
-		accessKey: "H"
-	}); */
-
-});
-</script>
-
-<script>
-    function visitPage(url){
-        window.location = url;
-    }
-  </script>
 </head>
-<body>
+
+<body style="margin-left: 10pt; margin-right: 10pt; margin-top: 5pt">
 
 <div id="header">
 	<div style="float:left;"><img src="img/ihtsdo_logo.png"></div>
 	
 </div>
+<h3>&nbsp;</h3>
 <p>
 <p>
-<div id="MySplitter" style="border-top:medium solid #55609D;"">
-
- 	 <div id="LeftPane" align=center>
-		<button style="width:100px;height:35px;" onclick="visitPage('index.html#')">Home</button><br>
-		<button style="width:100px;height:35px;" onclick="visitPage('index.html#project/projects')">Projects</button><br>
-		<button style="width:100px;height:35px;" onclick="visitPage('index.html#/lead/leads')">Leads</button><br>
-		<button style="width:100px;height:35px;" onclick="visitPage('index.html#/specialist/specialists')">Specialists</button><br>
-		<button style="width:100px;height:35px;" onclick="visitPage('index.html#/concept/query')">Search</button><br>
-		<button style="width:100px;height:35px;" onclick="visitPage('index.html#/metadata')">Metadata</button><br>
-		<button style="width:100px;height:35px;" onclick="visitPage('index.html#/edit-demo')">Edit Demo</button>
-		<button style="width:100px;height:35px;" onclick="visitPage('index.html#/project-create')">Create Project</button>
-	
- 	 </div> <!-- #LeftPane -->
-  
- 	 <div id="RightPane">
- 		 <div ng-view></div>
- 	 </div> <!-- #RightPane -->
-  
-</div> <!-- #MySplitter -->
-
+     <div  ng-view></div>
 </body>
 </html>
