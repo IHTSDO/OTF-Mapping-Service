@@ -400,6 +400,109 @@ mapProjectAppControllers.controller('ProjectCreateCtrl', ['$scope', '$http',,
 	$scope.queryConceptStatus = "[No concept query executed]";
 }]);
 
+/*
+ * Controller for retrieving and displaying records associated with a concept
+ */
+mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams',
+   function ($scope, $http, $routeParams) {
+	
+	$scope.conceptId = $routeParams.conceptId;
+	$scope.error = "";
+	
+	var entryRows = "";
+	var records;
+	
+	// retrieve the concept
+	$http({
+		url: root_mapping + "concept//" + $scope.conceptId,
+        dataType: "json",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }	
+	})
+	
+	// retrieve all map records where this concept appears
+	$http({
+       url: root_mapping + "record/conceptId/" + $scope.conceptId,
+       dataType: "json",
+       method: "GET",
+       headers: {
+         "Content-Type": "application/json"
+       }	
+     }).success(function(data) {
+    	 records = data.mapRecord;
+       $scope.records = data.mapRecord;
+       $scope.error = "Records retrieved";
+     }).error(function(error) {
+   	  $scope.error = "Error retrieving records records.  ";
+     }).then(function() {
+			
+		 // retrieve project information
+		 $http({
+	        url: root_mapping + "project/projects",
+	        dataType: "json",
+	        method: "GET",
+	        headers: {
+	          "Content-Type": "application/json"
+	        }
+	      }).success(function(data) {
+	    	  $scope.projects = data.mapProject;
+	      }).error(function(error) {
+	    	  $scope.error = $scope.error + "Error retrieving projects.  ";
+	      });
+     });
+ 
+	 $scope.getEntries = function(project) {
+		 console.debug("Constructing entries");
+		 console.debug(records);
+		 
+	 	 // instantiate empty entry set
+		 var mapRecords = "";
+		 var entryRows = "";
+	 
+		 console.debug("Finding entries for project " + project);
+
+		 // cycle over records to check if they belong to this project
+		 for (var i = 0; i < records.length; i++) {
+			 
+			 console.debug("Record");
+			 console.debug(records[i]);
+			 if (records[i].mapProjectId == project.id) {
+				 console.debug("Adding record " + records[i].conceptId);
+				mapRecords = mapRecords.concat(records[i]);
+			 }
+		 }
+
+		 // construct table elements from MapRecords and MapEntries
+		 for (var i = 0; i < mapRecords.length; i++) {
+			 
+			 entries = records[i].mapEntry;
+		 
+		 	 console.debug("Entries: " + entries);
+			 
+			 for (var j = 0; j < entries.length; j++) {
+				 
+				 var entry = entries[j];
+				 
+				 // give entries data from record
+				 entry.conceptId = records[i].conceptId;
+				 entry.conceptName = records[i].conceptName;
+				 entry.countDescendantConcepts = records[i].countDescendantConcepts;
+				 
+				 // add row
+				 entryRows = entryRows.concat(entry);
+			 }
+			 
+		 }
+		 
+		 return entryRows;
+     };
+
+}]);
+                                                              
+
+
 
 // TODO Add test for coming from project list page (i.e. pass the project to this controller)
 mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', '$routeParams',

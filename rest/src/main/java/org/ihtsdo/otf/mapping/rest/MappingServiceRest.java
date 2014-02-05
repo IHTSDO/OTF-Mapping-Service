@@ -928,6 +928,24 @@ public class MappingServiceRest {
 		return results;
 	}
 	
+	@GET
+	@Path("/record/concept/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find map records referencing a concept as a source concept", notes = "Requires hibernate id", response = MapRecordList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecordsForConceptId(
+			@ApiParam(value = "Concept hibernate id", required = true) Long conceptId) {
+		
+		MapRecordList results = new MapRecordList();
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			results.setMapRecords(mappingService.getMapRecordsForConcept(conceptId));
+			mappingService.close();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+		return results;
+	}
+	
 	
 	
 	

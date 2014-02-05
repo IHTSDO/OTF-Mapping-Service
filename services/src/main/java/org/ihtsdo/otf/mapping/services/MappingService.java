@@ -271,6 +271,20 @@ public interface MappingService {
 			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
 
 	public Long removeMapRecordsForProjectId(Long mapProjectId) throws Exception;
+	
+	/**
+	 * Helper function for retrieving map records given an internal hibernate concept id
+	 * @param conceptId the concept id in Long form
+	 * @return the map records where this concept is referenced
+	 */
+	public List<MapRecord> getMapRecordsForConcept(Long conceptId);
+	
+	/**
+	 * Given a Concept, retrieve map records that reference this as a source Concept
+	 * @param concept the Concept object
+	 * @return a list of MapRecords referencing this Concept
+	 */
+	public List<MapRecord> getMapRecordsForConcept(Concept concept);
 
 	public boolean getTransactionPerOperation() throws Exception;
 	

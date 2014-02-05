@@ -96,6 +96,11 @@ mapProjectApp.config(['$routeProvider',
 			templateUrl: 'partials/project-create.html',
 			controller: 'ProjectCreateCtrl'
 	  });
+	  
+	  $routeProvider.when('/record-concept/:conceptId', {
+			templateUrl: 'partials/record-concept.html',
+			controller: 'RecordConceptListCtrl'
+	  });
 		
 	  
 	  //////////////////////////////
