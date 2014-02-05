@@ -30,7 +30,8 @@ public class FileSorter {
 		Comparator<String> comparator) throws Exception {
 
 		// Split the input file into chunks and sort each section
-		List<String> splitFiles = splitFile(inputFile, comparator, 10000);
+		List<String> splitFiles =
+				splitFile(inputFile, outputFile, comparator, 10000);
 		Logger.getLogger(FileSorter.class).info("  Split files list:");
 		for (int i = 0; i < splitFiles.size(); i++) {
 			Logger.getLogger(FileSorter.class).info("    " + splitFiles.get(i));
@@ -49,7 +50,7 @@ public class FileSorter {
 			splitFiles.remove(splitFiles.size() - 1);
 
 			// add merged file to beginning of the list
-			splitFiles.add(1, merged_file);
+			splitFiles.add(merged_file);
 		}
 
 		// rename resultant file (expects only one split file to remain)
@@ -113,7 +114,6 @@ public class FileSorter {
 		return true;
 	}
 
-
 	/**
 	 * Delete sorted files.
 	 * 
@@ -137,7 +137,7 @@ public class FileSorter {
 			file.delete();
 		}
 	}
-	
+
 	/**
 	 * Merge to temp file.
 	 * 
@@ -231,7 +231,7 @@ public class FileSorter {
 	 * @return a String list of the split filenames
 	 * @throws Exception the exception
 	 */
-	private static List<String> splitFile(String inputFile,
+	private static List<String> splitFile(String inputFile, String outputFile,
 		Comparator<String> comparator, int size) throws Exception {
 
 		int currentSize = 0; // counter for current file size
@@ -259,7 +259,8 @@ public class FileSorter {
 				Collections.sort(lines, comparator);
 
 				// write file
-				splitFiles.add(createSplitFile(lines, fileIn));
+				splitFiles.add(createSplitFile(lines, fileIn,
+						new File(outputFile).getParentFile()));
 
 				// reset line array and size tracker
 				lines.clear();
@@ -269,7 +270,7 @@ public class FileSorter {
 
 		// write remaining lines to file
 		Collections.sort(lines, comparator);
-		splitFiles.add(createSplitFile(lines, fileIn));
+		splitFiles.add(createSplitFile(lines, fileIn, new File(outputFile).getParentFile()));
 
 		reader.close();
 		return splitFiles;
@@ -283,8 +284,8 @@ public class FileSorter {
 	 * @return the string
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	private static String createSplitFile(List<String> lines, File fileIn)
-		throws IOException {
+	private static String createSplitFile(List<String> lines, File fileIn,
+		File outputDir) throws IOException {
 		// write to array
 		File file_temp =
 				File.createTempFile("split_" + fileIn.getName() + "_", ".tmp",
