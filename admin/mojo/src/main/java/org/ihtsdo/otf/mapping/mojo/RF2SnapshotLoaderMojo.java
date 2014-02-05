@@ -1980,7 +1980,8 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 				
 				// check if this language refset and description form the
 				// defaultPreferredName
-				if (description.getTypeId().equals(dpnTypeId)
+				if (description.isActive() &&
+						description.getTypeId().equals(dpnTypeId)
 						&& new Long(language.getRefSetId()).equals(
 								dpnRefSetId)
 						&& language.getAcceptabilityId().equals(
