@@ -1,0 +1,52 @@
+<!--  partial for displaying project :projectId -->
+
+<p></p>
+<h3>{{project.name}}</h3>
+<p></p>
+
+
+Map Records ({{nRecords}})
+<p>{{errorRecords}}</p>
+ 
+
+
+<table width="100%" class="table pure-table" >
+<thead>
+	<tr>
+		<th>Concept</th>
+		<th>Concept Name</th>
+		<th>Target</th>
+		<th>Target Name</th>
+		<th>Rule</th>
+		<th>Index</th>
+		<th>RelationId</th>
+		<th>Notes</th>
+	</tr>
+</thead>
+
+<tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
+
+	<tr ng-repeat = "entry in record.mapEntry" >
+		<td>{{record.conceptId}}</td>
+		<td>{{record.conceptName}}</td>
+		<td>{{entry.targetId}}</td>
+		<td>{{entry.targetName}}</td>
+		<td>{{entry.rule}}</td>
+		<td>{{entry.indexMapPriority}}</td>
+		<td>{{entry.relationId}}</td>
+		<td><p ng-repeat = "note in record.mapNote">{{note.note}}</p></td>
+	</tr>
+
+</tbody>
+
+
+<!-- Displaying {{recordsPerPage}} map records per page.  -->
+
+<pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage" class="pagination-sm" 
+			boundary-links="true" rotate="true" num-pages="100"
+			on-select-page="changeRecordPage(page)"></pagination>
+
+</table>
+
+
+
