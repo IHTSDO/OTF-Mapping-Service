@@ -866,12 +866,13 @@ public class MappingServiceJpa implements MappingService {
 			List<MapRecord> m = fullTextEntityManager.createFullTextQuery(
 					luceneQuery, MapRecordJpa.class).getResultList();
 
-			for (MapRecord mr : m) {
-				s.addSearchResult(new SearchResultJpa(mr.getId(), "", mr
-						.getConceptId()));
+			int i = 0;
+		for (MapRecord mr : m) {
+			if (pfsParameter == null ||
+					pfsParameter.isIndexInRange(i++)) {
+				s.addSearchResult(new SearchResultJpa(mr.getId(), "", mr.getConceptId()));
 			}
-
-			s.sortSearchResultsById();
+		}
 
 		return s;
 	}

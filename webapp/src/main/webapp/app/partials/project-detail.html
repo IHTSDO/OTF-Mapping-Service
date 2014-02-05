@@ -1,30 +1,114 @@
 <!--  partial for displaying project :projectId -->
 
-<em>Note (1/16/2013):</em> Collection sorting on this page is only functional for Map Records.  Advices and Principles are currently displayed in un-ordered lists.  This will be fixed in subsequent versions.
 <p></p>
-<h3>Project: {{project.name}}</h3>
+<h3>{{project.name}}</h3>
 <p></p>
-<p>Source Terminology: {{project.sourceTerminology}}, v. {{project.sourceTerminologyVersion}}</p>
-<p>Destination Terminology: {{project.destinationTerminology}}, v. {{project.destinationTerminologyVersion}}</p>
-<p>Ref Set Id: {{project.refSetId}}
-<p>Published: {{project.published}}</p>
-<p>Block Structure: {{project.blockStructure}}</p>
-<p>Group Structure: {{project.groupStructure}}</p>
 
-<accordion close-others="false">
-<accordion-group heading="Map Leads ({{project.mapLead.length}})">
-<ul><li ng-repeat="lead in project.mapLead"><a href="mailto:{{lead.email}}">{{lead.name}}</a></li></ul>
-</accordion-group>
+<table class="table pure-table" style="border: 2px solid #ccc;">
+  <tr>
+    <td><a href="#" tooltip-placement="right" tooltip="Abbreviation and version information for the terminology this map project is mapping from.">Source Terminology</a></td>
+    <td>{{project.sourceTerminology}}, {{project.sourceTerminologyVersion}}</td>
+  </tr>
+  <tr>
+    <td><a href="#" tooltip-placement="right" tooltip="Abbreviation and version information for the terminology this map project is mapping to.">Destination Terminology</a></td>
+    <td>{{project.destinationTerminology}}, {{project.destinationTerminologyVersion}}</td>
+  </tr>
+  <tr>
+    <td><a href="#" tooltip-placement="right" tooltip="The RF2 metadata concept identifier and preferred name representing this map project.">Ref Set Id</a></td>
+    <td>{{project.refSetId}}</td>
+  </tr>
+  <tr>
+    <td><a href="#" tooltip-placement="right" tooltip="A true/false indicator of whether this mapping data has been published.">Published</a></td>
+    <td>{{project.published}}</td>
+  </tr>
+  <tr>
+    <td><a href="#" tooltip-placement="right" tooltip="A true/false indicator of whether this map project has multiple mappings for the same source concept.">Group Structure</a></td>
+    <td>{{project.groupStructure}}</td>
+  </tr>
+  <tr>
+    <td><a href="#" tooltip-placement="right" tooltip="List of the map leads for this project.">Map Leads</a></td>
+   <!-- <td><ul><li ng-repeat="lead in project.mapLead">{{lead.name}}, {{lead.userName}}, {{lead.email}} </li></ul></td>  --> 
+    <td><table width="100%" class="table pure-table" >
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>User Name</th>
+        <th>Email</th>
+      </tr>
+    </thead>
+    <tbody ng-repeat="lead in project.mapLead" style="border: 2px solid #ccc;" >
+      <tr>
+        <td>{{lead.name}}</td>
+        <td>{{lead.userName}}</td>
+        <td>{{lead.email}}</td>
+      </tr>
+    </tbody>
+    </table>
+    </td>
+  </tr>  
+  <tr>
+    <td><a href="#" tooltip-placement="right" tooltip="List of the map specialists for this project.">Map Specialists</a></td>
+    <td><table width="100%" class="table pure-table" >
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>User Name</th>
+        <th>Email</th>
+      </tr>
+    </thead>
+    <tbody ng-repeat="specialist in project.mapSpecialist" style="border: 2px solid #ccc;" >
+      <tr>
+        <td>{{specialist.name}}</td>
+        <td>{{specialist.userName}}</td>
+        <td>{{specialist.email}}</td>
+      </tr>
+    </tbody>
+    </table>
+    </td>
+  </tr> 
+  <tr>
+    <td><a href="#" tooltip-placement="right" tooltip="List of the map advice for this project.">Map Advice</a></td>
+    <td><table width="100%" class="table pure-table" >
+    <thead>
+      <tr>
+        <th>Advice</th>
+      </tr>
+    </thead>
+    <tbody ng-repeat="advice in project.mapAdvice" style="border: 2px solid #ccc;" >
+      <tr>
+        <td>{{advice.name}}</td>
+      </tr>
+    </tbody>
+    </table>
+    </td>
+  </tr>
+    <tr>
+    <td><a href="#" tooltip-placement="right" tooltip="List of the map principles for this project.">Map Principles</a></td>
+    <td><table width="100%" class="table pure-table" >
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Name</th>
+      </tr>
+    </thead>
+    <tbody ng-repeat="principle in project.mapPrinciple" style="border: 2px solid #ccc;" >
+      <tr>
+        <td>{{principle.principleId}}</td>
+        <td>{{principle.name}}</td>
+      </tr>
+    </tbody>
+    </table>
+    </td>
+  </tr>
+</table>  
+<!-- <span ng-show="project.mapAdvice.length > 0">Map Advice</span>
+<ul>
+    <select name="jlist" size="5" style="width: 600px;" >
+    <option ng-repeat="advice in project.mapAdvice" value="{{advice.name}}">{{advice.name}}</option>
+    </select>
+</ul> 
 
-<accordion-group heading="Map Specialists ({{project.mapSpecialist.length}})">
-<ul><li ng-repeat="specialist in project.mapSpecialist"><a href="mailto:{{specialist.email}}">{{specialist.name}}</a></li></ul>
-</accordion-group>
-
-<accordion-group heading="Map Advices ({{project.mapAdvice.length}})">
-<p ng-repeat="advice in project.mapAdvice">{{advice.name}}</p>
-</accordion-group>
-
-<accordion-group heading="Map Principles ({{project.mapPrinciple.length}})">
+Map Principles
 <ul>
 <li ng-repeat="principle in project.mapPrinciple">
 <p>{{principle.principleId}} - {{principle.name}}</p>
@@ -33,110 +117,10 @@
 <hr>
 </li>
 </ul>
-</accordion-group>
+-->
 
-<accordion-group heading="Map Records ({{nRecords}})">
-<p>{{errorRecords}}</p>
-
-
-<table width="100%" class="table pure-table">
-<thead>
-	<tr>
-		<th>Concept</th>
-		<th>Concept Name</th>
-		<th>Target</th>
-		<th>Target Name</th>
-		<th>Rule</th>
-		<th>Index</th>
-		<th>RelationId</th>
-		<th>Notes</th>
-	</tr>
-</thead>
-<!-- <tbody>
-<tr>
-	<td><input on-enter-blur on-blur-change="filterResult()" ng-model="filterCriteria.conceptId" type="text" /></td>
-	<td><input on-enter-blur on-blur-change="filterResult()" ng-model="filterCriteria.target" type="text" /></td>
-	<td><input on-enter-blur on-blur-change="filterResult()" ng-model="filterCriteria.rule" type="text" /></td>
-	<td><input on-enter-blur on-blur-change="filterResult()" ng-model="filterCriteria.indexMapPriority" type="text" /></td>
-	<td><input on-enter-blur on-blur-change="filterResult()" ng-model="filterCriteria.relationId" type="text" /></td>
-	<td><input on-enter-blur on-blur-change="filterResult()" ng-model="filterCriteria.rule" type="text" /></td>
-	<td><input on-enter-blur on-blur-change="filterResult()" ng-model="filterCriteria.indexMapPriority" type="text" /></td>
-	<td><input on-enter-blur on-blur-change="filterResult()" ng-model="filterCriteria.relationId" type="text" /></td>
-</tr>
-</tbody> -->
-
-<tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
-
-	<tr ng-repeat = "entry in record.mapEntry" >
-		<td>{{record.conceptId}}</td>
-		<!-- <td>{{record.conceptName}}</td> -->
-		<td>{{entry.targetId}}</td>
-		<!-- <td>{{entry.targetName}}</td> -->
-		<td>{{entry.rule}}</td>
-		<td>{{entry.indexMapPriority}}</td>
-		<td>{{entry.relationId}}</td>
-		<td><p ng-repeat = "note in entry.mapNote">{{note.note}}</p></td>
-	</tr>
-
-</tbody>
+<a href="#/record/projectId/{{project.id}}" class="btn">Map Records</a>
 
 
-Dipslaying {{recordsPerPage}} map records per page.
 
-<pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage" class="pagination-sm" 
-			boundary-links="true" rotate="true" num-pages="100"
-			on-select-page="changeRecordPage(page)"></pagination>
-
-</table>
-</accordion-group>
-
-<accordion-group heading="RF2 Concept">
-<p>{{errorConcept}}</p>
-<h4>Preferred Name: {{concept.defaultPreferredName}}</h4>
-<p>
-<p>Terminology: {{concept.terminology}}, v. {{concept.terminologyVersion}}</p>
-<p>Active: {{concept.active}}</p>
-<p>Effective Time: 
-
-{{concept.effectiveTime}} (<em>Needs reformat to proper date</em>)</p>
-<p>Module Id: {{concept.moduleId}}</p>
-<p>Status Id: {{concept.definitionStatusId}}</p>
-
-<h4>Descriptions:</h4>
-<p>
-<ul>
-<li ng-repeat="description in concept.description">
-<p>Id: {{description.terminologyId}}
-<p>Term: {{description.term}}
-<p>Terminology: {{description.terminology}}, v. {{description.terminologyVersion}}</p>
-<p>Active: {{description.active}}</p>
-<p>Case Significance Id: {{description.caseSignificanceId}}
-<p>Language Code: {{description.languageCode}}
-<p>
-<p>Language RefSets for this Description:
-<ul>
-<li ng-repeat="refset in description.languageRefSetMember">
-<p>Id: {{refset.terminologyId}}</p>
-<p>RefSet Id: {{refset.refSetId}}</p>
-<p>Acceptability Id: {{refset.acceptabilityId}}</p>
-</li>
-</ul>
-</li>
-</ul>
-
-<h4>Relationships:</h4>
-<p>
-<ul>
-<li ng-repeat="rel in concept.relationship">
-<p>Id: {{rel.terminologyId}}</p>
-<p>Active: {{rel.active}}</p>
-<p>Destination Concept: <a href="index.html#/concept/id/{{rel.destinationConceptId}}">{{rel.destinationConceptId}} - {{rel.destinationConceptPreferredName}}</a></p>
-<p>Characteristic Type Id: {{rel.characteristicTypeId}}</p>
-<p>Modifier Id: {{rel.modifierId}}</p>
-<p>Type Id: {{rel.typeId}}</p>
-<p>Relationship Group: {{rel.relationshipGroup}}</p>
-</li>
-</ul>
-</accordion-group>
-</accordion>
 
