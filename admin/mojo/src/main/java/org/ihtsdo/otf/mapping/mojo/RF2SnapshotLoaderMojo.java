@@ -539,29 +539,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		}
 	}
 
-	/**
-	 * Delete sorted files.
-	 * 
-	 * @param file the file
-	 */
-	public static void deleteSortedFiles(File file) {
-
-		// Check if file is directory/folder
-		if (file.isDirectory()) {
-			// Get all files in the folder
-			File[] files = file.listFiles();
-
-			for (int i = 0; i < files.length; i++) {
-				// Delete each file in the folder
-				deleteSortedFiles(files[i]);
-			}
-			// Delete the folder
-			file.delete();
-		} else {
-			// Delete the file if it is not a folder
-			file.delete();
-		}
-	}
 
 	// Used for debugging/efficiency monitoring
 	/**
@@ -676,7 +653,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 			}
 
 			// delete any existing temporary files
-			deleteSortedFiles(sorted_files);
+			FileSorter.deleteSortedFiles(sorted_files);
 
 			// test whether file/folder still exists (i.e. delete error)
 			if (sorted_files.exists()) {
