@@ -14,8 +14,8 @@
     <td>{{project.destinationTerminology}}, {{project.destinationTerminologyVersion}}</td>
   </tr>
   <tr>
-    <td><a href="#" tooltip-placement="right" tooltip="The RF2 metadata concept identifier and preferred name representing this map project.">Ref Set Id</a></td>
-    <td>{{project.refSetId}}</td>
+    <td><a href="#" tooltip-placement="right" tooltip="The RF2 metadata concept identifier and preferred name representing this map project.">Ref Set</a></td>
+    <td>{{project.refSetName}}, {{project.refSetId}}</td>
   </tr>
   <tr>
     <td><a href="#" tooltip-placement="right" tooltip="A true/false indicator of whether this mapping data has been published.">Published</a></td>
@@ -31,9 +31,9 @@
     <td><table width="100%" class="table pure-table" >
     <thead>
       <tr>
-        <th>User</th>
-        <th>User Name</th>
-        <th>Email</th>
+        <th style="width: 30%;">User</th>
+        <th style="width: 20%;">User Name</th>
+        <th style="width: 50%;">Email</th>
       </tr>
     </thead>
     <tbody ng-repeat="lead in project.mapLead" style="border: 2px solid #ccc;" >
@@ -51,9 +51,9 @@
     <td><table width="100%" class="table pure-table" >
     <thead>
       <tr>
-        <th>User</th>
-        <th>User Name</th>
-        <th>Email</th>
+        <th style="width: 30%;">User</th>
+        <th style="width: 20%;">User Name</th>
+        <th style="width: 50%;">Email</th>
       </tr>
     </thead>
     <tbody ng-repeat="specialist in project.mapSpecialist" style="border: 2px solid #ccc;" >
@@ -87,8 +87,8 @@
     <td><table width="100%" class="table pure-table" >
     <thead>
       <tr>
-        <th>Id</th>
-        <th>Name</th>
+        <th style="width: 30%;">Id</th>
+        <th style="width: 70%;">Name</th>
       </tr>
     </thead>
     <tbody ng-repeat="principle in project.mapPrinciple" style="border: 2px solid #ccc;" >

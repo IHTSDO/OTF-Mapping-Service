@@ -8,33 +8,40 @@
 Map Records ({{nRecords}})
 <p>{{errorRecords}}</p>
  
-
+Filter Results: <input ng-model="query"> 
 
 <table width="100%" class="table pure-table" >
 <thead>
 	<tr>
-		<th>Concept</th>
-		<th>Concept Name</th>
-		<th>Target</th>
-		<th>Target Name</th>
-		<th>Rule</th>
-		<th>Index</th>
-		<th>RelationId</th>
-		<th>Notes</th>
+		<th style="width: 10%;">Concept</th>
+		<th style="width: 18%;">Concept Name</th>
+        <th style="width: 8%;">Group Id</th>
+        <th style="width: 10%;">Map Priority</th>
+        <th style="width: 13%;">Rule</th>
+		<th style="width: 10%;">Target</th>
+		<th style="width: 18%;">Target Name</th>
+		<th style="width: 9%;">Relation Id</th>
+		<th style="width: 5%;">Other</th>
 	</tr>
 </thead>
 
-<tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
+<tbody ng-repeat="record in records | filter:query" style="border: 2px solid #ccc;" >
 
 	<tr ng-repeat = "entry in record.mapEntry" >
 		<td>{{record.conceptId}}</td>
 		<td>{{record.conceptName}}</td>
+        <td>{{entry.mapGroup}}</td>
+        <td>{{entry.mapPriority}}</td>
+        <td>{{entry.rule}}</td>
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
-		<td>{{entry.rule}}</td>
-		<td>{{entry.indexMapPriority}}</td>
 		<td>{{entry.relationId}}</td>
-		<td><p ng-repeat = "note in record.mapNote">{{note.note}}</p></td>
+        <!-- <td><button type="button" class="btn btn-default btn-lg">
+  <span class="glyphicon glyphicon-star"></span> Notes
+</button></td> -->
+        
+        <td><span ng-show="record.mapNote.length > 0"><button type="button" popover-placement="top" popover="On the Top!" class="btn btn-default"><!-- <span class="glyphicon glyphicon-star"> --></span>Top</button></span></td>  -->
+		<!-- <td><span ng-show="record.mapNote.length > 0"><img src="img/notepad.png" border="0">  </span><p ng-repeat = "note in record.mapNote">{{note.note}}</p></td> -->
 	</tr>
 
 </tbody>
