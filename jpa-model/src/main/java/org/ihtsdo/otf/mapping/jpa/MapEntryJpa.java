@@ -81,9 +81,9 @@ public class MapEntryJpa implements MapEntry {
 	@Column(nullable = true, length = 4000)
 	private String rule;
 
-	/** The index (map priority). */
+	/** The map priority. */
 	@Column(nullable = false)
-	private int indexMapPriority;
+	private int mapPriority;
 
 	/** The relation id. */
 	@Column(nullable = false, length = 25)
@@ -112,12 +112,12 @@ public class MapEntryJpa implements MapEntry {
 	 * @param targetId the targetId
 	 * @param mapAdvices the map advices
 	 * @param rule the rule
-	 * @param indexMapPriority the index map priority
+	 * @param mapPriority the index map priority
 	 * @param relationId the relation id
 	 */
 	public MapEntryJpa(Long id, MapRecord mapRecord, Set<MapNote> mapNotes,
 			String targetId, Set<MapAdvice> mapAdvices, String rule,
-			int indexMapPriority, String relationId) {
+			int mapPriority, String relationId) {
 		super();
 		this.id = id;
 		this.mapRecord = mapRecord;
@@ -125,7 +125,7 @@ public class MapEntryJpa implements MapEntry {
 		this.targetId = targetId;
 		this.mapAdvices = mapAdvices;
 		this.rule = rule;
-		this.indexMapPriority = indexMapPriority;
+		this.mapPriority = mapPriority;
 		this.relationId = relationId;
 	}
 
@@ -306,16 +306,16 @@ public class MapEntryJpa implements MapEntry {
 	 */
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
-	public int getIndexMapPriority() {
-		return indexMapPriority;
+	public int getMapPriority() {
+		return mapPriority;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setIndex(java.lang.String)
 	 */
 	@Override
-	public void setIndexMapPriority(int index) {
-		this.indexMapPriority = index;
+	public void setMapPriority(int index) {
+		this.mapPriority = index;
 	}
 
 	/* (non-Javadoc)
@@ -433,7 +433,7 @@ public class MapEntryJpa implements MapEntry {
 		return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord
 				+ ", mapNotes=" + mapNotes + ", mapAdvices=" + mapAdvices
 				+ ", mapPrinciples=" + mapPrinciples + ", targetId=" + targetId
-				+ ", rule=" + rule + ", indexMapPriority=" + indexMapPriority
+				+ ", rule=" + rule + ", mapPriority=" + mapPriority
 				+ ", relationId=" + relationId + ", mapBlock=" + mapBlock
 				+ ", mapGroup=" + mapGroup + "]";
 	}

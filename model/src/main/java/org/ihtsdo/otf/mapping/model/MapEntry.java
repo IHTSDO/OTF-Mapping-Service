@@ -131,14 +131,14 @@ public interface MapEntry {
 	 *
 	 * @return the index
 	 */
-	public int getIndexMapPriority();
+	public int getMapPriority();
 	
 	/**
 	 * Sets the index, the map priority.
 	 *
 	 * @param index the index
 	 */
-	public void setIndexMapPriority(int index);
+	public void setMapPriority(int index);
 	
 	/**
 	 * Gets the map group
