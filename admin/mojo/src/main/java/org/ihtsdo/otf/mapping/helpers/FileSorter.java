@@ -28,14 +28,11 @@ public class FileSorter {
 	 */
 	public static void sortFile(String inputFile, String outputFile,
 		Comparator<String> comparator) throws Exception {
-
+		
 		// Split the input file into chunks and sort each section
+		Logger.getLogger(FileSorter.class).info("  Split " + inputFile);
 		List<String> splitFiles =
-				splitFile(inputFile, outputFile, comparator, 10000);
-		Logger.getLogger(FileSorter.class).info("  Split files list:");
-		for (int i = 0; i < splitFiles.size(); i++) {
-			Logger.getLogger(FileSorter.class).info("    " + splitFiles.get(i));
-		}
+				splitFile(inputFile, outputFile, comparator, 32 * 1024 * 1024);
 
 		// Iteratively merge split files
 		while (splitFiles.size() > 1) {
@@ -232,26 +229,25 @@ public class FileSorter {
 	 * @throws Exception the exception
 	 */
 	private static List<String> splitFile(String inputFile, String outputFile,
-		Comparator<String> comparator, int size) throws Exception {
+		Comparator<String> comparator, int segmentSize) throws Exception {
 
 		int currentSize = 0; // counter for current file size
-		int segmentSize = 32 * 1024 * 1024; // maximum split file size (in
-																				// characters)
 		String line; // current file line
-		List<String> lines = new ArrayList<String>(size); // set of lines to be
+		List<String> lines = new ArrayList<String>(10000); // set of lines to be
 																											// sorted via
 																											// Collections.sort
 		List<String> splitFiles = new ArrayList<String>();
 
 		// open file
-		File fileIn = new File(inputFile).getAbsoluteFile();
+		File fileIn = new File(inputFile);
+		System.out.println("fileIn="+fileIn);
 		BufferedReader reader = new BufferedReader(new FileReader(fileIn));
 
 		// cycle until end of file
 		while ((line = reader.readLine()) != null) {
-
 			currentSize += line.length();
-
+			lines.add(line);
+			
 			// if above segment size, sort and write the array
 			if (currentSize > segmentSize) {
 
@@ -287,19 +283,20 @@ public class FileSorter {
 	private static String createSplitFile(List<String> lines, File fileIn,
 		File outputDir) throws IOException {
 		// write to array
-		File file_temp =
+		File fileTemp =
 				File.createTempFile("split_" + fileIn.getName() + "_", ".tmp",
-						fileIn.getParentFile());
-		BufferedWriter writer = new BufferedWriter(new FileWriter(file_temp));
+						outputDir);
+		BufferedWriter writer = new BufferedWriter(new FileWriter(fileTemp));
 
 		for (int i = 0; i < lines.size(); i++) {
 			writer.write(lines.get(i));
 			writer.newLine();
 		}
+		writer.flush();
 		writer.close();
 		Logger.getLogger(FileSorter.class).info(
-				"  Created split file: " + file_temp.getName());
-		return file_temp.getAbsolutePath();
+				"   Created split file: " + fileTemp.getName());
+		return fileTemp.getAbsolutePath();
 	}
 
 }
