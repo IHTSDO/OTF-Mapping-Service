@@ -67,6 +67,11 @@ mapProjectApp.config(['$routeProvider',
 	      controller: 'MapRecordListCtrl'
 	  });
 	  
+	  $routeProvider.when('/record/projectId/:projectId', {
+		  templateUrl: 'partials/project-records.html',
+	      controller: 'MapProjectDetailCtrl'
+	  });
+	  
 	  $routeProvider.when('/record/id/:recordId', {
 		  templateUrl: 'partials/record-detail.html',
 	      controller: 'MapRecordDetailCtrl'
@@ -80,11 +85,6 @@ mapProjectApp.config(['$routeProvider',
 	  $routeProvider.when('/project/id/:projectId', {
   		  templateUrl: 'partials/project-detail.html', 
   		  controller: 'MapProjectDetailCtrl'
-  	  });
-	  
-	  $routeProvider.when('/record/id/:recordId', {
-  		  templateUrl: 'partials/record-detail.html', 
-  		  controller: 'MapRecordDetailCtrl'
   	  });
 	  
 	  $routeProvider.when('/edit-demo', {
@@ -136,7 +136,8 @@ mapProjectApp.config(['$routeProvider',
 	  ///////////////////////////////
 	  
 	  $routeProvider.when('/', {
-		  templateUrl: 'partials/home.html'
+		  templateUrl: 'partials/project-list.html', 
+		  controller: 'MapProjectListCtrl'
 	  });
 	  
 	  $routeProvider.otherwise({
