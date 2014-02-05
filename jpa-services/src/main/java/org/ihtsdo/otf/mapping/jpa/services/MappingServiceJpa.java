@@ -1063,6 +1063,46 @@ public class MappingServiceJpa implements MappingService {
 
 		return m;
 	}
+	
+
+	/**
+	 * Helper function for retrieving map records given an internal hibernate concept id
+	 * @param conceptId the concept id in Long form
+	 * @return the map records where this concept is referenced
+	 */
+	@Override
+	public List<MapRecord> getMapRecordsForConcept(Long conceptId) {
+
+		// call retrieval function with concept
+		return getMapRecordsForConcept(manager.find(ConceptJpa.class, conceptId));
+	}
+	
+	/**
+	 * Given a Concept, retrieve map records that reference this as a source Concept
+	 * @param concept the Concept object
+	 * @return a list of MapRecords referencing this Concept
+	 */
+	@Override
+	public List<MapRecord> getMapRecordsForConcept(Concept concept) {
+		
+
+		// find maprecords where:
+		//    (1) the conceptId matches the concept terminologyId
+		//    (2) the concept terminology matches the source terminology for the mapRecord's project
+		@SuppressWarnings("unchecked")
+		List<MapRecord> results =
+				manager
+					.createQuery(
+							  "select mr from MapRecordJpa "
+							+ "where conceptId = :conceptId and"
+							+ "and mapProjectId in (select mp.id from MapProjectJpa mp where sourceTerminology = :sourceTerminology")
+					.setParameter("conceptId", concept.getTerminologyId())
+					.setParameter("sourceTerminology", concept.getTerminology())
+					.getResultList();
+		
+		// return results
+		return results;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordCountForMapProjectId(java.lang.Long)
