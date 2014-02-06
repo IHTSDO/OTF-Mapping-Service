@@ -400,7 +400,7 @@ public class MappingServiceRest {
 			}
 	}
 	/**
-	 * Returns the records for a given concept id
+	 * Returns the records for a given project id
 	 * @param projectId the projectId
 	 * @return the mapRecords
 	 */
@@ -443,6 +443,42 @@ public class MappingServiceRest {
 			PfsParameter pfs = new PfsParameterJpa();
 			pfs.setStartIndex(nStart);
 			pfs.setMaxResults(nMaxResults);
+			
+			// execute the service call
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecordList mapRecords = new MapRecordList();
+			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId, pfs));
+			mappingService.close();
+			
+			return mapRecords;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Returns a delimited page of map records for a project id
+	 * @param projectId the projectId
+	 * @param nStart the first record to return
+	 * @param nMaxResults the number of records to fetch
+	 * @return the mapRecords
+	 */
+	@GET
+	@Path("/record/projectId/{id:[0-9][0-9]*}/{nStart:[0-9][0-9]*}-{nMaxResults:[0-9][0-9]*}/{filters}")
+	@ApiOperation(value = "Find paged records by project id and query", notes = "Returns delimited page of MapRecords, e.g. range [nStart: nStart+nMaxRecords-1] given a project id and string filters query", response = MapRecord.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecordsForMapProjectId(
+			@ApiParam(value = "Project id for map records", required = true) @PathParam("id") Long projectId,
+			@ApiParam(value = "Start index of records", required = true) @PathParam("nStart") int nStart,
+			@ApiParam(value = "Number of records to fetch", required = true) @PathParam("nMaxResults") int nMaxResults,
+			@ApiParam(value = "Filters query string", required = true) @PathParam("filters") String filters) {
+		
+		try {
+			// instantiate the pfs parameters
+			PfsParameter pfs = new PfsParameterJpa();
+			pfs.setStartIndex(nStart);
+			pfs.setMaxResults(nMaxResults);
+			pfs.setFilters(filters);
 			
 			// execute the service call
 			MappingService mappingService = new MappingServiceJpa();

@@ -838,7 +838,7 @@ public class MappingServiceJpa implements MappingService {
 	@SuppressWarnings("unchecked")
 	public SearchResultList findMapRecords(String query,
 			PfsParameter pfsParameter) throws Exception {
-
+		
 		SearchResultList s = new SearchResultListJpa();
 
 		FullTextEntityManager fullTextEntityManager = Search
@@ -849,22 +849,31 @@ public class MappingServiceJpa implements MappingService {
 			Query luceneQuery;
 
 			// construct luceneQuery based on URL format
-			if (query.indexOf(':') == -1) { // no fields indicated
+			//if (query.indexOf(':') == -1) { // no fields indicated
+			
+			if (pfsParameter.getFilters().indexOf(':') == -1) { // no fields indicated
+			
 				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
 						Version.LUCENE_36, fieldNames.toArray(new String[0]),
 						searchFactory.getAnalyzer(MapRecordJpa.class));
 				queryParser.setAllowLeadingWildcard(false);
-				luceneQuery = queryParser.parse(query);
+				
+				// TODO Determine if we want to eliminate String query as parameter in favor of PFS
+				//luceneQuery = queryParser.parse(query);
+				luceneQuery = queryParser.parse(pfsParameter.getFilters());
 
 			} else { // field:value
 				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
 						"summary",
 						searchFactory.getAnalyzer(MapRecordJpa.class));
-				luceneQuery = queryParser.parse(query);
+				luceneQuery = queryParser.parse(pfsParameter.getFilters());
 			}
 
 			List<MapRecord> m = fullTextEntityManager.createFullTextQuery(
-					luceneQuery, MapRecordJpa.class).getResultList();
+					luceneQuery, MapRecordJpa.class)
+					.setFirstResult(pfsParameter.getStartIndex())
+					.setMaxResults(pfsParameter.getMaxResults())
+					.getResultList();
 
 			int i = 0;
 		for (MapRecord mr : m) {

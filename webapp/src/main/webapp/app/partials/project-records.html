@@ -9,7 +9,7 @@
 
 <p>{{errorRecords}}</p>
  
-Filter Results: <input ng-model="query">
+<p>Search Records:<form><input ng-model="query"><input type="submit" ng-click="retrieveRecords(1)"></form>
 
 <table width="100%" class="table pure-table" >
 <thead>
@@ -26,7 +26,7 @@ Filter Results: <input ng-model="query">
 	</tr>
 </thead>
 
-<tbody ng-repeat="record in records | filter:query" style="border: 2px solid #ccc;" >
+<tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
 
 	<tr ng-repeat = "entry in record.mapEntry" >
 		<td><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
