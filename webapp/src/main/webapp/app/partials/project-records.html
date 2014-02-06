@@ -1,14 +1,15 @@
-<!--  partial for displaying project :projectId -->
+<!--  partial for displaying records -->
 
 <p></p>
-<h3>{{project.name}}</h3>
+
+<a href="#/project/id/{{project.id}}"><h3>{{project.name}}</h3></a>
 <p></p>
 
 
-Map Records ({{nRecords}})
+
 <p>{{errorRecords}}</p>
  
-Filter Results: <input ng-model="query"> 
+Filter Results: <input ng-model="query">
 
 <table width="100%" class="table pure-table" >
 <thead>
@@ -28,7 +29,7 @@ Filter Results: <input ng-model="query">
 <tbody ng-repeat="record in records | filter:query" style="border: 2px solid #ccc;" >
 
 	<tr ng-repeat = "entry in record.mapEntry" >
-		<td>{{record.conceptId}}</td>
+		<td><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
 		<td>{{record.conceptName}}</td>
         <td>{{entry.mapGroup}}</td>
         <td>{{entry.mapPriority}}</td>
@@ -36,23 +37,19 @@ Filter Results: <input ng-model="query">
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
 		<td>{{entry.relationId}}</td>
-        <!-- <td><button type="button" class="btn btn-default btn-lg">
-  <span class="glyphicon glyphicon-star"></span> Notes
-</button></td> -->
-        
-        <td><span ng-show="record.mapNote.length > 0"><button type="button" popover-placement="top" popover="On the Top!" class="btn btn-default"><!-- <span class="glyphicon glyphicon-star"> --></span>Top</button></span></td>  -->
-		<!-- <td><span ng-show="record.mapNote.length > 0"><img src="img/notepad.png" border="0">  </span><p ng-repeat = "note in record.mapNote">{{note.note}}</p></td> -->
-	</tr>
+        <td>
+        <span ng-show="record.mapNote.length > 0"><IMG popover-placement="left" popover="{{record.mapNote.0.note}}" src="img/notepad.png" ALT="notepad icon"></span>
+        <span ng-show="entry.mapAdvice.length > 0"><IMG popover-placement="left" popover="{{entry.mapAdvice.0.detail}}" src="img/dialog-question.png" ALT="question icon"></span>       
+        </td>
+  </tr>
 
 </tbody>
-
-
-<!-- Displaying {{recordsPerPage}} map records per page.  -->
 
 <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage" class="pagination-sm" 
 			boundary-links="true" rotate="true" num-pages="100"
 			on-select-page="changeRecordPage(page)"></pagination>
 
+{{nRecords}} records
 </table>
 
 
