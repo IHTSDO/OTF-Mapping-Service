@@ -26,7 +26,7 @@
       
       <properties>
         <!-- This can be overridden to use "create" instead -->
-        <hibernate.hbm2ddl.auto>create</hibernate.hbm2ddl.auto>
+        <hibernate.hbm2ddl.auto>none</hibernate.hbm2ddl.auto>
       </properties>
       
       <build>
