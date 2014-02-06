@@ -1,51 +1,55 @@
-<!--  partial for displaying project :projectId -->
+<!--  partial for displaying records -->
 
 <p></p>
-<h3>{{project.name}}</h3>
+
+<a href="#/project/id/{{project.id}}"><h3>{{project.name}}</h3></a>
 <p></p>
 
 
-Map Records ({{nRecords}})
+
 <p>{{errorRecords}}</p>
  
-
+Filter Results: <input ng-model="query">
 
 <table width="100%" class="table pure-table" >
 <thead>
 	<tr>
-		<th>Concept</th>
-		<th>Concept Name</th>
-		<th>Target</th>
-		<th>Target Name</th>
-		<th>Rule</th>
-		<th>Index</th>
-		<th>RelationId</th>
-		<th>Notes</th>
+		<th style="width: 10%;">Concept</th>
+		<th style="width: 18%;">Concept Name</th>
+        <th style="width: 8%;">Group Id</th>
+        <th style="width: 10%;">Map Priority</th>
+        <th style="width: 13%;">Rule</th>
+		<th style="width: 10%;">Target</th>
+		<th style="width: 18%;">Target Name</th>
+		<th style="width: 9%;">Relation Id</th>
+		<th style="width: 5%;">Other</th>
 	</tr>
 </thead>
 
-<tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
+<tbody ng-repeat="record in records | filter:query" style="border: 2px solid #ccc;" >
 
 	<tr ng-repeat = "entry in record.mapEntry" >
-		<td>{{record.conceptId}}</td>
+		<td><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
 		<td>{{record.conceptName}}</td>
+        <td>{{entry.mapGroup}}</td>
+        <td>{{entry.mapPriority}}</td>
+        <td>{{entry.rule}}</td>
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
-		<td>{{entry.rule}}</td>
-		<td>{{entry.indexMapPriority}}</td>
 		<td>{{entry.relationId}}</td>
-		<td><p ng-repeat = "note in record.mapNote">{{note.note}}</p></td>
-	</tr>
+        <td>
+        <span ng-show="record.mapNote.length > 0"><IMG popover-placement="left" popover="{{record.mapNote.0.note}}" src="img/notepad.png" ALT="notepad icon"></span>
+        <span ng-show="entry.mapAdvice.length > 0"><IMG popover-placement="left" popover="{{entry.mapAdvice.0.detail}}" src="img/dialog-question.png" ALT="question icon"></span>       
+        </td>
+  </tr>
 
 </tbody>
-
-
-<!-- Displaying {{recordsPerPage}} map records per page.  -->
 
 <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage" class="pagination-sm" 
 			boundary-links="true" rotate="true" num-pages="100"
 			on-select-page="changeRecordPage(page)"></pagination>
 
+{{nRecords}} records
 </table>
 
 
