@@ -457,8 +457,21 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		     
 		      }).then(function() {
 
-		    	  var terminology = projects[0].sourceTerminology;
-		    	  var version = projects[0].sourceTerminologyVersion;
+		    	  // set terminology based on first map record's map project
+		    	  var terminology = "null";
+		    	  var version = "null";
+		    	  
+		    	  for (var i = 0; i < projects.length; i++) {
+		    		  if (projects[i].id == records[0].mapProjectId) {
+		    			  terminology = projects[i].sourceTerminology;
+		    			  version = projects[i].sourceTerminologyVersion;
+		    			  break;
+		    		  }
+		    	  }
+		    	  
+		    	  console.debug(terminology);
+		    	  console.debug(version);
+		    	  
 		    	  
 		    	  // find concept based on source terminology
 		    	  $http({
