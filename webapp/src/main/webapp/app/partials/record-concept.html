@@ -1,7 +1,7 @@
 <!--  partial for displaying project :projectId -->
 
 <p></p>
-<h3>{{concept.terminology}} Concept {{concept.terminologyId}}<br> {{concept.defaultPreferredName}}</h3>
+<h3>{{concept.terminology}} Concept {{concept.terminologyId}}<br>&nbsp&nbsp{{concept.defaultPreferredName}}</h3>
 <p></p>
 <table width="100%" class="table pure-table" >
 <thead>
@@ -20,12 +20,12 @@
 <tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
 
 	<tr ng-repeat = "entry in record.mapEntry" >
-		<td>{{getProjectName(record)}}</td>
+		<td><a href="index.html#/record/projectId/{{record.mapProjectId}}">{{getProjectName(record)}}</a></td>
 		<td>{{getProjectRefSetId(record)}}</td>
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
 		<td>{{entry.rule}}</td>
-		<td>{{entry.indexMapPriority}}</td>
+		<td>{{entry.mapPriority}}</td>
 		<td>{{entry.relationId}}</td>
 		<td><p ng-repeat = "note in record.mapNote">{{note.note}}</p></td>
 	</tr>

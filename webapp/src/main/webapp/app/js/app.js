@@ -97,7 +97,7 @@ mapProjectApp.config(['$routeProvider',
 			controller: 'ProjectCreateCtrl'
 	  });
 	  
-	  $routeProvider.when('/record-concept/:conceptId', {
+	  $routeProvider.when('/record/conceptId/:conceptId', {
 			templateUrl: 'partials/record-concept.html',
 			controller: 'RecordConceptListCtrl'
 	  });
