@@ -406,100 +406,89 @@ mapProjectAppControllers.controller('ProjectCreateCtrl', ['$scope', '$http',,
 mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams',
    function ($scope, $http, $routeParams) {
 	
-	$scope.conceptId = $routeParams.conceptId;
-	$scope.error = "";
+	// scope variables
+	$scope.error = "";		// initially empty
+	$scope.rows = "["; // beginning of Json array
 	
-	var entryRows = "";
-	var records;
+	// local variables
+	var records = [];
+	var projects = [];
+	var project_names = [];
+	var project_refSetIds = [];
 	
-	// retrieve the concept
+	$scope.getProjectName = function(record) {
+		var projectId = record.mapProjectId;
+		return project_names[parseInt(projectId, 10)-1];
+	};
+	
+	$scope.getProjectRefSetId = function(record) {
+		var projectId = record.mapProjectId;
+		return project_refSetIds[parseInt(projectId, 10)-1];
+	};
+	
+	// retrieve all records with this concept id
 	$http({
-		url: root_mapping + "concept//" + $scope.conceptId,
-        dataType: "json",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }	
-	})
-	
-	// retrieve all map records where this concept appears
-	$http({
-       url: root_mapping + "record/conceptId/" + $scope.conceptId,
-       dataType: "json",
-       method: "GET",
-       headers: {
-         "Content-Type": "application/json"
-       }	
-     }).success(function(data) {
-    	 records = data.mapRecord;
-       $scope.records = data.mapRecord;
-       $scope.error = "Records retrieved";
-     }).error(function(error) {
-   	  $scope.error = "Error retrieving records records.  ";
-     }).then(function() {
-			
-		 // retrieve project information
-		 $http({
-	        url: root_mapping + "project/projects",
+	        url: root_mapping + "record/conceptId/" + $routeParams.conceptId,
 	        dataType: "json",
 	        method: "GET",
 	        headers: {
 	          "Content-Type": "application/json"
-	        }
+	        }	
 	      }).success(function(data) {
-	    	  $scope.projects = data.mapProject;
+	    	  $scope.records = data.mapRecord;
+	          records = data.mapRecord;
 	      }).error(function(error) {
-	    	  $scope.error = $scope.error + "Error retrieving projects.  ";
+	    	  $scope.error = $scope.error + "Could not retrieve records. "; 
+	     
+	      }).then(function() {
+	      
+		// retrieve project information   
+		 $http({
+			 url: root_mapping + "project/projects",
+			 dataType: "json",
+		        method: "GET",
+		        headers: {
+		          "Content-Type": "application/json"
+		        }	
+		      }).success(function(data) {
+		          projects = data.mapProject;
+		      }).error(function(error) {
+		    	  $scope.error = $scope.error + "Could not retrieve projects. "; 
+		     
+		      }).then(function() {
+
+		    	  var terminology = projects[0].sourceTerminology;
+		    	  var version = projects[0].sourceTerminologyVersion;
+		    	  
+		    	  // find concept based on source terminology
+		    	  $http({
+	    			 url: root_content + "concept/" 
+	    			 				   + terminology + "/" 
+	    			 				   + version 
+	    			 				   + "/id/" 
+	    			 				   + $routeParams.conceptId,
+	    			 dataType: "json",
+	    		     method: "GET",
+	    		     headers: {
+	    		          "Content-Type": "application/json"
+	    		     }	
+	    		  }).success(function(data) {
+	    		          $scope.concept = data;
+	    		  }).error(function(error) {
+	    		    	  $scope.error = $scope.error + "Could not retrieve Concept. ";    
+	    		  });
+		    	  
+		    	  // save refSetIds and project names
+		    	  project_names = new Array(projects.length);
+		    	  project_refSetIds = new Array(projects.length);
+		    	  
+		    	  for (var i=0; i<projects.length; i++) {
+		    		  project_names[i] = projects[i].name;
+		    		  project_refSetIds[i] = projects[i].refSetId;
+		    	  }
+		      });
 	      });
-     });
- 
-	 $scope.getEntries = function(project) {
-		 console.debug("Constructing entries");
-		 console.debug(records);
-		 
-	 	 // instantiate empty entry set
-		 var mapRecords = "";
-		 var entryRows = "";
-	 
-		 console.debug("Finding entries for project " + project);
-
-		 // cycle over records to check if they belong to this project
-		 for (var i = 0; i < records.length; i++) {
-			 
-			 console.debug("Record");
-			 console.debug(records[i]);
-			 if (records[i].mapProjectId == project.id) {
-				 console.debug("Adding record " + records[i].conceptId);
-				mapRecords = mapRecords.concat(records[i]);
-			 }
-		 }
-
-		 // construct table elements from MapRecords and MapEntries
-		 for (var i = 0; i < mapRecords.length; i++) {
-			 
-			 entries = records[i].mapEntry;
-		 
-		 	 console.debug("Entries: " + entries);
-			 
-			 for (var j = 0; j < entries.length; j++) {
-				 
-				 var entry = entries[j];
-				 
-				 // give entries data from record
-				 entry.conceptId = records[i].conceptId;
-				 entry.conceptName = records[i].conceptName;
-				 entry.countDescendantConcepts = records[i].countDescendantConcepts;
-				 
-				 // add row
-				 entryRows = entryRows.concat(entry);
-			 }
-			 
-		 }
-		 
-		 return entryRows;
-     };
-
-}]);
+	}]);
                                                               
 
 

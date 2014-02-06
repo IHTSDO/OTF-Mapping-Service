@@ -1,0 +1,46 @@
+<!--  partial for displaying project :projectId -->
+
+<p></p>
+<h3>{{concept.terminology}} Concept {{concept.terminologyId}}<br> {{concept.defaultPreferredName}}</h3>
+<p></p>
+<table width="100%" class="table pure-table" >
+<thead>
+	<tr>
+		<th>Map Project</th>
+		<th>Project Ref Set Id</th>
+		<th>Target</th>
+		<th>Target Name</th>
+		<th>Rule</th>
+		<th>Map Priority</th>
+		<th>Relation Id</th>
+		<th>Notes</th>
+	</tr>
+</thead>
+
+<tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
+
+	<tr ng-repeat = "entry in record.mapEntry" >
+		<td>{{getProjectName(record)}}</td>
+		<td>{{getProjectRefSetId(record)}}</td>
+		<td>{{entry.targetId}}</td>
+		<td>{{entry.targetName}}</td>
+		<td>{{entry.rule}}</td>
+		<td>{{entry.indexMapPriority}}</td>
+		<td>{{entry.relationId}}</td>
+		<td><p ng-repeat = "note in record.mapNote">{{note.note}}</p></td>
+	</tr>
+
+</tbody>
+
+
+<!-- Displaying {{recordsPerPage}} map records per page.  -->
+
+<pagination ng-show="records.length > recordsPerPage"
+			total-items="nRecords" page="recordPage" max-size="recordsPerPage" class="pagination-sm" 
+			boundary-links="true" rotate="true" num-pages="100"
+			on-select-page="changeRecordPage(page)"></pagination>
+
+</table>
+
+
+
