@@ -8,48 +8,70 @@
 
 
 <p>{{errorRecords}}</p>
- 
-Filter Results: <input ng-model="query">
 
-<table width="100%" class="table pure-table" >
-<thead>
-	<tr>
-		<th style="width: 10%;">Concept</th>
-		<th style="width: 18%;">Concept Name</th>
-        <th style="width: 8%;">Group Id</th>
-        <th style="width: 10%;">Map Priority</th>
-        <th style="width: 13%;">Rule</th>
-		<th style="width: 10%;">Target</th>
-		<th style="width: 18%;">Target Name</th>
-		<th style="width: 9%;">Relation Id</th>
-		<th style="width: 5%;">Other</th>
-	</tr>
-</thead>
+Filter Results:
+<input ng-model="query">
 
-<tbody ng-repeat="record in records | filter:query" style="border: 2px solid #ccc;" >
+<table width="100%" class="table">
+  <thead>
+    <tr>
+      <th style="width: 5%;"></th>
+      <th style="width: 10%;">Concept</th>
+      <th style="width: 18%;">Concept Name</th>
+      <th style="width: 8%;">Group Id</th>
+      <th style="width: 10%;">Map Priority</th>
+      <th style="width: 13%;">Rule</th>
+      <th style="width: 10%;">Target</th>
+      <th style="width: 18%;">Target Name</th>
+      <th style="width: 9%;">Relation Id</th>
+    </tr>
+  </thead>
 
-	<tr ng-repeat = "entry in record.mapEntry" >
-		<td><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
-		<td>{{record.conceptName}}</td>
-        <td>{{entry.mapGroup}}</td>
-        <td>{{entry.mapPriority}}</td>
-        <td>{{entry.rule}}</td>
-		<td>{{entry.targetId}}</td>
-		<td>{{entry.targetName}}</td>
-		<td>{{entry.relationId}}</td>
-        <td>
-        <span ng-show="record.mapNote.length > 0"><IMG popover-placement="left" popover="{{record.mapNote.0.note}}" src="img/notepad.png" ALT="notepad icon"></span>
-        <span ng-show="entry.mapAdvice.length > 0"><IMG popover-placement="left" popover="{{entry.mapAdvice.0.detail}}" src="img/dialog-question.png" ALT="question icon"></span>       
-        </td>
-  </tr>
+  <tbody ng-repeat="record in records | filter:query"
+    style="border: 2px solid #ccc;">
 
-</tbody>
+    <tr ng-repeat="entry in record.mapEntry">
 
-<pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage" class="pagination-sm" 
-			boundary-links="true" rotate="true" num-pages="100"
-			on-select-page="changeRecordPage(page)"></pagination>
+      <td><span ng-show="record.mapNote.length > 0">
+          <div class="dropdown">
+            <a class="dropdown-toggle"> <img src="img/notepad.png"
+              ALT="notepad icon">
+            </a>
+            <ul class="dropdown-menu">
+              <a><b>Note View</b></a>
+              <li ng-repeat="note in record.mapNote"><a>{{note.note}}</a></li>
+            </ul>
+          </div>
+      </span> <span ng-show="entry.mapAdvice.length > 0"> <IMG
+          src="img/dialog-question.png" ALT="question icon"
+          ng-click="isCollapsed = !isCollapsed">
+          <div collapse="isCollapsed">
+            <div class="well well-lg">
+              <a><b>Advice View</b></a>
+              <li ng-repeat="advice in entry.mapAdvice"><a>{{advice.detail}}</a>
+              </li>
+            </div>
+          </div>
+      </span></td>
 
-{{nRecords}} records
+      <td><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
+      <td>{{record.conceptName}}</td>
+      <td>{{entry.mapGroup}}</td>
+      <td>{{entry.mapPriority}}</td>
+      <td>{{entry.rule}}</td>
+      <td>{{entry.targetId}}</td>
+      <td>{{entry.targetName}}</td>
+      <td>{{entry.relationId}}</td>
+
+    </tr>
+
+  </tbody>
+
+  <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
+    class="pagination-sm" boundary-links="true" rotate="true" num-pages="100"
+    on-select-page="changeRecordPage(page)"></pagination>
+
+  {{nRecords}} records
 </table>
 
 
