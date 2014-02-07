@@ -36,7 +36,6 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptList;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
-import com.sun.jersey.core.impl.provider.entity.ByteArrayProvider;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -390,7 +389,7 @@ public class MappingServiceRest {
 			
 			try {
 				MappingService mappingService = new MappingServiceJpa();
-				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId);
+				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId, null);
 				mappingService.close();
 				
 				// Jersey can't handle Long as return type, convert to string
@@ -399,8 +398,39 @@ public class MappingServiceRest {
 				throw new WebApplicationException(e);
 			}
 	}
+	
 	/**
-	 * Returns the records for a given concept id
+	 * Returns the count of records associated with a map project given a filtering query
+	 * @param mapProjectId the map project id
+	 * @param filters the string filters
+	 * @return the number of records as a String object
+	 */
+	@GET
+	@Path("/record/projectId/{id:[0-9][0-9]*}/nRecords/{filters}")
+	@ApiOperation(value = "Find the number of records for a project id", notes = "Returns the number of map records for a project id", response = Integer.class)
+	@Produces({ MediaType.TEXT_PLAIN})
+	public String getMapRecordCountForMapProjectIdWithQuery(
+			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "String query to filter records", required = true) @PathParam("filters") String filters) {
+			
+			
+			try {
+				PfsParameter pfs = new PfsParameterJpa();
+				pfs.setFilters(filters);
+				
+				MappingService mappingService = new MappingServiceJpa();
+				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId, pfs);
+				mappingService.close();
+				
+				// Jersey can't handle Long as return type, convert to string
+				return nRecords.toString();
+			} catch (Exception e) {
+				throw new WebApplicationException(e);
+			}
+	}
+	
+	/**
+	 * Returns the records for a given project id
 	 * @param projectId the projectId
 	 * @return the mapRecords
 	 */
@@ -443,6 +473,45 @@ public class MappingServiceRest {
 			PfsParameter pfs = new PfsParameterJpa();
 			pfs.setStartIndex(nStart);
 			pfs.setMaxResults(nMaxResults);
+			
+			// execute the service call
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecordList mapRecords = new MapRecordList();
+			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId, pfs));
+			mappingService.close();
+			
+			return mapRecords;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Returns a delimited page of map records for a project id
+	 * @param projectId the projectId
+	 * @param nStart the first record to return
+	 * @param nMaxResults the number of records to fetch
+	 * @return the mapRecords
+	 */
+	@GET
+	@Path("/record/projectId/{id:[0-9][0-9]*}/{nStart:[0-9][0-9]*}-{nMaxResults:[0-9][0-9]*}/{filters}")
+	@ApiOperation(value = "Find paged records by project id and query", notes = "Returns delimited page of MapRecords, e.g. range [nStart: nStart+nMaxRecords-1] given a project id and string filters query", response = MapRecord.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecordsForMapProjectId(
+			@ApiParam(value = "Project id for map records", required = true) @PathParam("id") Long projectId,
+			@ApiParam(value = "Start index of records", required = true) @PathParam("nStart") int nStart,
+			@ApiParam(value = "Number of records to fetch", required = true) @PathParam("nMaxResults") int nMaxResults,
+			@ApiParam(value = "Filters query string", required = true) @PathParam("filters") String filters) {
+		
+		try {
+			
+			System.out.println("Called getMapRecordsForMapProjectId with query string: " + filters);
+			
+			// instantiate the pfs parameters
+			PfsParameter pfs = new PfsParameterJpa();
+			pfs.setStartIndex(nStart);
+			pfs.setMaxResults(nMaxResults);
+			pfs.setFilters(filters);
 			
 			// execute the service call
 			MappingService mappingService = new MappingServiceJpa();
