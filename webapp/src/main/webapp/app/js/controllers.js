@@ -558,15 +558,42 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 		  $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
 
     	  // load first page
-    	  $scope.changeRecordPage(1);
-    	  
-    	  console.debug($scope.nRecords);
-    	  console.debug($scope.recordsPerPage);
-    	  console.debug($scope.numRecordPages); 
+    	  $scope.retrieveRecords(1);
       });
     	
-	  
-
+	 $scope.retrieveRecords = function(page) {
+		 
+		 console.debug("Switching to page " + page);
+		 
+		 var startRecord = (page - 1) * $scope.recordsPerPage + 1; 
+		 var query_url;
+		 
+		 if ($scope.query == null) {
+			 query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/" + startRecord + "-" + $scope.recordsPerPage;
+		 } else {
+			 query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/" + startRecord + "-" + $scope.recordsPerPage + "/" + $scope.query;
+		 }
+		 
+		 console.debug(query_url);
+		
+		// retrieve any map records associated with this project
+		  $http({
+			  url: query_url,
+			  dataType: "json",
+			  method: "GET",
+			  headers: {
+				  "Content-Type": "application/json"
+			  }
+		  }).success(function(data) {
+			  $scope.records = data.mapRecord;
+			  $scope.statusRecordLoad = "";
+			  $scope.recordPage = page;
+		  }).error(function(error) {
+			  $scope.errorRecord = "Error retrieving map records";
+			  console.debug("changeRecordPage error");
+		  });
+	 }; 
+/*
 	 // record pagination controls
 	 $scope.changeRecordPage = function(page) {
 		 
@@ -588,7 +615,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 			  $scope.errorRecord = "Error retrieving map records";
 			  console.debug("changeRecordPage error");
 		  });
-	 };
+	 };*/
 	 
 	 $scope.getNRecords = function() {
 		 // retrieve the total number of records associated with this map project

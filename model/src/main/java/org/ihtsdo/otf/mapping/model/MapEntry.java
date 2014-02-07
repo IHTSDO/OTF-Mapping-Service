@@ -219,6 +219,20 @@ public interface MapEntry {
 	 * @param mapAdvice the map principle
 	 */
 	public void removeMapPrinciple(MapPrinciple mapAdvice);
+
+	/**
+	 * Gets the relation name.
+	 *
+	 * @return the relation name
+	 */
+	public String getRelationName();
+
+	/**
+	 * Sets the relation name.
+	 * 
+	 * @param relationName
+	 */
+	public void setRelationName(String relationName);
 	
 
 	
