@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.ReaderUtil;
@@ -826,6 +828,8 @@ public class MappingServiceJpa implements MappingService {
 	 * return null; }
 	 */
 
+	
+	
 	/**
 	 * Retrieve map records for a lucene query.
 	 *
@@ -849,41 +853,46 @@ public class MappingServiceJpa implements MappingService {
 			Query luceneQuery;
 
 			// construct luceneQuery based on URL format
-			//if (query.indexOf(':') == -1) { // no fields indicated
-			
-			if (pfsParameter.getFilters().indexOf(':') == -1) { // no fields indicated
-			
+			if (query.indexOf(':') == -1) { // no fields indicated
 				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
 						Version.LUCENE_36, fieldNames.toArray(new String[0]),
 						searchFactory.getAnalyzer(MapRecordJpa.class));
 				queryParser.setAllowLeadingWildcard(false);
-				
-				// TODO Determine if we want to eliminate String query as parameter in favor of PFS
-				//luceneQuery = queryParser.parse(query);
-				luceneQuery = queryParser.parse(pfsParameter.getFilters());
+				luceneQuery = queryParser.parse(query);
 
 			} else { // field:value
 				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
 						"summary",
 						searchFactory.getAnalyzer(MapRecordJpa.class));
-				luceneQuery = queryParser.parse(pfsParameter.getFilters());
+				luceneQuery = queryParser.parse(query);
 			}
 
 			List<MapRecord> m = fullTextEntityManager.createFullTextQuery(
-					luceneQuery, MapRecordJpa.class)
-					.setFirstResult(pfsParameter.getStartIndex())
-					.setMaxResults(pfsParameter.getMaxResults())
-					.getResultList();
+					luceneQuery, MapRecordJpa.class).getResultList();
 
-			int i = 0;
-		for (MapRecord mr : m) {
+			System.out.println(Integer.toString(m.size())
+					+ " map records retrieved");
+
+			for (MapRecord mp : m) {
+				s.addSearchResult(new SearchResultJpa(mp.getId(), mp
+						.getConceptId().toString(), mp.getConceptName()));
+			}
+
+			s.sortSearchResultsById();
+
+
+
+		if (fullTextEntityManager != null) {
+			fullTextEntityManager.close();
+		}
+
+		return s;
+		/*for (MapRecord mr : m) {
 			if (pfsParameter == null ||
 					pfsParameter.isIndexInRange(i++)) {
 				s.addSearchResult(new SearchResultJpa(mr.getId(), "", mr.getConceptId()));
 			}
-		}
-
-		return s;
+		}*/
 	}
 
 	/**
@@ -1118,14 +1127,40 @@ public class MappingServiceJpa implements MappingService {
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordCountForMapProjectId(java.lang.Long)
 	 */
 	@Override
-	public Long getMapRecordCountForMapProjectId(Long mapProjectId) {
+	public Long getMapRecordCountForMapProjectId(Long mapProjectId, PfsParameter pfsParameter) throws Exception {
 
+		// if no paging/filtering/sorting object, retrieve total number of records
+		if (pfsParameter == null) {
+		
 		javax.persistence.Query query = manager
 				.createQuery("select count(m) from MapRecordJpa m where mapProjectId = :mapProjectId");
 
 
 			query.setParameter("mapProjectId", mapProjectId);
 			return new Long(query.getSingleResult().toString());
+		
+		// otherwise require a lucene search based on filters
+		} else {
+			String full_query = constructMapRecordForMapProjectIdQuery(mapProjectId, pfsParameter.getFilters());
+			FullTextEntityManager fullTextEntityManager = Search
+					.getFullTextEntityManager(manager);
+
+			SearchFactory searchFactory = fullTextEntityManager
+					.getSearchFactory();
+			Query luceneQuery;
+
+			// construct luceneQuery based on URL format
+			
+			QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+					"summary",
+					searchFactory.getAnalyzer(MapRecordJpa.class));
+			luceneQuery = queryParser.parse(full_query);
+
+			return new Long(fullTextEntityManager.createFullTextQuery(
+					luceneQuery, MapRecordJpa.class)
+					.getResultSize());
+
+		}
 		
 
 	}
@@ -1136,11 +1171,22 @@ public class MappingServiceJpa implements MappingService {
 	 *
 	 * @param mapProjectId the concept id
 	 * @return the list of map records
+	 * @throws Exception 
 	 */
 	@Override
-	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId) {
+	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId) throws Exception {
 
 		return getMapRecordsForMapProjectId(mapProjectId, null);
+	}
+	
+	@Override
+	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId, PfsParameter pfsParameter) throws Exception {
+		
+		if (pfsParameter.getFilters() == null) {
+			return getMapRecordsForMapProjectIdWithNoQuery(mapProjectId, pfsParameter);
+		} else {
+			return getMapRecordsForMapProjectIdWithQuery(mapProjectId, pfsParameter);
+		}
 	}
 
 	/**
@@ -1152,9 +1198,11 @@ public class MappingServiceJpa implements MappingService {
 	 * @return the list of map records
 	 */
 	@Override
-	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId,
-			PfsParameter pfs) {
+	public List<MapRecord> getMapRecordsForMapProjectIdWithNoQuery(Long mapProjectId,
+			PfsParameter pfsParameter) {
 		List<MapRecord> m = null;
+		
+		System.out.println("No filters found");
 
 		// construct query
 		javax.persistence.Query query = manager
@@ -1164,9 +1212,9 @@ public class MappingServiceJpa implements MappingService {
 		try {
 			query.setParameter("mapProjectId", mapProjectId);
 
-			if (pfs != null) {
-				query.setFirstResult(pfs.getStartIndex());
-				query.setMaxResults(pfs.getMaxResults());
+			if (pfsParameter != null) {
+				query.setFirstResult(pfsParameter.getStartIndex());
+				query.setMaxResults(pfsParameter.getMaxResults());
 			}
 
 			m = query.getResultList();
@@ -1179,6 +1227,108 @@ public class MappingServiceJpa implements MappingService {
 
 		return m;
 	}
+	/**
+	 * Retrieve map records for a lucene query.
+	 *
+	 * @param query the lucene query string
+	 * @param pfsParameter the pfs parameter
+	 * @return a list of map records
+	 * @throws Exception the exception
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<MapRecord> getMapRecordsForMapProjectIdWithQuery(Long mapProjectId,
+			PfsParameter pfsParameter) throws Exception {
+		
+		System.out.println("Filter string: " + pfsParameter.getFilters());
+		System.out.println("nStart  = " + Integer.toString(pfsParameter.getStartIndex()));
+		System.out.println("nMaxRes = " + Integer.toString(pfsParameter.getMaxResults()));
+		
+		String full_query = constructMapRecordForMapProjectIdQuery(mapProjectId, pfsParameter.getFilters());
+		
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
+		SearchFactory searchFactory = fullTextEntityManager
+				.getSearchFactory();
+		Query luceneQuery;
+
+		// construct luceneQuery based on URL format
+		
+		QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+				"summary",
+				searchFactory.getAnalyzer(MapRecordJpa.class));
+		luceneQuery = queryParser.parse(full_query);
+
+		List<MapRecord> m = fullTextEntityManager.createFullTextQuery(
+				luceneQuery, MapRecordJpa.class)
+				.getResultList();
+
+		System.out.println(Integer.toString(m.size()) + " records retrieved");
+		
+		return m;
+		
+	}
+	
+	/**
+	 * Helper function for map record query construction using both fielded terms and unfielded terms
+	 * @param mapProjectId the map project id for which queries are retrieved
+	 * @param queryStr the string of terms to construct a query for
+	 * @return the full lucene query text
+	 */
+	private String constructMapRecordForMapProjectIdQuery(Long mapProjectId, String queryStr) {
+		
+		String[] terms = queryStr.split("\\s+");
+		String full_query = "(";
+		
+		// cycle over terms
+		for (int i = 0; i < terms.length; i++) {
+			
+			// if a boolean operator, add unmodified (TODO update with fuller list later)
+			if (terms[i].matches("AND|and|OR|or|NOT|not")) {
+				full_query += (i==0 ? "" : " ") + terms[i] + " ";
+				continue;
+				
+			// else if already a field-specific query term
+			} else if (terms[i].contains(":")) {
+				full_query += terms[i];
+			
+			// otherwise, treat as unfielded query term
+			} else {
+				full_query += "(";
+			
+				Iterator<String> names_iter = fieldNames.iterator();
+				
+				while(names_iter.hasNext()) {
+					full_query += names_iter.next() + ":" + terms[i];
+					if (names_iter.hasNext()) full_query += " OR ";
+				}
+				
+				full_query += ")";
+			}
+			
+			// if further terms remain in the sequence, apply boolean separator
+			if (!(i == terms.length-1)) {
+				
+				// if next term is not a boolean operator, add OR
+				if(!terms[i+1].matches("AND|and||OR|or|NOT|not")) {
+					full_query += " OR ";
+				} else {
+					// do nothing, user-specified boolean will be applied above
+				}
+				
+			}
+		}
+		
+		// add mapProjectId constraint
+		full_query += ") AND mapProjectId:" + mapProjectId.toString();
+		
+		System.out.println("Full query: " + full_query);
+		
+		return full_query;
+		
+	}
+	
 
 	/**
 	 * Helper function for restful services. Constructs a basic concept from
@@ -1706,6 +1856,5 @@ public class MappingServiceJpa implements MappingService {
 							+ "is no active transaction");
 		tx.commit();
 	}
-
 
 }
