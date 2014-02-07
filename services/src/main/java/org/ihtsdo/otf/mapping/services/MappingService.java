@@ -226,19 +226,18 @@ public interface MappingService {
 	// Other services       ///
 	///////////////////////////
 	
-	public Long getMapRecordCountForMapProjectId(Long mapProjectId) throws Exception;
-	
-	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId) throws Exception;
-	
 	/**
-	 * Returns the map records for map project id.
+	 * Gets the map record count for map project id.
 	 *
-	 * @param projectId the project id
-	 * @param pfs the pfs
-	 * @return the map records for map project id
+	 * @param mapProjectId the map project id
+	 * @param pfsParameter the pfs parameter
+	 * @return the map record count for map project id
+	 * @throws Exception 
 	 */
-	public List<MapRecord> getMapRecordsForMapProjectId(Long projectId,
-			PfsParameter pfs) throws Exception;
+	public Long getMapRecordCountForMapProjectId(Long mapProjectId,
+			PfsParameter pfsParameter) throws Exception;
+	
+	
 		
 	public List<MapRecord> getMapRecordsForConceptId(String conceptId) throws Exception;
 
@@ -259,6 +258,7 @@ public interface MappingService {
 
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) throws Exception;
 	
+
 	/**
 	 * Creates the map records for map project.
 	 *
@@ -271,6 +271,44 @@ public interface MappingService {
 			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
 
 	public Long removeMapRecordsForProjectId(Long mapProjectId) throws Exception;
+	
+	/**
+	 * Helper function not requiring a PFS object
+	 * @param mapProjectId the id of the map project
+	 * @return the map records for a project id
+	 * @throws Exception
+	 */
+	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId) throws Exception;
+	
+	/**
+	 * Helper function which calls either a simple query or lucene query depending on filter parameters
+	 * @param mapProjectId the project id
+	 * @param pfsParameter the page/filter/sort parameter object
+	 * @return the map records for map project id
+	 * @throws Exception
+	 */
+	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId,
+			PfsParameter pfsParameter) throws Exception;
+	
+	/**
+	 * Executes lucene query given a projectId and paging/sorting/filtering parameters
+	 * @param mapProjectId the project id
+	 * @param pfsParameter the paging/filtering/sorting object
+	 * @return the paged and filtered map records for this map project id
+	 * @throws Exception
+	 */
+	public List<MapRecord> getMapRecordsForMapProjectIdWithQuery(Long mapProjectId,
+			PfsParameter pfsParameter) throws Exception;
+
+	/**
+	 * Executes simple query given a projectId and paging/sorting parameters (no filters, i.e. without lucene search)
+	 * @param mapProjectId the project id
+	 * @param pfsParameter the paging/filtering (not used)/sorting object
+	 * @return the paged map records for this map project id
+	 * @throws Exception
+	 */
+	public List<MapRecord> getMapRecordsForMapProjectIdWithNoQuery(Long mapProjectId,
+			PfsParameter pfsParameter);
 	
 	/**
 	 * Helper function for retrieving map records given an internal hibernate concept id
@@ -293,6 +331,9 @@ public interface MappingService {
 	public void beginTransaction() throws Exception;
 	
 	public void commit() throws Exception;
+
+	
+
 }
 	
 	

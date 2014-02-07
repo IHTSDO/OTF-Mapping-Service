@@ -556,13 +556,11 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 
     	  // load first page
     	  $scope.retrieveRecords(1);
-    	  
-    	  console.debug($scope.nRecords);
-    	  console.debug($scope.recordsPerPage);
-    	  console.debug($scope.numRecordPages); 
       });
     	
 	 $scope.retrieveRecords = function(page) {
+		 
+		 console.debug("Switching to page " + page);
 		 
 		 var startRecord = (page - 1) * $scope.recordsPerPage + 1; 
 		 var query_url;
@@ -572,6 +570,8 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 		 } else {
 			 query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/" + startRecord + "-" + $scope.recordsPerPage + "/" + $scope.query;
 		 }
+		 
+		 console.debug(query_url);
 		
 		// retrieve any map records associated with this project
 		  $http({
