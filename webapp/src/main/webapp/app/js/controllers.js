@@ -516,6 +516,9 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	  $scope.errorConcept = "";
 	  $scope.errorRecords = "";
 	  
+	  // for collapse directive
+	  $scope.isCollapsed = true;
+	  
 	  // retrieve project information
 	 $http({
         url: root_mapping + "project/id/" + $scope.projectId,
@@ -551,7 +554,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
     	  $scope.getNRecords();
     	  
           // pagination variables
-		  $scope.recordsPerPage = 5;
+		  $scope.recordsPerPage = 10;
 		  $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
 
     	  // load first page
