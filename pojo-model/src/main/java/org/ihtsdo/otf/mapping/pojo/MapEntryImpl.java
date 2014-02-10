@@ -10,6 +10,7 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
+// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapEntry}.
  * Includes hibernate tags for MEME database.
@@ -27,7 +28,7 @@ public class MapEntryImpl implements MapEntry {
 	/** The target. */
 	private String targetId;
 	
-	/** The target name */
+	/** The target name. */
 	private String targetName;
 
 	/** The map advices. */
@@ -45,17 +46,21 @@ public class MapEntryImpl implements MapEntry {
 	/** The relation id. */
 	private String relationId;
 	
+	/** The relation name. */
+	private String relationName;
+	
 	/** The map record. */
 	private MapRecord mapRecord;
 	
-	/** The map group */
+	/** The map group. */
 	private int mapGroup;
 	
-	/** The map block */
+	/** The map block. */
 	private int mapBlock;
 
 	/**
-	 * Return the id
+	 * Return the id.
+	 *
 	 * @return the id
 	 */
 	@Override
@@ -64,7 +69,8 @@ public class MapEntryImpl implements MapEntry {
 	}
 	
 	/**
-	 * Set the id
+	 * Set the id.
+	 *
 	 * @param id the id
 	 */
 	@Override
@@ -73,7 +79,8 @@ public class MapEntryImpl implements MapEntry {
 	}
 	
 	/**
-	 * Returns the id in string form
+	 * Returns the id in string form.
+	 *
 	 * @return the id in string form
 	 */
 	@XmlID
@@ -131,11 +138,17 @@ public class MapEntryImpl implements MapEntry {
 		this.targetId = targetId;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getTargetName()
+	 */
 	@Override
 	public String getTargetName() {
 		return this.targetName;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setTargetName(java.lang.String)
+	 */
 	@Override
 	public void setTargetName(String targetName) {
 		this.targetName = targetName;
@@ -174,21 +187,33 @@ public class MapEntryImpl implements MapEntry {
 		mapAdvices.remove(mapAdvice);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapPrinciples()
+	 */
 	@Override
 	public Set<MapPrinciple> getMapPrinciples() {
 		return mapPrinciples;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapPrinciples(java.util.Set)
+	 */
 	@Override
 	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
 		this.mapPrinciples = mapPrinciples;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#addMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
+	 */
 	@Override
 	public void addMapPrinciple(MapPrinciple mapPrinciple) {
 		mapPrinciples.add(mapPrinciple);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#removeMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
+	 */
 	@Override
 	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
 		mapPrinciples.remove(mapPrinciple);
@@ -244,6 +269,22 @@ public class MapEntryImpl implements MapEntry {
 
 
 	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getRelationName()
+	 */
+	@Override
+	public String getRelationName() {
+		return relationName;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setRelationName(java.lang.String)
+	 */
+	@Override
+	public void setRelationName(String relationName) {
+		this.relationName = relationName;
+	}
+
+	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapRecord()
 	 */
 	@Override
@@ -259,22 +300,34 @@ public class MapEntryImpl implements MapEntry {
 		this.mapRecord = mapRecord;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapGroup()
+	 */
 	@Override
 	public int getMapGroup() {
 		return this.mapGroup;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapGroup(int)
+	 */
 	@Override
 	public void setMapGroup(int mapGroup) {
 		this.mapGroup = mapGroup;
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapBlock()
+	 */
 	@Override
 	public int getMapBlock() {
 		return this.mapBlock;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapBlock(int)
+	 */
 	@Override
 	public void setMapBlock(int mapBlock) {
 		this.mapBlock = mapBlock;

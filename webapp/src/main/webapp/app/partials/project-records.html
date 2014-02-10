@@ -5,25 +5,18 @@
 <a href="#/project/id/{{project.id}}"><h3>{{project.name}}</h3></a>
 <p></p>
 
+<p>{{errorRecords}} </p>
 
-
-<p>{{errorRecords}}</p>
  
 <p>Search Records:<form><input ng-model="query"><input type="submit" ng-click="retrieveRecords(1)"></form>
 
 <table width="100%" class="table pure-table" >
 <thead>
 	<tr>
-		<th style="width: 10%;">Concept</th>
-		<th style="width: 18%;">Concept Name</th>
-        <th style="width: 8%;">Group Id</th>
-        <th style="width: 10%;">Map Priority</th>
-        <th style="width: 13%;">Rule</th>
-		<th style="width: 10%;">Target</th>
-		<th style="width: 18%;">Target Name</th>
-		<th style="width: 9%;">Relation Id</th>
-		<th style="width: 5%;">Other</th>
-	</tr>
+		<th ng-repeat = "header in headers">
+			<sort-by onsort="onSort" sortdir = "filterCriteria.sortDir" sortedby="filterCriteria.sortedBy" sortvalue="{{header.value}}">{{header.title}}</sort-by>
+		</th>
+		</tr>
 </thead>
 
 <tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
@@ -36,7 +29,6 @@
         <td>{{entry.rule}}</td>
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
-		<td>{{entry.relationId}}</td>
         <td>
         <span ng-show="record.mapNote.length > 0"><IMG popover-placement="left" popover="{{record.mapNote.0.note}}" src="img/notepad.png" ALT="notepad icon"></span>
         <span ng-show="entry.mapAdvice.length > 0"><IMG popover-placement="left" popover="{{entry.mapAdvice.0.detail}}" src="img/dialog-question.png" ALT="question icon"></span>       
@@ -46,10 +38,8 @@
 </tbody>
 
 <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage" class="pagination-sm" 
-			boundary-links="true" rotate="true" num-pages="100"
+			boundary-links="true" rotate="true" num-pages="numRecordPages"
 			on-select-page="retrieveRecords(page)"></pagination>
-
-{{nRecords}} records
 </table>
 
 
