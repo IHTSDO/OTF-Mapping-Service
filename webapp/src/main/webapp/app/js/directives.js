@@ -1,6 +1,6 @@
 'use strict';
 
-var mapProjectAppDirectives = angular.module('mapProjectAppDirectives');
+var mapProjectAppDirectives = angular.module('mapProjectAppDirectives', ['ui.boostrap']);
 
 /* Directives */
 

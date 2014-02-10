@@ -491,6 +491,8 @@ public class MappingServiceRest {
 	 * @param projectId the projectId
 	 * @param nStart the first record to return
 	 * @param nMaxResults the number of records to fetch
+	 * @param filters the filter query
+	 * @param sortBy the field to sort results by
 	 * @return the mapRecords
 	 */
 	@GET
@@ -502,6 +504,7 @@ public class MappingServiceRest {
 			@ApiParam(value = "Start index of records", required = true) @PathParam("nStart") int nStart,
 			@ApiParam(value = "Number of records to fetch", required = true) @PathParam("nMaxResults") int nMaxResults,
 			@ApiParam(value = "Filters query string", required = true) @PathParam("filters") String filters) {
+			//@ApiParam(value = "Sorting field", required = false) String sortBy) {
 		
 		try {
 			
@@ -512,6 +515,8 @@ public class MappingServiceRest {
 			pfs.setStartIndex(nStart);
 			pfs.setMaxResults(nMaxResults);
 			pfs.setFilters(filters);
+			//pfs.setSortField(sortBy);
+			
 			
 			// execute the service call
 			MappingService mappingService = new MappingServiceJpa();

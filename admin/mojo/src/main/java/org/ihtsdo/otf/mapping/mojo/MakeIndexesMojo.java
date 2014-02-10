@@ -76,16 +76,20 @@ public class MakeIndexesMojo extends AbstractMojo {
 
 			manager = factory.createEntityManager();
 			
-			getLog().info("  Creating indexes for ConceptJpa");
+			// full text entity manager
 			FullTextEntityManager fullTextEntityManager = Search
 					.getFullTextEntityManager(manager);
+			
+			/*// Concepts
+			getLog().info("  Creating indexes for ConceptJpa");
 			fullTextEntityManager.purgeAll(ConceptJpa.class);
 			fullTextEntityManager.flushToIndexes();
 			fullTextEntityManager.createIndexer(ConceptJpa.class)
 					.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
 					.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-					.startAndWait();
+					.startAndWait();*/
 			
+			// Map Projects
 			getLog().info("  Creating indexes for MapProjectJpa");
 			fullTextEntityManager.purgeAll(MapProjectJpa.class);
 			fullTextEntityManager.flushToIndexes();
@@ -93,16 +97,21 @@ public class MakeIndexesMojo extends AbstractMojo {
 					.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
 					.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
 					.startAndWait();
+			
+			// Map Records
 			getLog().info("  Creating indexes for MapRecordJpa");
 			fullTextEntityManager.purgeAll(MapRecordJpa.class);
 			fullTextEntityManager.flushToIndexes();
 			fullTextEntityManager.createIndexer(MapRecordJpa.class)
 					.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
 					.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-					.startAndWait();			
+					.startAndWait();
+			
+			// Cleanup
 			getLog().info("  Completing MakeIndexes.java");
 			manager.close();
 			factory.close();
+			
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);

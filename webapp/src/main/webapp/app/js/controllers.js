@@ -1,6 +1,7 @@
 'use strict';
 
 var mapProjectAppControllers = angular.module('mapProjectAppControllers', ['ui.bootstrap']);
+var mapProjectAppDirectives = angular.module('mapProjectAppDirectives', ['ui.boostrap']);
 
 var root_url = "${base.url}/mapping-rest/";
 
@@ -510,11 +511,30 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', '$routeParams',
    function ($scope, $http, $routeParams) {
 	
+	$scope.headers = [
+	                  {value: 'conceptId', title: 'Concept'},
+	                  {value: 'conceptName', title: 'Concept Name'},
+	                  {value: 'mapGroup', title: 'Group Id'},
+	                  {value: 'mapPriority', title: 'Map Priority'},
+	                  {value: 'rule', title: 'Rule'},
+	                  {value: 'targetId', title: 'Target'},
+	                  {value: 'targetName', title: 'Target Name'},
+	                  {value: 'actions', title: 'Actions'},
+	                  
+	                  ];
+	$scope.filterCriteria = {
+			pageNumber: 1,
+			sortDir: 'asc',
+			sortedBy: 'conceptId'
+	};
+	
+	
 	  $scope.projectId = $routeParams.projectId;
 	  
 	  $scope.errorProject = "";
 	  $scope.errorConcept = "";
 	  $scope.errorRecords = "";
+	 
 	  
 	  // retrieve project information
 	 $http({
@@ -546,23 +566,33 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
     		  $scope.errorRecord = "Error retrieving concept";
     	  });
       }).then(function(data) {
-  
-    	  // set scope variable for total records
-    	  $scope.getNRecords();
     	  
-          // pagination variables
-		  $scope.recordsPerPage = 10;
-		  $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
-
+    	  // get pagination variables
+    	  $scope.setPagination(10);
+    	  
     	  // load first page
     	  $scope.retrieveRecords(1);
       });
+	 
+	 // function to set the relevant pagination fields
+	 $scope.setPagination = function(recordsPerPage) {
+		 
+		 // set scope variable for total records
+		 $scope.getNRecords();
+				 
+		 // set pagination variables
+		 $scope.recordsPerPage = recordsPerPage;
+		 $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
+	 };
     	
+	 // function to retrieve records for a specified page
 	 $scope.retrieveRecords = function(page) {
 		 
+		 $scope.setPagination(10);
+		
 		 console.debug("Switching to page " + page);
 		 
-		 var startRecord = (page - 1) * $scope.recordsPerPage + 1; 
+		 var startRecord = (page - 1) * $scope.recordsPerPage; 
 		 var query_url;
 		 
 		 if ($scope.query == null) {
@@ -585,45 +615,34 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 			  $scope.records = data.mapRecord;
 			  $scope.statusRecordLoad = "";
 			  $scope.recordPage = page;
+			  
 		  }).error(function(error) {
 			  $scope.errorRecord = "Error retrieving map records";
 			  console.debug("changeRecordPage error");
 		  });
 	 }; 
-/*
-	 // record pagination controls
-	 $scope.changeRecordPage = function(page) {
-		 
-		 var startRecord = (page - 1) * $scope.recordsPerPage + 1;
 	 
-		  // retrieve any map records associated with this project
-		  $http({
-			  url: root_mapping + "record/projectId/" + $scope.project.objectId + "/" + startRecord + "-" + $scope.recordsPerPage,
-			  dataType: "json",
-			  method: "GET",
-			  headers: {
-				  "Content-Type": "application/json"
-			  }
-		  }).success(function(data) {
-			  $scope.records = data.mapRecord;
-			  $scope.statusRecordLoad = "";
-			  $scope.recordPage = page;
-		  }).error(function(error) {
-			  $scope.errorRecord = "Error retrieving map records";
-			  console.debug("changeRecordPage error");
-		  });
-	 };*/
-	 
+	 // function query for the number of records associated with full set or query
 	 $scope.getNRecords = function() {
+		 
+		 var query_url;
+		 
+		 if ($scope.query == null) {
+			 query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/nRecords";
+		 } else {
+			 query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/nRecords/" + $scope.query;
+		 }
+		 
 		 // retrieve the total number of records associated with this map project
 	   	  $http({
-	   		  url: root_mapping + "record/projectId/" + $scope.project.objectId + "/nRecords",
+	   		  url: query_url,
 	   		  dataType: "json",
 	   		  method: "GET",
 	   		  headers: {
 	   			  "Content-Type": "application/json"
 	   		  }
 	   	  }).success(function(data) {
+	   		  console.debug("getNRecords returned " + data);
 	   		  $scope.nRecords = data;
 	   		  
 	   	  }).error(function(error) {
@@ -631,36 +650,72 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	   		  console.debug("getNRecords error");
 	   	  });
 	 };
-	  
+	 
+	 $scope.onSort = function (sortedBy, sortDir) {
+		 $scope.filterCriteria.sortDir = sortDir;
+		 $scope.filterCriteria.sortedBy = sortedBy;
+		 $scope.filterCriteria.pageNumber = 1;
+	 };
 }]);
+
+
+//////////////////////////////////////////////////////
+// Directives:  TODO Separate into different file
+/////////////////////////////////////////////////////
+
+mapProjectAppControllers.directive('sortBy', function () {
+	
+	return {
+		templateUrl: 'sort-by.html',
+		restrict: 'E',
+		transclude: true,
+		replace: true,
+		scope: {
+			sortdir: '=',
+			sortedby: '=',
+			sortvalue: '@',
+			onsort: '='
+		},
+		link: function (scope, element, attrs) {
+			scope.sort = function () {
+				if (scope.sortedby == scope.sortvalue) 
+					scope.sortdir = scope.sortdir == 'asc' ? 'desc' : 'asc';
+				else {
+					scope.sortedeby = scope.sortvalue;
+					scope.sortdir = 'asc';
+				}
+				scope.onsort(scope.sortedby, scope.sortdir);
+			};
+		}
+	};
+});
+
+
 
 //////////////////////////////
 //Metadata Services
-//////////////////////////////	
+//////////////////////////////
 
 mapProjectAppControllers.controller('MetadataCtrl', 
-		['$scope', '$http',
-                                                             
-		function ($scope, $http) {
-			
-			$scope.errorMetadata = "";
-			
-			// retrieve any concept associated with this project
-	    	 $http({
-	    		  url: root_metadata + "all/SNOMEDCT/20130131",
-	    		  dataType: "json",
-	    		  method: "GET",
-	    		  headers: {
-	    			  "Content-Type": "application/json"
-	    		  }
-	    	  }).success(function(data) {
-	    		  $scope.idNameMaps = data.idNameMap;
-	    	  }).error(function(error) {
-	    		  $scope.errorMetadata = "Error retrieving metadata";
-	    	  });
-		}]);
+['$scope', '$http',
+                                 
+function ($scope, $http) {
 
+$scope.errorMetadata = "";
 
-
+// retrieve any concept associated with this project
+$http({
+url: root_metadata + "all/SNOMEDCT/20130131",
+dataType: "json",
+method: "GET",
+headers: {
+"Content-Type": "application/json"
+}
+}).success(function(data) {
+$scope.idNameMaps = data.idNameMap;
+}).error(function(error) {
+$scope.errorMetadata = "Error retrieving metadata";
+});
+}]);
 
 
