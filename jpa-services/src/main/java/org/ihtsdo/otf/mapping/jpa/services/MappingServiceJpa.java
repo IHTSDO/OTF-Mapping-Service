@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
@@ -26,6 +27,7 @@ import org.apache.lucene.util.Version;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
@@ -1227,6 +1229,50 @@ public class MappingServiceJpa implements MappingService {
 
 		return m;
 	}
+	
+	/**
+	 * Test function for .setParameter
+	 * @throws ParseException 
+	 */
+	@Override
+	public List<MapRecord> testCriteriaQuery(Long mapProjectId, String query, PfsParameter pfsParameter) throws Exception {
+		System.out.println("Filter string: " + pfsParameter.getFilters());
+		System.out.println("nStart  = " + Integer.toString(pfsParameter.getStartIndex()));
+		System.out.println("nMaxRes = " + Integer.toString(pfsParameter.getMaxResults()));
+	
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+		SearchFactory searchFactory = fullTextEntityManager
+				.getSearchFactory();
+
+		// construct luceneQuery based on URL format
+		QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+				"summary",
+				searchFactory.getAnalyzer(MapRecordJpa.class));
+		Query luceneQuery = queryParser.parse(query);
+
+		org.hibernate.search.jpa.FullTextQuery ftquery = (FullTextQuery) fullTextEntityManager.createFullTextQuery(
+				luceneQuery, MapRecordJpa.class)
+				.setParameter("mapProjectId", mapProjectId);
+		
+		
+		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+			ftquery.setFirstResult(pfsParameter.getStartIndex());
+			ftquery.setMaxResults(pfsParameter.getMaxResults());
+		}
+		if (pfsParameter.getSortField() != null) {
+			ftquery.setSort( new Sort (new SortField(pfsParameter.getSortField(), SortField.STRING)));
+		}
+		
+		List<MapRecord> m = ftquery.getResultList();
+
+		System.out.println(Integer.toString(m.size()) + " records retrieved");
+		
+		return m;
+		
+	}
+	
+	
 	/**
 	 * Retrieve map records for a lucene query.
 	 *
@@ -1260,8 +1306,10 @@ public class MappingServiceJpa implements MappingService {
 				searchFactory.getAnalyzer(MapRecordJpa.class));
 		luceneQuery = queryParser.parse(full_query);
 
-		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager.createFullTextQuery(
-				luceneQuery, MapRecordJpa.class);
+		org.hibernate.search.jpa.FullTextQuery ftquery = (FullTextQuery) fullTextEntityManager.createFullTextQuery(
+				luceneQuery, MapRecordJpa.class)
+				.setParameter("mapProjectId", 3);
+		
 		
 		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
 			ftquery.setFirstResult(pfsParameter.getStartIndex());
@@ -1290,6 +1338,10 @@ public class MappingServiceJpa implements MappingService {
 		System.out.println("--------------------------");
 		System.out.println("Entering query constructor");
 		System.out.println("--------------------------");
+		
+		// list of escape terms (i.e. quotes, operators) to be fed into query untouched
+		String escapeTerms = "AND|OR|NOT|\\+|\\-|\"|\\(|\\)";
+		String booleanTerms = "AND|OR|NOT";
 
 		// first cycle over the string to add artificial breaks before and after parentheses and quotes
 		String queryStr_mod = queryStr;
@@ -1297,9 +1349,12 @@ public class MappingServiceJpa implements MappingService {
 		queryStr_mod = queryStr_mod.replace(")", " ) ");
 		queryStr_mod = queryStr_mod.replace("\"", " \" ");
 		
+		// remove any leading or trailing whitespace (otherwise first/last null term bug)
+		queryStr_mod = queryStr_mod.trim();
+		
 		System.out.println("After parentheses/quote check: " + queryStr_mod);
 	
-		// split the string by white space
+		// split the string by white space and single-character operators
 		String[] terms = queryStr_mod.split("\\s+");
 		
 		System.out.println("Terms after query split:  ");
@@ -1312,8 +1367,7 @@ public class MappingServiceJpa implements MappingService {
 		List<String> parsedTerms = new ArrayList<String>();
 		String currentTerm = "";
 		
-		// cycle over terms TODO Add error checking of expression here or in webapp?
-		// for now, assumes quotes are properly placed
+		// cycle over terms to identify quoted (i.e. non-parsed) terms
 		for (int i = 0; i < terms.length; i++) {
 			
 			// if an open quote is detected
@@ -1357,12 +1411,6 @@ public class MappingServiceJpa implements MappingService {
 		
 		// begin constructing query
 		String full_query = "(";
-		
-		// TODO Fix odd bug introducing empty term when query starts with "
-		if (queryStr.startsWith("\"")) { 
-			System.out.println("Skipping null term");
-			parsedTerms.remove(0);
-		}
 					
 		
 		// cycle over terms
@@ -1371,15 +1419,15 @@ public class MappingServiceJpa implements MappingService {
 			
 			System.out.println("Next term: " + parsedTerms.get(i));
 
-			// if a parentheses, add unmodified
-			if(parsedTerms.get(i).equals("(") || parsedTerms.get(i).equals(")")) {
-				full_query += parsedTerms.get(i);
-				continue;
-			}
-			
-			// if a boolean operator, add unmodified (TODO update with fuller list later)
-			if (parsedTerms.get(i).matches("AND|and|OR|or|NOT|not")) {
-				full_query += (i==0 ? "" : " ") + parsedTerms.get(i) + " ";
+			// if an escape character/sequence, add unmodified
+			if(parsedTerms.get(i).matches(escapeTerms)) {
+				
+				// if first term, do not add preceding whitespace separator
+				full_query += (i==0 ? "" : " "); 
+				
+				// check for +/-
+				
+				full_query += (i==0 ? "" : " ") + parsedTerms.get(i	); // if first term, do not add whitespace separator
 				continue;
 				
 			// else if already a field-specific query term
@@ -1403,15 +1451,16 @@ public class MappingServiceJpa implements MappingService {
 			// if further terms remain in the sequence, apply boolean separator
 			if (!(i == parsedTerms.size()-1)) {
 				
-				// if next term is not a boolean operator, add OR
-				if(!parsedTerms.get(i+1).matches("AND|and|OR|or|NOT|not")) {
+				// if next term is not an operator, add OR
+				if(!parsedTerms.get(i+1).matches(escapeTerms)) {
 					full_query += " OR ";
 				} else {
-					// do nothing, user-specified boolean will be applied above
+					// do nothing
 				}
 				
 			}
 		}
+		
 		
 		/*// cycle over terms
 				for (int i = 0; i < terms.length; i++) {

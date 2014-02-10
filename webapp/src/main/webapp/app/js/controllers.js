@@ -588,7 +588,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	 // function to retrieve records for a specified page
 	 $scope.retrieveRecords = function(page) {
 		 
-		 $scope.setPagination(10);
+		// $scope.setPagination(10);
 		
 		 console.debug("Switching to page " + page);
 		 
