@@ -5,15 +5,15 @@
 <a href="#/project/id/{{project.id}}"><h3>{{project.name}}</h3></a>
 <p></p>
 
+<p>{{errorRecords}} (May not match number of rows; records with no entries are not displayed.)</p>
 
-
-<p>{{errorRecords}}</p>
  
 <p>Search Records:<form><input ng-model="query"><input type="submit" ng-click="retrieveRecords(1)"></form>
 
-<table width="100%" class="table pure-table" >
+<table width="100%" class="table" >
 <thead>
-	<tr>
+	<tr> 
+        <th style="width: 5%;"></th>
 		<th style="width: 10%;">Concept</th>
 		<th style="width: 18%;">Concept Name</th>
         <th style="width: 8%;">Group Id</th>
@@ -21,36 +21,71 @@
         <th style="width: 13%;">Rule</th>
 		<th style="width: 10%;">Target</th>
 		<th style="width: 18%;">Target Name</th>
-		<th style="width: 9%;">Relation Id</th>
-		<th style="width: 5%;">Other</th>
 	</tr>
 </thead>
+
+<tbody>
+	<tr>
+        <td></td>
+		<td><input style="width:95%;" type="text" ng-model="filterField[0]" ng-enter="clearOthers(1)"></td>
+		<td><input style="width:95%;" type="text" ng-model="filterField[1]" ng-enter="clearOthers(2)"></td>
+		<td><input style="width:95%;" type="text" ng-model="filterField[2]" ng-enter="clearOthers(3)"></td>
+		<td><input style="width:95%;" type="text" ng-model="filterFIeld[3]" ng-enter="clearOthers(4)"></td>
+		<td><input style="width:95%;" type="text" ng-model="filterField[4]" ng-enter="clearOthers(5)"></td>
+		<td><input style="width:95%;" type="text" ng-model="filterField[5]" ng-enter="clearOthers(6)"></td>
+		<td><input style="width:95%;" type="text" ng-model="filterField[6]" ng-enter="clearOthers(7)"></td>
+	</tr>
+</tbody>
 
 <tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
 
 	<tr ng-repeat = "entry in record.mapEntry" >
-		<td><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
+		
+        <td><span ng-show="record.mapNote.length > 0">
+          <div class="dropdown">
+            <a class="dropdown-toggle"> 
+            <img src="img/notepad.png" alt="notepad icon">
+            </a>
+            <ul class="dropdown-menu">
+              <b>Note View</b>
+              <li ng-repeat="note in record.mapNote"><a>{{note.note}}</a></li>
+            </ul>
+          </div>
+        </span>
+        <span ng-show="entry.mapAdvice.length > 0">
+          <div class="dropdown">
+            <a class="dropdown-toggle"> 
+            <img src="img/dialog-question.png" alt="question icon">
+            </a>
+            <ul class="dropdown-menu">
+              <b>Advice View</b>
+              <li ng-repeat="advice in entry.mapAdvice"><a>{{advice.detail}}</a></li>
+            </ul>
+          </div>
+        </span>
+         
+        </td>
+        <td><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
 		<td>{{record.conceptName}}</td>
         <td>{{entry.mapGroup}}</td>
         <td>{{entry.mapPriority}}</td>
         <td>{{entry.rule}}</td>
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
-		<td>{{entry.relationId}}</td>
-        <td>
-        <span ng-show="record.mapNote.length > 0"><IMG popover-placement="left" popover="{{record.mapNote.0.note}}" src="img/notepad.png" ALT="notepad icon"></span>
-        <span ng-show="entry.mapAdvice.length > 0"><IMG popover-placement="left" popover="{{entry.mapAdvice.0.detail}}" src="img/dialog-question.png" ALT="question icon"></span>       
-        </td>
+        
   </tr>
 
 </tbody>
 
 <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage" class="pagination-sm" 
-			boundary-links="true" rotate="true" num-pages="100"
+			boundary-links="true" rotate="true" num-pages="numRecordPages"
 			on-select-page="retrieveRecords(page)"></pagination>
 
 {{nRecords}} records
 </table>
+
+
+
 
 
 
