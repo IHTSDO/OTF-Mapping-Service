@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.helpers;
 
-import java.util.Comparator;
-
 /**
  * The Jpa implementation of the paging/filtering/sorting object
  * @author Patrick
@@ -19,7 +17,7 @@ public class PfsParameterJpa implements PfsParameter {
 	private String filters = null;
 	
 	/** The comparator for sorting */
-	private Comparator<Object> sortComparator = null;
+	private String sortField = null;
 	
 	/** The default constructor */
 	public PfsParameterJpa() {
@@ -80,22 +78,24 @@ public class PfsParameterJpa implements PfsParameter {
 		this.filters = filters;
 	}
 
-	/** 
-	 * Returns the sorting comparator
-	 * @return the sorting comparator
+	/**
+	 * Gets the sort field.
+	 *
+	 * @return the sort field
 	 */
 	@Override
-	public Comparator<Object> getsortComparator() {
-		return sortComparator;
+	public String getSortField() {
+		return sortField;
 	}
 
-	/** 
-	 * Sets the sorting comparator
-	 * @param sortComparator the sorting comparator
+	/**
+	 * Sets the sort field
+	 * 
+	 * @param sortField
 	 */
 	@Override
-	public void setsortComparator(Comparator<Object> sortComparator) {
-		this.sortComparator = sortComparator;
+	public void setSortField(String sortField) {
+		this.sortField = sortField;
 	}
 
 	/* (non-Javadoc)
@@ -108,4 +108,6 @@ public class PfsParameterJpa implements PfsParameter {
 				 i >= getStartIndex() && 
 				 i < (getStartIndex() + getMaxResults());
 	}
+
+	
 }

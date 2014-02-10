@@ -269,6 +269,22 @@ public class MapEntryImpl implements MapEntry {
 
 
 	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getRelationName()
+	 */
+	@Override
+	public String getRelationName() {
+		return relationName;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setRelationName(java.lang.String)
+	 */
+	@Override
+	public void setRelationName(String relationName) {
+		this.relationName = relationName;
+	}
+
+	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapRecord()
 	 */
 	@Override
@@ -421,20 +437,6 @@ public class MapEntryImpl implements MapEntry {
 				+ "]";
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getRelationName()
-	 */
-	@Override
-	public String getRelationName() {
-		return relationName;
-	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setRelationName(java.lang.String)
-	 */
-	@Override
-	public void setRelationName(String relationName) {
-		this.relationName = relationName;
-	}
 
 }

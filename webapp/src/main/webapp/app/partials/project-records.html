@@ -5,6 +5,7 @@
 <a href="#/project/id/{{project.id}}"><h3>{{project.name}}</h3></a>
 <p></p>
 
+<p>{{errorRecords}} </p>
 <p>{{errorRecords}} (May not match number of rows; records with no entries are not displayed.)</p>
 
  
@@ -23,19 +24,6 @@
 		<th style="width: 18%;">Target Name</th>
 	</tr>
 </thead>
-
-<tbody>
-	<tr>
-        <td></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[0]" ng-enter="clearOthers(1)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[1]" ng-enter="clearOthers(2)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[2]" ng-enter="clearOthers(3)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterFIeld[3]" ng-enter="clearOthers(4)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[4]" ng-enter="clearOthers(5)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[5]" ng-enter="clearOthers(6)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[6]" ng-enter="clearOthers(7)"></td>
-	</tr>
-</tbody>
 
 <tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
 
@@ -73,6 +61,10 @@
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
         
+        <td>
+        <span ng-show="record.mapNote.length > 0"><IMG popover-placement="left" popover="{{record.mapNote.0.note}}" src="img/notepad.png" ALT="notepad icon"></span>
+        <span ng-show="entry.mapAdvice.length > 0"><IMG popover-placement="left" popover="{{entry.mapAdvice.0.detail}}" src="img/dialog-question.png" ALT="question icon"></span>       
+        </td>
   </tr>
 
 </tbody>
@@ -80,8 +72,6 @@
 <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage" class="pagination-sm" 
 			boundary-links="true" rotate="true" num-pages="numRecordPages"
 			on-select-page="retrieveRecords(page)"></pagination>
-
-{{nRecords}} records
 </table>
 
 
