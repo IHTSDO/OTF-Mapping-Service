@@ -536,6 +536,9 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	  $scope.errorRecords = "";
 	 
 	  
+	  // for collapse directive
+	  $scope.isCollapsed = true;
+	  
 	  // retrieve project information
 	 $http({
         url: root_mapping + "project/id/" + $scope.projectId,
