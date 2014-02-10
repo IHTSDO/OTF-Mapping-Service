@@ -1901,7 +1901,6 @@ public class MappingServiceJpa implements MappingService {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject(org.ihtsdo.otf.mapping.model.MapProject, java.util.Set)
 	 */
-	@Override
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
 			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
 		
