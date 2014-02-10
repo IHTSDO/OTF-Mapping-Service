@@ -411,6 +411,18 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	$scope.error = "";		// initially empty
 	$scope.rows = "["; // beginning of Json array
 	
+	$scope.headers = [
+	                  {value: 'projectName', title: 'Project Name'},
+	                  {value: 'refSetId', title: 'Ref Set Id'},
+	                  {value: 'mapGroup', title: 'Group Id'},
+	                  {value: 'mapPriority', title: 'Map Priority'},
+	                  {value: 'rule', title: 'Rule'},
+	                  {value: 'targetId', title: 'Target'},
+	                  {value: 'targetName', title: 'Target Name'},
+	                  {value: 'actions', title: 'Actions'}
+	                  
+	                  ];
+	
 	// local variables
 	var records = [];
 	var projects = [];
@@ -519,7 +531,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	                  {value: 'rule', title: 'Rule'},
 	                  {value: 'targetId', title: 'Target'},
 	                  {value: 'targetName', title: 'Target Name'},
-	                  {value: 'actions', title: 'Actions'},
+	                  {value: 'actions', title: 'Actions'}
 	                  
 	                  ];
 	$scope.filterCriteria = {

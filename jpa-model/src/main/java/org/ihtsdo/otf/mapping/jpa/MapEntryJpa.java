@@ -76,7 +76,7 @@ public class MapEntryJpa implements MapEntry {
 	private String targetId;
 	
 	/** The target name. */
-	@Column(nullable = true) // TODO Change to false once other terminologies are in
+	@Column(nullable = true)
 	private String targetName;
 	
 	/** The rule. */

@@ -520,9 +520,8 @@ public class MappingServiceRest {
 			
 			// execute the service call
 			MappingService mappingService = new MappingServiceJpa();
-			MapRecordList mapRecords = new MapRecordList();
-			mapRecords.setMapRecords(mappingService.testCriteriaQuery(projectId, filters, pfs));
-			//mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId, pfs));
+			MapRecordList mapRecords = new MapRecordList();			
+			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId, pfs));
 			mappingService.close();
 			
 			return mapRecords;

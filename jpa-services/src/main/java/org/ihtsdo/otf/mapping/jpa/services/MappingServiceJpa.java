@@ -1252,8 +1252,7 @@ public class MappingServiceJpa implements MappingService {
 		Query luceneQuery = queryParser.parse(query);
 
 		org.hibernate.search.jpa.FullTextQuery ftquery = (FullTextQuery) fullTextEntityManager.createFullTextQuery(
-				luceneQuery, MapRecordJpa.class)
-				.setParameter("mapProjectId", mapProjectId);
+				luceneQuery, MapRecordJpa.class);
 		
 		
 		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
@@ -1307,8 +1306,7 @@ public class MappingServiceJpa implements MappingService {
 		luceneQuery = queryParser.parse(full_query);
 
 		org.hibernate.search.jpa.FullTextQuery ftquery = (FullTextQuery) fullTextEntityManager.createFullTextQuery(
-				luceneQuery, MapRecordJpa.class)
-				.setParameter("mapProjectId", 3);
+				luceneQuery, MapRecordJpa.class);
 		
 		
 		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
@@ -1335,19 +1333,33 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	private String constructMapRecordForMapProjectIdQuery(Long mapProjectId, String queryStr) {
 		
+		////////////////////
+		// Basic algorithm:
+		// 1) add whitespace breaks to operators
+		// 2) split query on whitespace
+		// 3) cycle over terms in split query to find quoted material, add each term/quoted term to parsed terms\
+		//    a) special case: quoted term after a :
+		// 3) cycle over terms in parsed terms
+		//    a) if an operator/parantheses, pass through unchanged
+		//	  b) if a fielded query (i.e. field:value), pass through unchanged
+		//    c) if not, construct query on all fields with this term
+		
+		
 		System.out.println("--------------------------");
 		System.out.println("Entering query constructor");
 		System.out.println("--------------------------");
 		
 		// list of escape terms (i.e. quotes, operators) to be fed into query untouched
-		String escapeTerms = "AND|OR|NOT|\\+|\\-|\"|\\(|\\)";
+		String escapeTerms = "\\+|\\-|\"|\\(|\\)";
 		String booleanTerms = "AND|OR|NOT";
 
-		// first cycle over the string to add artificial breaks before and after parentheses and quotes
+		// first cycle over the string to add artificial breaks before and after control characters
 		String queryStr_mod = queryStr;
 		queryStr_mod = queryStr_mod.replace("(", " ( ");
 		queryStr_mod = queryStr_mod.replace(")", " ) ");
 		queryStr_mod = queryStr_mod.replace("\"", " \" ");
+		queryStr_mod = queryStr_mod.replace("+", " + ");
+		queryStr_mod = queryStr_mod.replace("-", " - ");
 		
 		// remove any leading or trailing whitespace (otherwise first/last null term bug)
 		queryStr_mod = queryStr_mod.trim();
@@ -1365,6 +1377,7 @@ public class MappingServiceJpa implements MappingService {
 		// merge items between quotation marks
 		boolean exprInQuotes = false;
 		List<String> parsedTerms = new ArrayList<String>();
+		List<String> parsedTerms_temp = new ArrayList<String>();
 		String currentTerm = "";
 		
 		// cycle over terms to identify quoted (i.e. non-parsed) terms
@@ -1377,9 +1390,21 @@ public class MappingServiceJpa implements MappingService {
 					System.out.println("Close quote detected, exprInQuotes = " + exprInQuotes);
 					System.out.println("Adding " + currentTerm);	
 					
-					// add to parsed terms list (inside quotes)
-					parsedTerms.add("\"" + currentTerm + "\"");	
+					// special case check:  fielded term.  Impossible for first term to be fielded.
+					if (parsedTerms.size() == 0) {
+						parsedTerms.add("\"" + currentTerm + "\"");	
+					}
+					else {
+						String lastParsedTerm = parsedTerms.get(parsedTerms.size()-1);
 						
+						// if last parsed term ended with a colon, append this term to the last parsed term
+						if (lastParsedTerm.endsWith(":") == true) {
+							parsedTerms.set(parsedTerms.size()-1, lastParsedTerm + "\"" + currentTerm + "\"");
+						} else {
+							parsedTerms.add("\"" + currentTerm + "\"");	
+						}
+					} 
+					
 					// reset current term					
 					currentTerm = "";
 					exprInQuotes = false;
@@ -1419,13 +1444,8 @@ public class MappingServiceJpa implements MappingService {
 			
 			System.out.println("Next term: " + parsedTerms.get(i));
 
-			// if an escape character/sequence, add unmodified
-			if(parsedTerms.get(i).matches(escapeTerms)) {
-				
-				// if first term, do not add preceding whitespace separator
-				full_query += (i==0 ? "" : " "); 
-				
-				// check for +/-
+			// if a boolean or an escape character/sequence, add this term unmodified (with appropriate action
+			if(parsedTerms.get(i).matches(escapeTerms) || parsedTerms.get(i).matches(booleanTerms)) {
 				
 				full_query += (i==0 ? "" : " ") + parsedTerms.get(i	); // if first term, do not add whitespace separator
 				continue;
@@ -1448,14 +1468,12 @@ public class MappingServiceJpa implements MappingService {
 				full_query += ")";
 			}
 			
-			// if further terms remain in the sequence, apply boolean separator
+			// if further terms remain in the sequence
 			if (!(i == parsedTerms.size()-1)) {
 				
-				// if next term is not an operator, add OR
-				if(!parsedTerms.get(i+1).matches(escapeTerms)) {
-					full_query += " OR ";
-				} else {
-					// do nothing
+				// if next term is not a boolean operator or an escape term, add OR
+				if(!parsedTerms.get(i+1).matches(booleanTerms) && !parsedTerms.get(i+1).matches(escapeTerms)) {
+					full_query += " OR";
 				}
 				
 			}
@@ -1901,6 +1919,7 @@ public class MappingServiceJpa implements MappingService {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject(org.ihtsdo.otf.mapping.model.MapProject, java.util.Set)
 	 */
+	@Override
 	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
 			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
 		

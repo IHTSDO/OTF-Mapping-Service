@@ -15,10 +15,6 @@
 <thead>
 	<tr> 
         <th style="width: 5%;"></th>
-		<th ng-repeat = "header in headers">
-			<sort-by onsort="onSort" sortdir = "filterCriteria.sortDir" sortedby="filterCriteria.sortedBy" sortvalue="{{header.value}}">{{header.title}}</sort-by>
-		</th>
-		</tr>
 		<th style="width: 10%;">Concept</th>
 		<th style="width: 18%;">Concept Name</th>
         <th style="width: 8%;">Group Id</th>
@@ -28,19 +24,6 @@
 		<th style="width: 18%;">Target Name</th>
 	</tr>
 </thead>
-
-<tbody>
-	<tr>
-        <td></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[0]" ng-enter="clearOthers(1)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[1]" ng-enter="clearOthers(2)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[2]" ng-enter="clearOthers(3)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterFIeld[3]" ng-enter="clearOthers(4)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[4]" ng-enter="clearOthers(5)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[5]" ng-enter="clearOthers(6)"></td>
-		<td><input style="width:95%;" type="text" ng-model="filterField[6]" ng-enter="clearOthers(7)"></td>
-	</tr>
-</tbody>
 
 <tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
 
