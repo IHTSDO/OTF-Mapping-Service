@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,11 +20,14 @@ import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
@@ -1227,6 +1229,49 @@ public class MappingServiceJpa implements MappingService {
 
 		return m;
 	}
+	
+	/**
+	 * Test function for .setParameter
+	 * @throws ParseException 
+	 */
+	@Override
+	public List<MapRecord> testCriteriaQuery(Long mapProjectId, String query, PfsParameter pfsParameter) throws Exception {
+		System.out.println("Filter string: " + pfsParameter.getFilters());
+		System.out.println("nStart  = " + Integer.toString(pfsParameter.getStartIndex()));
+		System.out.println("nMaxRes = " + Integer.toString(pfsParameter.getMaxResults()));
+	
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+		SearchFactory searchFactory = fullTextEntityManager
+				.getSearchFactory();
+
+		// construct luceneQuery based on URL format
+		QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+				"summary",
+				searchFactory.getAnalyzer(MapRecordJpa.class));
+		Query luceneQuery = queryParser.parse(query);
+
+		org.hibernate.search.jpa.FullTextQuery ftquery = (FullTextQuery) fullTextEntityManager.createFullTextQuery(
+				luceneQuery, MapRecordJpa.class);
+		
+		
+		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+			ftquery.setFirstResult(pfsParameter.getStartIndex());
+			ftquery.setMaxResults(pfsParameter.getMaxResults());
+		}
+		if (pfsParameter.getSortField() != null) {
+			ftquery.setSort( new Sort (new SortField(pfsParameter.getSortField(), SortField.STRING)));
+		}
+		
+		List<MapRecord> m = ftquery.getResultList();
+
+		System.out.println(Integer.toString(m.size()) + " records retrieved");
+		
+		return m;
+		
+	}
+	
+	
 	/**
 	 * Retrieve map records for a lucene query.
 	 *
@@ -1260,9 +1305,19 @@ public class MappingServiceJpa implements MappingService {
 				searchFactory.getAnalyzer(MapRecordJpa.class));
 		luceneQuery = queryParser.parse(full_query);
 
-		List<MapRecord> m = fullTextEntityManager.createFullTextQuery(
-				luceneQuery, MapRecordJpa.class)
-				.getResultList();
+		org.hibernate.search.jpa.FullTextQuery ftquery = (FullTextQuery) fullTextEntityManager.createFullTextQuery(
+				luceneQuery, MapRecordJpa.class);
+		
+		
+		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+			ftquery.setFirstResult(pfsParameter.getStartIndex());
+			ftquery.setMaxResults(pfsParameter.getMaxResults());
+		}
+		if (pfsParameter.getSortField() != null) {
+			ftquery.setSort( new Sort (new SortField(pfsParameter.getSortField(), SortField.STRING)));
+		}
+		
+		List<MapRecord> m = ftquery.getResultList();
 
 		System.out.println(Integer.toString(m.size()) + " records retrieved");
 		
@@ -1278,20 +1333,126 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	private String constructMapRecordForMapProjectIdQuery(Long mapProjectId, String queryStr) {
 		
-		String[] terms = queryStr.split("\\s+");
-		String full_query = "(";
+		////////////////////
+		// Basic algorithm:
+		// 1) add whitespace breaks to operators
+		// 2) split query on whitespace
+		// 3) cycle over terms in split query to find quoted material, add each term/quoted term to parsed terms\
+		//    a) special case: quoted term after a :
+		// 3) cycle over terms in parsed terms
+		//    a) if an operator/parantheses, pass through unchanged
+		//	  b) if a fielded query (i.e. field:value), pass through unchanged
+		//    c) if not, construct query on all fields with this term
 		
-		// cycle over terms
+		
+		System.out.println("--------------------------");
+		System.out.println("Entering query constructor");
+		System.out.println("--------------------------");
+		
+		// list of escape terms (i.e. quotes, operators) to be fed into query untouched
+		String escapeTerms = "\\+|\\-|\"|\\(|\\)";
+		String booleanTerms = "AND|OR|NOT";
+
+		// first cycle over the string to add artificial breaks before and after control characters
+		String queryStr_mod = queryStr;
+		queryStr_mod = queryStr_mod.replace("(", " ( ");
+		queryStr_mod = queryStr_mod.replace(")", " ) ");
+		queryStr_mod = queryStr_mod.replace("\"", " \" ");
+		queryStr_mod = queryStr_mod.replace("+", " + ");
+		queryStr_mod = queryStr_mod.replace("-", " - ");
+		
+		// remove any leading or trailing whitespace (otherwise first/last null term bug)
+		queryStr_mod = queryStr_mod.trim();
+		
+		System.out.println("After parentheses/quote check: " + queryStr_mod);
+	
+		// split the string by white space and single-character operators
+		String[] terms = queryStr_mod.split("\\s+");
+		
+		System.out.println("Terms after query split:  ");
+		for (int i = 0; i < terms.length; i++) {
+			System.out.println(terms[i] + ", ");
+		}
+		
+		// merge items between quotation marks
+		boolean exprInQuotes = false;
+		List<String> parsedTerms = new ArrayList<String>();
+		List<String> parsedTerms_temp = new ArrayList<String>();
+		String currentTerm = "";
+		
+		// cycle over terms to identify quoted (i.e. non-parsed) terms
 		for (int i = 0; i < terms.length; i++) {
 			
-			// if a boolean operator, add unmodified (TODO update with fuller list later)
-			if (terms[i].matches("AND|and|OR|or|NOT|not")) {
-				full_query += (i==0 ? "" : " ") + terms[i] + " ";
+			// if an open quote is detected
+			if ( terms[i].equals("\"") ) {
+				
+				if (exprInQuotes == true) {
+					System.out.println("Close quote detected, exprInQuotes = " + exprInQuotes);
+					System.out.println("Adding " + currentTerm);	
+					
+					// special case check:  fielded term.  Impossible for first term to be fielded.
+					if (parsedTerms.size() == 0) {
+						parsedTerms.add("\"" + currentTerm + "\"");	
+					}
+					else {
+						String lastParsedTerm = parsedTerms.get(parsedTerms.size()-1);
+						
+						// if last parsed term ended with a colon, append this term to the last parsed term
+						if (lastParsedTerm.endsWith(":") == true) {
+							parsedTerms.set(parsedTerms.size()-1, lastParsedTerm + "\"" + currentTerm + "\"");
+						} else {
+							parsedTerms.add("\"" + currentTerm + "\"");	
+						}
+					} 
+					
+					// reset current term					
+					currentTerm = "";
+					exprInQuotes = false;
+					
+				} else {
+					System.out.println("Open quote detected, exprinQuotes = " + exprInQuotes);
+					exprInQuotes = true;
+				}
+			
+			// if no quote detected
+			} else {
+				
+				// if inside quotes, continue building term
+				if (exprInQuotes == true) {
+					currentTerm = currentTerm == "" ? terms[i] : currentTerm + " " + terms[i];
+				
+				// otherwise, add to parsed list
+				} else {
+					parsedTerms.add(terms[i]);	
+				}
+			}
+		}
+		
+		System.out.println("Original query: " + queryStr);
+		System.out.println("Terms in modified query:");
+		for (String s : parsedTerms) {
+			System.out.println("  " + s);
+		}
+		
+		// begin constructing query
+		String full_query = "(";
+					
+		
+		// cycle over terms
+		for (int i = 0; i < parsedTerms.size(); i++) {
+			
+			
+			System.out.println("Next term: " + parsedTerms.get(i));
+
+			// if a boolean or an escape character/sequence, add this term unmodified (with appropriate action
+			if(parsedTerms.get(i).matches(escapeTerms) || parsedTerms.get(i).matches(booleanTerms)) {
+				
+				full_query += (i==0 ? "" : " ") + parsedTerms.get(i	); // if first term, do not add whitespace separator
 				continue;
 				
 			// else if already a field-specific query term
-			} else if (terms[i].contains(":")) {
-				full_query += terms[i];
+			} else if (parsedTerms.get(i).contains(":")) {
+				full_query += parsedTerms.get(i);
 			
 			// otherwise, treat as unfielded query term
 			} else {
@@ -1300,25 +1461,63 @@ public class MappingServiceJpa implements MappingService {
 				Iterator<String> names_iter = fieldNames.iterator();
 				
 				while(names_iter.hasNext()) {
-					full_query += names_iter.next() + ":" + terms[i];
+					full_query += names_iter.next() + ":" + parsedTerms.get(i);
 					if (names_iter.hasNext()) full_query += " OR ";
 				}
 				
 				full_query += ")";
 			}
 			
-			// if further terms remain in the sequence, apply boolean separator
-			if (!(i == terms.length-1)) {
+			// if further terms remain in the sequence
+			if (!(i == parsedTerms.size()-1)) {
 				
-				// if next term is not a boolean operator, add OR
-				if(!terms[i+1].matches("AND|and||OR|or|NOT|not")) {
-					full_query += " OR ";
-				} else {
-					// do nothing, user-specified boolean will be applied above
+				// if next term is not a boolean operator or an escape term, add OR
+				if(!parsedTerms.get(i+1).matches(booleanTerms) && !parsedTerms.get(i+1).matches(escapeTerms)) {
+					full_query += " OR";
 				}
 				
 			}
 		}
+		
+		
+		/*// cycle over terms
+				for (int i = 0; i < terms.length; i++) {
+					
+					// if a boolean operator, add unmodified (TODO update with fuller list later)
+					if (terms[i].matches("AND|and|OR|or|NOT|not")) {
+						full_query += (i==0 ? "" : " ") + terms[i] + " ";
+						continue;
+						
+					// else if already a field-specific query term
+					} else if (terms[i].contains(":")) {
+						full_query += terms[i];
+					
+					// otherwise, treat as unfielded query term
+					} else {
+						full_query += "(";
+					
+						Iterator<String> names_iter = fieldNames.iterator();
+						
+						while(names_iter.hasNext()) {
+							full_query += names_iter.next() + ":" + terms[i];
+							if (names_iter.hasNext()) full_query += " OR ";
+						}
+						
+						full_query += ")";
+					}
+					
+					// if further terms remain in the sequence, apply boolean separator
+					if (!(i == terms.length-1)) {
+						
+						// if next term is not a boolean operator, add OR
+						if(!terms[i+1].matches("AND|and||OR|or|NOT|not")) {
+							full_query += " OR ";
+						} else {
+							// do nothing, user-specified boolean will be applied above
+						}
+						
+					}
+				}*/
 		
 		// add mapProjectId constraint
 		full_query += ") AND mapProjectId:" + mapProjectId.toString();
