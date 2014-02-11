@@ -131,7 +131,7 @@ public class ContentServiceJpa implements ContentService {
 		} catch (NoResultException e) {
 			// log result and return null
 			Logger.getLogger(this.getClass()).warn(
-					"Concept query for terminologyId = " + terminologyId
+					"ContentService.getConcept(): Concept query for terminologyId = " + terminologyId
 							+ ", terminology = " + terminology + ", terminologyVersion = "
 							+ terminologyVersion + " returned no results!");
 			return null;
@@ -241,6 +241,8 @@ public class ContentServiceJpa implements ContentService {
 
 						// get relationship
 						Relationship rel = it_inv_rel.next();
+						
+						
 
 						// if relationship is active, typeId equals the provided typeId, and
 						// the source concept is active
@@ -262,6 +264,7 @@ public class ContentServiceJpa implements ContentService {
 				}
 			}
 		}
+		
 		return conceptSet;
 	}
 

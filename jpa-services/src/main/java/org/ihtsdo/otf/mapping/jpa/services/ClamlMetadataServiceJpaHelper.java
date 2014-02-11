@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
- 
+
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -19,28 +19,29 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  */
 public class ClamlMetadataServiceJpaHelper implements MetadataService {
 
-
 	/**
 	 * Returns the isa relationship type.
-	 *
+	 * 
 	 * @param terminology the terminology
 	 * @param version the version
 	 * @return the isa relationship type
 	 * @throws Exception the exception
 	 */
-	private static Long getIsaRelationshipType(String terminology, String version) throws Exception {
+	private static Long getIsaRelationshipType(String terminology, String version)
+		throws Exception {
 		ContentService contentService = new ContentServiceJpa();
-		SearchResultList results = contentService.findConcepts("Isa", new PfsParameterJpa());
+		SearchResultList results =
+				contentService.findConcepts("Isa", new PfsParameterJpa());
 		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology) &&
-					result.getTerminologyVersion().equals(version) &&
-					result.getValue().equals("Isa")) {
+			if (result.getTerminology().equals(terminology)
+					&& result.getTerminologyVersion().equals(version)
+					&& result.getValue().equals("Isa")) {
 				return new Long(result.getTerminologyId());
 			}
 		}
 		return -1L;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -69,19 +70,20 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 
 		ContentService contentService = new ContentServiceJpa();
 		String rootId = "";
-		SearchResultList results = contentService.findConcepts("Module", new PfsParameterJpa());
+		SearchResultList results =
+				contentService.findConcepts("Module", new PfsParameterJpa());
 		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology) &&
-					result.getTerminologyVersion().equals(version) &&
-					result.getValue().equals("Module")) {
+			if (result.getTerminology().equals(terminology)
+					&& result.getTerminologyVersion().equals(version)
+					&& result.getValue().equals("Module")) {
 				rootId = result.getTerminologyId();
 				break;
 			}
 		}
-		
+
 		Set<Concept> descendants =
-				contentService.getDescendants(rootId, terminology,
-						version, getIsaRelationshipType(terminology, version));
+				contentService.getDescendants(rootId, terminology, version,
+						getIsaRelationshipType(terminology, version));
 
 		for (Concept descendant : descendants) {
 			if (descendant.isActive()) {
@@ -186,19 +188,20 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 
 		ContentService contentService = new ContentServiceJpa();
 		String rootId = "";
-		SearchResultList results = contentService.findConcepts("Definition status", new PfsParameterJpa());
+		SearchResultList results =
+				contentService.findConcepts("Definition status", new PfsParameterJpa());
 		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology) &&
-					result.getTerminologyVersion().equals(version) &&
-					result.getValue().equals("Definition status")) {
+			if (result.getTerminology().equals(terminology)
+					&& result.getTerminologyVersion().equals(version)
+					&& result.getValue().equals("Definition status")) {
 				rootId = result.getTerminologyId();
 				break;
 			}
 		}
-		
+
 		Set<Concept> descendants =
-				contentService.getDescendants(rootId, terminology,
-						version, getIsaRelationshipType(terminology, version));
+				contentService.getDescendants(rootId, terminology, version,
+						getIsaRelationshipType(terminology, version));
 
 		for (Concept descendant : descendants) {
 			if (descendant.isActive()) {
@@ -223,19 +226,20 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 
 		ContentService contentService = new ContentServiceJpa();
 		String rootId = "";
-		SearchResultList results = contentService.findConcepts("Description type", new PfsParameterJpa());
+		SearchResultList results =
+				contentService.findConcepts("Description type", new PfsParameterJpa());
 		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology) &&
-					result.getTerminologyVersion().equals(version) &&
-					result.getValue().equals("Description type")) {
+			if (result.getTerminology().equals(terminology)
+					&& result.getTerminologyVersion().equals(version)
+					&& result.getValue().equals("Description type")) {
 				rootId = result.getTerminologyId();
 				break;
 			}
 		}
-				
+
 		Set<Concept> descendants =
-				contentService.getDescendants(rootId, terminology,
-						version, getIsaRelationshipType(terminology, version));
+				contentService.getDescendants(rootId, terminology, version,
+						getIsaRelationshipType(terminology, version));
 
 		for (Concept descendant : descendants) {
 			if (descendant.isActive()) {
@@ -260,18 +264,19 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 
 		ContentService contentService = new ContentServiceJpa();
 		String rootId = "";
-		SearchResultList results = contentService.findConcepts("Case significance", new PfsParameterJpa());
+		SearchResultList results =
+				contentService.findConcepts("Case significance", new PfsParameterJpa());
 		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology) &&
-					result.getTerminologyVersion().equals(version) &&
-					result.getValue().equals("Case significance")) {
+			if (result.getTerminology().equals(terminology)
+					&& result.getTerminologyVersion().equals(version)
+					&& result.getValue().equals("Case significance")) {
 				rootId = result.getTerminologyId();
 				break;
 			}
 		}
 		Set<Concept> descendants =
-				contentService.getDescendants(rootId, terminology,
-						version, getIsaRelationshipType(terminology, version));
+				contentService.getDescendants(rootId, terminology, version,
+						getIsaRelationshipType(terminology, version));
 
 		for (Concept descendant : descendants) {
 			if (descendant.isActive()) {
@@ -297,11 +302,12 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 		// find all active descendants of 106237007
 		ContentService contentService = new ContentServiceJpa();
 		String rootId = "";
-		SearchResultList results = contentService.findConcepts("Relationship type", new PfsParameterJpa());
+		SearchResultList results =
+				contentService.findConcepts("Relationship type", new PfsParameterJpa());
 		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology) &&
-					result.getTerminologyVersion().equals(version) &&
-					result.getValue().equals("Relationship type")) {
+			if (result.getTerminology().equals(terminology)
+					&& result.getTerminologyVersion().equals(version)
+					&& result.getValue().equals("Relationship type")) {
 				rootId = result.getTerminologyId();
 				break;
 			}
@@ -323,12 +329,33 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#
+	 * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public Map<Long, String> getHierarchicalRelationshipTypes(String terminology,
+		String version) throws NumberFormatException, Exception {
+		Map<Long, String> map = new HashMap<Long, String>();
+
+		// find all active descendants of 106237007
+		ContentService contentService = new ContentServiceJpa();
+		Concept isaRel =
+				contentService.getConcept(new Long(getIsaRelationshipType(terminology,
+						version)));
+		map.put(new Long(isaRel.getTerminologyId()),
+				isaRel.getDefaultPreferredName());
+		return map;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MetadataService#
 	 * getRelationshipCharacteristicTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public Map<Long, String> getRelationshipCharacteristicTypes(
 		String terminology, String version) throws NumberFormatException, Exception {
-		return new HashMap<Long, String>(); 
+		return new HashMap<Long, String>();
 	}
 
 	/*
@@ -345,18 +372,19 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 
 		ContentService contentService = new ContentServiceJpa();
 		String rootId = "";
-		SearchResultList results = contentService.findConcepts("Modifier", new PfsParameterJpa());
+		SearchResultList results =
+				contentService.findConcepts("Modifier", new PfsParameterJpa());
 		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology) &&
-					result.getTerminologyVersion().equals(version) &&
-					result.getValue().equals("Modifier")) {
+			if (result.getTerminology().equals(terminology)
+					&& result.getTerminologyVersion().equals(version)
+					&& result.getValue().equals("Modifier")) {
 				rootId = result.getTerminologyId();
 				break;
 			}
 		}
 		Set<Concept> descendants =
-				contentService.getDescendants(rootId, terminology,
-						version, getIsaRelationshipType(terminology, version));
+				contentService.getDescendants(rootId, terminology, version,
+						getIsaRelationshipType(terminology, version));
 
 		for (Concept descendant : descendants) {
 			if (descendant.isActive()) {
