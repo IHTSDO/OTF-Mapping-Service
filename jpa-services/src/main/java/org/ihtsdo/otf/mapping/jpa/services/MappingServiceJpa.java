@@ -57,11 +57,8 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
-// TODO: Auto-generated Javadoc
 /**
- * The class for MappingServiceJpa.
- * 
- * @author ${author}
+ * JPA implementation of the {@link MappingService}
  */
 public class MappingServiceJpa implements MappingService {
 
@@ -1608,7 +1605,7 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public List<Concept> getUnmappedDescendantsForConcept(Concept concept,
 		int thresholdLlc) throws Exception {
-		
+
 		// declare results list and content service
 		List<Concept> unmappedDescendants = new ArrayList<Concept>();
 		ContentService contentService = new ContentServiceJpa();
@@ -1619,12 +1616,11 @@ public class MappingServiceJpa implements MappingService {
 						concept.getTerminology(), concept.getTerminologyVersion(),
 						new Long("116680003"));
 		Iterator<Concept> descendants_iter = descendants.iterator();
-		
-	
+
 		// if size of descendant set is greater than the low-level concept
 		// threshold, skip it
 		if (descendants.size() <= thresholdLlc) {
-		
+
 			// cycle over descendants
 			while (descendants_iter.hasNext()) {
 
@@ -2118,14 +2114,13 @@ public class MappingServiceJpa implements MappingService {
 					mapRecord.setMapProjectId(mapProject.getId());
 
 					// get the number of descendants - Need to optimize this
-					/**
-					 * Need a tool to compute and save this for LLCs
-					 * mapRecord.setCountDescendantConcepts(new Long(contentService
-					 * .getDescendants(concept.getTerminologyId(),
-					 * concept.getTerminology(), concept.getTerminologyVersion(), new
-					 * Long("116680003")).size()));
-					 **/
-					mapRecord.setCountDescendantConcepts(0L);
+					// Need a tool to compute and save this for LLCs (e.g. having < 11 descendants)
+					mapRecord.setCountDescendantConcepts(new Long(contentService
+					  .getDescendants(concept.getTerminologyId(),
+					  concept.getTerminology(), concept.getTerminologyVersion(), new
+					  Long("116680003")).size()));
+					 
+					//mapRecord.setCountDescendantConcepts(0L);
 
 					// set the previous concept to this concept
 					prevConceptId =

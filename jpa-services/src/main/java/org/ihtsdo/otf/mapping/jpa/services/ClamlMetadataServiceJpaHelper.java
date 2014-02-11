@@ -339,8 +339,8 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 		// find all active descendants of 106237007
 		ContentService contentService = new ContentServiceJpa();
 		Concept isaRel =
-				contentService.getConcept(new Long(getIsaRelationshipType(terminology,
-						version)));
+				contentService.getConcept(getIsaRelationshipType(terminology,
+						version).toString(),terminology, version);
 		map.put(new Long(isaRel.getTerminologyId()),
 				isaRel.getDefaultPreferredName());
 		return map;

@@ -344,7 +344,9 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 		// find all active descendants of 106237007
 		ContentService contentService = new ContentServiceJpa();
-		Concept isaRel = contentService.getConcept(isaRelationshipType);
+		Concept isaRel =
+				contentService.getConcept(isaRelationshipType + "", terminology,
+						version);
 		map.put(new Long(isaRel.getTerminologyId()),
 				isaRel.getDefaultPreferredName());
 		return map;
