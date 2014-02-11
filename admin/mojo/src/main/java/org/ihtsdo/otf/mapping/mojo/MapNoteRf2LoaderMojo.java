@@ -27,17 +27,47 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 /**
  * Loads map notes.
  * 
+ * Sample execution:
+ * 
+ * <pre>
+ *     <plugin>
+ *       <groupId>org.ihtsdo.otf.mapping</groupId>
+ *       <artifactId>mapping-admin-mojo</artifactId>
+ *       <version>${project.version}</version>
+ *       <dependencies>
+ *         <dependency>
+ *           <groupId>org.ihtsdo.otf.mapping</groupId>
+ *           <artifactId>mapping-admin-loader-config</artifactId>
+ *           <version>${project.version}</version>
+ *           <scope>system</scope>
+ *           <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+ *         </dependency>
+ *       </dependencies>
+ *       <executions>
+ *         <execution>
+ *           <id>load-map-notes</id>
+ *           <phase>package</phase>
+ *           <goals>
+ *             <goal>load-map-notes</goal>
+ *           </goals>
+ *           <configuration>
+ *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+ *           </configuration>
+ *         </execution>
+ *       </executions>
+ *     </plugin>
+ * </pre>
+ * 
  * @goal load-map-notes
- * @phase process-resources
+ * @phase package
  */
-public class MapNotesLoaderMojo extends AbstractMojo {
+public class MapNoteRf2LoaderMojo extends AbstractMojo {
 
 	/** The dt. */
 	private SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
 
 	/** The input file. */
 	private String inputFile;
-
 
 	/**
 	 * Properties file.
@@ -47,14 +77,14 @@ public class MapNotesLoaderMojo extends AbstractMojo {
 	 * @required
 	 */
 	private File propertiesFile;
-	
+
 	/** The manager. */
 	private EntityManager manager;
 
-  private BufferedReader mapNoteReader;
-    
-  private MapProject mapProject;
-  
+	private BufferedReader mapNoteReader;
+
+	private MapProject mapProject;
+
 	/**
 	 * Executes the plugin.
 	 * 
@@ -82,7 +112,7 @@ public class MapNotesLoaderMojo extends AbstractMojo {
 								+ inputFile);
 			}
 			Logger.getLogger(this.getClass()).info("inputFile: " + inputFile);
-			
+
 			// create Entitymanager
 			EntityManagerFactory emFactory =
 					Persistence.createEntityManagerFactory("MappingServiceDS");
@@ -92,15 +122,15 @@ public class MapNotesLoaderMojo extends AbstractMojo {
 			tx.begin();
 
 			File file = new File(inputFile);
-			
-			mapNoteReader = new BufferedReader(new FileReader(file));			
+
+			mapNoteReader = new BufferedReader(new FileReader(file));
 			// open input file and get MapProject and version
 			findMapProject();
 			mapNoteReader.close();
-			
+
 			mapNoteReader = new BufferedReader(new FileReader(file));
 			loadMapNotes();
-			
+
 			tx.commit();
 
 			mapNoteReader.close();
@@ -114,7 +144,6 @@ public class MapNotesLoaderMojo extends AbstractMojo {
 
 	}
 
-
 	private void loadMapNotes() throws Exception {
 
 		String line = "";
@@ -126,72 +155,76 @@ public class MapNotesLoaderMojo extends AbstractMojo {
 
 			if (!fields[0].equals("id")) { // header
 
-				//mapNote.setId(new Long(fields[0]));
+				// mapNote.setId(new Long(fields[0]));
 				mapNote.setTimestamp(dt.parse(fields[1]));
 				String note = fields[7];
 				if (note.startsWith("\"")) {
 					note = note.substring(1);
 				}
 				if (note.endsWith("\"")) {
-					note = note.substring(0, note.length() -1);
-			  }
+					note = note.substring(0, note.length() - 1);
+				}
 				note = note.trim();
 				mapNote.setNote(note);
 
 				MappingService mappingService = new MappingServiceJpa();
-				List<MapRecord> mapRecords = mappingService.getMapRecordsForConceptId(fields[5]);
-				
+				mappingService.setTransactionPerOperation(false);
+				mappingService.beginTransaction();
+				List<MapRecord> mapRecords =
+						mappingService.getMapRecordsForConceptId(fields[5]);
+
 				if (mapRecords != null && mapRecords.size() > 0) {
 					for (MapRecord mapRecord : mapRecords) {
-						//TODO: use mappingService.
-					  mapRecord.addMapNote(mapNote);
-					  manager.merge(mapRecord);
+						// TODO: use mappingService.
+						mapRecord.addMapNote(mapNote);
+						manager.merge(mapRecord);
 					}
-					
+
 				} else {
-					Logger.getLogger(this.getClass()).info("mapNote " + mapNote.getId() +
-							" references non-existent concept " + fields[5]);
+					Logger.getLogger(this.getClass()).info(
+							"mapNote " + mapNote.getId()
+									+ " references non-existent concept " + fields[5]);
 				}
+				mappingService.commit();
 			}
 		}
 	}
-	
 
-  /**
-   * Find version.
-   *
-   * @throws Exception the exception
-   */
-  public void findMapProject() throws Exception {
-  	
+	/**
+	 * Find version.
+	 * 
+	 * @throws Exception the exception
+	 */
+	public void findMapProject() throws Exception {
+
 		MappingService mappingService = new MappingServiceJpa();
-		
+
 		String refSetId = "";
-		
+
 		String line = "";
 
 		while ((line = mapNoteReader.readLine()) != null) {
 
 			String fields[] = line.split("\t");
-			
+
 			if (!fields[0].equals("id")) { // header
 				if (!refSetId.equals("") && !fields[4].equals(refSetId))
-					throw new MojoFailureException(
-							"More than one refSetId in " + inputFile + " :" + refSetId + " " + fields[4]);
-				refSetId = fields[4];  
+					throw new MojoFailureException("More than one refSetId in "
+							+ inputFile + " :" + refSetId + " " + fields[4]);
+				refSetId = fields[4];
 			}
 		}
-		
+
 		for (MapProject mp : mappingService.getMapProjects()) {
 			if (mp.getRefSetId().equals(refSetId)) {
 				mapProject = mp;
-			  break;
-		  }
+				break;
+			}
 		}
 		if (mapProject == null)
-			throw new MojoFailureException(
-					"Map Project was not found for refsetid: " + refSetId);
+			throw new MojoFailureException("Map Project was not found for refsetid: "
+					+ refSetId);
 
-    mappingService.close();
-  }
+		mappingService.close();
+	}
 }

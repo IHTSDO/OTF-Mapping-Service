@@ -16,33 +16,34 @@ mysql.test.pwd=rootpwd
 loader.SNOMEDCT.input.data=C:/data/snomedct-20140131-mini
 
 # SNOMEDCT full snapshot data:
-# loader.SNOMEDCT.input.data=C:\\data\\snomedct-20140131-snapshot
+# loader.SNOMEDCT.input.data=C:/data/snomedct-20140131-snapshot
 
 #
 # Path to icpc data
 #
-loader.ICPC.input.data=C:\\data\\icpc-2.xml
+loader.ICPC.input.data=C:/data/icpc-2.xml
 
 #
 # Path to unpublished icpc data
 #
-loader.ICPC.complexmap.input.data=C:\\data\\icpc-rf2-ExtendedMap-mini.txt
+#loader.complexmap.input.data=C:/data/der2_iisssccRefset_ExtendedMapSnapshotMini_INT_20140131.txt
+loader.complexmap.input.data=C:/data/icpc-rf2-ExtendedMap-mini.txt
 
 #
 # Path to icd9cm data
 #   this must be a file named icd9cm.xml
 #
-loader.ICD9CM.input.data=C:\\data\\icd9cm-2013.xml
+loader.ICD9CM.input.data=C:/data/icd9cm-2013.xml
 
 #
 # Path to icd10 data
 #
-loader.ICD10.input.data=C:\\data\\icd10-2010.xml
+loader.ICD10.input.data=C:/data/icd10-2010.xml
 
 #
 # Path to map notes data
 #
-loader.mapnotes.input.data=C:\\data\\xder2_sRefset_MapNotesSnapshot_INT_20130731.txt
+loader.mapnotes.input.data=C:/data/xder2_sRefset_MapNotesSnapshot_INT_20130731.txt
 
 #
 # Loader settings for preferred name
@@ -57,12 +58,12 @@ loader.defaultPreferredNames.acceptabilityId=900000000000548007
 #
 # Destination directory for exported data
 #
-export.output.dir=C:\\data\\export
+export.output.dir=C:/data/ihtsdo-project-data
 
 #
 # Input directory for data to import
 #
-import.input.dir=C:\\data\\import
+import.input.dir=C:/data/ihtsdo-project-data
 
 #
 # Webapp base URL

@@ -45,26 +45,60 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-// TODO: Auto-generated Javadoc
 /**
  * Converts claml data to RF2 objects.
  * 
+ * Sample execution:
+ * 
+ * <pre>
+ *     <plugin>
+ *       <groupId>org.ihtsdo.otf.mapping</groupId>
+ *       <artifactId>mapping-admin-mojo</artifactId>
+ *       <version>${project.version}</version>
+ *       <dependencies>
+ *         <dependency>
+ *           <groupId>org.ihtsdo.otf.mapping</groupId>
+ *           <artifactId>mapping-admin-loader-config</artifactId>
+ *           <version>${project.version}</version>
+ *           <scope>system</scope>
+ *           <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+ *         </dependency>
+ *       </dependencies>
+ *       <executions>
+ *         <execution>
+ *           <id>load-claml</id>
+ *           <phase>package</phase>
+ *           <goals>
+ *             <goal>load-claml</goal>
+ *           </goals>
+ *           <configuration>
+ *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+ *             <terminology>ICD10</terminology>
+ *           </configuration>
+ *         </execution>
+ *       </executions>
+ *     </plugin>
+ * </pre>
  * @goal load-claml
- * @phase process-resources
+ * @phase package
  */
-public class ClamlLoaderMojo extends AbstractMojo {
+public class TerminologyClamlLoaderMojo extends AbstractMojo {
+
+	// NOTE: default visibility is used instead of private 
+	// so that the inner class parser does not require
+	// the use of synthetic accessors
 
 	/** The dt. */
-	private SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+	SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
 
 	/** The input XML (Claml) file. */
-	private String inputFile;
+	String inputFile;
 
 	/** The effective time. */
-	private String effectiveTime;
+	String effectiveTime;
 
 	/** The terminology version. */
-	private String terminologyVersion;
+	String terminologyVersion;
 
 	/**
 	 * Properties file.
@@ -73,25 +107,25 @@ public class ClamlLoaderMojo extends AbstractMojo {
 	 *            expression="${project.build.directory}/generated-sources/org/ihtsdo"
 	 * @required
 	 */
-	private File propertiesFile;
-	
+	File propertiesFile;
+
 	/**
 	 * Name of terminology to be loaded.
 	 * @parameter
 	 * @required
 	 */
-	private String terminology;
+	String terminology;
 
 	/** The manager. */
-	private EntityManager manager;
+	EntityManager manager;
 
 	// Metadata data structures
 
 	/** The concept map. */
-	private Map<String, Concept> conceptMap;
+	Map<String, Concept> conceptMap;
 
 	/** The helper. */
-	private CreateMetadataHelper helper;
+	CreateMetadataHelper helper;
 
 	/**
 	 * Executes the plugin.
@@ -102,6 +136,9 @@ public class ClamlLoaderMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException {
 
 		FileInputStream propertiesInputStream = null;
+		FileInputStream fis = null;
+		InputStream inputStream = null;
+		Reader reader = null;
 		try {
 
 			getLog().info("Start loading " + terminology + " data ...");
@@ -113,17 +150,17 @@ public class ClamlLoaderMojo extends AbstractMojo {
 			propertiesInputStream.close();
 
 			// set the input directory
-			inputFile = properties.getProperty("loader." + terminology + ".input.data");
+			inputFile =
+					properties.getProperty("loader." + terminology + ".input.data");
 			if (!new File(inputFile).exists()) {
-				throw new MojoFailureException(
-						"Specified loader." + terminology + ".input.data directory does not exist: "
-								+ inputFile);
+				throw new MojoFailureException("Specified loader." + terminology
+						+ ".input.data directory does not exist: " + inputFile);
 			}
 			Logger.getLogger(this.getClass()).info("inputFile: " + inputFile);
 
 			// open input file and get effective time and version
 			findVersion();
-			
+
 			// create Entitymanager
 			EntityManagerFactory emFactory =
 					Persistence.createEntityManagerFactory("MappingServiceDS");
@@ -146,8 +183,9 @@ public class ClamlLoaderMojo extends AbstractMojo {
 
 			// Open XML and begin parsing
 			File file = new File(inputFile);
-			InputStream inputStream = checkForUtf8BOM(new FileInputStream(file));
-			Reader reader = new InputStreamReader(inputStream, "UTF-8");
+			fis = new FileInputStream(file);
+			inputStream = checkForUtf8BOM(fis);
+			reader = new InputStreamReader(inputStream, "UTF-8");
 			InputSource is = new InputSource(reader);
 			is.setEncoding("UTF-8");
 			saxParser.parse(is, handler);
@@ -158,6 +196,27 @@ public class ClamlLoaderMojo extends AbstractMojo {
 			e.printStackTrace();
 			throw new MojoExecutionException(
 					"Conversion of Claml to RF2 objects failed", e);
+		} finally {
+			try {
+				propertiesInputStream.close();
+			} catch (IOException e) {
+				// do nothing
+			}
+			try {
+				fis.close();
+			} catch (IOException e) {
+				// do nothing
+			}
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				// do nothing
+			}
+			try {
+				reader.close();
+			} catch (IOException e) {
+				// do nothing
+			}
 		}
 
 	}
@@ -209,25 +268,25 @@ public class ClamlLoaderMojo extends AbstractMojo {
 
 		/** The modified by code. */
 		String modifiedByCode = "";
-		
+
 		/** The exclude modifier code. */
 		String excludeModifierCode = "";
 
 		/** The modifier. */
 		String modifier = "";
-		
+
 		/** The class usage. */
 		String classUsage = "";
-		
+
 		/** The reference usage. */
 		String referenceUsage = "";
-		
+
 		/** The para chars. */
 		String paraChars = "";
-		
+
 		/** The ref set member counter. */
 		int refSetMemberCounter = 1;
-		
+
 		/** The fragment list. */
 		List<String> fragmentList = new ArrayList<String>();
 
@@ -244,8 +303,7 @@ public class ClamlLoaderMojo extends AbstractMojo {
 		/** The sub class to exclude modifier map. */
 		Map<String, List<String>> subClassToExcludeModifierMap =
 				new HashMap<String, List<String>>();
-		
-		
+
 		/**
 		 * The rels map for holding data for relationships that will be built after
 		 * all concepts are created.
@@ -300,7 +358,7 @@ public class ClamlLoaderMojo extends AbstractMojo {
 			if (qName.equalsIgnoreCase("modifiedby")) {
 				modifiedByCode = attributes.getValue("code");
 			}
-			
+
 			if (qName.equalsIgnoreCase("excludemodifier")) {
 				excludeModifierCode = attributes.getValue("code");
 			}
@@ -326,7 +384,7 @@ public class ClamlLoaderMojo extends AbstractMojo {
 					subClassToModifierMap.put(subClass, currentModifiers);
 				}
 			}
-			
+
 			if (qName.equalsIgnoreCase("excludemodifier")) {
 				List<String> currentModifiers = new ArrayList<String>();
 				for (String subClass : currentSubClasses) {
@@ -348,14 +406,13 @@ public class ClamlLoaderMojo extends AbstractMojo {
 				rubricKind = attributes.getValue("kind");
 				rubricId = attributes.getValue("id");
 			}
-			
+
 			if (qName.equalsIgnoreCase("reference")) {
 				fragmentList.add(chars.toString().trim());
 				chars = new StringBuffer();
 				referenceUsage = attributes.getValue("usage");
 			}
-			
-			
+
 		}
 
 		/*
@@ -368,14 +425,14 @@ public class ClamlLoaderMojo extends AbstractMojo {
 		public void endElement(String uri, String localName, String qName)
 			throws SAXException {
 			try {
-				
+
 				// adding concept/preferred description for modifier class
 				// NOTE: non-preferred descriptions still need to be added
 				// to modified classes
 				if (qName.equalsIgnoreCase("label") && !modifierCode.equals("")) {
 					addModifierClass();
 				}
-				
+
 				// para tags are used in icd9cm descriptions
 				if (qName.equalsIgnoreCase("para")) {
 					paraChars = chars.toString().trim();
@@ -402,12 +459,13 @@ public class ClamlLoaderMojo extends AbstractMojo {
 						else
 							concept.setDefaultPreferredName(chars.toString().trim());
 						if (conceptMap.containsKey(code))
-							Logger.getLogger(this.getClass()).info("ALERT1!  " + code + " already in map");
-						
+							Logger.getLogger(this.getClass()).info(
+									"ALERT1!  " + code + " already in map");
+
 						conceptMap.put(code, concept);
 
 						// TODO: move persistence of all concepts to endDocument loop
-						manager.persist(concept);	
+						manager.persist(concept);
 					}
 
 					// add description to concept
@@ -422,7 +480,7 @@ public class ClamlLoaderMojo extends AbstractMojo {
 					if (flattenFragmentList().length() != 0)
 						desc.setTerm(flattenFragmentList());
 					else if (chars.toString().trim().equals(""))
-					  desc.setTerm(paraChars);
+						desc.setTerm(paraChars);
 					else
 						desc.setTerm(chars.toString().trim());
 					desc.setConcept(concept);
@@ -437,26 +495,27 @@ public class ClamlLoaderMojo extends AbstractMojo {
 						Logger.getLogger(this.getClass()).info(
 								"rubricKind not in metadata " + rubricKind);
 					}
-					
+
 					concept.addDescription(desc);
 				}
 
-				
 				// end of reference tag
 				if (qName.equalsIgnoreCase("reference")) {
 					// relationships for this concept will be added at endDocument(),
 					// save relevant data now in relsMap
 					reference = chars.toString();
 
-					if (referenceUsage != null && !referenceUsage.equals("")) { /** && 
-							classUsage != null && !classUsage.equals("")) */
+					if (referenceUsage != null && !referenceUsage.equals("")) {
+						/**
+						 * && classUsage != null && !classUsage.equals(""))
+						 */
 						// check if this reference already has a relationship
 						Set<Concept> concepts = new HashSet<Concept>();
 						if (relsMap.containsKey(reference + ":" + referenceUsage)) {
 							concepts = relsMap.get(reference + ":" + referenceUsage);
 						}
 						concepts.add(concept);
-					  relsMap.put(reference + ":" + referenceUsage, concepts);
+						relsMap.put(reference + ":" + referenceUsage, concepts);
 					} else {
 						// check if this reference already has a relationship
 						Set<Concept> concepts = new HashSet<Concept>();
@@ -467,7 +526,7 @@ public class ClamlLoaderMojo extends AbstractMojo {
 						relsMap.put(reference + ":" + rubricKind, concepts);
 					}
 				}
-								
+
 				// if ending modifierclass, add to modifierMap which is used later
 				// when classes have modifiedBy tags
 				if (qName.equalsIgnoreCase("modifierclass")) {
@@ -479,18 +538,18 @@ public class ClamlLoaderMojo extends AbstractMojo {
 					modifierCodeToClassMap.put(modifierCode, concept);
 					modifierMap.put(modifier, modifierCodeToClassMap);
 				}
-				
+
 				if (qName.equalsIgnoreCase("fragment")) {
 					fragmentList.add(chars.toString().trim());
 				}
 
 				chars = new StringBuffer();
-				
+
 				// end of concept
 				if (qName.equalsIgnoreCase("class")
 						|| qName.equalsIgnoreCase("modifier")
 						|| qName.equalsIgnoreCase("modifierclass")) {
-					
+
 					// if relationships for this concept will be added at endDocument(),
 					// save relevant data now in relsMap
 					if (relsNeeded) {
@@ -508,8 +567,9 @@ public class ClamlLoaderMojo extends AbstractMojo {
 					// also check subClassToModifierMap to see if
 					// modifiers need to be created for this concept
 					modifierHelper();
-					
-					// this dagger/asterisk info is being recorded for display purposes later
+
+					// this dagger/asterisk info is being recorded for display purposes
+					// later
 					if (classUsage != null && !classUsage.equals("")) {
 						SimpleRefSetMember refSetMember = new SimpleRefSetMemberJpa();
 						refSetMember.setConcept(concept);
@@ -518,10 +578,12 @@ public class ClamlLoaderMojo extends AbstractMojo {
 						refSetMember.setModuleId(new Long(conceptMap.get("defaultModule")
 								.getTerminologyId()));
 						refSetMember.setTerminology(terminology);
-						refSetMember.setTerminologyId(new Integer(refSetMemberCounter++).toString());
+						refSetMember.setTerminologyId(new Integer(refSetMemberCounter++)
+								.toString());
 						refSetMember.setTerminologyVersion(terminologyVersion);
-						refSetMember.setRefSetId(conceptMap.get(classUsage).getTerminologyId());
-					  concept.addSimpleRefSetMember(refSetMember);
+						refSetMember.setRefSetId(conceptMap.get(classUsage)
+								.getTerminologyId());
+						concept.addSimpleRefSetMember(refSetMember);
 					}
 
 					// reset variables
@@ -538,11 +600,11 @@ public class ClamlLoaderMojo extends AbstractMojo {
 					referenceUsage = "";
 					paraChars = "";
 				}
-				
+
 				if (qName.equalsIgnoreCase("label")) {
 					fragmentList = new ArrayList<String>();
 				}
-			
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -607,15 +669,15 @@ public class ClamlLoaderMojo extends AbstractMojo {
 					}
 				}
 				manager.close();
-				
+
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		/**
 		 * Flatten fragment list.
-		 *
+		 * 
 		 * @return the string
 		 */
 		public String flattenFragmentList() {
@@ -625,10 +687,10 @@ public class ClamlLoaderMojo extends AbstractMojo {
 			}
 			return sb.toString();
 		}
-		
+
 		/**
 		 * Adds the modifier class.
-		 *
+		 * 
 		 * @throws Exception the exception
 		 */
 		public void addModifierClass() throws Exception {
@@ -667,10 +729,10 @@ public class ClamlLoaderMojo extends AbstractMojo {
 
 			concept.addDescription(desc);
 		}
-		
+
 		/**
 		 * Modifier helper.
-		 *
+		 * 
 		 * @throws Exception the exception
 		 */
 		public void modifierHelper() throws Exception {
@@ -684,20 +746,21 @@ public class ClamlLoaderMojo extends AbstractMojo {
 						Concept modConcept =
 								modifierMap.get(modifiedByCode).get(mapEntry.getKey());
 						Concept childConcept = new ConceptJpa();
-						String childTerminologyId = concept.getTerminologyId() + mapEntry.getKey();
+						String childTerminologyId =
+								concept.getTerminologyId() + mapEntry.getKey();
 						// if more than one '.' in the id, get rid of second
-						/**if (childTerminologyId.indexOf('.') != childTerminologyId.lastIndexOf('.')) {
-							childTerminologyId = childTerminologyId.substring(1,childTerminologyId.lastIndexOf('.') ) + 
-							childTerminologyId.substring(childTerminologyId.lastIndexOf('.') + 1 );
-						} */
+						/**
+						 * if (childTerminologyId.indexOf('.') !=
+						 * childTerminologyId.lastIndexOf('.')) { childTerminologyId =
+						 * childTerminologyId
+						 * .substring(1,childTerminologyId.lastIndexOf('.') ) +
+						 * childTerminologyId.substring(childTerminologyId.lastIndexOf('.')
+						 * + 1 ); }
+						 */
 						childConcept =
-								helper.createNewActiveConcept(
-										childTerminologyId,
-										terminology,
-										terminologyVersion,
-										concept.getDefaultPreferredName() + " "
-												+ modConcept.getDefaultPreferredName(),
-										effectiveTime);
+								helper.createNewActiveConcept(childTerminologyId, terminology,
+										terminologyVersion, concept.getDefaultPreferredName() + " "
+												+ modConcept.getDefaultPreferredName(), effectiveTime);
 						if (conceptMap.containsKey(childConcept.getTerminologyId()))
 							Logger.getLogger(this.getClass()).info(
 									"ALERT2!  " + childConcept.getTerminologyId()
@@ -706,12 +769,12 @@ public class ClamlLoaderMojo extends AbstractMojo {
 						conceptMap.put(childConcept.getTerminologyId(), childConcept);
 						manager.persist(childConcept);
 						// add relationship
-						helper.createIsaRelationship(concept, childConcept,
-								new Integer(relIdCounter++).toString(), terminology,
-								terminologyVersion, effectiveTime);
+						helper.createIsaRelationship(concept, childConcept, new Integer(
+								relIdCounter++).toString(), terminology, terminologyVersion,
+								effectiveTime);
 					}
 				} else {
-					throw new Exception ("modifiedByCode not in map " + modifiedByCode);
+					throw new Exception("modifiedByCode not in map " + modifiedByCode);
 				}
 			}
 			// before we close class, check subClassToModifierMap to see if
@@ -726,15 +789,16 @@ public class ClamlLoaderMojo extends AbstractMojo {
 										.toString());
 				List<String> modifiersRequiringChildren =
 						subClassToModifierMap.get(concept.getTerminologyId());
-							
+
 				for (int ct = 0; ct < modifiersRequiringChildren.size(); ct++) {
-					String modifierRequiringChildren =
-							modifiersRequiringChildren.get(ct);
+					String modifierRequiringChildren = modifiersRequiringChildren.get(ct);
 					// make sure modifier is not on the exclude list
-					if (subClassToExcludeModifierMap.containsKey(concept.getTerminologyId())) {
-						List<String> excludeList = subClassToExcludeModifierMap.get(concept.getTerminologyId());
-					  if (excludeList.contains(modifierRequiringChildren))
-					  	continue;
+					if (subClassToExcludeModifierMap.containsKey(concept
+							.getTerminologyId())) {
+						List<String> excludeList =
+								subClassToExcludeModifierMap.get(concept.getTerminologyId());
+						if (excludeList.contains(modifierRequiringChildren))
+							continue;
 					}
 					if (modifierMap.containsKey(modifierRequiringChildren)) {
 						// for each code on that modifier, create a child and create a
@@ -748,25 +812,27 @@ public class ClamlLoaderMojo extends AbstractMojo {
 								// add leading '.', if not present
 								if (key.indexOf(".") == -1)
 									key = "." + key;
-								childConcept.setTerminologyId(concept.getTerminologyId()
-										+ key);
+								childConcept.setTerminologyId(concept.getTerminologyId() + key);
 								newChildIds.add(childConcept.getTerminologyId());
-								childConcept = helper.createNewActiveConcept(
-										childConcept.getTerminologyId(), terminology,
-										terminologyVersion, concept.getDefaultPreferredName()
-												+ " " + modConcept.getDefaultPreferredName(),
-										effectiveTime);
+								childConcept =
+										helper.createNewActiveConcept(
+												childConcept.getTerminologyId(), terminology,
+												terminologyVersion, concept.getDefaultPreferredName()
+														+ " " + modConcept.getDefaultPreferredName(),
+												effectiveTime);
 								if (conceptMap.containsKey(childConcept.getTerminologyId()))
-									Logger.getLogger(this.getClass()).info("ALERT3!  " + childConcept.getTerminologyId() + " already in map");
-								
-								conceptMap.put(childConcept.getTerminologyId(),
-										childConcept);
+									Logger.getLogger(this.getClass()).info(
+											"ALERT3!  " + childConcept.getTerminologyId()
+													+ " already in map");
+
+								conceptMap.put(childConcept.getTerminologyId(), childConcept);
 								manager.persist(childConcept);
 								// add relationship
 								helper.createIsaRelationship(concept, childConcept,
 										new Integer(relIdCounter++).toString(), terminology,
 										terminologyVersion, effectiveTime);
-							} else { // adding modifier children for those beyond the first modifier
+							} else { // adding modifier children for those beyond the first
+												// modifier
 								for (String newChild : newChildIds) {
 									childConcept = new ConceptJpa();
 									// get rid of leading '.' if present
@@ -774,16 +840,19 @@ public class ClamlLoaderMojo extends AbstractMojo {
 										key = key.substring(1);
 									}
 									childConcept.setTerminologyId(newChild + key);
-									String parentDefaultPreferredName = conceptMap.get(newChild).getDefaultPreferredName();
-									childConcept = helper.createNewActiveConcept(
-											childConcept.getTerminologyId(), terminology,
-											terminologyVersion, parentDefaultPreferredName
-													+ " " + modConcept.getDefaultPreferredName(),
-											effectiveTime);
+									String parentDefaultPreferredName =
+											conceptMap.get(newChild).getDefaultPreferredName();
+									childConcept =
+											helper.createNewActiveConcept(
+													childConcept.getTerminologyId(), terminology,
+													terminologyVersion, parentDefaultPreferredName + " "
+															+ modConcept.getDefaultPreferredName(),
+													effectiveTime);
 									if (conceptMap.containsKey(childConcept.getTerminologyId()))
-										Logger.getLogger(this.getClass()).info("ALERT4!  " + childConcept.getTerminologyId() + " already in map");
-									conceptMap.put(childConcept.getTerminologyId(),
-											childConcept);
+										Logger.getLogger(this.getClass()).info(
+												"ALERT4!  " + childConcept.getTerminologyId()
+														+ " already in map");
+									conceptMap.put(childConcept.getTerminologyId(), childConcept);
 									manager.persist(childConcept);
 									// add relationship
 									helper.createIsaRelationship(concept, childConcept,
@@ -801,28 +870,30 @@ public class ClamlLoaderMojo extends AbstractMojo {
 		}
 	}
 
-
-  /**
-   * Find version.
-   *
-   * @throws Exception the exception
-   */
-  public void findVersion() throws Exception {
-  	BufferedReader br = new BufferedReader(new FileReader(inputFile));
-  	String line = "";
-  	while ((line = br.readLine()) != null) {
-  	   if (line.contains("<Title")) {
-  	  	 int versionIndex = line.indexOf("version=");
-  	  	 if (line.contains("></Title>"))
-  	  	   terminologyVersion = line.substring(versionIndex + 9, line.indexOf("></Title>") -1);
-  	  	 else
-  	  		 terminologyVersion = line.substring(versionIndex + 9, versionIndex + 13);
-  	  	 effectiveTime = terminologyVersion + "0101";
-  	     break;
-  	   }
-  	}
-  	br.close();
-  	Logger.getLogger(this.getClass()).info("terminologyVersion: " + terminologyVersion);
-  	Logger.getLogger(this.getClass()).info("effectiveTime: " + effectiveTime);
-  }
+	/**
+	 * Find version.
+	 * 
+	 * @throws Exception the exception
+	 */
+	public void findVersion() throws Exception {
+		BufferedReader br = new BufferedReader(new FileReader(inputFile));
+		String line = "";
+		while ((line = br.readLine()) != null) {
+			if (line.contains("<Title")) {
+				int versionIndex = line.indexOf("version=");
+				if (line.contains("></Title>"))
+					terminologyVersion =
+							line.substring(versionIndex + 9, line.indexOf("></Title>") - 1);
+				else
+					terminologyVersion =
+							line.substring(versionIndex + 9, versionIndex + 13);
+				effectiveTime = terminologyVersion + "0101";
+				break;
+			}
+		}
+		br.close();
+		Logger.getLogger(this.getClass()).info(
+				"terminologyVersion: " + terminologyVersion);
+		Logger.getLogger(this.getClass()).info("effectiveTime: " + effectiveTime);
+	}
 }

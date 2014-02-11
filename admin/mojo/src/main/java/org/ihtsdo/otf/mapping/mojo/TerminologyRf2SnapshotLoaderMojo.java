@@ -55,6 +55,15 @@ import com.google.common.io.Files;
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
  *       <version>${project.version}</version>
+ *       <dependencies>
+ *         <dependency>
+ *           <groupId>org.ihtsdo.otf.mapping</groupId>
+ *           <artifactId>mapping-admin-loader-config</artifactId>
+ *           <version>${project.version}</version>
+ *          <scope>system</scope>
+ *            <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+ *         </dependency>
+ *       </dependencies>
  *       <executions>
  *         <execution>
  *           <id>load-rf2-snapshot</id>
@@ -63,7 +72,7 @@ import com.google.common.io.Files;
  *             <goal>load-rf2-snapshot</goal>
  *           </goals>
  *           <configuration>
- *             <propertiesFile>${project.build.directory}/generated-sources/org/ihtsdo</propertiesFile>
+ *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
  *             <terminology>SNOMEDCT</terminology>
  *           </configuration>
  *         </execution>
@@ -73,9 +82,9 @@ import com.google.common.io.Files;
  * 
  * @goal load-rf2-snapshot
  * 
- * @phase process-resources
+ * @phase package
  */
-public class RF2SnapshotLoaderMojo extends AbstractMojo {
+public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
 	/**
 	 * Properties file.
@@ -276,10 +285,10 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 	Long memoryTotal = new Long(0);
 
 	/**
-	 * Instantiates a {@link RF2SnapshotLoaderMojo} from the specified parameters.
+	 * Instantiates a {@link TerminologyRf2SnapshotLoaderMojo} from the specified parameters.
 	 * 
 	 */
-	public RF2SnapshotLoaderMojo() {
+	public TerminologyRf2SnapshotLoaderMojo() {
 		// do nothing
 	}
 
@@ -539,7 +548,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		}
 	}
 
-
 	// Used for debugging/efficiency monitoring
 	/**
 	 * Returns the elapsed time.
@@ -788,16 +796,14 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		// ****************//
 		// RefSets //
 		// ****************//
-		sortRf2File(coreAttributeValueInputFile,
-				attribute_refsets_by_concept_file, 5);
+		sortRf2File(coreAttributeValueInputFile, attribute_refsets_by_concept_file,
+				5);
 		sortRf2File(coreSimpleRefsetInputFile, simple_refsets_by_concept_file, 5);
 		sortRf2File(coreSimpleMapInputFile, simple_map_refsets_by_concept_file, 5);
-		sortRf2File(coreComplexMapInputFile, complex_map_refsets_by_concept_file,
+		sortRf2File(coreComplexMapInputFile, complex_map_refsets_by_concept_file, 5);
+		sortRf2File(coreExtendedMapInputFile, extended_map_refsets_by_concept_file,
 				5);
-		sortRf2File(coreExtendedMapInputFile,
-				extended_map_refsets_by_concept_file, 5);
-		sortRf2File(coreLanguageInputFile, language_refsets_by_description_file,
-				5);
+		sortRf2File(coreLanguageInputFile, language_refsets_by_description_file, 5);
 
 	}
 
@@ -963,7 +969,6 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 		in.close();
 
 	}
-
 
 	/**
 	 * Helper function to perform sort operations.
@@ -2094,7 +2099,7 @@ public class RF2SnapshotLoaderMojo extends AbstractMojo {
 
 				// ComplexMap unique attributes NOT set by file (mapBlock
 				// elements)
-				complexMapRefSetMember.setMapBlock(1); // default value
+				complexMapRefSetMember.setMapBlock(0); // default value
 				complexMapRefSetMember.setMapBlockRule(null); // no default
 				complexMapRefSetMember.setMapBlockAdvice(null); // no default
 

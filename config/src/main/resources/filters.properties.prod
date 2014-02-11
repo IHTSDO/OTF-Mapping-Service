@@ -22,7 +22,7 @@ loader.ICPC.input.data=/home/ihtsdo/data/icpc-2.xml
 #
 # Path to unpublished icpc data
 #
-loader.ICPC.complexmap.input.data=/home/ihtsdo/data/icpc-rf2-ExtendedMap-mini.txt
+loader.complexmap.input.data=/home/ihtsdo/data/der2_iisssccRefset_ExtendedMapSnapshot_INT_20140131.txt
 
 #
 # Path to icd9cm data
@@ -37,7 +37,7 @@ loader.ICD10.input.data=/home/ihtsdo/data/icd10-2010.xml
 #
 # Path to map notes data
 #
-loader.mapnotes.input.data=/home/ihtsdo/data/xder2_sRefset_MapNotesSnapshot_INT_20130731.txt
+loader.mapnotes.input.data=/home/ihtsdo/data/der2_sRefset_MapNotesSnapshot_INT_20140131.txt
 
 #
 # Loader settings for preferred name
@@ -52,12 +52,12 @@ loader.defaultPreferredNames.acceptabilityId=900000000000548007
 #
 # Destination directory for exported data
 #
-export.output.dir=/home/ihtsdo/data/ihtsdo-project-data/export
+export.output.dir=/home/ihtsdo/data/ihtsdo-project-data
 
 #
 # Input directory for data to import
 #
-import.input.dir=/home/ihtsdo/data/ihtsdo-project-data/import
+import.input.dir=/home/ihtsdo/data/ihtsdo-project-data
 
 #
 # Webapp base URL

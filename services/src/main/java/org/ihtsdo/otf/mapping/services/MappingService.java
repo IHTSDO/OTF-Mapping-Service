@@ -446,7 +446,7 @@ public interface MappingService {
 	 * @return the list
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject) throws Exception;
+	public void createMapRecordsForMapProject(MapProject mapProject) throws Exception;
 	
 
 	/**
@@ -457,7 +457,7 @@ public interface MappingService {
 	 * @return the list
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> createMapRecordsForMapProject(MapProject mapProject, 
+	public void createMapRecordsForMapProject(MapProject mapProject, 
 			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
 
 	/**
