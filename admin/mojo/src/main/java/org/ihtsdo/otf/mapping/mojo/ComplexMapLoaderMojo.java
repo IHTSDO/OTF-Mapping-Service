@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Properties;
@@ -28,7 +29,12 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * @goal load-rf2-complex-map
  * @phase process-resources
  */
-public class RF2ComplexMapLoaderMojo extends AbstractMojo {
+public class ComplexMapLoaderMojo extends AbstractMojo {
+
+	/**
+	 * @parameter projectId
+	 */
+	private String projectId = null;
 
 	/** The dt. */
 	private SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
@@ -85,7 +91,6 @@ public class RF2ComplexMapLoaderMojo extends AbstractMojo {
 			Properties properties = new Properties();
 			propertiesInputStream = new FileInputStream(propertiesFile);
 			properties.load(propertiesInputStream);
-			propertiesInputStream.close();
 
 			// set the input directory
 			inputFile =
@@ -97,47 +102,69 @@ public class RF2ComplexMapLoaderMojo extends AbstractMojo {
 			}
 			Logger.getLogger(this.getClass()).info("inputFile: " + inputFile);
 
-			// open input file and get MapProject and version
-			File file = new File(inputFile);
-			complexMapReader = new BufferedReader(new FileReader(file));
-			findMapProject();
-			complexMapReader.close();
+			if (inputFile != null && projectId == null) {
+				// open input file and get MapProject and version
+				File file = new File(inputFile);
+				complexMapReader = new BufferedReader(new FileReader(file));
+				findMapProject();
+				complexMapReader.close();
 
-			// load complexMapRefSetMembers from extendedMap file
-			complexMapReader = new BufferedReader(new FileReader(file));
-			loadExtendedMapRefSets();
+				// load complexMapRefSetMembers from extendedMap file
+				complexMapReader = new BufferedReader(new FileReader(file));
+				loadExtendedMapRefSets();
 
-			// qualify advice fields
-			for (ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
+				// qualify advice fields
+				for (ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
 
-				String mapAdvice = refSetMember.getMapAdvice();
-				if (refSetMember.getMapAdvice().startsWith("IF")
-						&& !mapAdvice.contains(" | ")) {
-					refSetMember.setMapAdvice("");
-				} else if (mapAdvice.startsWith("ALWAYS") && !mapAdvice.contains(" | ")) {
-					refSetMember.setMapAdvice("");
-				} else if (mapAdvice.startsWith("ALWAYS") && mapAdvice.contains(" | ")) {
-					refSetMember
-							.setMapAdvice(mapAdvice.substring(mapAdvice.indexOf("|") + 2));
-				} else if (mapAdvice.startsWith("IF") && mapAdvice.contains(" | ")) {
-					refSetMember
-							.setMapAdvice(mapAdvice.substring(mapAdvice.indexOf("|") + 2));
+					String mapAdvice = refSetMember.getMapAdvice();
+					if (refSetMember.getMapAdvice().startsWith("IF")
+							&& !mapAdvice.contains(" | ")) {
+						refSetMember.setMapAdvice("");
+					} else if (mapAdvice.startsWith("ALWAYS")
+							&& !mapAdvice.contains(" | ")) {
+						refSetMember.setMapAdvice("");
+					} else if (mapAdvice.startsWith("ALWAYS")
+							&& mapAdvice.contains(" | ")) {
+						refSetMember.setMapAdvice(mapAdvice.substring(mapAdvice
+								.indexOf("|") + 2));
+					} else if (mapAdvice.startsWith("IF") && mapAdvice.contains(" | ")) {
+						refSetMember.setMapAdvice(mapAdvice.substring(mapAdvice
+								.indexOf("|") + 2));
+					}
+				}
+
+				// create map records
+				mappingService.createMapRecordsForMapProject(mapProject,
+						complexMapRefSetMembers);
+
+				complexMapReader.close();
+
+			} else if (projectId != null) {
+
+				for (String id : projectId.split(",")) {
+					MapProject mapProject =
+							mappingService.getMapProject(new Long(id));
+					// create map records
+					mappingService.createMapRecordsForMapProject(mapProject,
+							complexMapRefSetMembers);
 				}
 			}
 
-			// create map records
-			mappingService.createMapRecordsForMapProject(mapProject,
-					complexMapRefSetMembers);
-
 			// clean-up
-			complexMapReader.close();
 			contentService.close();
 			mappingService.close();
+			propertiesInputStream.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new MojoExecutionException(
 					"Loading of Unpublished RF2 Complex Maps failed.", e);
+		} finally {
+			try {
+				propertiesInputStream.close();
+			} catch (IOException e) {
+				// do nothing
+			}
 		}
 
 	}
