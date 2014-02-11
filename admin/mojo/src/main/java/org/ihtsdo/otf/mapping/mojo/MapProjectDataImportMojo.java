@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
@@ -25,40 +24,41 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 /**
  * Goal which imports project data from text files.
  * 
+ * Sample execution:
  * <pre>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-import-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-import-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
-            <executions>
-              <execution>
-                <id>import-project-data</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>import-project-data</goal>
-                </goals>
-                <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
+ *     <plugin>
+ *       <groupId>org.ihtsdo.otf.mapping</groupId>
+ *       <artifactId>mapping-admin-mojo</artifactId>
+ *       <version>${project.version}</version>
+ *      <dependencies>
+ *          <dependency>
+ *           <groupId>org.ihtsdo.otf.mapping</groupId>
+ *           <artifactId>mapping-admin-import-config</artifactId>
+ *           <version>${project.version}</version>
+ *           <scope>system</scope>
+ *           <systemPath>${project.build.directory}/mapping-admin-import-${project.version}.jar</systemPath>
+ *         </dependency>
+ *       </dependencies>
+ *       <executions>
+ *         <execution>
+ *           <id>import-project-data</id>
+ *           <phase>package</phase>
+ *           <goals>
+ *             <goal>import-project-data</goal>
+ *           </goals>
+ *           <configuration>
+ *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+ *           </configuration>
+ *         </execution>
+ *       </executions>
+ *     </plugin>
  * </pre>
  * 
  * @goal import-project-data
  * 
- * @phase process-resources
+ * @phase package
  */
-public class ImportProjectDataMojo extends AbstractMojo {
+public class MapProjectDataImportMojo extends AbstractMojo {
 
 	/**
 	 * Properties file.
@@ -69,12 +69,11 @@ public class ImportProjectDataMojo extends AbstractMojo {
 	 */
 	private File propertiesFile;
 
-
 	/**
-	 * Instantiates a {@link ImportProjectDataMojo} from the specified parameters.
+	 * Instantiates a {@link MapProjectDataImportMojo} from the specified parameters.
 	 * 
 	 */
-	public ImportProjectDataMojo() {
+	public MapProjectDataImportMojo() {
 		// Do nothing
 	}
 
@@ -85,7 +84,6 @@ public class ImportProjectDataMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
-
 
 		try {
 
@@ -119,7 +117,7 @@ public class ImportProjectDataMojo extends AbstractMojo {
 			File advicesFile = new File(inputDir, "mapadvices.txt");
 			BufferedReader advicesReader =
 					new BufferedReader(new FileReader(advicesFile));
-			
+
 			File principlesFile = new File(inputDir, "mapprinciples.txt");
 			BufferedReader principlesReader =
 					new BufferedReader(new FileReader(principlesFile));
@@ -129,10 +127,10 @@ public class ImportProjectDataMojo extends AbstractMojo {
 					new BufferedReader(new FileReader(projectsFile));
 
 			MappingService mappingService = new MappingServiceJpa();
-			
+
 			// Add Specialists and Leads
 			String line = "";
-   		while ((line = leadsReader.readLine()) != null) {
+			while ((line = leadsReader.readLine()) != null) {
 				StringTokenizer st = new StringTokenizer(line, "\t");
 				MapLeadJpa mapLead = new MapLeadJpa();
 				mapLead.setName(st.nextToken());
@@ -157,7 +155,7 @@ public class ImportProjectDataMojo extends AbstractMojo {
 				mapAdvice.setName(st.nextToken());
 				mapAdvice.setDetail(st.nextToken());
 				mappingService.addMapAdvice(mapAdvice);
-			} 
+			}
 
 			// Add map principles
 			while ((line = principlesReader.readLine()) != null) {
@@ -185,7 +183,7 @@ public class ImportProjectDataMojo extends AbstractMojo {
 				mapProject.setBlockStructure(fields[8].equals("true") ? true : false);
 				mapProject.setGroupStructure(fields[9].equals("true") ? true : false);
 				mapProject.setPublished(fields[10].equals("true") ? true : false);
-				
+
 				String mapAdvices = fields[11];
 				if (!mapAdvices.equals("")) {
 					for (String advice : mapAdvices.split(",")) {
@@ -208,33 +206,31 @@ public class ImportProjectDataMojo extends AbstractMojo {
 				}
 
 				String mapLeads = fields[13];
-				for(String lead : mapLeads.split(",")) {
+				for (String lead : mapLeads.split(",")) {
 					for (MapLead ml : mappingService.getMapLeads()) {
 						if (ml.getUserName().equals(lead))
-					    mapProject.addMapLead(ml);
+							mapProject.addMapLead(ml);
 					}
 				}
-				
+
 				String mapSpecialists = fields[14];
 				for (String specialist : mapSpecialists.split(",")) {
 					for (MapSpecialist ml : mappingService.getMapSpecialists()) {
 						if (ml.getUserName().equals(specialist))
-					    mapProject.addMapSpecialist(ml);
+							mapProject.addMapSpecialist(ml);
 					}
 				}
-				mappingService.addMapProject(mapProject); 
+				mappingService.addMapProject(mapProject);
 			}
-			
 
-			
 			mappingService.close();
-			
+
 			specialistsReader.close();
 			leadsReader.close();
 			advicesReader.close();
 			principlesReader.close();
 			projectsReader.close();
-			
+
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);

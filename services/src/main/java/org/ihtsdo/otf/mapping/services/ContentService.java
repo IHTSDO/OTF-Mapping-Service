@@ -54,6 +54,17 @@ public interface ContentService {
 		throws Exception;
 
 	/**
+	 * Returns {@link SearchResultList} for all concepts of the specified terminology.
+	 * @param terminology 
+	 * @param terminologyVersion 
+	 * 
+	 * @return the search results for the search string
+	 * @throws Exception if anything goes wrong
+	 */
+	public SearchResultList findAllConcepts(String terminology, String terminologyVersion)
+		throws Exception;
+
+	/**
 	 * Gets the descendants of a concept
 	 * @param terminologyId
 	 * @param terminology
