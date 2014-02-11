@@ -85,6 +85,10 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
 			// Remove map projects
 			for (MapProject p : service.getMapProjects()) {
 				getLog().info("  Remove map project - " + p.getName());
+				if (service.getMapRecordsForMapProjectId(p.getId()).size() != 0) {
+					throw new MojoFailureException(
+							"Attempt to delete a map project that has map records, delete the map records first");
+				}
 				service.removeMapProject(p.getId());
 			}
 

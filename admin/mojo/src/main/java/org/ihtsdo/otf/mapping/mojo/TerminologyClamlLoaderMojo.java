@@ -84,7 +84,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
-	// NOTE: default visibility is used instead of private 
+	// NOTE: default visibility is used instead of private
 	// so that the inner class parser does not require
 	// the use of synthetic accessors
 
@@ -465,6 +465,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 						conceptMap.put(code, concept);
 
 						// TODO: move persistence of all concepts to endDocument loop
+						getLog().debug(
+								"  Add concept " + concept.getTerminologyId() + " "
+										+ concept.getDefaultPreferredName());
 						manager.persist(concept);
 					}
 
@@ -767,6 +770,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 											+ " already in map");
 
 						conceptMap.put(childConcept.getTerminologyId(), childConcept);
+						getLog().debug(
+								"  Add concept " + childConcept.getTerminologyId() + " "
+										+ childConcept.getDefaultPreferredName());
 						manager.persist(childConcept);
 						// add relationship
 						helper.createIsaRelationship(concept, childConcept, new Integer(
@@ -826,6 +832,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 													+ " already in map");
 
 								conceptMap.put(childConcept.getTerminologyId(), childConcept);
+								getLog().debug(
+										"  Add concept " + childConcept.getTerminologyId() + " "
+												+ childConcept.getDefaultPreferredName());
 								manager.persist(childConcept);
 								// add relationship
 								helper.createIsaRelationship(concept, childConcept,
@@ -853,6 +862,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 												"ALERT4!  " + childConcept.getTerminologyId()
 														+ " already in map");
 									conceptMap.put(childConcept.getTerminologyId(), childConcept);
+									getLog().debug(
+											"  Add concept " + childConcept.getTerminologyId() + " "
+													+ childConcept.getDefaultPreferredName());
 									manager.persist(childConcept);
 									// add relationship
 									helper.createIsaRelationship(concept, childConcept,
