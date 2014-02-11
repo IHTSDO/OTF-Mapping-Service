@@ -1211,7 +1211,7 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId,
 		PfsParameter pfsParameter) throws Exception {
 
-		if (pfsParameter != null && pfsParameter.getFilterString() == null) {
+		if (pfsParameter != null && pfsParameter.getFilterString() != null) {
 			return getMapRecordsForMapProjectIdWithQuery(mapProjectId, pfsParameter);
 		} else {
 			return getMapRecordsForMapProjectIdWithNoQuery(mapProjectId, pfsParameter);
