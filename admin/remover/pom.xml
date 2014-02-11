@@ -301,7 +301,7 @@
                   <goal>remove-map-notes</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refSetId>${refsetId}</refSetId>
                 </configuration>
               </execution>
             </executions>
@@ -334,7 +334,7 @@
                   <goal>remove-map-records</goal>
                 </goals>
                 <configuration>
-                  <refSetId>${refset.id}</refSetId>
+                  <refSetId>${refsetId}</refSetId>
                 </configuration>
               </execution>
             </executions>
