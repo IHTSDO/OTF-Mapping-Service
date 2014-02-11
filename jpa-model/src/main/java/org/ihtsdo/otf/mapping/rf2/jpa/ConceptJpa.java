@@ -46,20 +46,20 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 	private Long definitionStatusId;
 
 	/** The descriptions. */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=DescriptionJpa.class) 
+	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=DescriptionJpa.class) 
 	private Set<Description> descriptions = new HashSet<Description>();
 
 	/** The relationships. */
-	@OneToMany(mappedBy = "sourceConcept", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=RelationshipJpa.class)
+	@OneToMany(mappedBy = "sourceConcept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=RelationshipJpa.class)
 	@IndexedEmbedded(targetElement=RelationshipJpa.class)
 	private Set<Relationship> relationships = new HashSet<Relationship>();
 
 	/** The inverse relationships. */
-	@OneToMany(mappedBy = "destinationConcept", orphanRemoval = true, fetch = FetchType.LAZY, targetEntity=RelationshipJpa.class)
+	@OneToMany(mappedBy = "destinationConcept", orphanRemoval = true, targetEntity=RelationshipJpa.class)
 	private Set<Relationship> inverseRelationships = new HashSet<Relationship>();
 
 	/** The simple RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=SimpleRefSetMemberJpa.class)
+	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=SimpleRefSetMemberJpa.class)
 	private Set<SimpleRefSetMember> simpleRefSetMembers = new HashSet<SimpleRefSetMember>();
 
 	/** The simpleMap RefSet members */

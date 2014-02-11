@@ -46,41 +46,6 @@ public class ContentServiceRest {
 	}
 
 	/**
-	 * Returns the concept for id.
-	 * 
-	 * @param id the id
-	 * @return the concept for id
-	 */
-	@GET
-	@Path("/concept/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find concept by id", notes = "Returns a concept in either xml json given a concept id.", response = Concept.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public Concept getConceptForId(
-		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id) {
-		
-		try {
-			ContentService contentService = new ContentServiceJpa();
-			Concept c = contentService.getConcept(id);
-			
-
-			// if a terminology Id passed incorrectly, search appropriately
-			if (c == null) {
-				c = contentService.getConcept(id.toString(), "SNOMEDCT",
-						terminologyLatestVersions.get("SNOMEDCT"));
-			} 
-			contentService.close();
-			return c;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		} 
-		
-		
-		
-	}
-
-	/**
 	 * Returns the concept for id, terminology. Looks in the latest version of the
 	 * terminology.
 	 * 
@@ -103,6 +68,9 @@ public class ContentServiceRest {
 		try {
 			ContentService contentService = new ContentServiceJpa();
 			Concept c = contentService.getConcept(id.toString(), terminology, terminologyVersion);
+			// Make sure to read descriptions and relationships
+			c.getDescriptions();
+			c.getRelationships();
 			contentService.close();
 			return c;
 		} catch (Exception e) {
@@ -133,6 +101,8 @@ public class ContentServiceRest {
 		try {
 			ContentService contentService = new ContentServiceJpa();
 			Concept c = contentService.getConcept(id.toString(), terminology, terminologyLatestVersions.get(terminology));
+			c.getDescriptions();
+			c.getRelationships();
 			contentService.close();
 			return c;
 		} catch (Exception e) {
