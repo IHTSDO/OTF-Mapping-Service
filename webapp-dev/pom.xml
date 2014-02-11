@@ -9,7 +9,7 @@
     <version>0.0.1</version>
   </parent>
 
-  <artifactId>mapping-webapp</artifactId>
+  <artifactId>mapping-webapp-dev</artifactId>
   <name>OTF RF2 Webapp</name>
   <description>OTF RF2 webapp</description>
   <packaging>war</packaging>

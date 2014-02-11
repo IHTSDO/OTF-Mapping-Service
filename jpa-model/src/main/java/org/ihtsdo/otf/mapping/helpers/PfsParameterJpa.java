@@ -65,7 +65,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * @return the filter string
 	 */
 	@Override
-	public String getFilters() {
+	public String getFilterString() {
 		return filters;
 	}
 
@@ -74,7 +74,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * @param filters the filter string
 	 */
 	@Override
-	public void setFilters(String filters) {
+	public void setFilterString(String filters) {
 		this.filters = filters;
 	}
 

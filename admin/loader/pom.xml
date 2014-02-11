@@ -272,7 +272,6 @@
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                  <terminology>various</terminology>
                 </configuration>
               </execution>
             </executions>
@@ -280,6 +279,40 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>CreateMapRecords</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.ihtsdo.otf.mapping</groupId>
+                <artifactId>mapping-admin-loader-config</artifactId>
+                <version>${project.version}</version>
+                <scope>system</scope>
+                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <id>create-map-records-from-complex-map</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>create-map-records-from-complex-map</goal>
+                </goals>
+                <configuration>
+                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+                  <refSetId>${refset.id}</refSetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>    
     <profile>
       <id>MapNotes</id>
       <build>

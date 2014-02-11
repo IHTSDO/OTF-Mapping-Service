@@ -41,7 +41,7 @@ import org.apache.maven.plugin.MojoFailureException;
  * 
  * @goal updatedb
  * 
- * @phase process-resources
+ * @phase package
  */
 public class UpdateDbMojo extends AbstractMojo {
 
