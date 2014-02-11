@@ -37,13 +37,13 @@ public interface PfsParameter {
 	 * Returns the filter string
 	 * @return the filter string
 	 */
-	public String getFilters();
+	public String getFilterString();
 
 	/**
 	 * Sets the filter string
-	 * @param filters the filter string
+	 * @param filterString the filter string
 	 */
-	public void setFilters(String filters);
+	public void setFilterString(String filterString);
 
 	/** 
 	 * Returns the sort field name

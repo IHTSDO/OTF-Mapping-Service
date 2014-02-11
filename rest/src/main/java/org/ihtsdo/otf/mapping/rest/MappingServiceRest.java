@@ -416,7 +416,7 @@ public class MappingServiceRest {
 			
 			try {
 				PfsParameter pfs = new PfsParameterJpa();
-				pfs.setFilters(filters);
+				pfs.setFilterString(filters);
 				
 				MappingService mappingService = new MappingServiceJpa();
 				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId, pfs);
@@ -514,7 +514,7 @@ public class MappingServiceRest {
 			PfsParameter pfs = new PfsParameterJpa();
 			pfs.setStartIndex(nStart);
 			pfs.setMaxResults(nMaxResults);
-			pfs.setFilters(filters);
+			pfs.setFilterString(filters);
 			//pfs.setSortField(sortBy);
 			
 			
@@ -993,7 +993,8 @@ public class MappingServiceRest {
 		MapRecordList results = new MapRecordList();
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			results.setMapRecords(mappingService.createMapRecordsForMapProject(mapProject));
+			mappingService.createMapRecordsForMapProject(mapProject);
+			results.setMapRecords(mappingService.getMapRecordsForMapProjectId(mapProject.getId()));
 			mappingService.close();
 			
 		} catch (Exception e) {

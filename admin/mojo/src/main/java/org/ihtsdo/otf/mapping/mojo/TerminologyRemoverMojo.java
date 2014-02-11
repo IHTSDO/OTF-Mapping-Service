@@ -16,7 +16,6 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -34,6 +33,15 @@ import org.apache.maven.plugin.MojoFailureException;
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
  *       <version>${project.version}</version>
+ *       <dependencies>
+ *         <dependency>
+ *           <groupId>org.ihtsdo.otf.mapping</groupId>
+ *           <artifactId>mapping-admin-remover-config</artifactId>
+ *           <version>${project.version}</version>
+ *           <scope>system</scope>
+ *           <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
+ *         </dependency>
+ *       </dependencies>
  *       <executions>
  *         <execution>
  *           <id>remove-terminology</id>
@@ -42,6 +50,7 @@ import org.apache.maven.plugin.MojoFailureException;
  *             <goal>remove-terminology</goal>
  *           </goals>
  *           <configuration>
+ *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
  *             <terminology>SNOMEDCT</terminology>
  *           </configuration>
  *         </execution>
@@ -51,11 +60,10 @@ import org.apache.maven.plugin.MojoFailureException;
  * 
  * @goal remove-terminology
  * 
- * @phase process-resources
+ * @phase package
  */
 public class TerminologyRemoverMojo extends AbstractMojo {
 
-	
 	/**
 	 * Name of terminology to be removed.
 	 * @parameter
@@ -65,7 +73,6 @@ public class TerminologyRemoverMojo extends AbstractMojo {
 
 	/** The manager. */
 	private EntityManager manager;
-
 
 	int i;
 
@@ -78,7 +85,6 @@ public class TerminologyRemoverMojo extends AbstractMojo {
 
 	}
 
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -88,18 +94,12 @@ public class TerminologyRemoverMojo extends AbstractMojo {
 	public void execute() throws MojoFailureException {
 		try {
 
-
-
 			getLog().info("Start removing " + terminology + " data ...");
 
-
-
 			// create Entitymanager
-			EntityManagerFactory factory = Persistence
-					.createEntityManagerFactory("MappingServiceDS");
+			EntityManagerFactory factory =
+					Persistence.createEntityManagerFactory("MappingServiceDS");
 			manager = factory.createEntityManager();
-
-
 
 			EntityTransaction tx = manager.getTransaction();
 			try {
@@ -108,60 +108,66 @@ public class TerminologyRemoverMojo extends AbstractMojo {
 				tx.begin();
 
 				// truncate RefSets
-				Query query = manager
-						.createQuery("DELETE From SimpleRefSetMemberJpa rs where terminology = :terminology");
-				query.setParameter("terminology", terminology);				
+				Query query =
+						manager
+								.createQuery("DELETE From SimpleRefSetMemberJpa rs where terminology = :terminology");
+				query.setParameter("terminology", terminology);
 				int deleteRecords = query.executeUpdate();
-				getLog().info(
-						"    simple_ref_set records deleted: " + deleteRecords);
-				
-				query = manager
-						.createQuery("DELETE From SimpleMapRefSetMemberJpa rs where terminology = :terminology");
+				getLog().info("    simple_ref_set records deleted: " + deleteRecords);
+
+				query =
+						manager
+								.createQuery("DELETE From SimpleMapRefSetMemberJpa rs where terminology = :terminology");
 				query.setParameter("terminology", terminology);
 				deleteRecords = query.executeUpdate();
 				getLog().info(
 						"    simple_map_ref_set records deleted: " + deleteRecords);
-				
-				query = manager
-						.createQuery("DELETE From ComplexMapRefSetMemberJpa rs where terminology = :terminology");
+
+				query =
+						manager
+								.createQuery("DELETE From ComplexMapRefSetMemberJpa rs where terminology = :terminology");
 				query.setParameter("terminology", terminology);
 				deleteRecords = query.executeUpdate();
 				getLog().info(
 						"    complex_map_ref_set records deleted: " + deleteRecords);
-				
-				query = manager
-						.createQuery("DELETE From AttributeValueRefSetMemberJpa rs where terminology = :terminology");
+
+				query =
+						manager
+								.createQuery("DELETE From AttributeValueRefSetMemberJpa rs where terminology = :terminology");
 				query.setParameter("terminology", terminology);
 				deleteRecords = query.executeUpdate();
 				getLog().info(
-						"    attribute_value_ref_set records deleted: "
-								+ deleteRecords);
-				
-				query = manager
-						.createQuery("DELETE From LanguageRefSetMemberJpa rs where terminology = :terminology");
+						"    attribute_value_ref_set records deleted: " + deleteRecords);
+
+				query =
+						manager
+								.createQuery("DELETE From LanguageRefSetMemberJpa rs where terminology = :terminology");
 				query.setParameter("terminology", terminology);
 				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"    language_ref_set records deleted: " + deleteRecords);
+				getLog().info("    language_ref_set records deleted: " + deleteRecords);
 
 				// Truncate Terminology Elements
-				query = manager.createQuery("DELETE From DescriptionJpa d where terminology = :terminology");
+				query =
+						manager
+								.createQuery("DELETE From DescriptionJpa d where terminology = :terminology");
 				query.setParameter("terminology", terminology);
 				deleteRecords = query.executeUpdate();
 				getLog().info("    description records deleted: " + deleteRecords);
-				query = manager.createQuery("DELETE From RelationshipJpa r where terminology = :terminology");
+				query =
+						manager
+								.createQuery("DELETE From RelationshipJpa r where terminology = :terminology");
 				query.setParameter("terminology", terminology);
 				deleteRecords = query.executeUpdate();
 				getLog().info("    relationship records deleted: " + deleteRecords);
-				query = manager.createQuery("DELETE From ConceptJpa c where terminology = :terminology");
+				query =
+						manager
+								.createQuery("DELETE From ConceptJpa c where terminology = :terminology");
 				query.setParameter("terminology", terminology);
 				deleteRecords = query.executeUpdate();
 				getLog().info("    concept records deleted: " + deleteRecords);
 
 				tx.commit();
 
-
-				
 				getLog().info("done ...");
 
 			} catch (Exception e) {
@@ -176,13 +182,7 @@ public class TerminologyRemoverMojo extends AbstractMojo {
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);
-		} 
+		}
 	}
-
-
-
-
-
-
 
 }

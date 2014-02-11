@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,11 +29,11 @@ public class FileSorter {
 	 */
 	public static void sortFile(String inputFile, String outputFile,
 		Comparator<String> comparator) throws Exception {
-		
+
 		// Split the input file into chunks and sort each section
 		Logger.getLogger(FileSorter.class).info("  Split " + inputFile);
 		List<String> splitFiles =
-				splitFile(inputFile, outputFile, comparator, 32 * 1024 * 1024);
+				splitFile(inputFile, new File(outputFile).getParent(), comparator, 32 * 1024 * 1024);
 
 		// Iteratively merge split files
 		while (splitFiles.size() > 1) {
@@ -43,8 +44,10 @@ public class FileSorter {
 							splitFiles.get(splitFiles.size() - 2), comparator);
 
 			// remove last two elements of list
-			splitFiles.remove(splitFiles.size() - 1);
-			splitFiles.remove(splitFiles.size() - 1);
+			String toRemove = splitFiles.remove(splitFiles.size() - 1);
+			new File(toRemove).delete();
+			toRemove = splitFiles.remove(splitFiles.size() - 1);
+			new File(toRemove).delete();
 
 			// add merged file to beginning of the list
 			splitFiles.add(merged_file);
@@ -53,9 +56,9 @@ public class FileSorter {
 		// rename resultant file (expects only one split file to remain)
 		if (splitFiles.size() == 1) {
 
-			File fileSorted = new File(splitFiles.get(0)).getAbsoluteFile();
-			File fileOut = new File(outputFile).getAbsoluteFile();
-			fileSorted.renameTo(fileOut);
+			File fileSorted = new File(splitFiles.get(0));
+			File fileOut = new File(outputFile);
+			Files.move(fileSorted.toPath(), fileOut.toPath());
 			Logger.getLogger(FileSorter.class).info(
 					"Moved file " + fileSorted.getName() + " to " + fileOut.getName());
 
@@ -147,8 +150,8 @@ public class FileSorter {
 	private static String mergeToTempFile(String filename1, String filename2,
 		Comparator<String> comparator) throws Exception {
 
-		File file1 = new File(filename1).getAbsoluteFile();
-		File file2 = new File(filename2).getAbsoluteFile();
+		File file1 = new File(filename1);
+		File file2 = new File(filename2);
 
 		BufferedReader reader1 = new BufferedReader(new FileReader(file1));
 		BufferedReader reader2 = new BufferedReader(new FileReader(file2));
@@ -228,26 +231,26 @@ public class FileSorter {
 	 * @return a String list of the split filenames
 	 * @throws Exception the exception
 	 */
-	private static List<String> splitFile(String inputFile, String outputFile,
+	private static List<String> splitFile(String inputFile, String dir,
 		Comparator<String> comparator, int segmentSize) throws Exception {
 
 		int currentSize = 0; // counter for current file size
 		String line; // current file line
 		List<String> lines = new ArrayList<String>(10000); // set of lines to be
-																											// sorted via
-																											// Collections.sort
+																												// sorted via
+																												// Collections.sort
 		List<String> splitFiles = new ArrayList<String>();
 
 		// open file
 		File fileIn = new File(inputFile);
-		System.out.println("fileIn="+fileIn);
+		System.out.println("fileIn=" + fileIn);
 		BufferedReader reader = new BufferedReader(new FileReader(fileIn));
 
 		// cycle until end of file
 		while ((line = reader.readLine()) != null) {
 			currentSize += line.length();
 			lines.add(line);
-			
+
 			// if above segment size, sort and write the array
 			if (currentSize > segmentSize) {
 
@@ -256,7 +259,7 @@ public class FileSorter {
 
 				// write file
 				splitFiles.add(createSplitFile(lines, fileIn,
-						new File(outputFile).getParentFile()));
+						new File(dir)));
 
 				// reset line array and size tracker
 				lines.clear();
@@ -266,7 +269,8 @@ public class FileSorter {
 
 		// write remaining lines to file
 		Collections.sort(lines, comparator);
-		splitFiles.add(createSplitFile(lines, fileIn, new File(outputFile).getParentFile()));
+		splitFiles.add(createSplitFile(lines, fileIn,
+				new File(dir)));
 
 		reader.close();
 		return splitFiles;
@@ -286,7 +290,8 @@ public class FileSorter {
 		File fileTemp =
 				File.createTempFile("split_" + fileIn.getName() + "_", ".tmp",
 						outputDir);
-		BufferedWriter writer = new BufferedWriter(new FileWriter(fileTemp));
+		FileWriter fileWriter = new FileWriter(fileTemp);
+		BufferedWriter writer = new BufferedWriter(fileWriter);
 
 		for (int i = 0; i < lines.size(); i++) {
 			writer.write(lines.get(i));
@@ -294,6 +299,7 @@ public class FileSorter {
 		}
 		writer.flush();
 		writer.close();
+		fileWriter.close();
 		Logger.getLogger(FileSorter.class).info(
 				"   Created split file: " + fileTemp.getName());
 		return fileTemp.getAbsolutePath();
