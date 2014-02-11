@@ -15,9 +15,11 @@ import javax.ws.rs.core.Response;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapLeadList;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
+import org.ihtsdo.otf.mapping.jpa.MapPrincipleList;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectList;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -34,7 +36,6 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptList;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
-import com.sun.jersey.core.impl.provider.entity.ByteArrayProvider;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -265,7 +266,7 @@ public class MappingServiceRest {
 	 * @return the map specialists
 	 */
 	@GET
-	@Path("/specialist/query/{String}")
+	@Path("/specialist/query/{string}")
 	@ApiOperation(value = "Find specialists by query", notes = "Returns map specialists for a query in either JSON or XML format", response = MapSpecialistList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapSpecialists(
@@ -310,7 +311,7 @@ public class MappingServiceRest {
 	 * @return the map leads
 	 */
 	@GET
-	@Path("/lead/query/{String}")
+	@Path("/lead/query/{string}")
 	@ApiOperation(value = "Find leads by query", notes = "Returns map leads for a query in either JSON or XML format", response = MapLeadList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapLeads(
@@ -379,7 +380,7 @@ public class MappingServiceRest {
 	 * @return the number of records as a String object
 	 */
 	@GET
-	@Path("record/projectId/{id:[0-9][0-9]*}/nRecords")
+	@Path("/record/projectId/{id:[0-9][0-9]*}/nRecords")
 	@ApiOperation(value = "Find the number of records for a project id", notes = "Returns the number of map records for a project id", response = Integer.class)
 	@Produces({ MediaType.TEXT_PLAIN})
 	public String getMapRecordCountForMapProjectId(
@@ -388,7 +389,7 @@ public class MappingServiceRest {
 			
 			try {
 				MappingService mappingService = new MappingServiceJpa();
-				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId);
+				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId, null);
 				mappingService.close();
 				
 				// Jersey can't handle Long as return type, convert to string
@@ -397,8 +398,39 @@ public class MappingServiceRest {
 				throw new WebApplicationException(e);
 			}
 	}
+	
 	/**
-	 * Returns the records for a given concept id
+	 * Returns the count of records associated with a map project given a filtering query
+	 * @param mapProjectId the map project id
+	 * @param filters the string filters
+	 * @return the number of records as a String object
+	 */
+	@GET
+	@Path("/record/projectId/{id:[0-9][0-9]*}/nRecords/{filters}")
+	@ApiOperation(value = "Find the number of records for a project id", notes = "Returns the number of map records for a project id", response = Integer.class)
+	@Produces({ MediaType.TEXT_PLAIN})
+	public String getMapRecordCountForMapProjectIdWithQuery(
+			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "String query to filter records", required = true) @PathParam("filters") String filters) {
+			
+			
+			try {
+				PfsParameter pfs = new PfsParameterJpa();
+				pfs.setFilterString(filters);
+				
+				MappingService mappingService = new MappingServiceJpa();
+				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId, pfs);
+				mappingService.close();
+				
+				// Jersey can't handle Long as return type, convert to string
+				return nRecords.toString();
+			} catch (Exception e) {
+				throw new WebApplicationException(e);
+			}
+	}
+	
+	/**
+	 * Returns the records for a given project id
 	 * @param projectId the projectId
 	 * @return the mapRecords
 	 */
@@ -445,6 +477,50 @@ public class MappingServiceRest {
 			// execute the service call
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecordList mapRecords = new MapRecordList();
+			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId, pfs));
+			mappingService.close();
+			
+			return mapRecords;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Returns a delimited page of map records for a project id
+	 * @param projectId the projectId
+	 * @param nStart the first record to return
+	 * @param nMaxResults the number of records to fetch
+	 * @param filters the filter query
+	 * @param sortBy the field to sort results by
+	 * @return the mapRecords
+	 */
+	@GET
+	@Path("/record/projectId/{id:[0-9][0-9]*}/{nStart:[0-9][0-9]*}-{nMaxResults:[0-9][0-9]*}/{filters}")
+	@ApiOperation(value = "Find paged records by project id and query", notes = "Returns delimited page of MapRecords, e.g. range [nStart: nStart+nMaxRecords-1] given a project id and string filters query", response = MapRecord.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecordsForMapProjectId(
+			@ApiParam(value = "Project id for map records", required = true) @PathParam("id") Long projectId,
+			@ApiParam(value = "Start index of records", required = true) @PathParam("nStart") int nStart,
+			@ApiParam(value = "Number of records to fetch", required = true) @PathParam("nMaxResults") int nMaxResults,
+			@ApiParam(value = "Filters query string", required = true) @PathParam("filters") String filters) {
+			//@ApiParam(value = "Sorting field", required = false) String sortBy) {
+		
+		try {
+			
+			System.out.println("Called getMapRecordsForMapProjectId with query string: " + filters);
+			
+			// instantiate the pfs parameters
+			PfsParameter pfs = new PfsParameterJpa();
+			pfs.setStartIndex(nStart);
+			pfs.setMaxResults(nMaxResults);
+			pfs.setFilterString(filters);
+			//pfs.setSortField(sortBy);
+			
+			
+			// execute the service call
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecordList mapRecords = new MapRecordList();			
 			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId, pfs));
 			mappingService.close();
 			
@@ -788,7 +864,7 @@ public class MappingServiceRest {
 	 * @return the ConceptList of unmapped descendants
 	 */
 	@GET
-	@Path("/concept/{terminology}/{version}/id/{id}/threshold/{threshold:[0-9][0-9]}")
+	@Path("/concept/{terminology}/{version}/id/{id}/threshold/{threshold:[0-9][0-9]*}")
 	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -817,7 +893,7 @@ public class MappingServiceRest {
 	@Path("/principle/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find principle by id", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrinciple.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapPrinciple getMapPrincipledForId(
+	public MapPrinciple getMapPrincipleForId(
 			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId) {
 		
 		try {
@@ -825,6 +901,29 @@ public class MappingServiceRest {
 			MapPrinciple mapPrinciple = mappingService.getMapPrinciple(mapPrincipleId);
 			mappingService.close();
 			return mapPrinciple;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+
+	/**
+	 * Returns all map principles in either JSON or XML format
+	 * 
+	 * @return the map principles
+	 */
+	@GET
+	@Path("/principle/principles/")
+	@ApiOperation(value = "Get all principles", notes = "Returns all MapPrinciples in either JSON or XML format", response = MapPrincipleList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapPrincipleList getMapPrinciples() {
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapPrincipleList mapPrinciples = new MapPrincipleList();
+			mapPrinciples.setmapPrinciples(mappingService.getMapPrinciples());
+			mapPrinciples.sortmapPrinciples();
+			mappingService.close();
+			return mapPrinciples;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -841,7 +940,7 @@ public class MappingServiceRest {
 	@Path("/principle/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Update principle by id", notes = "Updates a MapPrinciple. Must exist in mapping database. Must be in Json or Xml format", response = MapPrincipleJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Response updatetMapPrincipledForId(
+	public Response updateMapPrincipleForId(
 			@ApiParam(value = "Map Principle to update", required = true) MapPrincipleJpa mapPrinciple) {
 		
 		try {
@@ -853,6 +952,29 @@ public class MappingServiceRest {
 			throw new WebApplicationException(e);
 		}
 		return null;
+	}
+	
+	/**
+	 * Returns all map advices in either JSON or XML format
+	 * 
+	 * @return the map advices
+	 */
+	@GET
+	@Path("/advice/advices/")
+	@ApiOperation(value = "Get all advices", notes = "Returns all MapAdvices in either JSON or XML format", response = MapAdviceList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapAdviceList getMapAdvices() {
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapAdviceList mapAdvices = new MapAdviceList();
+			mapAdvices.setMapAdvices(mappingService.getMapAdvices());
+			mapAdvices.sortMapAdvices();
+			mappingService.close();
+			return mapAdvices;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
 	}
 	
 	/**
@@ -871,9 +993,28 @@ public class MappingServiceRest {
 		MapRecordList results = new MapRecordList();
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			results.setMapRecords(mappingService.createMapRecordsForMapProject(mapProject));
+			mappingService.createMapRecordsForMapProject(mapProject);
+			results.setMapRecords(mappingService.getMapRecordsForMapProjectId(mapProject.getId()));
 			mappingService.close();
 			
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+		return results;
+	}
+	
+	@GET
+	@Path("/record/concept/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find map records referencing a concept as a source concept", notes = "Requires hibernate id", response = MapRecordList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordList getMapRecordsForConceptId(
+			@ApiParam(value = "Concept hibernate id", required = true) Long conceptId) {
+		
+		MapRecordList results = new MapRecordList();
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			results.setMapRecords(mappingService.getMapRecordsForConcept(conceptId));
+			mappingService.close();
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}

@@ -18,7 +18,6 @@ import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -126,6 +125,7 @@ public class MapRecordJpa implements MapRecord {
 	}
 	
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public Long getMapProjectId() {
 		return mapProjectId;
 	}
@@ -147,7 +147,7 @@ public class MapRecordJpa implements MapRecord {
 	}
 	
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	public String getConceptName() {
 		return this.conceptName;
 	}

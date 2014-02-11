@@ -106,8 +106,14 @@
               </execution>
             </executions>
           </plugin>
-
-          <!-- Execute the mojo -->
+        </plugins>
+      </build>
+    </profile>
+    <!-- Execute the mojo -->
+    <profile>
+      <id>SNOMEDCT</id>
+      <build>
+        <plugins>
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
@@ -130,11 +136,11 @@
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                  <terminology>SNOMEDCT</terminology>                
+                  <terminology>SNOMEDCT</terminology>
                 </configuration>
               </execution>
             </executions>
-          </plugin> 
+          </plugin>
         </plugins>
       </build>
     </profile>
@@ -237,8 +243,108 @@
               </execution>
             </executions>
           </plugin>
-        </plugins> 
+        </plugins>
       </build>
-    </profile> 
+    </profile>
+    <profile>
+      <id>MapRecords</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.ihtsdo.otf.mapping</groupId>
+                <artifactId>mapping-admin-loader-config</artifactId>
+                <version>${project.version}</version>
+                <scope>system</scope>
+                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <id>load-rf2-complex-map</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-rf2-complex-map</goal>
+                </goals>
+                <configuration>
+                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>CreateMapRecords</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.ihtsdo.otf.mapping</groupId>
+                <artifactId>mapping-admin-loader-config</artifactId>
+                <version>${project.version}</version>
+                <scope>system</scope>
+                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <id>create-map-records-from-complex-map</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>create-map-records-from-complex-map</goal>
+                </goals>
+                <configuration>
+                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+                  <refSetId>${refset.id}</refSetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>    
+    <profile>
+      <id>MapNotes</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.ihtsdo.otf.mapping</groupId>
+                <artifactId>mapping-admin-loader-config</artifactId>
+                <version>${project.version}</version>
+                <scope>system</scope>
+                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <id>load-map-notes</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-map-notes</goal>
+                </goals>
+                <configuration>
+                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
