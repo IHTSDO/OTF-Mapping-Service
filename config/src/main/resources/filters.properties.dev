@@ -12,30 +12,58 @@ mysql.test.pwd=rootpwd
 # Path to loader data
 #   this directory must have Refset/ and Terminology/ directories
 #
-loader.SNOMEDCT.input.data=C:\\data\\usext-mini-data\\src\\main\\resources\\org\\ihtsdo
+# usext mini data:
+loader.SNOMEDCT.input.data=C:/data/snomedct-20140131-mini
+
+# SNOMEDCT full snapshot data:
+# loader.SNOMEDCT.input.data=C:/data/snomedct-20140131-snapshot
 
 #
 # Path to icpc data
 #
-loader.ICPC.input.data=C:\\data\\icpc.xml
+loader.ICPC.input.data=C:/data/icpc-2.xml
+
+#
+# Path to unpublished icpc data
+#
+#loader.complexmap.input.data=C:/data/der2_iisssccRefset_ExtendedMapSnapshotMini_INT_20140131.txt
+loader.complexmap.input.data=C:/data/icpc-rf2-ExtendedMap-mini.txt
 
 #
 # Path to icd9cm data
 #   this must be a file named icd9cm.xml
 #
-loader.ICD9CM.input.data=C:\\data\\icd9cm.xml
+loader.ICD9CM.input.data=C:/data/icd9cm-2013.xml
 
 #
 # Path to icd10 data
 #
-loader.ICD10.input.data=C:\\data\\icd10.xml
+loader.ICD10.input.data=C:/data/icd10-2010.xml
+
+#
+# Path to map notes data
+#
+loader.mapnotes.input.data=C:/data/xder2_sRefset_MapNotesSnapshot_INT_20130731.txt
 
 #
 # Loader settings for preferred name
 #
+# SNOMED CT RF2 SCTID for "Synonym"
 loader.defaultPreferredNames.typeId=900000000000013009
+# SNOMED CT RF2 SCTID for the US English language refset
 loader.defaultPreferredNames.refSetId=900000000000509007
+# SNOMED CT RF2 SCTID for "Preferred"
 loader.defaultPreferredNames.acceptabilityId=900000000000548007
+
+#
+# Destination directory for exported data
+#
+export.output.dir=C:/data/ihtsdo-project-data
+
+#
+# Input directory for data to import
+#
+import.input.dir=C:/data/ihtsdo-project-data
 
 #
 # Webapp base URL

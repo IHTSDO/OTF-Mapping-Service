@@ -42,7 +42,7 @@ public class ContentServiceRest {
 
 		// TODO: wire this to metadata service (getTerminologyLatestVesrions)
 		terminologyLatestVersions = new HashMap<String, String>();
-		terminologyLatestVersions.put("SNOMEDCT", "20130131");
+		terminologyLatestVersions.put("SNOMEDCT", "20140131");
 	}
 
 	/**

@@ -34,38 +34,33 @@ public interface PfsParameter {
 	public void setStartIndex(int startIndex);
 
 	/**
-	 * Returns the ending index of a query result subset
-	 * @return the end index
-	 */
-	public int getEndIndex();
-
-	/**
-	 * Sets the ending index of a query results subset
-	 * @param endIndex the end index
-	 */
-	public void setEndIndex(int endIndex);
-
-	/**
 	 * Returns the filter string
 	 * @return the filter string
 	 */
-	public String getFilters();
+	public String getFilterString();
 
 	/**
 	 * Sets the filter string
-	 * @param filters the filter string
+	 * @param filterString the filter string
 	 */
-	public void setFilters(String filters);
+	public void setFilterString(String filterString);
 
 	/** 
-	 * Returns the sorting comparator
-	 * @return the sorting comparator
+	 * Returns the sort field name
+	 * @return the sort field name
 	 */
-	public Comparator<Object> getsortComparator();
+	public String getSortField();
 
 	/** 
-	 * Sets the sorting comparator
-	 * @param sortComparator the sorting comparator
+	 * Sets the sort field name
+	 * @param sortField the sort field name
 	 */
-	public void setsortComparator(Comparator<Object> sortComparator);
+	public void setSortField(String sortField);
+	
+	/**
+	 * Indicates whether the index is in range for the given start index and max results settings.
+	 * @param i the index to check
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isIndexInRange(int i);
 }

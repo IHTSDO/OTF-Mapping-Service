@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.helpers;
 
-import java.util.Comparator;
-
 /**
  * The Jpa implementation of the paging/filtering/sorting object
  * @author Patrick
@@ -10,29 +8,27 @@ import java.util.Comparator;
 public class PfsParameterJpa implements PfsParameter {
 
 	/** The maximum number of results */
-	private int maxResults;
+	private int maxResults = -1;
 	
 	/** The start index for queries */
-	private int startIndex;
-	
-	/** The end index for queries */
-	private int endIndex;
+	private int startIndex = -1;
 	
 	/** The filter string */
-	private String filters;
+	private String filters = null;
 	
 	/** The comparator for sorting */
-	private Comparator<Object> sortComparator;
+	private String sortField = null;
 	
 	/** The default constructor */
 	public PfsParameterJpa() {
-		// TODO Auto-generated constructor stub
+		// do nothing
 	}
 	
 	/**
 	 * Returns the maximum number of results
 	 * @return the maximum number of results
 	 */
+	@Override
 	public int getMaxResults() {
 		return maxResults;
 	}
@@ -41,6 +37,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Sets the maximum number of results
 	 * @param maxResults the maximum number of results
 	 */
+	@Override
 	public void setMaxResults(int maxResults) {
 		this.maxResults = maxResults;
 	}
@@ -49,6 +46,7 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Returns the starting index of a query result subset
 	 * @return the start index
 	 */
+	@Override
 	public int getStartIndex() {
 		return startIndex;
 	}
@@ -57,31 +55,17 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Sets the starting index of a query result subset
 	 * @param startIndex the start index
 	 */
+	@Override
 	public void setStartIndex(int startIndex) {
 		this.startIndex = startIndex;
-	}
-
-	/**
-	 * Returns the ending index of a query result subset
-	 * @return the end index
-	 */
-	public int getEndIndex() {
-		return endIndex;
-	}
-
-	/**
-	 * Sets the ending index of a query results subset
-	 * @param endIndex the end index
-	 */
-	public void setEndIndex(int endIndex) {
-		this.endIndex = endIndex;
 	}
 
 	/**
 	 * Returns the filter string
 	 * @return the filter string
 	 */
-	public String getFilters() {
+	@Override
+	public String getFilterString() {
 		return filters;
 	}
 
@@ -89,24 +73,41 @@ public class PfsParameterJpa implements PfsParameter {
 	 * Sets the filter string
 	 * @param filters the filter string
 	 */
-	public void setFilters(String filters) {
+	@Override
+	public void setFilterString(String filters) {
 		this.filters = filters;
 	}
 
-	/** 
-	 * Returns the sorting comparator
-	 * @return the sorting comparator
+	/**
+	 * Gets the sort field.
+	 *
+	 * @return the sort field
 	 */
-	public Comparator<Object> getsortComparator() {
-		return sortComparator;
+	@Override
+	public String getSortField() {
+		return sortField;
 	}
 
-	/** 
-	 * Sets the sorting comparator
-	 * @param sortComparator the sorting comparator
+	/**
+	 * Sets the sort field
+	 * 
+	 * @param sortField
 	 */
-	public void setsortComparator(Comparator<Object> sortComparator) {
-		this.sortComparator = sortComparator;
+	@Override
+	public void setSortField(String sortField) {
+		this.sortField = sortField;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.helpers.PfsParameter#isIndexInRange(int)
+	 */
+	@Override
+	public boolean isIndexInRange(int i) {
+		return getStartIndex() != -1 &&
+				getMaxResults() != -1 &&
+				 i >= getStartIndex() && 
+				 i < (getStartIndex() + getMaxResults());
+	}
+
+	
 }

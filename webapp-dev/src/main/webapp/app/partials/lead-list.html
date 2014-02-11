@@ -1,0 +1,30 @@
+<!-- Partial for record list -->
+Filter Results: <input ng-model="query"> (Examples: <em>kathy, dmo, @sydney </em>)
+
+<p ng-show="editMode==false"></p>
+<accordion>
+    <accordion-group ng-repeat="lead in leads | filter:query | orderBy:orderProp">
+    	<accordion-heading>
+    	<h3>{{lead.name}}</h3>
+
+    	</accordion-heading>
+    	
+    	<div ng-show="editMode==true">
+    		<form>
+    		<p><input type="text" value="{{lead.name}}"></p>
+    		<p><input type="text" value="{{lead.userName}}"></p>
+    		<p><input type="text" value="{{lead.email}}"></p>
+    		<p><input type="button" value="Save" ng-click="toggleEdit()"><input type="button" value="Cancel" ng-click="save()"></p>
+    		</form>
+    	</div>
+    	
+    	<div ng-show="editMode==false">
+    	<p>User Name: {{lead.userName}}</span>
+		<p>Email: <a href="mailto:{{lead.email}}">{{lead.email}}</a></p>
+		<p>
+		<!-- <p>Projects: <input type="button" value="Get Projects" ng-click="getProjects( lead.id )"></p>
+		<ul><li ng-repeat="project in projects">{{project.id}}, {{project.name}}</ul></li> -->
+		<input ng-show="editMode==false" type="button" value="{{editModeValue}}" ng-click="toggleEdit()">
+		</div>
+   	</accordion-group>
+</accordion>

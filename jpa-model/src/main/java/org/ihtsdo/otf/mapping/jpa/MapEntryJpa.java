@@ -23,6 +23,7 @@ import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
@@ -33,6 +34,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Map Entry Jpa object.
  *
@@ -70,24 +72,29 @@ public class MapEntryJpa implements MapEntry {
 	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 
 	/** The target. */
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private String targetId;
 	
 	/** The target name. */
-	@Column(nullable = true) // TODO Change to false once other terminologies are in
+	@Column(nullable = true)
 	private String targetName;
 	
 	/** The rule. */
 	@Column(nullable = true, length = 4000)
 	private String rule;
 
-	/** The index (map priority). */
+	/** The map priority. */
 	@Column(nullable = false)
-	private int indexMapPriority;
+	private int mapPriority;
 
 	/** The relation id. */
 	@Column(nullable = false, length = 25)
 	private String relationId;
+	
+	// TODO Once loader modified, make this nullable = false
+	/** The relation name. */
+	@Column(nullable = true, length = 500)
+	private String relationName;
 	
 	/** The index (map priority). */
 	@Column(nullable = false)
@@ -112,12 +119,12 @@ public class MapEntryJpa implements MapEntry {
 	 * @param targetId the targetId
 	 * @param mapAdvices the map advices
 	 * @param rule the rule
-	 * @param indexMapPriority the index map priority
+	 * @param mapPriority the index map priority
 	 * @param relationId the relation id
 	 */
 	public MapEntryJpa(Long id, MapRecord mapRecord, Set<MapNote> mapNotes,
 			String targetId, Set<MapAdvice> mapAdvices, String rule,
-			int indexMapPriority, String relationId) {
+			int mapPriority, String relationId) {
 		super();
 		this.id = id;
 		this.mapRecord = mapRecord;
@@ -125,12 +132,13 @@ public class MapEntryJpa implements MapEntry {
 		this.targetId = targetId;
 		this.mapAdvices = mapAdvices;
 		this.rule = rule;
-		this.indexMapPriority = indexMapPriority;
+		this.mapPriority = mapPriority;
 		this.relationId = relationId;
 	}
 
 	/**
-	 * Return the id
+	 * Return the id.
+	 *
 	 * @return the id
 	 */
 	@Override
@@ -139,7 +147,8 @@ public class MapEntryJpa implements MapEntry {
 	}
 	
 	/**
-	 * Set the id
+	 * Set the id.
+	 *
 	 * @param id the id
 	 */
 	@Override
@@ -148,7 +157,8 @@ public class MapEntryJpa implements MapEntry {
 	}
 	
 	/**
-	 * Returns the id in string form
+	 * Returns the id in string form.
+	 *
 	 * @return the id in string form
 	 */
 	@XmlID
@@ -194,7 +204,7 @@ public class MapEntryJpa implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getTarget()
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)	
 	public String getTargetId() {
 		return targetId;
 	}
@@ -207,11 +217,18 @@ public class MapEntryJpa implements MapEntry {
 		this.targetId = targetId;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getTargetName()
+	 */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
 	public String getTargetName() {
 		return this.targetName;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setTargetName(java.lang.String)
+	 */
 	@Override
 	public void setTargetName(String targetName) {
 		this.targetName = targetName;
@@ -305,17 +322,17 @@ public class MapEntryJpa implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getIndex()
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
-	public int getIndexMapPriority() {
-		return indexMapPriority;
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)	
+	public int getMapPriority() {
+		return mapPriority;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setIndex(java.lang.String)
 	 */
 	@Override
-	public void setIndexMapPriority(int index) {
-		this.indexMapPriority = index;
+	public void setMapPriority(int index) {
+		this.mapPriority = index;
 	}
 
 	/* (non-Javadoc)
@@ -333,6 +350,27 @@ public class MapEntryJpa implements MapEntry {
 	@Override
 	public void setRelationId(String relationId) {
 		this.relationId = relationId;
+	}
+	
+	/**
+	 * Gets the relation name.
+	 *
+	 * @return the relation name
+	 */
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
+	public String getRelationName() {
+		return relationName;
+	}
+
+	/**
+	 * Sets the relation name.
+	 *
+	 * @param relationName the new relation name
+	 */
+	@Override
+	public void setRelationName(String relationName) {
+		this.relationName = relationName;
 	}
 
 	/* (non-Javadoc)
@@ -362,22 +400,34 @@ public class MapEntryJpa implements MapEntry {
 		return mapRecord != null ? mapRecord.getObjectId() : null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapGroup()
+	 */
 	@Override
 	public int getMapGroup() {
 		return this.mapGroup;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapGroup(int)
+	 */
 	@Override
 	public void setMapGroup(int mapGroup) {
 		this.mapGroup = mapGroup;
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapBlock()
+	 */
 	@Override
 	public int getMapBlock() {
 		return this.mapBlock;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapBlock(int)
+	 */
 	@Override
 	public void setMapBlock(int mapBlock) {
 		this.mapBlock = mapBlock;
@@ -428,12 +478,15 @@ public class MapEntryJpa implements MapEntry {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord
 				+ ", mapNotes=" + mapNotes + ", mapAdvices=" + mapAdvices
 				+ ", mapPrinciples=" + mapPrinciples + ", targetId=" + targetId
-				+ ", rule=" + rule + ", indexMapPriority=" + indexMapPriority
+				+ ", rule=" + rule + ", mapPriority=" + mapPriority
 				+ ", relationId=" + relationId + ", mapBlock=" + mapBlock
 				+ ", mapGroup=" + mapGroup + "]";
 	}

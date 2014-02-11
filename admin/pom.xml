@@ -21,5 +21,8 @@
     <module>lucene</module>
     <module>loader</module>
     <module>sampledata</module>
+    <module>remover</module>
+    <module>export</module>
+    <module>import</module>
   </modules>
 </project>

@@ -131,14 +131,14 @@ public interface MapEntry {
 	 *
 	 * @return the index
 	 */
-	public int getIndexMapPriority();
+	public int getMapPriority();
 	
 	/**
 	 * Sets the index, the map priority.
 	 *
 	 * @param index the index
 	 */
-	public void setIndexMapPriority(int index);
+	public void setMapPriority(int index);
 	
 	/**
 	 * Gets the map group
@@ -219,6 +219,20 @@ public interface MapEntry {
 	 * @param mapAdvice the map principle
 	 */
 	public void removeMapPrinciple(MapPrinciple mapAdvice);
+
+	/**
+	 * Gets the relation name.
+	 *
+	 * @return the relation name
+	 */
+	public String getRelationName();
+
+	/**
+	 * Sets the relation name.
+	 * 
+	 * @param relationName
+	 */
+	public void setRelationName(String relationName);
 	
 
 	

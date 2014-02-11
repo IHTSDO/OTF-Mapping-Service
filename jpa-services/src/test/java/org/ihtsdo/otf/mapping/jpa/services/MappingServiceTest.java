@@ -219,7 +219,6 @@ public class MappingServiceTest {
 	 * 
 	 * @throws Exception
 	 */
-	@SuppressWarnings("static-method")
 	@Test
 	public void testAddElements() throws Exception {
 
