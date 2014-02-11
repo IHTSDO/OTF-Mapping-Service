@@ -2087,6 +2087,11 @@ public class MappingServiceJpa implements MappingService {
 			int ct = 0;
 			for (ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
 
+				// Skip inactive cases
+				if (!refSetMember.isActive()) {
+					continue;
+				}
+				
 				// Skip concept exclusion rules in all cases
 				if (refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|")
 						&& !(refSetMember.getMapAdvice()
