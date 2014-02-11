@@ -108,7 +108,7 @@
           </plugin>
         </plugins>
       </build>
-    </profile>    
+    </profile>
     <!-- Execute the mojo -->
     <profile>
       <id>SNOMEDCT</id>
@@ -136,11 +136,11 @@
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                  <terminology>SNOMEDCT</terminology>                
+                  <terminology>SNOMEDCT</terminology>
                 </configuration>
               </execution>
             </executions>
-          </plugin> 
+          </plugin>
         </plugins>
       </build>
     </profile>
@@ -243,11 +243,11 @@
               </execution>
             </executions>
           </plugin>
-        </plugins> 
+        </plugins>
       </build>
     </profile>
     <profile>
-      <id>ICPC-unpublished</id>
+      <id>MapRecords</id>
       <build>
         <plugins>
           <plugin>
@@ -272,14 +272,14 @@
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                  <terminology>ICPC</terminology>
+                  <terminology>various</terminology>
                 </configuration>
               </execution>
             </executions>
           </plugin>
-        </plugins> 
+        </plugins>
       </build>
-    </profile>  
+    </profile>
     <profile>
       <id>MapNotes</id>
       <build>
@@ -306,12 +306,12 @@
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                  </configuration>
+                </configuration>
               </execution>
             </executions>
           </plugin>
-        </plugins> 
+        </plugins>
       </build>
-    </profile>  
+    </profile>
   </profiles>
 </project>

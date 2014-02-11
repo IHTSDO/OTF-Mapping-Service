@@ -185,6 +185,22 @@ public interface MetadataService {
 		String version) throws Exception;
 
 	/**
+	 * Returns the hierarchical relationship types.  The idea is that
+	 * these relationship types define "parent" and "child" relationships.
+	 * When looking through a concept's relationships, anything with one
+	 * of these types means the destinationId is a "parent".
+	 * When looking through a concept's inverse relationships, anything with one
+	 * of these types means the sourceId is a "child".
+   *
+	 * @param terminology the terminology
+	 * @param version the version
+	 * @return the relationship types
+	 * @throws Exception if anything goes wrong
+	 */
+	public Map<Long, String> getHierarchicalRelationshipTypes(String terminology,
+		String version) throws Exception;
+
+	/**
 	 * Returns the relationship characteristic types.
 	 * 
 	 * @param terminology the terminology

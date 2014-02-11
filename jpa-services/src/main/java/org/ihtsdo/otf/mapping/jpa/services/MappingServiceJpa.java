@@ -1972,16 +1972,19 @@ public class MappingServiceJpa implements MappingService {
 				}
 				// check if target is in desired terminology; if so, create entry
 				
-					String targetName = null;
+				String targetName = null;
 					if (!refSetMember.getMapTarget().equals(""))
 					  targetName = contentService.getConcept(refSetMember.getMapTarget(), mapProject.getDestinationTerminology(),
 							mapProject.getDestinationTerminologyVersion()).getDefaultPreferredName();
-					
+					String relationName = null;
+					if (refSetMember.getMapRelationId() != null)
+						relationName = contentService.getConcept(refSetMember.getMapRelationId()).getDefaultPreferredName();
 					MapEntry mapEntry = new MapEntryJpa();
 					mapEntry.setTargetId(refSetMember.getMapTarget());
 					mapEntry.setTargetName(targetName);
 					mapEntry.setMapRecord(mapRecord);
 					mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
+					mapEntry.setRelationName(relationName);
 					mapEntry.setRule(refSetMember.getMapRule());
 					mapEntry.setMapGroup(1);
 					mapEntry.setMapBlock(1);
