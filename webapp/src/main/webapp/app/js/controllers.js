@@ -520,8 +520,8 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 
 // TODO Add test for coming from project list page (i.e. pass the project to this controller)
-mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', '$routeParams',
-   function ($scope, $http, $routeParams) {
+mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', '$routeParams', '$sce',
+   function ($scope, $http, $routeParams, $sce) {
 	
 	$scope.headers = [
 	                  {value: 'conceptId', title: 'Concept'},
@@ -588,6 +588,10 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
     	  // load first page
     	  $scope.retrieveRecords(1);
       });
+	 
+	 $scope.to_trusted = function(html_code) {
+	    return $sce.trustAsHtml(html_code);
+	 }
 	 
 	 // function to set the relevant pagination fields
 	 $scope.setPagination = function(recordsPerPage) {
