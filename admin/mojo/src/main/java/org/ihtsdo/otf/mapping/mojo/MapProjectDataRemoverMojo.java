@@ -82,8 +82,6 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
 			getLog().info("Start removing map project data ...");
 
 			MappingService service = new MappingServiceJpa();
-			service.setTransactionPerOperation(false);
-			service.beginTransaction();
 			// Remove map projects
 			for (MapProject p : service.getMapProjects()) {
 				getLog().info("  Remove map project - " + p.getName());
@@ -113,7 +111,6 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
 				getLog().info("  Remove map principle - " + p.getName());
 				service.removeMapPrinciple(p.getId());
 			}
-			service.commit();
 			getLog().info("done ...");
 
 			service.close();
