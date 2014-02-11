@@ -51,70 +51,7 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 // Content Services
 //////////////////////////////	
 
-mapProjectAppControllers.controller('ConceptListCtrl', 
-		  function ($scope, $http) {
-			      $http({
-			        url: root_content + "concept/concepts",
-			        dataType: "json",
-			        method: "GET",
-			        headers: {
-			          "Content-Type": "application/json"
-			        }
-			      }).success(function(data) {
-			        $scope.concepts = data.concept;
-			      }).error(function(error) {
-			    	  $scope.error = "Error";
-			    });
-			 
-			    $scope.orderProp = 'id';	
-			  });
 
-
-mapProjectAppControllers.controller('ConceptDetailCtrl', ['$scope', '$http', '$routeParams',
-     function ($scope, $http, $routeParams) {
-	  $scope.status = "Loading...";
-      $scope.statusnote = "This process has not been optimized, and may be particularly slow on the EC2 server (mapping.snomedtools.org).";
-  	  $scope.conceptId = $routeParams.conceptId;
-  	  $http({
-          url: root_content + "concept/" + $routeParams.terminology + "/" + $routeParams.version + "/id/" +  $routeParams.conceptId,
-          dataType: "json",
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        }).success(function(data) {
-          $scope.status = "Load complete!";
-          $scope.statusnote = "";
-          $scope.concept = data;
-        }).error(function(error) {
-        	$scope.status = "Load error!";
-            $scope.statusnote = "";
-        	console.print("Error in conceptdetailctrol");
-        	
-        // check for unmapped descendants
-        }).then(function(data) {
-        	
-        	$http({
-                url: "${base.url}/mapping-rest/mapping/concept/" + $routeParams.terminology + "/" + $routeParams.version + "/id/" +  $routeParams.conceptId + "/threshold/11",
-                dataType: "json",
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json"
-                }
-              }).success(function(data) {
-            	  $scope.unmappedDescendants = data.concept;     	  
-              }).error(function(error) {
-            	  console.print("Error in unmapped descendants");
-              });
-        	
-        });
-  	  
-  	  $scope.hasUnmappedDescendants = function(id) {
-  		  
-  	  };
-  	    
-
-  }]);
 
   
 //////////////////////////////
@@ -505,30 +442,5 @@ mapProjectAppControllers.directive('sortBy', function () {
 
 
 
-//////////////////////////////
-//Metadata Services
-//////////////////////////////
-
-mapProjectAppControllers.controller('MetadataCtrl', 
-['$scope', '$http',
-                                 
-function ($scope, $http) {
-
-$scope.errorMetadata = "";
-
-// retrieve any concept associated with this project
-$http({
-url: root_metadata + "all/SNOMEDCT/20130131",
-dataType: "json",
-method: "GET",
-headers: {
-"Content-Type": "application/json"
-}
-}).success(function(data) {
-$scope.idNameMaps = data.idNameMap;
-}).error(function(error) {
-$scope.errorMetadata = "Error retrieving metadata";
-});
-}]);
 
 

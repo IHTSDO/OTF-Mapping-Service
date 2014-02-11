@@ -7,37 +7,7 @@ var mapProjectApp = angular.module('mapProjectApp', [
                                                      'mapProjectAppControllers'
                                                    ]);
 
-mapProjectApp.run(['$http', '$rootScope', function($http, $rootScope) {
-	$http({
-		  url: root_metadata + "terminologies/latest/",
-		  dataType: "json",
-		  method: "GET",
-		  headers: {
-			  "Content-Type": "application/json"
-		  }
-	  }).success(function(response) {
-	      $rootScope.termVersionPairs = response;
-	  }).error(function(error) {
-		  $rootScope.latestTerminologiesStatus = "Error retrieving metadata terminologies";
-	  });
 
-	}]);
-
-mapProjectApp.run(['$http', '$rootScope', function($http, $rootScope) {
-	$http({
-		  url: root_metadata + "all/SNOMEDCT",
-		  dataType: "json",
-		  method: "GET",
-		  headers: {
-			  "Content-Type": "application/json"
-		  }
-	  }).success(function(response) {
-	      $rootScope.keyValuePairLists = response.keyValuePairList;
-	  }).error(function(error) {
-		  $rootScope.errorMetadata = "Error retrieving all metadata";
-	 });
-
-	}]);
 
 mapProjectApp.config(['$routeProvider',
    function($routeProvider) {
@@ -52,39 +22,15 @@ mapProjectApp.config(['$routeProvider',
 		  controller: 'MapProjectListCtrl'
 	  });
 	  
-  	  $routeProvider.when('/lead/leads', {
-  		  templateUrl: 'partials/lead-list.html',
-  		  controller: 'MapLeadListCtrl'
-	  });
-  	  
-	  $routeProvider.when('/specialist/specialists', {
-		  templateUrl: 'partials/specialist-list.html',
-		  controller: 'MapSpecialistListCtrl'
-	  });
-	  
 	  $routeProvider.when('/record/projectId/:projectId', {
 		  templateUrl: 'partials/project-records.html',
 	      controller: 'MapProjectDetailCtrl'
 	  });
-	  $routeProvider.when('/advice/advices', {
-		  templateUrl: 'partials/advice-list.html',
-	      controller: 'MapAdviceListCtrl'
-	  });
-	  
+
 	  $routeProvider.when('/project/id/:projectId', {
   		  templateUrl: 'partials/project-detail.html', 
   		  controller: 'MapProjectDetailCtrl'
   	  });
-	  
-	  $routeProvider.when('/edit-demo', {
-			templateUrl: 'partials/edit-demo.html',
-			controller: 'EditDemoCtrl'
-	  });
-	  
-	  $routeProvider.when('/project-create', {
-			templateUrl: 'partials/project-create.html',
-			controller: 'ProjectCreateCtrl'
-	  });
 	  
 	  $routeProvider.when('/record/conceptId/:conceptId', {
 			templateUrl: 'partials/record-concept.html',
@@ -96,34 +42,17 @@ mapProjectApp.config(['$routeProvider',
 	  // CONTENT SERVICES
 	  //////////////////////////////
 	  
-	  $routeProvider.when('/concept/concepts', {
-		  templateUrl: 'partials/concept-list.html',
-		  controller: 'ConceptListCtrl'
-	  });
-	  
-	  
-	  $routeProvider.when('/concept/:terminology/:version/id/:conceptId', {
-  		  templateUrl: 'partials/concept-detail.html', 
-  		  controller: 'ConceptDetailCtrl'
-  	  });
 	  
 	  
 	  
 	  //////////////////////////////
 	  // QUERY SERVICES
 	  //////////////////////////////
-	  $routeProvider.when('/concept/query', {
-  		  templateUrl: 'partials/query-partial.html', 
-  		  controller: 'QueryCtrl'
-  	  });
-	  
+
 	  //////////////////////////////
 	  // METADATA SERVICES
 	  //////////////////////////////
-	  $routeProvider.when('/metadata', {
-	  	templateUrl: 'partials/metadata-detail.html', 
-		  controller: 'MetadataCtrl'
-	  });
+
 	  
 	  ///////////////////////////////
 	  // HOME and ERROR ROUTES
