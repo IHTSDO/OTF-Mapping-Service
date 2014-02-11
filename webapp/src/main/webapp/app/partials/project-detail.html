@@ -86,19 +86,31 @@
     </table>
     </td>
   </tr>
-    <tr>
+  <tr>
     <td><div tooltip-placement="right" tooltip="List of the map principles for this project."><b>Map Principles</b></div></td>
     <td><table width="100%" class="table pure-table" >
     <thead>
       <tr>
-        <th style="width: 30%;">Id</th>
-        <th style="width: 70%;">Name</th>
+        <th style="width: 10%;">Id</th>
+        <th style="width: 90%;">Name</th>
       </tr>
+
     </thead>
-    <tbody ng-repeat="principle in project.mapPrinciple" style="border: 2px solid #ccc;" >
-      <tr>
+       
+    <tbody ng-repeat="principle in project.mapPrinciple | orderBy:'principleId'" style="border: 2px solid #ccc;" >
+     <tr>
         <td>{{principle.principleId}}</td>
-        <td>{{principle.name}}</td>
+        <td>      
+            <div class="dropdown">
+            <a class="dropdown-toggle"> 
+            <img src="img/dialog-question.png" alt="question icon">
+            </a>{{principle.name}}
+            <span class="dropdown-menu">
+              <p>Reference: {{principle.sectionRef}}</p>
+              <p ng-bind-html="to_trusted(principle.detail)"></p>
+            </span>
+            </div>             
+        </td>
       </tr>
     </tbody>
     </table>
@@ -112,15 +124,6 @@
     </select>
 </ul> 
 
-Map Principles
-<ul>
-<li ng-repeat="principle in project.mapPrinciple">
-<p>{{principle.principleId}} - {{principle.name}}</p>
-<blockquote>{{principle.detail}}</blockquote>
-<p>Reference: {{principle.sectionRef}}</p>
-<hr>
-</li>
-</ul>
 -->
 
 <a href="#/record/projectId/{{project.id}}" class="btn">Map Records</div>
