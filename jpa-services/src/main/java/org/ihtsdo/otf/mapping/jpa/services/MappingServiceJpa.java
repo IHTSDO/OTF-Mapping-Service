@@ -1608,7 +1608,7 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public List<Concept> getUnmappedDescendantsForConcept(Concept concept,
 		int thresholdLlc) throws Exception {
-
+		
 		// declare results list and content service
 		List<Concept> unmappedDescendants = new ArrayList<Concept>();
 		ContentService contentService = new ContentServiceJpa();
@@ -1619,11 +1619,12 @@ public class MappingServiceJpa implements MappingService {
 						concept.getTerminology(), concept.getTerminologyVersion(),
 						new Long("116680003"));
 		Iterator<Concept> descendants_iter = descendants.iterator();
-
+		
+	
 		// if size of descendant set is greater than the low-level concept
 		// threshold, skip it
 		if (descendants.size() <= thresholdLlc) {
-
+		
 			// cycle over descendants
 			while (descendants_iter.hasNext()) {
 
@@ -1633,12 +1634,8 @@ public class MappingServiceJpa implements MappingService {
 				List<MapRecord> conceptRecords =
 						getMapRecordsForConceptId(descendant.getTerminologyId());
 
-				System.out.println(descendant.getTerminologyId() + " has "
-						+ Integer.toString(conceptRecords.size()) + " map records");
-
 				// if no records found, add to unmapped list
 				if (conceptRecords.size() == 0) {
-					System.out.println("--> Adding to unmapped list");
 					unmappedDescendants.add(descendant);
 				}
 			}

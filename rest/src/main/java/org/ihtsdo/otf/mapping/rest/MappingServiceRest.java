@@ -864,7 +864,7 @@ public class MappingServiceRest {
 	 * @return the ConceptList of unmapped descendants
 	 */
 	@GET
-	@Path("/concept/{terminology}/{version}/id/{id}/threshold/{threshold:[0-9][0-9]}")
+	@Path("/concept/{terminology}/{version}/id/{id}/threshold/{threshold:[0-9][0-9]*}")
 	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
