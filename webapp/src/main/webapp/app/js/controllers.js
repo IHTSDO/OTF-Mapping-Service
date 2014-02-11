@@ -77,6 +77,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	// local variables
 	var records = [];
 	var projects = [];
+	var project_ids = [];
 	var project_names = [];
 	var project_refSetIds = [];
 	
@@ -147,10 +148,12 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	    		  });
 		    	  
 		    	  // save refSetIds and project names
+		    	  project_ids = new Array(projects.length);
 		    	  project_names = new Array(projects.length);
 		    	  project_refSetIds = new Array(projects.length);
 		    	  
 		    	  for (var i=0; i<projects.length; i++) {
+		    		  project_ids[i] = projects[i].id;
 		    		  project_names[i] = projects[i].name;
 		    		  project_refSetIds[i] = projects[i].refSetId;
 		    	  }
@@ -158,8 +161,13 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	      });
 	
 		$scope.getProjectName = function(record) {
-			var projectId = record.mapProjectId;
-			return project_names[parseInt(projectId, 10)-1];
+			
+			for (var i = 0; i < $scope.projects.length; i++) {
+				if (project_ids[i] == record.mapProjectId) {
+					return project_names[parseInt(record.mapProjectId, 10)];
+				}
+			}
+			return null;
 		};
 	
 		$scope.getProjectRefSetId = function(record) {
