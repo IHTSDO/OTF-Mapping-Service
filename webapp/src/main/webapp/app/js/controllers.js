@@ -21,27 +21,6 @@ mapProjectAppControllers.controller('MapProjectAppNav',
 		};
 	});	
 
-mapProjectAppControllers.controller('PostTestCtrl',
-	
-	
-	function ($scope, $http) {
-	
-		$scope.data = "";
-		$scope.error = "Error";
-		$http({
-		     url: root_mapping + "lead/id/1",
-		     dataType: "json",
-		     method: "GET",
-		     headers: {
-		       "Content-Type": "application/json"
-	
-		      }
-		}).success(function(data) {
-		  	$scope.data = data.mapProject;
-		}).error(function(error) {
-			$scope.error = "Error";
-		});
-});
 
 	
 //////////////////////////////
@@ -65,145 +44,6 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
  
    /* $scope.orderProp = 'id';	*/
   });
-
-mapProjectAppControllers.controller('MapRecordListCtrl', 
-  function ($scope, $http) {
-      $http({
-        url: root_mapping + "record/records",
-        dataType: "json",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }).success(function(data) {
-        $scope.records = data.mapRecord;
-      }).error(function(error) {
-    	$scope.error = "Error";
-    });
- 
-    $scope.orderProp = 'id';	
-  });
-
-mapProjectAppControllers.controller('MapLeadListCtrl', 
-  function ($scope, $http) {
-      $http({
-        url: root_mapping + "lead/leads",
-        dataType: "json",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }).success(function(data) {
-        $scope.leads = data.mapLead;
-      }).error(function(error) {
-    	  $scope.error = "Error";
-      });
-      
-      $scope.getProjects = function(id) {
-          $http({
-             url: root_mapping + "lead/id/" + id + "/projects",
-             dataType: "json",
-             method: "GET",
-             headers: {
-               "Content-Type": "application/json"
-             }
-           }).success(function(data) {
-             $scope.projects = data.mapProject;
-           }).error(function(error) {
-         	  $scope.error = "Error";
-           });
-      };
-      
-    $scope.toggleEdit = function() {
-    	if($scope.editMode == false) {
-    		$scope.editMode = true;
-    		$scope.editModeValue = 'Stop Editing';
-    	} else {
-    		$scope.editMode = false;
-    		$scope.editModeValue = 'Edit';
-    	}
-    };
- 
-    $scope.editMode = false;
-    $scope.editModeValue = 'Edit';
-    $scope.orderProp = 'id';	
-  });
-
-mapProjectAppControllers.controller('MapSpecialistListCtrl', 
-  function ($scope, $http) {
-      $http({
-        url: root_mapping + "specialist/specialists",
-        dataType: "json",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }).success(function(data) {
-        $scope.specialists = data.mapSpecialist;
-      }).error(function(error) {
-    	  $scope.error = "Error";
-    });
- 
-    $scope.orderProp = 'id';	
-  });
-
-mapProjectAppControllers.controller('MapRecordDetailCtrl', ['$scope', '$http', '$routeParams',
-    function ($scope, $http, $routeParams) {
- 	  $scope.recordId = $routeParams.recordId;
- 	  $http({
-         url: root_mapping + "record/id/" + $scope.recordId,
-         dataType: "json",
-         method: "GET",
-         headers: {
-           "Content-Type": "application/json"
-         }
-       }).success(function(data) {
-         $scope.record = data;
-       }).error(function(error) {
-     });
-
- }]);
-
-mapProjectAppControllers.controller('EditDemoCtrl', 
-		['$scope', '$http', '$routeParams',
-		 
-   function ($scope, $http, $routeParams) {
-			
-		$scope.get = function() {
-			$http({
-				url: root_mapping + "principle/id/" + $scope.principleId,
-				dataType: "json",
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json"
-				}
-			}).success(function(data) {
-				$scope.principle = data;
-				$scope.currentPrinciple = $scope.principleId;
-			}).error(function(error) {
-				$scope.error = "ERROR";
-			});
-		};
- 	  
-		$scope.save = function() {
-			$http({
-				url: root_mapping + "principle/id/" + $scope.currentPrinciple,
-				dataType: "json",
-				method: "POST",
-				data: $scope.principle,
-				headers: {
-					"Content-Type": "application/json"
-				}
-			});
-		};
-		
-		$scope.reset = function() {
-			$scope.principleId = $scope.currentPrinciple;
-	    	$scope.get();
-	    };
-	 
-	}]);
-
 
 
 
@@ -276,124 +116,10 @@ mapProjectAppControllers.controller('ConceptDetailCtrl', ['$scope', '$http', '$r
 
   }]);
 
-//////////////////////////////
-// Query Services
-//////////////////////////////	
-
-mapProjectAppControllers.controller('QueryCtrl', ['$scope', '$http', '$routeParams',
-   function ($scope, $http, $routeParams) {
-	
-	$scope.searchConceptsStatus = "";
-	$scope.searchProjectsStatus = "";
-	$scope.searchRecordsStatus = "";
-	
-	$scope.searchConcepts = function(id) {
-		
-	  $scope.searchConceptsStatus = "[Searching...]";
-		
-	  $http({
-        url: root_content + "concept/query/" + $scope.queryConcept,
-        dataType: "json",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }	
-      }).success(function(data) {
-        $scope.conceptResults = data;
-        $scope.searchConceptsStatus= $scope.conceptResults.count + " results found:";
-       
-      }).error(function(error) {
-    	$scope.searchConceptsStatus = "Could not retrieve concepts.";
-      });
-	};
-	
-	$scope.resetConcepts = function(id) {
-		$scope.conceptResults = "";
-		$scope.searchConceptsStatus = "";
-	};
-	
-	$scope.searchProjects = function(id) {
-		
-	  $scope.searchProjectsStatus = "[Searching...]";
-	  
-	  $http({
-        url: root_mapping + "project/query/" + $scope.queryProject,
-        dataType: "json",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }	
-      }).success(function(data) {
-        $scope.projectResults = data;
-        $scope.searchProjectsStatus= $scope.projectResults.count + " results found:";
-      }).error(function(error) {
-    	$scope.searchProjectsStatus = "Could not retrieve projects."; 
-      });
-	};
-	
-	$scope.resetProjects = function(id) {
-		$scope.projectResults = "";
-		$scope.searchProjectsStatus = "";
-	};
-	
-	$scope.searchRecords = function(id) {
-		
-	  $scope.searchRecordsStatus = "[Searching...]";
-	  
-	  $http({
-        url: root_mapping + "record/query/" + $scope.queryRecord,
-        dataType: "json",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }	
-      }).success(function(data) {
-        $scope.recordResults = data;
-        $scope.searchRecordsStatus= $scope.recordResults.count + " results found, listing by Concept ID:";
-      }).error(function(error) {
-    	$scope.searchRecordsStatus = "Could not retrieve records."; 
-      });
-	};
-	
-	$scope.resetRecords = function(id) {
-		$scope.recordResults = "";
-		$scope.searchRecordsStatus = "";
-	};
-}]);
-
-
-mapProjectAppControllers.controller('QueryConceptCtrl', ['$scope', '$http', '$routeParams',
-   function ($scope, $http, $routeParams) {
-	
-	$scope.query = $routeParams.query;
-	$scope.searchConceptsStatus = "Searching concepts for query: " + $routeParams.query;
-	
-	$http({
-      url: root_content + "concept/query/" + $routeParams.query,
-      dataType: "json",
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }	
-    }).success(function(data) {
-      $scope.conceptResults = data;
-      $scope.searchConceptsStatus= $scope.conceptResults.count + " results found:";
-   
-    }).error(function(error) {
-    	$scope.searchConceptsStatus = "Could not retrieve concepts.";
-    });
-    	$scope.resetConcepts = function(id) {
-		$scope.conceptResults = "";
-		$scope.searchConceptsStatus = "[No concept query executed]";
-	};
-	
-}]);
   
 //////////////////////////////
 // Specialized Services
 //////////////////////////////	
-
-
 
 mapProjectAppControllers.controller('ProjectCreateCtrl', ['$scope', '$http',,
    function ($scope, $http) {
@@ -411,34 +137,13 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	$scope.error = "";		// initially empty
 	$scope.rows = "["; // beginning of Json array
 	
-	$scope.headers = [
-	                  {value: 'projectName', title: 'Project Name'},
-	                  {value: 'refSetId', title: 'Ref Set Id'},
-	                  {value: 'mapGroup', title: 'Group Id'},
-	                  {value: 'mapPriority', title: 'Map Priority'},
-	                  {value: 'rule', title: 'Rule'},
-	                  {value: 'targetId', title: 'Target'},
-	                  {value: 'targetName', title: 'Target Name'},
-	                  {value: 'actions', title: 'Actions'}
-	                  
-	                  ];
-	
 	// local variables
 	var records = [];
 	var projects = [];
 	var project_names = [];
 	var project_refSetIds = [];
 	
-	$scope.getProjectName = function(record) {
-		var projectId = record.mapProjectId;
-		return project_names[parseInt(projectId, 10)-1];
-	};
-	
-	$scope.getProjectRefSetId = function(record) {
-		var projectId = record.mapProjectId;
-		return project_refSetIds[parseInt(projectId, 10)-1];
-	};
-	
+
 	// retrieve all records with this concept id
 	$http({
 	        url: root_mapping + "record/conceptId/" + $routeParams.conceptId,
@@ -514,6 +219,17 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		    	  }
 		      });
 	      });
+	
+		$scope.getProjectName = function(record) {
+			var projectId = record.mapProjectId;
+			return project_names[parseInt(projectId, 10)-1];
+		};
+	
+		$scope.getProjectRefSetId = function(record) {
+			var projectId = record.mapProjectId;
+			return project_refSetIds[parseInt(projectId, 10)-1];
+		};
+	
 	}]);
                                                               
 
@@ -543,6 +259,12 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	
 	  $scope.projectId = $routeParams.projectId;
 	  
+	  // status variables
+	  $scope.unmappedDescendantsPresent = false;
+	  $scope.mapNotesPresent = false;
+	  $scope.mapAdvicesPresent = false;
+	  
+	  // error variables
 	  $scope.errorProject = "";
 	  $scope.errorConcept = "";
 	  $scope.errorRecords = "";
@@ -603,7 +325,8 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	 // function to retrieve records for a specified page
 	 $scope.retrieveRecords = function(page) {
 		 
-		// $scope.setPagination(10);
+		 // retrieve pagination information for the upcoming query
+		 $scope.setPagination(10);
 		
 		 console.debug("Switching to page " + page);
 		 
@@ -618,7 +341,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 		 
 		 console.debug(query_url);
 		
-		// retrieve any map records associated with this project
+		// retrieve map records
 		  $http({
 			  url: query_url,
 			  dataType: "json",
@@ -630,10 +353,40 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 			  $scope.records = data.mapRecord;
 			  $scope.statusRecordLoad = "";
 			  $scope.recordPage = page;
-			  
+
 		  }).error(function(error) {
 			  $scope.errorRecord = "Error retrieving map records";
 			  console.debug("changeRecordPage error");
+		  }).then(function(data) {
+			  
+			  // check if icon legends are necessary
+			  $scope.unmappedDescendantsPresent = false;
+			  $scope.mapNotesPresent = false;
+			  $scope.mapAdvicesPresent = false;
+			  
+			  // check if any notes or advices are present are present
+			  for (var i = 0; i < $scope.records.length; i++) {
+				  if ($scope.records[i].mapNote.length > 0) {
+					  $scope.mapNotesPresent = true;
+				  }
+				  for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
+					  
+					  console.debug("  Checking entry "+ j);
+					  if ($scope.records[i].mapEntry[j].mapNote.length > 0) {
+						  $scope.mapNotesPresent = true;
+					  };
+					  if ($scope.records[i].mapEntry[j].mapAdvice.length > 0) {
+						  $scope.mapAdvicesPresent = true;
+					  }
+				  };
+			  };
+					 			  
+			  // check if any advices are present
+			  
+			  // get unmapped descendants (checking done in routine)
+			  if ($scope.records.length > 0) {	
+				  getUnmappedDescendants(0);
+			  }
 		  });
 	 }; 
 	 
@@ -670,6 +423,47 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 		 $scope.filterCriteria.sortDir = sortDir;
 		 $scope.filterCriteria.sortedBy = sortedBy;
 		 $scope.filterCriteria.pageNumber = 1;
+	 };
+		
+		 
+	 // TODO This is kind of messy
+    function getUnmappedDescendants(index) {
+				  
+    	  // before processing this record, make call to start next async request
+    	  if (index < $scope.records.length-1) {
+		  	   getUnmappedDescendants(index+1);
+		  }
+    	
+		  console.debug("Checking record " + index);
+		  $scope.records[index].unmappedDescendants = [];
+		  
+		  // if descendants below threshold for lower-level concept, check for unmapped
+		  if ($scope.records[index].countDescendantConcepts < 11) {
+			 		  
+			  console.debug("  Record has < 11 descendants");
+
+			  $http({
+				  url: root_mapping + "concept/" 
+				  		+ $scope.project.sourceTerminology + "/"
+				  		+ $scope.project.sourceTerminologyVersion + "/"
+				  		+ "id/" + $scope.records[index].conceptId + "/"
+				  		+ "threshold/11",
+				  dataType: "json",
+				  method: "GET",
+				  headers: {
+					  "Content-Type": "application/json"
+				  }
+			  }).success(function(data) {
+				 console.debug("  Found " + data.concept.length + " unmapped descendants");
+				 $scope.unmappedDescendantsPresent = true;
+				 $scope.records[index].unmappedDescendants = data.concept;
+			  });
+		  // otherwise check the next record
+		  } else {
+			  console.debug("Above LLC threshold");
+			  
+		  }
+	  
 	 };
 }]);
 
