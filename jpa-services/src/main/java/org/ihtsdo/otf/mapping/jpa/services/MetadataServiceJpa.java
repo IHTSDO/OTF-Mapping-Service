@@ -157,6 +157,10 @@ public class MetadataServiceJpa implements MetadataService {
 		if (rtIdNameMap != null) {
 			idNameMapList.put("relationshipTypes", rtIdNameMap);
 		}
+		Map<Long, String> hierRtIdNameMap = getHierarchicalRelationshipTypes(terminology, version);
+		if (hierRtIdNameMap != null) {
+			idNameMapList.put("hierarchicalRelationshipTypes", hierRtIdNameMap);
+		}
 		Map<Long, String> smIdNameMap = getSimpleMapRefSets(terminology, version);
 		if (smIdNameMap != null) {
 			idNameMapList.put("simpleMapRefSets", smIdNameMap);
@@ -374,6 +378,21 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public Map<Long, String> getHierarchicalRelationshipTypes(String terminology,
+		String version) throws Exception {
+		if (helperMap.containsKey(terminology)) {
+			return helperMap.get(terminology).getHierarchicalRelationshipTypes(terminology,
+					version);
+		} else {
+			// return an empty map
+			return new HashMap<Long, String>();
+		}
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

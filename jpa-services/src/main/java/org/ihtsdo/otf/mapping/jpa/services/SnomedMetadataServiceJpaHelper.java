@@ -335,6 +335,25 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#
+	 * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public Map<Long, String> getHierarchicalRelationshipTypes(String terminology,
+		String version) throws NumberFormatException, Exception {
+		Map<Long, String> map = new HashMap<Long, String>();
+
+		// find all active descendants of 106237007
+		ContentService contentService = new ContentServiceJpa();
+		Concept isaRel = contentService.getConcept(isaRelationshipType);
+		map.put(new Long(isaRel.getTerminologyId()),
+				isaRel.getDefaultPreferredName());
+		return map;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MetadataService#
 	 * getRelationshipCharacteristicTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
