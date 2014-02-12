@@ -427,7 +427,7 @@ public interface MappingService {
 	 * @return the unmapped descendants for concept
 	 * @throws Exception the exception
 	 */
-	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
+	public SearchResultList findUnmappedDescendantsForConcept(String terminologyId,
 			String terminology, String terminologyVersion, int threshold) throws Exception;
 
 	/**
