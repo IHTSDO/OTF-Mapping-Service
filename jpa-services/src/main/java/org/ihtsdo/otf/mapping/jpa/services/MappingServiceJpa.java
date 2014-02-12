@@ -31,6 +31,7 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
@@ -1568,81 +1569,51 @@ public class MappingServiceJpa implements MappingService {
 		return full_query;
 
 	}
-
-	/**
-	 * Helper function for restful services. Constructs a basic concept from
-	 * parameters and calls getUnmappedDescentsForConcept(Concept concept, int
-	 * thresholdLlc)
-	 * 
-	 * @param terminologyId the terminology id
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
-	 * @param thresholdLlc the threshold llc
-	 * @return the unmapped descendants for concept
-	 * @throws Exception the exception
-	 */
-	@Override
-	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
-		String terminology, String terminologyVersion, int thresholdLlc)
-		throws Exception {
-		Concept concept = new ConceptJpa();
-		concept.setTerminologyId(terminologyId);
-		concept.setTerminology(terminology);
-		concept.setTerminologyVersion(terminologyVersion);
-		return getUnmappedDescendantsForConcept(concept, thresholdLlc);
-	}
-
+	
 	/**
 	 * Given a concept, returns a list of descendant concepts that have no
 	 * associated map record.
-	 * 
-	 * @param concept the root concept
+	 * @param terminologyId 
+	 * @param terminology 
+	 * @param terminologyVersion 
 	 * @param thresholdLlc the maximum number of descendants a concept can have
 	 *          before it is no longer considered a low-level concept (i.e. return
 	 *          an empty list)
 	 * @return the list of unmapped descendant concepts
 	 * @throws Exception the exception
 	 */
-	public List<Concept> getUnmappedDescendantsForConcept(Concept concept,
-		int thresholdLlc) throws Exception {
-
-		// declare results list and content service
-		List<Concept> unmappedDescendants = new ArrayList<Concept>();
+	public SearchResultList findUnmappedDescendantsForConcept(String terminologyId,
+			String terminology, String terminologyVersion, int thresholdLlc)
+			throws Exception {	
+		
+		SearchResultList unmappedDescendants = new SearchResultListJpa();
+		
+		// get descendants
 		ContentService contentService = new ContentServiceJpa();
-
-		// get descendants and construct iterator
-		Set<Concept> descendants =
-				contentService.getDescendants(concept.getTerminologyId(),
-						concept.getTerminology(), concept.getTerminologyVersion(),
-						new Long("116680003"));
-		Iterator<Concept> descendants_iter = descendants.iterator();
-
-		// if size of descendant set is greater than the low-level concept
-		// threshold, skip it
-		if (descendants.size() <= thresholdLlc) {
-
+		SearchResultList descendants = contentService.findDescendants(
+				terminologyId, 
+				terminology, 
+				terminologyVersion, 
+				new Long("116680003"));  // TODO: This still needs metadata replacement
+		
+		// if number of descendants <= low-level concept threshold, treat as high-level concept and report no unmapped
+		if (descendants.getCount() <= thresholdLlc) {
+		
 			// cycle over descendants
-			while (descendants_iter.hasNext()) {
-
-				Concept descendant = descendants_iter.next();
-
-				// find map records for this id
-				List<MapRecord> conceptRecords =
-						getMapRecordsForConceptId(descendant.getTerminologyId());
-
-				// if no records found, add to unmapped list
-				if (conceptRecords.size() == 0) {
-					unmappedDescendants.add(descendant);
+			for(SearchResult sr : descendants.getSearchResults()) {
+				
+				// if descendant has no associated map records, add to list
+				if (getMapRecordsForConceptId(sr.getTerminologyId()).size() == 0) {
+					unmappedDescendants.addSearchResult(sr);
 				}
 			}
 		}
-
-		// force-close the manager
-		if (contentService != null) {
-			contentService.close();
-		}
-
+		
+		// close manager
+		contentService.close();
+		
 		return unmappedDescendants;
+		
 	}
 
 	// //////////////////////////////
@@ -2120,10 +2091,11 @@ public class MappingServiceJpa implements MappingService {
 
 					// get the number of descendants - Need to optimize this
 					// Need a tool to compute and save this for LLCs (e.g. having < 11 descendants)
-					mapRecord.setCountDescendantConcepts(new Long(contentService
-					  .getDescendants(concept.getTerminologyId(),
-					  concept.getTerminology(), concept.getTerminologyVersion(), new
-					  Long("116680003")).size()));
+					mapRecord.setCountDescendantConcepts(new Long(contentService.findDescendants(
+							  concept.getTerminologyId(),
+							  concept.getTerminology(), 
+							  concept.getTerminologyVersion(), 
+							  new Long("116680003")).getCount()));
 					 
 					//mapRecord.setCountDescendantConcepts(0L);
 

@@ -1,16 +1,23 @@
 <!--  partial for displaying project :projectId -->
 
+
+
 <p></p>
 <h3>{{concept.terminology}} Concept {{concept.terminologyId}}:  {{concept.defaultPreferredName}}
 </h3>
+<p></p>
 
+<!--  Placeholder warning div -->
 <div ng-show = "records.length == 0">
-
-<em>Undeveloped Content/Placeholder Note</em></h4>
-<blockquote>Concepts that have no records associated with them will not display correctly at this time.  In future, this page will redirect to a map record creation page for those concepts.</blockquote>
+	<hr>
+	<h3><img src="img/warning-circle_25px.png">&nbspUndeveloped Content/Placeholder Note</h3><p></p><p></p>
+	<p> This concept has no map records associated with it, and therefore will not display.
+	<p> Future versions will redirect to map record creation page.
+	<hr>
 </div>
 
-<table width="100%" class="table" >
+
+<table width="100%" class="table">
 <thead>
 	<tr> 
         <th style="width: 5%;"></th>
@@ -26,7 +33,8 @@
 <tbody ng-repeat="record in records" style="border: 2px solid #ccc;">
 
 	<tr ng-repeat = "entry in record.mapEntry">
-	<td><span ng-show="record.mapNote.length > 0">
+		<td>
+		<div ng-show="record.mapNote.length > 0">
           <div class="dropdown">
             <a class="dropdown-toggle"> 
             <img src="img/notepad.png" alt="notepad icon">
@@ -36,8 +44,8 @@
               <li ng-repeat="note in record.mapNote"><a>{{note.note}}</a></li>
             </ul>
           </div>
-        </span>
-        <span ng-show="entry.mapAdvice.length > 0">
+        </div>
+        <div ng-show="entry.mapAdvice.length > 0">
           <div class="dropdown">
             <a class="dropdown-toggle"> 
             <img src="img/dialog-question.png" alt="question icon">
@@ -47,7 +55,7 @@
               <li ng-repeat="advice in entry.mapAdvice"><a>{{advice.detail}}</a></li>
             </ul>
           </div>
-        </span>
+        </div>
          
         </td>
 		<td><a href="index.html#/record/projectId/{{record.mapProjectId}}">{{getProjectName(record)}}</a></td>
@@ -57,10 +65,6 @@
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
 		<td>
-        <!-- Commented out while using leftmost-cell icons
-        <span ng-show="record.mapNote.length > 0"><IMG popover-placement="left" popover="{{record.mapNote.0.note}}" src="img/notepad.png" ALT="notepad icon"></span>
-        <span ng-show="entry.mapAdvice.length > 0"><IMG popover-placement="left" popover="{{entry.mapAdvice.0.detail}}" src="img/dialog-question.png" ALT="question icon"></span>       
-        --> 
         </td>
 	</tr>
 
@@ -79,5 +83,7 @@
  		</ul>
 </div>
 <div>Children [<em>In development</em>]</i>
+
+{{error}}
 
 

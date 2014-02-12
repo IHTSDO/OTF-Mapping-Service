@@ -58,11 +58,6 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 // Specialized Services
 //////////////////////////////	
 
-mapProjectAppControllers.controller('ProjectCreateCtrl', ['$scope', '$http',,
-   function ($scope, $http) {
-
-	$scope.queryConceptStatus = "[No concept query executed]";
-}]);
 
 /*
  * Controller for retrieving and displaying records associated with a concept
@@ -72,15 +67,10 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	
 	// scope variables
 	$scope.error = "";		// initially empty
-	$scope.rows = "["; // beginning of Json array
 	
 	// local variables
 	var records = [];
 	var projects = [];
-	var project_ids = [];
-	var project_names = [];
-	var project_refSetIds = [];
-	
 
 	// retrieve all records with this concept id
 	$http({
@@ -94,8 +84,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	    	  $scope.records = data.mapRecord;
 	          records = data.mapRecord;
 	      }).error(function(error) {
-	    	  $scope.error = $scope.error + "Could not retrieve records. "; 
-	     
+	    	  $scope.error = $scope.error + "Could not retrieve records. ";    
 	      }).then(function() {
 	      
 		// retrieve project information   
@@ -123,11 +112,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		    			  version = projects[i].sourceTerminologyVersion;
 		    			  break;
 		    		  }
-		    	  }
-		    	  
-		    	  console.debug(terminology);
-		    	  console.debug(version);
-		    	  
+		    	  }	  
 		    	  
 		    	  // find concept based on source terminology
 		    	  $http({
@@ -145,35 +130,20 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	    		          $scope.concept = data;
 	    		  }).error(function(error) {
 	    		    	  $scope.error = $scope.error + "Could not retrieve Concept. ";    
-	    		  });
-		    	  
-		    	  // save refSetIds and project names
-		    	  project_ids = new Array(projects.length);
-		    	  project_names = new Array(projects.length);
-		    	  project_refSetIds = new Array(projects.length);
-		    	  
-		    	  for (var i=0; i<projects.length; i++) {
-		    		  project_ids[i] = projects[i].id;
-		    		  project_names[i] = projects[i].name;
-		    		  project_refSetIds[i] = projects[i].refSetId;
-		    	  }
+	    		  });	    	 
 		      });
 	      });
 	
 		$scope.getProjectName = function(record) {
 			
-			for (var i = 0; i < $scope.projects.length; i++) {
-				if (project_ids[i] == record.mapProjectId) {
-					return project_names[parseInt(record.mapProjectId, 10)];
+			for (var i = 0; i < projects.length; i++) {
+				if (projects[i].id == record.mapProjectId) {
+					return projects[i].name;
 				}
 			}
 			return null;
 		};
-	
-		$scope.getProjectRefSetId = function(record) {
-			var projectId = record.mapProjectId;
-			return project_refSetIds[parseInt(projectId, 10)-1];
-		};
+
 	
 	}]);
                                                               
@@ -313,7 +283,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 			  $scope.mapNotesPresent = false;
 			  $scope.mapAdvicesPresent = false;
 			  
-			  // check if any notes or advices are present are present
+			  // check if any notes or advices are present
 			  for (var i = 0; i < $scope.records.length; i++) {
 				  if ($scope.records[i].mapNote.length > 0) {
 					  $scope.mapNotesPresent = true;
@@ -330,7 +300,6 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 				  };
 			  };
 					 			  
-			  // check if any advices are present
 			  
 			  // get unmapped descendants (checking done in routine)
 			  if ($scope.records.length > 0) {	
@@ -396,16 +365,16 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 				  		+ $scope.project.sourceTerminology + "/"
 				  		+ $scope.project.sourceTerminologyVersion + "/"
 				  		+ "id/" + $scope.records[index].conceptId + "/"
-				  		+ "threshold/11",
+				  		+ "threshold/10",
 				  dataType: "json",
 				  method: "GET",
 				  headers: {
 					  "Content-Type": "application/json"
 				  }
 			  }).success(function(data) {
-				 console.debug("  Found " + data.concept.length + " unmapped descendants");
+				 console.debug("  Found " + data.count + " unmapped descendants");
 				 $scope.unmappedDescendantsPresent = true;
-				 $scope.records[index].unmappedDescendants = data.concept;
+				 $scope.records[index].unmappedDescendants = data.searchResult;
 			  });
 		  // otherwise check the next record
 		  } else {
