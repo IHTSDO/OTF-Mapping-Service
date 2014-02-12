@@ -27,7 +27,7 @@
 
 	<tr ng-repeat = "entry in record.mapEntry" >
 		
-        <td><div ng-show="record.mapNote.length > 0">
+        <td><div style="inline-block" ng-show="record.mapNote.length > 0">
           <div class="dropdown">
             <a class="dropdown-toggle"> 
             <img src="img/notepad.png" alt="notepad icon">
@@ -38,7 +38,7 @@
             </ul>
           </div>
         </div>
-        <div ng-show="entry.mapAdvice.length > 0">
+        <div style="inline-block" ng-show="entry.mapAdvice.length > 0">
           <div class="dropdown">
             <a class="dropdown-toggle"> 
             <img src="img/dialog-question.png" alt="question icon">
@@ -49,14 +49,14 @@
             </ul>
           </div>
         </div>
-        <div ng-show="record.unmappedDescendants.length > 0">
+        <div style="inline-block" ng-show="record.unmappedDescendants.length > 0">
           <div class="dropdown">
             <a class="dropdown-toggle"> 
             <img src="img/warning.png" alt="question icon">
             </a>
             <ul class="dropdown-menu">
               <b>Unmapped Descendants</b>
-              <li ng-repeat="concept in record.unmappedDescendants"><a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}: {{concept.defaultPreferredName}}</a></li>
+              <li ng-repeat="concept in record.unmappedDescendants"><a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}: {{concept.value}}</a></li>
             </ul>
           </div>
         </div>

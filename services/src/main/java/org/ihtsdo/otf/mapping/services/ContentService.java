@@ -73,7 +73,10 @@ public interface ContentService {
 	 * @return the set of concepts
 	 * @throws Exception if anything goes wrong
 	 */
-	public Set<Concept> getDescendants(String terminologyId, String terminology,
-		String terminologyVersion, Long typeId) throws Exception;
+	public SearchResultList findDescendants(String terminologyId, String terminology,
+			String terminologyVersion, Long typeId);
+
+	Set<Concept> getDescendants(String terminologyId, String terminology,
+			String terminologyVersion, Long typeId);
 
 }
