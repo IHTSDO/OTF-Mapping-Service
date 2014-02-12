@@ -1,5 +1,7 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.util.List;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -33,6 +35,8 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Description;
+import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptList;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
@@ -869,18 +873,21 @@ public class MappingServiceRest {
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public ConceptList getUnmappedDescendantsForConcept(
+	public SearchResultList getUnmappedDescendantsForConcept(
 			@ApiParam(value = "concept terminology id", required = true) @PathParam("id") String terminologyId,
 			@ApiParam(value = "concept terminology", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "concept terminology version", required = true) @PathParam("version") String terminologyVersion,
 			@ApiParam(value = "threshold max number of descendants for a low-level concept", required = true) @PathParam("threshold") int threshold) {
 		
+		
+		// TODO Convert to Search Results
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			ConceptList concepts = new ConceptList();
-			concepts.setConcepts(mappingService.getUnmappedDescendantsForConcept(terminologyId, terminology, terminologyVersion, threshold));
+			
+			SearchResultList results = mappingService.findUnmappedDescendantsForConcept(terminologyId, terminology, terminologyVersion, threshold);
+		
 			mappingService.close();
-			return concepts;
+			return results;
 			
 		} catch (Exception e) {
 			throw new WebApplicationException(e);

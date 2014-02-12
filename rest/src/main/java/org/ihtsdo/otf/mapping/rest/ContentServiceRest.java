@@ -15,6 +15,8 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Description;
+import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -68,9 +70,11 @@ public class ContentServiceRest {
 		try {
 			ContentService contentService = new ContentServiceJpa();
 			Concept c = contentService.getConcept(id.toString(), terminology, terminologyVersion);
+			
 			// Make sure to read descriptions and relationships
-			c.getDescriptions();
-			c.getRelationships();
+			for (Description d : c.getDescriptions()) { d.getLanguageRefSetMembers(); };
+			for (Relationship r : c.getRelationships()) { r.getDestinationConcept(); }
+			
 			contentService.close();
 			return c;
 		} catch (Exception e) {
@@ -146,7 +150,7 @@ public class ContentServiceRest {
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public Set<Concept> getConceptDescendants(
+	public SearchResultList findConceptDescendants(
 		@ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("id") Long id,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
@@ -154,11 +158,11 @@ public class ContentServiceRest {
 		try {
 			ContentService contentService = new ContentServiceJpa();
 			
-			Set<Concept> concepts = contentService.getDescendants(id.toString(), terminology,
+			SearchResultList results = contentService.findDescendants(id.toString(), terminology,
 				terminologyVersion, new Long("116680003")); // TODO Change this to metadata reference
 		
 			contentService.close();
-			return concepts;
+			return results;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
