@@ -75,7 +75,14 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 					"You must specify either a projectId or a refSetId.");
 		}
 
-		if (projectId != null && refSetId != null) {
+		if (projectId != null && refSetId != null &&
+				projectId.equals("") && refSetId.equals("")) {
+			throw new MojoExecutionException(
+					"You must specify either a projectId or a refSetId.");
+		}
+
+		if (projectId != null && refSetId != null &&
+				!projectId.equals("") && !refSetId.equals("")) {
 			throw new MojoExecutionException(
 					"You must specify either a projectId or a refSetId, not both.");
 		}

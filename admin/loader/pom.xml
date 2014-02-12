@@ -305,7 +305,8 @@
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                  <refSetId>${refsetId}</refSetId>
+                  <refSetId>${refset.id}</refSetId>
+                  <projectId>${project.id}</projectId>
                 </configuration>
               </execution>
             </executions>
