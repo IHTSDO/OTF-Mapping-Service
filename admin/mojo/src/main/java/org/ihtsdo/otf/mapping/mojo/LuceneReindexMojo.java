@@ -50,16 +50,16 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
  * 
  * @phase package
  */
-public class LuceneMakeIndexesMojo extends AbstractMojo {
+public class LuceneReindexMojo extends AbstractMojo {
 
 	/** The manager. */
 	private EntityManager manager;
 
 	/**
-	 * Instantiates a {@link LuceneMakeIndexesMojo} from the specified parameters.
+	 * Instantiates a {@link LuceneReindexMojo} from the specified parameters.
 	 *
 	 */
-	public LuceneMakeIndexesMojo() {
+	public LuceneReindexMojo() {
 	}
 	
 	/*
