@@ -8,13 +8,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -105,8 +102,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 	/** The date format. */
 	private final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
 
-	// buffered readers for sorted files
-	/** The extended_map_refsets_by_concept. */
+	/* buffered readers for sorted files. */
 	private BufferedReader conceptsByConcept, descriptionsByDescription,
 			relationshipsBySourceConcept, languageRefsetsByDescription,
 			attributeRefsetsByDescription, simpleRefsetsByConcept,
@@ -165,18 +161,19 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		getLog().info("Start loading RF2 data ...");
+
 		FileInputStream propertiesInputStream = null;
 		try {
 
 			// Track system level information
 			long startTimeOrig = System.nanoTime();
 
-			getLog().info("Start loading RF2 data ...");
-
 			// load Properties file
 			Properties properties = new Properties();
 			propertiesInputStream = new FileInputStream(propertiesFile);
 			properties.load(propertiesInputStream);
+			propertiesInputStream.close();
 
 			// set the input directory
 			String coreInputDirString =
@@ -198,6 +195,26 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 					Long.valueOf(properties
 							.getProperty("loader.defaultPreferredNames.acceptabilityId"));
 
+			//
+			// Determine version
+			//
+			File coreConceptInputFile = null;
+			File coreTerminologyInputDir = new File(coreInputDir, "/Terminology/");
+			for (File f : coreTerminologyInputDir.listFiles()) {
+				if (f.getName().contains("sct2_Concept_")) {
+					if (coreConceptInputFile != null)
+						throw new MojoFailureException("Multiple Concept Files!");
+					coreConceptInputFile = f;
+				}
+			}
+			if (coreConceptInputFile != null) {
+				int index = coreConceptInputFile.getName().indexOf(".txt");
+				version = coreConceptInputFile.getName().substring(index - 8, index);
+				getLog().info("Version " + version);
+			} else {
+				throw new MojoFailureException("Could not find concept file to determine version");
+			}
+			
 			// output relevant properties/settings to console
 			getLog().info("Default preferred name settings:");
 			getLog().info(" typeId:          " + dpnTypeId);
@@ -206,9 +223,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 			getLog().info(
 					"Commit settings: Objects committed in blocks of "
 							+ Integer.toString(commitCt));
-
-			// close the Properties file
-			propertiesInputStream.close();
 
 			// create Entitymanager
 			EntityManagerFactory factory =
@@ -228,20 +242,18 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
 			getLog().info("Preparing input files...");
 			long startTime = System.nanoTime();
-			prepareSortedFiles(coreInputDir, sortedFileDir);
+			sortRf2Files(coreInputDir, sortedFileDir);
 			getLog()
 					.info(
 							"    File preparation complete in " + getElapsedTime(startTime)
 									+ "s");
 
-			EntityTransaction tx = manager.getTransaction();
+			openSortedFileReaders(sortedFileDir);
 			try {
 
 				// load Concepts
 				if (conceptsByConcept != null) {
-
 					getLog().info("    Loading Concepts...");
-
 					startTime = System.nanoTime();
 					loadConcepts();
 					getLog().info(
@@ -255,10 +267,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 						&& languageRefsetsByDescription != null) {
 					getLog().info("    Loading Descriptions and LanguageRefSets...");
 					startTime = System.nanoTime();
-					//
 					loadDescriptionsAndLanguageRefSets();
-					getLog().info(
-							"      "
+					getLog().info("      "
 									+ " Descriptions and language ref set members loaded in "
 									+ getElapsedTime(startTime) + "s" + " (Ended at "
 									+ ft.format(new Date()) + ")");
@@ -266,47 +276,10 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 					// set default preferred names
 					getLog().info(" Setting default preferred names for all concepts...");
 					startTime = System.nanoTime();
-					tx.begin();
-					Iterator<Concept> conceptIterator = conceptCache.values().iterator();
-					objectCt = 0;
-					int ct = 0;
-					int skippedCt = 0;
-					while (conceptIterator.hasNext()) {
-						Concept cachedConcept = conceptIterator.next();
-
-						Concept dbConcept = manager.find(ConceptJpa.class, cachedConcept.getId());
-						dbConcept.getDescriptions();
-						dbConcept.getRelationships();
-						if (defaultPreferredNames.get(dbConcept.getId()) != null) {
-							dbConcept.setDefaultPreferredName(defaultPreferredNames.get(dbConcept
-									.getId()));
-						} else {
-							dbConcept.setDefaultPreferredName("No default preferred name found");
-							skippedCt++;
-						}
-
-						manager.merge(dbConcept);
-
-						if (++ct % 50000 == 0) {
-							getLog().info(Integer.toString(ct));
-						}
-
-						if (++objectCt % commitCt == 0) {
-							tx.commit();
-							manager.clear();
-							tx.begin();
-						}
-					}
-
-					tx.commit();
-					manager.clear();
+					setDefaultPreferredNames();
 					getLog().info(
 							"      " + "Names set in " + getElapsedTime(startTime).toString()
 									+ "s");
-					getLog().info(
-							"      " + Integer.toString(skippedCt)
-									+ " concepts had no default preferred name");
-					defaultPreferredNames.clear();
 
 				}
 
@@ -314,9 +287,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 				if (relationshipsBySourceConcept != null) {
 					getLog().info("    Loading Relationships...");
 					startTime = System.nanoTime();
-
 					loadRelationships();
-
 					getLog().info(
 							"      " + Integer.toString(objectCt) + " Concepts loaded in "
 									+ getElapsedTime(startTime) + "s" + " (Ended at "
@@ -327,9 +298,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 				if (simpleRefsetsByConcept != null) {
 					getLog().info("    Loading Simple RefSets...");
 					startTime = System.nanoTime();
-
 					loadSimpleRefSets();
-
 					getLog().info(
 							"      " + Integer.toString(objectCt)
 									+ " Simple Refsets loaded in " + getElapsedTime(startTime)
@@ -340,7 +309,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 				if (simpleMapRefsetsByConcept != null) {
 					getLog().info("    Loading SimpleMap RefSets...");
 					startTime = System.nanoTime();
-
 					loadSimpleMapRefSets();
 					getLog().info(
 							"      " + Integer.toString(objectCt)
@@ -352,7 +320,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 				if (complexMapRefsetsByConcept != null) {
 					getLog().info("    Loading ComplexMap RefSets...");
 					startTime = System.nanoTime();
-
 					loadComplexMapRefSets();
 					getLog().info(
 							"      " + Integer.toString(objectCt)
@@ -365,9 +332,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 				if (extendedMapRefsetsByConcept != null) {
 					getLog().info("    Loading ExtendedMap RefSets...");
 					startTime = System.nanoTime();
-
 					loadExtendedMapRefSets();
-
 					getLog().info(
 							"      " + Integer.toString(objectCt)
 									+ " ExtendedMap RefSets loaded in "
@@ -379,7 +344,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 				if (attributeRefsetsByDescription != null) {
 					getLog().info("    Loading AttributeValue RefSets...");
 					startTime = System.nanoTime();
-
 					loadAttributeValueRefSets();
 					getLog().info(
 							"      " + Integer.toString(objectCt)
@@ -388,6 +352,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 									+ ft.format(new Date()) + ")");
 				}
 
+				// Final logging messages
 				getLog().info(
 						"    Total elapsed time for run: "
 								+ getTotalElapsedTimeStr(startTimeOrig));
@@ -395,7 +360,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
 			} catch (Exception e) {
 				e.printStackTrace();
-
 				throw e;
 			}
 
@@ -414,6 +378,77 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 				// do nothing
 			}
 		}
+	}
+
+	/**
+	 * Opens sorted data fiels.
+	 * @param outputDir
+	 */
+	private void openSortedFileReaders(File outputDir) throws IOException {
+		File conceptsByConceptsFile =
+				new File(outputDir, "concepts_by_concept.sort");
+		File descriptionsByDescriptionFile =
+				new File(outputDir, "descriptions_by_description.sort");
+		// File descriptions_core_by_description_file =
+		// new File(outputDir, "descriptions_core_by_description.sort");
+		// File descriptions_text_by_description_file =
+		// new File(outputDir, "descriptions_text_by_description.sort");
+		File relationshipsBySourceConceptFile =
+				new File(outputDir, "relationship_by_source_concept.sort");
+		// File relationships_by_dest_concept_file =
+		// new File(outputDir, "relationship_by_dest_concept.sort");
+		File languageRefsetsByDescriptionsFile =
+				new File(outputDir, "language_refsets_by_description.sort");
+		File attributeRefsetsByConceptFile =
+				new File(outputDir, "attribute_refsets_by_concept.sort");
+		File simpleRefsetsByConceptFile =
+				new File(outputDir, "simple_refsets_by_concept.sort");
+		File simpleMapRefsetsByConceptFile =
+				new File(outputDir, "simple_map_refsets_by_concept.sort");
+		File complexMapRefsetsByConceptFile =
+				new File(outputDir, "complex_map_refsets_by_concept.sort");
+		File extendedMapRefsetsByConceptsFile =
+				new File(outputDir, "extended_map_refsets_by_concept.sort");
+		// Concepts
+		conceptsByConcept =
+				new BufferedReader(new FileReader(conceptsByConceptsFile));
+
+		// Relationships by source concept
+		relationshipsBySourceConcept =
+				new BufferedReader(new FileReader(relationshipsBySourceConceptFile));
+
+		// Descriptions by description id
+		descriptionsByDescription =
+				new BufferedReader(new FileReader(descriptionsByDescriptionFile));
+
+		// Language RefSets by description id
+		languageRefsetsByDescription =
+				new BufferedReader(new FileReader(languageRefsetsByDescriptionsFile));
+
+		// ******************************************************* //
+		// Component RefSet Members //
+		// ******************************************************* //
+
+		// Attribute Value
+		attributeRefsetsByDescription =
+				new BufferedReader(new FileReader(attributeRefsetsByConceptFile));
+
+		// Simple
+		simpleRefsetsByConcept =
+				new BufferedReader(new FileReader(simpleRefsetsByConceptFile));
+
+		// Simple Map
+		simpleMapRefsetsByConcept =
+				new BufferedReader(new FileReader(simpleMapRefsetsByConceptFile));
+
+		// Complex map
+		complexMapRefsetsByConcept =
+				new BufferedReader(new FileReader(complexMapRefsetsByConceptFile));
+
+		// Extended map
+		extendedMapRefsetsByConcept =
+				new BufferedReader(new FileReader(extendedMapRefsetsByConceptsFile));
+
 	}
 
 	// Used for debugging/efficiency monitoring
@@ -470,24 +505,13 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 	}
 
 	/**
-	 * File management for sorted files.
+	 * Sorts all files by concept or referencedComponentId.
 	 * 
 	 * @throws Exception the exception
 	 */
-	// *************************************************************************************
-	// //
-	//
-	// *************************************************************************************
-	// //
-	private void prepareSortedFiles(File coreInputDir, File outputDir)
-		throws Exception {
+	private void sortRf2Files(File coreInputDir, File outputDir) throws Exception {
 
-		// *********************** //
-		// Sort files if required //
-		// *********************** //
-
-		// if sorted files do not exist OR sorted files are older than last modified
-		// input file, sort
+		// Check expecations and pre-conditions
 		if (!outputDir.exists()
 				|| getLastModified(outputDir) < getLastModified(coreInputDir)) {
 
@@ -519,21 +543,11 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 								+ outputDir.toString());
 			}
 
-			// sort files
-			sortRf2Files(coreInputDir, outputDir);
 		} else {
 			getLog().info(
 					"    Sorted files exist and are up to date.  No sorting required");
+			return;
 		}
-
-	}
-
-	/**
-	 * Sorts all files by concept or referencedComponentId.
-	 * 
-	 * @throws Exception the exception
-	 */
-	private void sortRf2Files(File coreInputDir, File outputDir) throws Exception {
 
 		//
 		// Set files
@@ -740,70 +754,30 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 		// Initialize files
 		//
 
-		File concepts_by_concept_file =
+		File conceptsByConceptFile =
 				new File(outputDir, "concepts_by_concept.sort");
-		File descriptions_by_description_file =
+		File descriptionsByDescriptionFile =
 				new File(outputDir, "descriptions_by_description.sort");
-		File descriptions_core_by_description_file =
+		File descriptionsCoreByDescriptionFile =
 				new File(outputDir, "descriptions_core_by_description.sort");
-		File descriptions_text_by_description_file =
+		File descriptionsTextByDescriptionFile =
 				new File(outputDir, "descriptions_text_by_description.sort");
-		File relationships_by_source_concept_file =
+		File relationshipsBySourceConceptFile =
 				new File(outputDir, "relationship_by_source_concept.sort");
-		File relationships_by_dest_concept_file =
+		File relationshipsByDestinationConceptFile =
 				new File(outputDir, "relationship_by_dest_concept.sort");
-		File language_refsets_by_description_file =
+		File languageRefsetsByDescriptionFile =
 				new File(outputDir, "language_refsets_by_description.sort");
-		File attribute_refsets_by_concept_file =
+		File attributeRefsetsByConceptFile =
 				new File(outputDir, "attribute_refsets_by_concept.sort");
-		File simple_refsets_by_concept_file =
+		File simpleRefsetsByConceptFile =
 				new File(outputDir, "simple_refsets_by_concept.sort");
-		File simple_map_refsets_by_concept_file =
+		File simpleMapRefsetsByConceptFile =
 				new File(outputDir, "simple_map_refsets_by_concept.sort");
-		File complex_map_refsets_by_concept_file =
+		File comlpexMapRefsetsByConceptFile =
 				new File(outputDir, "complex_map_refsets_by_concept.sort");
-		File extended_map_refsets_by_concept_file =
+		File extendedMapRefsetsByConceptsFile =
 				new File(outputDir, "extended_map_refsets_by_concept.sort");
-
-		// Concepts
-		conceptsByConcept =
-				new BufferedReader(new FileReader(concepts_by_concept_file));
-
-		// Relationships by source concept
-		relationshipsBySourceConcept =
-				new BufferedReader(new FileReader(relationships_by_source_concept_file));
-
-		// Descriptions by description id
-		descriptionsByDescription =
-				new BufferedReader(new FileReader(descriptions_by_description_file));
-
-		// Language RefSets by description id
-		languageRefsetsByDescription =
-				new BufferedReader(new FileReader(language_refsets_by_description_file));
-
-		// ******************************************************* //
-		// Component RefSet Members //
-		// ******************************************************* //
-
-		// Attribute Value
-		attributeRefsetsByDescription =
-				new BufferedReader(new FileReader(attribute_refsets_by_concept_file));
-
-		// Simple
-		simpleRefsetsByConcept =
-				new BufferedReader(new FileReader(simple_refsets_by_concept_file));
-
-		// Simple Map
-		simpleMapRefsetsByConcept =
-				new BufferedReader(new FileReader(simple_map_refsets_by_concept_file));
-
-		// Complex map
-		complexMapRefsetsByConcept =
-				new BufferedReader(new FileReader(complex_map_refsets_by_concept_file));
-
-		// Extended map
-		extendedMapRefsetsByConcept =
-				new BufferedReader(new FileReader(extended_map_refsets_by_concept_file));
 
 		// ******************************************************* //
 		// Log file
@@ -813,24 +787,23 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 		// Components //
 		// ****************//
 
-		sortRf2File(coreConceptInputFile, concepts_by_concept_file, 0);
+		sortRf2File(coreConceptInputFile, conceptsByConceptFile, 0);
 
 		// core descriptions by description
-		sortRf2File(coreDescriptionInputFile,
-				descriptions_core_by_description_file, 0);
+		sortRf2File(coreDescriptionInputFile, descriptionsCoreByDescriptionFile, 0);
 
 		// if text descriptions file exists, sort and merge
 		if (coreTextDefinitionInputFile != null) {
 
 			// sort the text definition file
 			sortRf2File(coreTextDefinitionInputFile,
-					descriptions_text_by_description_file, 0);
+					descriptionsTextByDescriptionFile, 0);
 
 			// merge the two description files
 			getLog().info("        Merging description files...");
-			File merged_descriptions =
-					mergeSortedFiles(descriptions_text_by_description_file,
-							descriptions_core_by_description_file, new Comparator<String>() {
+			File mergedDesc =
+					mergeSortedFiles(descriptionsTextByDescriptionFile,
+							descriptionsCoreByDescriptionFile, new Comparator<String>() {
 								@Override
 								public int compare(String s1, String s2) {
 									String v1[] = s1.split("\t");
@@ -840,47 +813,78 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 							}, outputDir, ""); // header line
 
 			// rename the temporary file
-			Files.move(merged_descriptions, descriptions_by_description_file);
+			Files.move(mergedDesc, descriptionsByDescriptionFile);
 
 		} else {
 			// copy the core descriptions file
-			Files.copy(descriptions_core_by_description_file,
-					descriptions_by_description_file);
+			Files.copy(descriptionsCoreByDescriptionFile,
+					descriptionsByDescriptionFile);
 		}
 
-		sortRf2File(coreRelInputFile, relationships_by_source_concept_file, 4);
-		sortRf2File(coreRelInputFile, relationships_by_dest_concept_file, 5);
+		sortRf2File(coreRelInputFile, relationshipsBySourceConceptFile, 4);
+		sortRf2File(coreRelInputFile, relationshipsByDestinationConceptFile, 5);
 
 		// ****************//
 		// RefSets //
 		// ****************//
-		sortRf2File(coreAttributeValueInputFile, attribute_refsets_by_concept_file,
-				5);
-		sortRf2File(coreSimpleRefsetInputFile, simple_refsets_by_concept_file, 5);
-		sortRf2File(coreSimpleMapInputFile, simple_map_refsets_by_concept_file, 5);
-		sortRf2File(coreComplexMapInputFile, complex_map_refsets_by_concept_file, 5);
-		sortRf2File(coreExtendedMapInputFile, extended_map_refsets_by_concept_file,
-				5);
-		sortRf2File(coreLanguageInputFile, language_refsets_by_description_file, 5);
+		sortRf2File(coreAttributeValueInputFile, attributeRefsetsByConceptFile, 5);
+		sortRf2File(coreSimpleRefsetInputFile, simpleRefsetsByConceptFile, 5);
+		sortRf2File(coreSimpleMapInputFile, simpleMapRefsetsByConceptFile, 5);
+		sortRf2File(coreComplexMapInputFile, comlpexMapRefsetsByConceptFile, 5);
+		sortRf2File(coreExtendedMapInputFile, extendedMapRefsetsByConceptsFile, 5);
+		sortRf2File(coreLanguageInputFile, languageRefsetsByDescriptionFile, 5);
 
-		//
-		// Determine version
-		//
-		int index = coreConceptInputFile.getName().indexOf(".txt");
-		version = coreConceptInputFile.getName().substring(index - 8, index);
-		getLog().info("Version " + version);
+		// Concepts
+		conceptsByConcept =
+				new BufferedReader(new FileReader(conceptsByConceptFile));
+
+		// Relationships by source concept
+		relationshipsBySourceConcept =
+				new BufferedReader(new FileReader(relationshipsBySourceConceptFile));
+
+		// Descriptions by description id
+		descriptionsByDescription =
+				new BufferedReader(new FileReader(descriptionsByDescriptionFile));
+
+		// Language RefSets by description id
+		languageRefsetsByDescription =
+				new BufferedReader(new FileReader(languageRefsetsByDescriptionFile));
+
+		// ******************************************************* //
+		// Component RefSet Members //
+		// ******************************************************* //
+
+		// Attribute Value
+		attributeRefsetsByDescription =
+				new BufferedReader(new FileReader(attributeRefsetsByConceptFile));
+
+		// Simple
+		simpleRefsetsByConcept =
+				new BufferedReader(new FileReader(simpleRefsetsByConceptFile));
+
+		// Simple Map
+		simpleMapRefsetsByConcept =
+				new BufferedReader(new FileReader(simpleMapRefsetsByConceptFile));
+
+		// Complex map
+		complexMapRefsetsByConcept =
+				new BufferedReader(new FileReader(comlpexMapRefsetsByConceptFile));
+
+		// Extended map
+		extendedMapRefsetsByConcept =
+				new BufferedReader(new FileReader(extendedMapRefsetsByConceptsFile));
 
 	}
 
 	/**
 	 * Helper function for sorting an individual file with colum comparator.
 	 * 
-	 * @param file_in the input file to be sorted
-	 * @param file_out the resulting sorted file
-	 * @param sort_column the column ([0, 1, ...] to compare by
+	 * @param fileIn the input file to be sorted
+	 * @param fileOut the resulting sorted file
+	 * @param sortColumn the column ([0, 1, ...] to compare by
 	 * @throws Exception the exception
 	 */
-	private void sortRf2File(File file_in, File file_out, final int sort_column)
+	private void sortRf2File(File fileIn, File fileOut, final int sortColumn)
 		throws Exception {
 
 		Comparator<String> comp;
@@ -890,14 +894,14 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 			public int compare(String s1, String s2) {
 				String v1[] = s1.split("\t");
 				String v2[] = s2.split("\t");
-				return v1[sort_column].compareTo(v2[sort_column]);
+				return v1[sortColumn].compareTo(v2[sortColumn]);
 			}
 		};
 
 		getLog().info(
-				" Sorting " + file_in.toString() + "  into " + file_out.toString()
-						+ " by column " + Integer.toString(sort_column));
-		FileSorter.sortFile(file_in.toString(), file_out.toString(), comp);
+				" Sorting " + fileIn.toString() + "  into " + fileOut.toString()
+						+ " by column " + Integer.toString(sortColumn));
+		FileSorter.sortFile(fileIn.toString(), fileOut.toString(), comp);
 
 	}
 
@@ -906,216 +910,39 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 	// /////////////////////////////
 
 	/**
-	 * Sort the specified file using the specified {@link Comparator} and
-	 * optionally sort uniquely.
-	 * 
-	 * @param filename the file to sort
-	 * @param fileout the destination sorted file
-	 * @param comp the {@link Comparator}
-	 * @throws Exception the exception
-	 */
-
-	public void sort(String filename, String fileout, Comparator<String> comp)
-		throws Exception {
-
-		//
-		// Vars
-		//
-		List<String> lines = null;
-		List<File> files1 = new ArrayList<File>();
-		List<File> files2 = new ArrayList<File>();
-		String line;
-		final File orig_file = new File(filename).getAbsoluteFile();
-		final File dest_file = new File(fileout).getAbsoluteFile();
-		final File sortdir = new File(dest_file.getParent());
-
-		//
-		// Open file
-		//
-		final BufferedReader in = new BufferedReader(new FileReader(orig_file));
-		//
-
-		// Break input file into files with max size of 16MB and then sort it
-		//
-
-		int size_so_far = 0;
-		final int segment_size = 32 * 1024 * 1024;
-
-		// get and save header
-		String header_line = in.readLine(); //
-
-		while ((line = in.readLine()) != null) {
-
-			if (size_so_far == 0) {
-
-				lines = new ArrayList<String>(10000);
-
-			}
-
-			lines.add(line);
-			size_so_far += line.length();
-
-			if (size_so_far > segment_size) {
-
-				sortHelper(lines.toArray(new String[0]), files1, comp, sortdir);
-
-				size_so_far = 0;
-			}
-		}
-
-		//
-		// If there are left-over lines, create final tmp file
-		//
-		if (lines != null && lines.size() != 0 && size_so_far <= segment_size) {
-			sortHelper(lines.toArray(new String[0]), files1, comp, sortdir);
-		}
-
-		//
-		// Calculations for pm
-		//
-		int total_files = files1.size();
-		int tmp = total_files;
-
-		while (tmp > 1) {
-
-			tmp = (int) Math.ceil(tmp / 2.0);
-			total_files += tmp;
-
-		}
-		//
-		// Merge sorted files
-		//
-		tmp = 0;
-
-		// if one file, do not sort
-		while (files1.size() > 1) {
-
-			// cycle over files two at a time
-			for (int i = 0; i < files1.size(); i += 2) {
-
-				if (files1.size() == i + 1) {
-					files2.add(files1.get(i));
-					break;
-				} else {
-
-					final File f =
-							mergeSortedFiles(files1.get(i), files1.get(i + 1), comp, sortdir,
-									header_line);
-
-					files2.add(f);
-
-					// files1.get(i).delete();
-					// files1.get(i + 1).delete();
-
-					// TODO add test to check line-by-line comparator
-					if (!FileSorter.checkSortedFile(f, comp)) {
-						getLog().info("FAILED SORT CHECK: " + f.getName());
-					} else
-						getLog().info("Passed sort check: " + f.getName());
-				}
-			}
-
-			files1 = new ArrayList<File>(files2);
-			files2.clear();
-		}
-
-		// rename file
-
-		if (files1.size() > 0) {
-			files1.get(0).renameTo(dest_file);
-		}
-
-		// if no files, create an empty file
-		else {
-			dest_file.createNewFile();
-		}
-
-		// close input file
-		in.close();
-
-	}
-
-	/**
-	 * Helper function to perform sort operations.
-	 * 
-	 * @param lines the lines to sort
-	 * @param all_tmp_files the list of files
-	 * @param comp the comparator
-	 * @param sortdir the sort dir
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 */
-	private static void sortHelper(String[] lines, List<File> all_tmp_files,
-		Comparator<String> comp, File sortdir) throws IOException {
-
-		//
-		// Create temp file
-		//
-		final File f = File.createTempFile("t+~", ".tmp", sortdir);
-
-		//
-		// Sort data for this segment
-		//
-		Arrays.sort(lines, comp);
-
-		//
-		// Write lines to file f
-		//
-		final BufferedWriter out = new BufferedWriter(new FileWriter(f));
-
-		for (int i = 0; i < lines.length; i++) {
-			final String line = lines[i];
-			out.write(line);
-			out.newLine();
-			// out.flush();
-
-		}
-
-		out.flush();
-		out.close();
-		all_tmp_files.add(f);
-	}
-
-	/**
 	 * Merge-sort two files.
 	 * 
 	 * @param files1 the first set of files
 	 * @param files2 the second set of files
 	 * @param comp the comparator
 	 * @param dir the sort dir
-	 * @param header_line the header_line
+	 * @param headerLine the header_line
 	 * @return the sorted {@link File}
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private File mergeSortedFiles(File files1, File files2,
-		Comparator<String> comp, File dir, String header_line) throws IOException {
+		Comparator<String> comp, File dir, String headerLine) throws IOException {
+
 		final BufferedReader in1 = new BufferedReader(new FileReader(files1));
-
 		final BufferedReader in2 = new BufferedReader(new FileReader(files2));
-
-		final File out_file = File.createTempFile("t+~", ".tmp", dir);
-
-		final BufferedWriter out = new BufferedWriter(new FileWriter(out_file));
+		final File outFile = File.createTempFile("t+~", ".tmp", dir);
+		final BufferedWriter out = new BufferedWriter(new FileWriter(outFile));
 
 		getLog().info(
 				"Merging files: " + files1.getName() + " - " + files2.getName()
-						+ " into " + out_file.getName());
+						+ " into " + outFile.getName());
 
 		String line1 = in1.readLine();
 		String line2 = in2.readLine();
 		String line = null;
 
-		if (!header_line.isEmpty()) {
-			line = header_line;
+		if (!headerLine.isEmpty()) {
+			line = headerLine;
 			out.write(line);
 			out.newLine();
 		}
 
 		while (line1 != null || line2 != null) {
-
-			// System.out.println("Comparing: ");
-			// System.out.println("     " + line1);
-			// System.out.println("     " + line2);
-
 			if (line1 == null) {
 				line = line2;
 				line2 = in2.readLine();
@@ -1150,7 +977,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 		in1.close();
 		in2.close();
 
-		return out_file;
+		return outFile;
 
 	}
 
@@ -1309,6 +1136,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 		getLog().info(" Free:  " + memoryFree);
 		getLog().info(" Max:   " + memoryMax);
 
+		defaultPreferredNames.clear();
+
 	}
 
 	/**
@@ -1394,9 +1223,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 		Concept concept;
 		Description description;
 		LanguageRefSetMember language;
-		int n_desc = 0; // counter for descriptions
-		int n_lang = 0; // counter for language ref set members
-		int n_skip = 0; // counter for number of language ref set members skipped
+		int descCt = 0; // counter for descriptions
+		int langCt = 0; // counter for language ref set members
+		int skipCt = 0; // counter for number of language ref set members skipped
 
 		// load and persist first description
 		description = getNextDescription();
@@ -1424,7 +1253,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 								+ " references non-existent description "
 								+ language.getDescription().getTerminologyId());
 				language = getNextLanguage();
-				n_skip++;
+				skipCt++;
 			}
 
 			// cycle over language ref sets until new description id found or end of
@@ -1436,12 +1265,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 				// set the description
 				language.setDescription(description);
 				description.addLanguageRefSetMember(language);
-				n_lang++;
-
-				// System.out.println("      " + Integer.toString(n_lang) + " - " +
-				// language.getDescription().getTerminologyId() + " - " +
-				// description.getTerminologyId() + " - " +
-				// language.getTerminologyId());
+				langCt++;
 
 				// check if this language refset and description form the
 				// defaultPreferredName
@@ -1475,14 +1299,14 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 			description = getNextDescription();
 
 			// increment description count
-			n_desc++;
+			descCt++;
 
-			if (n_desc % 100000 == 0) {
-				getLog().info("-> descriptions: " + Integer.toString(n_desc));
+			if (descCt % 100000 == 0) {
+				getLog().info("-> descriptions: " + Integer.toString(descCt));
 			}
 
 			// memory debugging
-			if (n_desc % commitCt == 0) {
+			if (descCt % commitCt == 0) {
 				Runtime runtime = Runtime.getRuntime();
 				if (memoryTotal < runtime.totalMemory()) {
 					memoryTotal = runtime.totalMemory();
@@ -1496,7 +1320,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 			}
 
 			// regularly commit at intervals
-			if (n_desc % commitCt == 0) {
+			if (descCt % commitCt == 0) {
 				tx.commit();
 				manager.clear();
 				tx.begin();
@@ -1508,10 +1332,10 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 		tx.commit();
 		manager.clear();
 
-		getLog().info("      " + n_desc + " descriptions loaded");
-		getLog().info("      " + n_lang + " language ref sets loaded");
+		getLog().info("      " + descCt + " descriptions loaded");
+		getLog().info("      " + langCt + " language ref sets loaded");
 		getLog().info(
-				"      " + n_skip + " language ref sets skipped (no description)");
+				"      " + skipCt + " language ref sets skipped (no description)");
 
 		// print memory information
 		getLog().info("MEMORY USAGE:");
@@ -1520,6 +1344,49 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 		getLog().info(" Max:   " + memoryMax);
 	}
 
+	/**
+	 * Sets the default preferred names.
+	 *
+	 * @throws Exception the exception
+	 */
+	private void setDefaultPreferredNames() throws Exception {
+		EntityTransaction tx = manager.getTransaction();
+		tx.begin();
+		Iterator<Concept> conceptIterator = conceptCache.values().iterator();
+		objectCt = 0;
+		int ct = 0;
+		while (conceptIterator.hasNext()) {
+			Concept cachedConcept = conceptIterator.next();
+
+			Concept dbConcept =
+					manager.find(ConceptJpa.class, cachedConcept.getId());
+			dbConcept.getDescriptions();
+			dbConcept.getRelationships();
+			if (defaultPreferredNames.get(dbConcept.getId()) != null) {
+				dbConcept.setDefaultPreferredName(defaultPreferredNames
+						.get(dbConcept.getId()));
+			} else {
+				dbConcept
+						.setDefaultPreferredName("No default preferred name found");
+			}
+
+			manager.merge(dbConcept);
+
+			if (++ct % 50000 == 0) {
+				getLog().info(Integer.toString(ct));
+			}
+
+			if (++objectCt % commitCt == 0) {
+				tx.commit();
+				manager.clear();
+				tx.begin();
+			}
+		}
+
+		tx.commit();
+		manager.clear();
+	}
+	
 	/**
 	 * Returns the next description.
 	 * 

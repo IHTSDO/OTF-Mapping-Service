@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -85,15 +86,22 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 	 * @see org.apache.maven.plugin.Mojo#execute()
 	 */
 	@Override
-	public void execute() throws MojoFailureException {
+	public void execute() throws MojoExecutionException {
 
 		if (projectId == null && refSetId == null) {
-			throw new MojoFailureException(
+			throw new MojoExecutionException(
 					"You must specify either a projectId or a refSetId.");
 		}
 
-		if (projectId != null && refSetId != null) {
-			throw new MojoFailureException(
+		if (projectId != null && refSetId != null &&
+				projectId.equals("") && refSetId.equals("")) {
+			throw new MojoExecutionException(
+					"You must specify either a projectId or a refSetId.");
+		}
+
+		if (projectId != null && refSetId != null &&
+				!projectId.equals("") && !refSetId.equals("")) {
+			throw new MojoExecutionException(
 					"You must specify either a projectId or a refSetId, not both.");
 		}
 
@@ -141,7 +149,7 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 			mappingService.close();
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
+			throw new MojoExecutionException("Unexpected exception:", e);
 		}
 	}
 
