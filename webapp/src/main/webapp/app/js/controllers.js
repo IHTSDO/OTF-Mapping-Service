@@ -128,9 +128,33 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	    		     }	
 	    		  }).success(function(data) {
 	    		          $scope.concept = data;
+	    		          $scope.findUnmappedDescendants();
+	    		          
+	    		          // find inverse relationships based on source terminology
+	    		    	  $http({
+	    		    			 url: root_content + "concept/" 
+	    		    			 				   + terminology + "/" 
+	    		    			 				   + version 
+	    		    			 				   + "/id/" 
+	    		    			 				   + $routeParams.conceptId
+	    		    			 				   + "/inverseRelationships",
+	    		    			 dataType: "json",
+	    		    		     method: "GET",
+	    		    		     headers: {
+	    		    		          "Content-Type": "application/json"
+	    		    		     }	
+	    		    		  }).success(function(data) {
+	    		    			  	  console.debug(data);
+	    		    		          $scope.concept.inverseRelationship = data.relationship;
+	    		    		          $scope.findUnmappedDescendants();
+	    		    		  }).error(function(error) {
+	    		    		    	  $scope.error = $scope.error + "Could not retrieve Concept. ";    
+	    		    		  });
 	    		  }).error(function(error) {
 	    		    	  $scope.error = $scope.error + "Could not retrieve Concept. ";    
-	    		  });	    	 
+	    		  });
+		    	  
+		    	  	
 		      });
 	      });
 	
@@ -143,8 +167,37 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			}
 			return null;
 		};
+		
+		$scope.findUnmappedDescendants = function() {
+			
+			$scope.concept.unmappedDescendants = [];
+			
+			if ($scope.records.length > 0) {
+				if ($scope.records[0].countDescendantConcepts < 11) {
+					
+					$http({
+						  url: root_mapping + "concept/" 
+						  		+ $scope.concept.terminology + "/"
+						  		+ $scope.concept.terminologyVersion + "/"
+						  		+ "id/" + $scope.concept.terminologyId + "/"
+						  		+ "threshold/10",
+						  dataType: "json",
+						  method: "GET",
+						  headers: {
+							  "Content-Type": "application/json"
+						  }
+					  }).success(function(data) {
+						 console.debug("  Found " + data.count + " unmapped descendants");
+						 if (data.count > 0) $scope.unmappedDescendantsPresent = true;
+						 $scope.concept.unmappedDescendants = data.searchResult;
+					  });
 
+				}
+			}
+			
+		};
 	
+		
 	}]);
                                                               
 
@@ -228,7 +281,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	 
 	 $scope.to_trusted = function(html_code) {
 	    return $sce.trustAsHtml(html_code);
-	 }
+	 };
 	 
 	 // function to set the relevant pagination fields
 	 $scope.setPagination = function(recordsPerPage) {
@@ -373,7 +426,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 				  }
 			  }).success(function(data) {
 				 console.debug("  Found " + data.count + " unmapped descendants");
-				 $scope.unmappedDescendantsPresent = true;
+				 if (data.count > 0) $scope.unmappedDescendantsPresent = true;
 				 $scope.records[index].unmappedDescendants = data.searchResult;
 			  });
 		  // otherwise check the next record
