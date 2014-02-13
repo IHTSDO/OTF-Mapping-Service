@@ -799,6 +799,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 		 */
 		public void modifierHelper(String codeToModify) throws Exception {
 
+			// Hardcoded exception for ICD10 (not in the data)
+			if (codeToModify.startsWith("W19.")) return;
+			
 			// Determine if "code" or any of its ancestor codes have modifiers
 			// that are not blocked by excluded modifiers
 			String cmpCode = codeToModify;
@@ -885,7 +888,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
 								// Recursively call for 5th digit modifiers on generated classes
 								if (codeToModify.length() == 3 && modifiedByCode.endsWith("_4")) {
-									if (!childCode.startsWith("W19"))
 										modifierHelper(childCode);
 								}
 							}
