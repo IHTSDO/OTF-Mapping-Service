@@ -7,7 +7,23 @@
 
 <p>{{errorRecords}} </p>
  
-<p><form><input ng-model="query"><input type="submit" value="Search" ng-click="retrieveRecords(1)"></form>
+<p>
+<form>
+	<input ng-model="query">
+	<input type="submit" value="Search" ng-click="retrieveRecords(1)">
+	<span class="dropdown">
+		<a class="dropdown-toggle"><img align="top" src="img/help.png" alt="help icon"></a>
+		<span class="dropdown-menu">
+              <strong>Search Options</strong><br>
+              <a>Boolean Operators: AND/OR/NOT (must be capitalized)</a>
+              <a>Force exclude/include:  +/-</a>
+              <a>Grouping: (), e.g. (term1 OR term2) AND term3</a>
+              <a>Quote-matching: "", e.g. "this is a single term" </a>
+              <a>Wildcards: ? for single character, * for multiple characters</a>
+              
+        </span>
+	</span>
+</form>
 
 <table width="100%" class="table" >
 <thead>
@@ -27,8 +43,9 @@
 
 	<tr ng-repeat = "entry in record.mapEntry" >
 		
-        <td><div ng-show="record.mapNote.length > 0">
-          <div class="dropdown">
+        <td>
+        <span ng-show="record.mapNote.length > 0">
+          <span class="dropdown">
             <a class="dropdown-toggle"> 
             <img src="img/notepad.png" alt="notepad icon">
             </a>
@@ -36,10 +53,10 @@
               <b>Note View</b>
               <li ng-repeat="note in record.mapNote"><a>{{note.note}}</a></li>
             </ul>
-          </div>
-        </div>
-        <div ng-show="entry.mapAdvice.length > 0">
-          <div class="dropdown">
+          </span>
+        </span>
+        <span ng-show="entry.mapAdvice.length > 0">
+          <span class="dropdown">
             <a class="dropdown-toggle"> 
             <img src="img/dialog-question.png" alt="question icon">
             </a>
@@ -47,10 +64,10 @@
               <b>Advice View</b>
               <li ng-repeat="advice in entry.mapAdvice"><a>{{advice.detail}}</a></li>
             </ul>
-          </div>
-        </div>
-        <div ng-show="record.unmappedDescendants.length > 0">
-          <div class="dropdown">
+          </span>
+        </span>
+        <span ng-show="record.unmappedDescendants.length > 0">
+          <span class="dropdown">
             <a class="dropdown-toggle"> 
             <img src="img/warning.png" alt="question icon">
             </a>
@@ -58,8 +75,8 @@
               <b>Unmapped Descendants</b>
               <li ng-repeat="concept in record.unmappedDescendants"><a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}: {{concept.value}}</a></li>
             </ul>
-          </div>
-        </div>
+          </span>
+        </span>
          
         </td>
         <td><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
