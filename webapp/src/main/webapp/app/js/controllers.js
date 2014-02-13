@@ -9,19 +9,6 @@ var root_mapping = root_url + "mapping/";
 var root_content = root_url + "content/";
 var root_metadata = root_url + "metadata/";
 	
-//////////////////////////////
-// Navigation
-//////////////////////////////	
-
-mapProjectAppControllers.controller('MapProjectAppNav',
-	function ($scope) {
-	
-		var changePage = function (newPage) {
-			$location.path = newPage;
-		};
-	});	
-
-
 	
 //////////////////////////////
 // Mapping Services
@@ -29,6 +16,10 @@ mapProjectAppControllers.controller('MapProjectAppNav',
 	
 mapProjectAppControllers.controller('MapProjectListCtrl', 
   function ($scope, $http) {
+	
+	  // initialize as empty to indicate still initializing database connection
+	  $scope.projects = [];
+	
       $http({
         url: root_mapping + "project/projects",
         dataType: "json",
@@ -137,7 +128,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	    		    			 				   + version 
 	    		    			 				   + "/id/" 
 	    		    			 				   + $routeParams.conceptId
-	    		    			 				   + "/inverseRelationships",
+	    		    			 				   + "/children",
 	    		    			 dataType: "json",
 	    		    		     method: "GET",
 	    		    		     headers: {
@@ -145,10 +136,9 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	    		    		     }	
 	    		    		  }).success(function(data) {
 	    		    			  	  console.debug(data);
-	    		    		          $scope.concept.inverseRelationship = data.relationship;
-	    		    		          $scope.findUnmappedDescendants();
+	    		    		          $scope.concept.children = data.searchResult;
 	    		    		  }).error(function(error) {
-	    		    		    	  $scope.error = $scope.error + "Could not retrieve Concept. ";    
+	    		    		    	  $scope.error = $scope.error + "Could not retrieve Concept children. ";    
 	    		    		  });
 	    		  }).error(function(error) {
 	    		    	  $scope.error = $scope.error + "Could not retrieve Concept. ";    
@@ -204,7 +194,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 
 // TODO Add test for coming from project list page (i.e. pass the project to this controller)
-mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', '$routeParams', '$sce',
+mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', '$routeParams', '$sce',
    function ($scope, $http, $routeParams, $sce) {
 	
 	$scope.headers = [
@@ -223,6 +213,8 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 			sortDir: 'asc',
 			sortedBy: 'conceptId'
 	};
+	
+
 	
 	
 	  $scope.projectId = $routeParams.projectId;
@@ -256,6 +248,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
     	  $scope.errorProject = "Could not retrieve project"; 
      
       }).then(function(data) {
+
  		 
     	  // retrieve any concept associated with this project
     	  $http({
@@ -395,7 +388,25 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 		 $scope.filterCriteria.sortedBy = sortedBy;
 		 $scope.filterCriteria.pageNumber = 1;
 	 };
-		
+	 
+	 // stuck here for html cleanliness -- probably want to move
+	 $scope.getSearchHelp = 
+		"<strong>Search Options</strong>" +
+		 "<table>" +
+		 "<thead>" +
+		 "<tr>" +
+		 "	<th>Option</th>" +
+		 " 	<th>Usage</th>" +
+		 "	<th>Example</th>" +
+		 "</tr>" +
+		 "</thead>" +
+		 "</table>";
+	
+	 
+	// function to return trusted html code (for tooltip content)
+	$scope.to_trusted = function(html_code) {
+	    return $sce.trustAsHtml(html_code);
+	 };
 		 
 	 // TODO This is kind of messy
     function getUnmappedDescendants(index) {
@@ -436,6 +447,87 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 		  }
 	  
 	 };
+}]);
+
+mapProjectAppControllers.controller('MapProjectDetailCtrl', 
+		['$scope', '$http', '$routeParams', '$sce',
+		 function ($scope, $http, $routeParams, $sce) {
+			
+			
+			console.debug("In MapProjectDetailCtrl");
+			
+			// retrieve project information
+			 $http({
+		        url: root_mapping + "project/id/" + $routeParams.projectId,
+		        dataType: "json",
+		        method: "GET",
+		        headers: {
+		          "Content-Type": "application/json"
+		        }	
+		      }).success(function(data) {
+		        $scope.project = data;
+		        $scope.errorProject = "Project retrieved";
+		      }).error(function(error) {
+		    	  $scope.errorProject = "Could not retrieve project"; 
+		     
+		      }).then(function(data) {
+		    	  
+		    	  console.debug($scope.project.destinationTerminology);
+		    	 
+		    	  // determine if this project has a principles document
+		    	  // TODO: THIS WILL BE CODED INTO PROJECT LATER
+		    	  if ($scope.project.destinationTerminology == "ICD10") {
+		    		  $scope.project.mapPrincipleDocumentPath = "doc/";
+		    		  $scope.project.mapPrincipleDocument = "ICD10_MappingPersonnelHandbook.docx";
+		    		  $scope.project.mapPrincipleDocumentName = "Mapping Personnel Handbook";
+		    	  } else {
+		    		  $scope.project.mapPrincipleDocument = null;
+		    	  }
+		    	  
+		    	  // sort the principles and advices
+		    	  $scope.sortedAdvice = $scope.sortByKey($scope.project.mapAdvice, 'id');
+		    	  $scope.sortedPrinciples = $scope.sortByKey($scope.project.mapPrinciple, 'id');
+		    	  
+		    	  // set pagination variables
+		    	  $scope.pageSize = 5;
+		    	  $scope.getPagedAdvice(1);
+		    	  $scope.getPagedPrinciple(1);
+		    	  $scope.orderProp = 'id';
+		    	  
+
+		    	  
+		    	  console.debug("Advice Pages: " + $scope.numPagesAdvice);
+		    	  console.debug("Principle Pages: " + $scope.numPagesPrinciple);
+		      
+		      });
+			
+			
+			// function to return trusted html code (for tooltip content)
+			$scope.to_trusted = function(html_code) {
+			    return $sce.trustAsHtml(html_code);
+			 };
+			 
+			 $scope.getPagedAdvice = function (page) {
+				 console.debug("Called paged advice for page " + page);				 
+				 $scope.pagedAdvice = $scope.sortedAdvice.slice(
+						 (page-1)*$scope.pageSize,
+						 page*$scope.pageSize);
+			 };
+			 
+			 $scope.getPagedPrinciple = function (page) {
+				 console.debug("Called paged principle for page " + page);
+				 $scope.pagedPrinciple = $scope.sortedPrinciples.slice(
+						 (page-1)*$scope.pageSize,
+						 page*$scope.pageSize);
+			 };
+			 
+			 $scope.sortByKey = function sortById(array, key) {
+				    return array.sort(function(a, b) {
+				        var x = a[key]; var y = b[key];
+				        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+				    });
+				};
+			 
 }]);
 
 

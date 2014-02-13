@@ -1,35 +1,23 @@
-<!--  partial for displaying project :projectId -->
-
-
-
+<!--  partial for displaying records associated with a concept id -->
 <p></p>
 <h3>Map Records for {{concept.terminology}} Concept {{concept.terminologyId}}:  {{concept.defaultPreferredName}}  
 
-	
 </h3>
 <p></p>
-	<div ng-show="concept.unmappedDescendants.length > 0">
-          <div class="dropdown">
-            <a class="dropdown-toggle"> 
-            <img src="img/warning.png" alt="question icon"> Concept has unmapped descendants.
-            </a>
-            <ul class="dropdown-menu">
-              <b>Unmapped Descendants</b>
-              <li ng-repeat="concept in concept.unmappedDescendants"><a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}: {{concept.value}}</a></li>
-            </ul>
-          </div>
-        </div>
-        <p></p>
+<p></p>
+
+
 
 <!--  Placeholder warning div -->
-<div ng-show = "records.length == 0">
+
+<span ng-show = "records.length == 0">
 	<hr>
 	<h3><img src="img/warning-circle_25px.png">&nbspUndeveloped Content/Placeholder Note</h3><p></p><p></p>
 	<p> This concept has no map records associated with it, and therefore will not display.
 	<p> Future versions will display a list of concepts matching this Id, and redirect to map record creation upon selection of desired concept.
 	<hr>
-</div>
-
+</span>
+<p></p>
 
 <table width="100%" class="table">
 <thead>
@@ -86,26 +74,72 @@
 
 </table>
 
-<h4>Concept Neighborhood</h4>
-<p></p>
-<div class="dropdown">
-		<a class="dropdown-toggle">Parents</a>	
- 		<ul class="dropdown-menu">
- 			<li ng-repeat="relationship in concept.relationship">
- 				<a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:  {{relationship.destinationConceptPreferredName}}</a> 
-			</li>
- 		</ul>
-</div>
-<div class="dropdown">
-		<a class="dropdown-toggle">Children</a>	 <em>Note: Concept names not currently displayed</em>
- 		<ul class="dropdown-menu">
- 			<li ng-repeat="relationship in concept.inverseRelationship">
- 				<a href="#/record/conceptId/{{relationship.sourceConceptId}}">{{relationship.sourceConceptId}}:  {{relationship.sourceConceptPreferredName}}</a> 
-			</li>
- 		</ul>
+
+<div ng-show="concept.relationship.length > 0 || concept.children.length > 0">
+
+	<h3>Concept Navigation</h3>
+	<p></p>
+	
+	<table width="100%">
+
+	<tbody style="border: 0px solid #ccc;">
+	<tr>
+		<td style="width:5%"></td>
+		<td style="width:95%">
+			
+			<!--  Navigation and Unmapped Descendants -->
+			<div class="dropdown" ng-show="concept.relationship.length > 0">
+					<a class="dropdown-toggle">Parents</a>	
+			 		<ul class="dropdown-menu">
+			 		<strong>Parents</strong>
+			 			<li ng-repeat="relationship in concept.relationship">
+			 				<a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:  {{relationship.destinationConceptPreferredName}}</a> 
+						</li>
+			 		</ul>
+			</div>
+			<div class="dropdown" ng-show="concept.children.length > 0">
+					<a class="dropdown-toggle">Children</a>	
+			 		<ul class="dropdown-menu">
+			 		<strong>Children</strong>
+			 			<li ng-repeat="concept in concept.children">
+			 				<a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:  {{concept.value}}</a> 
+						</li>
+			 		</ul>
+			</div>
+		</td>
+	</tr>
+	</table>
+	<p></p>
 </div>
 
-<em>Note:</em> Parent/children relationships are not yet fully integrated with ISA metadata lookup.
+<div ng-show = "concept.unmappedDescendants.length > 0">
+
+	<h3>Concept Alerts</h3>
+	<p></p>
+	<table width="100%">
+
+	<tbody style="border: 0px solid #ccc">
+	<tr>
+		<td align=center style="width:5%"><img src="img/warning.png" alt="question icon"></td>
+		<td style="width:95%">
+			
+			<div class="dropdown" ng-show="concept.unmappedDescendants.length > 0">
+			     <a class="dropdown-toggle">
+			     		
+			 			  Unmapped descendants.
+			     
+			     </a>
+			     <ul class="dropdown-menu">
+			       <strong>Unmapped Descendants</strong>
+			       <li ng-repeat="concept in concept.unmappedDescendants"><a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}: {{concept.value}}</a></li>
+			     </ul>
+			</div>
+	</td>
+	</tr>
+	</table>
+	<p></p>
+
+</div>
 
 {{error}}
 
