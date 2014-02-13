@@ -331,8 +331,8 @@ public class MapEntryJpa implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setIndex(java.lang.String)
 	 */
 	@Override
-	public void setMapPriority(int index) {
-		this.mapPriority = index;
+	public void setMapPriority(int mapPriority) {
+		this.mapPriority = mapPriority;
 	}
 
 	/* (non-Javadoc)
