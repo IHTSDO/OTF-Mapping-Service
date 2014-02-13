@@ -2051,6 +2051,7 @@ public class MappingServiceJpa implements MappingService {
 		boolean prevTransactionPerOperationSetting = getTransactionPerOperation();
 		setTransactionPerOperation(false);
 		beginTransaction();
+		List<MapAdvice> mapAdvices = getMapAdvices();
 		try {
 			// instantiate other local variables
 			Long prevConceptId = new Long(-1);
@@ -2075,9 +2076,8 @@ public class MappingServiceJpa implements MappingService {
 				}
 
 				// retrieve the concept
+				Logger.getLogger(this.getClass()).info("Get refset member concept");
 				Concept concept = refSetMember.getConcept();
-				Logger.getLogger(this.getClass()).info("Get refset member concept" + concept.getTerminologyId());
-				
 
 				// if no concept for this ref set member, skip
 				if (concept == null) {
@@ -2161,7 +2161,6 @@ public class MappingServiceJpa implements MappingService {
 				Logger.getLogger(this.getClass()).info("  Setting map advice");
 				if (refSetMember.getMapAdvice() != null
 						&& !refSetMember.getMapAdvice().equals("")) {
-					List<MapAdvice> mapAdvices = getMapAdvices();
 					for (MapAdvice ma : mapAdvices) {
 						if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
 								&& !ma.getName().equals(relationName)) {
