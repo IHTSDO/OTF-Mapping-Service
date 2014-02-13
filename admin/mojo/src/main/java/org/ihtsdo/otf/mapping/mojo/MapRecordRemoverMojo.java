@@ -44,7 +44,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *           </goals>
  *           <configuration>
  *             <!-- one of the two must be used -->
- *             <projectId>${project.id}</projectId>
+ *             <refsetId>${refset.id}</refsetId>
  *           </configuration>
  *         </execution>
  *       </executions>

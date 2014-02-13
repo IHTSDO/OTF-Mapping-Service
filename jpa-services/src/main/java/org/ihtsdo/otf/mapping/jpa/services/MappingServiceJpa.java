@@ -1086,13 +1086,13 @@ public class MappingServiceJpa implements MappingService {
 	// //////////////////////////////////////////////
 
 	/**
-	 * Retrieve map records for a given concept id.
+	 * Retrieve map records for a given terminology id.
 	 * 
-	 * @param conceptId the concept id
+	 * @param terminologyId the concept id
 	 * @return the list of map records
 	 */
 	@Override
-	public List<MapRecord> getMapRecordsForConceptId(String conceptId) {
+	public List<MapRecord> getMapRecordsForTerminologyId(String terminologyId) {
 		List<MapRecord> m = null;
 
 		// construct query
@@ -1101,7 +1101,7 @@ public class MappingServiceJpa implements MappingService {
 						.createQuery("select m from MapRecordJpa m where conceptId = :conceptId");
 
 		// Try query
-		query.setParameter("conceptId", conceptId);
+		query.setParameter("conceptId", terminologyId);
 		m = query.getResultList();
 
 		return m;
@@ -1603,7 +1603,7 @@ public class MappingServiceJpa implements MappingService {
 			for(SearchResult sr : descendants.getSearchResults()) {
 				
 				// if descendant has no associated map records, add to list
-				if (getMapRecordsForConceptId(sr.getTerminologyId()).size() == 0) {
+				if (getMapRecordsForTerminologyId(sr.getTerminologyId()).size() == 0) {
 					unmappedDescendants.addSearchResult(sr);
 				}
 			}
@@ -2051,6 +2051,7 @@ public class MappingServiceJpa implements MappingService {
 		boolean prevTransactionPerOperationSetting = getTransactionPerOperation();
 		setTransactionPerOperation(false);
 		beginTransaction();
+		List<MapAdvice> mapAdvices = getMapAdvices();
 		try {
 			// instantiate other local variables
 			Long prevConceptId = new Long(-1);
@@ -2060,7 +2061,7 @@ public class MappingServiceJpa implements MappingService {
 
 				// Skip inactive cases
 				if (!refSetMember.isActive()) {
-					Logger.getLogger(getClass()).debug("Skipping refset member " + refSetMember.getTerminologyId());
+					Logger.getLogger(this.getClass()).debug("Skipping refset member " + refSetMember.getTerminologyId());
 					continue;
 				}
 				
@@ -2070,11 +2071,12 @@ public class MappingServiceJpa implements MappingService {
 								.contains("MAP IS CONTEXT DEPENDENT FOR GENDER"))
 						&& !(refSetMember.getMapRule()
 								.matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]"))) {
-					Logger.getLogger(getClass()).debug("Skipping refset member exclusion rule " + refSetMember.getTerminologyId());
+					Logger.getLogger(this.getClass()).debug("Skipping refset member exclusion rule " + refSetMember.getTerminologyId());
 					continue;
 				}
 
 				// retrieve the concept
+				Logger.getLogger(this.getClass()).debug("Get refset member concept");
 				Concept concept = refSetMember.getConcept();
 
 				// if no concept for this ref set member, skip
@@ -2086,7 +2088,7 @@ public class MappingServiceJpa implements MappingService {
 				// if different concept than previous ref set member, create new
 				// mapRecord
 				if (!concept.getTerminologyId().equals(prevConceptId.toString())) {
-					Logger.getLogger(getClass()).debug("Creating map record for + " + concept.getTerminologyId());
+					Logger.getLogger(this.getClass()).debug("Creating map record for " + concept.getTerminologyId());
 
 					mapRecord = new MapRecordJpa();
 					mapRecord.setConceptId(concept.getTerminologyId());
@@ -2095,14 +2097,13 @@ public class MappingServiceJpa implements MappingService {
 
 					// get the number of descendants - Need to optimize this
 					// Need a tool to compute and save this for LLCs (e.g. having < 11 descendants)
-					Logger.getLogger(getClass()).debug("  Computing descendant count");					
 					mapRecord.setCountDescendantConcepts(new Long(contentService.findDescendants(
 							  concept.getTerminologyId(),
 							  concept.getTerminology(), 
 							  concept.getTerminologyVersion(), 
 							  new Long("116680003")).getCount()));
-					Logger.getLogger(getClass()).debug("  Computing descendant ct = " + 
-					  mapRecord.getCountDescendantConcepts());
+					Logger.getLogger(this.getClass()).debug("  Computing descendant ct = " + 
+						  mapRecord.getCountDescendantConcepts());
 					 
 					//mapRecord.setCountDescendantConcepts(0L);
 
@@ -2132,6 +2133,8 @@ public class MappingServiceJpa implements MappingService {
 					} else {
 						targetName = c.getDefaultPreferredName();
 					}
+					Logger.getLogger(this.getClass()).debug("  Setting target name " +
+						  targetName);
 				}
 
 				// Set map relation id as well from the cache
@@ -2139,28 +2142,33 @@ public class MappingServiceJpa implements MappingService {
 				if (refSetMember.getMapRelationId() != null)
 					relationName = relationIdNameMap.get(refSetMember.getMapRelationId());
 
+				Logger.getLogger(this.getClass()).debug("  Create map entry");
 				MapEntry mapEntry = new MapEntryJpa();
 				mapEntry.setTargetId(refSetMember.getMapTarget());
 				mapEntry.setTargetName(targetName);
 				mapEntry.setMapRecord(mapRecord);
 				mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
 				mapEntry.setRelationName(relationName);
-				mapEntry.setRule(refSetMember.getMapRule());
-				mapEntry.setMapGroup(refSetMember.getMapBlock());
-				mapEntry.setMapBlock(refSetMember.getMapGroup());
-
+				String rule = refSetMember.getMapRule();
+				if (rule.equals("OTHERWISE TRUE")) rule = "TRUE";
+				mapEntry.setRule(rule);
+				mapEntry.setMapBlock(refSetMember.getMapBlock());
+				mapEntry.setMapGroup(refSetMember.getMapGroup());
+				mapEntry.setMapPriority(refSetMember.getMapPriority());
+				
 				mapRecord.addMapEntry(mapEntry);
 
 				// Add support for advices - and there can be multiple map advice values
 				// Only add advice if it is an allowable value and doesn't match relation name
 				// This should automatically exclude IFA/ALWAYS advice 
+				Logger.getLogger(this.getClass()).debug("  Setting map advice");
 				if (refSetMember.getMapAdvice() != null
 						&& !refSetMember.getMapAdvice().equals("")) {
-					List<MapAdvice> mapAdvices = getMapAdvices();
 					for (MapAdvice ma : mapAdvices) {
 						if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
 								&& !ma.getName().equals(relationName)) {
 							mapEntry.addMapAdvice(ma);
+							Logger.getLogger(this.getClass()).debug("    " + ma.getName());
 						}
 					}
 				}

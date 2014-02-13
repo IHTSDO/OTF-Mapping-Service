@@ -390,7 +390,7 @@ public class MappingServiceRest {
 		try {
 			MappingService mappingService = new MappingServiceJpa();	
 			MapRecordList mapRecords = new MapRecordList();
-			mapRecords.setMapRecords(mappingService.getMapRecordsForConceptId(conceptId));
+			mapRecords.setMapRecords(mappingService.getMapRecordsForTerminologyId(conceptId));
 			mappingService.close();
 			return mapRecords;
 		} catch (Exception e) {
