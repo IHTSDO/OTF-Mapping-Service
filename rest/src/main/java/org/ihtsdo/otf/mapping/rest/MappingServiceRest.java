@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import java.util.List;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -14,6 +12,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -35,9 +34,6 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.Description;
-import org.ihtsdo.otf.mapping.rf2.Relationship;
-import org.ihtsdo.otf.mapping.rf2.jpa.ConceptList;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -82,6 +78,8 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectList getMapProjects() {
 		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping):  /project/projects");
+		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 		
@@ -109,6 +107,8 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapLeadList getMapLeads() {
 		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /lead/leads");
+		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapLeadList mapLeads = new MapLeadList();
@@ -131,6 +131,8 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Get all specialists", notes = "Returns all MapSpecialists in either JSON or XML format", response = MapSpecialistList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapSpecialistList getMapSpecialists() {
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): specialist/specialists");
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -179,6 +181,8 @@ public class MappingServiceRest {
 	public MapProjectList getMapProjectsForLead(
 			@ApiParam(value = "Id of map lead to fetch projects for", required = true) @PathParam("id") Long mapLeadId) { 
 		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): lead/id/" + mapLeadId.toString() + "/projects");
+		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProjectList mapProjects = new MapProjectList();	
@@ -205,6 +209,8 @@ public class MappingServiceRest {
 	public MapProject getMapProjectForId(
 			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
 		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /project/id/" + mapProjectId.toString());
+		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject =  mappingService.getMapProject(mapProjectId);
@@ -226,6 +232,8 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapProjects(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("String") String query) {
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /project/query/" + query);
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -254,6 +262,8 @@ public class MappingServiceRest {
 	public MapSpecialist getMapSpecialistForId(
 			@ApiParam(value = "Id of map specialist to fetch", required = true) @PathParam("id") Long mapSpecialistId) {
 		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): specialist/id/" + mapSpecialistId.toString());
+		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapSpecialist mapSpecialist = mappingService.getMapSpecialist(mapSpecialistId);
@@ -275,6 +285,8 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapSpecialists(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /specialist/query/" + query);
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -299,6 +311,8 @@ public class MappingServiceRest {
 	public MapLead getMapLeadForId(
 			@ApiParam(value = "Id of map lead to fetch", required = true) @PathParam("id") Long mapLeadId) {
 		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): lead/id/" + mapLeadId.toString());
+		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapLead mapLead = mappingService.getMapLead(mapLeadId);
@@ -320,6 +334,8 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapLeads(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /lead/query/" + query);
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();	
@@ -344,6 +360,8 @@ public class MappingServiceRest {
 	public MapRecord getMapRecordForId(
 			@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
 		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/id/" + mapRecordId.toString());
+		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
@@ -366,6 +384,8 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecordList getMapRecordsForConceptId(
 			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("String") String conceptId) {
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/conceptId/" + conceptId);
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();	
@@ -390,6 +410,7 @@ public class MappingServiceRest {
 	public String getMapRecordCountForMapProjectId(
 			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long mapProjectId) {
 			
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/projectId/" + mapProjectId.toString() + "/nRecords");
 			
 			try {
 				MappingService mappingService = new MappingServiceJpa();
@@ -417,6 +438,7 @@ public class MappingServiceRest {
 			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "String query to filter records", required = true) @PathParam("filters") String filters) {
 			
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/projectId/" + mapProjectId.toString() + "nRecords/" + filters);
 			
 			try {
 				PfsParameter pfs = new PfsParameterJpa();
@@ -433,28 +455,6 @@ public class MappingServiceRest {
 			}
 	}
 	
-	/**
-	 * Returns the records for a given project id
-	 * @param projectId the projectId
-	 * @return the mapRecords
-	 */
-	@GET
-	@Path("/record/projectId/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find records by project id", notes = "Returns MapRecords given a project id in either JSON or XML format", response = MapRecord.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecordList getMapRecordsForMapProjectId(
-			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long projectId) {
-		
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapRecordList mapRecords = new MapRecordList();
-			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId));
-			mappingService.close();
-			return mapRecords;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
 	
 	/**
 	 * Returns a delimited page of map records for a project id
@@ -471,6 +471,9 @@ public class MappingServiceRest {
 			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long projectId,
 			@ApiParam(value = "Start index of records", required = true) @PathParam("nStart") int nStart,
 			@ApiParam(value = "Number of records to fetch", required = true) @PathParam("nMaxResults") int nMaxResults) {
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/projectId/"
+				+ projectId.toString() + "/" + Integer.toString(nStart) + "-" + Integer.toString(nMaxResults));
 		
 		try {
 			// instantiate the pfs parameters
@@ -510,6 +513,10 @@ public class MappingServiceRest {
 			@ApiParam(value = "Filters query string", required = true) @PathParam("filters") String filters) {
 			//@ApiParam(value = "Sorting field", required = false) String sortBy) {
 		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/projectId/"
+				+ projectId.toString() + "/" + Integer.toString(nStart) + "-" + Integer.toString(nMaxResults)
+				+ "/" + filters);
+		
 		try {
 			
 			System.out.println("Called getMapRecordsForMapProjectId with query string: " + filters);
@@ -546,6 +553,7 @@ public class MappingServiceRest {
 	public String removeMapRecordsForProjectId(
 			@ApiParam(value = "Project id for which map records are to be deleted", required = true) @PathParam("id") Long mapProjectId) {
 			
+			Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/delete/projectId" + mapProjectId.toString());
 			
 			try {
 				MappingService mappingService = new MappingServiceJpa();
@@ -560,27 +568,7 @@ public class MappingServiceRest {
 	}
 	
 	
-	/**
-	 * Returns all map records for a lucene query
-	 * @param query the string query
-	 * @return the map records
-	 */
-	@GET
-	@Path("/record/query/{string}")
-	@ApiOperation(value = "Find records by query", notes = "Returns map records for a query in either JSON or XML format", response = MapRecordList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findMapRecords(
-			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-		
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			SearchResultList searchResultList = mappingService.findMapRecords(query, new PfsParameterJpa());
-			mappingService.close();
-			return searchResultList;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
+	
 	
 	// ///////////////////////////////////////////////////
 	// MapProject:  Add (@PUT) functions
