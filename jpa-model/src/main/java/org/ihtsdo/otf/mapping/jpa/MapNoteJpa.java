@@ -40,7 +40,7 @@ public class MapNoteJpa implements MapNote {
 	private MapUser user;
 	
 	/** The note. */
-	@Column(nullable = false)
+	@Column(nullable = false, length = 4000)
 	private String note;
 	
 	/** The timestamp. */
