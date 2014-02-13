@@ -2076,6 +2076,8 @@ public class MappingServiceJpa implements MappingService {
 
 				// retrieve the concept
 				Concept concept = refSetMember.getConcept();
+				Logger.getLogger(this.getClass()).info("Get refset member concept" + concept.getTerminologyId());
+				
 
 				// if no concept for this ref set member, skip
 				if (concept == null) {
@@ -2095,14 +2097,13 @@ public class MappingServiceJpa implements MappingService {
 
 					// get the number of descendants - Need to optimize this
 					// Need a tool to compute and save this for LLCs (e.g. having < 11 descendants)
-					Logger.getLogger(this.getClass()).info("  Computing descendant count");					
 					mapRecord.setCountDescendantConcepts(new Long(contentService.findDescendants(
 							  concept.getTerminologyId(),
 							  concept.getTerminology(), 
 							  concept.getTerminologyVersion(), 
 							  new Long("116680003")).getCount()));
 					Logger.getLogger(this.getClass()).info("  Computing descendant ct = " + 
-					  mapRecord.getCountDescendantConcepts());
+						  mapRecord.getCountDescendantConcepts());
 					 
 					//mapRecord.setCountDescendantConcepts(0L);
 
@@ -2132,6 +2133,8 @@ public class MappingServiceJpa implements MappingService {
 					} else {
 						targetName = c.getDefaultPreferredName();
 					}
+					Logger.getLogger(this.getClass()).info("  Setting target name " +
+						  targetName);
 				}
 
 				// Set map relation id as well from the cache
@@ -2139,6 +2142,7 @@ public class MappingServiceJpa implements MappingService {
 				if (refSetMember.getMapRelationId() != null)
 					relationName = relationIdNameMap.get(refSetMember.getMapRelationId());
 
+				Logger.getLogger(this.getClass()).info("  Create map entry");
 				MapEntry mapEntry = new MapEntryJpa();
 				mapEntry.setTargetId(refSetMember.getMapTarget());
 				mapEntry.setTargetName(targetName);
@@ -2154,6 +2158,7 @@ public class MappingServiceJpa implements MappingService {
 				// Add support for advices - and there can be multiple map advice values
 				// Only add advice if it is an allowable value and doesn't match relation name
 				// This should automatically exclude IFA/ALWAYS advice 
+				Logger.getLogger(this.getClass()).info("  Setting map advice");
 				if (refSetMember.getMapAdvice() != null
 						&& !refSetMember.getMapAdvice().equals("")) {
 					List<MapAdvice> mapAdvices = getMapAdvices();
@@ -2161,6 +2166,7 @@ public class MappingServiceJpa implements MappingService {
 						if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
 								&& !ma.getName().equals(relationName)) {
 							mapEntry.addMapAdvice(ma);
+							Logger.getLogger(this.getClass()).info("    " + ma.getName());
 						}
 					}
 				}
