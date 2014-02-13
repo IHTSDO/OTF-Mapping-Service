@@ -2149,10 +2149,12 @@ public class MappingServiceJpa implements MappingService {
 				mapEntry.setMapRecord(mapRecord);
 				mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
 				mapEntry.setRelationName(relationName);
-				mapEntry.setRule(refSetMember.getMapRule());
+				String rule = refSetMember.getMapRule();
+				if (rule.equals("OTHERWISE TRUE")) rule = "TRUE";
+				mapEntry.setRule(rule);
 				mapEntry.setMapBlock(refSetMember.getMapBlock());
 				mapEntry.setMapGroup(refSetMember.getMapGroup());
-				mapEntry.setMapGroup(refSetMember.getMapPriority());
+				mapEntry.setMapPriority(refSetMember.getMapPriority());
 				
 				mapRecord.addMapEntry(mapEntry);
 
