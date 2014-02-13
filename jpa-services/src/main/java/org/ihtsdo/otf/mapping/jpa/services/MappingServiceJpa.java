@@ -2060,7 +2060,7 @@ public class MappingServiceJpa implements MappingService {
 
 				// Skip inactive cases
 				if (!refSetMember.isActive()) {
-					Logger.getLogger(getClass()).debug("Skipping refset member " + refSetMember.getTerminologyId());
+					Logger.getLogger(this.getClass()).info("Skipping refset member " + refSetMember.getTerminologyId());
 					continue;
 				}
 				
@@ -2070,7 +2070,7 @@ public class MappingServiceJpa implements MappingService {
 								.contains("MAP IS CONTEXT DEPENDENT FOR GENDER"))
 						&& !(refSetMember.getMapRule()
 								.matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]"))) {
-					Logger.getLogger(getClass()).debug("Skipping refset member exclusion rule " + refSetMember.getTerminologyId());
+					Logger.getLogger(this.getClass()).info("Skipping refset member exclusion rule " + refSetMember.getTerminologyId());
 					continue;
 				}
 
@@ -2086,7 +2086,7 @@ public class MappingServiceJpa implements MappingService {
 				// if different concept than previous ref set member, create new
 				// mapRecord
 				if (!concept.getTerminologyId().equals(prevConceptId.toString())) {
-					Logger.getLogger(getClass()).debug("Creating map record for + " + concept.getTerminologyId());
+					Logger.getLogger(this.getClass()).info("Creating map record for " + concept.getTerminologyId());
 
 					mapRecord = new MapRecordJpa();
 					mapRecord.setConceptId(concept.getTerminologyId());
@@ -2095,13 +2095,13 @@ public class MappingServiceJpa implements MappingService {
 
 					// get the number of descendants - Need to optimize this
 					// Need a tool to compute and save this for LLCs (e.g. having < 11 descendants)
-					Logger.getLogger(getClass()).debug("  Computing descendant count");					
+					Logger.getLogger(this.getClass()).info("  Computing descendant count");					
 					mapRecord.setCountDescendantConcepts(new Long(contentService.findDescendants(
 							  concept.getTerminologyId(),
 							  concept.getTerminology(), 
 							  concept.getTerminologyVersion(), 
 							  new Long("116680003")).getCount()));
-					Logger.getLogger(getClass()).debug("  Computing descendant ct = " + 
+					Logger.getLogger(this.getClass()).info("  Computing descendant ct = " + 
 					  mapRecord.getCountDescendantConcepts());
 					 
 					//mapRecord.setCountDescendantConcepts(0L);
