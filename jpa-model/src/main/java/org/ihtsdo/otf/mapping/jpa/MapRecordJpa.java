@@ -33,15 +33,18 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
 /**
  * The Map Record Jpa object
  */
 @Entity
-@Table(name = "map_records", uniqueConstraints=@UniqueConstraint(columnNames={"mapProjectId", "id"}))
+// add indexes
+@Table(name="map_records",  uniqueConstraints={
+	   @UniqueConstraint(columnNames={"mapProjectId", "id"}),
+	   @UniqueConstraint(columnNames={"conceptId", "id"})
+	})
 @Audited
 @Indexed
-@XmlRootElement(name="mapRecord")
+@XmlRootElement(name = "mapRecord")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MapRecordJpa implements MapRecord {
 
@@ -49,34 +52,33 @@ public class MapRecordJpa implements MapRecord {
 	@Id
 	@GeneratedValue
 	private Long id;
-	
+
 	@Column(nullable = true)
 	private Long mapProjectId;
 
 	@Column(nullable = false)
 	private String conceptId;
-	
+
 	@Column(nullable = false)
 	private String conceptName;
-	
+
 	@Column(nullable = false)
 	private Long countDescendantConcepts;
 
 	/** The map records */
-	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL,  fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapEntryJpa.class)
-	@IndexedEmbedded(targetElement=MapEntryJpa.class)
+	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapEntryJpa.class)
+	@IndexedEmbedded(targetElement = MapEntryJpa.class)
 	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
-	
-	/** The map notes */	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapNoteJpa.class)
-	@IndexedEmbedded(targetElement=MapNoteJpa.class)
+
+	/** The map notes */
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapNoteJpa.class)
+	@IndexedEmbedded(targetElement = MapNoteJpa.class)
 	private Set<MapNote> mapNotes = new HashSet<MapNote>();
-	
+
 	/** The map principles. */
-	@ManyToMany(targetEntity=MapPrincipleJpa.class, fetch=FetchType.EAGER)
-	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
+	@ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.EAGER)
+	@IndexedEmbedded(targetElement = MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
-	
 
 	/** Default constructor */
 	public MapRecordJpa() {
@@ -88,12 +90,15 @@ public class MapRecordJpa implements MapRecord {
 	 * @param conceptId the concept id
 	 * @param mapEntries the map entries
 	 */
-	public MapRecordJpa(Long id, String conceptId, List<MapEntry> mapEntries) { // , List<MapNote> mapNotes) {
+	public MapRecordJpa(Long id, String conceptId, List<MapEntry> mapEntries) { // ,
+																																							// List<MapNote>
+																																							// mapNotes)
+																																							// {
 		super();
 		this.id = id;
 		this.conceptId = conceptId;
 		this.mapEntries = mapEntries;
-		//this.mapNotes = mapNotes;
+		// this.mapNotes = mapNotes;
 	}
 
 	/**
@@ -104,16 +109,16 @@ public class MapRecordJpa implements MapRecord {
 	public Long getId() {
 		return this.id;
 	}
-	
+
 	/**
 	 * Set the id
 	 * @param id the id
 	 */
 	@Override
 	public void setId(Long id) {
-		this.id = id;		
+		this.id = id;
 	}
-	
+
 	/**
 	 * Returns the id in string form
 	 * @return the id in string form
@@ -123,7 +128,7 @@ public class MapRecordJpa implements MapRecord {
 	public String getObjectId() {
 		return id.toString();
 	}
-	
+
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public Long getMapProjectId() {
@@ -134,7 +139,7 @@ public class MapRecordJpa implements MapRecord {
 	public void setMapProjectId(Long mapProjectId) {
 		this.mapProjectId = mapProjectId;
 	}
-	
+
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getConceptId() {
@@ -145,7 +150,7 @@ public class MapRecordJpa implements MapRecord {
 	public void setConceptId(String conceptId) {
 		this.conceptId = conceptId;
 	}
-	
+
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	public String getConceptName() {
@@ -154,7 +159,7 @@ public class MapRecordJpa implements MapRecord {
 
 	@Override
 	public void setConceptName(String conceptName) {
-		this.conceptName = conceptName;			
+		this.conceptName = conceptName;
 	}
 
 	@Override
@@ -168,7 +173,7 @@ public class MapRecordJpa implements MapRecord {
 	}
 
 	@Override
-	@XmlElement(type=MapNoteJpa.class, name="mapNote")
+	@XmlElement(type = MapNoteJpa.class, name = "mapNote")
 	public Set<MapNote> getMapNotes() {
 		return mapNotes;
 	}
@@ -189,7 +194,7 @@ public class MapRecordJpa implements MapRecord {
 	}
 
 	@Override
-	@XmlElement(type=MapEntryJpa.class, name="mapEntry")
+	@XmlElement(type = MapEntryJpa.class, name = "mapEntry")
 	public List<MapEntry> getMapEntries() {
 		return mapEntries;
 	}
@@ -204,16 +209,20 @@ public class MapRecordJpa implements MapRecord {
 		mapEntries.add(mapEntry);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeMapEntry(org.ihtsdo.otf.mapping.model.MapEntry)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.model.MapRecord#removeMapEntry(org.ihtsdo.otf.mapping
+	 * .model.MapEntry)
 	 */
 	@Override
 	public void removeMapEntry(MapEntry mapEntry) {
 		mapEntries.remove(mapEntry);
 	}
-	
+
 	@Override
-	@XmlElement(type=MapPrincipleJpa.class, name="mapPrinciple")
+	@XmlElement(type = MapPrincipleJpa.class, name = "mapPrinciple")
 	public Set<MapPrinciple> getMapPrinciples() {
 		return mapPrinciples;
 	}
@@ -233,7 +242,9 @@ public class MapRecordJpa implements MapRecord {
 		mapPrinciples.remove(mapPrinciple);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -246,7 +257,9 @@ public class MapRecordJpa implements MapRecord {
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -271,7 +284,9 @@ public class MapRecordJpa implements MapRecord {
 		return true;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
