@@ -17,6 +17,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
  * Goal which makes lucene indexes based on hibernate-search annotations.
  * 
  * Sample execution:
+ * 
  * <pre>
  *     <plugin>
  *        <groupId>org.ihtsdo.otf.mapping</groupId>
@@ -57,11 +58,11 @@ public class LuceneReindexMojo extends AbstractMojo {
 
 	/**
 	 * Instantiates a {@link LuceneReindexMojo} from the specified parameters.
-	 *
 	 */
 	public LuceneReindexMojo() {
+		// do nothing
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -73,23 +74,25 @@ public class LuceneReindexMojo extends AbstractMojo {
 		try {
 
 			getLog().info("  Starting MakeIndexes.java");
-			EntityManagerFactory factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+			EntityManagerFactory factory =
+					Persistence.createEntityManagerFactory("MappingServiceDS");
 
 			manager = factory.createEntityManager();
-			
+
 			// full text entity manager
-			FullTextEntityManager fullTextEntityManager = Search
-					.getFullTextEntityManager(manager);
-			
-			/*// Concepts
-			getLog().info("  Creating indexes for ConceptJpa");
-			fullTextEntityManager.purgeAll(ConceptJpa.class);
-			fullTextEntityManager.flushToIndexes();
-			fullTextEntityManager.createIndexer(ConceptJpa.class)
-					.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-					.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-					.startAndWait();*/
-			
+			FullTextEntityManager fullTextEntityManager =
+					Search.getFullTextEntityManager(manager);
+
+			/* TODO: have a separate call for this
+			 * // Concepts getLog().info("  Creating indexes for ConceptJpa");
+			 * fullTextEntityManager.purgeAll(ConceptJpa.class);
+			 * fullTextEntityManager.flushToIndexes();
+			 * fullTextEntityManager.createIndexer(ConceptJpa.class)
+			 * .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+			 * .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
+			 * .startAndWait();
+			 */
+
 			// Map Projects
 			getLog().info("  Creating indexes for MapProjectJpa");
 			fullTextEntityManager.purgeAll(MapProjectJpa.class);
@@ -98,7 +101,7 @@ public class LuceneReindexMojo extends AbstractMojo {
 					.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
 					.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
 					.startAndWait();
-			
+
 			// Map Records
 			getLog().info("  Creating indexes for MapRecordJpa");
 			fullTextEntityManager.purgeAll(MapRecordJpa.class);
@@ -107,12 +110,12 @@ public class LuceneReindexMojo extends AbstractMojo {
 					.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
 					.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
 					.startAndWait();
-			
+
 			// Cleanup
 			getLog().info("  Completing MakeIndexes.java");
 			manager.close();
 			factory.close();
-			
+
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);
