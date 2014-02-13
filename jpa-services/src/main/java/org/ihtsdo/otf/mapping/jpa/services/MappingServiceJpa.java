@@ -1086,13 +1086,13 @@ public class MappingServiceJpa implements MappingService {
 	// //////////////////////////////////////////////
 
 	/**
-	 * Retrieve map records for a given concept id.
+	 * Retrieve map records for a given terminology id.
 	 * 
-	 * @param conceptId the concept id
+	 * @param terminologyId the concept id
 	 * @return the list of map records
 	 */
 	@Override
-	public List<MapRecord> getMapRecordsForConceptId(String conceptId) {
+	public List<MapRecord> getMapRecordsForTerminologyId(String terminologyId) {
 		List<MapRecord> m = null;
 
 		// construct query
@@ -1101,7 +1101,7 @@ public class MappingServiceJpa implements MappingService {
 						.createQuery("select m from MapRecordJpa m where conceptId = :conceptId");
 
 		// Try query
-		query.setParameter("conceptId", conceptId);
+		query.setParameter("conceptId", terminologyId);
 		m = query.getResultList();
 
 		return m;
@@ -1603,7 +1603,7 @@ public class MappingServiceJpa implements MappingService {
 			for(SearchResult sr : descendants.getSearchResults()) {
 				
 				// if descendant has no associated map records, add to list
-				if (getMapRecordsForConceptId(sr.getTerminologyId()).size() == 0) {
+				if (getMapRecordsForTerminologyId(sr.getTerminologyId()).size() == 0) {
 					unmappedDescendants.addSearchResult(sr);
 				}
 			}
