@@ -114,6 +114,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 			String line = null;
 			int ct = 0;
 			while ((line = mapNoteReader.readLine()) != null) {
+				getLog().info("  processing " + line);
 				ct++;
 				
 				// parse fields and create object
@@ -138,6 +139,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 				}
 				mapNote.setNote(note);
 
+				getLog().info("  looking up map records for " + fields[5]);
 				List<MapRecord> mapRecords =
 						mappingService.getMapRecordsForTerminologyId(fields[5]);
 
