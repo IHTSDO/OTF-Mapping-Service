@@ -5,11 +5,29 @@ html, body
 {
 	margin: 0;			/* Remove body margin/padding */
 	padding: 0;
+	height: 100%;
 }
 #header { 
 	padding: 0px;
 	min-height: 100px;
 }
+
+/* Wrapper for page content to push down footer */
+#wrap {
+  min-height: 100%;
+  height: auto;
+  /* Negative indent footer by its height */
+  margin: 0 auto -60px;
+  /* Pad bottom by footer height */
+  padding: 0 0 60px;
+}
+
+/* Set the fixed height of the footer here */
+#footer {
+  height: 40px;
+  
+}
+
 
 #MySplitter {
 	/* border: 3px solid #669; */
@@ -74,3 +92,4 @@ html, body
 	visibility: hidden;
 }
 /* END Splitter CSS */
+
