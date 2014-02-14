@@ -415,7 +415,7 @@ public interface MappingService {
 	 * @return the map records for concept id
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> getMapRecordsForConceptId(String conceptId) throws Exception;
+	public List<MapRecord> getMapRecordsForTerminologyId(String conceptId) throws Exception;
 
 	/**
 	 * Returns the unmapped descendants for concept.
@@ -427,7 +427,7 @@ public interface MappingService {
 	 * @return the unmapped descendants for concept
 	 * @throws Exception the exception
 	 */
-	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
+	public SearchResultList findUnmappedDescendantsForConcept(String terminologyId,
 			String terminology, String terminologyVersion, int threshold) throws Exception;
 
 	/**

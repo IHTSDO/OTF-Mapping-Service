@@ -302,6 +302,7 @@
                 </goals>
                 <configuration>
                   <refSetId>${refset.id}</refSetId>
+                  <projectId>${project.id}</projectId>
                 </configuration>
               </execution>
             </executions>

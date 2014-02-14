@@ -11,46 +11,46 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 /**
- * Container for map projects.
+ * Container for map concepts.
  */
 @XmlRootElement(name = "conceptList")
 public class ConceptList {
 
-	/** The map projects. */
+	/** The map concepts. */
 	private List<Concept> Concepts = new ArrayList<Concept>();
 
 	/**
-	 * Instantiates a new map project list.
+	 * Instantiates a new map concept list.
 	 */
 	public ConceptList() {
 		// do nothing
 	}
 
 	/**
-	 * Adds the map project.
+	 * Adds the map concept.
 	 * 
 	 * @param Concept
-	 *            the map project
+	 *            the map concept
 	 */
 	public void addConcept(Concept Concept) {
 		Concepts.add(Concept);
 	}
 
 	/**
-	 * Removes the map project.
+	 * Removes the map concept.
 	 * 
 	 * @param Concept
-	 *            the map project
+	 *            the map concept
 	 */
 	public void removeConcept(Concept Concept) {
 		Concepts.remove(Concept);
 	}
 
 	/**
-	 * Sets the map projects.
+	 * Sets the map concepts.
 	 * 
 	 * @param Concepts
-	 *            the new map projects
+	 *            the new map concepts
 	 */
 	public void setConcepts(List<Concept> Concepts) {
 		this.Concepts = new ArrayList<Concept>();
@@ -62,7 +62,7 @@ public class ConceptList {
 	}
 	
 	/**
-	 * Sorts the map projects alphabetically by name
+	 * Sorts the map concepts alphabetically by name
 	 */
 	public void sortConcepts() {
 	
@@ -77,9 +77,9 @@ public class ConceptList {
 }
 
 	/**
-	 * Gets the map projects.
+	 * Gets the map concepts.
 	 * 
-	 * @return the map projects
+	 * @return the map concepts
 	 */
 	@XmlElement(type=ConceptJpa.class, name="concept")
 	public List<Concept> getConcepts() {

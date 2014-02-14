@@ -19,12 +19,10 @@ package org.ihtsdo.otf.mapping.mojo;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.avro.generic.GenericData.Record;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -45,8 +43,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *             <goal>remove-map-notes</goal>
  *           </goals>
  *           <configuration>
- *             <!-- one of the two must be used -->
- *             <projectId>${project.id}</projectId>
  *             <refSetId>${refset.id}</refSetId>
  *           </configuration>
  *         </execution>
@@ -59,12 +55,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * @phase package
  */
 public class MapNoteRemoverMojo extends AbstractMojo {
-
-	/**
-	 * The specified project id
-	 * @parameter
-	 */
-	private String projectId = null;
 
 	/**
 	 * The specified refSetId
@@ -88,14 +78,10 @@ public class MapNoteRemoverMojo extends AbstractMojo {
 	@Override
 	public void execute() throws MojoFailureException {
 
-		if (projectId == null && refSetId == null) {
-			throw new MojoFailureException(
-					"You must specify either a projectId or a refSetId.");
-		}
+		getLog().info("Starting map notes remover ...");
 
-		if (projectId != null && refSetId != null) {
-			throw new MojoFailureException(
-					"You must specify either a projectId or a refSetId, not both.");
+		if (refSetId == null) {
+			throw new MojoFailureException("You must specify a refSetId.");
 		}
 
 		try {
@@ -103,19 +89,11 @@ public class MapNoteRemoverMojo extends AbstractMojo {
 			MappingService mappingService = new MappingServiceJpa();
 			Set<MapProject> mapProjects = new HashSet<MapProject>();
 
-			if (projectId != null) {
-				getLog().info("Start removing map notes for project - " + projectId);
-				for (String id : projectId.split(",")) {
-					mapProjects.add(mappingService.getMapProject(Long.valueOf(id)));
-				}
-
-			} else if (refSetId != null) {
-				getLog().info("Start removing map notes for project - " + refSetId);
-				for (MapProject mapProject : mappingService.getMapProjects()) {
-					for (String id : refSetId.split(",")) {
-						if (mapProject.getRefSetId().equals(id)) {
-							mapProjects.add(mapProject);
-						}
+			getLog().info("Start removing map notes for project - " + refSetId);
+			for (MapProject mapProject : mappingService.getMapProjects()) {
+				for (String id : refSetId.split(",")) {
+					if (mapProject.getRefSetId().equals(id)) {
+						mapProjects.add(mapProject);
 					}
 				}
 			}
@@ -129,18 +107,20 @@ public class MapNoteRemoverMojo extends AbstractMojo {
 			mappingService.setTransactionPerOperation(false);
 			mappingService.beginTransaction();
 			for (MapProject project : mapProjects) {
-				for (MapRecord record : mappingService.getMapRecordsForMapProjectId(project
-						.getId())) {
+				for (MapRecord record : mappingService
+						.getMapRecordsForMapProjectId(project.getId())) {
 					for (MapEntry entry : record.getMapEntries()) {
-						if (entry.getMapNotes().size()>0) {
-							getLog().info("    Remove map record note from entry - " + entry.getId());
-							entry.setMapNotes(null);
+						if (entry.getMapNotes().size() > 0) {
+							getLog().info(
+									"    Remove map record note from entry - " + entry.getId());
+							entry.getMapNotes().clear();
 							mappingService.updateMapEntry(entry);
 						}
 					}
 					if (record.getMapNotes().size() > 0) {
-						getLog().info("    Remove map record notes from record - " + record.getId());
-						record.setMapNotes(null);
+						getLog().info(
+								"    Remove map record notes from record - " + record.getId());
+						record.getMapNotes().clear();
 						mappingService.updateMapRecord(record);
 					}
 				}

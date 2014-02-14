@@ -4,6 +4,7 @@
 <h3>{{project.name}}</h3>
 <p></p>
 
+
 <a href="#/record/projectId/{{project.id}}" class="btn">Map Records</a>
 <p></p>
 
@@ -70,23 +71,28 @@
     </table>
     </td>
   </tr> 
-  <tr>
+  <tr ng-show="project.mapAdvice.length > 0">
     <td><div tooltip-placement="right" tooltip="List of the map advice for this project."><b>Map Advice</b></div></td>
-    <td><table width="100%" class="table pure-table" >
+    <td>
+    <table width="100%" class="table pure-table" >
     <thead>
       <tr>
         <th>Advice</th>
       </tr>
     </thead>
-    <tbody ng-repeat="advice in project.mapAdvice" style="border: 2px solid #ccc;" >
+    <tbody ng-repeat="advice in pagedAdvice" style="border: 2px solid #ccc;" >
       <tr>
         <td>{{advice.name}}</td>
       </tr>
+     
     </tbody>
-    </table>
-    </td>
+    <pagination direction-links="false" boundary-links="true" 
+    			total-items="project.mapAdvice.length" items-per-page="pageSize" 
+    			page="pageAdvice" on-select-page="getPagedAdvice(page)"></pagination>
+   </table>
+   </td>
   </tr>
-  <tr>
+  <tr ng-show="project.mapPrinciple.length > 0">
     <td><div tooltip-placement="right" tooltip="List of the map principles for this project."><b>Map Principles</b></div></td>
     <td><table width="100%" class="table pure-table" >
     <thead>
@@ -97,14 +103,16 @@
 
     </thead>
        
-    <tbody ng-repeat="principle in project.mapPrinciple | orderBy:'principleId'" style="border: 2px solid #ccc;" >
+    <tbody ng-repeat="principle in pagedPrinciple | orderBy:principleId" style="border: 2px solid #ccc;" >
      <tr>
         <td>{{principle.principleId}}</td>
         <td>      
             <div class="dropdown">
             <a class="dropdown-toggle"> 
-            <img src="img/dialog-question.png" alt="question icon">
-            </a>{{principle.name}}
+            <img src="img/information-blue.png" alt="information icon">
+            </a>
+			&nbsp
+        	{{principle.name}}
             <span class="dropdown-menu">
               <p>Reference: {{principle.sectionRef}}</p>
               <p ng-bind-html="to_trusted(principle.detail)"></p>
@@ -113,16 +121,17 @@
         </td>
       </tr>
     </tbody>
+    <pagination direction-links="false" boundary-links="true" 
+    			total-items="project.mapPrinciple.length" items-per-page="pageSize" 
+    			page="pagePrinciple" on-select-page="getPagedPrinciple(page)"></pagination>
     </table>
+    
+    <div ng-show="project.mapPrincipleDocument != null">
+    Principles taken from <a href="{{project.mapPrincipleDocumentPath}}/{{project.mapPrincipleDocument}}" target="_blank">{{project.mapPrincipleDocumentName}}</a> </div>
     </td>
   </tr>
 </table>  
-<!-- <span ng-show="project.mapAdvice.length > 0">Map Advice</span>
-<ul>
-    <select name="jlist" size="5" style="width: 600px;" >
-    <option ng-repeat="advice in project.mapAdvice" value="{{advice.name}}">{{advice.name}}</option>
-    </select>
-</ul> 
+
 
 -->
 
