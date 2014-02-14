@@ -8,18 +8,49 @@ var root_url = "${base.url}/mapping-rest/";
 var root_mapping = root_url + "mapping/";
 var root_content = root_url + "content/";
 var root_metadata = root_url + "metadata/";
-	
+
+mapProjectAppControllers.run(function($rootScope) {
+    $rootScope.userName = null;
+    $rootScope.role = null;
+});
+
+
 //////////////////////////////
 // Navigation
 //////////////////////////////	
 
-mapProjectAppControllers.controller('MapProjectAppNav',
-	function ($scope) {
+
+
+mapProjectAppControllers.controller('LoginCtrl', 
+	 function ($scope, $rootScope, $location) {
+	// logout icon returns to login page, so reinitialize
+	$rootScope.userName = null;
+	$rootScope.role = null;
 	
-		var changePage = function (newPage) {
-			$location.path = newPage;
+	// initial values for pick-list
+	 $scope.roles = [
+	       {name:'Viewer', value:'Viewer'},
+	       {name:'Specialist', value:'Specialist'},
+	       {name:'Lead', value:'Lead'},
+	       {name:'Administrator', value:'Administrator'}];
+	 $scope.role = $scope.roles[0];  
+	 
+	 // login button directs to next page based on role selected
+	 $scope.go = function (path) {
+		 if ($scope.role.name == "Specialist") {
+			 path = "/specialist/dash";
+		 } else if ($scope.role.name == "Lead") {
+			 path = "/lead/dash";
+		 } else if ($scope.role.name == "Administrator") {
+			 path = "/admin/dash";
+		 } else if ($scope.role.name == "Viewer") {
+			 path = "/project/projects/";
+		 }
+			$location.path(path);
+			$rootScope.userName = $scope.userName;
+			$rootScope.role = $scope.role;
 		};
-	});	
+	 });
 
 
 	
@@ -41,8 +72,7 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
       }).error(function(error) {
     	  $scope.error = "Error";
       });
- 
-   /* $scope.orderProp = 'id';	*/
+
   });
 
 
@@ -413,10 +443,25 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 // Directives:  TODO Separate into different file
 /////////////////////////////////////////////////////
 
+
+mapProjectAppControllers.directive('headerDirective', function() {
+    
+	return {
+        templateUrl: './partials/header.html',
+		restrict: 'E', 
+        transclude: true,    // allows us “swap” our content for the calling html
+        replace: true,        // tells the calling html to replace itself with what’s returned here
+        link: function(scope, element, attrs) { // to get scope, the element, and its attributes
+          scope.user = $rootScope.user; 
+        }
+    };
+});
+
+
 mapProjectAppControllers.directive('sortBy', function () {
 	
 	return {
-		templateUrl: 'sort-by.html',
+		templateUrl: './partials/sort-by.html',
 		restrict: 'E',
 		transclude: true,
 		replace: true,
