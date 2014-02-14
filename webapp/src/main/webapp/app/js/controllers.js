@@ -60,6 +60,10 @@ mapProjectAppControllers.controller('LoginCtrl',
 	
 mapProjectAppControllers.controller('MapProjectListCtrl', 
   function ($scope, $http) {
+	
+	  // initialize as empty to indicate still initializing database connection
+	  $scope.projects = [];
+	
       $http({
         url: root_mapping + "project/projects",
         dataType: "json",
@@ -88,11 +92,6 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 // Specialized Services
 //////////////////////////////	
 
-mapProjectAppControllers.controller('ProjectCreateCtrl', ['$scope', '$http',,
-   function ($scope, $http) {
-
-	$scope.queryConceptStatus = "[No concept query executed]";
-}]);
 
 /*
  * Controller for retrieving and displaying records associated with a concept
@@ -102,14 +101,10 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	
 	// scope variables
 	$scope.error = "";		// initially empty
-	$scope.rows = "["; // beginning of Json array
 	
 	// local variables
 	var records = [];
 	var projects = [];
-	var project_names = [];
-	var project_refSetIds = [];
-	
 
 	// retrieve all records with this concept id
 	$http({
@@ -123,8 +118,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	    	  $scope.records = data.mapRecord;
 	          records = data.mapRecord;
 	      }).error(function(error) {
-	    	  $scope.error = $scope.error + "Could not retrieve records. "; 
-	     
+	    	  $scope.error = $scope.error + "Could not retrieve records. ";    
 	      }).then(function() {
 	      
 		// retrieve project information   
@@ -152,11 +146,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		    			  version = projects[i].sourceTerminologyVersion;
 		    			  break;
 		    		  }
-		    	  }
-		    	  
-		    	  console.debug(terminology);
-		    	  console.debug(version);
-		    	  
+		    	  }	  
 		    	  
 		    	  // find concept based on source terminology
 		    	  $http({
@@ -172,38 +162,82 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	    		     }	
 	    		  }).success(function(data) {
 	    		          $scope.concept = data;
+	    		          $scope.findUnmappedDescendants();
+	    		          
+	    		          // find inverse relationships based on source terminology
+	    		    	  $http({
+	    		    			 url: root_content + "concept/" 
+	    		    			 				   + terminology + "/" 
+	    		    			 				   + version 
+	    		    			 				   + "/id/" 
+	    		    			 				   + $routeParams.conceptId
+	    		    			 				   + "/children",
+	    		    			 dataType: "json",
+	    		    		     method: "GET",
+	    		    		     headers: {
+	    		    		          "Content-Type": "application/json"
+	    		    		     }	
+	    		    		  }).success(function(data) {
+	    		    			  	  console.debug(data);
+	    		    		          $scope.concept.children = data.searchResult;
+	    		    		  }).error(function(error) {
+	    		    		    	  $scope.error = $scope.error + "Could not retrieve Concept children. ";    
+	    		    		  });
 	    		  }).error(function(error) {
 	    		    	  $scope.error = $scope.error + "Could not retrieve Concept. ";    
 	    		  });
 		    	  
-		    	  // save refSetIds and project names
-		    	  project_names = new Array(projects.length);
-		    	  project_refSetIds = new Array(projects.length);
-		    	  
-		    	  for (var i=0; i<projects.length; i++) {
-		    		  project_names[i] = projects[i].name;
-		    		  project_refSetIds[i] = projects[i].refSetId;
-		    	  }
+		    	  	
 		      });
 	      });
 	
 		$scope.getProjectName = function(record) {
-			var projectId = record.mapProjectId;
-			return project_names[parseInt(projectId, 10)-1];
+			
+			for (var i = 0; i < projects.length; i++) {
+				if (projects[i].id == record.mapProjectId) {
+					return projects[i].name;
+				}
+			}
+			return null;
+		};
+		
+		$scope.findUnmappedDescendants = function() {
+			
+			$scope.concept.unmappedDescendants = [];
+			
+			if ($scope.records.length > 0) {
+				if ($scope.records[0].countDescendantConcepts < 11) {
+					
+					$http({
+						  url: root_mapping + "concept/" 
+						  		+ $scope.concept.terminology + "/"
+						  		+ $scope.concept.terminologyVersion + "/"
+						  		+ "id/" + $scope.concept.terminologyId + "/"
+						  		+ "threshold/10",
+						  dataType: "json",
+						  method: "GET",
+						  headers: {
+							  "Content-Type": "application/json"
+						  }
+					  }).success(function(data) {
+						 console.debug("  Found " + data.count + " unmapped descendants");
+						 if (data.count > 0) $scope.unmappedDescendantsPresent = true;
+						 $scope.concept.unmappedDescendants = data.searchResult;
+					  });
+
+				}
+			}
+			
 		};
 	
-		$scope.getProjectRefSetId = function(record) {
-			var projectId = record.mapProjectId;
-			return project_refSetIds[parseInt(projectId, 10)-1];
-		};
-	
+		
 	}]);
                                                               
 
 
 
 // TODO Add test for coming from project list page (i.e. pass the project to this controller)
-mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', '$routeParams', '$sce',
+mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', '$routeParams', '$sce',
    function ($scope, $http, $routeParams, $sce) {
 	
 	$scope.headers = [
@@ -222,6 +256,8 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 			sortDir: 'asc',
 			sortedBy: 'conceptId'
 	};
+	
+
 	
 	
 	  $scope.projectId = $routeParams.projectId;
@@ -255,6 +291,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
     	  $scope.errorProject = "Could not retrieve project"; 
      
       }).then(function(data) {
+
  		 
     	  // retrieve any concept associated with this project
     	  $http({
@@ -280,7 +317,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 	 
 	 $scope.to_trusted = function(html_code) {
 	    return $sce.trustAsHtml(html_code);
-	 }
+	 };
 	 
 	 // function to set the relevant pagination fields
 	 $scope.setPagination = function(recordsPerPage) {
@@ -335,7 +372,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 			  $scope.mapNotesPresent = false;
 			  $scope.mapAdvicesPresent = false;
 			  
-			  // check if any notes or advices are present are present
+			  // check if any notes or advices are present
 			  for (var i = 0; i < $scope.records.length; i++) {
 				  if ($scope.records[i].mapNote.length > 0) {
 					  $scope.mapNotesPresent = true;
@@ -352,7 +389,6 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 				  };
 			  };
 					 			  
-			  // check if any advices are present
 			  
 			  // get unmapped descendants (checking done in routine)
 			  if ($scope.records.length > 0) {	
@@ -395,7 +431,25 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 		 $scope.filterCriteria.sortedBy = sortedBy;
 		 $scope.filterCriteria.pageNumber = 1;
 	 };
-		
+	 
+	 // stuck here for html cleanliness -- probably want to move
+	 $scope.getSearchHelp = 
+		"<strong>Search Options</strong>" +
+		 "<table>" +
+		 "<thead>" +
+		 "<tr>" +
+		 "	<th>Option</th>" +
+		 " 	<th>Usage</th>" +
+		 "	<th>Example</th>" +
+		 "</tr>" +
+		 "</thead>" +
+		 "</table>";
+	
+	 
+	// function to return trusted html code (for tooltip content)
+	$scope.to_trusted = function(html_code) {
+	    return $sce.trustAsHtml(html_code);
+	 };
 		 
 	 // TODO This is kind of messy
     function getUnmappedDescendants(index) {
@@ -418,16 +472,16 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 				  		+ $scope.project.sourceTerminology + "/"
 				  		+ $scope.project.sourceTerminologyVersion + "/"
 				  		+ "id/" + $scope.records[index].conceptId + "/"
-				  		+ "threshold/11",
+				  		+ "threshold/10",
 				  dataType: "json",
 				  method: "GET",
 				  headers: {
 					  "Content-Type": "application/json"
 				  }
 			  }).success(function(data) {
-				 console.debug("  Found " + data.concept.length + " unmapped descendants");
-				 $scope.unmappedDescendantsPresent = true;
-				 $scope.records[index].unmappedDescendants = data.concept;
+				 console.debug("  Found " + data.count + " unmapped descendants");
+				 if (data.count > 0) $scope.unmappedDescendantsPresent = true;
+				 $scope.records[index].unmappedDescendants = data.searchResult;
 			  });
 		  // otherwise check the next record
 		  } else {
@@ -436,6 +490,87 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl', ['$scope', '$http', 
 		  }
 	  
 	 };
+}]);
+
+mapProjectAppControllers.controller('MapProjectDetailCtrl', 
+		['$scope', '$http', '$routeParams', '$sce',
+		 function ($scope, $http, $routeParams, $sce) {
+			
+			
+			console.debug("In MapProjectDetailCtrl");
+			
+			// retrieve project information
+			 $http({
+		        url: root_mapping + "project/id/" + $routeParams.projectId,
+		        dataType: "json",
+		        method: "GET",
+		        headers: {
+		          "Content-Type": "application/json"
+		        }	
+		      }).success(function(data) {
+		        $scope.project = data;
+		        $scope.errorProject = "Project retrieved";
+		      }).error(function(error) {
+		    	  $scope.errorProject = "Could not retrieve project"; 
+		     
+		      }).then(function(data) {
+		    	  
+		    	  console.debug($scope.project.destinationTerminology);
+		    	 
+		    	  // determine if this project has a principles document
+		    	  // TODO: THIS WILL BE CODED INTO PROJECT LATER
+		    	  if ($scope.project.destinationTerminology == "ICD10") {
+		    		  $scope.project.mapPrincipleDocumentPath = "doc/";
+		    		  $scope.project.mapPrincipleDocument = "ICD10_MappingPersonnelHandbook.docx";
+		    		  $scope.project.mapPrincipleDocumentName = "Mapping Personnel Handbook";
+		    	  } else {
+		    		  $scope.project.mapPrincipleDocument = null;
+		    	  }
+		    	  
+		    	  // sort the principles and advices
+		    	  $scope.sortedAdvice = $scope.sortByKey($scope.project.mapAdvice, 'id');
+		    	  $scope.sortedPrinciples = $scope.sortByKey($scope.project.mapPrinciple, 'id');
+		    	  
+		    	  // set pagination variables
+		    	  $scope.pageSize = 5;
+		    	  $scope.getPagedAdvice(1);
+		    	  $scope.getPagedPrinciple(1);
+		    	  $scope.orderProp = 'id';
+		    	  
+
+		    	  
+		    	  console.debug("Advice Pages: " + $scope.numPagesAdvice);
+		    	  console.debug("Principle Pages: " + $scope.numPagesPrinciple);
+		      
+		      });
+			
+			
+			// function to return trusted html code (for tooltip content)
+			$scope.to_trusted = function(html_code) {
+			    return $sce.trustAsHtml(html_code);
+			 };
+			 
+			 $scope.getPagedAdvice = function (page) {
+				 console.debug("Called paged advice for page " + page);				 
+				 $scope.pagedAdvice = $scope.sortedAdvice.slice(
+						 (page-1)*$scope.pageSize,
+						 page*$scope.pageSize);
+			 };
+			 
+			 $scope.getPagedPrinciple = function (page) {
+				 console.debug("Called paged principle for page " + page);
+				 $scope.pagedPrinciple = $scope.sortedPrinciples.slice(
+						 (page-1)*$scope.pageSize,
+						 page*$scope.pageSize);
+			 };
+			 
+			 $scope.sortByKey = function sortById(array, key) {
+				    return array.sort(function(a, b) {
+				        var x = a[key]; var y = b[key];
+				        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+				    });
+				};
+			 
 }]);
 
 
@@ -449,8 +584,8 @@ mapProjectAppControllers.directive('headerDirective', function() {
 	return {
         templateUrl: './partials/header.html',
 		restrict: 'E', 
-        transclude: true,    // allows us ‚Äúswap‚Äù our content for the calling html
-        replace: true,        // tells the calling html to replace itself with what‚Äôs returned here
+        transclude: true,    // allows us ìswapî our content for the calling html
+        replace: true,        // tells the calling html to replace itself with whatís returned here
         link: function(scope, element, attrs) { // to get scope, the element, and its attributes
           scope.user = $rootScope.user; 
         }

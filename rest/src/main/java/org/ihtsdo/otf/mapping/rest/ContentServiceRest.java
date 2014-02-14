@@ -11,10 +11,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Description;
+import org.ihtsdo.otf.mapping.rf2.Relationship;
+import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipList;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -46,43 +50,7 @@ public class ContentServiceRest {
 	}
 
 	/**
-	 * Returns the concept for id.
-	 * 
-	 * @param id the id
-	 * @return the concept for id
-	 */
-	@GET
-	@Path("/concept/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find concept by id", notes = "Returns a concept in either xml json given a concept id.", response = Concept.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public Concept getConceptForId(
-		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id) {
-		
-		try {
-			ContentService contentService = new ContentServiceJpa();
-			Concept c = contentService.getConcept(id);
-			
-
-			// if a terminology Id passed incorrectly, search appropriately
-			if (c == null) {
-				c = contentService.getConcept(id.toString(), "SNOMEDCT",
-						terminologyLatestVersions.get("SNOMEDCT"));
-			} 
-			contentService.close();
-			return c;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		} 
-		
-		
-		
-	}
-
-	/**
-	 * Returns the concept for id, terminology. Looks in the latest version of the
-	 * terminology.
+	 * Returns the concept for id, terminology, and terminology version
 	 * 
 	 * @param id the id
 	 * @param terminology the concept terminology
@@ -100,11 +68,56 @@ public class ContentServiceRest {
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
 		
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + id.toString());
+		
+		
 		try {
 			ContentService contentService = new ContentServiceJpa();
 			Concept c = contentService.getConcept(id.toString(), terminology, terminologyVersion);
+			
+			// Make sure to read descriptions and relationships (prevents serialization error)
+			for (Description d : c.getDescriptions()) { d.getLanguageRefSetMembers(); };
+			for (Relationship r : c.getRelationships()) { r.getDestinationConcept(); }
+			
 			contentService.close();
 			return c;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+		
+	}
+	
+	/**
+	 * Returns the inverse relationships for a concept (currently not marked for serialization in Concept)
+	 * 
+	 * @param id the id
+	 * @param terminology the concept terminology
+	 * @param version the concept terminologyVersion
+	 * @return the concept
+	 */
+	@GET
+	@Path("/concept/{terminology}/{version}/id/{id:[0-9][0-9]*}/inverseRelationships")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public RelationshipList getInverseRelationshipsForConcept(
+		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
+		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
+		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
+		
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + id.toString() + "/inverseRelationships");
+		
+		
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			Concept c = contentService.getConcept(id.toString(), terminology, terminologyVersion);
+		
+			RelationshipList relationshipList = new RelationshipList();
+			relationshipList.setRelationships(c.getInverseRelationships());
+					
+			contentService.close();
+			return relationshipList;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -130,9 +143,14 @@ public class ContentServiceRest {
 		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology) {
 		
+		
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/id/" + id.toString());
+		
 		try {
 			ContentService contentService = new ContentServiceJpa();
 			Concept c = contentService.getConcept(id.toString(), terminology, terminologyLatestVersions.get(terminology));
+			c.getDescriptions();
+			c.getRelationships();
 			contentService.close();
 			return c;
 		} catch (Exception e) {
@@ -153,6 +171,7 @@ public class ContentServiceRest {
 	public SearchResultList findConcepts (
 		@ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
 		
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/query/" + searchString);
 		try {
 			ContentService contentService = new ContentServiceJpa();
 			SearchResultList sr = contentService.findConcepts(searchString, new PfsParameterJpa());
@@ -176,19 +195,54 @@ public class ContentServiceRest {
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public Set<Concept> getConceptDescendants(
+	public SearchResultList findConceptDescendants(
 		@ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("id") Long id,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
 		
+		
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + id.toString() + "/descendants");
 		try {
 			ContentService contentService = new ContentServiceJpa();
 			
-			Set<Concept> concepts = contentService.getDescendants(id.toString(), terminology,
+			SearchResultList results = contentService.findDescendants(id.toString(), terminology,
 				terminologyVersion, new Long("116680003")); // TODO Change this to metadata reference
 		
 			contentService.close();
-			return concepts;
+			return results;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Returns the immediate children of a concept given terminology information
+	 * @param id the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the search result list
+	 */
+	@GET
+	@Path("/concept/{terminology}/{version}/id/{id:[0-9][0-9]*}/children")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public SearchResultList findConceptChildren(
+		@ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("id") Long id,
+		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
+		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
+		
+		
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + id.toString() + "/descendants");
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			
+			SearchResultList results = contentService.findChildren(id.toString(), terminology,
+				terminologyVersion, new Long("116680003")); // TODO Change this to metadata reference
+		
+			contentService.close();
+			return results;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}

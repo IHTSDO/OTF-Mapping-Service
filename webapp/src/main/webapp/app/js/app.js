@@ -42,7 +42,7 @@ mapProjectApp.config(['$routeProvider',
 	  
 	  $routeProvider.when('/record/projectId/:projectId', {
 		  templateUrl: 'partials/project-records.html',
-	      controller: 'MapProjectDetailCtrl'
+	      controller: 'MapProjectRecordCtrl'
 	  });
 
 	  $routeProvider.when('/project/id/:projectId', {
