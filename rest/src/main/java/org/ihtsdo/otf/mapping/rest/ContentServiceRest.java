@@ -214,4 +214,37 @@ public class ContentServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
+	
+	/**
+	 * Returns the immediate children of a concept given terminology information
+	 * @param id the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the search result list
+	 */
+	@GET
+	@Path("/concept/{terminology}/{version}/id/{id:[0-9][0-9]*}/children")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public SearchResultList findConceptChildren(
+		@ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("id") Long id,
+		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
+		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
+		
+		
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + id.toString() + "/descendants");
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			
+			SearchResultList results = contentService.findChildren(id.toString(), terminology,
+				terminologyVersion, new Long("116680003")); // TODO Change this to metadata reference
+		
+			contentService.close();
+			return results;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
 }
