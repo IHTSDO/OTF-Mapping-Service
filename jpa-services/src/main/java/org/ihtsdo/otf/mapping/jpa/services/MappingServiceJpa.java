@@ -1083,7 +1083,6 @@ public class MappingServiceJpa implements MappingService {
 	// Descendant services
 	// //////////////////////////////////////////////
 
-	@SuppressWarnings("unchecked")
 	/**
 	 * Retrieve map records for a given terminology id.
 	 * 
@@ -1258,72 +1257,6 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-
-		// construct luceneQuery based on URL format
-		QueryParser queryParser =
-				new QueryParser(Version.LUCENE_36, "summary",
-						searchFactory.getAnalyzer(MapRecordJpa.class));
-		Query luceneQuery = queryParser.parse(query);
-
-		org.hibernate.search.jpa.FullTextQuery ftquery =
-				(FullTextQuery) fullTextEntityManager.createFullTextQuery(luceneQuery,
-						MapRecordJpa.class);
-
-		if (pfsParameter.getStartIndex() != -1
-				&& pfsParameter.getMaxResults() != -1) {
-			ftquery.setFirstResult(pfsParameter.getStartIndex());
-			ftquery.setMaxResults(pfsParameter.getMaxResults());
-		}
-		if (pfsParameter.getSortField() != null) {
-			ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
-					SortField.STRING)));
-		}
-
-		List<MapRecord> m = ftquery.getResultList();
-
-		System.out.println(Integer.toString(m.size()) + " records retrieved");
-
-		return m;
-
-	}
-
-
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-
-		// construct luceneQuery based on URL format
-		QueryParser queryParser =
-				new QueryParser(Version.LUCENE_36, "summary",
-						searchFactory.getAnalyzer(MapRecordJpa.class));
-		Query luceneQuery = queryParser.parse(query);
-
-		org.hibernate.search.jpa.FullTextQuery ftquery =
-				fullTextEntityManager.createFullTextQuery(luceneQuery,
-				MapRecordJpa.class);
-
-		if (pfsParameter.getStartIndex() != -1
-				&& pfsParameter.getMaxResults() != -1) {
-			ftquery.setFirstResult(pfsParameter.getStartIndex());
-			ftquery.setMaxResults(pfsParameter.getMaxResults());
-		}
-		if (pfsParameter.getSortField() != null) {
-			ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
-					SortField.STRING)));
-		}
-
-		@SuppressWarnings("unchecked")
-		List<MapRecord> m = ftquery.getResultList();
-
-		System.out.println(Integer.toString(m.size()) + " records retrieved");
-
-		return m;
-
-	}
-
 	/**
 	 * Retrieve map records for a lucene query.
 	 * 
@@ -1397,22 +1330,26 @@ public class MappingServiceJpa implements MappingService {
 		}
 		
 		
-		// //////////////////
+		// Pre-treatment:  Find any lower-case boolean operators and set to uppercase
+				
+				
+		
+		////////////////////
 		// Basic algorithm:
+		// 
 		// 1) add whitespace breaks to operators
 		// 2) split query on whitespace
 		// 3) cycle over terms in split query to find quoted material, add each
 		// term/quoted term to parsed terms\
 		// a) special case: quoted term after a :
 		// 3) cycle over terms in parsed terms
-		// a) if an operator/parantheses, pass through unchanged
+		// a) if an operator/parantheses, pass through unchanged (send to upper case for boolean)
 		// b) if a fielded query (i.e. field:value), pass through unchanged
 		// c) if not, construct query on all fields with this term
 
-		// list of escape terms (i.e. quotes, operators) to be fed into query
-		// untouched
+		// list of escape terms (i.e. quotes, operators) to be fed into query untouched
 		String escapeTerms = "\\+|\\-|\"|\\(|\\)";
-		String booleanTerms = "AND|OR|NOT";
+		String booleanTerms = "and|AND|or|OR|not|NOT";
 
 		// first cycle over the string to add artificial breaks before and after
 		// control characters
@@ -1438,6 +1375,7 @@ public class MappingServiceJpa implements MappingService {
 		List<String> parsedTerms = new ArrayList<String>();
 		//List<String> parsedTerms_temp = new ArrayList<String>();
 		String currentTerm = "";
+		
 
 		// cycle over terms to identify quoted (i.e. non-parsed) terms
 		for (int i = 0; i < terms.length; i++) {
@@ -1485,52 +1423,83 @@ public class MappingServiceJpa implements MappingService {
 			}
 		}
 
-		// begin constructing query
-		full_query = "(";
+		for (String s : parsedTerms) {
+			System.out.println("  " + s);
+		}
 
-		// cycle over terms
+		// cycle over terms to construct query
+		full_query = "";
+		
 		for (int i = 0; i < parsedTerms.size(); i++) {
+			
+			// if not the first term AND the last term was not an escape term
+			// add whitespace separator
+			if (i != 0 && !parsedTerms.get(i-1).matches(escapeTerms)) {
+				
+				full_query += " ";
+			}
+			/*
+			full_query += (i == 0 ?										// check for first term
+							"" : 										// -> if first character, add nothing
+							parsedTerms.get(i-1).matches(escapeTerms) ? // check if last term was an escape character
+									"": 								// -> if last term was an escape character, add nothing
+									" ");								// -> otherwise, add a separating space
+*/									
 
-			// if a boolean or an escape character/sequence, add this term unmodified
-			if (parsedTerms.get(i).matches(escapeTerms)
-					|| parsedTerms.get(i).matches(booleanTerms)) {
+			// if an escape character/sequence, add this term unmodified
+			if (parsedTerms.get(i).matches(escapeTerms)) {
 
-				// if first term do not add whitespace separator
-				full_query += (i == 0 ? "" : " ") + parsedTerms.get(i); 																													
+				full_query += parsedTerms.get(i); 		
+				
+			// else if a boolean character, add this term in upper-case form (i.e. lucene format)
+			} else if (parsedTerms.get(i).matches(booleanTerms)) {
+				
+				full_query += parsedTerms.get(i).toUpperCase();
 
-			// else if already a field-specific query term
+			// else if already a field-specific query term, add this term unmodified
 			} else if (parsedTerms.get(i).contains(":")) {
-				full_query += parsedTerms.get(i);
+				
+				full_query += parsedTerms.get(i); 																													
 
 			// otherwise, treat as unfielded query term
 			} else {
+				
+				// open parenthetical term
 				full_query += "(";
-
+																										
+				// add fielded query for each indexed term, separated by OR
 				Iterator<String> names_iter = fieldNames.iterator();
-
 				while (names_iter.hasNext()) {
 					full_query += names_iter.next() + ":" + parsedTerms.get(i);
 					if (names_iter.hasNext())
 						full_query += " OR ";
 				}
 
+				// close parenthetical term
 				full_query += ")";
 			}
 
 			// if further terms remain in the sequence
 			if (!(i == parsedTerms.size() - 1)) {
-
-				// if next term is not a boolean operator or an escape term, add OR
-				if (!parsedTerms.get(i + 1).matches(booleanTerms)
-						&& !parsedTerms.get(i + 1).matches(escapeTerms)) {
+		
+				// Add a separating OR iff:
+				// - this term is not an escape character
+				// - this term is not a boolean term
+				// - next term is not a boolean term
+				if (!parsedTerms.get(i).matches(escapeTerms) && 
+					!parsedTerms.get(i).matches(booleanTerms) && 
+					!parsedTerms.get(i+1).matches(booleanTerms)) {
+					
 					full_query += " OR";
 				}
-
 			}
 		}
 
-		// add mapProjectId constraint
-		full_query += ") AND mapProjectId:" + mapProjectId.toString();
+		
+		// add parantheses and map project constraint
+		full_query = "(" + full_query + ")" + " AND mapProjectId:" + mapProjectId.toString();
+		
+		System.out.println("Full query: " + full_query);
 		
 		return full_query;
 
@@ -1590,8 +1559,9 @@ public class MappingServiceJpa implements MappingService {
 			}
 		}
 		
-		// close manager
+		// close managers
 		contentService.close();
+		metadataService.close();
 		
 		return unmappedDescendants;
 		
@@ -2190,6 +2160,8 @@ public class MappingServiceJpa implements MappingService {
 			}
 			
 			commit();
+			contentService.close();
+			metadataService.close();
 		} catch (Exception e) {
 			setTransactionPerOperation(prevTransactionPerOperationSetting);
 			throw e;

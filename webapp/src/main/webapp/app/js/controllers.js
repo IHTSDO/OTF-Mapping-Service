@@ -249,9 +249,8 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				 for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {		 
 					 
 					 if ($scope.records[i].mapEntry[j].targetId === "") {
-						 $scope.records[i].mapEntry[j].targetName = "[RELATION NAME NULL]";
-							
-								     // TODO: Reinsert this once map entries correctly loaded:  $scope.records[i].mapEntry[j].relationName;
+						 $scope.records[i].mapEntry[j].targetName = "\"" + $scope.records[i].mapEntry[j].relationName + "\"";
+	
 					 }
 				 }
 			 }
@@ -266,9 +265,8 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 						 var jsonObj = $scope.records[i].mapEntry[j].mapAdvice;
 						 
 						 // add the serialized advice	
-						 jsonObj.push({"id":"0", "name": "***PLACEHOLDER ADVICE***", "detail":"***PLACEHOLDER ADVICE***", "objectId":"0"});
+						 jsonObj.push({"id":"0", "name": "\"" + $scope.records[i].mapEntry[j].mapRelationName + "\"", "detail":"\"" + $scope.records[i].mapEntry[j].mapRelationName + "\"", "objectId":"0"});
 						 
-						 // TODO Replace placeholder with $scope.records[i].mapEntry[j].mapRelationName
 						 $scope.records[i].mapEntry[j].mapAdvice = jsonObj;
 					 }
 				 }
@@ -753,8 +751,8 @@ mapProjectAppControllers.directive('headerDirective', function() {
 	return {
         templateUrl: './partials/header.html',
 		restrict: 'E', 
-        transclude: true,    // allows us “swap” our content for the calling html
-        replace: true,        // tells the calling html to replace itself with what’s returned here
+        transclude: true,    // allows us ï¿½swapï¿½ our content for the calling html
+        replace: true,        // tells the calling html to replace itself with whatï¿½s returned here
         link: function(scope, element, attrs) { // to get scope, the element, and its attributes
           scope.user = $rootScope.user; 
         }

@@ -193,7 +193,7 @@ a:hover {
 .container,
 .navbar-fixed-top .container,
 .navbar-fixed-bottom .container {
-  width: 940px;
+  width: 90%; /* changed by PWG, 2/15/2014 from 940px */
 }
 
 .span12 {
