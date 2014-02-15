@@ -376,6 +376,44 @@ public class ContentServiceJpa implements ContentService {
 		
 		return conceptSet;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#getDescendants(java.lang.String, java.lang.String, java.lang.String, java.lang.Long)
+	 */
+	@Override
+	public SearchResultList findChildren(String terminologyId, String terminology,
+		String terminologyVersion, Long typeId) {
 
+		SearchResultList children = new SearchResultListJpa();
+
+		// get the concept and add it as first element of concept list
+		Concept concept =
+				getConcept(terminologyId, terminology, terminologyVersion);
+
+		// if no concept, return empty list
+		if (concept == null) { return children; }
+		
+		// cycle over relationships
+		for (Relationship rel : concept.getInverseRelationships()) {
+			
+			if (rel.isActive() && rel.getTypeId().equals(typeId)
+					&& rel.getSourceConcept().isActive()) {
+			
+				Concept c = rel.getSourceConcept();
+				
+				SearchResult sr = new SearchResultJpa();
+				sr.setId(c.getId());
+				sr.setTerminologyId(c.getTerminologyId());
+				sr.setTerminology(c.getTerminology());
+				sr.setTerminologyVersion(c.getTerminologyVersion());
+				sr.setValue(c.getDefaultPreferredName());
+				
+				// add search result to list
+				children.addSearchResult(sr);
+			}
+		}
+		
+		return children;
+	}
 
 }  

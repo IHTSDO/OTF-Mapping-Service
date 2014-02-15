@@ -12,6 +12,24 @@ var mapProjectApp = angular.module('mapProjectApp', [
 mapProjectApp.config(['$routeProvider',
    function($routeProvider) {
 	
+      //////////////////////////////
+	  // DASHBOARDS
+	  //////////////////////////////
+	  
+	  $routeProvider.when('/specialist/dash', {
+		  templateUrl: 'partials/specialist-dash.html', 
+		  controller: 'SpecialistDashCtrl'
+	  });
+	  
+	  $routeProvider.when('/lead/dash', {
+		  templateUrl: 'partials/lead-dash.html', 
+		  controller: 'LeadDashCtrl'
+	  });
+	  
+	  $routeProvider.when('/admin/dash', {
+		  templateUrl: 'partials/admin-dash.html', 
+		  controller: 'AdminDashCtrl'
+	  });
 	
       //////////////////////////////
 	  // MAPPING SERVICES
@@ -24,7 +42,7 @@ mapProjectApp.config(['$routeProvider',
 	  
 	  $routeProvider.when('/record/projectId/:projectId', {
 		  templateUrl: 'partials/project-records.html',
-	      controller: 'MapProjectDetailCtrl'
+	      controller: 'MapProjectRecordCtrl'
 	  });
 
 	  $routeProvider.when('/project/id/:projectId', {
@@ -58,9 +76,11 @@ mapProjectApp.config(['$routeProvider',
 	  // HOME and ERROR ROUTES
 	  ///////////////////////////////
 	  
+	 
+	  
 	  $routeProvider.when('/', {
-		  templateUrl: 'partials/project-list.html', 
-		  controller: 'MapProjectListCtrl'
+		  templateUrl: 'partials/login.html',
+  		  controller: 'LoginCtrl'
 	  });
 	  
 	  $routeProvider.otherwise({

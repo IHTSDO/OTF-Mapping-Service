@@ -79,4 +79,7 @@ public interface ContentService {
 	Set<Concept> getDescendants(String terminologyId, String terminology,
 			String terminologyVersion, Long typeId);
 
+	SearchResultList findChildren(String terminologyId, String terminology,
+			String terminologyVersion, Long typeId);
+
 }
