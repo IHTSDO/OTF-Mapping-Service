@@ -1014,6 +1014,7 @@ public class MappingServiceJpa implements MappingService {
 			luceneQuery = queryParser.parse(query);
 		}
 
+		@SuppressWarnings("unchecked")
 		List<MapEntry> m =
 				fullTextEntityManager.createFullTextQuery(luceneQuery,
 						MapEntryJpa.class).getResultList();
@@ -1064,6 +1065,7 @@ public class MappingServiceJpa implements MappingService {
 			luceneQuery = queryParser.parse(query);
 		}
 
+		@SuppressWarnings("unchecked")
 		List<MapAdvice> m =
 				fullTextEntityManager
 						.createFullTextQuery(luceneQuery, MapNoteJpa.class).getResultList();
@@ -1081,6 +1083,7 @@ public class MappingServiceJpa implements MappingService {
 	// Descendant services
 	// //////////////////////////////////////////////
 
+	@SuppressWarnings("unchecked")
 	/**
 	 * Retrieve map records for a given terminology id.
 	 * 
@@ -1221,7 +1224,6 @@ public class MappingServiceJpa implements MappingService {
 	 * parameters.
 	 * 
 	 * @param mapProjectId the concept id
-	 * @param pfs the paging/filtering/sorting parameter object
 	 * @return the list of map records
 	 */
 	@SuppressWarnings("unchecked")
@@ -1256,10 +1258,75 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 
+		FullTextEntityManager fullTextEntityManager =
+				Search.getFullTextEntityManager(manager);
+		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+
+		// construct luceneQuery based on URL format
+		QueryParser queryParser =
+				new QueryParser(Version.LUCENE_36, "summary",
+						searchFactory.getAnalyzer(MapRecordJpa.class));
+		Query luceneQuery = queryParser.parse(query);
+
+		org.hibernate.search.jpa.FullTextQuery ftquery =
+				(FullTextQuery) fullTextEntityManager.createFullTextQuery(luceneQuery,
+						MapRecordJpa.class);
+
+		if (pfsParameter.getStartIndex() != -1
+				&& pfsParameter.getMaxResults() != -1) {
+			ftquery.setFirstResult(pfsParameter.getStartIndex());
+			ftquery.setMaxResults(pfsParameter.getMaxResults());
+		}
+		if (pfsParameter.getSortField() != null) {
+			ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
+					SortField.STRING)));
+		}
+
+		List<MapRecord> m = ftquery.getResultList();
+
+		System.out.println(Integer.toString(m.size()) + " records retrieved");
+
+		return m;
+
+	}
+
+
+		FullTextEntityManager fullTextEntityManager =
+				Search.getFullTextEntityManager(manager);
+		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+
+		// construct luceneQuery based on URL format
+		QueryParser queryParser =
+				new QueryParser(Version.LUCENE_36, "summary",
+						searchFactory.getAnalyzer(MapRecordJpa.class));
+		Query luceneQuery = queryParser.parse(query);
+
+		org.hibernate.search.jpa.FullTextQuery ftquery =
+				fullTextEntityManager.createFullTextQuery(luceneQuery,
+				MapRecordJpa.class);
+
+		if (pfsParameter.getStartIndex() != -1
+				&& pfsParameter.getMaxResults() != -1) {
+			ftquery.setFirstResult(pfsParameter.getStartIndex());
+			ftquery.setMaxResults(pfsParameter.getMaxResults());
+		}
+		if (pfsParameter.getSortField() != null) {
+			ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
+					SortField.STRING)));
+		}
+
+		@SuppressWarnings("unchecked")
+		List<MapRecord> m = ftquery.getResultList();
+
+		System.out.println(Integer.toString(m.size()) + " records retrieved");
+
+		return m;
+
+	}
+
 	/**
 	 * Retrieve map records for a lucene query.
 	 * 
-	 * @param query the lucene query string
 	 * @param pfsParameter the pfs parameter
 	 * @return a list of map records
 	 * @throws Exception the exception
@@ -1318,7 +1385,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param queryStr the string of terms to construct a query for
 	 * @return the full lucene query text
 	 */
-	private String constructMapRecordForMapProjectIdQuery(Long mapProjectId,
+	private static String constructMapRecordForMapProjectIdQuery(Long mapProjectId,
 		PfsParameter pfsParameter) {
 		
 		String full_query;
@@ -1369,6 +1436,7 @@ public class MappingServiceJpa implements MappingService {
 		// merge items between quotation marks
 		boolean exprInQuotes = false;
 		List<String> parsedTerms = new ArrayList<String>();
+		//List<String> parsedTerms_temp = new ArrayList<String>();
 		String currentTerm = "";
 
 		// cycle over terms to identify quoted (i.e. non-parsed) terms
@@ -1486,14 +1554,28 @@ public class MappingServiceJpa implements MappingService {
 			throws Exception {	
 		
 		SearchResultList unmappedDescendants = new SearchResultListJpa();
+
+		// get hierarchical rel
+		MetadataService metadataService = new MetadataServiceJpa();
+		Map<Long, String> hierarchicalRelationshipTypeMap = metadataService.getHierarchicalRelationshipTypes(terminology, terminologyVersion);
+		if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
+			throw new IllegalStateException(
+					"Map project source terminology has too many hierarchical relationship types - "
+							+ terminology);
+		}
+		if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
+			throw new IllegalStateException(
+					"Map project source terminology has too few hierarchical relationship types - "
+							+ terminology);
+		}
+		long hierarchicalRelationshipType = hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
 		
 		// get descendants
 		ContentService contentService = new ContentServiceJpa();
 		SearchResultList descendants = contentService.findDescendants(
 				terminologyId, 
 				terminology, 
-				terminologyVersion, 
-				new Long("116680003"));  // TODO: This still needs metadata replacement
+				terminologyVersion, hierarchicalRelationshipType); 
 		
 		// if number of descendants <= low-level concept threshold, treat as high-level concept and report no unmapped
 		if (descendants.getCount() <= thresholdLlc) {
@@ -1821,9 +1903,8 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public void createMapRecordsForMapProject(MapProject mapProject)
 		throws Exception {
-
 		Logger.getLogger(MappingServiceJpa.class).warn(
-				"Creating map records for project from " + mapProject.getName());
+				"Find map records from query for project - " + mapProject.getName());
 		if (!getTransactionPerOperation()) {
 			throw new IllegalStateException(
 					"The application must let the service manage transactions for this method");
@@ -1831,16 +1912,18 @@ public class MappingServiceJpa implements MappingService {
 
 		// retrieve all complex map ref set members for mapProject
 		javax.persistence.Query query =
-				manager
-						.createQuery("select r from ComplexMapRefSetMemberJpa r where r.refSetId = :refSetId order by r.concept.id, "
-								+ "r.mapBlock, r.mapGroup, r.mapPriority");
+				manager.createQuery("select r from ComplexMapRefSetMemberJpa r "
+						+ "where r.refSetId = :refSetId order by r.concept.id, "
+						+ "r.mapBlock, r.mapGroup, r.mapPriority");
 		query.setParameter("refSetId", mapProject.getRefSetId());
-		Set<ComplexMapRefSetMember> complexMapRefSetMembers =
-				new HashSet<ComplexMapRefSetMember>();
+		List<ComplexMapRefSetMember> complexMapRefSetMembers =
+				new ArrayList<ComplexMapRefSetMember>();
 		for (Object member : query.getResultList()) {
 			ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
 			complexMapRefSetMembers.add(refSetMember);
 		}
+		Logger.getLogger(MappingServiceJpa.class).warn(
+				"  " + complexMapRefSetMembers.size() + " map records procesed (some skipped)");
 		createMapRecordsForMapProject(mapProject, complexMapRefSetMembers);
 	}
 
@@ -1860,6 +1943,7 @@ public class MappingServiceJpa implements MappingService {
 
 		int nRecords = 0;
 		tx.begin();
+		@SuppressWarnings("unchecked")
 		List<MapRecord> records =
 				manager
 				.createQuery(
@@ -1935,7 +2019,8 @@ public class MappingServiceJpa implements MappingService {
 	@SuppressWarnings("null")
 	@Override
 	public void createMapRecordsForMapProject(MapProject mapProject,
-		Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
+		List<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
+		Logger.getLogger(this.getClass()).debug("  Starting create map records for map project - " + mapProject.getName());
 
 		// Verify application is letting the service manage transactions
 		if (!getTransactionPerOperation()) {
@@ -1950,14 +2035,31 @@ public class MappingServiceJpa implements MappingService {
 		MetadataService metadataService = new MetadataServiceJpa();
 		Map<Long, String> relationIdNameMap = metadataService.getMapRelations(mapProject.getSourceTerminology(),
 				mapProject.getSourceTerminologyVersion());
+		Logger.getLogger(this.getClass()).debug("    relationIdNameMap = " + relationIdNameMap);
+		Map<Long, String> hierarchicalRelationshipTypeMap = metadataService.getHierarchicalRelationshipTypes(mapProject.getSourceTerminology(), 
+				mapProject.getSourceTerminologyVersion());
+		if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
+			throw new IllegalStateException(
+					"Map project source terminology has too many hierarchical relationship types - "
+							+ mapProject.getSourceTerminology());
+		}
+		if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
+			throw new IllegalStateException(
+					"Map project source terminology has too few hierarchical relationship types - "
+							+ mapProject.getSourceTerminology());
+		}
+		long hierarchicalRelationshipType = hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
+	
 
 		boolean prevTransactionPerOperationSetting = getTransactionPerOperation();
 		setTransactionPerOperation(false);
 		beginTransaction();
 		List<MapAdvice> mapAdvices = getMapAdvices();
+		int mapPriorityCt = 0;
+		int prevMapGroup = 0;
 		try {
 			// instantiate other local variables
-			Long prevConceptId = new Long(-1);
+			String prevConceptId = null;
 			MapRecord mapRecord = null;
 			int ct = 0;
 			for (ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
@@ -1974,25 +2076,27 @@ public class MappingServiceJpa implements MappingService {
 								.contains("MAP IS CONTEXT DEPENDENT FOR GENDER"))
 						&& !(refSetMember.getMapRule()
 								.matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]"))) {
-					Logger.getLogger(this.getClass()).debug("Skipping refset member exclusion rule " + refSetMember.getTerminologyId());
+					Logger.getLogger(this.getClass()).debug("    Skipping refset member exclusion rule " + refSetMember.getTerminologyId());
 					continue;
 				}
 
 				// retrieve the concept
-				Logger.getLogger(this.getClass()).debug("Get refset member concept");
+				Logger.getLogger(this.getClass()).debug("    Get refset member concept");
 				Concept concept = refSetMember.getConcept();
 
 				// if no concept for this ref set member, skip
 				if (concept == null) {
-					throw new NoResultException("Concept is unexpectedly missing for "
+					throw new NoResultException("    Concept is unexpectedly missing for "
 							+ refSetMember.getTerminologyId());
 				}
 
 				// if different concept than previous ref set member, create new
 				// mapRecord
-				if (!concept.getTerminologyId().equals(prevConceptId.toString())) {
-					Logger.getLogger(this.getClass()).debug("Creating map record for " + concept.getTerminologyId());
+				if (!concept.getTerminologyId().equals(prevConceptId)) {
+					Logger.getLogger(this.getClass()).debug("    Creating map record for " + concept.getTerminologyId());
 
+					mapPriorityCt = 0;
+					prevMapGroup = 0;
 					mapRecord = new MapRecordJpa();
 					mapRecord.setConceptId(concept.getTerminologyId());
 					mapRecord.setConceptName(concept.getDefaultPreferredName());
@@ -2004,21 +2108,21 @@ public class MappingServiceJpa implements MappingService {
 							  concept.getTerminologyId(),
 							  concept.getTerminology(), 
 							  concept.getTerminologyVersion(), 
-							  new Long("116680003")).getCount()));
-					Logger.getLogger(this.getClass()).debug("  Computing descendant ct = " + 
+							  hierarchicalRelationshipType).getCount()));
+					Logger.getLogger(this.getClass()).debug("      Computing descendant ct = " + 
 						  mapRecord.getCountDescendantConcepts());
 					 
 					//mapRecord.setCountDescendantConcepts(0L);
 
 					// set the previous concept to this concept
 					prevConceptId =
-							new Long(refSetMember.getConcept().getTerminologyId());
+							refSetMember.getConcept().getTerminologyId();
 
 					// persist the record
 					addMapRecord(mapRecord);
 
 					if (++ct % 500 == 0) {
-						Logger.getLogger(MappingServiceJpa.class).info(
+						Logger.getLogger(MappingServiceJpa.class).info("    " +
 								ct + " records created");
 					}
 				}
@@ -2036,16 +2140,19 @@ public class MappingServiceJpa implements MappingService {
 					} else {
 						targetName = c.getDefaultPreferredName();
 					}
-					Logger.getLogger(this.getClass()).debug("  Setting target name " +
+					Logger.getLogger(this.getClass()).debug("      Setting target name " +
 						  targetName);
 				}
 
 				// Set map relation id as well from the cache
 				String relationName = null;
-				if (refSetMember.getMapRelationId() != null)
+				if (refSetMember.getMapRelationId() != null) {
 					relationName = relationIdNameMap.get(refSetMember.getMapRelationId());
+					Logger.getLogger(this.getClass()).debug("      Look up relation name = " + 
+						  relationName);
+				}
 
-				Logger.getLogger(this.getClass()).debug("  Create map entry");
+				Logger.getLogger(this.getClass()).debug("      Create map entry");
 				MapEntry mapEntry = new MapEntryJpa();
 				mapEntry.setTargetId(refSetMember.getMapTarget());
 				mapEntry.setTargetName(targetName);
@@ -2057,14 +2164,19 @@ public class MappingServiceJpa implements MappingService {
 				mapEntry.setRule(rule);
 				mapEntry.setMapBlock(refSetMember.getMapBlock());
 				mapEntry.setMapGroup(refSetMember.getMapGroup());
-				mapEntry.setMapPriority(refSetMember.getMapPriority());
+				if (prevMapGroup != refSetMember.getMapGroup()) {
+					mapPriorityCt = 0;
+					prevMapGroup = refSetMember.getMapGroup();
+				}
+				// Increment map priority as we go through records
+				mapEntry.setMapPriority(++mapPriorityCt);
 				
 				mapRecord.addMapEntry(mapEntry);
 
 				// Add support for advices - and there can be multiple map advice values
 				// Only add advice if it is an allowable value and doesn't match relation name
 				// This should automatically exclude IFA/ALWAYS advice 
-				Logger.getLogger(this.getClass()).debug("  Setting map advice");
+				Logger.getLogger(this.getClass()).debug("      Setting map advice");
 				if (refSetMember.getMapAdvice() != null
 						&& !refSetMember.getMapAdvice().equals("")) {
 					for (MapAdvice ma : mapAdvices) {

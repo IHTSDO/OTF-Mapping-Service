@@ -62,13 +62,13 @@ public class UpdateDbMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		getLog().info("Start updating database schema...");
 		try {
-			getLog().info("Start updating database schema...");
 			EntityManagerFactory factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 			manager = factory.createEntityManager();
 			manager.close();
 			factory.close();
-			getLog().info(".. done");
+			getLog().info("done ...");
 
 		} catch (Throwable e) {
 			e.printStackTrace();

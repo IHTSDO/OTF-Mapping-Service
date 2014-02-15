@@ -92,10 +92,9 @@ public class TerminologyRemoverMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		getLog().info("Starting removing " + terminology + " data ...");
+
 		try {
-
-			getLog().info("Start removing " + terminology + " data ...");
-
 			// create Entitymanager
 			EntityManagerFactory factory =
 					Persistence.createEntityManagerFactory("MappingServiceDS");
