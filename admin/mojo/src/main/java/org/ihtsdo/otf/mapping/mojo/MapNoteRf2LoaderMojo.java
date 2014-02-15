@@ -143,7 +143,6 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 
 				// Verify matching map records were found, otherwise fail
 				if (mapRecords != null && mapRecords.size() > 0) {
-					int ct = 0;
 
 					// Iterate through records
 					for (MapRecord mapRecord : mapRecords) {
