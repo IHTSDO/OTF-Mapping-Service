@@ -71,14 +71,31 @@ public interface ContentService {
 	 * @param terminologyVersion
 	 * @param typeId
 	 * @return the set of concepts
-	 * @throws Exception if anything goes wrong
 	 */
 	public SearchResultList findDescendants(String terminologyId, String terminology,
 			String terminologyVersion, Long typeId);
 
+	/**
+	 * Returns the descendants.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param typeId the type id
+	 * @return the descendants
+	 */
 	Set<Concept> getDescendants(String terminologyId, String terminology,
 			String terminologyVersion, Long typeId);
 
+	/**
+	 * Find children.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param typeId the type id
+	 * @return the search result list
+	 */
 	SearchResultList findChildren(String terminologyId, String terminology,
 			String terminologyVersion, Long typeId);
 

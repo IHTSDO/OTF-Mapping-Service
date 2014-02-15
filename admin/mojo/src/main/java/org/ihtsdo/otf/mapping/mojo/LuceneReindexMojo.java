@@ -70,10 +70,10 @@ public class LuceneReindexMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		getLog().info("Starting reindexing ...");
 
 		try {
 
-			getLog().info("  Starting MakeIndexes.java");
 			EntityManagerFactory factory =
 					Persistence.createEntityManagerFactory("MappingServiceDS");
 
@@ -112,7 +112,7 @@ public class LuceneReindexMojo extends AbstractMojo {
 					.startAndWait();
 
 			// Cleanup
-			getLog().info("  Completing MakeIndexes.java");
+			getLog().info("done ...");
 			manager.close();
 			factory.close();
 

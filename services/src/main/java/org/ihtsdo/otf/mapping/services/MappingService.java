@@ -458,7 +458,7 @@ public interface MappingService {
 	 * @throws Exception the exception
 	 */
 	public void createMapRecordsForMapProject(MapProject mapProject, 
-			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
+			List<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
 
 	/**
 	 * Removes the map records for project id.
@@ -560,6 +560,7 @@ public interface MappingService {
 	// testing function
 	List<MapRecord> testCriteriaQuery(Long mapProjectId, String query,
 			PfsParameter pfsParameter) throws Exception;
+
 
 	
 

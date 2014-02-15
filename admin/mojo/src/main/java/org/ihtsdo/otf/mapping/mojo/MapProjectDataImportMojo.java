@@ -84,10 +84,9 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
-
+		getLog().info("Starting importing metadata ...");
 		try {
 
-			getLog().info("Starting Import Metadata");
 
 			FileInputStream propertiesInputStream = null;
 
@@ -223,8 +222,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mappingService.addMapProject(mapProject);
 			}
 
+			getLog().info("done ...");
 			mappingService.close();
-
 			specialistsReader.close();
 			leadsReader.close();
 			advicesReader.close();

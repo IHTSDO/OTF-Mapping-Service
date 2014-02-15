@@ -81,10 +81,10 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		getLog().info("Starting exporting metadata ...");
 
 		try {
 
-			getLog().info("Starting Export Metadata");
 
 			FileInputStream propertiesInputStream = null;
 
@@ -217,7 +217,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			}
 			mappingService.close();
 
-			getLog().info("...done");
+			getLog().info("done ...");
 			specialistsWriter.close();
 			leadsWriter.close();
 			advicesWriter.close();

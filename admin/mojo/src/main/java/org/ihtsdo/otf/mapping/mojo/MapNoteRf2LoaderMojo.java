@@ -74,12 +74,12 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoExecutionException {
+		getLog().info("Start loading map notes data ...");
 
 		FileInputStream propertiesInputStream = null;
 		BufferedReader mapNoteReader = null;
 		try {
 
-			getLog().info("Start loading map notes data ...");
 
 			// load Properties file
 			Properties properties = new Properties();
@@ -167,6 +167,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 				}
 			}
 			getLog().info("  " + ct + " map notes inserted");
+			getLog().info("done ...");
 			mappingService.commit();
 			mappingService.close();
 
