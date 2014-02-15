@@ -77,8 +77,7 @@ public class MapNoteRemoverMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
-
-		getLog().info("Starting map notes remover ...");
+		getLog().info("Starting removing map notes ...");
 
 		if (refSetId == null) {
 			throw new MojoFailureException("You must specify a refSetId.");

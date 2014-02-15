@@ -61,6 +61,8 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoExecutionException {
+		getLog().info(
+				"Starting generating map records from complex map records - " + refSetId);
 
 		if (refSetId == null) {
 			throw new MojoExecutionException("You must specify a refSetId.");
@@ -71,8 +73,6 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 			MappingService mappingService = new MappingServiceJpa();
 			Set<MapProject> mapProjects = new HashSet<MapProject>();
 
-			getLog().info(
-					"Generate map records from complex map records - " + refSetId);
 			for (MapProject mapProject : mappingService.getMapProjects()) {
 				for (String id : refSetId.split(",")) {
 					if (mapProject.getRefSetId().equals(id)) {
@@ -88,6 +88,8 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 								+ mapProject.getId());
 				mappingService.createMapRecordsForMapProject(mapProject);
 			}
+
+			getLog().info("done ...");
 			mappingService.close();
 
 		} catch (Exception e) {

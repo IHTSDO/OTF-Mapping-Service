@@ -211,11 +211,13 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 		// find all active descendants of 609330002
 		// 609330002 - Map category value
+		// TODO: figure out why that doesn't work.  opting for 447634004 instead
 		ContentService contentService = new ContentServiceJpa();
 		Set<Concept> descendants =
-				contentService.getDescendants("609330002", terminology, version,
+				contentService.getDescendants("447634004", terminology, version,
 						isaRelationshipType);
 
+		Logger.getLogger(this.getClass()).debug("Descendants of 447634004 " + descendants);
 		for (Concept descendant : descendants) {
 			if (descendant.isActive()) {
 				map.put(new Long(descendant.getTerminologyId()),
@@ -229,6 +231,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 				contentService.getDescendants("447247004", terminology, version,
 						isaRelationshipType);
 
+		Logger.getLogger(this.getClass()).debug("Descendants of 447247004 " + descendants);
 		for (Concept descendant : descendants) {
 			if (descendant.isActive()) {
 				map.put(new Long(descendant.getTerminologyId()),

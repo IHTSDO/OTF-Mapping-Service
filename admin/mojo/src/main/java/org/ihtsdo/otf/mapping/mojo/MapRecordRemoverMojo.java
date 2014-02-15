@@ -78,6 +78,7 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoExecutionException {
+		getLog().info("Starting removing map records for project - " + refSetId);
 
 		if (refSetId == null) {
 			throw new MojoExecutionException(
@@ -91,7 +92,6 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 			mappingService.beginTransaction();
 			Set<MapProject> mapProjects = new HashSet<MapProject>();
 
-			getLog().info("Start removing map records for project - " + refSetId);
 			for (MapProject mapProject : mappingService.getMapProjects()) {
 				for (String id : refSetId.split(",")) {
 					if (mapProject.getRefSetId().equals(id)) {

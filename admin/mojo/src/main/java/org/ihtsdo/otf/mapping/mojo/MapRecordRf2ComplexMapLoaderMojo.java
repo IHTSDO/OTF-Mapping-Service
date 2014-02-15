@@ -6,12 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
@@ -80,11 +80,11 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoExecutionException {
+		getLog().info("Starting loading complex map data ...");
 
 		FileInputStream propertiesInputStream = null;
 		try {
 
-			getLog().info("Start loading complex map data ...");
 
 			// load Properties file to determine file name
 			Properties properties = new Properties();
@@ -189,7 +189,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 			}
 
 			// load complexMapRefSetMembers from extendedMap file
-			Map<String, Set<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
+			Map<String, List<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
 					loadExtendedMapRefSets(outputFile, mapProjectMap);
 
 			// Call mapping service to create records as we go along
@@ -199,6 +199,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 						complexMapRefSetMemberMap.get(refSetId));
 			}
 
+			getLog().info("done ...");
 			// clean-up
 			mappingService.close();
 			//outputFile.delete();
@@ -222,7 +223,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 	 * 
 	 * @throws Exception the exception
 	 */
-	private static Map<String, Set<ComplexMapRefSetMember>> loadExtendedMapRefSets(
+	private static Map<String, List<ComplexMapRefSetMember>> loadExtendedMapRefSets(
 		File complexMapFile, Map<String, MapProject> mapProjectMap)
 		throws Exception {
 
@@ -233,11 +234,11 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 
 		// Set up sets for any map records we encounter
 		String line = null;
-		Map<String, Set<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
-				new HashMap<String, Set<ComplexMapRefSetMember>>();
+		Map<String, List<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
+				new HashMap<String, List<ComplexMapRefSetMember>>();
 		for (MapProject mapProject : mapProjectMap.values()) {
 			complexMapRefSetMemberMap.put(mapProject.getRefSetId(),
-					new HashSet<ComplexMapRefSetMember>());
+					new ArrayList<ComplexMapRefSetMember>());
 		}
 
 		final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
@@ -261,7 +262,6 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setMapRule(fields[8]);
 				complexMapRefSetMember.setMapAdvice(fields[9]);
 				complexMapRefSetMember.setMapTarget(fields[10]);
-				System.out.println("fields[12] " + fields[12]);
 				complexMapRefSetMember.setMapRelationId(Long.valueOf(fields[12]));
 
 				// BLOCK is unused
