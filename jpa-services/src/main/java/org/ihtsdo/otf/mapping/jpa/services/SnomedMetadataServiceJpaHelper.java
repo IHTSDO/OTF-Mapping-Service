@@ -58,6 +58,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -85,6 +86,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -112,6 +114,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 
 	}
@@ -140,6 +143,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -167,6 +171,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -194,6 +199,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -239,6 +245,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 			}
 		}
 
+		contentService.close();
 		return map;
 	}
 
@@ -266,6 +273,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -293,6 +301,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -320,6 +329,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -347,6 +357,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -368,6 +379,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						version);
 		map.put(new Long(isaRel.getTerminologyId()),
 				isaRel.getDefaultPreferredName());
+		contentService.close();
 		return map;
 	}
 
@@ -394,6 +406,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -421,6 +434,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
