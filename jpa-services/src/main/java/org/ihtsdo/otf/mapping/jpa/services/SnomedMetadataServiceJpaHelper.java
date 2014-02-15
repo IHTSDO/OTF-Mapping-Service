@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -209,6 +210,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 		Map<Long, String> map = new HashMap<Long, String>();
 
 		// find all active descendants of 609330002
+		// 609330002 - Map category value
 		ContentService contentService = new ContentServiceJpa();
 		Set<Concept> descendants =
 				contentService.getDescendants("609330002", terminology, version,
@@ -220,6 +222,20 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+
+		// find all active descendants of 447247004
+		// 447247004 - SNOMED CT source code not mappable to target coding scheme
+		descendants =
+				contentService.getDescendants("447247004", terminology, version,
+						isaRelationshipType);
+
+		for (Concept descendant : descendants) {
+			if (descendant.isActive()) {
+				map.put(new Long(descendant.getTerminologyId()),
+						descendant.getDefaultPreferredName());
+			}
+		}
+
 		return map;
 	}
 

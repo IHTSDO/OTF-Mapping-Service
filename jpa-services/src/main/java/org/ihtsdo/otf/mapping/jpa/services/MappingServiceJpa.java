@@ -1930,9 +1930,9 @@ public class MappingServiceJpa implements MappingService {
 
 		// retrieve all complex map ref set members for mapProject
 		javax.persistence.Query query =
-				manager
-						.createQuery("select r from ComplexMapRefSetMemberJpa r where r.refSetId = :refSetId order by r.concept.id, "
-								+ "r.mapBlock, r.mapGroup, r.mapPriority");
+				manager.createQuery("select r from ComplexMapRefSetMemberJpa r"
+						+ "where r.refSetId = :refSetId order by r.concept.id, "
+						+ "r.mapBlock, r.mapGroup, r.mapPriority");
 		query.setParameter("refSetId", mapProject.getRefSetId());
 		Set<ComplexMapRefSetMember> complexMapRefSetMembers =
 				new HashSet<ComplexMapRefSetMember>();
@@ -2033,6 +2033,7 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public void createMapRecordsForMapProject(MapProject mapProject,
 		Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
+		Logger.getLogger(this.getClass()).debug("Starting create map records for map project - " + mapProject.getName());
 
 		// Verify application is letting the service manage transactions
 		if (!getTransactionPerOperation()) {
@@ -2047,6 +2048,8 @@ public class MappingServiceJpa implements MappingService {
 		MetadataService metadataService = new MetadataServiceJpa();
 		Map<Long, String> relationIdNameMap = metadataService.getMapRelations(mapProject.getSourceTerminology(),
 				mapProject.getSourceTerminologyVersion());
+		Logger.getLogger(this.getClass()).debug("  relationIdNameMap = " + relationIdNameMap);
+		
 
 		boolean prevTransactionPerOperationSetting = getTransactionPerOperation();
 		setTransactionPerOperation(false);
@@ -2054,7 +2057,7 @@ public class MappingServiceJpa implements MappingService {
 		List<MapAdvice> mapAdvices = getMapAdvices();
 		try {
 			// instantiate other local variables
-			Long prevConceptId = new Long(-1);
+			String prevConceptId = null;
 			MapRecord mapRecord = null;
 			int ct = 0;
 			for (ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
@@ -2087,7 +2090,7 @@ public class MappingServiceJpa implements MappingService {
 
 				// if different concept than previous ref set member, create new
 				// mapRecord
-				if (!concept.getTerminologyId().equals(prevConceptId.toString())) {
+				if (!concept.getTerminologyId().equals(prevConceptId)) {
 					Logger.getLogger(this.getClass()).debug("Creating map record for " + concept.getTerminologyId());
 
 					mapRecord = new MapRecordJpa();
@@ -2109,7 +2112,7 @@ public class MappingServiceJpa implements MappingService {
 
 					// set the previous concept to this concept
 					prevConceptId =
-							new Long(refSetMember.getConcept().getTerminologyId());
+							refSetMember.getConcept().getTerminologyId();
 
 					// persist the record
 					addMapRecord(mapRecord);
@@ -2139,8 +2142,11 @@ public class MappingServiceJpa implements MappingService {
 
 				// Set map relation id as well from the cache
 				String relationName = null;
-				if (refSetMember.getMapRelationId() != null)
+				if (refSetMember.getMapRelationId() != null) {
 					relationName = relationIdNameMap.get(refSetMember.getMapRelationId());
+					Logger.getLogger(this.getClass()).debug("  Look up relation name = " + 
+						  relationName);
+				}
 
 				Logger.getLogger(this.getClass()).debug("  Create map entry");
 				MapEntry mapEntry = new MapEntryJpa();
