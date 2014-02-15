@@ -143,6 +143,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 
 				// Verify matching map records were found, otherwise fail
 				if (mapRecords != null && mapRecords.size() > 0) {
+					int ct = 0;
 
 					// Iterate through records
 					for (MapRecord mapRecord : mapRecords) {
@@ -152,12 +153,16 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 
 							// find matching refset id
 							if (mapProject.getRefSetId().equals(fields[4])) {
-								getLog().info(mapNote.getNote().length() + " " +
+								getLog().debug(mapNote.getNote().length() + " " +
 										"    Adding note to record " + mapProject.getRefSetId()
 												+ ", " + mapRecord.getConceptId() + " = "
 												+ mapNote.getNote());
 								mapRecord.addMapNote(mapNote);
 								mappingService.updateMapRecord(mapRecord);
+	
+								if (++ct % 500 == 0) {
+									getLog().info("      " + ct + " notes processed");
+								}
 							}
 						}
 					}
