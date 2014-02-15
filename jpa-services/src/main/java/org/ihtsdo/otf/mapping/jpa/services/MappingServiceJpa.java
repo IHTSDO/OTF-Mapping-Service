@@ -1959,7 +1959,7 @@ public class MappingServiceJpa implements MappingService {
 			complexMapRefSetMembers.add(refSetMember);
 		}
 		Logger.getLogger(MappingServiceJpa.class).warn(
-				"  " + complexMapRefSetMembers.size() + " map records created");
+				"  " + complexMapRefSetMembers.size() + " map records procesed (some skipped)");
 		createMapRecordsForMapProject(mapProject, complexMapRefSetMembers);
 	}
 
@@ -2090,6 +2090,7 @@ public class MappingServiceJpa implements MappingService {
 		beginTransaction();
 		List<MapAdvice> mapAdvices = getMapAdvices();
 		int mapPriorityCt = 0;
+		int prevMapGroup = 0;
 		try {
 			// instantiate other local variables
 			String prevConceptId = null;
@@ -2129,6 +2130,7 @@ public class MappingServiceJpa implements MappingService {
 					Logger.getLogger(this.getClass()).debug("    Creating map record for " + concept.getTerminologyId());
 
 					mapPriorityCt = 0;
+					prevMapGroup = 0;
 					mapRecord = new MapRecordJpa();
 					mapRecord.setConceptId(concept.getTerminologyId());
 					mapRecord.setConceptName(concept.getDefaultPreferredName());
@@ -2196,8 +2198,12 @@ public class MappingServiceJpa implements MappingService {
 				mapEntry.setRule(rule);
 				mapEntry.setMapBlock(refSetMember.getMapBlock());
 				mapEntry.setMapGroup(refSetMember.getMapGroup());
+				if (prevMapGroup != refSetMember.getMapGroup()) {
+					mapPriorityCt = 0;
+					prevMapGroup = refSetMember.getMapGroup();
+				}
 				// Increment map priority as we go through records
-				mapEntry.setMapPriority(mapPriorityCt++);
+				mapEntry.setMapPriority(++mapPriorityCt);
 				
 				mapRecord.addMapEntry(mapEntry);
 

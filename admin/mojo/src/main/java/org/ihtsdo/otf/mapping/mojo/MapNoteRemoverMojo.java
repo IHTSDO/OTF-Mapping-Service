@@ -105,22 +105,29 @@ public class MapNoteRemoverMojo extends AbstractMojo {
 			// Remove map record and entry notes
 			mappingService.setTransactionPerOperation(false);
 			mappingService.beginTransaction();
+			int ct = 0;
 			for (MapProject project : mapProjects) {
 				for (MapRecord record : mappingService
 						.getMapRecordsForMapProjectId(project.getId())) {
 					for (MapEntry entry : record.getMapEntries()) {
 						if (entry.getMapNotes().size() > 0) {
-							getLog().info(
+							getLog().debug(
 									"    Remove map record note from entry - " + entry.getId());
 							entry.getMapNotes().clear();
 							mappingService.updateMapEntry(entry);
+							if (++ct % 500 == 0) {
+								getLog().info("      " + ct + " notes processed");
+							}
 						}
 					}
 					if (record.getMapNotes().size() > 0) {
-						getLog().info(
+						getLog().debug(
 								"    Remove map record notes from record - " + record.getId());
 						record.getMapNotes().clear();
 						mappingService.updateMapRecord(record);
+						if (++ct % 500 == 0) {
+							getLog().info("      " + ct + " notes processed");
+						}
 					}
 				}
 			}
