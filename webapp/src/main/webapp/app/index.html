@@ -23,13 +23,9 @@
 </style>
 </head>
 
-<body style="margin-left: 10pt; margin-right: 10pt; margin-top: 5pt">
+<body>
 
-	<header-directive>
-	  <div style="float: left; width: 100%;">
-		<a href="index.html#/"><img src="img/ihtsdo_logo.png"></a>
-	  </div>
-	</header-directive>
+	<header-directive></header-directive>
 
 	<div id="wrap">
 
@@ -40,12 +36,15 @@
 			<div ng-view></div>
 		</div>
 	</div>
-
-    <div id="footer">
-		<div class="container"><center>IHTSDO�, SNOMED� and SNOMED CT� are registered trademarks of the International Health Terminology Standards Development Organisation (IHTSDO)</center>
-		<a href="http://www.ihtsdo.org/"><center>Contact Us</center></a>
-		</div>
-	</div>
+	
+	<div id="footer" class="container">
+    <nav class="navbar navbar-default navbar-fixed-bottom">
+        <div class="navbar-inner navbar-content-center">
+            <p>&nbsp;<a href="http://www.ihtsdo.org/">Copyright @2014 IHTSDO</a></p>
+        </div>
+    </nav>
+</div>
+	
 </body>
 
 </html>
