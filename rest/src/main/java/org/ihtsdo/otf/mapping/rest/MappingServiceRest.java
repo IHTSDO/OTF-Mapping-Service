@@ -460,15 +460,17 @@ public class MappingServiceRest {
 			
 			
 			// execute the service call
-			MappingService mappingService = new MappingServiceJpa();
-			MapRecordList mapRecords = new MapRecordList();
+			
 			try {
+				MappingService mappingService = new MappingServiceJpa();
+				MapRecordList mapRecords = new MapRecordList();
 				mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(mapProjectId, pfsParameter));
 				mappingService.close();
+				return mapRecords;
 			} catch (Exception e) {
 				throw new WebApplicationException(e);
 			}		
-			return mapRecords;
+			
 	}
 	
 	/**
@@ -706,7 +708,8 @@ public class MappingServiceRest {
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService. removeMapProject(mapProjectId);
+			mappingService.removeMapProject(mapProjectId);
+			mappingService.close();
 			return null;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
@@ -745,7 +748,7 @@ public class MappingServiceRest {
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService. removeMapSpecialist(mapSpecialistId);
+			mappingService.removeMapSpecialist(mapSpecialistId);
 			mappingService.close();
 			return null;
 		} catch (Exception e) {
@@ -765,7 +768,7 @@ public class MappingServiceRest {
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService. removeMapRecord(mapRecordId);
+			mappingService.removeMapRecord(mapRecordId);
 			mappingService.close();
 			return null;
 		} catch (Exception e) {
