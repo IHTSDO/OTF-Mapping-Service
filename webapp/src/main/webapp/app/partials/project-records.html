@@ -11,18 +11,7 @@
 <form>
 	<input ng-model="query">
 	<input type="submit" value="Search" ng-click="retrieveRecords(1)">
-	<span class="dropdown">
-		<a class="dropdown-toggle"><img align="top" src="img/help.png" alt="help icon"></a>
-		<span class="dropdown-menu">
-              <strong>Search Options</strong><br>
-              <a>Boolean Operators: AND/OR/NOT (must be capitalized)</a>
-              <a>Force exclude/include:  +/-</a>
-              <a>Grouping: (), e.g. (term1 OR term2) AND term3</a>
-              <a>Quote-matching: "", e.g. "this is a single term" </a>
-              <a>Wildcards: ? for single character, * for multiple characters</a>
-              
-        </span>
-	</span>
+	<input type="submit" value="Reset" ng-click="resetSearch()">
 </form>
 
 <table width="100%" class="table" >
@@ -91,10 +80,12 @@
   </tr>
 
 </tbody>
-
+{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
 <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage" class="pagination-sm" 
 			boundary-links="true" rotate="true" num-pages="numRecordPages"
 			on-select-page="retrieveRecords(page)"></pagination>
+
+
 </table>
 
 <p ng-show="unmappedDescendantsPresent"><img src="img/warning.png" alt="Unmapped Descendant Warning"> = This concept has unmapped descendants.</p>

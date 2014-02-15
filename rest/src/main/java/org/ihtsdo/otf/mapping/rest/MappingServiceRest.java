@@ -13,7 +13,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
@@ -398,23 +397,34 @@ public class MappingServiceRest {
 		}
 	}
 	
+	
 	/**
-	 * Returns the count of records associated with a map project
+	 * Returns the count of records associated with a map project given filters query, ignoring paging and sorting information
+	 * 
 	 * @param mapProjectId the map project id
+	 * @param pfsParameter the paging/filtering/sorting parameters object
 	 * @return the number of records as a String object
 	 */
-	@GET
+	@POST
 	@Path("/record/projectId/{id:[0-9][0-9]*}/nRecords")
-	@ApiOperation(value = "Find the number of records for a project id", notes = "Returns the number of map records for a project id", response = Integer.class)
-	@Produces({ MediaType.TEXT_PLAIN})
+	@ApiOperation(value = "Find number of records by project id given filtering information", notes = "Returns count of MapRecords in database given a paging/filtering/sorting parameters object", response = MapRecordList.class)
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces(MediaType.TEXT_PLAIN)
 	public String getMapRecordCountForMapProjectId(
-			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long mapProjectId) {
-			
-		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/projectId/" + mapProjectId.toString() + "/nRecords");
+			@ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
+		
+			// log call
+			Logger.getLogger(MappingServiceRest.class).info(
+					  "RESTful call (Mapping): /record/projectId/" + mapProjectId.toString() + " with PfsParameter: " + "\n"			
+					+ "     Index/Results = " + Integer.toString(pfsParameter.getStartIndex()) + "/" + Integer.toString(pfsParameter.getMaxResults()) + "\n"
+					+ "     Sort field    = " + pfsParameter.getSortField()
+					+ "     Filter String = " + pfsParameter.getFilterString());
 			
 			try {
+				
 				MappingService mappingService = new MappingServiceJpa();
-				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId, null);
+				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId, pfsParameter);
 				mappingService.close();
 				
 				// Jersey can't handle Long as return type, convert to string
@@ -424,121 +434,41 @@ public class MappingServiceRest {
 			}
 	}
 	
+	
 	/**
-	 * Returns the count of records associated with a map project given a filtering query
+	 * Returns delimited page of MapRecords given a paging/filtering/sorting parameters object
+	 * 
 	 * @param mapProjectId the map project id
-	 * @param filters the string filters
-	 * @return the number of records as a String object
+	 * @param pfsParameter the JSON object containing the paging/filtering/sorting parameters
+	 * @return the list of map records 
 	 */
-	@GET
-	@Path("/record/projectId/{id:[0-9][0-9]*}/nRecords/{filters}")
-	@ApiOperation(value = "Find the number of records for a project id", notes = "Returns the number of map records for a project id", response = Integer.class)
-	@Produces({ MediaType.TEXT_PLAIN})
-	public String getMapRecordCountForMapProjectIdWithQuery(
-			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "String query to filter records", required = true) @PathParam("filters") String filters) {
-			
-		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/projectId/" + mapProjectId.toString() + "nRecords/" + filters);
-			
-			try {
-				PfsParameter pfs = new PfsParameterJpa();
-				pfs.setFilterString(filters);
-				
-				MappingService mappingService = new MappingServiceJpa();
-				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId, pfs);
-				mappingService.close();
-				
-				// Jersey can't handle Long as return type, convert to string
-				return nRecords.toString();
-			} catch (Exception e) {
-				throw new WebApplicationException(e);
-			}
-	}
-	
-	
-	/**
-	 * Returns a delimited page of map records for a project id
-	 * @param projectId the projectId
-	 * @param nStart the first record to return
-	 * @param nMaxResults the number of records to fetch
-	 * @return the mapRecords
-	 */
-	@GET
-	@Path("/record/projectId/{id:[0-9][0-9]*}/{nStart:[0-9][0-9]*}-{nMaxResults:[0-9][0-9]*}")
-	@ApiOperation(value = "Find paged records by project id", notes = "Returns delimited page of MapRecords, e.g. range [nStart: nStart+nMaxRecords-1] given a project id in either JSON or XML format", response = MapRecord.class)
+	@POST
+	@Path("/record/projectId/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find paged records by project id", notes = "Returns delimited page of MapRecords given a paging/filtering/sorting parameters object", response = MapRecordList.class)
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecordList getMapRecordsForMapProjectId(
-			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long projectId,
-			@ApiParam(value = "Start index of records", required = true) @PathParam("nStart") int nStart,
-			@ApiParam(value = "Number of records to fetch", required = true) @PathParam("nMaxResults") int nMaxResults) {
+			@ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
 		
-		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/projectId/"
-				+ projectId.toString() + "/" + Integer.toString(nStart) + "-" + Integer.toString(nMaxResults));
-		
-		try {
-			// instantiate the pfs parameters
-			PfsParameter pfs = new PfsParameterJpa();
-			pfs.setStartIndex(nStart);
-			pfs.setMaxResults(nMaxResults);
+			// log call
+			Logger.getLogger(MappingServiceRest.class).info(
+					  "RESTful call (Mapping): /record/projectId/" + mapProjectId.toString() + " with PfsParameter: " + "\n"			
+					+ "     Index/Results = " + Integer.toString(pfsParameter.getStartIndex()) + "/" + Integer.toString(pfsParameter.getMaxResults()) + "\n"
+					+ "     Sort field    = " + pfsParameter.getSortField()
+					+ "     Filter String = " + pfsParameter.getFilterString());
+			
 			
 			// execute the service call
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecordList mapRecords = new MapRecordList();
-			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId, pfs));
-			mappingService.close();
-			
+			try {
+				mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(mapProjectId, pfsParameter));
+				mappingService.close();
+			} catch (Exception e) {
+				throw new WebApplicationException(e);
+			}		
 			return mapRecords;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	/**
-	 * Returns a delimited page of map records for a project id
-	 * @param projectId the projectId
-	 * @param nStart the first record to return
-	 * @param nMaxResults the number of records to fetch
-	 * @param filters the filter query
-	 * @param sortBy the field to sort results by
-	 * @return the mapRecords
-	 */
-	@GET
-	@Path("/record/projectId/{id:[0-9][0-9]*}/{nStart:[0-9][0-9]*}-{nMaxResults:[0-9][0-9]*}/{filters}")
-	@ApiOperation(value = "Find paged records by project id and query", notes = "Returns delimited page of MapRecords, e.g. range [nStart: nStart+nMaxRecords-1] given a project id and string filters query", response = MapRecord.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecordList getMapRecordsForMapProjectId(
-			@ApiParam(value = "Project id for map records", required = true) @PathParam("id") Long projectId,
-			@ApiParam(value = "Start index of records", required = true) @PathParam("nStart") int nStart,
-			@ApiParam(value = "Number of records to fetch", required = true) @PathParam("nMaxResults") int nMaxResults,
-			@ApiParam(value = "Filters query string", required = true) @PathParam("filters") String filters) {
-			//@ApiParam(value = "Sorting field", required = false) String sortBy) {
-		
-		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/projectId/"
-				+ projectId.toString() + "/" + Integer.toString(nStart) + "-" + Integer.toString(nMaxResults)
-				+ "/" + filters);
-		
-		try {
-			
-			System.out.println("Called getMapRecordsForMapProjectId with query string: " + filters);
-			
-			// instantiate the pfs parameters
-			PfsParameter pfs = new PfsParameterJpa();
-			pfs.setStartIndex(nStart);
-			pfs.setMaxResults(nMaxResults);
-			pfs.setFilterString(filters);
-			//pfs.setSortField(sortBy);
-			
-			
-			// execute the service call
-			MappingService mappingService = new MappingServiceJpa();
-			MapRecordList mapRecords = new MapRecordList();			
-			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId, pfs));
-			mappingService.close();
-			
-			return mapRecords;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
 	}
 	
 	/**

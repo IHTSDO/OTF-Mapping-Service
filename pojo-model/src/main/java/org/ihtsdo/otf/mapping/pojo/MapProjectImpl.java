@@ -63,6 +63,15 @@ public class MapProjectImpl implements MapProject {
 
 	/** The destination terminology version. */
 	private String destinationTerminologyVersion;
+	
+	/** The relation style */
+	private String mapRelationStyle;
+	
+	/** The name of the document containing the map principles */
+	private String mapPrincipleSourceDocument;
+	
+	/** Flag for whether the project is rule based */
+	private boolean ruleBased;
 
 	/**
 	 * Return the id
@@ -436,6 +445,37 @@ public class MapProjectImpl implements MapProject {
 	public void setRefSetName(String refSetName) {
 		this.refSetName = refSetName;
 		
+	}
+	
+	
+	@Override
+	public String getMapRelationStyle() {
+		return mapRelationStyle;
+	}
+
+	@Override
+	public void setMapRelationStyle(String mapRelationStyle) {
+		this.mapRelationStyle = mapRelationStyle;
+	}
+
+	@Override
+	public String getMapPrincipleSourceDocument() {
+		return mapPrincipleSourceDocument;
+	}
+
+	@Override
+	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
+		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+	}
+	
+	@Override
+	public boolean isRuleBased() {
+		return ruleBased;
+	}
+
+	@Override
+	public void setRuleBased(boolean ruleBased) {
+		this.ruleBased = ruleBased;
 	}
 
 	@Override

@@ -1,10 +1,13 @@
 package org.ihtsdo.otf.mapping.helpers;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * The Jpa implementation of the paging/filtering/sorting object
  * @author Patrick
  *
  */
+@XmlRootElement
 public class PfsParameterJpa implements PfsParameter {
 
 	/** The maximum number of results */
