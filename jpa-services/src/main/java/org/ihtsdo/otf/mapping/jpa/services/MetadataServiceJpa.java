@@ -52,8 +52,8 @@ public class MetadataServiceJpa implements MetadataService {
 		helperMap.put("ICD9CM", new ClamlMetadataServiceJpaHelper());
 		helperMap.put("ICPC", new ClamlMetadataServiceJpaHelper());
 
-		// create once
-		if (factory == null) {
+		// created once or if the factory has closed
+		if (factory == null || !factory.isOpen()) {
 			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 		}
 		// create on each instantiation
@@ -157,7 +157,8 @@ public class MetadataServiceJpa implements MetadataService {
 		if (rtIdNameMap != null) {
 			idNameMapList.put("relationshipTypes", rtIdNameMap);
 		}
-		Map<Long, String> hierRtIdNameMap = getHierarchicalRelationshipTypes(terminology, version);
+		Map<Long, String> hierRtIdNameMap =
+				getHierarchicalRelationshipTypes(terminology, version);
 		if (hierRtIdNameMap != null) {
 			idNameMapList.put("hierarchicalRelationshipTypes", hierRtIdNameMap);
 		}
@@ -378,21 +379,24 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MetadataService#
+	 * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public Map<Long, String> getHierarchicalRelationshipTypes(String terminology,
 		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
-			return helperMap.get(terminology).getHierarchicalRelationshipTypes(terminology,
-					version);
+			return helperMap.get(terminology).getHierarchicalRelationshipTypes(
+					terminology, version);
 		} else {
 			// return an empty map
 			return new HashMap<Long, String>();
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 

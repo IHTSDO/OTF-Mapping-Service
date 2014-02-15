@@ -161,7 +161,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
-		getLog().info("Start loading RF2 data ...");
+		getLog().info("Starting loading RF2 data ...");
 
 		FileInputStream propertiesInputStream = null;
 		try {

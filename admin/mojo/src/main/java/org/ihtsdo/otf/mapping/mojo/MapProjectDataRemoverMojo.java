@@ -77,9 +77,10 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		getLog().info("Starting removing map project data ...");
+
 		try {
 
-			getLog().info("Start removing map project data ...");
 
 			MappingService service = new MappingServiceJpa();
 			// Remove map projects

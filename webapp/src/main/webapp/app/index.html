@@ -1,12 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"> 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html ng-app="mapProjectApp">
 <head>
 <meta http-equiv="Content-Language" content="en" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>OTF Mapping Test WebApp</title>
 
-  <link rel="stylesheet" href="css/app.css">
-  <link rel="stylesheet" href="css/bootstrap.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/bootstrap.css">
 
   <!--  angular includes -->
   <script src="lib/angular/angular.js"></script>
@@ -20,21 +20,31 @@
 
 
 <style type="text/css" media="all">
-
 </style>
 </head>
 
-<body style="margin-left: 10pt; margin-right: 10pt; margin-top: 5pt">
+<body>
 
-<div id="header">
-	<div style="float:left;"><a href="index.html#/"><img src="img/ihtsdo_logo.png"></a></div>
+	<header-directive></header-directive>
+
+	<div id="wrap">
+
+		<!-- Begin page content -->
+		<div class="container">
+			<p>
+			<p>
+			<div ng-view></div>
+		</div>
+	</div>
 	
+	<div id="footer" class="container">
+    <nav class="navbar navbar-default navbar-fixed-bottom">
+        <div class="navbar-inner navbar-content-center">
+            <p>&nbsp;<a href="http://www.ihtsdo.org/">Copyright @2014 IHTSDO</a></p>
+        </div>
+    </nav>
 </div>
-<h3>&nbsp;</h3>
-<p>
-<p>
-<div  ng-view></div>
-
-     
+	
 </body>
+
 </html>
