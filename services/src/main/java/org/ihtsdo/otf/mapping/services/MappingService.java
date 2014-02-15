@@ -556,13 +556,6 @@ public interface MappingService {
 	 */
 	public void commit() throws Exception;
 
-	
-	// testing function
-	List<MapRecord> testCriteriaQuery(Long mapProjectId, String query,
-			PfsParameter pfsParameter) throws Exception;
-
-	
-
 }
 	
 	

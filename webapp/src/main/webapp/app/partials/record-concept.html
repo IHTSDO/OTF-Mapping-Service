@@ -92,7 +92,7 @@
 					<a class="dropdown-toggle">Parents</a>	
 			 		<ul class="dropdown-menu">
 			 		<strong>Parents</strong>
-			 			<li ng-repeat="relationship in concept.relationship">
+			 			<li ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
 			 				<a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:  {{relationship.destinationConceptPreferredName}}</a> 
 						</li>
 			 		</ul>
@@ -101,7 +101,7 @@
 					<a class="dropdown-toggle">Children</a>	
 			 		<ul class="dropdown-menu">
 			 		<strong>Children</strong>
-			 			<li ng-repeat="concept in concept.children">
+			 			<li ng-repeat="concept in concept.children | orderBy: 'value'">
 			 				<a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:  {{concept.value}}</a> 
 						</li>
 			 		</ul>

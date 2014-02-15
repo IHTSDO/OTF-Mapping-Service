@@ -183,8 +183,11 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapProject.setBlockStructure(fields[8].equals("true") ? true : false);
 				mapProject.setGroupStructure(fields[9].equals("true") ? true : false);
 				mapProject.setPublished(fields[10].equals("true") ? true : false);
-
-				String mapAdvices = fields[11];
+				mapProject.setMapRelationStyle(fields[11]);
+				mapProject.setMapPrincipleSourceDocument(fields[12]);
+				mapProject.setRuleBased(fields[14].equals("true") ? true : false);
+				
+				String mapAdvices = fields[15];
 				if (!mapAdvices.equals("")) {
 					for (String advice : mapAdvices.split(",")) {
 						for (MapAdvice ml : mappingService.getMapAdvices()) {
@@ -194,7 +197,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				String mapPrinciples = fields[12];
+				String mapPrinciples = fields[16];
 				if (!mapPrinciples.equals("")) {
 					for (String principle : mapPrinciples.split(",")) {
 						for (MapPrinciple ml : mappingService.getMapPrinciples()) {
@@ -205,7 +208,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				String mapLeads = fields[13];
+				String mapLeads = fields[17];
 				for (String lead : mapLeads.split(",")) {
 					for (MapLead ml : mappingService.getMapLeads()) {
 						if (ml.getUserName().equals(lead))
@@ -213,7 +216,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				String mapSpecialists = fields[14];
+				String mapSpecialists = fields[18];
 				for (String specialist : mapSpecialists.split(",")) {
 					for (MapSpecialist ml : mappingService.getMapSpecialists()) {
 						if (ml.getUserName().equals(specialist))

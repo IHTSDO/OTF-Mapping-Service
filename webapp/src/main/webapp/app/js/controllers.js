@@ -99,11 +99,23 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		    	  
 		    	  for (var i = 0; i < projects.length; i++) {
 		    		  if (projects[i].id == records[0].mapProjectId) {
+		    			  $scope.project = projects[i];
 		    			  terminology = projects[i].sourceTerminology;
 		    			  version = projects[i].sourceTerminologyVersion;
 		    			  break;
 		    		  }
 		    	  }	  
+		    	  
+		    	// check relation syle flags
+				  if ($scope.project.mapRelationStyle === "MAP_CATEGORY_STYLE") {
+					  console.debug("map category style detected");
+					  applyMapCategoryStyle();
+				  }
+				  
+				  if ($scope.project.mapRelationStyle === "RELATIONSHIP_STYLE") {
+					  console.debug("Relationship Style detected");
+					  applyRelationshipStyle();
+				  }
 		    	  
 		    	  // find concept based on source terminology
 		    	  $http({
@@ -186,37 +198,88 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			}
 			
 		};
+		
+		function applyMapCategoryStyle() {
+			 
+			 // Cycle over all entries. If targetId is blank, show relationName as the target name
+			 for (var i = 0; i < $scope.records.length; i++) {		 
+				 for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {		 
+					 
+					 if ($scope.records[i].mapEntry[j].targetId === "") {
+						 $scope.records[i].mapEntry[j].targetName = "[RELATION NAME NULL]";
+							
+								     // TODO: Reinsert this once map entries correctly loaded:  $scope.records[i].mapEntry[j].relationName;
+					 }
+				 }
+			 }
+		 };
+		 
+		function applyRelationshipStyle() {
+			// Cycle over all entries. Add the relation name to the advice list
+			 for (var i = 0; i < $scope.records.length; i++) {		 
+				 for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {		 	 
+					 if ($scope.records[i].mapEntry[j].targetId === "") {	 
+						 // get the object for easy handling
+						 var jsonObj = $scope.records[i].mapEntry[j].mapAdvice;
+						 
+						 // add the serialized advice	
+						 jsonObj.push({"id":"0", "name": "***PLACEHOLDER ADVICE***", "detail":"***PLACEHOLDER ADVICE***", "objectId":"0"});
+						 
+						 // TODO Replace placeholder with $scope.records[i].mapEntry[j].mapRelationName
+						 $scope.records[i].mapEntry[j].mapAdvice = jsonObj;
+					 }
+				 }
+			 }
+		 };
 	
 		
 	}]);
                                                               
+/**
+ * Controller for Map Project Records view
+ * 
+ * Basic function:
+ * 1) Retrieve map project
+ * 2) Retrieve concept associated with map project refsetid
+ * 3) Retrieve records
+ * 
+ * Scope functions (accessible from html)
+ * - $scope.resetSearch 		clears query and launches unfiltered record retrieval request
+ * - $scope.retrieveRecords 	launches new record retrieval request based on current paging/filtering/sorting parameters
+ * - $scope.to_trusted	 		converts unsafe html into usable/displayable code
+ *  
+ * Helper functions: 
+ * - setPagination				sets the relevant pagination attributes based on current page
+ * - getNRecords				retrieves the total number of records available given filtering parameters
+ * - getUnmappedDescendants		retrieves the unmapped descendants of a concept
+ * - applyMapCategoryStyle		modifies map entries for display based on MAP_CATEGORY_STYLE
+ * - applyRelationshipStyle		modifies map entries for display based on RELATIONSHIP_STYLE
+ * - constructPfsParameterObj	creates a PfsParameter object from current paging/filtering/sorting parameters, consumed by RESTful service
+ */
 
-
-
-// TODO Add test for coming from project list page (i.e. pass the project to this controller)
 mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', '$routeParams', '$sce',
    function ($scope, $http, $routeParams, $sce) {
 	
-	$scope.headers = [
-	                  {value: 'conceptId', title: 'Concept'},
-	                  {value: 'conceptName', title: 'Concept Name'},
-	                  {value: 'mapGroup', title: 'Group Id'},
-	                  {value: 'mapPriority', title: 'Map Priority'},
-	                  {value: 'rule', title: 'Rule'},
-	                  {value: 'targetId', title: 'Target'},
-	                  {value: 'targetName', title: 'Target Name'},
-	                  {value: 'actions', title: 'Actions'}
-	                  
-	                  ];
-	$scope.filterCriteria = {
-			pageNumber: 1,
-			sortDir: 'asc',
-			sortedBy: 'conceptId'
-	};
+		// header information (not used currently)
+		$scope.headers = [
+		                  {value: 'conceptId', title: 'Concept'},
+		                  {value: 'conceptName', title: 'Concept Name'},
+		                  {value: 'mapGroup', title: 'Group Id'},
+		                  {value: 'mapPriority', title: 'Map Priority'},
+		                  {value: 'rule', title: 'Rule'},
+		                  {value: 'targetId', title: 'Target'},
+		                  {value: 'targetName', title: 'Target Name'},
+		                  {value: 'actions', title: 'Actions'}
+		                  ];
+		
+		// header sorting criteria initialization (not used currently)
+		$scope.filterCriteria = {
+				pageNumber: 1,
+				sortDir: 'asc',
+				sortedBy: 'conceptId'
+		};
 	
-
-	
-	
+	  // the project id, extracted from route params
 	  $scope.projectId = $routeParams.projectId;
 	  
 	  // status variables
@@ -228,13 +291,15 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	  $scope.errorProject = "";
 	  $scope.errorConcept = "";
 	  $scope.errorRecords = "";
-	 
+	  
+	  // pagination variables
+	  $scope.recordsPerPage = 10;
 	  
 	  // for collapse directive
 	  $scope.isCollapsed = true;
 	  
 	  // retrieve project information
-	 $http({
+	  $http({
         url: root_mapping + "project/id/" + $scope.projectId,
         dataType: "json",
         method: "GET",
@@ -246,7 +311,6 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
         $scope.errorProject = "Project retrieved";
       }).error(function(error) {
     	  $scope.errorProject = "Could not retrieve project"; 
-     
       }).then(function(data) {
 
  		 
@@ -261,56 +325,54 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
     	  }).success(function(data) {
     		  $scope.concept = data;
     	  }).error(function(error) {
-    		  $scope.errorRecord = "Error retrieving concept";
+    		  $scope.errorConcept= "Error retrieving concept";
     	  });
       }).then(function(data) {
-    	  
-    	  // get pagination variables
-    	  $scope.setPagination(10);
     	  
     	  // load first page
     	  $scope.retrieveRecords(1);
       });
 	 
+	 // Constructs trusted html code from raw/untrusted html code
 	 $scope.to_trusted = function(html_code) {
 	    return $sce.trustAsHtml(html_code);
 	 };
 	 
-	 // function to set the relevant pagination fields
-	 $scope.setPagination = function(recordsPerPage) {
-		 
-		 // set scope variable for total records
-		 $scope.getNRecords();
-				 
-		 // set pagination variables
-		 $scope.recordsPerPage = recordsPerPage;
-		 $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
+	 // function to clear input box and return to initial view
+	 $scope.resetSearch = function() {
+		 $scope.query = null;
+		 $scope.retrieveRecords(1);
 	 };
     	
 	 // function to retrieve records for a specified page
 	 $scope.retrieveRecords = function(page) {
 		 
 		 // retrieve pagination information for the upcoming query
-		 $scope.setPagination(10);
+		 setPagination($scope.recordsPerPage);
 		
 		 console.debug("Switching to page " + page);
-		 
-		 var startRecord = (page - 1) * $scope.recordsPerPage; 
-		 var query_url;
-		 
-		 if ($scope.query == null) {
+		/*
+		   var query_url;
+		   var startRecord = (page - 1) * $scope.recordsPerPage;
+		   if ($scope.query == null) {
 			 query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/" + startRecord + "-" + $scope.recordsPerPage;
 		 } else {
 			 query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/" + startRecord + "-" + $scope.recordsPerPage + "/" + $scope.query;
-		 }
+		 }*/
+		 // construct html parameters parameter
+		 var pfsParameterObj = constructPfsParameterObj(page);
+		 var query_url = root_mapping + "record/projectId/" + $scope.project.objectId;
 		 
+		 console.debug("Retrieve records");
 		 console.debug(query_url);
-		
+		 console.debug(pfsParameterObj);
+		 
 		// retrieve map records
 		  $http({
 			  url: query_url,
 			  dataType: "json",
-			  method: "GET",
+			  data: pfsParameterObj,
+			  method: "POST",
 			  headers: {
 				  "Content-Type": "application/json"
 			  }
@@ -345,6 +407,19 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 					  }
 				  };
 			  };
+			  
+			  console.debug("Checking map category styles");
+			  
+			  // check relation syle flags
+			  if ($scope.project.mapRelationStyle === "MAP_CATEGORY_STYLE") {
+				  console.debug("map category style detected");
+				  applyMapCategoryStyle();
+			  }
+			  
+			  if ($scope.project.mapRelationStyle === "RELATIONSHIP_STYLE") {
+				  console.debug("Relationship Style detected");
+				  applyRelationshipStyle();
+			  }
 					 			  
 			  
 			  // get unmapped descendants (checking done in routine)
@@ -354,25 +429,45 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		  });
 	 }; 
 	 
+	 // Constructs a paging/filtering/sorting parameters object for RESTful consumption
+	 function constructPfsParameterObj(page) {
+		
+			 return {"startIndex": (page-1)*$scope.recordsPerPage,
+			 	 	 "maxResults": $scope.recordsPerPage, 
+			 	 	 "sortField": null, // TODO: Replace this when sorting functional
+			 	 	 "filterString": $scope.query == null ? null : $scope.query};  // assigning simply to $scope.query when null produces undefined
+		 
+	 }
+	 
+	 // function to set the relevant pagination fields
+	 function setPagination(recordsPerPage) {
+		 
+		 // set scope variable for total records
+		 getNRecords();
+				 
+		 // set pagination variables
+		 $scope.recordsPerPage = recordsPerPage;
+		 $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
+	 };
+	 
 	 // function query for the number of records associated with full set or query
-	 $scope.getNRecords = function() {
+	 function getNRecords() {
 		 
-		 var query_url;
+		 var query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/nRecords";
+		 var pfsParameterObj = constructPfsParameterObj(1);
 		 
-		 if ($scope.query == null) {
-			 query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/nRecords";
-		 } else {
-			 query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/nRecords/" + $scope.query;
-		 }
+		 console.debug("getNRecords");
+		 console.debug(pfsParameterObj);
 		 
 		 // retrieve the total number of records associated with this map project
-	   	  $http({
-	   		  url: query_url,
-	   		  dataType: "json",
-	   		  method: "GET",
-	   		  headers: {
-	   			  "Content-Type": "application/json"
-	   		  }
+		 $http({
+			  url: query_url,
+			  dataType: "json",
+			  data: pfsParameterObj,
+			  method: "POST",
+			  headers: {
+				  "Content-Type": "application/json"
+			  }
 	   	  }).success(function(data) {
 	   		  console.debug("getNRecords returned " + data);
 	   		  $scope.nRecords = data;
@@ -383,46 +478,27 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	   	  });
 	 };
 	 
-	 $scope.onSort = function (sortedBy, sortDir) {
-		 $scope.filterCriteria.sortDir = sortDir;
-		 $scope.filterCriteria.sortedBy = sortedBy;
-		 $scope.filterCriteria.pageNumber = 1;
-	 };
-	 
-	 // stuck here for html cleanliness -- probably want to move
-	 $scope.getSearchHelp = 
-		"<strong>Search Options</strong>" +
-		 "<table>" +
-		 "<thead>" +
-		 "<tr>" +
-		 "	<th>Option</th>" +
-		 " 	<th>Usage</th>" +
-		 "	<th>Example</th>" +
-		 "</tr>" +
-		 "</thead>" +
-		 "</table>";
-	
-	 
-	// function to return trusted html code (for tooltip content)
-	$scope.to_trusted = function(html_code) {
-	    return $sce.trustAsHtml(html_code);
-	 };
+	 /* For sorting, not currently used
+	  *  $scope.onSort = function (sortedBy, sortDir) {
+			 $scope.filterCriteria.sortDir = sortDir;
+			 $scope.filterCriteria.sortedBy = sortedBy;
+			 $scope.filterCriteria.pageNumber = 1;
+		 };
+	*/
+
 		 
-	 // TODO This is kind of messy
+	// TODO This is inefficient, consider implementing a batch request
     function getUnmappedDescendants(index) {
 				  
     	  // before processing this record, make call to start next async request
     	  if (index < $scope.records.length-1) {
 		  	   getUnmappedDescendants(index+1);
 		  }
-    	
-		  console.debug("Checking record " + index);
+    	  
 		  $scope.records[index].unmappedDescendants = [];
 		  
 		  // if descendants below threshold for lower-level concept, check for unmapped
 		  if ($scope.records[index].countDescendantConcepts < 11) {
-			 		  
-			  console.debug("  Record has < 11 descendants");
 
 			  $http({
 				  url: root_mapping + "concept/" 
@@ -436,16 +512,44 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 					  "Content-Type": "application/json"
 				  }
 			  }).success(function(data) {
-				 console.debug("  Found " + data.count + " unmapped descendants");
 				 if (data.count > 0) $scope.unmappedDescendantsPresent = true;
 				 $scope.records[index].unmappedDescendants = data.searchResult;
 			  });
-		  // otherwise check the next record
-		  } else {
-			  console.debug("Above LLC threshold");
-			  
-		  }
+		  } 
 	  
+	 };
+	 
+	 function applyMapCategoryStyle() {
+		 
+		 // Cycle over all entries. If targetId is blank, show relationName as the target name
+		 for (var i = 0; i < $scope.records.length; i++) {		 
+			 for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {		 
+				 
+				 if ($scope.records[i].mapEntry[j].targetId === "") {
+					 $scope.records[i].mapEntry[j].targetName = "[RELATION NAME NULL]";
+						
+							     // TODO: Reinsert this once map entries correctly loaded:  $scope.records[i].mapEntry[j].relationName;
+				 }
+			 }
+		 }
+	 };
+	 
+	function applyRelationshipStyle() {
+		// Cycle over all entries. Add the relation name to the advice list
+		 for (var i = 0; i < $scope.records.length; i++) {		 
+			 for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {		 	 
+				 if ($scope.records[i].mapEntry[j].targetId === "") {	 
+					 // get the object for easy handling
+					 var jsonObj = $scope.records[i].mapEntry[j].mapAdvice;
+					 
+					 // add the serialized advice	
+					 jsonObj.push({"id":"0", "name": "***PLACEHOLDER ADVICE***", "detail":"***PLACEHOLDER ADVICE***", "objectId":"0"});
+					 
+					 // TODO Replace placeholder with $scope.records[i].mapEntry[j].mapRelationName
+					 $scope.records[i].mapEntry[j].mapAdvice = jsonObj;
+				 }
+			 }
+		 }
 	 };
 }]);
 
@@ -483,21 +587,12 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 		    	  } else {
 		    		  $scope.project.mapPrincipleDocument = null;
 		    	  }
-		    	  
-		    	  // sort the principles and advices
-		    	  $scope.sortedAdvice = $scope.sortByKey($scope.project.mapAdvice, 'id');
-		    	  $scope.sortedPrinciples = $scope.sortByKey($scope.project.mapPrinciple, 'id');
-		    	  
+
 		    	  // set pagination variables
 		    	  $scope.pageSize = 5;
-		    	  $scope.getPagedAdvice(1);
-		    	  $scope.getPagedPrinciple(1);
+		    	  $scope.getPagedAdvices(1);
+		    	  $scope.getPagedPrinciples(1);
 		    	  $scope.orderProp = 'id';
-		    	  
-
-		    	  
-		    	  console.debug("Advice Pages: " + $scope.numPagesAdvice);
-		    	  console.debug("Principle Pages: " + $scope.numPagesPrinciple);
 		      
 		      });
 			
@@ -507,19 +602,89 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 			    return $sce.trustAsHtml(html_code);
 			 };
 			 
-			 $scope.getPagedAdvice = function (page) {
+			 ///////////////////////////////////////////////////////////////
+			 // Functions to display and filter advices and principles
+			 // NOTE: This is a workaround due to pagination issues
+			 ///////////////////////////////////////////////////////////////
+			 
+			 // get paged functions
+			 // - sorts (by id) filtered elements
+			 // - counts number of filtered elmeents
+			 // - returns artificial page via slice
+			 
+			 $scope.getPagedAdvices = function (page) {
 				 console.debug("Called paged advice for page " + page);				 
-				 $scope.pagedAdvice = $scope.sortedAdvice.slice(
-						 (page-1)*$scope.pageSize,
-						 page*$scope.pageSize);
+				 $scope.pagedAdvice = $scope.sortByKey($scope.project.mapAdvice, 'id')
+				 								.filter(containsAdviceFilter);
+				 $scope.pagedAdviceCount = $scope.pagedAdvice.length;
+				 $scope.pagedAdvice = $scope.pagedAdvice
+				 								.slice((page-1)*$scope.pageSize,
+				 										page*$scope.pageSize);
 			 };
 			 
-			 $scope.getPagedPrinciple = function (page) {
+			 $scope.getPagedPrinciples = function (page) {
 				 console.debug("Called paged principle for page " + page);
-				 $scope.pagedPrinciple = $scope.sortedPrinciples.slice(
-						 (page-1)*$scope.pageSize,
-						 page*$scope.pageSize);
+				 $scope.pagedPrinciple = $scope.sortByKey($scope.project.mapPrinciple, 'id')
+												.filter(containsPrincipleFilter);
+				 $scope.pagedPrincipleCount = $scope.pagedPrinciple.length;
+				 $scope.pagedPrinciple = $scope.pagedPrinciple
+												.slice((page-1)*$scope.pageSize,
+														page*$scope.pageSize);
+				 
+				 console.debug($scope.pagedPrinciple);
 			 };
+			 
+			 // functions to reset the filter and retrieve unfiltered results
+			 
+			 $scope.resetAdviceFilter = function() {
+				 $scope.adviceFilter = "";
+				 $scope.getPagedAdvices(1);
+			 };
+			 
+			 $scope.resetPrincipleFilter = function() {
+				 $scope.principleFilter = "";
+				 $scope.getPagedPrinciples(1);
+			 };
+			 
+			 
+			 // element-specific functions for filtering
+			 // don't want to search id or objectId
+			 
+			 function containsAdviceFilter(element) {
+				 
+				 // check if advice filter is empty
+				 if ($scope.adviceFilter === "" || $scope.adviceFilter == null) return true;
+				 
+				 // otherwise check if upper-case advice filter matches upper-case element name or detail
+				 if ( element.detail.toString().toUpperCase().indexOf( $scope.adviceFilter.toString().toUpperCase()) != -1) return true;
+				 if ( element.name.toString().toUpperCase().indexOf( $scope.adviceFilter.toString().toUpperCase()) != -1) return true;
+				 
+				 // otherwise return false
+				 return false;
+			 }
+			 
+			 function containsPrincipleFilter(element) {
+				 
+				 console.debug("Called containsPrincipleFilter");
+				 
+				// check if principle filter is empty
+				 if ($scope.principleFilter === "" || $scope.principleFilter == null) return true;
+				 
+				 console.debug("not null")
+				 
+				 // otherwise check if upper-case principle filter matches upper-case element name or detail
+				 if ( element.principleId.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
+				 if ( element.detail.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
+				 if ( element.name.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
+				 if ( element.sectionRef.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
+				 
+				 console.debug("did not match for " + $scope.principleFilter);
+				 
+				 // otherwise return false
+				 return false;
+			 }
+			 
+			 // helper function to sort a JSON array by field
 			 
 			 $scope.sortByKey = function sortById(array, key) {
 				    return array.sort(function(a, b) {
@@ -527,7 +692,11 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
 				    });
 				};
-			 
+				
+				
+			////////////////////////////////////////////////////////
+			// END PRINCIPLE/ADVICE SORTING/FILTERING FUNCTIONS
+			////////////////////////////////////////////////////////
 }]);
 
 
