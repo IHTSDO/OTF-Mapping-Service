@@ -81,9 +81,9 @@ public class ContentServiceJpa implements ContentService {
 					indexReaderAccessor.close(indexReader);
 				}
 			}
-			if (fullTextEntityManager != null) {
-				fullTextEntityManager.close();
-			}
+
+			fullTextEntityManager.close();
+
 
 			// closing fullTextEntityManager closes manager as well, recreate
 			manager = factory.createEntityManager();
@@ -197,6 +197,8 @@ public class ContentServiceJpa implements ContentService {
 				sr.setValue(c.getDefaultPreferredName());
 				results.addSearchResult(sr);
 			}
+			
+			fullTextEntityManager.close();
 
 			results.sortSearchResultsById();
 

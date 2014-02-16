@@ -212,8 +212,14 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						+ mpr.getDestinationTerminology() + "\t"
 						+ mpr.getDestinationTerminologyVersion() + "\t"
 						+ mpr.isBlockStructure() + "\t" + mpr.isGroupStructure() + "\t"
-						+ mpr.isPublished() + "\t" + mapAdvices + "\t" + mapPrinciples
-						+ "\t" + mprMapLeads + "\t" + mprMapSpecialists + "\n");
+						+ mpr.isPublished() + "\t" 
+						+ mpr.getMapRelationStyle() + "\t"
+						+ mpr.getMapPrincipleSourceDocument() + "\t"
+						+ mpr.isRuleBased() + "\t"
+						+ mapAdvices + "\t" 
+						+ mapPrinciples + "\t"
+						+ mprMapLeads + "\t" 
+						+ mprMapSpecialists + "\n");
 			}
 			mappingService.close();
 

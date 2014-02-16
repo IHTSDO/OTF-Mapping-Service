@@ -443,7 +443,6 @@ public interface MappingService {
 	 * Creates the map records for map project.
 	 *
 	 * @param mapProject the map project
-	 * @return the list
 	 * @throws Exception the exception
 	 */
 	public void createMapRecordsForMapProject(MapProject mapProject) throws Exception;
@@ -454,7 +453,6 @@ public interface MappingService {
 	 *
 	 * @param mapProject the map project
 	 * @param complexMapRefSetMembers the complex map ref set members
-	 * @return the list
 	 * @throws Exception the exception
 	 */
 	public void createMapRecordsForMapProject(MapProject mapProject, 
@@ -555,12 +553,6 @@ public interface MappingService {
 	 * @throws Exception the exception
 	 */
 	public void commit() throws Exception;
-
-	
-	// testing function
-	List<MapRecord> testCriteriaQuery(Long mapProjectId, String query,
-			PfsParameter pfsParameter) throws Exception;
-
 
 	
 
