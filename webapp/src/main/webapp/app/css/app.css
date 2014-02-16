@@ -12,9 +12,16 @@ html, body
 	min-height: 100px;
 }
 
+.otf-container,
+.otf-navbar-fixed-top .otf-container,
+.otf-navbar-fixed-bottom .otf-container {
+  width: 90%;
+}
+
 /* Wrapper for page content to push down footer */
 #wrap {
   min-height: 100%;
+  min-width: 100%;
   height: auto;
   /* Negative indent footer by its height */
   margin: 0 auto -60px;

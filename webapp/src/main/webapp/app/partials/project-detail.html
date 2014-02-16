@@ -31,6 +31,14 @@
     <td>{{project.groupStructure}}</td>
   </tr>
   <tr>
+    <td><div tooltip-placement="right" tooltip="A true/false indicator of whether this map project uses rules other than TRUE"><b>Rule Based</b></div></td>
+    <td>{{project.ruleBased}}</td>
+  </tr>
+    <tr>
+    <td><div tooltip-placement="right" tooltip="The method by which this project uses the map relation (e.g. map record based, relationship based)"><b>Relation Style</b></div></td>
+    <td>{{project.mapRelationStyle}}</td>
+  </tr>
+  <tr>
     <td><div tooltip-placement="right" tooltip="List of the map leads for this project."><b>Map Leads</b></div></td>
    <!-- <td><ul><li ng-repeat="lead in project.mapLead">{{lead.name}}, {{lead.userName}}, {{lead.email}} </li></ul></td>  --> 
     <td><table width="100%" class="table pure-table" >
@@ -74,31 +82,49 @@
   <tr ng-show="project.mapAdvice.length > 0">
     <td><div tooltip-placement="right" tooltip="List of the map advice for this project."><b>Map Advice</b></div></td>
     <td>
+    
+    <pagination direction-links="false" boundary-links="true" 
+    			total-items="pagedAdviceCount" items-per-page="pageSize" 
+    			page="pageAdvice" on-select-page="getPagedAdvices(page)"></pagination>
+    <form>
+	    <input type="text" ng-model="adviceFilter" ng-change="getPagedAdvices(1)">
+	    <input type="submit" value="Reset Filter" ng-click="resetAdviceFilter()">
+    </form>
+    		
     <table width="100%" class="table pure-table" >
     <thead>
       <tr>
         <th>Advice</th>
       </tr>
     </thead>
-    <tbody ng-repeat="advice in pagedAdvice" style="border: 2px solid #ccc;" >
+    <tbody ng-repeat="advice in pagedAdvice | orderBy: 'name'" style="border: 2px solid #ccc;" >
       <tr>
         <td>{{advice.name}}</td>
       </tr>
      
     </tbody>
-    <pagination direction-links="false" boundary-links="true" 
-    			total-items="project.mapAdvice.length" items-per-page="pageSize" 
-    			page="pageAdvice" on-select-page="getPagedAdvice(page)"></pagination>
+    
+    
    </table>
    </td>
   </tr>
   <tr ng-show="project.mapPrinciple.length > 0">
     <td><div tooltip-placement="right" tooltip="List of the map principles for this project."><b>Map Principles</b></div></td>
-    <td><table width="100%" class="table pure-table" >
+    <td>
+
+    <pagination direction-links="false" boundary-links="true" 
+    			total-items="pagedPrincipleCount" items-per-page="pageSize" 
+    			page="pagePrinciple" on-select-page="getPagedPrinciples(page)"></pagination>
+    <form>
+	    <input type="text" ng-model="principleFilter" ng-change="getPagedPrinciples(1)">
+	    <input type="submit" value="Reset Filter" ng-click="resetPrincipleFilter()">
+    </form>
+    
+    <table width="100%" class="table pure-table" >
     <thead>
       <tr>
         <th style="width: 10%;">Id</th>
-        <th style="width: 90%;">Name</th>
+        <th style="width: 90%;">Principle Name</th>
       </tr>
 
     </thead>
@@ -121,9 +147,7 @@
         </td>
       </tr>
     </tbody>
-    <pagination direction-links="false" boundary-links="true" 
-    			total-items="project.mapPrinciple.length" items-per-page="pageSize" 
-    			page="pagePrinciple" on-select-page="getPagedPrinciple(page)"></pagination>
+    
     </table>
     
     <div ng-show="project.mapPrincipleDocument != null">
@@ -131,9 +155,6 @@
     </td>
   </tr>
 </table>  
-
-
--->
 
 <a href="#/record/projectId/{{project.id}}" class="btn">Map Records</div>
 

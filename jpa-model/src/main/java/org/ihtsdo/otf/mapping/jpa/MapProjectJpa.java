@@ -85,6 +85,18 @@ public class MapProjectJpa implements MapProject {
 	@Column(nullable = false)
 	private String destinationTerminologyVersion;
 	
+	/** The relation behavior */
+	@Column(nullable = true)
+	private String mapRelationStyle;
+	
+	/** The name of the mapping principle document */
+	@Column(nullable = true)
+	private String mapPrincipleSourceDocument;
+	
+	/** Flag for whether this project is rule based */
+	@Column(nullable = false)
+	private boolean ruleBased;
+
 	/** The map leads. */
 	@ManyToMany(targetEntity=MapLeadJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapLeadJpa.class)
@@ -105,6 +117,7 @@ public class MapProjectJpa implements MapProject {
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 	
+		
 	/** Default constructor */
 	public MapProjectJpa() {
 	}
@@ -381,8 +394,36 @@ public class MapProjectJpa implements MapProject {
 	public void setRefSetId(String refSetId) {
 		this.refSetId = refSetId;
 	}
+
+	@Override
+	public String getMapRelationStyle() {
+		return mapRelationStyle;
+	}
 	
+	@Override
+	public String getMapPrincipleSourceDocument() {
+		return mapPrincipleSourceDocument;
+	}
+
+	@Override
+	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
+		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+	}
+
+	@Override
+	public void setMapRelationStyle(String mapRelationStyle) {
+		this.mapRelationStyle = mapRelationStyle;
+	}
 	
+	@Override
+	public boolean isRuleBased() {
+		return ruleBased;
+	}
+
+	@Override
+	public void setRuleBased(boolean ruleBased) {
+		this.ruleBased = ruleBased;
+	}
 
 	@Override
 	@XmlElement(type=MapAdviceJpa.class, name="mapAdvice")
