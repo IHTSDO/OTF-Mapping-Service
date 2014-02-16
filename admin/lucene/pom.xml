@@ -116,10 +116,10 @@
             </dependencies>
             <executions>
               <execution>
-                <id>make-indexes</id>
+                <id>reindex</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>make-indexes</goal>
+                  <goal>reindex</goal>
                 </goals>
                 <configuration>
                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
