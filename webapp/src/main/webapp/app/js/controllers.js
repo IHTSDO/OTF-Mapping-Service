@@ -579,13 +579,26 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 /////////////////////////////////////////////////////
 
 
-mapProjectAppControllers.directive('headerDirective', function() {
+mapProjectAppControllers.directive('otfHeaderDirective', function() {
     
 	return {
         templateUrl: './partials/header.html',
 		restrict: 'E', 
-        transclude: true,    // allows us “swap” our content for the calling html
-        replace: true,        // tells the calling html to replace itself with what’s returned here
+        transclude: true,    // allows us ï¿½swapï¿½ our content for the calling html
+        replace: true,        // tells the calling html to replace itself with whatï¿½s returned here
+        link: function(scope, element, attrs) { // to get scope, the element, and its attributes
+          scope.user = $rootScope.user; 
+        }
+    };
+});
+
+mapProjectAppControllers.directive('otfFooterDirective', function() {
+    
+	return {
+        templateUrl: './partials/footer.html',
+		restrict: 'E', 
+        transclude: true,    // allows us ï¿½swapï¿½ our content for the calling html
+        replace: true,        // tells the calling html to replace itself with whatï¿½s returned here
         link: function(scope, element, attrs) { // to get scope, the element, and its attributes
           scope.user = $rootScope.user; 
         }
