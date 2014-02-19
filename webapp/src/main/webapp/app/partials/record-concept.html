@@ -31,10 +31,12 @@
         <th style="width: 13%;">Rule</th>
 		<th style="width: 10%;">Target</th>
 		<th style="width: 18%;">Target Name</th>
+		<th style="width: 5%;"></th>
 	</tr>
 </thead>
 
-<tbody ng-repeat="record in records" style="border: 2px solid #ccc;">
+<tbody ng-dblclick="open(record)" ng-repeat="record in records" style="border: 2px solid #ccc;">
+
 
 	<tr ng-repeat = "entry in record.mapEntry">
 		<td>
@@ -68,9 +70,14 @@
         <td>{{entry.rule}}</td>
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
-		<td>
+		<td align="center" colspan="7">
+			<form>
+				<input type="submit" value="Edit Record" ng-click="open(record)">
+			</form>
         </td>
+		
 	</tr>
+
 
 </tbody>
 

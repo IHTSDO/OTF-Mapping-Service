@@ -58,22 +58,22 @@ public class ContentServiceRest {
 	 * @return the concept
 	 */
 	@GET
-	@Path("/concept/{terminology}/{version}/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Path("/concept/{terminology}/{version}/id/{terminologyId}")
+	@ApiOperation(value = "Find concept by id, version, and terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
 	public Concept getConceptForId(
-		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
+		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
 		
-		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + id.toString());
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + terminologyId);
 		
 		
 		try {
 			ContentService contentService = new ContentServiceJpa();
-			Concept c = contentService.getConcept(id.toString(), terminology, terminologyVersion);
+			Concept c = contentService.getConcept(terminologyId, terminology, terminologyVersion);
 			
 			// Make sure to read descriptions and relationships (prevents serialization error)
 			for (Description d : c.getDescriptions()) { d.getLanguageRefSetMembers(); };
@@ -96,22 +96,22 @@ public class ContentServiceRest {
 	 * @return the concept
 	 */
 	@GET
-	@Path("/concept/{terminology}/{version}/id/{id:[0-9][0-9]*}/inverseRelationships")
+	@Path("/concept/{terminology}/{version}/id/{terminologyId}/inverseRelationships")
 	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
 	public RelationshipList getInverseRelationshipsForConcept(
-		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
+		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
 		
-		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + id.toString() + "/inverseRelationships");
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + terminologyId + "/inverseRelationships");
 		
 		
 		try {
 			ContentService contentService = new ContentServiceJpa();
-			Concept c = contentService.getConcept(id.toString(), terminology, terminologyVersion);
+			Concept c = contentService.getConcept(terminologyId, terminology, terminologyVersion);
 		
 			RelationshipList relationshipList = new RelationshipList();
 			relationshipList.setRelationships(c.getInverseRelationships());
@@ -134,21 +134,21 @@ public class ContentServiceRest {
 	 * @return the concept
 	 */
 	@GET
-	@Path("/concept/{terminology}/id/{id:[0-9][0-9]*}")
+	@Path("/concept/{terminology}/id/terminologyId")
 	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
 	public Concept getConceptForId(
-		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("id") Long id,
+		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology) {
 		
 		
-		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/id/" + id.toString());
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/id/" + terminologyId);
 		
 		try {
 			ContentService contentService = new ContentServiceJpa();
-			Concept c = contentService.getConcept(id.toString(), terminology, terminologyLatestVersions.get(terminology));
+			Concept c = contentService.getConcept(terminologyId, terminology, terminologyLatestVersions.get(terminology));
 			c.getDescriptions();
 			c.getRelationships();
 			contentService.close();
@@ -190,22 +190,22 @@ public class ContentServiceRest {
 	 * @return the search result list
 	 */
 	@GET
-	@Path("/concept/{terminology}/{version}/id/{id:[0-9][0-9]*}/descendants")
+	@Path("/concept/{terminology}/{version}/id/{terminologyId}/descendants")
 	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
 	public SearchResultList findConceptDescendants(
-		@ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("id") Long id,
+		@ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("terminologyId") String terminologyId,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
 		
 		
-		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + id.toString() + "/descendants");
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + terminologyId + "/descendants");
 		try {
 			ContentService contentService = new ContentServiceJpa();
 			
-			SearchResultList results = contentService.findDescendants(id.toString(), terminology,
+			SearchResultList results = contentService.findDescendants(terminologyId, terminology,
 				terminologyVersion, new Long("116680003")); // TODO Change this to metadata reference
 		
 			contentService.close();
