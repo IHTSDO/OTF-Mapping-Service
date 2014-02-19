@@ -11,7 +11,6 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 
 /**
  * Goal which makes lucene indexes based on hibernate-search annotations.
@@ -47,7 +46,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
  *      </plugin>
  * </pre>
  * 
- * @goal makeindexes
+ * @goal reindex
  * 
  * @phase package
  */
