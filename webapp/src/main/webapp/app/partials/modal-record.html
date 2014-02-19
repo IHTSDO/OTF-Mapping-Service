@@ -1,0 +1,97 @@
+<div class="modal-header">
+	<h3>Edit Map Record</h3>
+	<table cellpadding="5px">
+		<tbody>
+			<tr><td>Project:</td><td>{{project.name}}</td></tr>
+			<tr><td>Concept:</td><td>{{concept.terminologyId}}: {{concept.defaultPreferredName}}</td></tr>
+		</tbody>
+	</table>
+
+</div>
+
+<div class="modal-body">
+
+
+	<h4>Map Entries ({{record.mapEntry.length}})</h4>
+	
+		<table class = "table" ng-repeat = "entry in record.mapEntry | orderBy:'mapPriority'">
+			
+		<tbody style="border: 2px solid #ccc;">
+			<tr>
+				<td>Target</td>
+				<td>
+					<form>
+						<input ng-model="entry.targetId" ng-blur="setEntryTarget(entry)">
+						<input ng-show="false" type="submit" value="null">
+					</form>
+					{{entry.targetName}}
+					{{errorSetEntryTarget}}
+				</td>
+			</tr>
+			<tr><td>Rule</td><td><input ng-model="entry.rule"></td></tr>
+			<tr>
+				<td>Relation Id</td>
+				<td>
+					{{entry.relationId}}<br>
+					{{entry.relationName}}
+					{{errorSetEntryRelation}}
+				</td>
+			</tr>
+			<tr><td>Map Priority</td><td><input ng-model="entry.mapPriority"></td></tr>
+			<tr><td>Group</td><td><input ng-model="entry.mapGroup"></td></tr>
+			
+			<tr>
+				<td>Advice</td>
+				<td>
+					<button disabled ng-repeat="advice in entry.mapAdvice">
+						{{advice.detail}} <img src="img/fileclose.png" ng-click="removeEntryElement(entry, 'mapAdvice', advice)">
+					</button>
+				</td>
+			</tr>
+			
+			<tr>
+				<td>Notes</td>
+				<td>
+					<button disabled ng-repeat="note in entry.mapNote">
+						{{note.detail}} <img src="img/fileclose.png" ng-click="removeNote(entry, note)">
+					</button>
+				</td>
+			</tr>
+			
+			<tr>
+				<td>Principle</td>
+				<td>
+					<button disabled ng-repeat="principle in entry.mapPrinciple">
+						{{principle.detail}} <img src="img/fileclose.png" ng-click="removePrinciple(entry, principle)">
+					</button>
+				</td>
+			</tr>	
+		</tbody>
+	
+	
+		</table>
+
+	<h4>Record Parameters</h4>
+	
+	<table cellpadding="5px">
+		<tbody>
+			
+			
+			<tr>
+				<td>Allowable Map Advices</td>
+				<td><div ng-repeat = "advice in project.mapAdvice | orderBy: 'id'">{{advice.detail}}</div></td>
+			</tr>
+			
+			<tr>
+				<td>Allowable Map Principles</td>
+				<td><div ng-repeat = "principle in project.mapPrinciple | orderBy:'id'">{{principle.principleId}}: {{principle.name}}</div></td>
+			</tr>
+		</tbody>
+	</table>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-primary" ng-click="ok()">Save</button>
+    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

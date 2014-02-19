@@ -96,8 +96,8 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 /*
  * Controller for retrieving and displaying records associated with a concept
  */
-mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams',
-   function ($scope, $http, $routeParams) {
+mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams', '$modal',
+   function ($scope, $http, $routeParams, $modal) {
 	
 	// scope variables
 	$scope.error = "";		// initially empty
@@ -203,6 +203,15 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		      });
 	      });
 	
+		$scope.getProject = function(record) {
+			for (var i = 0; i < projects.length; i++) {
+				if (projects[i].id == record.mapProjectId) {
+					return projects[i];
+				}
+			}
+			return null;
+		};
+	
 		$scope.getProjectName = function(record) {
 			
 			for (var i = 0; i < projects.length; i++) {
@@ -272,9 +281,152 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				 }
 			 }
 		 };
-	
+		 
+		 // function to remove an element by field 'id', applied to array
+		 Array.prototype.removeElementById = function(id) {
+			  
+			  var array = $.map(this, function(v,i){
+			      return v['id'] === id ? null : v;
+			   });
+			   this.length = 0; //clear original array
+			   this.push.apply(this, array); //push all elements except the one we want to delete
+		  };
+		 
+		 $scope.open = function (record) {
+
+		    var modalInstance = $modal.open({
+		      templateUrl: 'partials/modal-record.html',
+		      controller: ModalRecordInstanceCtrl,
+		      resolve: {
+		        args: function () {
+		        	
+		        	var args = [];
+		        	
+		        	args.push(record);
+		        	args.push($scope.getProject(record));
+		        	args.push($scope.concept);
+		        	
+		        	console.debug("INITIAL RECORD:");
+		        	console.debug(record);
+		        
+		        	
+		        	// pass the record
+		        	return angular.copy(args);
+		        }
+		    
+		      }
+		    	
+
+		    });
+		    
+		    modalInstance.result.then(function (record) {
+		    	console.debug("Modal ok");
+		    	
+		    	console.debug("FINAL RECORD");
+		    	console.debug(record);
+		    	
+		    	// update the record in the list
+		    	for (var i = 0; i < $scope.records.length; i++) {
+		    		if ($scope.records[i].id === record.id) {
+		    			console.debug("FOUND RECORD");
+		    			$scope.records[i] = record;
+		    		}
+		    	}
+		    	
+		    }, function() {
+		    	console.debug("Modal cancel");
+		    });
+		 };
+		 
+		 // expects argument in form of [record, project, concept]
+		 var ModalRecordInstanceCtrl = function($scope, $http, $modalInstance, args) {
+			
+			  $scope.record = args[0];
+			  $scope.project = args[1];
+			  $scope.concept = args[2];
+			 
+			  $scope.ok = function () {
+			    $modalInstance.close($scope.record);
+			  };
+
+			  $scope.cancel = function () {
+			    $modalInstance.dismiss('cancel');
+			  };
+			  
+			  $scope.removeEntryElement = function(entry, key, elem) {
+				  
+				  entry[key].removeElementById(elem.id);
+				  $scope.updateEntry(entry);
+				  
+			  };
+			  
+			  $scope.setEntryTarget = function(entry) {
+				  
+				  // get concept
+				  $http({
+					  url: root_content + "concept/" 
+					  		+ $scope.project.destinationTerminology + "/"
+					  		+ $scope.project.destinationTerminologyVersion + "/"
+					  		+ "id/" + entry.targetId,
+					  dataType: "json",
+					  method: "GET",
+					  headers: {
+						  "Content-Type": "application/json"
+					  }
+				  }).success(function(data) {
+					 entry.targetId = data.terminologyId;
+					 entry.targetName = data.defaultPreferredName;
+					 
+					 $scope.updateEntry(entry);
+					 
+					 console.debug("  Found concept " + entry.targetId);
+				  }).error(function(data) {
+					  console.debug("CONCEPT FIND ERROR");
+					 $scope.errorEntrySetTarget = "Could not find " + $scope.project.destinationTerminologyVersion + " concept: " + entry.targetId;
+					  
+				  });
+			  };
+			  
+			  // function to update an entry given a json array
+			  $scope.updateEntry = function(entry) {
+				  
+				  // find entry
+				  for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+					  
+					  // if this entry, replace
+					  if ($scope.record.mapEntry[i].id === entry.id) {
+						  $scope.record.mapEntry[i] = entry;
+						  break;
+					  }
+				  }
+			  };
+		 };
+			  
+			  
+		 
+		 	
 		
 	}]);
+
+// controller for modal Edit/Create view for Map Records
+mapProjectAppControllers.controller('ModalRecordInstanceCtrl', function($scope, $modalInstance, record) {
+	
+	console.debug("Hi, I am the modal controller");
+	
+	// set passed arguments to local variables
+	$scope.record = "testing-1-2-3";
+	
+	$scope.ok = function() {
+		console.debug("ok function called");
+		$modalInstance.close($scope.record);
+	};
+	
+	$scope.cancel = function() {
+		$modalInstance.dismiss("cancel");
+	};
+	
+	ModalRecordInstanceCtrl.$inject = ["$scope", "$modalInstance", "record"];
+});
                                                               
 /**
  * Controller for Map Project Records view
@@ -703,20 +855,14 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 			 
 			 function containsPrincipleFilter(element) {
 				 
-				 console.debug("Called containsPrincipleFilter");
-				 
 				// check if principle filter is empty
 				 if ($scope.principleFilter === "" || $scope.principleFilter == null) return true;
-				 
-				 console.debug("not null")
 				 
 				 // otherwise check if upper-case principle filter matches upper-case element name or detail
 				 if ( element.principleId.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
 				 if ( element.detail.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
 				 if ( element.name.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
 				 if ( element.sectionRef.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
-				 
-				 console.debug("did not match for " + $scope.principleFilter);
 				 
 				 // otherwise return false
 				 return false;
@@ -738,6 +884,8 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 }]);
 
 
+
+
 //////////////////////////////////////////////////////
 // Directives:  TODO Separate into different file
 /////////////////////////////////////////////////////
@@ -754,6 +902,19 @@ mapProjectAppControllers.directive('headerDirective', function() {
           scope.user = $rootScope.user; 
         }
     };
+});
+
+mapProjectAppControllers.directive('otf-modalHeader', function(headerTitle) {
+	
+	return {
+		templateUrl: './partials/modal-header.html',
+		restrict: 'E',
+		transclude: true,
+		replace: true,
+		link: function(scope, element, attrs) {
+			// do nothing for the moment
+		}
+	};
 });
 
 

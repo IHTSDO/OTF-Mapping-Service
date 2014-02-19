@@ -1,102 +1,15 @@
 /* CSS file for OTF Mapping WebApp */
 
-/* Splitter CSS */
 html, body
 {
 	margin: 0;			/* Remove body margin/padding */
 	padding: 0;
 	height: 100%;
 }
-#header { 
-	padding: 0px;
-	min-height: 100px;
-}
 
-.otf-container,
-.otf-navbar-fixed-top .otf-container,
-.otf-navbar-fixed-bottom .otf-container {
-  width: 90%;
+.otf-modalHeader {
+  min-height: 60px;
+  padding-right: 20px;
+  padding-left: 20px;
+  background-color: #2c2c2c;
 }
-
-/* Wrapper for page content to push down footer */
-#wrap {
-  min-height: 100%;
-  min-width: 100%;
-  height: auto;
-  /* Negative indent footer by its height */
-  margin: 0 auto -60px;
-  /* Pad bottom by footer height */
-  padding: 0 0 60px;
-}
-
-/* Set the fixed height of the footer here */
-#footer {
-  height: 40px;
-  
-}
-
-
-#MySplitter {
-	/* border: 3px solid #669; */
-	min-width: 500px;	/* Splitter can't be too thin ... */
-	min-height: 300px;	/* ... or too flat */
-	height: 100%;
-}
-#LeftPane {
-	width: 150px;
-	min-width: 100px;
-	max-width: 300px;
-	padding-top: 10px;
-}
-
-#RightPane {
-	padding: 10px;
-}
-
-#TopPane {				/* Top nested in right pane */
-	height: 150px;		/* Initial height */
-	min-height: 75px;	/* Minimum height */
-}
-#BottomPane {
-	background: #eef;
-	min-height: 100px;
-}
-
-/* Splitbar styles; these are the default class names */
-
-.ui-state-default { background-color: #88c }
-.ui-state-hover { background-color: #bbf }
-.ui-state-highlight { background-color: #68f }
-.ui-state-error { background-color: #eaa }
-
-.splitter-pane {
-	overflow: auto;
-}
-.splitter-bar-vertical {
-	width: 3px;
-	background-repeat: no-repeat;
-	background-position: center;
-}
-.splitter-bar-vertical-docked {
-	width: 36px;
-	background-repeat: no-repeat;
-	background-position: center;
-}
-.splitter-bar-horizontal {
-	height: 3px;
-	background-repeat: no-repeat;
-	background-position: center;
-}
-.splitter-bar-horizontal-docked {
-	height: 3px;
-	background-repeat: no-repeat;
-	background-position: center;
-}
-.splitter-bar.ui-state-highlight {
-	opacity: 0.7;
-}
-.splitter-iframe-hide {
-	visibility: hidden;
-}
-/* END Splitter CSS */
-
