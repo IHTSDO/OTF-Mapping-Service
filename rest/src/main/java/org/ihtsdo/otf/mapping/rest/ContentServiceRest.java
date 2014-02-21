@@ -76,7 +76,7 @@ public class ContentServiceRest {
 			Concept c = contentService.getConcept(terminologyId, terminology, terminologyVersion);
 			
 			// Make sure to read descriptions and relationships (prevents serialization error)
-			for (Description d : c.getDescriptions()) { d.getLanguageRefSetMembers(); };
+			for (Description d : c.getDescriptions()) { d.getLanguageRefSetMembers(); }
 			for (Relationship r : c.getRelationships()) { r.getDestinationConcept(); }
 			
 			contentService.close();

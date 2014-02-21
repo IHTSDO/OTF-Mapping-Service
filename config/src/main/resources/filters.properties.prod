@@ -1,10 +1,10 @@
 #
 # MySQL Config information
 #
-mysql.main.url=jdbc:mysql://127.0.0.1:3306/mappingservicedb
+mysql.main.url=jdbc:mysql://127.0.0.1:3306/mappingservicedb?autoReconnect=true
 mysql.main.user=otf
 mysql.main.pwd=otfpwd
-mysql.test.url=jdbc:mysql://127.0.0.1:3306/mappingservicedbtest
+mysql.test.url=jdbc:mysql://127.0.0.1:3306/mappingservicedbtest?autoReconnect=true
 mysql.test.user=otf
 mysql.test.pwd=otfpwd
 
