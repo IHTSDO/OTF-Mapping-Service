@@ -208,6 +208,32 @@ public class MapRecordJpa implements MapRecord {
 	public void addMapEntry(MapEntry mapEntry) {
 		mapEntries.add(mapEntry);
 	}
+	
+	/*
+	 * TODO Service
+	 * 1) receive json object
+	 * 2) find the jpa object based on json objectId
+	 * 3) use the jpa object to set the mapentry/etc record field
+	 * 
+	 * Check other objects for 
+	 */
+	
+	/**
+	 * Function to correctly set the record object for map entries
+	 * Must be called after deserialization in RESTful services after receiving Json/XML object
+	 * Rationale:  deserialization provides only the record id, not the Jpa object
+	 * 
+	 * @param record the MapRecord Jpa object from manager.find()
+	 */
+	@Override
+	public void assignToChildren() {
+		
+		// assign to entries
+		for (MapEntry entry : mapEntries) {
+			entry.setMapRecord(this);
+		}
+		
+	}
 
 	/*
 	 * (non-Javadoc)
