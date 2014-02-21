@@ -1,0 +1,72 @@
+<div>
+<table class = "table">
+	<tbody style="border: 2px solid #ccc;">
+		<tr>
+			<td>Target</td>
+			<td>
+				<div ng-show="entry.targetId != null && entry.targetId != ''">
+					{{entry.targetId}}: {{entry.targetName}}
+					<hr>
+				</div> 
+			
+				<form>
+					<input ng-model="queryTarget">
+					<input type="submit" value="Search" ng-click="retrieveTargetConcepts(queryTarget)">
+					<input type="submit" value="Reset" ng-click="resetTargetConcepts()">
+				</form>
+
+				<table width=100% ng-show = "targetConcepts.length > 0" class="table">
+			
+				<thead>
+					<tr>
+						<th style="width=5%"></td>
+						<th style="width=10%">Id</td>
+						<th style="width=80%">Name</td>	
+					</tr>
+				</thead>
+				
+				<tbody>
+					<tr ng-repeat="target in targetConcepts | limitTo:10">
+						<td><input type="submit" value="Select" ng-click="selectTargetConcept(entry, target)"></td>
+						<td>{{target.terminologyId}}</td>
+						<td>{{target.value}}</td>
+				</tbody>
+				
+			</table>
+			</td>
+		</tr>
+		<tr><td>Map Priority</td><td><input style="width:50px" ng-model="entry.mapPriority"></td></tr>
+		<tr><td>Rule</td><td><textarea style="width:500px"; ng-model="entry.rule"></textarea></td></tr>
+<!-- 		<tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'">
+			<td>Relation Id</td>
+			<td>
+				{{entry.relationId}}<br>
+				{{entry.relationName}}
+				{{errorSetEntryRelation}}
+			</td>
+		</tr>
+		
+		<tr><td>Group</td><td><input ng-model="entry.mapGroup"></td></tr>
+ -->		
+		<tr>
+			<td>Advice</td>
+			<td>
+				<div ng-show="entry.mapAdvice.length > 0">
+					<div ng-repeat="advice in entry.mapAdvice">
+						<button	disabled style="overflow:hidden; height:20px; width:500px;">{{advice.detail}}</button>
+						<img src="img/fileclose.png" ng-click="removeEntryElement(entry, 'mapAdvice', advice)">			
+					</div>
+					<hr>
+				</div>
+				<span style="color:red">{{errorAddAdvice}}</span>	
+				<form>
+					<textarea style="width:500px;"ng-model="adviceInput" 
+							typeahead="advice as advice.detail for advice in project.mapAdvice | filter:$viewValue | limitTo:8" class="form-control"
+							typeahead-min-length="0" typeahead-editable="false"></textarea>
+					<input type="submit" value="Add Advice" ng-click="addEntryAdvice(entry, adviceInput)">
+				</form>								
+			</td>
+		</td>
+	</tbody>
+</table>
+</div>
