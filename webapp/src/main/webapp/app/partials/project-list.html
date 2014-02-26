@@ -1,21 +1,14 @@
 <!-- Partial for project list -->
-
-<h2>Mapping Projects</h2>
-<h3>
-<ul>
-<li  style="line-height: 30px;" ng-repeat="project in projects">
-<a href="index.html#/project/id/{{project.objectId}}">{{project.name}}</a>
-</li>
-</ul>
-</h3>  	
-
 <div ng-show="projects.length == 0">
-
-	<h3>Initializing application...<br>
-	This should only take a few seconds.</h3>
+  <h3>
+    Initializing application...<br> This should only take a few seconds.
+  </h3>
 </div>
 
 
+<div class="container" ng-controller="dashboardCtrl">
+  <adf-dashboard name="{{name}}" structure="4-8" adf-model="model" ng-cloak />
+</div>
 
 
 {{error}}

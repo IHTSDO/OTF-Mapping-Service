@@ -5,8 +5,8 @@
     <a href="index.html#/"><img src="img/ihtsdo_logo.png"></a>
   </div>
 
-  <div class="navbar navbar-inverse">
-    <div class="container">
+  <div class="navbar navbar-default">
+
       <div class="navbar-header">
 
         <div style="text-align: right; color: black;">
@@ -14,23 +14,27 @@
           <span ng-show="userName != null">(</span> {{role.name}} 
           <span
             ng-show="userName != null">)</span>  
+            &nbsp;
           <span
             ng-show="role.name == 'Viewer'" title="Dashboard"><a
-            href="index.html#/project/projects/"><img src="img/meter.png"></a></span>
+            href="index.html#/project/projects/"><i class="glyphicon glyphicon-stats"></i></a></span>
           <span ng-show="role.name == 'Specialist'" title="Dashboard"><a
-            href="index.html#/specialist/dash"><img src="img/meter.png"></a></span>
+            href="index.html#/specialist/dash"><i class="glyphicon glyphicon-stats"></i></a></span>
           <span ng-show="role.name =='Lead'" title="Dashboard"><a
-            href="index.html#/lead/dash"><img src="img/meter.png"></a></span>
+            href="index.html#/lead/dash"><i class="glyphicon glyphicon-stats"></i></a></span>
           <span
             ng-show="role.name == 'Administrator'" title="Dashboard"><a
-            href="index.html#/admin/dash"><img src="img/meter.png"></a></span> 
+            href="index.html#/admin/dash"><i class="glyphicon glyphicon-stats"></i></a></span> 
+          &nbsp;
           <span
             ng-show="userName != null" title="Log out"><a
-            href="index.html#/" ng-click="go('/project/projects/')"><img
-              src="img/system-log-out-3.png"></a></span> 
+            href="index.html#/" ng-click="go('/project/projects/')"><i class="glyphicon glyphicon-log-out"></i></a></span> 
+          &nbsp;
           <span title="Help"><a
-            href="index.html#/"><img src="img/help.png"></a></span>
+            href="index.html#/"><i class="glyphicon glyphicon-question-sign"></i></a></span>
+          &nbsp;
         </div>
+            <div class="container">
       </div>
     </div>
   </div>
