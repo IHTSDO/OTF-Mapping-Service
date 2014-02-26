@@ -204,6 +204,13 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 				}
 				if (mprMapSpecialists.length() > 1)
 					mprMapSpecialists.deleteCharAt(mprMapSpecialists.length() - 1);
+				
+				StringBuffer mprRulePresetAgeRanges = new StringBuffer();
+				for(String rpar : mpr.getRulePresetAgeRanges()) {
+					mprRulePresetAgeRanges.append(rpar).append(",");	
+				}
+				if (mprRulePresetAgeRanges.length() > 1)
+					mprRulePresetAgeRanges.deleteCharAt(mprRulePresetAgeRanges.length() -1);
 
 				projectsWriter.write(mpr.getName() + "\t" + mpr.getRefSetId() + "\t"
 						+ mpr.getRefSetName() + "\t" + mpr.getObjectId() + "\t"
@@ -216,10 +223,12 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						+ mpr.getMapRelationStyle() + "\t"
 						+ mpr.getMapPrincipleSourceDocument() + "\t"
 						+ mpr.isRuleBased() + "\t"
+						+ mpr.getMapType() + "\t"
 						+ mapAdvices + "\t" 
 						+ mapPrinciples + "\t"
 						+ mprMapLeads + "\t" 
-						+ mprMapSpecialists + "\n");
+						+ mprMapSpecialists + "\t"
+						+ mprRulePresetAgeRanges + "\n");
 			}
 			mappingService.close();
 
