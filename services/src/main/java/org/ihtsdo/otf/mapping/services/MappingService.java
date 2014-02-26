@@ -244,7 +244,7 @@ public interface MappingService {
 	 * @param mapRecord the map record
 	 * @throws Exception the exception
 	 */
-	public void addMapRecord(MapRecord mapRecord) throws Exception;
+	public MapRecord addMapRecord(MapRecord mapRecord) throws Exception;
 	
 	/**
 	 * Adds the map entry.
@@ -302,9 +302,10 @@ public interface MappingService {
 	 * Update map record.
 	 *
 	 * @param mapRecord the map record
+	 * @return 
 	 * @throws Exception the exception
 	 */
-	public void updateMapRecord(MapRecord mapRecord) throws Exception;
+	public MapRecord updateMapRecord(MapRecord mapRecord) throws Exception;
 	
 	/**
 	 * Update map entry.
@@ -443,7 +444,6 @@ public interface MappingService {
 	 * Creates the map records for map project.
 	 *
 	 * @param mapProject the map project
-	 * @return the list
 	 * @throws Exception the exception
 	 */
 	public void createMapRecordsForMapProject(MapProject mapProject) throws Exception;
@@ -454,11 +454,10 @@ public interface MappingService {
 	 *
 	 * @param mapProject the map project
 	 * @param complexMapRefSetMembers the complex map ref set members
-	 * @return the list
 	 * @throws Exception the exception
 	 */
 	public void createMapRecordsForMapProject(MapProject mapProject, 
-			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
+			List<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
 
 	/**
 	 * Removes the map records for project id.
@@ -555,11 +554,6 @@ public interface MappingService {
 	 * @throws Exception the exception
 	 */
 	public void commit() throws Exception;
-
-	
-	// testing function
-	List<MapRecord> testCriteriaQuery(Long mapProjectId, String query,
-			PfsParameter pfsParameter) throws Exception;
 
 	
 

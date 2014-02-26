@@ -28,9 +28,9 @@ import org.apache.lucene.util.Version;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -246,9 +246,7 @@ public class MappingServiceJpa implements MappingService {
 
 		s.sortSearchResultsById();
 
-		if (fullTextEntityManager != null) {
-			fullTextEntityManager.close();
-		}
+		fullTextEntityManager.close();
 
 		return s;
 	}
@@ -467,9 +465,7 @@ public class MappingServiceJpa implements MappingService {
 
 		s.sortSearchResultsById();
 
-		if (fullTextEntityManager != null) {
-			fullTextEntityManager.close();
-		}
+		fullTextEntityManager.close();
 
 		return s;
 	}
@@ -897,9 +893,7 @@ public class MappingServiceJpa implements MappingService {
 
 		s.sortSearchResultsById();
 
-		if (fullTextEntityManager != null) {
-			fullTextEntityManager.close();
-		}
+		fullTextEntityManager.close();
 
 		return s;
 		/*
@@ -915,16 +909,21 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapRecord the map record to be added
 	 */
 	@Override
-	public void addMapRecord(MapRecord mapRecord) {
-
+	public MapRecord addMapRecord(MapRecord mapRecord) {
+		
+		// first set the map record of all elements of this record
+		mapRecord.assignToChildren();
+		
 		if (getTransactionPerOperation()) {
 			EntityTransaction tx = manager.getTransaction();
 
 			tx.begin();
 			manager.persist(mapRecord);
 			tx.commit();
+			return mapRecord;
 		} else {
 			manager.persist(mapRecord);
+			return mapRecord;
 		}
 
 	}
@@ -935,15 +934,21 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapRecord the map record to be updated
 	 */
 	@Override
-	public void updateMapRecord(MapRecord mapRecord) {
+	public MapRecord updateMapRecord(MapRecord mapRecord) {
 
+		// first assign the map record to its children
+		mapRecord.assignToChildren();
+		
 		if (getTransactionPerOperation()) {
+			
 			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
 			manager.merge(mapRecord);
 			tx.commit();
+			return mapRecord;
 		} else {
 			manager.merge(mapRecord);
+			return mapRecord;
 		}
 
 	}
@@ -992,6 +997,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @return the search result list
 	 * @throws Exception the exception
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter)
 		throws Exception {
@@ -1019,6 +1025,7 @@ public class MappingServiceJpa implements MappingService {
 			luceneQuery = queryParser.parse(query);
 		}
 
+		@SuppressWarnings("unchecked")
 		List<MapEntry> m =
 				fullTextEntityManager.createFullTextQuery(luceneQuery,
 						MapEntryJpa.class).getResultList();
@@ -1041,6 +1048,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @return the search result list
 	 * @throws Exception the exception
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter)
 		throws Exception {
@@ -1068,6 +1076,7 @@ public class MappingServiceJpa implements MappingService {
 			luceneQuery = queryParser.parse(query);
 		}
 
+		@SuppressWarnings("unchecked")
 		List<MapAdvice> m =
 				fullTextEntityManager
 						.createFullTextQuery(luceneQuery, MapNoteJpa.class).getResultList();
@@ -1091,6 +1100,7 @@ public class MappingServiceJpa implements MappingService {
 	 * @param terminologyId the concept id
 	 * @return the list of map records
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<MapRecord> getMapRecordsForTerminologyId(String terminologyId) {
 		List<MapRecord> m = null;
@@ -1160,7 +1170,7 @@ public class MappingServiceJpa implements MappingService {
 		PfsParameter pfsParameter) throws Exception {
 
 		// if no paging/filtering/sorting object, retrieve total number of records
-		if (pfsParameter == null) {
+		if (pfsParameter == null || (pfsParameter.getFilterString() == null || pfsParameter.getFilterString().equals("")) ){
 
 			javax.persistence.Query query =
 					manager
@@ -1208,25 +1218,25 @@ public class MappingServiceJpa implements MappingService {
 		return getMapRecordsForMapProjectId(mapProjectId, null);
 	}
 
-	@Override
+	/*@Override
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId,
 		PfsParameter pfsParameter) throws Exception {
 
-		if (pfsParameter != null && pfsParameter.getFilterString() != null) {
+		if (pfsParameter != null && pfsParameter.getFilterString() != null && !pfsParameter.getFilterString().equals("")) {
 			return getMapRecordsForMapProjectIdWithQuery(mapProjectId, pfsParameter);
 		} else {
 			return getMapRecordsForMapProjectIdWithNoQuery(mapProjectId, pfsParameter);
 		}
 	}
 
-	/**
+*/	/**
 	 * Retrieve map records for a given concept id and paging/filtering/sorting
 	 * parameters.
 	 * 
 	 * @param mapProjectId the concept id
-	 * @param pfs the paging/filtering/sorting parameter object
 	 * @return the list of map records
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<MapRecord> getMapRecordsForMapProjectIdWithNoQuery(
 		Long mapProjectId, PfsParameter pfsParameter) {
@@ -1257,73 +1267,23 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 	}
 
-	/**
-	 * Test function for .setParameter
-	 * @throws ParseException
-	 */
-	@Override
-	public List<MapRecord> testCriteriaQuery(Long mapProjectId, String query,
-		PfsParameter pfsParameter) throws Exception {
-		System.out.println("Filter string: " + pfsParameter.getFilterString());
-		System.out.println("nStart  = "
-				+ Integer.toString(pfsParameter.getStartIndex()));
-		System.out.println("nMaxRes = "
-				+ Integer.toString(pfsParameter.getMaxResults()));
-
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-
-		// construct luceneQuery based on URL format
-		QueryParser queryParser =
-				new QueryParser(Version.LUCENE_36, "summary",
-						searchFactory.getAnalyzer(MapRecordJpa.class));
-		Query luceneQuery = queryParser.parse(query);
-
-		org.hibernate.search.jpa.FullTextQuery ftquery =
-				(FullTextQuery) fullTextEntityManager.createFullTextQuery(luceneQuery,
-						MapRecordJpa.class);
-
-		if (pfsParameter.getStartIndex() != -1
-				&& pfsParameter.getMaxResults() != -1) {
-			ftquery.setFirstResult(pfsParameter.getStartIndex());
-			ftquery.setMaxResults(pfsParameter.getMaxResults());
-		}
-		if (pfsParameter.getSortField() != null) {
-			ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
-					SortField.STRING)));
-		}
-
-		List<MapRecord> m = ftquery.getResultList();
-
-		System.out.println(Integer.toString(m.size()) + " records retrieved");
-
-		return m;
-
-	}
 
 	/**
 	 * Retrieve map records for a lucene query.
 	 * 
-	 * @param query the lucene query string
 	 * @param pfsParameter the pfs parameter
 	 * @return a list of map records
 	 * @throws Exception the exception
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public List<MapRecord> getMapRecordsForMapProjectIdWithQuery(
+	public List<MapRecord> getMapRecordsForMapProjectId(
 		Long mapProjectId, PfsParameter pfsParameter) throws Exception {
-
-		if (pfsParameter != null) {
-			System.out.println("Filter string: " + pfsParameter.getFilterString());
-			System.out.println("nStart  = "
-					+ Integer.toString(pfsParameter.getStartIndex()));
-			System.out.println("nMaxRes = "
-					+ Integer.toString(pfsParameter.getMaxResults()));
-		}
+		
 		String full_query =
-				constructMapRecordForMapProjectIdQuery(mapProjectId, pfsParameter);
+				constructMapRecordForMapProjectIdQuery(
+						mapProjectId, 
+						pfsParameter == null ? new PfsParameterJpa() : pfsParameter);
 
 		FullTextEntityManager fullTextEntityManager =
 				Search.getFullTextEntityManager(manager);
@@ -1339,17 +1299,19 @@ public class MappingServiceJpa implements MappingService {
 		luceneQuery = queryParser.parse(full_query);
 
 		org.hibernate.search.jpa.FullTextQuery ftquery =
-				(FullTextQuery) fullTextEntityManager.createFullTextQuery(luceneQuery,
-						MapRecordJpa.class);
+				fullTextEntityManager.createFullTextQuery(luceneQuery,
+				MapRecordJpa.class);
 
-		if (pfsParameter.getStartIndex() != -1
-				&& pfsParameter.getMaxResults() != -1) {
-			ftquery.setFirstResult(pfsParameter.getStartIndex());
-			ftquery.setMaxResults(pfsParameter.getMaxResults());
-		}
-		if (pfsParameter.getSortField() != null) {
-			ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
-					SortField.STRING)));
+		if (pfsParameter != null) {
+			if (pfsParameter.getStartIndex() != -1
+					&& pfsParameter.getMaxResults() != -1) {
+				ftquery.setFirstResult(pfsParameter.getStartIndex());
+				ftquery.setMaxResults(pfsParameter.getMaxResults());
+			}
+			if (pfsParameter.getSortField() != null) {
+				ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
+						SortField.STRING)));
+			}
 		}
 
 		List<MapRecord> m = ftquery.getResultList();
@@ -1367,34 +1329,44 @@ public class MappingServiceJpa implements MappingService {
 	 * @param queryStr the string of terms to construct a query for
 	 * @return the full lucene query text
 	 */
-	private String constructMapRecordForMapProjectIdQuery(Long mapProjectId,
+	private static String constructMapRecordForMapProjectIdQuery(Long mapProjectId,
 		PfsParameter pfsParameter) {
+		
+		String full_query;
 
-		// //////////////////
+		// if no filter supplied, return query based on map project id only
+		if (pfsParameter.getFilterString() == null || pfsParameter.getFilterString().equals("")) {
+			full_query = "mapProjectId:" + mapProjectId.toString();
+			return full_query;
+		}
+		
+		
+		// Pre-treatment:  Find any lower-case boolean operators and set to uppercase
+				
+				
+		
+		////////////////////
 		// Basic algorithm:
+		// 
 		// 1) add whitespace breaks to operators
 		// 2) split query on whitespace
 		// 3) cycle over terms in split query to find quoted material, add each
 		// term/quoted term to parsed terms\
 		// a) special case: quoted term after a :
 		// 3) cycle over terms in parsed terms
-		// a) if an operator/parantheses, pass through unchanged
+		// a) if an operator/parantheses, pass through unchanged (send to upper case for boolean)
 		// b) if a fielded query (i.e. field:value), pass through unchanged
 		// c) if not, construct query on all fields with this term
 
-		System.out.println("--------------------------");
-		System.out.println("Entering query constructor");
-		System.out.println("--------------------------");
-
-		// list of escape terms (i.e. quotes, operators) to be fed into query
-		// untouched
+		// list of escape terms (i.e. quotes, operators) to be fed into query untouched
 		String escapeTerms = "\\+|\\-|\"|\\(|\\)";
-		String booleanTerms = "AND|OR|NOT";
+		String booleanTerms = "and|AND|or|OR|not|NOT";
 
 		// first cycle over the string to add artificial breaks before and after
 		// control characters
 		final String queryStr =
 				(pfsParameter == null ? "" : pfsParameter.getFilterString());
+		
 		String queryStr_mod = queryStr;
 		queryStr_mod = queryStr_mod.replace("(", " ( ");
 		queryStr_mod = queryStr_mod.replace(")", " ) ");
@@ -1406,21 +1378,15 @@ public class MappingServiceJpa implements MappingService {
 		// bug)
 		queryStr_mod = queryStr_mod.trim();
 
-		System.out.println("After parentheses/quote check: " + queryStr_mod);
-
 		// split the string by white space and single-character operators
 		String[] terms = queryStr_mod.split("\\s+");
-
-		System.out.println("Terms after query split:  ");
-		for (int i = 0; i < terms.length; i++) {
-			System.out.println(terms[i] + ", ");
-		}
 
 		// merge items between quotation marks
 		boolean exprInQuotes = false;
 		List<String> parsedTerms = new ArrayList<String>();
-		List<String> parsedTerms_temp = new ArrayList<String>();
+		//List<String> parsedTerms_temp = new ArrayList<String>();
 		String currentTerm = "";
+		
 
 		// cycle over terms to identify quoted (i.e. non-parsed) terms
 		for (int i = 0; i < terms.length; i++) {
@@ -1429,19 +1395,14 @@ public class MappingServiceJpa implements MappingService {
 			if (terms[i].equals("\"")) {
 
 				if (exprInQuotes == true) {
-					System.out.println("Close quote detected, exprInQuotes = "
-							+ exprInQuotes);
-					System.out.println("Adding " + currentTerm);
-
-					// special case check: fielded term. Impossible for first term to be
-					// fielded.
+		
+					// special case check: fielded term. Impossible for first term to be fielded.
 					if (parsedTerms.size() == 0) {
 						parsedTerms.add("\"" + currentTerm + "\"");
 					} else {
 						String lastParsedTerm = parsedTerms.get(parsedTerms.size() - 1);
 
-						// if last parsed term ended with a colon, append this term to the
-						// last parsed term
+						// if last parsed term ended with a colon, append this term to the last parsed term
 						if (lastParsedTerm.endsWith(":") == true) {
 							parsedTerms.set(parsedTerms.size() - 1, lastParsedTerm + "\""
 									+ currentTerm + "\"");
@@ -1455,8 +1416,6 @@ public class MappingServiceJpa implements MappingService {
 					exprInQuotes = false;
 
 				} else {
-					System.out.println("Open quote detected, exprinQuotes = "
-							+ exprInQuotes);
 					exprInQuotes = true;
 				}
 
@@ -1475,97 +1434,84 @@ public class MappingServiceJpa implements MappingService {
 			}
 		}
 
-		System.out.println("Original query: " + queryStr);
-		System.out.println("Terms in modified query:");
 		for (String s : parsedTerms) {
 			System.out.println("  " + s);
 		}
 
-		// begin constructing query
-		String full_query = "(";
-
-		// cycle over terms
+		// cycle over terms to construct query
+		full_query = "";
+		
 		for (int i = 0; i < parsedTerms.size(); i++) {
+			
+			// if not the first term AND the last term was not an escape term
+			// add whitespace separator
+			if (i != 0 && !parsedTerms.get(i-1).matches(escapeTerms)) {
+				
+				full_query += " ";
+			}
+			/*
+			full_query += (i == 0 ?										// check for first term
+							"" : 										// -> if first character, add nothing
+							parsedTerms.get(i-1).matches(escapeTerms) ? // check if last term was an escape character
+									"": 								// -> if last term was an escape character, add nothing
+									" ");								// -> otherwise, add a separating space
+*/									
 
-			System.out.println("Next term: " + parsedTerms.get(i));
+			// if an escape character/sequence, add this term unmodified
+			if (parsedTerms.get(i).matches(escapeTerms)) {
 
-			// if a boolean or an escape character/sequence, add this term unmodified
-			// (with appropriate action
-			if (parsedTerms.get(i).matches(escapeTerms)
-					|| parsedTerms.get(i).matches(booleanTerms)) {
+				full_query += parsedTerms.get(i); 		
+				
+			// else if a boolean character, add this term in upper-case form (i.e. lucene format)
+			} else if (parsedTerms.get(i).matches(booleanTerms)) {
+				
+				full_query += parsedTerms.get(i).toUpperCase();
 
-				full_query += (i == 0 ? "" : " ") + parsedTerms.get(i); // if first
-																																// term, do not
-																																// add
-																																// whitespace
-																																// separator
-				continue;
-
-				// else if already a field-specific query term
+			// else if already a field-specific query term, add this term unmodified
 			} else if (parsedTerms.get(i).contains(":")) {
-				full_query += parsedTerms.get(i);
+				
+				full_query += parsedTerms.get(i); 																													
 
-				// otherwise, treat as unfielded query term
+			// otherwise, treat as unfielded query term
 			} else {
+				
+				// open parenthetical term
 				full_query += "(";
-
+																										
+				// add fielded query for each indexed term, separated by OR
 				Iterator<String> names_iter = fieldNames.iterator();
-
 				while (names_iter.hasNext()) {
 					full_query += names_iter.next() + ":" + parsedTerms.get(i);
 					if (names_iter.hasNext())
 						full_query += " OR ";
 				}
 
+				// close parenthetical term
 				full_query += ")";
 			}
 
 			// if further terms remain in the sequence
 			if (!(i == parsedTerms.size() - 1)) {
-
-				// if next term is not a boolean operator or an escape term, add OR
-				if (!parsedTerms.get(i + 1).matches(booleanTerms)
-						&& !parsedTerms.get(i + 1).matches(escapeTerms)) {
+		
+				// Add a separating OR iff:
+				// - this term is not an escape character
+				// - this term is not a boolean term
+				// - next term is not a boolean term
+				if (!parsedTerms.get(i).matches(escapeTerms) && 
+					!parsedTerms.get(i).matches(booleanTerms) && 
+					!parsedTerms.get(i+1).matches(booleanTerms)) {
+					
 					full_query += " OR";
 				}
-
 			}
 		}
 
-		/*
-		 * // cycle over terms for (int i = 0; i < terms.length; i++) {
-		 * 
-		 * // if a boolean operator, add unmodified (TODO update with fuller list
-		 * later) if (terms[i].matches("AND|and|OR|or|NOT|not")) { full_query +=
-		 * (i==0 ? "" : " ") + terms[i] + " "; continue;
-		 * 
-		 * // else if already a field-specific query term } else if
-		 * (terms[i].contains(":")) { full_query += terms[i];
-		 * 
-		 * // otherwise, treat as unfielded query term } else { full_query += "(";
-		 * 
-		 * Iterator<String> names_iter = fieldNames.iterator();
-		 * 
-		 * while(names_iter.hasNext()) { full_query += names_iter.next() + ":" +
-		 * terms[i]; if (names_iter.hasNext()) full_query += " OR "; }
-		 * 
-		 * full_query += ")"; }
-		 * 
-		 * // if further terms remain in the sequence, apply boolean separator if
-		 * (!(i == terms.length-1)) {
-		 * 
-		 * // if next term is not a boolean operator, add OR
-		 * if(!terms[i+1].matches("AND|and||OR|or|NOT|not")) { full_query += " OR ";
-		 * } else { // do nothing, user-specified boolean will be applied above }
-		 * 
-		 * } }
-		 */
-
-		// add mapProjectId constraint
-		full_query += ") AND mapProjectId:" + mapProjectId.toString();
-
+		
+		// add parantheses and map project constraint
+		full_query = "(" + full_query + ")" + " AND mapProjectId:" + mapProjectId.toString();
+		
 		System.out.println("Full query: " + full_query);
-
+		
 		return full_query;
 
 	}
@@ -1582,19 +1528,34 @@ public class MappingServiceJpa implements MappingService {
 	 * @return the list of unmapped descendant concepts
 	 * @throws Exception the exception
 	 */
+	@Override
 	public SearchResultList findUnmappedDescendantsForConcept(String terminologyId,
 			String terminology, String terminologyVersion, int thresholdLlc)
 			throws Exception {	
 		
 		SearchResultList unmappedDescendants = new SearchResultListJpa();
+
+		// get hierarchical rel
+		MetadataService metadataService = new MetadataServiceJpa();
+		Map<Long, String> hierarchicalRelationshipTypeMap = metadataService.getHierarchicalRelationshipTypes(terminology, terminologyVersion);
+		if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
+			throw new IllegalStateException(
+					"Map project source terminology has too many hierarchical relationship types - "
+							+ terminology);
+		}
+		if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
+			throw new IllegalStateException(
+					"Map project source terminology has too few hierarchical relationship types - "
+							+ terminology);
+		}
+		long hierarchicalRelationshipType = hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
 		
 		// get descendants
 		ContentService contentService = new ContentServiceJpa();
 		SearchResultList descendants = contentService.findDescendants(
 				terminologyId, 
 				terminology, 
-				terminologyVersion, 
-				new Long("116680003"));  // TODO: This still needs metadata replacement
+				terminologyVersion, hierarchicalRelationshipType); 
 		
 		// if number of descendants <= low-level concept threshold, treat as high-level concept and report no unmapped
 		if (descendants.getCount() <= thresholdLlc) {
@@ -1609,8 +1570,9 @@ public class MappingServiceJpa implements MappingService {
 			}
 		}
 		
-		// close manager
+		// close managers
 		contentService.close();
+		metadataService.close();
 		
 		return unmappedDescendants;
 		
@@ -1874,6 +1836,7 @@ public class MappingServiceJpa implements MappingService {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciples()
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<MapPrinciple> getMapPrinciples() {
 		List<MapPrinciple> mapPrinciples = new ArrayList<MapPrinciple>();
@@ -1893,6 +1856,7 @@ public class MappingServiceJpa implements MappingService {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapAdvices()
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<MapAdvice> getMapAdvices() {
 		List<MapAdvice> mapAdvices = new ArrayList<MapAdvice>();
@@ -1920,9 +1884,8 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public void createMapRecordsForMapProject(MapProject mapProject)
 		throws Exception {
-
 		Logger.getLogger(MappingServiceJpa.class).warn(
-				"Creating map records for project from " + mapProject.getName());
+				"Find map records from query for project - " + mapProject.getName());
 		if (!getTransactionPerOperation()) {
 			throw new IllegalStateException(
 					"The application must let the service manage transactions for this method");
@@ -1930,16 +1893,18 @@ public class MappingServiceJpa implements MappingService {
 
 		// retrieve all complex map ref set members for mapProject
 		javax.persistence.Query query =
-				manager
-						.createQuery("select r from ComplexMapRefSetMemberJpa r where r.refSetId = :refSetId order by r.concept.id, "
-								+ "r.mapBlock, r.mapGroup, r.mapPriority");
+				manager.createQuery("select r from ComplexMapRefSetMemberJpa r "
+						+ "where r.refSetId = :refSetId order by r.concept.id, "
+						+ "r.mapBlock, r.mapGroup, r.mapPriority");
 		query.setParameter("refSetId", mapProject.getRefSetId());
-		Set<ComplexMapRefSetMember> complexMapRefSetMembers =
-				new HashSet<ComplexMapRefSetMember>();
+		List<ComplexMapRefSetMember> complexMapRefSetMembers =
+				new ArrayList<ComplexMapRefSetMember>();
 		for (Object member : query.getResultList()) {
 			ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
 			complexMapRefSetMembers.add(refSetMember);
 		}
+		Logger.getLogger(MappingServiceJpa.class).warn(
+				"  " + complexMapRefSetMembers.size() + " map records procesed (some skipped)");
 		createMapRecordsForMapProject(mapProject, complexMapRefSetMembers);
 	}
 
@@ -1951,6 +1916,7 @@ public class MappingServiceJpa implements MappingService {
 	 * org.ihtsdo.otf.mapping.services.MappingService#removeMapRecordsForProjectId
 	 * (java.lang.Long)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public Long removeMapRecordsForProjectId(Long mapProjectId) {
 
@@ -1958,11 +1924,12 @@ public class MappingServiceJpa implements MappingService {
 
 		int nRecords = 0;
 		tx.begin();
+		@SuppressWarnings("unchecked")
 		List<MapRecord> records =
-				(List<MapRecord>) manager
-						.createQuery(
-								"select m from MapRecordJpa m where m.mapProjectId = :mapProjectId")
-						.setParameter("mapProjectId", mapProjectId).getResultList();
+				manager
+				.createQuery(
+						"select m from MapRecordJpa m where m.mapProjectId = :mapProjectId")
+				.setParameter("mapProjectId", mapProjectId).getResultList();
 
 		for (MapRecord record : records) {
 
@@ -2030,9 +1997,11 @@ public class MappingServiceJpa implements MappingService {
 	 * org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject
 	 * (org.ihtsdo.otf.mapping.model.MapProject, java.util.Set)
 	 */
+	@SuppressWarnings("null")
 	@Override
 	public void createMapRecordsForMapProject(MapProject mapProject,
-		Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
+		List<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
+		Logger.getLogger(this.getClass()).debug("  Starting create map records for map project - " + mapProject.getName());
 
 		// Verify application is letting the service manage transactions
 		if (!getTransactionPerOperation()) {
@@ -2047,14 +2016,31 @@ public class MappingServiceJpa implements MappingService {
 		MetadataService metadataService = new MetadataServiceJpa();
 		Map<Long, String> relationIdNameMap = metadataService.getMapRelations(mapProject.getSourceTerminology(),
 				mapProject.getSourceTerminologyVersion());
+		Logger.getLogger(this.getClass()).debug("    relationIdNameMap = " + relationIdNameMap);
+		Map<Long, String> hierarchicalRelationshipTypeMap = metadataService.getHierarchicalRelationshipTypes(mapProject.getSourceTerminology(), 
+				mapProject.getSourceTerminologyVersion());
+		if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
+			throw new IllegalStateException(
+					"Map project source terminology has too many hierarchical relationship types - "
+							+ mapProject.getSourceTerminology());
+		}
+		if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
+			throw new IllegalStateException(
+					"Map project source terminology has too few hierarchical relationship types - "
+							+ mapProject.getSourceTerminology());
+		}
+		long hierarchicalRelationshipType = hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
+	
 
 		boolean prevTransactionPerOperationSetting = getTransactionPerOperation();
 		setTransactionPerOperation(false);
 		beginTransaction();
 		List<MapAdvice> mapAdvices = getMapAdvices();
+		int mapPriorityCt = 0;
+		int prevMapGroup = 0;
 		try {
 			// instantiate other local variables
-			Long prevConceptId = new Long(-1);
+			String prevConceptId = null;
 			MapRecord mapRecord = null;
 			int ct = 0;
 			for (ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
@@ -2071,25 +2057,27 @@ public class MappingServiceJpa implements MappingService {
 								.contains("MAP IS CONTEXT DEPENDENT FOR GENDER"))
 						&& !(refSetMember.getMapRule()
 								.matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]"))) {
-					Logger.getLogger(this.getClass()).debug("Skipping refset member exclusion rule " + refSetMember.getTerminologyId());
+					Logger.getLogger(this.getClass()).debug("    Skipping refset member exclusion rule " + refSetMember.getTerminologyId());
 					continue;
 				}
 
 				// retrieve the concept
-				Logger.getLogger(this.getClass()).debug("Get refset member concept");
+				Logger.getLogger(this.getClass()).debug("    Get refset member concept");
 				Concept concept = refSetMember.getConcept();
 
 				// if no concept for this ref set member, skip
 				if (concept == null) {
-					throw new NoResultException("Concept is unexpectedly missing for "
+					throw new NoResultException("    Concept is unexpectedly missing for "
 							+ refSetMember.getTerminologyId());
 				}
 
 				// if different concept than previous ref set member, create new
 				// mapRecord
-				if (!concept.getTerminologyId().equals(prevConceptId.toString())) {
-					Logger.getLogger(this.getClass()).debug("Creating map record for " + concept.getTerminologyId());
+				if (!concept.getTerminologyId().equals(prevConceptId)) {
+					Logger.getLogger(this.getClass()).debug("    Creating map record for " + concept.getTerminologyId());
 
+					mapPriorityCt = 0;
+					prevMapGroup = 0;
 					mapRecord = new MapRecordJpa();
 					mapRecord.setConceptId(concept.getTerminologyId());
 					mapRecord.setConceptName(concept.getDefaultPreferredName());
@@ -2101,21 +2089,21 @@ public class MappingServiceJpa implements MappingService {
 							  concept.getTerminologyId(),
 							  concept.getTerminology(), 
 							  concept.getTerminologyVersion(), 
-							  new Long("116680003")).getCount()));
-					Logger.getLogger(this.getClass()).debug("  Computing descendant ct = " + 
+							  hierarchicalRelationshipType).getCount()));
+					Logger.getLogger(this.getClass()).debug("      Computing descendant ct = " + 
 						  mapRecord.getCountDescendantConcepts());
 					 
 					//mapRecord.setCountDescendantConcepts(0L);
 
 					// set the previous concept to this concept
 					prevConceptId =
-							new Long(refSetMember.getConcept().getTerminologyId());
+							refSetMember.getConcept().getTerminologyId();
 
 					// persist the record
 					addMapRecord(mapRecord);
 
 					if (++ct % 500 == 0) {
-						Logger.getLogger(MappingServiceJpa.class).info(
+						Logger.getLogger(MappingServiceJpa.class).info("    " +
 								ct + " records created");
 					}
 				}
@@ -2129,20 +2117,23 @@ public class MappingServiceJpa implements MappingService {
 									mapProject.getDestinationTerminology(),
 									mapProject.getDestinationTerminologyVersion());
 					if (c == null) {
-						targetName = "Target name cound not be determined";
+						targetName = "Target name could not be determined";
 					} else {
 						targetName = c.getDefaultPreferredName();
 					}
-					Logger.getLogger(this.getClass()).debug("  Setting target name " +
+					Logger.getLogger(this.getClass()).debug("      Setting target name " +
 						  targetName);
 				}
 
 				// Set map relation id as well from the cache
 				String relationName = null;
-				if (refSetMember.getMapRelationId() != null)
+				if (refSetMember.getMapRelationId() != null) {
 					relationName = relationIdNameMap.get(refSetMember.getMapRelationId());
+					Logger.getLogger(this.getClass()).debug("      Look up relation name = " + 
+						  relationName);
+				}
 
-				Logger.getLogger(this.getClass()).debug("  Create map entry");
+				Logger.getLogger(this.getClass()).debug("      Create map entry");
 				MapEntry mapEntry = new MapEntryJpa();
 				mapEntry.setTargetId(refSetMember.getMapTarget());
 				mapEntry.setTargetName(targetName);
@@ -2154,14 +2145,19 @@ public class MappingServiceJpa implements MappingService {
 				mapEntry.setRule(rule);
 				mapEntry.setMapBlock(refSetMember.getMapBlock());
 				mapEntry.setMapGroup(refSetMember.getMapGroup());
-				mapEntry.setMapPriority(refSetMember.getMapPriority());
+				if (prevMapGroup != refSetMember.getMapGroup()) {
+					mapPriorityCt = 0;
+					prevMapGroup = refSetMember.getMapGroup();
+				}
+				// Increment map priority as we go through records
+				mapEntry.setMapPriority(++mapPriorityCt);
 				
 				mapRecord.addMapEntry(mapEntry);
 
 				// Add support for advices - and there can be multiple map advice values
 				// Only add advice if it is an allowable value and doesn't match relation name
 				// This should automatically exclude IFA/ALWAYS advice 
-				Logger.getLogger(this.getClass()).debug("  Setting map advice");
+				Logger.getLogger(this.getClass()).debug("      Setting map advice");
 				if (refSetMember.getMapAdvice() != null
 						&& !refSetMember.getMapAdvice().equals("")) {
 					for (MapAdvice ma : mapAdvices) {
@@ -2175,6 +2171,8 @@ public class MappingServiceJpa implements MappingService {
 			}
 			
 			commit();
+			contentService.close();
+			metadataService.close();
 		} catch (Exception e) {
 			setTransactionPerOperation(prevTransactionPerOperationSetting);
 			throw e;
@@ -2241,6 +2239,13 @@ public class MappingServiceJpa implements MappingService {
 					"Error attempting to commit a transaction when there "
 							+ "is no active transaction");
 		tx.commit();
+	}
+
+	@Override
+	public List<MapRecord> getMapRecordsForMapProjectIdWithQuery(
+			Long mapProjectId, PfsParameter pfsParameter) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

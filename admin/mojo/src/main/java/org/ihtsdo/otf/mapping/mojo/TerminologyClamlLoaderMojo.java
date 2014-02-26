@@ -127,6 +127,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoExecutionException {
+		getLog().info("Starting loading " + terminology + " data ...");
 
 		FileInputStream propertiesInputStream = null;
 		FileInputStream fis = null;
@@ -134,7 +135,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 		Reader reader = null;
 		try {
 
-			getLog().info("Start loading " + terminology + " data ...");
 
 			// load Properties file
 			Properties properties = new Properties();
@@ -185,6 +185,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 			saxParser.parse(is, handler);
 
 			tx.commit();
+			getLog().info("done ...");
 
 		} catch (Exception e) {
 			e.printStackTrace();

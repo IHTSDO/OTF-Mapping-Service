@@ -81,10 +81,10 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		getLog().info("Starting exporting metadata ...");
 
 		try {
 
-			getLog().info("Starting Export Metadata");
 
 			FileInputStream propertiesInputStream = null;
 
@@ -212,12 +212,18 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						+ mpr.getDestinationTerminology() + "\t"
 						+ mpr.getDestinationTerminologyVersion() + "\t"
 						+ mpr.isBlockStructure() + "\t" + mpr.isGroupStructure() + "\t"
-						+ mpr.isPublished() + "\t" + mapAdvices + "\t" + mapPrinciples
-						+ "\t" + mprMapLeads + "\t" + mprMapSpecialists + "\n");
+						+ mpr.isPublished() + "\t" 
+						+ mpr.getMapRelationStyle() + "\t"
+						+ mpr.getMapPrincipleSourceDocument() + "\t"
+						+ mpr.isRuleBased() + "\t"
+						+ mapAdvices + "\t" 
+						+ mapPrinciples + "\t"
+						+ mprMapLeads + "\t" 
+						+ mprMapSpecialists + "\n");
 			}
 			mappingService.close();
 
-			getLog().info("...done");
+			getLog().info("done ...");
 			specialistsWriter.close();
 			leadsWriter.close();
 			advicesWriter.close();
