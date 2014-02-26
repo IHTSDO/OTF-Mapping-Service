@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -185,8 +187,9 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapProject.setMapRelationStyle(fields[11]);
 				mapProject.setMapPrincipleSourceDocument(fields[12]);
 				mapProject.setRuleBased(fields[13].equals("true") ? true : false);
+				mapProject.setMapType(fields[14]);
 				
-				String mapAdvices = fields[14];
+				String mapAdvices = fields[15];
 				if (!mapAdvices.equals("")) {
 					for (String advice : mapAdvices.split(",")) {
 						for (MapAdvice ml : mappingService.getMapAdvices()) {
@@ -196,7 +199,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				String mapPrinciples = fields[15];
+				String mapPrinciples = fields[16];
 				if (!mapPrinciples.equals("")) {
 					for (String principle : mapPrinciples.split(",")) {
 						for (MapPrinciple ml : mappingService.getMapPrinciples()) {
@@ -207,7 +210,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				String mapLeads = fields[16];
+				String mapLeads = fields[17];
 				for (String lead : mapLeads.split(",")) {
 					for (MapLead ml : mappingService.getMapLeads()) {
 						if (ml.getUserName().equals(lead))
@@ -215,13 +218,21 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				String mapSpecialists = fields[17];
+				String mapSpecialists = fields[18];
 				for (String specialist : mapSpecialists.split(",")) {
 					for (MapSpecialist ml : mappingService.getMapSpecialists()) {
 						if (ml.getUserName().equals(specialist))
 							mapProject.addMapSpecialist(ml);
 					}
 				}
+				
+				String rulePresetAgeRangesStr = fields[19];
+				Set<String> rulePresetAgeRanges = new HashSet<String>();
+				for (String preset : rulePresetAgeRangesStr.split(",")) {
+					rulePresetAgeRanges.add(preset);
+				}
+				mapProject.setRulePresetAgeRanges(rulePresetAgeRanges);
+				
 				mappingService.addMapProject(mapProject);
 			}
 
