@@ -7,10 +7,12 @@
 
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/bootstrap.css">
+<link rel="stylesheet" href="css/sorttest.css">
+
 
   <!--  jquery includes -->
-  <script type="text/javascript" src="lib/jquery/jquery-1.11.0.js"></script>
-
+  <!-- <script type="text/javascript" src="lib/jquery/jquery.min-1.7.1.js"></script>
+ -->
   <!--  angular includes -->
   <script src="lib/angular/angular.js"></script>
   <script src="lib/angular/angular-route.js"></script>
@@ -19,17 +21,31 @@
   
   <!-- third-party utility includes  -->
   <script src="lib/ui-bootstrap/ui-bootstrap-custom-tpls-0.7.0.js"></script>
+  <script src="lib//jquery/jquery.min-1.7.1.js"></script>
   
-
-
-<style type="text/css" media="all">
-</style>
+  
+  <!-- 
+  <script src="lib/html.sortable.js"></script>
+  <script src="lib/html.sortable.angular.js"></script>
+  
+   <script>
+		$(function() {
+			$('.sortable').sortable();
+			$('.handles').sortable({
+				handle: 'span'
+			});
+			$('.connected').sortable({
+				connectWith: '.connected'
+			});
+			$('.exclude').sortable({
+				items: ':not(.disabled)'
+			});
+		});
+  </script> -->
 </head>
-
 <body>
 
 	<header-directive></header-directive>
-	
 
 	<div id="wrap">
 
@@ -41,13 +57,13 @@
 		</div>
 	</div>
 	
-	<div id="footer" class="container">
+	<!-- <div id="footer" class="container">
     <nav class="navbar navbar-default navbar-fixed-bottom">
         <div class="navbar-inner navbar-content-center">
             <p>&nbsp;<a href="http://www.ihtsdo.org/">Copyright @2014 IHTSDO</a></p>
         </div>
     </nav>
-</div>
+</div> -->
 	
 </body>
 

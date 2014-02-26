@@ -9,9 +9,14 @@ var root_mapping = root_url + "mapping/";
 var root_content = root_url + "content/";
 var root_metadata = root_url + "metadata/";
 
+var testArray = [{"id":4,"name":"D"},{"id":2,"name":"B"},{"id":1,"name":"A"},{"id":3,"name":"C"}];
+
+
 mapProjectAppControllers.run(function($rootScope) {
     $rootScope.userName = null;
     $rootScope.role = null;
+    $rootScope.testArray =  [{"id":4,"name":"D"},{"id":2,"name":"B"},{"id":1,"name":"A"},{"id":3,"name":"C"}];
+	
 });
 
 
@@ -23,6 +28,12 @@ mapProjectAppControllers.run(function($rootScope) {
 
 mapProjectAppControllers.controller('LoginCtrl', 
 	 function ($scope, $rootScope, $location) {
+	
+	
+	$scope.testArray = [{"id":4,"name":"D"},{"id":2,"name":"B"},{"id":1,"name":"A"},{"id":3,"name":"C"}];
+	
+	
+	
 	// logout icon returns to login page, so reinitialize
 	$rootScope.userName = null;
 	$rootScope.role = null;
@@ -794,7 +805,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				  
 				  $scope.record.mapEntry = newEntries;
 				  $scope.entryDeleted = true;
-			  }
+			  };
 			  
 			  $scope.retrieveTargetConcepts = function(query) {
 		    	  
@@ -848,7 +859,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		       * Adds a map group to existing list
 		       */
 		      $scope.addMapGroup = function() {
-		    	  console.debug("addMapGroup() - current groups: " + $scope.groups);
 		    	  var groupAdded = 0;
 		    	  
 		    	  // first attempt to "fill in" the first possible gap in groups
@@ -865,7 +875,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		    	  // if no group filled in, add to end
 		    	  // i.e. [1 2] -> [1 2 3]
 		    	  if (groupAdded == 0) {
-		    		  console.debug("Pushed at end");
 		    		  groupAdded = $scope.groups.length + 1;
 		    		  $scope.groups.push(groupAdded);
 		    	  }
@@ -876,23 +885,236 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		      /**
 		       * Removes a map group from existing groups if it exists
 		       */
-		      $scope.removeMapGroup = function(group) {
-		    	  console.debug("removeMapGroup() - " + group);
-		    	  console.debug($scope.groups);
-		    	  
+		      $scope.removeMapGroup = function(group) {   	  
 		    	  var newGroups = new Array();
 		    	  for (var i = 0; i < $scope.groups.length; i++) {
 		    		  if ($scope.groups[i] != group) newGroups.push($scope.groups[i]);
 		    	  }
 		    	  $scope.groups = newGroups;
-		    	  
-		    	  console.debug($scope.groups);
 		      };
 		 };
 			  
 			  
 		 
 		 	
+		
+	}]);
+
+/**
+ * Controller for new test view (i.e. non-modal) for map record edit/create/delete functions
+ */
+mapProjectAppControllers.controller('MapRecordDetailCtrl', 
+	['$scope', '$http', '$routeParams', '$sce',
+                                                             
+	 function ($scope, $http, $routeParams, $sce) {
+		
+		
+		$scope.testArray = [{"id":4,"name":"D"},{"id":2,"name":"B"},{"id":1,"name":"A"},{"id":3,"name":"C"}];
+		
+		// initialize scope variables
+		$scope.record = 	null;
+		$scope.project = 	null;
+		$scope.concept = 	null;
+		$scope.groups = 	null;
+		
+		// initialize local variables
+		var recordId = 		$routeParams.recordId;
+		
+		// obtain the record
+		$http({
+			 url: root_mapping + "record/id/" + recordId,
+			 dataType: "json",
+		        method: "GET",
+		        headers: { "Content-Type": "application/json"}	
+	      }).success(function(data) {
+	    	  $scope.record = data;
+	      }).error(function(error) {
+	    	  $scope.error = $scope.error + "Could not retrieve map record. ";
+	     
+	      }).then(function() {
+
+	    	  // obtain the record project
+	    	 $http({
+	 			 url: root_mapping + "project/id/" + $scope.record.mapProjectId,
+	 			 dataType: "json",
+	 		        method: "GET",
+	 		        headers: { "Content-Type": "application/json"}	
+		      }).success(function(data) {
+	 		    	  $scope.project = data;
+		      }).error(function(error) {
+	 		    	  $scope.error = $scope.error + "Could not retrieve map project. ";
+	          }).then(function() {
+	
+	        	  // obtain the record concept
+	        	 $http({
+	     			 url: root_content + "concept/" 
+	 				  		+ $scope.project.sourceTerminology + "/"
+					  		+ $scope.project.sourceTerminologyVersion + "/"
+					  		+ "id/" + $scope.record.conceptId,
+					  	dataType: "json",
+	     		        method: "GET",
+	     		        headers: { "Content-Type": "application/json"}	
+	 		      }).success(function(data) {
+	     		    	  $scope.concept = data;
+	 		      }).error(function(error) {
+	     		    	  $scope.error = $scope.error + "Could not retrieve record concept. ";
+	 		      });
+	        	 
+		    	  
+		    	  // get the groups
+		    	  getGroups();
+		    	  
+	          });
+          });
+	         
+		
+		/**
+		 * MAP ENTRY FUNCTIONS
+		 */
+		
+		// Returns all entries belonging to a particular map group
+        $scope.getEntries = function(mapGroup) {
+		  
+		  // if no argument, return all entries
+		  if (mapGroup == null) {
+			  return $scope.record.mapEntry;
+		  }
+		  
+		  // cycle over map entries and extract those with this map group
+		  var entries = new Array();
+		  
+		  for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+			  if (parseInt($scope.record.mapEntry[i].mapGroup, 10) === parseInt(mapGroup, 10)) {
+				  entries.push($scope.record.mapEntry[i]);
+			  };
+		  };
+		  
+		  return entries;  
+	    };
+	    
+	    // Returns a summary string for the entry rule type
+	    $scope.getRuleSummary = function(entry) {
+			  if ($scope.project.mapRelationStyle === "RELATIONSHIP_STYLE") {
+				  return "";
+			  } else {
+				  
+				  if (entry.rule.toUpperCase().indexOf("GENDER") != -1) return "[GENDER]";
+				  if (entry.rule.toUpperCase().indexOf("AGE OF ONSET") != -1) return "[AGE OF ONSET]";
+				  if (entry.rule.toUpperCase().indexOf("AGE") != -1) return "[AGE]";
+				  if (entry.rule.toUpperCase().indexOf("TRUE") != -1) return "[TRUE]";
+				  return "";
+			  } 	
+
+		  };
+		  
+		// Sets the scope variable for the active entry
+		$scope.selectEntry = function(entry) {
+			$scope.entry = entry;
+		};
+		
+		/** 
+		 * MAP GROUP FUNCTIONS
+		 */
+		
+		// Retrieves groups from the existing entries
+		function getGroups() {
+			  
+			  $scope.groups = new Array();
+			  for (var i = 0; i < $scope.record.mapEntry.length; i++) {			  
+				  
+				  if ($scope.groups.indexOf(parseInt($scope.record.mapEntry[i].mapGroup, 10)) == -1) {
+					  $scope.groups.push(parseInt($scope.record.mapEntry[i].mapGroup, 10));
+				  };
+			  };
+			  
+			  // if no groups found, add a default group
+			  if ($scope.groups.length == 0) $scope.groups.push(1);
+
+		  };
+		
+		  // Adds a map group to the existing list
+	      $scope.addMapGroup = function() {
+	    	  var groupAdded = 0;
+	    	  
+	    	  // first attempt to "fill in" the first possible gap in groups
+	    	  for (var i = 0; i < $scope.groups.length; i++) {
+	    		  if (i+1 < $scope.groups[i]  && groupAdded == false) {
+	    			  groupAdded = i+1;
+	    			  $scope.groups.push(groupAdded);
+	    		  }
+	    	  }
+	    	  
+	    	  // if no group filled in, add to end
+	    	  if (groupAdded == 0) {
+	    		  groupAdded = $scope.groups.length + 1;
+	    		  $scope.groups.push(groupAdded);
+	    	  }
+	      };
+	      
+	      // Removes a map group if it exists
+	      $scope.removeMapGroup = function(group) {   	  
+	    	  var newGroups = new Array();
+	    	  for (var i = 0; i < $scope.groups.length; i++) {
+	    		  if ($scope.groups[i] != group) newGroups.push($scope.groups[i]);
+	    	  }
+	    	  $scope.groups = newGroups;
+	      };
+	      
+	      
+	      /**
+	       * ENTRY EDITING FUNCTIONS
+	       */
+	      $scope.retrieveTargetConcepts = function(query) {
+	    	  
+	    	  // execute query for concepts
+	    	  // TODO Change query format to match records
+	    	  $http({
+	    			 url: root_content + "concept/query/" + query,
+	    			 dataType: "json",
+	    		     method: "GET",
+	    		     headers: {
+	    		          "Content-Type": "application/json"
+	    		     }	
+	    		  }).success(function(data) {
+	    			  
+	    			  console.debug(data);
+	    		     
+	    			  // eliminate concepts that don't match target terminology
+	    			  
+	    			  $scope.targetConcepts = [];
+	    			  
+	    			  for (var i = 0; i < data.count; i++) {
+	    				  if (data.searchResult[i].terminology === $scope.project.destinationTerminology &&
+	    					  data.searchResult[i].terminologyVersion === $scope.project.destinationTerminologyVersion) {
+	    					
+	    					  $scope.targetConcepts.push(data.searchResult[i]);
+	    				  };
+	    			  };
+	    			  
+	    			  
+
+	    		  }).error(function(data) {
+	    			  $scope.errorCreateRecord = "Failed to retrieve entries";
+	    		  });
+	      };
+	      
+	      $scope.resetTargetConcepts = function() {
+	    	  console.debug("resetTargetConcepts() called");
+	    	  $scope.queryTarget = "";
+	    	  $scope.targetConcepts = [];
+	      };
+	      
+	      $scope.selectTargetConcept = function(entry, target) {
+	    	  console.debug("selectTargetConcept() called");
+	    	  console.debug(target);
+	    	  entry.targetId = target.terminologyId;
+	    	  entry.targetName = target.value;
+	    	  $scope.resetTargetConcepts();
+	      };
+	      
+	      
+		  
+		  
 		
 	}]);
 
@@ -1411,6 +1633,12 @@ mapProjectAppControllers
 			
 		});
 
+mapProjectAppControllers
+.controller('SortTestCtrl', function($scope) {
+	
+	console.debug("IN CONTROLLER");
+	$scope.testArray = [{"id":4,"name":"D"},{"id":2,"name":"B"},{"id":1,"name":"A"},{"id":3,"name":"C"}];
+});
 
 
 
