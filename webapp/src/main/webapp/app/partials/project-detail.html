@@ -36,8 +36,11 @@
   </tr>
     <tr>
     <td><div tooltip-placement="right" tooltip="The method by which this project uses the map relation (e.g. map record based, relationship based)"><b>Relation Style</b></div></td>
-    <td>{{project.mapRelationStyle}}</td>
+    <td>{{mapRelationStyleText}}</td>
   </tr>
+  <tr>
+  	<td><div tooltip-placement="right" tooltip="The type of mapping this project uses (i.e.. simple, complex, extended)"><b>Map Type</b></div></td>
+  	<td>{{mapTypeText}}</td>
   <tr>
     <td><div tooltip-placement="right" tooltip="List of the map leads for this project."><b>Map Leads</b></div></td>
    <!-- <td><ul><li ng-repeat="lead in project.mapLead">{{lead.name}}, {{lead.userName}}, {{lead.email}} </li></ul></td>  --> 
@@ -132,8 +135,8 @@
     <tbody ng-repeat="principle in pagedPrinciple | orderBy:principleId" style="border: 2px solid #ccc;" >
      <tr>
         <td>{{principle.principleId}}</td>
-        <td>      
-            <div class="dropdown">
+        <td>    
+        	<div class="dropdown">
             <a class="dropdown-toggle"> 
             <img src="img/information-blue.png" alt="information icon">
             </a>
@@ -143,7 +146,7 @@
               <p>Reference: {{principle.sectionRef}}</p>
               <p ng-bind-html="to_trusted(principle.detail)"></p>
             </span>
-            </div>             
+            </div>        
         </td>
       </tr>
     </tbody>

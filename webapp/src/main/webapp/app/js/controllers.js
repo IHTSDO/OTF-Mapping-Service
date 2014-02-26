@@ -107,8 +107,8 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 /*
  * Controller for retrieving and displaying records associated with a concept
  */
-mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams', '$modal',
-   function ($scope, $http, $routeParams, $modal) {
+mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams', '$modal', '$sce',
+   function ($scope, $http, $routeParams, $modal, $sce) {
 	
 	// scope variables
 	$scope.error = "";		// initially empty
@@ -135,6 +135,11 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
           }).then(function() {
         	  $scope.getRecordsForConcept();
           });
+	
+	// function to return trusted html code (for tooltip content)
+	$scope.to_trusted = function(html_code) {
+	    return $sce.trustAsHtml(html_code);
+	 };
 
     $scope.getRecordsForConcept = function() {
 		// retrieve all records with this concept id
@@ -275,6 +280,13 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				}
 			}
 			
+		};
+		
+		// given a record, retrieves associated project's ruleBased flag
+		$scope.getRuleBasedForRecord = function(record) {
+			var project = $scope.getProject(record);
+			return project.ruleBased;
+				
 		};
 		
 		function applyMapCategoryStyle() {
@@ -749,6 +761,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 			  };
 			  
+			  
 			  // TODO expand this later
 			  $scope.entriesEqual = function(entry1, entry2) {
 				  if (! (entry1.targetId === entry2.targetId)) return false;
@@ -907,9 +920,6 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 	['$scope', '$http', '$routeParams', '$sce',
                                                              
 	 function ($scope, $http, $routeParams, $sce) {
-		
-		
-		$scope.testArray = [{"id":4,"name":"D"},{"id":2,"name":"B"},{"id":1,"name":"A"},{"id":3,"name":"C"}];
 		
 		// initialize scope variables
 		$scope.record = 	null;
@@ -1304,6 +1314,8 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 				  console.debug("Relationship Style detected");
 				  applyRelationshipStyle();
 			  }
+			  
+			  console.debug("Checking map type");
 					 			  
 			  
 			  // get unmapped descendants (checking done in routine)
@@ -1405,6 +1417,9 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	 
 	 function applyMapCategoryStyle() {
 		 
+		 // set the category display text
+		 $scope.mapRelationStyleText = "Map Category Style";
+		 
 		 // Cycle over all entries. If targetId is blank, show relationName as the target name
 		 for (var i = 0; i < $scope.records.length; i++) {		 
 			 for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {		 
@@ -1417,6 +1432,9 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	 };
 	 
 	function applyRelationshipStyle() {
+		
+		$scope.mapRelationStyleText = "Relationship Style";
+		
 		// Cycle over all entries. Add the relation name to the advice list
 		 for (var i = 0; i < $scope.records.length; i++) {		 
 			 for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {		 	 
@@ -1457,7 +1475,19 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 		     
 		      }).then(function(data) {
 		    	  
-		    	  console.debug($scope.project.destinationTerminology);
+		    	  // apply map type text styling
+		    	  if ($scope.project.mapType === "SIMPLE_MAP") $scope.mapTypeText = "Simple Mapping";
+				  else if ($scope.project.mapType === "COMPLEX_MAP") $scope.mapTypeText = "Complex Mapping";
+				  else if($scope.project.mapType === "EXTENDED_MAP") $scope.mapTypeText = "Extended Mapping";
+				  else $scope.mapTypeText = "No mapping type specified";
+		    	  
+		    	  // apply relation style text styling
+		    	  console.debug($scope.project.mapRelationStyle);
+		    	  console.debug($scope.project.mapRelationStyle === "MAP_CATEGORY_STYLE");
+		    	  if ($scope.project.mapRelationStyle === "MAP_CATEGORY_STYLE") $scope.mapRelationStyleText = "Map Category Style";
+		    	  else if ($scope.project.mapRelationStyle === "RELATIONSHIP_STYLE") $scope.mapRelationStyleText = "Relationship Style";
+		    	  else $scope.mapRelationStyleText = "No relation style specified";
+		    	 
 		    	 
 		    	  // determine if this project has a principles document
 		    	  // TODO: THIS WILL BE CODED INTO PROJECT LATER
@@ -1477,6 +1507,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 		      
 		      });
 			
+		
 			
 			// function to return trusted html code (for tooltip content)
 			$scope.to_trusted = function(html_code) {
@@ -1558,6 +1589,8 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				 // otherwise return false
 				 return false;
 			 }
+			 
+		
 			 
 			 // helper function to sort a JSON array by field
 			 

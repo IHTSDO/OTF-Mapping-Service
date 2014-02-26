@@ -29,7 +29,7 @@
 		<th style="width: 18%;">Project Name</th>
         <th style="width: 8%;">Group Id</th>
         <th style="width: 10%;">Map Priority</th>
-        <th style="width: 13%;">Rule</th>
+        <th style="width: 13%;" >Rule</th>
 		<th style="width: 10%;">Target</th>
 		<th style="width: 18%;">Target Name</th>
 		<th style="width: 5%;"></th>
@@ -41,34 +41,24 @@
 
 	<tr ng-repeat = "entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
 		<td>
-		<div ng-show="record.mapNote.length > 0">
-          <div class="dropdown">
-            <a class="dropdown-toggle"> 
-            <img src="img/notepad.png" alt="notepad icon">
-            </a>
-            <ul class="dropdown-menu">
-              <b>Note View</b>
-              <li ng-repeat="note in record.mapNote"><a>{{note.note}}</a></li>
-            </ul>
-          </div>
-        </div>
-        <div ng-show="entry.mapAdvice.length > 0">
+        <span ng-show="entry.mapAdvice.length > 0">
           <div class="dropdown">
             <a class="dropdown-toggle"> 
             <img src="img/dialog-question.png" alt="question icon">
             </a>
-            <ul class="dropdown-menu">
-              <b>Advice View</b>
-              <li ng-repeat="advice in entry.mapAdvice"><a>{{advice.detail}}</a></li>
-            </ul>
+            <span class="dropdown-menu">
+            <p><strong>Advice</strong></p>
+            <p></p>
+            <p ng-repeat="advice in entry.mapAdvice" ng-bind-html="to_trusted(advice.detail)"></p>
+          	</span>
           </div>
-        </div>
+        </span>
          
         </td>
 		<td><a href="index.html#/record/projectId/{{record.mapProjectId}}">{{getProjectName(record)}}</a></td>
 		<td>{{entry.mapGroup}}</td>
         <td>{{entry.mapPriority}}</td>
-        <td>{{entry.rule}}</td>
+        <td><span ng-show = "getRuleBasedForRecord(record) == true">{{entry.rule}}</span></td>
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
 		<td align="center" colspan="7">
@@ -84,6 +74,13 @@
 
 </table>
 
+</div>
+
+<div ng-show="record.mapNote.length > 0">
+  <h3>Record Notes</h3>
+  <ul>
+    <li ng-repeat="note in record.mapNote"><a>{{note.note}}</a></li>
+  </ul>
 </div>
 
 <h3>Add Map Record for this Concept to a Map Project</h3>

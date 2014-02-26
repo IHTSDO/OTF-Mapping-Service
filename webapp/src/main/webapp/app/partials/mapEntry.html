@@ -36,18 +36,10 @@
 			</td>
 		</tr>
 		<tr><td>Map Priority</td><td><input style="width:50px" ng-model="entry.mapPriority"></td></tr>
-		<tr><td>Rule</td><td><textarea style:"width=80%;"  ng-model="entry.rule"></textarea></td></tr>
-<!-- 		<tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'">
-			<td>Relation Id</td>
-			<td>
-				{{entry.relationId}}<br>
-				{{entry.relationName}}
-				{{errorSetEntryRelation}}
-			</td>
-		</tr>
+		<tr ng-show="project.ruleBased == true"><td>Rule</td><td><textarea style:"width=80%;"  ng-model="entry.rule"></textarea></td></tr>
 		
 		<tr><td>Group</td><td><input ng-model="entry.mapGroup"></td></tr>
- -->		
+	
 		<tr>
 			<td>Advice</td>
 			<td>
