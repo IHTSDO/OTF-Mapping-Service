@@ -29,10 +29,10 @@ mapProjectAppControllers.controller('LoginCtrl',
 	
 	// initial values for pick-list
 	 $scope.roles = [
-	       {name:'Viewer', value:'Viewer'},
-	       {name:'Specialist', value:'Specialist'},
-	       {name:'Lead', value:'Lead'},
-	       {name:'Administrator', value:'Administrator'}];
+	       {name:'Viewer', value:1},
+	       {name:'Specialist', value:2},
+	       {name:'Lead', value:3},
+	       {name:'Administrator', value:4}];
 	 $scope.role = $scope.roles[0];  
 	 
 	 // login button directs to next page based on role selected
@@ -84,7 +84,6 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 //////////////////////////////
 // Content Services
 //////////////////////////////	
-
 
 
   
