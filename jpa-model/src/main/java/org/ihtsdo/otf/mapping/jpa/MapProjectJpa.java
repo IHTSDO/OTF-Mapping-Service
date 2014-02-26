@@ -3,11 +3,14 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
@@ -85,6 +88,10 @@ public class MapProjectJpa implements MapProject {
 	@Column(nullable = false)
 	private String destinationTerminologyVersion;
 	
+	/** The mapping behavior */
+	@Column(nullable = true)
+	private String mapType;
+	
 	/** The relation behavior */
 	@Column(nullable = true)
 	private String mapRelationStyle;
@@ -117,7 +124,12 @@ public class MapProjectJpa implements MapProject {
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 	
-		
+	/** The preset age ranges for rule generation (Age, Age at onset) */
+	@ElementCollection(fetch=FetchType.EAGER)
+	@CollectionTable(name="map_projects_rule_preset_age_ranges", joinColumns=@JoinColumn(name="id"))
+	@Column(nullable = true)
+	private Set<String> rulePresetAgeRanges = new HashSet<String>();
+	
 	/** Default constructor */
 	public MapProjectJpa() {
 	}
@@ -424,6 +436,26 @@ public class MapProjectJpa implements MapProject {
 	public void setRuleBased(boolean ruleBased) {
 		this.ruleBased = ruleBased;
 	}
+	
+	@Override
+	public String getMapType() {
+		return mapType;
+	}
+
+	@Override
+	public void setMapType(String mapType) {
+		this.mapType = mapType;
+	}
+
+	@Override
+	public Set<String> getRulePresetAgeRanges() {
+		return rulePresetAgeRanges;
+	}
+
+	@Override
+	public void setRulePresetAgeRanges(Set<String> rulePresetAgeRanges) {
+		this.rulePresetAgeRanges = rulePresetAgeRanges;
+	}
 
 	@Override
 	@XmlElement(type=MapAdviceJpa.class, name="mapAdvice")
@@ -467,49 +499,76 @@ public class MapProjectJpa implements MapProject {
 		mapPrinciples.remove(mapPrinciple);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public String toString() {
-		 
-		 return this.getId() + "," + this.getName() + "," +
-		     this.getRefSetId() + "," +
-				 this.getSourceTerminology() + "," +
-				 this.getSourceTerminologyVersion() + "," +
-				 this.getDestinationTerminology() + "," +
-				 this.getDestinationTerminologyVersion() + "," +
-				 this.isBlockStructure() + "," +
-				 this.isGroupStructure() + "," +
-				 this.isPublished() + "," + 
-				 this.getMapAdvices() == null ? "" : this.getMapAdvices().toString() + "," +
-				 this.getMapLeads() == null ? "" : this.getMapLeads().toString() + "," +
-				 this.getMapSpecialists() == null ? "" : this.getMapSpecialists().toString();
-				 
-	 }
+		return "MapProjectJpa [name=" + name + ", blockStructure="
+				+ blockStructure + ", groupStructure=" + groupStructure
+				+ ", published=" + published + ", refSetId=" + refSetId
+				+ ", refSetName=" + refSetName + ", sourceTerminology="
+				+ sourceTerminology + ", sourceTerminologyVersion="
+				+ sourceTerminologyVersion + ", destinationTerminology="
+				+ destinationTerminology + ", destinationTerminologyVersion="
+				+ destinationTerminologyVersion + ", mapType=" + mapType
+				+ ", mapRelationStyle=" + mapRelationStyle
+				+ ", mapPrincipleSourceDocument=" + mapPrincipleSourceDocument
+				+ ", ruleBased=" + ruleBased + ", mapLeads=" + mapLeads
+				+ ", mapSpecialists=" + mapSpecialists + ", mapPrinciples="
+				+ mapPrinciples + ", mapAdvices=" + mapAdvices
+				+ ", rulePresetAgeRanges=" + rulePresetAgeRanges + "]";
+	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result =
-				prime
-						* result
-						+ ((destinationTerminology == null) ? 0 : destinationTerminology
-								.hashCode());
-		result = prime * result + ((refSetId == null) ? 0 : refSetId.hashCode());
-		result =
-				prime * result
-						+ ((sourceTerminology == null) ? 0 : sourceTerminology.hashCode());
+		result = prime * result + (blockStructure ? 1231 : 1237);
+		result = prime
+				* result
+				+ ((destinationTerminology == null) ? 0
+						: destinationTerminology.hashCode());
+		result = prime
+				* result
+				+ ((destinationTerminologyVersion == null) ? 0
+						: destinationTerminologyVersion.hashCode());
+		result = prime * result + (groupStructure ? 1231 : 1237);
+		result = prime * result
+				+ ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
+		result = prime * result
+				+ ((mapLeads == null) ? 0 : mapLeads.hashCode());
+		result = prime
+				* result
+				+ ((mapPrincipleSourceDocument == null) ? 0
+						: mapPrincipleSourceDocument.hashCode());
+		result = prime * result
+				+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
+		result = prime
+				* result
+				+ ((mapRelationStyle == null) ? 0 : mapRelationStyle.hashCode());
+		result = prime * result
+				+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
+		result = prime * result + ((mapType == null) ? 0 : mapType.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + (published ? 1231 : 1237);
+		result = prime * result
+				+ ((refSetId == null) ? 0 : refSetId.hashCode());
+		result = prime * result
+				+ ((refSetName == null) ? 0 : refSetName.hashCode());
+		result = prime * result + (ruleBased ? 1231 : 1237);
+		result = prime
+				* result
+				+ ((rulePresetAgeRanges == null) ? 0 : rulePresetAgeRanges
+						.hashCode());
+		result = prime
+				* result
+				+ ((sourceTerminology == null) ? 0 : sourceTerminology
+						.hashCode());
+		result = prime
+				* result
+				+ ((sourceTerminologyVersion == null) ? 0
+						: sourceTerminologyVersion.hashCode());
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -519,20 +578,91 @@ public class MapProjectJpa implements MapProject {
 		if (getClass() != obj.getClass())
 			return false;
 		MapProjectJpa other = (MapProjectJpa) obj;
+		if (blockStructure != other.blockStructure)
+			return false;
 		if (destinationTerminology == null) {
 			if (other.destinationTerminology != null)
 				return false;
 		} else if (!destinationTerminology.equals(other.destinationTerminology))
+			return false;
+		if (destinationTerminologyVersion == null) {
+			if (other.destinationTerminologyVersion != null)
+				return false;
+		} else if (!destinationTerminologyVersion
+				.equals(other.destinationTerminologyVersion))
+			return false;
+		if (groupStructure != other.groupStructure)
+			return false;
+		if (mapAdvices == null) {
+			if (other.mapAdvices != null)
+				return false;
+		} else if (!mapAdvices.equals(other.mapAdvices))
+			return false;
+		if (mapLeads == null) {
+			if (other.mapLeads != null)
+				return false;
+		} else if (!mapLeads.equals(other.mapLeads))
+			return false;
+		if (mapPrincipleSourceDocument == null) {
+			if (other.mapPrincipleSourceDocument != null)
+				return false;
+		} else if (!mapPrincipleSourceDocument
+				.equals(other.mapPrincipleSourceDocument))
+			return false;
+		if (mapPrinciples == null) {
+			if (other.mapPrinciples != null)
+				return false;
+		} else if (!mapPrinciples.equals(other.mapPrinciples))
+			return false;
+		if (mapRelationStyle == null) {
+			if (other.mapRelationStyle != null)
+				return false;
+		} else if (!mapRelationStyle.equals(other.mapRelationStyle))
+			return false;
+		if (mapSpecialists == null) {
+			if (other.mapSpecialists != null)
+				return false;
+		} else if (!mapSpecialists.equals(other.mapSpecialists))
+			return false;
+		if (mapType == null) {
+			if (other.mapType != null)
+				return false;
+		} else if (!mapType.equals(other.mapType))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (published != other.published)
 			return false;
 		if (refSetId == null) {
 			if (other.refSetId != null)
 				return false;
 		} else if (!refSetId.equals(other.refSetId))
 			return false;
+		if (refSetName == null) {
+			if (other.refSetName != null)
+				return false;
+		} else if (!refSetName.equals(other.refSetName))
+			return false;
+		if (ruleBased != other.ruleBased)
+			return false;
+		if (rulePresetAgeRanges == null) {
+			if (other.rulePresetAgeRanges != null)
+				return false;
+		} else if (!rulePresetAgeRanges.equals(other.rulePresetAgeRanges))
+			return false;
 		if (sourceTerminology == null) {
 			if (other.sourceTerminology != null)
 				return false;
 		} else if (!sourceTerminology.equals(other.sourceTerminology))
+			return false;
+		if (sourceTerminologyVersion == null) {
+			if (other.sourceTerminologyVersion != null)
+				return false;
+		} else if (!sourceTerminologyVersion
+				.equals(other.sourceTerminologyVersion))
 			return false;
 		return true;
 	}
