@@ -11,7 +11,6 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
-import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 
 /**
  * Goal which makes lucene indexes based on hibernate-search annotations.
@@ -47,7 +46,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
  *      </plugin>
  * </pre>
  * 
- * @goal makeindexes
+ * @goal reindex
  * 
  * @phase package
  */
@@ -70,10 +69,10 @@ public class LuceneReindexMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		getLog().info("Starting reindexing ...");
 
 		try {
 
-			getLog().info("  Starting MakeIndexes.java");
 			EntityManagerFactory factory =
 					Persistence.createEntityManagerFactory("MappingServiceDS");
 
@@ -112,7 +111,7 @@ public class LuceneReindexMojo extends AbstractMojo {
 					.startAndWait();
 
 			// Cleanup
-			getLog().info("  Completing MakeIndexes.java");
+			getLog().info("done ...");
 			manager.close();
 			factory.close();
 

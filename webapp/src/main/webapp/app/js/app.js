@@ -66,16 +66,13 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                             });
 
                         })
-                        .controller('dashboardCtrl', function ($scope, localStorageService) {
+                        .controller('dashboardCtrl', function ($rootScope, $scope, localStorageService) {
                           var name = 'default';
                           var model = localStorageService.get(name);
-                          if (!model) {
+                          if (!model && $rootScope.role.value >= 3) { // lead or higher privledge
                             // set default model for demo purposes
                             model = {
-                              structure: "4-8",
-   
-                            
-                            
+                              structure: "4-8",                          
                             rows: [{
                                 columns: [{
                                   class: 'col-md-4',
@@ -96,7 +93,22 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                 }]
                               }]
                             };
-                          }
+                          } else if (!model) { // viewer or specialist
+                              // set default model for demo purposes
+                              model = {
+                                structure: "4-8",                          
+                              rows: [{
+                                  columns: [{
+                                    class: 'col-md-4',
+                                    widgets: [{
+                                        type: "mapProjectList",
+                                        config: {},
+                                        title: "Map Projects"
+                                    }]
+                                  }]
+                                }]
+                              };
+                            }
                           $scope.name = name;
                           $scope.model = model;
 
@@ -149,6 +161,11 @@ mapProjectApp.config(['$routeProvider',
 	  $routeProvider.when('/record/conceptId/:conceptId', {
 			templateUrl: 'partials/record-concept.html',
 			controller: 'RecordConceptListCtrl'
+	  });
+	  
+	  $routeProvider.when('/record/conceptId/:conceptId/create', {
+		  templateUrl: 'partials/record-create.html',
+		  controller: 'RecordCreateCtrl'
 	  });
 		
 	  

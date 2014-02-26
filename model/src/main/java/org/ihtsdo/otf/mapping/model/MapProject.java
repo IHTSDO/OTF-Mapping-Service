@@ -295,4 +295,47 @@ public interface MapProject  {
 	 * @param destinationTerminologyVersion the destination terminology version
 	 */
 	public void setDestinationTerminologyVersion(String destinationTerminologyVersion);
+	
+	
+	/**
+	 * Gets the map relation style
+	 * 
+	 * @return the map relation style
+	 */
+	public String getMapRelationStyle();
+
+	/**
+	 * Sets the map relation style
+	 * 
+	 * @param mapRelationStyle the map relation style
+	 */
+	public void setMapRelationStyle(String mapRelationStyle);
+
+
+	/**
+	 * Sets the map principle source document name
+	 * 
+	 * @param mapPrincipleSourceDocument the name of the map principle source document
+	 */
+	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument);
+	
+	/**
+	 * Gets the map principle source document name
+	 * 
+	 * @return the name of the map principle source document
+	 */
+	public String getMapPrincipleSourceDocument();
+
+	/**
+	 * Returns boolean flag for whether project is rule based
+	 * @return the boolean rule based
+	 */
+	public boolean isRuleBased();
+
+	/**
+	 * Sets the rule based flag with a boolean value
+	 * @param ruleBased the boolean rule based
+	 */
+	public void setRuleBased(boolean ruleBased);
+
 }

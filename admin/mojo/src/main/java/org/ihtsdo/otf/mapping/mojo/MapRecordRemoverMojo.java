@@ -78,10 +78,11 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoExecutionException {
+		getLog().info("Starting removing map records for project - " + refSetId);
 
 		if (refSetId == null) {
 			throw new MojoExecutionException(
-					"You must specify either a projectId or a refSetId.");
+					"You must specify a refSetId.");
 		}
 
 		try {
@@ -91,7 +92,7 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 			mappingService.beginTransaction();
 			Set<MapProject> mapProjects = new HashSet<MapProject>();
 
-			getLog().info("Start removing map records for project - " + refSetId);
+			getLog().info("Start removing map records for refSetId - " + refSetId);
 			for (MapProject mapProject : mappingService.getMapProjects()) {
 				for (String id : refSetId.split(",")) {
 					if (mapProject.getRefSetId().equals(id)) {
@@ -106,14 +107,18 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 			}
 
 			// Remove map record and entry notes
+			int ct = 0;
 			for (MapProject mapProject : mapProjects) {
-				getLog().info("    Remove map records for " + mapProject.getName());
+				getLog().debug("    Remove map records for " + mapProject.getName());
 				for (MapRecord record : mappingService
 						.getMapRecordsForMapProjectId(mapProject.getId())) {
 					getLog().info(
 							"    Removing map record " + record.getId() + " from "
 									+ mapProject.getName());
 					mappingService.removeMapRecord(record.getId());
+					if (++ct % 500 == 0) {
+						getLog().info("      " + ct + " notes processed");
+					}
 				}
 			}
 			mappingService.commit();

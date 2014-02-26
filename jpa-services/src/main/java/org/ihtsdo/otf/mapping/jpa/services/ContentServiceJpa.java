@@ -81,16 +81,18 @@ public class ContentServiceJpa implements ContentService {
 					indexReaderAccessor.close(indexReader);
 				}
 			}
-			if (fullTextEntityManager != null) {
-				fullTextEntityManager.close();
-			}
+
+			fullTextEntityManager.close();
+
 
 			// closing fullTextEntityManager closes manager as well, recreate
 			manager = factory.createEntityManager();
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.services.ContentService#close()
 	 */
 	@Override
@@ -100,8 +102,11 @@ public class ContentServiceJpa implements ContentService {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ContentService#getConcept(java.lang.Long)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getConcept(java.lang.Long)
 	 */
 	@Override
 	public Concept getConcept(Long conceptId) {
@@ -131,9 +136,10 @@ public class ContentServiceJpa implements ContentService {
 		} catch (NoResultException e) {
 			// log result and return null
 			Logger.getLogger(this.getClass()).warn(
-					"ContentService.getConcept(): Concept query for terminologyId = " + terminologyId
-							+ ", terminology = " + terminology + ", terminologyVersion = "
-							+ terminologyVersion + " returned no results!");
+					"ContentService.getConcept(): Concept query for terminologyId = "
+							+ terminologyId + ", terminology = " + terminology
+							+ ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!");
 			return null;
 		}
 	}
@@ -191,6 +197,8 @@ public class ContentServiceJpa implements ContentService {
 				sr.setValue(c.getDefaultPreferredName());
 				results.addSearchResult(sr);
 			}
+			
+			fullTextEntityManager.close();
 
 			results.sortSearchResultsById();
 
@@ -205,115 +213,67 @@ public class ContentServiceJpa implements ContentService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public SearchResultList findAllConcepts(String terminology, String terminologyVersion) {
+	public SearchResultList findAllConcepts(String terminology,
+		String terminologyVersion) {
 		javax.persistence.Query query =
 				manager
 						.createQuery("select c.id, c.terminologyId, c.defaultPreferredName from ConceptJpa c where terminologyVersion = :terminologyVersion and terminology = :terminology");
-			query.setParameter("terminology", terminology);
-			query.setParameter("terminologyVersion", terminologyVersion);
-			SearchResultList searchResultList = new SearchResultListJpa();
-			for (Object result : query.getResultList()) {
-				Object[] values = (Object[])result;
-				SearchResult searchResult = new SearchResultJpa();
-				searchResult.setId(Long.parseLong(values[0].toString()));
-				searchResult.setTerminologyId(values[1].toString());
-				searchResult.setTerminology(terminology);
-				searchResult.setTerminologyVersion(terminologyVersion);
-				searchResult.setValue(values[2].toString());
-				searchResultList.addSearchResult(searchResult);
-			}
-			return searchResultList;
+		query.setParameter("terminology", terminology);
+		query.setParameter("terminologyVersion", terminologyVersion);
+		SearchResultList searchResultList = new SearchResultListJpa();
+		for (Object result : query.getResultList()) {
+			Object[] values = (Object[]) result;
+			SearchResult searchResult = new SearchResultJpa();
+			searchResult.setId(Long.parseLong(values[0].toString()));
+			searchResult.setTerminologyId(values[1].toString());
+			searchResult.setTerminology(terminology);
+			searchResult.setTerminologyVersion(terminologyVersion);
+			searchResult.setValue(values[2].toString());
+			searchResultList.addSearchResult(searchResult);
+		}
+		return searchResultList;
 	}
 
-	
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ContentService#getDescendants(java.lang.String, java.lang.String, java.lang.String, java.lang.Long)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getDescendants(java.lang
+	 * .String, java.lang.String, java.lang.String, java.lang.Long)
 	 */
 	@Override
-	public SearchResultList findDescendants(String terminologyId, String terminology,
-		String terminologyVersion, Long typeId) {
+	public SearchResultList findDescendants(String terminologyId,
+		String terminology, String terminologyVersion, Long typeId) {
 
-		Queue<Concept> conceptQueue = new LinkedList<Concept>();
-		Set<Concept> conceptSet = new HashSet<Concept>();
-
-		// get the concept and add it as first element of concept list
-		Concept rootConcept =
-				getConcept(terminologyId, terminology, terminologyVersion);
-
-		// if non-null result, seed the queue with this concept
-		if (rootConcept != null) {
-			conceptQueue.add(rootConcept);
-		}
-
-		// while concepts remain to be checked
-		while (!conceptQueue.isEmpty()) {
-
-			// retrieve this concept
-			Concept c = conceptQueue.poll();
-
-			// if concept is active
-			if (c.isActive()) {
-
-				// if concept is already in set, it has already been processed
-				if (!conceptSet.contains(c)) {
-
-					// relationship set and iterator
-					Set<Relationship> inv_relationships = c.getInverseRelationships();
-					Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
-
-					// iterate over inverse relationships
-					while (it_inv_rel.hasNext()) {
-
-						// get relationship
-						Relationship rel = it_inv_rel.next();
-						
-						
-
-						// if relationship is active, typeId equals the provided typeId, and
-						// the source concept is active
-						if (rel.isActive() && rel.getTypeId().equals(typeId)
-								&& rel.getSourceConcept().isActive()) {
-
-							// get source concept from inverse relationship (i.e. child of
-							// concept)
-							Concept c_rel = rel.getSourceConcept();
-
-							// if set does not contain the source concept, add it to set and
-							// queue
-							if (!conceptSet.contains(c_rel)) {
-								conceptSet.add(c_rel);
-								conceptQueue.add(c_rel);
-							}
-						}
-					}
-				}
-			}
-		}
-		
 		// convert concept set to search results
 		SearchResultList results = new SearchResultListJpa();
-		Iterator<Concept> conceptSet_iter = conceptSet.iterator();
-		
-		while(conceptSet_iter.hasNext()) {
-			
+		Iterator<Concept> conceptSet_iter =
+				getDescendants(terminologyId, terminology, terminologyVersion, typeId)
+						.iterator();
+
+		while (conceptSet_iter.hasNext()) {
+
 			Concept c = conceptSet_iter.next();
 			SearchResult s = new SearchResultJpa();
-			
+
 			s.setId(c.getId());
 			s.setTerminology(c.getTerminology());
 			s.setTerminologyVersion(c.getTerminologyVersion());
 			s.setTerminologyId(c.getTerminologyId());
 			s.setValue(c.getDefaultPreferredName());
-			
+
 			results.addSearchResult(s);
 		}
-		
+
 		return results;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ContentService#getDescendants(java.lang.String, java.lang.String, java.lang.String, java.lang.Long)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getDescendants(java.lang
+	 * .String, java.lang.String, java.lang.String, java.lang.Long)
 	 */
 	@Override
 	public Set<Concept> getDescendants(String terminologyId, String terminology,
@@ -352,7 +312,7 @@ public class ContentServiceJpa implements ContentService {
 
 						// get relationship
 						Relationship rel = it_inv_rel.next();
-						
+
 						// if relationship is active, typeId equals the provided typeId, and
 						// the source concept is active
 						if (rel.isActive() && rel.getTypeId().equals(typeId)
@@ -373,16 +333,20 @@ public class ContentServiceJpa implements ContentService {
 				}
 			}
 		}
-		
+
 		return conceptSet;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ContentService#getDescendants(java.lang.String, java.lang.String, java.lang.String, java.lang.Long)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getDescendants(java.lang
+	 * .String, java.lang.String, java.lang.String, java.lang.Long)
 	 */
 	@Override
-	public SearchResultList findChildren(String terminologyId, String terminology,
-		String terminologyVersion, Long typeId) {
+	public SearchResultList findChildren(String terminologyId,
+		String terminology, String terminologyVersion, Long typeId) {
 
 		SearchResultList children = new SearchResultListJpa();
 
@@ -391,29 +355,31 @@ public class ContentServiceJpa implements ContentService {
 				getConcept(terminologyId, terminology, terminologyVersion);
 
 		// if no concept, return empty list
-		if (concept == null) { return children; }
-		
+		if (concept == null) {
+			return children;
+		}
+
 		// cycle over relationships
 		for (Relationship rel : concept.getInverseRelationships()) {
-			
+
 			if (rel.isActive() && rel.getTypeId().equals(typeId)
 					&& rel.getSourceConcept().isActive()) {
-			
+
 				Concept c = rel.getSourceConcept();
-				
+
 				SearchResult sr = new SearchResultJpa();
 				sr.setId(c.getId());
 				sr.setTerminologyId(c.getTerminologyId());
 				sr.setTerminology(c.getTerminology());
 				sr.setTerminologyVersion(c.getTerminologyVersion());
 				sr.setValue(c.getDefaultPreferredName());
-				
+
 				// add search result to list
 				children.addSearchResult(sr);
 			}
 		}
-		
+
 		return children;
 	}
 
-}  
+}
