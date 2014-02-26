@@ -2,10 +2,121 @@
 
 
 // Declare app level module
-var mapProjectApp = angular.module('mapProjectApp', [
-                                                     'ngRoute',
-                                                     'mapProjectAppControllers'
-                                                   ]);
+var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
+                                                     'mapProjectAppControllers',                                                
+                                                     'adf',  
+                                                     'mapProjectApp.widgets.mapProjectList', 
+                                                     'mapProjectApp.widgets.metadataList',
+                                                     'LocalStorageModule'
+                        ])
+                        .value('prefix', '')
+                        .config(function (dashboardProvider) {
+                          dashboardProvider
+                            .structure('6-6', {
+                              rows: [{
+                                columns: [{
+                                  class: 'col-md-6'
+                                }, {
+                                  class: 'col-md-6'
+                                }]
+                              }]
+                            })
+                            .structure('4-8', {
+                              rows: [{
+                                columns: [{
+                                  class: 'col-md-4',
+                                  widgets: []
+                                }, {
+                                  class: 'col-md-8',
+                                  widgets: []
+                                }]
+                              }]
+                            })
+                            .structure('12/4-4-4', {
+                              rows: [{
+                                columns: [{
+                                  class: 'col-md-12'
+                                }]
+                              }, {
+                                columns: [{
+                                  class: 'col-md-4'
+                                }, {
+                                  class: 'col-md-4'
+                                }, {
+                                  class: 'col-md-4'
+                                }]
+                              }]
+                            })
+                            .structure('12/6-6/12', {
+                              rows: [{
+                                columns: [{
+                                  class: 'col-md-12'
+                                }]
+                              }, {
+                                columns: [{
+                                  class: 'col-md-6'
+                                }, {
+                                  class: 'col-md-6'
+                                }]
+                              }, {
+                                columns: [{
+                                  class: 'col-md-12'
+                                }]
+                              }]
+                            });
+
+                        })
+                        .controller('dashboardCtrl', function ($rootScope, $scope, localStorageService) {
+                          var name = 'default';
+                          var model = localStorageService.get(name);
+                          if (!model && $rootScope.role.value >= 3) { // lead or higher privledge
+                            // set default model for demo purposes
+                            model = {
+                              structure: "4-8",                          
+                            rows: [{
+                                columns: [{
+                                  class: 'col-md-4',
+                                  widgets: [{
+                                      type: "mapProjectList",
+                                      config: {},
+                                      title: "Map Projects"
+                                  }]
+                                }, {
+                                  class: 'col-md-8',
+                                  widgets: [{
+                                      type: "metadataList",
+                                      config: {
+                                          terminology: "SNOMEDCT"
+                                      },
+                                      title: "Metadata"
+                                  }]
+                                }]
+                              }]
+                            };
+                          } else if (!model) { // viewer or specialist
+                              // set default model for demo purposes
+                              model = {
+                                structure: "4-8",                          
+                              rows: [{
+                                  columns: [{
+                                    class: 'col-md-4',
+                                    widgets: [{
+                                        type: "mapProjectList",
+                                        config: {},
+                                        title: "Map Projects"
+                                    }]
+                                  }]
+                                }]
+                              };
+                            }
+                          $scope.name = name;
+                          $scope.model = model;
+
+                          $scope.$on('adfDashboardChanged', function (event, name, model) {
+                            localStorageService.set(name, model);
+                          });
+                        });
+
 
 
 
@@ -22,18 +133,15 @@ mapProjectApp.config(['$routeProvider',
 	  });
 	  
 	  $routeProvider.when('/specialist/dash', {
-		  templateUrl: 'partials/specialist-dash.html', 
-		  controller: 'SpecialistDashCtrl'
+		  templateUrl: 'partials/project-list.html'
 	  });
 	  
 	  $routeProvider.when('/lead/dash', {
-		  templateUrl: 'partials/lead-dash.html', 
-		  controller: 'LeadDashCtrl'
+		  templateUrl: 'partials/project-list.html'
 	  });
 	  
 	  $routeProvider.when('/admin/dash', {
-		  templateUrl: 'partials/admin-dash.html', 
-		  controller: 'AdminDashCtrl'
+		  templateUrl: 'partials/project-list.html'
 	  });
 	
       //////////////////////////////
@@ -41,8 +149,8 @@ mapProjectApp.config(['$routeProvider',
 	  //////////////////////////////
 	  
 	  $routeProvider.when('/project/projects', {
-		  templateUrl: 'partials/project-list.html', 
-		  controller: 'MapProjectListCtrl'
+		  templateUrl: 'partials/project-list.html'//, 
+		  //controller: 'MapProjectListCtrl'
 	  });
 	  
 	  $routeProvider.when('/record/projectId/:projectId', {

@@ -40,10 +40,10 @@ mapProjectAppControllers.controller('LoginCtrl',
 	
 	// initial values for pick-list
 	 $scope.roles = [
-	       {name:'Viewer', value:'Viewer'},
-	       {name:'Specialist', value:'Specialist'},
-	       {name:'Lead', value:'Lead'},
-	       {name:'Administrator', value:'Administrator'}];
+	       {name:'Viewer', value:1},
+	       {name:'Specialist', value:2},
+	       {name:'Lead', value:3},
+	       {name:'Administrator', value:4}];
 	 $scope.role = $scope.roles[0];  
 	 
 	 // login button directs to next page based on role selected
@@ -95,7 +95,6 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 //////////////////////////////
 // Content Services
 //////////////////////////////	
-
 
 
   
@@ -1617,7 +1616,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 /////////////////////////////////////////////////////
 
 
-mapProjectAppControllers.directive('headerDirective', function() {
+mapProjectAppControllers.directive('otfHeaderDirective', function() {
     
 	return {
         templateUrl: './partials/header.html',
@@ -1630,6 +1629,18 @@ mapProjectAppControllers.directive('headerDirective', function() {
     };
 });
 
+mapProjectAppControllers.directive('otfFooterDirective', function() {
+    
+	return {
+        templateUrl: './partials/footer.html',
+		restrict: 'E', 
+        transclude: true,    // allows us �swap� our content for the calling html
+        replace: true,        // tells the calling html to replace itself with what�s returned here
+        link: function(scope, element, attrs) { // to get scope, the element, and its attributes
+          scope.user = $rootScope.user; 
+        }
+    };
+});
 
 mapProjectAppControllers.directive('otfEntry', function() {
     
