@@ -223,7 +223,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						+ mpr.getMapRelationStyle() + "\t"
 						+ mpr.getMapPrincipleSourceDocument() + "\t"
 						+ mpr.isRuleBased() + "\t"
-						+ mpr.getMapType() + "\t"
+						+ mpr.getMapRefsetPattern() + "\t"
 						+ mapAdvices + "\t" 
 						+ mapPrinciples + "\t"
 						+ mprMapLeads + "\t" 

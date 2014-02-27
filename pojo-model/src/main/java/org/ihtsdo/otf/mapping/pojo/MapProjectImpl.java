@@ -74,7 +74,7 @@ public class MapProjectImpl implements MapProject {
 	private boolean ruleBased;
 
 	/** The mapping behavior (i.e. SIMPLE_MAP, COMPLEX_MAP, EXTENDED_MAP) */
-	private String mapType;
+	private String mapRefsetPattern;
 	
 	/** The set of preset age ranges for rule generation */
 	private Set<String> rulePresetAgeRanges = new HashSet<String>();
@@ -485,13 +485,13 @@ public class MapProjectImpl implements MapProject {
 	}
 	
 	@Override
-	public String getMapType() {
-		return mapType;
+	public String getMapRefsetPattern() {
+		return mapRefsetPattern;
 	}
 
 	@Override
-	public void setMapType(String mapType) {
-		this.mapType = mapType;
+	public void setMapRefsetPattern(String mapRefsetPattern) {
+		this.mapRefsetPattern = mapRefsetPattern;
 	}
 
 	@Override
@@ -530,10 +530,12 @@ public class MapProjectImpl implements MapProject {
 				+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
 		result = prime
 				* result
+				+ ((mapRefsetPattern == null) ? 0 : mapRefsetPattern.hashCode());
+		result = prime
+				* result
 				+ ((mapRelationStyle == null) ? 0 : mapRelationStyle.hashCode());
 		result = prime * result
 				+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
-		result = prime * result + ((mapType == null) ? 0 : mapType.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + (published ? 1231 : 1237);
 		result = prime * result
@@ -601,6 +603,11 @@ public class MapProjectImpl implements MapProject {
 				return false;
 		} else if (!mapPrinciples.equals(other.mapPrinciples))
 			return false;
+		if (mapRefsetPattern == null) {
+			if (other.mapRefsetPattern != null)
+				return false;
+		} else if (!mapRefsetPattern.equals(other.mapRefsetPattern))
+			return false;
 		if (mapRelationStyle == null) {
 			if (other.mapRelationStyle != null)
 				return false;
@@ -610,11 +617,6 @@ public class MapProjectImpl implements MapProject {
 			if (other.mapSpecialists != null)
 				return false;
 		} else if (!mapSpecialists.equals(other.mapSpecialists))
-			return false;
-		if (mapType == null) {
-			if (other.mapType != null)
-				return false;
-		} else if (!mapType.equals(other.mapType))
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -669,7 +671,7 @@ public class MapProjectImpl implements MapProject {
 				+ destinationTerminologyVersion + ", mapRelationStyle="
 				+ mapRelationStyle + ", mapPrincipleSourceDocument="
 				+ mapPrincipleSourceDocument + ", ruleBased=" + ruleBased
-				+ ", mapType=" + mapType + ", rulePresetAgeRanges="
-				+ rulePresetAgeRanges + "]";
+				+ ", mapRefsetPattern=" + mapRefsetPattern
+				+ ", rulePresetAgeRanges=" + rulePresetAgeRanges + "]";
 	}
 }

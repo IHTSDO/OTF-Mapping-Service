@@ -88,9 +88,9 @@ public class MapProjectJpa implements MapProject {
 	@Column(nullable = false)
 	private String destinationTerminologyVersion;
 	
-	/** The mapping behavior */
+	/** The RF2 refset pattern for this map project */
 	@Column(nullable = true)
-	private String mapType;
+	private String mapRefsetPattern;
 	
 	/** The relation behavior */
 	@Column(nullable = true)
@@ -438,13 +438,13 @@ public class MapProjectJpa implements MapProject {
 	}
 	
 	@Override
-	public String getMapType() {
-		return mapType;
+	public String getMapRefsetPattern() {
+		return mapRefsetPattern;
 	}
 
 	@Override
-	public void setMapType(String mapType) {
-		this.mapType = mapType;
+	public void setMapRefsetPattern(String mapRefsetPattern) {
+		this.mapRefsetPattern = mapRefsetPattern;
 	}
 
 	@Override
@@ -508,8 +508,8 @@ public class MapProjectJpa implements MapProject {
 				+ sourceTerminology + ", sourceTerminologyVersion="
 				+ sourceTerminologyVersion + ", destinationTerminology="
 				+ destinationTerminology + ", destinationTerminologyVersion="
-				+ destinationTerminologyVersion + ", mapType=" + mapType
-				+ ", mapRelationStyle=" + mapRelationStyle
+				+ destinationTerminologyVersion + ", mapRefsetPattern="
+				+ mapRefsetPattern + ", mapRelationStyle=" + mapRelationStyle
 				+ ", mapPrincipleSourceDocument=" + mapPrincipleSourceDocument
 				+ ", ruleBased=" + ruleBased + ", mapLeads=" + mapLeads
 				+ ", mapSpecialists=" + mapSpecialists + ", mapPrinciples="
@@ -543,10 +543,12 @@ public class MapProjectJpa implements MapProject {
 				+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
 		result = prime
 				* result
+				+ ((mapRefsetPattern == null) ? 0 : mapRefsetPattern.hashCode());
+		result = prime
+				* result
 				+ ((mapRelationStyle == null) ? 0 : mapRelationStyle.hashCode());
 		result = prime * result
 				+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
-		result = prime * result + ((mapType == null) ? 0 : mapType.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + (published ? 1231 : 1237);
 		result = prime * result
@@ -614,6 +616,11 @@ public class MapProjectJpa implements MapProject {
 				return false;
 		} else if (!mapPrinciples.equals(other.mapPrinciples))
 			return false;
+		if (mapRefsetPattern == null) {
+			if (other.mapRefsetPattern != null)
+				return false;
+		} else if (!mapRefsetPattern.equals(other.mapRefsetPattern))
+			return false;
 		if (mapRelationStyle == null) {
 			if (other.mapRelationStyle != null)
 				return false;
@@ -623,11 +630,6 @@ public class MapProjectJpa implements MapProject {
 			if (other.mapSpecialists != null)
 				return false;
 		} else if (!mapSpecialists.equals(other.mapSpecialists))
-			return false;
-		if (mapType == null) {
-			if (other.mapType != null)
-				return false;
-		} else if (!mapType.equals(other.mapType))
 			return false;
 		if (name == null) {
 			if (other.name != null)
