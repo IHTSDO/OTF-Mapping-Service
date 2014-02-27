@@ -342,13 +342,13 @@ public interface MapProject  {
 	 * Returns the map behavior type (e.g. COMPLEX_MAP)
 	 * @return the map type
 	 */
-	public String getMapType();
+	public String getMapRefsetPattern();
 	
 	/**
 	 * Sets the map behavior type (e.g. COMPLEX_MAP)
-	 * @param mapType the map type
+	 * @param mapRefsetPattern the map type
 	 */
-	public void setMapType(String mapType);
+	public void setMapRefsetPattern(String mapRefsetPattern);
 	
 	/**
 	 * Returns the set of default preset age ranges for rule generation

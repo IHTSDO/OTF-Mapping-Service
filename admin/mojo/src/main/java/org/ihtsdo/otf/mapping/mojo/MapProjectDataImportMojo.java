@@ -187,7 +187,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapProject.setMapRelationStyle(fields[11]);
 				mapProject.setMapPrincipleSourceDocument(fields[12]);
 				mapProject.setRuleBased(fields[13].equals("true") ? true : false);
-				mapProject.setMapType(fields[14]);
+				mapProject.setMapRefsetPattern(fields[14]);
 				
 				String mapAdvices = fields[15];
 				if (!mapAdvices.equals("")) {
@@ -220,18 +220,19 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
 				String mapSpecialists = fields[18];
 				for (String specialist : mapSpecialists.split(",")) {
+					
 					for (MapSpecialist ml : mappingService.getMapSpecialists()) {
 						if (ml.getUserName().equals(specialist))
 							mapProject.addMapSpecialist(ml);
 					}
 				}
 				
-				String rulePresetAgeRangesStr = fields[19];
+				/*String rulePresetAgeRangesStr = fields[19];
 				Set<String> rulePresetAgeRanges = new HashSet<String>();
 				for (String preset : rulePresetAgeRangesStr.split(",")) {
 					rulePresetAgeRanges.add(preset);
 				}
-				mapProject.setRulePresetAgeRanges(rulePresetAgeRanges);
+				mapProject.setRulePresetAgeRanges(rulePresetAgeRanges);*/
 				
 				mappingService.addMapProject(mapProject);
 			}
