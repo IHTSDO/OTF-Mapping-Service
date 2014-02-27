@@ -92,13 +92,17 @@
 			<ul><li ng-repeat = "principle in project.mapPrinciple | orderBy:'id'">{{principle.principleId}}: {{principle.name}}</ul>
 		</accordion-group>
 	</accordion>
+  <input type="checkbox" ng-model="record.flagForMapLeadReview"> &nbsp;
+  Map Lead Review<br>
+  <input type="checkbox" ng-model="record.flagForEditorialReview"> &nbsp;
+  Editorial Review<br>
+  <input type="checkbox" ng-model="record.flagForConsensusReview"> &nbsp;
+  Consensus Review<br>
 </div>
 
 <div class="modal-footer">
-
 	<table width=100%>
-		<tr>
-			
+		<tr>			
 			<td style="width:29%;">
 			<button class="btn btn-primary" ng-show="modeAddEntryGlobal == false" ng-click="saveRecord()">Save Map Record</button>
 			<button class="btn btn-warning" ng-click="cancelRecord()">Cancel</button>
@@ -107,6 +111,7 @@
 			<td style="width:20%;">
 				<button class="btn btn-danger btn-small" ng-show="modeAddEntryGlobal == false"  ng-click="deleteRecord()">Delete Map Record</button>
 			</td>
+        </tr>
 	</table>
 
     
