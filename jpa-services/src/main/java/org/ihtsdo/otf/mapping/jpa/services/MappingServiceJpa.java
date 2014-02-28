@@ -88,7 +88,8 @@ public class MappingServiceJpa implements MappingService {
 
 		// created once or if the factory has been closed
 		if (factory == null || !factory.isOpen()) {
-			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+          Logger.getLogger(this.getClass()).info("Setting mapping service entity manager factory.");
+  		  factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 		}
 
 		// created on each instantiation
@@ -166,7 +167,7 @@ public class MappingServiceJpa implements MappingService {
 		try {
 			m = (MapProject) query.getSingleResult();
 		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).warn(
+		  Logger.getLogger(this.getClass()).warn(
 					"Map project query for id = " + id + " returned no results!");
 			return null;
 		}
