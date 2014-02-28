@@ -206,6 +206,21 @@ public class MapRecordImpl implements MapRecord {
 	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
 		mapPrinciples.remove(mapPrinciple);
 	}
+	
+	/**
+	 * Function to correctly set the record object for map entries
+	 * 
+	 * @param record the MapRecord Jpa object from manager.find()
+	 */
+	@Override
+	public void assignToChildren() {
+		
+		// assign to entries
+		for (MapEntry entry : mapEntries) {
+			entry.setMapRecord(this);
+		}
+		
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -277,6 +292,8 @@ public class MapRecordImpl implements MapRecord {
 		return "MapRecordImpl [id=" + id + ", conceptId=" + conceptId
 				+ ", mapNotes=" + mapNotes + ", mapEntries=" + mapEntries + "]";
 	}
+
+	
 
 
 }

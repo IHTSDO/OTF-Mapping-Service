@@ -48,7 +48,6 @@ public class MapNoteJpa implements MapNote {
 	@Column(nullable = false)
 	private Date timestamp;
 	
-	
 	/** Default constructor */
 	public MapNoteJpa() {
 	}

@@ -1,0 +1,172 @@
+/**
+ The MIT License
+ 
+ Copyright (c) 2013, Sebastian Sdorra
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+*/
+
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
+body {
+  padding-top: 10px;
+}
+
+.edit .column {
+  min-height: 120px;
+  border: 1px #ccc dashed;
+  padding-top: 15px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+
+pre.edit {
+  margin-top: 15px;
+}
+
+.column .placeholder {
+  background: #E8E8E8;
+  border: 1px dashed #505050;
+  margin-bottom: 15px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.widget h3 a {
+  text-decoration: none;
+}
+
+.dashboard-container h1 a {
+  text-decoration: none;
+}
+
+.padding-bottom {
+  padding-bottom: 5px;
+}
+
+/** Restores button with gradiant background-image */
+.btn {
+  display: inline-block;
+  *display: inline;
+  padding: 4px 10px 4px;
+  margin-bottom: 0;
+  *margin-left: .3em;
+  font-size: 13px;
+  line-height: 18px;
+  *line-height: 20px;
+  color: #333333;
+  text-align: center;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+  vertical-align: middle;
+  cursor: pointer;
+  background-color: #f5f5f5;
+  *background-color: #e6e6e6;
+  background-image: -ms-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#e6e6e6));
+  background-image: -webkit-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -o-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6);
+  background-repeat: repeat-x;
+  border: 1px solid #cccccc;
+  *border: 0;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+  border-color: #e6e6e6 #e6e6e6 #bfbfbf;
+  border-bottom-color: #b3b3b3;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+  filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+  *zoom: 1;
+  -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+     -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/** Provides navbars with gradient background-images */
+.navbar-header {
+	width: 100%;
+	  background-image: -webkit-linear-gradient(top, #EEEEEE, #DDDDDD);
+	    background-color: #2c2c2c;
+  background-image: -moz-linear-gradient(top, #EEEEEE, #DDDDDD);
+  background-image: -ms-linear-gradient(top, #EEEEEE, #DDDDDD);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#EEEEEE), to(#CCCCCC));
+  background-image: -webkit-linear-gradient(top, #EEEEEE, #DDDDDD);
+  background-image: -o-linear-gradient(top, #EEEEEE, #DDDDDD);
+  background-image: linear-gradient(top, #EEEEEE, #DDDDDD);
+}
+
+.navbar-inner {
+  min-height: 30px;
+  padding-right: 20px;
+  padding-left: 20px;
+  background-color: #2c2c2c;
+  background-image: -moz-linear-gradient(top, #EEEEEE, #CCCCCC);
+  background-image: -ms-linear-gradient(top, #EEEEEE, #CCCCCC);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#EEEEEE), to(#CCCCCC));
+  background-image: -webkit-linear-gradient(top, #EEEEEE, #CCCCCC);
+  background-image: -o-linear-gradient(top, #EEEEEE, #CCCCCC);
+  background-image: linear-gradient(top, #EEEEEE, #CCCCCC);
+  background-repeat: repeat-x;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#EEEEEE', endColorstr='#CCCCCC', GradientType=0);
+  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+     -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.navbar .btn-navbar {
+  display: none;
+  float: right;
+  padding: 7px 10px;
+  margin-right: 5px;
+  margin-left: 5px;
+  background-color: #2c2c2c;
+  *background-color: #222222;
+  background-image: -moz-linear-gradient(top,#EEEEEE, #CCCCCC);
+  background-image: -ms-linear-gradient(top, #EEEEEE, #CCCCCC);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#EEEEEE), to(#CCCCCC));
+  background-image: -webkit-linear-gradient(top, #EEEEEE, #CCCCCC);
+  background-image: -o-linear-gradient(top, #EEEEEE, #CCCCCC);
+  background-image: linear-gradient(top,#EEEEEE, #CCCCCC);
+  background-repeat: repeat-x;
+  border-color: #222222 #222222 #000000;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#EEEEEE', endColorstr='#CCCCCC', GradientType=0);
+  filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+  -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.075);
+     -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.075);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.075);
+}
+
+/** Revises size of accordian panel headings */
+.panel-heading {
+  padding: 3px 6px;
+  border-bottom: 1px solid transparent;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}

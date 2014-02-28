@@ -73,6 +73,12 @@ public class MapProjectImpl implements MapProject {
 	/** Flag for whether the project is rule based */
 	private boolean ruleBased;
 
+	/** The mapping behavior (i.e. SIMPLE_MAP, COMPLEX_MAP, EXTENDED_MAP) */
+	private String mapRefsetPattern;
+	
+	/** The set of preset age ranges for rule generation */
+	private Set<String> rulePresetAgeRanges = new HashSet<String>();
+	
 	/**
 	 * Return the id
 	 * @return the id
@@ -477,41 +483,78 @@ public class MapProjectImpl implements MapProject {
 	public void setRuleBased(boolean ruleBased) {
 		this.ruleBased = ruleBased;
 	}
+	
+	@Override
+	public String getMapRefsetPattern() {
+		return mapRefsetPattern;
+	}
+
+	@Override
+	public void setMapRefsetPattern(String mapRefsetPattern) {
+		this.mapRefsetPattern = mapRefsetPattern;
+	}
+
+	@Override
+	public Set<String> getRulePresetAgeRanges() {
+		return rulePresetAgeRanges;
+	}
+
+	@Override
+	public void setRulePresetAgeRanges(Set<String> rulePresetAgeRanges) {
+		this.rulePresetAgeRanges = rulePresetAgeRanges;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (blockStructure ? 1231 : 1237);
-		result =
-				prime
-						* result
-						+ ((destinationTerminology == null) ? 0 : destinationTerminology
-								.hashCode());
-		result =
-				prime
-						* result
-						+ ((destinationTerminologyVersion == null) ? 0
-								: destinationTerminologyVersion.hashCode());
+		result = prime
+				* result
+				+ ((destinationTerminology == null) ? 0
+						: destinationTerminology.hashCode());
+		result = prime
+				* result
+				+ ((destinationTerminologyVersion == null) ? 0
+						: destinationTerminologyVersion.hashCode());
 		result = prime * result + (groupStructure ? 1231 : 1237);
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result =
-				prime * result + ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
-		result = prime * result + ((mapLeads == null) ? 0 : mapLeads.hashCode());
-		result =
-				prime * result
-						+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
+		result = prime * result
+				+ ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
+		result = prime * result
+				+ ((mapLeads == null) ? 0 : mapLeads.hashCode());
+		result = prime
+				* result
+				+ ((mapPrincipleSourceDocument == null) ? 0
+						: mapPrincipleSourceDocument.hashCode());
+		result = prime * result
+				+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
+		result = prime
+				* result
+				+ ((mapRefsetPattern == null) ? 0 : mapRefsetPattern.hashCode());
+		result = prime
+				* result
+				+ ((mapRelationStyle == null) ? 0 : mapRelationStyle.hashCode());
+		result = prime * result
+				+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + (published ? 1231 : 1237);
-		result = prime * result + ((refSetId == null) ? 0 : refSetId.hashCode());
-		result =
-				prime * result
-						+ ((sourceTerminology == null) ? 0 : sourceTerminology.hashCode());
-		result =
-				prime
-						* result
-						+ ((sourceTerminologyVersion == null) ? 0
-								: sourceTerminologyVersion.hashCode());
+		result = prime * result
+				+ ((refSetId == null) ? 0 : refSetId.hashCode());
+		result = prime * result
+				+ ((refSetName == null) ? 0 : refSetName.hashCode());
+		result = prime * result + (ruleBased ? 1231 : 1237);
+		result = prime
+				* result
+				+ ((rulePresetAgeRanges == null) ? 0 : rulePresetAgeRanges
+						.hashCode());
+		result = prime
+				* result
+				+ ((sourceTerminology == null) ? 0 : sourceTerminology
+						.hashCode());
+		result = prime
+				* result
+				+ ((sourceTerminologyVersion == null) ? 0
+						: sourceTerminologyVersion.hashCode());
 		return result;
 	}
 
@@ -539,11 +582,6 @@ public class MapProjectImpl implements MapProject {
 			return false;
 		if (groupStructure != other.groupStructure)
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (mapAdvices == null) {
 			if (other.mapAdvices != null)
 				return false;
@@ -553,6 +591,27 @@ public class MapProjectImpl implements MapProject {
 			if (other.mapLeads != null)
 				return false;
 		} else if (!mapLeads.equals(other.mapLeads))
+			return false;
+		if (mapPrincipleSourceDocument == null) {
+			if (other.mapPrincipleSourceDocument != null)
+				return false;
+		} else if (!mapPrincipleSourceDocument
+				.equals(other.mapPrincipleSourceDocument))
+			return false;
+		if (mapPrinciples == null) {
+			if (other.mapPrinciples != null)
+				return false;
+		} else if (!mapPrinciples.equals(other.mapPrinciples))
+			return false;
+		if (mapRefsetPattern == null) {
+			if (other.mapRefsetPattern != null)
+				return false;
+		} else if (!mapRefsetPattern.equals(other.mapRefsetPattern))
+			return false;
+		if (mapRelationStyle == null) {
+			if (other.mapRelationStyle != null)
+				return false;
+		} else if (!mapRelationStyle.equals(other.mapRelationStyle))
 			return false;
 		if (mapSpecialists == null) {
 			if (other.mapSpecialists != null)
@@ -571,6 +630,18 @@ public class MapProjectImpl implements MapProject {
 				return false;
 		} else if (!refSetId.equals(other.refSetId))
 			return false;
+		if (refSetName == null) {
+			if (other.refSetName != null)
+				return false;
+		} else if (!refSetName.equals(other.refSetName))
+			return false;
+		if (ruleBased != other.ruleBased)
+			return false;
+		if (rulePresetAgeRanges == null) {
+			if (other.rulePresetAgeRanges != null)
+				return false;
+		} else if (!rulePresetAgeRanges.equals(other.rulePresetAgeRanges))
+			return false;
 		if (sourceTerminology == null) {
 			if (other.sourceTerminology != null)
 				return false;
@@ -579,16 +650,28 @@ public class MapProjectImpl implements MapProject {
 		if (sourceTerminologyVersion == null) {
 			if (other.sourceTerminologyVersion != null)
 				return false;
-		} else if (!sourceTerminologyVersion.equals(other.sourceTerminologyVersion))
+		} else if (!sourceTerminologyVersion
+				.equals(other.sourceTerminologyVersion))
 			return false;
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
-		return name;
+		return "MapProjectImpl [name=" + name + ", blockStructure="
+				+ blockStructure + ", groupStructure=" + groupStructure
+				+ ", published=" + published + ", mapLeads=" + mapLeads
+				+ ", mapSpecialists=" + mapSpecialists + ", mapAdvices="
+				+ mapAdvices + ", mapPrinciples=" + mapPrinciples
+				+ ", refSetId=" + refSetId + ", refSetName=" + refSetName
+				+ ", sourceTerminology=" + sourceTerminology
+				+ ", destinationTerminology=" + destinationTerminology
+				+ ", sourceTerminologyVersion=" + sourceTerminologyVersion
+				+ ", destinationTerminologyVersion="
+				+ destinationTerminologyVersion + ", mapRelationStyle="
+				+ mapRelationStyle + ", mapPrincipleSourceDocument="
+				+ mapPrincipleSourceDocument + ", ruleBased=" + ruleBased
+				+ ", mapRefsetPattern=" + mapRefsetPattern
+				+ ", rulePresetAgeRanges=" + rulePresetAgeRanges + "]";
 	}
 }
