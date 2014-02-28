@@ -561,6 +561,7 @@ public class MappingServiceRest {
 	 */
 	@PUT
 	@Path("/specialist/add")
+	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 	@ApiOperation(value = "Add a specialist", notes = "Adds a MapSpecialist", response = MapSpecialistJpa.class)
 	public Response addMapSpecialist(@ApiParam(value = "The map specialist to add", required = true) MapSpecialistJpa mapSpecialist) { 
 
@@ -582,14 +583,16 @@ public class MappingServiceRest {
 	 */
 	@PUT
 	@Path("/record/add")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@ApiOperation(value = "Add a record", notes = "Adds a MapRecord", response = MapRecordJpa.class)
-	public Response addMapRecord( @ApiParam(value = "The map record to add", required = true) MapRecordJpa mapRecord) { 
+	public MapRecord addMapRecord( @ApiParam(value = "The map record to add", required = true) MapRecordJpa mapRecord) { 
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.addMapRecord(mapRecord);
+			MapRecord result = mappingService.addMapRecord(mapRecord);
 			mappingService.close();
-			return null;
+			return result;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -675,14 +678,17 @@ public class MappingServiceRest {
 	 */
 	@POST
 	@Path("/record/update")
+	@Consumes({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@ApiOperation(value = "Update a record", notes = "Updates a map record", response = MapRecordJpa.class)
-	public Response updateMapRecord(@ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) { 
+	public MapRecord updateMapRecord(@ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) { 
 
+		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.updateMapRecord(mapRecord);
+			MapRecord result = mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
-			return null;
+			return result;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -775,6 +781,29 @@ public class MappingServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
+	
+	
+	/**
+	 * Removes a map record
+	 * @param mapRecord the map record to delete
+	 * @return Response the response
+	 */
+	@DELETE
+	@Path("/record/delete")
+	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@ApiOperation(value = "Remove a record", notes = "Removes a map record", response = MapRecordJpa.class)
+	public Response removeMapRecord(@ApiParam(value = "Map Record object to delete", required = true)  MapRecordJpa mapRecord) { 
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.removeMapRecord(mapRecord.getId());
+			mappingService.close();
+			return null;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+
 	
 	///////////////////////////
 	// Descendant services

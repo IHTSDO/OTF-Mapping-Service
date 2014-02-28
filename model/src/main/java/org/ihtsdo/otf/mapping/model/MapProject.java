@@ -338,4 +338,28 @@ public interface MapProject  {
 	 */
 	public void setRuleBased(boolean ruleBased);
 
+	/**
+	 * Returns the map behavior type (e.g. COMPLEX_MAP)
+	 * @return the map type
+	 */
+	public String getMapRefsetPattern();
+	
+	/**
+	 * Sets the map behavior type (e.g. COMPLEX_MAP)
+	 * @param mapRefsetPattern the map type
+	 */
+	public void setMapRefsetPattern(String mapRefsetPattern);
+	
+	/**
+	 * Returns the set of default preset age ranges for rule generation
+	 * @return the preset age ranges for rule generation
+	 */
+	public Set<String> getRulePresetAgeRanges();
+	
+	/**
+	 * Sets the set of default preset age ranges for rule generation
+	 * @param rulePresetAgeRanges the preset age ranges
+	 */
+	public void setRulePresetAgeRanges(Set<String> rulePresetAgeRanges);
+
 }

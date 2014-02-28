@@ -910,16 +910,21 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapRecord the map record to be added
 	 */
 	@Override
-	public void addMapRecord(MapRecord mapRecord) {
-
+	public MapRecord addMapRecord(MapRecord mapRecord) {
+		
+		// first set the map record of all elements of this record
+		mapRecord.assignToChildren();
+		
 		if (getTransactionPerOperation()) {
 			EntityTransaction tx = manager.getTransaction();
 
 			tx.begin();
 			manager.persist(mapRecord);
 			tx.commit();
+			return mapRecord;
 		} else {
 			manager.persist(mapRecord);
+			return mapRecord;
 		}
 
 	}
@@ -930,15 +935,21 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapRecord the map record to be updated
 	 */
 	@Override
-	public void updateMapRecord(MapRecord mapRecord) {
+	public MapRecord updateMapRecord(MapRecord mapRecord) {
 
+		// first assign the map record to its children
+		mapRecord.assignToChildren();
+		
 		if (getTransactionPerOperation()) {
+			
 			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
 			manager.merge(mapRecord);
 			tx.commit();
+			return mapRecord;
 		} else {
 			manager.merge(mapRecord);
+			return mapRecord;
 		}
 
 	}
@@ -2107,7 +2118,7 @@ public class MappingServiceJpa implements MappingService {
 									mapProject.getDestinationTerminology(),
 									mapProject.getDestinationTerminologyVersion());
 					if (c == null) {
-						targetName = "Target name cound not be determined";
+						targetName = "Target name could not be determined";
 					} else {
 						targetName = c.getDefaultPreferredName();
 					}

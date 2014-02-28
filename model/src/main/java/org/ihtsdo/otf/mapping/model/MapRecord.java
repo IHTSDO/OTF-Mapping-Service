@@ -169,5 +169,12 @@ public interface MapRecord {
 	 */
 	public void removeMapPrinciple(MapPrinciple mapPrinciple);
 	
+	/**
+	 * Assigns the map record to its children after deserialization
+	 *
+	 * @param mapRecord the map record
+	 */
+	public void assignToChildren();
+	
 	
 }

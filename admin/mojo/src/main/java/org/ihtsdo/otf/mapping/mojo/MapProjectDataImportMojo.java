@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -184,7 +186,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapProject.setPublished(fields[10].equals("true") ? true : false);
 				mapProject.setMapRelationStyle(fields[11]);
 				mapProject.setMapPrincipleSourceDocument(fields[12]);
-				mapProject.setRuleBased(fields[14].equals("true") ? true : false);
+				mapProject.setRuleBased(fields[13].equals("true") ? true : false);
+				mapProject.setMapRefsetPattern(fields[14]);
 				
 				String mapAdvices = fields[15];
 				if (!mapAdvices.equals("")) {
@@ -217,11 +220,20 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
 				String mapSpecialists = fields[18];
 				for (String specialist : mapSpecialists.split(",")) {
+					
 					for (MapSpecialist ml : mappingService.getMapSpecialists()) {
 						if (ml.getUserName().equals(specialist))
 							mapProject.addMapSpecialist(ml);
 					}
 				}
+				
+				/*String rulePresetAgeRangesStr = fields[19];
+				Set<String> rulePresetAgeRanges = new HashSet<String>();
+				for (String preset : rulePresetAgeRangesStr.split(",")) {
+					rulePresetAgeRanges.add(preset);
+				}
+				mapProject.setRulePresetAgeRanges(rulePresetAgeRanges);*/
+				
 				mappingService.addMapProject(mapProject);
 			}
 
