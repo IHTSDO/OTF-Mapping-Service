@@ -118,6 +118,16 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 	/** The concept map. */
 	Map<String, Concept> conceptMap;
 
+	/**
+	 * child to parent code map NOTE: this assumes a single superclass
+	 **/
+	Map<String, String> childToParentCodeMap;
+
+	/**
+	 * Indicates subclass relationships NOTE: this assumes a single superclass
+	 **/
+	Map<String, Boolean> parentCodeHasChildrenMap;
+
 	/** The helper. */
 	ClamlMetadataHelper helper;
 
@@ -134,7 +144,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 		InputStream inputStream = null;
 		Reader reader = null;
 		try {
-
 
 			// load Properties file
 			Properties properties = new Properties();
@@ -165,6 +174,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 					new ClamlMetadataHelper(terminology, terminologyVersion,
 							effectiveTime, manager);
 			conceptMap = helper.createMetadata();
+
+			childToParentCodeMap = new HashMap<String, String>();
+			parentCodeHasChildrenMap = new HashMap<String, Boolean>();
 
 			// Prep SAX parser
 			SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -382,7 +394,11 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 			}
 
 			// used for isa relationships
+			// ASSUMPTION: only a single SuperClass exists
 			if (qName.equalsIgnoreCase("superclass")) {
+				if (parentCode != null)
+					throw new IllegalStateException("Multiple SuperClass entries for "
+							+ code + " = " + parentCode + ", " + attributes.getValue("code"));
 				parentCode = attributes.getValue("code");
 				relsNeeded = true;
 				getLog().info("  Class " + code + " has parent " + parentCode);
@@ -427,7 +443,11 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 					for (char c = letterStart; c <= letterEnd; c++) {
 						for (int i = start; i <= end; i++) {
 							String padI = "0000000000" + i;
-							String code = c + padI.substring(padI.length() - startEnd[0].length() + 1, padI.length());
+							String code =
+									c
+											+ padI.substring(
+													padI.length() - startEnd[0].length() + 1,
+													padI.length());
 							getLog().info(
 									"  Class and subclasses of " + code + " exclude modifier "
 											+ excludeModifierCode);
@@ -535,7 +555,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 						desc.setTerm(chars.toString().trim());
 					getLog().info(
 							"  Instantiate Description for class " + code + " - "
-									+ rubricKind + " - " + (desc.getTerm().replaceAll("\r","").replaceAll("\n", "")));
+									+ rubricKind + " - "
+									+ (desc.getTerm().replaceAll("\r", "").replaceAll("\n", "")));
 					desc.setConcept(concept);
 					desc.setCaseSignificanceId(new Long(conceptMap.get(
 							"defaultCaseSignificance").getTerminologyId()));
@@ -616,6 +637,11 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 						}
 						children.add(concept);
 						relsMap.put(parentCode + ":" + "isa", children);
+						for (Concept child : children) {
+							childToParentCodeMap.put(child.getTerminologyId(), parentCode);
+						}
+						parentCodeHasChildrenMap.put(parentCode, true);
+
 						relsNeeded = false;
 					}
 
@@ -801,8 +827,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 		public void modifierHelper(String codeToModify) throws Exception {
 
 			// Hardcoded exception for ICD10 (not in the data)
-			if (codeToModify.startsWith("W19.")) return;
-			
+			if (codeToModify.startsWith("W19."))
+				return;
+
 			// Determine if "code" or any of its ancestor codes have modifiers
 			// that are not blocked by excluded modifiers
 			String cmpCode = codeToModify;
@@ -836,9 +863,10 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 					}
 				}
 
-				cmpCode = cmpCode.substring(0, cmpCode.length() - 1);
-				if (cmpCode.endsWith(".")) {
-					cmpCode = cmpCode.substring(0, cmpCode.length() - 1);
+				cmpCode =
+						TerminologyClamlLoaderMojo.this.childToParentCodeMap.get(cmpCode);
+				if (cmpCode == null) {
+					break;
 				}
 			}
 
@@ -863,44 +891,96 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 							// child and create a relationship
 							for (Map.Entry<String, Concept> mapEntry : modifierMap.get(
 									modifiedByCode).entrySet()) {
+
 								Concept modConcept =
 										modifierMap.get(modifiedByCode).get(mapEntry.getKey());
-								Concept childConcept = new ConceptJpa();
-								String childCode =
-										concept.getTerminologyId() + mapEntry.getKey();
-								getLog().info(
-										"      Create child code " + childCode + " for "
-												+ modifiedByCode);
-								childConcept =
-										helper.createNewActiveConcept(childCode, terminology,
-												terminologyVersion, concept.getDefaultPreferredName()
-														+ " " + modConcept.getDefaultPreferredName(),
-												effectiveTime);
-								if (conceptMap.containsKey(childConcept.getTerminologyId()))
-									throw new IllegalStateException("ALERT2!  "
-											+ childConcept.getTerminologyId() + " already in map");
 
-								conceptMap.put(childConcept.getTerminologyId(), childConcept);
-								manager.persist(childConcept);
-								// add relationship
-								helper.createIsaRelationship(concept, childConcept,
-										new Integer(relIdCounter++).toString(), terminology,
-										terminologyVersion, effectiveTime);
+								// handle case where a _5 modifier is defined with a code having
+								// .*
+								String childCode = null;
+								if (modifiedByCode.endsWith("_5")
+										&& mapEntry.getKey().startsWith("."))
+									childCode =
+											concept.getTerminologyId()
+													+ mapEntry.getKey().substring(1);
+								else
+									childCode = concept.getTerminologyId() + mapEntry.getKey();
+								createChildConcept(childCode, concept, modConcept,
+										relIdCounter++);
 
 								// Recursively call for 5th digit modifiers on generated classes
 								if (codeToModify.length() == 3 && modifiedByCode.endsWith("_4")) {
-										modifierHelper(childCode);
+									modifierHelper(childCode);
 								}
 							}
 
 						} else {
 							throw new Exception("modifiedByCode not in map " + modifiedByCode);
 						}
+
+					}
+
+					// Handle case of 3 digit code with a _5 modifier without any children
+					else if (codeToModify.length() == 3
+							&& parentCodeHasChildrenMap.get(codeToModify) != null
+							&& !parentCodeHasChildrenMap.get(codeToModify)
+							&& modifiedByCode.endsWith("_5")) {
+
+						// for each code on that modifier, create a
+						// child and create a relationship
+						for (Map.Entry<String, Concept> mapEntry : modifierMap.get(
+								modifiedByCode).entrySet()) {
+
+							Concept modConcept =
+									modifierMap.get(modifiedByCode).get(mapEntry.getKey());
+
+							// Recursively call for 5th digit modifiers where there are no
+							// child
+							// concepts and the code is only 3 digits, fill in with X
+							// create intermediate layer with X
+							createChildConcept(concept.getTerminologyId() + "X", concept,
+									modConcept, relIdCounter++);
+
+							modifierHelper(concept.getTerminologyId() + "X");
+						}
 					}
 
 				}
 
 			}
+		}
+
+		/**
+		 * Creates the child concept.
+		 * 
+		 * @param childCode the child code
+		 * @param parentConcept the concept
+		 * @param modConcept the mod concept
+		 * @param relId the rel id
+		 * @return the concept
+		 * @throws Exception the exception
+		 */
+		private Concept createChildConcept(String childCode, Concept parentConcept,
+			Concept modConcept, int relId) throws Exception {
+			Concept childConcept = new ConceptJpa();
+			childConcept =
+					helper.createNewActiveConcept(childCode, terminology,
+							terminologyVersion, parentConcept.getDefaultPreferredName() + " "
+									+ modConcept.getDefaultPreferredName(), effectiveTime);
+			if (conceptMap.containsKey(childConcept.getTerminologyId()))
+				throw new IllegalStateException("ALERT2!  "
+						+ childConcept.getTerminologyId() + " already in map");
+
+			conceptMap.put(childConcept.getTerminologyId(), childConcept);
+			manager.persist(childConcept);
+			// add relationship
+			helper.createIsaRelationship(parentConcept, childConcept, ("" + relId),
+					terminology, terminologyVersion, effectiveTime);
+			childToParentCodeMap.put(childConcept.getTerminologyId(),
+					parentConcept.getTerminologyId());
+			parentCodeHasChildrenMap.put(parentConcept.getTerminologyId(), true);
+			return childConcept;
+
 		}
 	}
 
