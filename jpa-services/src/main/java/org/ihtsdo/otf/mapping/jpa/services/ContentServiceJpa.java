@@ -298,13 +298,12 @@ public class ContentServiceJpa implements ContentService {
       // retrieve this concept
       Concept c = conceptQueue.poll();
 			
-			System.out.println("Checking concept " + c.getTerminologyId());
 
       // if concept is active
       if (c.isActive()) {
-				
-				System.out.println("  Concept is active");
 
+				// if concept is already in set, it has already been processed
+				//if (!conceptSet.contains(c)) {
         // if concept is already in set, it has already been processed
         if (!conceptSet.contains(c)) {
 					
@@ -313,6 +312,9 @@ public class ContentServiceJpa implements ContentService {
           // relationship set and iterator
           Set<Relationship> inv_relationships = c.getInverseRelationships();
           Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
+		
+					// iterate over inverse relationships
+					while (it_inv_rel.hasNext()) {
 
           // iterate over inverse relationships
           while (it_inv_rel.hasNext()) {
@@ -334,22 +336,11 @@ public class ContentServiceJpa implements ContentService {
 							if (!conceptSet.contains(c_rel)) {
 								conceptSet.add(c_rel);
 								conceptQueue.add(c_rel);
-								System.out.println("    Adding relationship's concept to set & queue");
-							} else {
-								System.out.println("    Relationship's concept already in set, not adding");
 							}
-						} else {
-							if (!rel.isActive()) System.out.println("    Relationship not active");
-							if (!rel.getTypeId().equals(typeId)) System.out.println("    Relationship typeId does not match");
-							if (!rel.getSourceConcept().isActive()) System.out.println("    Relationship concept not active");
-						}
+						} 
 					}
-				} else {
-					System.out.println("  Concept already in set");
-				}
-			} else {
-				System.out.println("  Concept not active");
-			}
+				//} 
+			} 
 		}
 
     return conceptSet;
