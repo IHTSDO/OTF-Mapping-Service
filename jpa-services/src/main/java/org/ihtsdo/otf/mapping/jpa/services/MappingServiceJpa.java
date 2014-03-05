@@ -173,6 +173,47 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 
 	}
+	
+	@Override
+	public MapProject getMapProjectByName(String name) {
+		
+		MapProject m = null;
+		
+		javax.persistence.Query query = 
+				manager.createQuery("select m from MapProjectJpa m where name = :name")
+				.setParameter("name", name);
+		
+		try {
+			m = (MapProject) query.getSingleResult();
+		} catch (NoResultException e) {
+			Logger.getLogger(this.getClass()).warn(
+					"Map project query for name = " + name + " returned no results!");
+			return null;
+		}
+		return m;
+	}
+	
+	@Override
+	public MapProject getMapProjectByRefSetId(String refSetId) {
+		
+		MapProject m = null;
+		
+		javax.persistence.Query query = 
+				manager.createQuery("select m from MapProjectJpa m where refSetId = :refSetId")
+				.setParameter("refSetId", refSetId);
+		
+		try {
+			m = (MapProject) query.getSingleResult();
+		} catch (NoResultException e) {
+			Logger.getLogger(this.getClass()).warn(
+					"Map project query for refSetId = " + refSetId + " returned no results!");
+			return null;
+		}
+		return m;
+	}
+		
+		
+	
 
 	/**
 	 * Retrieve all map projects.
