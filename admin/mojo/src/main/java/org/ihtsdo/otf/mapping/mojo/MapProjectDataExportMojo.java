@@ -143,6 +143,22 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			BufferedWriter projectsWriter =
 					new BufferedWriter(new FileWriter(projectsFile.getAbsoluteFile()));
 
+			File scopeIncludesFile = new File(outputDir, "scopeIncludes.txt");
+			// if file doesn't exist, then create it
+			if (!scopeIncludesFile.exists()) {
+				scopeIncludesFile.createNewFile();
+			}
+			BufferedWriter scopeIncludesWriter =
+					new BufferedWriter(new FileWriter(scopeIncludesFile.getAbsoluteFile()));
+
+			File scopeExcludesFile = new File(outputDir, "scopeExcludes.txt");
+			// if file doesn't exist, then create it
+			if (!scopeExcludesFile.exists()) {
+				scopeExcludesFile.createNewFile();
+			}
+			BufferedWriter scopeExcludesWriter =
+					new BufferedWriter(new FileWriter(scopeExcludesFile.getAbsoluteFile()));
+			
 			// export to mapspecialists.txt
 			MappingService mappingService = new MappingServiceJpa();
 			MapSpecialistList mapSpecialists = new MapSpecialistList();
@@ -228,8 +244,23 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						+ mapPrinciples + "\t"
 						+ mprMapLeads + "\t" 
 						+ mprMapSpecialists + "\t"
-						+ mprRulePresetAgeRanges + "\n");
+						+ mpr.isScopeDescendantsFlag() + "\t" 
+						+ mpr.isScopeExcludedDescendantsFlag() + "\n");
+						/**+ mprRulePresetAgeRanges + "\n"); commented out by DSS, b/c commented out on import side*/
 			}
+			
+			for (MapProject mpr : mappingService.getMapProjects()) {
+				for (String concept : mpr.getScopeConcepts()) {
+					scopeIncludesWriter.write(mpr.getId() + "\t" + concept + "\n");
+				}
+			}
+			
+			for (MapProject mpr : mappingService.getMapProjects()) {
+				for (String concept : mpr.getScopeConcepts()) {
+					scopeExcludesWriter.write(mpr.getId() + "\t" + concept + "\n");
+				}
+			}
+			
 			mappingService.close();
 
 			getLog().info("done ...");
@@ -238,6 +269,8 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			advicesWriter.close();
 			principlesWriter.close();
 			projectsWriter.close();
+			scopeIncludesWriter.close();
+			scopeExcludesWriter.close();
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);
