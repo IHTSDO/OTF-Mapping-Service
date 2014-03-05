@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
@@ -58,8 +57,11 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
+// TODO: Auto-generated Javadoc
 /**
- * JPA implementation of the {@link MappingService}
+ * JPA implementation of the {@link MappingService}.
+ *
+ * @author ${author}
  */
 public class MappingServiceJpa implements MappingService {
 
@@ -905,8 +907,9 @@ public class MappingServiceJpa implements MappingService {
 
 	/**
 	 * Add a map record.
-	 * 
+	 *
 	 * @param mapRecord the map record to be added
+	 * @return the map record
 	 */
 	@Override
 	public MapRecord addMapRecord(MapRecord mapRecord) {
@@ -930,8 +933,9 @@ public class MappingServiceJpa implements MappingService {
 
 	/**
 	 * Update a map record.
-	 * 
+	 *
 	 * @param mapRecord the map record to be updated
+	 * @return the map record
 	 */
 	@Override
 	public MapRecord updateMapRecord(MapRecord mapRecord) {
@@ -1119,7 +1123,8 @@ public class MappingServiceJpa implements MappingService {
 
 	/**
 	 * Helper function for retrieving map records given an internal hibernate
-	 * concept id
+	 * concept id.
+	 *
 	 * @param conceptId the concept id in Long form
 	 * @return the map records where this concept is referenced
 	 */
@@ -1132,7 +1137,8 @@ public class MappingServiceJpa implements MappingService {
 
 	/**
 	 * Given a Concept, retrieve map records that reference this as a source
-	 * Concept
+	 * Concept.
+	 *
 	 * @param concept the Concept object
 	 * @return a list of MapRecords referencing this Concept
 	 */
@@ -1206,10 +1212,10 @@ public class MappingServiceJpa implements MappingService {
 	/**
 	 * Helper function: retrieves all map records for a map project id without
 	 * paging/filtering/sorting.
-	 * 
+	 *
 	 * @param mapProjectId the concept id
 	 * @return the list of map records
-	 * @throws Exception
+	 * @throws Exception the exception
 	 */
 	@Override
 	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId)
@@ -1232,8 +1238,9 @@ public class MappingServiceJpa implements MappingService {
 */	/**
 	 * Retrieve map records for a given concept id and paging/filtering/sorting
 	 * parameters.
-	 * 
+	 *
 	 * @param mapProjectId the concept id
+	 * @param pfsParameter the pfs parameter
 	 * @return the list of map records
 	 */
 	@SuppressWarnings("unchecked")
@@ -1270,7 +1277,8 @@ public class MappingServiceJpa implements MappingService {
 
 	/**
 	 * Retrieve map records for a lucene query.
-	 * 
+	 *
+	 * @param mapProjectId the map project id
 	 * @param pfsParameter the pfs parameter
 	 * @return a list of map records
 	 * @throws Exception the exception
@@ -1324,9 +1332,10 @@ public class MappingServiceJpa implements MappingService {
 
 	/**
 	 * Helper function for map record query construction using both fielded terms
-	 * and unfielded terms
+	 * and unfielded terms.
+	 *
 	 * @param mapProjectId the map project id for which queries are retrieved
-	 * @param queryStr the string of terms to construct a query for
+	 * @param pfsParameter the pfs parameter
 	 * @return the full lucene query text
 	 */
 	private static String constructMapRecordForMapProjectIdQuery(Long mapProjectId,
@@ -1516,12 +1525,233 @@ public class MappingServiceJpa implements MappingService {
 
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findConceptsInScope(org.ihtsdo.otf.mapping.model.MapProject)
+	 */
+	public SearchResultList findConceptsInScope(MapProject project)
+		throws Exception {
+		SearchResultList conceptsInScope = new SearchResultListJpa();
+
+		ContentService contentService = new ContentServiceJpa();
+
+		String terminology = project.getSourceTerminology();
+		String terminologyVersion = project.getSourceTerminologyVersion();	
+		
+		for (String conceptId : project.getScopeConcepts()) {
+			Concept c = contentService.getConcept(conceptId, terminology, terminologyVersion);
+			SearchResult sr = new SearchResultJpa();
+			sr.setId(c.getId());
+			sr.setTerminologyId(c.getTerminologyId());
+			sr.setTerminology(c.getTerminology());
+			sr.setTerminologyVersion(c.getTerminologyVersion());
+			sr.setValue(c.getDefaultPreferredName());
+			conceptsInScope.addSearchResult(sr);
+		}
+		
+		if (project.isScopeDescendantsFlag()) {
+			// get hierarchical rel
+			MetadataService metadataService = new MetadataServiceJpa();
+			Map<Long, String> hierarchicalRelationshipTypeMap =
+					metadataService.getHierarchicalRelationshipTypes(terminology,
+							terminologyVersion);
+			if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
+				throw new IllegalStateException(
+						"Map project source terminology has too many hierarchical relationship types - "
+								+ terminology);
+			}
+			if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
+				throw new IllegalStateException(
+						"Map project source terminology has too few hierarchical relationship types - "
+								+ terminology);
+			}
+			long hierarchicalRelationshipType =
+					hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
+
+			// for each scope concept, get descendants
+			for (String terminologyId : project.getScopeConcepts()) {
+				SearchResultList descendants =
+						contentService.findDescendants(terminologyId, terminology,
+								terminologyVersion, hierarchicalRelationshipType);
+
+				// cycle over descendants
+				for (SearchResult sr : descendants.getSearchResults()) {
+					conceptsInScope.addSearchResult(sr);
+				}
+			}
+
+			// close managers
+			metadataService.close();
+		}
+
+		contentService.close();
+		
+		// get those excluded from scope
+		SearchResultList excludedResultList = findConceptsExcludedFromScope(project);
+
+		// remove those excluded from scope
+		for (SearchResult sr : excludedResultList.getSearchResults()) {
+			if (conceptsInScope.contains(sr))
+				conceptsInScope.removeSearchResult(sr);
+		}
+
+		return conceptsInScope;
+
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findUnmappedConceptsInScope(org.ihtsdo.otf.mapping.model.MapProject)
+	 */
+	public SearchResultList findUnmappedConceptsInScope(MapProject project) throws Exception {
+		SearchResultList conceptsInScope = findConceptsInScope(project);
+		SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
+		
+		for (SearchResult sr : conceptsInScope.getSearchResults()) {
+		  // if concept has no associated map records, add to list
+		  if (getMapRecordsForTerminologyId(sr.getTerminologyId()).size() == 0) {
+		  	unmappedConceptsInScope.addSearchResult(sr);
+		  }
+		}
+		
+		return unmappedConceptsInScope;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMappedConceptsOutOfScopeBounds(org.ihtsdo.otf.mapping.model.MapProject)
+	 */
+	public SearchResultList findMappedConceptsOutOfScopeBounds(MapProject project) throws Exception {
+		SearchResultList mappedConceptsOutOfBounds = new SearchResultListJpa();
+		List<MapRecord> mapRecordList = getMapRecordsForMapProjectId(project.getId());
+		ContentService contentService = new ContentServiceJpa();
+
+		for (MapRecord record : mapRecordList) {
+			Concept c = contentService.getConcept(record.getConceptId(), 
+					project.getSourceTerminology(), project.getSourceTerminologyVersion());
+			if (isConceptOutOfScopeBounds(c, project)) {			
+				SearchResult sr = new SearchResultJpa();
+				sr.setId(c.getId());
+				sr.setTerminologyId(c.getTerminologyId());
+				sr.setTerminology(c.getTerminology());
+				sr.setTerminologyVersion(c.getTerminologyVersion());
+				sr.setValue(c.getDefaultPreferredName());
+				mappedConceptsOutOfBounds.addSearchResult(sr);
+			}
+				
+		}
+		contentService.close();
+		return mappedConceptsOutOfBounds;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#findConceptsExcludedFromScope(org.ihtsdo.otf.mapping.model.MapProject)
+	 */
+	public SearchResultList findConceptsExcludedFromScope(MapProject project)
+			throws Exception {
+			SearchResultList conceptsExcludedFromScope = new SearchResultListJpa();
+			
+			ContentService contentService = new ContentServiceJpa();
+
+			String terminology = project.getSourceTerminology();
+			String terminologyVersion = project.getSourceTerminologyVersion();	
+			
+			// add specified excluded concepts
+			for (String conceptId : project.getScopeExcludedConcepts()) {
+				Concept c = contentService.getConcept(conceptId, terminology, terminologyVersion);
+				SearchResult sr = new SearchResultJpa();
+				sr.setId(c.getId());
+				sr.setTerminologyId(c.getTerminologyId());
+				sr.setTerminology(c.getTerminology());
+				sr.setTerminologyVersion(c.getTerminologyVersion());
+				sr.setValue(c.getDefaultPreferredName());
+				conceptsExcludedFromScope.addSearchResult(sr);
+			}
+
+			// add descendant excluded concepts if indicated
+			if (project.isScopeExcludedDescendantsFlag()) {
+				// get hierarchical rel
+				MetadataService metadataService = new MetadataServiceJpa();
+				Map<Long, String> hierarchicalRelationshipTypeMap =
+						metadataService.getHierarchicalRelationshipTypes(terminology,
+								terminologyVersion);
+				if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
+					throw new IllegalStateException(
+							"Map project source terminology has too many hierarchical relationship types - "
+									+ terminology);
+				}
+				if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
+					throw new IllegalStateException(
+							"Map project source terminology has too few hierarchical relationship types - "
+									+ terminology);
+				}
+				long hierarchicalRelationshipType =
+						hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
+
+				// for each excluded scope concept, get descendants
+				for (String terminologyId : project.getScopeExcludedConcepts()) {
+					SearchResultList descendants =
+							contentService.findDescendants(terminologyId, terminology,
+									terminologyVersion, hierarchicalRelationshipType);
+
+					// cycle over descendants
+					for (SearchResult sr : descendants.getSearchResults()) {
+						conceptsExcludedFromScope.addSearchResult(sr);
+					}
+				}
+
+				// close managers
+				metadataService.close();
+			}
+
+			contentService.close();
+			
+			return conceptsExcludedFromScope;
+
+		}
+	
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#isConceptInScope(org.ihtsdo.otf.mapping.rf2.Concept, org.ihtsdo.otf.mapping.model.MapProject)
+   */
+  public boolean isConceptInScope(Concept concept, MapProject project) throws Exception {
+  	SearchResultList conceptsInScope = findConceptsInScope(project);
+  	for (SearchResult sr : conceptsInScope.getSearchResults()) {
+  		if (sr.getTerminologyId().equals(concept.getTerminologyId()))
+  			return true;
+  	}
+  	return false;
+  }
+  
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#isConceptExcludedFromScope(org.ihtsdo.otf.mapping.rf2.Concept, org.ihtsdo.otf.mapping.model.MapProject)
+   */
+  public boolean isConceptExcludedFromScope(Concept concept, MapProject project) throws Exception {
+  	SearchResultList conceptsExcludedFromScope = findConceptsExcludedFromScope(project);
+  	for (SearchResult sr : conceptsExcludedFromScope.getSearchResults()) {
+  		if (sr.getTerminologyId().equals(concept.getTerminologyId()))
+  			return true;
+  	}
+  	return false;  	
+  }
+  
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#isConceptOutOfScopeBounds(org.ihtsdo.otf.mapping.rf2.Concept, org.ihtsdo.otf.mapping.model.MapProject)
+   */
+  public boolean isConceptOutOfScopeBounds(Concept concept, MapProject project) throws Exception {
+  	if (isConceptInScope(concept, project))  	
+  		return false;
+  	else if (isConceptExcludedFromScope(concept, project))
+  		return false;
+  	else 
+  		return true; 		
+  }
+
+	
 	/**
 	 * Given a concept, returns a list of descendant concepts that have no
 	 * associated map record.
-	 * @param terminologyId 
-	 * @param terminology 
-	 * @param terminologyVersion 
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
 	 * @param thresholdLlc the maximum number of descendants a concept can have
 	 *          before it is no longer considered a low-level concept (i.e. return
 	 *          an empty list)
@@ -2241,6 +2471,9 @@ public class MappingServiceJpa implements MappingService {
 		tx.commit();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForMapProjectIdWithQuery(java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameter)
+	 */
 	@Override
 	public List<MapRecord> getMapRecordsForMapProjectIdWithQuery(
 			Long mapProjectId, PfsParameter pfsParameter) throws Exception {

@@ -80,6 +80,18 @@ public class MapRecordJpa implements MapRecord {
 	@IndexedEmbedded(targetElement = MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 
+	/** Indicates whether the record is flagged for map lead review. */
+	@Column(unique = false, nullable = false)
+	private boolean flagForMapLeadReview = false;
+
+	/** Indicates whether the record is flagged for editorial review. */
+	@Column(unique = false, nullable = false)
+	private boolean flagForEditorialReview = false;
+
+	/** Indicates if the record is flagged for consensus review. */
+	@Column(unique = false, nullable = false)
+	private boolean flagForConsensusReview = false;
+	
 	/** Default constructor */
 	public MapRecordJpa() {
 	}
@@ -268,6 +280,37 @@ public class MapRecordJpa implements MapRecord {
 		mapPrinciples.remove(mapPrinciple);
 	}
 
+
+	@Override
+	public boolean isFlagForMapLeadReview() {
+		return flagForMapLeadReview;
+	}
+
+	@Override
+	public void setFlagForMapLeadReview(boolean flag) {
+		flagForMapLeadReview = flag;
+	}
+
+	@Override
+	public boolean isFlagForEditorialReview() {
+		return flagForEditorialReview;
+	}
+
+	@Override
+	public void setFlagForEditorialReview(boolean flag) {
+		flagForEditorialReview = flag;
+	}
+
+	@Override
+	public boolean isFlagForConsensusReview() {
+		return flagForConsensusReview;
+	}
+
+	@Override
+	public void setFlagForConsensusReview(boolean flag) {
+		flagForConsensusReview = flag;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -320,5 +363,6 @@ public class MapRecordJpa implements MapRecord {
 		return "MapRecordJpa [id=" + id + ", conceptId=" + conceptId
 				+ ", mapEntries=" + mapEntries + "]";
 	}
+
 
 }
