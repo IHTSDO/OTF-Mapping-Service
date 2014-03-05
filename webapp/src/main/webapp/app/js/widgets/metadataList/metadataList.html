@@ -1,8 +1,8 @@
 
 
 <div>
-{{errorMetadata}} {{data}}
-<h5>Terminology: {{terminology}}</h5>
+{{errorMetadata}} 
+<h5>Terminology: {{config.terminology}}</h5>
 <accordion> <accordion-group
   ng-repeat="keyValuePairList in keyValuePairLists | filter:query  | orderBy:keyValuePairList.name">
 <accordion-heading>
