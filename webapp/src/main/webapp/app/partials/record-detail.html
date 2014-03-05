@@ -1,0 +1,135 @@
+<h3>Mapping <strong>{{project.sourceTerminology}}</strong> Concept {{concept.terminologyId}} ({{concept.defaultPreferredName}}) to <strong>{{project.destinationTerminology}}</strong> </h3>
+
+<!--  left-panel -->
+<div style="float:left; width:40%;padding:10px;">
+
+	<!--  The Record -->
+	<div style="border:1px solid; padding:10px; border-radius:10px;">
+
+		<h3>Map Record</h3>
+		<hr>
+		
+		<!--  first-level accordion for Map Group -->
+		<h4>Record Entries</h4>
+		
+		<div ng-show="project.groupStructure == true">
+			
+			<accordion close-others="false">
+		
+				<!--  first-level accordion groups -->
+				<accordion-group 
+					ng-repeat = "group in groups | orderBy: 'group'"  is-open="true">
+				
+					<accordion-heading>
+						Group {{group}} 
+						<span ng-show="getEntries(group).length == 0">
+							&nbsp<img src="img/fileclose.png" ng-click="removeMapGroup(group)">
+						</span>
+					</accordion-heading>
+					
+					<!-- <table width=100%>
+						<tr ng-repeat="entry in getEntries(group) track by $index" ng-click="selectEntry(entry)">
+							<td style="padding:5px;vertical-align:top;">{{getRuleSummary(entry)}}</td>
+							<td style="padding:5px;vertical-align:top;">{{entry.targetId}}</td>
+							<td style="padding:5px;vertical-align:top;">{{entry.targetName}}</td>
+						</tr>
+					</table>
+					 -->
+					 
+					<p ng-repeat = "originalEntry in getEntries(group) | orderBy:'mapPriority'"
+					   ng-click = "selectEntry(originalEntry)">
+						<a ng-show="originalEntry.targetId != null && originalEntry.targetId != ''">{{getRuleSummary(originalEntry)}} {{originalEntry.targetId}} {{originalEntry.targetName}}</a>
+						<a ng-show="originalEntry.targetId == null || originalEntry.targetId === ''">[Empty Entry]</a>
+					</p>
+					<p>
+						<br>
+						<input type="submit" value="Add Map Entry" ng-click="entry = addMapEntry(group)">
+					</p>	
+					
+				</accordion-group> <!--  end Group accordion group -->
+			
+				<p></p>
+				<input type="submit" value="Add Map Group" ng-click="addMapGroup()">
+				
+			</accordion> <!--  first-level accordion -->
+		</div>
+		<div ng-show="project.groupStructure == false"">
+			<p ng-repeat = "originalEntry in record.mapEntry | orderBy:'mapPriority'"
+			   ng-click = "selectEntry(originalEntry)">
+				<a ng-show="originalEntry.targetId != null && originalEntry.targetId != ''">{{getRuleSummary(originalEntry)}} {{originalEntry.targetId}} {{originalEntry.targetName}}</a>
+				<a ng-show="originalEntry.targetId == null || originalEntry.targetId === ''">[Empty Entry]</a>
+			</p>
+			<p style="list-style:none;">
+				<br>
+				<input type="submit" value="Add Map Entry" ng-click="entry = addMapEntry(group)">
+			</p>
+			
+			
+		</div>
+	
+		<hr>
+		<h4>Record Principles</h4>
+		
+		<div ng-show="record.mapPrinciple.length > 0">
+			<div ng-repeat="principle in record.mapPrinciple">
+				<button	disabled>{{principle.principleId}}: {{principle.name}}
+				<img src="img/fileclose.png" ng-click="removeRecordPrinciple(record, principle)">			
+				</button>
+			</div>
+			<hr>
+		</div>
+		<span style="color:red">{{errorAddRecordPrinciple}}</span>
+		<form>
+			<textarea ng-model="principleInput" 
+					  typeahead="principle as principle.principleId + ':  ' + principle.name for principle in project.mapPrinciple | filter:$viewValue | limitTo:8" class="form-control"
+					  typeahead-min-length="0" typeahead-editable="false"></textarea>
+					
+			<input type="submit" value="Add Principle" ng-click="addRecordPrinciple(record, principleInput)">
+		</form>
+		<hr>
+		<h4>Record Notes</h4>
+		<div ng-show="record.mapNote.length > 0">
+			<div ng-repeat="note in record.mapNote">
+				<button	disabled>{{note.note}}
+				<img src="img/fileclose.png" ng-click="removeRecordNote(record, note)">			
+				</button>
+			</div>
+			<hr>
+		</div>
+		<span style="color:red">{{errorAddRecordNote}}</span>
+		<form>
+			<textarea ng-model="noteInput" class="form-control"></textarea>
+			<input type="submit" value="Add Note" ng-click="addRecordNote(record, noteInput)">
+		</form>
+	
+		<hr>
+		<button class="btn btn-primary" ng-click="saveMapRecord()">Save Map Record</button>
+		<button class="btn btn-warning" ng-click="cancelMapRecord()">Cancel Changes</button>
+		<button class="btn btn-danger"  ng-click="deleteMapRecord()">Delete Record</button>
+		<p></p>
+		<span style="color:green;">{{recordSuccess}}</span>
+		<span style="color:red;">{{recordError}}</span>
+		
+	</div> <!--  end the record -->
+
+</div> <!--  end left panel -->
+
+<!--  right panel -->
+<div style="float:left; width:50%; padding:10px;" ng-show = "entry != null && entry != ''">
+	
+	<div style="border:1px solid; padding:10px; border-radius:10px;">
+		<h3>Map Entry <span ng-show="project.groupStructure == true">(Group {{entry.mapGroup}})</span></h3>
+		<hr>
+		<otf-entry></otf-entry>
+		
+		<hr>
+		<button class="btn btn-primary" ng-click="saveMapEntry(entry)">Save Map Entry</button>
+		<button class="btn btn-warning" ng-click="cancelMapEntry()">Cancel Changes</button>
+		<button class="btn btn-danger"  ng-click="deleteMapEntry(entry)">Delete Map Entry</button>
+		
+		<p></p>
+		<span style="color:green;">{{entrySuccess}}</span>
+		<span style="color:red;">{{entryError}}</span>
+	</div>
+
+</div>

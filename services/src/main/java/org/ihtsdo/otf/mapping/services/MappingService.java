@@ -43,6 +43,24 @@ public interface MappingService {
 	public MapProject getMapProject(Long id) throws Exception;
 	
 	/**
+	 * Gets the map project.
+	 *
+	 * @param name the name
+	 * @return the map project
+	 * @throws Excception the exception
+	 */
+	public MapProject getMapProjectByName(String name) throws Exception;
+	
+	/**
+	 * Gets the map project by ref set id.
+	 *
+	 * @param refSetId the ref set id
+	 * @return the map project by ref set id
+	 * @throws Exception the exception
+	 */
+	public MapProject getMapProjectByRefSetId(String refSetId) throws Exception;
+	
+	/**
 	 * Return map user for auto-generated id.
 	 *
 	 * @param id the auto-generated id

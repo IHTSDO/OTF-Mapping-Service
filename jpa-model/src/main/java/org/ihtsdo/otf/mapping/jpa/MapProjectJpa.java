@@ -136,9 +136,8 @@ public class MapProjectJpa implements MapProject {
 	@CollectionTable(name="map_projects_rule_preset_age_ranges", joinColumns=@JoinColumn(name="id"))
 	@Column(nullable = true)
 	private Set<String> rulePresetAgeRanges = new HashSet<String>();
-	
-	
-  /**  The concepts in scope for this project. */
+		
+   /**  The concepts in scope for this project. */
 	@ElementCollection(fetch=FetchType.EAGER)
 	@CollectionTable(name="map_projects_scope_concepts", joinColumns=@JoinColumn(name="id"))
 	@Column(nullable = true)
