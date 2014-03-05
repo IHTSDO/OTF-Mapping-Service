@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -20,6 +22,7 @@ import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
@@ -27,6 +30,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * Goal which imports project data from text files.
  * 
  * Sample execution:
+ * 
  * <pre>
  *     <plugin>
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
@@ -72,7 +76,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 	private File propertiesFile;
 
 	/**
-	 * Instantiates a {@link MapProjectDataImportMojo} from the specified parameters.
+	 * Instantiates a {@link MapProjectDataImportMojo} from the specified
+	 * parameters.
 	 * 
 	 */
 	public MapProjectDataImportMojo() {
@@ -88,7 +93,6 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 	public void execute() throws MojoFailureException {
 		getLog().info("Starting importing metadata ...");
 		try {
-
 
 			FileInputStream propertiesInputStream = null;
 
@@ -126,6 +130,14 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 			File projectsFile = new File(inputDir, "mapprojects.txt");
 			BufferedReader projectsReader =
 					new BufferedReader(new FileReader(projectsFile));
+			
+			File scopeExcludesFile = new File(inputDir, "scopeExcludes.txt");
+			BufferedReader scopeExcludesReader =
+					new BufferedReader(new FileReader(scopeExcludesFile));
+
+			File scopeIncludesFile = new File(inputDir, "scopeIncludes.txt");
+			BufferedReader scopeIncludesReader =
+					new BufferedReader(new FileReader(scopeIncludesFile));
 
 			MappingService mappingService = new MappingServiceJpa();
 
@@ -188,7 +200,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapProject.setMapPrincipleSourceDocument(fields[12]);
 				mapProject.setRuleBased(fields[13].equals("true") ? true : false);
 				mapProject.setMapRefsetPattern(fields[14]);
-				
+
 				String mapAdvices = fields[15];
 				if (!mapAdvices.equals("")) {
 					for (String advice : mapAdvices.split(",")) {
@@ -220,21 +232,61 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
 				String mapSpecialists = fields[18];
 				for (String specialist : mapSpecialists.split(",")) {
-					
+
 					for (MapSpecialist ml : mappingService.getMapSpecialists()) {
 						if (ml.getUserName().equals(specialist))
 							mapProject.addMapSpecialist(ml);
 					}
 				}
-				
-				/*String rulePresetAgeRangesStr = fields[19];
-				Set<String> rulePresetAgeRanges = new HashSet<String>();
-				for (String preset : rulePresetAgeRangesStr.split(",")) {
-					rulePresetAgeRanges.add(preset);
-				}
-				mapProject.setRulePresetAgeRanges(rulePresetAgeRanges);*/
-				
+
+				mapProject.setScopeDescendantsFlag(fields[19].equals("true") ? true
+						: false);
+				mapProject.setScopeExcludedDescendantsFlag(fields[20].equals("true")
+						? true : false);
+
+
+				/*
+				 * String rulePresetAgeRangesStr = fields[19]; Set<String>
+				 * rulePresetAgeRanges = new HashSet<String>(); for (String preset :
+				 * rulePresetAgeRangesStr.split(",")) { rulePresetAgeRanges.add(preset);
+				 * } mapProject.setRulePresetAgeRanges(rulePresetAgeRanges);
+				 */
+
 				mappingService.addMapProject(mapProject);
+			}
+
+			Map<String, Set<String>> projectToConceptsInScope = new HashMap<String, Set<String>>();
+			while ((line = scopeIncludesReader.readLine()) != null) {
+				String[] fields = line.split("\\t");
+				if (projectToConceptsInScope.containsKey(fields[0]))
+					projectToConceptsInScope.get(fields[0]).add(fields[1]);
+				else {
+					Set<String> conceptsInScope = new HashSet<String>();
+					conceptsInScope.add(fields[1]);
+					projectToConceptsInScope.put(fields[0], conceptsInScope);
+				}
+			}
+			for (String projectId : projectToConceptsInScope.keySet()) {
+				MapProject mapProject = mappingService.getMapProject(new Long(projectId));
+				mapProject.setScopeConcepts(projectToConceptsInScope.get(projectId));
+				mappingService.updateMapProject(mapProject);
+			}
+			
+			Map<String, Set<String>> projectToConceptsExcludedFromScope = new HashMap<String, Set<String>>();			
+			while ((line = scopeExcludesReader.readLine()) != null) {
+				String[] fields = line.split("\\t");
+				if (projectToConceptsExcludedFromScope.containsKey(fields[0]))
+					projectToConceptsExcludedFromScope.get(fields[0]).add(fields[1]);
+				else {
+					Set<String> conceptsExcludedFromScope = new HashSet<String>();
+					conceptsExcludedFromScope.add(fields[1]);
+					projectToConceptsExcludedFromScope.put(fields[0], conceptsExcludedFromScope);
+				}
+			}
+			for (String projectId : projectToConceptsExcludedFromScope.keySet()) {
+				MapProject mapProject = mappingService.getMapProject(new Long(projectId));
+				mapProject.setScopeExcludedConcepts(projectToConceptsExcludedFromScope.get(projectId));
+			  mappingService.updateMapProject(mapProject);
 			}
 
 			getLog().info("done ...");
@@ -244,6 +296,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 			advicesReader.close();
 			principlesReader.close();
 			projectsReader.close();
+			scopeIncludesReader.close();
+			scopeExcludesReader.close();
 
 		} catch (Throwable e) {
 			e.printStackTrace();

@@ -36,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * The Class MapProjectJpa.
  *
+ * @author ${author}
  */
 @Entity
 @Table(name = "map_projects")
@@ -69,7 +70,7 @@ public class MapProjectJpa implements MapProject {
 	/** The ref set id. */
 	private String refSetId;
 	
-	/** The ref set name */
+	/**  The ref set name. */
 	private String refSetName;
 	
 	/** The source terminology. */
@@ -88,19 +89,19 @@ public class MapProjectJpa implements MapProject {
 	@Column(nullable = false)
 	private String destinationTerminologyVersion;
 	
-	/** The RF2 refset pattern for this map project */
+	/**  The RF2 refset pattern for this map project. */
 	@Column(nullable = true)
 	private String mapRefsetPattern;
 	
-	/** The relation behavior */
+	/**  The relation behavior. */
 	@Column(nullable = true)
 	private String mapRelationStyle;
 	
-	/** The name of the mapping principle document */
+	/**  The name of the mapping principle document. */
 	@Column(nullable = true)
 	private String mapPrincipleSourceDocument;
 	
-	/** Flag for whether this project is rule based */
+	/**  Flag for whether this project is rule based. */
 	@Column(nullable = false)
 	private boolean ruleBased;
 
@@ -124,18 +125,42 @@ public class MapProjectJpa implements MapProject {
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
 	
-	/** The preset age ranges for rule generation (Age, Age at onset) */
+	/**  The preset age ranges for rule generation (Age, Age at onset). */
 	@ElementCollection(fetch=FetchType.EAGER)
 	@CollectionTable(name="map_projects_rule_preset_age_ranges", joinColumns=@JoinColumn(name="id"))
 	@Column(nullable = true)
 	private Set<String> rulePresetAgeRanges = new HashSet<String>();
 	
-	/** Default constructor */
+	
+  /**  The concepts in scope for this project. */
+	@ElementCollection(fetch=FetchType.EAGER)
+	@CollectionTable(name="map_projects_scope_concepts", joinColumns=@JoinColumn(name="id"))
+	@Column(nullable = true)
+	private Set<String> scopeConcepts = new HashSet<String>();
+	
+	/**  The concepts excluded from scope of this project. */
+	@ElementCollection(fetch=FetchType.EAGER)
+	@CollectionTable(name="map_projects_scope_excluded_concepts", joinColumns=@JoinColumn(name="id"))
+	@Column(nullable = true)
+	private Set<String> scopeExcludedConcepts = new HashSet<String>();
+	
+	/**  Indicates if descendants of the scope are included in the scope. */
+	@Column(unique = false, nullable = false)
+	private boolean scopeDescendantsFlag = false;
+	
+	/**  Indicates if descendants of the excluded scope are excluded from the scope. */
+	@Column(unique = false, nullable = false)
+	private boolean scopeExcludedDescendantsFlag = false;
+	
+	/**
+	 *  Default constructor.
+	 */
 	public MapProjectJpa() {
 	}
 
 	/**
-	 * Full constructor
+	 * Full constructor.
+	 *
 	 * @param id the id
 	 * @param name the project name
 	 * @param blockStructure the blockstructure (boolean)
@@ -172,7 +197,8 @@ public class MapProjectJpa implements MapProject {
 	}
 
 	/**
-	 * Return the id
+	 * Return the id.
+	 *
 	 * @return the id
 	 */
 	@Override
@@ -181,7 +207,8 @@ public class MapProjectJpa implements MapProject {
 	}
 	
 	/**
-	 * Set the id
+	 * Set the id.
+	 *
 	 * @param id the id
 	 */
 	@Override
@@ -190,7 +217,8 @@ public class MapProjectJpa implements MapProject {
 	}
 	
 	/**
-	 * Returns the id in string form
+	 * Returns the id in string form.
+	 *
 	 * @return the id in string form
 	 */
 	@XmlID
@@ -200,8 +228,9 @@ public class MapProjectJpa implements MapProject {
 	}
 	
 	/**
-	 * Required for 
-	 * @param objectId
+	 * Required for .
+	 *
+	 * @param objectId the object id
 	 */
 	public void setObjectId(String objectId) {
 		// do nothing
@@ -344,161 +373,319 @@ public class MapProjectJpa implements MapProject {
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getName()
+	 */
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)		
 	public String getName() {
 		return name;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setName(java.lang.String)
+	 */
 	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#isBlockStructure()
+	 */
 	@Override
 	public boolean isBlockStructure() {
 		return blockStructure;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setBlockStructure(boolean)
+	 */
 	@Override
 	public void setBlockStructure(boolean blockStructure) {
 		this.blockStructure = blockStructure;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#isGroupStructure()
+	 */
 	@Override
 	public boolean isGroupStructure() {
 		return groupStructure;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setGroupStructure(boolean)
+	 */
 	@Override
 	public void setGroupStructure(boolean groupStructure) {
 		this.groupStructure = groupStructure;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#isPublished()
+	 */
 	@Override
 	public boolean isPublished() {
 		return published;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setPublished(boolean)
+	 */
 	@Override
 	public void setPublished(boolean published) {
 		this.published = published;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getRefSetName()
+	 */
 	@Override
 	public String getRefSetName() {
 		return this.refSetName;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setRefSetName(java.lang.String)
+	 */
 	@Override
 	public void setRefSetName(String refSetName) {
 		this.refSetName = refSetName;
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getRefSetId()
+	 */
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)	
 	public String getRefSetId() {
 		return refSetId;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setRefSetId(java.lang.String)
+	 */
 	@Override
 	public void setRefSetId(String refSetId) {
 		this.refSetId = refSetId;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapRelationStyle()
+	 */
 	@Override
 	public String getMapRelationStyle() {
 		return mapRelationStyle;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapPrincipleSourceDocument()
+	 */
 	@Override
 	public String getMapPrincipleSourceDocument() {
 		return mapPrincipleSourceDocument;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapPrincipleSourceDocument(java.lang.String)
+	 */
 	@Override
 	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
 		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapRelationStyle(java.lang.String)
+	 */
 	@Override
 	public void setMapRelationStyle(String mapRelationStyle) {
 		this.mapRelationStyle = mapRelationStyle;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#isRuleBased()
+	 */
 	@Override
 	public boolean isRuleBased() {
 		return ruleBased;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setRuleBased(boolean)
+	 */
 	@Override
 	public void setRuleBased(boolean ruleBased) {
 		this.ruleBased = ruleBased;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapRefsetPattern()
+	 */
 	@Override
 	public String getMapRefsetPattern() {
 		return mapRefsetPattern;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapRefsetPattern(java.lang.String)
+	 */
 	@Override
 	public void setMapRefsetPattern(String mapRefsetPattern) {
 		this.mapRefsetPattern = mapRefsetPattern;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getRulePresetAgeRanges()
+	 */
 	@Override
 	public Set<String> getRulePresetAgeRanges() {
 		return rulePresetAgeRanges;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setRulePresetAgeRanges(java.util.Set)
+	 */
 	@Override
 	public void setRulePresetAgeRanges(Set<String> rulePresetAgeRanges) {
 		this.rulePresetAgeRanges = rulePresetAgeRanges;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapAdvices()
+	 */
 	@Override
 	@XmlElement(type=MapAdviceJpa.class, name="mapAdvice")
 	public Set<MapAdvice> getMapAdvices() {
 		return mapAdvices;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapAdvices(java.util.Set)
+	 */
 	@Override
 	public void setMapAdvices(Set<MapAdvice> mapAdvices) {
 		this.mapAdvices = mapAdvices;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#addMapAdvice(org.ihtsdo.otf.mapping.model.MapAdvice)
+	 */
 	@Override
 	public void addMapAdvice(MapAdvice mapAdvice) {
 		mapAdvices.add(mapAdvice);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#removeMapAdvice(org.ihtsdo.otf.mapping.model.MapAdvice)
+	 */
 	@Override
 	public void removeMapAdvice(MapAdvice mapAdvice) {
 		mapAdvices.remove(mapAdvice);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapPrinciples()
+	 */
 	@Override
 	@XmlElement(type=MapPrincipleJpa.class, name="mapPrinciple")
 	public Set<MapPrinciple> getMapPrinciples() {
 		return mapPrinciples;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapPrinciples(java.util.Set)
+	 */
 	@Override
 	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
 		this.mapPrinciples = mapPrinciples;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#addMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
+	 */
 	@Override
 	public void addMapPrinciple(MapPrinciple mapPrinciple) {
 		mapPrinciples.add(mapPrinciple);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#removeMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
+	 */
 	@Override
 	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
 		mapPrinciples.remove(mapPrinciple);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getScopeConcepts()
+	 */
+	@Override
+	public Set<String> getScopeConcepts() {
+		return scopeConcepts;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setScopeConcepts(java.util.Set)
+	 */
+	@Override
+	public void setScopeConcepts(Set<String> scopeConcepts) {
+		this.scopeConcepts = scopeConcepts;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#isScopeDescendantsFlag()
+	 */
+	@Override
+	public boolean isScopeDescendantsFlag() {
+		return scopeDescendantsFlag;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setScopeDescendantsFlag(boolean)
+	 */
+	@Override
+	public void setScopeDescendantsFlag(boolean flag) {
+		scopeDescendantsFlag = flag;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getScopeExcludedConcepts()
+	 */
+	@Override
+	public Set<String> getScopeExcludedConcepts() {
+		return scopeExcludedConcepts;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setScopeExcludedConcepts(java.util.Set)
+	 */
+	@Override
+	public void setScopeExcludedConcepts(Set<String> scopeExcludedConcepts) {
+		this.scopeExcludedConcepts = scopeExcludedConcepts;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#isScopeExcludedDescendantsFlag()
+	 */
+	@Override
+	public boolean isScopeExcludedDescendantsFlag() {
+		return scopeExcludedDescendantsFlag;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setScopeExcludedDescendantsFlag(boolean)
+	 */
+	@Override
+	public void setScopeExcludedDescendantsFlag(boolean flag) {
+		scopeExcludedDescendantsFlag = flag;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "MapProjectJpa [name=" + name + ", blockStructure="
@@ -517,6 +704,9 @@ public class MapProjectJpa implements MapProject {
 				+ ", rulePresetAgeRanges=" + rulePresetAgeRanges + "]";
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -571,6 +761,9 @@ public class MapProjectJpa implements MapProject {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

@@ -25,7 +25,8 @@ public interface MapProject  {
 	public void setId(Long id);
 	
 	/**
-	 * Returns the id in string form
+	 * Returns the id in string form.
+	 *
 	 * @return the string object id
 	 */
 	public String getObjectId();
@@ -298,42 +299,44 @@ public interface MapProject  {
 	
 	
 	/**
-	 * Gets the map relation style
-	 * 
+	 * Gets the map relation style.
+	 *
 	 * @return the map relation style
 	 */
 	public String getMapRelationStyle();
 
 	/**
-	 * Sets the map relation style
-	 * 
+	 * Sets the map relation style.
+	 *
 	 * @param mapRelationStyle the map relation style
 	 */
 	public void setMapRelationStyle(String mapRelationStyle);
 
 
 	/**
-	 * Sets the map principle source document name
-	 * 
+	 * Sets the map principle source document name.
+	 *
 	 * @param mapPrincipleSourceDocument the name of the map principle source document
 	 */
 	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument);
 	
 	/**
-	 * Gets the map principle source document name
-	 * 
+	 * Gets the map principle source document name.
+	 *
 	 * @return the name of the map principle source document
 	 */
 	public String getMapPrincipleSourceDocument();
 
 	/**
-	 * Returns boolean flag for whether project is rule based
+	 * Returns boolean flag for whether project is rule based.
+	 *
 	 * @return the boolean rule based
 	 */
 	public boolean isRuleBased();
 
 	/**
-	 * Sets the rule based flag with a boolean value
+	 * Sets the rule based flag with a boolean value.
+	 *
 	 * @param ruleBased the boolean rule based
 	 */
 	public void setRuleBased(boolean ruleBased);
@@ -351,15 +354,75 @@ public interface MapProject  {
 	public void setMapRefsetPattern(String mapRefsetPattern);
 	
 	/**
-	 * Returns the set of default preset age ranges for rule generation
+	 * Returns the set of default preset age ranges for rule generation.
+	 *
 	 * @return the preset age ranges for rule generation
 	 */
 	public Set<String> getRulePresetAgeRanges();
 	
 	/**
-	 * Sets the set of default preset age ranges for rule generation
+	 * Sets the set of default preset age ranges for rule generation.
+	 *
 	 * @param rulePresetAgeRanges the preset age ranges
 	 */
 	public void setRulePresetAgeRanges(Set<String> rulePresetAgeRanges);
+	
+	/**
+	 * Returns the scope concepts.
+	 *
+	 * @return the scope concepts
+	 */
+	public Set<String> getScopeConcepts();
+	
+	/**
+	 * Sets the scope concepts.
+	 *
+	 * @param scopeConcepts the scope concepts
+	 */
+	public void setScopeConcepts(Set<String> scopeConcepts);
+	
+	/**
+	 * Indicates whether or not scope descendants flag is the case.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isScopeDescendantsFlag();
+	
+	/**
+	 * Sets the scope descendants flag.
+	 *
+	 * @param flag the scope descendants flag
+	 */
+	public void setScopeDescendantsFlag(boolean flag);
+	
+	/**
+	 * Returns the scope excluded concepts.
+	 *
+	 * @return the scope excluded concepts
+	 */
+	public Set<String> getScopeExcludedConcepts();
+	
+	/**
+	 * Sets the scope excluded concepts.
+	 *
+	 * @param scopeExcludedConcepts the scope excluded concepts
+	 */
+	public void setScopeExcludedConcepts(Set<String> scopeExcludedConcepts);
+	
+	/**
+	 * Indicates whether or not scope excluded descendants flag is the case.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isScopeExcludedDescendantsFlag();
+	
+	/**
+	 * Sets the scope excluded descendants flag.
+	 *
+	 * @param flag the scope excluded descendants flag
+	 */
+	public void setScopeExcludedDescendantsFlag(boolean flag);
+	
+	
 
 }
