@@ -8,12 +8,14 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.jpa.MapUserList;
+import org.ihtsdo.otf.mapping.jpa.MapLeadList;
+import org.ihtsdo.otf.mapping.jpa.MapSpecialistList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -141,14 +143,39 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			BufferedWriter projectsWriter =
 					new BufferedWriter(new FileWriter(projectsFile.getAbsoluteFile()));
 
-			// export to mapusers.txt
+			File scopeIncludesFile = new File(outputDir, "scopeIncludes.txt");
+			// if file doesn't exist, then create it
+			if (!scopeIncludesFile.exists()) {
+				scopeIncludesFile.createNewFile();
+			}
+			BufferedWriter scopeIncludesWriter =
+					new BufferedWriter(new FileWriter(scopeIncludesFile.getAbsoluteFile()));
+
+			File scopeExcludesFile = new File(outputDir, "scopeExcludes.txt");
+			// if file doesn't exist, then create it
+			if (!scopeExcludesFile.exists()) {
+				scopeExcludesFile.createNewFile();
+			}
+			BufferedWriter scopeExcludesWriter =
+					new BufferedWriter(new FileWriter(scopeExcludesFile.getAbsoluteFile()));
+			
+			// export to mapspecialists.txt
 			MappingService mappingService = new MappingServiceJpa();
-			MapUserList mapUsers = new MapUserList();
-			mapUsers.setMapUsers(mappingService.getMapUsers());
-			mapUsers.sortMapUsers();
-			for (MapUser ms : mapUsers.getMapUsers()) {
+			MapSpecialistList mapSpecialists = new MapSpecialistList();
+			mapSpecialists.setMapSpecialists(mappingService.getMapSpecialists());
+			mapSpecialists.sortMapSpecialists();
+			for (MapSpecialist ms : mapSpecialists.getMapSpecialists()) {
 				specialistsWriter.write(ms.getName() + "\t" + ms.getUserName() + "\t"
 						+ ms.getEmail() + "\n");
+			}
+
+			// export to mapleads.txt
+			MapLeadList mapLeads = new MapLeadList();
+			mapLeads.setMapLeads(mappingService.getMapLeads());
+			mapLeads.sortMapLeads();
+			for (MapLead ml : mapLeads.getMapLeads()) {
+				leadsWriter.write(ml.getName() + "\t" + ml.getUserName() + "\t"
+						+ ml.getEmail() + "\n");
 			}
 
 			// export to mapadvices.txt
@@ -181,14 +208,14 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 					mapPrinciples.deleteCharAt(mapPrinciples.length() - 1);
 
 				StringBuffer mprMapLeads = new StringBuffer();
-				for (MapUser ma : mpr.getMapLeads()) {
+				for (MapLead ma : mpr.getMapLeads()) {
 					mprMapLeads.append(ma.getUserName()).append(",");
 				}
 				if (mprMapLeads.length() > 1)
 					mprMapLeads.deleteCharAt(mprMapLeads.length() - 1);
 
 				StringBuffer mprMapSpecialists = new StringBuffer();
-				for (MapUser ma : mpr.getMapSpecialists()) {
+				for (MapSpecialist ma : mpr.getMapSpecialists()) {
 					mprMapSpecialists.append(ma.getUserName()).append(",");
 				}
 				if (mprMapSpecialists.length() > 1)
@@ -217,8 +244,23 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						+ mapPrinciples + "\t"
 						+ mprMapLeads + "\t" 
 						+ mprMapSpecialists + "\t"
-						+ mprRulePresetAgeRanges + "\n");
+						+ mpr.isScopeDescendantsFlag() + "\t" 
+						+ mpr.isScopeExcludedDescendantsFlag() + "\n");
+						/**+ mprRulePresetAgeRanges + "\n"); commented out by DSS, b/c commented out on import side*/
 			}
+			
+			for (MapProject mpr : mappingService.getMapProjects()) {
+				for (String concept : mpr.getScopeConcepts()) {
+					scopeIncludesWriter.write(mpr.getId() + "\t" + concept + "\n");
+				}
+			}
+			
+			for (MapProject mpr : mappingService.getMapProjects()) {
+				for (String concept : mpr.getScopeExcludedConcepts()) {
+					scopeExcludesWriter.write(mpr.getId() + "\t" + concept + "\n");
+				}
+			}
+			
 			mappingService.close();
 
 			getLog().info("done ...");
@@ -227,6 +269,8 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			advicesWriter.close();
 			principlesWriter.close();
 			projectsWriter.close();
+			scopeIncludesWriter.close();
+			scopeExcludesWriter.close();
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);

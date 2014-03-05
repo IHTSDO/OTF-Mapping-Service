@@ -3,9 +3,11 @@ package org.ihtsdo.otf.mapping.model;
 import java.util.List;
 import java.util.Set;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Interface MapRecord.
  *
+ * @author ${author}
  */
 public interface MapRecord {
 	
@@ -24,7 +26,8 @@ public interface MapRecord {
 	public void setId(Long id);
 	
 	/**
-	 * Returns the id in string form
+	 * Returns the id in string form.
+	 *
 	 * @return the string object id
 	 */
 	public String getObjectId();
@@ -59,26 +62,28 @@ public interface MapRecord {
 	public void setConceptId(String conceptId);
 	
 	/**
-	 * Returns the concept name
+	 * Returns the concept name.
+	 *
 	 * @return the concept name
 	 */
 	public String getConceptName();
 	
 	/**
-	 * Sets the concept name
+	 * Sets the concept name.
+	 *
 	 * @param conceptName the concept name
 	 */
 	public void setConceptName(String conceptName);
 	
 	/**
-	 * Returns the number of descendant concepts
+	 * Returns the number of descendant concepts.
 	 *
 	 * @return the number of descendant concepts
 	 */
 	public Long getCountDescendantConcepts();
 	
 	/**
-	 * Sets the number of descendant concepts
+	 * Sets the number of descendant concepts.
 	 *
 	 * @param countDescendantConcepts the number of descendant concepts
 	 */
@@ -170,11 +175,50 @@ public interface MapRecord {
 	public void removeMapPrinciple(MapPrinciple mapPrinciple);
 	
 	/**
-	 * Assigns the map record to its children after deserialization
-	 *
-	 * @param mapRecord the map record
+	 * Assigns the map record to its children after deserialization.
 	 */
 	public void assignToChildren();
 	
+	/**
+	 * Indicates whether or not flag for map lead review is the case.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isFlagForMapLeadReview();
+	
+	/**
+	 * Sets the flag for map lead review.
+	 *
+	 * @param flag the flag for map lead review
+	 */
+	public void setFlagForMapLeadReview(boolean flag);
+	
+	/**
+	 * Indicates whether or not flag for editorial review is the case.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isFlagForEditorialReview();
+	
+	/**
+	 * Sets the flag for editorial review.
+	 *
+	 * @param flag the flag for editorial review
+	 */
+	public void setFlagForEditorialReview(boolean flag);
+	
+	/**
+	 * Indicates whether or not flag for consensus review is the case.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isFlagForConsensusReview();
+	
+	/**
+	 * Sets the flag for consensus review.
+	 *
+	 * @param flag the flag for consensus review
+	 */
+	public void setFlagForConsensusReview(boolean flag);
 	
 }

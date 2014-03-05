@@ -18,6 +18,7 @@ import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
+// TODO: Auto-generated Javadoc
 /**
  * The class for MetadataServiceJpa.
  * 
@@ -53,7 +54,6 @@ public class MetadataServiceJpa implements MetadataService {
 
 		// created once or if the factory has closed
 		if (factory == null || !factory.isOpen()) {
-          Logger.getLogger(this.getClass()).info("Setting metadata service entity manager factory.");
 			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 		}
 		// create on each instantiation

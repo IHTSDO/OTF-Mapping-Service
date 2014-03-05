@@ -306,6 +306,7 @@ public class ContentServiceJpa implements ContentService {
           Set<Relationship> inv_relationships = c.getInverseRelationships();
           Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
 		
+
           // iterate over inverse relationships
           while (it_inv_rel.hasNext()) {
 

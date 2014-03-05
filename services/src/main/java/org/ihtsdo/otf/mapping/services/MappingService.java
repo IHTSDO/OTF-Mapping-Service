@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
-import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -197,6 +196,7 @@ public interface MappingService {
 	 * Adds the map record.
 	 *
 	 * @param mapRecord the map record
+	 * @return the map record
 	 * @throws Exception the exception
 	 */
 	public MapRecord addMapRecord(MapRecord mapRecord) throws Exception;
@@ -250,7 +250,7 @@ public interface MappingService {
 	 * Update map record.
 	 *
 	 * @param mapRecord the map record
-	 * @return 
+	 * @return the map record
 	 * @throws Exception the exception
 	 */
 	public MapRecord updateMapRecord(MapRecord mapRecord) throws Exception;
@@ -495,7 +495,78 @@ public interface MappingService {
 	 */
 	public void commit() throws Exception;
 
-	
+	/**
+	 * Find concepts in scope.
+	 *
+	 * @param project the project
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findConceptsInScope(MapProject project)
+		throws Exception;
+
+	/**
+	 * Find unmapped concepts in scope.
+	 *
+	 * @param project the project
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findUnmappedConceptsInScope(MapProject project)
+		throws Exception;
+
+	/**
+	 * Find mapped concepts out of scope bounds.
+	 *
+	 * @param project the project
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findMappedConceptsOutOfScopeBounds(MapProject project)
+		throws Exception;
+
+	/**
+	 * Find concepts excluded from scope.
+	 *
+	 * @param project the project
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findConceptsExcludedFromScope(MapProject project)
+		throws Exception;
+
+	/**
+	 * Indicates whether or not concept in scope is the case.
+	 *
+	 * @param concept the concept
+	 * @param project the project
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 * @throws Exception the exception
+	 */
+	public boolean isConceptInScope(Concept concept, MapProject project)
+		throws Exception;
+
+	/**
+	 * Indicates whether or not concept excluded from scope is the case.
+	 *
+	 * @param concept the concept
+	 * @param project the project
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 * @throws Exception the exception
+	 */
+	public boolean isConceptExcludedFromScope(Concept concept, MapProject project)
+		throws Exception;
+
+	/**
+	 * Indicates whether or not concept out of scope bounds is the case.
+	 *
+	 * @param concept the concept
+	 * @param project the project
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 * @throws Exception the exception
+	 */
+	public boolean isConceptOutOfScopeBounds(Concept concept, MapProject project)
+		throws Exception;
 
 }
 	
