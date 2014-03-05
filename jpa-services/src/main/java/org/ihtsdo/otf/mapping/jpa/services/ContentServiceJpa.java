@@ -304,17 +304,11 @@ public class ContentServiceJpa implements ContentService {
 
 				// if concept is already in set, it has already been processed
 				//if (!conceptSet.contains(c)) {
-        // if concept is already in set, it has already been processed
-        if (!conceptSet.contains(c)) {
-					
-					 System.out.println("  Concept is not yet in set");
 
           // relationship set and iterator
           Set<Relationship> inv_relationships = c.getInverseRelationships();
           Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
 		
-					// iterate over inverse relationships
-					while (it_inv_rel.hasNext()) {
 
           // iterate over inverse relationships
           while (it_inv_rel.hasNext()) {

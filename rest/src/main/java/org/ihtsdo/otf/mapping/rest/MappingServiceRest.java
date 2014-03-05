@@ -14,6 +14,8 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.RestPrimitive;
+import org.ihtsdo.otf.mapping.helpers.RestPrimitiveJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
 import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
@@ -26,6 +28,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
 import org.ihtsdo.otf.mapping.jpa.MapSpecialistList;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -33,14 +36,18 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
+
 /**
- * The Mapping Services REST package
+ * The Mapping Services REST package.
+ *
+ * @author ${author}
  */
 @Path("/mapping")
 @Api(value = "/mapping", description = "Operations supporting Map objects.")
@@ -67,8 +74,8 @@ public class MappingServiceRest {
 	/////////////////////////////////////////////////////
 
 	/**
-	 * Returns all map projects in either JSON or XML format
-	 * 
+	 * Returns all map projects in either JSON or XML format.
+	 *
 	 * @return the map projects
 	 */
 	@GET
@@ -96,8 +103,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns all map leads in either JSON or XML format
-	 * 
+	 * Returns all map leads in either JSON or XML format.
+	 *
 	 * @return the map leads
 	 */
 	@GET
@@ -121,8 +128,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns all map specialists in either JSON or XML format
-	 * 
+	 * Returns all map specialists in either JSON or XML format.
+	 *
 	 * @return the map specialists
 	 */
 	@GET
@@ -146,8 +153,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns all map records in either JSON or XML format
-	 * 
+	 * Returns all map records in either JSON or XML format.
+	 *
 	 * @return the map records
 	 */
 	@GET
@@ -169,7 +176,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns all map projects for a map lead in either JSON or XML format
+	 * Returns all map projects for a map lead in either JSON or XML format.
+	 *
 	 * @param mapLeadId the map lead
 	 * @return the map projects
 	 */
@@ -196,8 +204,8 @@ public class MappingServiceRest {
 	}
 
 	/**
-	 * Returns the project for a given id (auto-generated) in JSON format
-	 * 
+	 * Returns the project for a given id (auto-generated) in JSON format.
+	 *
 	 * @param mapProjectId the mapProjectId
 	 * @return the mapProject
 	 */
@@ -221,7 +229,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns all map projects for a lucene query
+	 * Returns all map projects for a lucene query.
+	 *
 	 * @param query the string query
 	 * @return the map projects
 	 */
@@ -249,8 +258,8 @@ public class MappingServiceRest {
 
 	
 	/**
-	 * Returns the specialist for a given id (auto-generated) in JSON format
-	 * 
+	 * Returns the specialist for a given id (auto-generated) in JSON format.
+	 *
 	 * @param mapSpecialistId the mapSpecialistId
 	 * @return the mapSpecialist
 	 */
@@ -274,7 +283,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns all map specialists for a lucene query
+	 * Returns all map specialists for a lucene query.
+	 *
 	 * @param query the string query
 	 * @return the map specialists
 	 */
@@ -298,8 +308,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns the lead for a given id (auto-generated) in JSON format
-	 * 
+	 * Returns the lead for a given id (auto-generated) in JSON format.
+	 *
 	 * @param mapLeadId the mapLeadId
 	 * @return the mapLead
 	 */
@@ -323,7 +333,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns all map leads for a lucene query
+	 * Returns all map leads for a lucene query.
+	 *
 	 * @param query the string query
 	 * @return the map leads
 	 */
@@ -347,8 +358,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns the record for a given id (auto-generated) in JSON format
-	 * 
+	 * Returns the record for a given id (auto-generated) in JSON format.
+	 *
 	 * @param mapRecordId the mapRecordId
 	 * @return the mapRecord
 	 */
@@ -372,8 +383,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns the records for a given concept id
-	 * 
+	 * Returns the records for a given concept id.
+	 *
 	 * @param conceptId the concept id
 	 * @return the mapRecords
 	 */
@@ -399,8 +410,8 @@ public class MappingServiceRest {
 	
 	
 	/**
-	 * Returns the count of records associated with a map project given filters query, ignoring paging and sorting information
-	 * 
+	 * Returns the count of records associated with a map project given filters query, ignoring paging and sorting information.
+	 *
 	 * @param mapProjectId the map project id
 	 * @param pfsParameter the paging/filtering/sorting parameters object
 	 * @return the number of records as a String object
@@ -436,11 +447,11 @@ public class MappingServiceRest {
 	
 	
 	/**
-	 * Returns delimited page of MapRecords given a paging/filtering/sorting parameters object
-	 * 
+	 * Returns delimited page of MapRecords given a paging/filtering/sorting parameters object.
+	 *
 	 * @param mapProjectId the map project id
 	 * @param pfsParameter the JSON object containing the paging/filtering/sorting parameters
-	 * @return the list of map records 
+	 * @return the list of map records
 	 */
 	@POST
 	@Path("/record/projectId/{id:[0-9][0-9]*}")
@@ -474,7 +485,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Deletes all map records associated with a map project given a project id
+	 * Deletes all map records associated with a map project given a project id.
+	 *
 	 * @param mapProjectId the map project id
 	 * @return the number of records deleted
 	 */
@@ -510,7 +522,8 @@ public class MappingServiceRest {
 	// ///////////////////////////////////////////////////
 	
 	/**
-	 * Adds a map project
+	 * Adds a map project.
+	 *
 	 * @param mapProject the map project to be added
 	 * @return returns the added map project object
 	 */
@@ -533,7 +546,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Adds a map lead
+	 * Adds a map lead.
+	 *
 	 * @param mapLead the map lead to be added
 	 * @return Response the response
 	 */
@@ -555,7 +569,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Adds a map specialist
+	 * Adds a map specialist.
+	 *
 	 * @param mapSpecialist the map specialist to be added
 	 * @return Response the response
 	 */
@@ -577,7 +592,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Adds a map record
+	 * Adds a map record.
+	 *
 	 * @param mapRecord the map record to be added
 	 * @return Response the response
 	 */
@@ -608,7 +624,8 @@ public class MappingServiceRest {
 	
 	
 	/**
-	 * Updates a map project
+	 * Updates a map project.
+	 *
 	 * @param mapProject the map project to be added
 	 * @return Response the response
 	 */
@@ -631,7 +648,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Updates a map lead
+	 * Updates a map lead.
+	 *
 	 * @param mapLead the map lead to be added
 	 * @return Response the response
 	 */
@@ -652,7 +670,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Updates a map specialist
+	 * Updates a map specialist.
+	 *
 	 * @param mapSpecialist the map specialist to be added
 	 * @return Response the response
 	 */
@@ -672,7 +691,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Updates a map record
+	 * Updates a map record.
+	 *
 	 * @param mapRecord the map record to be added
 	 * @return Response the response
 	 */
@@ -703,7 +723,8 @@ public class MappingServiceRest {
 	/////////////////////////////////////////////////////
 	
 	/**
-	 * Removes a map project
+	 * Removes a map project.
+	 *
 	 * @param mapProjectId the id of the map project to be deleted
 	 * @return Response the response
 	 */
@@ -723,7 +744,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Removes a map lead
+	 * Removes a map lead.
+	 *
 	 * @param mapLeadId the id of the map lead to be deleted
 	 * @return Response the response
 	 */
@@ -743,7 +765,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Removes a map specialist
+	 * Removes a map specialist.
+	 *
 	 * @param mapSpecialistId the id of the map specialist to be deleted
 	 * @return Response the response
 	 */
@@ -763,7 +786,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Removes a map record
+	 * Removes a map record.
+	 *
 	 * @param mapRecordId the id of the map record to be deleted
 	 * @return Response the response
 	 */
@@ -784,7 +808,8 @@ public class MappingServiceRest {
 	
 	
 	/**
-	 * Removes a map record
+	 * Removes a map record.
+	 *
 	 * @param mapRecord the map record to delete
 	 * @return Response the response
 	 */
@@ -810,7 +835,8 @@ public class MappingServiceRest {
 	///////////////////////////
 	
 	/**
-	 * Given concept information, returns a ConceptList of descendant concepts without associated map records
+	 * Given concept information, returns a ConceptList of descendant concepts without associated map records.
+	 *
 	 * @param terminologyId the concept terminology id
 	 * @param terminology the concept terminology
 	 * @param terminologyVersion the concept terminology version
@@ -846,6 +872,12 @@ public class MappingServiceRest {
 	
 	
 
+	/**
+	 * Returns the map principle for id.
+	 *
+	 * @param mapPrincipleId the map principle id
+	 * @return the map principle for id
+	 */
 	@GET
 	@Path("/principle/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find principle by id", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrinciple.class)
@@ -864,8 +896,8 @@ public class MappingServiceRest {
 	}
 
 	/**
-	 * Returns all map principles in either JSON or XML format
-	 * 
+	 * Returns all map principles in either JSON or XML format.
+	 *
 	 * @return the map principles
 	 */
 	@GET
@@ -887,9 +919,9 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Updates a map principle
-	 * @param mapPrincipleId
-	 * @param mapPrinciple
+	 * Updates a map principle.
+	 *
+	 * @param mapPrinciple the map principle
 	 * @return the response
 	 */
 	@POST
@@ -912,8 +944,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns all map advices in either JSON or XML format
-	 * 
+	 * Returns all map advices in either JSON or XML format.
+	 *
 	 * @return the map advices
 	 */
 	@GET
@@ -960,6 +992,12 @@ public class MappingServiceRest {
 		return results;
 	}
 	
+	/**
+	 * Returns the map records for concept id.
+	 *
+	 * @param conceptId the concept id
+	 * @return the map records for concept id
+	 */
 	@GET
 	@Path("/record/concept/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find map records referencing a concept as a source concept", notes = "Requires hibernate id", response = MapRecordList.class)
@@ -978,8 +1016,222 @@ public class MappingServiceRest {
 		return results;
 	}
 	
+	///////////////////////////
+	// Scope services
+	///////////////////////////
+	
+
+	/**
+	 * Find concepts in scope.
+	 *
+	 * @param project the project
+	 * @return the search result list
+	 */
+	@GET
+	@Path("/scope/{project}")
+	@ApiOperation(value = "Returns concepts in scope for the given map project in either JSON or XML format", response = SearchResultList.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public SearchResultList findConceptsInScope(
+		@ApiParam(value = "map project", required = true) @PathParam("project") int project) {
 	
 	
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(new Long(project));
+			SearchResultList results = mappingService.findConceptsInScope(mapProject);
+		
+			mappingService.close();
+			return results;
+			
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}	
 	
+
+
+			/**
+			 * Find concepts excluded from scope.
+			 *
+			 * @param project the project
+			 * @return the search result list
+			 */
+			@GET
+			@Path("/excluded/{project}")
+			@ApiOperation(value = "Returns concepts excluded from scope for the given map project in either JSON or XML format", response = SearchResultList.class)
+			@Produces({
+					MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+			})
+			public SearchResultList findConceptsExcludedFromScope(
+				@ApiParam(value = "map project", required = true) @PathParam("project") int project) {
+			
+			
+				try {
+					MappingService mappingService = new MappingServiceJpa();
+					MapProject mapProject = mappingService.getMapProject(new Long(project));
+					SearchResultList results = mappingService.findConceptsExcludedFromScope(mapProject);
+				
+					mappingService.close();
+					return results;
+					
+				} catch (Exception e) {
+					throw new WebApplicationException(e);
+				}
+			}	
+			
+			/**
+			 * Find unmapped concepts in scope.
+			 *
+			 * @param project the project
+			 * @return the search result list
+			 */
+			@GET
+			@Path("/unmapped/{project}")
+			@ApiOperation(value = "Returns unmapped concepts in scope for the given map project in either JSON or XML format", response = SearchResultList.class)
+			@Produces({
+					MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+			})
+			public SearchResultList findUnmappedConceptsInScope(
+				@ApiParam(value = "map project", required = true) @PathParam("project") int project) {
+			
+			
+				try {
+					MappingService mappingService = new MappingServiceJpa();
+					MapProject mapProject = mappingService.getMapProject(new Long(project));
+					SearchResultList results = mappingService.findUnmappedConceptsInScope(mapProject);
+				
+					mappingService.close();
+					return results;
+					
+				} catch (Exception e) {
+					throw new WebApplicationException(e);
+				}
+			}
+			
+			/**
+			 * Find mapped concepts out of scope bounds.
+			 *
+			 * @param project the project
+			 * @return the search result list
+			 */
+			@GET
+			@Path("/outofbounds/{project}")
+			@ApiOperation(value = "Returns mapped concepts that are out of scope bounds for the given map project in either JSON or XML format", response = SearchResultList.class)
+			@Produces({
+					MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+			})
+			public SearchResultList findMappedConceptsOutOfScopeBounds(
+				@ApiParam(value = "map project", required = true) @PathParam("project") int project) {
+			
+			
+				try {
+					MappingService mappingService = new MappingServiceJpa();
+					MapProject mapProject = mappingService.getMapProject(new Long(project));
+					SearchResultList results = mappingService.findMappedConceptsOutOfScopeBounds(mapProject);
+				
+					mappingService.close();
+					return results;
+					
+				} catch (Exception e) {
+					throw new WebApplicationException(e);
+				}
+			}
+
+
+  		@GET
+			@Path("/scope/{project}/{conceptId}")
+			@ApiOperation(value = "Indicates if the given concept is in scope for the given map project in either JSON or XML format", response = SearchResultList.class)
+			@Produces({
+					MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+			})
+			public RestPrimitive isConceptInScope(
+				@ApiParam(value = "Concept id of concept in question", required = true) @PathParam("conceptId") String conceptId,
+				@ApiParam(value = "map project", required = true) @PathParam("project") int project) {
+			
+			
+				try {
+
+					MappingService mappingService = new MappingServiceJpa();
+					MapProject mapProject = mappingService.getMapProject(new Long(project));
+					ContentService contentService = new ContentServiceJpa();
+					Concept concept = contentService.getConcept(conceptId, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+					boolean response = mappingService.isConceptInScope(concept, mapProject);
+				
+					mappingService.close();
+					contentService.close();
+					if (response)
+						return new RestPrimitiveJpa("true", "boolean");
+					else
+						return new RestPrimitiveJpa("false", "boolean");
+					
+				} catch (Exception e) {
+					throw new WebApplicationException(e);
+				}
+			}
+		  
+  		@GET
+			@Path("/excluded/{project}/{conceptId}")
+			@ApiOperation(value = "Indicates if the given concept is excluded from scope for the given map project in either JSON or XML format", response = SearchResultList.class)
+			@Produces({
+					MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+			})
+			public RestPrimitive isConceptExcludedFromScope(
+				@ApiParam(value = "Concept id of concept in question", required = true) @PathParam("conceptId") String conceptId,
+				@ApiParam(value = "map project", required = true) @PathParam("project") int project) {
+			
+			
+				try {
+
+					MappingService mappingService = new MappingServiceJpa();
+					MapProject mapProject = mappingService.getMapProject(new Long(project));
+					ContentService contentService = new ContentServiceJpa();
+					Concept concept = contentService.getConcept(conceptId, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+					boolean response = mappingService.isConceptExcludedFromScope(concept, mapProject);
+				
+					mappingService.close();
+					contentService.close();
+					if (response)
+						return new RestPrimitiveJpa("true", "boolean");
+					else
+						return new RestPrimitiveJpa("false", "boolean");
+					
+				} catch (Exception e) {
+					throw new WebApplicationException(e);
+				}
+			}
+  		
+  		@GET
+			@Path("/outofbounds/{project}/{conceptId}")
+			@ApiOperation(value = "Indicates if the given concept is out of scope bounds for the given map project in either JSON or XML format", response = SearchResultList.class)
+			@Produces({
+					MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+			})
+			public RestPrimitive isConceptOutOfScopeBounds(
+				@ApiParam(value = "Concept id of concept in question", required = true) @PathParam("conceptId") String conceptId,
+				@ApiParam(value = "map project", required = true) @PathParam("project") int project) {
+			
+			
+				try {
+
+					MappingService mappingService = new MappingServiceJpa();
+					MapProject mapProject = mappingService.getMapProject(new Long(project));
+					ContentService contentService = new ContentServiceJpa();
+					Concept concept = contentService.getConcept(conceptId, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+					boolean response = mappingService.isConceptOutOfScopeBounds(concept, mapProject);
+				
+					mappingService.close();
+					contentService.close();
+					if (response)
+						return new RestPrimitiveJpa("true", "boolean");
+					else
+						return new RestPrimitiveJpa("false", "boolean");
+					
+				} catch (Exception e) {
+					throw new WebApplicationException(e);
+				}
+			}  		
+  		
 
 }
