@@ -1078,13 +1078,15 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 		// begin transcation
 		EntityTransaction tx = manager.getTransaction();
 		tx.begin();
+	
 
 		while ((line = conceptsByConcept.readLine()) != null) {
-
+			
 			String fields[] = line.split("\t");
 			Concept concept = new ConceptJpa();
 
 			if (!fields[0].equals("id")) { // header
+				
 				concept.setTerminologyId(fields[0]);
 				concept.setEffectiveTime(dt.parse(fields[1]));
 				concept.setActive(fields[2].equals("1") ? true : false);
@@ -1271,6 +1273,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 				// defaultPreferredName
 				if (description.isActive() && description.getTypeId().equals(dpnTypeId)
 						&& new Long(language.getRefSetId()).equals(dpnRefSetId)
+						&& language.isActive()
 						&& language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
 
 					// retrieve the concept for this description

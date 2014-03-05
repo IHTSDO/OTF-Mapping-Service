@@ -6,3 +6,8 @@ html, body
 	padding: 0;
 	height: 100%;
 }
+
+footer
+{
+	padding: 60px;
+}

@@ -6,7 +6,7 @@
 			<td>
 				<div ng-show="entry.targetId != null && entry.targetId != ''">
 					{{entry.targetId}}: {{entry.targetName}}
-					<hr>
+					<p></p>
 				</div> 
 			
 				<form>
@@ -35,19 +35,20 @@
 			</table>
 			</td>
 		</tr>
-		<tr><td>Map Priority</td><td><input style="width:50px" ng-model="entry.mapPriority"></td></tr>
-		<tr ng-show="project.ruleBased == true"><td>Rule</td><td><textarea style:"width=80%;"  ng-model="entry.rule"></textarea></td></tr>
-		
 		<tr><td>Group</td><td><input ng-model="entry.mapGroup"></td></tr>
+		<tr><td>Map Priority</td><td><input style="width:50px" ng-model="entry.mapPriority"></td></tr>
+		<tr ng-show="project.ruleBased == true">
+			<td>Rule</td><td>{{entry.rule}}<p ng-show="entry.rule.length > 0"></p><input type="submit" value="Construct Rule" ng-click="constructRule(entry)"></p></td></tr>
+		
 	
 		<tr>
 			<td>Advice</td>
 			<td>
 				<div ng-show="entry.mapAdvice.length > 0">
 					<div ng-repeat="advice in entry.mapAdvice">
-						<button	disabled>{{advice.detail}}
-						<img src="img/fileclose.png" ng-click="removeEntryElement(entry, 'mapAdvice', advice)">			
-						</button>
+						<button	disabled>{{advice.detail}}</button>
+						<img src="img/fileclose.png" ng-click="removeEntryAdvice(entry, advice)">			
+						
 					</div>
 					<hr>
 				</div>

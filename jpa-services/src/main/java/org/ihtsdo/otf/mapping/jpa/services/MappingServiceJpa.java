@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
@@ -37,20 +36,18 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
-import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
-import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
@@ -88,7 +85,8 @@ public class MappingServiceJpa implements MappingService {
 
 		// created once or if the factory has been closed
 		if (factory == null || !factory.isOpen()) {
-			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+          Logger.getLogger(this.getClass()).info("Setting mapping service entity manager factory.");
+  		  factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 		}
 
 		// created on each instantiation
@@ -166,7 +164,7 @@ public class MappingServiceJpa implements MappingService {
 		try {
 			m = (MapProject) query.getSingleResult();
 		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).warn(
+		  Logger.getLogger(this.getClass()).warn(
 					"Map project query for id = " + id + " returned no results!");
 			return null;
 		}
@@ -334,28 +332,28 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 	// ///////////////////////////////////////////////////////////////
-	// MapSpecialist
-	// - getMapSpecialists()
-	// - getMapProjectsForSpecialist(MapSpecialist mapSpecialist)
-	// - findMapSpecialists(String query)
-	// - addMapSpecialist(MapSpecialist mapSpecialist)
-	// - updateMapSpecialist(MapSpecialist mapSpecialist)
-	// - removeMapSpecialist(Long id)
+	// MapUser
+	// - getMapUsers()
+	// - getMapProjectsForUser(MapUser mapUser)
+	// - findMapUsers(String query)
+	// - addMapUser(MapUser mapUser)
+	// - updateMapUser(MapUser mapUser)
+	// - removeMapUser(Long id)
 	// ///////////////////////////////////////////////////////////////
 
 	/**
-	 * Retrieve all map specialists.
+	 * Retrieve all map users
 	 * 
-	 * @return a List of MapSpecialists
+	 * @return a List of MapUsers
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public List<MapSpecialist> getMapSpecialists() {
+	public List<MapUser> getMapUsers() {
 
-		List<MapSpecialist> m = null;
+		List<MapUser> m = null;
 
 		javax.persistence.Query query =
-				manager.createQuery("select m from MapSpecialistJpa m");
+				manager.createQuery("select m from MapUserJpa m");
 
 		// Try query
 
@@ -371,15 +369,15 @@ public class MappingServiceJpa implements MappingService {
 	 * @return the MapSpecialist
 	 */
 	@Override
-	public MapSpecialist getMapSpecialist(Long id) {
+	public MapUser getMapUser(Long id) {
 
-		MapSpecialist m = null;
+		MapUser m = null;
 
 		javax.persistence.Query query =
-				manager.createQuery("select m from MapSpecialistJpa m where id = :id");
+				manager.createQuery("select m from MapUserJpa m where id = :id");
 		query.setParameter("id", id);
 		try {
-			m = (MapSpecialist) query.getSingleResult();
+			m = (MapUser) query.getSingleResult();
 		} catch (NoResultException e) {
 			Logger.getLogger(this.getClass()).warn(
 					"Map specialist query for id = " + id + " returned no results!");
@@ -397,19 +395,19 @@ public class MappingServiceJpa implements MappingService {
 	 * @return a List of MapProjects
 	 */
 	@Override
-	public List<MapProject> getMapProjectsForMapSpecialist(
-		MapSpecialist mapSpecialist) {
+	public List<MapProject> getMapProjectsForMapUser(
+		MapUser mapUser) {
 
 		List<MapProject> mp_list = getMapProjects();
 		List<MapProject> mp_list_return = new ArrayList<MapProject>();
 
-		// iterate and check for presence of mapSpecialist
+		// iterate and check for presence of mapUser as specialist
 		for (MapProject mp : mp_list) {
 
-			Set<MapSpecialist> ms_set = mp.getMapSpecialists();
+			Set<MapUser> ms_set = mp.getMapSpecialists();
 
-			for (MapSpecialist ms : ms_set) {
-				if (ms.equals(mapSpecialist)) {
+			for (MapUser ms : ms_set) {
+				if (ms.equals(mapUser)) {
 					mp_list_return.add(mp);
 				}
 			}
@@ -428,7 +426,7 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public SearchResultList findMapSpecialists(String query,
+	public SearchResultList findMapUsers(String query,
 		PfsParameter pfsParameter) throws Exception {
 
 		SearchResultList s = new SearchResultListJpa();
@@ -444,22 +442,22 @@ public class MappingServiceJpa implements MappingService {
 			MultiFieldQueryParser queryParser =
 					new MultiFieldQueryParser(Version.LUCENE_36,
 							fieldNames.toArray(new String[0]),
-							searchFactory.getAnalyzer(MapSpecialistJpa.class));
+							searchFactory.getAnalyzer(MapUserJpa.class));
 			queryParser.setAllowLeadingWildcard(false);
 			luceneQuery = queryParser.parse(query);
 
 		} else { // field:value
 			QueryParser queryParser =
 					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(MapSpecialistJpa.class));
+							searchFactory.getAnalyzer(MapUserJpa.class));
 			luceneQuery = queryParser.parse(query);
 		}
 
-		List<MapSpecialist> m =
+		List<MapUser> m =
 				fullTextEntityManager.createFullTextQuery(luceneQuery,
-						MapSpecialistJpa.class).getResultList();
+						MapUserJpa.class).getResultList();
 
-		for (MapSpecialist ms : m) {
+		for (MapUser ms : m) {
 			s.addSearchResult(new SearchResultJpa(ms.getId(), "", ms.getName()));
 		}
 
@@ -471,39 +469,20 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 	/**
-	 * Add a map specialist.
-	 * 
-	 * @param mapSpecialist the map specialist
-	 */
-	@Override
-	public void addMapSpecialist(MapSpecialist mapSpecialist) {
-
-		if (getTransactionPerOperation()) {
-			EntityTransaction tx = manager.getTransaction();
-			tx.begin();
-			manager.persist(mapSpecialist);
-			tx.commit();
-		} else {
-			manager.persist(mapSpecialist);
-		}
-
-	}
-
-	/**
 	 * Update a map specialist.
 	 * 
 	 * @param mapSpecialist the changed map specialist
 	 */
 	@Override
-	public void updateMapSpecialist(MapSpecialist mapSpecialist) {
+	public void updateMapUser(MapUser mapUser) {
 
 		if (getTransactionPerOperation()) {
 			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
-			manager.merge(mapSpecialist);
+			manager.merge(mapUser);
 			tx.commit();
 		} else {
-			manager.merge(mapSpecialist);
+			manager.merge(mapUser);
 		}
 
 	}
@@ -514,266 +493,73 @@ public class MappingServiceJpa implements MappingService {
 	 * @param mapSpecialistId the map specialist to be removed
 	 */
 	@Override
-	public void removeMapSpecialist(Long mapSpecialistId) {
+	public void removeMapUser(Long mapUserId) {
 
 		EntityTransaction tx = manager.getTransaction();
 
 		// retrieve this map specialist
-		MapSpecialist ms = manager.find(MapSpecialistJpa.class, mapSpecialistId);
+		MapUser mu = manager.find(MapUserJpa.class, mapUserId);
 
 		// retrieve all projects on which this specialist appears
-		List<MapProject> projects = getMapProjectsForMapSpecialist(ms);
+		List<MapProject> projects = getMapProjectsForMapUser(mu);
 
 		if (getTransactionPerOperation()) {
 			// remove specialist from all these projects
 			tx.begin();
 			for (MapProject mp : projects) {
-				mp.removeMapSpecialist(ms);
+				mp.removeMapLead(mu);
+				mp.removeMapSpecialist(mu);
 				manager.merge(mp);
 			}
 			tx.commit();
 
 			// remove specialist
 			tx.begin();
-			if (manager.contains(ms)) {
-				manager.remove(ms);
+			if (manager.contains(mu)) {
+				manager.remove(mu);
 			} else {
-				manager.remove(manager.merge(ms));
+				manager.remove(manager.merge(mu));
 			}
 			tx.commit();
 
 		} else {
 			for (MapProject mp : projects) {
-				mp.removeMapSpecialist(ms);
+				mp.removeMapLead(mu);
+				mp.removeMapSpecialist(mu);
 				manager.merge(mp);
 			}
-			if (manager.contains(ms)) {
-				manager.remove(ms);
+			if (manager.contains(mu)) {
+				manager.remove(mu);
 			} else {
-				manager.remove(manager.merge(ms));
-			}
-			manager.remove(ms);
-		}
-
-	}
-
-	// ///////////////////////////////////////////////////
-	// MapLead
-	// - getMapLeads()
-	// - getMapProjectsForLead(mapSpecialist)
-	// - findMapSpecialists(query)
-	// - addMapLead(mapLead)
-	// - updateMapLead(mapLead)
-	// - removeMapLead(id)
-	// ///////////////////////////////////////////////////
-
-	/**
-	 * Retrieve all map leads.
-	 * 
-	 * @return a List of MapLeads
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public List<MapLead> getMapLeads() {
-
-		List<MapLead> mapLeads = new ArrayList<MapLead>();
-
-		javax.persistence.Query query =
-				manager.createQuery("select m from MapLeadJpa m");
-
-		// Try query
-
-		mapLeads = query.getResultList();
-
-		return mapLeads;
-	}
-
-	/**
-	 * Return map lead for auto-generated id.
-	 * 
-	 * @param id the auto-generated id
-	 * @return the MapLead
-	 */
-	@Override
-	public MapLead getMapLead(Long id) {
-
-		MapLead m = null;
-
-		javax.persistence.Query query =
-				manager.createQuery("select m from MapLeadJpa m where id = :id");
-		query.setParameter("id", id);
-		try {
-			m = (MapLead) query.getSingleResult();
-		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).warn(
-					"Map lead query for id = " + id + " returned no results!");
-			return null;
-		}
-
-		return m;
-
-	}
-
-	/**
-	 * Retrieve all map projects assigned to a particular map lead.
-	 * 
-	 * @param mapLead the map lead
-	 * @return a List of MapProjects
-	 */
-	@Override
-	public List<MapProject> getMapProjectsForMapLead(MapLead mapLead) {
-
-		List<MapProject> mp_list = getMapProjects();
-		List<MapProject> mp_list_return = new ArrayList<MapProject>();
-
-		// iterate and check for presence of mapSpecialist
-		for (MapProject mp : mp_list) {
-			Set<MapLead> ml_set = mp.getMapLeads();
-
-			for (MapLead ml : ml_set) {
-				if (ml.equals(mapLead)) {
-					mp_list_return.add(mp);
-				}
+				manager.remove(manager.merge(mu));
 			}
 		}
-		return mp_list_return;
+
 	}
 
-	/**
-	 * Query for MapLeads.
-	 * 
-	 * @param query the query
-	 * @param pfsParameter the pfs parameter
-	 * @return the List of MapProjects
-	 * @throws Exception the exception
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter)
-		throws Exception {
-
-		SearchResultList s = new SearchResultListJpa();
-
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-		Query luceneQuery;
-
-		// construct luceneQuery based on URL format
-		if (query.indexOf(':') == -1) { // no fields indicated
-			MultiFieldQueryParser queryParser =
-					new MultiFieldQueryParser(Version.LUCENE_36,
-							fieldNames.toArray(new String[0]),
-							searchFactory.getAnalyzer(MapLeadJpa.class));
-			queryParser.setAllowLeadingWildcard(false);
-			luceneQuery = queryParser.parse(query);
-
-		} else { // field:value
-			QueryParser queryParser =
-					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(MapLeadJpa.class));
-			luceneQuery = queryParser.parse(query);
-		}
-
-		List<MapLead> m =
-				fullTextEntityManager
-						.createFullTextQuery(luceneQuery, MapLeadJpa.class).getResultList();
-
-		for (MapLead ml : m) {
-			s.addSearchResult(new SearchResultJpa(ml.getId(), "", ml.getName()));
-		}
-
-		s.sortSearchResultsById();
-
-		return s;
-	}
-
+	
 	/**
 	 * Add a map lead.
 	 * 
 	 * @param mapLead the map lead
 	 */
 	@Override
-	public void addMapLead(MapLead mapLead) {
+	public MapUser addMapUser(MapUser mapUser) {
 		if (getTransactionPerOperation()) {
 			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
-			manager.persist(mapLead);
+			manager.persist(mapUser);
 			tx.commit();
 		} else {
-			manager.persist(mapLead);
+			manager.persist(mapUser);
 		}
+		
+		return mapUser;
 	}
 
-	/**
-	 * Update a map lead.
-	 * 
-	 * @param mapLead the changed map lead
-	 */
-	@Override
-	public void updateMapLead(MapLead mapLead) {
+	
 
-		if (getTransactionPerOperation()) {
-			EntityTransaction tx = manager.getTransaction();
-			tx.begin();
-			manager.merge(mapLead);
-			tx.commit();
-
-		} else {
-			manager.merge(mapLead);
-		}
-
-	}
-
-	/**
-	 * Remove (delete) a map lead.
-	 * 
-	 * @param mapLeadId the map lead to be removed
-	 */
-	@Override
-	public void removeMapLead(Long mapLeadId) {
-
-		EntityTransaction tx = manager.getTransaction();
-
-		// retrieve this map lead
-		MapLead ml = manager.find(MapLeadJpa.class, mapLeadId);
-
-		// retrieve all projects on which this lead appears
-		List<MapProject> projects = getMapProjectsForMapLead(ml);
-
-		if (getTransactionPerOperation()) {
-			// remove lead from all these projects
-			tx.begin();
-			for (MapProject mp : projects) {
-				mp.removeMapLead(ml);
-				manager.merge(mp);
-			}
-			tx.commit();
-
-			// remove lead
-			tx.begin();
-			if (manager.contains(ml)) {
-				manager.remove(ml);
-			} else {
-				manager.remove(manager.merge(ml));
-			}
-			tx.commit();
-
-		} else {
-			for (MapProject mp : projects) {
-				mp.removeMapLead(ml);
-				manager.merge(mp);
-			}
-			if (manager.contains(ml)) {
-				manager.remove(ml);
-			} else {
-				manager.remove(manager.merge(ml));
-			}
-		}
-
-	}
-
+	
 	// //////////////////////////////////
 	// MapRecord
 	// //////////////////////////////////
@@ -1025,7 +811,6 @@ public class MappingServiceJpa implements MappingService {
 			luceneQuery = queryParser.parse(query);
 		}
 
-		@SuppressWarnings("unchecked")
 		List<MapEntry> m =
 				fullTextEntityManager.createFullTextQuery(luceneQuery,
 						MapEntryJpa.class).getResultList();
@@ -1076,7 +861,6 @@ public class MappingServiceJpa implements MappingService {
 			luceneQuery = queryParser.parse(query);
 		}
 
-		@SuppressWarnings("unchecked")
 		List<MapAdvice> m =
 				fullTextEntityManager
 						.createFullTextQuery(luceneQuery, MapNoteJpa.class).getResultList();
@@ -1924,7 +1708,6 @@ public class MappingServiceJpa implements MappingService {
 
 		int nRecords = 0;
 		tx.begin();
-		@SuppressWarnings("unchecked")
 		List<MapRecord> records =
 				manager
 				.createQuery(
@@ -1997,7 +1780,6 @@ public class MappingServiceJpa implements MappingService {
 	 * org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject
 	 * (org.ihtsdo.otf.mapping.model.MapProject, java.util.Set)
 	 */
-	@SuppressWarnings("null")
 	@Override
 	public void createMapRecordsForMapProject(MapProject mapProject,
 		List<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
@@ -2247,5 +2029,6 @@ public class MappingServiceJpa implements MappingService {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 
 }

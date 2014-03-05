@@ -4,23 +4,19 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
-import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
-import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
-import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -107,13 +103,9 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 								+ inputDirString);
 			}
 
-			File specialistsFile = new File(inputDir, "mapspecialists.txt");
-			BufferedReader specialistsReader =
-					new BufferedReader(new FileReader(specialistsFile));
-
-			File leadsFile = new File(inputDir, "mapleads.txt");
-			BufferedReader leadsReader =
-					new BufferedReader(new FileReader(leadsFile));
+			File usersFile = new File(inputDir, "mapusers.txt");
+			BufferedReader usersReader =
+					new BufferedReader(new FileReader(usersFile));
 
 			File advicesFile = new File(inputDir, "mapadvices.txt");
 			BufferedReader advicesReader =
@@ -129,24 +121,15 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
 			MappingService mappingService = new MappingServiceJpa();
 
-			// Add Specialists and Leads
+			// Add Users
 			String line = "";
-			while ((line = leadsReader.readLine()) != null) {
+			while ((line = usersReader.readLine()) != null) {
 				StringTokenizer st = new StringTokenizer(line, "\t");
-				MapLeadJpa mapLead = new MapLeadJpa();
-				mapLead.setName(st.nextToken());
-				mapLead.setUserName(st.nextToken());
-				mapLead.setEmail(st.nextToken());
-				mappingService.addMapLead(mapLead);
-			}
-
-			while ((line = specialistsReader.readLine()) != null) {
-				StringTokenizer st = new StringTokenizer(line, "\t");
-				MapSpecialistJpa mapSpecialist = new MapSpecialistJpa();
-				mapSpecialist.setName(st.nextToken());
-				mapSpecialist.setUserName(st.nextToken());
-				mapSpecialist.setEmail(st.nextToken());
-				mappingService.addMapSpecialist(mapSpecialist);
+				MapUser mapUser = new MapUserJpa();
+				mapUser.setName(st.nextToken());
+				mapUser.setUserName(st.nextToken());
+				mapUser.setEmail(st.nextToken());
+				mappingService.addMapUser(mapUser);
 			}
 
 			// Add map advices
@@ -212,7 +195,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
 				String mapLeads = fields[17];
 				for (String lead : mapLeads.split(",")) {
-					for (MapLead ml : mappingService.getMapLeads()) {
+					for (MapUser ml : mappingService.getMapUsers()) {
 						if (ml.getUserName().equals(lead))
 							mapProject.addMapLead(ml);
 					}
@@ -221,7 +204,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				String mapSpecialists = fields[18];
 				for (String specialist : mapSpecialists.split(",")) {
 					
-					for (MapSpecialist ml : mappingService.getMapSpecialists()) {
+					for (MapUser ml : mappingService.getMapUsers()) {
 						if (ml.getUserName().equals(specialist))
 							mapProject.addMapSpecialist(ml);
 					}
@@ -239,8 +222,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
 			getLog().info("done ...");
 			mappingService.close();
-			specialistsReader.close();
-			leadsReader.close();
+			usersReader.close();
 			advicesReader.close();
 			principlesReader.close();
 			projectsReader.close();

@@ -11,6 +11,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
@@ -25,10 +26,9 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
-import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -105,14 +105,20 @@ public class MapProjectJpa implements MapProject {
 	private boolean ruleBased;
 
 	/** The map leads. */
-	@ManyToMany(targetEntity=MapLeadJpa.class, fetch=FetchType.EAGER)
-	@IndexedEmbedded(targetElement=MapLeadJpa.class)
-	private Set<MapLead> mapLeads = new HashSet<MapLead>();
+	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
+	@JoinTable(name="map_projects_map_leads",
+	   joinColumns=@JoinColumn(name="map_projects_id"),
+	   inverseJoinColumns=@JoinColumn(name="map_users_id"))
+	@IndexedEmbedded(targetElement=MapUserJpa.class)
+	private Set<MapUser> mapLeads = new HashSet<MapUser>();
 	
 	/** The map specialists. */
-	@ManyToMany(targetEntity=MapSpecialistJpa.class, fetch=FetchType.EAGER)
-	@IndexedEmbedded(targetElement=MapSpecialistJpa.class)
-	private Set<MapSpecialist> mapSpecialists = new HashSet<MapSpecialist>();
+	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
+	@JoinTable(name="map_projects_map_specialists",
+			   joinColumns=@JoinColumn(name="map_projects_id"),
+			   inverseJoinColumns=@JoinColumn(name="map_users_id"))
+	@IndexedEmbedded(targetElement=MapUserJpa.class)
+	private Set<MapUser> mapSpecialists = new HashSet<MapUser>();
 	
 	/** The allowable map principles for this MapProject. */
 	@ManyToMany(targetEntity=MapPrincipleJpa.class, fetch=FetchType.EAGER)
@@ -132,43 +138,6 @@ public class MapProjectJpa implements MapProject {
 	
 	/** Default constructor */
 	public MapProjectJpa() {
-	}
-
-	/**
-	 * Full constructor
-	 * @param id the id
-	 * @param name the project name
-	 * @param blockStructure the blockstructure (boolean)
-	 * @param groupStructure the group structure (boolean)
-	 * @param published is published (boolean)
-	 * @param mapAdvices the map advices
-	 * @param refSetId the ref set id
-	 * @param sourceTerminology the source terminology
-	 * @param sourceTerminologyVersion the source terminology version
-	 * @param destinationTerminology the destination terminology
-	 * @param destinationTerminologyVersion the destination terminology vresion
-	 * @param mapLeads the map leads
-	 * @param mapSpecialists the map specialists
-	 */
-	public MapProjectJpa(Long id, String name, boolean blockStructure,
-			boolean groupStructure, boolean published, Set<MapAdvice> mapAdvices,
-			String refSetId, String sourceTerminology, String sourceTerminologyVersion,
-			String destinationTerminology, String destinationTerminologyVersion,
-			Set<MapLead> mapLeads, Set<MapSpecialist> mapSpecialists) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.blockStructure = blockStructure;
-		this.groupStructure = groupStructure;
-		this.published = published;
-		this.mapAdvices = mapAdvices;
-		this.refSetId = refSetId;
-		this.sourceTerminology = sourceTerminology;
-		this.sourceTerminologyVersion = sourceTerminologyVersion;
-		this.destinationTerminology = destinationTerminology;
-		this.destinationTerminologyVersion = destinationTerminologyVersion;
-		this.mapLeads = mapLeads;
-		this.mapSpecialists = mapSpecialists;
 	}
 
 	/**
@@ -211,8 +180,8 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapLeads()
 	 */
 	@Override
-	@XmlElement(type=MapLeadJpa.class, name="mapLead")
-	public Set<MapLead> getMapLeads() {
+	@XmlElement(type=MapUserJpa.class, name="mapLead")
+	public Set<MapUser> getMapLeads() {
 		return mapLeads;
 	}
 
@@ -220,7 +189,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapLeads(java.util.Set)
 	 */
 	@Override
-	public void setMapLeads(Set<MapLead> mapLeads) {
+	public void setMapLeads(Set<MapUser> mapLeads) {
 		this.mapLeads = mapLeads;
 	}
 
@@ -228,7 +197,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#addMapLead(org.ihtsdo.otf.mapping.model.MapLead)
 	 */
 	@Override
-	public void addMapLead(MapLead mapLead) {
+	public void addMapLead(MapUser mapLead) {
 		mapLeads.add(mapLead);
 	}
 
@@ -236,7 +205,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#removeMapLead(org.ihtsdo.otf.mapping.model.MapLead)
 	 */
 	@Override
-	public void removeMapLead(MapLead mapLead) {
+	public void removeMapLead(MapUser mapLead) {
 		mapLeads.remove(mapLead);
 	}
 	
@@ -245,8 +214,8 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapSpecialists()
 	 */
 	@Override
-	@XmlElement(type=MapSpecialistJpa.class, name="mapSpecialist")
-	public Set<MapSpecialist> getMapSpecialists() {
+	@XmlElement(type=MapUserJpa.class, name="mapSpecialist")
+	public Set<MapUser> getMapSpecialists() {
 		return mapSpecialists;
 	}
 
@@ -254,7 +223,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapSpecialists(java.util.Set)
 	 */
 	@Override
-	public void setMapSpecialists(Set<MapSpecialist> mapSpecialists) {
+	public void setMapSpecialists(Set<MapUser> mapSpecialists) {
 		this.mapSpecialists = mapSpecialists;
 	}
 
@@ -262,7 +231,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#addMapSpecialist(org.ihtsdo.otf.mapping.model.MapSpecialist)
 	 */
 	@Override
-	public void addMapSpecialist(MapSpecialist mapSpecialist) {
+	public void addMapSpecialist(MapUser mapSpecialist) {
 		mapSpecialists.add(mapSpecialist);
 	}
 
@@ -270,7 +239,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#removeMapSpecialist(org.ihtsdo.otf.mapping.model.MapSpecialist)
 	 */
 	@Override
-	public void removeMapSpecialist(MapSpecialist mapSpecialist) {
+	public void removeMapSpecialist(MapUser mapSpecialist) {
 		mapSpecialists.remove(mapSpecialist);
 	}
 

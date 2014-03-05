@@ -8,14 +8,12 @@ import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.jpa.MapLeadList;
-import org.ihtsdo.otf.mapping.jpa.MapSpecialistList;
+import org.ihtsdo.otf.mapping.jpa.MapUserList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
-import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -143,23 +141,14 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			BufferedWriter projectsWriter =
 					new BufferedWriter(new FileWriter(projectsFile.getAbsoluteFile()));
 
-			// export to mapspecialists.txt
+			// export to mapusers.txt
 			MappingService mappingService = new MappingServiceJpa();
-			MapSpecialistList mapSpecialists = new MapSpecialistList();
-			mapSpecialists.setMapSpecialists(mappingService.getMapSpecialists());
-			mapSpecialists.sortMapSpecialists();
-			for (MapSpecialist ms : mapSpecialists.getMapSpecialists()) {
+			MapUserList mapUsers = new MapUserList();
+			mapUsers.setMapUsers(mappingService.getMapUsers());
+			mapUsers.sortMapUsers();
+			for (MapUser ms : mapUsers.getMapUsers()) {
 				specialistsWriter.write(ms.getName() + "\t" + ms.getUserName() + "\t"
 						+ ms.getEmail() + "\n");
-			}
-
-			// export to mapleads.txt
-			MapLeadList mapLeads = new MapLeadList();
-			mapLeads.setMapLeads(mappingService.getMapLeads());
-			mapLeads.sortMapLeads();
-			for (MapLead ml : mapLeads.getMapLeads()) {
-				leadsWriter.write(ml.getName() + "\t" + ml.getUserName() + "\t"
-						+ ml.getEmail() + "\n");
 			}
 
 			// export to mapadvices.txt
@@ -192,14 +181,14 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 					mapPrinciples.deleteCharAt(mapPrinciples.length() - 1);
 
 				StringBuffer mprMapLeads = new StringBuffer();
-				for (MapLead ma : mpr.getMapLeads()) {
+				for (MapUser ma : mpr.getMapLeads()) {
 					mprMapLeads.append(ma.getUserName()).append(",");
 				}
 				if (mprMapLeads.length() > 1)
 					mprMapLeads.deleteCharAt(mprMapLeads.length() - 1);
 
 				StringBuffer mprMapSpecialists = new StringBuffer();
-				for (MapSpecialist ma : mpr.getMapSpecialists()) {
+				for (MapUser ma : mpr.getMapSpecialists()) {
 					mprMapSpecialists.append(ma.getUserName()).append(",");
 				}
 				if (mprMapSpecialists.length() > 1)
