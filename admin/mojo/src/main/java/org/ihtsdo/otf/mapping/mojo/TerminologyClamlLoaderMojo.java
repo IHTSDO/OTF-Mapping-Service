@@ -491,6 +491,10 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
         // add label chars if within a label tag
         if (tagStack.contains("label")) {
+          // Append a space if we've already seen earlier fragments
+          if (labelChars.length() != 0 && chars.toString().trim().length() > 0) {
+            labelChars.append(" ");
+          }
           labelChars.append(chars.toString().trim());
         }
         // Clear "characters"
@@ -524,6 +528,10 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
         // Encountered </Para>, append label characters
         if (qName.equalsIgnoreCase("para")) {
+          // Append a space if we've already seen earlier fragments
+          if (labelChars.length() != 0 && chars.toString().trim().length() > 0) {
+            labelChars.append(" ");
+          }
           labelChars.append(chars.toString().trim());
         }
 
@@ -538,6 +546,10 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         // Encountered </Label> while in a Class, add concept/description
         if (qName.equalsIgnoreCase("label") && tagStack.contains("class")) {
 
+          // Append a space if we've already seen earlier fragments
+          if (labelChars.length() != 0 && chars.toString().trim().length() > 0) {
+            labelChars.append(" ");
+          }
           // Pick up any characters in the label tag
           labelChars.append(chars.toString().trim());
 
