@@ -7,11 +7,10 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
@@ -45,22 +44,13 @@ public interface MappingService {
 	public MapProject getMapProject(Long id) throws Exception;
 	
 	/**
-	 * Return map specialist for auto-generated id.
+	 * Return map user for auto-generated id.
 	 *
 	 * @param id the auto-generated id
-	 * @return the MapLead
+	 * @return the mapUser
 	 * @throws Exception the exception
 	 */
-	public MapLead getMapLead(Long id) throws Exception;
-	
-	/**
-	 * Return map lead for auto-generated id.
-	 *
-	 * @param id the auto-generated id
-	 * @return the mapSpecialist
-	 * @throws Exception the exception
-	 */
-	public MapSpecialist getMapSpecialist(Long id) throws Exception;
+	public MapUser getMapUser(Long id) throws Exception;
 	
 	/**
 	 * Return map record for auto-generated id.
@@ -80,20 +70,12 @@ public interface MappingService {
 	public List<MapProject> getMapProjects() throws Exception;
 	
 	/**
-	 * Retrieve all map specialists.
+	 * Retrieve all map users
 	 *
-	 * @return a List of MapSpecialists
+	 * @return a List of MapUsers
 	 * @throws Exception the exception
 	 */
-	public List<MapSpecialist> getMapSpecialists() throws Exception;
-	
-	/**
-	 * Retrieve all map leads.
-	 *
-	 * @return a List of MapLeads
-	 * @throws Exception the exception
-	 */
-	public List<MapLead> getMapLeads() throws Exception;
+	public List<MapUser> getMapUsers() throws Exception;
 	
 	/**
 	 * Retrieve all map principles.
@@ -112,22 +94,13 @@ public interface MappingService {
 	public List<MapAdvice> getMapAdvices() throws Exception;
 	
 	/**
-	 * Retrieve all map projects assigned to a particular map specialist.
+	 * Retrieve all map projects assigned to a particular map user.
 	 *
-	 * @param mapSpecialist the map specialist
+	 * @param mapUser the map user
 	 * @return a List of MapProjects
 	 * @throws Exception the exception
 	 */
-	public List<MapProject> getMapProjectsForMapSpecialist(MapSpecialist mapSpecialist) throws Exception;
-	
-	/**
-	 * Retrieve all map projects assigned to a particular map lead.
-	 *
-	 * @param mapLead the map lead
-	 * @return a List of MapProjects
-	 * @throws Exception the exception
-	 */
-	public List<MapProject> getMapProjectsForMapLead(MapLead mapLead) throws Exception;
+	public List<MapProject> getMapProjectsForMapUser(MapUser mapUser) throws Exception;
 	
 	/**
 	 * Retrieve all map records.
@@ -160,24 +133,14 @@ public interface MappingService {
 	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/**
-	 * Query for MapSpecialists.
+	 * Query for MapUsers
 	 *
 	 * @param query the query
 	 * @param pfsParameter the paging, filtering, sorting parameter
-	 * @return the List of MapProjects
+	 * @return the List of MapUsers
 	 * @throws Exception the exception
 	 */
-	public SearchResultList findMapSpecialists(String query, PfsParameter pfsParameter) throws Exception;
-	
-	/**
-	 * Query for MapLeads.
-	 *
-	 * @param query the query
-	 * @param pfsParameter the paging, filtering, sorting parameter
-	 * @return the List of MapProjects
-	 * @throws Exception the exception
-	 */
-	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter) throws Exception;
+	public SearchResultList findMapUsers(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/**
 	 * Query for MapAdvices.
@@ -214,20 +177,12 @@ public interface MappingService {
     ////////////////////////////
 	
 	/**
-	 * Adds the map specialist.
+	 * Adds the map user.
 	 *
-	 * @param mapSpecialist the map specialist
+	 * @param mapUser the map user
 	 * @throws Exception the exception
 	 */
-	public void addMapSpecialist(MapSpecialist mapSpecialist) throws Exception;
-	
-	/**
-	 * Adds the map lead.
-	 *
-	 * @param mapLead the map lead
-	 * @throws Exception the exception
-	 */
-	public void addMapLead(MapLead mapLead) throws Exception;
+	public MapUser addMapUser(MapUser mapUser) throws Exception;
 	
 	/**
 	 * Adds the map project.
@@ -275,20 +230,13 @@ public interface MappingService {
 	////////////////////////////
 	
 	/**
-	 * Update map specialist.
+	 * Update map user
 	 *
-	 * @param mapSpecialist the map specialist
+	 * @param mapUser the map user
 	 * @throws Exception the exception
 	 */
-	public void updateMapSpecialist(MapSpecialist mapSpecialist) throws Exception;
+	public void updateMapUser(MapUser mapUser) throws Exception;
 	
-	/**
-	 * Update map lead.
-	 *
-	 * @param mapLead the map lead
-	 * @throws Exception the exception
-	 */
-	public void updateMapLead(MapLead mapLead) throws Exception;
 	
 	/**
 	 * Update map project.
@@ -336,20 +284,12 @@ public interface MappingService {
 	////////////////////////////
 	
 	/**
-	 * Removes the map specialist.
+	 * Removes the map user.
 	 *
-	 * @param mapSpecialistId the map specialist id
+	 * @param mapUserId the map user id
 	 * @throws Exception the exception
 	 */
-	public void removeMapSpecialist(Long mapSpecialistId) throws Exception;
-	
-	/**
-	 * Removes the map lead.
-	 *
-	 * @param mapLeadId the map lead id
-	 * @throws Exception the exception
-	 */
-	public void removeMapLead(Long mapLeadId) throws Exception;
+	public void removeMapUser(Long mapUserId) throws Exception;
 	
 	/**
 	 * Removes the map project.

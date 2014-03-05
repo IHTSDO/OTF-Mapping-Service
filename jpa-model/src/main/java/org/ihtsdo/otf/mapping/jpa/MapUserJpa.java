@@ -26,9 +26,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MapUserJpa implements MapUser {
 
-	
-	
-	
 	/** The id. */
 	@Id
 	@GeneratedValue

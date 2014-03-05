@@ -6,10 +6,9 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlID;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
-import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -35,10 +34,10 @@ public class MapProjectImpl implements MapProject {
 	private boolean published = false;
 
 	/** The map leads working on this MapProject. */
-	private Set<MapLead> mapLeads = new HashSet<MapLead>();
+	private Set<MapUser> mapLeads = new HashSet<MapUser>();
 
 	/** The map specialists working on this MapProject. */
-	private Set<MapSpecialist> mapSpecialists = new HashSet<MapSpecialist>();
+	private Set<MapUser> mapSpecialists = new HashSet<MapUser>();
 
 	/** The allowable map advices for this MapProject. */
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
@@ -113,7 +112,7 @@ public class MapProjectImpl implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapLeads()
 	 */
 	@Override
-	public Set<MapLead> getMapLeads() {
+	public Set<MapUser> getMapLeads() {
 		return mapLeads;
 	}
 
@@ -123,7 +122,7 @@ public class MapProjectImpl implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapLeads(java.util.Set)
 	 */
 	@Override
-	public void setMapLeads(Set<MapLead> mapLeads) {
+	public void setMapLeads(Set<MapUser> mapLeads) {
 		this.mapLeads = mapLeads;
 	}
 
@@ -135,7 +134,7 @@ public class MapProjectImpl implements MapProject {
 	 * .model.MapLead)
 	 */
 	@Override
-	public void addMapLead(MapLead mapLead) {
+	public void addMapLead(MapUser mapLead) {
 		mapLeads.add(mapLead);
 	}
 
@@ -147,7 +146,7 @@ public class MapProjectImpl implements MapProject {
 	 * .model.MapLead)
 	 */
 	@Override
-	public void removeMapLead(MapLead mapLead) {
+	public void removeMapLead(MapUser mapLead) {
 		mapLeads.remove(mapLead);
 	}
 
@@ -157,7 +156,7 @@ public class MapProjectImpl implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapSpecialists()
 	 */
 	@Override
-	public Set<MapSpecialist> getMapSpecialists() {
+	public Set<MapUser> getMapSpecialists() {
 		return mapSpecialists;
 	}
 
@@ -168,7 +167,7 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#setMapSpecialists(java.util.Set)
 	 */
 	@Override
-	public void setMapSpecialists(Set<MapSpecialist> mapSpecialists) {
+	public void setMapSpecialists(Set<MapUser> mapSpecialists) {
 		this.mapSpecialists = mapSpecialists;
 	}
 
@@ -180,7 +179,7 @@ public class MapProjectImpl implements MapProject {
 	 * .mapping.model.MapSpecialist)
 	 */
 	@Override
-	public void addMapSpecialist(MapSpecialist mapSpecialist) {
+	public void addMapSpecialist(MapUser mapSpecialist) {
 		mapSpecialists.add(mapSpecialist);
 	}
 
@@ -192,7 +191,7 @@ public class MapProjectImpl implements MapProject {
 	 * otf.mapping.model.MapSpecialist)
 	 */
 	@Override
-	public void removeMapSpecialist(MapSpecialist mapSpecialist) {
+	public void removeMapSpecialist(MapUser mapSpecialist) {
 		mapSpecialists.remove(mapSpecialist);
 	}
 
