@@ -256,7 +256,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			}
 			
 			for (MapProject mpr : mappingService.getMapProjects()) {
-				for (String concept : mpr.getScopeConcepts()) {
+				for (String concept : mpr.getScopeExcludedConcepts()) {
 					scopeExcludesWriter.write(mpr.getId() + "\t" + concept + "\n");
 				}
 			}
