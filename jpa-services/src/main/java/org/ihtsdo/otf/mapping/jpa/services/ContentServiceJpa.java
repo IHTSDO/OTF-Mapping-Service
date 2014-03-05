@@ -202,7 +202,10 @@ public class ContentServiceJpa implements ContentService {
       fullTextEntityManager.close();
 
       results.sortSearchResultsById();
-
+      
+      // closing fullTextEntityManager closes manager as well, recreate
+      manager = factory.createEntityManager();
+      
       return results;
     } catch (Exception e) {
 
