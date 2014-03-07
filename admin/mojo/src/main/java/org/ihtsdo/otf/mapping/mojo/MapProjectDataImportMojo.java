@@ -14,16 +14,14 @@ import java.util.StringTokenizer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
-import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
-import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
-import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -111,13 +109,9 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 								+ inputDirString);
 			}
 
-			File specialistsFile = new File(inputDir, "mapspecialists.txt");
-			BufferedReader specialistsReader =
-					new BufferedReader(new FileReader(specialistsFile));
-
-			File leadsFile = new File(inputDir, "mapleads.txt");
-			BufferedReader leadsReader =
-					new BufferedReader(new FileReader(leadsFile));
+			File usersFile = new File(inputDir, "mapusers.txt");
+			BufferedReader usersReader =
+					new BufferedReader(new FileReader(usersFile));
 
 			File advicesFile = new File(inputDir, "mapadvices.txt");
 			BufferedReader advicesReader =
@@ -141,27 +135,26 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
 			MappingService mappingService = new MappingServiceJpa();
 
-			// Add Specialists and Leads
+	
+			// Add Users
+			getLog().info("Adding users...");
+			
 			String line = "";
-			while ((line = leadsReader.readLine()) != null) {
+			while ((line = usersReader.readLine()) != null) {
 				StringTokenizer st = new StringTokenizer(line, "\t");
-				MapLeadJpa mapLead = new MapLeadJpa();
-				mapLead.setName(st.nextToken());
-				mapLead.setUserName(st.nextToken());
-				mapLead.setEmail(st.nextToken());
-				mappingService.addMapLead(mapLead);
+				MapUser mapUser = new MapUserJpa();
+				mapUser.setName(st.nextToken());
+				mapUser.setUserName(st.nextToken());
+				mapUser.setEmail(st.nextToken());
+				mappingService.addMapUser(mapUser);
 			}
+			
+			getLog().info("  " + Integer.toString(mappingService.getMapUsers().size()) + " users added.");
 
-			while ((line = specialistsReader.readLine()) != null) {
-				StringTokenizer st = new StringTokenizer(line, "\t");
-				MapSpecialistJpa mapSpecialist = new MapSpecialistJpa();
-				mapSpecialist.setName(st.nextToken());
-				mapSpecialist.setUserName(st.nextToken());
-				mapSpecialist.setEmail(st.nextToken());
-				mappingService.addMapSpecialist(mapSpecialist);
-			}
-
+			
 			// Add map advices
+			getLog().info("Adding advices...");
+			
 			while ((line = advicesReader.readLine()) != null) {
 				StringTokenizer st = new StringTokenizer(line, "\t");
 				MapAdviceJpa mapAdvice = new MapAdviceJpa();
@@ -169,8 +162,13 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapAdvice.setDetail(st.nextToken());
 				mappingService.addMapAdvice(mapAdvice);
 			}
+			
+			getLog().info("  " + Integer.toString(mappingService.getMapAdvices().size()) + " advices added.");
+
 
 			// Add map principles
+			getLog().info("Adding principles...");
+			
 			while ((line = principlesReader.readLine()) != null) {
 				String[] fields = line.split("\\|");
 				MapPrincipleJpa mapPrinciple = new MapPrincipleJpa();
@@ -180,28 +178,30 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapPrinciple.setDetail(fields[3]);
 				mappingService.addMapPrinciple(mapPrinciple);
 			}
+			getLog().info("  " + Integer.toString(mappingService.getMapPrinciples().size()) + " principles added.");
+
 
 			// Add map projects
+			getLog().info("Adding projects...");
 			while ((line = projectsReader.readLine()) != null) {
 				String[] fields = line.split("\t");
 				MapProjectJpa mapProject = new MapProjectJpa();
 				mapProject.setName(fields[0]);
 				mapProject.setRefSetId(fields[1]);
 				mapProject.setRefSetName(fields[2]);
-				mapProject.setObjectId(fields[3]);
-				mapProject.setSourceTerminology(fields[4]);
-				mapProject.setSourceTerminologyVersion(fields[5]);
-				mapProject.setDestinationTerminology(fields[6]);
-				mapProject.setDestinationTerminologyVersion(fields[7]);
-				mapProject.setBlockStructure(fields[8].equals("true") ? true : false);
-				mapProject.setGroupStructure(fields[9].equals("true") ? true : false);
-				mapProject.setPublished(fields[10].equals("true") ? true : false);
-				mapProject.setMapRelationStyle(fields[11]);
-				mapProject.setMapPrincipleSourceDocument(fields[12]);
-				mapProject.setRuleBased(fields[13].equals("true") ? true : false);
-				mapProject.setMapRefsetPattern(fields[14]);
+				mapProject.setSourceTerminology(fields[3]);
+				mapProject.setSourceTerminologyVersion(fields[4]);
+				mapProject.setDestinationTerminology(fields[5]);
+				mapProject.setDestinationTerminologyVersion(fields[6]);
+				mapProject.setBlockStructure(fields[7].equals("true") ? true : false);
+				mapProject.setGroupStructure(fields[8].equals("true") ? true : false);
+				mapProject.setPublished(fields[9].equals("true") ? true : false);
+				mapProject.setMapRelationStyle(fields[10]);
+				mapProject.setMapPrincipleSourceDocument(fields[11]);
+				mapProject.setRuleBased(fields[12].equals("true") ? true : false);
+				mapProject.setMapRefsetPattern(fields[13]);
 
-				String mapAdvices = fields[15];
+				String mapAdvices = fields[14];
 				if (!mapAdvices.equals("")) {
 					for (String advice : mapAdvices.split(",")) {
 						for (MapAdvice ml : mappingService.getMapAdvices()) {
@@ -211,7 +211,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				String mapPrinciples = fields[16];
+				String mapPrinciples = fields[15];
 				if (!mapPrinciples.equals("")) {
 					for (String principle : mapPrinciples.split(",")) {
 						for (MapPrinciple ml : mappingService.getMapPrinciples()) {
@@ -222,26 +222,26 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				String mapLeads = fields[17];
+				String mapLeads = fields[16];
 				for (String lead : mapLeads.split(",")) {
-					for (MapLead ml : mappingService.getMapLeads()) {
+					for (MapUser ml : mappingService.getMapUsers()) {
 						if (ml.getUserName().equals(lead))
 							mapProject.addMapLead(ml);
 					}
 				}
 
-				String mapSpecialists = fields[18];
+				String mapSpecialists = fields[17];
 				for (String specialist : mapSpecialists.split(",")) {
 
-					for (MapSpecialist ml : mappingService.getMapSpecialists()) {
+					for (MapUser ml : mappingService.getMapUsers()) {
 						if (ml.getUserName().equals(specialist))
 							mapProject.addMapSpecialist(ml);
 					}
 				}
 
-				mapProject.setScopeDescendantsFlag(fields[19].equals("true") ? true
+				mapProject.setScopeDescendantsFlag(fields[18].equals("true") ? true
 						: false);
-				mapProject.setScopeExcludedDescendantsFlag(fields[20].equals("true")
+				mapProject.setScopeExcludedDescendantsFlag(fields[19].equals("true")
 						? true : false);
 
 
@@ -254,45 +254,92 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
 				mappingService.addMapProject(mapProject);
 			}
+			
+			getLog().info("  " + Integer.toString(mappingService.getMapProjects().size()) + " projects added.");
 
-			Map<String, Set<String>> projectToConceptsInScope = new HashMap<String, Set<String>>();
+
+			// Concepts In Scope Assignment
+			
+			// hashmap of project id -> Set of concept terminology ids
+			Map<Long, Set<String>> projectToConceptsInScope = new HashMap<Long, Set<String>>();
+			
+			// cycle over the includes file
+			
+			getLog().info("Adding scope includes...");
+			
 			while ((line = scopeIncludesReader.readLine()) != null) {
+				
 				String[] fields = line.split("\\t");
-				if (projectToConceptsInScope.containsKey(fields[0]))
-					projectToConceptsInScope.get(fields[0]).add(fields[1]);
+				
+				// retrieve the project id associated with this refSetId
+				Long projectId = mappingService.getMapProjectByRefSetId(fields[0]).getId();
+	
+				// if project already added, add list of concepts
+				if (projectToConceptsInScope.containsKey(projectId))
+					projectToConceptsInScope.get(projectId).add(fields[1]);
+				
+				// otherwise add project with list of concepts
 				else {
 					Set<String> conceptsInScope = new HashSet<String>();
 					conceptsInScope.add(fields[1]);
-					projectToConceptsInScope.put(fields[0], conceptsInScope);
+					projectToConceptsInScope.put(projectId, conceptsInScope);
 				}
 			}
-			for (String projectId : projectToConceptsInScope.keySet()) {
-				MapProject mapProject = mappingService.getMapProject(new Long(projectId));
+			
+			// set the map project scope concepts and update the project
+			int conceptsIncludedInScopeCount = 0;
+			for (Long projectId : projectToConceptsInScope.keySet()) {
+				MapProject mapProject = mappingService.getMapProject(projectId);
 				mapProject.setScopeConcepts(projectToConceptsInScope.get(projectId));
 				mappingService.updateMapProject(mapProject);
+				conceptsIncludedInScopeCount += projectToConceptsInScope.get(projectId).size();
 			}
 			
-			Map<String, Set<String>> projectToConceptsExcludedFromScope = new HashMap<String, Set<String>>();			
+			getLog().info("  " + Integer.toString(conceptsIncludedInScopeCount) + " included concepts added for " + Integer.toString(projectToConceptsInScope.keySet().size()) + " projects.");
+
+			
+			// Concepts Excluded From Scope Assignmnet
+			
+			getLog().info("Adding scope excludes...");
+			
+			// map of project ids -> set of concept terminology Ids
+			Map<Long, Set<String>> projectToConceptsExcludedFromScope = new HashMap<Long, Set<String>>();			
+		
+			// cycle over the exclude file
 			while ((line = scopeExcludesReader.readLine()) != null) {
+	
 				String[] fields = line.split("\\t");
-				if (projectToConceptsExcludedFromScope.containsKey(fields[0]))
-					projectToConceptsExcludedFromScope.get(fields[0]).add(fields[1]);
+				
+				// retrieve the project id associated with this refSetId
+				Long projectId = mappingService.getMapProjectByRefSetId(fields[0]).getId();
+				
+				// if project in set, add this new set of concept ids
+				if (projectToConceptsExcludedFromScope.containsKey(projectId))
+					projectToConceptsExcludedFromScope.get(projectId).add(fields[1]);
+				
+				// otherwise, insert project into hash set with the excluded concept list
 				else {
 					Set<String> conceptsExcludedFromScope = new HashSet<String>();
 					conceptsExcludedFromScope.add(fields[1]);
-					projectToConceptsExcludedFromScope.put(fields[0], conceptsExcludedFromScope);
+					projectToConceptsExcludedFromScope.put(projectId, conceptsExcludedFromScope);
 				}
 			}
-			for (String projectId : projectToConceptsExcludedFromScope.keySet()) {
+			
+			// cycle over detected project excludes and update map projects
+			int conceptsExcludedFromScopeCount = 0;
+			for (Long projectId : projectToConceptsExcludedFromScope.keySet()) {
 				MapProject mapProject = mappingService.getMapProject(new Long(projectId));
 				mapProject.setScopeExcludedConcepts(projectToConceptsExcludedFromScope.get(projectId));
-			  mappingService.updateMapProject(mapProject);
+				mappingService.updateMapProject(mapProject);
+				conceptsExcludedFromScopeCount += mapProject.getScopeExcludedConcepts().size();
 			}
+			
+			getLog().info("  " + Integer.toString(conceptsExcludedFromScopeCount) + " excluded concepts added for " + Integer.toString(projectToConceptsExcludedFromScope.keySet().size()) + " projects.");
+
 
 			getLog().info("done ...");
 			mappingService.close();
-			specialistsReader.close();
-			leadsReader.close();
+			usersReader.close();
 			advicesReader.close();
 			principlesReader.close();
 			projectsReader.close();

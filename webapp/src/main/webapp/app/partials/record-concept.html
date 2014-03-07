@@ -36,7 +36,7 @@
 	</tr>
 </thead>
 
-<tbody ng-dblclick="open(record)" ng-repeat="record in records" style="border: 4px solid #ccc;">
+<tbody ng-repeat="record in records" style="border: 4px solid #ccc;">
 
 
 	<tr ng-repeat = "entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
@@ -61,10 +61,8 @@
         <td><span ng-show = "getRuleBasedForRecord(record) == true">{{entry.rule}}</span></td>
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
-		<td align="center" colspan="7">
-			<form>
-				<input type="submit" value="Edit Record" ng-click="open(record, getProject(record))">
-			</form>
+		<td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
+			
         </td>
 		
 	</tr>

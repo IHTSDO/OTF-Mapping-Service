@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.jpa;
+/*package org.ihtsdo.otf.mapping.jpa;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -30,28 +30,28 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-/**
+*//**
  * The Class MapRecordJpaTest.
  * 
  * Provides test cases 1. confirm MapRecord data load returns expected data 2.
  * confirms indexed fields are indexed 3. confirms MapRecord is audited and
  * changes are logged in audit table
- */
+ *//*
 public class MapRecordJpaTest {
 
-	/** The manager. */
+	*//** The manager. *//*
 	private static EntityManager manager;
 
-	/** The factory. */
+	*//** The factory. *//*
 	private static EntityManagerFactory factory;
 
-	/** The full text entity manager. */
+	*//** The full text entity manager. *//*
 	private static FullTextEntityManager fullTextEntityManager;
 
-	/** The audit history reader. */
+	*//** The audit history reader. *//*
 	private static AuditReader reader;
 
-	/** The first map record for testing. */
+	*//** The first map record for testing. *//*
 	private static MapRecordJpa mapRecord1;
 	
 	private static String conceptId1 = "105480006";
@@ -59,13 +59,13 @@ public class MapRecordJpaTest {
 	private static MapSpecialistJpa mapSpecialist1;
 
 
-	/**
+	*//**
 	 * Creates db tables, load test objects and create indexes to prepare for
 	 * test cases.
 	 * 
 	 * @throws Exception
 	 *             if anything goes wrong
-	 */
+	 *//*
 	@BeforeClass
 	public static void init() throws Exception {
 
@@ -82,10 +82,10 @@ public class MapRecordJpaTest {
 		
 	}
 	
-	/**
+	*//**
 	 * Test map record indexes.
 	 * @throws Exception 
-	 */
+	 *//*
 	@SuppressWarnings({
 			"static-method", "unchecked"
 	})
@@ -116,10 +116,10 @@ public class MapRecordJpaTest {
 
 	}
 
-	/**
+	*//**
 	 * Test map project audit reader history.
 	 * @throws Exception 
-	 */
+	 *//*
 	@SuppressWarnings("static-method")
 	@Test
 	public void testMapRecordAuditReader() throws Exception {
@@ -167,10 +167,10 @@ public class MapRecordJpaTest {
 
 	}
 	
-	/**
+	*//**
 	 * Test map record delete functions for both record and mapped relationships
 	 * @throws Exception 
-	 */
+	 *//*
 	@SuppressWarnings("static-method")
 	@Test
 	public void confirmMapRecordDelete() throws Exception {
@@ -231,10 +231,10 @@ public class MapRecordJpaTest {
 		removeTestData();
 	}
 	
-/**
+*//**
  * Tests cascading delete settings from Entry to Note, Principle, Advice
  * @throws Exception
- */
+ *//*
 @SuppressWarnings("static-method")
 @Test
 public void confirmMapEntryDelete() throws Exception {
@@ -282,10 +282,10 @@ public void confirmMapEntryDelete() throws Exception {
 	}
 
 
-	/**
+	*//**
 	 * Confirms map record load.
 	 * @throws Exception 
-	 */
+	 *//*
 	@SuppressWarnings("static-method")
 	@Test
 	public void confirmMapRecordLoad() throws Exception {
@@ -317,7 +317,7 @@ public void confirmMapEntryDelete() throws Exception {
 	}
 
 
-	/**
+	*//**
 	 * Load map records. Called before each unit test
 	 * Creates one mapRecord with:
 	 *  - 1 entry (has 1 principle, 1 advice, 1 note)
@@ -326,7 +326,7 @@ public void confirmMapEntryDelete() throws Exception {
 	 *  
 	 * @throws Exception
 	 *             the exception
-	 */
+	 *//*
 	private static void addTestData() throws Exception {
 		
 		EntityTransaction tx = manager.getTransaction();
@@ -380,9 +380,9 @@ public void confirmMapEntryDelete() throws Exception {
 		tx.commit();
 	}
 	
-	/**
+	*//**
 	 * Removes all test data, called after each unit test
-	 */
+	 *//*
 	@SuppressWarnings("unchecked")
 	private static void removeTestData() {
 		
@@ -418,9 +418,9 @@ public void confirmMapEntryDelete() throws Exception {
 		tx.commit();
 	}
 
-	/**
+	*//**
 	 * Clean up.
-	 */
+	 *//*
 	@AfterClass
 	public static void cleanUp() {
 		
@@ -431,3 +431,4 @@ public void confirmMapEntryDelete() throws Exception {
 	}
 
 }
+*/

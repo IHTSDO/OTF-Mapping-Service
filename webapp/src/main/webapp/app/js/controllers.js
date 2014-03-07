@@ -318,16 +318,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				 }
 			 }
 		 };
-		 
-		 // function to remove an element by field 'id', applied to array
-		 Array.prototype.removeElementById = function(id) {
-			  
-			  var array = $.map(this, function(v,i){
-			      return v['id'] === id ? null : v;
-			   });
-			   this.length = 0; //clear original array
-			   this.push.apply(this, array); //push all elements except the one we want to delete
-		  };
 		  
 		 $scope.createMapRecord = function(projectName) {
 			 
@@ -401,524 +391,16 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			  };
     		  
 		 };
-		 
-		 $scope.open = function (record) {
-
-		    var modalInstance = $modal.open({
-		      templateUrl: 'partials/modal-record.html',
-		      controller: ModalRecordInstanceCtrl,
-		      resolve: {
-		        args: function () {
-		        	
-		        	var args = [];
-		        	
-		        	args.push(record);
-		        	args.push($scope.getProject(record));
-		        	args.push($scope.concept);
-		        	
-		        	console.debug("INITIAL RECORD:");
-		        	console.debug(record);
-		        
-		        	
-		        	// pass the record
-		        	return angular.copy(args);
-		        }
-		    
-		      }
-		    	
-
-		    });
-		    
-		    modalInstance.result.then(function (record) {
-		    	console.debug("Modal ok function");
-		    	
-		    	
-		    ////////////////////////////////////////////////////////////////////
-		    // CHECK FOR DELETE
-		    // - requires id and empty entry set
-		    // - a delete request for a record with no id and empty entry set 
-		    //   refers to a record that does not exist in DB
-		    ////////////////////////////////////////////////////////////////////
-		    	
-		    if (!(record.id === "") && record.mapEntry.length == 0) {
-	    		
-	    		console.debug("DELETE RECORD");
-		    	console.debug(record);
-
-    			$http({
-					  url: root_mapping + "record/delete",
-					  dataType: "json",
-					  data: record,
-					  method: "DELETE",
-					  headers: {
-						  "Content-Type": "application/json"
-					  }
-				  }).success(function(data) {
-					 console.debug("  Record deleted");
-				  }).error(function(data) {
-					  console.debug("Delete record ERROR");	  
-				  }).then(function(data) {
-					  // update the record in scope
-					  var newRecords = [];
-					  for (var i = 0; i < $scope.records.length; i++) {
-						  if (!(record.id === $scope.records[i].id)) {
-							  newRecords.push($scope.records[i]);
-						  };
-					  }
-					  $scope.records = newRecords;
-				  });
-		  
-			    	
-	    	///////////////////////////////////////////////
-		    // CHECK FOR ADD
-		    // - requires no id and non-empty entry set
-		    // - a record with no id and empty entry set will
-		    //   not be added (shouldn't pass save test)
-		    ///////////////////////////////////////////////	
-		    
-	    	// if no id and entries not empty, ADD this record
-		    } else if (record.id === "" && record.mapEntry.length > 0) {
-	    		console.debug("ADD RECORD");
-		    	console.debug(record);
-	    		
-	    		$http({
-					  url: root_mapping + "record/add",
-					  dataType: "json",
-					  data: record,
-					  method: "PUT",
-					  headers: {
-						  "Content-Type": "application/json"
-					  }
-				  }).success(function(data) {
-					 record = data;
-					 console.debug("  Record added");
-				  }).error(function(data) {
-					  console.debug("Existing record update ERROR");	  
-				  }).then(function(data) {
-					  // add the record to scope
-					  $scope.records.push(record);
-				  });
-	    	
-	    	
-		    	
-    		///////////////////////////////////////////////
-		    // CHECK FOR UPDATE
-		    // - requires id and non-empty entry set
-		    // - a record with id and empty entry set 
-	    	//   indicates a DELETE request
-		    ///////////////////////////////////////////////	
-	    	} else {
-		    	
-		    
-	    			console.debug("UPDATE RECORD");
-			    	console.debug(record);
-	
-	    			$http({
-						  url: root_mapping + "record/update",
-						  dataType: "json",
-						  data: record,
-						  method: "POST",
-						  headers: {
-							  "Content-Type": "application/json"
-						  }
-					  }).success(function(data) {
-						 record = data;
-						 console.debug("  Record updated");
-					  }).error(function(data) {
-						  console.debug("Existing record update ERROR");	  
-					  }).then(function(data) {
-						  // update the record in scope
-						  for (var i = 0; i < $scope.records.length; i++) {
-							  if (record.id === $scope.records[i].id) {
-								  $scope.records[i] = record;
-							  };
-						  };
-					  });
-		    	}
-		    	
-
-		    }, function() {
-		    	console.debug("Modal cancel");
-		    });
-		 };
-		 
-		 // expects argument in form of [record, project, concept]
-		 var ModalRecordInstanceCtrl = function($scope, $http, $modalInstance, args) {
-			
-			  // argument variables
-			  $scope.record = args[0];
-			  $scope.project = args[1];
-			  $scope.concept = args[2];
-			 
-			  // set scope variables
-			  $scope.modeAddEntry = [];
-			  initGroups();
-
-			  //////////////////////////////////////////////////////////
-			  // Action Logic:
-			  //
-			  //		                mapEntries
-			  //	  -----------------------------------
-			  //	  |			 |	Empty	| Not empty |
-			  //      |----------------------------------
-			  //  ID  | null	 |	Error	|    ADD    |
-			  //	  |	non-null |	DELETE	|   UPDATE  |
-			  //	  -----------------------------------
-			  //
-			  ///////////////////////////////////////////////////////////
-			  
-			  $scope.saveRecord = function () {
-				  
-				  // if no entries, check if it exists in database
-				  if ($scope.record.mapEntry.length == 0) {
-					  
-					  // does not exist, just throw an alert
-					  if ($scope.record.id === "") {
-						  alert("This record cannot be created with no entries.");
-						  
-					  // does exist, confirm delete request
-					  } else {
-						 
-						  var confirmDelete = confirm("This record has no entries and will be deleted. Are you sure you want to delete this record?");
-						  if (confirmDelete == true) $modalInstance.close($scope.record);
-					  }
-					  
-				  }
-				  
-				  // otherwise pass to handler for ADD or UPDATE
-				  else $modalInstance.close($scope.record);
-			  };
-
-			  $scope.cancelRecord = function () {
-			    $modalInstance.dismiss('cancel');
-			  };
-			  
-			  $scope.deleteRecord = function() {
-				var confirmDelete = confirm("Are you sure you want to delete this record?");
-				if (confirmDelete == true) {
-					$scope.record.mapEntry = []; // set to empty to indicate delete request
-					$modalInstance.close($scope.record, "delete");
-					
-				}
-			  };
-			  
-			  
-			  $scope.addEntryAdvice = function(entry, advice) {
-				
-				  // check if advice valid
-				  if (advice == '') {
-					  $scope.errorAddAdvice = "Advice cannot be empty";
-				  } else if (advice == null) {
-					  $scope.errorAddAdvice = "This advice is not found in allowable advices for this project";
-				  } else {
-					  $scope.errorAddAdvice = "";
-						 
-					  console.debug("Add Entry Advice");
-					  console.debug(entry);
-					  console.debug(advice);
-					  
-					  // check if this advice is already present
-					  var advicePresent = false;
-					  for (var i = 0; i < entry.mapAdvice.length; i++) {
-						  if (advice.id === entry.mapAdvice[i].id) advicePresent = true;
-					  }
-					  
-					  if (advicePresent == true) {
-						  $scope.errorAddAdvice = "This advice " + advice.detail + " is already attached to this entry";
-					  } else {
-						  
-						  $scope.addEntryElement(entry, 'mapAdvice', advice);
-					  }
-				  }
-			  };
-			  
-			  
-			  $scope.addEntryElement = function(entry, key, elem) {
-				  
-				  console.debug("Add Entry Element");
-				  console.debug(entry);
-				  console.debug(key);
-				  console.debug(elem);
-				  
-				  entry[key].push(elem);
-				  $scope.updateEntry(entry);
-			  };
-			  
-			  $scope.removeEntryElement = function(entry, key, elem) {
-				  
-				  entry[key].removeElementById(elem.id);
-				  $scope.updateEntry(entry);
-				  
-			  };
-			  
-			  $scope.setEntryTarget = function(entry) {
-				  
-				  // get concept
-				  $http({
-					  url: root_content + "concept/" 
-					  		+ $scope.project.destinationTerminology + "/"
-					  		+ $scope.project.destinationTerminologyVersion + "/"
-					  		+ "id/" + entry.targetId,
-					  dataType: "json",
-					  method: "GET",
-					  headers: {
-						  "Content-Type": "application/json"
-					  }
-				  }).success(function(data) {
-					 entry.targetId = data.terminologyId;
-					 entry.targetName = data.defaultPreferredName;
-					 
-					 $scope.updateEntry(entry);
-					 
-					 console.debug("  Found concept " + entry.targetId);
-				  }).error(function(data) {
-					  console.debug("CONCEPT FIND ERROR");
-					 $scope.errorEntrySetTarget = "Could not find " + $scope.project.destinationTerminologyVersion + " concept: " + entry.targetId;
-					  
-				  });
-			  };
-			  
-			  // function to update an entry given a json array
-			  $scope.updateEntry = function(entry) {
-				  
-				  // find entry
-				  for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-					  
-					  // if this entry, replace
-					  if ($scope.record.mapEntry[i].id === entry.id) {
-						  $scope.record.mapEntry[i] = entry;
-						  break;
-					  }
-				  }
-			  };
-			  
-			  $scope.getEntries = function(mapGroup) {
-				  
-				  // if no argument, return all entries
-				  if (mapGroup == null) {
-					  return $scope.record.mapEntry;
-				  }
-				  
-				  // cycle over map entries and extract those with this map group
-				  var entries = new Array();
-				  
-				  for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-					  if (parseInt($scope.record.mapEntry[i].mapGroup, 10) === parseInt(mapGroup, 10)) {
-						  entries.push($scope.record.mapEntry[i]);
-					  };
-				  };
-				  
-				  return entries;
-				  //return entries.length == 0 ? null : entries;
-				  
-			  };
-			  
-			  function setGroupEditMode(group, mode) {				  
-				  // set mode for this group
-				  $scope.modeAddEntry[group] = mode;
-				  
-				  $scope.modeAddEntryGlobal = (mode == true ? true : false);
-			  }
-			  
-			  
-			  function initGroups() {
-				  getGroups();
-				  for (var i = 0; i < $scope.groups.length; i++) {
-					  setGroupEditMode($scope.groups[i], false);
-				  }
-				  $scope.modeAddEntryGlobal == false;
-			  };
-			  
-			  
-			  function getGroups() {
-				  
-				  $scope.groups = new Array();
-				  for (var i = 0; i < $scope.record.mapEntry.length; i++) {			  
-					  
-					  if ($scope.groups.indexOf(parseInt($scope.record.mapEntry[i].mapGroup, 10)) == -1) {
-						  $scope.groups.push(parseInt($scope.record.mapEntry[i].mapGroup, 10));
-					  };
-				  };
-				  
-				  // if no groups found, add a default group
-				  if ($scope.groups.length == 0) $scope.groups.push(1);
-
-				  
-			  };
-			  
-			  $scope.getRuleSummary = function(entry) {
-				  if ($scope.project.mapRelationStyle === "RELATIONSHIP_STYLE") {
-					  return "";
-				  } else {
-					  
-					  if (entry.rule.toUpperCase().indexOf("GENDER") != -1) return "[GENDER]";
-					  if (entry.rule.toUpperCase().indexOf("AGE OF ONSET") != -1) return "[AGE OF ONSET]";
-					  if (entry.rule.toUpperCase().indexOf("AGE") != -1) return "[AGE]";
-					  if (entry.rule.toUpperCase().indexOf("TRUE") != -1) return "[TRUE]";
-					  return "";
-				  } 	
-
-			  };
-			  
-			  
-			  // TODO expand this later
-			  $scope.entriesEqual = function(entry1, entry2) {
-				  if (! (entry1.targetId === entry2.targetId)) return false;
-				  if (! (entry1.rule === entry2.rule)) return false;
-				  if (! (entry1.mapGroup === entry2.mapGroup)) return false;
-				  return true;
-			  };
-			  
-			  $scope.addMapEntry = function(group) {
-				  
-				  // create blank entry associated with this id
-				  var newEntry = {
-						"mapRecordId": $scope.record.id,
-						"targetId":"",
-						"targetName":"",
-						"rule":"",
-						"mapPriority":"",
-						"relationId":"",
-						"relationName":"",
-						"mapBlock":"",
-						"mapGroup": group,
-						"mapAdvice":[],
-						"mapPrinciples":[]
-				  };
-				  
-				  setGroupEditMode(group, true);
-				  
-				  return newEntry;
  
-			  };
-			  
-			  $scope.saveMapEntry = function(entry) {
-				  $scope.record['mapEntry'].push(entry);
-				  console.debug("REVISED RECORD");
-				  console.debug($scope.record);
-				  setGroupEditMode(entry.mapGroup, false);
-			  };
-			  
-			  $scope.cancelMapEntry = function(group) {
-				  console.debug("cancelMapEntry() - " + group);
-				  setGroupEditMode(group, false);
-			  }
-			  
-			  // TODO Figure out splice problems
-			  $scope.removeMapEntry = function(entry) {
-				  var newEntries = new Array();
-				  
-				  // cycle over existing entries, push if not this entry
-				  for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-					  if (! ($scope.entriesEqual(entry, $scope.record.mapEntry[i]))) {
-						  newEntries.push($scope.record.mapEntry[i]);
-					  }
-				  }
-				  
-				  $scope.record.mapEntry = newEntries;
-				  $scope.entryDeleted = true;
-			  };
-			  
-			  $scope.retrieveTargetConcepts = function(query) {
-		    	  
-		    	  // execute query for concepts
-		    	  // TODO Change query format to match records
-		    	  $http({
-		    			 url: root_content + "concept/query/" + query,
-		    			 dataType: "json",
-		    		     method: "GET",
-		    		     headers: {
-		    		          "Content-Type": "application/json"
-		    		     }	
-		    		  }).success(function(data) {
-		    			  
-		    			  console.debug(data);
-		    		     
-		    			  // eliminate concepts that don't match target terminology
-		    			  
-		    			  $scope.targetConcepts = [];
-		    			  
-		    			  for (var i = 0; i < data.count; i++) {
-		    				  if (data.searchResult[i].terminology === $scope.project.destinationTerminology &&
-		    					  data.searchResult[i].terminologyVersion === $scope.project.destinationTerminologyVersion) {
-		    					
-		    					  $scope.targetConcepts.push(data.searchResult[i]);
-		    				  };
-		    			  };
-		    			  
-		    			  
-
-		    		  }).error(function(data) {
-		    			  $scope.errorCreateRecord = "Failed to retrieve entries";
-		    		  });
-		      };
-		      
-		      $scope.resetTargetConcepts = function() {
-		    	  console.debug("resetTargetConcepts() called");
-		    	  $scope.queryTarget = "";
-		    	  $scope.targetConcepts = [];
-		      };
-		      
-		      $scope.selectTargetConcept = function(entry, target) {
-		    	  console.debug("selectTargetConcept() called");
-		    	  console.debug(target);
-		    	  entry.targetId = target.terminologyId;
-		    	  entry.targetName = target.value;
-		    	  $scope.resetTargetConcepts();
-		      };
-		      
-		      /**
-		       * Adds a map group to existing list
-		       */
-		      $scope.addMapGroup = function() {
-		    	  var groupAdded = 0;
-		    	  
-		    	  // first attempt to "fill in" the first possible gap in groups
-		    	  // i.e. [2 3] -> [1 2 3]
-		    	  for (var i = 0; i < $scope.groups.length; i++) {
-		    		  console.debug(i+1 + " " + $scope.groups[i]);
-		    		  if (i+1 < $scope.groups[i]  && groupAdded == false) {
-		    			  groupAdded = i+1;
-		    			  $scope.groups.push(groupAdded);
-		    			  console.debug("Pushed in fill");
-		    		  }
-		    	  }
-		    	  
-		    	  // if no group filled in, add to end
-		    	  // i.e. [1 2] -> [1 2 3]
-		    	  if (groupAdded == 0) {
-		    		  groupAdded = $scope.groups.length + 1;
-		    		  $scope.groups.push(groupAdded);
-		    	  }
-		    	  
-		    	  setGroupEditMode(groupAdded, false);
-		      };
-		      
-		      /**
-		       * Removes a map group from existing groups if it exists
-		       */
-		      $scope.removeMapGroup = function(group) {   	  
-		    	  var newGroups = new Array();
-		    	  for (var i = 0; i < $scope.groups.length; i++) {
-		    		  if ($scope.groups[i] != group) newGroups.push($scope.groups[i]);
-		    	  }
-		    	  $scope.groups = newGroups;
-		      };
-		 };
-			  
-			  
-		 
-		 	
-		
-	}]);
+}]);
 
 /**
  * Controller for new test view (i.e. non-modal) for map record edit/create/delete functions
  */
 mapProjectAppControllers.controller('MapRecordDetailCtrl', 
-	['$scope', '$http', '$routeParams', '$sce',
+	['$scope', '$http', '$routeParams', '$sce', '$modal',
                                                              
-	 function ($scope, $http, $routeParams, $sce) {
+	 function ($scope, $http, $routeParams, $sce, $modal) {
 		
 		// initialize scope variables
 		$scope.record = 	null;
@@ -927,7 +409,8 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 		$scope.groups = 	null;
 		
 		// initialize local variables
-		var recordId = 		$routeParams.recordId;
+		var recordId = 		$routeParams.recordId; 
+		var currentLocalId = 0;   // used for addition of new entries without hibernate id
 		
 		// obtain the record
 		$http({
@@ -971,10 +454,193 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 	        	 
 		    	  
 		    	  // get the groups
-		    	  getGroups();
+	        	  if ($scope.project.groupStructure == true)
+	        		  getGroups();
 		    	  
 	          });
           });
+		
+		  // initialize the preset age ranges
+		  initializePresetAgeRanges();
+		
+		/**
+		 * Utility functions
+		 */  
+		  
+		  // function to add an element and assign a local id if not tracked by hibernate
+		  Array.prototype.addElement = function(elem) {
+			  
+			  console.debug("addElement called");
+			  
+			  // if hibernate id, simply add
+			  if (elem.id != null && elem.id != '') {
+				  console.debug("addElement: hibernate id detected");
+				  this.push(elem);
+				  
+			  // otherwise, assign a unique localid
+			  } else {
+				  
+				  console.debug("addElement: Assigning local id");
+				  
+				  // get the maximum local id already assigned
+				  var maxLocalId = -1;
+				  $.map(this, function(v,i) {
+					  console.debug("Checking element:");
+					  console.debug(v);
+					  if (v.hasOwnProperty("localId")) {
+						 if (v['localId'] > maxLocalId) maxLocalId = v['localId'];
+					  }
+				  });
+
+				  elem['localId'] = maxLocalId == -1 ? 1 : maxLocalId + 1;
+			  	  console.debug(elem);
+			  }
+			  
+			  this.push(elem);
+		  };
+		  
+		// function to remove an element by id or localid
+		// instantiated to negate necessity for equals methods for map objects
+		//   which may not be strictly identical via string or key comparison
+		 Array.prototype.removeElement = function(elem) {
+			 
+			  // switch on type of id
+			  var idType = elem.hasOwnProperty('localId') ? 'localId' : 'id';
+			  
+			  var array = new Array();
+			  $.map(this, function(v,i){
+				  if (v[idType] === elem[idType]) array.push(v);
+			  });
+
+			  this.length = 0; //clear original array
+			  this.push.apply(this, array); //push all elements except the one we want to delete
+		  };
+		  
+		/**
+		 * MAP RECORD FUNCTIONS
+		 */
+		$scope.saveMapRecord = function() {
+			
+			$http({
+				  url: root_mapping + "record/update",
+				  dataType: "json",
+				  data: $scope.record,
+				  method: "POST",
+				  headers: {
+					  "Content-Type": "application/json"
+				  }
+			  }).success(function(data) {
+				 $scope.record = data;
+				 $scope.recordSuccess = "Record saved.";
+				 $scope.recordError = "";
+			  }).error(function(data) {
+				 $scope.recordSuccess = "";
+				 $scope.recordError = "Error saving record.";
+			  });
+		};
+		
+		// on cancel, discard changes and requery database
+		$scope.cancelMapRecord = function() {
+
+			  $http({
+				 url: root_mapping + "record/id/" + recordId,
+				 dataType: "json",
+			        method: "GET",
+			        headers: { "Content-Type": "application/json"}	
+		      }).success(function(data) {
+		    	  $scope.record = data;
+		    	  $scope.recordSuccess = "";
+				  $scope.recordError = "Record changes aborted.";
+		      }).error(function(error) {
+		    	  $scope.error = $scope.error + "Could not retrieve map record. ";
+		     
+		      }).then(function() {
+	       	 
+		      	  // get the groups
+		    	  getGroups();
+		    	  
+		    	  $scope.entry = null;
+		      });	
+		};
+		
+		$scope.deleteMapRecord = function() {
+			var confirmDelete = confirm("Deleting this map record will also destroy the map entries attached to this record.\n\nAre you sure you want to delete this record?");
+			if (confirmDelete == true) {
+			
+				$http({
+					  url: root_mapping + "record/delete",
+					  dataType: "json",
+					  data: $scope.record,
+					  method: "DELETE",
+					  headers: {"Content-Type": "application/json"}
+				  }).success(function(data) {
+					 $scope.record = data;
+					 console.debug("  Record updated");
+				  }).error(function(data) {
+					  console.debug("Existing record update ERROR");	  
+				  });
+			}
+		};
+		
+		$scope.addRecordPrinciple = function(record, principle) {
+			
+			// check if principle valid
+			if (principle === '') {
+				$scope.errorAddRecordPrinciple = "Principle cannot be empty";
+			} else if (principle == null) {
+				$scope.errorAddRecordPrinciple = "This principle is not found in allowable principles for this map project";
+			} else {
+				$scope.errorAddRecordPrinciple = "";
+				
+				// check if principle already present
+				var principlePresent = false;
+				for (var i = 0; i < record.mapPrinciple.length; i++) {
+					if (principle.id == record.mapPrinciple[i].id) principlePresent = true;
+				}
+				
+				if (principlePresent == true) {
+					$scope.errorAddRecordPrinciple = "The principle with id " + principle.principleId  + " is already attached to the map record";
+				} else {
+					$scope.record['mapPrinciple'].push(principle);
+				};
+			};
+		};
+		
+		$scope.removeRecordPrinciple = function(record, principle) {
+			record['mapPrinciple'].removeElement(principle);
+			$scope.record = record;
+		};
+		
+		$scope.addRecordNote = function(record, note) {
+			// check if note non-empty
+			if (note === '' || note == null) {
+				$scope.errorAddRecordNote = "Note cannot be empty";
+			} else {
+				
+				// construct Json user
+				var mapUser = null;
+				
+				// construct note object
+				var mapNote = new Array();
+				mapNote.note = note;
+				mapNote.timestamp = (new Date()).getMilliseconds();
+				mapNote.user = mapUser;
+				
+				// add note to record
+				record['mapNote'].addElement(mapNote);
+				
+				// set scope record to record
+				$scope.record = record;
+				
+			}
+		};
+		
+		$scope.removeRecordNote = function(record, note) {
+			record['mapNote'].removeElement(note);
+			$scope.record = record;
+		};
+		
+		
 	         
 		
 		/**
@@ -1018,8 +684,334 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 		  
 		// Sets the scope variable for the active entry
 		$scope.selectEntry = function(entry) {
-			$scope.entry = entry;
+			$scope.entry = angular.copy(entry);
 		};
+		
+		// function for adding an empty map entry to a record
+		$scope.addMapEntry = function(group) {
+			  
+			  // create blank entry associated with this id
+			  var newEntry = {
+					"id": "",
+					"mapRecordId": $scope.record.id,
+					"targetId":"",
+					"targetName":"",
+					"rule":"",
+					"mapPriority": $scope.getEntries(group).length + 1,
+					"relationId":"",
+					"relationName":"",
+					"mapBlock":"",
+					"mapGroup": group,
+					"mapAdvice":[],
+					"mapPrinciples":[],
+			  		"localId": currentLocalId + 1
+			  };
+			  
+			  $scope.record.mapEntry.push(newEntry);
+			  $scope.selectEntry(newEntry);
+
+		  };
+		  
+		  // Saves the selected entry to the map record
+		  $scope.saveMapEntry = function(entry) {
+				console.debug("saveMapEntry");
+				
+				var index = findEntryIndex(entry);
+				if (index == -1) {
+					alert("Fatal Error:  Entry could not be saved.\n\nThis entry does not belong to the current Map Record.");
+					$scope.entrySuccess = "";
+					$scope.entryError = "Error saving entry";
+				} else {
+					$scope.record.mapEntry[index] = entry;
+					$scope.entrySuccess = "Entry saved.";
+					$scope.entryError = "";
+				}
+			};
+		  
+		  // Cancels changes to the selected map entry
+		  $scope.cancelMapEntry = function() {
+			    $scope.entrySuccess = "";
+				$scope.entryError = "";
+		     	$scope.entry = null;
+		  };
+		  
+		  // Deletes selected map entry
+		  $scope.deleteMapEntry = function(entry) { 
+			  console.debug("deleteMapEntry");
+			  $scope.entrySuccess = "";
+			  $scope.entryError = "";
+			  
+			  
+			  var confirmDelete = confirm("Are you sure you want to delete this entry?");
+			  if (confirmDelete == true) {
+				  
+				  	var entries = new Array();
+				  	var index = findEntryIndex(entry);
+				  	
+				  	if (index == -1) {
+				  		alert("Entry not found, cannot be deleted");
+				  	} else {
+				  		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+				  			if (i != index) entries.push($scope.record.mapEntry[i]);
+				  		}
+				  		$scope.record.mapEntry = entries;
+				  		$scope.entry = null;
+				  	}
+				  		
+			  }
+		  };
+		  
+		  $scope.addEntryAdvice = function(entry, advice) {
+				
+			  // check if advice valid
+			  if (advice == '') {
+				  $scope.errorAddAdvice = "Advice cannot be empty";
+			  } else if (advice == null) {
+				  $scope.errorAddAdvice = "This advice is not found in allowable advices for this project";
+			  } else {
+				  $scope.errorAddAdvice = "";
+					 
+				  console.debug("Add Entry Advice");
+				  console.debug(entry);
+				  console.debug(advice);
+				  
+				  // check if this advice is already present
+				  var advicePresent = false;
+				  for (var i = 0; i < entry.mapAdvice.length; i++) {
+					  if (advice.id === entry.mapAdvice[i].id) advicePresent = true;
+				  }
+				  
+				  if (advicePresent == true) {
+					  $scope.errorAddAdvice = "This advice " + advice.detail + " is already attached to this entry";
+				  } else {
+					  $scope.entry['mapAdvice'].push(advice);
+				  }
+			  }
+		  };
+		  
+		  $scope.removeEntryAdvice = function(entry, advice) {	  
+			  	  console.debug("RemoveEntryAdvice()");
+				  entry['mapAdvice'].removeElement(advice);
+				  $scope.entry = entry;  
+		  };
+		  
+			  
+		  function findEntryIndex(entry) {
+			  
+			  console.debug("findEntryIndex");
+			  console.debug($scope.record.mapEntry);
+			  console.debug(entry);
+			  
+			  // check if entry has hibernate id
+			  if (entry.id != null && entry.id != '') {
+				  
+				  console.debug("Has hibernate id");
+				  
+				  // cycle over entries until matching id found and return index
+				  for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+					  if (entry.id === $scope.record.mapEntry[i].id) return i;
+				  }
+				  
+			  // otherwise, check for entries with local id
+			  } else {
+				  
+				  
+				  console.debug("No hibernate id");
+				  
+				  for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+					  // if no hibernate id, skip this record, otherwise check by localId
+					  if ($scope.record.mapEntry[i].id === null || $scope.record.mapEntry[i].id === '') {
+						  
+						console.debug(entry.localId);
+						console.debug($scope.record.mapEntry[i].localId);
+						if (entry.localId == $scope.record.mapEntry[i].localId) return i;
+					}  
+				  }
+			  }
+			  
+			  console.debug("Not found");
+			  
+			  return -1;
+		  };
+		  
+	    /**
+	     * RULE CONSTRUCTION FUNCTIONS
+	     */
+		  
+		  $scope.constructRule = function(entry) {
+			  
+			  $scope.openRuleConstructor();
+		  };
+		  
+		  $scope.openRuleConstructor = function() {
+			  
+			  var modalInstance = $modal.open({
+				  templateUrl: 'partials/rule-modal.html',
+				  controller: RuleConstructorModalCtrl,
+				  resolve: {
+					  presetAgeRanges: function() {
+						  return angular.copy($scope.presetAgeRanges);
+					  }
+				  }
+			  });
+			  
+			  modalInstance.result.then(function(rule) {
+				  console.debug("Rule Constructor Modal OK function");
+				  console.debug(rule);
+				  $scope.entry.rule = rule;
+			  });
+		  };
+		  
+		// set up the preset age range defaults
+		var RuleConstructorModalCtrl = function($scope, $http, $modalInstance, presetAgeRanges) {
+			
+			$scope.ageRange={"name":"" , "lower":"", "lowerOp":"", "lowerUnits":"", 
+					  "upper":"", "upperOp":"", "upperUnits":""},
+
+			$scope.presetAgeRanges = presetAgeRanges;
+			$scope.ruleCategories = ['TRUE', 'Gender - Male', 'Gender - Female', 'Age - Chronological', 'Age - At Onset'];
+			
+			
+			$scope.saveRule = function() {
+				$modalInstance.close($scope.rule);
+			};
+			
+			$scope.cancelRule = function() {
+				$modalInstance.dismiss('cancel');
+			};
+
+			$scope.changeRuleCategory = function(ruleCategory) {
+				console.debug("ChangeRuleCategory()");
+				
+				$scope.ageRange = null;
+				$scope.constructRule(ruleCategory, null);
+			};
+			
+			$scope.constructRule = function(ruleCategory, ageRange) {
+				
+				console.debug("constructRule() with " + ruleCategory);
+				console.debug(ageRange);
+				
+				if (ruleCategory === "TRUE") {
+					console.debug("TRUE selected");
+					$scope.rule = "TRUE";
+				}
+				
+				else if (ruleCategory === "Gender - Male") {
+					console.debug("ruleGenderMale selected");
+					$scope.rule = "IFA 248153007 | Male (finding) |";
+				}
+				
+				else if (ruleCategory === "Gender - Female") {
+					console.debug("ruleGenderFemale selected");
+					$scope.rule = "IFA 248152002 | Female (finding) |";
+				}
+				
+				else if (ageRange != null) {
+					
+					if (ruleCategory === "Age - Chronological") {
+						console.debug("ruleAge selected");
+
+						if (ageRange.lower != '') {
+							$scope.rule += "IFA 424144002 | Current chronological age (observable entity)"
+										+  " | " + ageRange.lowerOp + " "
+										+  ageRange.lower + " "
+										+  ageRange.lowerUnits;
+						}
+						
+						if (ageRange.lower != '' && ageRange.upper != '')
+							$scope.rule += " | ";
+						
+						if (ageRange.upper != '') {
+							$scope.rule += "IFA 424144002 | Current chronological age (observable entity)"
+										+  " | " + ageRange.upperOp + " "
+										+  ageRange.upper + " "
+										+  ageRange.upperUnits;
+						}			
+					} else if (ruleCategory === "Age - At Onset") {
+						console.debug("ruleAgeAtOnset selected");
+						$scope.rule = "IFA 445518008 | Age at onset of clinical finding (observable entity)";
+						if (ageRange.upper != '') {
+							$scope.rule += " | " + ageRange.lowerOp + " "
+										+  ageRange.lower + " "
+										+  ageRange.lowerUnits;
+						}
+					}
+				} else $scope.rule = null;
+			};
+			
+			$scope.constructRuleAgeHelper = function(ruleCategory, ageRange) {
+				$scope.constructRule($scope.ruleCategory);
+			};
+			
+		};
+		
+		function initializePresetAgeRanges() {  
+			  $scope.presetAgeRanges = [
+			                            
+	          {"name":"Perinatal" , "lower":"0.0", "lowerOp":">=", "lowerUnits":"days", 
+	          					  "upper":"7.0", "upperOp":"\<", "upperUnits":"days"},
+	          					  
+	          {"name":"Neonatal/newborn" , "lower":"0.0", "lowerOp":">=", "lowerUnits":"days", 
+	          					         "upper":"28.0", "upperOp":"\<", "upperUnits":"days"},
+	          					  
+	          {"name":"Infant" , "lower":"", "lowerOp":"", "lowerUnits":"", 
+	          				   "upper":"2.0", "upperOp":"\<", "upperUnits":"years"},
+	          
+	          {"name":"Juvenile" , "lower":"2.0", "lowerOp":">=", "lowerUnits":"years", 
+	          					 "upper":"19.0", "upperOp":"\<", "upperUnits":"years"},
+	          
+	          {"name":"Adolescence" , "lower":"12.0", "lowerOp":">=", "lowerUnits":"years", 
+	          						"upper":"19.0", "upperOp":"\<", "upperUnits":"years"},
+	          
+	          {"name":"Childhood" , "lower":"0.0", "lowerOp":">=", "lowerUnits":"years", 
+	          					  "upper":"19.0", "upperOp":"\<", "upperUnits":"years"},
+	          
+	          {"name":"Adult" , "lower":"19.0", "lowerOp":">=", "lowerUnits":"years", 
+	          					  "upper":"", "upperOp":"", "upperUnits":""},
+	          
+	          {"name":"Pre-senile" , "lower":"", "lowerOp":"", "lowerUnits":"", 
+	          					  "upper":"65.0", "upperOp":"\<", "upperUnits":"years"},
+	          
+	          {"name":"Senile" , "lower":"65.0", "lowerOp":">=", "lowerUnits":"days", 
+	          					  "upper":"", "upperOp":"\<", "upperUnits":""}
+			  ];
+			  
+			  // set the preset age range strings
+			  for (var i = 0; i < $scope.presetAgeRanges.length; i++) {
+				  var presetAgeRangeStr = $scope.presetAgeRanges[i].name;
+				  
+				  if ($scope.presetAgeRanges[i].lower != null && $scope.presetAgeRanges[i].lower != '' &&
+						  $scope.presetAgeRanges[i].upper != null && $scope.presetAgeRanges[i].upper != '') {
+						  
+						  presetAgeRangeStr += ", ";
+					  }
+				  
+				  if ($scope.presetAgeRanges[i].lower != null && $scope.presetAgeRanges[i].lower != '') {
+					  presetAgeRangeStr += $scope.presetAgeRanges[i].lowerOp + " "
+					  					+  $scope.presetAgeRanges[i].lower + " "
+					  					+  $scope.presetAgeRanges[i].lowerUnits;
+				  }
+				  
+				  if ($scope.presetAgeRanges[i].lower != null && $scope.presetAgeRanges[i].lower != '' &&
+					  $scope.presetAgeRanges[i].upper != null && $scope.presetAgeRanges[i].upper != '') {
+					  
+					  presetAgeRangeStr += " and ";
+				  }
+				  
+				  if ($scope.presetAgeRanges[i].upper != null && $scope.presetAgeRanges[i].upper != '') {
+					  
+					  presetAgeRangeStr += $scope.presetAgeRanges[i].upperOp + " "
+					  					+  $scope.presetAgeRanges[i].upper + " "
+					  					+  $scope.presetAgeRanges[i].upperUnits;
+				  }
+				  
+				  $scope.presetAgeRanges[i].stringName = presetAgeRangeStr;
+			  };
+		  };
+		  
+				
+	
 		
 		/** 
 		 * MAP GROUP FUNCTIONS
@@ -1676,13 +1668,6 @@ mapProjectAppControllers
 			console.debug($scope.mapEntry);
 			
 		});
-
-mapProjectAppControllers
-.controller('SortTestCtrl', function($scope) {
-	
-	console.debug("IN CONTROLLER");
-	$scope.testArray = [{"id":4,"name":"D"},{"id":2,"name":"B"},{"id":1,"name":"A"},{"id":3,"name":"C"}];
-});
 
 
 
