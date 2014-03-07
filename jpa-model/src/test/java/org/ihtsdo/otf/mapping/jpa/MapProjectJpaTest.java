@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.jpa;
+/*package org.ihtsdo.otf.mapping.jpa;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -25,88 +25,88 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-/**
+*//**
  * The Class MapProjectJpaTest.
  * 
  * Provides test cases 1. confirm MapProject data load returns expected data 2.
  * confirms indexed fields are indexed 3. confirms MapProject is audited and
  * changes are logged in audit table
- */
+ *//*
 public class MapProjectJpaTest {
 
-	/** The manager. */
+	*//** The manager. *//*
 	private static EntityManager manager;
 
-	/** The factory. */
+	*//** The factory. *//*
 	private static EntityManagerFactory factory;
 
-	/** The full text entity manager. */
+	*//** The full text entity manager. *//*
 	private static FullTextEntityManager fullTextEntityManager;
 
-	/** The audit history reader. */
+	*//** The audit history reader. *//*
 	private static AuditReader reader;
 
-	/** The mapping to ICD10CM. */
+	*//** The mapping to ICD10CM. *//*
 	private static MapProjectJpa mapProject1;
 
-	/** The mapping to ICD9CM. */
+	*//** The mapping to ICD9CM. *//*
 	private static MapProjectJpa mapProject3;
 
-	/** The test ref set id. */
+	*//** The test ref set id. *//*
 	private static String testRefSetId = "123456789";
 
-	/** The test ref set id for the mapping to ICD9CM. */
+	*//** The test ref set id for the mapping to ICD9CM. *//*
 	private static String testRefSetId3 = "345678912";
 
-	/** The test name for the mapping to ICD10CM. */
+	*//** The test name for the mapping to ICD10CM. *//*
 	private static String testName = "SNOMEDCT to ICD10CM Mapping";
 
-	/** The updated test name. */
+	*//** The updated test name. *//*
 	private static String testName2 = "Updated SNOMEDCT to ICD10CM Mapping";
 
-	/** The test name for the mapping to ICD9CM. */
+	*//** The test name for the mapping to ICD9CM. *//*
 	private static String testName3 = "SNOMEDCT to ICD9CM Mapping";
 
-	/** The test source terminology. */
+	*//** The test source terminology. *//*
 	private static String testSourceTerminology = "SNOMEDCT";
 
-	/** The test source terminology for the mapping to ICD9CM. */
+	*//** The test source terminology for the mapping to ICD9CM. *//*
 	private static String testSourceTerminology3 = "SNOMEDCT9";
 
-	/** The test source terminology version. */
+	*//** The test source terminology version. *//*
 	private static String testSourceTerminologyVersion = "20130731";
 
-	/** The test source terminology version for the mapping to ICD9CM. */
+	*//** The test source terminology version for the mapping to ICD9CM. *//*
 	private static String testSourceTerminologyVersion3 = "20130131";
 
-	/** The test destination terminology. */
+	*//** The test destination terminology. *//*
 	private static String testDestinationTerminology = "ICD10CM";
 
-	/** The test destination terminology for the mapping to ICD9CM. */
+	*//** The test destination terminology for the mapping to ICD9CM. *//*
 	private static String testDestinationTerminology3 = "ICD9CM";
 
-	/** The test destination terminology version. */
+	*//** The test destination terminology version. *//*
 	private static String testDestinationTerminologyVersion = "2010";
 
-	/** The test destination terminology version for the mapping to ICD9CM. */
+	*//** The test destination terminology version for the mapping to ICD9CM. *//*
 	private static String testDestinationTerminologyVersion3 = "2009";
 
-	/** The test block structure. */
+	*//** The test block structure. *//*
 	private static boolean testBlockStructure = true;
 
-	/** The test group structure. */
+	*//** The test group structure. *//*
 	private static boolean testGroupStructure = false;
 
-	/** The test published. */
+	*//** The test published. *//*
 	private static boolean testPublished = false;
 
-	/**
+	*//**
 	 * Creates db tables, load test objects and create indexes to prepare for
 	 * test cases.
 	 * 
 	 * @throws Exception
 	 *             if anything goes wrong
-	 */
+	 *//*
 	@BeforeClass
 	public static void init() throws Exception {
 
@@ -126,7 +126,7 @@ public class MapProjectJpaTest {
 		tx.commit();
 
 		// create indexes
-		/**
+		*//**
 		 * try { FullTextEntityManager fullTextEntityManager =
 		 * Search.getFullTextEntityManager(manager);
 		 * fullTextEntityManager.purgeAll(ConceptJpa.class);
@@ -136,15 +136,15 @@ public class MapProjectJpaTest {
 		 * .threadsToLoadObjects(5).threadsForSubsequentFetching(20)
 		 * .startAndWait(); } catch (Throwable e) { e.printStackTrace();
 		 * fail("Indexing failed."); }
-		 */
+		 *//*
 
 		// create audit reader for history records
 		reader = AuditReaderFactory.get(manager);
 	}
 
-	/**
+	*//**
 	 * Test map project load.
-	 */
+	 *//*
 	@Test
 	public void testMapProjectLoad() {
 
@@ -157,12 +157,12 @@ public class MapProjectJpaTest {
 
 	}
 
-	/**
+	*//**
 	 * Load map projects.
 	 * 
 	 * @throws Exception
 	 *             the exception
-	 */
+	 *//*
 	private static void loadMapProjects() throws Exception {
 
 		// create initial map project mapping to ICD10CM
@@ -221,9 +221,9 @@ public class MapProjectJpaTest {
 
 	}
 
-	/**
+	*//**
 	 * Confirm load.
-	 */
+	 *//*
 	@SuppressWarnings("static-method")
 	private void confirmLoad() {
 		javax.persistence.Query query = manager
@@ -240,12 +240,12 @@ public class MapProjectJpaTest {
 
 	}
 
-	/**
+	*//**
 	 * Test map project indexes.
 	 * 
 	 * @throws ParseException
 	 *             if lucene fails to parse query
-	 */
+	 *//*
 	@SuppressWarnings({
 			"static-method", "unchecked"
 	})
@@ -321,9 +321,9 @@ public class MapProjectJpaTest {
 
 	}
 
-	/**
+	*//**
 	 * Test map project audit reader history.
-	 */
+	 *//*
 	@SuppressWarnings("static-method")
 	@Test
 	public void testMapProjectAuditReader() {
@@ -365,9 +365,9 @@ public class MapProjectJpaTest {
 
 	}
 
-	/**
+	*//**
 	 * Clean up.
-	 */
+	 *//*
 	@AfterClass
 	public static void cleanUp() {
 		EntityTransaction tx = manager.getTransaction();
@@ -414,3 +414,4 @@ public class MapProjectJpaTest {
 	}
 
 }
+*/

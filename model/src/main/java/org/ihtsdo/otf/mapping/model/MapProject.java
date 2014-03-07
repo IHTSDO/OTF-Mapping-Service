@@ -176,7 +176,7 @@ public interface MapProject  {
 	 *
 	 * @return the map leads
 	 */
-	public Set<MapLead> getMapLeads();
+	public Set<MapUser> getMapLeads();
 
 	
 	/**
@@ -184,7 +184,7 @@ public interface MapProject  {
 	 *
 	 * @param mapLeads the map leads
 	 */
-	public void setMapLeads(Set<MapLead> mapLeads);
+	public void setMapLeads(Set<MapUser> mapLeads);
 	
 
 	/**
@@ -192,7 +192,7 @@ public interface MapProject  {
 	 *
 	 * @param mapLead the map lead
 	 */
-	public void addMapLead(MapLead mapLead);
+	public void addMapLead(MapUser mapLead);
 	
 
 	/**
@@ -200,7 +200,7 @@ public interface MapProject  {
 	 *
 	 * @param mapLead the map lead
 	 */
-	public void removeMapLead(MapLead mapLead);
+	public void removeMapLead(MapUser mapLead);
 	
 	
 	/**
@@ -208,7 +208,7 @@ public interface MapProject  {
 	 *
 	 * @return the map specialists
 	 */
-	public Set<MapSpecialist> getMapSpecialists();
+	public Set<MapUser> getMapSpecialists();
 
 	
 	/**
@@ -216,7 +216,7 @@ public interface MapProject  {
 	 *
 	 * @param mapSpecialists the map specialists
 	 */
-	public void setMapSpecialists(Set<MapSpecialist> mapSpecialists);
+	public void setMapSpecialists(Set<MapUser> mapSpecialists);
 	
 
 	/**
@@ -224,7 +224,7 @@ public interface MapProject  {
 	 *
 	 * @param mapSpecialist the map specialist
 	 */
-	public void addMapSpecialist(MapSpecialist mapSpecialist);
+	public void addMapSpecialist(MapUser mapSpecialist);
 	
 
 	/**
@@ -232,7 +232,7 @@ public interface MapProject  {
 	 *
 	 * @param mapSpecialist the map specialist
 	 */
-	public void removeMapSpecialist(MapSpecialist mapSpecialist);
+	public void removeMapSpecialist(MapUser mapSpecialist);
 	
 
 	/**

@@ -316,9 +316,6 @@ public class ContentServiceJpa implements ContentService {
       // if concept is active
       if (c.isActive()) {
 
-				// if concept is already in set, it has already been processed
-				//if (!conceptSet.contains(c)) {
-
           // relationship set and iterator
           Set<Relationship> inv_relationships = c.getInverseRelationships();
           Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
@@ -339,17 +336,16 @@ public class ContentServiceJpa implements ContentService {
               // concept)
               Concept c_rel = rel.getSourceConcept();
 
-							// if set does not contain the source concept, add it to set and
-							// queue
-							if (!conceptSet.contains(c_rel)) {
-								conceptSet.add(c_rel);
-								conceptQueue.add(c_rel);
-							}
-						} 
+					// if set does not contain the source concept, add it to set and
+					// queue
+					if (!conceptSet.contains(c_rel)) {
+						conceptSet.add(c_rel);
+						conceptQueue.add(c_rel);
 					}
-				//} 
-			} 
-		}
+				} 
+			}
+		} 
+	}
 
     return conceptSet;
   }
