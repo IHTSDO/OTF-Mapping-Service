@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -25,6 +24,7 @@ import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
@@ -250,27 +250,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				projectAgeRanges.put(refSetId, newAgeRanges);
 
 			}
-			getLog().info("  " + Integer.toString(mappingService.getMapAgeRanges().size()) + " ageranges added.");
-/*
-			while ((line = agerangesReader.readLine()) != null) {
-				String[] fields = line.split("\\|", -1); // make sure to account for empty fields
-				
-				for (int i=0; i < fields.length; i++) {
-					getLog().info(Integer.toString(i) + ": " + fields[i] + " - " + (fields[i].equals("true") ? "true" : "false") + " - " + (fields[i].equals("null") ? "true" : "false") + " - " + (fields[i] == null ? "null" : "non-null"));
-				}
-		
-				MapAgeRangeJpa mapAgeRange = new MapAgeRangeJpa();
-				mapAgeRange.setName(fields[0]);
-				mapAgeRange.setLowerValue(fields[1].equals("") || fields[1].equals("null") ? null : new Integer(fields[1]));
-				mapAgeRange.setLowerUnits(fields[2]);
-				mapAgeRange.setLowerInclusive(fields[3].equals("true") ? true : false);
-				mapAgeRange.setUpperValue(fields[4].equals("") || fields[4].equals("null") ? null : new Integer(fields[4]));
-				mapAgeRange.setUpperUnits(fields[5]);
-				mapAgeRange.setUpperInclusive(fields[6].equals("true") ? true : false);
-				mappingService.addMapAgeRange(mapAgeRange);
-			}
-			getLog().info("  " + Integer.toString(mappingService.getMapAgeRanges().size()) + " ageranges added.");
-*/
+			getLog().info("  " + Integer.toString(mappingService.getMapAgeRanges().size()) + " ageranges added from " + Integer.toString(projectAgeRanges.size()) + " map projects.");
 			
 			
 			// Add map projects
@@ -360,7 +340,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 			
 			// cycle over the includes file
 			
-		/*	getLog().info("Adding scope includes...");
+			getLog().info("Adding scope includes...");
 			
 			while ((line = scopeIncludesReader.readLine()) != null) {
 				
@@ -430,10 +410,11 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 			}
 			
 			getLog().info("  " + Integer.toString(conceptsExcludedFromScopeCount) + " excluded concepts added for " + Integer.toString(projectToConceptsExcludedFromScope.keySet().size()) + " projects.");
-*/
+
 
 			getLog().info("done ...");
 			mappingService.close();
+			agerangesReader.close();
 			usersReader.close();
 			advicesReader.close();
 			principlesReader.close();

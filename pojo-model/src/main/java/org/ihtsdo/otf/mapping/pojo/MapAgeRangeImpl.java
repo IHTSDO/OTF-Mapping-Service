@@ -4,6 +4,8 @@ import org.ihtsdo.otf.mapping.model.MapAgeRange;
 
 public class MapAgeRangeImpl implements MapAgeRange {
 	
+	private Long id;
+	
 	/** The age range preset name */
 	private String name;
 	
@@ -28,12 +30,12 @@ public class MapAgeRangeImpl implements MapAgeRange {
 	}
 	
 	@Override
-	public int getLowerValue() {
+	public Integer getLowerValue() {
 		return this.lowerValue;
 	}
 	
 	@Override
-	public void setLowerValue(int value) {
+	public void setLowerValue(Integer value) {
 		this.lowerValue = value;
 	}
 	
@@ -57,12 +59,12 @@ public class MapAgeRangeImpl implements MapAgeRange {
 		
 	}
 	@Override
-	public int getUpperValue() {
+	public Integer getUpperValue() {
 		return this.upperValue;
 	}
 	
 	@Override
-	public void setUpperValue(int value) {
+	public void setUpperValue(Integer value) {
 		this.upperValue = value;
 	}
 	@Override
@@ -83,6 +85,32 @@ public class MapAgeRangeImpl implements MapAgeRange {
 	@Override
 	public void setUpperInclusive(boolean inclusive) {
 		this.upperInclusive = inclusive;
+	}
+
+	@Override
+	public Long getId() {
+		return this.id;
+	}
+
+	@Override
+	public void setId(Long id) {
+		this.id = id;
+		
+	}
+
+	@Override
+	public String getObjectId() {
+		return this.id.toString();
+	}
+
+	@Override
+	public boolean hasLowerBound() {
+		return this.lowerValue == -1;
+	}
+
+	@Override
+	public boolean hasUpperBound() {
+		return this.upperValue == -1;
 	}
 	
 

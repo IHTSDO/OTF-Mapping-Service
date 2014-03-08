@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlID;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -13,7 +14,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 // TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapProject}.
- *
+ * 
  * @author ${author}
  */
 public class MapProjectImpl implements MapProject {
@@ -76,10 +77,10 @@ public class MapProjectImpl implements MapProject {
 	private String mapRefsetPattern;
 	
 	/**  The set of preset age ranges for rule generation. */
-	private Set<String> rulePresetAgeRanges = new HashSet<String>();
+	private Set<MapAgeRange> presetAgeRanges = new HashSet<MapAgeRange>();
 	
-  /**  The scope concepts. */
-  private Set<String> scopeConcepts = new HashSet<String>();
+    /**  The scope concepts. */
+    private Set<String> scopeConcepts = new HashSet<String>();
 	
 	/**  The scope excluded concepts. */
 	private Set<String> scopeExcludedConcepts = new HashSet<String>();
@@ -552,21 +553,6 @@ public class MapProjectImpl implements MapProject {
 		this.mapRefsetPattern = mapRefsetPattern;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#getRulePresetAgeRanges()
-	 */
-	@Override
-	public Set<String> getRulePresetAgeRanges() {
-		return rulePresetAgeRanges;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#setRulePresetAgeRanges(java.util.Set)
-	 */
-	@Override
-	public void setRulePresetAgeRanges(Set<String> rulePresetAgeRanges) {
-		this.rulePresetAgeRanges = rulePresetAgeRanges;
-	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getScopeConcepts()
@@ -640,67 +626,58 @@ public class MapProjectImpl implements MapProject {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (blockStructure ? 1231 : 1237);
-		result =
-				prime
-						* result
-						+ ((destinationTerminology == null) ? 0 : destinationTerminology
-								.hashCode());
-		result =
-				prime
-						* result
-						+ ((destinationTerminologyVersion == null) ? 0
-								: destinationTerminologyVersion.hashCode());
+		result = prime
+				* result
+				+ ((destinationTerminology == null) ? 0
+						: destinationTerminology.hashCode());
+		result = prime
+				* result
+				+ ((destinationTerminologyVersion == null) ? 0
+						: destinationTerminologyVersion.hashCode());
 		result = prime * result + (groupStructure ? 1231 : 1237);
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result =
-				prime * result + ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
-		result = prime * result + ((mapLeads == null) ? 0 : mapLeads.hashCode());
-		result =
-				prime
-						* result
-						+ ((mapPrincipleSourceDocument == null) ? 0
-								: mapPrincipleSourceDocument.hashCode());
-		result =
-				prime * result
-						+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
-		result =
-				prime * result
-						+ ((mapRefsetPattern == null) ? 0 : mapRefsetPattern.hashCode());
-		result =
-				prime * result
-						+ ((mapRelationStyle == null) ? 0 : mapRelationStyle.hashCode());
-		result =
-				prime * result
-						+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
+		result = prime * result
+				+ ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
+		result = prime * result
+				+ ((mapLeads == null) ? 0 : mapLeads.hashCode());
+		result = prime
+				* result
+				+ ((mapPrincipleSourceDocument == null) ? 0
+						: mapPrincipleSourceDocument.hashCode());
+		result = prime * result
+				+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
+		result = prime
+				* result
+				+ ((mapRefsetPattern == null) ? 0 : mapRefsetPattern.hashCode());
+		result = prime
+				* result
+				+ ((mapRelationStyle == null) ? 0 : mapRelationStyle.hashCode());
+		result = prime * result
+				+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((presetAgeRanges == null) ? 0 : presetAgeRanges.hashCode());
 		result = prime * result + (published ? 1231 : 1237);
-		result = prime * result + ((refSetId == null) ? 0 : refSetId.hashCode());
-		result =
-				prime * result + ((refSetName == null) ? 0 : refSetName.hashCode());
+		result = prime * result
+				+ ((refSetId == null) ? 0 : refSetId.hashCode());
+		result = prime * result
+				+ ((refSetName == null) ? 0 : refSetName.hashCode());
 		result = prime * result + (ruleBased ? 1231 : 1237);
-		result =
-				prime
-						* result
-						+ ((rulePresetAgeRanges == null) ? 0 : rulePresetAgeRanges
-								.hashCode());
-		result =
-				prime * result
-						+ ((scopeConcepts == null) ? 0 : scopeConcepts.hashCode());
+		result = prime * result
+				+ ((scopeConcepts == null) ? 0 : scopeConcepts.hashCode());
 		result = prime * result + (scopeDescendantsFlag ? 1231 : 1237);
-		result =
-				prime
-						* result
-						+ ((scopeExcludedConcepts == null) ? 0 : scopeExcludedConcepts
-								.hashCode());
+		result = prime
+				* result
+				+ ((scopeExcludedConcepts == null) ? 0 : scopeExcludedConcepts
+						.hashCode());
 		result = prime * result + (scopeExcludedDescendantsFlag ? 1231 : 1237);
-		result =
-				prime * result
-						+ ((sourceTerminology == null) ? 0 : sourceTerminology.hashCode());
-		result =
-				prime
-						* result
-						+ ((sourceTerminologyVersion == null) ? 0
-								: sourceTerminologyVersion.hashCode());
+		result = prime
+				* result
+				+ ((sourceTerminology == null) ? 0 : sourceTerminology
+						.hashCode());
+		result = prime
+				* result
+				+ ((sourceTerminologyVersion == null) ? 0
+						: sourceTerminologyVersion.hashCode());
 		return result;
 	}
 
@@ -727,11 +704,6 @@ public class MapProjectImpl implements MapProject {
 				.equals(other.destinationTerminologyVersion))
 			return false;
 		if (groupStructure != other.groupStructure)
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
 			return false;
 		if (mapAdvices == null) {
 			if (other.mapAdvices != null)
@@ -774,6 +746,11 @@ public class MapProjectImpl implements MapProject {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+		if (presetAgeRanges == null) {
+			if (other.presetAgeRanges != null)
+				return false;
+		} else if (!presetAgeRanges.equals(other.presetAgeRanges))
+			return false;
 		if (published != other.published)
 			return false;
 		if (refSetId == null) {
@@ -787,11 +764,6 @@ public class MapProjectImpl implements MapProject {
 		} else if (!refSetName.equals(other.refSetName))
 			return false;
 		if (ruleBased != other.ruleBased)
-			return false;
-		if (rulePresetAgeRanges == null) {
-			if (other.rulePresetAgeRanges != null)
-				return false;
-		} else if (!rulePresetAgeRanges.equals(other.rulePresetAgeRanges))
 			return false;
 		if (scopeConcepts == null) {
 			if (other.scopeConcepts != null)
@@ -815,31 +787,55 @@ public class MapProjectImpl implements MapProject {
 		if (sourceTerminologyVersion == null) {
 			if (other.sourceTerminologyVersion != null)
 				return false;
-		} else if (!sourceTerminologyVersion.equals(other.sourceTerminologyVersion))
+		} else if (!sourceTerminologyVersion
+				.equals(other.sourceTerminologyVersion))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "MapProjectImpl [id=" + id + ", name=" + name + ", blockStructure="
-				+ blockStructure + ", groupStructure=" + groupStructure
-				+ ", published=" + published + ", mapLeads=" + mapLeads
-				+ ", mapSpecialists=" + mapSpecialists + ", mapAdvices=" + mapAdvices
-				+ ", mapPrinciples=" + mapPrinciples + ", refSetId=" + refSetId
-				+ ", refSetName=" + refSetName + ", sourceTerminology="
-				+ sourceTerminology + ", destinationTerminology="
-				+ destinationTerminology + ", sourceTerminologyVersion="
-				+ sourceTerminologyVersion + ", destinationTerminologyVersion="
+		return "MapProjectImpl [id=" + id + ", name=" + name
+				+ ", blockStructure=" + blockStructure + ", groupStructure="
+				+ groupStructure + ", published=" + published + ", mapLeads="
+				+ mapLeads + ", mapSpecialists=" + mapSpecialists
+				+ ", mapAdvices=" + mapAdvices + ", mapPrinciples="
+				+ mapPrinciples + ", refSetId=" + refSetId + ", refSetName="
+				+ refSetName + ", sourceTerminology=" + sourceTerminology
+				+ ", destinationTerminology=" + destinationTerminology
+				+ ", sourceTerminologyVersion=" + sourceTerminologyVersion
+				+ ", destinationTerminologyVersion="
 				+ destinationTerminologyVersion + ", mapRelationStyle="
 				+ mapRelationStyle + ", mapPrincipleSourceDocument="
 				+ mapPrincipleSourceDocument + ", ruleBased=" + ruleBased
-				+ ", mapRefsetPattern=" + mapRefsetPattern + ", rulePresetAgeRanges="
-				+ rulePresetAgeRanges + ", scopeConcepts=" + scopeConcepts
-				+ ", scopeExcludedConcepts=" + scopeExcludedConcepts
-				+ ", scopeDescendantsFlag=" + scopeDescendantsFlag
-				+ ", scopeExcludedDescendantsFlag=" + scopeExcludedDescendantsFlag
-				+ "]";
+				+ ", mapRefsetPattern=" + mapRefsetPattern
+				+ ", presetAgeRanges=" + presetAgeRanges + ", scopeConcepts="
+				+ scopeConcepts + ", scopeExcludedConcepts="
+				+ scopeExcludedConcepts + ", scopeDescendantsFlag="
+				+ scopeDescendantsFlag + ", scopeExcludedDescendantsFlag="
+				+ scopeExcludedDescendantsFlag + "]";
+	}
+
+	@Override
+	public Set<MapAgeRange> getPresetAgeRanges() {
+		return this.presetAgeRanges;
+	}
+
+	@Override
+	public void setPresetAgeRanges(Set<MapAgeRange> ageRanges) {
+		this.presetAgeRanges = ageRanges;
+	}
+
+	@Override
+	public void addPresetAgeRange(MapAgeRange ageRange) {
+		this.presetAgeRanges.add(ageRange);
+		
+	}
+
+	@Override
+	public void removePresetAgeRange(MapAgeRange ageRange) {
+		this.presetAgeRanges.remove(ageRange);
+		
 	}
 
 
