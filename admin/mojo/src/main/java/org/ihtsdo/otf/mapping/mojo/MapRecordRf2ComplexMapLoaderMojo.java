@@ -270,6 +270,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setMapBlockAdvice(null); // no default
 				
 				// Terminology attributes
+				System.out.println("refSetId = " + refSetId);
 				complexMapRefSetMember.setTerminology(mapProjectMap.get(refSetId)
 						.getSourceTerminology());
 				complexMapRefSetMember.setTerminologyVersion(mapProjectMap
