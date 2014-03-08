@@ -35,6 +35,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
+import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
@@ -42,6 +43,7 @@ import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -430,6 +432,25 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 
 	}
+	
+	@Override
+	public MapUser getMapUser(String userName) {
+		
+		MapUser m = null;
+
+		javax.persistence.Query query =
+				manager.createQuery("select m from MapUserJpa m where userName = :userName");
+		query.setParameter("userName", userName);
+		try {
+			m = (MapUser) query.getSingleResult();
+		} catch (NoResultException e) {
+			Logger.getLogger(this.getClass()).warn(
+					"Map specialist query for userName = " + userName + " returned no results!");
+			return null;
+		}
+
+		return m;
+	}
 
 	/**
 	 * Retrieve all map projects assigned to a particular map specialist.
@@ -737,11 +758,20 @@ public class MappingServiceJpa implements MappingService {
 	 *
 	 * @param mapRecord the map record to be added
 	 * @return the map record
+	 * @throws Exception 
 	 */
 	@Override
-	public MapRecord addMapRecord(MapRecord mapRecord) {
+	public MapRecord addMapRecord(MapRecord mapRecord) throws Exception {
 		
-		// first set the map record of all elements of this record
+		// check if user valid
+		if (mapRecord.getOwner() == null) { // || !userExists(mapRecord.getOwner())) {
+			throw new Exception();
+		}
+		
+		// set the timestamp
+		mapRecord.setTimestamp((new java.util.Date()).getTime());
+		
+		// set the map record of all elements of this record
 		mapRecord.assignToChildren();
 		
 		if (getTransactionPerOperation()) {
@@ -767,6 +797,9 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public MapRecord updateMapRecord(MapRecord mapRecord) {
 
+		// update timestamp
+		mapRecord.setTimestamp((new java.util.Date()).getTime());
+		
 		// first assign the map record to its children
 		mapRecord.assignToChildren();
 		
@@ -1089,6 +1122,8 @@ public class MappingServiceJpa implements MappingService {
 			}
 
 			m = query.getResultList();
+			
+			System.out.println(Integer.toString(m.size()));
 		} catch (NoResultException e) {
 			Logger.getLogger(this.getClass()).warn(
 					"Map project query for id = " + mapProjectId
@@ -2096,6 +2131,13 @@ public class MappingServiceJpa implements MappingService {
 			String prevConceptId = null;
 			MapRecord mapRecord = null;
 			int ct = 0;
+			MapUser loaderUser = getMapUser("loader");
+			
+			if (loaderUser == null) {
+				throw new Exception("Loader user could not be found");
+			}
+			
+			
 			for (ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
 
 				// Skip inactive cases
@@ -2151,6 +2193,9 @@ public class MappingServiceJpa implements MappingService {
 					// set the previous concept to this concept
 					prevConceptId =
 							refSetMember.getConcept().getTerminologyId();
+					
+					// set the owner to legacy
+					mapRecord.setOwner(loaderUser);
 
 					// persist the record
 					addMapRecord(mapRecord);
@@ -2303,6 +2348,98 @@ public class MappingServiceJpa implements MappingService {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	//////////////////////////
+	// UTILITY FUNCTIONS
+	//////////////////////////
+	
+	@Override
+	public boolean userExists(MapUser mapUser) {
+		
+		List<MapUser> mapUsers = getMapUsers();
+		
+		// find if user with this username exists in list of valid users
+		for (MapUser m : mapUsers) {
+			if (m.getUserName().equals(mapUser.getUserName())) return true;
+		}
+		
+		// if not found, return false
+		return false;
+	}
 
+	/**
+	 * Retrieve all map age ranges.
+	 * 
+	 * @return a List of MapAgeRanges
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<MapAgeRange> getMapAgeRanges() {
+
+		List<MapAgeRange> m = null;
+
+		// construct query
+		javax.persistence.Query query =
+				manager.createQuery("select m from MapAgeRangeJpa m");
+
+		// Try query
+
+		m = query.getResultList();
+
+		return m;
+	}
+
+	
+	@Override
+	public MapAgeRange addMapAgeRange(MapAgeRange mapAgeRange) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+
+			tx.begin();
+			manager.persist(mapAgeRange);
+			tx.commit();
+			
+		} else {
+			manager.persist(mapAgeRange);
+		}
+		
+		return mapAgeRange;
+	}
+
+
+	@Override
+	public void removeMapAgeRange(Long mapAgeRangeId) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+			tx.begin();
+			MapAgeRange mar = manager.find(MapAgeRangeJpa.class, mapAgeRangeId);
+			if (manager.contains(mar)) {
+				manager.remove(mar);
+			} else {
+				manager.remove(manager.merge(mar));
+			}
+			tx.commit();
+		} else {
+			MapAgeRange mar = manager.find(MapAgeRangeJpa.class, mapAgeRangeId);
+			if (manager.contains(mar)) {
+				manager.remove(mar);
+			} else {
+				manager.remove(manager.merge(mar));
+			}
+		}
+	}
+
+	@Override
+	public void updateMapAgeRange(MapAgeRange mapAgeRange) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+
+			tx.begin();
+			manager.merge(mapAgeRange);
+			tx.commit();
+		} else {
+			manager.merge(mapAgeRange);
+		}
+	}
 
 }

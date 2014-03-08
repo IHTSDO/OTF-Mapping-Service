@@ -423,6 +423,14 @@ public interface MapProject  {
 	 */
 	public void setScopeExcludedDescendantsFlag(boolean flag);
 	
+	public Set<MapAgeRange> getPresetAgeRanges();
+	
+	public void setPresetAgeRanges(Set<MapAgeRange> ageRanges);
+	
+	public void addPresetAgeRange(MapAgeRange ageRange);
+	
+	public void removePresetAgeRange(MapAgeRange ageRange);
+	
 	
 
 }

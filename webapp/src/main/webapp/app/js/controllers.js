@@ -27,16 +27,29 @@ mapProjectAppControllers.run(function($rootScope) {
 
 
 mapProjectAppControllers.controller('LoginCtrl', 
-	 function ($scope, $rootScope, $location) {
+	 function ($scope, $rootScope, $location, $http) {
 	
+	$scope.user = null;
 	
-	$scope.testArray = [{"id":4,"name":"D"},{"id":2,"name":"B"},{"id":1,"name":"A"},{"id":3,"name":"C"}];
-	
-	
+	// retrieve users
+	$http({
+		 url: root_mapping + "user/users",
+		 dataType: "json",
+	        method: "GET",
+	        headers: {
+	          "Content-Type": "application/json"
+	        }	
+	      }).success(function(data) {
+	    	  $scope.users = data.mapUser;
+	      }).error(function(error) {
+	    	  $scope.error = $scope.error + "Could not retrieve projects. "; 
+	     
+         });
 	
 	// logout icon returns to login page, so reinitialize
 	$rootScope.userName = null;
 	$rootScope.role = null;
+	$rootScope.user = null;
 	
 	// initial values for pick-list
 	 $scope.roles = [
@@ -57,11 +70,18 @@ mapProjectAppControllers.controller('LoginCtrl',
 		 } else if ($scope.role.name == "Viewer") {
 			 path = "/project/projects/";
 		 }
-			$location.path(path);
-			$rootScope.userName = $scope.userName;
+		 
+		 if ($scope.user == null) {
+			 alert("You must specify a user");
+		 } else {
+			$rootScope.user = $scope.user;
+			$rootScope.userName = $scope.user.name;
 			$rootScope.role = $scope.role;
-		};
-	 });
+			$location.path(path);
+			
+		 }
+	 };
+ });
 
 
 	
@@ -433,6 +453,10 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 	 		        headers: { "Content-Type": "application/json"}	
 		      }).success(function(data) {
 	 		    	  $scope.project = data;
+	 				  
+	 		    	  // initialize the preset age ranges
+	 				  initializePresetAgeRanges();
+	 		    	  
 		      }).error(function(error) {
 	 		    	  $scope.error = $scope.error + "Could not retrieve map project. ";
 	          }).then(function() {
@@ -460,8 +484,7 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 	          });
           });
 		
-		  // initialize the preset age ranges
-		  initializePresetAgeRanges();
+
 		
 		/**
 		 * Utility functions
@@ -520,6 +543,12 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 		 * MAP RECORD FUNCTIONS
 		 */
 		$scope.saveMapRecord = function() {
+			
+			if ($rootScope.user.id == null || $rootScope.user.id === '') {
+				alert("Global Error:  The current user is not set.  Please return to the log-in page to log in again.\n\nKNOWN BUG:  Reloading a browser window or navigating this site via external bookmarks can cause this error.");
+			} else {
+				$scope.record.ownerId = $rootScope.user.id;
+			}
 			
 			$http({
 				  url: root_mapping + "record/update",
@@ -696,7 +725,7 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 					"mapRecordId": $scope.record.id,
 					"targetId":"",
 					"targetName":"",
-					"rule":"",
+					"rule":"TRUE",
 					"mapPriority": $scope.getEntries(group).length + 1,
 					"relationId":"",
 					"relationName":"",
@@ -850,7 +879,7 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 				  controller: RuleConstructorModalCtrl,
 				  resolve: {
 					  presetAgeRanges: function() {
-						  return angular.copy($scope.presetAgeRanges);
+						  return angular.copy($scope.project.presetAgeRanges);
 					  }
 				  }
 			  });
@@ -865,8 +894,8 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 		// set up the preset age range defaults
 		var RuleConstructorModalCtrl = function($scope, $http, $modalInstance, presetAgeRanges) {
 			
-			$scope.ageRange={"name":"" , "lower":"", "lowerOp":"", "lowerUnits":"", 
-					  "upper":"", "upperOp":"", "upperUnits":""},
+			$scope.ageRange={"name":"" , "lowerValue":"", "lowerInclusive":"", "lowerUnits":"", 
+					  "upperValue":"", "upperInclusive":"", "upperUnits":""},
 
 			$scope.presetAgeRanges = presetAgeRanges;
 			$scope.ruleCategories = ['TRUE', 'Gender - Male', 'Gender - Female', 'Age - Chronological', 'Age - At Onset'];
@@ -892,6 +921,8 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 				console.debug("constructRule() with " + ruleCategory);
 				console.debug(ageRange);
 				
+				$scope.rule = "";
+				
 				if (ruleCategory === "TRUE") {
 					console.debug("TRUE selected");
 					$scope.rule = "TRUE";
@@ -912,28 +943,28 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 					if (ruleCategory === "Age - Chronological") {
 						console.debug("ruleAge selected");
 
-						if (ageRange.lower != '') {
+						if (ageRange.lowerValue != '') {
 							$scope.rule += "IFA 424144002 | Current chronological age (observable entity)"
-										+  " | " + ageRange.lowerOp + " "
-										+  ageRange.lower + " "
+										+  " | " + (ageRange.lowerInclusive == true ? ">=" : ">") + " "
+										+  ageRange.lowerValue + " "
 										+  ageRange.lowerUnits;
 						}
 						
-						if (ageRange.lower != '' && ageRange.upper != '')
+						if (ageRange.lowerValue != '' && ageRange.upperValue != '')
 							$scope.rule += " | ";
 						
-						if (ageRange.upper != '') {
+						if (ageRange.upperValue != '') {
 							$scope.rule += "IFA 424144002 | Current chronological age (observable entity)"
-										+  " | " + ageRange.upperOp + " "
-										+  ageRange.upper + " "
+										+  " | " + (ageRange.upperInclusive == true ? "<=" : "<") + " "
+										+  ageRange.upperValue + " "
 										+  ageRange.upperUnits;
 						}			
 					} else if (ruleCategory === "Age - At Onset") {
 						console.debug("ruleAgeAtOnset selected");
 						$scope.rule = "IFA 445518008 | Age at onset of clinical finding (observable entity)";
-						if (ageRange.upper != '') {
-							$scope.rule += " | " + ageRange.lowerOp + " "
-										+  ageRange.lower + " "
+						if (ageRange.upperValue != '') {
+							$scope.rule += " | " + (ageRange.lowerInclusive == true ? ">=" : ">") + " "
+										+  ageRange.lowerValue + " "
 										+  ageRange.lowerUnits;
 						}
 					}
@@ -947,62 +978,28 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 		};
 		
 		function initializePresetAgeRanges() {  
-			  $scope.presetAgeRanges = [
-			                            
-	          {"name":"Perinatal" , "lower":"0.0", "lowerOp":">=", "lowerUnits":"days", 
-	          					  "upper":"7.0", "upperOp":"\<", "upperUnits":"days"},
-	          					  
-	          {"name":"Neonatal/newborn" , "lower":"0.0", "lowerOp":">=", "lowerUnits":"days", 
-	          					         "upper":"28.0", "upperOp":"\<", "upperUnits":"days"},
-	          					  
-	          {"name":"Infant" , "lower":"", "lowerOp":"", "lowerUnits":"", 
-	          				   "upper":"2.0", "upperOp":"\<", "upperUnits":"years"},
-	          
-	          {"name":"Juvenile" , "lower":"2.0", "lowerOp":">=", "lowerUnits":"years", 
-	          					 "upper":"19.0", "upperOp":"\<", "upperUnits":"years"},
-	          
-	          {"name":"Adolescence" , "lower":"12.0", "lowerOp":">=", "lowerUnits":"years", 
-	          						"upper":"19.0", "upperOp":"\<", "upperUnits":"years"},
-	          
-	          {"name":"Childhood" , "lower":"0.0", "lowerOp":">=", "lowerUnits":"years", 
-	          					  "upper":"19.0", "upperOp":"\<", "upperUnits":"years"},
-	          
-	          {"name":"Adult" , "lower":"19.0", "lowerOp":">=", "lowerUnits":"years", 
-	          					  "upper":"", "upperOp":"", "upperUnits":""},
-	          
-	          {"name":"Pre-senile" , "lower":"", "lowerOp":"", "lowerUnits":"", 
-	          					  "upper":"65.0", "upperOp":"\<", "upperUnits":"years"},
-	          
-	          {"name":"Senile" , "lower":"65.0", "lowerOp":">=", "lowerUnits":"days", 
-	          					  "upper":"", "upperOp":"\<", "upperUnits":""}
-			  ];
+			  $scope.presetAgeRanges = $scope.project.presetAgeRanges;
 			  
 			  // set the preset age range strings
 			  for (var i = 0; i < $scope.presetAgeRanges.length; i++) {
-				  var presetAgeRangeStr = $scope.presetAgeRanges[i].name;
+				  var presetAgeRangeStr = $scope.presetAgeRanges[i].name + ", ";
 				  
-				  if ($scope.presetAgeRanges[i].lower != null && $scope.presetAgeRanges[i].lower != '' &&
-						  $scope.presetAgeRanges[i].upper != null && $scope.presetAgeRanges[i].upper != '') {
-						  
-						  presetAgeRangeStr += ", ";
-					  }
-				  
-				  if ($scope.presetAgeRanges[i].lower != null && $scope.presetAgeRanges[i].lower != '') {
-					  presetAgeRangeStr += $scope.presetAgeRanges[i].lowerOp + " "
-					  					+  $scope.presetAgeRanges[i].lower + " "
+				  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != '') {
+					  presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive == true ? ">=" : ">") + " "
+					  					+  $scope.presetAgeRanges[i].lowerValue + " "
 					  					+  $scope.presetAgeRanges[i].lowerUnits;
 				  }
 				  
-				  if ($scope.presetAgeRanges[i].lower != null && $scope.presetAgeRanges[i].lower != '' &&
-					  $scope.presetAgeRanges[i].upper != null && $scope.presetAgeRanges[i].upper != '') {
+				  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != '' &&
+					  $scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != '') {
 					  
 					  presetAgeRangeStr += " and ";
 				  }
 				  
-				  if ($scope.presetAgeRanges[i].upper != null && $scope.presetAgeRanges[i].upper != '') {
+				  if ($scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != '') {
 					  
-					  presetAgeRangeStr += $scope.presetAgeRanges[i].upperOp + " "
-					  					+  $scope.presetAgeRanges[i].upper + " "
+					  presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive == true ? "<=" : "<") + " "
+					  					+  $scope.presetAgeRanges[i].upperValue + " "
 					  					+  $scope.presetAgeRanges[i].upperUnits;
 				  }
 				  
