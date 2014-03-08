@@ -223,13 +223,6 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 				if (mprMapSpecialists.length() > 1)
 					mprMapSpecialists.deleteCharAt(mprMapSpecialists.length() - 1);
 				
-				StringBuffer mprRulePresetAgeRanges = new StringBuffer();
-				for(String rpar : mpr.getRulePresetAgeRanges()) {
-					mprRulePresetAgeRanges.append(rpar).append(",");	
-				}
-				if (mprRulePresetAgeRanges.length() > 1)
-					mprRulePresetAgeRanges.deleteCharAt(mprRulePresetAgeRanges.length() -1);
-
 				projectsWriter.write(mpr.getName() + "\t" + mpr.getRefSetId() + "\t"
 						+ mpr.getRefSetName() + "\t"
 						+ mpr.getSourceTerminology() + "\t"

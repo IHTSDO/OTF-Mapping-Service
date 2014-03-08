@@ -135,12 +135,6 @@ public class MapProjectJpa implements MapProject {
 	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
-	
-	/**  The preset age ranges for rule generation (Age, Age at onset). */
-	@ElementCollection(fetch=FetchType.EAGER)
-	@CollectionTable(name="map_projects_rule_preset_age_ranges", joinColumns=@JoinColumn(name="id"))
-	@Column(nullable = true)
-	private Set<String> rulePresetAgeRanges = new HashSet<String>();
 		
    /**  The concepts in scope for this project. */
 	@ElementCollection(fetch=FetchType.EAGER)
@@ -509,22 +503,6 @@ public class MapProjectJpa implements MapProject {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#getRulePresetAgeRanges()
-	 */
-	@Override
-	public Set<String> getRulePresetAgeRanges() {
-		return rulePresetAgeRanges;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#setRulePresetAgeRanges(java.util.Set)
-	 */
-	@Override
-	public void setRulePresetAgeRanges(Set<String> rulePresetAgeRanges) {
-		this.rulePresetAgeRanges = rulePresetAgeRanges;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapAdvices()
 	 */
 	@Override
@@ -655,30 +633,30 @@ public class MapProjectJpa implements MapProject {
 	}
 
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
-		return "MapProjectJpa [name=" + name + ", blockStructure="
-				+ blockStructure + ", groupStructure=" + groupStructure
-				+ ", published=" + published + ", refSetId=" + refSetId
-				+ ", refSetName=" + refSetName + ", sourceTerminology="
-				+ sourceTerminology + ", sourceTerminologyVersion="
-				+ sourceTerminologyVersion + ", destinationTerminology="
-				+ destinationTerminology + ", destinationTerminologyVersion="
+		return "MapProjectJpa [id=" + id + ", name=" + name
+				+ ", blockStructure=" + blockStructure + ", groupStructure="
+				+ groupStructure + ", published=" + published + ", refSetId="
+				+ refSetId + ", refSetName=" + refSetName
+				+ ", sourceTerminology=" + sourceTerminology
+				+ ", sourceTerminologyVersion=" + sourceTerminologyVersion
+				+ ", destinationTerminology=" + destinationTerminology
+				+ ", destinationTerminologyVersion="
 				+ destinationTerminologyVersion + ", mapRefsetPattern="
 				+ mapRefsetPattern + ", mapRelationStyle=" + mapRelationStyle
 				+ ", mapPrincipleSourceDocument=" + mapPrincipleSourceDocument
-				+ ", ruleBased=" + ruleBased + ", mapLeads=" + mapLeads
+				+ ", ruleBased=" + ruleBased + ", presetAgeRanges="
+				+ presetAgeRanges + ", mapLeads=" + mapLeads
 				+ ", mapSpecialists=" + mapSpecialists + ", mapPrinciples="
 				+ mapPrinciples + ", mapAdvices=" + mapAdvices
-				+ ", rulePresetAgeRanges=" + rulePresetAgeRanges + "]";
+				+ ", scopeConcepts=" + scopeConcepts
+				+ ", scopeExcludedConcepts=" + scopeExcludedConcepts
+				+ ", scopeDescendantsFlag=" + scopeDescendantsFlag
+				+ ", scopeExcludedDescendantsFlag="
+				+ scopeExcludedDescendantsFlag + "]";
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -712,16 +690,22 @@ public class MapProjectJpa implements MapProject {
 		result = prime * result
 				+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((presetAgeRanges == null) ? 0 : presetAgeRanges.hashCode());
 		result = prime * result + (published ? 1231 : 1237);
 		result = prime * result
 				+ ((refSetId == null) ? 0 : refSetId.hashCode());
 		result = prime * result
 				+ ((refSetName == null) ? 0 : refSetName.hashCode());
 		result = prime * result + (ruleBased ? 1231 : 1237);
+		result = prime * result
+				+ ((scopeConcepts == null) ? 0 : scopeConcepts.hashCode());
+		result = prime * result + (scopeDescendantsFlag ? 1231 : 1237);
 		result = prime
 				* result
-				+ ((rulePresetAgeRanges == null) ? 0 : rulePresetAgeRanges
+				+ ((scopeExcludedConcepts == null) ? 0 : scopeExcludedConcepts
 						.hashCode());
+		result = prime * result + (scopeExcludedDescendantsFlag ? 1231 : 1237);
 		result = prime
 				* result
 				+ ((sourceTerminology == null) ? 0 : sourceTerminology
@@ -733,9 +717,6 @@ public class MapProjectJpa implements MapProject {
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -801,6 +782,11 @@ public class MapProjectJpa implements MapProject {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+		if (presetAgeRanges == null) {
+			if (other.presetAgeRanges != null)
+				return false;
+		} else if (!presetAgeRanges.equals(other.presetAgeRanges))
+			return false;
 		if (published != other.published)
 			return false;
 		if (refSetId == null) {
@@ -815,10 +801,19 @@ public class MapProjectJpa implements MapProject {
 			return false;
 		if (ruleBased != other.ruleBased)
 			return false;
-		if (rulePresetAgeRanges == null) {
-			if (other.rulePresetAgeRanges != null)
+		if (scopeConcepts == null) {
+			if (other.scopeConcepts != null)
 				return false;
-		} else if (!rulePresetAgeRanges.equals(other.rulePresetAgeRanges))
+		} else if (!scopeConcepts.equals(other.scopeConcepts))
+			return false;
+		if (scopeDescendantsFlag != other.scopeDescendantsFlag)
+			return false;
+		if (scopeExcludedConcepts == null) {
+			if (other.scopeExcludedConcepts != null)
+				return false;
+		} else if (!scopeExcludedConcepts.equals(other.scopeExcludedConcepts))
+			return false;
+		if (scopeExcludedDescendantsFlag != other.scopeExcludedDescendantsFlag)
 			return false;
 		if (sourceTerminology == null) {
 			if (other.sourceTerminology != null)

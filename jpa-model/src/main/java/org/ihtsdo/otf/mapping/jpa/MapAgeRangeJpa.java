@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -160,11 +161,13 @@ public class MapAgeRangeJpa implements MapAgeRange {
 	}
 	
 	@Override
+	@XmlElement(name = "hasLowerBound")
 	public boolean hasLowerBound() {
 		return this.lowerValue == -1;
 	}
 
 	@Override
+	@XmlElement(name = "hasUpperBound")
 	public boolean hasUpperBound() {
 		return this.upperValue == -1;
 	}
