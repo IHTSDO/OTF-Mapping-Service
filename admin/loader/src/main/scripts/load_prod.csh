@@ -26,7 +26,7 @@ endif
 
 
 echo "    Load ICPC ...`/bin/date`"
-cd $CODE_HOME/admin/loader (file is ~/data/icpc*xml)
+cd $CODE_HOME/admin/loader
 mvn -PICPC -Drun.config=prod install >&! mvn.log
 if ($status !- 0) then
     echo "ERROR running updatedb"
@@ -35,7 +35,7 @@ if ($status !- 0) then
 endif
 
 echo "    Load ICD10 ...`/bin/date`"
-cd $CODE_HOME/admin/loader (file is ~/data/icd10*xml)
+cd $CODE_HOME/admin/loader
 mvn -PICD10-Drun.config=prod install >&! mvn.log
 if ($status !- 0) then
     echo "ERROR running updatedb"
@@ -44,7 +44,7 @@ if ($status !- 0) then
 endif
 
 echo "    Load ICD9CM ...`/bin/date`"
-cd $CODE_HOME/admin/loader (file is ~/data/icd9cm*xml)
+cd $CODE_HOME/admin/loader
 mvn -PICD9CM -Drun.config=prod install >&! mvn.log
 if ($status !- 0) then
     echo "ERROR running updatedb"
@@ -53,7 +53,7 @@ if ($status !- 0) then
 endif
 
 echo "    Import project data ...`/bin/date`"
-cd $CODE_HOME/admin/import (dir is in ~/data/ihtsdo-project-data)
+cd $CODE_HOME/admin/import
 mvn -Drun.config=prod install >&! mvn.log
 if ($status !- 0) then
     echo "ERROR running updatedb"
