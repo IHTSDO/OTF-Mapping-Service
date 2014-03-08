@@ -9,6 +9,27 @@ package org.ihtsdo.otf.mapping.model;
 public interface MapAgeRange {
 	
 	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
+	public Long getId();
+
+	/**
+	 * Sets the id.
+	 *
+	 * @param id the new id
+	 */
+	public void setId(Long id);
+
+	/**
+	 * Gets the object id.
+	 *
+	 * @return the object id
+	 */
+	public String getObjectId();
+	
+	/**
 	 * Gets the name.
 	 *
 	 * @return the name
@@ -27,14 +48,14 @@ public interface MapAgeRange {
 	 *
 	 * @return the lower value
 	 */
-	public int getLowerValue();
+	public Integer getLowerValue();
 	
 	/**
 	 * Sets the lower value.
 	 *
 	 * @param value the new lower value
 	 */
-	public void setLowerValue(int value);
+	public void setLowerValue(Integer value);
 	
 	/**
 	 * Gets the lower units.
@@ -60,7 +81,7 @@ public interface MapAgeRange {
 	/**
 	 * Sets the lower inclusive.
 	 *
-	 * @param the lower inclusive, i.e. true, if this bound is inclusive (>=)
+	 * @param inclusive the new lower inclusive
 	 */
 	public void setLowerInclusive(boolean inclusive);
 	
@@ -69,14 +90,14 @@ public interface MapAgeRange {
 	 *
 	 * @return the upper value
 	 */
-	public int getUpperValue();
+	public Integer getUpperValue();
 	
 	/**
 	 * Sets the upper value.
 	 *
 	 * @param value the new upper value
 	 */
-	public void setUpperValue(int value);
+	public void setUpperValue(Integer value);
 	
 	/**
 	 * Gets the upper units.
@@ -105,4 +126,21 @@ public interface MapAgeRange {
 	 * @param inclusive the upper inclusive, true if this bound is inclusive (i.e. <=)
 	 */
 	public void setUpperInclusive(boolean inclusive);
+	
+	
+	/**
+	 * Checks for lower bound.
+	 *
+	 * @return true, if successful
+	 */
+	public boolean hasLowerBound();
+	
+	/**
+	 * Checks for upper bound.
+	 *
+	 * @return true, if successful
+	 */
+	public boolean hasUpperBound();
+
+	
 }

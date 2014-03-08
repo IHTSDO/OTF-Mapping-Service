@@ -26,6 +26,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -104,6 +105,10 @@ public class MapProjectJpa implements MapProject {
 	/**  Flag for whether this project is rule based. */
 	@Column(nullable = false)
 	private boolean ruleBased;
+	
+	/** The preset age ranges */
+	@ManyToMany(targetEntity=MapAgeRangeJpa.class, fetch=FetchType.EAGER)
+	private Set<MapAgeRange> presetAgeRanges = new HashSet<MapAgeRange>();
 
 	/** The map leads. */
 	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
@@ -829,5 +834,23 @@ public class MapProjectJpa implements MapProject {
 		return true;
 	}
 
+	@Override
+	public Set<MapAgeRange> getPresetAgeRanges() {
+		return this.presetAgeRanges;
+	}
 
+	@Override
+	public void setPresetAgeRanges(Set<MapAgeRange> ageRanges) {
+		this.presetAgeRanges = ageRanges;		
+	}
+
+	@Override
+	public void addPresetAgeRange(MapAgeRange ageRange) {
+		this.presetAgeRanges.add(ageRange);
+	}
+
+	@Override
+	public void removePresetAgeRange(MapAgeRange ageRange) {
+		this.presetAgeRanges.remove(ageRange);		
+	}
 }

@@ -66,6 +66,7 @@
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapRecordJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapAdviceJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MappingRevisionEntity&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MappingRevisionListener&lt;/class&gt;
      </managed.classes.list>
