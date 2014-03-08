@@ -32,6 +32,8 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.ClamlMetadataHelper;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
@@ -40,6 +42,8 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -193,11 +197,41 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       inputStream = checkForUtf8BOM(fis);
       reader = new InputStreamReader(inputStream, "UTF-8");
       InputSource is = new InputSource(reader);
-      is.setEncoding("UTF-8");
-      saxParser.parse(is, handler);
+			is.setEncoding("UTF-8");
+			saxParser.parse(is, handler);
 
-      tx.commit();
-      getLog().info("done ...");
+			tx.commit();
+
+			// creating tree positions
+			// first get isaRelType from metadata
+			MetadataService metadataService = new MetadataServiceJpa();
+			Map<Long, String> hierRelTypeMap = metadataService.getHierarchicalRelationshipTypes(terminology, terminologyVersion);
+			String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
+			metadataService.close();
+			
+			ContentService contentService = new ContentServiceJpa();
+			getLog().info("Start creating tree positions.");
+			// TODO: don't hardcode root or isa values
+			// eg, for ICPC what is the root?
+			/**if (terminology.equals("ICPC"))
+			  contentService.computeTreePositions(terminology, terminologyVersion,
+					isaRelType, "A");
+			else */if (terminology.equals("ICD10")) {
+				String[] roots = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII"};
+				for (String root : roots) 
+				  contentService.computeTreePositions(terminology, terminologyVersion,
+						isaRelType, root);
+			} else if (terminology.equals("ICD9CM")) {
+				contentService.computeTreePositions(terminology, terminologyVersion,
+						isaRelType, "001-999.99");			 
+				contentService.computeTreePositions(terminology, terminologyVersion,
+						isaRelType, "E000-E999.9");
+				contentService.computeTreePositions(terminology, terminologyVersion,
+						isaRelType, "V01-V91.99");
+			}
+			contentService.close();
+
+			getLog().info("done ...");
 
     } catch (Exception e) {
       e.printStackTrace();
