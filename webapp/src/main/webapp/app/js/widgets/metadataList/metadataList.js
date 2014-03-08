@@ -2,22 +2,30 @@
 'use strict';
 
 angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
-  .value('terminology', 'SNOMEDCT')
   .config(function(dashboardProvider){
     dashboardProvider
       .widget('metadataList', {
         title: 'Metadata',
-        description: 'Displays metadata for a terminology',
-        controller: 'metadataCtrl',
+        description: 'Display metadata for a terminology',
         templateUrl: 'js/widgets/metadataList/metadataList.html',
-        edit: {      
-          templateUrl: 'js/widgets/metadataList/edit.html',
-          reload: true,
-          controller: 'metadataEditCtrl'          
+        controller: 'metadataCtrl',
+        resolve: {
+          data: function(metadataService, config){
+            if (!config.terminology){
+                config.terminology = 'SNOMEDCT';
+            } 
+            return metadataService.get(config.terminology);
+          }
+        },
+        edit: {
+          templateUrl: 'js/widgets/metadataList/edit.html'
         }
       });
-  }).controller('metadataCtrl', function($scope, $http, terminology){
-
+  })
+  .service('metadataService', function($q, $http){
+    return {
+      get: function(terminology){
+        var deferred = $q.defer();
 		$http({
 			  url: root_metadata + "all/" + terminology,
 			  dataType: "json",
@@ -25,38 +33,20 @@ angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
 			  headers: {
 				  "Content-Type": "application/json"
 			  }
-		  }).success(function(response) {
-		      $scope.terminology = terminology;
-		      $scope.keyValuePairLists = response.keyValuePairList;
-		  }).error(function(error) {
-			  $scope.errorMetadata = "Error retrieving all metadata";
+		  }).success(function(data) {
+	            if (data){
+	                deferred.resolve(data);
+	              } else {
+	                deferred.reject();
+	              }
+		  }).error(function() {
+              deferred.reject();
 		 });
-	  	   $http({
-				  url: root_metadata + "terminologies/latest/",
-				  dataType: "json",
-				  method: "GET",
-				  headers: {
-					  "Content-Type": "application/json"
-				  }
-			  }).success(function(response) {
-			      $scope.termVersionPairs = response;
-			  }).error(function(error) {
-				  $scope.latestTerminologiesStatus = "Error retrieving metadata terminologies";
-			  });
-  }).controller('metadataEditCtrl', function($scope, $http, terminology){
-		      $scope.terminology = terminology;
-		      $http({
-				  url: root_metadata + "terminologies/latest/",
-				  dataType: "json",
-				  method: "GET",
-				  headers: {
-					  "Content-Type": "application/json"
-				  }
-			  }).success(function(response) {
-			      $scope.termVersionPairs = response;
-			  }).error(function(error) {
-				  $scope.latestTerminologiesStatus = "Error retrieving metadata terminologies";
-			  });
+        return deferred.promise;
+      }
+    };
+  })
+  .controller('metadataCtrl', function($scope, data){
+    $scope.data = data;
+    $scope.keyValuePairLists = data.keyValuePairList;
   });
-
-	

@@ -25,6 +25,8 @@ import javax.persistence.Query;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.FileSorter;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -41,6 +43,8 @@ import org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 
 import com.google.common.io.Files;
 
@@ -352,6 +356,21 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 									+ ft.format(new Date()) + ")");
 				}
 
+				// creating tree positions
+				// first get isaRelType from metadata
+				MetadataService metadataService = new MetadataServiceJpa();
+				Map<Long, String> hierRelTypeMap = metadataService.getHierarchicalRelationshipTypes(terminology, version);
+				String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
+				metadataService.close();
+				
+				ContentService contentService = new ContentServiceJpa();
+				getLog().info("Start creating tree positions.");
+				// TODO: don't hardcode root or isa values
+				contentService.computeTreePositions(terminology, version,
+						isaRelType, "138875005");
+				contentService.close();
+				
+				
 				// Final logging messages
 				getLog().info(
 						"    Total elapsed time for run: "

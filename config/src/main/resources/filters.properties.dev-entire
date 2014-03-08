@@ -1,7 +1,7 @@
 #
 # MySQL Config information
 #
-mysql.main.url=jdbc:mysql://127.0.0.1:3306/mappingservicedb
+mysql.main.url=jdbc:mysql://127.0.0.1:3306/mappingservicedbentire
 mysql.main.user=root
 mysql.main.pwd=rootpwd
 mysql.test.url=jdbc:mysql://127.0.0.1:3306/mappingservicedbtest
@@ -14,9 +14,9 @@ mysql.test.pwd=rootpwd
 #
 
 #
-# SNOMEDCT mini data
+# SNOMEDCT full snapshot data
 #
-loader.SNOMEDCT.input.data=C:/data/snomedct-20140131-mini
+loader.SNOMEDCT.input.data=C:/data/snomedct-20140131-snapshot
 
 #
 # Path to icpc data

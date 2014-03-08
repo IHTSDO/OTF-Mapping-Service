@@ -1,14 +1,6 @@
 <form role="form">
   <div class="form-group">
-    <label for="terminology">Terminology</label>
-    <input type="terminology" class="form-control" id="terminology" ng-model="config.terminology" placeholder="Enter terminology">
+    <label for="terminology">Terminology</label>  
+    <select class="form-control" id="terminology" ng-model="config.terminology" ng-options="currOption for currOption in ['SNOMEDCT', 'ICD10', 'ICD9CM', 'ICPC' ]"></select>    
   </div>
-  <!-- <select ng-model="terminology" ng-options="keyValuePair.key for keyValuePair in termVersionPairs.keyValuePair"></select>
-  --> <select ng-model="terminology" ng-options="currOption for currOption in ['SNOMEDCT', 'ICD10', 'ICD9CM']"></select>  
-    
-    
-    <ul>
-<li ng-repeat = "keyValuePair in termVersionPairs.keyValuePair"> {{keyValuePair.key}}</li>
-</ul> 
-  
 </form>
