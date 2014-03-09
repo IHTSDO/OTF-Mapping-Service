@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.rest;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -12,28 +13,24 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
-import org.ihtsdo.otf.mapping.jpa.MapLeadJpa;
-import org.ihtsdo.otf.mapping.jpa.MapLeadList;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleList;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectList;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordList;
-import org.ihtsdo.otf.mapping.jpa.MapSpecialistJpa;
-import org.ihtsdo.otf.mapping.jpa.MapSpecialistList;
+import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.jpa.ConceptList;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -61,8 +58,7 @@ public class MappingServiceRest {
 	/////////////////////////////////////////////////////
 	// Mapping Objects: Retrieval (@GET) functions
 	// - getMapProjects()
-	// - getMapLeads()
-	// - getMapSpecialists()
+	// - getMapUsers()
 	// - getMapProjectForId(Long mapProjectId)
 	// - findMapProjectsForQuery(String query)
 	/////////////////////////////////////////////////////
@@ -77,6 +73,8 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Get all projects", notes = "Returns all MapProjects in either JSON or XML format", response = MapProjectList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectList getMapProjects() {
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping):  /project/projects");
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -100,41 +98,20 @@ public class MappingServiceRest {
 	 * @return the map leads
 	 */
 	@GET
-	@Path("/lead/leads/")
-	@ApiOperation(value = "Get all leads", notes = "Returns all MapLeads in either JSON or XML format", response = MapLeadList.class)
+	@Path("/user/users/")
+	@ApiOperation(value = "Get all mapping users", notes = "Returns all MapUsers in either JSON or XML format", response = MapUserList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapLeadList getMapLeads() {
+	public MapUserList getMapUsers() {
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /user/users");
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			MapLeadList mapLeads = new MapLeadList();
-			mapLeads.setMapLeads(mappingService.getMapLeads());
-			mapLeads.sortMapLeads();
+			MapUserList mapLeads = new MapUserList();
+			mapLeads.setMapUsers(mappingService.getMapUsers());
+			mapLeads.sortMapUsers();
 			mappingService.close();
 			return mapLeads;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	/**
-	 * Returns all map specialists in either JSON or XML format
-	 * 
-	 * @return the map specialists
-	 */
-	@GET
-	@Path("/specialist/specialists/")
-	@ApiOperation(value = "Get all specialists", notes = "Returns all MapSpecialists in either JSON or XML format", response = MapSpecialistList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapSpecialistList getMapSpecialists() {
-		
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapSpecialistList mapSpecialists = new MapSpecialistList();
-			mapSpecialists.setMapSpecialists(mappingService.getMapSpecialists());
-			mapSpecialists.sortMapSpecialists();
-			mappingService.close();
-			return mapSpecialists;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -169,17 +146,19 @@ public class MappingServiceRest {
 	 * @return the map projects
 	 */
 	@GET
-	@Path("/lead/id/{id:[0-9][0-9]*}/projects")
-	@ApiOperation(value = "Find all projects for lead", notes = "Returns a MapLead's MapProjects in either JSON or XML format", response = MapProjectList.class)
+	@Path("/user/id/{id:[0-9][0-9]*}/projects")
+	@ApiOperation(value = "Find all projects for user", notes = "Returns a MapUser's MapProjects in either JSON or XML format", response = MapProjectList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapProjectList getMapProjectsForLead(
+	public MapProjectList getMapProjectsForUser(
 			@ApiParam(value = "Id of map lead to fetch projects for", required = true) @PathParam("id") Long mapLeadId) { 
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): lead/id/" + mapLeadId.toString() + "/projects");
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProjectList mapProjects = new MapProjectList();	
-			MapLead mapLead = mappingService.getMapLead(mapLeadId);
-			mapProjects.setMapProjects(mappingService.getMapProjectsForMapLead(mapLead));
+			MapUser mapLead = mappingService.getMapUser(mapLeadId);
+			mapProjects.setMapProjects(mappingService.getMapProjectsForMapUser(mapLead));
 			mapProjects.sortMapProjects();
 			mappingService.close();
 			return mapProjects;
@@ -200,6 +179,8 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProject getMapProjectForId(
 			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /project/id/" + mapProjectId.toString());
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -223,6 +204,8 @@ public class MappingServiceRest {
 	public SearchResultList findMapProjects(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("String") String query) {
 		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /project/query/" + query);
+		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			SearchResultList searchResultList = mappingService.findMapProjects(query, new PfsParameterJpa());
@@ -234,92 +217,49 @@ public class MappingServiceRest {
 		}
 		
 	}
-
-
 	
 	/**
-	 * Returns the specialist for a given id (auto-generated) in JSON format
+	 * Returns the user for a given id (auto-generated) in JSON format
 	 * 
-	 * @param mapSpecialistId the mapSpecialistId
-	 * @return the mapSpecialist
+	 * @param mapUserId the mapUserId
+	 * @return the mapUser
 	 */
 	@GET
-	@Path("/specialist/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find specialist by id", notes = "Returns a MapSpecialist given a specialist id in either JSON or XML format", response = MapSpecialist.class)
+	@Path("/user/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find user by id", notes = "Returns a MapUser given a user id in either JSON or XML format", response = MapUser.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapSpecialist getMapSpecialistForId(
-			@ApiParam(value = "Id of map specialist to fetch", required = true) @PathParam("id") Long mapSpecialistId) {
+	public MapUser getMapUserForId(
+			@ApiParam(value = "Id of map lead to fetch", required = true) @PathParam("id") Long mapUserId) {
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): user/id/" + mapUserId.toString());
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			MapSpecialist mapSpecialist = mappingService.getMapSpecialist(mapSpecialistId);
+			MapUser mapUser = mappingService.getMapUser(mapUserId);
 			mappingService.close();
-			return mapSpecialist;
+			return mapUser;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
 	
 	/**
-	 * Returns all map specialists for a lucene query
+	 * Returns all map users for a lucene query
 	 * @param query the string query
-	 * @return the map specialists
+	 * @return the map users
 	 */
 	@GET
-	@Path("/specialist/query/{string}")
-	@ApiOperation(value = "Find specialists by query", notes = "Returns map specialists for a query in either JSON or XML format", response = MapSpecialistList.class)
+	@Path("/user/query/{string}")
+	@ApiOperation(value = "Find users by query", notes = "Returns map users for a query in either JSON or XML format", response = MapUserList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findMapSpecialists(
+	public SearchResultList findMapUsers(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
 		
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			SearchResultList searchResultList = mappingService.findMapSpecialists(query, new PfsParameterJpa());
-			mappingService.close();
-			return searchResultList;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	/**
-	 * Returns the lead for a given id (auto-generated) in JSON format
-	 * 
-	 * @param mapLeadId the mapLeadId
-	 * @return the mapLead
-	 */
-	@GET
-	@Path("/lead/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find lead by id", notes = "Returns a MapLead given a lead id in either JSON or XML format", response = MapLead.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapLead getMapLeadForId(
-			@ApiParam(value = "Id of map lead to fetch", required = true) @PathParam("id") Long mapLeadId) {
-		
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapLead mapLead = mappingService.getMapLead(mapLeadId);
-			mappingService.close();
-			return mapLead;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	/**
-	 * Returns all map leads for a lucene query
-	 * @param query the string query
-	 * @return the map leads
-	 */
-	@GET
-	@Path("/lead/query/{string}")
-	@ApiOperation(value = "Find leads by query", notes = "Returns map leads for a query in either JSON or XML format", response = MapLeadList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findMapLeads(
-			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /user/query/" + query);
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();	
-			SearchResultList searchResultList = mappingService.findMapLeads(query, new PfsParameterJpa());		
+			SearchResultList searchResultList = mappingService.findMapUsers(query, new PfsParameterJpa());		
 			mappingService.close();
 			return searchResultList;
 		} catch (Exception e) {
@@ -339,6 +279,8 @@ public class MappingServiceRest {
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecord getMapRecordForId(
 			@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
+		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/id/" + mapRecordId.toString());
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
@@ -363,10 +305,12 @@ public class MappingServiceRest {
 	public MapRecordList getMapRecordsForConceptId(
 			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("String") String conceptId) {
 		
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/conceptId/" + conceptId);
+		
 		try {
 			MappingService mappingService = new MappingServiceJpa();	
 			MapRecordList mapRecords = new MapRecordList();
-			mapRecords.setMapRecords(mappingService.getMapRecordsForConceptId(conceptId));
+			mapRecords.setMapRecords(mappingService.getMapRecordsForTerminologyId(conceptId));
 			mappingService.close();
 			return mapRecords;
 		} catch (Exception e) {
@@ -374,22 +318,34 @@ public class MappingServiceRest {
 		}
 	}
 	
+	
 	/**
-	 * Returns the count of records associated with a map project
+	 * Returns the count of records associated with a map project given filters query, ignoring paging and sorting information
+	 * 
 	 * @param mapProjectId the map project id
+	 * @param pfsParameter the paging/filtering/sorting parameters object
 	 * @return the number of records as a String object
 	 */
-	@GET
+	@POST
 	@Path("/record/projectId/{id:[0-9][0-9]*}/nRecords")
-	@ApiOperation(value = "Find the number of records for a project id", notes = "Returns the number of map records for a project id", response = Integer.class)
-	@Produces({ MediaType.TEXT_PLAIN})
+	@ApiOperation(value = "Find number of records by project id given filtering information", notes = "Returns count of MapRecords in database given a paging/filtering/sorting parameters object", response = MapRecordList.class)
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces(MediaType.TEXT_PLAIN)
 	public String getMapRecordCountForMapProjectId(
-			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long mapProjectId) {
-			
+			@ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
+		
+			// log call
+			Logger.getLogger(MappingServiceRest.class).info(
+					  "RESTful call (Mapping): /record/projectId/" + mapProjectId.toString() + " with PfsParameter: " + "\n"			
+					+ "     Index/Results = " + Integer.toString(pfsParameter.getStartIndex()) + "/" + Integer.toString(pfsParameter.getMaxResults()) + "\n"
+					+ "     Sort field    = " + pfsParameter.getSortField()
+					+ "     Filter String = " + pfsParameter.getFilterString());
 			
 			try {
+				
 				MappingService mappingService = new MappingServiceJpa();
-				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId, null);
+				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId, pfsParameter);
 				mappingService.close();
 				
 				// Jersey can't handle Long as return type, convert to string
@@ -399,135 +355,44 @@ public class MappingServiceRest {
 			}
 	}
 	
+	
 	/**
-	 * Returns the count of records associated with a map project given a filtering query
+	 * Returns delimited page of MapRecords given a paging/filtering/sorting parameters object
+	 * 
 	 * @param mapProjectId the map project id
-	 * @param filters the string filters
-	 * @return the number of records as a String object
+	 * @param pfsParameter the JSON object containing the paging/filtering/sorting parameters
+	 * @return the list of map records 
 	 */
-	@GET
-	@Path("/record/projectId/{id:[0-9][0-9]*}/nRecords/{filters}")
-	@ApiOperation(value = "Find the number of records for a project id", notes = "Returns the number of map records for a project id", response = Integer.class)
-	@Produces({ MediaType.TEXT_PLAIN})
-	public String getMapRecordCountForMapProjectIdWithQuery(
-			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "String query to filter records", required = true) @PathParam("filters") String filters) {
+	@POST
+	@Path("/record/projectId/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find paged records by project id", notes = "Returns delimited page of MapRecords given a paging/filtering/sorting parameters object", response = MapRecordList.class)
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@CookieParam(value = "userInfo")
+	public MapRecordList getMapRecordsForMapProjectId(
+			@ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
+		
+			// log call
+			Logger.getLogger(MappingServiceRest.class).info(
+					  "RESTful call (Mapping): /record/projectId/" + mapProjectId.toString() + " with PfsParameter: " + "\n"			
+					+ "     Index/Results = " + Integer.toString(pfsParameter.getStartIndex()) + "/" + Integer.toString(pfsParameter.getMaxResults()) + "\n"
+					+ "     Sort field    = " + pfsParameter.getSortField()
+					+ "     Filter String = " + pfsParameter.getFilterString());
 			
+			
+			// execute the service call
 			
 			try {
-				PfsParameter pfs = new PfsParameterJpa();
-				pfs.setFilterString(filters);
-				
 				MappingService mappingService = new MappingServiceJpa();
-				Long nRecords = mappingService.getMapRecordCountForMapProjectId(mapProjectId, pfs);
+				MapRecordList mapRecords = new MapRecordList();
+				mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(mapProjectId, pfsParameter));
 				mappingService.close();
-				
-				// Jersey can't handle Long as return type, convert to string
-				return nRecords.toString();
+				return mapRecords;
 			} catch (Exception e) {
 				throw new WebApplicationException(e);
-			}
-	}
-	
-	/**
-	 * Returns the records for a given project id
-	 * @param projectId the projectId
-	 * @return the mapRecords
-	 */
-	@GET
-	@Path("/record/projectId/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find records by project id", notes = "Returns MapRecords given a project id in either JSON or XML format", response = MapRecord.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecordList getMapRecordsForMapProjectId(
-			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long projectId) {
-		
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapRecordList mapRecords = new MapRecordList();
-			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId));
-			mappingService.close();
-			return mapRecords;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	/**
-	 * Returns a delimited page of map records for a project id
-	 * @param projectId the projectId
-	 * @param nStart the first record to return
-	 * @param nMaxResults the number of records to fetch
-	 * @return the mapRecords
-	 */
-	@GET
-	@Path("/record/projectId/{id:[0-9][0-9]*}/{nStart:[0-9][0-9]*}-{nMaxResults:[0-9][0-9]*}")
-	@ApiOperation(value = "Find paged records by project id", notes = "Returns delimited page of MapRecords, e.g. range [nStart: nStart+nMaxRecords-1] given a project id in either JSON or XML format", response = MapRecord.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecordList getMapRecordsForMapProjectId(
-			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("id") Long projectId,
-			@ApiParam(value = "Start index of records", required = true) @PathParam("nStart") int nStart,
-			@ApiParam(value = "Number of records to fetch", required = true) @PathParam("nMaxResults") int nMaxResults) {
-		
-		try {
-			// instantiate the pfs parameters
-			PfsParameter pfs = new PfsParameterJpa();
-			pfs.setStartIndex(nStart);
-			pfs.setMaxResults(nMaxResults);
+			}		
 			
-			// execute the service call
-			MappingService mappingService = new MappingServiceJpa();
-			MapRecordList mapRecords = new MapRecordList();
-			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId, pfs));
-			mappingService.close();
-			
-			return mapRecords;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	/**
-	 * Returns a delimited page of map records for a project id
-	 * @param projectId the projectId
-	 * @param nStart the first record to return
-	 * @param nMaxResults the number of records to fetch
-	 * @param filters the filter query
-	 * @param sortBy the field to sort results by
-	 * @return the mapRecords
-	 */
-	@GET
-	@Path("/record/projectId/{id:[0-9][0-9]*}/{nStart:[0-9][0-9]*}-{nMaxResults:[0-9][0-9]*}/{filters}")
-	@ApiOperation(value = "Find paged records by project id and query", notes = "Returns delimited page of MapRecords, e.g. range [nStart: nStart+nMaxRecords-1] given a project id and string filters query", response = MapRecord.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecordList getMapRecordsForMapProjectId(
-			@ApiParam(value = "Project id for map records", required = true) @PathParam("id") Long projectId,
-			@ApiParam(value = "Start index of records", required = true) @PathParam("nStart") int nStart,
-			@ApiParam(value = "Number of records to fetch", required = true) @PathParam("nMaxResults") int nMaxResults,
-			@ApiParam(value = "Filters query string", required = true) @PathParam("filters") String filters) {
-			//@ApiParam(value = "Sorting field", required = false) String sortBy) {
-		
-		try {
-			
-			System.out.println("Called getMapRecordsForMapProjectId with query string: " + filters);
-			
-			// instantiate the pfs parameters
-			PfsParameter pfs = new PfsParameterJpa();
-			pfs.setStartIndex(nStart);
-			pfs.setMaxResults(nMaxResults);
-			pfs.setFilterString(filters);
-			//pfs.setSortField(sortBy);
-			
-			
-			// execute the service call
-			MappingService mappingService = new MappingServiceJpa();
-			MapRecordList mapRecords = new MapRecordList();			
-			mapRecords.setMapRecords(mappingService.getMapRecordsForMapProjectId(projectId, pfs));
-			mappingService.close();
-			
-			return mapRecords;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
 	}
 	
 	/**
@@ -542,6 +407,7 @@ public class MappingServiceRest {
 	public String removeMapRecordsForProjectId(
 			@ApiParam(value = "Project id for which map records are to be deleted", required = true) @PathParam("id") Long mapProjectId) {
 			
+			Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/delete/projectId" + mapProjectId.toString());
 			
 			try {
 				MappingService mappingService = new MappingServiceJpa();
@@ -556,33 +422,13 @@ public class MappingServiceRest {
 	}
 	
 	
-	/**
-	 * Returns all map records for a lucene query
-	 * @param query the string query
-	 * @return the map records
-	 */
-	@GET
-	@Path("/record/query/{string}")
-	@ApiOperation(value = "Find records by query", notes = "Returns map records for a query in either JSON or XML format", response = MapRecordList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findMapRecords(
-			@ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-		
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			SearchResultList searchResultList = mappingService.findMapRecords(query, new PfsParameterJpa());
-			mappingService.close();
-			return searchResultList;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
+	
 	
 	// ///////////////////////////////////////////////////
 	// MapProject:  Add (@PUT) functions
 	// - addMapProject
 	// - addMapSpecialist
-	// - addMapLead
+	// - addMapUser
 	// ///////////////////////////////////////////////////
 	
 	/**
@@ -615,40 +461,19 @@ public class MappingServiceRest {
 	 */
 	@PUT
 	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
-	@Path("/lead/add")
-	@ApiOperation(value = "Add a lead", notes = "Adds a MapLead", response = MapLeadJpa.class)
-	public Response addMapLead(@ApiParam(value = "The map lead to add. Must be in Json or Xml format", required = true) MapLeadJpa mapLead) { 
+	@Path("/user/add")
+	@ApiOperation(value = "Add a user", notes = "Adds a MapUser", response = MapUserJpa.class)
+	public Response addMapUser(@ApiParam(value = "The map userd to add. Must be in Json or Xml format", required = true) MapUserJpa mapUser) { 
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.addMapLead(mapLead);
+			mappingService.addMapUser(mapUser);
 			mappingService.close();
 			return null;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 
-	}
-	
-	/**
-	 * Adds a map specialist
-	 * @param mapSpecialist the map specialist to be added
-	 * @return Response the response
-	 */
-	@PUT
-	@Path("/specialist/add")
-	@ApiOperation(value = "Add a specialist", notes = "Adds a MapSpecialist", response = MapSpecialistJpa.class)
-	public Response addMapSpecialist(@ApiParam(value = "The map specialist to add", required = true) MapSpecialistJpa mapSpecialist) { 
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.addMapSpecialist(mapSpecialist);
-			mappingService.close();
-			return null;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-		
 	}
 	
 	/**
@@ -658,14 +483,16 @@ public class MappingServiceRest {
 	 */
 	@PUT
 	@Path("/record/add")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@ApiOperation(value = "Add a record", notes = "Adds a MapRecord", response = MapRecordJpa.class)
-	public Response addMapRecord( @ApiParam(value = "The map record to add", required = true) MapRecordJpa mapRecord) { 
+	public MapRecord addMapRecord( @ApiParam(value = "The map record to add", required = true) MapRecordJpa mapRecord) { 
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.addMapRecord(mapRecord);
+			MapRecord result = mappingService.addMapRecord(mapRecord);
 			mappingService.close();
-			return null;
+			return result;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -676,7 +503,7 @@ public class MappingServiceRest {
 	// MapProject:  Update (@POST) functions
 	// - updateMapProject
 	// - updateMapSpecialist
-	// - updateMapLead
+	// - updateMapUser
 	/////////////////////////////////////////////////////
 	
 	
@@ -704,39 +531,19 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Updates a map lead
-	 * @param mapLead the map lead to be added
+	 * Updates a map user
+	 * @param mapUser the map user to be added
 	 * @return Response the response
 	 */
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("/lead/update")
-	@ApiOperation(value = "Update a lead", notes = "Updates a map lead", response = MapLeadJpa.class)
-	public Response updateMapLead( @ApiParam(value = "The map lead to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapLeadJpa mapLead) { 
+	@Path("/user/update")
+	@ApiOperation(value = "Update a user", notes = "Updates a map user", response = MapUserJpa.class)
+	public Response updateMapUser( @ApiParam(value = "The map user to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapUserJpa mapUser) { 
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.updateMapLead(mapLead);
-			mappingService.close();
-			return null;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	/**
-	 * Updates a map specialist
-	 * @param mapSpecialist the map specialist to be added
-	 * @return Response the response
-	 */
-	@POST
-	@Path("/specialist/update")
-	@ApiOperation(value = "Update a specialist", notes = "Updates a map specialist", response = MapSpecialistJpa.class)
-	public Response updateMapSpecialist(@ApiParam(value = "The map specialist to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapSpecialistJpa mapSpecialist) { 
-	
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.updateMapSpecialist(mapSpecialist);
+			mappingService.updateMapUser(mapUser);
 			mappingService.close();
 			return null;
 		} catch (Exception e) {
@@ -751,14 +558,17 @@ public class MappingServiceRest {
 	 */
 	@POST
 	@Path("/record/update")
+	@Consumes({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@ApiOperation(value = "Update a record", notes = "Updates a map record", response = MapRecordJpa.class)
-	public Response updateMapRecord(@ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) { 
+	public MapRecord updateMapRecord(@ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) { 
 
+		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.updateMapRecord(mapRecord);
+			MapRecord result = mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
-			return null;
+			return result;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -769,7 +579,7 @@ public class MappingServiceRest {
 	// MapProject:  Removal (@DELETE) functions
 	// - removeMapProject
 	// - removeMapSpecialist
-	// - removeMapLead
+	// - removeMapUser
 	/////////////////////////////////////////////////////
 	
 	/**
@@ -784,26 +594,7 @@ public class MappingServiceRest {
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService. removeMapProject(mapProjectId);
-			return null;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	/**
-	 * Removes a map lead
-	 * @param mapLeadId the id of the map lead to be deleted
-	 * @return Response the response
-	 */
-	@DELETE
-	@Path("/lead/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Remove a lead", notes = "Removes a map lead", response = MapLead.class)
-	public Response removeMapLead(@ApiParam(value = "Id of map lead to remove", required = true) @PathParam("id") Long mapLeadId) { 
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.removeMapLead(mapLeadId);
+			mappingService.removeMapProject(mapProjectId);
 			mappingService.close();
 			return null;
 		} catch (Exception e) {
@@ -812,24 +603,25 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Removes a map specialist
-	 * @param mapSpecialistId the id of the map specialist to be deleted
+	 * Removes a map user
+	 * @param mapUserId the id of the map user to be deleted
 	 * @return Response the response
 	 */
 	@DELETE
-	@Path("/specialist/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Remove a specialist", notes = "Removes a map specialist", response = MapSpecialist.class)
-	public Response removeMapSpecialist(@ApiParam(value = "Id of map specialist to remove", required = true) @PathParam("id") Long mapSpecialistId) { 
+	@Path("/user/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Remove a user", notes = "Removes a map user", response = MapUser.class)
+	public Response removeMapUser(@ApiParam(value = "Id of map user to remove", required = true) @PathParam("id") Long mapUserId) { 
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService. removeMapSpecialist(mapSpecialistId);
+			mappingService.removeMapUser(mapUserId);
 			mappingService.close();
 			return null;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
+	
 	
 	/**
 	 * Removes a map record
@@ -843,13 +635,36 @@ public class MappingServiceRest {
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService. removeMapRecord(mapRecordId);
+			mappingService.removeMapRecord(mapRecordId);
 			mappingService.close();
 			return null;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
+	
+	
+	/**
+	 * Removes a map record
+	 * @param mapRecord the map record to delete
+	 * @return Response the response
+	 */
+	@DELETE
+	@Path("/record/delete")
+	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@ApiOperation(value = "Remove a record", notes = "Removes a map record", response = MapRecordJpa.class)
+	public Response removeMapRecord(@ApiParam(value = "Map Record object to delete", required = true)  MapRecordJpa mapRecord) { 
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.removeMapRecord(mapRecord.getId());
+			mappingService.close();
+			return null;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+
 	
 	///////////////////////////
 	// Descendant services
@@ -869,18 +684,21 @@ public class MappingServiceRest {
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public ConceptList getUnmappedDescendantsForConcept(
+	public SearchResultList getUnmappedDescendantsForConcept(
 			@ApiParam(value = "concept terminology id", required = true) @PathParam("id") String terminologyId,
 			@ApiParam(value = "concept terminology", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "concept terminology version", required = true) @PathParam("version") String terminologyVersion,
 			@ApiParam(value = "threshold max number of descendants for a low-level concept", required = true) @PathParam("threshold") int threshold) {
 		
+		
+		// TODO Convert to Search Results
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			ConceptList concepts = new ConceptList();
-			concepts.setConcepts(mappingService.getUnmappedDescendantsForConcept(terminologyId, terminology, terminologyVersion, threshold));
+			
+			SearchResultList results = mappingService.findUnmappedDescendantsForConcept(terminologyId, terminology, terminologyVersion, threshold);
+		
 			mappingService.close();
-			return concepts;
+			return results;
 			
 		} catch (Exception e) {
 			throw new WebApplicationException(e);

@@ -23,7 +23,6 @@ import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
@@ -87,8 +86,9 @@ public class MapEntryJpa implements MapEntry {
 	@Column(nullable = false)
 	private int mapPriority;
 
+	// TODO This temporarily set nullable pending addition of relation id to webapp
 	/** The relation id. */
-	@Column(nullable = false, length = 25)
+	@Column(nullable = true, length = 25)
 	private String relationId;
 	
 	// TODO Once loader modified, make this nullable = false
@@ -96,7 +96,7 @@ public class MapEntryJpa implements MapEntry {
 	@Column(nullable = true, length = 500)
 	private String relationName;
 	
-	/** The index (map priority). */
+	/** The mapBlock. */
 	@Column(nullable = false)
 	private int mapBlock;
 	
@@ -164,7 +164,7 @@ public class MapEntryJpa implements MapEntry {
 	@XmlID
 	@Override
 	public String getObjectId() {
-		return id.toString();
+		return (this.id == null ? null : id.toString());
 	}
 	
 	/* (non-Javadoc)
@@ -331,8 +331,8 @@ public class MapEntryJpa implements MapEntry {
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setIndex(java.lang.String)
 	 */
 	@Override
-	public void setMapPriority(int index) {
-		this.mapPriority = index;
+	public void setMapPriority(int mapPriority) {
+		this.mapPriority = mapPriority;
 	}
 
 	/* (non-Javadoc)
@@ -400,6 +400,15 @@ public class MapEntryJpa implements MapEntry {
 		return mapRecord != null ? mapRecord.getObjectId() : null;
 	}
 	
+	
+	/**
+	 * Sets the map record based on serialized id
+	 * Necessary when receiving a serialized entry with only mapRecordId
+	 */
+	public void setMapRecordId(Long mapRecordId) {
+		this.mapRecord = new MapRecordJpa();
+		this.mapRecord.setId(mapRecordId);
+	}
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapGroup()
 	 */

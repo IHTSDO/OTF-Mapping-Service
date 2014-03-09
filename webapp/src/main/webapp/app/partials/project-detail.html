@@ -4,6 +4,7 @@
 <h3>{{project.name}}</h3>
 <p></p>
 
+
 <a href="#/record/projectId/{{project.id}}" class="btn">Map Records</a>
 <p></p>
 
@@ -29,6 +30,17 @@
     <td><div tooltip-placement="right" tooltip="A true/false indicator of whether this map project has multiple mappings for the same source concept."><b>Group Structure</b></div></td>
     <td>{{project.groupStructure}}</td>
   </tr>
+  <tr>
+    <td><div tooltip-placement="right" tooltip="A true/false indicator of whether this map project uses rules other than TRUE"><b>Rule Based</b></div></td>
+    <td>{{project.ruleBased}}</td>
+  </tr>
+    <tr>
+    <td><div tooltip-placement="right" tooltip="The method by which this project uses the map relation (e.g. map record based, relationship based)"><b>Relation Style</b></div></td>
+    <td>{{mapRelationStyleText}}</td>
+  </tr>
+  <tr>
+  	<td><div tooltip-placement="right" tooltip="The type of mapping this project uses (i.e.. simple, complex, extended)"><b>Map Type</b></div></td>
+  	<td>{{project.mapRefsetPattern}}</td>
   <tr>
     <td><div tooltip-placement="right" tooltip="List of the map leads for this project."><b>Map Leads</b></div></td>
    <!-- <td><ul><li ng-repeat="lead in project.mapLead">{{lead.name}}, {{lead.userName}}, {{lead.email}} </li></ul></td>  --> 
@@ -70,61 +82,129 @@
     </table>
     </td>
   </tr> 
-  <tr>
+  <tr ng-show="project.mapAdvice.length > 0">
     <td><div tooltip-placement="right" tooltip="List of the map advice for this project."><b>Map Advice</b></div></td>
-    <td><table width="100%" class="table pure-table" >
+    <td>
+    
+    <pagination direction-links="false" boundary-links="true" 
+    			total-items="pagedAdviceCount" items-per-page="pageSize" 
+    			page="pageAdvice" on-select-page="getPagedAdvices(page)"></pagination>
+    <form>
+	    <input type="text" ng-model="adviceFilter" ng-change="getPagedAdvices(1)">
+	    <input type="submit" value="Reset Filter" ng-click="resetAdviceFilter()">
+    </form>
+    		
+    <table width="100%" class="table pure-table" >
     <thead>
       <tr>
         <th>Advice</th>
       </tr>
     </thead>
-    <tbody ng-repeat="advice in project.mapAdvice" style="border: 2px solid #ccc;" >
+    <tbody ng-repeat="advice in pagedAdvice | orderBy: 'name'" style="border: 2px solid #ccc;" >
       <tr>
         <td>{{advice.name}}</td>
       </tr>
+     
     </tbody>
-    </table>
-    </td>
+    
+    
+   </table>
+   </td>
   </tr>
-  <tr>
+  <tr ng-show="project.mapPrinciple.length > 0">
     <td><div tooltip-placement="right" tooltip="List of the map principles for this project."><b>Map Principles</b></div></td>
-    <td><table width="100%" class="table pure-table" >
+    <td>
+
+    <pagination direction-links="false" boundary-links="true" 
+    			total-items="pagedPrincipleCount" items-per-page="pageSize" 
+    			page="pagePrinciple" on-select-page="getPagedPrinciples(page)"></pagination>
+    <form>
+	    <input type="text" ng-model="principleFilter" ng-change="getPagedPrinciples(1)">
+	    <input type="submit" value="Reset Filter" ng-click="resetPrincipleFilter()">
+    </form>
+    
+    <table width="100%" class="table pure-table" >
     <thead>
       <tr>
         <th style="width: 10%;">Id</th>
-        <th style="width: 90%;">Name</th>
+        <th style="width: 90%;">Principle Name</th>
       </tr>
 
     </thead>
        
-    <tbody ng-repeat="principle in project.mapPrinciple | orderBy:'principleId'" style="border: 2px solid #ccc;" >
+    <tbody ng-repeat="principle in pagedPrinciple | orderBy:principleId" style="border: 2px solid #ccc;" >
      <tr>
         <td>{{principle.principleId}}</td>
-        <td>      
-            <div class="dropdown">
+        <td>    
+        	<div class="dropdown">
             <a class="dropdown-toggle"> 
-            <img src="img/dialog-question.png" alt="question icon">
-            </a>{{principle.name}}
+            <img src="img/information-blue.png" alt="information icon">
+            </a>
+			&nbsp
+        	{{principle.name}}
             <span class="dropdown-menu">
               <p>Reference: {{principle.sectionRef}}</p>
               <p ng-bind-html="to_trusted(principle.detail)"></p>
             </span>
-            </div>             
+            </div>        
         </td>
       </tr>
     </tbody>
+    
     </table>
+    
+    <div ng-show="project.mapPrincipleDocument != null">
+    Principles taken from <a href="{{project.mapPrincipleDocumentPath}}/{{project.mapPrincipleDocument}}" target="_blank">{{project.mapPrincipleDocumentName}}</a> </div>
+    </td>
+    
+  </tr>
+  
+  <tr ng-show="project.presetAgeRanges.length > 0">
+  
+  
+  	
+  
+  	<td><div tooltip-placement="right" tooltip="List of the preset age ranges used for rule construction for this project."><b>Preset Age Ranges</b></div></td>
+    <td>
+	    <table width="100%" class="table pure-table" " >
+	    <thead>
+	      <tr>
+	        <th style="width: 30%;">Name</th>
+	        <th style="width: 35%;">Lower Bound</th>
+	        <th style="width: 35%;">Upper Bound</th>
+	      </tr>
+	    </thead>
+	    
+	    
+	    <tbody ng-repeat="ageRange in project.presetAgeRanges | orderBy: 'name'">
+	    
+	    <tr>
+	    	<td>{{ageRange.name}}</td>
+	    	<td>
+
+	    	<span ng-show="ageRange.lowerInclusive == true && ageRange.lowerValue != null">>=</span>
+	    	<span ng-show="ageRange.lowerInclusive == false && ageRange.lowerValue != null">></span>
+	    	
+	    	{{ageRange.lowerValue}} {{ageRange.lowerUnits}} 
+	    	
+	    	</td>
+	    	<td>
+	    	
+	    	<span ng-show="ageRange.upperInclusive == true && ageRange.upperValue != null"><=</span>
+	    	<span ng-show="ageRange.upperInclusive == false && ageRange.upperValue != null"><</span>
+	    	
+	    	
+	    	{{ageRange.upperValue}} {{ageRange.upperUnits}} 
+	    	
+	    	</td>
+    	</tr>
+    	</tbody>
+	    
+	    </table>
     </td>
   </tr>
+  
 </table>  
-<!-- <span ng-show="project.mapAdvice.length > 0">Map Advice</span>
-<ul>
-    <select name="jlist" size="5" style="width: 600px;" >
-    <option ng-repeat="advice in project.mapAdvice" value="{{advice.name}}">{{advice.name}}</option>
-    </select>
-</ul> 
-
--->
 
 <a href="#/record/projectId/{{project.id}}" class="btn">Map Records</div>
 

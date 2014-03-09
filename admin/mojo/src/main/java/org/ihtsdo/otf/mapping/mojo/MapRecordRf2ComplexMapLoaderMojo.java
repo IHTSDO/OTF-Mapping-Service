@@ -6,12 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
@@ -80,11 +80,11 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoExecutionException {
+		getLog().info("Starting loading complex map data ...");
 
 		FileInputStream propertiesInputStream = null;
 		try {
 
-			getLog().info("Start loading complex map data ...");
 
 			// load Properties file to determine file name
 			Properties properties = new Properties();
@@ -113,6 +113,9 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 					File.createTempFile("ttt", ".sort",
 							new File(System.getProperty("java.io.tmpdir")));
 			outputFile.delete();
+			// Sort file according to unix sort
+			// -k 5,5 -k 6,6n -k 7,7n -k 8,8n -k 1,4 -k 9,9 -k 10,10 -k 11,11
+			// -k 12,12 -k 13,13
 			FileSorter.sortFile(inputFile, outputFile.getPath(),
 					new Comparator<String>() {
 
@@ -120,8 +123,6 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 						public int compare(String o1, String o2) {
 							String[] fields1 = o1.split("\t");
 							String[] fields2 = o2.split("\t");
-							// -k 5,5 -k 6,6n -k 7,7n -k 8,8n -k 1,4 -k 9,9 -k 10,10 -k 11,11
-							// -k 12,12 -k 13,13
 							long i = fields1[4].compareTo(fields2[4]);
 							if (i != 0) {
 								return (int) i;
@@ -188,7 +189,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 			}
 
 			// load complexMapRefSetMembers from extendedMap file
-			Map<String, Set<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
+			Map<String, List<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
 					loadExtendedMapRefSets(outputFile, mapProjectMap);
 
 			// Call mapping service to create records as we go along
@@ -198,6 +199,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 						complexMapRefSetMemberMap.get(refSetId));
 			}
 
+			getLog().info("done ...");
 			// clean-up
 			mappingService.close();
 			//outputFile.delete();
@@ -221,20 +223,22 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 	 * 
 	 * @throws Exception the exception
 	 */
-	private Map<String, Set<ComplexMapRefSetMember>> loadExtendedMapRefSets(
+	private static Map<String, List<ComplexMapRefSetMember>> loadExtendedMapRefSets(
 		File complexMapFile, Map<String, MapProject> mapProjectMap)
 		throws Exception {
 
+		// Open reader and service
 		BufferedReader complexMapReader =
 				new BufferedReader(new FileReader(complexMapFile));
 		ContentService contentService = new ContentServiceJpa();
 
+		// Set up sets for any map records we encounter
 		String line = null;
-		Map<String, Set<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
-				new HashMap<String, Set<ComplexMapRefSetMember>>();
+		Map<String, List<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
+				new HashMap<String, List<ComplexMapRefSetMember>>();
 		for (MapProject mapProject : mapProjectMap.values()) {
 			complexMapRefSetMemberMap.put(mapProject.getRefSetId(),
-					new HashSet<ComplexMapRefSetMember>());
+					new ArrayList<ComplexMapRefSetMember>());
 		}
 
 		final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
@@ -246,15 +250,13 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 
 			if (!fields[0].equals("id")) { // header
 
+				// ComplexMap attributes
 				complexMapRefSetMember.setTerminologyId(fields[0]);
 				complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
 				complexMapRefSetMember.setActive(fields[2].equals("1"));
 				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
 				final String refSetId = fields[4];
 				complexMapRefSetMember.setRefSetId(refSetId);
-				// conceptId
-
-				// ComplexMap unique attributes
 				complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
 				complexMapRefSetMember.setMapPriority(Integer.parseInt(fields[7]));
 				complexMapRefSetMember.setMapRule(fields[8]);
@@ -262,13 +264,13 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 				complexMapRefSetMember.setMapTarget(fields[10]);
 				complexMapRefSetMember.setMapRelationId(Long.valueOf(fields[12]));
 
-				// ComplexMap unique attributes NOT set by file (mapBlock
-				// elements)
+				// BLOCK is unused
 				complexMapRefSetMember.setMapBlock(0); // default value
 				complexMapRefSetMember.setMapBlockRule(null); // no default
 				complexMapRefSetMember.setMapBlockAdvice(null); // no default
-
+				
 				// Terminology attributes
+				System.out.println("refSetId = " + refSetId);
 				complexMapRefSetMember.setTerminology(mapProjectMap.get(refSetId)
 						.getSourceTerminology());
 				complexMapRefSetMember.setTerminologyVersion(mapProjectMap
@@ -285,9 +287,9 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 					complexMapRefSetMember.setConcept(concept);
 					// don't persist, non-published shouldn't be in the db
 					complexMapRefSetMemberMap.get(refSetId).add(complexMapRefSetMember);
-
 				} else {
-					Logger.getLogger(this.getClass()).info(
+					complexMapReader.close();
+					throw new IllegalStateException(
 							"complexMapRefSetMember "
 									+ complexMapRefSetMember.getTerminologyId()
 									+ " references non-existent concept " + fields[5]);
@@ -296,6 +298,13 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 		}
 		complexMapReader.close();
 
+		// Remove any map projects for which we did not encounter any records
+		for (MapProject mapProject : mapProjectMap.values()) {
+			if (complexMapRefSetMemberMap.get(mapProject.getRefSetId()).size() == 0) {
+				complexMapRefSetMemberMap.remove(mapProject.getRefSetId());
+			}
+		}
+		
 		return complexMapRefSetMemberMap;
 	}
 }

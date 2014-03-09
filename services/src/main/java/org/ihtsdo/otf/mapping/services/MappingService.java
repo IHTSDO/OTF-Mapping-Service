@@ -6,12 +6,12 @@ import java.util.Set;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapLead;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
@@ -45,22 +45,31 @@ public interface MappingService {
 	public MapProject getMapProject(Long id) throws Exception;
 	
 	/**
-	 * Return map specialist for auto-generated id.
+	 * Gets the map project.
 	 *
-	 * @param id the auto-generated id
-	 * @return the MapLead
+	 * @param name the name
+	 * @return the map project
 	 * @throws Exception the exception
 	 */
-	public MapLead getMapLead(Long id) throws Exception;
+	public MapProject getMapProjectByName(String name) throws Exception;
 	
 	/**
-	 * Return map lead for auto-generated id.
+	 * Gets the map project by ref set id.
 	 *
-	 * @param id the auto-generated id
-	 * @return the mapSpecialist
+	 * @param refSetId the ref set id
+	 * @return the map project by ref set id
 	 * @throws Exception the exception
 	 */
-	public MapSpecialist getMapSpecialist(Long id) throws Exception;
+	public MapProject getMapProjectByRefSetId(String refSetId) throws Exception;
+	
+	/**
+	 * Return map user for auto-generated id.
+	 *
+	 * @param id the auto-generated id
+	 * @return the mapUser
+	 * @throws Exception the exception
+	 */
+	public MapUser getMapUser(Long id) throws Exception;
 	
 	/**
 	 * Return map record for auto-generated id.
@@ -80,20 +89,12 @@ public interface MappingService {
 	public List<MapProject> getMapProjects() throws Exception;
 	
 	/**
-	 * Retrieve all map specialists.
+	 * Retrieve all map users.
 	 *
-	 * @return a List of MapSpecialists
+	 * @return a List of MapUsers
 	 * @throws Exception the exception
 	 */
-	public List<MapSpecialist> getMapSpecialists() throws Exception;
-	
-	/**
-	 * Retrieve all map leads.
-	 *
-	 * @return a List of MapLeads
-	 * @throws Exception the exception
-	 */
-	public List<MapLead> getMapLeads() throws Exception;
+	public List<MapUser> getMapUsers() throws Exception;
 	
 	/**
 	 * Retrieve all map principles.
@@ -112,22 +113,13 @@ public interface MappingService {
 	public List<MapAdvice> getMapAdvices() throws Exception;
 	
 	/**
-	 * Retrieve all map projects assigned to a particular map specialist.
+	 * Retrieve all map projects assigned to a particular map user.
 	 *
-	 * @param mapSpecialist the map specialist
+	 * @param mapUser the map user
 	 * @return a List of MapProjects
 	 * @throws Exception the exception
 	 */
-	public List<MapProject> getMapProjectsForMapSpecialist(MapSpecialist mapSpecialist) throws Exception;
-	
-	/**
-	 * Retrieve all map projects assigned to a particular map lead.
-	 *
-	 * @param mapLead the map lead
-	 * @return a List of MapProjects
-	 * @throws Exception the exception
-	 */
-	public List<MapProject> getMapProjectsForMapLead(MapLead mapLead) throws Exception;
+	public List<MapProject> getMapProjectsForMapUser(MapUser mapUser) throws Exception;
 	
 	/**
 	 * Retrieve all map records.
@@ -160,24 +152,14 @@ public interface MappingService {
 	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/**
-	 * Query for MapSpecialists.
+	 * Query for MapUsers.
 	 *
 	 * @param query the query
 	 * @param pfsParameter the paging, filtering, sorting parameter
-	 * @return the List of MapProjects
+	 * @return the List of MapUsers
 	 * @throws Exception the exception
 	 */
-	public SearchResultList findMapSpecialists(String query, PfsParameter pfsParameter) throws Exception;
-	
-	/**
-	 * Query for MapLeads.
-	 *
-	 * @param query the query
-	 * @param pfsParameter the paging, filtering, sorting parameter
-	 * @return the List of MapProjects
-	 * @throws Exception the exception
-	 */
-	public SearchResultList findMapLeads(String query, PfsParameter pfsParameter) throws Exception;
+	public SearchResultList findMapUsers(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/**
 	 * Query for MapAdvices.
@@ -214,20 +196,13 @@ public interface MappingService {
     ////////////////////////////
 	
 	/**
-	 * Adds the map specialist.
+	 * Adds the map user.
 	 *
-	 * @param mapSpecialist the map specialist
+	 * @param mapUser the map user
+	 * @return the map user
 	 * @throws Exception the exception
 	 */
-	public void addMapSpecialist(MapSpecialist mapSpecialist) throws Exception;
-	
-	/**
-	 * Adds the map lead.
-	 *
-	 * @param mapLead the map lead
-	 * @throws Exception the exception
-	 */
-	public void addMapLead(MapLead mapLead) throws Exception;
+	public MapUser addMapUser(MapUser mapUser) throws Exception;
 	
 	/**
 	 * Adds the map project.
@@ -242,9 +217,10 @@ public interface MappingService {
 	 * Adds the map record.
 	 *
 	 * @param mapRecord the map record
+	 * @return the map record
 	 * @throws Exception the exception
 	 */
-	public void addMapRecord(MapRecord mapRecord) throws Exception;
+	public MapRecord addMapRecord(MapRecord mapRecord) throws Exception;
 	
 	/**
 	 * Adds the map entry.
@@ -275,20 +251,13 @@ public interface MappingService {
 	////////////////////////////
 	
 	/**
-	 * Update map specialist.
+	 * Update map user.
 	 *
-	 * @param mapSpecialist the map specialist
+	 * @param mapUser the map user
 	 * @throws Exception the exception
 	 */
-	public void updateMapSpecialist(MapSpecialist mapSpecialist) throws Exception;
+	public void updateMapUser(MapUser mapUser) throws Exception;
 	
-	/**
-	 * Update map lead.
-	 *
-	 * @param mapLead the map lead
-	 * @throws Exception the exception
-	 */
-	public void updateMapLead(MapLead mapLead) throws Exception;
 	
 	/**
 	 * Update map project.
@@ -302,9 +271,10 @@ public interface MappingService {
 	 * Update map record.
 	 *
 	 * @param mapRecord the map record
+	 * @return the map record
 	 * @throws Exception the exception
 	 */
-	public void updateMapRecord(MapRecord mapRecord) throws Exception;
+	public MapRecord updateMapRecord(MapRecord mapRecord) throws Exception;
 	
 	/**
 	 * Update map entry.
@@ -335,20 +305,12 @@ public interface MappingService {
 	////////////////////////////
 	
 	/**
-	 * Removes the map specialist.
+	 * Removes the map user.
 	 *
-	 * @param mapSpecialistId the map specialist id
+	 * @param mapUserId the map user id
 	 * @throws Exception the exception
 	 */
-	public void removeMapSpecialist(Long mapSpecialistId) throws Exception;
-	
-	/**
-	 * Removes the map lead.
-	 *
-	 * @param mapLeadId the map lead id
-	 * @throws Exception the exception
-	 */
-	public void removeMapLead(Long mapLeadId) throws Exception;
+	public void removeMapUser(Long mapUserId) throws Exception;
 	
 	/**
 	 * Removes the map project.
@@ -415,7 +377,7 @@ public interface MappingService {
 	 * @return the map records for concept id
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> getMapRecordsForConceptId(String conceptId) throws Exception;
+	public List<MapRecord> getMapRecordsForTerminologyId(String conceptId) throws Exception;
 
 	/**
 	 * Returns the unmapped descendants for concept.
@@ -427,7 +389,7 @@ public interface MappingService {
 	 * @return the unmapped descendants for concept
 	 * @throws Exception the exception
 	 */
-	public List<Concept> getUnmappedDescendantsForConcept(String terminologyId,
+	public SearchResultList findUnmappedDescendantsForConcept(String terminologyId,
 			String terminology, String terminologyVersion, int threshold) throws Exception;
 
 	/**
@@ -443,7 +405,6 @@ public interface MappingService {
 	 * Creates the map records for map project.
 	 *
 	 * @param mapProject the map project
-	 * @return the list
 	 * @throws Exception the exception
 	 */
 	public void createMapRecordsForMapProject(MapProject mapProject) throws Exception;
@@ -454,11 +415,10 @@ public interface MappingService {
 	 *
 	 * @param mapProject the map project
 	 * @param complexMapRefSetMembers the complex map ref set members
-	 * @return the list
 	 * @throws Exception the exception
 	 */
 	public void createMapRecordsForMapProject(MapProject mapProject, 
-			Set<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
+			List<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
 
 	/**
 	 * Removes the map records for project id.
@@ -556,12 +516,102 @@ public interface MappingService {
 	 */
 	public void commit() throws Exception;
 
-	
-	// testing function
-	List<MapRecord> testCriteriaQuery(Long mapProjectId, String query,
-			PfsParameter pfsParameter) throws Exception;
+	/**
+	 * Find concepts in scope.
+	 *
+	 * @param project the project
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findConceptsInScope(MapProject project)
+		throws Exception;
 
+	/**
+	 * Find unmapped concepts in scope.
+	 *
+	 * @param project the project
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findUnmappedConceptsInScope(MapProject project)
+		throws Exception;
+
+	/**
+	 * Find mapped concepts out of scope bounds.
+	 *
+	 * @param project the project
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findMappedConceptsOutOfScopeBounds(MapProject project)
+		throws Exception;
+
+	/**
+	 * Find concepts excluded from scope.
+	 *
+	 * @param project the project
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findConceptsExcludedFromScope(MapProject project)
+		throws Exception;
+
+	/**
+	 * Indicates whether or not concept in scope is the case.
+	 *
+	 * @param concept the concept
+	 * @param project the project
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 * @throws Exception the exception
+	 */
+	public boolean isConceptInScope(Concept concept, MapProject project)
+		throws Exception;
+
+	/**
+	 * Indicates whether or not concept excluded from scope is the case.
+	 *
+	 * @param concept the concept
+	 * @param project the project
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 * @throws Exception the exception
+	 */
+	public boolean isConceptExcludedFromScope(Concept concept, MapProject project)
+		throws Exception;
+
+	/**
+	 * Indicates whether or not concept out of scope bounds is the case.
+	 *
+	 * @param concept the concept
+	 * @param project the project
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 * @throws Exception the exception
+	 */
+	public boolean isConceptOutOfScopeBounds(Concept concept, MapProject project)
+		throws Exception;
+
+	/**
+	 * Gets the map user.
+	 *
+	 * @param userName the user name
+	 * @return the map user
+	 */
+	public MapUser getMapUser(String userName);
+
+	/**
+	 * User exists.
+	 *
+	 * @param mapUser the map user
+	 * @return true, if successful
+	 */
+	public boolean userExists(MapUser mapUser);
+
+	public List<MapAgeRange> getMapAgeRanges();
 	
+	public MapAgeRange addMapAgeRange(MapAgeRange ageRange);
+	
+	public void removeMapAgeRange(Long ageRangeId);
+	
+	public void updateMapAgeRange(MapAgeRange ageRange);
 
 }
 	

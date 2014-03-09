@@ -36,8 +36,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *             <goal>create-map-records-from-complex-map</goal>
  *           </goals>
  *           <configuration>
- *             <!-- one of the two must be used -->
- *             <projectId>${project.id}</projectId>
  *             <refSetId>${refset.id}</refSetId>
  *           </configuration>
  *         </execution>
@@ -49,12 +47,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * @phase package
  */
 public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
-
-	/**
-	 * The project id
-	 * @parameter projectId
-	 */
-	private String projectId = null;
 
 	/**
 	 * The refSet id
@@ -69,15 +61,11 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoExecutionException {
+		getLog().info(
+				"Starting generating map records from complex map records - " + refSetId);
 
-		if (projectId == null && refSetId == null) {
-			throw new MojoExecutionException(
-					"You must specify either a projectId or a refSetId.");
-		}
-
-		if (projectId != null && refSetId != null) {
-			throw new MojoExecutionException(
-					"You must specify either a projectId or a refSetId, not both.");
+		if (refSetId == null) {
+			throw new MojoExecutionException("You must specify a refSetId.");
 		}
 
 		try {
@@ -85,21 +73,10 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 			MappingService mappingService = new MappingServiceJpa();
 			Set<MapProject> mapProjects = new HashSet<MapProject>();
 
-			if (projectId != null) {
-				getLog().info(
-						"Generate map records from complex map records - " + projectId);
-				for (String id : projectId.split(",")) {
-					mapProjects.add(mappingService.getMapProject(Long.valueOf(id)));
-				}
-
-			} else if (refSetId != null) {
-				getLog().info(
-						"Generate map records from complex map records - " + refSetId);
-				for (MapProject mapProject : mappingService.getMapProjects()) {
-					for (String id : refSetId.split(",")) {
-						if (mapProject.getRefSetId().equals(id)) {
-							mapProjects.add(mapProject);
-						}
+			for (MapProject mapProject : mappingService.getMapProjects()) {
+				for (String id : refSetId.split(",")) {
+					if (mapProject.getRefSetId().equals(id)) {
+						mapProjects.add(mapProject);
 					}
 				}
 			}
@@ -111,6 +88,8 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 								+ mapProject.getId());
 				mappingService.createMapRecordsForMapProject(mapProject);
 			}
+
+			getLog().info("done ...");
 			mappingService.close();
 
 		} catch (Exception e) {

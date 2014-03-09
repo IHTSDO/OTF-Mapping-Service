@@ -16,6 +16,9 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -24,6 +27,10 @@ import javax.persistence.Query;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
+import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
  * Goal which removes a terminology from a database.
@@ -92,10 +99,9 @@ public class TerminologyRemoverMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		getLog().info("Starting removing " + terminology + " data ...");
+
 		try {
-
-			getLog().info("Start removing " + terminology + " data ...");
-
 			// create Entitymanager
 			EntityManagerFactory factory =
 					Persistence.createEntityManagerFactory("MappingServiceDS");
@@ -168,6 +174,19 @@ public class TerminologyRemoverMojo extends AbstractMojo {
 
 				tx.commit();
 
+				// remove Tree Positions
+				// first get all versions for this terminology
+				MetadataService metadataService = new MetadataServiceJpa();
+				List<String> versions = metadataService.getVersions(terminology);
+				metadataService.close();
+				
+				ContentService contentService = new ContentServiceJpa();
+				getLog().info("Start removing tree positions from " + terminology + ".");
+				for (String version: versions)
+				  contentService.clearTreePositions(terminology, version);
+				contentService.close();
+				
+				
 				getLog().info("done ...");
 
 			} catch (Exception e) {

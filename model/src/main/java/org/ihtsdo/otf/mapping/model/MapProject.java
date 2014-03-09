@@ -25,7 +25,8 @@ public interface MapProject  {
 	public void setId(Long id);
 	
 	/**
-	 * Returns the id in string form
+	 * Returns the id in string form.
+	 *
 	 * @return the string object id
 	 */
 	public String getObjectId();
@@ -175,7 +176,7 @@ public interface MapProject  {
 	 *
 	 * @return the map leads
 	 */
-	public Set<MapLead> getMapLeads();
+	public Set<MapUser> getMapLeads();
 
 	
 	/**
@@ -183,7 +184,7 @@ public interface MapProject  {
 	 *
 	 * @param mapLeads the map leads
 	 */
-	public void setMapLeads(Set<MapLead> mapLeads);
+	public void setMapLeads(Set<MapUser> mapLeads);
 	
 
 	/**
@@ -191,7 +192,7 @@ public interface MapProject  {
 	 *
 	 * @param mapLead the map lead
 	 */
-	public void addMapLead(MapLead mapLead);
+	public void addMapLead(MapUser mapLead);
 	
 
 	/**
@@ -199,7 +200,7 @@ public interface MapProject  {
 	 *
 	 * @param mapLead the map lead
 	 */
-	public void removeMapLead(MapLead mapLead);
+	public void removeMapLead(MapUser mapLead);
 	
 	
 	/**
@@ -207,7 +208,7 @@ public interface MapProject  {
 	 *
 	 * @return the map specialists
 	 */
-	public Set<MapSpecialist> getMapSpecialists();
+	public Set<MapUser> getMapSpecialists();
 
 	
 	/**
@@ -215,7 +216,7 @@ public interface MapProject  {
 	 *
 	 * @param mapSpecialists the map specialists
 	 */
-	public void setMapSpecialists(Set<MapSpecialist> mapSpecialists);
+	public void setMapSpecialists(Set<MapUser> mapSpecialists);
 	
 
 	/**
@@ -223,7 +224,7 @@ public interface MapProject  {
 	 *
 	 * @param mapSpecialist the map specialist
 	 */
-	public void addMapSpecialist(MapSpecialist mapSpecialist);
+	public void addMapSpecialist(MapUser mapSpecialist);
 	
 
 	/**
@@ -231,7 +232,7 @@ public interface MapProject  {
 	 *
 	 * @param mapSpecialist the map specialist
 	 */
-	public void removeMapSpecialist(MapSpecialist mapSpecialist);
+	public void removeMapSpecialist(MapUser mapSpecialist);
 	
 
 	/**
@@ -295,4 +296,147 @@ public interface MapProject  {
 	 * @param destinationTerminologyVersion the destination terminology version
 	 */
 	public void setDestinationTerminologyVersion(String destinationTerminologyVersion);
+	
+	
+	/**
+	 * Gets the map relation style.
+	 *
+	 * @return the map relation style
+	 */
+	public String getMapRelationStyle();
+
+	/**
+	 * Sets the map relation style.
+	 *
+	 * @param mapRelationStyle the map relation style
+	 */
+	public void setMapRelationStyle(String mapRelationStyle);
+
+
+	/**
+	 * Sets the map principle source document name.
+	 *
+	 * @param mapPrincipleSourceDocument the name of the map principle source document
+	 */
+	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument);
+	
+	/**
+	 * Gets the map principle source document name.
+	 *
+	 * @return the name of the map principle source document
+	 */
+	public String getMapPrincipleSourceDocument();
+
+	/**
+	 * Returns boolean flag for whether project is rule based.
+	 *
+	 * @return the boolean rule based
+	 */
+	public boolean isRuleBased();
+
+	/**
+	 * Sets the rule based flag with a boolean value.
+	 *
+	 * @param ruleBased the boolean rule based
+	 */
+	public void setRuleBased(boolean ruleBased);
+
+	/**
+	 * Returns the map behavior type (e.g. COMPLEX_MAP)
+	 * @return the map type
+	 */
+	public String getMapRefsetPattern();
+	
+	/**
+	 * Sets the map behavior type (e.g. COMPLEX_MAP)
+	 * @param mapRefsetPattern the map type
+	 */
+	public void setMapRefsetPattern(String mapRefsetPattern);
+		
+	/**
+	 * Returns the scope concepts.
+	 *
+	 * @return the scope concepts
+	 */
+	public Set<String> getScopeConcepts();
+	
+	/**
+	 * Sets the scope concepts.
+	 *
+	 * @param scopeConcepts the scope concepts
+	 */
+	public void setScopeConcepts(Set<String> scopeConcepts);
+	
+	/**
+	 * Indicates whether or not scope descendants flag is the case.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isScopeDescendantsFlag();
+	
+	/**
+	 * Sets the scope descendants flag.
+	 *
+	 * @param flag the scope descendants flag
+	 */
+	public void setScopeDescendantsFlag(boolean flag);
+	
+	/**
+	 * Returns the scope excluded concepts.
+	 *
+	 * @return the scope excluded concepts
+	 */
+	public Set<String> getScopeExcludedConcepts();
+	
+	/**
+	 * Sets the scope excluded concepts.
+	 *
+	 * @param scopeExcludedConcepts the scope excluded concepts
+	 */
+	public void setScopeExcludedConcepts(Set<String> scopeExcludedConcepts);
+	
+	/**
+	 * Indicates whether or not scope excluded descendants flag is the case.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isScopeExcludedDescendantsFlag();
+	
+	/**
+	 * Sets the scope excluded descendants flag.
+	 *
+	 * @param flag the scope excluded descendants flag
+	 */
+	public void setScopeExcludedDescendantsFlag(boolean flag);
+	
+	/**
+	 * Gets the preset age ranges.
+	 *
+	 * @return the preset age ranges
+	 */
+	public Set<MapAgeRange> getPresetAgeRanges();
+	
+	/**
+	 * Sets the preset age ranges.
+	 *
+	 * @param ageRanges the new preset age ranges
+	 */
+	public void setPresetAgeRanges(Set<MapAgeRange> ageRanges);
+	
+	/**
+	 * Adds the preset age range.
+	 *
+	 * @param ageRange the age range
+	 */
+	public void addPresetAgeRange(MapAgeRange ageRange);
+	
+	/**
+	 * Removes the preset age range.
+	 *
+	 * @param ageRange the age range
+	 */
+	public void removePresetAgeRange(MapAgeRange ageRange);
+	
+	
+
 }
