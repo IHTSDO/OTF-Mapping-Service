@@ -1,51 +1,56 @@
-<!--  partial for displaying project :projectId -->
-
+<!--  partial for displaying records associated with a concept id -->
 <p></p>
-<h3>{{concept.terminology}} Concept {{concept.terminologyId}}:  {{concept.defaultPreferredName}}
+
+
+
+
+<!--  Placeholder warning div -->
+
+<span ng-show = "records.length == 0">
+	<hr>
+	<h3><img src="img/warning-circle_25px.png">&nbspNo Map Records exist for Concept Id {{conceptId}}</h3><p></p><p></p>
+	<p> This concept has no map records associated with it.
+	<hr>
+</span>
+<p></p>
+
+<div ng-show = "records.length > 0">
+
+<h3>Map Records for {{concept.terminology}} Concept {{concept.terminologyId}}:  {{concept.defaultPreferredName}}  
+
 </h3>
+<p></p>
+<p></p>
 
-<div ng-show = "records.length == 0">
-
-<em>Undeveloped Content/Placeholder Note</em></h4>
-<blockquote>Concepts that have no records associated with them will not display correctly at this time.  In future, this page will redirect to a map record creation page for those concepts.</blockquote>
-</div>
-
-<table width="100%" class="table" >
+<table width="100%" class="table">
 <thead>
 	<tr> 
         <th style="width: 5%;"></th>
 		<th style="width: 18%;">Project Name</th>
         <th style="width: 8%;">Group Id</th>
         <th style="width: 10%;">Map Priority</th>
-        <th style="width: 13%;">Rule</th>
+        <th style="width: 13%;" >Rule</th>
 		<th style="width: 10%;">Target</th>
 		<th style="width: 18%;">Target Name</th>
+		<th style="width: 5%;"></th>
 	</tr>
 </thead>
 
-<tbody ng-repeat="record in records" style="border: 2px solid #ccc;">
+<tbody ng-repeat="record in records" style="border: 4px solid #ccc;">
 
-	<tr ng-repeat = "entry in record.mapEntry">
-	<td><span ng-show="record.mapNote.length > 0">
-          <div class="dropdown">
-            <a class="dropdown-toggle"> 
-            <img src="img/notepad.png" alt="notepad icon">
-            </a>
-            <ul class="dropdown-menu">
-              <b>Note View</b>
-              <li ng-repeat="note in record.mapNote"><a>{{note.note}}</a></li>
-            </ul>
-          </div>
-        </span>
+
+	<tr ng-repeat = "entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
+		<td>
         <span ng-show="entry.mapAdvice.length > 0">
           <div class="dropdown">
             <a class="dropdown-toggle"> 
             <img src="img/dialog-question.png" alt="question icon">
             </a>
-            <ul class="dropdown-menu">
-              <b>Advice View</b>
-              <li ng-repeat="advice in entry.mapAdvice"><a>{{advice.detail}}</a></li>
-            </ul>
+            <span class="dropdown-menu">
+            <p><strong>Advice</strong></p>
+            <p></p>
+            <p ng-repeat="advice in entry.mapAdvice" ng-bind-html="to_trusted(advice.detail)"></p>
+          	</span>
           </div>
         </span>
          
@@ -53,31 +58,125 @@
 		<td><a href="index.html#/record/projectId/{{record.mapProjectId}}">{{getProjectName(record)}}</a></td>
 		<td>{{entry.mapGroup}}</td>
         <td>{{entry.mapPriority}}</td>
-        <td>{{entry.rule}}</td>
+        <td><span ng-show = "getRuleBasedForRecord(record) == true">{{entry.rule}}</span></td>
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
-		<td>
-        <!-- Commented out while using leftmost-cell icons
-        <span ng-show="record.mapNote.length > 0"><IMG popover-placement="left" popover="{{record.mapNote.0.note}}" src="img/notepad.png" ALT="notepad icon"></span>
-        <span ng-show="entry.mapAdvice.length > 0"><IMG popover-placement="left" popover="{{entry.mapAdvice.0.detail}}" src="img/dialog-question.png" ALT="question icon"></span>       
-        --> 
+		<td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
+			
         </td>
+		
 	</tr>
+
 
 </tbody>
 
 </table>
 
-<h4>Concept Navigation</h4>
-<p></p>
-<div class="dropdown">
-		<a class="dropdown-toggle">Parents</a>	
- 		<ul class="dropdown-menu">
- 			<li ng-repeat="relationship in concept.relationship">
- 				<a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:  {{relationship.destinationConceptPreferredName}}</a> 
-			</li>
- 		</ul>
 </div>
-<div>Children [<em>In development</em>]</i>
+
+<div ng-show="record.mapNote.length > 0">
+  <h3>Record Notes</h3>
+  <ul>
+    <li ng-repeat="note in record.mapNote"><a>{{note.note}}</a></li>
+  </ul>
+</div>
+
+<h3>Add Map Record for this Concept to a Map Project</h3>
+
+<form>
+Select project:
+<select ng-model="mapProjectSelect">
+	<option ng-repeat = "mapProject in projects">{{mapProject.name}}</option>
+</select>
+<input type="submit" value="Create Record" ng-click="createMapRecord(mapProjectSelect, conceptId)">
+</form>
+
+<div ng-show="concept.relationship.length > 0 || concept.children.length > 0">
+
+	<h3>Concept Navigation</h3>
+	<p></p>
+	
+	<table width="100%">
+
+	<tbody style="border: 0px solid #ccc;">
+	<tr>
+		<td style="width:5%"></td>
+		<td style="width:95%">
+			
+			<!--  Navigation and Unmapped Descendants -->
+			<div class="dropdown" ng-show="concept.relationship.length > 0">
+					<a class="dropdown-toggle">Parents</a>	
+			 		<ul class="dropdown-menu">
+			 		<strong>Parents</strong>
+			 			<li ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
+			 				<a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:  {{relationship.destinationConceptPreferredName}}</a> 
+						</li>
+			 		</ul>
+			</div>
+			<div class="dropdown" ng-show="concept.children.length > 0">
+					<a class="dropdown-toggle">Children</a>	
+			 		<ul class="dropdown-menu">
+			 		<strong>Children</strong>
+			 			<li ng-repeat="concept in concept.children | orderBy: 'value'">
+			 				<a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:  {{concept.value}}</a> 
+						</li>
+			 		</ul>
+			</div>
+		</td>
+	</tr>
+	</table>
+	<p></p>
+</div>
+
+<div ng-show = "concept.unmappedDescendants.length > 0">
+
+	<h3>Concept Alerts</h3>
+	<p></p>
+	<table width="100%">
+
+	<tbody style="border: 0px solid #ccc">
+	<tr>
+		<td align=center style="width:5%"><img src="img/warning.png" alt="question icon"></td>
+		<td style="width:95%">
+			
+			<div class="dropdown" ng-show="concept.unmappedDescendants.length > 0">
+			     <a class="dropdown-toggle">
+			     		
+			 			  Unmapped descendants.
+			     
+			     </a>
+			     <ul class="dropdown-menu">
+			       <strong>Unmapped Descendants</strong>
+			       <li ng-repeat="concept in concept.unmappedDescendants"><a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}: {{concept.value}}</a></li>
+			     </ul>
+			</div>
+	</td>
+	</tr>
+	</table>
+	<p></p>
+
+</div>
+
+<!--  TODO: Remove these once floating footer / padding issues resolved -->
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+<p>.</p>
+<hr>
+{{error}}
 
 

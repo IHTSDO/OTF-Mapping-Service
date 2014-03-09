@@ -36,9 +36,12 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 			if (result.getTerminology().equals(terminology)
 					&& result.getTerminologyVersion().equals(version)
 					&& result.getValue().equals("Isa")) {
+				
+				contentService.close();
 				return new Long(result.getTerminologyId());
 			}
 		}
+		contentService.close();
 		return -1L;
 	}
 
@@ -91,6 +94,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -209,6 +213,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -247,6 +252,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -284,6 +290,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -322,6 +329,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -339,10 +347,11 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 		// find all active descendants of 106237007
 		ContentService contentService = new ContentServiceJpa();
 		Concept isaRel =
-				contentService.getConcept(new Long(getIsaRelationshipType(terminology,
-						version)));
+				contentService.getConcept(getIsaRelationshipType(terminology,
+						version).toString(),terminology, version);
 		map.put(new Long(isaRel.getTerminologyId()),
 				isaRel.getDefaultPreferredName());
+		contentService.close();
 		return map;
 	}
 
@@ -392,6 +401,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 

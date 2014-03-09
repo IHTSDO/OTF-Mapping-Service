@@ -20,10 +20,10 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
-import org.ihtsdo.otf.mapping.model.MapLead;
+import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -77,27 +77,26 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		getLog().info("Starting removing map project data ...");
+
 		try {
 
-			getLog().info("Start removing map project data ...");
 
 			MappingService service = new MappingServiceJpa();
 			// Remove map projects
 			for (MapProject p : service.getMapProjects()) {
 				getLog().info("  Remove map project - " + p.getName());
+				if (service.getMapRecordsForMapProjectId(p.getId()).size() != 0) {
+					throw new MojoFailureException(
+							"Attempt to delete a map project that has map records, delete the map records first");
+				}
 				service.removeMapProject(p.getId());
 			}
 
-			// Remove map leads
-			for (MapLead l : service.getMapLeads()) {
-				getLog().info("  Remove map lead - " + l.getName());
-				service.removeMapLead(l.getId());
-			}
-
-			// Remove map specialists
-			for (MapSpecialist s : service.getMapSpecialists()) {
-				getLog().info("  Remove map specialist - " + s.getName());
-				service.removeMapSpecialist(s.getId());
+			// Remove map users
+			for (MapUser l : service.getMapUsers()) {
+				getLog().info("  Remove map user - " + l.getName());
+				service.removeMapUser(l.getId());
 			}
 
 			// Remove map advices
@@ -111,6 +110,13 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
 				getLog().info("  Remove map principle - " + p.getName());
 				service.removeMapPrinciple(p.getId());
 			}
+			
+			// Remove map age ranges
+			for (MapAgeRange r : service.getMapAgeRanges()) {
+				getLog().info("  Remove map age range - " + r.getName());
+				service.removeMapAgeRange(r.getId());
+			}
+			
 			getLog().info("done ...");
 
 			service.close();

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -57,6 +58,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -84,6 +86,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -111,6 +114,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 
 	}
@@ -139,6 +143,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -166,6 +171,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -193,6 +199,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -209,17 +216,36 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 		Map<Long, String> map = new HashMap<Long, String>();
 
 		// find all active descendants of 609330002
+		// 609330002 - Map category value
+		// TODO: figure out why that doesn't work.  opting for 447634004 instead
 		ContentService contentService = new ContentServiceJpa();
 		Set<Concept> descendants =
-				contentService.getDescendants("609330002", terminology, version,
+				contentService.getDescendants("447634004", terminology, version,
 						isaRelationshipType);
 
+		Logger.getLogger(this.getClass()).debug("Descendants of 447634004 " + descendants);
 		for (Concept descendant : descendants) {
 			if (descendant.isActive()) {
 				map.put(new Long(descendant.getTerminologyId()),
 						descendant.getDefaultPreferredName());
 			}
 		}
+
+		// find all active descendants of 447247004
+		// 447247004 - SNOMED CT source code not mappable to target coding scheme
+		descendants =
+				contentService.getDescendants("447247004", terminology, version,
+						isaRelationshipType);
+
+		Logger.getLogger(this.getClass()).debug("Descendants of 447247004 " + descendants);
+		for (Concept descendant : descendants) {
+			if (descendant.isActive()) {
+				map.put(new Long(descendant.getTerminologyId()),
+						descendant.getDefaultPreferredName());
+			}
+		}
+
+		contentService.close();
 		return map;
 	}
 
@@ -247,6 +273,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -274,6 +301,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -301,6 +329,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -328,6 +357,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -344,9 +374,12 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
 		// find all active descendants of 106237007
 		ContentService contentService = new ContentServiceJpa();
-		Concept isaRel = contentService.getConcept(isaRelationshipType);
+		Concept isaRel =
+				contentService.getConcept(isaRelationshipType + "", terminology,
+						version);
 		map.put(new Long(isaRel.getTerminologyId()),
 				isaRel.getDefaultPreferredName());
+		contentService.close();
 		return map;
 	}
 
@@ -373,6 +406,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 
@@ -400,6 +434,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 						descendant.getDefaultPreferredName());
 			}
 		}
+		contentService.close();
 		return map;
 	}
 

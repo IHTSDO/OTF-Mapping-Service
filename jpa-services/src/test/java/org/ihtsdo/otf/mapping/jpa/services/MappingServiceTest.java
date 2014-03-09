@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.jpa.services;
+/*package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,28 +26,28 @@ import org.ihtsdo.otf.mapping.model.MapSpecialist;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-/**
+*//**
  * The Class MapProjectJpaTest.
  * 
  * Provides test cases 1. confirm MapProject data load returns expected data 2.
  * confirms indexed fields are indexed 3. confirms MapProject is audited and
  * changes are logged in audit table
- */
+ *//*
 public class MappingServiceTest {
 
-	/** The mapping service */
+	*//** The mapping service *//*
 	private static MappingServiceJpa service;
 
-	/** The manager. */
+	*//** The manager. *//*
 	private static EntityManager manager;
 
-	/** The factory. */
+	*//** The factory. *//*
 	private static EntityManagerFactory factory;
 
-	/**
+	*//**
 	 * Creates db tables, load test objects and create indexes to prepare for
 	 * test cases.
-	 */
+	 *//*
 	@BeforeClass
 	public static void init() {
 
@@ -59,7 +59,7 @@ public class MappingServiceTest {
 		// construct the mapping service
 		service = new MappingServiceJpa();
 
-		/*
+		
 		 * // create local connection entities for audit testing factory =
 		 * Persistence.createEntityManagerFactory("MappingServiceDS"); manager =
 		 * factory.createEntityManager(); fullTextEntityManager =
@@ -68,12 +68,12 @@ public class MappingServiceTest {
 		 * 
 		 * fullTextEntityManager.purgeAll(MapProjectJpa.class);
 		 * fullTextEntityManager.flushToIndexes();
-		 */
+		 
 	}
 
-	/**
+	*//**
 	 * Close services after complete
-	 */
+	 *//*
 	// @AfterClass
 	public static void cleanup() {
 
@@ -214,11 +214,11 @@ public class MappingServiceTest {
 
 	}
 
-	/**
+	*//**
 	 * Create mock data and test adding the objects
 	 * 
 	 * @throws Exception
-	 */
+	 *//*
 	@Test
 	public void testAddElements() throws Exception {
 
@@ -492,11 +492,11 @@ public class MappingServiceTest {
 		}
 	}
 
-	/**
+	*//**
 	 * Test retrieval of elements from existing database
 	 * 
 	 * @throws Exception
-	 */
+	 *//*
 	@SuppressWarnings("static-method")
 	@Test
 	public void testRetrieveElements() throws Exception {
@@ -613,11 +613,11 @@ public class MappingServiceTest {
 
 	}
 
-	/**
+	*//**
 	 * Test updating each type of element
 	 * 
 	 * @throws Exception
-	 */
+	 *//*
 	@SuppressWarnings("static-method")
 	@Test
 	public void testUpdateElements() throws Exception {
@@ -646,12 +646,12 @@ public class MappingServiceTest {
 			System.out.println("Project update successful");
 		}
 		// TODO Reenable for audit testing
-		/*
+		
 		 * if (reader.getRevisions(MapProject.class, project_old).size() !=
 		 * revNumbers.size() + 1) { fail(
 		 * "Failed to update revision table:  number of revisions has not increased by 1"
 		 * ); }
-		 */
+		 
 
 		// test update and envers audit of map specialist
 		MapSpecialist specialist_old = specialists.get(0);
@@ -670,12 +670,12 @@ public class MappingServiceTest {
 			System.out.println("Specialist update successful");
 		}
 		// TODO Reenable for audit testing
-		/*
+		
 		 * if (reader.getRevisions(MapSpecialist.class, specialist_old).size()
 		 * != revNumbers.size() + 1) { fail(
 		 * "Failed to update revision table:  number of revisions has not increased by 1"
 		 * ); }
-		 */
+		 
 
 		// test update and envers audit of map lead
 
@@ -696,23 +696,23 @@ public class MappingServiceTest {
 		}
 
 		// TODO Reenable for audit testing
-		/*
+		
 		 * if (reader.getRevisions(MapLead.class, lead_old).size() !=
 		 * revNumbers.size() + 1) { fail(
 		 * "Failed to update revision table:  number of revisions has not increased by 1"
 		 * ); }
-		 */
+		 
 
 		// TODO Determine desired audit results for project
 
 	}
 
-	/**
+	*//**
 	 * Test removal of each type of element Further test propagation of removal
 	 * of lead/specialist on project
 	 * 
 	 * @throws Exception
-	 */
+	 *//*
 	@SuppressWarnings("static-method")
 	@Test
 	public void testRemoveElements() throws Exception {
@@ -755,3 +755,4 @@ public class MappingServiceTest {
 	}
 
 }
+*/

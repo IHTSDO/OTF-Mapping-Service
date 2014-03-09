@@ -20,10 +20,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -45,8 +44,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *           </goals>
  *           <configuration>
  *             <!-- one of the two must be used -->
- *             <projectId>${project.id}</projectId>
- *             <refSetId>${refset.id}</refSetId>
+ *             <refsetId>${refset.id}</refsetId>
  *           </configuration>
  *         </execution>
  *       </executions>
@@ -58,12 +56,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * @phase package
  */
 public class MapRecordRemoverMojo extends AbstractMojo {
-
-	/**
-	 * The specified project id
-	 * @parameter
-	 */
-	private String projectId = null;
 
 	/**
 	 * The specified refSetId
@@ -85,16 +77,12 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 	 * @see org.apache.maven.plugin.Mojo#execute()
 	 */
 	@Override
-	public void execute() throws MojoFailureException {
+	public void execute() throws MojoExecutionException {
+		getLog().info("Starting removing map records for project - " + refSetId);
 
-		if (projectId == null && refSetId == null) {
-			throw new MojoFailureException(
-					"You must specify either a projectId or a refSetId.");
-		}
-
-		if (projectId != null && refSetId != null) {
-			throw new MojoFailureException(
-					"You must specify either a projectId or a refSetId, not both.");
+		if (refSetId == null) {
+			throw new MojoExecutionException(
+					"You must specify a refSetId.");
 		}
 
 		try {
@@ -104,19 +92,11 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 			mappingService.beginTransaction();
 			Set<MapProject> mapProjects = new HashSet<MapProject>();
 
-			if (projectId != null) {
-				getLog().info("Start removing map records for project - " + projectId);
-				for (String id : projectId.split(",")) {
-					mapProjects.add(mappingService.getMapProject(Long.valueOf(id)));
-				}
-
-			} else if (refSetId != null) {
-				getLog().info("Start removing map records for project - " + refSetId);
-				for (MapProject mapProject : mappingService.getMapProjects()) {
-					for (String id : refSetId.split(",")) {
-						if (mapProject.getRefSetId().equals(id)) {
-							mapProjects.add(mapProject);
-						}
+			getLog().info("Start removing map records for refSetId - " + refSetId);
+			for (MapProject mapProject : mappingService.getMapProjects()) {
+				for (String id : refSetId.split(",")) {
+					if (mapProject.getRefSetId().equals(id)) {
+						mapProjects.add(mapProject);
 					}
 				}
 			}
@@ -127,12 +107,18 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 			}
 
 			// Remove map record and entry notes
+			int ct = 0;
 			for (MapProject mapProject : mapProjects) {
-				getLog().info("    Remove map records for " + mapProject.getName());
-				for (MapRecord record : mappingService.getMapRecordsForMapProjectId(mapProject
-						.getId())) {
-					getLog().info("    Removing map record " + record.getId() + " from " + mapProject.getName());
+				getLog().debug("    Remove map records for " + mapProject.getName());
+				for (MapRecord record : mappingService
+						.getMapRecordsForMapProjectId(mapProject.getId())) {
+					getLog().info(
+							"    Removing map record " + record.getId() + " from "
+									+ mapProject.getName());
 					mappingService.removeMapRecord(record.getId());
+					if (++ct % 500 == 0) {
+						getLog().info("      " + ct + " notes processed");
+					}
 				}
 			}
 			mappingService.commit();
@@ -141,7 +127,7 @@ public class MapRecordRemoverMojo extends AbstractMojo {
 			mappingService.close();
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
+			throw new MojoExecutionException("Unexpected exception:", e);
 		}
 	}
 

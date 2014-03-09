@@ -2,93 +2,180 @@
 
 
 // Declare app level module
-var mapProjectApp = angular.module('mapProjectApp', [
-                                                     'ngRoute',
-                                                     'mapProjectAppControllers'
-                                                   ]);
+var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
+                                                     'mapProjectAppControllers',                                                
+                                                     'adf',  
+                                                     'mapProjectApp.widgets.mapProjectList', 
+                                                     'mapProjectApp.widgets.metadataList',
+                                                     'LocalStorageModule'
+                        ])
+                        .value('prefix', '')
+                        .config(function (dashboardProvider) {
+                          dashboardProvider
+                            .structure('6-6', {
+                              rows: [{
+                                columns: [{
+                                  class: 'col-md-6'
+                                }, {
+                                  class: 'col-md-6'
+                                }]
+                              }]
+                            })
+                            .structure('4-8', {
+                              rows: [{
+                                columns: [{
+                                  class: 'col-md-4',
+                                  widgets: []
+                                }, {
+                                  class: 'col-md-8',
+                                  widgets: []
+                                }]
+                              }]
+                            })
+                            .structure('12/4-4-4', {
+                              rows: [{
+                                columns: [{
+                                  class: 'col-md-12'
+                                }]
+                              }, {
+                                columns: [{
+                                  class: 'col-md-4'
+                                }, {
+                                  class: 'col-md-4'
+                                }, {
+                                  class: 'col-md-4'
+                                }]
+                              }]
+                            })
+                            .structure('12/6-6/12', {
+                              rows: [{
+                                columns: [{
+                                  class: 'col-md-12'
+                                }]
+                              }, {
+                                columns: [{
+                                  class: 'col-md-6'
+                                }, {
+                                  class: 'col-md-6'
+                                }]
+                              }, {
+                                columns: [{
+                                  class: 'col-md-12'
+                                }]
+                              }]
+                            });
 
-mapProjectApp.run(['$http', '$rootScope', function($http, $rootScope) {
-	$http({
-		  url: root_metadata + "terminologies/latest/",
-		  dataType: "json",
-		  method: "GET",
-		  headers: {
-			  "Content-Type": "application/json"
-		  }
-	  }).success(function(response) {
-	      $rootScope.termVersionPairs = response;
-	  }).error(function(error) {
-		  $rootScope.latestTerminologiesStatus = "Error retrieving metadata terminologies";
-	  });
+                        })
+                        .controller('dashboardCtrl', function ($rootScope, $scope, localStorageService) {
+                          var name = 'default';
+                          var model = localStorageService.get(name);
+                          if (!model && $rootScope.role.value >= 3) { // lead or higher privledge
+                            // set default model for demo purposes
+                            model = {
+                              structure: "4-8",                          
+                            rows: [{
+                                columns: [{
+                                  class: 'col-md-4',
+                                  widgets: [{
+                                      type: "mapProjectList",
+                                      config: {},
+                                      title: "Map Projects"
+                                  }]
+                                }, {
+                                  class: 'col-md-8',
+                                  widgets: [{
+                                      type: "metadataList",
+                                      config: {
+                                          terminology: "SNOMEDCT"
+                                      },
+                                      title: "Metadata"
+                                  }]
+                                }]
+                              }]
+                            };
+                          } else if (!model) { // viewer or specialist
+                              // set default model for demo purposes
+                              model = {
+                                structure: "4-8",                          
+                              rows: [{
+                                  columns: [{
+                                    class: 'col-md-4',
+                                    widgets: [{
+                                        type: "mapProjectList",
+                                        config: {},
+                                        title: "Map Projects"
+                                    }]
+                                  }]
+                                }]
+                              };
+                            }
+                          $scope.name = name;
+                          $scope.model = model;
 
-	}]);
+                          $scope.$on('adfDashboardChanged', function (event, name, model) {
+                            localStorageService.set(name, model);
+                          });
+                        });
 
-mapProjectApp.run(['$http', '$rootScope', function($http, $rootScope) {
-	$http({
-		  url: root_metadata + "all/SNOMEDCT",
-		  dataType: "json",
-		  method: "GET",
-		  headers: {
-			  "Content-Type": "application/json"
-		  }
-	  }).success(function(response) {
-	      $rootScope.keyValuePairLists = response.keyValuePairList;
-	  }).error(function(error) {
-		  $rootScope.errorMetadata = "Error retrieving all metadata";
-	 });
 
-	}]);
+
 
 mapProjectApp.config(['$routeProvider',
    function($routeProvider) {
 	
+      //////////////////////////////
+	  // DASHBOARDS
+	  //////////////////////////////
+	
+	  $routeProvider.when('/sorttest', {
+		  controller: 'SortTestCtrl',
+		  templateUrl: 'sorttest.html'
+	  });
+	  
+	  $routeProvider.when('/specialist/dash', {
+		  templateUrl: 'partials/project-list.html'
+	  });
+	  
+	  $routeProvider.when('/lead/dash', {
+		  templateUrl: 'partials/project-list.html'
+	  });
+	  
+	  $routeProvider.when('/admin/dash', {
+		  templateUrl: 'partials/project-list.html'
+	  });
 	
       //////////////////////////////
 	  // MAPPING SERVICES
 	  //////////////////////////////
 	  
 	  $routeProvider.when('/project/projects', {
-		  templateUrl: 'partials/project-list.html', 
-		  controller: 'MapProjectListCtrl'
-	  });
-	  
-  	  $routeProvider.when('/lead/leads', {
-  		  templateUrl: 'partials/lead-list.html',
-  		  controller: 'MapLeadListCtrl'
-	  });
-  	  
-	  $routeProvider.when('/specialist/specialists', {
-		  templateUrl: 'partials/specialist-list.html',
-		  controller: 'MapSpecialistListCtrl'
+		  templateUrl: 'partials/project-list.html'//, 
+		  //controller: 'MapProjectListCtrl'
 	  });
 	  
 	  $routeProvider.when('/record/projectId/:projectId', {
 		  templateUrl: 'partials/project-records.html',
-	      controller: 'MapProjectDetailCtrl'
+	      controller: 'MapProjectRecordCtrl'
 	  });
-	  $routeProvider.when('/advice/advices', {
-		  templateUrl: 'partials/advice-list.html',
-	      controller: 'MapAdviceListCtrl'
-	  });
-	  
+
 	  $routeProvider.when('/project/id/:projectId', {
   		  templateUrl: 'partials/project-detail.html', 
   		  controller: 'MapProjectDetailCtrl'
   	  });
 	  
-	  $routeProvider.when('/edit-demo', {
-			templateUrl: 'partials/edit-demo.html',
-			controller: 'EditDemoCtrl'
-	  });
-	  
-	  $routeProvider.when('/project-create', {
-			templateUrl: 'partials/project-create.html',
-			controller: 'ProjectCreateCtrl'
-	  });
-	  
 	  $routeProvider.when('/record/conceptId/:conceptId', {
 			templateUrl: 'partials/record-concept.html',
 			controller: 'RecordConceptListCtrl'
+	  });
+	  
+	  $routeProvider.when('/record/conceptId/:conceptId/create', {
+		  templateUrl: 'partials/record-create.html',
+		  controller: 'RecordCreateCtrl'
+	  });
+	  
+	  $routeProvider.when('/record/recordId/:recordId', {
+		  templateUrl: 'partials/record-detail.html',
+		  controller: 'MapRecordDetailCtrl'
 	  });
 		
 	  
@@ -96,42 +183,27 @@ mapProjectApp.config(['$routeProvider',
 	  // CONTENT SERVICES
 	  //////////////////////////////
 	  
-	  $routeProvider.when('/concept/concepts', {
-		  templateUrl: 'partials/concept-list.html',
-		  controller: 'ConceptListCtrl'
-	  });
-	  
-	  
-	  $routeProvider.when('/concept/:terminology/:version/id/:conceptId', {
-  		  templateUrl: 'partials/concept-detail.html', 
-  		  controller: 'ConceptDetailCtrl'
-  	  });
 	  
 	  
 	  
 	  //////////////////////////////
 	  // QUERY SERVICES
 	  //////////////////////////////
-	  $routeProvider.when('/concept/query', {
-  		  templateUrl: 'partials/query-partial.html', 
-  		  controller: 'QueryCtrl'
-  	  });
-	  
+
 	  //////////////////////////////
 	  // METADATA SERVICES
 	  //////////////////////////////
-	  $routeProvider.when('/metadata', {
-	  	templateUrl: 'partials/metadata-detail.html', 
-		  controller: 'MetadataCtrl'
-	  });
+
 	  
 	  ///////////////////////////////
 	  // HOME and ERROR ROUTES
 	  ///////////////////////////////
 	  
+	 
+	  
 	  $routeProvider.when('/', {
-		  templateUrl: 'partials/project-list.html', 
-		  controller: 'MapProjectListCtrl'
+		  templateUrl: 'partials/login.html',
+  		  controller: 'LoginCtrl'
 	  });
 	  
 	  $routeProvider.otherwise({
