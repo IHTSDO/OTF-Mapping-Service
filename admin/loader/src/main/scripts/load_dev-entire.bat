@@ -17,7 +17,7 @@ echo Starting ...%date% %time%
 echo ------------------------------------------------
 if DEFINED MVN_HOME (echo MVN_HOME  = %MVN_HOME%) else (echo MVN_HOME must be defined
 goto trailer)
-if DEFINED OTF_MAPPING_HOME (echo MVN_HOME  = %OTF_MAPPING_HOME%) else (echo OTF_MAPPING_HOME must be defined
+if DEFINED OTF_MAPPING_HOME (echo OTF_MAPPING_HOME  = %OTF_MAPPING_HOME%) else (echo OTF_MAPPING_HOME must be defined
 goto trailer)
 
 echo     Run updatedb with hibernate.hbm2ddl.auto = create ...%date%%time%
