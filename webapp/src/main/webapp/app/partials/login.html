@@ -1,29 +1,44 @@
 <!-- Partial for login page -->
 
-<form>
-<table class="table">
-<!-- <tr>
-<td>Username:</td>
-<td><input type="text" ng-model="userName"> </td>
-</tr> -->
-
-<tr>
-	<td>Select User: </td>
-	<td><select ng-model="user" ng-options = "user as user.name for user in users"></select></td>
-</tr>
 
 
-<tr>
-<td>Role:</td> 
-<td><select ng-model="role" ng-options="r.name for r in roles"></select></td>
-</tr>
-</table>
+<div ng-show="users.length == 0 && error.length == 0">
 
+	<h3>Initializing application.  Plesae wait.</h3>
+</div>
+
+<div ng-show="users.length > 0">
+	<form>
+	<table >
 	
-<button type="submit"ng-click="go('/project/projects/')">Login</button>
-</form>
-<hr>
-{{user}}
+	<tr>
+		<td style="padding:5px; width:5%;">Select User: </td>
+		<td style="padding:5px; width:20%;"><select ng-model="user" ng-options = "user as user.name for user in users"></select></td>
+	</tr>
+	
+	
+	<tr>
+		<td style="padding:5px; width:5%;">Role:</td> 
+		<td style="padding:5px; width:20%;"><select ng-model="role" ng-options="r.name for r in roles"></select></td>
+	</tr>
+	
+	
+	<tr>
+		<td style="padding:5px;" ></td>
+		<td style="padding:5px;" >
+		<button type="submit" ng-click="go('/project/projects/')">Login</button>
+		</td>
+	</tr>
+	</table>
+	</form>
+</div>
+
+<div ng-show = "error.length > 0">
+
+	<h3>Error initialization application</h3>
+	<p></p>
+	{{error}}
+</div>
 
 
 
