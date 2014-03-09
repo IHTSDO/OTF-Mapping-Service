@@ -17,7 +17,7 @@ echo Starting ...%date% %time%
 echo ------------------------------------------------
 if DEFINED MVN_HOME (echo MVN_HOME  = %MVN_HOME%) else (echo MVN_HOME must be defined
 goto trailer)
-if DEFINED OTF_MAPPING_HOME (echo MVN_HOME  = %OTF_MAPPING_HOME%) else (echo OTF_MAPPING_HOME must be defined
+if DEFINED OTF_MAPPING_HOME (echo OTF_MAPPING_HOME  = %OTF_MAPPING_HOME%) else (echo OTF_MAPPING_HOME must be defined
 goto trailer)
 
 echo     Run updatedb with hibernate.hbm2ddl.auto = create ...%date%%time%
@@ -83,7 +83,7 @@ IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
-trailer:
+:trailer
 echo ------------------------------------------------
 IF %error% NEQ 0 (
 echo There were one or more errors.  Please reference the mvn.log file for details. 
