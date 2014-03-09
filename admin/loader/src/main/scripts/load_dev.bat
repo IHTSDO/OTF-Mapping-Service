@@ -83,7 +83,7 @@ IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
-trailer:
+:trailer
 echo ------------------------------------------------
 IF %error% NEQ 0 (
 echo There were one or more errors.  Please reference the mvn.log file for details. 
