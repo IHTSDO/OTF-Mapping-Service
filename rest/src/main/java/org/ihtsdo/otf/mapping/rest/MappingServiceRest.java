@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.rest;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -367,6 +368,7 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Find paged records by project id", notes = "Returns delimited page of MapRecords given a paging/filtering/sorting parameters object", response = MapRecordList.class)
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@CookieParam(value = "userInfo")
 	public MapRecordList getMapRecordsForMapProjectId(
 			@ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {

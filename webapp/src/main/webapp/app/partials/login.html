@@ -1,11 +1,18 @@
 <!-- Partial for login page -->
 
-
-<table>
-<tr>
+<form>
+<table class="table">
+<!-- <tr>
 <td>Username:</td>
 <td><input type="text" ng-model="userName"> </td>
+</tr> -->
+
+<tr>
+	<td>Select User: </td>
+	<td><select ng-model="user" ng-options = "user as user.name for user in users"></select></td>
 </tr>
+
+
 <tr>
 <td>Role:</td> 
 <td><select ng-model="role" ng-options="r.name for r in roles"></select></td>
@@ -13,7 +20,10 @@
 </table>
 
 	
-<button ng-click="go('/project/projects/')">Login</button>
+<button type="submit"ng-click="go('/project/projects/')">Login</button>
+</form>
+<hr>
+{{user}}
 
 
 

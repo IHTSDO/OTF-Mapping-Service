@@ -352,21 +352,7 @@ public interface MapProject  {
 	 * @param mapRefsetPattern the map type
 	 */
 	public void setMapRefsetPattern(String mapRefsetPattern);
-	
-	/**
-	 * Returns the set of default preset age ranges for rule generation.
-	 *
-	 * @return the preset age ranges for rule generation
-	 */
-	public Set<String> getRulePresetAgeRanges();
-	
-	/**
-	 * Sets the set of default preset age ranges for rule generation.
-	 *
-	 * @param rulePresetAgeRanges the preset age ranges
-	 */
-	public void setRulePresetAgeRanges(Set<String> rulePresetAgeRanges);
-	
+		
 	/**
 	 * Returns the scope concepts.
 	 *
@@ -422,6 +408,34 @@ public interface MapProject  {
 	 * @param flag the scope excluded descendants flag
 	 */
 	public void setScopeExcludedDescendantsFlag(boolean flag);
+	
+	/**
+	 * Gets the preset age ranges.
+	 *
+	 * @return the preset age ranges
+	 */
+	public Set<MapAgeRange> getPresetAgeRanges();
+	
+	/**
+	 * Sets the preset age ranges.
+	 *
+	 * @param ageRanges the new preset age ranges
+	 */
+	public void setPresetAgeRanges(Set<MapAgeRange> ageRanges);
+	
+	/**
+	 * Adds the preset age range.
+	 *
+	 * @param ageRange the age range
+	 */
+	public void addPresetAgeRange(MapAgeRange ageRange);
+	
+	/**
+	 * Removes the preset age range.
+	 *
+	 * @param ageRange the age range
+	 */
+	public void removePresetAgeRange(MapAgeRange ageRange);
 	
 	
 

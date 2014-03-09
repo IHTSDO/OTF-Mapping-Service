@@ -1,10 +1,12 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -47,7 +49,7 @@ public interface MappingService {
 	 *
 	 * @param name the name
 	 * @return the map project
-	 * @throws Excception the exception
+	 * @throws Exception the exception
 	 */
 	public MapProject getMapProjectByName(String name) throws Exception;
 	
@@ -87,7 +89,7 @@ public interface MappingService {
 	public List<MapProject> getMapProjects() throws Exception;
 	
 	/**
-	 * Retrieve all map users
+	 * Retrieve all map users.
 	 *
 	 * @return a List of MapUsers
 	 * @throws Exception the exception
@@ -150,7 +152,7 @@ public interface MappingService {
 	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/**
-	 * Query for MapUsers
+	 * Query for MapUsers.
 	 *
 	 * @param query the query
 	 * @param pfsParameter the paging, filtering, sorting parameter
@@ -197,6 +199,7 @@ public interface MappingService {
 	 * Adds the map user.
 	 *
 	 * @param mapUser the map user
+	 * @return the map user
 	 * @throws Exception the exception
 	 */
 	public MapUser addMapUser(MapUser mapUser) throws Exception;
@@ -248,7 +251,7 @@ public interface MappingService {
 	////////////////////////////
 	
 	/**
-	 * Update map user
+	 * Update map user.
 	 *
 	 * @param mapUser the map user
 	 * @throws Exception the exception
@@ -585,6 +588,30 @@ public interface MappingService {
 	 */
 	public boolean isConceptOutOfScopeBounds(Concept concept, MapProject project)
 		throws Exception;
+
+	/**
+	 * Gets the map user.
+	 *
+	 * @param userName the user name
+	 * @return the map user
+	 */
+	public MapUser getMapUser(String userName);
+
+	/**
+	 * User exists.
+	 *
+	 * @param mapUser the map user
+	 * @return true, if successful
+	 */
+	public boolean userExists(MapUser mapUser);
+
+	public List<MapAgeRange> getMapAgeRanges();
+	
+	public MapAgeRange addMapAgeRange(MapAgeRange ageRange);
+	
+	public void removeMapAgeRange(Long ageRangeId);
+	
+	public void updateMapAgeRange(MapAgeRange ageRange);
 
 }
 	
