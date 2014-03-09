@@ -957,17 +957,17 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 					if (ruleCategory === "Age - Chronological") {
 						console.debug("ruleAge selected");
 
-						if (ageRange.lowerValue != '') {
+						if (ageRange.lowerValue != "-1") {
 							$scope.rule += "IFA 424144002 | Current chronological age (observable entity)"
 										+  " | " + (ageRange.lowerInclusive == true ? ">=" : ">") + " "
 										+  ageRange.lowerValue + " "
 										+  ageRange.lowerUnits;
 						}
 						
-						if (ageRange.lowerValue != '' && ageRange.upperValue != '')
+						if (ageRange.lowerValue != "-1" && ageRange.upperValue != "-1")
 							$scope.rule += " | ";
 						
-						if (ageRange.upperValue != '') {
+						if (ageRange.upperValue != "-1") {
 							$scope.rule += "IFA 424144002 | Current chronological age (observable entity)"
 										+  " | " + (ageRange.upperInclusive == true ? "<=" : "<") + " "
 										+  ageRange.upperValue + " "
@@ -976,7 +976,7 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 					} else if (ruleCategory === "Age - At Onset") {
 						console.debug("ruleAgeAtOnset selected");
 						$scope.rule = "IFA 445518008 | Age at onset of clinical finding (observable entity)";
-						if (ageRange.upperValue != '') {
+						if (ageRange.upperValue != "-1") {
 							$scope.rule += " | " + (ageRange.lowerInclusive == true ? ">=" : ">") + " "
 										+  ageRange.lowerValue + " "
 										+  ageRange.lowerUnits;
@@ -998,19 +998,19 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 			  for (var i = 0; i < $scope.presetAgeRanges.length; i++) {
 				  var presetAgeRangeStr = $scope.presetAgeRanges[i].name + ", ";
 				  
-				  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != '') {
+				  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != "-1") {
 					  presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive == true ? ">=" : ">") + " "
 					  					+  $scope.presetAgeRanges[i].lowerValue + " "
 					  					+  $scope.presetAgeRanges[i].lowerUnits;
 				  }
 				  
-				  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != '' &&
-					  $scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != '') {
+				  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != "-1" &&
+					  $scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != "-1") {
 					  
 					  presetAgeRangeStr += " and ";
 				  }
 				  
-				  if ($scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != '') {
+				  if ($scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != "-1") {
 					  
 					  presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive == true ? "<=" : "<") + " "
 					  					+  $scope.presetAgeRanges[i].upperValue + " "
