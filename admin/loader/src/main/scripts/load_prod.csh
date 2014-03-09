@@ -42,7 +42,7 @@ endif
 
 echo "    Load ICD10 ...`/bin/date`"
 cd $OTF_MAPPING_HOME/admin/loader
-mvn -PICD10-Drun.config=prod install >&! mvn.log
+mvn -PICD10 -Drun.config=prod install >&! mvn.log
 if ($status !- 0) then
     echo "ERROR loading ICD10"
     cat mvn.log

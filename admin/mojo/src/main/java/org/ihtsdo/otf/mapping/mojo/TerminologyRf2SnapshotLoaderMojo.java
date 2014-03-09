@@ -364,10 +364,10 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 				metadataService.close();
 				
 				ContentService contentService = new ContentServiceJpa();
-				getLog().info("Start creating tree positions.");
+				getLog().info("SKIP Start creating tree positions.");
 				// TODO: don't hardcode root or isa values
-				contentService.computeTreePositions(terminology, version,
-						isaRelType, "138875005");
+				//contentService.computeTreePositions(terminology, version,
+				//		isaRelType, "138875005");
 				contentService.close();
 				
 				
