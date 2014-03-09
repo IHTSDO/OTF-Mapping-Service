@@ -11,6 +11,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapUserList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -134,6 +135,25 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			BufferedWriter projectsWriter =
 					new BufferedWriter(new FileWriter(projectsFile.getAbsoluteFile()));
 
+			File agerangesFile = new File(outputDir, "mapageranges.txt");
+			
+			// if file doesn't exist, then create it
+			if (!agerangesFile.exists()) {
+				agerangesFile.createNewFile();
+			}
+			BufferedWriter agerangesWriter =
+					new BufferedWriter(new FileWriter(agerangesFile.getAbsoluteFile()));
+
+			File agerangesbyprojectFile = new File(outputDir, "mapagerangesbyproject.txt");
+			
+			// if file doesn't exist, then create it
+			if (!agerangesFile.exists()) {
+				agerangesFile.createNewFile();
+			}
+			BufferedWriter agerangesbyprojectWriter =
+					new BufferedWriter(new FileWriter(agerangesbyprojectFile.getAbsoluteFile()));
+
+			
 			File scopeIncludesFile = new File(outputDir, "scopeIncludes.txt");
 			// if file doesn't exist, then create it
 			if (!scopeIncludesFile.exists()) {
@@ -160,8 +180,6 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						+ ms.getEmail() + "\n");
 			}
 
-			
-
 			// export to mapadvices.txt
 			for (MapAdvice ma : mappingService.getMapAdvices()) {
 				advicesWriter.write(ma.getName() + "\t" + ma.getDetail() + "\n");
@@ -174,7 +192,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 				principlesWriter.write(ma.getName() + "|" + ma.getPrincipleId() + "|"
 						+ ma.getSectionRef() + "|" + detail + "\n");
 			}
-
+			
 			// export to mapprojects.txt
 			for (MapProject mpr : mappingService.getMapProjects()) {
 				StringBuffer mapAdvices = new StringBuffer();
@@ -205,13 +223,6 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 				if (mprMapSpecialists.length() > 1)
 					mprMapSpecialists.deleteCharAt(mprMapSpecialists.length() - 1);
 				
-				StringBuffer mprRulePresetAgeRanges = new StringBuffer();
-				for(String rpar : mpr.getRulePresetAgeRanges()) {
-					mprRulePresetAgeRanges.append(rpar).append(",");	
-				}
-				if (mprRulePresetAgeRanges.length() > 1)
-					mprRulePresetAgeRanges.deleteCharAt(mprRulePresetAgeRanges.length() -1);
-
 				projectsWriter.write(mpr.getName() + "\t" + mpr.getRefSetId() + "\t"
 						+ mpr.getRefSetName() + "\t"
 						+ mpr.getSourceTerminology() + "\t"
@@ -230,7 +241,15 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						+ mprMapSpecialists + "\t"
 						+ mpr.isScopeDescendantsFlag() + "\t" 
 						+ mpr.isScopeExcludedDescendantsFlag() + "\n");
-						/**+ mprRulePresetAgeRanges + "\n"); commented out by DSS, b/c commented out on import side*/
+				
+				
+				// add to mapagerangesbyproject.txt
+				for (MapAgeRange ar : mpr.getPresetAgeRanges()) {
+					agerangesbyprojectWriter.write(
+							mpr.getRefSetId() + "|" + ar.getName() + "|" 
+						+   ar.getLowerValue() + "|" + ar.getLowerUnits() + "|"	+ (ar.getLowerInclusive() == true ? "true" : "false") + "|"	
+						+   ar.getUpperValue() + "|" + ar.getUpperUnits() + "|" + (ar.getUpperInclusive() == true ? "true" : "false") + "\n");		
+					}
 			}
 			
 			for (MapProject mpr : mappingService.getMapProjects()) {
@@ -254,6 +273,8 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			projectsWriter.close();
 			scopeIncludesWriter.close();
 			scopeExcludesWriter.close();
+			agerangesWriter.close();
+			agerangesbyprojectWriter.close();
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);

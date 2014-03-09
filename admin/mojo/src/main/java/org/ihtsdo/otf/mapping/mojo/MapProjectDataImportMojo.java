@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -14,11 +16,13 @@ import java.util.StringTokenizer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
+import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -121,6 +125,10 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 			BufferedReader principlesReader =
 					new BufferedReader(new FileReader(principlesFile));
 
+			File agerangesFile = new File(inputDir, "mapageranges.txt");
+			BufferedReader agerangesReader =
+					new BufferedReader(new FileReader(agerangesFile));
+
 			File projectsFile = new File(inputDir, "mapprojects.txt");
 			BufferedReader projectsReader =
 					new BufferedReader(new FileReader(projectsFile));
@@ -135,7 +143,6 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
 			MappingService mappingService = new MappingServiceJpa();
 
-	
 			// Add Users
 			getLog().info("Adding users...");
 			
@@ -180,9 +187,79 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 			}
 			getLog().info("  " + Integer.toString(mappingService.getMapPrinciples().size()) + " principles added.");
 
+			// Add map age ranges
+			getLog().info("Adding project age ranges...");
+			
+			// Instantiate sets for checking uniqueness and saving project-specific information
+			Set<MapAgeRange> ageRanges = new HashSet<MapAgeRange>();
+			Map<String, Set<MapAgeRange>> projectAgeRanges = new HashMap<String, Set<MapAgeRange>>();
+			
+			// cycle through the project age ranges
+			while ((line = agerangesReader.readLine()) != null) {
+				String[] fields = line.split("\\|", -1); // make sure to account for empty fields
+				
+				for (int i=0; i < fields.length; i++) {
+					getLog().info(Integer.toString(i) + ": " + fields[i] + " - " + (fields[i].equals("true") ? "true" : "false") + " - " + (fields[i].equals("null") ? "true" : "false") + " - " + (fields[i] == null ? "null" : "non-null"));
+				}
+				// get the ref set id
+				String refSetId = fields[0];
+		
+				// construct the age range
+				MapAgeRangeJpa mapAgeRange = new MapAgeRangeJpa();
+				mapAgeRange.setName(fields[1]);
+				mapAgeRange.setLowerValue(fields[2].equals("") || fields[2].equals("null") ? null : new Integer(fields[2]));
+				mapAgeRange.setLowerUnits(fields[3]);
+				mapAgeRange.setLowerInclusive(fields[4].equals("true") ? true : false);
+				mapAgeRange.setUpperValue(fields[5].equals("") || fields[5].equals("null") ? null : new Integer(fields[5]));
+				mapAgeRange.setUpperUnits(fields[6]);
+				mapAgeRange.setUpperInclusive(fields[7].equals("true") ? true : false);
+		
+				// if this age range is not in hash set, add it
+				MapAgeRange newAgeRange = null;
+				if (!ageRanges.contains(mapAgeRange)) {
+					newAgeRange = mappingService.addMapAgeRange(mapAgeRange);
+					ageRanges.add(newAgeRange);
+					getLog().info("Adding new age range to hash set: " + newAgeRange.getName() + " with id = " + Long.toString(newAgeRange.getId()));
+				
+				// otherwise find this age range by hash value
+				} else {
+					Iterator<MapAgeRange> iter = ageRanges.iterator();
+					while (iter.hasNext()) {
+						MapAgeRange hashedAgeRange = iter.next();
+						if (hashedAgeRange.equals(mapAgeRange)) {
+							newAgeRange = hashedAgeRange;
+						}
+					}
+					getLog().info("Found hashed age range - id = " + Long.toString(newAgeRange.getId()));
+				}
+					
+				// add this age range to this refset id hashset
+				Set<MapAgeRange> newAgeRanges = projectAgeRanges.get(refSetId);
+				
+				// if a list exists for this refset id, add to list
+				if (newAgeRanges != null) {
+					newAgeRanges.add(newAgeRange);
+					
+				// otherwise instantiate a new list
+				} else {
+					newAgeRanges = new HashSet<MapAgeRange>();
+					newAgeRanges.add(newAgeRange);
+				}
+					
+				// replace the list
+				projectAgeRanges.put(refSetId, newAgeRanges);
 
+			}
+			getLog().info("  " + Integer.toString(mappingService.getMapAgeRanges().size()) + " ageranges added from " + Integer.toString(projectAgeRanges.size()) + " map projects.");
+			
+			
 			// Add map projects
 			getLog().info("Adding projects...");
+			
+			// get the preset age ranges with hibernate id
+			List<MapAgeRange> presetAgeRanges = mappingService.getMapAgeRanges();
+			
+			
 			while ((line = projectsReader.readLine()) != null) {
 				String[] fields = line.split("\t");
 				MapProjectJpa mapProject = new MapProjectJpa();
@@ -245,18 +322,16 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 						? true : false);
 
 
-				/*
-				 * String rulePresetAgeRangesStr = fields[19]; Set<String>
-				 * rulePresetAgeRanges = new HashSet<String>(); for (String preset :
-				 * rulePresetAgeRangesStr.split(",")) { rulePresetAgeRanges.add(preset);
-				 * } mapProject.setRulePresetAgeRanges(rulePresetAgeRanges);
-				 */
+				// add the preset age ranges
+				if (projectAgeRanges.containsKey(mapProject.getRefSetId())) {
+					mapProject.setPresetAgeRanges(projectAgeRanges.get(mapProject.getRefSetId()));
+				}
 
 				mappingService.addMapProject(mapProject);
 			}
 			
 			getLog().info("  " + Integer.toString(mappingService.getMapProjects().size()) + " projects added.");
-
+			
 
 			// Concepts In Scope Assignment
 			
@@ -339,6 +414,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
 			getLog().info("done ...");
 			mappingService.close();
+			agerangesReader.close();
 			usersReader.close();
 			advicesReader.close();
 			principlesReader.close();

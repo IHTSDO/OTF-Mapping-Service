@@ -32,6 +32,33 @@ public interface MapRecord {
 	 */
 	public String getObjectId();
 	
+	/**
+	 * Sets the owner.
+	 *
+	 * @param mapUser the new owner
+	 */
+	public void setOwner(MapUser mapUser);
+	
+	/**
+	 * Gets the owner.
+	 *
+	 * @return the owner
+	 */
+	public MapUser getOwner();
+	
+	/**
+	 * Sets the timestamp.
+	 *
+	 * @param timestamp the new timestamp
+	 */
+	public void setTimestamp(Long timestamp);
+	
+	/**
+	 * Gets the timestamp.
+	 *
+	 * @return the timestamp
+	 */
+	public Long getTimestamp();
 	
 	/**
 	 * Returns the map project id.

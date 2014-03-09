@@ -156,7 +156,54 @@
     <div ng-show="project.mapPrincipleDocument != null">
     Principles taken from <a href="{{project.mapPrincipleDocumentPath}}/{{project.mapPrincipleDocument}}" target="_blank">{{project.mapPrincipleDocumentName}}</a> </div>
     </td>
+    
   </tr>
+  
+  <tr ng-show="project.presetAgeRanges.length > 0">
+  
+  
+  	
+  
+  	<td><div tooltip-placement="right" tooltip="List of the preset age ranges used for rule construction for this project."><b>Preset Age Ranges</b></div></td>
+    <td>
+	    <table width="100%" class="table pure-table" " >
+	    <thead>
+	      <tr>
+	        <th style="width: 30%;">Name</th>
+	        <th style="width: 35%;">Lower Bound</th>
+	        <th style="width: 35%;">Upper Bound</th>
+	      </tr>
+	    </thead>
+	    
+	    
+	    <tbody ng-repeat="ageRange in project.presetAgeRanges | orderBy: 'name'">
+	    
+	    <tr>
+	    	<td>{{ageRange.name}}</td>
+	    	<td>
+
+	    	<span ng-show="ageRange.lowerInclusive == true && ageRange.lowerValue != null">>=</span>
+	    	<span ng-show="ageRange.lowerInclusive == false && ageRange.lowerValue != null">></span>
+	    	
+	    	{{ageRange.lowerValue}} {{ageRange.lowerUnits}} 
+	    	
+	    	</td>
+	    	<td>
+	    	
+	    	<span ng-show="ageRange.upperInclusive == true && ageRange.upperValue != null"><=</span>
+	    	<span ng-show="ageRange.upperInclusive == false && ageRange.upperValue != null"><</span>
+	    	
+	    	
+	    	{{ageRange.upperValue}} {{ageRange.upperUnits}} 
+	    	
+	    	</td>
+    	</tr>
+    	</tbody>
+	    
+	    </table>
+    </td>
+  </tr>
+  
 </table>  
 
 <a href="#/record/projectId/{{project.id}}" class="btn">Map Records</div>

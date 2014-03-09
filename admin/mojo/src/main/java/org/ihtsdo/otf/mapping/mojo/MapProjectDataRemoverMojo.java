@@ -20,6 +20,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -109,6 +110,13 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
 				getLog().info("  Remove map principle - " + p.getName());
 				service.removeMapPrinciple(p.getId());
 			}
+			
+			// Remove map age ranges
+			for (MapAgeRange r : service.getMapAgeRanges()) {
+				getLog().info("  Remove map age range - " + r.getName());
+				service.removeMapAgeRange(r.getId());
+			}
+			
 			getLog().info("done ...");
 
 			service.close();
