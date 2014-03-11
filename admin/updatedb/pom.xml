@@ -23,12 +23,12 @@
           <name>run.config</name>
         </property>
       </activation>
-      
+
       <properties>
         <!-- This can be overridden to use "create" instead -->
         <hibernate.hbm2ddl.auto>update</hibernate.hbm2ddl.auto>
       </properties>
-      
+
       <build>
         <plugins>
 
