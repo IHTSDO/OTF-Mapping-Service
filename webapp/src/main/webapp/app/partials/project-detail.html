@@ -1,5 +1,4 @@
 <!--  partial for displaying project :projectId -->
-
 <p></p>
 <h3>{{project.name}}</h3>
 <p></p>
@@ -159,11 +158,8 @@
     
   </tr>
   
-  <tr ng-show="project.presetAgeRanges.length > 0">
-  
-  
-  	
-  
+  <tr ng-show="project.mapAgeRange.length > 0">
+
   	<td><div tooltip-placement="right" tooltip="List of the preset age ranges used for rule construction for this project."><b>Preset Age Ranges</b></div></td>
     <td>
 	    <table width="100%" class="table pure-table" " >
@@ -176,26 +172,27 @@
 	    </thead>
 	    
 	    
-	    <tbody ng-repeat="ageRange in project.presetAgeRanges | orderBy: 'name'">
+	    <tbody ng-repeat="ageRange in project.mapAgeRange | orderBy: 'name'">
 	    
 	    <tr>
 	    	<td>{{ageRange.name}}</td>
 	    	<td>
-
-	    	<span ng-show="ageRange.lowerInclusive == true && ageRange.lowerValue != null">>=</span>
-	    	<span ng-show="ageRange.lowerInclusive == false && ageRange.lowerValue != null">></span>
-	    	
-	    	{{ageRange.lowerValue}} {{ageRange.lowerUnits}} 
-	    	
+			<div ng-show="ageRange.lowerValue != '-1'">
+		    	<span ng-show="ageRange.lowerInclusive == true && ageRange.lowerValue != null">≥</span>
+		    	<span ng-show="ageRange.lowerInclusive == false && ageRange.lowerValue != null">></span>
+		    	
+		    	{{ageRange.lowerValue}} {{ageRange.lowerUnits}} 
+	    	</div>
 	    	</td>
 	    	<td>
 	    	
-	    	<span ng-show="ageRange.upperInclusive == true && ageRange.upperValue != null"><=</span>
-	    	<span ng-show="ageRange.upperInclusive == false && ageRange.upperValue != null"><</span>
+	    	<div ng-show="ageRange.upperValue != '-1'">
 	    	
-	    	
-	    	{{ageRange.upperValue}} {{ageRange.upperUnits}} 
-	    	
+		    	<span ng-show="ageRange.upperInclusive == true && ageRange.upperValue != null">≤</span>
+		    	<span ng-show="ageRange.upperInclusive == false && ageRange.upperValue != null"><</span>
+		    	
+		    	{{ageRange.upperValue}} {{ageRange.upperUnits}} 
+	    	</div>
 	    	</td>
     	</tr>
     	</tbody>

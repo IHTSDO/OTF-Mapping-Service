@@ -35,19 +35,30 @@
 			</table>
 			</td>
 		</tr>
-		<tr><td>Group</td><td><input ng-model="entry.mapGroup" ng-change="validateMapGroup(entry.mapGroup)"></td></tr>
-		<tr><td>Map Priority</td><td><input style="width:50px" ng-model="entry.mapPriority"></td></tr>
+		
 		<tr ng-show="project.ruleBased == true">
-			<td>Rule</td><td>{{entry.rule}}<p ng-show="entry.rule.length > 0"></p><input type="submit" value="Construct Rule" ng-click="constructRule(entry)"></p></td></tr>
+			<td>Rule</td><td>{{entry.rule}}<p ng-show="entry.rule.length > 0"></p><input type="submit" value="Construct Rule" ng-click="constructRule(entry)"></p></td>
+		</tr>
+		
+		<tr ng-show="project.relationStyle === 'RELATIONSHIP_STYLE'">
+		
+			<td>Relation Id</td>
+			<td><input type="text" ng-model="entry.relationId"></td>
+		</tr>
+		<tr>
+			<td>Relation Name</td>
+			<td>{{entry.relationName}}</td>
+		</tr>
 		
 	
-		<tr>
+		<tr ng-show="project.relationStyle != 'RELATIONSHIP_STYLE'">
 			<td>Advice</td>
 			<td>
 				<div ng-show="entry.mapAdvice.length > 0">
 					<div ng-repeat="advice in entry.mapAdvice">
-						<button	disabled>{{advice.detail}}</button>
-						<img src="img/fileclose.png" ng-click="removeEntryAdvice(entry, advice)">			
+						<button	disabled>{{advice.detail}}
+							<i class="glyphicon glyphicon-remove-circle" ng-click="removeEntryAdvice(entry, advice)">	</i>
+						</button>		
 						
 					</div>
 					<hr>
