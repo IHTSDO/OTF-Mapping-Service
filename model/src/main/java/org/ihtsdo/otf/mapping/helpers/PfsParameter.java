@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.helpers;
 
-import java.util.Comparator;
 
 /**
  * The interface for the paging/filtering/sorting parameter oject
