@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
-import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -15,7 +14,6 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
-// TODO: Auto-generated Javadoc
 /**
  * Interface for services to retrieve (get) map objects.
  *
@@ -605,12 +603,33 @@ public interface MappingService {
 	 */
 	public boolean userExists(MapUser mapUser);
 
+	/**
+	 * Returns the map age ranges.
+	 *
+	 * @return the map age ranges
+	 */
 	public List<MapAgeRange> getMapAgeRanges();
 	
+	/**
+	 * Adds the map age range.
+	 *
+	 * @param ageRange the age range
+	 * @return the map age range
+	 */
 	public MapAgeRange addMapAgeRange(MapAgeRange ageRange);
 	
+	/**
+	 * Removes the map age range.
+	 *
+	 * @param ageRangeId the age range id
+	 */
 	public void removeMapAgeRange(Long ageRangeId);
 	
+	/**
+	 * Update map age range.
+	 *
+	 * @param ageRange the age range
+	 */
 	public void updateMapAgeRange(MapAgeRange ageRange);
 
 }

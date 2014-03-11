@@ -57,8 +57,8 @@ public class ContentServiceJpa implements ContentService {
 	/** The transaction per operation. */
 	private boolean transactionPerOperation = true;
 
-	/** The transaction entity. */
-	private EntityTransaction tx;
+	/** The transaction entity. 
+	private EntityTransaction tx;*/
 
   /**
    * Instantiates an empty {@link ContentServiceJpa}.
