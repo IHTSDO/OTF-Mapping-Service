@@ -26,10 +26,12 @@ mapProjectAppControllers.run(function($rootScope) {
 
 
 
-mapProjectAppControllers.controller('LoginCtrl', 
+mapProjectAppControllers.controller('LoginCtrl', ['$scope', '$rootScope', '$location', '$http',
 	 function ($scope, $rootScope, $location, $http) {
 	
-	$scope.user = null;
+	$scope.user = "";
+	$scope.users = "";
+	$scope.error = "";
 	
 	// retrieve users
 	$http({
@@ -42,7 +44,7 @@ mapProjectAppControllers.controller('LoginCtrl',
 	      }).success(function(data) {
 	    	  $scope.users = data.mapUser;
 	      }).error(function(error) {
-	    	  $scope.error = $scope.error + "Could not retrieve projects. "; 
+	    	  $scope.error = $scope.error + "Could not retrieve map users. "; 
 	     
          });
 	
@@ -60,7 +62,10 @@ mapProjectAppControllers.controller('LoginCtrl',
 	 $scope.role = $scope.roles[0];  
 	 
 	 // login button directs to next page based on role selected
-	 $scope.go = function (path) {
+	 $scope.go = function () {
+		 
+		 var path = "";
+		 
 		 if ($scope.role.name == "Specialist") {
 			 path = "/specialist/dash";
 		 } else if ($scope.role.name == "Lead") {
@@ -77,11 +82,20 @@ mapProjectAppControllers.controller('LoginCtrl',
 			$rootScope.user = $scope.user;
 			$rootScope.userName = $scope.user.name;
 			$rootScope.role = $scope.role;
-			$location.path(path);
 			
+			do {
+				if ($rootScope.userName === $scope.user.name) {
+					$location.path(path);
+				} else {
+					console.debug('test');
+				}
+			} while ($rootScope.userName != $scope.user.name);
 		 }
+			
+			
+		 
 	 };
- });
+ }]);
 
 
 	
@@ -126,8 +140,8 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 /*
  * Controller for retrieving and displaying records associated with a concept
  */
-mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams', '$modal', '$sce',
-   function ($scope, $http, $routeParams, $modal, $sce) {
+mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams', '$modal', '$sce', '$rootScope', 
+   function ($scope, $http, $routeParams, $modal, $sce, $rootScope) {
 	
 	// scope variables
 	$scope.error = "";		// initially empty
@@ -418,9 +432,9 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
  * Controller for new test view (i.e. non-modal) for map record edit/create/delete functions
  */
 mapProjectAppControllers.controller('MapRecordDetailCtrl', 
-	['$scope', '$http', '$routeParams', '$sce', '$modal',
+	['$scope', '$http', '$routeParams', '$sce', '$modal', '$rootScope',
                                                              
-	 function ($scope, $http, $routeParams, $sce, $modal) {
+	 function ($scope, $http, $routeParams, $sce, $modal, $rootScope) {
 		
 		// initialize scope variables
 		$scope.record = 	null;
@@ -544,11 +558,11 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 		 */
 		$scope.saveMapRecord = function() {
 			
-			if ($rootScope.user.id == null || $rootScope.user.id === '') {
+			/*if ($rootScope.user.id == null || $rootScope.user.id === '') {
 				alert("Global Error:  The current user is not set.  Please return to the log-in page to log in again.\n\nKNOWN BUG:  Reloading a browser window or navigating this site via external bookmarks can cause this error.");
 			} else {
 				$scope.record.ownerId = $rootScope.user.id;
-			}
+			}*/
 			
 			$http({
 				  url: root_mapping + "record/update",
@@ -943,17 +957,17 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 					if (ruleCategory === "Age - Chronological") {
 						console.debug("ruleAge selected");
 
-						if (ageRange.lowerValue != '') {
+						if (ageRange.lowerValue != "-1") {
 							$scope.rule += "IFA 424144002 | Current chronological age (observable entity)"
 										+  " | " + (ageRange.lowerInclusive == true ? ">=" : ">") + " "
 										+  ageRange.lowerValue + " "
 										+  ageRange.lowerUnits;
 						}
 						
-						if (ageRange.lowerValue != '' && ageRange.upperValue != '')
+						if (ageRange.lowerValue != "-1" && ageRange.upperValue != "-1")
 							$scope.rule += " | ";
 						
-						if (ageRange.upperValue != '') {
+						if (ageRange.upperValue != "-1") {
 							$scope.rule += "IFA 424144002 | Current chronological age (observable entity)"
 										+  " | " + (ageRange.upperInclusive == true ? "<=" : "<") + " "
 										+  ageRange.upperValue + " "
@@ -962,7 +976,7 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 					} else if (ruleCategory === "Age - At Onset") {
 						console.debug("ruleAgeAtOnset selected");
 						$scope.rule = "IFA 445518008 | Age at onset of clinical finding (observable entity)";
-						if (ageRange.upperValue != '') {
+						if (ageRange.upperValue != "-1") {
 							$scope.rule += " | " + (ageRange.lowerInclusive == true ? ">=" : ">") + " "
 										+  ageRange.lowerValue + " "
 										+  ageRange.lowerUnits;
@@ -984,19 +998,19 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 			  for (var i = 0; i < $scope.presetAgeRanges.length; i++) {
 				  var presetAgeRangeStr = $scope.presetAgeRanges[i].name + ", ";
 				  
-				  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != '') {
+				  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != "-1") {
 					  presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive == true ? ">=" : ">") + " "
 					  					+  $scope.presetAgeRanges[i].lowerValue + " "
 					  					+  $scope.presetAgeRanges[i].lowerUnits;
 				  }
 				  
-				  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != '' &&
-					  $scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != '') {
+				  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != "-1" &&
+					  $scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != "-1") {
 					  
 					  presetAgeRangeStr += " and ";
 				  }
 				  
-				  if ($scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != '') {
+				  if ($scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != "-1") {
 					  
 					  presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive == true ? "<=" : "<") + " "
 					  					+  $scope.presetAgeRanges[i].upperValue + " "
@@ -1046,6 +1060,18 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 	    	  if (groupAdded == 0) {
 	    		  groupAdded = $scope.groups.length + 1;
 	    		  $scope.groups.push(groupAdded);
+	    	  }
+	      };
+	      
+	      // Function to validate a new map group (i.e. add it to existing list if not present)
+	      $scope.validateMapGroup = function(group) {
+	    	  console.debug($scope.groups);
+	    	  if ($scope.groups.indexOf(group) == -1) {
+	    		  console.debug("Group " + group + " not in group list");
+	    		  $scope.groups.push(parseInt(group));
+	    		  $scope.groups.sort();
+	    		  console.debug("New group list: ");
+	    		  console.debug($scope.groups);
 	    	  }
 	      };
 	      
@@ -1139,8 +1165,8 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
  * - constructPfsParameterObj	creates a PfsParameter object from current paging/filtering/sorting parameters, consumed by RESTful service
  */
 
-mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', '$routeParams', '$sce',
-   function ($scope, $http, $routeParams, $sce) {
+mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', '$routeParams', '$sce', '$rootScope',
+   function ($scope, $http, $routeParams, $sce, $rootScope) {
 	
 		// header information (not used currently)
 		$scope.headers = [
@@ -1441,8 +1467,8 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 }]);
 
 mapProjectAppControllers.controller('MapProjectDetailCtrl', 
-		['$scope', '$http', '$routeParams', '$sce',
-		 function ($scope, $http, $routeParams, $sce) {
+		['$scope', '$http', '$routeParams', '$sce', '$rootScope',
+		 function ($scope, $http, $routeParams, $sce, $rootScope) {
 			
 			
 			console.debug("In MapProjectDetailCtrl");
@@ -1605,7 +1631,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 /////////////////////////////////////////////////////
 
 
-mapProjectAppControllers.directive('otfHeaderDirective', function() {
+mapProjectAppControllers.directive('otfHeaderDirective', ['$rootScope', function() {
     
 	return {
         templateUrl: './partials/header.html',
@@ -1616,7 +1642,7 @@ mapProjectAppControllers.directive('otfHeaderDirective', function() {
           scope.user = $rootScope.user; 
         }
     };
-});
+}]);
 
 mapProjectAppControllers.directive('otfFooterDirective', function() {
     

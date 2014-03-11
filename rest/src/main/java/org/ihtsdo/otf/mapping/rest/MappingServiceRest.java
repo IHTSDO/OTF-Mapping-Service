@@ -99,11 +99,11 @@ public class MappingServiceRest {
 	 */
 	@GET
 	@Path("/user/users/")
-	@ApiOperation(value = "Get all leads", notes = "Returns all MapUsers in either JSON or XML format", response = MapUserList.class)
+	@ApiOperation(value = "Get all mapping users", notes = "Returns all MapUsers in either JSON or XML format", response = MapUserList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapUserList getMapUsers() {
 		
-		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /lead/leads");
+		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /user/users");
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
