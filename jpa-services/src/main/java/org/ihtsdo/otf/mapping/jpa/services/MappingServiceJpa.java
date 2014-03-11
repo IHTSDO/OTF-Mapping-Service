@@ -400,8 +400,6 @@ public class MappingServiceJpa implements MappingService {
 		javax.persistence.Query query =
 				manager.createQuery("select m from MapUserJpa m");
 
-		// Try query
-
 		m = query.getResultList();
 
 		return m;

@@ -35,7 +35,7 @@
 			</table>
 			</td>
 		</tr>
-		<tr><td>Group</td><td><input ng-model="entry.mapGroup"></td></tr>
+		<tr><td>Group</td><td><input ng-model="entry.mapGroup" ng-change="validateMapGroup(entry.mapGroup)"></td></tr>
 		<tr><td>Map Priority</td><td><input style="width:50px" ng-model="entry.mapPriority"></td></tr>
 		<tr ng-show="project.ruleBased == true">
 			<td>Rule</td><td>{{entry.rule}}<p ng-show="entry.rule.length > 0"></p><input type="submit" value="Construct Rule" ng-click="constructRule(entry)"></p></td></tr>

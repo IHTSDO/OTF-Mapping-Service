@@ -21,13 +21,14 @@
 <thead>
 	<tr> 
         <th style="width: 8%;"></th>
-		<th style="width: 10%;">Concept</th>
-		<th style="width: 20%;">Concept Name</th>
+		<th style="width: 9%;">Concept</th>
+		<th style="width: 18%;">Concept Name</th>
         <th style="width: 8%;">Group Id</th>
         <th style="width: 10%;">Map Priority</th>
         <th style="width: 14%;" ng-show="project.ruleBased == true">Rule</th>
-		<th style="width: 10%;">Target</th>
-		<th style="width: 20%;">Target Name</th>
+		<th style="width: 9%;">Target</th>
+		<th style="width: 18%;">Target Name</th>
+		<th style="width: 5%;"></th>
 	</tr>
 </thead>
 
@@ -80,6 +81,9 @@
         <td ng-show="project.ruleBased == true">{{entry.rule}}</td>
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
+		
+		<td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
+		
         
         
   </tr>
