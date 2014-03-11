@@ -7,7 +7,8 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'adf',  
                                                      'mapProjectApp.widgets.mapProjectList', 
                                                      'mapProjectApp.widgets.metadataList',
-                                                     'LocalStorageModule'
+                                                     'LocalStorageModule',
+                                                     'ngCookies'
                         ])
                         .value('prefix', '')
                         .config(function (dashboardProvider) {
@@ -69,7 +70,11 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                         .controller('dashboardCtrl', function ($rootScope, $scope, localStorageService) {
                           var name = 'default';
                           var model = localStorageService.get(name);
-                          if (!model && $rootScope.role.value >= 3) { // lead or higher privledge
+                          
+                          var currentUser = localStorageService.get('currentUser');
+                          var currentRole = localStorageService.get('currentRole');
+                          
+                          if (!model && currentRole.value >= 3) { // lead or higher privledge
                             // set default model for demo purposes
                             model = {
                               structure: "4-8",                          

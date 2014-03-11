@@ -39,8 +39,9 @@
 'use strict';
 
 angular.module('adf')
-  .directive('adfDashboard', function($rootScope, $log, $modal, dashboard){
-
+  .directive('adfDashboard', function($rootScope, $log, $modal, dashboard, localStorageService){
+	
+	  
     function fillStructure(model, columns, counter){
       angular.forEach(model.rows, function(row){
         angular.forEach(row.columns, function(column){
@@ -98,6 +99,10 @@ angular.module('adf')
           opacity: 0.4
         };
         
+        // retrieve current user and role
+    	var currentUser = localStorageService.get('currentUser');
+    	var currentRole = localStorageService.get('currentRole');
+        
         var name = $scope.name;
         var model = $scope.adfModel;
         if ( ! model || ! model.rows ){
@@ -117,7 +122,7 @@ angular.module('adf')
         
         if (model) {
           if (!model.title){
-            model.title = $rootScope.role.name + ' Dashboard';
+            model.title = currentRole.name + ' Dashboard';
           }
           $scope.model = model;
         } else {
@@ -179,9 +184,9 @@ angular.module('adf')
             addScope.$destroy();
           };
           addScope.isWidgetInRole = function(widget){
-        	  if (widget == 'mapProjectList' && $rootScope.role.value >= 1) {
+        	  if (widget == 'mapProjectList' && currentRole.value >= 1) { //$rootScope.role.value >= 1) {
             	  return true;
-              } else if (widget == 'metadataList' && $rootScope.role.value >= 3) {
+              } else if (widget == 'metadataList' && currentRole.value > 1) { //$rootScope.role.value >= 3) {
         	      return true;
           	  }
         	  return false;
