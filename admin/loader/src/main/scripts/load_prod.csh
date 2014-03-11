@@ -21,6 +21,15 @@ if ($status != 0) then
     exit 1
 endif
 
+echo "    Clear indexes ...`/bin/date`"
+cd $OTF_MAPPING_HOME/admin/lucene
+mvn -Drun.config=prod install >&! mvn.log
+if ($status != 0) then
+    echo "ERROR running lucene"
+    cat mvn.log
+    exit 1
+endif
+
 echo "    Load SNOMEDCT ...`/bin/date`"
 cd $OTF_MAPPING_HOME/admin/loader
 mvn -PSNOMEDCT -Drun.config=prod install >&! mvn.log
