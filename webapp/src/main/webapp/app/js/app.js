@@ -7,6 +7,8 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'adf',  
                                                      'mapProjectApp.widgets.mapProjectList', 
                                                      'mapProjectApp.widgets.metadataList',
+                                                     'mapProjectApp.widgets.mapRecord',
+                                                     'mapProjectApp.widgets.mapEntry',
                                                      'LocalStorageModule',
                                                      'ngCookies'
                         ])
@@ -179,8 +181,8 @@ mapProjectApp.config(['$routeProvider',
 	  });
 	  
 	  $routeProvider.when('/record/recordId/:recordId', {
-		  templateUrl: 'partials/record-detail.html',
-		  controller: 'MapRecordDetailCtrl'
+		  templateUrl: 'partials/record-dashboard.html',
+		  controller: 'MapRecordDashboardCtrl'
 	  });
 		
 	  

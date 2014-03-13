@@ -235,7 +235,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						+ mpr.isScopeExcludedDescendantsFlag() + "\n");
 				
 				
-				// add to mapagerangesbyproject.txt
+				// add to mapageranges.txt
 				for (MapAgeRange ar : mpr.getPresetAgeRanges()) {
 					agerangesWriter.write(
 							mpr.getRefSetId() + "|" + ar.getName() + "|" 

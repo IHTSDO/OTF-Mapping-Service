@@ -14,6 +14,49 @@ mapProjectAppControllers.run(function() {
 });
 
 
+mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $routeParams, localStorageService) {
+   $scope.name = 'mappingDashboard';
+    //$scope.model = localStorageService.get($scope.name);
+    
+    console.debug('MapRecordDashboardCtrl -- initial name and model');
+    console.debug($scope.name);
+    console.debug(localStorageService.get($scope.name));
+    
+    var currentUser = localStorageService.get('currentUser');
+    var currentRole = localStorageService.get('currentRole');
+    
+    if (!$scope.model) {
+	    $scope.model = {
+	    structure: "6-6",                          
+	      rows: [{
+	          columns: [{
+	            class: 'col-md-6',
+	            widgets: [{
+	                type: "mapRecord",
+	                config: { recordId: $routeParams.recordId},
+	                title: "Map Record"
+	            }]
+	          }, {
+	            class: 'col-md-6',
+	            widgets: [{
+	            	type: "mapEntry",
+	            	config: { entry: $scope.entry},
+	            	title: "Map Entry"
+	            }]
+	          }]
+	        }]
+	      };
+    }
+    
+    console.debug("CONTROLLER MODEL");
+    console.debug($scope.model);
+
+  /*  $scope.$on('adfDashboardChanged', function (event, name, model) {
+      console.debug("Dashboard change detected by MapRecordDashboard");
+      localStorageService.set(name, model);
+    });*/
+  });
+
 //////////////////////////////
 // Navigation
 //////////////////////////////	
@@ -446,6 +489,8 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		  };	  
 	 };
 }]);
+
+
 
 /**
  * Controller for new test view (i.e. non-modal) for map record edit/create/delete functions
@@ -945,7 +990,7 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 			  var confirmDelete = confirm("Are you sure you want to delete this entry?");
 			  if (confirmDelete == true) {
 
-				  if ($scope.mapProject.groupStructure == false) {
+				  if ($scope.project.groupStructure == false) {
 					  
 					  var entries = new Array();
 					  
@@ -995,6 +1040,8 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 				  } else {
 					  $scope.entry['mapAdvice'].push(advice);
 				  }
+				  
+				  $scope.adviceInput = "";
 			  }
 		  };
 		  
@@ -1752,10 +1799,6 @@ mapProjectAppControllers.directive('otfHeaderDirective', ['$rootScope', 'localSt
         	scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {   	
         		console.debug("HEADER: Detected change in focus project");
         		scope.focusProject = 1; //parameters.newvalue.name;
-        		//scope.focusProject = scope.focusProject.name;
-        		console.debug(localStorageService.get('focusProject'));
-        		console.debug('name:');
-        		console.debug(parameters.newvalue.name);
         	});
         	
         	
