@@ -830,6 +830,7 @@ public class MapProjectJpa implements MapProject {
 	}
 
 	@Override
+	@XmlElement(type=MapAgeRangeJpa.class, name="mapAgeRange")
 	public Set<MapAgeRange> getPresetAgeRanges() {
 		return this.presetAgeRanges;
 	}

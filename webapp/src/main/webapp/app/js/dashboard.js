@@ -39,8 +39,9 @@
 'use strict';
 
 angular.module('adf')
-  .directive('adfDashboard', function($rootScope, $log, $modal, dashboard){
-
+  .directive('adfDashboard', function($rootScope, $log, $modal, dashboard, localStorageService){
+	
+	  
     function fillStructure(model, columns, counter){
       angular.forEach(model.rows, function(row){
         angular.forEach(row.columns, function(column){
@@ -97,7 +98,7 @@ angular.module('adf')
           forcePlaceholderSize: true,
           opacity: 0.4
         };
-        
+    	
         var name = $scope.name;
         var model = $scope.adfModel;
         if ( ! model || ! model.rows ){
@@ -117,7 +118,7 @@ angular.module('adf')
         
         if (model) {
           if (!model.title){
-            model.title = $rootScope.role.name + ' Dashboard';
+            model.title = 'Dashboard';
           }
           $scope.model = model;
         } else {
@@ -130,6 +131,9 @@ angular.module('adf')
         $scope.editClass = "";
 
         $scope.toggleEditMode = function(){
+        
+        	console.debug('toggleEditMode');
+        	
           $scope.editMode = ! $scope.editMode;
           if ($scope.editClass === ""){
             $scope.editClass = "edit";
@@ -179,12 +183,20 @@ angular.module('adf')
             addScope.$destroy();
           };
           addScope.isWidgetInRole = function(widget){
-        	  if (widget == 'mapProjectList' && $rootScope.role.value >= 1) {
-            	  return true;
-              } else if (widget == 'metadataList' && $rootScope.role.value >= 3) {
-        	      return true;
-          	  }
-        	  return false;
+        	  if ($scope.name === 'default') {
+	        	  if (widget == 'mapProjectList' && currentRole.value >= 1) { //$rootScope.role.value >= 1) {
+	            	  return true;
+	              } else if (widget == 'metadataList' && currentRole.value > 1) { //$rootScope.role.value >= 3) {
+	        	      return true;
+	          	  } 
+	        	  return false;
+        	  } else if ($scope.name === 'mappingDashboard') {
+        		  if (widget == 'mapRecord') {// } && currentRole.value >= 1) { //$rootScope.role.value >= 1) {
+	            	  return true;
+	              } else if (widget == 'mapEntry') {// } && currentRole.value > 1) { //$rootScope.role.value >= 3) {
+	        	      return true;
+	          	  } 
+        	  }
           };
           addScope.closeDialog = function(){
             instance.close();
@@ -196,7 +208,9 @@ angular.module('adf')
         // pass attributes to scope
         $scope.name = $attr.name;
         $scope.structure = $attr.structure;
+        $scope.adfModel = $attr.adfModel;
       },
       templateUrl: './partials/dashboard.html'
+    	 
     };
   });

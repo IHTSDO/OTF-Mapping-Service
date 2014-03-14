@@ -57,8 +57,6 @@ public class ContentServiceJpa implements ContentService {
 	/** The transaction per operation. */
 	private boolean transactionPerOperation = true;
 
-	/** The transaction entity. 
-	private EntityTransaction tx;*/
 
   /**
    * Instantiates an empty {@link ContentServiceJpa}.
@@ -396,7 +394,7 @@ public class ContentServiceJpa implements ContentService {
   }
 
 	@Override
-	public SearchResultList getTreePositionsForConcept(String conceptId,
+	public SearchResultList findTreePositionsForConcept(String conceptId,
 		String terminology, String terminologyVersion) {
 	    javax.persistence.Query query =
 	        manager
@@ -417,31 +415,50 @@ public class ContentServiceJpa implements ContentService {
 	    }
 	    return searchResultList;
 	}
+	
+	public SearchResultList findDescendantsFromTreePostions(String conceptId,
+		String terminology, String terminologyVersion ) {
 
-	@Override
-	public SearchResultList getDescendantTreePositionsForConcept(
-		String terminologyId, String terminology, String terminologyVersion) {
+		Map<String,String> conceptIdToDefaultPns = new HashMap<String, String>();
+		Map<String,Long> conceptIdToHibernateIds = new HashMap<String, Long>();
+    SearchResultList searchResultList = new SearchResultListJpa();
     javax.persistence.Query query =
         manager
-            .createQuery("select tp.id, tp.ancestorPath, tp.conceptId from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology");
+            .createQuery("select tp.ancestorPath from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and conceptId = :conceptId");
     query.setParameter("terminology", terminology);
     query.setParameter("terminologyVersion", terminologyVersion);
-    SearchResultList searchResultList = new SearchResultListJpa();
+    query.setParameter("conceptId", conceptId);
     for (Object result : query.getResultList()) {
-      Object[] values = (Object[]) result;
-    	String ancestorPath = values[1].toString();
-    	if (ancestorPath.contains(terminologyId)) {
-        SearchResult searchResult = new SearchResultJpa();
-        searchResult.setId(Long.parseLong(values[0].toString()));
-        searchResult.setTerminologyId(values[2].toString());
-        searchResult.setTerminology(terminology);
-        searchResult.setTerminologyVersion(terminologyVersion);
-        searchResult.setValue(values[1].toString());
-        searchResultList.addSearchResult(searchResult);
-    	}
+
+      String ancestorPath = result.toString() + "~" + conceptId;
+        javax.persistence.Query query2 =
+          manager
+              .createQuery("select distinct b.id, a.conceptId, b.defaultPreferredName "
+              		+ "From TreePositionJpa a, ConceptJpa b "
+              		+ "where a.conceptId = b.terminologyId and a.terminology = b.terminology and"
+              		+ " a.terminologyVersion = b.terminologyVersion and "
+              		+ " a.ancestorPath like '"+ancestorPath+"%'");
+        for (Object result2 : query2.getResultList()) {
+  	      Object[] values2 = (Object[]) result2;
+  	      conceptIdToDefaultPns.put(values2[1].toString(), values2[2].toString());
+  	      conceptIdToHibernateIds.put(values2[1].toString(), Long.parseLong(values2[0].toString()));  	     
+  	    }
     }
+    for (Map.Entry<String, String> entry : conceptIdToDefaultPns.entrySet()) {
+    	String cid = entry.getKey();
+    	String pn = entry.getValue();
+      SearchResult searchResult = new SearchResultJpa();
+      searchResult.setId(conceptIdToHibernateIds.get(cid));
+      searchResult.setTerminologyId(cid);
+      searchResult.setTerminology(terminology);
+      searchResult.setTerminologyVersion(terminologyVersion);
+      searchResult.setValue(pn);
+      searchResultList.addSearchResult(searchResult);
+    }
+
     return searchResultList;
 	}
+
 
 	@Override
 	public void clearTreePositions(String terminology, String terminologyVersion) {
@@ -466,12 +483,24 @@ public class ContentServiceJpa implements ContentService {
 
   
 	@Override
-	public Set<TreePosition> computeTreePositions(String terminology,
-		String terminologyVersion, String typeId, String rootId) {
+	public void computeTreePositions(String terminology,
+		String terminologyVersion, String typeId, String rootId) throws Exception {
+		
+    //fail in createTreePositions if we’re not using 
+    //getTransactionPerOperation (this allows us to control transaction scope from the service).
+		int commitCt = 500;
+		EntityTransaction tx = null;
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			
+		} else {
+			throw new Exception("CreateTreePositions() requires getTransactionPerOperation mode.");
+		}
 		
     Queue<Map<Concept, TreePosition>> conceptQueue = new LinkedList<Map<Concept, TreePosition>>();
     Set<Map<Concept, TreePosition>> conceptSet = new HashSet<Map<Concept, TreePosition>>();
-    Set<TreePosition> tpSet = new HashSet<TreePosition>();
+    int tpCounter = 0;
 
     // get the concept and add it as first element of concept list
     Concept rootConcept =
@@ -484,7 +513,8 @@ public class ContentServiceJpa implements ContentService {
     	rootTp.setTerminology(terminology);
     	rootTp.setTerminologyVersion(terminologyVersion);
     	rootTp.setConceptId(rootConcept.getTerminologyId());
-    	tpSet.add(rootTp);
+    	manager.persist(rootTp);
+    	tpCounter++;
     	hm.put(rootConcept, rootTp);
       conceptQueue.add(hm);
     }
@@ -495,6 +525,7 @@ public class ContentServiceJpa implements ContentService {
       // retrieve this concept
     	Map<Concept, TreePosition> currentMap = conceptQueue.poll();
       Concept currentConcept = currentMap.keySet().iterator().next();
+       currentConcept = getConcept(currentConcept.getId());
       TreePosition currentTp = currentMap.get(currentConcept);
 			
 
@@ -528,7 +559,15 @@ public class ContentServiceJpa implements ContentService {
               tp.setTerminology(terminology);
               tp.setTerminologyVersion(terminologyVersion);
               tp.setConceptId(c_rel.getTerminologyId());
-              tpSet.add(tp);
+              tpCounter++;
+              manager.persist(tp);
+      				// regularly commit at intervals
+      				if (tpCounter % commitCt == 0) {
+      					tpCounter = 0;
+      					tx.commit();
+      					manager.clear();
+      					tx.begin();
+      				}
               
 							// if set does not contain the source concept, add it to set and
 							// queue
@@ -550,24 +589,18 @@ public class ContentServiceJpa implements ContentService {
 			} 
       
     }
-		if (getTransactionPerOperation()) {
-			EntityTransaction tx = manager.getTransaction();
-			tx.begin();
-			for (TreePosition pos : tpSet) {
-			  manager.persist(pos);
-			}
-			tx.commit();
-		} else {
-			for (TreePosition pos : tpSet) {
-			  manager.persist(pos);
-			}
-		}
-    return tpSet;
+
 		
 	}
+	
 
 	@Override
 	public boolean getTransactionPerOperation() {
 		return transactionPerOperation;
+	}
+	
+	@Override
+	public void setTransactionPerOperation(boolean transactionPerOperation) {
+		this.transactionPerOperation = transactionPerOperation;
 	}
 }

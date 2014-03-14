@@ -5,11 +5,12 @@ import java.util.Set;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
+// TODO: Auto-generated Javadoc
 /**
  * The interface for the content service.
- * 
+ *
+ * @author ${author}
  */
 public interface ContentService {
 
@@ -72,9 +73,10 @@ public interface ContentService {
 	 * @param terminologyVersion the terminology version
 	 * @param typeId the type id
 	 * @return the set of concepts
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findDescendants(String terminologyId, String terminology,
-			String terminologyVersion, Long typeId);
+			String terminologyVersion, Long typeId) throws Exception;
 
 	/**
 	 * Returns the descendants.
@@ -84,9 +86,10 @@ public interface ContentService {
 	 * @param terminologyVersion the terminology version
 	 * @param typeId the type id
 	 * @return the descendants
+	 * @throws Exception the exception
 	 */
 	public Set<Concept> getDescendants(String terminologyId, String terminology,
-			String terminologyVersion, Long typeId);
+			String terminologyVersion, Long typeId) throws Exception;
 
 	/**
 	 * Find children.
@@ -96,9 +99,10 @@ public interface ContentService {
 	 * @param terminologyVersion the terminology version
 	 * @param typeId the type id
 	 * @return the search result list
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findChildren(String terminologyId, String terminology,
-			String terminologyVersion, Long typeId);
+			String terminologyVersion, Long typeId) throws Exception;
 	
 	/**
 	 * Returns the tree positions for concept.
@@ -107,28 +111,20 @@ public interface ContentService {
 	 * @param terminology the terminology
 	 * @param terminologyVersion the terminology version
 	 * @return the tree positions for concept
+	 * @throws Exception the exception
 	 */
-	public SearchResultList getTreePositionsForConcept(String terminologyId, String terminology,
-		String terminologyVersion);
+	public SearchResultList findTreePositionsForConcept(String terminologyId, String terminology,
+		String terminologyVersion) throws Exception;
 	
-	/**
-	 * Returns the descendant tree positions for concept.
-	 *
-	 * @param terminologyId the terminology id
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
-	 * @return the descendant tree positions for concept
-	 */
-	public SearchResultList getDescendantTreePositionsForConcept(String terminologyId, String terminology,
-		String terminologyVersion);
 
 	/**
 	 * Clear tree positions.
 	 *
 	 * @param terminology the terminology
 	 * @param terminologyVersion the terminology version
+	 * @throws Exception the exception
 	 */
-	public void clearTreePositions(String terminology, String terminologyVersion);
+	public void clearTreePositions(String terminology, String terminologyVersion) throws Exception;
 	
 	/**
 	 * Compute tree positions.
@@ -137,9 +133,9 @@ public interface ContentService {
 	 * @param terminologyVersion the terminology version
 	 * @param typeId TODO
 	 * @param rootId the root id
-	 * @return the tree positions
+	 * @throws Exception the exception
 	 */
-	public Set<TreePosition> computeTreePositions(String terminology, String terminologyVersion, String typeId, String rootId); 
+	public void computeTreePositions(String terminology, String terminologyVersion, String typeId, String rootId) throws Exception; 
 
 	/**
 	 * Gets the transaction per operation.
@@ -148,4 +144,25 @@ public interface ContentService {
 	 * @throws Exception the exception
 	 */
 	public boolean getTransactionPerOperation() throws Exception;
+	
+
+	/**
+	 * Sets the transaction per operation.
+	 *
+	 * @param transactionPerOperation the transaction per operation
+	 * @throws Exception the exception
+	 */
+	public void setTransactionPerOperation(boolean transactionPerOperation) throws Exception;
+	
+	/**
+	 * Find descendants from tree postions.
+	 *
+	 * @param conceptId the concept id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findDescendantsFromTreePostions(String conceptId,
+		String terminology, String terminologyVersion ) throws Exception;
 }
