@@ -14,7 +14,6 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
-// TODO: Auto-generated Javadoc
 /**
  * Interface for services to retrieve (get) map objects.
  *

@@ -122,6 +122,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
   /** The concept map. */
   Map<String, Concept> conceptMap;
 
+  /** The roots. */
+  List<String> roots = null;
+
   /**
    * child to parent code map NOTE: this assumes a single superclass
    **/
@@ -213,30 +216,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
       ContentService contentService = new ContentServiceJpa();
       getLog().info("Start creating tree positions.");
-      // TODO: don't hardcode root or isa values
-      // eg, for ICPC what is the root?
-      /**
-       * if (terminology.equals("ICPC"))
-       * contentService.computeTreePositions(terminology, terminologyVersion,
-       * isaRelType, "A"); else
-       */
-      if (terminology.equals("ICD10")) {
-        String[] roots =
-            {
-                "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X",
-                "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII",
-                "XIX", "XX", "XXI", "XXII"
-            };
-        for (String root : roots)
-          contentService.computeTreePositions(terminology, terminologyVersion,
-              isaRelType, root);
-      } else if (terminology.equals("ICD9CM")) {
+      for (String root : roots) {
         contentService.computeTreePositions(terminology, terminologyVersion,
-            isaRelType, "001-999.99");
-        contentService.computeTreePositions(terminology, terminologyVersion,
-            isaRelType, "E000-E999.9");
-        contentService.computeTreePositions(terminology, terminologyVersion,
-            isaRelType, "V01-V91.99");
+            isaRelType, root);
       }
       contentService.close();
 
@@ -399,6 +381,21 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       // add current tag to stack
       tagStack.push(qName.toLowerCase());
 
+      if (qName.equalsIgnoreCase("meta")) {
+        // e.g. <Meta name="TopLevelSort"
+        // value="- A B D F H K L N P R S T U W X Y Z"/>
+        String name = attributes.getValue("name");
+        if (name != null && name.equalsIgnoreCase("toplevelsort")) {
+          String value = attributes.getValue("value");
+          roots = new ArrayList<String>();
+          for (String code : value.split(" ")) {
+            getLog().info("  Adding root: " + code.trim());
+            roots.add(code.trim());
+          }
+        }
+        if (roots.size() == 0)
+          throw new IllegalStateException("No roots found");
+      }
       // Encountered Class tag, save code and class usage
       if (qName.equalsIgnoreCase("class")) {
         code = attributes.getValue("code");
@@ -912,7 +909,13 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
                   "      Exclude modifier " + modifier + " for "
                       + modifiersToMatchedCodeMap.get(modifier) + " due to "
                       + excludedModifiersToMatchedCodeMap.get(modifier));
-              modifiersToMatchedCodeMap.remove(modifier);
+              if (!overrideExclusion(codeToModify, modifier)) {
+                modifiersToMatchedCodeMap.remove(modifier);
+              } else {
+                getLog().info(
+                    "      Override exclude modifier " + modifier + " for "
+                        + codeToModify);
+              }
             }
           }
         }
@@ -924,13 +927,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         if (classToExcludedModifierMap.containsKey(cmpCode)) {
           for (String modifier : classToExcludedModifierMap.get(cmpCode)) {
             // Check manual exclusion overrides.
-            if (!overrideExclusion(cmpCode, modifier)) {
-              excludedModifiersToMatchedCodeMap.put(modifier, cmpCode);
-            } else {
-              getLog().info(
-                  "      Override exclude modifier " + modifier + " for "
-                      + cmpCode);
-            }
+            excludedModifiersToMatchedCodeMap.put(modifier, cmpCode);
           }
         }
 
@@ -1042,9 +1039,10 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         return false;
       }
       String cmpCode = code.substring(0, 3);
+      getLog().info(
+          "    CHECK OVERRIDE " + code + ", " + cmpCode + ", " + modifier);
 
       Set<String> overrideCodes = new HashSet<String>();
-      overrideCodes.add("V09");
       overrideCodes.add("V19");
       overrideCodes.add("V29");
       overrideCodes.add("V39");
@@ -1247,7 +1245,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       overrideCodes.add("Y91");
 
       // Override excludes for the code list above for S20W00_4
-      if (overrideCodes.contains(cmpCode) && modifier.equals("S00W20_4"))
+      if (overrideCodes.contains(cmpCode) && modifier.equals("S20W00_4"))
         return true;
 
       // Override excludes for the code list above for S20V01T_5

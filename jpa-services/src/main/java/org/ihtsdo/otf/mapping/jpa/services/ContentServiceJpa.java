@@ -416,7 +416,11 @@ public class ContentServiceJpa implements ContentService {
 	    return searchResultList;
 	}
 	
-	public SearchResultList findDescendantsFromTreePostions(String conceptId,
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#findDescendantsFromTreePostions(java.lang.String, java.lang.String, java.lang.String)
+	 */
+	@Override
+  public SearchResultList findDescendantsFromTreePostions(String conceptId,
 		String terminology, String terminologyVersion ) {
 
 		Map<String,String> conceptIdToDefaultPns = new HashMap<String, String>();
@@ -482,11 +486,14 @@ public class ContentServiceJpa implements ContentService {
 	}
 
   
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#computeTreePositions(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
 	@Override
 	public void computeTreePositions(String terminology,
 		String terminologyVersion, String typeId, String rootId) throws Exception {
 		
-    //fail in createTreePositions if we’re not using 
+    //fail in createTreePositions if weï¿½re not using 
     //getTransactionPerOperation (this allows us to control transaction scope from the service).
 		int commitCt = 500;
 		EntityTransaction tx = null;
