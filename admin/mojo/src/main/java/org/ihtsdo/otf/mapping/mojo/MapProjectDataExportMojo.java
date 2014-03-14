@@ -144,14 +144,6 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			BufferedWriter agerangesWriter =
 					new BufferedWriter(new FileWriter(agerangesFile.getAbsoluteFile()));
 
-			File agerangesbyprojectFile = new File(outputDir, "mapagerangesbyproject.txt");
-			
-			// if file doesn't exist, then create it
-			if (!agerangesFile.exists()) {
-				agerangesFile.createNewFile();
-			}
-			BufferedWriter agerangesbyprojectWriter =
-					new BufferedWriter(new FileWriter(agerangesbyprojectFile.getAbsoluteFile()));
 
 			
 			File scopeIncludesFile = new File(outputDir, "scopeIncludes.txt");
@@ -243,9 +235,9 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						+ mpr.isScopeExcludedDescendantsFlag() + "\n");
 				
 				
-				// add to mapagerangesbyproject.txt
+				// add to mapageranges.txt
 				for (MapAgeRange ar : mpr.getPresetAgeRanges()) {
-					agerangesbyprojectWriter.write(
+					agerangesWriter.write(
 							mpr.getRefSetId() + "|" + ar.getName() + "|" 
 						+   ar.getLowerValue() + "|" + ar.getLowerUnits() + "|"	+ (ar.getLowerInclusive() == true ? "true" : "false") + "|"	
 						+   ar.getUpperValue() + "|" + ar.getUpperUnits() + "|" + (ar.getUpperInclusive() == true ? "true" : "false") + "\n");		
@@ -274,7 +266,6 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			scopeIncludesWriter.close();
 			scopeExcludesWriter.close();
 			agerangesWriter.close();
-			agerangesbyprojectWriter.close();
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);

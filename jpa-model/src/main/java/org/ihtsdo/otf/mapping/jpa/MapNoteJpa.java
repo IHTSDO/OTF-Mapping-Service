@@ -92,7 +92,7 @@ public class MapNoteJpa implements MapNote {
 	@XmlID
 	@Override
 	public String getObjectId() {
-		return id.toString();
+		return (this.id == null ? null : id.toString());
 	}
 
 	/* (non-Javadoc)
