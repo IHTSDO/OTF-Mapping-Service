@@ -12,6 +12,7 @@ REM set MVN_HOME=C:/apache-maven-3.0.5
 REM set OTF_MAPPING_HOME="C:/Users/Brian Carlsen/workspace/mapping-parent"
 REM
 
+
 echo ------------------------------------------------
 echo Starting ...%date% %time%
 echo ------------------------------------------------
@@ -19,6 +20,7 @@ if DEFINED MVN_HOME (echo MVN_HOME  = %MVN_HOME%) else (echo MVN_HOME must be de
 goto trailer)
 if DEFINED OTF_MAPPING_HOME (echo OTF_MAPPING_HOME  = %OTF_MAPPING_HOME%) else (echo OTF_MAPPING_HOME must be defined
 goto trailer)
+set MAVEN_OPTS = -Xmx4000M
 
 echo     Run updatedb with hibernate.hbm2ddl.auto = create ...%date%%time%
 cd %OTF_MAPPING_HOME%/admin/updatedb
