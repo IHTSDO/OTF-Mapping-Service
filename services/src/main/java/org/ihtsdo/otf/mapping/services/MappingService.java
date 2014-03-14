@@ -14,6 +14,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
+// TODO: Auto-generated Javadoc
 /**
  * Interface for services to retrieve (get) map objects.
  *
@@ -631,6 +632,16 @@ public interface MappingService {
 	 * @param ageRange the age range
 	 */
 	public void updateMapAgeRange(MapAgeRange ageRange);
+
+	
+	
+	/**
+	 * Validate map record.
+	 *
+	 * @param mapRecord the map record to be validated
+	 * @return the list of error messages if map record is invalid
+	 */
+	public List<String> validateMapRecord(MapRecord mapRecord);
 
 }
 	

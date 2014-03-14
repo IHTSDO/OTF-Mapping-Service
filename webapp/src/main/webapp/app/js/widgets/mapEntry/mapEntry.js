@@ -172,6 +172,10 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 						  "upperValue":"", "upperInclusive":"", "upperUnits":""},
 	
 				$scope.presetAgeRanges = presetAgeRanges;
+				
+				initializePresetAgeRanges();
+				
+				console.debug($scope.presetAgeRanges);
 				$scope.ruleCategories = ['TRUE', 'Gender - Male', 'Gender - Female', 'Age - Chronological', 'Age - At Onset'];
 				
 				
@@ -237,6 +241,35 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				$scope.constructRuleAgeHelper = function(ruleCategory, ageRange) {
 					$scope.constructRule($scope.ruleCategory);
 				};
+				
+				function initializePresetAgeRanges() {  
+					  
+					  // set the preset age range strings
+					  for (var i = 0; i < $scope.presetAgeRanges.length; i++) {
+						  var presetAgeRangeStr = $scope.presetAgeRanges[i].name + ", ";
+						  
+						  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != "-1") {
+							  presetAgeRangeStr += ($scope.presetAgeRanges[i].lowerInclusive == true ? ">=" : ">") + " "
+							  					+  $scope.presetAgeRanges[i].lowerValue + " "
+							  					+  $scope.presetAgeRanges[i].lowerUnits;
+						  }
+						  
+						  if ($scope.presetAgeRanges[i].lowerValue != null && $scope.presetAgeRanges[i].lowerValue != "-1" &&
+							  $scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != "-1") {
+							  
+							  presetAgeRangeStr += " and ";
+						  }
+						  
+						  if ($scope.presetAgeRanges[i].upperValue != null && $scope.presetAgeRanges[i].upperValue != "-1") {
+							  
+							  presetAgeRangeStr += ($scope.presetAgeRanges[i].upperInclusive == true ? "<=" : "<") + " "
+							  					+  $scope.presetAgeRanges[i].upperValue + " "
+							  					+  $scope.presetAgeRanges[i].upperUnits;
+						  }
+						  
+						  $scope.presetAgeRanges[i].stringName = presetAgeRangeStr;
+					  };
+				  };
 			
 		};
 		

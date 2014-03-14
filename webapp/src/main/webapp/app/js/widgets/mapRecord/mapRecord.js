@@ -165,6 +165,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   			// Group and MapPriority //
   			///////////////////////////
   			
+  			
   			// if not group structured project
   			if ($scope.project.groupStructure == false) {
   				
@@ -201,26 +202,61 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   				$scope.record.mapEntry = entries;
   			}
   			
+  			// COMMENTED OUT FOR PUSH 03/14/2014
   			
-  			console.debug($scope.record);
+  			/*console.debug($scope.record);
   			console.debug($scope.record.mapEntry);
 
-  			$http({
-  				  url: root_mapping + "record/update",
-  				  dataType: "json",
-  				  data: $scope.record,
-  				  method: "POST",
-  				  headers: {
-  					  "Content-Type": "application/json"
-  				  }
-  			  }).success(function(data) {
-  				 $scope.record = data;
-  				 $scope.recordSuccess = "Record saved.";
-  				 $scope.recordError = "";
-  			  }).error(function(data) {
-  				 $scope.recordSuccess = "";
-  				 $scope.recordError = "Error saving record.";
-  			  });
+  			console.debug("Validating the map entry");
+			// validate the record
+			$http({
+				  url: root_mapping + "record/validate",
+				  dataType: "json",
+				  data: $scope.record,
+				  method: "POST",
+				  headers: {
+					  "Content-Type": "application/json",
+					  "user" : localStorageService.get('currentUser')
+						  
+				  }
+			  }).success(function(data) {
+				  console.debug("validation results:");
+				  console.debug(data);
+				  $scope.recordValidationMessages = data;
+			  }).error(function(data) {
+				  $scope.recordSuccesss = "";
+				  $scope.recordValidationMessages = "Failed to validate";
+				  $scope.recordError = "Error validating record.";
+			  }).then(function(data) {
+				
+				  // if no error messages were returned, save the record
+				  if ($scope.recordValidationMessages.length == 0)  {
+				*/	  
+					  $http({
+						  url: root_mapping + "record/update",
+						  dataType: "json",
+						  data: $scope.record,
+						  method: "POST",
+						  headers: {
+							  "Content-Type": "application/json"
+						  }
+					  }).success(function(data) {
+						 $scope.record = data;
+						 $scope.recordSuccess = "Record saved.";
+						 $scope.recordError = "";
+					  }).error(function(data) {
+						 $scope.recordSuccess = "";
+						 $scope.recordError = "Error saving record.";
+					  });
+				  
+				/*  // otherwise, display the errors
+				  } else {
+					  console.debug($scope.recordValidationMessages.length);
+					  $scope.recordError = $scope.recordValidationMessages;
+					  $scope.recordSuccess = "";
+				  }
+				  
+			  });*/
   		};
   		
   		// discard changes
