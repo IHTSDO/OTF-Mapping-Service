@@ -58,7 +58,6 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
-// TODO: Auto-generated Javadoc
 /**
  * JPA implementation of the {@link MappingService}.
  *
@@ -281,7 +280,7 @@ public class MappingServiceJpa implements MappingService {
 				fullTextEntityManager.createFullTextQuery(luceneQuery,
 						MapProjectJpa.class).getResultList();
 
-		System.out.println(Integer.toString(m.size()) + " map projects retrieved");
+		Logger.getLogger(this.getClass()).debug(Integer.toString(m.size()) + " map projects retrieved");
 
 		for (MapProject mp : m) {
 			s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId()
@@ -454,7 +453,6 @@ public class MappingServiceJpa implements MappingService {
 	/**
 	 * Retrieve all map projects assigned to a particular map specialist.
 	 * 
-	 * @param mapSpecialist the map specialist
 	 * @return a List of MapProjects
 	 */
 	@Override
@@ -534,7 +532,7 @@ public class MappingServiceJpa implements MappingService {
 	/**
 	 * Update a map specialist.
 	 * 
-	 * @param mapSpecialist the changed map specialist
+	 * @param mapUser the changed map user
 	 */
 	@Override
 	public void updateMapUser(MapUser mapUser) {
@@ -553,7 +551,7 @@ public class MappingServiceJpa implements MappingService {
 	/**
 	 * Remove (delete) a map specialist.
 	 * 
-	 * @param mapSpecialistId the map specialist to be removed
+	 * @param mapUserId the map user to be removed
 	 */
 	@Override
 	public void removeMapUser(Long mapUserId) {
@@ -604,7 +602,7 @@ public class MappingServiceJpa implements MappingService {
 	/**
 	 * Add a map lead.
 	 * 
-	 * @param mapLead the map lead
+	 * @param mapUser the map lead
 	 */
 	@Override
 	public MapUser addMapUser(MapUser mapUser) {
@@ -671,16 +669,16 @@ public class MappingServiceJpa implements MappingService {
 
 			MapRecord r = (MapRecord) query.getSingleResult();
 
-			System.out.println("Returning record_id... "
+			Logger.getLogger(this.getClass()).debug("Returning record_id... "
 					+ ((r != null) ? r.getId().toString() : "null"));
 			return r;
 
 		} catch (NoResultException e) {
-			System.out.println("MapRecord query for id = " + id
+			Logger.getLogger(this.getClass()).debug("MapRecord query for id = " + id
 					+ " returned no results!");
 			return null;
 		} catch (NonUniqueResultException e) {
-			System.out.println("MapRecord query for id = " + id
+			Logger.getLogger(this.getClass()).debug("MapRecord query for id = " + id
 					+ " returned multiple results!");
 			return null;
 		}
@@ -733,7 +731,7 @@ public class MappingServiceJpa implements MappingService {
 				fullTextEntityManager.createFullTextQuery(luceneQuery,
 						MapRecordJpa.class).getResultList();
 
-		System.out.println(Integer.toString(m.size()) + " map records retrieved");
+		Logger.getLogger(this.getClass()).debug(Integer.toString(m.size()) + " map records retrieved");
 
 		for (MapRecord mp : m) {
 			s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getConceptId()
@@ -1122,7 +1120,7 @@ public class MappingServiceJpa implements MappingService {
 
 			m = query.getResultList();
 			
-			System.out.println(Integer.toString(m.size()));
+			Logger.getLogger(this.getClass()).debug(Integer.toString(m.size()));
 		} catch (NoResultException e) {
 			Logger.getLogger(this.getClass()).warn(
 					"Map project query for id = " + mapProjectId
@@ -1183,7 +1181,7 @@ public class MappingServiceJpa implements MappingService {
 
 		List<MapRecord> m = ftquery.getResultList();
 
-		System.out.println(Integer.toString(m.size()) + " records retrieved");
+		Logger.getLogger(this.getClass()).debug(Integer.toString(m.size()) + " records retrieved");
 
 		return m;
 
@@ -1303,7 +1301,7 @@ public class MappingServiceJpa implements MappingService {
 		}
 
 		for (String s : parsedTerms) {
-			System.out.println("  " + s);
+			Logger.getLogger(MappingServiceJpa.class).debug("  " + s);
 		}
 
 		// cycle over terms to construct query
@@ -1378,7 +1376,7 @@ public class MappingServiceJpa implements MappingService {
 		// add parantheses and map project constraint
 		full_query = "(" + full_query + ")" + " AND mapProjectId:" + mapProjectId.toString();
 		
-		System.out.println("Full query: " + full_query);
+		Logger.getLogger(MappingServiceJpa.class).debug("Full query: " + full_query);
 		
 		return full_query;
 
@@ -1387,7 +1385,8 @@ public class MappingServiceJpa implements MappingService {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#findConceptsInScope(org.ihtsdo.otf.mapping.model.MapProject)
 	 */
-	public SearchResultList findConceptsInScope(MapProject project)
+	@Override
+  public SearchResultList findConceptsInScope(MapProject project)
 		throws Exception {
 
 		SearchResultList conceptsInScope = new SearchResultListJpa();
@@ -1451,7 +1450,8 @@ public class MappingServiceJpa implements MappingService {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#findUnmappedConceptsInScope(org.ihtsdo.otf.mapping.model.MapProject)
 	 */
-	public SearchResultList findUnmappedConceptsInScope(MapProject project) throws Exception {
+	@Override
+  public SearchResultList findUnmappedConceptsInScope(MapProject project) throws Exception {
 		SearchResultList conceptsInScope = findConceptsInScope(project);
 		SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
 		
@@ -1468,7 +1468,8 @@ public class MappingServiceJpa implements MappingService {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#findMappedConceptsOutOfScopeBounds(org.ihtsdo.otf.mapping.model.MapProject)
 	 */
-	public SearchResultList findMappedConceptsOutOfScopeBounds(MapProject project) throws Exception {
+	@Override
+  public SearchResultList findMappedConceptsOutOfScopeBounds(MapProject project) throws Exception {
 		SearchResultList mappedConceptsOutOfBounds = new SearchResultListJpa();
 		List<MapRecord> mapRecordList = getMapRecordsForMapProjectId(project.getId());
 		ContentService contentService = new ContentServiceJpa();
@@ -1494,7 +1495,8 @@ public class MappingServiceJpa implements MappingService {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#findConceptsExcludedFromScope(org.ihtsdo.otf.mapping.model.MapProject)
 	 */
-	public SearchResultList findConceptsExcludedFromScope(MapProject project)
+	@Override
+  public SearchResultList findConceptsExcludedFromScope(MapProject project)
 			throws Exception {
 			SearchResultList conceptsExcludedFromScope = new SearchResultListJpa();
 			
@@ -1545,6 +1547,7 @@ public class MappingServiceJpa implements MappingService {
   /* (non-Javadoc)
    * @see org.ihtsdo.otf.mapping.services.MappingService#isConceptInScope(org.ihtsdo.otf.mapping.rf2.Concept, org.ihtsdo.otf.mapping.model.MapProject)
    */
+  @Override
   public boolean isConceptInScope(Concept concept, MapProject project) throws Exception {
   	// if directly matches preset scope concept return true
   	for (String c : project.getScopeConcepts()) {
@@ -1574,6 +1577,7 @@ public class MappingServiceJpa implements MappingService {
   /* (non-Javadoc)
    * @see org.ihtsdo.otf.mapping.services.MappingService#isConceptExcludedFromScope(org.ihtsdo.otf.mapping.rf2.Concept, org.ihtsdo.otf.mapping.model.MapProject)
    */
+  @Override
   public boolean isConceptExcludedFromScope(Concept concept, MapProject project) throws Exception {
   	// if directly matches preset scope concept return true
   	for (String c : project.getScopeExcludedConcepts()) {
@@ -2093,7 +2097,7 @@ public class MappingServiceJpa implements MappingService {
 
 		tx.commit();
 
-		System.out.println(Integer.toString(nRecords)
+		Logger.getLogger(this.getClass()).debug(Integer.toString(nRecords)
 				+ " records deleted for map project id = " + mapProjectId.toString());
 
 		return new Long(nRecords);

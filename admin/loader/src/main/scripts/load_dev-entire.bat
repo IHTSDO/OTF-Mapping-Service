@@ -27,6 +27,13 @@ IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
 
+echo     Clear indexes ...%date%%time%
+cd %OTF_MAPPING_HOME%/admin/lucene
+call %MVN_HOME%/bin/mvn -Drun.config=dev install 1> mvn.log
+IF %ERRORLEVEL% NEQ 0 (set error=1
+goto trailer)
+del /Q mvn.log
+
 echo     Load SNOMEDCT ...%date%%time%
 cd %OTF_MAPPING_HOME%/admin/loader
 call %MVN_HOME%/bin/mvn -PSNOMEDCT -Drun.config=dev-entire install 1> mvn.log
