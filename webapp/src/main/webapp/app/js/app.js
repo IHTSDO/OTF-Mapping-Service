@@ -7,7 +7,10 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'adf',  
                                                      'mapProjectApp.widgets.mapProjectList', 
                                                      'mapProjectApp.widgets.metadataList',
-                                                     'LocalStorageModule'
+                                                     'mapProjectApp.widgets.mapRecord',
+                                                     'mapProjectApp.widgets.mapEntry',
+                                                     'LocalStorageModule',
+                                                     'ngCookies'
                         ])
                         .value('prefix', '')
                         .config(function (dashboardProvider) {
@@ -69,7 +72,11 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                         .controller('dashboardCtrl', function ($rootScope, $scope, localStorageService) {
                           var name = 'default';
                           var model = localStorageService.get(name);
-                          if (!model && $rootScope.role.value >= 3) { // lead or higher 
+                          
+                          var currentUser = localStorageService.get('currentUser');
+                          var currentRole = localStorageService.get('currentRole');
+                          
+                          if (!model && currentRole.value >= 3) { // lead or higher privledge
                             // set default model for demo purposes
                             model = {
                               structure: "4-8",                          
@@ -174,8 +181,8 @@ mapProjectApp.config(['$routeProvider',
 	  });
 	  
 	  $routeProvider.when('/record/recordId/:recordId', {
-		  templateUrl: 'partials/record-detail.html',
-		  controller: 'MapRecordDetailCtrl'
+		  templateUrl: 'partials/record-dashboard.html',
+		  controller: 'MapRecordDashboardCtrl'
 	  });
 		
 	  
