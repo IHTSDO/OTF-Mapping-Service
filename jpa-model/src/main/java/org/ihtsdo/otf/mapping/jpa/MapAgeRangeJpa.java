@@ -124,6 +124,7 @@ public class MapAgeRangeJpa implements MapAgeRange {
 	public boolean getLowerInclusive() {
 		return this.lowerInclusive;
 	}
+	
 	@Override
 	public void setLowerInclusive(boolean inclusive) {
 		this.lowerInclusive = inclusive;
