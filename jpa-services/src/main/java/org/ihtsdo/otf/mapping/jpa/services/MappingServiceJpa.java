@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1388,6 +1389,7 @@ public class MappingServiceJpa implements MappingService {
 	@Override
   public SearchResultList findConceptsInScope(MapProject project)
 		throws Exception {
+
 		SearchResultList conceptsInScope = new SearchResultListJpa();
 
 		ContentService contentService = new ContentServiceJpa();
@@ -1405,54 +1407,44 @@ public class MappingServiceJpa implements MappingService {
 			sr.setValue(c.getDefaultPreferredName());
 			conceptsInScope.addSearchResult(sr);
 		}
-		
+	
 		if (project.isScopeDescendantsFlag()) {
-			// get hierarchical rel
-			MetadataService metadataService = new MetadataServiceJpa();
-			Map<Long, String> hierarchicalRelationshipTypeMap =
-					metadataService.getHierarchicalRelationshipTypes(terminology,
-							terminologyVersion);
-			if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
-				throw new IllegalStateException(
-						"Map project source terminology has too many hierarchical relationship types - "
-								+ terminology);
-			}
-			if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
-				throw new IllegalStateException(
-						"Map project source terminology has too few hierarchical relationship types - "
-								+ terminology);
-			}
-			long hierarchicalRelationshipType =
-					hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
 
 			// for each scope concept, get descendants
 			for (String terminologyId : project.getScopeConcepts()) {
 				SearchResultList descendants =
-						contentService.findDescendants(terminologyId, terminology,
-								terminologyVersion, hierarchicalRelationshipType);
+
+				contentService.findDescendantsFromTreePostions(terminologyId, terminology, terminologyVersion);
 
 				// cycle over descendants
 				for (SearchResult sr : descendants.getSearchResults()) {
 					conceptsInScope.addSearchResult(sr);
 				}
 			}
-
-			// close managers
-			metadataService.close();
 		}
-
-		contentService.close();
-		
+	  contentService.close();		
 		// get those excluded from scope
 		SearchResultList excludedResultList = findConceptsExcludedFromScope(project);
 
-		// remove those excluded from scope
-		for (SearchResult sr : excludedResultList.getSearchResults()) {
-			if (conceptsInScope.contains(sr))
-				conceptsInScope.removeSearchResult(sr);
-		}
 
-		return conceptsInScope;
+		// remove those excluded from scope
+		SearchResultList finalConceptsInScope = new SearchResultListJpa();
+		for (SearchResult sr : conceptsInScope.getSearchResults()) {
+		  if (!excludedResultList.contains(sr)) {
+			  finalConceptsInScope.addSearchResult(sr);
+		  }
+		}
+		
+		Logger.getLogger(this.getClass()).info(
+        "Finished getting scope concepts. size:" + finalConceptsInScope.getCount());		
+		
+		/**PrintWriter writer = new PrintWriter("C:/data/inScopeConcepts.txt", "UTF-8");
+		for(SearchResult sr : finalConceptsInScope.getSearchResults()) {
+			writer.println(sr.getTerminologyId());
+		}
+		writer.close();*/
+		
+		return finalConceptsInScope;
 
 	}
 	
@@ -1517,40 +1509,26 @@ public class MappingServiceJpa implements MappingService {
 			// add specified excluded concepts
 			for (String conceptId : project.getScopeExcludedConcepts()) {
 				Concept c = contentService.getConcept(conceptId, terminology, terminologyVersion);
-				SearchResult sr = new SearchResultJpa();
-				sr.setId(c.getId());
-				sr.setTerminologyId(c.getTerminologyId());
-				sr.setTerminology(c.getTerminology());
-				sr.setTerminologyVersion(c.getTerminologyVersion());
-				sr.setValue(c.getDefaultPreferredName());
-				conceptsExcludedFromScope.addSearchResult(sr);
+				if (c != null) {
+				  SearchResult sr = new SearchResultJpa();
+				  sr.setId(c.getId());
+				  sr.setTerminologyId(c.getTerminologyId());
+				  sr.setTerminology(c.getTerminology());
+				  sr.setTerminologyVersion(c.getTerminologyVersion());
+				  sr.setValue(c.getDefaultPreferredName());
+				  conceptsExcludedFromScope.addSearchResult(sr);
+				}
 			}
 
 			// add descendant excluded concepts if indicated
 			if (project.isScopeExcludedDescendantsFlag()) {
-				// get hierarchical rel
-				MetadataService metadataService = new MetadataServiceJpa();
-				Map<Long, String> hierarchicalRelationshipTypeMap =
-						metadataService.getHierarchicalRelationshipTypes(terminology,
-								terminologyVersion);
-				if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
-					throw new IllegalStateException(
-							"Map project source terminology has too many hierarchical relationship types - "
-									+ terminology);
-				}
-				if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
-					throw new IllegalStateException(
-							"Map project source terminology has too few hierarchical relationship types - "
-									+ terminology);
-				}
-				long hierarchicalRelationshipType =
-						hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
+
 
 				// for each excluded scope concept, get descendants
 				for (String terminologyId : project.getScopeExcludedConcepts()) {
 					SearchResultList descendants =
-							contentService.findDescendants(terminologyId, terminology,
-									terminologyVersion, hierarchicalRelationshipType);
+							contentService.findDescendantsFromTreePostions(terminologyId, terminology, terminologyVersion);
+
 
 					// cycle over descendants
 					for (SearchResult sr : descendants.getSearchResults()) {
@@ -1558,12 +1536,10 @@ public class MappingServiceJpa implements MappingService {
 					}
 				}
 
-				// close managers
-				metadataService.close();
 			}
 
 			contentService.close();
-			
+			Logger.getLogger(this.getClass()).info("conceptsExcludedFromScope.size:" + conceptsExcludedFromScope.getCount());			
 			return conceptsExcludedFromScope;
 
 		}
@@ -1574,12 +1550,29 @@ public class MappingServiceJpa implements MappingService {
    */
   @Override
   public boolean isConceptInScope(Concept concept, MapProject project) throws Exception {
-  	SearchResultList conceptsInScope = findConceptsInScope(project);
-  	for (SearchResult sr : conceptsInScope.getSearchResults()) {
-  		if (sr.getTerminologyId().equals(concept.getTerminologyId()))
+  	// if directly matches preset scope concept return true
+  	for (String c : project.getScopeConcepts()) {
+  		if (c.equals(concept.getTerminologyId()))
   			return true;
   	}
-  	return false;
+  	// don't make contentService if no chance descendants meet conditions
+  	if (!project.isScopeDescendantsFlag() && !project.isScopeDescendantsFlag())
+  		return false;
+  	
+  	ContentService contentService = new ContentServiceJpa();
+  	for (SearchResult tp: contentService.findTreePositionsForConcept(concept.getTerminologyId(),
+  			project.getSourceTerminology(), project.getSourceTerminologyVersion()).getSearchResults()) {
+  		String ancestorPath = tp.getValue();
+  		if (project.isScopeExcludedDescendantsFlag() && ancestorPath.contains(concept.getTerminologyId())) {
+  			continue;
+  		}
+  		if (project.isScopeDescendantsFlag() && ancestorPath.contains(concept.getTerminologyId())) {
+  			contentService.close();
+  			return true;
+  	  }
+  	}
+  	contentService.close();
+	  return false;
   }
   
   /* (non-Javadoc)
@@ -1587,26 +1580,55 @@ public class MappingServiceJpa implements MappingService {
    */
   @Override
   public boolean isConceptExcludedFromScope(Concept concept, MapProject project) throws Exception {
-  	SearchResultList conceptsExcludedFromScope = findConceptsExcludedFromScope(project);
-  	for (SearchResult sr : conceptsExcludedFromScope.getSearchResults()) {
-  		if (sr.getTerminologyId().equals(concept.getTerminologyId()))
+  	// if directly matches preset scope concept return true
+  	for (String c : project.getScopeExcludedConcepts()) {
+  		if (c.equals(concept.getTerminologyId()))
   			return true;
   	}
-  	return false;  	
+  	// don't make contentService if no chance descendants meet conditions
+  	if (!project.isScopeDescendantsFlag() && !project.isScopeDescendantsFlag())
+  		return false;
+  	
+  	ContentService contentService = new ContentServiceJpa();
+  	for (SearchResult tp: contentService.findTreePositionsForConcept(concept.getTerminologyId(),
+  			project.getSourceTerminology(), project.getSourceTerminologyVersion()).getSearchResults()) {
+  		String ancestorPath = tp.getValue();
+  		if (project.isScopeDescendantsFlag() && ancestorPath.contains(concept.getTerminologyId())) {
+  			continue;
+  		}
+  		if (project.isScopeExcludedDescendantsFlag() && ancestorPath.contains(concept.getTerminologyId())) {
+  			contentService.close();
+  			return true;
+  	  }
+  	}
+  	contentService.close();
+	  return false;
   }
   
   /* (non-Javadoc)
    * @see org.ihtsdo.otf.mapping.services.MappingService#isConceptOutOfScopeBounds(org.ihtsdo.otf.mapping.rf2.Concept, org.ihtsdo.otf.mapping.model.MapProject)
    */
-  @Override
-  public boolean isConceptOutOfScopeBounds(Concept concept, MapProject project) throws Exception {
-  	if (isConceptInScope(concept, project))  	
-  		return false;
-  	else if (isConceptExcludedFromScope(concept, project))
-  		return false;
-  	else 
-  		return true; 		
-  }
+	public boolean isConceptOutOfScopeBounds(Concept concept, MapProject project)
+		throws Exception {
+		// if directly matches preset scope concept return false
+		for (String c : project.getScopeConcepts()) {
+			if (c.equals(concept.getTerminologyId()))
+				return false;
+		}
+
+		ContentService contentService = new ContentServiceJpa();
+		for (SearchResult tp : contentService.findTreePositionsForConcept(
+				concept.getTerminologyId(), project.getSourceTerminology(),
+				project.getSourceTerminologyVersion()).getSearchResults()) {
+			String ancestorPath = tp.getValue();
+			if (project.isScopeDescendantsFlag()
+					&& ancestorPath.contains(concept.getTerminologyId())) {
+				return false;
+			}
+		}
+		contentService.close();
+		return true;
+	}
 
 	
 	/**
@@ -1998,7 +2020,7 @@ public class MappingServiceJpa implements MappingService {
 			complexMapRefSetMembers.add(refSetMember);
 		}
 		Logger.getLogger(MappingServiceJpa.class).warn(
-				"  " + complexMapRefSetMembers.size() + " map records procesed (some skipped)");
+				"  " + complexMapRefSetMembers.size() + " map records processed (some skipped)");
 		createMapRecordsForMapProject(mapProject, complexMapRefSetMembers);
 	}
 

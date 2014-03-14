@@ -271,6 +271,8 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				  applyRelationshipStyle();
 			  }
 	    	  
+
+			  
 	    	  // find concept based on source terminology
 	    	  $http({
     			 url: root_content + "concept/" 
@@ -1675,11 +1677,46 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 		    	  } else {
 		    		  $scope.project.mapPrincipleDocument = null;
 		    	  }
+		    	  
+
+
+		    	  var scopeArr = [];
+		    	  var len = $scope.project.scopeConcepts.length;
+		    	 
+		    	  // find concept based on source terminology
+		      	  for (var i = 0; i < len; i++) {
+		    	    $http({
+	    			   url: root_content + "concept/" 
+	    			 				   + "SNOMEDCT" +  "/" 
+	    			 				   + "20140131" 
+	    			 				   + "/id/" 
+	    			 				   + $scope.project.scopeConcepts[i],
+	    			   dataType: "json",
+	    		       method: "GET",
+	    		       headers: {
+	    		          "Content-Type": "application/json"
+	    		       }	
+	    		    }).success(function(data) {
+	    		          var obj = {
+	    		    	          key: data.terminologyId,
+	    		    	          concept: data
+	    		    	      };
+	    		          scopeArr.push(obj);
+	    		    	  $scope.scopeConceptsArray = scopeArr;    
+	    		    }).error(function(error) {
+	    			  console.debug("Could not retrieve concept");
+	    		    	  $scope.error = $scope.error + "Could not retrieve Concept. ";    
+	    		    });
+		    	  
+		    	  }
 
 		    	  // set pagination variables
 		    	  $scope.pageSize = 5;
+		    	  $scope.maxSize = 5;
 		    	  $scope.getPagedAdvices(1);
 		    	  $scope.getPagedPrinciples(1);
+		    	  $scope.getPagedScopeConcepts(1);
+		    	  $scope.getPagedScopeExcludedConcepts(1);
 		    	  $scope.orderProp = 'id';
 		      
 		      });
@@ -1723,6 +1760,30 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				 console.debug($scope.pagedPrinciple);
 			 };
 			 
+			 $scope.getPagedScopeConcepts = function (page) {
+				 console.debug("Called paged scope concept for page " + page);
+				 $scope.pagedScopeConcept = $scope.sortByKey($scope.project.scopeConcepts, 'id')
+												.filter(containsScopeConceptFilter);
+				 $scope.pagedScopeConceptCount = $scope.pagedScopeConcept.length;
+				 $scope.pagedScopeConcept = $scope.pagedScopeConcept
+												.slice((page-1)*$scope.pageSize,
+														page*$scope.pageSize);
+				 
+				 console.debug($scope.pagedScopeConcept);
+			 };
+			 
+			 $scope.getPagedScopeExcludedConcepts = function (page) {
+				 console.debug("Called paged scope excluded concept for page " + page);
+				 $scope.pagedScopeExcludedConcept = $scope.sortByKey($scope.project.scopeExcludedConcepts, 'id')
+												.filter(containsScopeExcludedConceptFilter);
+				 $scope.pagedScopeExcludedConceptCount = $scope.pagedScopeExcludedConcept.length;
+				 $scope.pagedScopeExcludedConcept = $scope.pagedScopeExcludedConcept
+												.slice((page-1)*$scope.pageSize,
+														page*$scope.pageSize);
+				 
+				 console.debug($scope.pagedScopeExcludedConcept);
+			 };
+			 
 			 // functions to reset the filter and retrieve unfiltered results
 			 
 			 $scope.resetAdviceFilter = function() {
@@ -1735,6 +1796,15 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				 $scope.getPagedPrinciples(1);
 			 };
 			 
+			 $scope.resetScopeConceptFilter = function() {
+				 $scope.scopeConceptFilter = "";
+				 $scope.getPagedScopeConcepts(1);
+			 };		
+			 
+			 $scope.resetScopeExcludedConceptFilter = function() {
+				 $scope.scopeExcludedConceptFilter = "";
+				 $scope.getPagedScopeExcludedConcepts(1);
+			 };	
 			 
 			 // element-specific functions for filtering
 			 // don't want to search id or objectId
@@ -1767,7 +1837,35 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				 return false;
 			 }
 			 
-		
+			 function containsScopeConceptFilter(element) {
+				 
+					// check if scopeConcept filter is empty
+					 if ($scope.scopeConceptFilter === "" || $scope.scopeConceptFilter == null) return true;
+					 
+					 // otherwise check if upper-case scopeConcept filter matches upper-case element name or detail
+					 if ( element.scopeConceptId.toString().toUpperCase().indexOf( $scope.scopeConceptFilter.toString().toUpperCase()) != -1) return true;
+					 if ( element.detail.toString().toUpperCase().indexOf( $scope.scopeConceptFilter.toString().toUpperCase()) != -1) return true;
+					 if ( element.name.toString().toUpperCase().indexOf( $scope.scopeConceptFilter.toString().toUpperCase()) != -1) return true;
+					 if ( element.sectionRef.toString().toUpperCase().indexOf( $scope.scopeConceptFilter.toString().toUpperCase()) != -1) return true;
+					 
+					 // otherwise return false
+					 return false;
+				 }		
+			 
+			 function containsScopeExcludedConceptFilter(element) {
+				 
+					// check if scopeConcept filter is empty
+					 if ($scope.scopeExcludesConceptFilter === "" || $scope.scopeExcludesConceptFilter == null) return true;
+					 
+					 // otherwise check if upper-case scopeConcept filter matches upper-case element name or detail
+					 if ( element.scopeExcludesConceptId.toString().toUpperCase().indexOf( $scope.scopeExcludesConceptFilter.toString().toUpperCase()) != -1) return true;
+					 if ( element.detail.toString().toUpperCase().indexOf( $scope.scopeExcludesConceptFilter.toString().toUpperCase()) != -1) return true;
+					 if ( element.name.toString().toUpperCase().indexOf( $scope.scopeExcludesConceptFilter.toString().toUpperCase()) != -1) return true;
+					 if ( element.sectionRef.toString().toUpperCase().indexOf( $scope.scopeExcludesConceptFilter.toString().toUpperCase()) != -1) return true;
+					 
+					 // otherwise return false
+					 return false;
+				 }		
 			 
 			 // helper function to sort a JSON array by field
 			 

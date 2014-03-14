@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
@@ -14,7 +15,11 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
  *
  */
 @Entity
-@Table(name = "tree_positions")
+@Table(name = "tree_positions",  uniqueConstraints={
+	   @UniqueConstraint(columnNames={"ancestorPath", "id"}),
+	   @UniqueConstraint(columnNames={"conceptId", "id"})
+	})
+
 public class TreePositionJpa implements TreePosition {
 
 	/** The id. */
