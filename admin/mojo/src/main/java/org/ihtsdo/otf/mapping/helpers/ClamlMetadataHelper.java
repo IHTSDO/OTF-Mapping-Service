@@ -325,6 +325,12 @@ public class ClamlMetadataHelper {
 						terminologyVersion, "Dagger refset", effectiveTime);
 		conceptMap.put("dagger", daggerRefsetConcept);
 		manager.persist(daggerRefsetConcept);
+		
+		Concept treeRootConcept =
+				createNewActiveConcept("" + metadataCounter++, terminology,
+						terminologyVersion, "Tree root", effectiveTime);
+		conceptMap.put("treeRoot", treeRootConcept);
+		manager.persist(treeRootConcept);
 
 		Concept metadataConcept =
 				createNewActiveConcept("" + metadataCounter++, terminology,
@@ -364,6 +370,10 @@ public class ClamlMetadataHelper {
 				+ metadataCounter++, terminology, terminologyVersion, effectiveTime);
 
 		createIsaRelationship(metadataConcept, modifierConcept, new Integer(
+				metadataCounter++).toString(), terminology, terminologyVersion,
+				effectiveTime);
+		
+		createIsaRelationship(metadataConcept, treeRootConcept, new Integer(
 				metadataCounter++).toString(), terminology, terminologyVersion,
 				effectiveTime);
 

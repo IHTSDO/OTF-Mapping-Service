@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -465,6 +466,14 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 	public Map<String, String> getTerminologyLatestVersions() {
 		// no-op - this is just helper class
 		return null;
+	}
+
+	@Override
+	public List<String> getTreeRoots(String terminology, String version)
+		throws Exception {
+    List<String> list = new ArrayList<String>();
+    list.add("138875005");
+		return list;
 	}
 
 }
