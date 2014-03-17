@@ -248,4 +248,37 @@ public interface MapRecord {
 	 */
 	public void setFlagForConsensusReview(boolean flag);
 	
+
+  /**
+   * Returns the origins.
+   *
+   * @return the origins
+   */
+  public Set<Long> getOrigins();
+	
+
+	/**
+	 * Sets the origins.
+	 *
+	 * @param origins the origins
+	 */
+	public void setOrigins(Set<Long> origins);
+	
+
+	/**
+	 * Adds the origin.
+	 *
+	 * @param origin the origin
+	 */
+	public void addOrigin(Long origin);
+	
+
+	/**
+	 * Removes the origin.
+	 *
+	 * @param origin the origin
+	 */
+	public void removeOrigin(Long origin);
+	
+	
 }
