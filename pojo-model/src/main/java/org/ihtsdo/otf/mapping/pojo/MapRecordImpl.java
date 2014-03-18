@@ -5,18 +5,18 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlID;
 
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * Reference implementation of {@link MapRecord}.
  * Includes hibernate tags for persistence
  *
- * @author ${author}
  */
 public class MapRecordImpl implements MapRecord {
 	
@@ -50,8 +50,8 @@ public class MapRecordImpl implements MapRecord {
 	/**  The map principles. */
 	private Set<MapPrinciple> mapPrinciples;
 	
-	/**  The origins. */
-	private Set<Long> origins;
+	/**  The originIds. */
+	private Set<Long> originIds;
 	
 	/**  The flag for map lead review. */
 	private boolean flagForMapLeadReview = false;
@@ -62,7 +62,9 @@ public class MapRecordImpl implements MapRecord {
   /**  The flag for consensus review. */
   private boolean flagForConsensusReview = false;
 
-
+  /**  The workflow status. */
+  private WorkflowStatus workflowStatus;
+  
 	/**
 	 * Return the id.
 	 *
@@ -297,20 +299,20 @@ public class MapRecordImpl implements MapRecord {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getOrigins()
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getOriginIds()
 	 */
 	@Override
-	public Set<Long> getOrigins() {
-		return origins;
+	public Set<Long> getOriginIds() {
+		return originIds;
 	}
 
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setOrigins(java.util.Set)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setOriginIds(java.util.Set)
 	 */
 	@Override
-	public void setOrigins(Set<Long> origins) {
-		this.origins = origins;
+	public void setOriginIds(Set<Long> originIds) {
+		this.originIds = originIds;
 	}
 
 
@@ -319,7 +321,7 @@ public class MapRecordImpl implements MapRecord {
 	 */
 	@Override
 	public void addOrigin(Long origin) {
-		this.origins.add(origin);
+		this.originIds.add(origin);
 	}
 
 
@@ -328,9 +330,12 @@ public class MapRecordImpl implements MapRecord {
 	 */
 	@Override
 	public void removeOrigin(Long origin) {
-		origins.remove(origin);
+		originIds.remove(origin);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -354,12 +359,15 @@ public class MapRecordImpl implements MapRecord {
 						+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
 		result =
 				prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
-		result = prime * result + ((origins == null) ? 0 : origins.hashCode());
+		result = prime * result + ((originIds == null) ? 0 : originIds.hashCode());
 		result = prime * result + ((owner == null) ? 0 : owner.hashCode());
 		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -410,10 +418,10 @@ public class MapRecordImpl implements MapRecord {
 				return false;
 		} else if (!mapProjectId.equals(other.mapProjectId))
 			return false;
-		if (origins == null) {
-			if (other.origins != null)
+		if (originIds == null) {
+			if (other.originIds != null)
 				return false;
-		} else if (!origins.equals(other.origins))
+		} else if (!originIds.equals(other.originIds))
 			return false;
 		if (owner == null) {
 			if (other.owner != null)
@@ -428,11 +436,14 @@ public class MapRecordImpl implements MapRecord {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "MapRecordImpl [id=" + id + ", conceptId=" + conceptId
 				+ ", mapNotes=" + mapNotes + ", mapEntries=" + mapEntries
-				+ ", origins=" + origins + "]";
+				+ ", originIds=" + originIds + "]";
 	}
 
 	/* (non-Javadoc)
@@ -481,6 +492,22 @@ public class MapRecordImpl implements MapRecord {
 	@Override
 	public void setFlagForConsensusReview(boolean flag) {
 		flagForConsensusReview = flag;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setWorkflowStatus(java.lang.String)
+	 */
+	@Override
+	public void setWorkflowStatus(WorkflowStatus workflowStatus) {
+		this.workflowStatus = workflowStatus;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getWorkflowStatus()
+	 */
+	@Override
+	public WorkflowStatus getWorkflowStatus() {
+		return workflowStatus;
 	}
 
 

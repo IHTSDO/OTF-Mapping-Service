@@ -3,6 +3,8 @@ package org.ihtsdo.otf.mapping.model;
 import java.util.List;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Interface MapRecord.
@@ -250,19 +252,19 @@ public interface MapRecord {
 	
 
   /**
-   * Returns the origins.
+   * Returns the originIds.
    *
-   * @return the origins
+   * @return the originIds
    */
-  public Set<Long> getOrigins();
+  public Set<Long> getOriginIds();
 	
 
 	/**
-	 * Sets the origins.
+	 * Sets the originIds.
 	 *
-	 * @param origins the origins
+	 * @param originIds the originIds
 	 */
-	public void setOrigins(Set<Long> origins);
+	public void setOriginIds(Set<Long> originIds);
 	
 
 	/**
@@ -280,5 +282,17 @@ public interface MapRecord {
 	 */
 	public void removeOrigin(Long origin);
 	
+	/**
+	 * Sets the workflow status.
+	 *
+	 * @param workflowStatus the workflow status
+	 */
+	public void setWorkflowStatus(WorkflowStatus workflowStatus);
 	
+	/**
+	 * Returns the workflow status.
+	 *
+	 * @return the workflow status
+	 */
+	public WorkflowStatus getWorkflowStatus();
 }

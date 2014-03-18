@@ -486,7 +486,7 @@ public class ContentServiceJpa implements ContentService {
 	public void computeTreePositions(String terminology,
 		String terminologyVersion, String typeId, String rootId) throws Exception {
 		
-    //fail in createTreePositions if we’re not using 
+    //fail in createTreePositions if we are not using 
     //getTransactionPerOperation (this allows us to control transaction scope from the service).
 		int commitCt = 500;
 		EntityTransaction tx = null;
