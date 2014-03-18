@@ -10,6 +10,8 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -17,6 +19,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
@@ -30,6 +33,7 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -38,11 +42,9 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Map Record Jpa object.
  *
- * @author ${author}
  */
 @Entity
 // add indexes
@@ -101,11 +103,11 @@ public class MapRecordJpa implements MapRecord {
 	@IndexedEmbedded(targetElement = MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
 	
-	/** The origins. */
+	/** The originIds. */
 	@ElementCollection(fetch=FetchType.EAGER)
-	@CollectionTable(name="map_records_origins", joinColumns=@JoinColumn(name="id"))
+	@CollectionTable(name="map_records_origin_ids", joinColumns=@JoinColumn(name="id"))
 	@Column(nullable = true)
-	private Set<Long> origins = new HashSet<Long>();
+	private Set<Long> originIds = new HashSet<Long>();
 
 	/** Indicates whether the record is flagged for map lead review. */
 	@Column(unique = false, nullable = false)
@@ -118,6 +120,11 @@ public class MapRecordJpa implements MapRecord {
 	/** Indicates if the record is flagged for consensus review. */
 	@Column(unique = false, nullable = false)
 	private boolean flagForConsensusReview = false;
+	
+	/** The workflow status. */
+	@Enumerated(EnumType.STRING)
+	private WorkflowStatus workflowStatus;
+	
 	
 	/**
 	 * Default constructor.
@@ -386,20 +393,20 @@ public class MapRecordJpa implements MapRecord {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getOrigins()
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getOriginIds()
 	 */
 	@Override
-	public Set<Long> getOrigins() {
-		return origins;
+	public Set<Long> getOriginIds() {
+		return originIds;
 	}
 
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setOrigins(java.util.Set)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setOriginIds(java.util.Set)
 	 */
 	@Override
-	public void setOrigins(Set<Long> origins) {
-		this.origins = origins;
+	public void setOriginIds(Set<Long> originIds) {
+		this.originIds = originIds;
 	}
 
 
@@ -408,7 +415,7 @@ public class MapRecordJpa implements MapRecord {
 	 */
 	@Override
 	public void addOrigin(Long origin) {
-		this.origins.add(origin);
+		this.originIds.add(origin);
 	}
 
 
@@ -417,7 +424,7 @@ public class MapRecordJpa implements MapRecord {
 	 */
 	@Override
 	public void removeOrigin(Long origin) {
-		origins.remove(origin);
+		originIds.remove(origin);
 	}
 
 	/* (non-Javadoc)
@@ -491,9 +498,12 @@ public class MapRecordJpa implements MapRecord {
 						+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
 		result =
 				prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
-		result = prime * result + ((origins == null) ? 0 : origins.hashCode());
+		result = prime * result + ((originIds == null) ? 0 : originIds.hashCode());
 		result = prime * result + ((owner == null) ? 0 : owner.hashCode());
 		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
+		result =
+				prime * result
+						+ ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
 		return result;
 	}
 
@@ -547,10 +557,10 @@ public class MapRecordJpa implements MapRecord {
 				return false;
 		} else if (!mapProjectId.equals(other.mapProjectId))
 			return false;
-		if (origins == null) {
-			if (other.origins != null)
+		if (originIds == null) {
+			if (other.originIds != null)
 				return false;
-		} else if (!origins.equals(other.origins))
+		} else if (!originIds.equals(other.originIds))
 			return false;
 		if (owner == null) {
 			if (other.owner != null)
@@ -562,6 +572,11 @@ public class MapRecordJpa implements MapRecord {
 				return false;
 		} else if (!timestamp.equals(other.timestamp))
 			return false;
+		if (workflowStatus == null) {
+			if (other.workflowStatus != null)
+				return false;
+		} else if (!workflowStatus.equals(other.workflowStatus))
+			return false;
 		return true;
 	}
 
@@ -572,10 +587,22 @@ public class MapRecordJpa implements MapRecord {
 				+ ", conceptName=" + conceptName + ", countDescendantConcepts="
 				+ countDescendantConcepts + ", mapEntries=" + mapEntries
 				+ ", mapNotes=" + mapNotes + ", mapPrinciples=" + mapPrinciples
-				+ ", origins=" + origins + ", flagForMapLeadReview="
+				+ ", originIds=" + originIds + ", flagForMapLeadReview="
 				+ flagForMapLeadReview + ", flagForEditorialReview="
 				+ flagForEditorialReview + ", flagForConsensusReview="
-				+ flagForConsensusReview + "]";
+				+ flagForConsensusReview + workflowStatus + "]";
+	}
+
+
+	@Override
+	public void setWorkflowStatus(WorkflowStatus workflowStatus) {
+		this.workflowStatus = workflowStatus;
+	}
+
+
+	@Override
+	public WorkflowStatus getWorkflowStatus() {
+		return workflowStatus;
 	}
 
 

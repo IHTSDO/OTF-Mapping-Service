@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +34,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
@@ -1997,10 +1997,10 @@ public class MappingServiceJpa implements MappingService {
 	 * (org.ihtsdo.otf.mapping.model.MapProject)
 	 */
 	@Override
-	public void createMapRecordsForMapProject(MapProject mapProject)
+	public void createMapRecordsForMapProject(MapProject mapProject, WorkflowStatus workflowStatus)
 		throws Exception {
 		Logger.getLogger(MappingServiceJpa.class).warn(
-				"Find map records from query for project - " + mapProject.getName());
+				"Find map records from query for project - " + mapProject.getName() + " workflowStatus - " + workflowStatus);
 		if (!getTransactionPerOperation()) {
 			throw new IllegalStateException(
 					"The application must let the service manage transactions for this method");
@@ -2020,7 +2020,7 @@ public class MappingServiceJpa implements MappingService {
 		}
 		Logger.getLogger(MappingServiceJpa.class).warn(
 				"  " + complexMapRefSetMembers.size() + " map records processed (some skipped)");
-		createMapRecordsForMapProject(mapProject, complexMapRefSetMembers);
+		createMapRecordsForMapProject(mapProject, complexMapRefSetMembers, workflowStatus);
 	}
 
 	// ONLY FOR TESTING PURPOSES
@@ -2113,7 +2113,7 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	@Override
 	public void createMapRecordsForMapProject(MapProject mapProject,
-		List<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
+		List<ComplexMapRefSetMember> complexMapRefSetMembers, WorkflowStatus workflowStatus) throws Exception {
 		Logger.getLogger(this.getClass()).debug("  Starting create map records for map project - " + mapProject.getName());
 
 		// Verify application is letting the service manage transactions
@@ -2221,6 +2221,9 @@ public class MappingServiceJpa implements MappingService {
 					
 					// set the owner to legacy
 					mapRecord.setOwner(loaderUser);
+					
+					// set the workflow status to published
+					mapRecord.setWorkflowStatus(workflowStatus);
 
 					// persist the record
 					addMapRecord(mapRecord);

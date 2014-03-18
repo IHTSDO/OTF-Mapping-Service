@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleList;
@@ -795,32 +796,6 @@ public class MappingServiceRest {
 		}
 	}
 	
-	/**
-	 * Generates map records based on a map projects metadata.  Requires map project conceptId, source and destination terminologies, source and destination terminology versions be set.
-	 * @param mapProject the map project 
-	 * @return returns a list of map records
-	 */
-	@POST
-	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
-	@Path("/project/record/generate")
-	@ApiOperation(value = "Find map records based on project metadata", notes = "Retrieves map records given project metadata", response = MapRecordList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecordList createMapRecordsForProject(
-			@ApiParam(value = "Map Principle to update", required = true) MapProjectJpa mapProject) {
-
-		MapRecordList results = new MapRecordList();
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.createMapRecordsForMapProject(mapProject);
-			results.setMapRecords(mappingService.getMapRecordsForMapProjectId(mapProject.getId()));
-			mappingService.close();
-			
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-		return results;
-	}
-	
 	@GET
 	@Path("/record/concept/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find map records referencing a concept as a source concept", notes = "Requires hibernate id", response = MapRecordList.class)
@@ -840,7 +815,83 @@ public class MappingServiceRest {
 	}
 	
 	
+	@GET
+	@Path("/scope/includes/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findConceptsInScope(
+			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject =  mappingService.getMapProject(mapProjectId);
+			SearchResultList searchResultList = mappingService.findConceptsInScope(mapProject);
+			mappingService.close();
+			return searchResultList;
+			
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+		
+	}
 	
+	@GET
+	@Path("/scope/excludes/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findConceptsExcludedFromScope(
+			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject =  mappingService.getMapProject(mapProjectId);
+			SearchResultList searchResultList = mappingService.findConceptsExcludedFromScope(mapProject);
+			mappingService.close();
+			return searchResultList;
+			
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+		
+	}
 	
+	@GET
+	@Path("/scope/outofbounds/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findMappedConceptsOutOfScopeBounds(
+			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject =  mappingService.getMapProject(mapProjectId);
+			SearchResultList searchResultList = mappingService.findMappedConceptsOutOfScopeBounds(mapProject);
+			mappingService.close();
+			return searchResultList;
+			
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+		
+	}
 
+	@GET
+	@Path("/scope/unmapped/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findUnmappedConceptsInScope(
+			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject =  mappingService.getMapProject(mapProjectId);
+			SearchResultList searchResultList = mappingService.findUnmappedConceptsInScope(mapProject);
+			mappingService.close();
+			return searchResultList;
+			
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+		
+	}
 }
