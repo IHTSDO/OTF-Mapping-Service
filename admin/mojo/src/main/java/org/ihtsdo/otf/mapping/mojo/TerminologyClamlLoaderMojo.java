@@ -1043,7 +1043,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           "    CHECK OVERRIDE " + code + ", " + cmpCode + ", " + modifier);
 
       Set<String> overrideCodes = new HashSet<String>();
-      overrideCodes.add("V19");
       overrideCodes.add("V29");
       overrideCodes.add("V39");
       overrideCodes.add("V49");
