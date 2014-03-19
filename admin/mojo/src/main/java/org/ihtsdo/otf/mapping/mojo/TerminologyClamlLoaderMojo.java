@@ -204,7 +204,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       saxParser.parse(is, handler);
 
       tx.commit();
-
+      
       // creating tree positions
       // first get isaRelType from metadata
       MetadataService metadataService = new MetadataServiceJpa();
@@ -1043,7 +1043,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           "    CHECK OVERRIDE " + code + ", " + cmpCode + ", " + modifier);
 
       Set<String> overrideCodes = new HashSet<String>();
-      overrideCodes.add("V29");
       overrideCodes.add("V39");
       overrideCodes.add("V49");
       overrideCodes.add("V59");
