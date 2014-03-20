@@ -1043,6 +1043,11 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           "    CHECK OVERRIDE " + code + ", " + cmpCode + ", " + modifier);
 
       Set<String> overrideCodes = new HashSet<String>();
+
+      // 4TH AND 5TH
+      overrideCodes.add("V09");
+      overrideCodes.add("V19");
+      overrideCodes.add("V29");
       overrideCodes.add("V39");
       overrideCodes.add("V49");
       overrideCodes.add("V59");
@@ -1243,7 +1248,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       overrideCodes.add("Y91");
 
       // Override excludes for the code list above for S20W00_4
-      if (overrideCodes.contains(cmpCode) && modifier.equals("S20W00_4"))
+      if (overrideCodes.contains(cmpCode) && modifier.equals("S20W00_4")
+          && !parentCodeHasChildrenMap.containsKey(cmpCode))
         return true;
 
       // Override excludes for the code list above for S20V01T_5
