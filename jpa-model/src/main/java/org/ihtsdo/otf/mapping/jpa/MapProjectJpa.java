@@ -14,9 +14,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -25,10 +27,12 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -106,6 +110,13 @@ public class MapProjectJpa implements MapProject {
 	@Column(nullable = false)
 	private boolean ruleBased;
 	
+	/** Name of the handler for project-specific algorithms */
+	@Column(nullable = true)
+	private String projectSpecificAlgorithmHandlerClass;
+	
+	@Transient
+	private ProjectSpecificAlgorithmHandler algorithmHandler;
+	
 	/** The preset age ranges */
 	@ManyToMany(targetEntity=MapAgeRangeJpa.class, fetch=FetchType.EAGER)
 	private Set<MapAgeRange> presetAgeRanges = new HashSet<MapAgeRange>();
@@ -135,7 +146,12 @@ public class MapProjectJpa implements MapProject {
 	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
-		
+	
+	/** The allowable map relations for this MapProject. */
+	@ManyToMany(targetEntity=MapRelationJpa.class, fetch=FetchType.EAGER)
+	@IndexedEmbedded(targetElement=MapRelationJpa.class)
+	private Set<MapRelation> mapRelations = new HashSet<MapRelation>();
+	
    /**  The concepts in scope for this project. */
 	@ElementCollection(fetch=FetchType.EAGER)
 	@CollectionTable(name="map_projects_scope_concepts", joinColumns=@JoinColumn(name="id"))
@@ -631,18 +647,86 @@ public class MapProjectJpa implements MapProject {
 	public void setScopeExcludedDescendantsFlag(boolean flag) {
 		scopeExcludedDescendantsFlag = flag;
 	}
+	
+	@Override
+	@XmlElement(type=MapAgeRangeJpa.class, name="mapAgeRange")
+	public Set<MapAgeRange> getPresetAgeRanges() {
+		return this.presetAgeRanges;
+	}
 
+	@Override
+	public void setPresetAgeRanges(Set<MapAgeRange> ageRanges) {
+		this.presetAgeRanges = ageRanges;		
+	}
+
+	@Override
+	public void addPresetAgeRange(MapAgeRange ageRange) {
+		this.presetAgeRanges.add(ageRange);
+	}
+
+	@Override
+	public void removePresetAgeRange(MapAgeRange ageRange) {
+		this.presetAgeRanges.remove(ageRange);		
+	}
+	
+	@Override
+	@XmlElement(type=MapRelationJpa.class, name="mapRelation")
+	public Set<MapRelation> getMapRelations() {
+		return mapRelations;
+	}
+
+	@Override
+	public void setMapRelations(Set<MapRelation> mapRelations) {
+		this.mapRelations = mapRelations;
+	}
+	
+	@Override
+	public void addMapRelation(MapRelation mr) {
+		this.mapRelations.add(mr);
+		
+	}
+	
+	@Override
+	public void removeMapRelation(MapRelation mr) {
+		this.mapRelations.remove(mr);
+		
+	}
+
+	@Override
+	public String getProjectSpecificAlgorithmHandlerClass() {
+		return projectSpecificAlgorithmHandlerClass;
+	}
+	
+	@Override
+	public void setProjectSpecificAlgorithmHandlerClass(
+			String projectSpecificAlgorithmHandlerClass) {
+		this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
+	}
+	
+	@Override
+	@XmlTransient
+	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler() {
+		
+		try {
+			this.algorithmHandler = (ProjectSpecificAlgorithmHandler) Class.forName(this.projectSpecificAlgorithmHandlerClass).newInstance();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		this.algorithmHandler.setMapProject(this); 
+		
+		return this.algorithmHandler;
+	}
 
 	@Override
 	public String toString() {
-		return "MapProjectJpa [id=" + id + ", name=" + name
-				+ ", blockStructure=" + blockStructure + ", groupStructure="
-				+ groupStructure + ", published=" + published + ", refSetId="
-				+ refSetId + ", refSetName=" + refSetName
-				+ ", sourceTerminology=" + sourceTerminology
-				+ ", sourceTerminologyVersion=" + sourceTerminologyVersion
-				+ ", destinationTerminology=" + destinationTerminology
-				+ ", destinationTerminologyVersion="
+		return "MapProjectJpa [name=" + name + ", blockStructure="
+				+ blockStructure + ", groupStructure=" + groupStructure
+				+ ", published=" + published + ", refSetId=" + refSetId
+				+ ", refSetName=" + refSetName + ", sourceTerminology="
+				+ sourceTerminology + ", sourceTerminologyVersion="
+				+ sourceTerminologyVersion + ", destinationTerminology="
+				+ destinationTerminology + ", destinationTerminologyVersion="
 				+ destinationTerminologyVersion + ", mapRefsetPattern="
 				+ mapRefsetPattern + ", mapRelationStyle=" + mapRelationStyle
 				+ ", mapPrincipleSourceDocument=" + mapPrincipleSourceDocument
@@ -650,10 +734,10 @@ public class MapProjectJpa implements MapProject {
 				+ presetAgeRanges + ", mapLeads=" + mapLeads
 				+ ", mapSpecialists=" + mapSpecialists + ", mapPrinciples="
 				+ mapPrinciples + ", mapAdvices=" + mapAdvices
-				+ ", scopeConcepts=" + scopeConcepts
-				+ ", scopeExcludedConcepts=" + scopeExcludedConcepts
-				+ ", scopeDescendantsFlag=" + scopeDescendantsFlag
-				+ ", scopeExcludedDescendantsFlag="
+				+ ", mapRelations=" + mapRelations + ", scopeConcepts="
+				+ scopeConcepts + ", scopeExcludedConcepts="
+				+ scopeExcludedConcepts + ", scopeDescendantsFlag="
+				+ scopeDescendantsFlag + ", scopeExcludedDescendantsFlag="
 				+ scopeExcludedDescendantsFlag + "]";
 	}
 
@@ -687,6 +771,8 @@ public class MapProjectJpa implements MapProject {
 		result = prime
 				* result
 				+ ((mapRelationStyle == null) ? 0 : mapRelationStyle.hashCode());
+		result = prime * result
+				+ ((mapRelations == null) ? 0 : mapRelations.hashCode());
 		result = prime * result
 				+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -772,6 +858,11 @@ public class MapProjectJpa implements MapProject {
 				return false;
 		} else if (!mapRelationStyle.equals(other.mapRelationStyle))
 			return false;
+		if (mapRelations == null) {
+			if (other.mapRelations != null)
+				return false;
+		} else if (!mapRelations.equals(other.mapRelations))
+			return false;
 		if (mapSpecialists == null) {
 			if (other.mapSpecialists != null)
 				return false;
@@ -829,24 +920,7 @@ public class MapProjectJpa implements MapProject {
 		return true;
 	}
 
-	@Override
-	@XmlElement(type=MapAgeRangeJpa.class, name="mapAgeRange")
-	public Set<MapAgeRange> getPresetAgeRanges() {
-		return this.presetAgeRanges;
-	}
-
-	@Override
-	public void setPresetAgeRanges(Set<MapAgeRange> ageRanges) {
-		this.presetAgeRanges = ageRanges;		
-	}
-
-	@Override
-	public void addPresetAgeRange(MapAgeRange ageRange) {
-		this.presetAgeRanges.add(ageRange);
-	}
-
-	@Override
-	public void removePresetAgeRange(MapAgeRange ageRange) {
-		this.presetAgeRanges.remove(ageRange);		
-	}
+	
+	
+	
 }

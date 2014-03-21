@@ -26,6 +26,7 @@ import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectList;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordList;
+import org.ihtsdo.otf.mapping.jpa.MapRelationList;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -48,8 +49,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MappingServiceRest {
 
-	/** The mapping service jpa. */
-	private MappingServiceJpa mappingService;
 	
 	/**
 	 * Instantiates an empty {@link MappingServiceRest}.
@@ -581,30 +580,29 @@ public class MappingServiceRest {
 		
 	}
 	
-	/**
-	 * Validates a map record
-	 * @param mapRecord the map record to be validated
-	 * @return Response the response
-	 */
-	@POST
-	@Path("/record/validate")
+	@GET
+	@Path("/record/{id:[0-9][0-9]*}/revisions")
 	@Consumes({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Update a record", notes = "Updates a map record", response = MapRecordJpa.class)
-	public List<String> validateMapRecord(@ApiParam(value = "The map record to validate.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) { 
-
+	@ApiOperation(value = "Get record revision history", notes = "Retrieves revision history of a record", response = MapRecordList.class)
+	public MapRecordList getMapRecordRevisions(@ApiParam(value = "Id of map record to get revisions for", required = true) @PathParam("id") Long mapRecordId) {
 		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/validate");
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			List<String> messages = mappingService.validateMapRecord(mapRecord);
+			List<MapRecord> revisions = mappingService.getMapRecordRevisions(mapRecordId);
+			MapRecordList results = new MapRecordList();
+			results.setMapRecords(revisions);
+			
 			mappingService.close();
-			return messages;
+			return results;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 		
 	}
+	
+	
 	
 	/////////////////////////////////////////////////////
 	// MapProject:  Removal (@DELETE) functions
@@ -825,6 +823,30 @@ public class MappingServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
+	
+	/**
+	 * Returns all map relations in either JSON or XML format
+	 * 
+	 * @return the map relations
+	 */
+	@GET
+	@Path("/relation/relations/")
+	@ApiOperation(value = "Get all relations", notes = "Returns all MapRelations in either JSON or XML format", response = MapRelationList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRelationList getMapRelations() {
+		
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapRelationList mapRelations = new MapRelationList();
+			mapRelations.setMapRelations(mappingService.getMapRelations());
+			mapRelations.sortMapRelations();
+			mappingService.close();
+			return mapRelations;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
 	
 	/**
 	 * Generates map records based on a map projects metadata.  Requires map project conceptId, source and destination terminologies, source and destination terminology versions be set.

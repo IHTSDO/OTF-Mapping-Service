@@ -450,7 +450,7 @@ public class MapEntryJpa implements MapEntry {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((mapRecord == null) ? 0 : mapRecord.hashCode());
+		result = (int) (prime * result + ((mapRecord == null) ? 0 : mapRecord.getId())); // PWG: 0318 Changed from mapRecord.hashCode() due to stack overflow/circular reference in MapRecord.hashCode()
 		result =
 				prime * result + ((relationId == null) ? 0 : relationId.hashCode());
 		result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());

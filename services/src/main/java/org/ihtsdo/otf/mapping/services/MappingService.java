@@ -10,6 +10,7 @@ import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
+import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -632,17 +633,27 @@ public interface MappingService {
 	 * @param ageRange the age range
 	 */
 	public void updateMapAgeRange(MapAgeRange ageRange);
-
-	
 	
 	/**
-	 * Validate map record.
+	 * Gets the record revisions.
 	 *
-	 * @param mapRecord the map record to be validated
-	 * @return the list of error messages if map record is invalid
+	 * @param mapRecordId the map record id
+	 * @return the record revisions
 	 */
-	public List<String> validateMapRecord(MapRecord mapRecord);
+	public List<MapRecord> getMapRecordRevisions(Long mapRecordId);
 
+	public List<MapRelation> getMapRelations();
+
+	public SearchResultList findMapRelations(String query, PfsParameter pfsParameter)
+			throws Exception;
+
+	public void addMapRelation(MapRelation mapRelation);
+
+	public void updateMapRelation(MapRelation mapRelation);
+
+	public void removeMapRelation(Long mapRelationId);
+
+	
 }
 	
 	
