@@ -46,7 +46,16 @@ angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
       }
     };
   })
-  .controller('metadataCtrl', function($scope, data){
+  .controller('metadataCtrl', function($scope, metadataService, data){
     $scope.data = data;
     $scope.keyValuePairLists = data.keyValuePairList;
+    
+    // watch for project change
+	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
+		console.debug("metadataCtrl:  Detected change in focus project");
+        $scope.data = metadataService.get(parameters.focusProject.sourceTerminology);
+        $scope.keyValuePairLists = data.keyValuePairList;
+	});
+    
+    
   });

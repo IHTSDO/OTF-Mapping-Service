@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -19,12 +18,14 @@ import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
@@ -120,6 +121,10 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 			File advicesFile = new File(inputDir, "mapadvices.txt");
 			BufferedReader advicesReader =
 					new BufferedReader(new FileReader(advicesFile));
+			
+			File relationsFile = new File(inputDir, "maprelations.txt");
+			BufferedReader relationsReader =
+					new BufferedReader(new FileReader(relationsFile));
 
 			File principlesFile = new File(inputDir, "mapprinciples.txt");
 			BufferedReader principlesReader =
@@ -167,11 +172,29 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				MapAdviceJpa mapAdvice = new MapAdviceJpa();
 				mapAdvice.setName(st.nextToken());
 				mapAdvice.setDetail(st.nextToken());
+				mapAdvice.setAllowableForNullTarget(st.nextToken().equals("true") ? true : false);
+				mapAdvice.setComputed(st.nextToken().equals("true") ? true : false);
 				mappingService.addMapAdvice(mapAdvice);
 			}
 			
 			getLog().info("  " + Integer.toString(mappingService.getMapAdvices().size()) + " advices added.");
 
+			// Add map relations
+			getLog().info("Adding relations...");
+			
+			while ((line = relationsReader.readLine()) != null) {
+				StringTokenizer st = new StringTokenizer(line, "\t");
+				MapRelationJpa mapRelation = new MapRelationJpa();
+				mapRelation.setTerminologyId(st.nextToken());
+				mapRelation.setName(st.nextToken());
+				mapRelation.setAllowableForNullTarget(st.nextToken().equals("true") ? true : false);
+				mapRelation.setComputed(st.nextToken().equals("true") ? true : false);
+				mappingService.addMapRelation(mapRelation);
+			}
+			
+			getLog().info("  " + Integer.toString(mappingService.getMapRelations().size()) + " relations added.");
+
+			
 
 			// Add map principles
 			getLog().info("Adding principles...");
@@ -198,9 +221,6 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 			while ((line = agerangesReader.readLine()) != null) {
 				String[] fields = line.split("\\|", -1); // make sure to account for empty fields
 				
-				for (int i=0; i < fields.length; i++) {
-					getLog().info(Integer.toString(i) + ": " + fields[i] + " - " + (fields[i].equals("true") ? "true" : "false") + " - " + (fields[i].equals("null") ? "true" : "false") + " - " + (fields[i] == null ? "null" : "non-null"));
-				}
 				// get the ref set id
 				String refSetId = fields[0];
 		
@@ -219,7 +239,6 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				if (!ageRanges.contains(mapAgeRange)) {
 					newAgeRange = mappingService.addMapAgeRange(mapAgeRange);
 					ageRanges.add(newAgeRange);
-					getLog().info("Adding new age range to hash set: " + newAgeRange.getName() + " with id = " + Long.toString(newAgeRange.getId()));
 				
 				// otherwise find this age range by hash value
 				} else {
@@ -230,7 +249,6 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 							newAgeRange = hashedAgeRange;
 						}
 					}
-					getLog().info("Found hashed age range - id = " + Long.toString(newAgeRange.getId()));
 				}
 					
 				// add this age range to this refset id hashset
@@ -255,11 +273,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 			
 			// Add map projects
 			getLog().info("Adding projects...");
-			
-			// get the preset age ranges with hibernate id
-			List<MapAgeRange> presetAgeRanges = mappingService.getMapAgeRanges();
-			
-			
+				
 			while ((line = projectsReader.readLine()) != null) {
 				String[] fields = line.split("\t");
 				MapProjectJpa mapProject = new MapProjectJpa();
@@ -277,8 +291,9 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapProject.setMapPrincipleSourceDocument(fields[11]);
 				mapProject.setRuleBased(fields[12].equals("true") ? true : false);
 				mapProject.setMapRefsetPattern(fields[13]);
+				mapProject.setProjectSpecificAlgorithmHandlerClass(fields[14]);
 
-				String mapAdvices = fields[14];
+				String mapAdvices = fields[15].replaceAll("\"", "");
 				if (!mapAdvices.equals("")) {
 					for (String advice : mapAdvices.split(",")) {
 						for (MapAdvice ml : mappingService.getMapAdvices()) {
@@ -287,8 +302,19 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 						}
 					}
 				}
-
-				String mapPrinciples = fields[15];
+				
+				String mapRelations = fields[16].replaceAll("\"", "");
+				if (!mapRelations.equals("")) {
+					for (String terminologyId : mapRelations.split(",")) {
+						for (MapRelation ml : mappingService.getMapRelations()) {
+							if (ml.getTerminologyId().equals(terminologyId)) {
+								mapProject.addMapRelation(ml);
+							}
+						}
+					}
+				}
+			
+				String mapPrinciples = fields[17].replaceAll("\"", "");
 				if (!mapPrinciples.equals("")) {
 					for (String principle : mapPrinciples.split(",")) {
 						for (MapPrinciple ml : mappingService.getMapPrinciples()) {
@@ -299,7 +325,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				String mapLeads = fields[16];
+				String mapLeads = fields[18].replaceAll("\"", "");
 				for (String lead : mapLeads.split(",")) {
 					for (MapUser ml : mappingService.getMapUsers()) {
 						if (ml.getUserName().equals(lead))
@@ -307,7 +333,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				String mapSpecialists = fields[17];
+				String mapSpecialists = fields[19].replaceAll("\"", "");
 				for (String specialist : mapSpecialists.split(",")) {
 
 					for (MapUser ml : mappingService.getMapUsers()) {
@@ -316,9 +342,9 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				mapProject.setScopeDescendantsFlag(fields[18].equals("true") ? true
+				mapProject.setScopeDescendantsFlag(fields[20].equals("true") ? true
 						: false);
-				mapProject.setScopeExcludedDescendantsFlag(fields[19].equals("true")
+				mapProject.setScopeExcludedDescendantsFlag(fields[21].equals("true")
 						? true : false);
 
 
@@ -417,6 +443,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 			agerangesReader.close();
 			usersReader.close();
 			advicesReader.close();
+			relationsReader.close();
 			principlesReader.close();
 			projectsReader.close();
 			scopeIncludesReader.close();

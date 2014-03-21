@@ -14,6 +14,7 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
@@ -119,6 +120,15 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			BufferedWriter advicesWriter =
 					new BufferedWriter(new FileWriter(advicesFile.getAbsoluteFile()));
 
+			File relationsFile = new File(outputDir, "maprelations.txt");
+			// if file doesn't exist, then create it
+			if (!relationsFile.exists()) {
+				relationsFile.createNewFile();
+			}
+			BufferedWriter relationsWriter =
+					new BufferedWriter(new FileWriter(relationsFile.getAbsoluteFile()));
+
+			
 			File principlesFile = new File(outputDir, "mapprinciples.txt");
 			// if file doesn't exist, then create it
 			if (!principlesFile.exists()) {
@@ -174,7 +184,16 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 
 			// export to mapadvices.txt
 			for (MapAdvice ma : mappingService.getMapAdvices()) {
-				advicesWriter.write(ma.getName() + "\t" + ma.getDetail() + "\n");
+				advicesWriter.write(ma.getName() + "\t" + ma.getDetail() + "\t" + ma.isAllowableForNullTarget() + "\t" + ma.isComputed() + "\n");
+			}
+			
+			// export to maprelations.txt
+			for (MapRelation ma : mappingService.getMapRelations()) {
+				relationsWriter.write(
+						ma.getTerminologyId() + "\t" + 
+						ma.getName() + "\t"  + 
+						ma.isAllowableForNullTarget() + 
+						ma.isComputed() + "\n");
 			}
 
 			// export to mapprinciples.txt
@@ -193,6 +212,13 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 				}
 				if (mapAdvices.length() > 1)
 					mapAdvices.deleteCharAt(mapAdvices.length() - 1);
+				
+				StringBuffer mapRelations = new StringBuffer();
+				for (MapRelation ma : mpr.getMapRelations()) {
+					mapRelations.append(ma.getTerminologyId()).append(",");
+				}
+				if (mapRelations.length() > 1)
+					mapRelations.deleteCharAt(mapRelations.length() - 1);
 
 				StringBuffer mapPrinciples = new StringBuffer();
 				for (MapPrinciple ma : mpr.getMapPrinciples()) {
@@ -227,7 +253,9 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						+ mpr.getMapPrincipleSourceDocument() + "\t"
 						+ mpr.isRuleBased() + "\t"
 						+ mpr.getMapRefsetPattern() + "\t"
+						+ mpr.getProjectSpecificAlgorithmHandlerClass() + "\t"
 						+ mapAdvices + "\t" 
+						+ mapRelations + "\t"
 						+ mapPrinciples + "\t"
 						+ mprMapLeads + "\t" 
 						+ mprMapSpecialists + "\t"

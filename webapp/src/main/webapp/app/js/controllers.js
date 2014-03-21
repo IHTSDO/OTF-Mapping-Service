@@ -8,6 +8,7 @@ var root_url = "${base.url}/mapping-rest/";
 var root_mapping = root_url + "mapping/";
 var root_content = root_url + "content/";
 var root_metadata = root_url + "metadata/";
+var root_validation = root_url + "validation/";
 
 mapProjectAppControllers.run(function() {
 
@@ -51,10 +52,10 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
     console.debug("CONTROLLER MODEL");
     console.debug($scope.model);
 
-  /*  $scope.$on('adfDashboardChanged', function (event, name, model) {
+    $scope.$on('adfDashboardChanged', function (event, name, model) {
       console.debug("Dashboard change detected by MapRecordDashboard");
       localStorageService.set(name, model);
-    });*/
+    });
   });
 
 //////////////////////////////
@@ -64,9 +65,8 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService', '$rootScope', '$location', '$http',
 	 function ($scope, localStorageService, $rootScope, $location, $http) {
 	
-	// visiting this page clears the local storage user/role informatoin
-	localStorageService.remove('currentUser');
-	localStorageService.remove('currentRole');
+	// visiting this page clears the local cache
+	localStorageService.clearAll();
 
 	// broadcast user/role information clearing to rest of app
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', newvalue: null});  
@@ -205,10 +205,23 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	// scope variables
 	$scope.error = "";		// initially empty
 	$scope.conceptId = $routeParams.conceptId;
+	$scope.recordsInProject = [];
+	$scope.recordsNotInProject = [];
 	
 	// local variables
 	var records = [];
 	var projects = [];
+	$scope.focusProject = [];
+
+	// retrieve focus project on first call
+	$scope.focusProject = localStorageService.get("focusProject");
+	
+	 // watch for changes to focus project
+	  $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
+		  console.debug("RecordConceptListCtrl:  Detected change in focus project");      
+		  $scope.focusProject = parameters.focusProject;
+		  $scope.filterRecords();
+	  });	
 	
 	// retrieve projects information   
 	$http({
@@ -219,7 +232,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	          "Content-Type": "application/json"
 	        }	
 	      }).success(function(data) {
-	    	  $scope.projects = data.mapProject;
 	          projects = data.mapProject;
 	      }).error(function(error) {
 	    	  $scope.error = $scope.error + "Could not retrieve projects. "; 
@@ -245,6 +257,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	      }).success(function(data) {
 	    	  $scope.records = data.mapRecord;
 	          records = data.mapRecord;
+	          $scope.filterRecords();
 	      }).error(function(error) {
 	    	  $scope.error = $scope.error + "Could not retrieve records. ";    
 	      }).then(function() {
@@ -315,6 +328,18 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	    	  
 	    	  	
 	      });
+	};
+	
+	$scope.filterRecords = function() {
+		$scope.recordsInProject = [];
+		$scope.recordsNotInProject = [];
+		for (var i = 0; i < $scope.records.length; i++) {
+			if ($scope.records[i].mapProjectId === $scope.focusProject.id) {
+				$scope.recordsInProject.push($scope.records[i]);
+			} else {
+				$scope.recordsNotInProject.push($scope.records[i]);
+			}
+		}
 	};
 	
 	$scope.getProject = function(record) {
@@ -410,12 +435,11 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		 }
 	 };
 	  
-	 $scope.createMapRecord = function(projectName) {
+	 $scope.createMapRecord = function(project) {
 		 
-		  if (!(projectName == null) && !(projectName === "")) {
+		  if (!(project == null) && !(project === "")) {
 
 			  // get the project
-			  var project = $scope.getProjectFromName(projectName);
 			  var countDescendantConcepts;
 			  
 			  // find concept based on source terminology
@@ -728,7 +752,7 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 			console.debug("Validating the map entry");
 			// validate the record
 			$http({
-				  url: root_mapping + "record/validate",
+				  url: root_validation + "record/validate",
 				  dataType: "json",
 				  data: $scope.record,
 				  method: "POST",
@@ -738,14 +762,14 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 			  }).success(function(data) {
 				  console.debug("validation results:");
 				  console.debug(data);
-				  $scope.recordValidationMessages = data;
+				  $scope.validationResult = data;
 			  }).error(function(data) {
-				  $scope.recordValidationMessages = "Failed to validate";
-				  $scope.recordError = "Error validating record.";
+				  $scope.validationResult = null;
+				  console.debug("Failed to validate map record");
 			  }).then(function(data) {
 				
 				  // if no error messages were returned, save the record
-				  if ($scope.recordValidationMessages.length == 0)  {
+				  if ($scope.validationResult.errors.length == 0)  {
 					  
 					  $http({
 						  url: root_mapping + "record/update",
@@ -759,6 +783,7 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 						 $scope.record = data;
 						 $scope.recordSuccess = "Record saved.";
 						 $scope.recordError = "";
+						 window.history.back();
 					  }).error(function(data) {
 						 $scope.recordSuccess = "";
 						 $scope.recordError = "Error saving record.";
@@ -778,31 +803,7 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 		
 		// discard changes
 		$scope.cancelMapRecord = function() {
-
 			  window.history.back();
-			
-			  /* PREVIOUSLY:
-			   * Discarded changes and requeried database
-			   * 
-			   * $http({
-				 url: root_mapping + "record/id/" + recordId,
-				 dataType: "json",
-			        method: "GET",
-			        headers: { "Content-Type": "application/json"}	
-		      }).success(function(data) {
-		    	  $scope.record = data;
-		    	  $scope.recordSuccess = "";
-				  $scope.recordError = "Record changes aborted.";
-		      }).error(function(error) {
-		    	  $scope.error = $scope.error + "Could not retrieve map record. ";
-		     
-		      }).then(function() {
-	       	 
-		      	  // get the groups
-		    	  getGroups();
-		    	  
-		    	  $scope.entry = null;
-		      });*/	
 		};
 		
 		$scope.deleteMapRecord = function() {
@@ -1367,8 +1368,8 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
  * - constructPfsParameterObj	creates a PfsParameter object from current paging/filtering/sorting parameters, consumed by RESTful service
  */
 
-mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', '$routeParams', '$sce', '$rootScope',
-   function ($scope, $http, $routeParams, $sce, $rootScope) {
+mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', '$routeParams', '$sce', '$rootScope', '$location',
+   function ($scope, $http, $routeParams, $sce, $rootScope, $location) {
 	
 		// header information (not used currently)
 		$scope.headers = [
@@ -1408,6 +1409,15 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	  // for collapse directive
 	  $scope.isCollapsed = true;
 	  
+	  // watch for changes to focus project
+  	  $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
+  		  console.debug("ProjectRecordCtrl:  Detected change in focus project");      
+          $location.path("record/projectId/" + parameters.focusProject.id);
+	  });	
+	  
+	  
+ 
+  
 	  // retrieve project information
 	  $http({
         url: root_mapping + "project/id/" + $scope.projectId,
@@ -1442,6 +1452,7 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
     	  // load first page
     	  $scope.retrieveRecords(1);
       });
+	  
 	 
 	 // Constructs trusted html code from raw/untrusted html code
 	 $scope.to_trusted = function(html_code) {
@@ -1714,6 +1725,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 		    	  $scope.pageSize = 5;
 		    	  $scope.maxSize = 5;
 		    	  $scope.getPagedAdvices(1);
+		    	  $scope.getPagedRelations(1);
 		    	  $scope.getPagedPrinciples(1);
 		    	  $scope.getPagedScopeConcepts(1);
 		    	  $scope.getPagedScopeExcludedConcepts(1);
@@ -1744,6 +1756,16 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				 								.filter(containsAdviceFilter);
 				 $scope.pagedAdviceCount = $scope.pagedAdvice.length;
 				 $scope.pagedAdvice = $scope.pagedAdvice
+				 								.slice((page-1)*$scope.pageSize,
+				 										page*$scope.pageSize);
+			 };
+			 
+			 $scope.getPagedRelations = function (page) {
+					
+				 $scope.pagedRelation = $scope.sortByKey($scope.project.mapRelation, 'id')
+				 								.filter(containsRelationFilter);
+				 $scope.pagedRelationCount = $scope.pagedRelation.length;
+				 $scope.pagedRelation = $scope.pagedRelation
 				 								.slice((page-1)*$scope.pageSize,
 				 										page*$scope.pageSize);
 			 };
@@ -1791,6 +1813,11 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				 $scope.getPagedAdvices(1);
 			 };
 			 
+			 $scope.resetRelationFilter = function() {
+				 $scope.relationFilter = "";
+				 $scope.getPagedRelationss(1);
+			 };
+			 
 			 $scope.resetPrincipleFilter = function() {
 				 $scope.principleFilter = "";
 				 $scope.getPagedPrinciples(1);
@@ -1817,6 +1844,19 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				 // otherwise check if upper-case advice filter matches upper-case element name or detail
 				 if ( element.detail.toString().toUpperCase().indexOf( $scope.adviceFilter.toString().toUpperCase()) != -1) return true;
 				 if ( element.name.toString().toUpperCase().indexOf( $scope.adviceFilter.toString().toUpperCase()) != -1) return true;
+				 
+				 // otherwise return false
+				 return false;
+			 }
+			 
+			 function containsRelationFilter(element) {
+							 
+				 // check if relation filter is empty
+				 if ($scope.relationFilter === "" || $scope.relationFilter == null) return true;
+				 
+				 // otherwise check if upper-case relation filter matches upper-case element name or detail
+				 if ( element.terminologyId.toString().toUpperCase().indexOf( $scope.relationFilter.toString().toUpperCase()) != -1) return true;
+				 if ( element.name.toString().toUpperCase().indexOf( $scope.relationFilter.toString().toUpperCase()) != -1) return true;
 				 
 				 // otherwise return false
 				 return false;
@@ -1927,13 +1967,6 @@ mapProjectAppControllers.directive('otfHeaderDirective', ['$rootScope', 'localSt
         		scope.mapProjects = localStorageService.get('mapProjects');		
         	});
         	
-        	// watch for change in focus projects
-        	scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {   	
-        		console.debug("HEADER: Detected change in focus project");
-        		scope.focusProject = 1; //parameters.newvalue.name;
-        	});
-        	
-        	
         	// retrieve local variables on header load or refresh
         	scope.currentUser = 	localStorageService.get('currentUser'); 
             scope.currentRole = 	localStorageService.get('currentRole');         
@@ -1946,7 +1979,7 @@ mapProjectAppControllers.directive('otfHeaderDirective', ['$rootScope', 'localSt
             	console.debug("changing project to " + scope.focusProject.name);
             	
             	localStorageService.add('focusProject', scope.focusProject);
-            	$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', newvalue: scope.focusProject});  
+            	$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: scope.focusProject});  
             };
         }
     };
