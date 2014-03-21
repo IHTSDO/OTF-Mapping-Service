@@ -28,7 +28,7 @@ public class TreePositionJpa implements TreePosition {
 	private Long id;
 	
 	/** The ancestor path. */
-	@Column(nullable = false, length = 400)
+	@Column(nullable = false, length = 255)
 	private String ancestorPath;
 	
 	/** The terminology. */

@@ -11,6 +11,7 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 
 /**
  * Goal which makes lucene indexes based on hibernate-search annotations.
@@ -52,74 +53,73 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
  */
 public class LuceneReindexMojo extends AbstractMojo {
 
-	/** The manager. */
-	private EntityManager manager;
+  /** The manager. */
+  private EntityManager manager;
 
-	/**
-	 * Instantiates a {@link LuceneReindexMojo} from the specified parameters.
-	 */
-	public LuceneReindexMojo() {
-		// do nothing
-	}
+  /**
+   * Instantiates a {@link LuceneReindexMojo} from the specified parameters.
+   */
+  public LuceneReindexMojo() {
+    // do nothing
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.maven.plugin.Mojo#execute()
-	 */
-	@Override
-	public void execute() throws MojoFailureException {
-		getLog().info("Starting reindexing ...");
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
+  @Override
+  public void execute() throws MojoFailureException {
+    getLog().info("Starting reindexing ...");
 
-		try {
+    try {
 
-			EntityManagerFactory factory =
-					Persistence.createEntityManagerFactory("MappingServiceDS");
+      EntityManagerFactory factory =
+          Persistence.createEntityManagerFactory("MappingServiceDS");
 
-			manager = factory.createEntityManager();
+      manager = factory.createEntityManager();
 
-			// full text entity manager
-			FullTextEntityManager fullTextEntityManager =
-					Search.getFullTextEntityManager(manager);
+      // full text entity manager
+      FullTextEntityManager fullTextEntityManager =
+          Search.getFullTextEntityManager(manager);
 
-			/* TODO: have a separate call for this
-			 * // Concepts getLog().info("  Creating indexes for ConceptJpa");
-			 * fullTextEntityManager.purgeAll(ConceptJpa.class);
-			 * fullTextEntityManager.flushToIndexes();
-			 * fullTextEntityManager.createIndexer(ConceptJpa.class)
-			 * .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-			 * .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-			 * .startAndWait();
-			 */
+      // Concepts
+      getLog().info("  Creating indexes for ConceptJpa");
+      fullTextEntityManager.purgeAll(ConceptJpa.class);
+      fullTextEntityManager.flushToIndexes();
+      fullTextEntityManager.createIndexer(ConceptJpa.class)
+          .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+          .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
+          .startAndWait();
 
-			// Map Projects
-			getLog().info("  Creating indexes for MapProjectJpa");
-			fullTextEntityManager.purgeAll(MapProjectJpa.class);
-			fullTextEntityManager.flushToIndexes();
-			fullTextEntityManager.createIndexer(MapProjectJpa.class)
-					.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-					.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-					.startAndWait();
+      // Map Projects
+      getLog().info("  Creating indexes for MapProjectJpa");
+      fullTextEntityManager.purgeAll(MapProjectJpa.class);
+      fullTextEntityManager.flushToIndexes();
+      fullTextEntityManager.createIndexer(MapProjectJpa.class)
+          .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+          .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
+          .startAndWait();
 
-			// Map Records
-			getLog().info("  Creating indexes for MapRecordJpa");
-			fullTextEntityManager.purgeAll(MapRecordJpa.class);
-			fullTextEntityManager.flushToIndexes();
-			fullTextEntityManager.createIndexer(MapRecordJpa.class)
-					.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-					.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-					.startAndWait();
+      // Map Records
+      getLog().info("  Creating indexes for MapRecordJpa");
+      fullTextEntityManager.purgeAll(MapRecordJpa.class);
+      fullTextEntityManager.flushToIndexes();
+      fullTextEntityManager.createIndexer(MapRecordJpa.class)
+          .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+          .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
+          .startAndWait();
 
-			// Cleanup
-			getLog().info("done ...");
-			manager.close();
-			factory.close();
+      // Cleanup
+      getLog().info("done ...");
+      manager.close();
+      factory.close();
 
-		} catch (Throwable e) {
-			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
-		}
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw new MojoFailureException("Unexpected exception:", e);
+    }
 
-	}
+  }
 
 }
