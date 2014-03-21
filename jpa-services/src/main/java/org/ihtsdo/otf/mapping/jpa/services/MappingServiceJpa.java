@@ -1455,11 +1455,21 @@ public class MappingServiceJpa implements MappingService {
 		SearchResultList conceptsInScope = findConceptsInScope(project);
 		SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
 		
+		//take everything in scope for the project minus concepts with mappings 
+		//(in that project) with workflow status of PUBLISHED or READY_FOR_PUBLICATION
 		for (SearchResult sr : conceptsInScope.getSearchResults()) {
 		  // if concept has no associated map records, add to list
-		  if (getMapRecordsForTerminologyId(sr.getTerminologyId()).size() == 0) {
-		  	unmappedConceptsInScope.addSearchResult(sr);
-		  }
+			List<MapRecord> mapRecords = getMapRecordsForTerminologyId(sr.getTerminologyId());
+        boolean foundEndStage = false;		
+			  for (MapRecord mapRecord : mapRecords) {
+				  if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED) ||
+				  		mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)) {
+				  	foundEndStage = true;
+				  	break;
+				  }
+			  }
+			  if (!foundEndStage)
+			  	unmappedConceptsInScope.addSearchResult(sr);
 		}
 		
 		return unmappedConceptsInScope;

@@ -115,28 +115,28 @@ public interface WorkflowTrackingRecord {
 	 *
 	 * @return the assigned specialists
 	 */
-	public Set<MapUser> getAssignedSpecialists();
+	public Set<MapUser> getAssignedUsers();
 	
 	/**
 	 * Sets the assigned specialists.
 	 *
-	 * @param assignedSpecialists the assigned specialists
+	 * @param assignedUsers the assigned specialists
 	 */
-	public void setAssignedSpecialists(Set<MapUser> assignedSpecialists);
+	public void setAssignedUsers(Set<MapUser> assignedUsers);
 	
 	/**
 	 * Adds the assigned specialist.
 	 *
-	 * @param assignedSpecialist the assigned specialist
+	 * @param assignedUser the assigned specialist
 	 */
-	public void addAssignedSpecialist(MapUser assignedSpecialist);
+	public void addAssignedUser(MapUser assignedUser);
 	
 	/**
 	 * Removes the assigned specialist.
 	 *
-	 * @param assignedSpecialist the assigned specialist
+	 * @param assignedUser the assigned specialist
 	 */
-	public void removeAssignedSpecialist(MapUser assignedSpecialist);
+	public void removeAssignedUser(MapUser assignedUser);
 	
 	/**
 	 * Returns the map records.

@@ -36,12 +36,12 @@ public class WorkflowJpa implements Workflow {
 	private MapProject mapProject;
 	
 	/**  The tracking records for unmapped in scope concepts. */
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = WorkflowTrackingRecordJpa.class)
+	@OneToMany(targetEntity = WorkflowTrackingRecordJpa.class)
 	@IndexedEmbedded(targetElement = WorkflowTrackingRecordJpa.class)
 	private Set<WorkflowTrackingRecord> trackingRecordsForUnmappedInScopeConcepts;
 	
 	/**  The tracking records for conflict concepts. */
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = WorkflowTrackingRecordJpa.class)
+	@OneToMany(targetEntity = WorkflowTrackingRecordJpa.class)
 	@IndexedEmbedded(targetElement = WorkflowTrackingRecordJpa.class)	
 	private Set<WorkflowTrackingRecord> trackingRecordsForConflictConcepts;
 	
