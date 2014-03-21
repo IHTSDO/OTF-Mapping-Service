@@ -1641,20 +1641,21 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 		    		  $scope.project.mapPrincipleDocument = "ICD10_MappingPersonnelHandbook.docx";
 		    		  $scope.project.mapPrincipleDocumentName = "Mapping Personnel Handbook";
 		    	  } else {
-		    		  $scope.project.mapPrincipleDocument = null;
+		    		  $scope.project.mapagedpPrincipleDocument = null;
 		    	  }
 		    	  
 
-
-		    	  var scopeArr = [];
+		    	  var scopeMap = {};
 		    	  var len = $scope.project.scopeConcepts.length;
+		    	  var terminology = $scope.project.sourceTerminology;
+		    	  var terminologyVersion = $scope.project.sourceTerminologyVersion;
 		    	 
 		    	  // find concept based on source terminology
 		      	  for (var i = 0; i < len; i++) {
 		    	    $http({
 	    			   url: root_content + "concept/" 
-	    			 				   + "SNOMEDCT" +  "/" 
-	    			 				   + "20140131" 
+	    			 				   + terminology +  "/" 
+	    			 				   + terminologyVersion 
 	    			 				   + "/id/" 
 	    			 				   + $scope.project.scopeConcepts[i],
 	    			   dataType: "json",
@@ -1666,9 +1667,9 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 	    		          var obj = {
 	    		    	          key: data.terminologyId,
 	    		    	          concept: data
-	    		    	      };
-	    		          scopeArr.push(obj);
-	    		    	  $scope.scopeConceptsArray = scopeArr;    
+	    		    	      };  
+	    		    	  scopeMap[obj.key] = obj.concept.defaultPreferredName;
+	    		    	  $scope.scopeMap = scopeMap;
 	    		    }).error(function(error) {
 	    			  console.debug("Could not retrieve concept");
 	    		    	  $scope.error = $scope.error + "Could not retrieve Concept. ";    
@@ -1676,6 +1677,35 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 		    	  
 		    	  }
 
+		    	  var scopeExcludedMap = {};
+		    	  var len = $scope.project.scopeExcludedConcepts.length;
+		    	 
+		    	  // find concept based on source terminology
+		      	  for (var i = 0; i < len; i++) {
+		    	    $http({
+	    			   url: root_content + "concept/" 
+	    			 				   + terminology +  "/" 
+	    			 				   + terminologyVersion 
+	    			 				   + "/id/" 
+	    			 				   + $scope.project.scopeExcludedConcepts[i],
+	    			   dataType: "json",
+	    		       method: "GET",
+	    		       headers: {
+	    		          "Content-Type": "application/json"
+	    		       }	
+	    		    }).success(function(data) {
+	    		          var obj = {
+	    		    	          key: data.terminologyId,
+	    		    	          concept: data
+	    		    	      };  
+	    		    	  scopeExcludedMap[obj.key] = obj.concept.defaultPreferredName;
+	    		    	  $scope.scopeExcludedMap = scopeExcludedMap;
+	    		    }).error(function(error) {
+	    			  console.debug("Could not retrieve concept");
+	    		    	  $scope.error = $scope.error + "Could not retrieve Concept. ";    
+	    		    });
+		    	  
+		    	  }
 		    	  // set pagination variables
 		    	  $scope.pageSize = 5;
 		    	  $scope.maxSize = 5;
@@ -1687,13 +1717,15 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 		      
 		      });
 			
-		
+
 			
 			// function to return trusted html code (for tooltip content)
 			$scope.to_trusted = function(html_code) {
 			    return $sce.trustAsHtml(html_code);
 			 };
+			
 			 
+
 			 ///////////////////////////////////////////////////////////////
 			 // Functions to display and filter advices and principles
 			 // NOTE: This is a workaround due to pagination issues
@@ -1727,9 +1759,14 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 			 };
 			 
 			 $scope.getPagedScopeConcepts = function (page) {
-				 console.debug("Called paged scope concept for page " + page);
-				 $scope.pagedScopeConcept = $scope.sortByKey($scope.project.scopeConcepts, 'id')
-												.filter(containsScopeConceptFilter);
+				 console.debug("Called paged scope concept for page " + page); 
+				 //$scope.pagedScopeConcept = $scope.sortByKey($scope.project.scopeConcepts, 'id')
+					//.filter(containsScopeConceptFilter);
+				 //if ($scope.scopeMap == null)
+					 $scope.pagedScopeConcept = $scope.project.scopeConcepts;
+				 //else	 
+				 //    $scope.pagedScopeConcept = $scope.scopeMap.filter(containsScopeConceptFilter);
+				 //$scope.pagedScopeConcept = $scope.project.scopeConcepts.sort(function(a,b){return $scope.scopeMap[a] - $scope.scopeMap[b];});
 				 $scope.pagedScopeConceptCount = $scope.pagedScopeConcept.length;
 				 $scope.pagedScopeConcept = $scope.pagedScopeConcept
 												.slice((page-1)*$scope.pageSize,
@@ -1810,9 +1847,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 					 
 					 // otherwise check if upper-case scopeConcept filter matches upper-case element name or detail
 					 if ( element.scopeConceptId.toString().toUpperCase().indexOf( $scope.scopeConceptFilter.toString().toUpperCase()) != -1) return true;
-					 if ( element.detail.toString().toUpperCase().indexOf( $scope.scopeConceptFilter.toString().toUpperCase()) != -1) return true;
 					 if ( element.name.toString().toUpperCase().indexOf( $scope.scopeConceptFilter.toString().toUpperCase()) != -1) return true;
-					 if ( element.sectionRef.toString().toUpperCase().indexOf( $scope.scopeConceptFilter.toString().toUpperCase()) != -1) return true;
 					 
 					 // otherwise return false
 					 return false;
@@ -1825,9 +1860,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 					 
 					 // otherwise check if upper-case scopeConcept filter matches upper-case element name or detail
 					 if ( element.scopeExcludesConceptId.toString().toUpperCase().indexOf( $scope.scopeExcludesConceptFilter.toString().toUpperCase()) != -1) return true;
-					 if ( element.detail.toString().toUpperCase().indexOf( $scope.scopeExcludesConceptFilter.toString().toUpperCase()) != -1) return true;
 					 if ( element.name.toString().toUpperCase().indexOf( $scope.scopeExcludesConceptFilter.toString().toUpperCase()) != -1) return true;
-					 if ( element.sectionRef.toString().toUpperCase().indexOf( $scope.scopeExcludesConceptFilter.toString().toUpperCase()) != -1) return true;
 					 
 					 // otherwise return false
 					 return false;
@@ -1841,7 +1874,8 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
 				    });
 				};
-				
+			
+				 
 				
 			////////////////////////////////////////////////////////
 			// END PRINCIPLE/ADVICE SORTING/FILTERING FUNCTIONS
