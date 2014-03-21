@@ -16,8 +16,7 @@ mysql.test.pwd=rootpwd
 #
 # SNOMEDCT mini data
 #
-#loader.SNOMEDCT.input.data=C:/data/snomedct-20140131-mini
-loader.SNOMEDCT.input.data=C:/data/snomedct-20140131-snapshot
+loader.SNOMEDCT.input.data=C:/data/snomedct-20140131-mini
 
 #
 # Path to icpc data

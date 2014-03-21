@@ -122,6 +122,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
   /** The concept map. */
   Map<String, Concept> conceptMap;
 
+  /** The roots. */
+  List<String> roots = null;
+
   /**
    * child to parent code map NOTE: this assumes a single superclass
    **/
@@ -197,41 +200,29 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       inputStream = checkForUtf8BOM(fis);
       reader = new InputStreamReader(inputStream, "UTF-8");
       InputSource is = new InputSource(reader);
-			is.setEncoding("UTF-8");
-			saxParser.parse(is, handler);
+      is.setEncoding("UTF-8");
+      saxParser.parse(is, handler);
 
-			tx.commit();
+      tx.commit();
+      
+      // creating tree positions
+      // first get isaRelType from metadata
+      MetadataService metadataService = new MetadataServiceJpa();
+      Map<Long, String> hierRelTypeMap =
+          metadataService.getHierarchicalRelationshipTypes(terminology,
+              terminologyVersion);
+      String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
+      metadataService.close();
 
-			// creating tree positions
-			// first get isaRelType from metadata
-			MetadataService metadataService = new MetadataServiceJpa();
-			Map<Long, String> hierRelTypeMap = metadataService.getHierarchicalRelationshipTypes(terminology, terminologyVersion);
-			String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
-			metadataService.close();
-			
-			ContentService contentService = new ContentServiceJpa();
-			getLog().info("Start creating tree positions.");
-			// TODO: don't hardcode root or isa values
-			// eg, for ICPC what is the root?
-			/**if (terminology.equals("ICPC"))
-			  contentService.computeTreePositions(terminology, terminologyVersion,
-					isaRelType, "A");
-			else */if (terminology.equals("ICD10")) {
-				String[] roots = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII"};
-				for (String root : roots) 
-				  contentService.computeTreePositions(terminology, terminologyVersion,
-						isaRelType, root);
-			} else if (terminology.equals("ICD9CM")) {
-				contentService.computeTreePositions(terminology, terminologyVersion,
-						isaRelType, "001-999.99");			 
-				contentService.computeTreePositions(terminology, terminologyVersion,
-						isaRelType, "E000-E999.9");
-				contentService.computeTreePositions(terminology, terminologyVersion,
-						isaRelType, "V01-V91.99");
-			}
-			contentService.close();
+      ContentService contentService = new ContentServiceJpa();
+      getLog().info("Start creating tree positions.");
+      for (String root : roots) {
+        contentService.computeTreePositions(terminology, terminologyVersion,
+            isaRelType, root);
+      }
+      contentService.close();
 
-			getLog().info("done ...");
+      getLog().info("done ...");
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -390,6 +381,21 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       // add current tag to stack
       tagStack.push(qName.toLowerCase());
 
+      if (qName.equalsIgnoreCase("meta")) {
+        // e.g. <Meta name="TopLevelSort"
+        // value="- A B D F H K L N P R S T U W X Y Z"/>
+        String name = attributes.getValue("name");
+        if (name != null && name.equalsIgnoreCase("toplevelsort")) {
+          String value = attributes.getValue("value");
+          roots = new ArrayList<String>();
+          for (String code : value.split(" ")) {
+            getLog().info("  Adding root: " + code.trim());
+            roots.add(code.trim());
+          }
+        }
+        if (roots.size() == 0)
+          throw new IllegalStateException("No roots found");
+      }
       // Encountered Class tag, save code and class usage
       if (qName.equalsIgnoreCase("class")) {
         code = attributes.getValue("code");
@@ -903,7 +909,13 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
                   "      Exclude modifier " + modifier + " for "
                       + modifiersToMatchedCodeMap.get(modifier) + " due to "
                       + excludedModifiersToMatchedCodeMap.get(modifier));
-              modifiersToMatchedCodeMap.remove(modifier);
+              if (!overrideExclusion(codeToModify, modifier)) {
+                modifiersToMatchedCodeMap.remove(modifier);
+              } else {
+                getLog().info(
+                    "      Override exclude modifier " + modifier + " for "
+                        + codeToModify);
+              }
             }
           }
         }
@@ -914,6 +926,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         // find an excluded modifier at a level lower than where it was defined
         if (classToExcludedModifierMap.containsKey(cmpCode)) {
           for (String modifier : classToExcludedModifierMap.get(cmpCode)) {
+            // Check manual exclusion overrides.
             excludedModifiersToMatchedCodeMap.put(modifier, cmpCode);
           }
         }
@@ -991,15 +1004,15 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
                 "        Creating placeholder concept "
                     + conceptToModify.getTerminologyId() + ".X");
             Concept placeholderConcept = new ConceptJpa();
-            placeholderConcept.setDefaultPreferredName(" - PLACEHOLDER 4th digit");
-            
+            placeholderConcept
+                .setDefaultPreferredName(" - PLACEHOLDER 4th digit");
+
             // Recursively call for 5th digit modifiers where there are no
             // child
             // concepts and the code is only 3 digits, fill in with X
             // create intermediate layer with X
-            createChildConcept(conceptToModify.getTerminologyId()
-                + ".X", conceptToModify, placeholderConcept,
-                relIdCounter++);
+            createChildConcept(conceptToModify.getTerminologyId() + ".X",
+                conceptToModify, placeholderConcept, relIdCounter++);
 
             modifierHelper(conceptMap.get(codeToModify).getTerminologyId()
                 + ".X");
@@ -1012,6 +1025,238 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         }
 
       }
+    }
+
+    /**
+     * Override exclusions in certain cases.
+     * 
+     * @param code the code
+     * @param modifier the modifier
+     * @return true, if successful
+     */
+    private boolean overrideExclusion(String code, String modifier) {
+      if (code.contains("-")) {
+        return false;
+      }
+      String cmpCode = code.substring(0, 3);
+      getLog().info(
+          "    CHECK OVERRIDE " + code + ", " + cmpCode + ", " + modifier);
+
+      Set<String> overrideCodes = new HashSet<String>();
+
+      // 4TH AND 5TH
+      overrideCodes.add("V09");
+      overrideCodes.add("V19");
+      overrideCodes.add("V29");
+      overrideCodes.add("V39");
+      overrideCodes.add("V49");
+      overrideCodes.add("V59");
+      overrideCodes.add("V69");
+      overrideCodes.add("V79");
+      overrideCodes.add("V80");
+      overrideCodes.add("V81");
+      overrideCodes.add("V82");
+      overrideCodes.add("V83");
+      overrideCodes.add("V84");
+      overrideCodes.add("V85");
+      overrideCodes.add("V86");
+      overrideCodes.add("V87");
+      overrideCodes.add("V88");
+      overrideCodes.add("V89");
+      overrideCodes.add("V95");
+      overrideCodes.add("V96");
+      overrideCodes.add("V97");
+      overrideCodes.add("W00");
+      overrideCodes.add("W01");
+      overrideCodes.add("W02");
+      overrideCodes.add("W03");
+      overrideCodes.add("W04");
+      overrideCodes.add("W05");
+      overrideCodes.add("W06");
+      overrideCodes.add("W07");
+      overrideCodes.add("W08");
+      overrideCodes.add("W09");
+      overrideCodes.add("W10");
+      overrideCodes.add("W11");
+      overrideCodes.add("W12");
+      overrideCodes.add("W13");
+      overrideCodes.add("W14");
+      overrideCodes.add("W15");
+      overrideCodes.add("W16");
+      overrideCodes.add("W17");
+      overrideCodes.add("W18");
+      overrideCodes.add("W19");
+      overrideCodes.add("W20");
+      overrideCodes.add("W21");
+      overrideCodes.add("W22");
+      overrideCodes.add("W23");
+      overrideCodes.add("W24");
+      overrideCodes.add("W25");
+      overrideCodes.add("W26");
+      overrideCodes.add("W27");
+      overrideCodes.add("W28");
+      overrideCodes.add("W29");
+      overrideCodes.add("W30");
+      overrideCodes.add("W31");
+      overrideCodes.add("W32");
+      overrideCodes.add("W33");
+      overrideCodes.add("W34");
+      overrideCodes.add("W35");
+      overrideCodes.add("W36");
+      overrideCodes.add("W37");
+      overrideCodes.add("W38");
+      overrideCodes.add("W39");
+      overrideCodes.add("W40");
+      overrideCodes.add("W41");
+      overrideCodes.add("W42");
+      overrideCodes.add("W43");
+      overrideCodes.add("W44");
+      overrideCodes.add("W45");
+      overrideCodes.add("W46");
+      overrideCodes.add("W49");
+      overrideCodes.add("W50");
+      overrideCodes.add("W51");
+      overrideCodes.add("W52");
+      overrideCodes.add("W53");
+      overrideCodes.add("W54");
+      overrideCodes.add("W55");
+      overrideCodes.add("W56");
+      overrideCodes.add("W57");
+      overrideCodes.add("W58");
+      overrideCodes.add("W59");
+      overrideCodes.add("W60");
+      overrideCodes.add("W64");
+      overrideCodes.add("W65");
+      overrideCodes.add("W66");
+      overrideCodes.add("W67");
+      overrideCodes.add("W68");
+      overrideCodes.add("W69");
+      overrideCodes.add("W70");
+      overrideCodes.add("W73");
+      overrideCodes.add("W74");
+      overrideCodes.add("W75");
+      overrideCodes.add("W76");
+      overrideCodes.add("W77");
+      overrideCodes.add("W78");
+      overrideCodes.add("W79");
+      overrideCodes.add("W80");
+      overrideCodes.add("W81");
+      overrideCodes.add("W83");
+      overrideCodes.add("W84");
+      overrideCodes.add("W85");
+      overrideCodes.add("W86");
+      overrideCodes.add("W87");
+      overrideCodes.add("W88");
+      overrideCodes.add("W89");
+      overrideCodes.add("W90");
+      overrideCodes.add("W91");
+      overrideCodes.add("W92");
+      overrideCodes.add("W93");
+      overrideCodes.add("W94");
+      overrideCodes.add("W99");
+      overrideCodes.add("X00");
+      overrideCodes.add("X01");
+      overrideCodes.add("X02");
+      overrideCodes.add("X03");
+      overrideCodes.add("X04");
+      overrideCodes.add("X05");
+      overrideCodes.add("X06");
+      overrideCodes.add("X08");
+      overrideCodes.add("X09");
+      overrideCodes.add("X10");
+      overrideCodes.add("X11");
+      overrideCodes.add("X12");
+      overrideCodes.add("X13");
+      overrideCodes.add("X14");
+      overrideCodes.add("X15");
+      overrideCodes.add("X16");
+      overrideCodes.add("X17");
+      overrideCodes.add("X18");
+      overrideCodes.add("X19");
+      overrideCodes.add("X20");
+      overrideCodes.add("X21");
+      overrideCodes.add("X22");
+      overrideCodes.add("X23");
+      overrideCodes.add("X24");
+      overrideCodes.add("X25");
+      overrideCodes.add("X26");
+      overrideCodes.add("X27");
+      overrideCodes.add("X28");
+      overrideCodes.add("X29");
+      overrideCodes.add("X30");
+      overrideCodes.add("X31");
+      overrideCodes.add("X32");
+      overrideCodes.add("X33");
+      overrideCodes.add("X34");
+      overrideCodes.add("X35");
+      overrideCodes.add("X36");
+      overrideCodes.add("X37");
+      overrideCodes.add("X38");
+      overrideCodes.add("X39");
+      overrideCodes.add("X40");
+      overrideCodes.add("X41");
+      overrideCodes.add("X42");
+      overrideCodes.add("X43");
+      overrideCodes.add("X44");
+      overrideCodes.add("X45");
+      overrideCodes.add("X46");
+      overrideCodes.add("X47");
+      overrideCodes.add("X48");
+      overrideCodes.add("X49");
+      overrideCodes.add("X50");
+      overrideCodes.add("X51");
+      overrideCodes.add("X52");
+      overrideCodes.add("X53");
+      overrideCodes.add("X54");
+      overrideCodes.add("X57");
+      overrideCodes.add("X58");
+      overrideCodes.add("X59");
+      overrideCodes.add("Y06");
+      overrideCodes.add("Y07");
+      overrideCodes.add("Y35");
+      overrideCodes.add("Y36");
+      overrideCodes.add("Y40");
+      overrideCodes.add("Y41");
+      overrideCodes.add("Y42");
+      overrideCodes.add("Y43");
+      overrideCodes.add("Y44");
+      overrideCodes.add("Y45");
+      overrideCodes.add("Y46");
+      overrideCodes.add("Y47");
+      overrideCodes.add("Y48");
+      overrideCodes.add("Y49");
+      overrideCodes.add("Y50");
+      overrideCodes.add("Y51");
+      overrideCodes.add("Y52");
+      overrideCodes.add("Y53");
+      overrideCodes.add("Y54");
+      overrideCodes.add("Y55");
+      overrideCodes.add("Y56");
+      overrideCodes.add("Y57");
+      overrideCodes.add("Y58");
+      overrideCodes.add("Y59");
+      overrideCodes.add("Y63");
+      overrideCodes.add("Y64");
+      overrideCodes.add("Y65");
+      overrideCodes.add("Y83");
+      overrideCodes.add("Y84");
+      overrideCodes.add("Y85");
+      overrideCodes.add("Y87");
+      overrideCodes.add("Y88");
+      overrideCodes.add("Y89");
+      overrideCodes.add("Y90");
+      overrideCodes.add("Y91");
+
+      // Override excludes for the code list above for S20W00_4
+      if (overrideCodes.contains(cmpCode) && modifier.equals("S20W00_4")
+          && !parentCodeHasChildrenMap.containsKey(cmpCode))
+        return true;
+
+      // Override excludes for the code list above for S20V01T_5
+      if (overrideCodes.contains(cmpCode) && modifier.equals("S20V01T_5"))
+        return true;
+
+      return false;
     }
 
     /**

@@ -634,6 +634,16 @@ public interface MappingService {
 	 */
 	public void updateMapAgeRange(MapAgeRange ageRange);
 
+	
+	
+	/**
+	 * Validate map record.
+	 *
+	 * @param mapRecord the map record to be validated
+	 * @return the list of error messages if map record is invalid
+	 */
+	public List<String> validateMapRecord(MapRecord mapRecord);
+
 }
 	
 	

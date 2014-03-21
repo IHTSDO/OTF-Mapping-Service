@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -2065,7 +2066,7 @@ public class MappingServiceJpa implements MappingService {
 					manager.remove(manager.merge(note));
 				}
 			}
-			record.setMapNotes(null); // TODO Check if this is necessary
+			record.setMapNotes(null);
 
 			// delete entries
 			for (MapEntry entry : record.getMapEntries()) {
@@ -2078,7 +2079,7 @@ public class MappingServiceJpa implements MappingService {
 						manager.remove(manager.merge(entryNote));
 					}
 				}
-				entry.setMapNotes(null); // TODO Check if this is necessary
+				entry.setMapNotes(null);
 
 				// remove principles
 				entry.setMapPrinciples(null);
@@ -2479,5 +2480,405 @@ public class MappingServiceJpa implements MappingService {
 			manager.merge(mapAgeRange);
 		}
 	}
+	
+	
+	
+	/////////////////////////////////////////////////////////
+	// Map Record Validation Checks and Helper Functions
+	/////////////////////////////////////////////////////////
+	
+	
+	/**
+	 * Function to determine whether two groups are equal
+	 * Two groups are considered equal if, for each map priority, the following are equal
+	 * - targetId OR relationId if targetId is empty
+	 * - rule
+	 * - 
+	 * @param entryGroups
+	 * @return
+	 */
+	public List<String> checkMapRecordForDuplicateGroups(MapRecord mapRecord, MapProject mapProject, Map<Integer, List<MapEntry>> entryGroups) {
+		
+		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for duplicate groups...");
+		
+		// if only one group, return null messages
+		// also skips test by default for projects without group structure
+		if (entryGroups.keySet().size() == 1) return null;
+		
+		// list of error messages to return
+		List<String> messages = new ArrayList<String>();
+		
+		
+		// cycle over all groups but the last
+		for (int i = 0; i < entryGroups.keySet().size() - 1; i++) {
+			
+			// iterate over set until the next unchecked group
+			Iterator group_iter = entryGroups.keySet().iterator();
+			
+			for (int i_iter = i; i_iter > 0; i--) {
+				group_iter.next();
+			}
+			
+			List<MapEntry> group1 = entryGroups.get(group_iter.next());
+			
+			Logger.getLogger(MappingServiceJpa.class).info("    Checking group " + Integer.toString(group1.get(0).getMapGroup()));
+			
+			// compare this group to remaining groups
+			while (group_iter.hasNext()) {
+				List<MapEntry> group2 = entryGroups.get(group_iter.next());
+				
+				Logger.getLogger(MappingServiceJpa.class).info("         --> Against group " + Integer.toString(group2.get(0).getMapGroup()));
+				
+				
+				// assume groups are equal until tests shows otherwise
+				boolean groupsEqual = true;
+				
+				// if groups are same size, check entries
+				if (group1.size() == group2.size()) {
+					
+					// if any two entries at the same position are not equal, groups are not equal
+					for (int k = 0; k < group1.size(); k++) {
+						if (!group1.get(k).equals(group2.get(k))) groupsEqual = false;
+					}
+					
+				// groups of differing size are assumed to be not equal	
+				} else {
+					groupsEqual = false;
+				}
+			
+				// if groups are equal, add to error messages
+				if (groupsEqual == true) {
+					messages.add("Groups " + Integer.toString(group1.get(0).getMapGroup()) + " and " + Integer.toString(group2.get(0).getMapGroup()) + " are equal!");
+				}
+			}
+			
+			
+		}
+		
+		for (String message : messages) {
+			Logger.getLogger(MappingServiceJpa.class).info("    " + message);
+		}
+		
+		return messages;
+	}
+	
+	/**
+	 * Function to check a map record for duplicate entries within map groups
+	 * 
+	 * @param mapRecord the map record
+	 * @param mapProject the map project for this record
+	 * @param entryGroups the binned entry lists by group
+	 * @return a list of errors detected
+	 */
+	public List<String> checkMapRecordForDuplicateEntries(MapRecord mapRecord, MapProject mapProject, Map<Integer, List<MapEntry>> entryGroups) {
+	
+		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for duplicate entries within map groups...");
+		
+		List<String> messages = new ArrayList<String>();
+		for (Integer key : entryGroups.keySet()) {
+		
+			List<MapEntry> entries = entryGroups.get(key);
+			
+			// cycle over all entries but last
+			for (int i = 0 ; i < entries.size() - 1; i++) {
+				
+				// compare to subsequent entries
+				for (int j = i+1; j < entries.size(); j++) {
+					if (entries.get(i).equals(entries.get(j))) {
+						messages.add("Duplicate entries found in group " + Integer.toString(key) + " at map priority positions " + Integer.toString(i) + " and " + Integer.toString(j));
+					}
+				}
+			}
+		}
+		
+		for (String message : messages) {
+			Logger.getLogger(MappingServiceJpa.class).info("    " + message);
+		}
+		
+		return messages;
+		
+	}
+	/**
+	 * Function to check proper use of TRUE rules
+	 * 
+	 * @param mapRecord the map record
+	 * @param mapProject the map project for this record
+	 * @param entryGroups the binned entry lists by group
+	 * @return a list of errors detected
+	 */
+	public List<String> checkMapRecordTrueRules(MapRecord mapRecord, MapProject mapProject, Map<Integer, List<MapEntry>> entryGroups) {
+		
+		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for proper use of TRUE rules...");
+		
+		List<String> messages = new ArrayList<String>();
+		
+		for (Integer key : entryGroups.keySet()) {
+			
+			for (MapEntry mapEntry : entryGroups.get(key)) {
+				
+				Logger.getLogger(MappingServiceJpa.class).info("    Checking entry " + Integer.toString(mapEntry.getMapPriority()));
+				
+				
+				// add message if TRUE rule found at non-terminating entry
+				if (mapEntry.getMapPriority() != entryGroups.get(key).size() && mapEntry.getRule().equals("TRUE")) {
+					messages.add("Found non-terminating entry with TRUE rule."
+							+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+							+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
+					
+				// add message if terminating entry rule is not TRUE
+				} else if (mapEntry.getMapPriority() == entryGroups.get(key).size() && !mapEntry.getRule().equals("TRUE")) {
+					messages.add("Terminating entry has non-TRUE rule."
+							+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+							+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
+					}
+			}
+		}
+		for (String message : messages) {
+			Logger.getLogger(MappingServiceJpa.class).info("    " + message);
+		}
+		
+		return messages;
+	}
+	
+	/**
+	 * Function to check higher level groups do not have only NC target codes
+	 * 
+	 * @param mapRecord the map record
+	 * @param mapProject the map project for this record
+	 * @param entryGroups the binned entry lists by group
+	 * @return a list of errors detected
+	 */
+	public List<String> checkMapRecordNcNodes(MapRecord mapRecord, MapProject mapProject, Map<Integer, List<MapEntry>> entryGroups) {
+		
+		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for high-level groups with only NC target codes...");
+		
+		List<String> messages = new ArrayList<String>();
+	
+		
+		for (String message : messages) {
+			Logger.getLogger(MappingServiceJpa.class).info("    " + message);
+		}
+		
+		return messages;
+	}
+	
+	/**
+	 * Function to check that all advices attached are allowable by the project
+	 * 
+	 * @param mapRecord the map record
+	 * @param mapProject the map project for this record
+	 * @param entryGroups the binned entry lists by group
+	 * @return a list of errors detected
+	 */
+	public List<String> checkMapRecordAdvices(MapRecord mapRecord, MapProject mapProject, Map<Integer, List<MapEntry>> entryGroups) {
+		
+		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for valid map advices...");
+		
+		List<String> messages = new ArrayList<String>();
+		
+		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+		
+			for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
+				
+				if (mapProject.getMapAdvices().contains(mapAdvice)) {
+					messages.add("Invalid advice " + mapAdvice.getName() + "."
+							+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+							+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
+				}
+			}
+			
+		}
+		
+		for (String message : messages) {
+			Logger.getLogger(MappingServiceJpa.class).info("    " + message);
+		}
+		
+		return messages;
+	}
+	
+	/**
+	 * Check map record's entries for EITHER:
+	 * 1) Valid map targets
+	 *    - check target exists (i.e. in database)
+	 *    - check valid position (i.e. must be leaf node)
+	 * 	2) Entry with no target has valid relationId
+	 * 
+	 * @param mapRecord the map record
+	 * @param mapProject the map project
+	 * @param entryGroups the binned entry groups
+	 * @return the list of error messages
+	 */
+	public List<String> checkMapRecordTargets(MapRecord mapRecord, MapProject mapProject, Map<Integer, List<MapEntry>> entryGroups) {
+		
+		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for valid targets...");
+		
+		List<String> messages = new ArrayList<String>();
+		
+		ContentService contentService = new ContentServiceJpa();
+		
+		String terminology = mapProject.getDestinationTerminology();
+		String terminologyVersion = mapProject.getDestinationTerminologyVersion();
+		
+		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+			
+			// if this entry has a target assigned
+			if (mapEntry.getTargetId() != null && !mapEntry.getTargetId().equals("")) {
+				
+				// retrieve the target concept
+				try {
+					Concept concept = contentService.getConcept(mapEntry.getTargetId(), terminology, terminologyVersion);
+				
+					if (concept == null) {
+						messages.add("Target concept (" + terminology + ", " + terminologyVersion + ", " + mapEntry.getTargetId() + ")"
+								+    " not in database!"
+								+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+								+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
+					} else {
+					
+						MetadataService metadataService = new MetadataServiceJpa();
+						Map<Long, String> hierarchicalRelationshipTypeMap = metadataService.getHierarchicalRelationshipTypes(terminology, terminologyVersion);
+						Long hierarchicalRelationshipType =
+								hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
+						
+						// check this concept is a leaf node
+						if(contentService.getDescendants(
+								mapEntry.getTargetId(), 
+								mapProject.getDestinationTerminology(), 
+								mapProject.getDestinationTerminologyVersion(),
+								hierarchicalRelationshipType).size() > 0) {
+							
+							messages.add("Target concept (" + terminology + ", " + terminologyVersion + ", " + mapEntry.getTargetId() + ")"
+									+    " is not a leaf node!"
+									+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+									+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
+						};
+					}
+					
+				
+				} catch (Exception e) {
+					Logger.getLogger(MappingServiceJpa.class).info("    Unexpected error while validating map target for "
+								+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+								+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
+				}
+				
+			// if no assigned target, check relation id
+			} else if (mapEntry.getRelationId() != null && !mapEntry.getRelationId().equals("")) {
+					
+				// TODO: Insert check here
+			} else {
+				messages.add("Entry has no target or relation id."
+						+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+						+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
+
+			}
+			
+		}
+	
+		for (String message : messages) {
+			Logger.getLogger(MappingServiceJpa.class).info("    " + message);
+		}
+		
+		return messages;
+	}
+	
+	/**
+	 * Helper function to sort a records entries into entry lists binned by group
+	 * 
+	 * @param mapRecord the map record
+	 * @return a map of group->entry list
+	 */
+	public Map<Integer, List<MapEntry>> getEntryGroups(MapRecord mapRecord) {
+	
+		Map<Integer, List<MapEntry>> entryGroups = new HashMap<Integer, List<MapEntry>>();
+		
+		for (MapEntry entry : mapRecord.getMapEntries()) {
+	
+			// if no existing set for this group, create a blank set
+			List<MapEntry> entryGroup = entryGroups.get(entry.getMapGroup());
+			if (entryGroup == null) {
+				entryGroup = new ArrayList<MapEntry>();
+			} 
+			
+			// add this entry to group and put it in group map
+			entryGroup.add(entry);
+			entryGroups.put(entry.getMapGroup(), entryGroup);
+		}
+	
+		return entryGroups;
+	}
+	
+	/**
+	 * Top-level tool to validate a map record.
+	 * @param mapRecord the map record
+	 * @return a list of error messages
+	 */
+	@Override
+	public List<String> validateMapRecord(MapRecord mapRecord) {
+		
+		List<String> messages = new ArrayList<String>();
+		
+		MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
+		Map<Integer, List<MapEntry>> entryGroups = getEntryGroups(mapRecord);
+		
+		Logger.getLogger(MappingServiceJpa.class).info(mapProject.toString());
+		Logger.getLogger(MappingServiceJpa.class).info(entryGroups .toString());
+		
+		
+		/*
+		 	Fatal Errors
+		 	•   No entries attached to map record
+		 	•   Multiple map groups present for a project without group structure
+		 */
+		
+		// FATAL ERROR: map record has no entries
+		if (mapRecord.getMapEntries().size() == 0) {
+			messages.add("Map record has no entries");
+			return messages;
+		}
+		
+		// FATAL ERROR: multiple map groups present for a project without group structure
+		if (!mapProject.isGroupStructure() && entryGroups.keySet().size() > 1) {
+			messages.add("Project has no group structure but multiple map groups were found.");
+			return messages;
+		}
+		
+		
+		/*
+			Group validation checks
+			•	Verify groups are not duplicated
+			•	Verify entries within a group are not duplicated
+			•	Verify the last entry in a group is a TRUE rule
+			•	Verify higher map groups do not have only NC nodes
+			
+		*/
+	
+		// Validation Check: verify groups are not duplicated
+		messages.addAll(checkMapRecordForDuplicateGroups(mapRecord, mapProject, entryGroups));
+		
+		// Validation Check: verify entries within a group are not duplicated
+		messages.addAll(checkMapRecordForDuplicateEntries(mapRecord, mapProject, entryGroups));
+		
+		// Validation Check:  verify correct positioning of TRUE rules
+		messages.addAll(checkMapRecordTrueRules(mapRecord, mapProject, entryGroups));
+		
+		// Validation Check:  very higher map groups do not have only NC nodes
+		messages.addAll(checkMapRecordNcNodes(mapRecord, mapProject, entryGroups));
+		
+		/*
+	       Entry Validation Checks
+		   •	Verify advice values are valid for the project (this can happen if “allowable map advice” changes without updating map entries)
+		   •	Verify allowable map advice with map categories (TODO Clarify this)
+		   •	Entry must have target code both in the target terminology and valid (e.g. leaf nodes) OR have a relationId corresponding to a valid map category
+		*/	
+		
+		// Validation Check: verify advice values are valid for the project (this can happen if “allowable map advice” changes without updating map entries)
+		messages.addAll(checkMapRecordAdvices(mapRecord, mapProject, entryGroups));
+		
+		// Validation Check: very that map entry targets OR relationIds are valid
+		messages.addAll(checkMapRecordTargets(mapRecord, mapProject, entryGroups));
+		
+		return messages;
+	}
+
 
 }
