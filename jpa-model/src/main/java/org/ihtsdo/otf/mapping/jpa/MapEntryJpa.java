@@ -33,7 +33,6 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Map Entry Jpa object.
  *
@@ -86,14 +85,12 @@ public class MapEntryJpa implements MapEntry {
 	@Column(nullable = false)
 	private int mapPriority;
 
-	// TODO This temporarily set nullable pending addition of relation id to webapp
 	/** The relation id. */
-	@Column(nullable = true, length = 25)
+	@Column(nullable = false, length = 25)
 	private String relationId;
 	
-	// TODO Once loader modified, make this nullable = false
 	/** The relation name. */
-	@Column(nullable = true, length = 500)
+	@Column(nullable = false, length = 500)
 	private String relationName;
 	
 	/** The mapBlock. */

@@ -2,9 +2,7 @@ package org.ihtsdo.otf.mapping.helpers;
 
 
 /**
- * The interface for the paging/filtering/sorting parameter oject
- * @author Patrick
- *
+ * Represents a parameter container for paging, filtering and sorting.
  */
 public interface PfsParameter {
 

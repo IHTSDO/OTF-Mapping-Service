@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,7 +19,6 @@ import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
-// TODO: Auto-generated Javadoc
 /**
  * The class for MetadataServiceJpa.
  * 
@@ -415,7 +415,21 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-	/*
+    /* (non-Javadoc)
+     * @see org.ihtsdo.otf.mapping.services.MetadataService#getTreeRoots(java.lang.String, java.lang.String)
+     */
+    @Override
+    public List<String> getTreeRoots(String terminology, String version)
+        throws Exception {
+      if (helperMap.containsKey(terminology)) {
+        return helperMap.get(terminology).getTreeRoots(terminology,version);
+      } else {
+          // return an empty map
+          return new ArrayList<String>();
+      }
+    }
+    
+    /*
 	 * (non-Javadoc)
 	 * 
 	 * @see
@@ -529,11 +543,6 @@ public class MetadataServiceJpa implements MetadataService {
 
 	}
 
-	@Override
-	public List<String> getTreeRoots(String terminology, String version)
-		throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
+
 
 }
