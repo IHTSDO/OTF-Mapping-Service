@@ -133,6 +133,25 @@ public class MapRecordJpa implements MapRecord {
 	}
 
 
+	public MapRecordJpa(MapRecord cMapRecord) {
+		this.id = cMapRecord.getId();
+		this.owner = cMapRecord.getOwner();
+		this.timestamp = cMapRecord.getTimestamp();
+		this.mapProjectId = cMapRecord.getMapProjectId();
+		this.conceptId = cMapRecord.getConceptId();
+		this.conceptName = cMapRecord.getConceptName();
+		this.countDescendantConcepts = cMapRecord.getCountDescendantConcepts();
+		this.mapEntries = cMapRecord.getMapEntries();
+		this.mapNotes = cMapRecord.getMapNotes();
+		this.mapPrinciples = cMapRecord.getMapPrinciples();
+		this.originIds = cMapRecord.getOriginIds();
+		this.flagForMapLeadReview = cMapRecord.isFlagForMapLeadReview();
+		this.flagForEditorialReview = cMapRecord.isFlagForEditorialReview();
+		this.flagForConsensusReview = cMapRecord.isFlagForConsensusReview();
+		this.workflowStatus = cMapRecord.getWorkflowStatus();
+	}
+
+
 	/**
 	 * Return the id.
 	 *

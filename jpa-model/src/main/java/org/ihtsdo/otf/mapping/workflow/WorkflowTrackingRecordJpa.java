@@ -66,18 +66,15 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	private String sortKey;
 	
 	/**  The map records. */
-	@OneToMany(/**mappedBy = "workflowTrackingRecord",*/ cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapRecordJpa.class)
+	@OneToMany(targetEntity = MapRecordJpa.class)
 	@IndexedEmbedded(targetElement = MapRecordJpa.class)
 	private Set<MapRecord> mapRecords = new HashSet<MapRecord>();
 
 	
-	/**  The assigned specialists. */
+	/**  The assigned users. */
 	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
-	//@JoinTable(name="map_projects_map_leads",
-	//   joinColumns=@JoinColumn(name="map_projects_id"),
-	//   inverseJoinColumns=@JoinColumn(name="map_users_id"))
 	@IndexedEmbedded(targetElement=MapUserJpa.class)
-	private Set<MapUser> assignedSpecialists = new HashSet<MapUser>();
+	private Set<MapUser> assignedUsers = new HashSet<MapUser>();
 	
 	/**
 	 * {@inheritDoc}
@@ -194,35 +191,35 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#getAssignedSpecialists()
+	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#getAssignedUsers()
 	 */
 	@Override
-	public Set<MapUser> getAssignedSpecialists() {
-		return assignedSpecialists;
+	public Set<MapUser> getAssignedUsers() {
+		return assignedUsers;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#setAssignedSpecialists(java.util.Set)
+	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#setAssignedUsers(java.util.Set)
 	 */
 	@Override
-	public void setAssignedSpecialists(Set<MapUser> assignedSpecialists) {
-		this.assignedSpecialists = assignedSpecialists;
+	public void setAssignedUsers(Set<MapUser> assignedUsers) {
+		this.assignedUsers = assignedUsers;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#addAssignedSpecialist(org.ihtsdo.otf.mapping.model.MapUser)
 	 */
 	@Override
-	public void addAssignedSpecialist(MapUser assignedSpecialist) {
-		this.assignedSpecialists.add(assignedSpecialist);
+	public void addAssignedUser(MapUser assignedUser) {
+		this.assignedUsers.add(assignedUser);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#removeAssignedSpecialist(org.ihtsdo.otf.mapping.model.MapUser)
 	 */
 	@Override
-	public void removeAssignedSpecialist(MapUser assignedSpecialist) {
-		this.assignedSpecialists.remove(assignedSpecialist);
+	public void removeAssignedUser(MapUser assignedUser) {
+		this.assignedUsers.remove(assignedUser);
 	}
 
 	/* (non-Javadoc)
@@ -265,8 +262,8 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 				+ ", terminologyVersion=" + terminologyVersion
 				+ ", defaultPreferredName=" + defaultPreferredName
 				+ ", hasDiscrepancy=" + hasDiscrepancy + ", sortKey=" + sortKey
-				+ ", mapRecords=" + mapRecords + ", assignedSpecialists="
-				+ assignedSpecialists + "]";
+				+ ", mapRecords=" + mapRecords + ", assignedUsers="
+				+ assignedUsers + "]";
 	}
 
 	@Override
@@ -276,7 +273,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 		result =
 				prime
 						* result
-						+ ((assignedSpecialists == null) ? 0 : assignedSpecialists
+						+ ((assignedUsers == null) ? 0 : assignedUsers
 								.hashCode());
 		result =
 				prime
@@ -309,10 +306,10 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 		if (getClass() != obj.getClass())
 			return false;
 		WorkflowTrackingRecordJpa other = (WorkflowTrackingRecordJpa) obj;
-		if (assignedSpecialists == null) {
-			if (other.assignedSpecialists != null)
+		if (assignedUsers == null) {
+			if (other.assignedUsers != null)
 				return false;
-		} else if (!assignedSpecialists.equals(other.assignedSpecialists))
+		} else if (!assignedUsers.equals(other.assignedUsers))
 			return false;
 		if (defaultPreferredName == null) {
 			if (other.defaultPreferredName != null)

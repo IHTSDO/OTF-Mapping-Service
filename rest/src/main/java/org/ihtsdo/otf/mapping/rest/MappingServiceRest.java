@@ -16,7 +16,6 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
-import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleList;
@@ -46,8 +45,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MappingServiceRest {
 
-	/** The mapping service jpa. */
-	private MappingServiceJpa mappingService;
+
 	
 	/**
 	 * Instantiates an empty {@link MappingServiceRest}.
