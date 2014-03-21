@@ -373,7 +373,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 		String version) throws NumberFormatException, Exception {
 		Map<Long, String> map = new HashMap<Long, String>();
 
-		// find all active descendants of 106237007
+		// find all active descendants 
 		ContentService contentService = new ContentServiceJpa();
 		Concept isaRel =
 				contentService.getConcept(isaRelationshipType + "", terminology,

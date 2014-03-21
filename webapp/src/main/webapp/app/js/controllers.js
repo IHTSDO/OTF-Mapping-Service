@@ -724,8 +724,11 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 			console.debug($scope.record);
 			console.debug($scope.record.mapEntry);
 
+			
+			console.debug("Validating the map entry");
+			// validate the record
 			$http({
-				  url: root_mapping + "record/update",
+				  url: root_mapping + "record/validate",
 				  dataType: "json",
 				  data: $scope.record,
 				  method: "POST",
@@ -733,12 +736,43 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 					  "Content-Type": "application/json"
 				  }
 			  }).success(function(data) {
-				 $scope.record = data;
-				 $scope.recordSuccess = "Record saved.";
-				 $scope.recordError = "";
+				  console.debug("validation results:");
+				  console.debug(data);
+				  $scope.recordValidationMessages = data;
 			  }).error(function(data) {
-				 $scope.recordSuccess = "";
-				 $scope.recordError = "Error saving record.";
+				  $scope.recordValidationMessages = "Failed to validate";
+				  $scope.recordError = "Error validating record.";
+			  }).then(function(data) {
+				
+				  // if no error messages were returned, save the record
+				  if ($scope.recordValidationMessages.length == 0)  {
+					  
+					  $http({
+						  url: root_mapping + "record/update",
+						  dataType: "json",
+						  data: $scope.record,
+						  method: "POST",
+						  headers: {
+							  "Content-Type": "application/json"
+						  }
+					  }).success(function(data) {
+						 $scope.record = data;
+						 $scope.recordSuccess = "Record saved.";
+						 $scope.recordError = "";
+					  }).error(function(data) {
+						 $scope.recordSuccess = "";
+						 $scope.recordError = "Error saving record.";
+					  });
+				  
+				  // otherwise, display the errors
+				  } else {
+					  $scope.recordError = "Could not save map record due to errors:";
+					  
+					  for (var i = 0; i < $scope.recordValidationMessages.length; i++) {
+						  $scope.recordError = $scope.recordValidationMessages[i] + "\n\n";
+					  }
+				  }
+				  
 			  });
 		};
 		
