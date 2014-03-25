@@ -21,7 +21,7 @@ goto trailer)
 if DEFINED OTF_MAPPING_HOME (echo OTF_MAPPING_HOME  = %OTF_MAPPING_HOME%) else (echo OTF_MAPPING_HOME must be defined
 goto trailer)
 set MAVEN_OPTS = -Xmx4000M
-set error = 0
+set error=0
 
 echo     Run updatedb with hibernate.hbm2ddl.auto = create ...%date% %time%
 cd %OTF_MAPPING_HOME%/admin/updatedb
