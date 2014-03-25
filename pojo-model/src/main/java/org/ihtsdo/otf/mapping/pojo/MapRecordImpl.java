@@ -11,7 +11,6 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapRecord}.
  * Includes hibernate tags for persistence
@@ -28,6 +27,10 @@ public class MapRecordImpl implements MapRecord {
 	
 	/** The timestamp. */
 	private Long timestamp;
+	
+	private MapUser lastModifiedBy;
+	
+	private Long lastModified;
 	
 	/** The map project id. */
 	private Long mapProjectId;
@@ -118,6 +121,30 @@ public class MapRecordImpl implements MapRecord {
 	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getLastModifiedBy()
+	 */
+	@Override
+	public MapUser getLastModifiedBy() {
+		return lastModifiedBy;
+	}
+
+	@Override
+	public void setLastModifiedBy(MapUser mapUser) {
+		this.lastModifiedBy = mapUser;
+	}
+
+	@Override
+	public Long getLastModified() {
+		return this.lastModified;
+	}
+
+	@Override
+	public void setLastModified(Long lastModified) {
+		this.lastModified = lastModified;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapProjectId()
@@ -443,6 +470,7 @@ public class MapRecordImpl implements MapRecord {
 		flagForConsensusReview = flag;
 	}
 
+	
 	
 
 
