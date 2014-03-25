@@ -2378,6 +2378,8 @@ public class MappingServiceJpa implements MappingService {
           if (++ct % 500 == 0) {
             Logger.getLogger(MappingServiceJpa.class).info(
                 "    " + ct + " records created");
+            commit();
+            beginTransaction();
           }
         }
 
