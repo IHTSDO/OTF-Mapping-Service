@@ -83,17 +83,17 @@ public class MapRecordJpa implements MapRecord {
 	/** The map records. */
 	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapEntryJpa.class)
 	@IndexedEmbedded(targetElement = MapEntryJpa.class)
-	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
+	private List<MapEntry> mapEntries = new ArrayList<>();
 
 	/** The map notes. */
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapNoteJpa.class)
 	@IndexedEmbedded(targetElement = MapNoteJpa.class)
-	private Set<MapNote> mapNotes = new HashSet<MapNote>();
+	private Set<MapNote> mapNotes = new HashSet<>();
 
 	/** The map principles. */
 	@ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.EAGER)
 	@IndexedEmbedded(targetElement = MapPrincipleJpa.class)
-	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
+	private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
 	/** Indicates whether the record is flagged for map lead review. */
 	@Column(unique = false, nullable = false)
@@ -148,7 +148,8 @@ public class MapRecordJpa implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getOwner()
 	 */
-	@XmlElement(type = MapUserJpa.class, name = "owner")
+	@Override
+  @XmlElement(type = MapUserJpa.class, name = "owner")
 	public MapUser getOwner() {
 		return owner;
 	}
@@ -157,15 +158,17 @@ public class MapRecordJpa implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setOwner(org.ihtsdo.otf.mapping.model.MapUser)
 	 */
-	public void setOwner(MapUser owner) {
-		this.owner = (MapUserJpa) owner;
+	@Override
+  public void setOwner(MapUser owner) {
+		this.owner = owner;
 	}
 
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getTimestamp()
 	 */
-	public Long getTimestamp() {
+	@Override
+  public Long getTimestamp() {
 		return timestamp;
 	}
 
@@ -173,7 +176,8 @@ public class MapRecordJpa implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setTimestamp(java.lang.Long)
 	 */
-	public void setTimestamp(Long timestamp) {
+	@Override
+  public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
 

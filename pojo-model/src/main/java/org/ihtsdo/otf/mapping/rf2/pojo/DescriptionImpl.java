@@ -31,7 +31,7 @@ public class DescriptionImpl extends AbstractComponent implements Description {
 	private String terminology;
 	
 	/** The language RefSet members */
-	private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<LanguageRefSetMember>();
+	private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<>();
 
 	/**
 	 * Instantiates an empty {@link Description}.

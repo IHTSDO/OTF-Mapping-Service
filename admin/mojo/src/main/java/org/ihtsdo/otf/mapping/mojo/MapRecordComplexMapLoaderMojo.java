@@ -86,7 +86,7 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 				getLog().info(
 						"  Generating records for " + mapProject.getName() + ", "
 								+ mapProject.getId());
-				mappingService.createMapRecordsForMapProject(mapProject);
+				mappingService.createMapRecordsForMapProject(mapProject.getId());
 			}
 
 			getLog().info("done ...");

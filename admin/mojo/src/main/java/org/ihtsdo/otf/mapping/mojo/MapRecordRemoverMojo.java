@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -101,8 +100,8 @@ public class MapRecordRemoverMojo extends AbstractMojo {
       }
 
       if (mapProjects.isEmpty()) {
-        throw new MojoFailureException(
-            "Failed to find project(s) for specified parameters.");
+        getLog().info("NO PROJECTS FOUND " + refSetId);
+        return;
       }
 
       // Remove map record and entry notes
@@ -110,7 +109,7 @@ public class MapRecordRemoverMojo extends AbstractMojo {
       for (MapProject mapProject : mapProjects) {
         getLog().debug("    Remove map records for " + mapProject.getName());
         for (MapRecord record : mappingService
-            .getMapRecordsForMapProjectId(mapProject.getId())) {
+            .getMapRecordsForMapProject(mapProject.getId())) {
           getLog().info(
               "    Removing map record " + record.getId() + " from "
                   + mapProject.getName());

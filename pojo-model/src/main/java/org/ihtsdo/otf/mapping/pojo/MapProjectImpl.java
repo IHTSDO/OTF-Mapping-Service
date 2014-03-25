@@ -35,19 +35,19 @@ public class MapProjectImpl implements MapProject {
 	private boolean published = false;
 
 	/** The map leads working on this MapProject. */
-	private Set<MapUser> mapLeads = new HashSet<MapUser>();
+	private Set<MapUser> mapLeads = new HashSet<>();
 
 	/** The map specialists working on this MapProject. */
-	private Set<MapUser> mapSpecialists = new HashSet<MapUser>();
+	private Set<MapUser> mapSpecialists = new HashSet<>();
 
 	/** The allowable map advices for this MapProject. */
-	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
+	private Set<MapAdvice> mapAdvices = new HashSet<>();
 	
 	/**  The allowable map principles for this MapProject. */
-	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
+	private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
 	/** The allowable map relations for this MapProject. */
-	private Set<MapRelation> mapRelations = new HashSet<MapRelation>();
+	private Set<MapRelation> mapRelations = new HashSet<>();
 	
 	/** The ref set id. */
 	private String refSetId;
@@ -80,13 +80,13 @@ public class MapProjectImpl implements MapProject {
 	private String mapRefsetPattern;
 	
 	/**  The set of preset age ranges for rule generation. */
-	private Set<MapAgeRange> presetAgeRanges = new HashSet<MapAgeRange>();
+	private Set<MapAgeRange> presetAgeRanges = new HashSet<>();
 	
     /**  The scope concepts. */
-    private Set<String> scopeConcepts = new HashSet<String>();
+    private Set<String> scopeConcepts = new HashSet<>();
 	
 	/**  The scope excluded concepts. */
-	private Set<String> scopeExcludedConcepts = new HashSet<String>();
+	private Set<String> scopeExcludedConcepts = new HashSet<>();
 	
 	/**  The scope descendants flag. */
 	private boolean scopeDescendantsFlag = false;

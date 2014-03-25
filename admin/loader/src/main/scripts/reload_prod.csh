@@ -12,57 +12,38 @@ echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
 
-echo "    Run updatedb with hibernate.hbm2ddl.auto = update ...`/bin/date`"
+echo "    Run updatedb with hibernate.hbm2ddl.auto = create ...`/bin/date`"
 cd $OTF_MAPPING_HOME/admin/updatedb
-mvn -Drun.config=prod -Dhibernate.hbm2ddl.auto=create install >&! mvn.log
+mvn -Drun.config=prod -Dhibernate.hbm2ddl.auto=update install >&! mvn.log
 if ($status != 0) then
     echo "ERROR running updatedb"
     cat mvn.log
     exit 1
 endif
 
-echo "    Clear indexes ...`/bin/date`"
-cd $OTF_MAPPING_HOME/admin/lucene
-mvn -Drun.config=prod install >&! mvn.log
+echo "    Remove map notes ...`/bin/date`"
+cd $OTF_MAPPING_HOME/admin/remover
+mvn -PMapNotes -Drefset.id=447562003,447563008,450993002 -Drun.config=prod install >&! mvn.log
 if ($status != 0) then
-    echo "ERROR running lucene"
+    echo "ERROR removing map notes"
     cat mvn.log
     exit 1
 endif
 
-echo "    Load SNOMEDCT ...`/bin/date`"
-cd $OTF_MAPPING_HOME/admin/loader
-mvn -PSNOMEDCT -Drun.config=prod install >&! mvn.log
+echo "    Remove mapping records ...`/bin/date`"
+cd $OTF_MAPPING_HOME/admin/remover
+mvn -PMapRecords -Drefset.id=447562003,447563008,450993002 -Drun.config=prod install >&! mvn.log
 if ($status != 0) then
-    echo "ERROR loading SNOMEDCT"
+    echo "ERROR removing map records"
     cat mvn.log
     exit 1
 endif
 
-
-echo "    Load ICPC ...`/bin/date`"
-cd $OTF_MAPPING_HOME/admin/loader
-mvn -PICPC -Drun.config=prod install >&! mvn.log
+echo "    Remove map project data ...`/bin/date`"
+cd $OTF_MAPPING_HOME/admin/remover
+mvn -PMapProjectData -Drun.config=prod install >&! mvn.log
 if ($status != 0) then
-    echo "ERROR loading ICPC"
-    cat mvn.log
-    exit 1
-endif
-
-echo "    Load ICD10 ...`/bin/date`"
-cd $OTF_MAPPING_HOME/admin/loader
-mvn -PICD10 -Drun.config=prod install >&! mvn.log
-if ($status != 0) then
-    echo "ERROR loading ICD10"
-    cat mvn.log
-    exit 1
-endif
-
-echo "    Load ICD9CM ...`/bin/date`"
-cd $OTF_MAPPING_HOME/admin/loader
-mvn -PICD9CM -Drun.config=prod install >&! mvn.log
-if ($status != 0) then
-    echo "ERROR loading ICD9CM"
+    echo "ERROR removing map record data"
     cat mvn.log
     exit 1
 endif

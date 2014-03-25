@@ -20,10 +20,20 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.ValidationService;
 
+/**
+ * Reference implementation of the validation service
+ */
+@SuppressWarnings("static-method")
 public class ValidationServiceJpa implements ValidationService {
 
+	/**
+	 * Instantiates an empty {@link ValidationServiceJpa}.
+	 */
 	public ValidationServiceJpa() { }
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.ValidationService#validateMapRecord(org.ihtsdo.otf.mapping.model.MapRecord)
+	 */
 	@Override
 	public ValidationResult validateMapRecord(MapRecord mapRecord) throws Exception {
 		
@@ -87,18 +97,18 @@ public class ValidationServiceJpa implements ValidationService {
 	
 	
 	/**
-	* Function to check a map record for duplicate entries within map groups
-	* 
-	* @param mapRecord the map record
-	* @param mapProject the map project for this record
-	* @param entryGroups the binned entry lists by group
-	* @return a list of errors detected
-	*/
-	public Set<String> checkMapRecordForDuplicateEntries(MapRecord mapRecord, MapProject mapProject, Map<Integer, List<MapEntry>> entryGroups) {
+	 * Function to check a map record for duplicate entries within map groups.
+	 *
+	 * @param mapRecord the map record
+	 * @param mapProject the map project for this record
+	 * @param entryGroups the binned entry lists by group
+	 * @return a list of errors detected
+	 */
+  public Set<String> checkMapRecordForDuplicateEntries(MapRecord mapRecord, MapProject mapProject, Map<Integer, List<MapEntry>> entryGroups) {
 	
 		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for duplicate entries within map groups...");
 		
-		Set<String> messages = new HashSet<String>();
+		Set<String> messages = new HashSet<>();
 		List<MapEntry> entries = mapRecord.getMapEntries();
 		
 		// cycle over all entries but last
@@ -128,18 +138,18 @@ public class ValidationServiceJpa implements ValidationService {
 	}
 	
 	/**
-	* Function to check proper use of TRUE rules
-	* 
-	* @param mapRecord the map record
-	* @param mapProject the map project for this record
-	* @param entryGroups the binned entry lists by group
-	* @return a list of errors detected
-	*/
+	 * Function to check proper use of TRUE rules.
+	 *
+	 * @param mapRecord the map record
+	 * @param mapProject the map project for this record
+	 * @param entryGroups the binned entry lists by group
+	 * @return a list of errors detected
+	 */
 	public Set<String> checkMapRecordTrueRules(MapRecord mapRecord, MapProject mapProject, Map<Integer, List<MapEntry>> entryGroups) {
 	
 	Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for proper use of TRUE rules...");
 	
-	Set<String> messages = new HashSet<String>();
+	Set<String> messages = new HashSet<>();
 	
 	for (Integer key : entryGroups.keySet()) {
 	
@@ -169,18 +179,18 @@ public class ValidationServiceJpa implements ValidationService {
 	}
 	
 	/**
-	* Function to check higher level groups do not have only NC target codes
-	* 
-	* @param mapRecord the map record
-	* @param mapProject the map project for this record
-	* @param entryGroups the binned entry lists by group
-	* @return a list of errors detected
-	*/
+	 * Function to check higher level groups do not have only NC target codes.
+	 *
+	 * @param mapRecord the map record
+	 * @param mapProject the map project for this record
+	 * @param entryGroups the binned entry lists by group
+	 * @return a list of errors detected
+	 */
 	public Set<String> checkMapRecordNcNodes(MapRecord mapRecord, MapProject mapProject, Map<Integer, List<MapEntry>> entryGroups) {
 	
 		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for high-level groups with only NC target codes...");
 		
-		Set<String> messages = new HashSet<String>();
+		Set<String> messages = new HashSet<>();
 		
 		// if only one group, ignore
 		if (entryGroups.keySet().size() == 1) return messages;
@@ -211,18 +221,18 @@ public class ValidationServiceJpa implements ValidationService {
 	}
 	
 	/**
-	* Function to check that all advices attached are allowable by the project
-	* 
-	* @param mapRecord the map record
-	* @param mapProject the map project for this record
-	* @param entryGroups the binned entry lists by group
-	* @return a list of errors detected
-	*/
+	 * Function to check that all advices attached are allowable by the project.
+	 *
+	 * @param mapRecord the map record
+	 * @param mapProject the map project for this record
+	 * @param entryGroups the binned entry lists by group
+	 * @return a list of errors detected
+	 */
 	public Set<String> checkMapRecordAdvices(MapRecord mapRecord, MapProject mapProject, Map<Integer, List<MapEntry>> entryGroups) {
 	
 		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for valid map advices...");
 		
-		Set<String> messages = new HashSet<String>();
+		Set<String> messages = new HashSet<>();
 		
 		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 		
@@ -260,7 +270,7 @@ public class ValidationServiceJpa implements ValidationService {
 	
 		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for valid targets...");
 		
-		Set<String> messages = new HashSet<String>();
+		Set<String> messages = new HashSet<>();
 		
 		ContentService contentService = new ContentServiceJpa();
 		
@@ -331,21 +341,21 @@ public class ValidationServiceJpa implements ValidationService {
 	}
 	
 	/**
-	* Helper function to sort a records entries into entry lists binned by group
-	* 
-	* @param mapRecord the map record
-	* @return a map of group->entry list
-	*/
+	 * Helper function to sort a records entries into entry lists binned by group.
+	 *
+	 * @param mapRecord the map record
+	 * @return a map of group->entry list
+	 */
 	public Map<Integer, List<MapEntry>> getEntryGroups(MapRecord mapRecord) {
 	
-		Map<Integer, List<MapEntry>> entryGroups = new HashMap<Integer, List<MapEntry>>();
+		Map<Integer, List<MapEntry>> entryGroups = new HashMap<>();
 		
 			for (MapEntry entry : mapRecord.getMapEntries()) {
 			
 			// if no existing set for this group, create a blank set
 			List<MapEntry> entryGroup = entryGroups.get(entry.getMapGroup());
 			if (entryGroup == null) {
-				entryGroup = new ArrayList<MapEntry>();
+				entryGroup = new ArrayList<>();
 			} 
 			
 			// add this entry to group and put it in group map

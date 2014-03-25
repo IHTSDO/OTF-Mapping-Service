@@ -98,8 +98,8 @@ public class MapNoteRemoverMojo extends AbstractMojo {
 			}
 
 			if (mapProjects.isEmpty()) {
-				throw new MojoFailureException(
-						"Failed to find project(s) for specified parameters.");
+			    getLog().info("NO PROJECTS FOUND " + refSetId);
+			    return;
 			}
 
 			// Remove map record and entry notes
@@ -108,7 +108,7 @@ public class MapNoteRemoverMojo extends AbstractMojo {
 			int ct = 0;
 			for (MapProject project : mapProjects) {
 				for (MapRecord record : mappingService
-						.getMapRecordsForMapProjectId(project.getId())) {
+						.getMapRecordsForMapProject(project.getId())) {
 					for (MapEntry entry : record.getMapEntries()) {
 						if (entry.getMapNotes().size() > 0) {
 							getLog().debug(

@@ -70,7 +70,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getModules(String terminology, String version)
     throws Exception {
-    Map<Long, String> map = new HashMap<Long, String>();
+    Map<Long, String> map = new HashMap<>();
 
     ContentService contentService = new ContentServiceJpa();
     String rootId = "";
@@ -109,7 +109,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getAttributeValueRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
-    return new HashMap<Long, String>();
+    return new HashMap<>();
   }
 
   /*
@@ -122,7 +122,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getComplexMapRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
-    return new HashMap<Long, String>();
+    return new HashMap<>();
 
   }
 
@@ -136,7 +136,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getLanguageRefSets(String terminology, String version)
     throws NumberFormatException, Exception {
-    return new HashMap<Long, String>();
+    return new HashMap<>();
   }
 
   /*
@@ -150,7 +150,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   public Map<Long, String> getSimpleMapRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
 
-    return new HashMap<Long, String>();
+    return new HashMap<>();
   }
 
   /*
@@ -163,7 +163,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getSimpleRefSets(String terminology, String version)
     throws NumberFormatException, Exception {
-    return new HashMap<Long, String>();
+    return new HashMap<>();
   }
 
   /*
@@ -176,7 +176,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getMapRelations(String terminology, String version)
     throws NumberFormatException, Exception {
-    return new HashMap<Long, String>();
+    return new HashMap<>();
   }
 
   /*
@@ -189,7 +189,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getDefinitionStatuses(String terminology,
     String version) throws NumberFormatException, Exception {
-    Map<Long, String> map = new HashMap<Long, String>();
+    Map<Long, String> map = new HashMap<>();
 
     ContentService contentService = new ContentServiceJpa();
     String rootId = "";
@@ -228,7 +228,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getDescriptionTypes(String terminology,
     String version) throws NumberFormatException, Exception {
-    Map<Long, String> map = new HashMap<Long, String>();
+    Map<Long, String> map = new HashMap<>();
 
     ContentService contentService = new ContentServiceJpa();
     String rootId = "";
@@ -267,7 +267,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getCaseSignificances(String terminology,
     String version) throws NumberFormatException, Exception {
-    Map<Long, String> map = new HashMap<Long, String>();
+    Map<Long, String> map = new HashMap<>();
 
     ContentService contentService = new ContentServiceJpa();
     String rootId = "";
@@ -305,7 +305,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getRelationshipTypes(String terminology,
     String version) throws NumberFormatException, Exception {
-    Map<Long, String> map = new HashMap<Long, String>();
+    Map<Long, String> map = new HashMap<>();
 
     // find all active descendants of 106237007
     ContentService contentService = new ContentServiceJpa();
@@ -343,7 +343,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getHierarchicalRelationshipTypes(String terminology,
     String version) throws NumberFormatException, Exception {
-    Map<Long, String> map = new HashMap<Long, String>();
+    Map<Long, String> map = new HashMap<>();
 
     // find all active descendants of 106237007
     ContentService contentService = new ContentServiceJpa();
@@ -365,7 +365,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getRelationshipCharacteristicTypes(
     String terminology, String version) throws NumberFormatException, Exception {
-    return new HashMap<Long, String>();
+    return new HashMap<>();
   }
 
   /*
@@ -378,7 +378,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getRelationshipModifiers(String terminology,
     String version) throws NumberFormatException, Exception {
-    Map<Long, String> map = new HashMap<Long, String>();
+    Map<Long, String> map = new HashMap<>();
 
     ContentService contentService = new ContentServiceJpa();
     String rootId = "";
@@ -438,7 +438,7 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public List<String> getTreeRoots(String terminology, String version)
     throws Exception {
-    List<String> list = new ArrayList<String>();
+    List<String> list = new ArrayList<>();
     return list;
   }
 
