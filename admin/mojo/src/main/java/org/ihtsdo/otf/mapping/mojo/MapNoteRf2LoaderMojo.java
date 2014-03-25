@@ -139,7 +139,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 				mapNote.setNote(note);
 
 				List<MapRecord> mapRecords =
-						mappingService.getMapRecordsForTerminologyId(fields[5]);
+						mappingService.getMapRecordsForConcept(fields[5]);
 
 				// Verify matching map records were found, otherwise fail
 				if (mapRecords != null && mapRecords.size() > 0) {

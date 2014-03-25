@@ -119,7 +119,7 @@ public class MapProjectJpa implements MapProject {
 	
 	/** The preset age ranges */
 	@ManyToMany(targetEntity=MapAgeRangeJpa.class, fetch=FetchType.EAGER)
-	private Set<MapAgeRange> presetAgeRanges = new HashSet<MapAgeRange>();
+	private Set<MapAgeRange> presetAgeRanges = new HashSet<>();
 
 	/** The map leads. */
 	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
@@ -127,7 +127,7 @@ public class MapProjectJpa implements MapProject {
 	   joinColumns=@JoinColumn(name="map_projects_id"),
 	   inverseJoinColumns=@JoinColumn(name="map_users_id"))
 	@IndexedEmbedded(targetElement=MapUserJpa.class)
-	private Set<MapUser> mapLeads = new HashSet<MapUser>();
+	private Set<MapUser> mapLeads = new HashSet<>();
 	
 	/** The map specialists. */
 	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
@@ -135,34 +135,34 @@ public class MapProjectJpa implements MapProject {
 			   joinColumns=@JoinColumn(name="map_projects_id"),
 			   inverseJoinColumns=@JoinColumn(name="map_users_id"))
 	@IndexedEmbedded(targetElement=MapUserJpa.class)
-	private Set<MapUser> mapSpecialists = new HashSet<MapUser>();
+	private Set<MapUser> mapSpecialists = new HashSet<>();
 	
 	/** The allowable map principles for this MapProject. */
 	@ManyToMany(targetEntity=MapPrincipleJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
-	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
+	private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
 	/** The allowable map advices for this MapProject. */
 	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
-	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
+	private Set<MapAdvice> mapAdvices = new HashSet<>();
 	
 	/** The allowable map relations for this MapProject. */
 	@ManyToMany(targetEntity=MapRelationJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapRelationJpa.class)
-	private Set<MapRelation> mapRelations = new HashSet<MapRelation>();
+	private Set<MapRelation> mapRelations = new HashSet<>();
 	
    /**  The concepts in scope for this project. */
 	@ElementCollection(fetch=FetchType.EAGER)
 	@CollectionTable(name="map_projects_scope_concepts", joinColumns=@JoinColumn(name="id"))
 	@Column(nullable = true)
-	private Set<String> scopeConcepts = new HashSet<String>();
+	private Set<String> scopeConcepts = new HashSet<>();
 	
 	/**  The concepts excluded from scope of this project. */
 	@ElementCollection(fetch=FetchType.EAGER)
 	@CollectionTable(name="map_projects_scope_excluded_concepts", joinColumns=@JoinColumn(name="id"))
 	@Column(nullable = true)
-	private Set<String> scopeExcludedConcepts = new HashSet<String>();
+	private Set<String> scopeExcludedConcepts = new HashSet<>();
 	
 	/**  Indicates if descendants of the scope are included in the scope. */
 	@Column(unique = false, nullable = false)

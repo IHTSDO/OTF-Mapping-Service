@@ -73,7 +73,7 @@ public class ContentServiceJpa implements ContentService {
     manager = factory.createEntityManager();
 
     if (fieldNames == null) {
-      fieldNames = new HashSet<String>();
+      fieldNames = new HashSet<>();
       FullTextEntityManager fullTextEntityManager =
           org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
       IndexReaderAccessor indexReaderAccessor =
@@ -291,8 +291,8 @@ public class ContentServiceJpa implements ContentService {
   public Set<Concept> getDescendants(String terminologyId, String terminology,
     String terminologyVersion, Long typeId) {
 
-    Queue<Concept> conceptQueue = new LinkedList<Concept>();
-    Set<Concept> conceptSet = new HashSet<Concept>();
+    Queue<Concept> conceptQueue = new LinkedList<>();
+    Set<Concept> conceptSet = new HashSet<>();
 
     // get the concept and add it as first element of concept list
     Concept rootConcept =
@@ -424,8 +424,8 @@ public class ContentServiceJpa implements ContentService {
   public SearchResultList findDescendantsFromTreePostions(String conceptId,
     String terminology, String terminologyVersion) {
 
-    Map<String, String> conceptIdToDefaultPns = new HashMap<String, String>();
-    Map<String, Long> conceptIdToHibernateIds = new HashMap<String, Long>();
+    Map<String, String> conceptIdToDefaultPns = new HashMap<>();
+    Map<String, Long> conceptIdToHibernateIds = new HashMap<>();
     SearchResultList searchResultList = new SearchResultListJpa();
     javax.persistence.Query query =
         manager
@@ -510,9 +510,9 @@ public class ContentServiceJpa implements ContentService {
     tx.begin();
 
     Queue<Map<Concept, TreePosition>> conceptQueue =
-        new LinkedList<Map<Concept, TreePosition>>();
+        new LinkedList<>();
     Set<Map<Concept, TreePosition>> conceptSet =
-        new HashSet<Map<Concept, TreePosition>>();
+        new HashSet<>();
     int tpCounter = 0;
 
     // get the concept and add it as first element of concept list
@@ -520,7 +520,7 @@ public class ContentServiceJpa implements ContentService {
 
     // if non-null result, seed the queue with this concept
     if (rootConcept != null) {
-      Map<Concept, TreePosition> hm = new HashMap<Concept, TreePosition>();
+      Map<Concept, TreePosition> hm = new HashMap<>();
       TreePosition rootTp = new TreePositionJpa("");
       rootTp.setTerminology(terminology);
       rootTp.setTerminologyVersion(terminologyVersion);
@@ -598,7 +598,7 @@ public class ContentServiceJpa implements ContentService {
             }
             if (!setContainsChild) {
               Map<Concept, TreePosition> lhm =
-                  new HashMap<Concept, TreePosition>();
+                  new HashMap<>();
               lhm.put(c_rel, tp);
               conceptSet.add(lhm);
               conceptQueue.add(lhm);

@@ -18,7 +18,7 @@ public class KeyValuePairList {
 
 
 	/** The entries. */
-	private List<KeyValuePair> keyValuePairList = new ArrayList<KeyValuePair>();
+	private List<KeyValuePair> keyValuePairList = new ArrayList<>();
 	
 	/** The name. */
 	private String name = "";

@@ -32,6 +32,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
 	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
+@SuppressWarnings("static-method")
 public class ContentServiceRest {
 
 	/** The terminology versions. */
@@ -44,19 +45,18 @@ public class ContentServiceRest {
 	public ContentServiceRest() {
 
 		// TODO: wire this to metadata service (getTerminologyLatestVesrions)
-		terminologyLatestVersions = new HashMap<String, String>();
+		terminologyLatestVersions = new HashMap<>();
 		terminologyLatestVersions.put("SNOMEDCT", "20140131");
 	}
 
 	/**
 	 * Returns the concept for id, terminology, and terminology version
-	 * 
-	 * @param id the id
+	 * @param terminologyId the terminology id
 	 * @param terminology the concept terminology
-	 * @param version the concept terminologyVersion
+	 * @param terminologyVersion the terminology version
 	 * @return the concept
 	 */
-	@GET
+    @GET
 	@Path("/concept/{terminology}/{version}/id/{terminologyId}")
 	@ApiOperation(value = "Find concept by id, version, and terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
 	@Produces({
@@ -89,9 +89,9 @@ public class ContentServiceRest {
 	/**
 	 * Returns the inverse relationships for a concept (currently not marked for serialization in Concept)
 	 * 
-	 * @param id the id
+	 * @param terminologyId the id
 	 * @param terminology the concept terminology
-	 * @param version the concept terminologyVersion
+	 * @param terminologyVersion the concept terminologyVersion
 	 * @return the concept
 	 */
 	@GET
@@ -128,7 +128,7 @@ public class ContentServiceRest {
 	 * Returns the concept for id, terminology. Looks in the latest version of the
 	 * terminology.
 	 * 
-	 * @param id the id
+	 * @param terminologyId the id
 	 * @param terminology the concept terminology
 	 * @return the concept
 	 */
@@ -183,7 +183,7 @@ public class ContentServiceRest {
 	
 	/**
 	 * Returns the descendants of a concept as mapped by relationships and inverse relationships
-	 * @param id the terminology id
+	 * @param terminologyId the terminology id
 	 * @param terminology the terminology
 	 * @param terminologyVersion the terminology version
 	 * @return the search result list

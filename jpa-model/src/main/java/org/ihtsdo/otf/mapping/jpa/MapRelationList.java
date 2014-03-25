@@ -17,7 +17,7 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 public class MapRelationList {
 
 	/** The map relations. */
-	private List<MapRelation> mapRelations = new ArrayList<MapRelation>();
+	private List<MapRelation> mapRelations = new ArrayList<>();
 
 	/**
 	 * Instantiates a new map relation list.
@@ -53,7 +53,7 @@ public class MapRelationList {
 	 *            the new map relations
 	 */
 	public void setMapRelations(List<MapRelation> mapRelations) {
-		this.mapRelations = new ArrayList<MapRelation>();
+		this.mapRelations = new ArrayList<>();
 		this.mapRelations.addAll(mapRelations);
 		
 		
