@@ -764,12 +764,14 @@ public class MappingServiceJpa implements MappingService {
 	public MapRecord addMapRecord(MapRecord mapRecord) throws Exception {
 		
 		// check if user valid
-		if (mapRecord.getOwner() == null) { // || !userExists(mapRecord.getOwner())) {
-			throw new Exception();
+		if (mapRecord.getOwner() == null) { 
+			throw new Exception("Map Record requires valid user in owner field");
 		}
 		
-		// set the timestamp
-		mapRecord.setTimestamp((new java.util.Date()).getTime());
+		// check if last modified by user valid
+		if (mapRecord.getLastModifiedBy() == null) {
+			throw new Exception("Map Record requires valid user in lastModifiedBy field");
+		}
 		
 		// set the map record of all elements of this record
 		mapRecord.assignToChildren();
@@ -798,7 +800,7 @@ public class MappingServiceJpa implements MappingService {
 	public MapRecord updateMapRecord(MapRecord mapRecord) {
 
 		// update timestamp
-		mapRecord.setTimestamp((new java.util.Date()).getTime());
+		mapRecord.setLastModified((new java.util.Date()).getTime());
 		
 		// first assign the map record to its children
 		mapRecord.assignToChildren();
@@ -829,6 +831,7 @@ public class MappingServiceJpa implements MappingService {
 
 		// find the map record
 		MapRecord m = manager.find(MapRecordJpa.class, id);
+
 		if (getTransactionPerOperation()) {
 			// delete the map record
 			tx.begin();
@@ -2372,8 +2375,9 @@ public class MappingServiceJpa implements MappingService {
 					prevConceptId =
 							refSetMember.getConcept().getTerminologyId();
 					
-					// set the owner to legacy
+					// set the owner and lastModifiedBy user fields to loaderUser
 					mapRecord.setOwner(loaderUser);
+					mapRecord.setLastModifiedBy(loaderUser);
 
 					// persist the record
 					addMapRecord(mapRecord);
