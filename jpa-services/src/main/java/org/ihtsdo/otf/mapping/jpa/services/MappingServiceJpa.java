@@ -999,23 +999,34 @@ public class MappingServiceJpa implements MappingService {
 	 * @return a list of MapRecords referencing this Concept
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public List<MapRecord> getMapRecordsForConcept(Concept concept) {
-
+		List<MapRecord> results;
 		// find maprecords where:
 		// (1) the conceptId matches the concept terminologyId
 		// (2) the concept terminology matches the source terminology for the
 		// mapRecord's project
-		@SuppressWarnings("unchecked")
-		List<MapRecord> results =
-				manager
+		// Try query
+		try {
+		  /**javax.persistence.Query query = manager
 						.createQuery(
-								"select mr from MapRecordJpa "
-										+ "where conceptId = :conceptId and"
+								"select mr from MapRecordJpa mr "
+										+ "where conceptId = :conceptId "
 										+ "and mapProjectId in (select mp.id from MapProjectJpa mp where sourceTerminology = :sourceTerminology")
 						.setParameter("conceptId", concept.getTerminologyId())
-						.setParameter("sourceTerminology", concept.getTerminology())
-						.getResultList();
-
+						.setParameter("sourceTerminology", concept.getTerminology()); **/
+		  javax.persistence.Query query = manager
+					.createQuery(
+							"select mr from MapRecordJpa mr "
+									+ "where conceptId = :conceptId ")
+					.setParameter("conceptId", concept.getTerminologyId());
+		  results = query.getResultList();
+		} catch (Exception e) {
+			Logger.getLogger(this.getClass()).warn(
+					"Map records for concept " + concept.getTerminologyId()
+							+ " returned no map record results!");
+			return null;
+		}
 		// return results
 		return results;
 	}
@@ -1387,9 +1398,10 @@ public class MappingServiceJpa implements MappingService {
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#findConceptsInScope(org.ihtsdo.otf.mapping.model.MapProject)
 	 */
 	@Override
-  public SearchResultList findConceptsInScope(MapProject project)
+  public SearchResultList findConceptsInScope(Long projectId)
 		throws Exception {
 
+		MapProject project = getMapProject(projectId);
 		SearchResultList conceptsInScope = new SearchResultListJpa();
 
 		ContentService contentService = new ContentServiceJpa();
@@ -1453,26 +1465,28 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	@Override
   public SearchResultList findUnmappedConceptsInScope(MapProject project) throws Exception {
-		SearchResultList conceptsInScope = findConceptsInScope(project);
+		SearchResultList conceptsInScope = findConceptsInScope(project.getId());
 		SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
 		
 		//take everything in scope for the project minus concepts with mappings 
 		//(in that project) with workflow status of PUBLISHED or READY_FOR_PUBLICATION
 		for (SearchResult sr : conceptsInScope.getSearchResults()) {
-		  // if concept has no associated map records, add to list
-			List<MapRecord> mapRecords = getMapRecordsForTerminologyId(sr.getTerminologyId());
-        boolean foundEndStage = false;		
-			  for (MapRecord mapRecord : mapRecords) {
-				  if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED) ||
-				  		mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)) {
-				  	foundEndStage = true;
-				  	break;
-				  }
-			  }
-			  if (!foundEndStage)
-			  	unmappedConceptsInScope.addSearchResult(sr);
+			// if concept has no associated map records, add to list
+			List<MapRecord> mapRecords =
+					getMapRecordsForTerminologyId(sr.getTerminologyId());
+			boolean foundEndStage = false;
+			for (MapRecord mapRecord : mapRecords) {
+				if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+						|| mapRecord.getWorkflowStatus().equals(
+								WorkflowStatus.READY_FOR_PUBLICATION)) {
+					foundEndStage = true;
+					break;
+				}
+			}
+			if (!foundEndStage)
+				unmappedConceptsInScope.addSearchResult(sr);
 		}
-		
+
 		return unmappedConceptsInScope;
 	}
 	

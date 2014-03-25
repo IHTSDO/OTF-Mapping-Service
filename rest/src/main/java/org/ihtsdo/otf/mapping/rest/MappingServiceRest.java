@@ -1,12 +1,9 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import java.util.List;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -19,6 +16,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleList;
@@ -48,7 +46,8 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MappingServiceRest {
 
-
+	/** The mapping service jpa. */
+	private MappingServiceJpa mappingService;
 	
 	/**
 	 * Instantiates an empty {@link MappingServiceRest}.
@@ -563,42 +562,14 @@ public class MappingServiceRest {
 	@Consumes({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@ApiOperation(value = "Update a record", notes = "Updates a map record", response = MapRecordJpa.class)
-	public MapRecord updateMapRecord(
-			@HeaderParam("user") MapUserJpa mapUser,
-			@ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) { 
-			
+	public MapRecord updateMapRecord(@ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) { 
+
 		
 		try {
-			if (mapUser != null) System.out.println(mapUser.getName());
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecord result = mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
 			return result;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-		
-	}
-	
-	/**
-	 * Validates a map record
-	 * @param mapRecord the map record to be validated
-	 * @return Response the response
-	 */
-	@POST
-	@Path("/record/validate")
-	@Consumes({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Produces({	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Update a record", notes = "Updates a map record", response = MapRecordJpa.class)
-	public List<String> validateMapRecord(@ApiParam(value = "The map record to validate.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) { 
-
-		Logger.getLogger(MappingServiceRest.class).info("RESTful call (Mapping): /record/validate");
-		
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			List<String> messages = mappingService.validateMapRecord(mapRecord);
-			mappingService.close();
-			return messages;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -854,7 +825,7 @@ public class MappingServiceRest {
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject =  mappingService.getMapProject(mapProjectId);
-			SearchResultList searchResultList = mappingService.findConceptsInScope(mapProject);
+			SearchResultList searchResultList = mappingService.findConceptsInScope(mapProject.getId());
 			mappingService.close();
 			return searchResultList;
 			

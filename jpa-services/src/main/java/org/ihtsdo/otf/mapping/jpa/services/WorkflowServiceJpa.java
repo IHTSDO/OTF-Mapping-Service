@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,10 +12,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.util.ReaderUtil;
-import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -65,35 +62,6 @@ public class WorkflowServiceJpa implements WorkflowService {
 		// created on each instantiation
 		manager = factory.createEntityManager();
 
-		// fieldNames created once
-		if (fieldNames == null) {
-			fieldNames = new HashSet<String>();
-
-			fullTextEntityManager =
-					org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
-			IndexReaderAccessor indexReaderAccessor =
-					fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
-			Set<String> indexedClassNames =
-					fullTextEntityManager.getSearchFactory().getStatistics()
-							.getIndexedClassNames();
-			for (String indexClass : indexedClassNames) {
-				IndexReader indexReader = indexReaderAccessor.open(indexClass);
-				try {
-					for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
-						fieldNames.add(info.name);
-					}
-				} finally {
-					indexReaderAccessor.close(indexReader);
-				}
-			}
-
-			if (fullTextEntityManager != null) {
-				fullTextEntityManager.close();
-			}
-
-			// closing fullTextEntityManager also closes manager, recreate
-			manager = factory.createEntityManager();
-		}
 	}
 	
 	@Override
@@ -112,10 +80,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 	@Override
 	public void computeWorkflow(MapProject project) throws Exception {
 
-		if (getTransactionPerOperation()) {
-			EntityTransaction tx = manager.getTransaction();
-			tx.begin();
-		}
+
 		
 		/** Remove any existing workflow object for this map project */
 		if (getWorkflow(project) != null) {
@@ -123,6 +88,10 @@ public class WorkflowServiceJpa implements WorkflowService {
 		}
 		
 		/** Create a new Workflow object for this map project and set map project and persist it*/
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+			tx.begin();
+		} // TODO: else
 		Workflow workflow = new WorkflowJpa();
 		workflow.setMapProject(project);
 		manager.persist(workflow);
@@ -132,11 +101,10 @@ public class WorkflowServiceJpa implements WorkflowService {
 		MappingService mappingService = new MappingServiceJpa();
 		SearchResultList searchResultList = mappingService.findUnmappedConceptsInScope(project);
 		for (SearchResult sr : searchResultList.getSearchResults()) {
-			Concept concept = contentService.getConcept(new Long(sr.getTerminologyId()));
+			Concept concept = contentService.getConcept(sr.getTerminologyId(), sr.getTerminology(), sr.getTerminologyVersion());
 			
 			/* Create a workflow tracking record and persist it */
 			WorkflowTrackingRecord trackingRecord = new WorkflowTrackingRecordJpa();
-			manager.persist(trackingRecord);
 			trackingRecord.setTerminology(concept.getTerminology());
 			trackingRecord.setTerminologyId(concept.getTerminologyId());
 			trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
@@ -145,12 +113,18 @@ public class WorkflowServiceJpa implements WorkflowService {
 			SearchResultList treePositionsList = contentService.findTreePositionsForConcept(concept.getTerminologyId(), 
 					concept.getTerminology(), concept.getTerminologyVersion());
 			trackingRecord.setSortKey(treePositionsList.getSearchResults().get(0).getValue());
+			manager.persist(trackingRecord);
 			
 			/* get MapRecords for this concept in this project */
 		  List<MapRecord> mapRecords = mappingService.getMapRecordsForConcept(concept);
 		  boolean conflictDetected = true;
 		  boolean earlyStage = false;
 		  Set<MapUser> assignedUsers = new HashSet<MapUser>();
+		  if (mapRecords == null || mapRecords.size() == 0) {
+		  	trackingRecord.setHasDiscrepancy(false);
+		  	workflow.addTrackingRecord(trackingRecord);
+		  	continue;
+		  }
 		  for (MapRecord mapRecord : mapRecords) {
 		  	if (!mapRecord.getMapProjectId().equals(project.getId()))
 		  		continue;
@@ -166,13 +140,14 @@ public class WorkflowServiceJpa implements WorkflowService {
 		  	trackingRecord.setHasDiscrepancy(true);
 		  	trackingRecord.setAssignedUsers(assignedUsers);
 		  	trackingRecord.setMapRecords(new HashSet<MapRecord>(mapRecords));
+		  	workflow.addTrackingRecord(trackingRecord);
 		  } else if (earlyStage) {
 		  	trackingRecord.setAssignedUsers(assignedUsers);
 		  	trackingRecord.setMapRecords(new HashSet<MapRecord>(mapRecords));
+		  	workflow.addTrackingRecord(trackingRecord);
 		  } else {
 		  	throw new Exception("ComputeWorkflow exception.");
 		  }
-		  //TODO: add transaction management and commit;
 		}
 		
 		mappingService.close();
@@ -262,8 +237,8 @@ public class WorkflowServiceJpa implements WorkflowService {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Workflow> getWorkflows() throws Exception {
-		List<Workflow> m = null;
-		
+
+		List<Workflow> m = new ArrayList<Workflow>();
 		javax.persistence.Query query = 
 				manager.createQuery("select m from WorkflowJpa m");
 		

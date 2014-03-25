@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -55,6 +56,24 @@ public class WorkflowServiceRest {
 	}
 	
 	@GET
+	@Path("/workflows")
+	@ApiOperation(value = "Return workflows", notes = "Returns all workflows.")
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public void getWorkflows() {
+		
+		Logger.getLogger(WorkflowServiceRest.class).info("RESTful call (Workflow): /workflows");
+		
+		try {			
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			workflowService.getWorkflows();
+			workflowService.close();
+			return;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	@GET
 	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Compute workflow for project by id", notes = "Computes workflow given a project id.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
@@ -66,10 +85,10 @@ public class WorkflowServiceRest {
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			mappingService.close();
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			workflowService.computeWorkflow(mapProject);
 			workflowService.close();
-			mappingService.close();
 			return;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
@@ -117,7 +136,8 @@ public class WorkflowServiceRest {
 		}
 	}
 
-	@PUT
+	// userName String would be preferred
+	@POST
 	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 	@Path("/assign/{projectid:[0-9][0-9]*}/{terminologyid:[0-9][0-9]*}/{userid:[0-9][0-9]*}")
 	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
@@ -146,7 +166,7 @@ public class WorkflowServiceRest {
 		return null;
 	}
 	
-	@PUT
+	@POST
 	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 	@Path("/assign/{projectid:[0-9][0-9]*}/{terminologyid:[0-9][0-9]*}/{recordid:[0-9][0-9]*}/{userid:[0-9][0-9]*}")
 	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)

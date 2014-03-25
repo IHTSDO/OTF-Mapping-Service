@@ -45,29 +45,31 @@ public interface Workflow {
 	 */
 	public Set<WorkflowTrackingRecord> getTrackingRecordsForUnmappedInScopeConcepts();
 
-	/**
-	 * Sets the tracking records for unmapped in scope concepts.
-	 *
-	 * @param trackingRecordsForUnmappedInScopeConcepts the tracking records for unmapped in scope concepts
-	 */
-	public void setTrackingRecordsForUnmappedInScopeConcepts(
-		Set<WorkflowTrackingRecord> trackingRecordsForUnmappedInScopeConcepts);
 
 	/**
-	 * Adds the tracking records for unmapped in scope concept.
+	 * Sets the tracking records.
 	 *
-	 * @param trackingRecordsForUnmappedInScopeConcept the tracking records for unmapped in scope concept
+	 * @param trackingRecords the tracking records
 	 */
-	public void addTrackingRecordsForUnmappedInScopeConcept(
-		WorkflowTrackingRecord trackingRecordsForUnmappedInScopeConcept);
+	public void setTrackingRecords(
+		Set<WorkflowTrackingRecord> trackingRecords);
 
 	/**
-	 * Removes the tracking records for unmapped in scope concept.
+	 * Adds the tracking record.
 	 *
-	 * @param trackingRecordsForUnmappedInScopeConcept the tracking records for unmapped in scope concept
+	 * @param trackingRecord the tracking record
 	 */
-	public void removeTrackingRecordsForUnmappedInScopeConcept(
-		WorkflowTrackingRecord trackingRecordsForUnmappedInScopeConcept);
+	public void addTrackingRecord(
+		WorkflowTrackingRecord trackingRecord);
+
+
+	/**
+	 * Removes the tracking record.
+	 *
+	 * @param trackingRecord the tracking record
+	 */
+	public void removeTrackingRecord(
+		WorkflowTrackingRecord trackingRecord);
 
 	/**
 	 * Returns the tracking records for conflict concepts.
@@ -76,28 +78,11 @@ public interface Workflow {
 	 */
 	public Set<WorkflowTrackingRecord> getTrackingRecordsForConflictConcepts();
 
-	/**
-	 * Sets the tracking records for conflict concepts.
-	 *
-	 * @param trackingRecordsForConflictConcepts the tracking records for conflict concepts
-	 */
-	public void setTrackingRecordsForConflictConcepts(
-		Set<WorkflowTrackingRecord> trackingRecordsForConflictConcepts);
 
 	/**
-	 * Adds the tracking records for conflict concepts.
+	 * Returns the tracking records.
 	 *
-	 * @param trackingRecordsForConflictConcept the tracking records for conflict concept
+	 * @return the tracking records
 	 */
-	public void addTrackingRecordsForConflictConcepts(
-		WorkflowTrackingRecord trackingRecordsForConflictConcept);
-
-	/**
-	 * Removes the tracking records for conflict concepts.
-	 *
-	 * @param trackingRecordsForConflictConcept the tracking records for conflict concept
-	 */
-	public void removeTrackingRecordsForConflictConcepts(
-		WorkflowTrackingRecord trackingRecordsForConflictConcept);
-
+	public Set<WorkflowTrackingRecord> getTrackingRecords();
 }

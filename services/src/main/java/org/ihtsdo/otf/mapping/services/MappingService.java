@@ -519,11 +519,11 @@ public interface MappingService {
 	/**
 	 * Find concepts in scope.
 	 *
-	 * @param project the project
+	 * @param projectId the project
 	 * @return the search result list
 	 * @throws Exception the exception
 	 */
-	public SearchResultList findConceptsInScope(MapProject project)
+	public SearchResultList findConceptsInScope(Long projectId)
 		throws Exception;
 
 	/**
@@ -633,9 +633,7 @@ public interface MappingService {
 	 * @param ageRange the age range
 	 */
 	public void updateMapAgeRange(MapAgeRange ageRange);
-
-	
-	
+		
 	/**
 	 * Validate map record.
 	 *
@@ -643,6 +641,7 @@ public interface MappingService {
 	 * @return the list of error messages if map record is invalid
 	 */
 	public List<String> validateMapRecord(MapRecord mapRecord);
+
 
 }
 	
