@@ -1,8 +1,8 @@
 package org.ihtsdo.otf.mapping.workflow;
 
+import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -32,18 +32,15 @@ public class WorkflowJpa implements Workflow {
 	private Long id;
 	
   /**  The map project. */
-  @OneToOne(targetEntity = MapProjectJpa.class)
+  @OneToOne(targetEntity = MapProjectJpa.class, fetch = FetchType.LAZY)
 	private MapProject mapProject;
 	
 	/**  The tracking records for unmapped in scope concepts. */
 	@OneToMany(targetEntity = WorkflowTrackingRecordJpa.class)
 	@IndexedEmbedded(targetElement = WorkflowTrackingRecordJpa.class)
-	private Set<WorkflowTrackingRecord> trackingRecordsForUnmappedInScopeConcepts;
+	private Set<WorkflowTrackingRecord> trackingRecords = new HashSet<WorkflowTrackingRecord>();
 	
-	/**  The tracking records for conflict concepts. */
-	@OneToMany(targetEntity = WorkflowTrackingRecordJpa.class)
-	@IndexedEmbedded(targetElement = WorkflowTrackingRecordJpa.class)	
-	private Set<WorkflowTrackingRecord> trackingRecordsForConflictConcepts;
+
 	
 	/**
 	 * {@inheritDoc}
@@ -77,76 +74,85 @@ public class WorkflowJpa implements Workflow {
 		this.mapProject = mapProject;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#getTrackingRecordsForUnmappedInScopeConcepts()
-	 */
-	@Override
-	public Set<WorkflowTrackingRecord> getTrackingRecordsForUnmappedInScopeConcepts() {
-		return trackingRecordsForUnmappedInScopeConcepts;
-	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#setTrackingRecordsForUnmappedInScopeConcepts(java.util.Set)
-	 */
-	@Override
-	public void setTrackingRecordsForUnmappedInScopeConcepts(
-		Set<WorkflowTrackingRecord> trackingRecordsForUnmappedInScopeConcepts) {
-		this.trackingRecordsForUnmappedInScopeConcepts = trackingRecordsForUnmappedInScopeConcepts;
-		
-	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#addTrackingRecordsForUnmappedInScopeConcept(org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord)
-	 */
-	@Override
-	public void addTrackingRecordsForUnmappedInScopeConcept(
-		WorkflowTrackingRecord trackingRecordsForUnmappedInScopeConcept) {
-		this.trackingRecordsForUnmappedInScopeConcepts.add(trackingRecordsForUnmappedInScopeConcept);		
-	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#removeTrackingRecordsForUnmappedInScopeConcept(org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord)
-	 */
-	@Override
-	public void removeTrackingRecordsForUnmappedInScopeConcept(
-		WorkflowTrackingRecord trackingRecordsForUnmappedInScopeConcept) {
-		this.trackingRecordsForUnmappedInScopeConcepts.remove(trackingRecordsForUnmappedInScopeConcept);	
-	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#getTrackingRecordsForConflictConcepts()
 	 */
 	@Override
 	public Set<WorkflowTrackingRecord> getTrackingRecordsForConflictConcepts() {
-		return trackingRecordsForConflictConcepts;
+		Set<WorkflowTrackingRecord> conflictRecords = new HashSet<WorkflowTrackingRecord>();
+		for (WorkflowTrackingRecord trackingRecord : trackingRecords) {
+			if (trackingRecord.isHasDiscrepancy())
+				conflictRecords.add(trackingRecord);
+		}
+		return conflictRecords;
+	}
+
+
+
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "WorkflowJpa [id=" + id + ", mapProject=" + mapProject
+				+ ", trackingRecords="
+				+ trackingRecords + "]";
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#setTrackingRecordsForConflictConcepts(java.util.Set)
+	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#getTrackingRecordsForUnmappedInScopeConcepts()
 	 */
 	@Override
-	public void setTrackingRecordsForConflictConcepts(
-		Set<WorkflowTrackingRecord> trackingRecordsForConflictConcepts) {
-		this.trackingRecordsForConflictConcepts = trackingRecordsForConflictConcepts;
+	public Set<WorkflowTrackingRecord> getTrackingRecordsForUnmappedInScopeConcepts() {
+		Set<WorkflowTrackingRecord> unmappedTrackingRecords = new HashSet<WorkflowTrackingRecord>();
+		for (WorkflowTrackingRecord trackingRecord : trackingRecords) {
+			if (!trackingRecord.isHasDiscrepancy())
+				unmappedTrackingRecords.add(trackingRecord);
+		}
+		return unmappedTrackingRecords;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#addTrackingRecordsForConflictConcepts(org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord)
+	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#setTrackingRecords(java.util.Set)
 	 */
 	@Override
-	public void addTrackingRecordsForConflictConcepts(
-		WorkflowTrackingRecord trackingRecordsForConflictConcept) {
-		this.trackingRecordsForConflictConcepts.add(trackingRecordsForConflictConcept);
+	public void setTrackingRecords(Set<WorkflowTrackingRecord> trackingRecords) {
+		this.trackingRecords = trackingRecords;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#removeTrackingRecordsForConflictConcepts(org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord)
+	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#addTrackingRecord(org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord)
 	 */
 	@Override
-	public void removeTrackingRecordsForConflictConcepts(
-		WorkflowTrackingRecord trackingRecordsForConflictConcept) {
-		this.trackingRecordsForConflictConcepts.remove(trackingRecordsForConflictConcept);
+	public void addTrackingRecord(WorkflowTrackingRecord trackingRecord) {
+		if (trackingRecords == null)
+			trackingRecords = new HashSet<WorkflowTrackingRecord>();
+		trackingRecords.add(trackingRecord);
 	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#removeTrackingRecord(org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord)
+	 */
+	@Override
+	public void removeTrackingRecord(WorkflowTrackingRecord trackingRecord) {
+		trackingRecords.remove(trackingRecord);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#getTrackingRecords()
+	 */
+	@Override
+	public Set<WorkflowTrackingRecord> getTrackingRecords() {
+		return trackingRecords;
+	}
+
+
+
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -158,16 +164,6 @@ public class WorkflowJpa implements Workflow {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result =
 				prime * result + ((mapProject == null) ? 0 : mapProject.hashCode());
-		result =
-				prime
-						* result
-						+ ((trackingRecordsForConflictConcepts == null) ? 0
-								: trackingRecordsForConflictConcepts.hashCode());
-		result =
-				prime
-						* result
-						+ ((trackingRecordsForUnmappedInScopeConcepts == null) ? 0
-								: trackingRecordsForUnmappedInScopeConcepts.hashCode());
 		return result;
 	}
 
@@ -193,31 +189,6 @@ public class WorkflowJpa implements Workflow {
 				return false;
 		} else if (!mapProject.equals(other.mapProject))
 			return false;
-		if (trackingRecordsForConflictConcepts == null) {
-			if (other.trackingRecordsForConflictConcepts != null)
-				return false;
-		} else if (!trackingRecordsForConflictConcepts
-				.equals(other.trackingRecordsForConflictConcepts))
-			return false;
-		if (trackingRecordsForUnmappedInScopeConcepts == null) {
-			if (other.trackingRecordsForUnmappedInScopeConcepts != null)
-				return false;
-		} else if (!trackingRecordsForUnmappedInScopeConcepts
-				.equals(other.trackingRecordsForUnmappedInScopeConcepts))
-			return false;
 		return true;
 	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "WorkflowJpa [id=" + id + ", mapProject=" + mapProject
-				+ ", trackingRecordsForUnmappedInScopeConcepts="
-				+ trackingRecordsForUnmappedInScopeConcepts
-				+ ", trackingRecordsForConflictConcepts="
-				+ trackingRecordsForConflictConcepts + "]";
-	}
-
 }

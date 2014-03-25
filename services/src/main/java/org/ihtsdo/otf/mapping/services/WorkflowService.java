@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.services;
 import java.util.List;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
