@@ -7,7 +7,6 @@ import javax.xml.bind.annotation.XmlID;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
-import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 
 // TODO: Auto-generated Javadoc
@@ -34,9 +33,6 @@ public class MapEntryImpl implements MapEntry {
 	/** The map advices. */
 	private Set<MapAdvice> mapAdvices;
 	
-	/** The map principles. */
-	private Set<MapPrinciple> mapPrinciples;
-
 	/** The rule. */
 	private String rule;
 
@@ -187,38 +183,6 @@ public class MapEntryImpl implements MapEntry {
 		mapAdvices.remove(mapAdvice);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapPrinciples()
-	 */
-	@Override
-	public Set<MapPrinciple> getMapPrinciples() {
-		return mapPrinciples;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapPrinciples(java.util.Set)
-	 */
-	@Override
-	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
-		this.mapPrinciples = mapPrinciples;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#addMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
-	 */
-	@Override
-	public void addMapPrinciple(MapPrinciple mapPrinciple) {
-		mapPrinciples.add(mapPrinciple);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#removeMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
-	 */
-	@Override
-	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
-		mapPrinciples.remove(mapPrinciple);
-	}
-
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getRule()
 	 */
