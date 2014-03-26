@@ -76,4 +76,18 @@ public interface MapRelation {
 	 */
 	public void setComputed(boolean isComputed);
 
+	/**
+	 * Gets the abbreviation.
+	 *
+	 * @return the abbreviation
+	 */
+	public String getAbbreviation();
+
+	/**
+	 * Sets the abbreviation.
+	 *
+	 * @param abbreviation the new abbreviation
+	 */
+	public void setAbbreviation(String abbreviation);
+
 }

@@ -14,7 +14,7 @@
 		<table>
 		
 			<tr><td style="vertical-align: top; padding:5px;"><strong>Id</strong></td>
-				<td style="vertical-align: top; padding:5px;">{{project.destinationTerminology}}, {{entry.targetId}}</td>
+				<td style="vertical-align: top; padding:5px;"><span ng-show="entry.targetId != null && entry.targetId != ''">{{project.destinationTerminology}}, {{entry.targetId}}</span></td>
 			</tr>
 			<tr><td style="vertical-align: top; padding:5px;"><strong>Name</strong></td>
 				<td style="vertical-align: top; padding:5px;">{{entry.targetName}}</td>
@@ -61,25 +61,43 @@
 			Mapping Parameters <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': isParametersOpen, 'glyphicon-chevron-right': !isParametersOpen}"></i>
 		</accordion-heading>
 
-		<table>
+		<table style="padding: 5px">
 	
 			<tr ng-show="project.ruleBased == true">
 				<td style="vertical-align: top; padding:5px;"><strong>Rule</strong></td>
 				<td style="vertical-align: top; padding:5px;">{{entry.rule}}<p ng-show="entry.rule.length > 0"></p><input type="submit" value="Set Rule" ng-click="openRuleConstructor(entry)"></p></td>
 			</tr>
 			
-			<tr ng-show="project.relationStyle === 'RELATIONSHIP_STYLE'">
+			<tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'">
 			
 				<td style="vertical-align: top; padding:5px;"><strong>Relation Id</strong></td>
-				<td style="vertical-align: top; padding:5px;"><input type="text" ng-model="entry.relationId"></td>
+				<td style="vertical-align: top; padding:5px;">{{entry.mapRelation.terminologyId}}</td>
 			</tr>
 			
-			<tr ng-show="project.relationStyle === 'RELATIONSHIP_STYLE'">
+			<tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'">
 				<td style="vertical-align: top; padding:5px;"><strong>Relation Name</strong></td>
-				<td style="vertical-align: top; padding:5px;">{{entry.relationName}}</td>
+				<td style="vertical-align: top; padding:5px;">{{entry.mapRelation.name}}</td>
+				
+			</tr>
+			
+			<tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length > 0">
+				<td style="vertical-align: top; padding:5px;">Select Map Relation</td>
+				<td style="vertical-align: top; padding:5px;">
+					
+					<select style = "width:60%"
+							ng-model = "mapRelationInput"
+							ng-change = "selectMapRelation(mapRelationInput)"
+							ng-options = "mapRelation as mapRelation.displayName for mapRelation in allowableMapRelations"></select> 
+				</td>
+				
+			</tr>
+			
+			<tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length == 0">
+				<td></td>
+				<td>No map relations are available for this target.</td>
 			</tr>
 
-			<tr ng-show="project.relationStyle != 'RELATIONSHIP_STYLE'">
+			<tr ng-show="project.mapRelationStyle != 'RELATIONSHIP_STYLE'">
 				<td style="vertical-align: top; padding:5px;"><strong>Advice</strong></td>
 				<td style="vertical-align: top; padding:5px;">
 					<div ng-show="entry.mapAdvice.length > 0">
@@ -93,12 +111,12 @@
 					</div>
 					<span style="color:red">{{errorAddAdvice}}</span>	
 					<form>
-						<textarea style="width:100%;" 
+						Add Advice: <select style="width: 60%;" 
+								sort-by="advice.name" 
+								ng-change="addEntryAdvice(entry, adviceInput)"
 								ng-model="adviceInput" 
-								typeahead="advice as advice.detail for advice in project.mapAdvice | filter:$viewValue | limitTo:8" class="form-control"
-								typeahead-min-length="0" typeahead-editable="false"></textarea>
-						<input type="submit" value="Add Advice" ng-click="addEntryAdvice(entry, adviceInput)">
-					</form>								
+								ng-options="advice as advice.detail for advice in allowableAdvices"></select>
+					</form>							
 				</td>
 			</tr>
 		</table>

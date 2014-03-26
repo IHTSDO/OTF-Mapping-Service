@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -851,6 +853,28 @@ public class MappingServiceJpa implements MappingService {
 		}
 
 	}
+	
+	@Override
+	/**
+	 * Takes a map record and computes any auto-generated advice for its entries
+	 */
+	public MapRecord computeMapAdviceAndMapRelationsForMapRecord(MapRecord mapRecord) {
+		
+		ProjectSpecificAlgorithmHandler algorithmHandler = 
+				getMapProject(mapRecord.getMapProjectId()).getProjectSpecificAlgorithmHandler();
+		
+		List<MapEntry> revisedMapEntries = new ArrayList<MapEntry>();
+		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+			algorithmHandler.computeMapAdviceAndMapRelations(mapRecord);
+		}
+		
+		mapRecord.setMapEntries(revisedMapEntries);
+		
+		return mapRecord;
+		
+	}
+	
+
 	
 	@Override
 	public List<MapRecord> getMapRecordRevisions(Long mapRecordId) {
@@ -2283,9 +2307,17 @@ public class MappingServiceJpa implements MappingService {
 
 		// Get map relation id->name mapping
 		MetadataService metadataService = new MetadataServiceJpa();
+		
 		Map<Long, String> relationIdNameMap = metadataService.getMapRelations(mapProject.getSourceTerminology(),
 				mapProject.getSourceTerminologyVersion());
 		Logger.getLogger(this.getClass()).debug("    relationIdNameMap = " + relationIdNameMap);
+		
+		// use the map relation id->name mapping to construct a hash set of MapRelations
+		Map<String, MapRelation> mapRelationIdMap = new HashMap<>();
+		for (MapRelation mapRelation : getMapRelations()) {
+			mapRelationIdMap.put(mapRelation.getTerminologyId(), mapRelation);
+		}
+		
 		Map<Long, String> hierarchicalRelationshipTypeMap = metadataService.getHierarchicalRelationshipTypes(mapProject.getSourceTerminology(), 
 				mapProject.getSourceTerminologyVersion());
 		if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
@@ -2418,8 +2450,7 @@ public class MappingServiceJpa implements MappingService {
 				mapEntry.setTargetId(refSetMember.getMapTarget());
 				mapEntry.setTargetName(targetName);
 				mapEntry.setMapRecord(mapRecord);
-				mapEntry.setRelationId(refSetMember.getMapRelationId().toString());
-				mapEntry.setRelationName(relationName);
+				mapEntry.setMapRelation(mapRelationIdMap.get(refSetMember.getMapRelationId().toString()));
 				String rule = refSetMember.getMapRule();
 				if (rule.equals("OTHERWISE TRUE")) rule = "TRUE";
 				mapEntry.setRule(rule);

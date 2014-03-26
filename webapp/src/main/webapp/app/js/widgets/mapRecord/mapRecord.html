@@ -29,6 +29,7 @@
 		</accordion-heading>
 		
 		<div ng-show="project.groupStructure == true">
+
 			<accordion close-others="false">	
 				
 				<div ui-sortable ng-model="groups">
@@ -45,12 +46,13 @@
 						<span class="pull-right"><i class="glyphicon glyphicon-move"></i></span>
 						</accordion-heading>
 					
+
 						 
 						<div ui-sortable ng-model="entries[group]"> 
-							<p ng-repeat = "entry in entries[group]"
+							<p ng-repeat = "entry in entries[group] track by entry.localId"
 							   ng-click = "selectEntry(entry)">
 								   
-								<a ng-show="entry.targetId != null && entry.targetId != ''">{{getRuleSummary(entry)}} {{entry.targetId}} {{entry.targetName}}</a>
+								<a ng-show="entry.targetId != null && entry.targetId != ''"><span ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span> {{entry.targetId}} {{entry.targetName}}</a>
 								<a ng-show="entry.targetId == null || entry.targetId === ''">[Empty Entry]</a>	
 							</p>
 						</div> <!--  end sortable entries -->
@@ -69,11 +71,12 @@
 		
 		<!--  for no group structure in project -->
 		<div ng-show="project.groupStructure == false"">
+
 			<div ui-sortable ng-model="entries"> 
 				<p ng-repeat = "entry in entries"
 				   ng-click = "selectEntry(entry)">
 					<a ng-show="entry.targetId != null && entry.targetId != ''">
-						[{{entry.ruleSummary}}] {{entry.targetId}} {{entry.targetName}}</a>
+						<span ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span> {{entry.targetId}} {{entry.targetName}}</a>
 					<a ng-show="entry.targetId == null || entry.targetId === ''">[Empty Entry]</a>
 	
 					
@@ -131,7 +134,8 @@
 		<span style="color:red">{{errorAddRecordNote}}</span>
 		<form>
 			<textarea ng-model="noteInput" class="form-control"></textarea>
-			<input type="submit" value="Add Note" ng-click="addRecordNote(record, noteInput); noteInput=''">
+			<p></p>
+			<input class="pull-right" type="submit" value="Add Note" ng-click="addRecordNote(record, noteInput); noteInput=''">
 		</form>
 	</accordion-group>
 </accordion>

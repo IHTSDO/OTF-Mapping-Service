@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
@@ -39,6 +40,10 @@ public class MapRelationJpa implements MapRelation {
 	@Column(nullable = false)
 	private String name;
 	
+	/** The abbreviation for display */
+	@Column(nullable = true)
+	private String abbreviation;
+
 	/** Whether this relation can be used for null targets. */
 	@Column(nullable = false)
 	private boolean isAllowableForNullTarget;
@@ -94,11 +99,30 @@ public class MapRelationJpa implements MapRelation {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRelation#getAbbreviation()
+	 */
+	@Override
+	public String getAbbreviation() {
+		return abbreviation;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRelation#setAbbreviation(java.lang.String)
+	 */
+	@Override
+	public void setAbbreviation(String abbreviation) {
+		this.abbreviation = abbreviation;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRelation#isAllowableForNullTarget()
-	 */
+	 *
+	 * @XmlAttribute annotation used to override default nomenclature ('allowableForNullTarget')
+	  */
 	@Override
+	@XmlAttribute(name = "isAllowableForNullTarget")
 	public boolean isAllowableForNullTarget() {
 		return isAllowableForNullTarget;
 	}
@@ -113,8 +137,12 @@ public class MapRelationJpa implements MapRelation {
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRelation#isComputed()
+	 *
+	 * Field is true IFF the relation is ALWAYS computed (never assigned by user)
+	 * @XmlAttribute annotation used to override default nomenclature ('computed')
 	 */
 	@Override
+	@XmlAttribute(name = "isComputed")
 	public boolean isComputed() {
 		return isComputed;
 	}
@@ -126,5 +154,41 @@ public class MapRelationJpa implements MapRelation {
 	public void setComputed(boolean isComputed) {
 		this.isComputed = isComputed;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((terminologyId == null) ? 0 : terminologyId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MapRelationJpa other = (MapRelationJpa) obj;
+		if (terminologyId == null) {
+			if (other.terminologyId != null)
+				return false;
+		} else if (!terminologyId.equals(other.terminologyId))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "MapRelationJpa [id=" + id + ", terminologyId=" + terminologyId
+				+ ", name=" + name + ", abbreviation=" + abbreviation
+				+ ", isAllowableForNullTarget=" + isAllowableForNullTarget
+				+ ", isComputed=" + isComputed + "]";
+	}
+	
+	
 
 }
