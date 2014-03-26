@@ -17,9 +17,7 @@ import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 
 /**
- * The Class WorkflowJpa.
- *
- * @author ${author}
+ * Reference implementation of {@link Workflow}.
  */
 @Entity
 @Table(name="workflow")
@@ -38,9 +36,7 @@ public class WorkflowJpa implements Workflow {
 	/**  The tracking records for unmapped in scope concepts. */
 	@OneToMany(targetEntity = WorkflowTrackingRecordJpa.class)
 	@IndexedEmbedded(targetElement = WorkflowTrackingRecordJpa.class)
-	private Set<WorkflowTrackingRecord> trackingRecords = new HashSet<WorkflowTrackingRecord>();
-	
-
+	private Set<WorkflowTrackingRecord> trackingRecords = new HashSet<>();
 	
 	/**
 	 * {@inheritDoc}
@@ -74,16 +70,12 @@ public class WorkflowJpa implements Workflow {
 		this.mapProject = mapProject;
 	}
 
-
-
-
-
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.workflow.Workflow#getTrackingRecordsForConflictConcepts()
 	 */
 	@Override
 	public Set<WorkflowTrackingRecord> getTrackingRecordsForConflictConcepts() {
-		Set<WorkflowTrackingRecord> conflictRecords = new HashSet<WorkflowTrackingRecord>();
+		Set<WorkflowTrackingRecord> conflictRecords = new HashSet<>();
 		for (WorkflowTrackingRecord trackingRecord : trackingRecords) {
 			if (trackingRecord.isHasDiscrepancy())
 				conflictRecords.add(trackingRecord);
@@ -109,7 +101,7 @@ public class WorkflowJpa implements Workflow {
 	 */
 	@Override
 	public Set<WorkflowTrackingRecord> getTrackingRecordsForUnmappedInScopeConcepts() {
-		Set<WorkflowTrackingRecord> unmappedTrackingRecords = new HashSet<WorkflowTrackingRecord>();
+		Set<WorkflowTrackingRecord> unmappedTrackingRecords = new HashSet<>();
 		for (WorkflowTrackingRecord trackingRecord : trackingRecords) {
 			if (!trackingRecord.isHasDiscrepancy())
 				unmappedTrackingRecords.add(trackingRecord);
@@ -131,7 +123,7 @@ public class WorkflowJpa implements Workflow {
 	@Override
 	public void addTrackingRecord(WorkflowTrackingRecord trackingRecord) {
 		if (trackingRecords == null)
-			trackingRecords = new HashSet<WorkflowTrackingRecord>();
+			trackingRecords = new HashSet<>();
 		trackingRecords.add(trackingRecord);
 	}
 
@@ -150,9 +142,6 @@ public class WorkflowJpa implements Workflow {
 	public Set<WorkflowTrackingRecord> getTrackingRecords() {
 		return trackingRecords;
 	}
-
-
-
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -189,6 +178,6 @@ public class WorkflowJpa implements Workflow {
 				return false;
 		} else if (!mapProject.equals(other.mapProject))
 			return false;
-		return true;
-	}
+    return true;
+  }
 }

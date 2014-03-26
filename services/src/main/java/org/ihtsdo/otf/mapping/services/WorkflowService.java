@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.services;
 import java.util.List;
 import java.util.Set;
 
-import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -12,9 +11,8 @@ import org.ihtsdo.otf.mapping.workflow.Workflow;
 import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
 
 /**
- * The interface for the workflow service.
- *
- * @author ${author}
+ * Represents a service for answering questions and performing actions
+ * related to workflow management.
  */
 public interface WorkflowService {
 

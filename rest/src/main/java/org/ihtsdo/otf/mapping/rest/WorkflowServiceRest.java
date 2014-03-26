@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package org.ihtsdo.otf.mapping.rest;
 
 import java.util.ArrayList;
@@ -43,6 +46,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Path("/workflow")
 @Api(value = "/workflow", description = "Operations supporting workflow.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@SuppressWarnings("static-method")
 public class WorkflowServiceRest {
 
 	
@@ -75,6 +79,13 @@ public class WorkflowServiceRest {
 		}
 	}
 	
+	/**
+	 * Finds available work for the specified map project and user.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userId the user id
+	 * @return the search result list
+	 */
 	@GET
 	@Path("/work/id/{id:[0-9][0-9]*}/user/{userid:[0-9][0-9]*}")
 	@ApiOperation(value = "Find available work.", notes = "Returns available work for a given user on a given map project.", response = SearchResultList.class)
@@ -185,6 +196,12 @@ public class WorkflowServiceRest {
 		return null;
 	}
 
+	/**
+	 * Returns the records assigned to user.
+	 *
+	 * @param userId the user id
+	 * @return the records assigned to user
+	 */
 	@GET
 	@Path("/assigned/id/{id}/user/{user}")
 	@ApiOperation(value = "Returns records assigned to given user.", notes = "Returns work assigned to a given user.")

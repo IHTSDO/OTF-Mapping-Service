@@ -251,9 +251,6 @@ public class ContentServiceRest {
 	// FOR TESTING ONLY!!
 	/**
 	 * Returns the immediate children of a concept given terminology information
-	 * @param id the terminology id
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
 	 * @return the search result list
 	 */
 	@GET
@@ -280,6 +277,11 @@ public class ContentServiceRest {
 		}
 	}
 	
+	/**
+	 * Clears tree positions.
+	 *
+	 * @return the search result list
+	 */
 	@GET
 	@Path("/concept/treePositions/clear")
 	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
@@ -302,6 +304,11 @@ public class ContentServiceRest {
 		}
 	}
 	
+	/**
+	 * Finds tree positions for concept.
+	 *
+	 * @return the search result list
+	 */
 	@GET
 	@Path("/concept/treePositions/concept")
 	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
@@ -322,6 +329,11 @@ public class ContentServiceRest {
 		}
 	}
 	
+	/**
+	 * Finds descendants from tree postions.
+	 *
+	 * @return the search result list
+	 */
 	@GET
 	@Path("/concept/treePositions/descendantfind")
 	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
