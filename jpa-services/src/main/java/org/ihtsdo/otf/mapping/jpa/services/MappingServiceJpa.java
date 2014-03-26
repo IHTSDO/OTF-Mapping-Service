@@ -1059,27 +1059,20 @@ public class MappingServiceJpa implements MappingService {
     // (1) the conceptId matches the concept terminologyId
     // (2) the concept terminology matches the source terminology for the
     // mapRecord's project
-		// Try query
-		try {
-		  /**javax.persistence.Query query = manager
-            .createQuery(
-								"select mr from MapRecordJpa mr "
-										+ "where conceptId = :conceptId "
-                    + "and mapProjectId in (select mp.id from MapProjectJpa mp where sourceTerminology = :sourceTerminology")
-            .setParameter("conceptId", concept.getTerminologyId())
-						.setParameter("sourceTerminology", concept.getTerminology()); **/
-		  javax.persistence.Query query = manager
-					.createQuery(
-							"select mr from MapRecordJpa mr "
-									+ "where conceptId = :conceptId ")
-					.setParameter("conceptId", concept.getTerminologyId());
-		  results = query.getResultList();
-		} catch (Exception e) {
-			Logger.getLogger(this.getClass()).warn(
-					"Map records for concept " + concept.getTerminologyId()
-							+ " returned no map record results!");
-			return null;
-		}
+    // Try query
+    try {
+      javax.persistence.Query query =
+          manager.createQuery(
+              "select mr from MapRecordJpa mr "
+                  + "where conceptId = :conceptId ").setParameter("conceptId",
+              concept.getTerminologyId());
+      results = query.getResultList();
+    } catch (Exception e) {
+      Logger.getLogger(this.getClass()).warn(
+          "Map records for concept " + concept.getTerminologyId()
+              + " returned no map record results!");
+      return null;
+    }
     // return results
     return results;
   }
@@ -1474,24 +1467,25 @@ public class MappingServiceJpa implements MappingService {
     SearchResultList conceptsInScope = findConceptsInScope(mapProjectId);
     SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
 
-		//take everything in scope for the project minus concepts with mappings 
-		//(in that project) with workflow status of PUBLISHED or READY_FOR_PUBLICATION
+    // take everything in scope for the project minus concepts with mappings
+    // (in that project) with workflow status of PUBLISHED or
+    // READY_FOR_PUBLICATION
     for (SearchResult sr : conceptsInScope.getSearchResults()) {
       // if concept has no associated map records, add to list
-			List<MapRecord> mapRecords =
-					getMapRecordsForConcept(sr.getTerminologyId());
-			boolean foundEndStage = false;
-			for (MapRecord mapRecord : mapRecords) {
-				if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
-						|| mapRecord.getWorkflowStatus().equals(
-								WorkflowStatus.READY_FOR_PUBLICATION)) {
-					foundEndStage = true;
-					break;
-				}
-			}
-			if (!foundEndStage)
-        unmappedConceptsInScope.addSearchResult(sr);
+      List<MapRecord> mapRecords =
+          getMapRecordsForConcept(sr.getTerminologyId());
+      boolean foundEndStage = false;
+      for (MapRecord mapRecord : mapRecords) {
+        if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+            || mapRecord.getWorkflowStatus().equals(
+                WorkflowStatus.READY_FOR_PUBLICATION)) {
+          foundEndStage = true;
+          break;
+        }
       }
+      if (!foundEndStage)
+        unmappedConceptsInScope.addSearchResult(sr);
+    }
 
     return unmappedConceptsInScope;
   }
@@ -1664,8 +1658,12 @@ public class MappingServiceJpa implements MappingService {
     return false;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.services.MappingService#isConceptOutOfScopeBounds(java.lang.String, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MappingService#isConceptOutOfScopeBounds
+   * (java.lang.String, long)
    */
   @Override
   public boolean isConceptOutOfScopeBounds(String conceptId, long mapProjectId)
@@ -1682,8 +1680,7 @@ public class MappingServiceJpa implements MappingService {
         conceptId, project.getSourceTerminology(),
         project.getSourceTerminologyVersion()).getSearchResults()) {
       String ancestorPath = tp.getValue();
-      if (project.isScopeDescendantsFlag()
-          && ancestorPath.contains(conceptId)) {
+      if (project.isScopeDescendantsFlag() && ancestorPath.contains(conceptId)) {
         return false;
       }
     }
@@ -1998,8 +1995,7 @@ public class MappingServiceJpa implements MappingService {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#removeMapAdvice(long)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapAdvice(long)
    */
   @Override
   public void removeMapAdvice(long mapAdviceId) {
@@ -2026,8 +2022,7 @@ public class MappingServiceJpa implements MappingService {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#removeMapRelation(long)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapRelation(long)
    */
   @Override
   public void removeMapRelation(long mapRelationId) {
@@ -2054,8 +2049,7 @@ public class MappingServiceJpa implements MappingService {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciple(long)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciple(long)
    */
   @Override
   public MapPrinciple getMapPrinciple(long id) {
@@ -2135,11 +2129,12 @@ public class MappingServiceJpa implements MappingService {
   // ///////////////////////////////////////
 
   @Override
-  public void createMapRecordsForMapProject(long mapProjectId, WorkflowStatus workflowStatus)
-		throws Exception {
+  public void createMapRecordsForMapProject(long mapProjectId,
+    WorkflowStatus workflowStatus) throws Exception {
     MapProject mapProject = getMapProject(mapProjectId);
     Logger.getLogger(MappingServiceJpa.class).warn(
-				"Find map records from query for project - " + mapProjectId + " workflowStatus - " + workflowStatus);
+        "Find map records from query for project - " + mapProjectId
+            + " workflowStatus - " + workflowStatus);
     if (!getTransactionPerOperation()) {
       throw new IllegalStateException(
           "The application must let the service manage transactions for this method");
@@ -2151,15 +2146,16 @@ public class MappingServiceJpa implements MappingService {
             + "where r.refSetId = :refSetId order by r.concept.id, "
             + "r.mapBlock, r.mapGroup, r.mapPriority");
     query.setParameter("refSetId", mapProject.getRefSetId());
-    List<ComplexMapRefSetMember> complexMapRefSetMembers =
-        new ArrayList<>();
+    List<ComplexMapRefSetMember> complexMapRefSetMembers = new ArrayList<>();
     for (Object member : query.getResultList()) {
       ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
       complexMapRefSetMembers.add(refSetMember);
     }
     Logger.getLogger(MappingServiceJpa.class).warn(
-				"  " + complexMapRefSetMembers.size() + " map records processed (some skipped)");
-		createMapRecordsForMapProject(mapProjectId, complexMapRefSetMembers, workflowStatus);
+        "  " + complexMapRefSetMembers.size()
+            + " map records processed (some skipped)");
+    createMapRecordsForMapProject(mapProjectId, complexMapRefSetMembers,
+        workflowStatus);
   }
 
   // ONLY FOR TESTING PURPOSES
@@ -2250,7 +2246,8 @@ public class MappingServiceJpa implements MappingService {
    */
   @Override
   public void createMapRecordsForMapProject(long mapProjectId,
-		List<ComplexMapRefSetMember> complexMapRefSetMembers, WorkflowStatus workflowStatus) throws Exception {
+    List<ComplexMapRefSetMember> complexMapRefSetMembers,
+    WorkflowStatus workflowStatus) throws Exception {
     MapProject mapProject = getMapProject(mapProjectId);
     Logger.getLogger(this.getClass()).debug(
         "  Starting create map records for map project - "
@@ -2370,9 +2367,9 @@ public class MappingServiceJpa implements MappingService {
 
           // set the owner to legacy
           mapRecord.setOwner(loaderUser);
-					
-					// set the workflow status to published
-					mapRecord.setWorkflowStatus(workflowStatus);
+
+          // set the workflow status to published
+          mapRecord.setWorkflowStatus(workflowStatus);
 
           // persist the record
           addMapRecord(mapRecord);
@@ -2577,7 +2574,9 @@ public class MappingServiceJpa implements MappingService {
     return mapAgeRange;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapAgeRange(long)
    */
   @Override
@@ -2602,8 +2601,12 @@ public class MappingServiceJpa implements MappingService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.services.MappingService#updateMapAgeRange(org.ihtsdo.otf.mapping.model.MapAgeRange)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MappingService#updateMapAgeRange(org.ihtsdo
+   * .otf.mapping.model.MapAgeRange)
    */
   @Override
   public void updateMapAgeRange(MapAgeRange mapAgeRange) {
@@ -2617,6 +2620,5 @@ public class MappingServiceJpa implements MappingService {
       manager.merge(mapAgeRange);
     }
   }
-
 
 }
