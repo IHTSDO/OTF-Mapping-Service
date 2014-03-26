@@ -7,11 +7,16 @@ import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -29,6 +34,7 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -40,6 +46,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 // TODO: Auto-generated Javadoc
 /**
  * The Map Record Jpa object.
+ *
  */
 @Entity
 // add indexes
@@ -91,20 +98,26 @@ public class MapRecordJpa implements MapRecord {
 	@Column(nullable = false)
 	private Long countDescendantConcepts;
 
-	/** The map records. */
+	/** The map entries. */
 	@OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapEntryJpa.class)
 	@IndexedEmbedded(targetElement = MapEntryJpa.class)
-	private List<MapEntry> mapEntries = new ArrayList<MapEntry>();
+	private List<MapEntry> mapEntries = new ArrayList<>();
 
 	/** The map notes. */
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapNoteJpa.class)
 	@IndexedEmbedded(targetElement = MapNoteJpa.class)
-	private Set<MapNote> mapNotes = new HashSet<MapNote>();
+	private Set<MapNote> mapNotes = new HashSet<>();
 
 	/** The map principles. */
 	@ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.EAGER)
 	@IndexedEmbedded(targetElement = MapPrincipleJpa.class)
-	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
+	private Set<MapPrinciple> mapPrinciples = new HashSet<>();
+	
+	/** The originIds. */
+	@ElementCollection(fetch=FetchType.EAGER)
+	@CollectionTable(name="map_records_origin_ids", joinColumns=@JoinColumn(name="id"))
+	@Column(nullable = true)
+	private Set<Long> originIds = new HashSet<>();
 
 	/** Indicates whether the record is flagged for map lead review. */
 	@Column(unique = false, nullable = false)
@@ -118,12 +131,40 @@ public class MapRecordJpa implements MapRecord {
 	@Column(unique = false, nullable = false)
 	private boolean flagForConsensusReview = false;
 	
+	/** The workflow status. */
+	@Enumerated(EnumType.STRING)
+	private WorkflowStatus workflowStatus;
+	
+	
 	/**
 	 * Default constructor.
 	 */
 	public MapRecordJpa() {
 	}
 
+
+	/**
+	 * Instantiates a {@link MapRecordJpa} from the specified parameters.
+	 *
+	 * @param cMapRecord the c map record
+	 */
+	public MapRecordJpa(MapRecord cMapRecord) {
+		this.id = cMapRecord.getId();
+		this.owner = cMapRecord.getOwner();
+		this.timestamp = cMapRecord.getTimestamp();
+		this.mapProjectId = cMapRecord.getMapProjectId();
+		this.conceptId = cMapRecord.getConceptId();
+		this.conceptName = cMapRecord.getConceptName();
+		this.countDescendantConcepts = cMapRecord.getCountDescendantConcepts();
+		this.mapEntries = cMapRecord.getMapEntries();
+		this.mapNotes = cMapRecord.getMapNotes();
+		this.mapPrinciples = cMapRecord.getMapPrinciples();
+		this.originIds = cMapRecord.getOriginIds();
+		this.flagForMapLeadReview = cMapRecord.isFlagForMapLeadReview();
+		this.flagForEditorialReview = cMapRecord.isFlagForEditorialReview();
+		this.flagForConsensusReview = cMapRecord.isFlagForConsensusReview();
+		this.workflowStatus = cMapRecord.getWorkflowStatus();
+	}
 
 	/**
 	 * Return the id.
@@ -159,6 +200,7 @@ public class MapRecordJpa implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getOwner()
 	 */
+	@Override
 	@XmlElement(type = MapUserJpa.class, name = "owner")
 	public MapUser getOwner() {
 		return owner;
@@ -168,14 +210,16 @@ public class MapRecordJpa implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setOwner(org.ihtsdo.otf.mapping.model.MapUser)
 	 */
+	@Override
 	public void setOwner(MapUser owner) {
-		this.owner = (MapUserJpa) owner;
+		this.owner = owner;
 	}
 
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getTimestamp()
 	 */
+	@Override
 	public Long getTimestamp() {
 		return timestamp;
 	}
@@ -184,6 +228,7 @@ public class MapRecordJpa implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setTimestamp(java.lang.Long)
 	 */
+	@Override
 	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
@@ -416,7 +461,41 @@ public class MapRecordJpa implements MapRecord {
 	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
 		mapPrinciples.remove(mapPrinciple);
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getOriginIds()
+	 */
+	@Override
+	public Set<Long> getOriginIds() {
+		return originIds;
+	}
 
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setOriginIds(java.util.Set)
+	 */
+	@Override
+	public void setOriginIds(Set<Long> originIds) {
+		this.originIds = originIds;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addOrigin(java.lang.Long)
+	 */
+	@Override
+	public void addOrigin(Long origin) {
+		this.originIds.add(origin);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeOrigin(java.lang.Long)
+	 */
+	@Override
+	public void removeOrigin(Long origin) {
+		originIds.remove(origin);
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#isFlagForMapLeadReview()
@@ -473,28 +552,31 @@ public class MapRecordJpa implements MapRecord {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((conceptId == null) ? 0 : conceptId.hashCode());
-		result = prime * result
-				+ ((conceptName == null) ? 0 : conceptName.hashCode());
-		result = prime
-				* result
-				+ ((countDescendantConcepts == null) ? 0
-						: countDescendantConcepts.hashCode());
+		result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
+		result =
+				prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
+		result =
+				prime
+						* result
+						+ ((countDescendantConcepts == null) ? 0 : countDescendantConcepts
+								.hashCode());
 		result = prime * result + (flagForConsensusReview ? 1231 : 1237);
 		result = prime * result + (flagForEditorialReview ? 1231 : 1237);
 		result = prime * result + (flagForMapLeadReview ? 1231 : 1237);
-		result = prime * result
-				+ ((mapEntries == null) ? 0 : mapEntries.hashCode());
-		result = prime * result
-				+ ((mapNotes == null) ? 0 : mapNotes.hashCode());
-		result = prime * result
-				+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
-		result = prime * result
-				+ ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
+		result =
+				prime * result + ((mapEntries == null) ? 0 : mapEntries.hashCode());
+		result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
+		result =
+				prime * result
+						+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
+		result =
+				prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
+		result = prime * result + ((originIds == null) ? 0 : originIds.hashCode());
 		result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-		result = prime * result
-				+ ((timestamp == null) ? 0 : timestamp.hashCode());
+		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
+		result =
+				prime * result
+						+ ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
 		return result;
 	}
 
@@ -523,8 +605,7 @@ public class MapRecordJpa implements MapRecord {
 		if (countDescendantConcepts == null) {
 			if (other.countDescendantConcepts != null)
 				return false;
-		} else if (!countDescendantConcepts
-				.equals(other.countDescendantConcepts))
+		} else if (!countDescendantConcepts.equals(other.countDescendantConcepts))
 			return false;
 		if (flagForConsensusReview != other.flagForConsensusReview)
 			return false;
@@ -552,6 +633,11 @@ public class MapRecordJpa implements MapRecord {
 				return false;
 		} else if (!mapProjectId.equals(other.mapProjectId))
 			return false;
+		if (originIds == null) {
+			if (other.originIds != null)
+				return false;
+		} else if (!originIds.equals(other.originIds))
+			return false;
 		if (owner == null) {
 			if (other.owner != null)
 				return false;
@@ -561,6 +647,11 @@ public class MapRecordJpa implements MapRecord {
 			if (other.timestamp != null)
 				return false;
 		} else if (!timestamp.equals(other.timestamp))
+			return false;
+		if (workflowStatus == null) {
+			if (other.workflowStatus != null)
+				return false;
+		} else if (!workflowStatus.equals(other.workflowStatus))
 			return false;
 		return true;
 	}
@@ -575,10 +666,24 @@ public class MapRecordJpa implements MapRecord {
 				+ ", conceptName=" + conceptName + ", countDescendantConcepts="
 				+ countDescendantConcepts + ", mapEntries=" + mapEntries
 				+ ", mapNotes=" + mapNotes + ", mapPrinciples=" + mapPrinciples
-				+ ", flagForMapLeadReview=" + flagForMapLeadReview
-				+ ", flagForEditorialReview=" + flagForEditorialReview
-				+ ", flagForConsensusReview=" + flagForConsensusReview + "]";
+				+ ", originIds=" + originIds + ", flagForMapLeadReview="
+				+ flagForMapLeadReview + ", flagForEditorialReview="
+				+ flagForEditorialReview + ", flagForConsensusReview="
+				+ flagForConsensusReview + workflowStatus + "]";
 	}
+
+
+	@Override
+	public void setWorkflowStatus(WorkflowStatus workflowStatus) {
+		this.workflowStatus = workflowStatus;
+	}
+
+
+	@Override
+	public WorkflowStatus getWorkflowStatus() {
+		return workflowStatus;
+	}
+
 
 
 }

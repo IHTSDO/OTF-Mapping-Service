@@ -290,7 +290,8 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			getLog().info("done ...");
 			usersWriter.close();
 			advicesWriter.close();
-			principlesWriter.close();
+            principlesWriter.close();
+            relationsWriter.close();
 			projectsWriter.close();
 			scopeIncludesWriter.close();
 			scopeExcludesWriter.close();

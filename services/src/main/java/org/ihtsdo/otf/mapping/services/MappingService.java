@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -13,7 +14,6 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
-import org.ihtsdo.otf.mapping.rf2.Concept;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -365,7 +365,7 @@ public interface MappingService {
 	 * @return the map record count for map project id
 	 * @throws Exception the exception
 	 */
-	public Long getMapRecordCountForMapProjectId(Long mapProjectId,
+	public Long getMapRecordCountForMapProject(Long mapProjectId,
 			PfsParameter pfsParameter) throws Exception;
 	
 	
@@ -373,11 +373,11 @@ public interface MappingService {
 	/**
 	 * Gets the map records for concept id.
 	 *
-	 * @param conceptId the concept id
+	 * @param terminologyId the concept id
 	 * @return the map records for concept id
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> getMapRecordsForTerminologyId(String conceptId) throws Exception;
+	public List<MapRecord> getMapRecordsForConcept(String terminologyId) throws Exception;
 
 	/**
 	 * Returns the unmapped descendants for concept.
@@ -404,21 +404,23 @@ public interface MappingService {
 	/**
 	 * Creates the map records for map project.
 	 *
-	 * @param mapProject the map project
+	 * @param mapProjectId the map project id
+	 * @param workflowStatus the workflow status
 	 * @throws Exception the exception
 	 */
-	public void createMapRecordsForMapProject(MapProject mapProject) throws Exception;
+	public void createMapRecordsForMapProject(Long mapProjectId,  WorkflowStatus workflowStatus) throws Exception;
 	
 
 	/**
 	 * Creates the map records for map project.
 	 *
-	 * @param mapProject the map project
+	 * @param mapProjectId the map project id
 	 * @param complexMapRefSetMembers the complex map ref set members
+	 * @param workflowStatus TODO
 	 * @throws Exception the exception
 	 */
-	public void createMapRecordsForMapProject(MapProject mapProject, 
-			List<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
+	public void createMapRecordsForMapProject(Long mapProjectId, 
+			List<ComplexMapRefSetMember> complexMapRefSetMembers, WorkflowStatus workflowStatus) throws Exception;
 
 	/**
 	 * Removes the map records for project id.
@@ -427,7 +429,7 @@ public interface MappingService {
 	 * @return the long
 	 * @throws Exception the exception
 	 */
-	public Long removeMapRecordsForProjectId(Long mapProjectId) throws Exception;
+	public Long removeMapRecordsForProject(Long mapProjectId) throws Exception;
 	
 	/**
 	 * Helper function not requiring a PFS object.
@@ -436,7 +438,7 @@ public interface MappingService {
 	 * @return the map records for a project id
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId) throws Exception;
+	public List<MapRecord> getMapRecordsForMapProject(Long mapProjectId) throws Exception;
 	
 	/**
 	 * Helper function which calls either a simple query or lucene query depending on filter parameters.
@@ -446,147 +448,88 @@ public interface MappingService {
 	 * @return the map records for map project id
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> getMapRecordsForMapProjectId(Long mapProjectId,
-			PfsParameter pfsParameter) throws Exception;
-	
-	/**
-	 * Executes lucene query given a projectId and paging/sorting/filtering parameters.
-	 *
-	 * @param mapProjectId the project id
-	 * @param pfsParameter the paging/filtering/sorting object
-	 * @return the paged and filtered map records for this map project id
-	 * @throws Exception the exception
-	 */
-	public List<MapRecord> getMapRecordsForMapProjectIdWithQuery(Long mapProjectId,
+	public List<MapRecord> getMapRecordsForMapProject(Long mapProjectId,
 			PfsParameter pfsParameter) throws Exception;
 
 	/**
-	 * Executes simple query given a projectId and paging/sorting parameters (no filters, i.e. without lucene search)
+	 * Helper function for retrieving map records given a concept id.
 	 *
-	 * @param mapProjectId the project id
-	 * @param pfsParameter the paging/filtering (not used)/sorting object
-	 * @return the paged map records for this map project id
-	 */
-	public List<MapRecord> getMapRecordsForMapProjectIdWithNoQuery(Long mapProjectId,
-			PfsParameter pfsParameter);
-	
-	/**
-	 * Helper function for retrieving map records given an internal hibernate concept id.
-	 *
-	 * @param conceptId the concept id in Long form
+	 * @param conceptId the concept id
 	 * @return the map records where this concept is referenced
 	 */
 	public List<MapRecord> getMapRecordsForConcept(Long conceptId);
-	
-	/**
-	 * Given a Concept, retrieve map records that reference this as a source Concept.
-	 *
-	 * @param concept the Concept object
-	 * @return a list of MapRecords referencing this Concept
-	 */
-	public List<MapRecord> getMapRecordsForConcept(Concept concept);
-
-	/**
-	 * Gets the transaction per operation.
-	 *
-	 * @return the transaction per operation
-	 * @throws Exception the exception
-	 */
-	public boolean getTransactionPerOperation() throws Exception;
-	
-	/**
-	 * Sets the transaction per operation.
-	 *
-	 * @param transactionPerOperation the new transaction per operation
-	 * @throws Exception the exception
-	 */
-	public void setTransactionPerOperation(boolean transactionPerOperation) throws Exception;
-	
-	/**
-	 * Begin transaction.
-	 *
-	 * @throws Exception the exception
-	 */
-	public void beginTransaction() throws Exception;
-	
-	/**
-	 * Commit.
-	 *
-	 * @throws Exception the exception
-	 */
-	public void commit() throws Exception;
 
 	/**
 	 * Find concepts in scope.
 	 *
-	 * @param project the project
+     * @param mapProjectId the map project id
 	 * @return the search result list
 	 * @throws Exception the exception
 	 */
-	public SearchResultList findConceptsInScope(MapProject project)
+	public SearchResultList findConceptsInScope(Long mapProjectId)
 		throws Exception;
 
 	/**
 	 * Find unmapped concepts in scope.
 	 *
-	 * @param project the project
+     * @param mapProjectId the map project id
 	 * @return the search result list
 	 * @throws Exception the exception
 	 */
-	public SearchResultList findUnmappedConceptsInScope(MapProject project)
+	public SearchResultList findUnmappedConceptsInScope(Long mapProjectId)
 		throws Exception;
 
 	/**
 	 * Find mapped concepts out of scope bounds.
 	 *
-	 * @param project the project
+     * @param mapProjectId the map project id
 	 * @return the search result list
 	 * @throws Exception the exception
 	 */
-	public SearchResultList findMappedConceptsOutOfScopeBounds(MapProject project)
+	public SearchResultList findMappedConceptsOutOfScopeBounds(Long mapProjectId)
 		throws Exception;
 
 	/**
 	 * Find concepts excluded from scope.
 	 *
-	 * @param project the project
+     * @param mapProjectId the map project id
 	 * @return the search result list
 	 * @throws Exception the exception
 	 */
-	public SearchResultList findConceptsExcludedFromScope(MapProject project)
+	public SearchResultList findConceptsExcludedFromScope(Long mapProjectId)
 		throws Exception;
 
 	/**
 	 * Indicates whether or not concept in scope is the case.
 	 *
-	 * @param concept the concept
-	 * @param project the project
+	 * @param terminologyId the concept id
+     * @param mapProjectId the map project id
 	 * @return <code>true</code> if so, <code>false</code> otherwise
 	 * @throws Exception the exception
 	 */
-	public boolean isConceptInScope(Concept concept, MapProject project)
+	public boolean isConceptInScope(String terminologyId, Long mapProjectId)
 		throws Exception;
 
 	/**
 	 * Indicates whether or not concept excluded from scope is the case.
 	 *
-	 * @param concept the concept
-	 * @param project the project
+     * @param terminologyId the concept id
+     * @param mapProjectId the map project id
 	 * @return <code>true</code> if so, <code>false</code> otherwise
 	 * @throws Exception the exception
 	 */
-	public boolean isConceptExcludedFromScope(Concept concept, MapProject project)
+	public boolean isConceptExcludedFromScope(String terminologyId, Long mapProjectId)
 		throws Exception;
 
 	/**
 	 * Indicates whether or not concept out of scope bounds is the case.
 	 *
-	 * @param concept the concept
-	 * @param project the project
+     * @param terminologyId the concept id
+     * @param mapProjectId the map project id
 	 * @return <code>true</code> if so, <code>false</code> otherwise
 	 * @throws Exception the exception
 	 */
-	public boolean isConceptOutOfScopeBounds(Concept concept, MapProject project)
+	public boolean isConceptOutOfScopeBounds(String terminologyId, Long mapProjectId)
 		throws Exception;
 
 	/**
@@ -598,12 +541,12 @@ public interface MappingService {
 	public MapUser getMapUser(String userName);
 
 	/**
-	 * User exists.
+	 * Indicates whether or not a user with the specified username exists.
 	 *
-	 * @param mapUser the map user
-	 * @return true, if successful
+	 * @param mapUser the map user name
+	 * @return <code>true</code> if so, <code>false</code> otherwise
 	 */
-	public boolean userExists(MapUser mapUser);
+	public boolean userExists(String mapUser);
 
 	/**
 	 * Returns the map age ranges.
@@ -643,14 +586,14 @@ public interface MappingService {
 	public List<MapRecord> getMapRecordRevisions(Long mapRecordId);
 
 	/**
-	 * Gets the map relations.
+	 * Returns the map relations.
 	 *
 	 * @return the map relations
 	 */
 	public List<MapRelation> getMapRelations();
 
 	/**
-	 * Find map relations.
+	 * Finds map relations from the specified query.
 	 *
 	 * @param query the query
 	 * @param pfsParameter the pfs parameter
@@ -688,6 +631,36 @@ public interface MappingService {
 	 * @return the map record
 	 */
 	public MapRecord computeMapAdviceAndMapRelationsForMapRecord(MapRecord mapRecord);
+	
+    /**
+     * Gets the transaction per operation.
+     *
+     * @return the transaction per operation
+     * @throws Exception the exception
+     */
+    public boolean getTransactionPerOperation() throws Exception;
+    
+    /**
+     * Sets the transaction per operation.
+     *
+     * @param transactionPerOperation the new transaction per operation
+     * @throws Exception the exception
+     */
+    public void setTransactionPerOperation(boolean transactionPerOperation) throws Exception;
+
+    /**
+     * Begin transaction.
+     *
+     * @throws Exception the exception
+     */
+    public void beginTransaction() throws Exception;
+    
+    /**
+     * Commit.
+     *
+     * @throws Exception the exception
+     */
+    public void commit() throws Exception;
 	
 }
 	

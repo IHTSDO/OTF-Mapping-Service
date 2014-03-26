@@ -13,17 +13,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ValidationResultJpa implements ValidationResult {
 
 	/** The errors. */
-	private Set<String> errors = new HashSet<String>();
+	private Set<String> errors = new HashSet<>();
 	
 	/** The warnings. */
-	private Set<String> warnings = new HashSet<String>();
+	private Set<String> warnings = new HashSet<>();
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#isValid()
 	 */
 	@Override
 	public boolean isValid() {
-		return this.errors.size() == 0;
+		return valid && errors.size() == 0;
 	}
 	
 	/* (non-Javadoc)

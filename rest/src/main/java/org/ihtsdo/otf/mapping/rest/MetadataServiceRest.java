@@ -20,17 +20,15 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Metadata Services REST package.
- *
- * @author ${author}
+ * Metadata Services REST package.
  */
 @Path("/metadata")
 @Api(value = "/metadata", description = "Operations providing metadata.")
 @Produces({
 		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
+@SuppressWarnings("static-method")
 public class MetadataServiceRest {
 
 	/**
@@ -40,7 +38,7 @@ public class MetadataServiceRest {
 	 * @param version the version
 	 * @return the all metadata
 	 */
-	@GET
+  @GET
 	@Path("/all/{terminology}/{version}")
 	@ApiOperation(value = "Get all metadata", notes = "Returns all metadata in either JSON or XML format", response = KeyValuePairLists.class)
 	@Produces({
@@ -104,6 +102,11 @@ public class MetadataServiceRest {
 		}
 	}
 
+  /**
+   * Returns the all terminologies latest versions.
+   *
+   * @return the all terminologies latest versions
+   */
   @GET
 	@Path("/terminologies/latest/")
 	@ApiOperation(value = "Get all terminologies and their latest versions", notes = "Returns list of terminologies and their latest versions in either JSON or XML format", response = KeyValuePairList.class)
@@ -126,6 +129,11 @@ public class MetadataServiceRest {
 		}
 	}
 
+  /**
+   * Returns the all terminologies versions.
+   *
+   * @return the all terminologies versions
+   */
   @GET
 	@Path("/terminologies/")
 	@ApiOperation(value = "Get all terminologies and all their versions", notes = "Returns list of terminologies and their versions in either JSON or XML format", response = KeyValuePairList.class)
