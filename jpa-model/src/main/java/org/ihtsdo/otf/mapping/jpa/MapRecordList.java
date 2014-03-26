@@ -17,7 +17,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 public class MapRecordList {
 
 	/** The map records. */
-	private List<MapRecord> mapRecords = new ArrayList<MapRecord>();
+	private List<MapRecord> mapRecords = new ArrayList<>();
 
 	/**
 	 * Instantiates a new map record list.
@@ -53,7 +53,7 @@ public class MapRecordList {
 	 *            the new map records
 	 */
 	public void setMapRecords(List<MapRecord> mapRecords) {
-		this.mapRecords = new ArrayList<MapRecord>();
+		this.mapRecords = new ArrayList<>();
 		if (mapRecords != null) {
 			this.mapRecords.addAll(mapRecords);
 		}

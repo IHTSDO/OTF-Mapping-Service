@@ -17,7 +17,7 @@ import org.ihtsdo.otf.mapping.model.MapEntry;
 public class MapEntryList {
 
 	/** The map entrys. */
-	private List<MapEntry> mapEntrys = new ArrayList<MapEntry>();
+	private List<MapEntry> mapEntrys = new ArrayList<>();
 
 	/**
 	 * Instantiates a new map entry list.
@@ -53,7 +53,7 @@ public class MapEntryList {
 	 *            the new map entrys
 	 */
 	public void setmapEntrys(List<MapEntry> mapEntrys) {
-		this.mapEntrys = new ArrayList<MapEntry>();
+		this.mapEntrys = new ArrayList<>();
 		this.mapEntrys.addAll(mapEntrys);
 		
 		

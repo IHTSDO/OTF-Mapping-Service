@@ -202,36 +202,28 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   				$scope.record.mapEntry = entries;
   			}
   			
-  			// COMMENTED OUT FOR PUSH 03/14/2014
-  			
-  			/*console.debug($scope.record);
-  			console.debug($scope.record.mapEntry);
-
   			console.debug("Validating the map entry");
 			// validate the record
 			$http({
-				  url: root_mapping + "record/validate",
+				  url: root_validation + "record/validate",
 				  dataType: "json",
 				  data: $scope.record,
 				  method: "POST",
 				  headers: {
-					  "Content-Type": "application/json",
-					  "user" : localStorageService.get('currentUser')
-						  
+					  "Content-Type": "application/json"
 				  }
 			  }).success(function(data) {
 				  console.debug("validation results:");
 				  console.debug(data);
-				  $scope.recordValidationMessages = data;
+				  $scope.validationResult = data;
 			  }).error(function(data) {
-				  $scope.recordSuccesss = "";
-				  $scope.recordValidationMessages = "Failed to validate";
-				  $scope.recordError = "Error validating record.";
+				  $scope.validationResult = null;
+				  console.debug("Failed to validate map record");
 			  }).then(function(data) {
 				
 				  // if no error messages were returned, save the record
-				  if ($scope.recordValidationMessages.length == 0)  {
-				*/	  
+				  if ($scope.validationResult.errors.length == 0)  {
+					  
 					  $http({
 						  url: root_mapping + "record/update",
 						  dataType: "json",
@@ -249,14 +241,12 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						 $scope.recordError = "Error saving record.";
 					  });
 				  
-				/*  // otherwise, display the errors
+				  // otherwise, display the errors
 				  } else {
-					  console.debug($scope.recordValidationMessages.length);
-					  $scope.recordError = $scope.recordValidationMessages;
-					  $scope.recordSuccess = "";
+					 $scope.recordSuccess = "";
 				  }
 				  
-			  });*/
+			  });
   		};
   		
   		// discard changes
@@ -264,28 +254,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
   			  window.history.back();
   			
-  			  /* PREVIOUSLY:
-  			   * Discarded changes and requeried database
-  			   * 
-  			   * $http({
-  				 url: root_mapping + "record/id/" + recordId,
-  				 dataType: "json",
-  			        method: "GET",
-  			        headers: { "Content-Type": "application/json"}	
-  		      }).success(function(data) {
-  		    	  $scope.record = data;
-  		    	  $scope.recordSuccess = "";
-  				  $scope.recordError = "Record changes aborted.";
-  		      }).error(function(error) {
-  		    	  $scope.error = $scope.error + "Could not retrieve map record. ";
-  		     
-  		      }).then(function() {
-  	       	 
-  		      	  // get the groups
-  		    	  getGroups();
-  		    	  
-  		    	  $scope.entry = null;
-  		      });*/	
   		};
   		
   		$scope.deleteMapRecord = function() {
@@ -299,9 +267,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   					  method: "DELETE",
   					  headers: {"Content-Type": "application/json"}
   				  }).success(function(data) {
-  					 $scope.record = data;
+  					 window.history.back();
   				  }).error(function(data) {
-  					  console.debug("Existing record update ERROR");	  
+  					  console.debug("ERROR deleting record");	  
   				  });
   			}
   		};

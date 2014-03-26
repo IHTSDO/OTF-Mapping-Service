@@ -196,7 +196,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 			// Call mapping service to create records as we go along
 			for (String refSetId : complexMapRefSetMemberMap.keySet()) {
 				mappingService.createMapRecordsForMapProject(
-						mapProjectMap.get(refSetId),
+						mapProjectMap.get(refSetId).getId(),
 						complexMapRefSetMemberMap.get(refSetId), WorkflowStatus.READY_FOR_PUBLICATION);
 			}
 

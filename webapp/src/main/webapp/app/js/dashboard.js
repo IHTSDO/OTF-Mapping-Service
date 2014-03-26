@@ -88,6 +88,11 @@ angular.module('adf')
         adfModel: '='
       },
       controller: function($scope){
+    	  
+	    $scope.currentUser = localStorageService.get('currentUser');
+		$scope.currentRole = localStorageService.get('currentRole');
+    		  
+    	  
         // sortable options for drag and drop
         $scope.sortableOptions = {
           connectWith: ".column",
@@ -184,16 +189,16 @@ angular.module('adf')
           };
           addScope.isWidgetInRole = function(widget){
         	  if ($scope.name === 'default') {
-	        	  if (widget == 'mapProjectList' && currentRole.value >= 1) { //$rootScope.role.value >= 1) {
+	        	  if (widget == 'mapProjectList' && $scope.currentRole.value >= 1) { //$rootScope.role.value >= 1) {
 	            	  return true;
-	              } else if (widget == 'metadataList' && currentRole.value > 1) { //$rootScope.role.value >= 3) {
+	              } else if (widget == 'metadataList' && $scope.currentRole.value > 1) { //$rootScope.role.value >= 3) {
 	        	      return true;
-	          	  } 
+	          	  } else if (widget == 'mapProject') return true;
 	        	  return false;
         	  } else if ($scope.name === 'mappingDashboard') {
-        		  if (widget == 'mapRecord') {// } && currentRole.value >= 1) { //$rootScope.role.value >= 1) {
+        		  if (widget == 'mapRecord' && $scope.currentRole.value >= 1) { //$rootScope.role.value >= 1) {
 	            	  return true;
-	              } else if (widget == 'mapEntry') {// } && currentRole.value > 1) { //$rootScope.role.value >= 3) {
+	              } else if (widget == 'mapEntry' && $scope.currentRole.value > 1) { //$rootScope.role.value >= 3) {
 	        	      return true;
 	          	  } 
         	  }

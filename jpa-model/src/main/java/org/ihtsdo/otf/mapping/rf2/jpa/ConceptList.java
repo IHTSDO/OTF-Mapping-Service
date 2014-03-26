@@ -17,7 +17,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 public class ConceptList {
 
 	/** The map concepts. */
-	private List<Concept> Concepts = new ArrayList<Concept>();
+	private List<Concept> Concepts = new ArrayList<>();
 
 	/**
 	 * Instantiates a new map concept list.
@@ -53,7 +53,7 @@ public class ConceptList {
 	 *            the new map concepts
 	 */
 	public void setConcepts(List<Concept> Concepts) {
-		this.Concepts = new ArrayList<Concept>();
+		this.Concepts = new ArrayList<>();
 		if (Concepts != null) {
 			this.Concepts.addAll(Concepts);
 		}

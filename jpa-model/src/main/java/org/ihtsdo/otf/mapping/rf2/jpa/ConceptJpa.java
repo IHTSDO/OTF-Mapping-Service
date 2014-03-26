@@ -6,7 +6,6 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -47,28 +46,28 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
 	/** The descriptions. */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=DescriptionJpa.class) 
-	private Set<Description> descriptions = new HashSet<Description>();
+	private Set<Description> descriptions = new HashSet<>();
 
 	/** The relationships. */
 	@OneToMany(mappedBy = "sourceConcept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=RelationshipJpa.class)
 	@IndexedEmbedded(targetElement=RelationshipJpa.class)
-	private Set<Relationship> relationships = new HashSet<Relationship>();
+	private Set<Relationship> relationships = new HashSet<>();
 
 	/** The inverse relationships. */
 	@OneToMany(mappedBy = "destinationConcept", orphanRemoval = true, targetEntity=RelationshipJpa.class)
-	private Set<Relationship> inverseRelationships = new HashSet<Relationship>();
+	private Set<Relationship> inverseRelationships = new HashSet<>();
 
 	/** The simple RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=SimpleRefSetMemberJpa.class)
-	private Set<SimpleRefSetMember> simpleRefSetMembers = new HashSet<SimpleRefSetMember>();
+	private Set<SimpleRefSetMember> simpleRefSetMembers = new HashSet<>();
 
 	/** The simpleMap RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=SimpleMapRefSetMemberJpa.class)
-	private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = new HashSet<SimpleMapRefSetMember>();
+	private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = new HashSet<>();
 
 	/** The complexMap RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=ComplexMapRefSetMemberJpa.class)
-	private Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<ComplexMapRefSetMember>();
+	private Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<>();
 	
 	/** The attributeValue RefSet members */
 	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=AttributeValueRefSetMemberJpa.class)

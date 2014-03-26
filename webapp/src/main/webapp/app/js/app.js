@@ -7,10 +7,12 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'adf',  
                                                      'mapProjectApp.widgets.mapProjectList', 
                                                      'mapProjectApp.widgets.metadataList',
+                                                     'mapProjectApp.widgets.mapProject',
                                                      'mapProjectApp.widgets.mapRecord',
                                                      'mapProjectApp.widgets.mapEntry',
                                                      'LocalStorageModule',
-                                                     'ngCookies'
+                                                     'ngCookies'/*,
+                                                     'textAngular'*/
                         ])
                         .value('prefix', '')
                         .config(function (dashboardProvider) {
@@ -32,7 +34,11 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                 }, {
                                   class: 'col-md-8',
                                   widgets: []
+                                }, {
+                                  class: 'col-md-4',
+                                  widgets: []
                                 }]
+                                
                               }]
                             })
                             .structure('12/4-4-4', {
@@ -79,27 +85,32 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                           if (!model && currentRole.value >= 3) { // lead or higher privledge
                             // set default model for demo purposes
                             model = {
-                              structure: "4-8",                          
-                            rows: [{
-                                columns: [{
-                                  class: 'col-md-4',
-                                  widgets: [{
-                                      type: "mapProjectList",
-                                      config: {},
-                                      title: "Map Projects"
-                                  }]
-                                }, {
-                                  class: 'col-md-8',
-                                  widgets: [{
-                                      type: "metadataList",
-                                      config: {
-                                          terminology: "SNOMEDCT"
-                                      },
-                                      title: "Metadata"
-                                  }]
-                                }]
-                              }]
-                            };
+                                structure: "4-8",                          
+	                            rows: [{
+	                                columns: [
+	                                {
+	                                  class: 'col-md-4',
+	                                  widgets: [{
+	                                      type: "mapProjectList",
+	                                      config: {},
+	                                      title: "Map Projects"
+	                                  }, {
+	                                      type: "mapProject",
+	                                      config: {},
+	                                      title: "Map Project"
+	                                  }]
+	                                }, {
+	                                  class: 'col-md-8',
+	                                  widgets: [{
+	                                      type: "metadataList",
+	                                      config: {
+	                                          terminology: "SNOMEDCT"
+	                                      },
+	                                      title: "Metadata"
+	                                  }]
+	                                }]
+	                              }]
+                            }
                           } else if (!model) { // viewer or specialist
                               // set default model for demo purposes
                               model = {

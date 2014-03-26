@@ -136,6 +136,7 @@
 	</accordion-group>
 </accordion>
 
+
 <!--  FLAGS PANEL -->
 <accordion>
 	<accordion-group is-open="isFlagsOpen">
@@ -156,10 +157,16 @@
 <button class="btn btn-sm btn-danger"  ng-click="deleteMapRecord()">Delete Record</button>
 <p></p>
 <span style="color:green;">{{recordSuccess}}</span>
-<span style="color:red;" ng-show="recordError.length > 0">
+<span style="color:red;" ng-show="validationResult.errors.length > 0">
 Errors detected:
 <ul>
-<li ng-repeat = "error in recordValidationMessages">{{error}}</li>
+<li ng-repeat = "error in validationResult.errors">{{error}}</li>
 </ul>
 </span>
-		
+<span style="color:orange;" ng-show="validationResult.warnings.length > 0">
+Warnings:
+<ul>
+<li ng-repeat = "warning in validationResult.warnings">{{warning}}</li>
+</ul>
+</span>
+	
