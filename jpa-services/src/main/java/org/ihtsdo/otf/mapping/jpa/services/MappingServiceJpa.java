@@ -144,7 +144,7 @@ public class MappingServiceJpa implements MappingService {
   // //////////////////////////////////
   // MapProject
   // - getMapProjects
-  // - getMapProject(long id)
+  // - getMapProject(Long id)
   // - getMapProject(String name)
   // - findMapProjects(String query)
   // - addMapProject(MapProject mapProject)
@@ -159,7 +159,7 @@ public class MappingServiceJpa implements MappingService {
    * @return the MapProject
    */
   @Override
-  public MapProject getMapProject(long id) {
+  public MapProject getMapProject(Long id) {
 
     MapProject m = null;
 
@@ -347,7 +347,7 @@ public class MappingServiceJpa implements MappingService {
    * @param mapProjectId the map project to be removed
    */
   @Override
-  public void removeMapProject(long mapProjectId) {
+  public void removeMapProject(Long mapProjectId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       // first, remove the leads and specialists from this project
@@ -385,7 +385,7 @@ public class MappingServiceJpa implements MappingService {
   // - findMapUsers(String query)
   // - addMapUser(MapUser mapUser)
   // - updateMapUser(MapUser mapUser)
-  // - removeMapUser(long id)
+  // - removeMapUser(Long id)
   // ///////////////////////////////////////////////////////////////
 
   /**
@@ -414,7 +414,7 @@ public class MappingServiceJpa implements MappingService {
    * @return the MapSpecialist
    */
   @Override
-  public MapUser getMapUser(long id) {
+  public MapUser getMapUser(Long id) {
 
     MapUser m = null;
 
@@ -557,7 +557,7 @@ public class MappingServiceJpa implements MappingService {
    * @param mapUserId the map user to be removed
    */
   @Override
-  public void removeMapUser(long mapUserId) {
+  public void removeMapUser(Long mapUserId) {
 
     EntityTransaction tx = manager.getTransaction();
 
@@ -652,7 +652,7 @@ public class MappingServiceJpa implements MappingService {
    * @return the map record
    */
   @Override
-  public MapRecord getMapRecord(long id) {
+  public MapRecord getMapRecord(Long id) {
 
     javax.persistence.Query query =
         manager.createQuery("select r from MapRecordJpa r where id = :id");
@@ -822,7 +822,7 @@ public class MappingServiceJpa implements MappingService {
    * @param id the id of the map record to be removed
    */
   @Override
-  public void removeMapRecord(long id) {
+  public void removeMapRecord(Long id) {
 
     EntityTransaction tx = manager.getTransaction();
 
@@ -852,7 +852,7 @@ public class MappingServiceJpa implements MappingService {
       "unused", "unchecked", "rawtypes"
   })
   @Override
-  public List<MapRecord> getMapRecordRevisions(long mapRecordId) {
+  public List<MapRecord> getMapRecordRevisions(Long mapRecordId) {
 
     AuditReader reader = AuditReaderFactory.get(manager);
     List<MapRecord> revisions = new ArrayList<>();
@@ -1044,16 +1044,12 @@ public class MappingServiceJpa implements MappingService {
     return m;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForConcept(
-   * long)
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForConcept(java.lang.Long)
    */
   @Override
   @SuppressWarnings("unchecked")
-  public List<MapRecord> getMapRecordsForConcept(long conceptId) {
+  public List<MapRecord> getMapRecordsForConcept(Long conceptId) {
 
     // call retrieval function with concept
     Concept concept = manager.find(ConceptJpa.class, conceptId);
@@ -1085,10 +1081,10 @@ public class MappingServiceJpa implements MappingService {
    * 
    * @see
    * org.ihtsdo.otf.mapping.services.MappingService#getMapRecordCountForMapProjectId
-   * (java.lang.long)
+   * (java.lang.Long)
    */
   @Override
-  public long getMapRecordCountForMapProject(long mapProjectId,
+  public Long getMapRecordCountForMapProject(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
 
     // if no paging/filtering/sorting object, retrieve total number of records
@@ -1101,7 +1097,7 @@ public class MappingServiceJpa implements MappingService {
               .createQuery("select count(m) from MapRecordJpa m where mapProjectId = :mapProjectId");
 
       query.setParameter("mapProjectId", mapProjectId);
-      return new Long(query.getSingleResult().toString()).longValue();
+      return new Long(query.getSingleResult().toString());
 
       // otherwise require a lucene search based on filters
     } else {
@@ -1121,14 +1117,14 @@ public class MappingServiceJpa implements MappingService {
       luceneQuery = queryParser.parse(full_query);
 
       return new Long(fullTextEntityManager.createFullTextQuery(luceneQuery,
-          MapRecordJpa.class).getResultSize()).longValue();
+          MapRecordJpa.class).getResultSize());
 
     }
 
   }
 
   @Override
-  public List<MapRecord> getMapRecordsForMapProject(long mapProjectId)
+  public List<MapRecord> getMapRecordsForMapProject(Long mapProjectId)
     throws Exception {
 
     return getMapRecordsForMapProject(mapProjectId, null);
@@ -1139,11 +1135,11 @@ public class MappingServiceJpa implements MappingService {
    * 
    * @see
    * org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForMapProject
-   * (long, org.ihtsdo.otf.mapping.helpers.PfsParameter)
+   * (java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameter)
    */
   @Override
   @SuppressWarnings("unchecked")
-  public List<MapRecord> getMapRecordsForMapProject(long mapProjectId,
+  public List<MapRecord> getMapRecordsForMapProject(Long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
 
     String full_query =
@@ -1197,7 +1193,7 @@ public class MappingServiceJpa implements MappingService {
    * @return the full lucene query text
    */
   private static String constructMapRecordForMapProjectIdQuery(
-    long mapProjectId, PfsParameter pfsParameter) {
+    Long mapProjectId, PfsParameter pfsParameter) {
 
     String full_query;
 
@@ -1393,7 +1389,7 @@ public class MappingServiceJpa implements MappingService {
    * ihtsdo.otf.mapping.model.MapProject)
    */
   @Override
-  public SearchResultList findConceptsInScope(long mapProjectId)
+  public SearchResultList findConceptsInScope(Long mapProjectId)
     throws Exception {
     MapProject project = getMapProject(mapProjectId);
     SearchResultList conceptsInScope = new SearchResultListJpa();
@@ -1465,7 +1461,7 @@ public class MappingServiceJpa implements MappingService {
    * (org.ihtsdo.otf.mapping.model.MapProject)
    */
   @Override
-  public SearchResultList findUnmappedConceptsInScope(long mapProjectId)
+  public SearchResultList findUnmappedConceptsInScope(Long mapProjectId)
     throws Exception {
     SearchResultList conceptsInScope = findConceptsInScope(mapProjectId);
     SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
@@ -1497,10 +1493,10 @@ public class MappingServiceJpa implements MappingService {
    * (non-Javadoc)
    * 
    * @see org.ihtsdo.otf.mapping.services.MappingService#
-   * findMappedConceptsOutOfScopeBounds(long)
+   * findMappedConceptsOutOfScopeBounds(java.lang.Long)
    */
   @Override
-  public SearchResultList findMappedConceptsOutOfScopeBounds(long mapProjectId)
+  public SearchResultList findMappedConceptsOutOfScopeBounds(Long mapProjectId)
     throws Exception {
     SearchResultList mappedConceptsOutOfBounds = new SearchResultListJpa();
     MapProject project = getMapProject(mapProjectId);
@@ -1535,7 +1531,7 @@ public class MappingServiceJpa implements MappingService {
    * (org.ihtsdo.otf.mapping.model.MapProject)
    */
   @Override
-  public SearchResultList findConceptsExcludedFromScope(long mapProjectId)
+  public SearchResultList findConceptsExcludedFromScope(Long mapProjectId)
     throws Exception {
     SearchResultList conceptsExcludedFromScope = new SearchResultListJpa();
 
@@ -1592,7 +1588,7 @@ public class MappingServiceJpa implements MappingService {
    * .otf.mapping.rf2.Concept, org.ihtsdo.otf.mapping.model.MapProject)
    */
   @Override
-  public boolean isConceptInScope(String conceptId, long mapProjectId)
+  public boolean isConceptInScope(String conceptId, Long mapProjectId)
     throws Exception {
     MapProject project = getMapProject(mapProjectId);
     // if directly matches preset scope concept return true
@@ -1631,7 +1627,7 @@ public class MappingServiceJpa implements MappingService {
    * org.ihtsdo.otf.mapping.model.MapProject)
    */
   @Override
-  public boolean isConceptExcludedFromScope(String conceptId, long mapProjectId)
+  public boolean isConceptExcludedFromScope(String conceptId, Long mapProjectId)
     throws Exception {
     MapProject project = getMapProject(mapProjectId);
     // if directly matches preset scope concept return true
@@ -1666,10 +1662,10 @@ public class MappingServiceJpa implements MappingService {
    * 
    * @see
    * org.ihtsdo.otf.mapping.services.MappingService#isConceptOutOfScopeBounds
-   * (java.lang.String, long)
+   * (java.lang.String, java.lang.Long)
    */
   @Override
-  public boolean isConceptOutOfScopeBounds(String conceptId, long mapProjectId)
+  public boolean isConceptOutOfScopeBounds(String conceptId, Long mapProjectId)
     throws Exception {
     MapProject project = getMapProject(mapProjectId);
     // if directly matches preset scope concept return false
@@ -1943,10 +1939,10 @@ public class MappingServiceJpa implements MappingService {
    * 
    * @see
    * org.ihtsdo.otf.mapping.services.MappingService#removeMapEntry(java.lang
-   * .long)
+   * .Long)
    */
   @Override
-  public void removeMapEntry(long mapEntryId) {
+  public void removeMapEntry(Long mapEntryId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       tx.begin();
@@ -1971,10 +1967,10 @@ public class MappingServiceJpa implements MappingService {
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#removeMapPrinciple(long)
+   * org.ihtsdo.otf.mapping.services.MappingService#removeMapPrinciple(java.lang.Long)
    */
   @Override
-  public void removeMapPrinciple(long mapPrincipleId) {
+  public void removeMapPrinciple(Long mapPrincipleId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       tx.begin();
@@ -1998,10 +1994,10 @@ public class MappingServiceJpa implements MappingService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapAdvice(long)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapAdvice(java.lang.Long)
    */
   @Override
-  public void removeMapAdvice(long mapAdviceId) {
+  public void removeMapAdvice(Long mapAdviceId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       tx.begin();
@@ -2025,10 +2021,10 @@ public class MappingServiceJpa implements MappingService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapRelation(long)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapRelation(java.lang.Long)
    */
   @Override
-  public void removeMapRelation(long mapRelationId) {
+  public void removeMapRelation(Long mapRelationId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       tx.begin();
@@ -2052,10 +2048,10 @@ public class MappingServiceJpa implements MappingService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciple(long)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciple(java.lang.Long)
    */
   @Override
-  public MapPrinciple getMapPrinciple(long id) {
+  public MapPrinciple getMapPrinciple(Long id) {
 
     MapPrinciple m = null;
 
@@ -2132,7 +2128,7 @@ public class MappingServiceJpa implements MappingService {
   // ///////////////////////////////////////
 
   @Override
-  public void createMapRecordsForMapProject(long mapProjectId,
+  public void createMapRecordsForMapProject(Long mapProjectId,
     WorkflowStatus workflowStatus) throws Exception {
     MapProject mapProject = getMapProject(mapProjectId);
     Logger.getLogger(MappingServiceJpa.class).warn(
@@ -2167,11 +2163,11 @@ public class MappingServiceJpa implements MappingService {
    * 
    * @see
    * org.ihtsdo.otf.mapping.services.MappingService#removeMapRecordsForProjectId
-   * (long)
+   * (java.lang.Long)
    */
   @SuppressWarnings("unchecked")
   @Override
-  public long removeMapRecordsForProject(long mapProjectId) {
+  public Long removeMapRecordsForProject(Long mapProjectId) {
 
     EntityTransaction tx = manager.getTransaction();
 
@@ -2236,7 +2232,7 @@ public class MappingServiceJpa implements MappingService {
         Integer.toString(nRecords) + " records deleted for map project id = "
             + mapProjectId);
 
-    return new Long(nRecords).longValue();
+    return new Long(nRecords);
 
   }
 
@@ -2245,10 +2241,10 @@ public class MappingServiceJpa implements MappingService {
    * 
    * @see
    * org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject
-   * (long, java.util.List)
+   * (java.lang.Long, java.util.List)
    */
   @Override
-  public void createMapRecordsForMapProject(long mapProjectId,
+  public void createMapRecordsForMapProject(Long mapProjectId,
     List<ComplexMapRefSetMember> complexMapRefSetMembers,
     WorkflowStatus workflowStatus) throws Exception {
     MapProject mapProject = getMapProject(mapProjectId);
@@ -2580,10 +2576,10 @@ public class MappingServiceJpa implements MappingService {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapAgeRange(long)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapAgeRange(java.lang.Long)
    */
   @Override
-  public void removeMapAgeRange(long mapAgeRangeId) {
+  public void removeMapAgeRange(Long mapAgeRangeId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       tx.begin();
