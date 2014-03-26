@@ -848,6 +848,9 @@ public class MappingServiceJpa implements MappingService {
 
   }
 
+  @SuppressWarnings({
+      "unused", "unchecked", "rawtypes"
+  })
   @Override
   public List<MapRecord> getMapRecordRevisions(long mapRecordId) {
 
