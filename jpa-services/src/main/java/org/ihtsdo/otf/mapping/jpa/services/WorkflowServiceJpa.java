@@ -12,7 +12,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
-import org.hibernate.search.jpa.FullTextEntityManager;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
@@ -39,12 +38,6 @@ public class WorkflowServiceJpa implements WorkflowService {
 
 	/** The manager. */
 	private EntityManager manager;
-
-	/** The full text entity manager. */
-	private FullTextEntityManager fullTextEntityManager;
-
-	/** The indexed field names. */
-	private static Set<String> fieldNames;
 
 	/** The transaction per operation. */
 	private boolean transactionPerOperation = true;
@@ -76,7 +69,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		
     List<Workflow> workflows = getWorkflows();
     for (Workflow workflow : workflows) {
-    	if (workflow.getMapProject().equals(project)) {
+    	if (workflow.getMapProject().getId().equals(project.getId())) {
     		return workflow;
     	}
     }
@@ -88,9 +81,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 	 */
 	@Override
 	public void computeWorkflow(MapProject project) throws Exception {
-
-
-		
+	
 		/** Remove any existing workflow object for this map project */
 		if (getWorkflow(project) != null) {
 			removeWorkflow(project);
@@ -100,7 +91,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		if (getTransactionPerOperation()) {
 			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
-		} // TODO: else
+		} 
 		Workflow workflow = new WorkflowJpa();
 		workflow.setMapProject(project);
 		manager.persist(workflow);
@@ -178,10 +169,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		WorkflowTrackingRecord m = null;
 		
 		Workflow workflow = getWorkflow(project);
-		Set<WorkflowTrackingRecord> allTrackingRecords = new HashSet<WorkflowTrackingRecord>();
-		allTrackingRecords.addAll(workflow.getTrackingRecordsForConflictConcepts());
-		allTrackingRecords.addAll(workflow.getTrackingRecordsForUnmappedInScopeConcepts());
-		for (WorkflowTrackingRecord trackingRecord : allTrackingRecords) {
+		for (WorkflowTrackingRecord trackingRecord : workflow.getTrackingRecords()) {
 			if (trackingRecord.getTerminology().equals(c.getTerminology()) &&
 					trackingRecord.getTerminologyId().equals(c.getTerminologyId()) &&
 					trackingRecord.getTerminologyVersion().equals(c.getTerminologyVersion()))
@@ -199,10 +187,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		WorkflowTrackingRecord record) throws Exception {
 		// also need to load workflow, get all tracking records, remove from that list and save the workflow object
 		Workflow workflow = getWorkflow(project);
-		Set<WorkflowTrackingRecord> allTrackingRecords = new HashSet<WorkflowTrackingRecord>();
-		allTrackingRecords.addAll(workflow.getTrackingRecordsForConflictConcepts());
-		allTrackingRecords.addAll(workflow.getTrackingRecordsForUnmappedInScopeConcepts());
-		allTrackingRecords.remove(record);
+		workflow.getTrackingRecords().remove(record);
 		
 		if (getTransactionPerOperation()) {
 			EntityTransaction tx = manager.getTransaction();
@@ -331,7 +316,16 @@ public class WorkflowServiceJpa implements WorkflowService {
 		/** Creates map record (set owner (user) and workflow status (NEW)) */
 		MapRecord mapRecord = new MapRecordJpa();
 		mapRecord.setOwner(user);
+		mapRecord.setConceptId(concept.getTerminologyId());
+		mapRecord.setMapProjectId(project.getId());
+		mapRecord.setConceptName(concept.getDefaultPreferredName());
 		mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
+		mapRecord.setTimestamp(System.currentTimeMillis());
+		// TODO: need to compute descendants here?
+		mapRecord.setCountDescendantConcepts(0L);
+		mapRecord.setFlagForConsensusReview(false);
+		mapRecord.setFlagForEditorialReview(false);
+		mapRecord.setFlagForMapLeadReview(false);
 		MappingService mappingService = new MappingServiceJpa();
 		mappingService.addMapRecord(mapRecord);
 		mappingService.close();
@@ -346,6 +340,14 @@ public class WorkflowServiceJpa implements WorkflowService {
 			throw new Exception("User " + user.getUserName() + " is already assigned to this tracking record: " + trackingRecord);
 		trackingRecord.addAssignedUser(user);
 		trackingRecord.addMapRecord(mapRecord);
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(trackingRecord);
+			tx.commit();
+		} else {
+			manager.persist(trackingRecord);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -364,6 +366,14 @@ public class WorkflowServiceJpa implements WorkflowService {
     WorkflowTrackingRecord trackingRecord = getWorkflowTrackingRecord(project, concept);
     trackingRecord.addAssignedUser(user);
     trackingRecord.addMapRecord(mapRecord);
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(trackingRecord);
+			tx.commit();
+		} else {
+	    manager.persist(trackingRecord);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -398,10 +408,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		Workflow workflow = getWorkflow(project);
 		
 		/** iterate thru tracking records until you find one for the given concept/user combination */
-		Set<WorkflowTrackingRecord> allTrackingRecords = new HashSet<WorkflowTrackingRecord>();
-		allTrackingRecords.addAll(workflow.getTrackingRecordsForConflictConcepts());
-		allTrackingRecords.addAll(workflow.getTrackingRecordsForUnmappedInScopeConcepts());
-		for (WorkflowTrackingRecord trackingRecord : allTrackingRecords) {
+		for (WorkflowTrackingRecord trackingRecord : workflow.getTrackingRecords()) {
 			if (trackingRecord.getTerminology().equals(concept.getTerminologyId()) &&
 					trackingRecord.getAssignedUsers().contains(user)) {
 				/** remove the user and the mapping record from the tracking record and save the tracking record */
@@ -414,7 +421,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 				updateWorkflowTrackingRecord(project, trackingRecord);
 			}
 		}
-		/** remove the matching map record using mappingService.removeMapRecord() */
+		/** TODO: remove the matching map record using mappingService.removeMapRecord() */
 
 	}
 
