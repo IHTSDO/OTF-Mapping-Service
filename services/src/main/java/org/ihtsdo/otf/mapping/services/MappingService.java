@@ -41,7 +41,7 @@ public interface MappingService {
 	 * @return the MapProject
 	 * @throws Exception the exception
 	 */
-	public MapProject getMapProject(long id) throws Exception;
+	public MapProject getMapProject(Long id) throws Exception;
 	
 	/**
 	 * Gets the map project.
@@ -68,7 +68,7 @@ public interface MappingService {
 	 * @return the mapUser
 	 * @throws Exception the exception
 	 */
-	public MapUser getMapUser(long id) throws Exception;
+	public MapUser getMapUser(Long id) throws Exception;
 	
 	/**
 	 * Return map record for auto-generated id.
@@ -77,7 +77,7 @@ public interface MappingService {
 	 * @return the mapRecord
 	 * @throws Exception the exception
 	 */
-	public MapRecord getMapRecord(long id) throws Exception;
+	public MapRecord getMapRecord(Long id) throws Exception;
 	
 	/**
 	 * Returns all map projects.
@@ -309,7 +309,7 @@ public interface MappingService {
 	 * @param mapUserId the map user id
 	 * @throws Exception the exception
 	 */
-	public void removeMapUser(long mapUserId) throws Exception;
+	public void removeMapUser(Long mapUserId) throws Exception;
 	
 	/**
 	 * Removes the map project.
@@ -317,7 +317,7 @@ public interface MappingService {
 	 * @param mapProjectId the map project id
 	 * @throws Exception the exception
 	 */
-	public void removeMapProject(long mapProjectId) throws Exception;
+	public void removeMapProject(Long mapProjectId) throws Exception;
 	
 	/**
 	 * Removes the map record.
@@ -325,7 +325,7 @@ public interface MappingService {
 	 * @param mapRecordId the map record id
 	 * @throws Exception the exception
 	 */
-	public void removeMapRecord(long mapRecordId) throws Exception;
+	public void removeMapRecord(Long mapRecordId) throws Exception;
 	
 	/**
 	 * Removes the map entry.
@@ -333,7 +333,7 @@ public interface MappingService {
 	 * @param mapEntryId the map entry id
 	 * @throws Exception the exception
 	 */
-	public void removeMapEntry(long mapEntryId) throws Exception;
+	public void removeMapEntry(Long mapEntryId) throws Exception;
 	
 	/**
 	 * Removes the map principle.
@@ -341,7 +341,7 @@ public interface MappingService {
 	 * @param mapPrincipleId the map principle id
 	 * @throws Exception the exception
 	 */
-	public void removeMapPrinciple(long mapPrincipleId) throws Exception;
+	public void removeMapPrinciple(Long mapPrincipleId) throws Exception;
 	
 	/**
 	 * Removes the map advice.
@@ -349,7 +349,7 @@ public interface MappingService {
 	 * @param mapAdviceId the map advice id
 	 * @throws Exception the exception
 	 */
-	public void removeMapAdvice(long mapAdviceId) throws Exception;
+	public void removeMapAdvice(Long mapAdviceId) throws Exception;
 	
 	
 	///////////////////////////
@@ -364,7 +364,7 @@ public interface MappingService {
 	 * @return the map record count for map project id
 	 * @throws Exception the exception
 	 */
-	public long getMapRecordCountForMapProject(long mapProjectId,
+	public Long getMapRecordCountForMapProject(Long mapProjectId,
 			PfsParameter pfsParameter) throws Exception;
 	
 	
@@ -398,7 +398,7 @@ public interface MappingService {
 	 * @return the map principle
 	 * @throws Exception the exception
 	 */
-	public MapPrinciple getMapPrinciple(long id) throws Exception;
+	public MapPrinciple getMapPrinciple(Long id) throws Exception;
 
 	/**
 	 * Creates the map records for map project.
@@ -407,7 +407,7 @@ public interface MappingService {
 	 * @param workflowStatus the workflow status
 	 * @throws Exception the exception
 	 */
-	public void createMapRecordsForMapProject(long mapProjectId,  WorkflowStatus workflowStatus) throws Exception;
+	public void createMapRecordsForMapProject(Long mapProjectId,  WorkflowStatus workflowStatus) throws Exception;
 	
 
 	/**
@@ -418,7 +418,7 @@ public interface MappingService {
 	 * @param workflowStatus TODO
 	 * @throws Exception the exception
 	 */
-	public void createMapRecordsForMapProject(long mapProjectId, 
+	public void createMapRecordsForMapProject(Long mapProjectId, 
 			List<ComplexMapRefSetMember> complexMapRefSetMembers, WorkflowStatus workflowStatus) throws Exception;
 
 	/**
@@ -428,7 +428,7 @@ public interface MappingService {
 	 * @return the long
 	 * @throws Exception the exception
 	 */
-	public long removeMapRecordsForProject(long mapProjectId) throws Exception;
+	public Long removeMapRecordsForProject(Long mapProjectId) throws Exception;
 	
 	/**
 	 * Helper function not requiring a PFS object.
@@ -437,7 +437,7 @@ public interface MappingService {
 	 * @return the map records for a project id
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> getMapRecordsForMapProject(long mapProjectId) throws Exception;
+	public List<MapRecord> getMapRecordsForMapProject(Long mapProjectId) throws Exception;
 	
 	/**
 	 * Helper function which calls either a simple query or lucene query depending on filter parameters.
@@ -447,7 +447,7 @@ public interface MappingService {
 	 * @return the map records for map project id
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> getMapRecordsForMapProject(long mapProjectId,
+	public List<MapRecord> getMapRecordsForMapProject(Long mapProjectId,
 			PfsParameter pfsParameter) throws Exception;
 
 	/**
@@ -456,7 +456,7 @@ public interface MappingService {
 	 * @param conceptId the concept id
 	 * @return the map records where this concept is referenced
 	 */
-	public List<MapRecord> getMapRecordsForConcept(long conceptId);
+	public List<MapRecord> getMapRecordsForConcept(Long conceptId);
 
 	/**
 	 * Find concepts in scope.
@@ -465,7 +465,7 @@ public interface MappingService {
 	 * @return the search result list
 	 * @throws Exception the exception
 	 */
-	public SearchResultList findConceptsInScope(long mapProjectId)
+	public SearchResultList findConceptsInScope(Long mapProjectId)
 		throws Exception;
 
 	/**
@@ -475,7 +475,7 @@ public interface MappingService {
 	 * @return the search result list
 	 * @throws Exception the exception
 	 */
-	public SearchResultList findUnmappedConceptsInScope(long mapProjectId)
+	public SearchResultList findUnmappedConceptsInScope(Long mapProjectId)
 		throws Exception;
 
 	/**
@@ -485,7 +485,7 @@ public interface MappingService {
 	 * @return the search result list
 	 * @throws Exception the exception
 	 */
-	public SearchResultList findMappedConceptsOutOfScopeBounds(long mapProjectId)
+	public SearchResultList findMappedConceptsOutOfScopeBounds(Long mapProjectId)
 		throws Exception;
 
 	/**
@@ -495,7 +495,7 @@ public interface MappingService {
 	 * @return the search result list
 	 * @throws Exception the exception
 	 */
-	public SearchResultList findConceptsExcludedFromScope(long mapProjectId)
+	public SearchResultList findConceptsExcludedFromScope(Long mapProjectId)
 		throws Exception;
 
 	/**
@@ -506,7 +506,7 @@ public interface MappingService {
 	 * @return <code>true</code> if so, <code>false</code> otherwise
 	 * @throws Exception the exception
 	 */
-	public boolean isConceptInScope(String terminologyId, long mapProjectId)
+	public boolean isConceptInScope(String terminologyId, Long mapProjectId)
 		throws Exception;
 
 	/**
@@ -517,7 +517,7 @@ public interface MappingService {
 	 * @return <code>true</code> if so, <code>false</code> otherwise
 	 * @throws Exception the exception
 	 */
-	public boolean isConceptExcludedFromScope(String terminologyId, long mapProjectId)
+	public boolean isConceptExcludedFromScope(String terminologyId, Long mapProjectId)
 		throws Exception;
 
 	/**
@@ -528,7 +528,7 @@ public interface MappingService {
 	 * @return <code>true</code> if so, <code>false</code> otherwise
 	 * @throws Exception the exception
 	 */
-	public boolean isConceptOutOfScopeBounds(String terminologyId, long mapProjectId)
+	public boolean isConceptOutOfScopeBounds(String terminologyId, Long mapProjectId)
 		throws Exception;
 
 	/**
@@ -567,7 +567,7 @@ public interface MappingService {
 	 *
 	 * @param ageRangeId the age range id
 	 */
-	public void removeMapAgeRange(long ageRangeId);
+	public void removeMapAgeRange(Long ageRangeId);
 	
 	/**
 	 * Update map age range.
@@ -582,7 +582,7 @@ public interface MappingService {
 	 * @param mapRecordId the map record id
 	 * @return the record revisions
 	 */
-	public List<MapRecord> getMapRecordRevisions(long mapRecordId);
+	public List<MapRecord> getMapRecordRevisions(Long mapRecordId);
 
 	/**
 	 * Returns the map relations.
@@ -621,7 +621,7 @@ public interface MappingService {
 	 *
 	 * @param mapRelationId the map relation id
 	 */
-  public void removeMapRelation(long mapRelationId);
+  public void removeMapRelation(Long mapRelationId);
 
         
     /**
