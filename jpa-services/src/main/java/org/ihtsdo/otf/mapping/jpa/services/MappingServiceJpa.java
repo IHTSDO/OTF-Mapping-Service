@@ -36,6 +36,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
@@ -1048,26 +1049,37 @@ public class MappingServiceJpa implements MappingService {
    * long)
    */
   @Override
+  @SuppressWarnings("unchecked")
   public List<MapRecord> getMapRecordsForConcept(long conceptId) {
 
     // call retrieval function with concept
     Concept concept = manager.find(ConceptJpa.class, conceptId);
-
+    List<MapRecord> results = null;
     // find maprecords where:
     // (1) the conceptId matches the concept terminologyId
     // (2) the concept terminology matches the source terminology for the
     // mapRecord's project
-    @SuppressWarnings("unchecked")
-    List<MapRecord> results =
-        manager
+		// Try query
+		try {
+		  /**javax.persistence.Query query = manager
             .createQuery(
-                "select mr from MapRecordJpa "
-                    + "where conceptId = :conceptId and"
+								"select mr from MapRecordJpa mr "
+										+ "where conceptId = :conceptId "
                     + "and mapProjectId in (select mp.id from MapProjectJpa mp where sourceTerminology = :sourceTerminology")
             .setParameter("conceptId", concept.getTerminologyId())
-            .setParameter("sourceTerminology", concept.getTerminology())
-            .getResultList();
-
+						.setParameter("sourceTerminology", concept.getTerminology()); **/
+		  javax.persistence.Query query = manager
+					.createQuery(
+							"select mr from MapRecordJpa mr "
+									+ "where conceptId = :conceptId ")
+					.setParameter("conceptId", concept.getTerminologyId());
+		  results = query.getResultList();
+		} catch (Exception e) {
+			Logger.getLogger(this.getClass()).warn(
+					"Map records for concept " + concept.getTerminologyId()
+							+ " returned no map record results!");
+			return null;
+		}
     // return results
     return results;
   }
@@ -1462,12 +1474,24 @@ public class MappingServiceJpa implements MappingService {
     SearchResultList conceptsInScope = findConceptsInScope(mapProjectId);
     SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
 
+		//take everything in scope for the project minus concepts with mappings 
+		//(in that project) with workflow status of PUBLISHED or READY_FOR_PUBLICATION
     for (SearchResult sr : conceptsInScope.getSearchResults()) {
       // if concept has no associated map records, add to list
-      if (getMapRecordsForConcept(sr.getTerminologyId()).size() == 0) {
+			List<MapRecord> mapRecords =
+					getMapRecordsForConcept(sr.getTerminologyId());
+			boolean foundEndStage = false;
+			for (MapRecord mapRecord : mapRecords) {
+				if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+						|| mapRecord.getWorkflowStatus().equals(
+								WorkflowStatus.READY_FOR_PUBLICATION)) {
+					foundEndStage = true;
+					break;
+				}
+			}
+			if (!foundEndStage)
         unmappedConceptsInScope.addSearchResult(sr);
       }
-    }
 
     return unmappedConceptsInScope;
   }
@@ -1922,7 +1946,7 @@ public class MappingServiceJpa implements MappingService {
    * .long)
    */
   @Override
-  public void removeMapEntry(Long mapEntryId) {
+  public void removeMapEntry(long mapEntryId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       tx.begin();
@@ -1950,7 +1974,7 @@ public class MappingServiceJpa implements MappingService {
    * org.ihtsdo.otf.mapping.services.MappingService#removeMapPrinciple(long)
    */
   @Override
-  public void removeMapPrinciple(Long mapPrincipleId) {
+  public void removeMapPrinciple(long mapPrincipleId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       tx.begin();
@@ -1975,11 +1999,10 @@ public class MappingServiceJpa implements MappingService {
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#removeMapAdvice(java.lang
-   * .Long)
+   * org.ihtsdo.otf.mapping.services.MappingService#removeMapAdvice(long)
    */
   @Override
-  public void removeMapAdvice(Long mapAdviceId) {
+  public void removeMapAdvice(long mapAdviceId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       tx.begin();
@@ -2004,11 +2027,10 @@ public class MappingServiceJpa implements MappingService {
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#removeMapRelation(java.lang
-   * .Long)
+   * org.ihtsdo.otf.mapping.services.MappingService#removeMapRelation(long)
    */
   @Override
-  public void removeMapRelation(Long mapRelationId) {
+  public void removeMapRelation(long mapRelationId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       tx.begin();
@@ -2033,11 +2055,10 @@ public class MappingServiceJpa implements MappingService {
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciple(java.lang
-   * .Long)
+   * org.ihtsdo.otf.mapping.services.MappingService#getMapPrinciple(long)
    */
   @Override
-  public MapPrinciple getMapPrinciple(Long id) {
+  public MapPrinciple getMapPrinciple(long id) {
 
     MapPrinciple m = null;
 
@@ -2113,18 +2134,12 @@ public class MappingServiceJpa implements MappingService {
   // / Services for Map Project Creation
   // ///////////////////////////////////////
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject
-   * (long)
-   */
   @Override
-  public void createMapRecordsForMapProject(long mapProjectId) throws Exception {
+  public void createMapRecordsForMapProject(long mapProjectId, WorkflowStatus workflowStatus)
+		throws Exception {
     MapProject mapProject = getMapProject(mapProjectId);
     Logger.getLogger(MappingServiceJpa.class).warn(
-        "Find map records from query for project - " + mapProject.getName());
+				"Find map records from query for project - " + mapProjectId + " workflowStatus - " + workflowStatus);
     if (!getTransactionPerOperation()) {
       throw new IllegalStateException(
           "The application must let the service manage transactions for this method");
@@ -2143,9 +2158,8 @@ public class MappingServiceJpa implements MappingService {
       complexMapRefSetMembers.add(refSetMember);
     }
     Logger.getLogger(MappingServiceJpa.class).warn(
-        "  " + complexMapRefSetMembers.size()
-            + " map records processed (some skipped)");
-    createMapRecordsForMapProject(mapProjectId, complexMapRefSetMembers);
+				"  " + complexMapRefSetMembers.size() + " map records processed (some skipped)");
+		createMapRecordsForMapProject(mapProjectId, complexMapRefSetMembers, workflowStatus);
   }
 
   // ONLY FOR TESTING PURPOSES
@@ -2154,11 +2168,11 @@ public class MappingServiceJpa implements MappingService {
    * 
    * @see
    * org.ihtsdo.otf.mapping.services.MappingService#removeMapRecordsForProjectId
-   * (java.lang.Long)
+   * (long)
    */
   @SuppressWarnings("unchecked")
   @Override
-  public Long removeMapRecordsForProject(long mapProjectId) {
+  public long removeMapRecordsForProject(long mapProjectId) {
 
     EntityTransaction tx = manager.getTransaction();
 
@@ -2223,7 +2237,7 @@ public class MappingServiceJpa implements MappingService {
         Integer.toString(nRecords) + " records deleted for map project id = "
             + mapProjectId);
 
-    return new Long(nRecords);
+    return new Long(nRecords).longValue();
 
   }
 
@@ -2236,7 +2250,7 @@ public class MappingServiceJpa implements MappingService {
    */
   @Override
   public void createMapRecordsForMapProject(long mapProjectId,
-    List<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception {
+		List<ComplexMapRefSetMember> complexMapRefSetMembers, WorkflowStatus workflowStatus) throws Exception {
     MapProject mapProject = getMapProject(mapProjectId);
     Logger.getLogger(this.getClass()).debug(
         "  Starting create map records for map project - "
@@ -2356,6 +2370,9 @@ public class MappingServiceJpa implements MappingService {
 
           // set the owner to legacy
           mapRecord.setOwner(loaderUser);
+					
+					// set the workflow status to published
+					mapRecord.setWorkflowStatus(workflowStatus);
 
           // persist the record
           addMapRecord(mapRecord);
@@ -2560,8 +2577,11 @@ public class MappingServiceJpa implements MappingService {
     return mapAgeRange;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapAgeRange(long)
+   */
   @Override
-  public void removeMapAgeRange(Long mapAgeRangeId) {
+  public void removeMapAgeRange(long mapAgeRangeId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       tx.begin();
@@ -2582,6 +2602,9 @@ public class MappingServiceJpa implements MappingService {
     }
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#updateMapAgeRange(org.ihtsdo.otf.mapping.model.MapAgeRange)
+   */
   @Override
   public void updateMapAgeRange(MapAgeRange mapAgeRange) {
     if (getTransactionPerOperation()) {

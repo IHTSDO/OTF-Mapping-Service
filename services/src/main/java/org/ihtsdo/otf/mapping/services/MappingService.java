@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -403,9 +404,10 @@ public interface MappingService {
 	 * Creates the map records for map project.
 	 *
 	 * @param mapProjectId the map project id
+	 * @param workflowStatus the workflow status
 	 * @throws Exception the exception
 	 */
-	public void createMapRecordsForMapProject(long mapProjectId) throws Exception;
+	public void createMapRecordsForMapProject(long mapProjectId,  WorkflowStatus workflowStatus) throws Exception;
 	
 
 	/**
@@ -413,10 +415,11 @@ public interface MappingService {
 	 *
 	 * @param mapProjectId the map project id
 	 * @param complexMapRefSetMembers the complex map ref set members
+	 * @param workflowStatus TODO
 	 * @throws Exception the exception
 	 */
 	public void createMapRecordsForMapProject(long mapProjectId, 
-			List<ComplexMapRefSetMember> complexMapRefSetMembers) throws Exception;
+			List<ComplexMapRefSetMember> complexMapRefSetMembers, WorkflowStatus workflowStatus) throws Exception;
 
 	/**
 	 * Removes the map records for project id.
