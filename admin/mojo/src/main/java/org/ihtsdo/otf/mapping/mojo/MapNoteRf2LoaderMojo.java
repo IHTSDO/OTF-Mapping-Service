@@ -17,6 +17,7 @@ import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -111,6 +112,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 
 			// Iterate through the file
 			mapNoteReader = new BufferedReader(new FileReader(new File(inputFile)));
+			MapUser loaderUser = mappingService.getMapUser("loader");
 			String line = null;
 			int ct = 0;
 			while ((line = mapNoteReader.readLine()) != null) {
@@ -129,7 +131,8 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 				}
 
 				// Set fields
-				mapNote.setTimestamp(dt.parse(fields[1]));
+                mapNote.setUser(loaderUser);
+                mapNote.setTimestamp(dt.parse(fields[1]));
 				String note = fields[7];
 				note = note.trim();
 				if (note.length() > 4000) {

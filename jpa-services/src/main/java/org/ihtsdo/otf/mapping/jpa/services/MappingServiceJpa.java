@@ -143,7 +143,7 @@ public class MappingServiceJpa implements MappingService {
   // //////////////////////////////////
   // MapProject
   // - getMapProjects
-  // - getMapProject(Long id)
+  // - getMapProject(long id)
   // - getMapProject(String name)
   // - findMapProjects(String query)
   // - addMapProject(MapProject mapProject)
@@ -158,7 +158,7 @@ public class MappingServiceJpa implements MappingService {
    * @return the MapProject
    */
   @Override
-  public MapProject getMapProject(Long id) {
+  public MapProject getMapProject(long id) {
 
     MapProject m = null;
 
@@ -346,7 +346,7 @@ public class MappingServiceJpa implements MappingService {
    * @param mapProjectId the map project to be removed
    */
   @Override
-  public void removeMapProject(Long mapProjectId) {
+  public void removeMapProject(long mapProjectId) {
     if (getTransactionPerOperation()) {
       EntityTransaction tx = manager.getTransaction();
       // first, remove the leads and specialists from this project
@@ -384,7 +384,7 @@ public class MappingServiceJpa implements MappingService {
   // - findMapUsers(String query)
   // - addMapUser(MapUser mapUser)
   // - updateMapUser(MapUser mapUser)
-  // - removeMapUser(Long id)
+  // - removeMapUser(long id)
   // ///////////////////////////////////////////////////////////////
 
   /**
@@ -413,7 +413,7 @@ public class MappingServiceJpa implements MappingService {
    * @return the MapSpecialist
    */
   @Override
-  public MapUser getMapUser(Long id) {
+  public MapUser getMapUser(long id) {
 
     MapUser m = null;
 
@@ -556,7 +556,7 @@ public class MappingServiceJpa implements MappingService {
    * @param mapUserId the map user to be removed
    */
   @Override
-  public void removeMapUser(Long mapUserId) {
+  public void removeMapUser(long mapUserId) {
 
     EntityTransaction tx = manager.getTransaction();
 
@@ -651,7 +651,7 @@ public class MappingServiceJpa implements MappingService {
    * @return the map record
    */
   @Override
-  public MapRecord getMapRecord(Long id) {
+  public MapRecord getMapRecord(long id) {
 
     javax.persistence.Query query =
         manager.createQuery("select r from MapRecordJpa r where id = :id");
@@ -821,7 +821,7 @@ public class MappingServiceJpa implements MappingService {
    * @param id the id of the map record to be removed
    */
   @Override
-  public void removeMapRecord(Long id) {
+  public void removeMapRecord(long id) {
 
     EntityTransaction tx = manager.getTransaction();
 
@@ -848,7 +848,7 @@ public class MappingServiceJpa implements MappingService {
   }
 
   @Override
-  public List<MapRecord> getMapRecordRevisions(Long mapRecordId) {
+  public List<MapRecord> getMapRecordRevisions(long mapRecordId) {
 
     AuditReader reader = AuditReaderFactory.get(manager);
     List<MapRecord> revisions = new ArrayList<>();
@@ -1077,10 +1077,10 @@ public class MappingServiceJpa implements MappingService {
    * 
    * @see
    * org.ihtsdo.otf.mapping.services.MappingService#getMapRecordCountForMapProjectId
-   * (java.lang.Long)
+   * (java.lang.long)
    */
   @Override
-  public Long getMapRecordCountForMapProject(Long mapProjectId,
+  public long getMapRecordCountForMapProject(long mapProjectId,
     PfsParameter pfsParameter) throws Exception {
 
     // if no paging/filtering/sorting object, retrieve total number of records
@@ -1093,7 +1093,7 @@ public class MappingServiceJpa implements MappingService {
               .createQuery("select count(m) from MapRecordJpa m where mapProjectId = :mapProjectId");
 
       query.setParameter("mapProjectId", mapProjectId);
-      return new Long(query.getSingleResult().toString());
+      return new Long(query.getSingleResult().toString()).longValue();
 
       // otherwise require a lucene search based on filters
     } else {
@@ -1113,7 +1113,7 @@ public class MappingServiceJpa implements MappingService {
       luceneQuery = queryParser.parse(full_query);
 
       return new Long(fullTextEntityManager.createFullTextQuery(luceneQuery,
-          MapRecordJpa.class).getResultSize());
+          MapRecordJpa.class).getResultSize()).longValue();
 
     }
 
@@ -1125,17 +1125,6 @@ public class MappingServiceJpa implements MappingService {
 
     return getMapRecordsForMapProject(mapProjectId, null);
   }
-
-  /*
-   * @Override public List<MapRecord> getMapRecordsForMapProjectId(Long
-   * mapProjectId, PfsParameter pfsParameter) throws Exception {
-   * 
-   * if (pfsParameter != null && pfsParameter.getFilterString() != null &&
-   * !pfsParameter.getFilterString().equals("")) { return
-   * getMapRecordsForMapProjectIdWithQuery(mapProjectId, pfsParameter); } else {
-   * return getMapRecordsForMapProjectIdWithNoQuery(mapProjectId, pfsParameter);
-   * } }
-   */
 
   /*
    * (non-Javadoc)
@@ -1930,7 +1919,7 @@ public class MappingServiceJpa implements MappingService {
    * 
    * @see
    * org.ihtsdo.otf.mapping.services.MappingService#removeMapEntry(java.lang
-   * .Long)
+   * .long)
    */
   @Override
   public void removeMapEntry(Long mapEntryId) {
@@ -1958,8 +1947,7 @@ public class MappingServiceJpa implements MappingService {
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.services.MappingService#removeMapPrinciple(java.
-   * lang.Long)
+   * org.ihtsdo.otf.mapping.services.MappingService#removeMapPrinciple(long)
    */
   @Override
   public void removeMapPrinciple(Long mapPrincipleId) {
@@ -2206,9 +2194,6 @@ public class MappingServiceJpa implements MappingService {
           }
         }
         entry.setMapNotes(null);
-
-        // remove principles
-        entry.setMapPrinciples(null);
 
         // remove advices
         entry.setMapAdvices(null);
