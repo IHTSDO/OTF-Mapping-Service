@@ -17,7 +17,7 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 public class MapPrincipleList {
 
 	/** The map principles. */
-	private List<MapPrinciple> mapPrinciples = new ArrayList<MapPrinciple>();
+	private List<MapPrinciple> mapPrinciples = new ArrayList<>();
 
 	/**
 	 * Default Constructor
@@ -53,7 +53,7 @@ public class MapPrincipleList {
 	 *            the new map principles
 	 */
 	public void setmapPrinciples(List<MapPrinciple> mapPrinciples) {
-		this.mapPrinciples = new ArrayList<MapPrinciple>();
+		this.mapPrinciples = new ArrayList<>();
 		this.mapPrinciples.addAll(mapPrinciples);
 		
 		

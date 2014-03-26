@@ -19,7 +19,7 @@ import org.ihtsdo.otf.mapping.rf2.Relationship;
 public class RelationshipList {
 
 	/** The map relationships. */
-	private List<Relationship> relationships = new ArrayList<Relationship>();
+	private List<Relationship> relationships = new ArrayList<>();
 
 	/**
 	 * Instantiates a new map relationship list.
@@ -30,9 +30,7 @@ public class RelationshipList {
 
 	/**
 	 * Adds the map relationship.
-	 * 
-	 * @param Relationship
-	 *            the map relationship
+	 * @param relationship 
 	 */
 	public void addRelationship(Relationship relationship) {
 		relationships.add(relationship);
@@ -40,9 +38,7 @@ public class RelationshipList {
 
 	/**
 	 * Removes the map relationship.
-	 * 
-	 * @param Relationship
-	 *            the map relationship
+	 * @param relationship 
 	 */
 	public void removeRelationship(Relationship relationship) {
 		relationships.remove(relationship);
@@ -50,12 +46,10 @@ public class RelationshipList {
 
 	/**
 	 * Sets the map Relationships given a List of relationships
-	 * 
-	 * @param Relationships
-	 *            the new map Relationships
+	 * @param relationships 
 	 */
 	public void setRelationships(List<Relationship> relationships) {
-		this.relationships = new ArrayList<Relationship>();
+		this.relationships = new ArrayList<>();
 		if (relationships != null) {
 			this.relationships.addAll(relationships);	
 		}	

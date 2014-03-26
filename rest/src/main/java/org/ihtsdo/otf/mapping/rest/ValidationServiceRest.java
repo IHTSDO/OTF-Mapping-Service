@@ -17,16 +17,20 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
-
+/**
+ * Validation service for map records.
+ */
 @Path("/validation")
 @Api(value = "/validation", description = "Operations supporting Map objects.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class ValidationServiceRest {
 
+	/** The validation service. */
 	private ValidationService validationService = new ValidationServiceJpa();
 	
 	/**
-	 * Validates a map record
+	 * Validates a map record.
+	 *
 	 * @param mapRecord the map record to be validated
 	 * @return Response the response
 	 */

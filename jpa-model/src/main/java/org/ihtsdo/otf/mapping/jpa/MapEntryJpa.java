@@ -29,7 +29,6 @@ import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
-import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 
@@ -57,20 +56,15 @@ public class MapEntryJpa implements MapEntry {
 	private MapRecord mapRecord;
 
 	/** The map notes. */
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapNoteJpa.class)
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=MapNoteJpa.class)
 	@IndexedEmbedded(targetElement=MapNoteJpa.class)
-	private Set<MapNote> mapNotes = new HashSet<MapNote>();
+	private Set<MapNote> mapNotes = new HashSet<>();
 
 	/** The map advices. */
 	@ManyToMany(targetEntity=MapAdviceJpa.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
-	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
+	private Set<MapAdvice> mapAdvices = new HashSet<>();
 	
-	/** The map principles. */
-	@ManyToMany(targetEntity=MapPrincipleJpa.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch=FetchType.EAGER)
-	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
-	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
-
 	/** The target. */
 	@Column(nullable = true)
 	private String targetId;
@@ -248,39 +242,6 @@ public class MapEntryJpa implements MapEntry {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapPrinciples()
-	 */
-	@XmlElement(type=MapPrincipleJpa.class, name="mapPrinciple")
-	@Override
-	public Set<MapPrinciple> getMapPrinciples() {
-		return mapPrinciples;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapPrinciples(java.util.Set)
-	 */
-	@Override
-	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
-		this.mapPrinciples = mapPrinciples;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#addMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
-	 */
-	@Override
-	public void addMapPrinciple(MapPrinciple mapPrinciple) {
-		mapPrinciples.add(mapPrinciple);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#removeMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
-	 */
-	@Override
-	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
-		mapPrinciples.remove(mapPrinciple);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getRule()
 	 */
 	@Override
@@ -346,6 +307,7 @@ public class MapEntryJpa implements MapEntry {
 	/**
 	 * Sets the map record based on serialized id
 	 * Necessary when receiving a serialized entry with only mapRecordId
+	 * @param mapRecordId the map record id
 	 */
 	public void setMapRecordId(Long mapRecordId) {
 		this.mapRecord = new MapRecordJpa();
@@ -435,7 +397,7 @@ public class MapEntryJpa implements MapEntry {
 	public String toString() {
 		return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord
 				+ ", mapNotes=" + mapNotes + ", mapAdvices=" + mapAdvices
-				+ ", mapPrinciples=" + mapPrinciples + ", targetId=" + targetId
+				+ ", targetId=" + targetId
 				+ ", targetName=" + targetName + ", rule=" + rule
 				+ ", mapPriority=" + mapPriority + ", mapRelation="
 				+ mapRelation + ", mapBlock=" + mapBlock + ", mapGroup="

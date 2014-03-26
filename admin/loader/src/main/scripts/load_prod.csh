@@ -12,7 +12,7 @@ echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
 
-echo "    Run updatedb with hibernate.hbm2ddl.auto = create ...`/bin/date`"
+echo "    Run updatedb with hibernate.hbm2ddl.auto = update ...`/bin/date`"
 cd $OTF_MAPPING_HOME/admin/updatedb
 mvn -Drun.config=prod -Dhibernate.hbm2ddl.auto=create install >&! mvn.log
 if ($status != 0) then
@@ -76,9 +76,18 @@ if ($status != 0) then
     exit 1
 endif
 
-echo "    Create ICD10 and ICD9CM map records ...`/bin/date`"
+echo "    Create ICD10 map records ...`/bin/date`"
 cd $OTF_MAPPING_HOME/admin/loader
-mvn -PCreateMapRecords -Drun.config=prod -Drefset.id=447562003,447563008 install >&! mvn.log
+mvn -PCreateMapRecords -Drun.config=prod -Drefset.id=447562003 install >&! mvn.log
+if ($status != 0) then
+    echo "ERROR creating ICD10 and ICD9CM map records"
+    cat mvn.log
+    exit 1
+endif
+
+echo "    Create ICD9CM map records ...`/bin/date`"
+cd $OTF_MAPPING_HOME/admin/loader
+mvn -PCreateMapRecords -Drun.config=prod -Drefset.id=447563008 install >&! mvn.log
 if ($status != 0) then
     echo "ERROR creating ICD10 and ICD9CM map records"
     cat mvn.log

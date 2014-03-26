@@ -20,7 +20,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 public class SearchResultListJpa implements SearchResultList {
 	
 	/** The results */
-	private List<SearchResult> searchResults = new ArrayList<SearchResult>();
+	private List<SearchResult> searchResults = new ArrayList<>();
 
 	/** The default constructor */
 	public SearchResultListJpa() {

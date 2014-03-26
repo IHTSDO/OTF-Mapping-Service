@@ -18,6 +18,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.FileSorter;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -195,8 +196,8 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 			// Call mapping service to create records as we go along
 			for (String refSetId : complexMapRefSetMemberMap.keySet()) {
 				mappingService.createMapRecordsForMapProject(
-						mapProjectMap.get(refSetId),
-						complexMapRefSetMemberMap.get(refSetId));
+						mapProjectMap.get(refSetId).getId(),
+						complexMapRefSetMemberMap.get(refSetId), WorkflowStatus.READY_FOR_PUBLICATION);
 			}
 
 			getLog().info("done ...");

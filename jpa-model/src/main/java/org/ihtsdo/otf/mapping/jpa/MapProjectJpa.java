@@ -119,7 +119,7 @@ public class MapProjectJpa implements MapProject {
 	
 	/** The preset age ranges */
 	@ManyToMany(targetEntity=MapAgeRangeJpa.class, fetch=FetchType.EAGER)
-	private Set<MapAgeRange> presetAgeRanges = new HashSet<MapAgeRange>();
+	private Set<MapAgeRange> presetAgeRanges = new HashSet<>();
 
 	/** The map leads. */
 	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
@@ -127,7 +127,7 @@ public class MapProjectJpa implements MapProject {
 	   joinColumns=@JoinColumn(name="map_projects_id"),
 	   inverseJoinColumns=@JoinColumn(name="map_users_id"))
 	@IndexedEmbedded(targetElement=MapUserJpa.class)
-	private Set<MapUser> mapLeads = new HashSet<MapUser>();
+	private Set<MapUser> mapLeads = new HashSet<>();
 	
 	/** The map specialists. */
 	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
@@ -135,34 +135,34 @@ public class MapProjectJpa implements MapProject {
 			   joinColumns=@JoinColumn(name="map_projects_id"),
 			   inverseJoinColumns=@JoinColumn(name="map_users_id"))
 	@IndexedEmbedded(targetElement=MapUserJpa.class)
-	private Set<MapUser> mapSpecialists = new HashSet<MapUser>();
+	private Set<MapUser> mapSpecialists = new HashSet<>();
 	
 	/** The allowable map principles for this MapProject. */
 	@ManyToMany(targetEntity=MapPrincipleJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
-	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
+	private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
 	/** The allowable map advices for this MapProject. */
 	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
-	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
+	private Set<MapAdvice> mapAdvices = new HashSet<>();
 	
 	/** The allowable map relations for this MapProject. */
 	@ManyToMany(targetEntity=MapRelationJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapRelationJpa.class)
-	private Set<MapRelation> mapRelations = new HashSet<MapRelation>();
+	private Set<MapRelation> mapRelations = new HashSet<>();
 	
    /**  The concepts in scope for this project. */
-	@ElementCollection(fetch=FetchType.EAGER)
+	@ElementCollection
 	@CollectionTable(name="map_projects_scope_concepts", joinColumns=@JoinColumn(name="id"))
 	@Column(nullable = true)
-	private Set<String> scopeConcepts = new HashSet<String>();
+	private Set<String> scopeConcepts = new HashSet<>();
 	
 	/**  The concepts excluded from scope of this project. */
-	@ElementCollection(fetch=FetchType.EAGER)
+	@ElementCollection
 	@CollectionTable(name="map_projects_scope_excluded_concepts", joinColumns=@JoinColumn(name="id"))
 	@Column(nullable = true)
-	private Set<String> scopeExcludedConcepts = new HashSet<String>();
+	private Set<String> scopeExcludedConcepts = new HashSet<>();
 	
 	/**  Indicates if descendants of the scope are included in the scope. */
 	@Column(unique = false, nullable = false)
@@ -746,14 +746,16 @@ public class MapProjectJpa implements MapProject {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (blockStructure ? 1231 : 1237);
-		result = prime
-				* result
-				+ ((destinationTerminology == null) ? 0
-						: destinationTerminology.hashCode());
-		result = prime
-				* result
-				+ ((destinationTerminologyVersion == null) ? 0
-						: destinationTerminologyVersion.hashCode());
+		result =
+				prime
+						* result
+						+ ((destinationTerminology == null) ? 0 : destinationTerminology
+								.hashCode());
+		result =
+				prime
+						* result
+						+ ((destinationTerminologyVersion == null) ? 0
+								: destinationTerminologyVersion.hashCode());
 		result = prime * result + (groupStructure ? 1231 : 1237);
 		result = prime * result
 				+ ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
@@ -776,30 +778,19 @@ public class MapProjectJpa implements MapProject {
 		result = prime * result
 				+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((presetAgeRanges == null) ? 0 : presetAgeRanges.hashCode());
 		result = prime * result + (published ? 1231 : 1237);
-		result = prime * result
-				+ ((refSetId == null) ? 0 : refSetId.hashCode());
-		result = prime * result
-				+ ((refSetName == null) ? 0 : refSetName.hashCode());
+		result = prime * result + ((refSetId == null) ? 0 : refSetId.hashCode());
+		result =
+				prime * result + ((refSetName == null) ? 0 : refSetName.hashCode());
 		result = prime * result + (ruleBased ? 1231 : 1237);
-		result = prime * result
-				+ ((scopeConcepts == null) ? 0 : scopeConcepts.hashCode());
-		result = prime * result + (scopeDescendantsFlag ? 1231 : 1237);
-		result = prime
-				* result
-				+ ((scopeExcludedConcepts == null) ? 0 : scopeExcludedConcepts
-						.hashCode());
-		result = prime * result + (scopeExcludedDescendantsFlag ? 1231 : 1237);
-		result = prime
-				* result
-				+ ((sourceTerminology == null) ? 0 : sourceTerminology
-						.hashCode());
-		result = prime
-				* result
-				+ ((sourceTerminologyVersion == null) ? 0
-						: sourceTerminologyVersion.hashCode());
+		result =
+				prime * result
+						+ ((sourceTerminology == null) ? 0 : sourceTerminology.hashCode());
+		result =
+				prime
+						* result
+						+ ((sourceTerminologyVersion == null) ? 0
+								: sourceTerminologyVersion.hashCode());
 		return result;
 	}
 
@@ -827,26 +818,10 @@ public class MapProjectJpa implements MapProject {
 			return false;
 		if (groupStructure != other.groupStructure)
 			return false;
-		if (mapAdvices == null) {
-			if (other.mapAdvices != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!mapAdvices.equals(other.mapAdvices))
-			return false;
-		if (mapLeads == null) {
-			if (other.mapLeads != null)
-				return false;
-		} else if (!mapLeads.equals(other.mapLeads))
-			return false;
-		if (mapPrincipleSourceDocument == null) {
-			if (other.mapPrincipleSourceDocument != null)
-				return false;
-		} else if (!mapPrincipleSourceDocument
-				.equals(other.mapPrincipleSourceDocument))
-			return false;
-		if (mapPrinciples == null) {
-			if (other.mapPrinciples != null)
-				return false;
-		} else if (!mapPrinciples.equals(other.mapPrinciples))
+		} else if (!id.equals(other.id))
 			return false;
 		if (mapRefsetPattern == null) {
 			if (other.mapRefsetPattern != null)
@@ -873,11 +848,6 @@ public class MapProjectJpa implements MapProject {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (presetAgeRanges == null) {
-			if (other.presetAgeRanges != null)
-				return false;
-		} else if (!presetAgeRanges.equals(other.presetAgeRanges))
-			return false;
 		if (published != other.published)
 			return false;
 		if (refSetId == null) {
@@ -892,20 +862,6 @@ public class MapProjectJpa implements MapProject {
 			return false;
 		if (ruleBased != other.ruleBased)
 			return false;
-		if (scopeConcepts == null) {
-			if (other.scopeConcepts != null)
-				return false;
-		} else if (!scopeConcepts.equals(other.scopeConcepts))
-			return false;
-		if (scopeDescendantsFlag != other.scopeDescendantsFlag)
-			return false;
-		if (scopeExcludedConcepts == null) {
-			if (other.scopeExcludedConcepts != null)
-				return false;
-		} else if (!scopeExcludedConcepts.equals(other.scopeExcludedConcepts))
-			return false;
-		if (scopeExcludedDescendantsFlag != other.scopeExcludedDescendantsFlag)
-			return false;
 		if (sourceTerminology == null) {
 			if (other.sourceTerminology != null)
 				return false;
@@ -914,8 +870,7 @@ public class MapProjectJpa implements MapProject {
 		if (sourceTerminologyVersion == null) {
 			if (other.sourceTerminologyVersion != null)
 				return false;
-		} else if (!sourceTerminologyVersion
-				.equals(other.sourceTerminologyVersion))
+		} else if (!sourceTerminologyVersion.equals(other.sourceTerminologyVersion))
 			return false;
 		return true;
 	}

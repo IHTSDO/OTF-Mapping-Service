@@ -17,7 +17,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 public class MapProjectList {
 
 	/** The map projects. */
-	private List<MapProject> mapProjects = new ArrayList<MapProject>();
+	private List<MapProject> mapProjects = new ArrayList<>();
 
 	/**
 	 * Instantiates a new map project list.
@@ -53,7 +53,7 @@ public class MapProjectList {
 	 *            the new map projects
 	 */
 	public void setMapProjects(List<MapProject> mapProjects) {
-		this.mapProjects = new ArrayList<MapProject>();
+		this.mapProjects = new ArrayList<>();
 		if (mapProjects != null) {
 			this.mapProjects.addAll(mapProjects);
 		}
