@@ -3,12 +3,12 @@ package org.ihtsdo.otf.mapping.pojo;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlID;
-
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
 // TODO: Auto-generated Javadoc
@@ -35,17 +35,20 @@ public class MapProjectImpl implements MapProject {
 	private boolean published = false;
 
 	/** The map leads working on this MapProject. */
-	private Set<MapUser> mapLeads = new HashSet<MapUser>();
+	private Set<MapUser> mapLeads = new HashSet<>();
 
 	/** The map specialists working on this MapProject. */
-	private Set<MapUser> mapSpecialists = new HashSet<MapUser>();
+	private Set<MapUser> mapSpecialists = new HashSet<>();
 
 	/** The allowable map advices for this MapProject. */
-	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
+	private Set<MapAdvice> mapAdvices = new HashSet<>();
 	
 	/**  The allowable map principles for this MapProject. */
-	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
+	private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
+	/** The allowable map relations for this MapProject. */
+	private Set<MapRelation> mapRelations = new HashSet<>();
+	
 	/** The ref set id. */
 	private String refSetId;
 	
@@ -77,19 +80,25 @@ public class MapProjectImpl implements MapProject {
 	private String mapRefsetPattern;
 	
 	/**  The set of preset age ranges for rule generation. */
-	private Set<MapAgeRange> presetAgeRanges = new HashSet<MapAgeRange>();
+	private Set<MapAgeRange> presetAgeRanges = new HashSet<>();
 	
     /**  The scope concepts. */
-    private Set<String> scopeConcepts = new HashSet<String>();
+    private Set<String> scopeConcepts = new HashSet<>();
 	
 	/**  The scope excluded concepts. */
-	private Set<String> scopeExcludedConcepts = new HashSet<String>();
+	private Set<String> scopeExcludedConcepts = new HashSet<>();
 	
 	/**  The scope descendants flag. */
 	private boolean scopeDescendantsFlag = false;
 	
 	/**  The scope excluded descendants flag. */
 	private boolean scopeExcludedDescendantsFlag = false;
+	
+	/** The name of the handler class for project specific algorithms */
+	private String projectSpecificAlgorithmHandlerClass;
+	
+	/** The instantiated handler for project specific algorithms */
+	private ProjectSpecificAlgorithmHandler algorithmHandler;
 	
 	
 	
@@ -118,7 +127,6 @@ public class MapProjectImpl implements MapProject {
 	 *
 	 * @return the id in string form
 	 */
-	@XmlID
 	@Override
 	public String getObjectId() {
 		return id.toString();
@@ -504,6 +512,24 @@ public class MapProjectImpl implements MapProject {
 	public void setMapRelationStyle(String mapRelationStyle) {
 		this.mapRelationStyle = mapRelationStyle;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#addMapRelation(org.ihtsdo.otf.mapping.model.MapRelation)
+	 */
+	@Override
+	public void addMapRelation(MapRelation mr) {
+		this.mapRelations.add(mr);
+		
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#removeMapRelation(org.ihtsdo.otf.mapping.model.MapRelation)
+	 */
+	@Override
+	public void removeMapRelation(MapRelation mr) {
+		this.mapRelations.remove(mr);
+		
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapPrincipleSourceDocument()
@@ -619,8 +645,80 @@ public class MapProjectImpl implements MapProject {
 	}
 	
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getPresetAgeRanges()
+	 */
+	@Override
+	public Set<MapAgeRange> getPresetAgeRanges() {
+		return this.presetAgeRanges;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setPresetAgeRanges(java.util.Set)
+	 */
+	@Override
+	public void setPresetAgeRanges(Set<MapAgeRange> ageRanges) {
+		this.presetAgeRanges = ageRanges;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#addPresetAgeRange(org.ihtsdo.otf.mapping.model.MapAgeRange)
+	 */
+	@Override
+	public void addPresetAgeRange(MapAgeRange ageRange) {
+		this.presetAgeRanges.add(ageRange);
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#removePresetAgeRange(org.ihtsdo.otf.mapping.model.MapAgeRange)
+	 */
+	@Override
+	public void removePresetAgeRange(MapAgeRange ageRange) {
+		this.presetAgeRanges.remove(ageRange);
+		
+	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapRelations()
+	 */
+	@Override
+	public Set<MapRelation> getMapRelations() {
+		return mapRelations;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapRelations(java.util.Set)
+	 */
+	@Override
+	public void setMapRelations(Set<MapRelation> mapRelations) {
+		this.mapRelations = mapRelations;
+	}
 	
+	@Override
+	public String getProjectSpecificAlgorithmHandlerClass() {
+		return projectSpecificAlgorithmHandlerClass;
+	}
+	
+	@Override
+	public void setProjectSpecificAlgorithmHandlerClass(
+			String projectSpecificAlgorithmHandlerClass) {
+		this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
+	}
+	
+	@Override
+	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler() {
+		try {
+			this.algorithmHandler = (ProjectSpecificAlgorithmHandler) Class.forName(this.projectSpecificAlgorithmHandlerClass).newInstance();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		this.algorithmHandler.setMapProject(this); 
+		
+		return this.algorithmHandler;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -651,6 +749,8 @@ public class MapProjectImpl implements MapProject {
 		result = prime
 				* result
 				+ ((mapRelationStyle == null) ? 0 : mapRelationStyle.hashCode());
+		result = prime * result
+				+ ((mapRelations == null) ? 0 : mapRelations.hashCode());
 		result = prime * result
 				+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -736,6 +836,11 @@ public class MapProjectImpl implements MapProject {
 				return false;
 		} else if (!mapRelationStyle.equals(other.mapRelationStyle))
 			return false;
+		if (mapRelations == null) {
+			if (other.mapRelations != null)
+				return false;
+		} else if (!mapRelations.equals(other.mapRelations))
+			return false;
 		if (mapSpecialists == null) {
 			if (other.mapSpecialists != null)
 				return false;
@@ -795,16 +900,16 @@ public class MapProjectImpl implements MapProject {
 
 	@Override
 	public String toString() {
-		return "MapProjectImpl [id=" + id + ", name=" + name
-				+ ", blockStructure=" + blockStructure + ", groupStructure="
-				+ groupStructure + ", published=" + published + ", mapLeads="
-				+ mapLeads + ", mapSpecialists=" + mapSpecialists
-				+ ", mapAdvices=" + mapAdvices + ", mapPrinciples="
-				+ mapPrinciples + ", refSetId=" + refSetId + ", refSetName="
-				+ refSetName + ", sourceTerminology=" + sourceTerminology
-				+ ", destinationTerminology=" + destinationTerminology
-				+ ", sourceTerminologyVersion=" + sourceTerminologyVersion
-				+ ", destinationTerminologyVersion="
+		return "MapProjectImpl [name=" + name + ", blockStructure="
+				+ blockStructure + ", groupStructure=" + groupStructure
+				+ ", published=" + published + ", mapLeads=" + mapLeads
+				+ ", mapSpecialists=" + mapSpecialists + ", mapAdvices="
+				+ mapAdvices + ", mapPrinciples=" + mapPrinciples
+				+ ", mapRelations=" + mapRelations + ", refSetId=" + refSetId
+				+ ", refSetName=" + refSetName + ", sourceTerminology="
+				+ sourceTerminology + ", destinationTerminology="
+				+ destinationTerminology + ", sourceTerminologyVersion="
+				+ sourceTerminologyVersion + ", destinationTerminologyVersion="
 				+ destinationTerminologyVersion + ", mapRelationStyle="
 				+ mapRelationStyle + ", mapPrincipleSourceDocument="
 				+ mapPrincipleSourceDocument + ", ruleBased=" + ruleBased
@@ -814,28 +919,6 @@ public class MapProjectImpl implements MapProject {
 				+ scopeExcludedConcepts + ", scopeDescendantsFlag="
 				+ scopeDescendantsFlag + ", scopeExcludedDescendantsFlag="
 				+ scopeExcludedDescendantsFlag + "]";
-	}
-
-	@Override
-	public Set<MapAgeRange> getPresetAgeRanges() {
-		return this.presetAgeRanges;
-	}
-
-	@Override
-	public void setPresetAgeRanges(Set<MapAgeRange> ageRanges) {
-		this.presetAgeRanges = ageRanges;
-	}
-
-	@Override
-	public void addPresetAgeRange(MapAgeRange ageRange) {
-		this.presetAgeRanges.add(ageRange);
-		
-	}
-
-	@Override
-	public void removePresetAgeRange(MapAgeRange ageRange) {
-		this.presetAgeRanges.remove(ageRange);
-		
 	}
 
 

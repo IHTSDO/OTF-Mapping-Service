@@ -23,6 +23,7 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
@@ -86,7 +87,7 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
 			// Remove map projects
 			for (MapProject p : service.getMapProjects()) {
 				getLog().info("  Remove map project - " + p.getName());
-				if (service.getMapRecordsForMapProjectId(p.getId()).size() != 0) {
+				if (service.getMapRecordsForMapProject(p.getId()).size() != 0) {
 					throw new MojoFailureException(
 							"Attempt to delete a map project that has map records, delete the map records first");
 				}
@@ -103,6 +104,12 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
 			for (MapAdvice a : service.getMapAdvices()) {
 				getLog().info("  Remove map advice - " + a.getName());
 				service.removeMapAdvice(a.getId());
+			}
+			
+			// Remove map relations
+			for (MapRelation  a : service.getMapRelations()) {
+				getLog().info("  Remove map relation - " + a.getName());
+				service.removeMapRelation (a.getId());
 			}
 
 			// Remove map principles

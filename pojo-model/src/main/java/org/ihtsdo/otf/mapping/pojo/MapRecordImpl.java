@@ -99,28 +99,32 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getOwner()
 	 */
-	public MapUser getOwner() {
+	@Override
+  public MapUser getOwner() {
 		return owner;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setOwner(org.ihtsdo.otf.mapping.model.MapUser)
 	 */
-	public void setOwner(MapUser owner) {
+	@Override
+  public void setOwner(MapUser owner) {
 		this.owner = owner;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getTimestamp()
 	 */
-	public Long getTimestamp() {
+	@Override
+  public Long getTimestamp() {
 		return timestamp;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setTimestamp(java.lang.Long)
 	 */
-	public void setTimestamp(Long timestamp) {
+	@Override
+  public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
 

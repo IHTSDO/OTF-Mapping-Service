@@ -97,11 +97,51 @@
     <thead>
       <tr>
         <th>Advice</th>
+        <th>Allowed for Null Target</th>
+        <th>Computable</th>
       </tr>
     </thead>
     <tbody ng-repeat="advice in pagedAdvice | orderBy: 'name'" style="border: 2px solid #ccc;" >
       <tr>
         <td>{{advice.name}}</td>
+        <td>{{advice.allowableForNullTarget}}</td>
+        <td>{{advice.computable}}</td>
+      </tr>
+     
+    </tbody>
+    
+    
+   </table>
+   </td>
+  </tr>
+  <tr ng-show="project.mapRelation.length > 0">
+    <td><div tooltip-placement="right" tooltip="List of the map relations for this project."><b>Map Relations</b></div></td>
+    <td>
+    
+    <pagination ng-show="project.mapRelation.length > pageSize"
+    			direction-links="false" boundary-links="true" 
+    			total-items="pagedRelationCount" items-per-page="pageSize" 
+    			page="pageRelation" on-select-page="getPagedRelations(page)"></pagination>
+    <form>
+	    <input type="text" ng-model="relationFilter" ng-change="getPagedRelations(1)">
+	    <input type="submit" value="Reset Filter" ng-click="resetRelationFilter()">
+    </form>
+    		
+    <table width="100%" class="table pure-table" >
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Allowed for Null Target</th>
+        <th>Computed</th>
+      </tr>
+    </thead>
+    <tbody ng-repeat="relation in pagedRelation | orderBy: 'name'" style="border: 2px solid #ccc;" >
+      <tr>
+        <td>{{relation.terminologyId}}</td>
+        <td>{{relation.name}}</td>
+        <td>{{relation.isAllowableForNullTarget}}</td>
+        <td>{{relation.isComputed}}</td>
       </tr>
      
     </tbody>
@@ -114,7 +154,8 @@
     <td><div tooltip-placement="right" tooltip="List of the map principles for this project."><b>Map Principles</b></div></td>
     <td>
 
-    <pagination direction-links="false" boundary-links="true" 
+    <pagination ng-show="project.mapPrinciple.length > pageSize"
+    			direction-links="false" boundary-links="true" 
     			total-items="pagedPrincipleCount" items-per-page="pageSize" 
     			page="pagePrinciple" on-select-page="getPagedPrinciples(page)"></pagination>
     <form>

@@ -57,17 +57,17 @@ public class MapEntryJpa implements MapEntry {
 	/** The map notes. */
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity=MapNoteJpa.class)
 	@IndexedEmbedded(targetElement=MapNoteJpa.class)
-	private Set<MapNote> mapNotes = new HashSet<MapNote>();
+	private Set<MapNote> mapNotes = new HashSet<>();
 
 	/** The map advices. */
 	@ManyToMany(targetEntity=MapAdviceJpa.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
-	private Set<MapAdvice> mapAdvices = new HashSet<MapAdvice>();
+	private Set<MapAdvice> mapAdvices = new HashSet<>();
 	
 	/** The map principles. */
 	@ManyToMany(targetEntity=MapPrincipleJpa.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
-	private Set<MapPrinciple> mapPrinciples = new HashSet<MapPrinciple>();
+	private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
 	/** The target. */
 	@Column(nullable = true)
@@ -401,6 +401,7 @@ public class MapEntryJpa implements MapEntry {
 	/**
 	 * Sets the map record based on serialized id
 	 * Necessary when receiving a serialized entry with only mapRecordId
+	 * @param mapRecordId the map record id
 	 */
 	public void setMapRecordId(Long mapRecordId) {
 		this.mapRecord = new MapRecordJpa();
@@ -447,7 +448,7 @@ public class MapEntryJpa implements MapEntry {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((mapRecord == null) ? 0 : mapRecord.hashCode());
+		result = (int) (prime * result + ((mapRecord == null) ? 0 : mapRecord.getId())); // PWG: 0318 Changed from mapRecord.hashCode() due to stack overflow/circular reference in MapRecord.hashCode()
 		result =
 				prime * result + ((relationId == null) ? 0 : relationId.hashCode());
 		result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());

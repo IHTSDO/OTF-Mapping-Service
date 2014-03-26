@@ -20,25 +20,25 @@ public class ConceptImpl extends AbstractComponent implements Concept {
 	private Long definitionStatusId;
 
 	/** The descriptions. */
-	private Set<Description> descriptions = new HashSet<Description>();
+	private Set<Description> descriptions = new HashSet<>();
 
 	/** The relationships. */
-	private Set<Relationship> relationships = new HashSet<Relationship>();
+	private Set<Relationship> relationships = new HashSet<>();
 
 	/** The inverse relationships. */
-	private Set<Relationship> inverseRelationships = new HashSet<Relationship>();
+	private Set<Relationship> inverseRelationships = new HashSet<>();
 	
 	/** The simple RefSet members */
-	private Set<SimpleRefSetMember> simpleRefSetMembers = new HashSet<SimpleRefSetMember>();
+	private Set<SimpleRefSetMember> simpleRefSetMembers = new HashSet<>();
 	
 	/** The simpleMap RefSet members */
-	private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = new HashSet<SimpleMapRefSetMember>();
+	private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = new HashSet<>();
 	
 	/** The complexMap RefSet members */
-	private Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<ComplexMapRefSetMember>();
+	private Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<>();
 	
 	/** the attributeValue RefSet members */
-	private Set<AttributeValueRefSetMember> attributeValueRefSetMembers = new HashSet<AttributeValueRefSetMember>();
+	private Set<AttributeValueRefSetMember> attributeValueRefSetMembers = new HashSet<>();
 
 	/** The terminology. */
 	private String terminology;

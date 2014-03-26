@@ -2,6 +2,8 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+
 // TODO: Auto-generated Javadoc
 /**
  * Represents a map project.
@@ -436,7 +438,56 @@ public interface MapProject  {
 	 * @param ageRange the age range
 	 */
 	public void removePresetAgeRange(MapAgeRange ageRange);
+
+	/**
+	 * Gets the map relations.
+	 *
+	 * @return the map relations
+	 */
+	public Set<MapRelation> getMapRelations();
+
+	/**
+	 * Sets the map relations.
+	 *
+	 * @param mapRelations the new map relations
+	 */
+	public void setMapRelations(Set<MapRelation> mapRelations);
+
 	
+	/**
+	 * Adds the map relation.
+	 *
+	 * @param mr the mr
+	 */
+	public void addMapRelation(MapRelation mr);
 	
+	/**
+	 * Removes the map relation.
+	 *
+	 * @param mr the mr
+	 */
+	public void removeMapRelation(MapRelation mr);
+
+	/**
+	 * Gets the project specific algorithm handler class.
+	 *
+	 * @return the project specific algorithm handler class
+	 */
+	public String getProjectSpecificAlgorithmHandlerClass();
+
+	/**
+	 * Sets the project specific algorithm handler class.
+	 *
+	 * @param projectSpecificAlgorithmHandlerClass the new project specific algorithm handler class
+	 */
+	public void setProjectSpecificAlgorithmHandlerClass(
+			String projectSpecificAlgorithmHandlerClass);
+	
+	/**
+	 * Instantiates and returns the project specific algorithm handler.
+	 *
+	 * @return the project specific algorithm handler
+	 */
+	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler();
 
 }

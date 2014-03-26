@@ -46,7 +46,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 */
 	public MetadataServiceJpa() {
 
-		helperMap = new HashMap<String, MetadataService>();
+		helperMap = new HashMap<>();
 		helperMap.put("SNOMEDCT", new SnomedMetadataServiceJpaHelper());
 		helperMap.put("ICD10", new ClamlMetadataServiceJpaHelper());
 		helperMap.put("ICD9CM", new ClamlMetadataServiceJpaHelper());
@@ -59,7 +59,7 @@ public class MetadataServiceJpa implements MetadataService {
 		// create on each instantiation
 		manager = factory.createEntityManager();
 
-		fieldNames = new HashSet<String>();
+		fieldNames = new HashSet<>();
 
 		fullTextEntityManager =
 				org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
@@ -109,7 +109,7 @@ public class MetadataServiceJpa implements MetadataService {
 	public Map<String, Map<Long, String>> getAllMetadata(String terminology,
 		String version) throws Exception {
 		Map<String, Map<Long, String>> idNameMapList =
-				new HashMap<String, Map<Long, String>>();
+				new HashMap<>();
 		Map<Long, String> modulesIdNameMap = getModules(terminology, version);
 		if (modulesIdNameMap != null) {
 			idNameMapList.put("modules", modulesIdNameMap);
@@ -187,7 +187,7 @@ public class MetadataServiceJpa implements MetadataService {
 			return helperMap.get(terminology).getModules(terminology, version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -206,7 +206,7 @@ public class MetadataServiceJpa implements MetadataService {
 					version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -225,7 +225,7 @@ public class MetadataServiceJpa implements MetadataService {
 					version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -244,7 +244,7 @@ public class MetadataServiceJpa implements MetadataService {
 					.getLanguageRefSets(terminology, version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -263,7 +263,7 @@ public class MetadataServiceJpa implements MetadataService {
 					version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -281,7 +281,7 @@ public class MetadataServiceJpa implements MetadataService {
 			return helperMap.get(terminology).getSimpleRefSets(terminology, version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -299,7 +299,7 @@ public class MetadataServiceJpa implements MetadataService {
 			return helperMap.get(terminology).getMapRelations(terminology, version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -318,7 +318,7 @@ public class MetadataServiceJpa implements MetadataService {
 					version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -337,7 +337,7 @@ public class MetadataServiceJpa implements MetadataService {
 					version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -356,7 +356,7 @@ public class MetadataServiceJpa implements MetadataService {
 					version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -375,7 +375,7 @@ public class MetadataServiceJpa implements MetadataService {
 					version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -393,7 +393,7 @@ public class MetadataServiceJpa implements MetadataService {
 					terminology, version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -411,7 +411,7 @@ public class MetadataServiceJpa implements MetadataService {
 					terminology, version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -425,7 +425,7 @@ public class MetadataServiceJpa implements MetadataService {
         return helperMap.get(terminology).getTreeRoots(terminology,version);
       } else {
           // return an empty map
-          return new ArrayList<String>();
+          return new ArrayList<>();
       }
     }
     
@@ -444,7 +444,7 @@ public class MetadataServiceJpa implements MetadataService {
 					version);
 		} else {
 			// return an empty map
-			return new HashMap<Long, String>();
+			return new HashMap<>();
 		}
 	}
 
@@ -532,7 +532,7 @@ public class MetadataServiceJpa implements MetadataService {
 
 		List<Object[]> resultList = query.getResultList();
 		Map<String, String> resultMap =
-				new HashMap<String, String>(resultList.size());
+				new HashMap<>(resultList.size());
 		for (Object[] result : resultList)
 			resultMap.put((String) result[0], (String) result[1]);
 		if (manager.isOpen()) {

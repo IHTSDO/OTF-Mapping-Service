@@ -24,7 +24,8 @@ public interface MapAdvice  {
 	public void setId(Long id);
 	
 	/**
-	 * Returns the id in string form
+	 * Returns the id in string form.
+	 *
 	 * @return the string object id
 	 */
 	public String getObjectId();
@@ -57,5 +58,33 @@ public interface MapAdvice  {
 	 * @param name the name
 	 */
 	public void setName(String name);
+
+	/**
+	 * Checks if is allowable for null target.
+	 *
+	 * @return true, if is allowable for null target
+	 */
+	public boolean isAllowableForNullTarget();
+
+	/**
+	 * Sets the allowable for null target.
+	 *
+	 * @param isAllowableForNullTarget the new allowable for null target
+	 */
+	public void setAllowableForNullTarget(boolean isAllowableForNullTarget);
+
+	/**
+	 * Checks if is computable.
+	 *
+	 * @return true, if is computable
+	 */
+	public boolean isComputed();
+
+	/**
+	 * Sets the computable.
+	 *
+	 * @param isComputable the new computable
+	 */
+	public void setComputed(boolean isComputable);
 
 }
