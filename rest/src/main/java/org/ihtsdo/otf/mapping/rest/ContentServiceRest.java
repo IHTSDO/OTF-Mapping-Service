@@ -18,7 +18,6 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
-import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipList;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
@@ -252,9 +251,6 @@ public class ContentServiceRest {
 	// FOR TESTING ONLY!!
 	/**
 	 * Returns the immediate children of a concept given terminology information
-	 * @param id the terminology id
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
 	 * @return the search result list
 	 */
 	@GET
@@ -281,6 +277,11 @@ public class ContentServiceRest {
 		}
 	}
 	
+	/**
+	 * Clears tree positions.
+	 *
+	 * @return the search result list
+	 */
 	@GET
 	@Path("/concept/treePositions/clear")
 	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
@@ -303,6 +304,11 @@ public class ContentServiceRest {
 		}
 	}
 	
+	/**
+	 * Finds tree positions for concept.
+	 *
+	 * @return the search result list
+	 */
 	@GET
 	@Path("/concept/treePositions/concept")
 	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
@@ -323,6 +329,11 @@ public class ContentServiceRest {
 		}
 	}
 	
+	/**
+	 * Finds descendants from tree postions.
+	 *
+	 * @return the search result list
+	 */
 	@GET
 	@Path("/concept/treePositions/descendantfind")
 	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
@@ -333,7 +344,6 @@ public class ContentServiceRest {
 			
 		try {
 			ContentService contentService = new ContentServiceJpa();
-			long startTime = System.currentTimeMillis();
 			Logger.getLogger(this.getClass()).info("start");
 			SearchResultList results = contentService.findDescendantsFromTreePostions("110091001", "SNOMEDCT",
 				"20140131"); 

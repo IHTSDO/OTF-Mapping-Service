@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package org.ihtsdo.otf.mapping.rest;
 
 import java.util.List;
@@ -6,7 +9,6 @@ import java.util.Set;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -20,7 +22,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
-import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -45,6 +46,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Path("/workflow")
 @Api(value = "/workflow", description = "Operations supporting workflow.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@SuppressWarnings("static-method")
 public class WorkflowServiceRest {
 
 	
@@ -55,7 +57,11 @@ public class WorkflowServiceRest {
 
 	}
 	
-	@GET
+    /**
+     * Returns the workflows.
+     * TODO: remove this - testing method
+     */
+    @GET
 	@Path("/workflows")
 	@ApiOperation(value = "Return workflows", notes = "Returns all workflows.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
@@ -73,6 +79,11 @@ public class WorkflowServiceRest {
 		}
 	}
 	
+	/**
+	 * Compute workflow.
+	 *
+	 * @param mapProjectId the map project id
+	 */
 	@GET
 	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Compute workflow for project by id", notes = "Computes workflow given a project id.")
@@ -95,6 +106,13 @@ public class WorkflowServiceRest {
 		}
 	}
 	
+	/**
+	 * Finds available work for the specified map project and user.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userId the user id
+	 * @return the search result list
+	 */
 	@GET
 	@Path("/work/id/{id:[0-9][0-9]*}/user/{userid:[0-9][0-9]*}")
 	@ApiOperation(value = "Find available work.", notes = "Returns available work for a given user on a given map project.", response = SearchResultList.class)
@@ -136,7 +154,15 @@ public class WorkflowServiceRest {
 		}
 	}
 
-	// userName String would be preferred
+	/**
+	 * Assigns a user to a concept for a specified map project.
+	 * TODO: pass username instead of userId
+	 * 
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @param userId the user id
+	 * @return the response
+	 */
 	@POST
 	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 	@Path("/assign/{projectid:[0-9][0-9]*}/{terminologyid:[0-9][0-9]*}/{userid:[0-9][0-9]*}")
@@ -166,6 +192,16 @@ public class WorkflowServiceRest {
 		return null;
 	}
 	
+	/**
+	 * Assigns the user to the concept for a specified map project with an intial map
+	 * record as a template.
+	 * 
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @param recordId the template record id
+	 * @param userId the user id
+	 * @return the response
+	 */
 	@POST
 	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 	@Path("/assign/{projectid:[0-9][0-9]*}/{terminologyid:[0-9][0-9]*}/{recordid:[0-9][0-9]*}/{userid:[0-9][0-9]*}")
@@ -198,6 +234,12 @@ public class WorkflowServiceRest {
 		return null;
 	}
 
+	/**
+	 * Returns the records assigned to user.
+	 *
+	 * @param userId the user id
+	 * @return the records assigned to user
+	 */
 	@GET
 	@Path("/assigned/user/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Returns records assigned to given user.", notes = "Returns work assigned to a given user.")
@@ -219,7 +261,14 @@ public class WorkflowServiceRest {
 		}
 	}
 	
-	public MapRecordList getRecentlyEditedMapRecords(MapUser specialist, PfsParameter pfsParameter) {
+	/**
+	 * Returns the recently edited map records for the specified user.
+	 *
+	 * @param user the user
+	 * @param pfsParameter the pfs parameter
+	 * @return the recently edited map records
+	 */
+	public MapRecordList getRecentlyEditedMapRecords(MapUser user, PfsParameter pfsParameter) {
 		//TODO: what does this mean?  
 		// do envers query  AuditReader owner set to this user
 		// get all the records (latest revision) of which the given user touched

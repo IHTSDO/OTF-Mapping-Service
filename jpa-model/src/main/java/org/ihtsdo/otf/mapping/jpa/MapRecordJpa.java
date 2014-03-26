@@ -19,7 +19,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
@@ -107,7 +106,7 @@ public class MapRecordJpa implements MapRecord {
 	@ElementCollection(fetch=FetchType.EAGER)
 	@CollectionTable(name="map_records_origin_ids", joinColumns=@JoinColumn(name="id"))
 	@Column(nullable = true)
-	private Set<Long> originIds = new HashSet<Long>();
+	private Set<Long> originIds = new HashSet<>();
 
 	/** Indicates whether the record is flagged for map lead review. */
 	@Column(unique = false, nullable = false)
@@ -133,6 +132,11 @@ public class MapRecordJpa implements MapRecord {
 	}
 
 
+	/**
+	 * Instantiates a {@link MapRecordJpa} from the specified parameters.
+	 *
+	 * @param cMapRecord the c map record
+	 */
 	public MapRecordJpa(MapRecord cMapRecord) {
 		this.id = cMapRecord.getId();
 		this.owner = cMapRecord.getOwner();
@@ -150,7 +154,6 @@ public class MapRecordJpa implements MapRecord {
 		this.flagForConsensusReview = cMapRecord.isFlagForConsensusReview();
 		this.workflowStatus = cMapRecord.getWorkflowStatus();
 	}
-
 
 	/**
 	 * Return the id.
