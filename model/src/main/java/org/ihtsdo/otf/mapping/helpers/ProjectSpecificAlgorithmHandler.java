@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.helpers;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
@@ -28,28 +29,12 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	public void setMapProject(MapProject mapProject);
 	
 	/**
-	 * Checks if is target code valid.
-	 *
-	 * @param mapRecord the map record
-	 * @return true, if is target code valid
-	 */
-	public boolean isTargetCodeValid(MapRecord mapRecord);
-	
-	/**
 	 * Checks if the map advice is computable.
 	 *
 	 * @param mapRecord the map record
 	 * @return true, if is map advice computable
 	 */
 	public boolean isMapAdviceComputable(MapRecord mapRecord);
-	
-	/**
-	 * Gets the computed map advice.
-	 *
-	 * @param mapRecord the map record
-	 * @return the computed map advice
-	 */
-	public Set<MapAdvice> getComputedMapAdvice(MapRecord mapRecord);
 	
 	/**
 	 * Checks if the map relation is computable.
@@ -59,12 +44,39 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	 */
 	public boolean isMapRelationComputable(MapRecord mapRecord);
 	
+	
 	/**
-	 * Gets the computed map relation.
+	 * Performs basic checks against:
+	 * - record with no entries
+	 * - duplicate map entries
+	 * - multiple groups in project with no group structure
+	 * - higher level groups without any targets
+	 * - invalid TRUE rules
+	 * - advices are valid for the project
 	 *
 	 * @param mapRecord the map record
-	 * @return the computed map relation
+	 * @return the validation result
+	 * @throws Exception the exception
 	 */
-	public MapRelation getComputedMapRelation(MapRecord mapRecord);
+	public ValidationResult validateRecord(MapRecord mapRecord) throws Exception;
+
+	
+	/**
+	 * Validate target codes.  Must be overwritten for each project handler.
+	 *
+	 * @param mapRecord the map record
+	 * @return the validation result
+	 * @throws Exception 
+	 */
+	public ValidationResult validateTargetCodes(MapRecord mapRecord) throws Exception;
+	
+	/**
+	 * Compute map advice and map relations. Must be overwritten for each project handler.
+	 *
+	 * @param mapRecord the map record
+	 * @param mapEntry the map entry
+	 * @return 
+	 */
+	public ValidationResult computeMapAdviceAndMapRelations(MapRecord mapRecord);
 	
 }

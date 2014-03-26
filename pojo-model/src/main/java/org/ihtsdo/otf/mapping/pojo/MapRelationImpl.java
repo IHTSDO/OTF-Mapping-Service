@@ -16,6 +16,9 @@ public class MapRelationImpl implements MapRelation {
 	/** The name. */
 	private String name;
 	
+	/** The abbreviated name for display */
+	private String abbreviation;
+	
 	/** Whether this relation can be applied for null targets */
 	private boolean isAllowableForNullTarget;
 	
@@ -68,6 +71,16 @@ public class MapRelationImpl implements MapRelation {
 	@Override
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public String getAbbreviation() {
+		return this.abbreviation;
+	}
+
+	@Override
+	public void setAbbreviation(String abbreviation) {
+		this.abbreviation = abbreviation;		
 	}
 
 	/* (non-Javadoc)

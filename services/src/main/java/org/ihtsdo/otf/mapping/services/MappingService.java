@@ -15,6 +15,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
+// TODO: Auto-generated Javadoc
 /**
  * Interface for services to retrieve (get) map objects.
  *
@@ -641,17 +642,52 @@ public interface MappingService {
 	 */
 	public List<MapRecord> getMapRecordRevisions(Long mapRecordId);
 
+	/**
+	 * Gets the map relations.
+	 *
+	 * @return the map relations
+	 */
 	public List<MapRelation> getMapRelations();
 
+	/**
+	 * Find map relations.
+	 *
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
 	public SearchResultList findMapRelations(String query, PfsParameter pfsParameter)
 			throws Exception;
 
+	/**
+	 * Adds the map relation.
+	 *
+	 * @param mapRelation the map relation
+	 */
 	public void addMapRelation(MapRelation mapRelation);
 
+	/**
+	 * Update map relation.
+	 *
+	 * @param mapRelation the map relation
+	 */
 	public void updateMapRelation(MapRelation mapRelation);
 
+	/**
+	 * Removes the map relation.
+	 *
+	 * @param mapRelationId the map relation id
+	 */
 	public void removeMapRelation(Long mapRelationId);
 
+	/**
+	 * Compute map advice and map relations for map record.
+	 *
+	 * @param mapRecord the map record
+	 * @return the map record
+	 */
+	public MapRecord computeMapAdviceAndMapRelationsForMapRecord(MapRecord mapRecord);
 	
 }
 	

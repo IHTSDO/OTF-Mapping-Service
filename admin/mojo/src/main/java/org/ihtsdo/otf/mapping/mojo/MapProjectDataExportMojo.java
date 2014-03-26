@@ -191,6 +191,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			for (MapRelation ma : mappingService.getMapRelations()) {
 				relationsWriter.write(
 						ma.getTerminologyId() + "\t" + 
+						ma.getAbbreviation() + "\t" +
 						ma.getName() + "\t"  + 
 						ma.isAllowableForNullTarget() + 
 						ma.isComputed() + "\n");

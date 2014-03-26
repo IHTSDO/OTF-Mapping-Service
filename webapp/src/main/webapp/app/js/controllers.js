@@ -1693,33 +1693,6 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 		    	  var scopeArr = [];
 		    	  var len = $scope.project.scopeConcepts.length;
-		    	 
-		    	  // find concept based on source terminology
-		      	  for (var i = 0; i < len; i++) {
-		    	    $http({
-	    			   url: root_content + "concept/" 
-	    			 				   + "SNOMEDCT" +  "/" 
-	    			 				   + "20140131" 
-	    			 				   + "/id/" 
-	    			 				   + $scope.project.scopeConcepts[i],
-	    			   dataType: "json",
-	    		       method: "GET",
-	    		       headers: {
-	    		          "Content-Type": "application/json"
-	    		       }	
-	    		    }).success(function(data) {
-	    		          var obj = {
-	    		    	          key: data.terminologyId,
-	    		    	          concept: data
-	    		    	      };
-	    		          scopeArr.push(obj);
-	    		    	  $scope.scopeConceptsArray = scopeArr;    
-	    		    }).error(function(error) {
-	    			  console.debug("Could not retrieve concept");
-	    		    	  $scope.error = $scope.error + "Could not retrieve Concept. ";    
-	    		    });
-		    	  
-		    	  }
 
 		    	  // set pagination variables
 		    	  $scope.pageSize = 5;

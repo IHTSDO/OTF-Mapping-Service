@@ -192,6 +192,7 @@ public class MapRecordJpa implements MapRecord {
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getlastModifiedBy()
 	 */
 	@Override
+	@XmlElement(type = MapUserJpa.class, name = "lastModifiedBy")
 	public MapUser getLastModifiedBy() {
 		return lastModifiedBy;
 	}
