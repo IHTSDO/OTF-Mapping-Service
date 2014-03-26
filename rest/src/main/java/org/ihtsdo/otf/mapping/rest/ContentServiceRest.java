@@ -18,7 +18,6 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
-import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipList;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
@@ -333,7 +332,6 @@ public class ContentServiceRest {
 			
 		try {
 			ContentService contentService = new ContentServiceJpa();
-			long startTime = System.currentTimeMillis();
 			Logger.getLogger(this.getClass()).info("start");
 			SearchResultList results = contentService.findDescendantsFromTreePostions("110091001", "SNOMEDCT",
 				"20140131"); 
