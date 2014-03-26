@@ -119,7 +119,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		  List<MapRecord> mapRecords = mappingService.getMapRecordsForConcept(concept.getTerminologyId());
 		  boolean conflictDetected = true;
 		  boolean earlyStage = false;
-		  Set<MapUser> assignedUsers = new HashSet<MapUser>();
+		  Set<MapUser> assignedUsers = new HashSet<>();
 		  if (mapRecords == null || mapRecords.size() == 0) {
 		  	trackingRecord.setHasDiscrepancy(false);
 		  	workflow.addTrackingRecord(trackingRecord);
@@ -139,11 +139,11 @@ public class WorkflowServiceJpa implements WorkflowService {
 		  if (conflictDetected) {
 		  	trackingRecord.setHasDiscrepancy(true);
 		  	trackingRecord.setAssignedUsers(assignedUsers);
-		  	trackingRecord.setMapRecords(new HashSet<MapRecord>(mapRecords));
+		  	trackingRecord.setMapRecords(new HashSet<>(mapRecords));
 		  	workflow.addTrackingRecord(trackingRecord);
 		  } else if (earlyStage) {
 		  	trackingRecord.setAssignedUsers(assignedUsers);
-		  	trackingRecord.setMapRecords(new HashSet<MapRecord>(mapRecords));
+		  	trackingRecord.setMapRecords(new HashSet<>(mapRecords));
 		  	workflow.addTrackingRecord(trackingRecord);
 		  } else {
 		  	throw new Exception("ComputeWorkflow exception.");
@@ -244,7 +244,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 	@Override
 	public List<Workflow> getWorkflows() throws Exception {
 
-		List<Workflow> m = new ArrayList<Workflow>();
+		List<Workflow> m = new ArrayList<>();
 		javax.persistence.Query query = 
 				manager.createQuery("select m from WorkflowJpa m");
 		
@@ -382,7 +382,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 	@Override
 	public Set<MapRecord> getMapRecordsAssignedToUser(MapProject project,
 		MapUser user) throws Exception {
-		Set<MapRecord> mapRecordsAssigned = new HashSet<MapRecord>();
+		Set<MapRecord> mapRecordsAssigned = new HashSet<>();
 		/** get workflow for map project */
 		Workflow workflow = getWorkflow(project);
 		/** iterate through all workflow tracking records (for unmapped in scope concepts) 

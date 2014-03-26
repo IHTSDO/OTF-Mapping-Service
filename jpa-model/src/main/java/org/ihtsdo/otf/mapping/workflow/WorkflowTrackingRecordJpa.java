@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.workflow;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -24,12 +23,8 @@ import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
-
-
 /**
- * The Class WorkflowTrackingRecordJpa.
- *
- * @author ${author}
+ * Default implementatino of {@link WorkflowTrackingRecordJpa}.
  */
 @Entity
 @Table(name = "workflow_tracking_records")
@@ -68,13 +63,13 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	/**  The map records. */
 	@OneToMany(targetEntity = MapRecordJpa.class)
 	@IndexedEmbedded(targetElement = MapRecordJpa.class)
-	private Set<MapRecord> mapRecords = new HashSet<MapRecord>();
+	private Set<MapRecord> mapRecords = new HashSet<>();
 
 	
 	/**  The assigned users. */
 	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapUserJpa.class)
-	private Set<MapUser> assignedUsers = new HashSet<MapUser>();
+	private Set<MapUser> assignedUsers = new HashSet<>();
 	
 	/**
 	 * {@inheritDoc}
