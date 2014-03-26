@@ -72,4 +72,4 @@ base.url=http://localhost:8080
 #
 # JPA debugging settings
 #
-show.sql=false
+show.sql=true

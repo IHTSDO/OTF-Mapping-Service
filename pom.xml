@@ -69,6 +69,8 @@
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapRelationJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.workflow.WorkflowJpa&lt;/class&gt;
+        &lt;class&gt;org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecordJpa&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MappingRevisionEntity&lt;/class&gt;
         &lt;class&gt;org.ihtsdo.otf.mapping.jpa.MappingRevisionListener&lt;/class&gt;
      </managed.classes.list>

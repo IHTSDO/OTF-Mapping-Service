@@ -13,10 +13,12 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipList;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
@@ -246,4 +248,102 @@ public class ContentServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
+	
+	// FOR TESTING ONLY!!
+	/**
+	 * Returns the immediate children of a concept given terminology information
+	 * @param id the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the search result list
+	 */
+	@GET
+	@Path("/concept/treePositions")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public SearchResultList computeTreePositions() {
+	
+		
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			contentService.setTransactionPerOperation(true);
+			
+			contentService.computeTreePositions("SNOMEDCT",
+				"20140131", "116680003", "138875005"); 
+			/**Set<TreePosition> results = contentService.computeTreePositions("SNOMEDCT",
+					"20140131", new Long("116680003"), new Long("371772001"));*/
+			contentService.close();
+			return new SearchResultListJpa();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	@GET
+	@Path("/concept/treePositions/clear")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public SearchResultList clearTreePositions() {
+	
+		
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			
+			contentService.clearTreePositions("SNOMEDCT",
+				"20140131"); 
+		
+			contentService.close();
+			return new SearchResultListJpa();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	@GET
+	@Path("/concept/treePositions/concept")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public SearchResultList findTreePositionsForConcept() {
+			
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			
+			SearchResultList results = contentService.findTreePositionsForConcept("118234003", "SNOMEDCT",
+				"20140131"); 
+			contentService.close();
+			return results;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	@GET
+	@Path("/concept/treePositions/descendantfind")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public SearchResultList findDescendantsFromTreePostions() {
+			
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			long startTime = System.currentTimeMillis();
+			Logger.getLogger(this.getClass()).info("start");
+			SearchResultList results = contentService.findDescendantsFromTreePostions("110091001", "SNOMEDCT",
+				"20140131"); 
+			contentService.close();
+
+			Logger.getLogger(this.getClass()).info("end");
+			return results;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
 }
