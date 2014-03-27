@@ -1,6 +1,8 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -16,7 +18,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
@@ -30,12 +31,14 @@ import org.ihtsdo.otf.mapping.jpa.MapRelationList;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.WorkflowService;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -1090,28 +1093,40 @@ public class MappingServiceRest {
   }
  
   @GET
-  @Path("/recentRecords/{userName}")
+  @Path("/recentRecords/{userName}/{projectId}")
   @ApiOperation(value = "Find recently edited map records", notes = "Returns recently edited map records for given userName in either JSON or XML format", response = MapRecordList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public MapRecordList getRecentlyEditedMapRecords(
+    @ApiParam(value = "Id of map project", required = true) @PathParam("projectId") String projectId,
     @ApiParam(value = "Id of user", required = true) @PathParam("userName") String userName) {
 	/**public MapRecordList getRecentlyEditedMapRecords(MapUser user, PfsParameter pfsParameter) {*/
-		//TODO: 
+		//TODO: PfsParameter
 		// do envers query  AuditReader owner set to this user
 		// get all the records (latest revision) of which the given user touched
-    MappingService mappingService = new MappingServiceJpa();
-    // TODO: should take project also?
-    //mappingService.getMapRecordsForMapProject(mapProjectId)
+  	List<MapRecord> editedRecords = new ArrayList<>();
+  	
     try {
-      List<MapRecord> mapRecords = mappingService.getMapRecords();
-      for (MapRecord mapRecord : mapRecords) {
+      MappingService mappingService = new MappingServiceJpa();
+      WorkflowService workflowService = new WorkflowServiceJpa();
+    
+      MapUser user = mappingService.getMapUser(userName);
+      MapProject project = mappingService.getMapProject(new Long(projectId));
+		  Set<MapRecord> recordsForUser = workflowService.getMapRecordsAssignedToUser(project, user);
+    
+		  workflowService.close();
+
+		  for (MapRecord mapRecord : recordsForUser) {
         mappingService.getMostRecentMapRecordRevision(mapRecord.getId());
       }
+      mappingService.close();
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
-		return null;
+    
+    MapRecordList recordList = new MapRecordList();
+    recordList.setMapRecords(editedRecords);
+		return recordList;
 	}
 }
