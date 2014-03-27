@@ -324,11 +324,10 @@ public class MapEntryImpl implements MapEntry {
 	public String toString() {
 		return "MapEntryImpl [id=" + id + ", mapNotes=" + mapNotes
 				+ ", targetId=" + targetId + ", targetName=" + targetName
-				+ ", mapAdvices=" + mapAdvices + ", mapPrinciples="
-				+ mapPrinciples + ", rule=" + rule + ", mapPriority="
-				+ mapPriority + ", mapRelation=" + mapRelation + ", mapRecord="
-				+ mapRecord + ", mapGroup=" + mapGroup + ", mapBlock="
-				+ mapBlock + "]";
+				+ ", mapAdvices=" + mapAdvices + ", rule=" + rule
+				+ ", mapPriority=" + mapPriority + ", mapRelation="
+				+ mapRelation + ", mapRecord=" + mapRecord + ", mapGroup="
+				+ mapGroup + ", mapBlock=" + mapBlock + "]";
 	}
 
 

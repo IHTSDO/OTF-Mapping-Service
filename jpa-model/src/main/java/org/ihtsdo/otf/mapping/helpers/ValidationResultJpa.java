@@ -23,7 +23,7 @@ public class ValidationResultJpa implements ValidationResult {
 	 */
 	@Override
 	public boolean isValid() {
-		return valid && errors.size() == 0;
+		return errors.size() == 0;
 	}
 	
 	/* (non-Javadoc)
