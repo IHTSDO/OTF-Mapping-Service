@@ -891,6 +891,17 @@ public class MappingServiceJpa implements MappingService {
 		return query;
 	}
 
+  @Override
+  public MapRecord getMostRecentMapRecordRevision(long mapRecordId)  throws Exception {
+  	AuditReader reader = AuditReaderFactory.get(manager);
+  	MapRecord record_rev1 = reader.find(MapRecordJpa.class, mapRecordId, 1);
+
+  	List<Number> revNumbers = reader.getRevisions(MapRecordJpa.class, record_rev1);
+  	MapRecordJpa record_previous = reader.find(MapRecordJpa.class, record_rev1.getId(),
+  	  revNumbers.get(revNumbers.size()-1));
+  	return record_previous;
+  }
+  
 	// //////////////////////////////////
 	// Other query services
 	// //////////////////////////////////
@@ -2649,5 +2660,6 @@ public class MappingServiceJpa implements MappingService {
 			manager.merge(mapAgeRange);
 		}
 	}
+
 
 }

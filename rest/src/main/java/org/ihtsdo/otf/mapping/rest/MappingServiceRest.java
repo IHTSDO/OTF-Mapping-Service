@@ -16,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
@@ -1087,4 +1088,30 @@ public class MappingServiceRest {
     }
 
   }
+ 
+  @GET
+  @Path("/recentRecords/{userName}")
+  @ApiOperation(value = "Find recently edited map records", notes = "Returns recently edited map records for given userName in either JSON or XML format", response = MapRecordList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public MapRecordList getRecentlyEditedMapRecords(
+    @ApiParam(value = "Id of user", required = true) @PathParam("userName") String userName) {
+	/**public MapRecordList getRecentlyEditedMapRecords(MapUser user, PfsParameter pfsParameter) {*/
+		//TODO: 
+		// do envers query  AuditReader owner set to this user
+		// get all the records (latest revision) of which the given user touched
+    MappingService mappingService = new MappingServiceJpa();
+    // TODO: should take project also?
+    //mappingService.getMapRecordsForMapProject(mapProjectId)
+    try {
+      List<MapRecord> mapRecords = mappingService.getMapRecords();
+      for (MapRecord mapRecord : mapRecords) {
+        mappingService.getMostRecentMapRecordRevision(mapRecord.getId());
+      }
+    } catch (Exception e) {
+      throw new WebApplicationException(e);
+    }
+		return null;
+	}
 }

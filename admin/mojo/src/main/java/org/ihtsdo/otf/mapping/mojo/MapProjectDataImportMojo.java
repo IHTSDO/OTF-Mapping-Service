@@ -343,9 +343,9 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 					}
 				}
 
-				mapProject.setScopeDescendantsFlag(fields[20].equals("true") ? true
+				mapProject.setScopeDescendantsFlag(fields[20].toLowerCase().equals("true") ? true
 						: false);
-				mapProject.setScopeExcludedDescendantsFlag(fields[21].equals("true")
+				mapProject.setScopeExcludedDescendantsFlag(fields[21].toLowerCase().equals("true")
 						? true : false);
 
 

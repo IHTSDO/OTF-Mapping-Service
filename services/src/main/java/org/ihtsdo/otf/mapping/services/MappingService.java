@@ -661,6 +661,14 @@ public interface MappingService {
      * @throws Exception the exception
      */
     public void commit() throws Exception;
+    
+    /**
+     * Returns the most recent map record revision.
+     *
+     * @return the most recent map record revision
+     * @throws Exception the exception
+     */
+    public MapRecord getMostRecentMapRecordRevision(long mapRecordId) throws Exception;
 	
 }
 	
