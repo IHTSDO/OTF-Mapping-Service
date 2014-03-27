@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -143,6 +144,7 @@ public class MapAdviceJpa implements MapAdvice {
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#isAllowableForNullTarget()
 	 */
 	@Override
+	@XmlAttribute(name = "isAllowableForNullTarget")
 	public boolean isAllowableForNullTarget() {
 		return isAllowableForNullTarget;
 	}
@@ -159,6 +161,7 @@ public class MapAdviceJpa implements MapAdvice {
 	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#isComputable()
 	 */
 	@Override
+	@XmlAttribute(name = "isComputed")
 	public boolean isComputed() {
 		return isComputed;
 	}

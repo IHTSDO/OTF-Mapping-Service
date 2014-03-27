@@ -63,6 +63,32 @@ public interface MapRecord {
 	public Long getTimestamp();
 	
 	/**
+	 * Gets the last modified by.
+	 *
+	 * @return the last modified by
+	 */
+	public MapUser getLastModifiedBy();
+	
+	/**
+	 * Sets the last modified by.
+	 *
+	 * @param mapUser the new last modified by
+	 */
+	public void setLastModifiedBy(MapUser mapUser);
+	
+	/**
+	 * Gets the last modified date, in ms since 1970.
+	 *
+	 * @return the last modified date
+	 */
+	public Long getLastModified();
+	
+	/**
+	 * Sets the last modified date, in ms since 1970
+	 */
+	public void setLastModified(Long lastModified);
+	
+	/**
 	 * Returns the map project id.
 	 *
 	 * @return the map project id

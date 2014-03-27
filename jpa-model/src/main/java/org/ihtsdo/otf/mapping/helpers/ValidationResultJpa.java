@@ -12,10 +12,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class ValidationResultJpa implements ValidationResult {
 
-	
-	/** Flag for whether this object passed its validation tests. */
-	private boolean valid;
-	
 	/** The errors. */
 	private Set<String> errors = new HashSet<>();
 	
@@ -27,15 +23,7 @@ public class ValidationResultJpa implements ValidationResult {
 	 */
 	@Override
 	public boolean isValid() {
-		return valid && errors.size() == 0;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#setValid(boolean)
-	 */
-	@Override
-	public void setValid(boolean valid) {
-		this.valid = valid;
+		return errors.size() == 0;
 	}
 	
 	/* (non-Javadoc)
@@ -118,6 +106,14 @@ public class ValidationResultJpa implements ValidationResult {
 	@Override
 	public void removeWarning(String warning) {
 		this.warnings.remove(warning);
+	}
+
+	@Override
+	public void merge(ValidationResult validationResult) {
+		
+		this.errors.addAll(validationResult.getErrors());
+		this.warnings.addAll(validationResult.getWarnings());
+		
 	}
 
 	

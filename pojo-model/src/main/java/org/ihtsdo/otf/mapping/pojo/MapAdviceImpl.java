@@ -11,6 +11,7 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 public class MapAdviceImpl implements MapAdvice {
 
 	/** The id. */
+	
 	private Long id;
 	
 	/** The name. */

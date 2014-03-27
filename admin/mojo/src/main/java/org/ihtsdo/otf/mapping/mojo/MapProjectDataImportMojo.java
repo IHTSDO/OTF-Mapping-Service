@@ -186,6 +186,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				StringTokenizer st = new StringTokenizer(line, "\t");
 				MapRelationJpa mapRelation = new MapRelationJpa();
 				mapRelation.setTerminologyId(st.nextToken());
+				mapRelation.setAbbreviation(st.nextToken());
 				mapRelation.setName(st.nextToken());
 				mapRelation.setAllowableForNullTarget(st.nextToken().equals("true") ? true : false);
 				mapRelation.setComputed(st.nextToken().equals("true") ? true : false);

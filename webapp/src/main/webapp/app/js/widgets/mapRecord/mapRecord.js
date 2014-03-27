@@ -29,6 +29,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   		$scope.concept = 	null;
   		$scope.groups = 	null;
   		$scope.entries =    null;
+  		$scope.user = 		localStorageService.get('currentUser');
   		
   		// initialize accordion variables
   		$scope.isConceptOpen = true;
@@ -119,18 +120,18 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   		// 2) a 2-d array, with structure [group][mapPriority]
   		function initializeEntries() {
   			
-  			$scope.entries = null;
-  			
-  			// assign rule summaries for display
+  			// calculate rule summaries and assign local id equivalent to hibernate id (needed for track by in ng-repeat)
   			for (var i = 0; i < $scope.record.mapEntry.length; i++) {
   				$scope.record.mapEntry[i].ruleSummary = 
   					$scope.getRuleSummary($scope.record.mapEntry[i]);
+  				$scope.record.mapEntry[i].localId = $scope.record.mapEntry[i].id;
+  				
+  				currentLocalId = Math.max($scope.record.mapEntry[i].localId, currentLocalId);
   			}
   					
   			// if no group structure, simply copy and sort
   			if ($scope.project.groupStructure == false) {
-  			
-  				$scope.entries = sortByKey($scope.entries, 'mapPriority');
+  				$scope.entries = sortByKey($scope.record.mapEntry, 'mapPriority');
   				
   			// otherwise, initialize group arrays
   			} else {
@@ -138,8 +139,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   				// TODO Clunky array assignment, consider revisiting
   				// initiailize entry arrays for distribution by group
   				$scope.entries = new Array(10);
+  				
   				for (var i=0; i < $scope.entries.length; i++) $scope.entries[i] = new Array();
-  			
+  				
   				// cycle over the entries and assign to group bins
   				for (var i=0; i < $scope.record.mapEntry.length; i++) {
   					$scope.entries[$scope.record.mapEntry[i].mapGroup].push($scope.record.mapEntry[i]);
@@ -150,12 +152,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   					$scope.entries[i] = sortByKey($scope.entries[i], 'mapPriority');
   				}
   			}
-  			
-  			
   		}
   		
-  		
-  		  
   		/**
   		 * MAP RECORD FUNCTIONS
   		 */
@@ -164,7 +162,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   			///////////////////////////
   			// Group and MapPriority //
   			///////////////////////////
-  			
   			
   			// if not group structured project
   			if ($scope.project.groupStructure == false) {
@@ -202,7 +199,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   				$scope.record.mapEntry = entries;
   			}
   			
-  			console.debug("Validating the map entry");
+  			console.debug("Validating the map record");
 			// validate the record
 			$http({
 				  url: root_validation + "record/validate",
@@ -223,6 +220,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				
 				  // if no error messages were returned, save the record
 				  if ($scope.validationResult.errors.length == 0)  {
+					  
+					  // assign the current user to the lastModifiedBy field
+					  $scope.record.lastModifiedBy = user;
 					  
 					  $http({
 						  url: root_mapping + "record/update",
@@ -398,7 +398,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   		// Sets the scope variable for the active entry
   		$scope.selectEntry = function(entry) {
   			console.debug("Select entry");
-  			$rootScope.$broadcast('localStorageModule.notification.changeSelectedEntry',{key: 'changeSelectedEntry', entry: angular.copy(entry), record: $scope.record, project: $scope.project});  
+  			$rootScope.$broadcast('mapRecordWidget.notification.changeSelectedEntry',{key: 'changeSelectedEntry', entry: angular.copy(entry), record: $scope.record, project: $scope.project});  
   	         
   		};
   		
@@ -422,15 +422,22 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   			  		"localId": currentLocalId + 1
   			  };
   			  
+  			  currentLocalId += 1;
+  			  
   			  newEntry.ruleSummary = $scope.getRuleSummary(newEntry);
   			  
-  			  $scope.entries[group].push(newEntry);
+  			  if ($scope.project.groupStructure == true) {
+  				  $scope.entries[group].push(newEntry);
+  			  } else {
+  				  $scope.entries.push(newEntry);
+  			  }
+  			  
   			  $scope.selectEntry(newEntry);
 
   		  };
   		  
   		  // Notification watcher for save/delete entry events
-  		  $scope.$on('localStorageModule.notification.modifySelectedEntry', function(event, parameters) { 	
+  		  $scope.$on('mapEntryWidget.notification.modifySelectedEntry', function(event, parameters) { 	
   			    console.debug("MapRecordWidget: Detected entry modify request");
             
       			var entry = parameters.entry;

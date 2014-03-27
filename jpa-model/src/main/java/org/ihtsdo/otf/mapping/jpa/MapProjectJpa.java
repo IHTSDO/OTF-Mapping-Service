@@ -708,7 +708,7 @@ public class MapProjectJpa implements MapProject {
 	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler() {
 		
 		try {
-			this.algorithmHandler = (ProjectSpecificAlgorithmHandler) Class.forName(this.projectSpecificAlgorithmHandlerClass).newInstance();
+			this.algorithmHandler = (ProjectSpecificAlgorithmHandler) Class.forName("org.ihtsdo.otf.mapping.helpers." + this.projectSpecificAlgorithmHandlerClass).newInstance();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

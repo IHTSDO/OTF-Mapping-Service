@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,6 +20,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
@@ -41,6 +43,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Map Record Jpa object.
  *
@@ -64,12 +67,20 @@ public class MapRecordJpa implements MapRecord {
 	private Long id;
 	
 	/** The owner. */
-	@ManyToOne(targetEntity = MapUserJpa.class, optional=true)
+	@ManyToOne(targetEntity = MapUserJpa.class)
 	private MapUser owner;
 			
 	/** The timestamp. */
 	@Column(nullable = false)
-	private Long timestamp;
+	private Long timestamp = (new Date()).getTime();
+	
+	/** The user last modifying this record */
+	@OneToOne(targetEntity = MapUserJpa.class)
+	private MapUser lastModifiedBy;
+	
+	/** The time at which the last user modified this record */
+	@Column(nullable = false)
+	private Long lastModified = (new Date()).getTime();
 
 	/** The map project id. */
 	@Column(nullable = true)
@@ -222,6 +233,39 @@ public class MapRecordJpa implements MapRecord {
 		this.timestamp = timestamp;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getlastModifiedBy()
+	 */
+	@Override
+	@XmlElement(type = MapUserJpa.class, name = "lastModifiedBy")
+	public MapUser getLastModifiedBy() {
+		return lastModifiedBy;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setLastModifiedBy(org.ihtsdo.otf.mapping.model.MapUser)
+	 */
+	@Override
+	public void setLastModifiedBy(MapUser mapUser) {
+		this.lastModifiedBy = mapUser;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getLastModified()
+	 */
+	@Override
+	public Long getLastModified() {
+		return this.lastModified;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setLastModified(java.lang.Long)
+	 */
+	@Override
+	public void setLastModified(Long lastModified) {
+		this.lastModified = lastModified;
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapProjectId()
@@ -501,6 +545,9 @@ public class MapRecordJpa implements MapRecord {
 		flagForConsensusReview = flag;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -533,6 +580,9 @@ public class MapRecordJpa implements MapRecord {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -606,6 +656,9 @@ public class MapRecordJpa implements MapRecord {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "MapRecordJpa [owner=" + owner + ", timestamp=" + timestamp

@@ -12,7 +12,6 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
-
 /**
  * Reference implementation of {@link MapRecord}.
  * Includes hibernate tags for persistence
@@ -28,6 +27,10 @@ public class MapRecordImpl implements MapRecord {
 	
 	/** The timestamp. */
 	private Long timestamp;
+	
+	private MapUser lastModifiedBy;
+	
+	private Long lastModified;
 	
 	/** The map project id. */
 	private Long mapProjectId;
@@ -100,7 +103,7 @@ public class MapRecordImpl implements MapRecord {
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getOwner()
 	 */
 	@Override
-  public MapUser getOwner() {
+	public MapUser getOwner() {
 		return owner;
 	}
 
@@ -108,7 +111,7 @@ public class MapRecordImpl implements MapRecord {
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setOwner(org.ihtsdo.otf.mapping.model.MapUser)
 	 */
 	@Override
-  public void setOwner(MapUser owner) {
+	public void setOwner(MapUser owner) {
 		this.owner = owner;
 	}
 
@@ -116,7 +119,7 @@ public class MapRecordImpl implements MapRecord {
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getTimestamp()
 	 */
 	@Override
-  public Long getTimestamp() {
+	public Long getTimestamp() {
 		return timestamp;
 	}
 
@@ -124,9 +127,33 @@ public class MapRecordImpl implements MapRecord {
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setTimestamp(java.lang.Long)
 	 */
 	@Override
-  public void setTimestamp(Long timestamp) {
+	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getLastModifiedBy()
+	 */
+	@Override
+	public MapUser getLastModifiedBy() {
+		return lastModifiedBy;
+	}
+
+	@Override
+	public void setLastModifiedBy(MapUser mapUser) {
+		this.lastModifiedBy = mapUser;
+	}
+
+	@Override
+	public Long getLastModified() {
+		return this.lastModified;
+	}
+
+	@Override
+	public void setLastModified(Long lastModified) {
+		this.lastModified = lastModified;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapProjectId()
@@ -349,7 +376,7 @@ public class MapRecordImpl implements MapRecord {
 				prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
 		result =
 				prime
-						* result
+				* result
 						+ ((countDescendantConcepts == null) ? 0 : countDescendantConcepts
 								.hashCode());
 		result = prime * result + (flagForConsensusReview ? 1231 : 1237);
@@ -360,7 +387,7 @@ public class MapRecordImpl implements MapRecord {
 		result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
 		result =
 				prime * result
-						+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
+				+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
 		result =
 				prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
 		result = prime * result + ((originIds == null) ? 0 : originIds.hashCode());
@@ -516,6 +543,7 @@ public class MapRecordImpl implements MapRecord {
 
 
 
+	
 	
 
 

@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Interface MapEntry.
  */
@@ -22,7 +23,8 @@ public interface MapEntry {
 	public void setId(Long id);
 	
 	/**
-	 * Returns the id in string form
+	 * Returns the id in string form.
+	 *
 	 * @return the string object id
 	 */
 	public String getObjectId();
@@ -141,42 +143,32 @@ public interface MapEntry {
 	public void setMapPriority(int index);
 	
 	/**
-	 * Gets the map group
+	 * Gets the map group.
+	 *
 	 * @return the map group
 	 */
 	public int getMapGroup();
 	
 	/**
-	 * Sets the map group
+	 * Sets the map group.
+	 *
 	 * @param mapGroup the map group
 	 */
 	public void setMapGroup(int mapGroup);
 	
 	/**
-	 * Gets the map block
+	 * Gets the map block.
+	 *
 	 * @return the map block
 	 */
 	public int getMapBlock();
 	
 	/**
-	 * Sets the map block
+	 * Sets the map block.
+	 *
 	 * @param mapBlock the map block
 	 */
 	public void setMapBlock(int mapBlock);
-	
-	/**
-	 * Returns the relation id.
-	 *
-	 * @return the relation id
-	 */
-	public String getRelationId();
-	
-	/**
-	 * Sets the relation id.
-	 *
-	 * @param relationId the relation id
-	 */
-	public void setRelationId(String relationId);
 	
 	/**
 	 * Returns the map record.
@@ -193,18 +185,18 @@ public interface MapEntry {
 	public void setMapRecord(MapRecord mapRecord);
 	
 	/**
-	 * Gets the relation name.
+	 * Gets the map relation.
 	 *
-	 * @return the relation name
+	 * @return the map relation
 	 */
-	public String getRelationName();
+	public MapRelation getMapRelation();
 
 	/**
-	 * Sets the relation name.
-	 * 
-	 * @param relationName
+	 * Sets the map relation.
+	 *
+	 * @param mapRelation the new map relation
 	 */
-	public void setRelationName(String relationName);
+	public void setMapRelation(MapRelation mapRelation);
 	
 
 	
