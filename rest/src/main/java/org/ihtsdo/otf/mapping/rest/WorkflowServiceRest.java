@@ -3,10 +3,10 @@
  */
 package org.ihtsdo.otf.mapping.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -57,37 +57,10 @@ public class WorkflowServiceRest {
 
 	}
 	
-    /**
-     * Returns the workflows.
-     * TODO: remove this - testing method
-     */
-    @GET
-	@Path("/workflows")
-	@ApiOperation(value = "Return workflows", notes = "Returns all workflows.")
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public void getWorkflows() {
-		
-		Logger.getLogger(WorkflowServiceRest.class).info("RESTful call (Workflow): /workflows");
-		
-		try {			
-			WorkflowService workflowService = new WorkflowServiceJpa();
-			workflowService.getWorkflows();
-			workflowService.close();
-			return;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
 	
-	/**
-	 * Compute workflow.
-	 *
-	 * @param mapProjectId the map project id
-	 */
-	@GET
+	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Compute workflow for project by id", notes = "Computes workflow given a project id.")
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void computeWorkflow(
 			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
 		
@@ -154,30 +127,26 @@ public class WorkflowServiceRest {
 		}
 	}
 
-	/**
-	 * Assigns a user to a concept for a specified map project.
-	 * TODO: pass username instead of userId
-	 * 
-	 * @param mapProjectId the map project id
-	 * @param terminologyId the terminology id
-	 * @param userId the user id
-	 * @return the response
-	 */
-	@POST
-	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
-	@Path("/assign/{projectid:[0-9][0-9]*}/{terminologyid:[0-9][0-9]*}/{userid:[0-9][0-9]*}")
+	// TODO: was unable to get this to work as a @POST service
+	@GET
+	@Path("/assign/id/{id}/concept/{terminologyId}/user/{userName}")
 	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
+	@Produces({
+		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
 	public Response assignUserToConcept(
-		@ApiParam(value = "Id of map project", required = true) @PathParam("mapProjectId") Long mapProjectId, 
-		@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") Long terminologyId, 
-		@ApiParam(value = "Id of user", required = true) @PathParam("userId") Long userId) {
+		@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
+		@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId,
+		@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName) {
 		try {
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			MappingService mappingService = new MappingServiceJpa();
 			ContentService contentService = new ContentServiceJpa();
-			MapProject project = mappingService.getMapProject(mapProjectId);
-			MapUser user = mappingService.getMapUser(userId);
-			Concept concept = contentService.getConcept(terminologyId);
+			
+			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
+			MapUser user = mappingService.getMapUser(userName);
+			Concept concept = contentService.getConcept(terminologyId, project.getSourceTerminology(), 
+					project.getSourceTerminologyVersion());
 			
 			workflowService.assignUserToConcept(project, concept, user);
 			
@@ -192,33 +161,26 @@ public class WorkflowServiceRest {
 		return null;
 	}
 	
-	/**
-	 * Assigns the user to the concept for a specified map project with an intial map
-	 * record as a template.
-	 * 
-	 * @param mapProjectId the map project id
-	 * @param terminologyId the terminology id
-	 * @param recordId the template record id
-	 * @param userId the user id
-	 * @return the response
-	 */
-	@POST
-	@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
-	@Path("/assign/{projectid:[0-9][0-9]*}/{terminologyid:[0-9][0-9]*}/{recordid:[0-9][0-9]*}/{userid:[0-9][0-9]*}")
+	@GET
+	@Path("/assign/id/{id}/concept/{terminologyId}/record/{recordId}/user/{userName}")
 	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
+	@Produces({
+		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
 	public Response assignUserToConcept(
-		@ApiParam(value = "Id of map project", required = true) @PathParam("mapProjectId") Long mapProjectId, 
-		@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") Long terminologyId,  
-		@ApiParam(value = "Id of map record", required = true) @PathParam("recordId") Long recordId, 
-		@ApiParam(value = "Id of user", required = true) @PathParam("userId") Long userId) {
+		@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
+		@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId, 
+		@ApiParam(value = "Id of map record", required = true) @PathParam("recordId") String recordId,
+		@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName) {
 			try {
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			MappingService mappingService = new MappingServiceJpa();
 			ContentService contentService = new ContentServiceJpa();
 			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
-			MapUser user = mappingService.getMapUser(new Long(userId));
+			MapUser user = mappingService.getMapUser(userName);
 			MapRecord record = mappingService.getMapRecord(new Long(recordId));
-			Concept concept = contentService.getConcept(new Long(terminologyId));
+			Concept concept = contentService.getConcept(terminologyId, project.getSourceTerminology(), 
+					project.getSourceTerminologyVersion());
 			
 			workflowService.assignUserToConcept(project, concept, record, user);
 			
@@ -241,38 +203,30 @@ public class WorkflowServiceRest {
 	 * @return the records assigned to user
 	 */
 	@GET
-	@Path("/assigned/user/{id:[0-9][0-9]*}")
+	@Path("/assigned/id/{id}/user/{user}")
 	@ApiOperation(value = "Returns records assigned to given user.", notes = "Returns work assigned to a given user.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
 	public MapRecordList getRecordsAssignedToUser(
-		@ApiParam(value = "Id of user", required = true) @PathParam("id")  Long userId) {
+		@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
+		@ApiParam(value = "UserName of user", required = true) @PathParam("user")  String userName) {
 		MapRecordList assigned = new MapRecordList();
 		try {
-		  MappingService mappingService = new MappingServiceJpa();
-		  List<MapRecord> mapRecords = mappingService.getMapRecords();
-		  for (MapRecord mapRecord : mapRecords) {
-			  if (mapRecord.getOwner().getId().toString().equals(userId.toString()))
-			  	assigned.addMapRecord(mapRecord);
-		  }
-		  mappingService.close();
-		  return assigned;
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
+			MapUser user = mappingService.getMapUser(userName);
+			
+			Set<MapRecord> mapRecords = workflowService.getMapRecordsAssignedToUser(project, user);
+			List<MapRecord> mapRecordsList = new ArrayList<MapRecord>(mapRecords);
+			assigned.setMapRecords(mapRecordsList);
+			
+			mappingService.close();
+			workflowService.close();
+			return assigned;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
 	
-	/**
-	 * Returns the recently edited map records for the specified user.
-	 *
-	 * @param user the user
-	 * @param pfsParameter the pfs parameter
-	 * @return the recently edited map records
-	 */
-	public MapRecordList getRecentlyEditedMapRecords(MapUser user, PfsParameter pfsParameter) {
-		//TODO: what does this mean?  
-		// do envers query  AuditReader owner set to this user
-		// get all the records (latest revision) of which the given user touched
-		// this goes into the mappingService
-		return null;
-	}
+
 }
