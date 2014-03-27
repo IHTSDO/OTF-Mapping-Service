@@ -1764,12 +1764,12 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 		      });
 			
 
-			
+		
 			// function to return trusted html code (for tooltip content)
 			$scope.to_trusted = function(html_code) {
 			    return $sce.trustAsHtml(html_code);
 			 };
-			
+			 
 			 
 
 			 ///////////////////////////////////////////////////////////////
@@ -1948,8 +1948,8 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
 				    });
 				};
-			
-				 
+				
+				
 				
 			////////////////////////////////////////////////////////
 			// END PRINCIPLE/ADVICE SORTING/FILTERING FUNCTIONS

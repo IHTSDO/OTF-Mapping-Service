@@ -15,6 +15,7 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 
+// TODO: Auto-generated Javadoc
 /**
  * Interface for services to retrieve (get) map objects.
  *
@@ -621,9 +622,16 @@ public interface MappingService {
 	 *
 	 * @param mapRelationId the map relation id
 	 */
-  public void removeMapRelation(Long mapRelationId);
+	public void removeMapRelation(Long mapRelationId);
 
-        
+	/**
+	 * Compute map advice and map relations for map record.
+	 *
+	 * @param mapRecord the map record
+	 * @return the map record
+	 */
+	public MapRecord computeMapAdviceAndMapRelationsForMapRecord(MapRecord mapRecord);
+	
     /**
      * Gets the transaction per operation.
      *

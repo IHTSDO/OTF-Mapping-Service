@@ -97,15 +97,16 @@
     <thead>
       <tr>
         <th>Advice</th>
-        <th>Allowed for Null Target</th>
-        <th>Computable</th>
+        <th><div tooltip-placement="top" tooltip="Whether this advice can be applied to entries with no target">Allowable for Null Target</div></td>
+        <th><div tooltip-placement="top" tooltip="If true, this advice is applied automatically and cannot be assigned directly by the user">Computed</div></td>
+    </th>
       </tr>
     </thead>
     <tbody ng-repeat="advice in pagedAdvice | orderBy: 'name'" style="border: 2px solid #ccc;" >
       <tr>
         <td>{{advice.name}}</td>
-        <td>{{advice.allowableForNullTarget}}</td>
-        <td>{{advice.computable}}</td>
+        <td>{{advice.isAllowableForNullTarget}}</td>
+        <td>{{advice.isComputed}}</td>
       </tr>
      
     </tbody>
@@ -131,14 +132,16 @@
     <thead>
       <tr>
         <th>Id</th>
-        <th>Name</th>
-        <th>Allowed for Null Target</th>
-        <th>Computed</th>
-      </tr>
+        <th><div tooltip-placement="top" tooltip="Short code abbreviation for this relation, if applicable">Code</div></td>
+        <th><div tooltip-placement="top" tooltip="The full name of this map relation">Name</div></td>
+        <th><div tooltip-placement="top" tooltip="Whether this relation can be applied to entries with no target">Allowable for Null Target</div></td>
+        <th><div tooltip-placement="top" tooltip="If true, this relation is applied automatically and cannot be assigned directly by the user">Computed</div></td>
+     </tr>
     </thead>
     <tbody ng-repeat="relation in pagedRelation | orderBy: 'name'" style="border: 2px solid #ccc;" >
       <tr>
         <td>{{relation.terminologyId}}</td>
+        <td><span ng-show = "relation.abbreviation != 'none'">{{relation.abbreviation}}</span></td>
         <td>{{relation.name}}</td>
         <td>{{relation.isAllowableForNullTarget}}</td>
         <td>{{relation.isComputed}}</td>
