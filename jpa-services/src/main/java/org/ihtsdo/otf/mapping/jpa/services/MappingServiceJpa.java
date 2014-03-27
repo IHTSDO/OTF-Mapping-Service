@@ -867,6 +867,7 @@ public class MappingServiceJpa implements MappingService {
 
   @Override
   public MapRecord getMostRecentMapRecordRevision(long mapRecordId)  throws Exception {
+  	
   	AuditReader reader = AuditReaderFactory.get(manager);
   	MapRecord record_rev1 = reader.find(MapRecordJpa.class, mapRecordId, 1);
 
