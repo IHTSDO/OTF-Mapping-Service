@@ -10,6 +10,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.mapProject',
                                                      'mapProjectApp.widgets.mapRecord',
                                                      'mapProjectApp.widgets.mapEntry',
+                                                     'mapProjectApp.widgets.workAvailable',
                                                      'LocalStorageModule',
                                                      'ngCookies'/*,
                                                      'textAngular'*/
@@ -91,15 +92,23 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
 	                                {
 	                                  class: 'col-md-4',
 	                                  widgets: [{
-	                                      type: "mapProjectList",
-	                                      config: {},
-	                                      title: "Map Projects"
-	                                  }, {
 	                                      type: "mapProject",
 	                                      config: {},
 	                                      title: "Map Project"
 	                                  }]
 	                                }, {
+	                                  class: 'col-md-8',
+	                                  widgets: [{
+	                                      type: "workAvailable",
+	                                      config: {},
+	                                      title: "Available Work"
+	                                  }]
+	                                }]
+	                              }, // end row 1
+	                              
+	                              { // begin row 2
+                            	   columns : [
+	                               {
 	                                  class: 'col-md-8',
 	                                  widgets: [{
 	                                      type: "metadataList",
@@ -108,9 +117,10 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
 	                                      },
 	                                      title: "Metadata"
 	                                  }]
-	                                }]
-	                              }]
-                            }
+	                               }]
+	                              } // end row 2
+                               ] // end rows
+                            } // end model
                           } else if (!model) { // viewer or specialist
                               // set default model for demo purposes
                               model = {

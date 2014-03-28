@@ -2587,23 +2587,8 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 	// ////////////////////////
-	// UTILITY FUNCTIONS
+	// AGE RANGE FUNCTIONS
 	// ////////////////////////
-
-	@Override
-	public boolean userExists(String mapUser) {
-
-		List<MapUser> mapUsers = getMapUsers();
-
-		// find if user with this username exists in list of valid users
-		for (MapUser m : mapUsers) {
-			if (m.getUserName().equals(mapUser))
-				return true;
-		}
-
-		// if not found, return false
-		return false;
-	}
 
 	/**
 	 * Retrieve all map age ranges.
