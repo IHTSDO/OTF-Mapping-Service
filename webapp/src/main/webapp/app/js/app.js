@@ -9,7 +9,8 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.metadataList',
                                                      'mapProjectApp.widgets.mapProject',
                                                      'mapProjectApp.widgets.mapRecord',
-                                                     'mapProjectApp.widgets.mapEntry',
+                                                     'mapProjectApp.widgets.mapEntry',  
+                                                     'mapProjectApp.widgets.assignedList', 
                                                      'mapProjectApp.widgets.workAvailable',
                                                      'LocalStorageModule',
                                                      'ngCookies'/*,
@@ -117,10 +118,22 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
 	                                      },
 	                                      title: "Metadata"
 	                                  }]
+	                                }, {
+		                                  class: 'col-md-8',
+		                                  widgets: [{
+		                                      type: "assignedList",
+		                                      config: {
+		                                          terminology: "SNOMEDCT"
+		                                      },
+		                                      title: "Assigned To Me"
 	                               }]
+		                                  }]
 	                              } // end row 2
                                ] // end rows
                             } // end model
+		                              }]
+	                              }]
+                            }
                           } else if (!model) { // viewer or specialist
                               // set default model for demo purposes
                               model = {

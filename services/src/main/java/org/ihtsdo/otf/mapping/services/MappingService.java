@@ -629,7 +629,7 @@ public interface MappingService {
 	 */
 	public MapRelation computeMapRelation(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
 	
-	/**
+    /**
 	 * Compute map advice.
 	 *
 	 * @param mapRecord the map record
@@ -677,7 +677,7 @@ public interface MappingService {
      * @return the most recent map record revision
      * @throws Exception the exception
      */
-    public MapRecord getMostRecentMapRecordRevision(long mapRecordId) throws Exception;
+    public List<MapRecord> getRecentlyEditedMapRecords(MapUser mapUser) throws Exception;
 
 	/**
 	 * Gets the project specific algorithm handler.

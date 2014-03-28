@@ -58,7 +58,7 @@ public class WorkflowServiceRest {
 	}
 
 
-	@POST
+	@GET
 	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Compute workflow for project by id", notes = "Computes workflow given a project id.")
 	public void computeWorkflow(
@@ -130,8 +130,8 @@ public class WorkflowServiceRest {
 	@ApiOperation(value = "Find available work.", notes = "Returns available work for a given user on a given map project.", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAvailableWork(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId, 
-			@ApiParam(value = "Id of map user", required = true) @PathParam("userid") Long userId) {
+		@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId, 
+		@ApiParam(value = "Id of map user", required = true) @PathParam("userid") Long userId) {
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject project = mappingService.getMapProject(mapProjectId);
@@ -142,27 +142,27 @@ public class WorkflowServiceRest {
 
 			SearchResultList searchResultList = new SearchResultListJpa();
 
-			/** call getWorkflow and get the tracking records for unmapped in scope concepts.*/
-			Workflow workflow = workflowService.getWorkflow(project);
-			Set<WorkflowTrackingRecord> trackingRecords = workflow.getTrackingRecordsForUnmappedInScopeConcepts();
-			for (WorkflowTrackingRecord trackingRecord : trackingRecords) {
-				/** don't add cases where there are 2 assigned users already */
-				/** don't add cases where this specialist is already an assigned user */	
-				if (trackingRecord.getAssignedUsers().size() >= 2 ||
-						trackingRecord.getAssignedUsers().contains(user)) {
-					continue; 
-				} else {
-					SearchResult searchResult = new SearchResultJpa();
-					searchResult.setTerminology(trackingRecord.getTerminology());
-					searchResult.setTerminologyId(trackingRecord.getTerminologyId());
-					searchResult.setTerminologyVersion(trackingRecord.getTerminologyVersion());
-					searchResult.setValue(trackingRecord.getDefaultPreferredName());
-					searchResultList.addSearchResult(searchResult);
-				}   	
-			}
+		  /** call getWorkflow and get the tracking records for unmapped in scope concepts.*/
+		  Workflow workflow = workflowService.getWorkflow(project);
+		  Set<WorkflowTrackingRecord> trackingRecords = workflow.getTrackingRecordsForUnmappedInScopeConcepts();
+	    for (WorkflowTrackingRecord trackingRecord : trackingRecords) {
+		    /** don't add cases where there are 2 assigned users already */
+	      /** don't add cases where this specialist is already an assigned user */	
+		    if (trackingRecord.getAssignedUsers().size() >= 2 ||
+		    		trackingRecord.getAssignedUsers().contains(user)) {
+		    	continue; 
+	      } else {
+	      	SearchResult searchResult = new SearchResultJpa();
+	      	searchResult.setTerminology(trackingRecord.getTerminology());
+	      	searchResult.setTerminologyId(trackingRecord.getTerminologyId());
+	      	searchResult.setTerminologyVersion(trackingRecord.getTerminologyVersion());
+	      	searchResult.setValue(trackingRecord.getDefaultPreferredName());
+		    	searchResultList.addSearchResult(searchResult);
+		    }   	
+	    }
 			workflowService.close();
 			
-			return searchResultList;
+	    return searchResultList;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -174,11 +174,11 @@ public class WorkflowServiceRest {
 	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
 	@Produces({
 		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
+  })
 	public Response assignUserToConcept(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
-			@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId,
-			@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName) {
+		@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
+		@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId,
+		@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName) {
 		try {
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			MappingService mappingService = new MappingServiceJpa();
@@ -207,13 +207,13 @@ public class WorkflowServiceRest {
 	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
 	@Produces({
 		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
+  })
 	public Response assignUserToConcept(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
-			@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId, 
-			@ApiParam(value = "Id of map record", required = true) @PathParam("recordId") String recordId,
-			@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName) {
-		try {
+		@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
+		@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId, 
+		@ApiParam(value = "Id of map record", required = true) @PathParam("recordId") String recordId,
+		@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName) {
+			try {
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			MappingService mappingService = new MappingServiceJpa();
 			ContentService contentService = new ContentServiceJpa();
@@ -245,11 +245,11 @@ public class WorkflowServiceRest {
 	 */
 	@GET
 	@Path("/assigned/id/{id}/user/{user}")
-	@ApiOperation(value = "Returns records assigned to given user.", notes = "Returns work assigned to a given user.")
+	@ApiOperation(value = "Returns records assigned to given user.", notes = "Returns work assigned to a given user.", response = MapRecordList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
 	public MapRecordList getRecordsAssignedToUser(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
-			@ApiParam(value = "UserName of user", required = true) @PathParam("user")  String userName) {
+		@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
+		@ApiParam(value = "UserName of user", required = true) @PathParam("user")  String userName) {
 		MapRecordList assigned = new MapRecordList();
 		try {
 			WorkflowService workflowService = new WorkflowServiceJpa();
