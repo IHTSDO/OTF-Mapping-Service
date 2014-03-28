@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -210,6 +211,8 @@ public class MappingServiceRest {
     try {
       MappingService mappingService = new MappingServiceJpa();
       MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      mapProject.getScopeConcepts().size();
+      mapProject.getScopeExcludedConcepts().size();
       mappingService.close();
       return mapProject;
     } catch (Exception e) {
@@ -1099,22 +1102,23 @@ public class MappingServiceRest {
   })
   public MapRecordList getRecentlyEditedMapRecords(
     @ApiParam(value = "Id of user", required = true) @PathParam("userName") String userName) {
-	/**public MapRecordList getRecentlyEditedMapRecords(MapUser user, PfsParameter pfsParameter) {*/
-		//TODO: 
-		// do envers query  AuditReader owner set to this user
-		// get all the records (latest revision) of which the given user touched
-    MappingService mappingService = new MappingServiceJpa();
-    // TODO: should take project also?
-    //mappingService.getMapRecordsForMapProject(mapProjectId)
+	//TODO: PfsParameter
+  	List<MapRecord> editedRecords = new ArrayList<>();
     try {
-      List<MapRecord> mapRecords = mappingService.getMapRecords();
-      for (MapRecord mapRecord : mapRecords) {
-        mappingService.getMostRecentMapRecordRevision(mapRecord.getId());
-      }
+      MappingService mappingService = new MappingServiceJpa();
+      
+      MapUser user = mappingService.getMapUser(userName);
+     	 
+      editedRecords = mappingService.getRecentlyEditedMapRecords(user);
+      
+      mappingService.close();
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
-		return null;
+    
+    MapRecordList recordList = new MapRecordList();
+    recordList.setMapRecords(editedRecords);
+		return recordList;
 	}
   
   /**
