@@ -193,7 +193,11 @@ angular.module('adf')
 	            	  return true;
 	              } else if (widget == 'metadataList' && $scope.currentRole.value > 1) { //$rootScope.role.value >= 3) {
 	        	      return true;
-	          	  } else if (widget == 'mapProject') return true;
+	          	  } else if (widget == 'mapProject') {
+	          		  return true;
+	          	  } else if (widget == 'assignedList' && $scope.currentRole.value > 1) {
+	          		  return true;
+	          	  }
 	        	  return false;
         	  } else if ($scope.name === 'mappingDashboard') {
         		  if (widget == 'mapRecord' && $scope.currentRole.value >= 1) { //$rootScope.role.value >= 1) {

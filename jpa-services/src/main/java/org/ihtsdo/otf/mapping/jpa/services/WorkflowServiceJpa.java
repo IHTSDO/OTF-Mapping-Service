@@ -326,6 +326,8 @@ public class WorkflowServiceJpa implements WorkflowService {
 		mapRecord.setFlagForConsensusReview(false);
 		mapRecord.setFlagForEditorialReview(false);
 		mapRecord.setFlagForMapLeadReview(false);
+		mapRecord.setLastModifiedBy(user);
+		mapRecord.setLastModified(System.currentTimeMillis());
 		MappingService mappingService = new MappingServiceJpa();
 		mappingService.addMapRecord(mapRecord);
 		mappingService.close();
@@ -362,6 +364,8 @@ public class WorkflowServiceJpa implements WorkflowService {
 		mapRecord.setId(null);
 		/** add the id of the initial record to the "origin ids" list of the cloned record */
     mapRecord.addOrigin(initialRecord.getId());
+		mapRecord.setLastModifiedBy(user);
+		mapRecord.setLastModified(System.currentTimeMillis());
     /** find the workflowTrackingRecord and add user and record to it */
     WorkflowTrackingRecord trackingRecord = getWorkflowTrackingRecord(project, concept);
     trackingRecord.addAssignedUser(user);

@@ -58,7 +58,7 @@ public class WorkflowServiceRest {
 	}
 	
 	
-	@POST
+	@GET
 	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Compute workflow for project by id", notes = "Computes workflow given a project id.")
 	public void computeWorkflow(
@@ -204,7 +204,7 @@ public class WorkflowServiceRest {
 	 */
 	@GET
 	@Path("/assigned/id/{id}/user/{user}")
-	@ApiOperation(value = "Returns records assigned to given user.", notes = "Returns work assigned to a given user.")
+	@ApiOperation(value = "Returns records assigned to given user.", notes = "Returns work assigned to a given user.", response = MapRecordList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
 	public MapRecordList getRecordsAssignedToUser(
 		@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
