@@ -194,6 +194,7 @@ angular.module('adf')
 	              } else if (widget == 'metadataList' && $scope.currentRole.value > 1) { //$rootScope.role.value >= 3) {
 	        	      return true;
 	          	  } else if (widget == 'mapProject') return true;
+	          	  else if (widget = "availableWork") return true;
 	        	  return false;
         	  } else if ($scope.name === 'mappingDashboard') {
         		  if (widget == 'mapRecord' && $scope.currentRole.value >= 1) { //$rootScope.role.value >= 1) {

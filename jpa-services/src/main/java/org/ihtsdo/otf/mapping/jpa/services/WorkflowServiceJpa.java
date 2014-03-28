@@ -1,6 +1,8 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,8 +14,11 @@ import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -424,6 +429,86 @@ public class WorkflowServiceJpa implements WorkflowService {
 		/** TODO: remove the matching map record using mappingService.removeMapRecord() */
 
 	}
+	
+	// TODO DIscuss model change to have WorkflowTrackingRecords directly connected to Workflow
+	// i.e. WorkflowTrackingRecord->Workflow (analogous to Record->Entry)
+	// this would enable searching and sorting in the hibernate environment
+	@Override
+	public SearchResultList findAvailableWork(Workflow workflow,
+			MapUser mapUser, PfsParameter pfsParameter) {
+		
+		
+		SearchResultList results = new SearchResultListJpa();
+		
+		// TODO Discuss changing this to List for easier sorting
+		List<WorkflowTrackingRecord> sortedTrackingRecords = 
+			new ArrayList<WorkflowTrackingRecord>(workflow.getTrackingRecordsForUnmappedInScopeConcepts());
+		
+		Collections.sort(sortedTrackingRecords,
+				new Comparator<WorkflowTrackingRecord>() {
+					@Override
+					public int compare(WorkflowTrackingRecord w1, WorkflowTrackingRecord w2) {
+						return w1.getSortKey().compareTo(w2.getSortKey());
+					}
+		});
+		
+		results.setTotalCount(new Long(sortedTrackingRecords.size()));
+		
+		// if pagination variables set, extract sublist
+		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+
+			Long maxBound = Math.min(
+								pfsParameter.getStartIndex() + pfsParameter.getMaxResults(),
+								results.getTotalCount());
+			sortedTrackingRecords = sortedTrackingRecords.subList(
+					pfsParameter.getStartIndex(), maxBound.intValue());
+					
+		} 
+		
+		// convert tracking records to search results
+		for (WorkflowTrackingRecord trackingRecord : sortedTrackingRecords) {
+			
+			SearchResult result = new SearchResultJpa();
+			
+			result.setId(trackingRecord.getId());
+			result.setTerminology(trackingRecord.getTerminology());
+			result.setTerminologyId(trackingRecord.getTerminologyId());
+			result.setTerminologyVersion(trackingRecord.getTerminologyVersion());
+			result.setValue(trackingRecord.getDefaultPreferredName());
+			
+			results.addSearchResult(result);
+		}
+		
+		// return search results
+		return results;
+		
+		/*// TODO Change return type to List for sorting
+		Set<WorkflowTrackingRecord> workflowTrackingRecords = workflow.getTrackingRecordsForUnmappedInScopeConcepts();
+		
+		
+		
+		
+		
+		// cycle over all unmapped tracking records in scope
+		for (WorkflowTrackingRecord workflowTrackingRecord : workflow.getTrackingRecordsForUnmappedInScopeConcepts()) {
+			
+			
+			
+			// if this record does not have two users assigned
+			// AND this record is not currently assigned to the user
+			// add to list
+			if (workflowTrackingRecord.getAssignedUsers().size() < 2 &&
+				!workflowTrackingRecord.getAssignedUsers().contains(mapUser)) {
+				
+				SearchResult result = new SearchResultJpa();
+				result.
+				
+				workflowTrackingRecords.add(workflowTrackingRecord);
+			}
+		}
+		
+		return workflowTrackingRecords;*/
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#close()
@@ -484,4 +569,6 @@ public class WorkflowServiceJpa implements WorkflowService {
 							+ "is no active transaction");
 		tx.commit();
 	}
+
+	
 }

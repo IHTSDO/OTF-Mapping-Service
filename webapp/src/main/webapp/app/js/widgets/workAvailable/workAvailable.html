@@ -1,0 +1,56 @@
+<div ng-show="currentRole.value > 1">
+
+	Select user to assign work to: 
+	<select ng-model="assignedMapUser"
+			ng-options = "mapUser as mapUser.name for mapUser in mapUsers">
+	</select>
+	
+	 
+</div>
+
+
+Batch size: <select ng-model="batchSize" ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
+&nbsp
+<button ng-show="currentRole.value > 1" class="btn btn-sm" ng-click="assignBatch(assignedMapUser, batchSize)">Assign Batch</button>
+<button ng-show="currentRole.value = 1" class="btn btn-sm" ng-click="assignBatch(searchResult, assignedMapUser)">Claim Batch</button>
+
+<hr>
+		
+<accordion>
+	<accordion-group is-open="isConceptListOpen">
+		<accordion-heading>
+			Concepts Available for Assignment ({{nTrackingRecords}}) <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': isConceptListOpen, 'glyphicon-chevron-right': !isConceptListOpen}"></i>
+		
+		</accordion-heading>
+		
+		<pagination total-items="nTrackingRecords" page="TrackingRecordPage" max-size="TrackingRecordsPerPage" class="pagination-sm" 
+			boundary-links="true" rotate="true" num-pages="numTrackingRecordPages"
+			on-select-page="retrieveAvailableWork(page)"></pagination>
+		<table class="table">
+		
+		<thead>
+			<tr>
+				<th style="width: 15%; padding: 5px;"></th>
+				<th style="width: 15%; padding: 5px;">Id</th>
+				<th style="width: 60%; padding: 5px;">Name</th>
+				
+			</tr>
+			
+		</thead>
+		
+		<tbody>
+		
+			<tr ng-repeat="concept in availableWork">
+				
+				<td style="width: 15%; padding: 5px;">
+					<button ng-show="currentRole.value == 1" class="btn btn-sm" ng-click="assignWork(concept, currentUser)">Claim</button>
+					<button ng-show="currentRole.value > 1" class="btn btn-sm" ng-click="assignWork(concept, assignedMapUser)">Assign</button>
+				</td>
+				<td style="width: 15%; padding: 5px;">{{concept.terminologyId}}</td>
+				<td style="width: 60%; padding: 5px;">{{concept.value}}</td>
+				
+		</tbody>
+		
+		</table>
+		
+		

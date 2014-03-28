@@ -9,6 +9,7 @@ var root_mapping = root_url + "mapping/";
 var root_content = root_url + "content/";
 var root_metadata = root_url + "metadata/";
 var root_validation = root_url + "validation/";
+var root_workflow = root_url + "workflow/";
 
 mapProjectAppControllers.run(function() {
 
@@ -109,6 +110,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	        }	
 	      }).success(function(data) {
 	    	  $scope.users = data.mapUser;
+	    	  localStorageService.add('mapUsers', data.mapUser);
 	      }).error(function(error) {
 	    	  $scope.error = $scope.error + "Could not retrieve map users. "; 
 	     
@@ -124,6 +126,8 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	 
 	 // login button directs to next page based on role selected
 	 $scope.go = function () {
+		 
+		 console.debug($scope.role);
 		 
 		 var path = "";
 		 
@@ -145,6 +149,8 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 			 // add the user information to local storage
 			 localStorageService.add('currentUser', $scope.user);
 			 localStorageService.add('currentRole', $scope.role);
+			 
+			 
 			 
 			 // broadcast the user information to rest of app
 			 $rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', newvalue: $scope.user});
@@ -1643,6 +1649,8 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 			 }
 		 }
 	 };
+	 
+	
 }]);
 
 mapProjectAppControllers.controller('MapProjectDetailCtrl', 
@@ -1770,6 +1778,22 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 			    return $sce.trustAsHtml(html_code);
 			 };
 			 
+			 
+			 $scope.computeWorkflow = function() {
+				 console.debug("Computing workflow");
+				// retrieve project information
+				 $http({
+			        url: root_workflow + "project/id/" + $routeParams.projectId,
+			        dataType: "json",
+			        method: "POST",
+			        headers: {
+			          "Content-Type": "application/json"
+			        }	
+			      }).success(function(data) {
+			      });
+				 
+				 
+			 };
 			 
 
 			 ///////////////////////////////////////////////////////////////

@@ -17,7 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -74,6 +74,45 @@ public class WorkflowServiceRest {
 			workflowService.computeWorkflow(mapProject);
 			workflowService.close();
 			return;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Finds available work for the specified map project and user.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userId the user id
+	 * @return the search result list
+	 */
+	@POST
+	@Path("/work/projectId/{id:[0-9][0-9]*}/userId/{userid:[0-9][0-9]*}")
+	@ApiOperation(value = "Get available work.", notes = "Returns available work for a given user on a given map project.", response = SearchResultList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList getAvailableWork(
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId, 
+			@ApiParam(value = "Id of map user", required = true) @PathParam("userid") Long userId,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
+		try {
+			
+			// retrieve the project and user
+			MappingService mappingService = new MappingServiceJpa();
+			
+			MapProject project = mappingService.getMapProject(mapProjectId);
+			MapUser user = mappingService.getMapUser(userId);
+			
+			mappingService.close();
+
+			// retrieve the workflow and tracking records
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			
+			Workflow workflow = workflowService.getWorkflow(project);	
+			SearchResultList trackingRecordsList = workflowService.findAvailableWork(workflow, user, pfsParameter);
+
+			workflowService.close();
+			
+			return trackingRecordsList;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
