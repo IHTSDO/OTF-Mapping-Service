@@ -1,6 +1,6 @@
 package org.ihtsdo.otf.mapping.helpers;
 
-import java.util.Set;
+import java.util.List;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -52,7 +52,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	 * - multiple groups in project with no group structure
 	 * - higher level groups without any targets
 	 * - invalid TRUE rules
-	 * - advices are valid for the project
+	 * - advices are valid for the project.
 	 *
 	 * @param mapRecord the map record
 	 * @return the validation result
@@ -66,7 +66,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	 *
 	 * @param mapRecord the map record
 	 * @return the validation result
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public ValidationResult validateTargetCodes(MapRecord mapRecord) throws Exception;
 	
@@ -75,8 +75,17 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	 *
 	 * @param mapRecord the map record
 	 * @param mapEntry the map entry
-	 * @return 
+	 * @return the list
 	 */
-	public ValidationResult computeMapAdviceAndMapRelations(MapRecord mapRecord);
+	public List<MapAdvice> computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry);
+	
+	/**
+	 * Compute map relations.
+	 *
+	 * @param mapRecord the map record
+	 * @param mapEntry the map entry
+	 * @return the list
+	 */
+	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry);
 	
 }

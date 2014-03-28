@@ -56,7 +56,7 @@ public class MapEntryJpa implements MapEntry {
 	private MapRecord mapRecord;
 
 	/** The map notes. */
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=MapNoteJpa.class)
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.EAGER, targetEntity=MapNoteJpa.class)
 	@IndexedEmbedded(targetElement=MapNoteJpa.class)
 	private Set<MapNote> mapNotes = new HashSet<>();
 
@@ -198,8 +198,8 @@ public class MapEntryJpa implements MapEntry {
 	}
 	
 
-	@XmlElement(type = MapRelationJpa.class, name = "mapRelation")
 	@Override
+	@XmlElement(type=MapRelationJpa.class, name="mapRelation")
 	public MapRelation getMapRelation() {
 		return mapRelation;
 	}
@@ -311,6 +311,7 @@ public class MapEntryJpa implements MapEntry {
 	 * @param mapRecordId the map record id
 	 */
 	public void setMapRecordId(Long mapRecordId) {
+		System.out.println("Setting map record id to " + mapRecordId.toString());
 		this.mapRecord = new MapRecordJpa();
 		this.mapRecord.setId(mapRecordId);
 	}

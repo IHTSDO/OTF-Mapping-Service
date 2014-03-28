@@ -127,12 +127,41 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		entry.targetId = target.terminologyId;
 		entry.targetName = target.value;
 		$scope.resetTargetConcepts();
-		// get the allowable advices
+		computeRelation(entry);
+		
+	};
+	
+	$scope.clearTargetConcept = function(entry) {
+		console.debug("clearTargetConcept() called");
+		entry.targetId = null;
+		entry.targetName = null;
+		computeRelation(entry);
+	};
+	
+	function computeRelation(entry) {
+		$http({
+			url: root_mapping + "relation/compute",
+			dataType: "json",
+			data: entry,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+
+			console.debug(data);
+
+			entry.mapRelation = data;
+			
+		}).error(function(data) {
+			$scope.errorCreateRecord = "Failed to retrieve entries";
+		});
+		
+		// get the allowable advices and relations
 		$scope.allowableAdvices = getAllowableElements(entry, $scope.project.mapAdvice);
 		$scope.allowableMapRelations = getAllowableElements(entry, $scope.project.mapRelation);
 		
-		
-	};
+	}
 
 	//////////////////////////////////////
 	// Rule Modal Constructor Functions //
@@ -327,6 +356,10 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		
 		$scope.entry.mapRelation = mapRelation;
 	};
+	
+	$scope.clearMapRelation = function(mapRelation) {
+		$scope.entry.mapRelation = null;
+	}
 
 
 	// Function for MapAdvice and MapRelations, returns allowable lists based on null target and element properties

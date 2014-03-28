@@ -49,23 +49,23 @@ import com.wordnik.swagger.annotations.ApiParam;
 @SuppressWarnings("static-method")
 public class WorkflowServiceRest {
 
-	
+
 	/**
 	 * Instantiates an empty {@link WorkflowServiceRest}.
 	 */
 	public WorkflowServiceRest() {
 
 	}
-	
-	
+
+
 	@GET
 	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Compute workflow for project by id", notes = "Computes workflow given a project id.")
 	public void computeWorkflow(
 			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
-		
+
 		Logger.getLogger(WorkflowServiceRest.class).info("RESTful call (Workflow): /project/id/" + mapProjectId.toString());
-		
+
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
@@ -78,7 +78,7 @@ public class WorkflowServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
-	
+
 	/**
 	 * Finds available work for the specified map project and user.
 	 *
@@ -98,11 +98,11 @@ public class WorkflowServiceRest {
 			MapProject project = mappingService.getMapProject(mapProjectId);
 			MapUser user = mappingService.getMapUser(userId);
 			mappingService.close();
-			
+
 			WorkflowService workflowService = new WorkflowServiceJpa();
 
 			SearchResultList searchResultList = new SearchResultListJpa();
-			
+
 		  /** call getWorkflow and get the tracking records for unmapped in scope concepts.*/
 		  Workflow workflow = workflowService.getWorkflow(project);
 		  Set<WorkflowTrackingRecord> trackingRecords = workflow.getTrackingRecordsForUnmappedInScopeConcepts();
@@ -121,6 +121,8 @@ public class WorkflowServiceRest {
 		    	searchResultList.addSearchResult(searchResult);
 		    }   	
 	    }
+			workflowService.close();
+			
 	    return searchResultList;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
@@ -142,25 +144,25 @@ public class WorkflowServiceRest {
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			MappingService mappingService = new MappingServiceJpa();
 			ContentService contentService = new ContentServiceJpa();
-			
+
 			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
 			MapUser user = mappingService.getMapUser(userName);
 			Concept concept = contentService.getConcept(terminologyId, project.getSourceTerminology(), 
 					project.getSourceTerminologyVersion());
-			
+
 			workflowService.assignUserToConcept(project, concept, user);
-			
+
 			mappingService.close();
 			workflowService.close();
 			contentService.close();
-			
-			
+
+
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 		return null;
 	}
-	
+
 	@GET
 	@Path("/assign/id/{id}/concept/{terminologyId}/record/{recordId}/user/{userName}")
 	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
@@ -181,15 +183,15 @@ public class WorkflowServiceRest {
 			MapRecord record = mappingService.getMapRecord(new Long(recordId));
 			Concept concept = contentService.getConcept(terminologyId, project.getSourceTerminology(), 
 					project.getSourceTerminologyVersion());
-			
+
 			workflowService.assignUserToConcept(project, concept, record, user);
-			
-			
+
+
 			mappingService.close();
 			workflowService.close();
 			contentService.close();
-			
-			
+
+
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -215,11 +217,11 @@ public class WorkflowServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
 			MapUser user = mappingService.getMapUser(userName);
-			
+
 			Set<MapRecord> mapRecords = workflowService.getMapRecordsAssignedToUser(project, user);
 			List<MapRecord> mapRecordsList = new ArrayList<MapRecord>(mapRecords);
 			assigned.setMapRecords(mapRecordsList);
-			
+
 			mappingService.close();
 			workflowService.close();
 			return assigned;
@@ -227,6 +229,6 @@ public class WorkflowServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
-	
+
 
 }

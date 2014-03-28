@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.services;
 import java.util.List;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
@@ -625,12 +626,28 @@ public interface MappingService {
 	public void removeMapRelation(Long mapRelationId);
 
 	/**
-	 * Compute map advice and map relations for map record.
+	 * Compute map relation.
 	 *
 	 * @param mapRecord the map record
-	 * @return the map record
+	 * @param mapEntry the map entry
+	 * @return the map relation
+	 * @throws ClassNotFoundException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
-	public MapRecord computeMapAdviceAndMapRelationsForMapRecord(MapRecord mapRecord);
+	public MapRelation computeMapRelation(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
+	
+    /**
+	 * Compute map advice.
+	 *
+	 * @param mapRecord the map record
+	 * @param mapEntry the map entry
+	 * @return the list
+	 * @throws ClassNotFoundException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 */
+	public List<MapAdvice> computeMapAdvice(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
 	
     /**
      * Gets the transaction per operation.
@@ -669,6 +686,20 @@ public interface MappingService {
      * @throws Exception the exception
      */
     public List<MapRecord> getRecentlyEditedMapRecords(MapUser mapUser) throws Exception;
+
+	/**
+	 * Gets the project specific algorithm handler.
+	 *
+	 * @param mapProject the map project
+	 * @return the project specific algorithm handler
+	 * @throws ClassNotFoundException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 */
+	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(MapProject mapProject) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
+
+
+	
 	
 }
 	
