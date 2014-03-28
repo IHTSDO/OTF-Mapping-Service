@@ -705,19 +705,6 @@ public class MapProjectImpl implements MapProject {
 			String projectSpecificAlgorithmHandlerClass) {
 		this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
 	}
-	
-	@Override
-	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler() {
-		try {
-			this.algorithmHandler = (ProjectSpecificAlgorithmHandler) Class.forName(this.projectSpecificAlgorithmHandlerClass).newInstance();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		this.algorithmHandler.setMapProject(this); 
-		
-		return this.algorithmHandler;
-	}
 
 	@Override
 	public int hashCode() {

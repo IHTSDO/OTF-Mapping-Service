@@ -75,9 +75,11 @@ public class ContentServiceRest {
 			ContentService contentService = new ContentServiceJpa();
 			Concept c = contentService.getConcept(terminologyId, terminology, terminologyVersion);
 			
-			// Make sure to read descriptions and relationships (prevents serialization error)
-			for (Description d : c.getDescriptions()) { d.getLanguageRefSetMembers(); }
-			for (Relationship r : c.getRelationships()) { r.getDestinationConcept(); }
+			if (c != null) {
+				// Make sure to read descriptions and relationships (prevents serialization error)
+				for (Description d : c.getDescriptions()) { d.getLanguageRefSetMembers(); }
+				for (Relationship r : c.getRelationships()) { r.getDestinationConcept(); }
+			}
 			
 			contentService.close();
 			return c;

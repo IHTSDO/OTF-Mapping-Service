@@ -72,17 +72,25 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		return false;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#computeMapAdviceAndMapRelations(org.ihtsdo.otf.mapping.model.MapRecord)
-	 */
 	@Override
 	/**
-	 * This must be overwritten for each project specific handler
+	 * Given a map record and a map entry, returns any computed advice.
+	 * This must be overwritten for each project specific handler.
 	 * @param mapRecord
 	 * @return
 	 */
-	public ValidationResult computeMapAdviceAndMapRelations(MapRecord mapRecord) {
-		return new ValidationResultJpa();
+	public List<MapAdvice> computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) {
+		return null;
+	}
+	
+	/**
+	 * Given a map record and a map entry, returns the computed map relation (if applicable)
+	 * This must be overwritten for each project specific handler.
+	 * @param mapRecord
+	 * @return
+	 */
+	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) {
+		return null;
 	}
 
 	/* (non-Javadoc)
@@ -157,8 +165,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		validationResult.merge(checkMapRecordAdvices(mapRecord, entryGroups));
 		
 		// Validation Check: very that map entry targets OR relationIds are valid
-		validationResult.merge(checkMapRecordTargets(mapRecord, entryGroups));
-		
+	/*	validationResult.merge(checkMapRecordTargets(mapRecord, entryGroups));
+		*/
 		
 		return validationResult;
 	}
@@ -227,6 +235,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
 		ValidationResult validationResult = new ValidationResultJpa();
 
+		// if not rule based, return empty validation result
+		if (mapProject.isRuleBased() == false) return validationResult;
+		
+		// cycle over the groups
 		for (Integer key : entryGroups.keySet()) {
 
 			for (MapEntry mapEntry : entryGroups.get(key)) {
@@ -268,7 +280,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
 		ValidationResult validationResult = new ValidationResultJpa();
 
-		// if only one group, ignore
+		// if only one group, return empty validation result (also covers non-group-structure projects)
 		if (entryGroups.keySet().size() == 1) return validationResult;
 
 		// otherwise cycle over the high-level groups (i.e. all but first group)
@@ -330,104 +342,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		return validationResult;
 	}
 
-	/**
-	 * Check map record's entries for EITHER:
-	 * 1) Valid map targets
-	 *    - check target exists (i.e. in database)
-	 *    - check valid position (i.e. must be leaf node)
-	 * 	2) Entry with no target has valid relationId
-	 * 
-	 * @param mapRecord the map record
-	 * @param mapProject the map project
-	 * @param entryGroups the binned entry groups
-	 * @return the list of error messages
-	 */
-	public ValidationResult checkMapRecordTargets(MapRecord mapRecord, Map<Integer, List<MapEntry>> entryGroups) {
-
-		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for valid targets...");
-
-		ValidationResult validationResult = new ValidationResultJpa();
-
-		ContentService contentService = new ContentServiceJpa();
-
-		String terminology = mapProject.getDestinationTerminology();
-		String terminologyVersion = mapProject.getDestinationTerminologyVersion();
-
-		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-
-			// if this entry has a target assigned
-			if (mapEntry.getTargetId() != null && !mapEntry.getTargetId().equals("")) {
-
-				// first, check the terminology id
-				if (!mapEntry.getTargetId().matches("[*d*d*d*]")) {
-					validationResult.addError("Target code must contain at least three digits!"
-							+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-							+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
-				}
-
-				if (mapEntry.getTargetId().contains("-")) {
-					validationResult.addError("Target code cannot contain a dash (-) character!"
-							+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-							+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
-
-				}
-
-				// if terminology id meets correct format, retrieve the target concept
-				try {
-					Concept concept = contentService.getConcept(mapEntry.getTargetId(), terminology, terminologyVersion);
-
-					if (concept == null) {
-						validationResult.addError("Target concept (" + terminology + ", " + terminologyVersion + ", " + mapEntry.getTargetId() + ")"
-								+    " not in database!"
-								+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-								+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
-					} else {
-
-						MetadataService metadataService = new MetadataServiceJpa();
-						Map<Long, String> hierarchicalRelationshipTypeMap = metadataService.getHierarchicalRelationshipTypes(terminology, terminologyVersion);
-						Long hierarchicalRelationshipType =
-								hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
-
-						// check this concept is a leaf node
-						if(contentService.getDescendants(
-								mapEntry.getTargetId(), 
-								mapProject.getDestinationTerminology(), 
-								mapProject.getDestinationTerminologyVersion(),
-								hierarchicalRelationshipType).size() > 0) {
-
-							validationResult.addError("Target concept (" + terminology + ", " + terminologyVersion + ", " + mapEntry.getTargetId() + ")"
-									+    " is not a leaf node!"
-									+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-									+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
-						}
-					}
-
-
-				} catch (Exception e) {
-					Logger.getLogger(MappingServiceJpa.class).info(
-							"    Unexpected error while validating map target for "
-									+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-									+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
-				}
-
-				// if no assigned target, check relation id
-			} else if (mapEntry.getMapRelation() != null) {
-
-			} else {
-				validationResult.addError("Entry is blank (no target code or relation category)"
-						+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-						+    " map priority " + Integer.toString(mapEntry.getMapPriority()));
-
-			}
-
-		}
-
-		for (String error : validationResult.getErrors()) {
-			Logger.getLogger(MappingServiceJpa.class).info("    " + error);
-		}
-
-		return validationResult;
-	}
 
 	/**
 	 * Helper function to sort a records entries into entry lists binned by group.
@@ -454,5 +368,4 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
 		return entryGroups;
 	}
-
 }

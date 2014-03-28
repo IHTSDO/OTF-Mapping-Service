@@ -14,7 +14,7 @@
 		<table>
 		
 			<tr><td style="vertical-align: top; padding:5px;"><strong>Id</strong></td>
-				<td style="vertical-align: top; padding:5px;"><span ng-show="entry.targetId != null && entry.targetId != ''">{{project.destinationTerminology}}, {{entry.targetId}}</span></td>
+				<td style="vertical-align: top; padding:5px;"><span ng-show="entry.targetId != null && entry.targetId != ''">{{project.destinationTerminology}}, {{entry.targetId}} &nbsp<button ng-click="clearTargetConcept(entry)">Clear</button></span></td>
 			</tr>
 			<tr><td style="vertical-align: top; padding:5px;"><strong>Name</strong></td>
 				<td style="vertical-align: top; padding:5px;">{{entry.targetName}}</td>
@@ -71,7 +71,7 @@
 			<tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'">
 			
 				<td style="vertical-align: top; padding:5px;"><strong>Relation Id</strong></td>
-				<td style="vertical-align: top; padding:5px;">{{entry.mapRelation.terminologyId}}</td>
+				<td style="vertical-align: top; padding:5px;">{{entry.mapRelation.terminologyId}} <span ng-show="entry.mapRelation != null"><button ng-click="clearMapRelation(entry)">Clear</button></td>
 			</tr>
 			
 			<tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'">
@@ -81,7 +81,7 @@
 			</tr>
 			
 			<tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length > 0">
-				<td style="vertical-align: top; padding:5px;">Select Map Relation</td>
+				<td style="vertical-align: top; padding:5px;">Select</td>
 				<td style="vertical-align: top; padding:5px;">
 					
 					<select style = "width:60%"
@@ -93,8 +93,8 @@
 			</tr>
 			
 			<tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length == 0">
-				<td></td>
-				<td>No map relations are available for this target.</td>
+				<td style="vertical-align: top; padding:5px;"></td>
+				<td style="vertical-align: top; padding:5px;">No map relations are available for this target.</td>
 			</tr>
 
 			<tr ng-show="project.mapRelationStyle != 'RELATIONSHIP_STYLE'">
