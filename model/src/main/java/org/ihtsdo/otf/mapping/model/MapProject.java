@@ -2,8 +2,6 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
-import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
-
 // TODO: Auto-generated Javadoc
 /**
  * Represents a map project.
@@ -483,11 +481,4 @@ public interface MapProject  {
 	public void setProjectSpecificAlgorithmHandlerClass(
 			String projectSpecificAlgorithmHandlerClass);
 	
-	/**
-	 * Instantiates and returns the project specific algorithm handler.
-	 *
-	 * @return the project specific algorithm handler
-	 */
-	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler();
-
 }
