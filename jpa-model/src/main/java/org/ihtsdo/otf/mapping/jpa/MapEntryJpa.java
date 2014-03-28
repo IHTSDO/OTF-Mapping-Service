@@ -197,7 +197,8 @@ public class MapEntryJpa implements MapEntry {
 		
 	}
 	
-	
+
+	@XmlElement(type = MapRelationJpa.class, name = "mapRelation")
 	@Override
 	public MapRelation getMapRelation() {
 		return mapRelation;

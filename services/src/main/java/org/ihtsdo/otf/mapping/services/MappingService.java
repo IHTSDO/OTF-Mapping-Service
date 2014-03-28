@@ -668,7 +668,7 @@ public interface MappingService {
      * @return the most recent map record revision
      * @throws Exception the exception
      */
-    public MapRecord getMostRecentMapRecordRevision(long mapRecordId) throws Exception;
+    public List<MapRecord> getRecentlyEditedMapRecords(MapUser mapUser) throws Exception;
 	
 }
 	

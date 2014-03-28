@@ -27,6 +27,8 @@ import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.query.AuditEntity;
+import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
@@ -64,8 +66,11 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
+// TODO: Auto-generated Javadoc
 /**
  * JPA implementation of the {@link MappingService}.
+ *
+ * @author ${author}
  */
 public class MappingServiceJpa implements MappingService {
 
@@ -180,6 +185,9 @@ public class MappingServiceJpa implements MappingService {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapProjectByName(java.lang.String)
+	 */
 	@Override
 	public MapProject getMapProjectByName(String name) {
 
@@ -199,6 +207,9 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapProjectByRefSetId(java.lang.String)
+	 */
 	@Override
 	public MapProject getMapProjectByRefSetId(String refSetId) {
 
@@ -238,6 +249,11 @@ public class MappingServiceJpa implements MappingService {
 		// Try query
 
 		m = query.getResultList();
+		
+		for (MapProject mp : m) {
+			mp.getScopeConcepts().size();
+			mp.getScopeExcludedConcepts().size();
+		}
 
 		return m;
 	}
@@ -391,8 +407,8 @@ public class MappingServiceJpa implements MappingService {
 	// ///////////////////////////////////////////////////////////////
 
 	/**
-	 * Retrieve all map users
-	 * 
+	 * Retrieve all map users.
+	 *
 	 * @return a List of MapUsers
 	 */
 	@Override
@@ -435,6 +451,9 @@ public class MappingServiceJpa implements MappingService {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapUser(java.lang.String)
+	 */
 	@Override
 	public MapUser getMapUser(String userName) {
 
@@ -458,7 +477,8 @@ public class MappingServiceJpa implements MappingService {
 
 	/**
 	 * Retrieve all map projects assigned to a particular map specialist.
-	 * 
+	 *
+	 * @param mapUser the map user
 	 * @return a List of MapProjects
 	 */
 	@Override
@@ -605,8 +625,9 @@ public class MappingServiceJpa implements MappingService {
 
 	/**
 	 * Add a map lead.
-	 * 
+	 *
 	 * @param mapUser the map lead
+	 * @return the map user
 	 */
 	@Override
 	public MapUser addMapUser(MapUser mapUser) {
@@ -673,6 +694,8 @@ public class MappingServiceJpa implements MappingService {
 			Logger.getLogger(this.getClass()).debug(
 					"Returning record_id... "
 							+ ((r != null) ? r.getId().toString() : "null"));
+
+			
 			return r;
 
 		} catch (NoResultException e) {
@@ -755,10 +778,10 @@ public class MappingServiceJpa implements MappingService {
 
 	/**
 	 * Add a map record.
-	 * 
+	 *
 	 * @param mapRecord the map record to be added
 	 * @return the map record
-	 * @throws Exception
+	 * @throws Exception the exception
 	 */
 	@Override
 	public MapRecord addMapRecord(MapRecord mapRecord) throws Exception {
@@ -852,6 +875,9 @@ public class MappingServiceJpa implements MappingService {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#computeMapAdviceAndMapRelationsForMapRecord(org.ihtsdo.otf.mapping.model.MapRecord)
+	 */
 	@SuppressWarnings({
 		"unused", "unchecked", "rawtypes"
 	})
@@ -877,6 +903,9 @@ public class MappingServiceJpa implements MappingService {
 
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordRevisions(java.lang.Long)
+	 */
 	@Override
 	public List<MapRecord> getMapRecordRevisions(Long mapRecordId) {
 
@@ -891,16 +920,32 @@ public class MappingServiceJpa implements MappingService {
 		return query;
 	}
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords(org.ihtsdo.otf.mapping.model.MapUser)
+   */
   @Override
-  public MapRecord getMostRecentMapRecordRevision(long mapRecordId)  throws Exception {
+  public List<MapRecord> getRecentlyEditedMapRecords(MapUser mapUser)  throws Exception {
+  	
+  	Map<String, MapRecord> editedRecords = new HashMap<>();
   	
   	AuditReader reader = AuditReaderFactory.get(manager);
-  	MapRecord record_rev1 = reader.find(MapRecordJpa.class, mapRecordId, 1);
+  	
+  	AuditQuery query =
+  			reader
+        .createQuery()
+        .forRevisionsOfEntity(MapRecordJpa.class, false, true)
+        .add(AuditEntity.relatedId("owner").eq(mapUser.getId()))
+        .addOrder(AuditEntity.property("lastModified").desc());
 
-  	List<Number> revNumbers = reader.getRevisions(MapRecordJpa.class, record_rev1);
-  	MapRecordJpa record_previous = reader.find(MapRecordJpa.class, record_rev1.getId(),
-  	  revNumbers.get(revNumbers.size()-1));
-  	return record_previous;
+    List<Object[]> allRevisions = (List<Object[]>) query.getResultList();
+    for (Object[] revision : allRevisions) {
+    	MapRecord record = (MapRecord)revision[0];
+    	// only save the most recent revision
+    	if (!editedRecords.keySet().contains(record.getConceptId()))
+    	  editedRecords.put(record.getConceptId(), record);
+    }
+
+  	return new ArrayList<MapRecord>(editedRecords.values());
   }
   
 	// //////////////////////////////////
@@ -1161,6 +1206,9 @@ public class MappingServiceJpa implements MappingService {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForMapProject(java.lang.Long)
+	 */
 	@Override
 	public List<MapRecord> getMapRecordsForMapProject(Long mapProjectId)
 			throws Exception {
@@ -2147,6 +2195,9 @@ public class MappingServiceJpa implements MappingService {
 		return mapAdvices;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRelations()
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<MapRelation> getMapRelations() {
@@ -2165,6 +2216,9 @@ public class MappingServiceJpa implements MappingService {
 	// / Services for Map Project Creation
 	// ///////////////////////////////////////
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#createMapRecordsForMapProject(java.lang.Long, org.ihtsdo.otf.mapping.helpers.WorkflowStatus)
+	 */
 	@Override
 	public void createMapRecordsForMapProject(Long mapProjectId,
 			WorkflowStatus workflowStatus) throws Exception {
@@ -2562,6 +2616,9 @@ public class MappingServiceJpa implements MappingService {
 	// UTILITY FUNCTIONS
 	// ////////////////////////
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#userExists(java.lang.String)
+	 */
 	@Override
 	public boolean userExists(String mapUser) {
 
@@ -2599,6 +2656,9 @@ public class MappingServiceJpa implements MappingService {
 		return m;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#addMapAgeRange(org.ihtsdo.otf.mapping.model.MapAgeRange)
+	 */
 	@Override
 	public MapAgeRange addMapAgeRange(MapAgeRange mapAgeRange) {
 		if (getTransactionPerOperation()) {
