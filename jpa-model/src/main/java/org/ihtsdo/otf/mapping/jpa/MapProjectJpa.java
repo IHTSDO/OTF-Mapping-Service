@@ -18,7 +18,6 @@ import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -701,21 +700,6 @@ public class MapProjectJpa implements MapProject {
 	public void setProjectSpecificAlgorithmHandlerClass(
 			String projectSpecificAlgorithmHandlerClass) {
 		this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
-	}
-	
-	@Override
-	@XmlTransient
-	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler() {
-		
-		try {
-			this.algorithmHandler = (ProjectSpecificAlgorithmHandler) Class.forName("org.ihtsdo.otf.mapping.helpers." + this.projectSpecificAlgorithmHandlerClass).newInstance();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		this.algorithmHandler.setMapProject(this); 
-		
-		return this.algorithmHandler;
 	}
 
 	@Override

@@ -16,16 +16,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
+import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleList;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectList;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordList;
+import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationList;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserList;
@@ -33,6 +34,7 @@ import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
+import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -1114,4 +1116,77 @@ public class MappingServiceRest {
     }
 		return null;
 	}
+  
+  /**
+   * Updates a map record
+   * @param mapRecord the map record to be added
+   * @return Response the response
+   */
+  @POST
+  @Path("/relation/compute")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @ApiOperation(value = "", notes = "", response = MapRelationJpa.class)
+  public MapRelation computeMapRelation(
+    @ApiParam(value = "", required = true) MapEntryJpa mapEntry) {
+
+	  try {
+		  MappingService mappingService = new MappingServiceJpa();
+		  MapRelation mapRelation = mappingService.computeMapRelation(mapEntry);
+		  mappingService.close();
+		  return mapRelation;
+	  } catch (Exception e) {
+		  throw new WebApplicationException(e);
+	  }
+  }
+  
+ /*
+  @GET
+  @Path("/relation/compute")
+  @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @ApiOperation(value = "Compute an entry's map relation", notes = "Given a map entry and its associated map record, computes any map relation based on target and project parameters", response = MapRelationJpa.class)
+  public MapRelation computeMapRelation(
+    @ApiParam(value = "The map record.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord,
+    @ApiParam(value = "The map entry to compute the relation for.  Need not be in database.  Must be in Json or Xml format", required = true) MapEntryJpa mapEntry) {
+  
+	  
+	  try {
+		  MappingService mappingService = new MappingServiceJpa();
+		  MapRelation mapRelation = mappingService.computeMapRelation(mapRecord, mapEntry);
+		  mappingService.close();
+		  return mapRelation;
+	  } catch (Exception e) {
+		  throw new WebApplicationException(e);
+	  }
+	  
+  }
+  
+  @GET
+  @Path("/advice/compute")
+  @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @ApiOperation(value = "Compute an entry's map advice", notes = "Given a map entry and its associated map record, computes any map advice based on target and project parameters", response = MapRelationJpa.class)
+  public MapAdviceList computeMapAdvice(
+    @ApiParam(value = "The map record.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord,
+    @ApiParam(value = "The map entry to compute the advice for.  Need not be in database.  Must be in Json or Xml format", required = true) MapEntryJpa mapEntry) {
+  
+	  
+	  try {
+		  MappingService mappingService = new MappingServiceJpa();
+		  MapAdviceList mapAdviceList = new MapAdviceList();
+		  mapAdviceList.setMapAdvices(mappingService.computeMapAdvice(mapRecord, mapEntry));
+		  mappingService.close();
+		  return mapAdviceList;
+		  
+	  } catch (Exception e) {
+		  throw new WebApplicationException(e);
+	  }
+	  
+  }*/
+  
 }

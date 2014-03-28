@@ -14,6 +14,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Persistence;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.FieldInfo;
@@ -170,13 +171,18 @@ public class MappingServiceJpa implements MappingService {
 		query.setParameter("id", id);
 
 		try {
+			System.out.println("GetMapProject(Long id)");
 			m = (MapProject) query.getSingleResult();
+			m.getScopeConcepts().size();
+			m.getScopeExcludedConcepts().size();
+			return m;
+			
 		} catch (NoResultException e) {
 			Logger.getLogger(this.getClass()).warn(
 					"Map project query for id = " + id + " returned no results!");
 			return null;
 		}
-		return m;
+		
 
 	}
 
@@ -191,6 +197,8 @@ public class MappingServiceJpa implements MappingService {
 
 		try {
 			m = (MapProject) query.getSingleResult();
+			m.getScopeConcepts().size();
+			m.getScopeExcludedConcepts().size();
 		} catch (NoResultException e) {
 			Logger.getLogger(this.getClass()).warn(
 					"Map project query for name = " + name + " returned no results!");
@@ -211,12 +219,16 @@ public class MappingServiceJpa implements MappingService {
 
 		try {
 			m = (MapProject) query.getSingleResult();
+			m.getScopeConcepts().size();
+			m.getScopeExcludedConcepts().size();
 		} catch (NoResultException e) {
 			Logger.getLogger(this.getClass()).warn(
 					"Map project query for refSetId = " + refSetId
 					+ " returned no results!");
 			return null;
 		}
+		
+		
 		return m;
 	}
 
@@ -235,9 +247,12 @@ public class MappingServiceJpa implements MappingService {
 		javax.persistence.Query query =
 				manager.createQuery("select m from MapProjectJpa m");
 
-		// Try query
-
 		m = query.getResultList();
+		
+		for (MapProject project : m) {
+			project.getScopeConcepts().size();
+			project.getScopeExcludedConcepts().size();
+		}
 
 		return m;
 	}
@@ -474,6 +489,8 @@ public class MappingServiceJpa implements MappingService {
 
 			for (MapUser ms : ms_set) {
 				if (ms.equals(mapUser)) {
+					mp.getScopeConcepts().size();
+					mp.getScopeExcludedConcepts().size();
 					mp_list_return.add(mp);
 				}
 			}
@@ -855,24 +872,36 @@ public class MappingServiceJpa implements MappingService {
 	@SuppressWarnings({
 		"unused", "unchecked", "rawtypes"
 	})
+	
+	
+	/**
+	 * Takes a map entry and computes any auto-generated advice for its entries
+	 */
 	@Override
+	public MapRelation computeMapRelation(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+	
+		MapRecord mapRecord = getMapRecord(mapEntry.getMapRecord().getId());
+		MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
+		ProjectSpecificAlgorithmHandler algorithmHandler = 
+				getProjectSpecificAlgorithmHandler(mapProject);
+
+		return algorithmHandler.computeMapRelation(mapRecord, mapEntry);
+	}
+	
 	/**
 	 * Takes a map record and computes any auto-generated advice for its entries
+	 * @throws ClassNotFoundException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
-	public MapRecord computeMapAdviceAndMapRelationsForMapRecord(MapRecord mapRecord) {
+	public List<MapAdvice> computeMapAdvice(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 
+		MapRecord mapRecord = mapEntry.getMapRecord();
+		
 		ProjectSpecificAlgorithmHandler algorithmHandler = 
-				getMapProject(mapRecord.getMapProjectId()).getProjectSpecificAlgorithmHandler();
+				getProjectSpecificAlgorithmHandler(getMapProject(mapRecord.getMapProjectId()));
 
-		List<MapEntry> revisedMapEntries = new ArrayList<MapEntry>();
-		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-			algorithmHandler.computeMapAdviceAndMapRelations(mapRecord);
-		}
-
-		mapRecord.setMapEntries(revisedMapEntries);
-
-		return mapRecord;
-
+		return algorithmHandler.computeMapAdvice(mapRecord, mapEntry);
 	}
 
 
@@ -2660,6 +2689,20 @@ public class MappingServiceJpa implements MappingService {
 			manager.merge(mapAgeRange);
 		}
 	}
+	
+	
+	@Override
+	@XmlTransient
+	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(MapProject mapProject) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+		
+		ProjectSpecificAlgorithmHandler algorithmHandler = 
+				(ProjectSpecificAlgorithmHandler) Class.forName("org.ihtsdo.otf.mapping.jpa.handlers." + mapProject.getProjectSpecificAlgorithmHandlerClass())
+				.newInstance();
+				
+		algorithmHandler.setMapProject(mapProject); 
+		return algorithmHandler;
 
+		
+	}
 
 }
