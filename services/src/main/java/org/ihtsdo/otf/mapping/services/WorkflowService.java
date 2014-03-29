@@ -92,10 +92,11 @@ public interface WorkflowService {
 	 * @param project the project
 	 * @param concept the concept
 	 * @param user the user
+	 * @return 
 	 *
 	 * @throws Exception the exception
 	 */
-	public void assignUserToConcept(MapProject project, Concept concept, MapUser user) throws Exception;
+	public MapRecord assignUserToConcept(MapProject project, Concept concept, MapUser user) throws Exception;
 
 	/**
 	 * Assign user to concept.

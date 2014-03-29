@@ -3,15 +3,19 @@
 
 angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 .config(function(dashboardProvider){
+	
 	dashboardProvider
 	.widget('workAvailable', {
 		title: 'Available Work',
 		description: 'Module to assign work to users',
 		controller: 'workAvailableWidgetCtrl',
 		templateUrl: 'js/widgets/workAvailable/workAvailable.html',
+		resolve: {},
 		edit: {}
 	});
-}).controller('workAvailableWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $modal, localStorageService){
+})
+
+.controller('workAvailableWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $modal, localStorageService){
 
 	// local variables
 	$scope.batchSizes = [100, 50, 25, 10, 5];
@@ -28,13 +32,25 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 
 	console.debug('LIST OF USERS:');
 	console.debug($scope.mapUsers);
+	
+	
+	
+	
 
-	// watch for project change
+	// watch for project change and modify the local variable if necessary
+	// coupled with $watch below, this avoids premature work fetching
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("WorkAvailableCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
 	});
+	
+	// coupled with $watch below, this avoids premature work fetching
+	$scope.$on('assignedListWidget.notification.unassignWork', function(event, parameters) { 	
+		console.debug("WorkAvailableCtrl:  Detected unassign work notification");
+		$scope.retrieveAvailableWork(1);
+	});
 
+	// on any change of focusProject, retrieve new available work
 	$scope.$watch('focusProject', function() {
 		console.debug('my scope project changed!');
 
@@ -44,6 +60,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	});
 
 
+	// get a page of available work
 	$scope.retrieveAvailableWork = function(page) {
 		console.debug('workAvailableCtrl: Retrieving available work');
 
@@ -72,19 +89,36 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		});
 	};
 	
+	// set the pagination variables
 	function setPagination(trackingRecordsPerPage, nTrackingRecords) {
 		
 		$scope.trackingRecordsPerPage = trackingRecordsPerPage;
 		$scope.numRecordPages = Math.ceil($scope.nTrackingRecords / trackingRecordsPerPage);
 	};
 	
+	// assign a single concept to the current user
+	// TODO Insert check before assignment
+	// TODO Implement refresh after successful claim
 	$scope.assignWork = function(trackingRecord, mapUser) {
-		// TODO Add check for this record having been claimed/assigned
-		$scope.availableWork.removeElement(trackingRecord);
-		$rootScope.$broadcast('availableWork.notification.assignWork',{key: 'assignedWork', assignedWork: $scope.trackingRecord});  
-        
+
+		$http({
+			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
+								 "/concept/" + trackingRecord.terminologyId +
+								 "/user/" + $scope.currentUser.userName,
+			dataType: "json",
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			$scope.availableWork.removeElement(trackingRecord);
+			$rootScope.$broadcast('availableWork.notification.assignWork',{key: 'assignedWork', assignedWork: data});  
+		});
+		
+	   
 	};
 	
+	// assign a batch of records to the current user
 	$scope.assignBatch = function(mapUser, batchSize) {
 		
 		// construct a paging/filtering/sorting object
@@ -114,13 +148,30 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			} else {
 				console.debug("Claimed batch:");
 				console.debug(trackingRecords);
-				// TODO Service call to flag these tracking records
-				$rootScope.$broadcast('availableWork.notification.assignWork',{key: 'assignedWork', assignedWork: trackingRecords});  
+				
+				var terminologyIds = [];
+				for (var i = 0; i < trackingRecords.length; i++) {
+					terminologyIds.push(trackingRecords[i].terminologyId);
+				}
+				
+				$http({
+					url: root_workflow + "assign/batch/projectId/" + $scope.focusProject.id 
+									   + "/user/" + $scope.currentUser.userName,	
+					dataType: "json",
+					data: terminologyIds,
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					}	
+				}).success(function(data) {
+					$rootScope.$broadcast('workAvailableWidget.notification.assignWork',
+							{key: 'trackingRecords', trackingRecords: data.mapRecord});
+				
+				});
 			}
-			
-			$scope.availableWork = data.searchResult;
-			$scope.nTrackingRecords = data.totalCount;
 		});
+				
+			
 		   
 	};
 

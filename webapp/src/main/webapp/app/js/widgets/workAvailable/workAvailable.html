@@ -43,8 +43,8 @@ Batch size: <select ng-model="batchSize" ng-options="batchSize as batchSize for 
 			<tr ng-repeat="concept in availableWork">
 				
 				<td style="width: 15%; padding: 5px;">
-					<button ng-show="currentRole.value == 1" class="btn btn-sm" ng-click="assignWork(concept, currentUser)">Claim</button>
-					<button ng-show="currentRole.value > 1" class="btn btn-sm" ng-click="assignWork(concept, assignedMapUser)">Assign</button>
+					<a ng-show="currentRole.value == 1" ng-click="assignWork(concept, currentUser)">Claim</a>
+					<a ng-show="currentRole.value > 1" ng-click="assignWork(concept, assignedMapUser)">Assign</button>
 				</td>
 				<td style="width: 15%; padding: 5px;">{{concept.terminologyId}}</td>
 				<td style="width: 60%; padding: 5px;">{{concept.value}}</td>

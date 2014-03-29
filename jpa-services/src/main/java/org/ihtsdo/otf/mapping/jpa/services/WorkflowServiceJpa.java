@@ -315,7 +315,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#assignUserToConcept(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.rf2.Concept, org.ihtsdo.otf.mapping.model.MapUser)
 	 */
 	@Override
-	public void assignUserToConcept(MapProject project, Concept concept,
+	public MapRecord assignUserToConcept(MapProject project, Concept concept,
 		MapUser user) throws Exception {
 		
 		/** Creates map record (set owner (user) and workflow status (NEW)) */
@@ -355,6 +355,8 @@ public class WorkflowServiceJpa implements WorkflowService {
 		} else {
 			manager.persist(trackingRecord);
 		}
+		
+		return mapRecord;
 	}
 
 	/* (non-Javadoc)
@@ -435,83 +437,74 @@ public class WorkflowServiceJpa implements WorkflowService {
 	}
 	
 	// TODO DIscuss model change to have WorkflowTrackingRecords directly connected to Workflow
-	// i.e. WorkflowTrackingRecord->Workflow (analogous to Record->Entry)
-	// this would enable searching and sorting in the hibernate environment
+	// 		i.e. WorkflowTrackingRecord->Workflow (analogous to Record->Entry)
+	// 		this would enable searching and sorting in the hibernate environment
+	//
+	// TODO If above is not desirable, consider converting workflow.getTrackingRecords return a sorted list
+	//      This would avoid some clumsy manipulation here
 	@Override
 	public SearchResultList findAvailableWork(Workflow workflow,
 			MapUser mapUser, PfsParameter pfsParameter) {
 		
-		
+		// create return object
 		SearchResultList results = new SearchResultListJpa();
 		
-		// TODO Discuss changing this to List for easier sorting
-		List<WorkflowTrackingRecord> sortedTrackingRecords = 
-			new ArrayList<WorkflowTrackingRecord>(workflow.getTrackingRecordsForUnmappedInScopeConcepts());
+		// create list of tracking records from set (see TODO above)
+		List<WorkflowTrackingRecord> trackingRecords = new ArrayList<WorkflowTrackingRecord>(workflow.getTrackingRecordsForUnmappedInScopeConcepts());
 		
-		Collections.sort(sortedTrackingRecords,
-				new Comparator<WorkflowTrackingRecord>() {
-					@Override
-					public int compare(WorkflowTrackingRecord w1, WorkflowTrackingRecord w2) {
-						return w1.getSortKey().compareTo(w2.getSortKey());
-					}
-		});
+		// sort list of tracking records (see TODO above)
+		Collections.sort(
+						trackingRecords,
+						new Comparator<WorkflowTrackingRecord>() {
+							@Override
+							public int compare(WorkflowTrackingRecord w1, WorkflowTrackingRecord w2) {
+								return w1.getSortKey().compareTo(w2.getSortKey());
+							}
+						});
 		
-		results.setTotalCount(new Long(sortedTrackingRecords.size()));
+		// set the total count
+		// TODO This will return erroneous count if records are aleady assigned to this user
+		//      Need a better way to query for records (see TODO above)
+		results.setTotalCount(new Long(trackingRecords.size()));
 		
-		// if pagination variables set, extract sublist
-		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
-
-			Long maxBound = Math.min(
-								pfsParameter.getStartIndex() + pfsParameter.getMaxResults(),
-								results.getTotalCount());
-			sortedTrackingRecords = sortedTrackingRecords.subList(
-					pfsParameter.getStartIndex(), maxBound.intValue());
+		// paging parameters
+		int startIndex, maxResults;
+		
+		// if paging requested, retrieve parameters
+		if (pfsParameter != null && pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+			startIndex = pfsParameter.getStartIndex();
+			maxResults = pfsParameter.getMaxResults();
+		
+		// else no paging requested, return all tracking records
+		} else {
+			startIndex = 0;
+			maxResults = trackingRecords.size();
+		}
+		
+		// start at start index, continue until end of list or page size reached
+		for (	int i = startIndex; 
+				i < trackingRecords.size() && results.getCount() <= maxResults;
+				i++) {
+			
+			WorkflowTrackingRecord trackingRecord = trackingRecords.get(i);
+				
+			if (!trackingRecord.getAssignedUsers().contains(mapUser) &&
+					trackingRecord.getAssignedUsers().size() < 2) {
 					
-		} 
-		
-		// convert tracking records to search results
-		for (WorkflowTrackingRecord trackingRecord : sortedTrackingRecords) {
-			
-			SearchResult result = new SearchResultJpa();
-			
-			result.setId(trackingRecord.getId());
-			result.setTerminology(trackingRecord.getTerminology());
-			result.setTerminologyId(trackingRecord.getTerminologyId());
-			result.setTerminologyVersion(trackingRecord.getTerminologyVersion());
-			result.setValue(trackingRecord.getDefaultPreferredName());
-			
-			results.addSearchResult(result);
+				SearchResult result = new SearchResultJpa();
+				
+				result.setId(trackingRecord.getId());
+				result.setTerminology(trackingRecord.getTerminology());
+				result.setTerminologyId(trackingRecord.getTerminologyId());
+				result.setTerminologyVersion(trackingRecord.getTerminologyVersion());
+				result.setValue(trackingRecord.getDefaultPreferredName());
+				
+				results.addSearchResult(result);			
+			}
 		}
 		
 		// return search results
 		return results;
-		
-		/*// TODO Change return type to List for sorting
-		Set<WorkflowTrackingRecord> workflowTrackingRecords = workflow.getTrackingRecordsForUnmappedInScopeConcepts();
-		
-		
-		
-		
-		
-		// cycle over all unmapped tracking records in scope
-		for (WorkflowTrackingRecord workflowTrackingRecord : workflow.getTrackingRecordsForUnmappedInScopeConcepts()) {
-			
-			
-			
-			// if this record does not have two users assigned
-			// AND this record is not currently assigned to the user
-			// add to list
-			if (workflowTrackingRecord.getAssignedUsers().size() < 2 &&
-				!workflowTrackingRecord.getAssignedUsers().contains(mapUser)) {
-				
-				SearchResult result = new SearchResultJpa();
-				result.
-				
-				workflowTrackingRecords.add(workflowTrackingRecord);
-			}
-		}
-		
-		return workflowTrackingRecords;*/
 	}
 
 	/* (non-Javadoc)
