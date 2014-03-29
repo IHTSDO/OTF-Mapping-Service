@@ -86,54 +86,49 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                           
                           if (!model && currentRole.value >= 3) { // lead or higher privledge
                             // set default model for demo purposes
-                            model = {
-                                structure: "4-8",                          
-	                            rows: [{
-	                                columns: [
-	                                {
-	                                  class: 'col-md-4',
-	                                  widgets: [{
+                        	model = {
+                        			  
+                        	  structure: "12/6-6/12",
+                        	  rows: [{
+                                  columns: [{
+                                    class: 'col-md-12',
+                                    widgets: [{
 	                                      type: "mapProject",
 	                                      config: {},
 	                                      title: "Map Project"
 	                                  }]
-	                                }, {
-	                                  class: 'col-md-8',
-	                                  widgets: [{
+                                  }]
+                                }, {
+                                  columns: [{
+                                    class: 'col-md-6',
+                                    widgets: [{
 	                                      type: "workAvailable",
 	                                      config: {},
 	                                      title: "Available Work"
 	                                  }]
-	                                }]
-	                              }, // end row 1
-	                              
-	                              { // begin row 2
-                            	   columns : [
-	                               {
-	                                  class: 'col-md-8',
-	                                  widgets: [{
+                                  }, {
+                                    class: 'col-md-6',
+                                    widgets: [{
+	                                      type: "assignedList",
+	                                      config: {},
+	                                      title: "Assigned to Me"
+	                                  }]
+                                  }]
+                                }, {
+                                  columns: [{
+                                    class: 'col-md-12',
+                                    widgets: [{
 	                                      type: "metadataList",
 	                                      config: {
 	                                          terminology: "SNOMEDCT"
 	                                      },
 	                                      title: "Metadata"
 	                                  }]
-	                                }, {
-		                                  class: 'col-md-8',
-		                                  widgets: [{
-		                                      type: "assignedList",
-		                                      config: {
-		                                          terminology: "SNOMEDCT"
-		                                      },
-		                                      title: "Assigned To Me"
-	                               }]
-		                                  }]
-	                              } // end row 2
-                               ] // end rows
-                            } // end model
-		                              }]
-	                              }]
-                            }
+                                  }]
+                                }]
+                        	  
+	
+                            };
                           } else if (!model) { // viewer or specialist
                               // set default model for demo purposes
                               model = {
