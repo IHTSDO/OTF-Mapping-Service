@@ -542,14 +542,6 @@ public interface MappingService {
 	public MapUser getMapUser(String userName);
 
 	/**
-	 * Indicates whether or not a user with the specified username exists.
-	 *
-	 * @param mapUser the map user name
-	 * @return <code>true</code> if so, <code>false</code> otherwise
-	 */
-	public boolean userExists(String mapUser);
-
-	/**
 	 * Returns the map age ranges.
 	 *
 	 * @return the map age ranges

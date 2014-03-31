@@ -10,9 +10,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
         description: 'Edit module for a map record',
         templateUrl: 'js/widgets/mapRecord/mapRecord.html',
         controller: 'mapRecordWidgetCtrl',
-        resolve: {
-        
-        },
+        resolve: {},
         edit: {}   
       });
   })

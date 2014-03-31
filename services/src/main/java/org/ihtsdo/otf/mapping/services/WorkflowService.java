@@ -3,6 +3,8 @@ package org.ihtsdo.otf.mapping.services;
 import java.util.List;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -90,10 +92,11 @@ public interface WorkflowService {
 	 * @param project the project
 	 * @param concept the concept
 	 * @param user the user
+	 * @return 
 	 *
 	 * @throws Exception the exception
 	 */
-	public void assignUserToConcept(MapProject project, Concept concept, MapUser user) throws Exception;
+	public MapRecord assignUserToConcept(MapProject project, Concept concept, MapUser user) throws Exception;
 
 	/**
 	 * Assign user to concept.
@@ -165,4 +168,15 @@ public interface WorkflowService {
 	 * @throws Exception the exception
 	 */
 	public void commit() throws Exception;
+
+	/**
+	 * Find available work.
+	 *
+	 * @param workflow the workflow
+	 * @param mapUser the map user
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 */
+	public SearchResultList findAvailableWork(Workflow workflow, MapUser mapUser,
+			PfsParameter pfsParameter);
 }

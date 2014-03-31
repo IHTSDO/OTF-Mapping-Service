@@ -75,7 +75,7 @@ public class MapRecordJpa implements MapRecord {
 	private Long timestamp = (new Date()).getTime();
 	
 	/** The user last modifying this record */
-	@OneToOne(targetEntity = MapUserJpa.class)
+	@ManyToOne(targetEntity = MapUserJpa.class)
 	private MapUser lastModifiedBy;
 	
 	/** The time at which the last user modified this record */
