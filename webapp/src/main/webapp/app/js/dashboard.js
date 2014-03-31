@@ -198,6 +198,7 @@ angular.module('adf')
 	          	  } else if (widget == 'assignedList' && $scope.currentRole.value > 1) {
 	          		  return true;
 	          	  }
+	          	  else if (widget = "availableWork") return true;
 	        	  return false;
         	  } else if ($scope.name === 'mappingDashboard') {
         		  if (widget == 'mapRecord' && $scope.currentRole.value >= 1) { //$rootScope.role.value >= 1) {

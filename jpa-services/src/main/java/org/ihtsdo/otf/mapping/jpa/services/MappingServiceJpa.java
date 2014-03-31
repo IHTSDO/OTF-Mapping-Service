@@ -923,7 +923,7 @@ public class MappingServiceJpa implements MappingService {
 				getProjectSpecificAlgorithmHandler(getMapProject(mapRecord.getMapProjectId()));
 
 		return algorithmHandler.computeMapAdvice(mapRecord, mapEntry);
-		}
+	}
 
 
 
@@ -976,7 +976,7 @@ public class MappingServiceJpa implements MappingService {
     			!editedRecords.keySet().contains(record.getConceptId()) )
     			
     	  editedRecords.put(record.getConceptId(), record);
-    }
+  }
 
   	return new ArrayList<MapRecord>(editedRecords.values());
   }
@@ -2646,26 +2646,8 @@ public class MappingServiceJpa implements MappingService {
 	}
 
 	// ////////////////////////
-	// UTILITY FUNCTIONS
+	// AGE RANGE FUNCTIONS
 	// ////////////////////////
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#userExists(java.lang.String)
-	 */
-	@Override
-	public boolean userExists(String mapUser) {
-
-		List<MapUser> mapUsers = getMapUsers();
-
-		// find if user with this username exists in list of valid users
-		for (MapUser m : mapUsers) {
-			if (m.getUserName().equals(mapUser))
-				return true;
-		}
-
-		// if not found, return false
-		return false;
-	}
 
 	/**
 	 * Retrieve all map age ranges.

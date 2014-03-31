@@ -11,6 +11,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.mapRecord',
                                                      'mapProjectApp.widgets.mapEntry',  
                                                      'mapProjectApp.widgets.assignedList', 
+                                                     'mapProjectApp.widgets.workAvailable',
                                                      'LocalStorageModule',
                                                      'ngCookies'/*,
                                                      'textAngular'*/
@@ -85,42 +86,49 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                           
                           if (!model && currentRole.value >= 3) { // lead or higher privledge
                             // set default model for demo purposes
-                            model = {
-                                structure: "4-8",                          
-	                            rows: [{
-	                                columns: [
-	                                {
-	                                  class: 'col-md-4',
-	                                  widgets: [{
-	                                      type: "mapProjectList",
-	                                      config: {},
-	                                      title: "Map Projects"
-	                                  }, {
+                        	model = {
+                        			  
+                        	  structure: "12/6-6/12",
+                        	  rows: [{
+                                  columns: [{
+                                    class: 'col-md-12',
+                                    widgets: [{
 	                                      type: "mapProject",
 	                                      config: {},
 	                                      title: "Map Project"
 	                                  }]
-	                                }, {
-	                                  class: 'col-md-8',
-	                                  widgets: [{
+                                  }]
+                                }, {
+                                  columns: [{
+                                    class: 'col-md-6',
+                                    widgets: [{
+	                                      type: "workAvailable",
+	                                      config: {},
+	                                      title: "Available Work"
+	                                  }]
+                                  }, {
+                                    class: 'col-md-6',
+                                    widgets: [{
+	                                      type: "assignedList",
+	                                      config: {},
+	                                      title: "Assigned to Me"
+	                                  }]
+                                  }]
+                                }, {
+                                  columns: [{
+                                    class: 'col-md-12',
+                                    widgets: [{
 	                                      type: "metadataList",
 	                                      config: {
 	                                          terminology: "SNOMEDCT"
 	                                      },
 	                                      title: "Metadata"
 	                                  }]
-	                                }, {
-		                                  class: 'col-md-8',
-		                                  widgets: [{
-		                                      type: "assignedList",
-		                                      config: {
-		                                          terminology: "SNOMEDCT"
-		                                      },
-		                                      title: "Assigned To Me"
-		                                  }]
-		                              }]
-	                              }]
-                            }
+                                  }]
+                                }]
+                        	  
+	
+                            };
                           } else if (!model) { // viewer or specialist
                               // set default model for demo purposes
                               model = {
