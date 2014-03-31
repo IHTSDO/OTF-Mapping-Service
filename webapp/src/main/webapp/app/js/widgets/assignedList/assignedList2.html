@@ -1,9 +1,23 @@
 
 
 <div>
-<ul>
-<li  style="line-height: 30px;" ng-repeat="record in records">
-{{record.conceptId}} &nbsp; {{record.conceptName}} &nbsp; <a href="#/record/recordId/{{record.id}}" >Edit</a>
-</li>
-</ul>
+
+   <table width="100%" class="table pure-table" >
+    <thead>
+      <tr>
+        <th style="width: 30%;">Id</th>
+        <th style="width: 50%;">Default Preferred Name</th>
+        <th style="width: 20%;"></th>
+      </tr>
+    </thead>
+    <tbody ng-repeat="record in records " style="border: 2px solid #ccc;" >
+      <tr>
+        <td>{{record.conceptId}}</td>
+        <td>{{record.conceptName}}</td>
+        <td><a href="#/record/recordId/{{record.id}}" >Edit</a></td>
+      </tr>    
+    </tbody>
+    
+    
+   </table>
 </div>
