@@ -155,6 +155,8 @@ public class WorkflowServiceJpa implements WorkflowService {
 		  }
 		}
 		
+		Logger.getLogger(WorkflowServiceJpa.class).info("Done computing workflow");
+		
 		mappingService.close();
 		contentService.close();
 
@@ -390,6 +392,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getMapRecordsAssignedToUser(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser)
 	 */
+	
+	// TODO Add pfs support to this routine
+	
 	@Override
 	public Set<MapRecord> getMapRecordsAssignedToUser(MapProject project,
 		MapUser user) throws Exception {
@@ -398,10 +403,13 @@ public class WorkflowServiceJpa implements WorkflowService {
 		Workflow workflow = getWorkflow(project);
 		/** iterate through all workflow tracking records (for unmapped in scope concepts) 
 		 * and find cases where there is a map record entry where that user is the owner*/
-		for (WorkflowTrackingRecord trackingRecord : workflow.getTrackingRecordsForUnmappedInScopeConcepts()) {
-			for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
-				if (mapRecord.getOwner().equals(user)) {
-					mapRecordsAssigned.add(mapRecord);
+		
+		if (workflow != null) {
+			for (WorkflowTrackingRecord trackingRecord : workflow.getTrackingRecordsForUnmappedInScopeConcepts()) {
+				for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
+					if (mapRecord.getOwner().equals(user)) {
+						mapRecordsAssigned.add(mapRecord);
+					}
 				}
 			}
 		}
@@ -418,21 +426,36 @@ public class WorkflowServiceJpa implements WorkflowService {
 		/** get workflow for the project */
 		Workflow workflow = getWorkflow(project);
 		
+		MappingService mappingService = new MappingServiceJpa();
+
 		/** iterate thru tracking records until you find one for the given concept/user combination */
 		for (WorkflowTrackingRecord trackingRecord : workflow.getTrackingRecords()) {
-			if (trackingRecord.getTerminology().equals(concept.getTerminologyId()) &&
+			if (trackingRecord.getTerminologyId().equals(concept.getTerminologyId()) &&
 					trackingRecord.getAssignedUsers().contains(user)) {
+					
 				/** remove the user and the mapping record from the tracking record and save the tracking record */
 				trackingRecord.removeAssignedUser(user);
 				// go through all mapRecords whose owner is that user
 				for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
-					if (mapRecord.getOwner().equals(user))
-				    trackingRecord.removeMapRecord(mapRecord);
+					if (mapRecord.getOwner().equals(user)) {
+						
+						System.out.println("Removing record");
+						trackingRecord.removeMapRecord(mapRecord);
+						
+						// update the record
+						updateWorkflowTrackingRecord(project, trackingRecord);
+						
+						// delete the record
+						mappingService.removeMapRecord(mapRecord.getId());
+					}
 				}
-				updateWorkflowTrackingRecord(project, trackingRecord);
+				
+
+
 			}
 		}
-		/** TODO: remove the matching map record using mappingService.removeMapRecord() */
+		
+		mappingService.close();
 
 	}
 	
@@ -449,8 +472,28 @@ public class WorkflowServiceJpa implements WorkflowService {
 		// create return object
 		SearchResultList results = new SearchResultListJpa();
 		
-		// create list of tracking records from set (see TODO above)
-		List<WorkflowTrackingRecord> trackingRecords = new ArrayList<WorkflowTrackingRecord>(workflow.getTrackingRecordsForUnmappedInScopeConcepts());
+		
+		//////////////
+		// TESTING ///
+		//////////////
+		
+		List<WorkflowTrackingRecord> trackingRecords = new ArrayList<>();
+		
+		javax.persistence.Query query;
+		
+		/*for (WorkflowTrackingRecord tr : trackingRecords) {
+			System.out.println("  " + tr.getId().toString() + " - " + tr.getAssignedUsers().size());
+		}*/
+
+		// from records where users have been assigned, return those where user count < 2 and this user has not been assigned
+		query = manager.createQuery("SELECT tr FROM WorkflowTrackingRecordJpa tr WHERE NOT EXISTS (from tr.assignedUsers as user where user.id = " + mapUser.getId().toString() + ") AND size(tr.assignedUsers) < 2");
+		System.out.println("IN user query returned " + Integer.toString(query.getResultList().size()) + " results");
+		
+		trackingRecords.addAll(query.getResultList());
+		
+		System.out.println(Integer.toString(trackingRecords.size()) + " available tracking records found");
+		
+				//new ArrayList<WorkflowTrackingRecord>(workflow.getTrackingRecordsForUnmappedInScopeConcepts());
 		
 		// sort list of tracking records (see TODO above)
 		Collections.sort(
@@ -487,7 +530,8 @@ public class WorkflowServiceJpa implements WorkflowService {
 				i++) {
 			
 			WorkflowTrackingRecord trackingRecord = trackingRecords.get(i);
-				
+			
+							
 			if (!trackingRecord.getAssignedUsers().contains(mapUser) &&
 					trackingRecord.getAssignedUsers().size() < 2) {
 					

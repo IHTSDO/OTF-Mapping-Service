@@ -220,7 +220,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				  if ($scope.validationResult.errors.length == 0)  {
 					  
 					  // assign the current user to the lastModifiedBy field
-					  $scope.record.lastModifiedBy = user;
+					  $scope.record.lastModifiedBy = $scope.user;
 					  
 					  $http({
 						  url: root_mapping + "record/update",
@@ -241,6 +241,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				  
 				  // otherwise, display the errors
 				  } else {
+					  console.debug("Validation failed!");
 					 $scope.recordSuccess = "";
 				  }
 				  
