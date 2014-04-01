@@ -22,7 +22,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.batchSize = $scope.batchSizes[2];
 	
 	// pagination variables
-	$scope.conceptsPerPage = 10;
+	$scope.conceptsPerPage = 20;
 
 	// retrieve focus project, current user, and user list
 	$scope.focusProject = localStorageService.get('focusProject');
@@ -66,7 +66,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 
 		// clear the existing work
 		$scope.availableWork = null;
-		
+			
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": (page-1)*$scope.conceptsPerPage,
@@ -124,7 +124,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": 0,
-			 	 	 "maxResults": $scope.batchSize, 
+			 	 	 "maxResults": $scope.batchSize-1, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 		
@@ -140,12 +140,22 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		}).success(function(data) {
 			
 			var trackingRecords = data.searchResult;
+			var conceptListValid = true;
 			
-			// if user is viewing concepts, check that first result matches first displayed result
-			if (trackingRecords[0].id != $scope.availableWork[0].id) {
-				retrieveAvailableWork(1);
-				alert("The work you are viewing has been claimed by another user.  Please try again.  To claim a set of concepts without viewing them, close the concept viewer and request a batch.");
-			} else {
+			// if user is viewing concepts (TODO add), check that first result matches first displayed result
+			// TODO More robust check
+			if (isConceptListOpen == true) {
+				for (var i = 0; i < $scope.$scope.trackingRecordPerPage; i++) {
+					if (trackingRecords[i].id != $scope.availableWork[i].id) {
+						retrieveAvailableWork(1);
+						alert("One or more of the concepts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
+						$scope.isConceptListOpen = false;
+						conceptListValid = false;
+					}
+				}
+			} 
+			
+			if (conceptListValid == true) {
 				console.debug("Claimed batch:");
 				console.debug(trackingRecords);
 				
@@ -166,6 +176,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				}).success(function(data) {
 					$rootScope.$broadcast('workAvailableWidget.notification.assignWork',
 							{key: 'trackingRecords', trackingRecords: data.mapRecord});
+					$scope.retrieveAvailableWork(1);
 				
 				});
 			}

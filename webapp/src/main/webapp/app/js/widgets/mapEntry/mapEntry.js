@@ -110,8 +110,10 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				};
 			};
 
+			$scope.statusRetrieveTargetConcepts = $scope.targetConcepts.length == 0 ? 'No concepts found': '';
+
 		}).error(function(data) {
-			$scope.errorCreateRecord = "Failed to retrieve entries";
+			$scope.errorRetrieveTargetConcepts = "Failed to retrieve entries";
 		});
 	};
 
