@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.jpa.services;
 
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -25,6 +26,7 @@ public class ValidationServiceJpa implements ValidationService {
 		
 		ValidationResult validationResult = algorithmHandler.validateRecord(mapRecord);
 		
+		mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
 		return validationResult;
 	}
 }

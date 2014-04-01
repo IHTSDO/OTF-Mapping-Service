@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
@@ -105,6 +106,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		validationResult.merge(performUniversalValidationChecks(mapRecord));
 		validationResult.merge(validateTargetCodes(mapRecord));
 		
+		mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
 		return validationResult;
 	}
 	
