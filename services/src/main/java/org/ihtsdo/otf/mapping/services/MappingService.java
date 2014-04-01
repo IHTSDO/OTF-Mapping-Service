@@ -677,7 +677,7 @@ public interface MappingService {
      * @return the most recent map record revision
      * @throws Exception the exception
      */
-    public List<MapRecord> getRecentlyEditedMapRecords(MapUser mapUser) throws Exception;
+    public List<MapRecord> getRecentlyEditedMapRecords(Long projectId, String userName) throws Exception;
 
 	/**
 	 * Gets the project specific algorithm handler.

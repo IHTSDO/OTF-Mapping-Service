@@ -1095,21 +1095,20 @@ public class MappingServiceRest {
   }
  
   @GET
-  @Path("/recentRecords/{userName}")
+  @Path("/recentRecords/{id}/{userName}")
   @ApiOperation(value = "Find recently edited map records", notes = "Returns recently edited map records for given userName in either JSON or XML format", response = MapRecordList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public MapRecordList getRecentlyEditedMapRecords(
-    @ApiParam(value = "Id of user", required = true) @PathParam("userName") String userName) {
-	//TODO: PfsParameter
-  	List<MapRecord> editedRecords = new ArrayList<>();
+  	@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
+		@ApiParam(value = "User name", required = true) @PathParam("userName") String userName) {
+	//TODO: PfsParameter, change to POST test with ProjectRecordController function
+  List<MapRecord> editedRecords = new ArrayList<>();
     try {
       MappingService mappingService = new MappingServiceJpa();
-      
-      MapUser user = mappingService.getMapUser(userName);
-     	 
-      editedRecords = mappingService.getRecentlyEditedMapRecords(user);
+       
+      editedRecords = mappingService.getRecentlyEditedMapRecords(new Long(mapProjectId), userName);
       
       mappingService.close();
     } catch (Exception e) {

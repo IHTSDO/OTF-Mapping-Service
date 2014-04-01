@@ -948,7 +948,11 @@ public class MappingServiceJpa implements MappingService {
    * @see org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords(org.ihtsdo.otf.mapping.model.MapUser)
    */
   @Override
-  public List<MapRecord> getRecentlyEditedMapRecords(MapUser mapUser)  throws Exception {
+  // TODO remove NEW records
+  // TODO confirm return sorted by lastModifiedBy most recent at head
+  public List<MapRecord> getRecentlyEditedMapRecords(Long projectId, String userName)  throws Exception {
+  	
+  	MapUser user = getMapUser(userName);
   	
   	Map<String, MapRecord> editedRecords = new HashMap<>();
   	
@@ -958,14 +962,19 @@ public class MappingServiceJpa implements MappingService {
   			reader
         .createQuery()
         .forRevisionsOfEntity(MapRecordJpa.class, false, true)
-        .add(AuditEntity.relatedId("owner").eq(mapUser.getId()))
+        .add(AuditEntity.relatedId("owner").eq(user.getId()))
         .addOrder(AuditEntity.property("lastModified").desc());
 
     List<Object[]> allRevisions = (List<Object[]>) query.getResultList();
     for (Object[] revision : allRevisions) {
     	MapRecord record = (MapRecord)revision[0];
+    	// used to force reading the graph
+    	record.getLastModifiedBy().getEmail();
     	// only save the most recent revision
-    	if (!editedRecords.keySet().contains(record.getConceptId()))
+    	if (record.getMapProjectId().equals(projectId) &&
+    			
+    			!editedRecords.keySet().contains(record.getConceptId()) )
+    			
     	  editedRecords.put(record.getConceptId(), record);
   }
 
