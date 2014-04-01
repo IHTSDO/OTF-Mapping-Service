@@ -674,10 +674,13 @@ public interface MappingService {
     /**
      * Returns the most recent map record revision.
      *
+     * @param projectId the project id
+     * @param userName the user name
+     * @param pfsParameter the pfs parameter
      * @return the most recent map record revision
      * @throws Exception the exception
      */
-    public List<MapRecord> getRecentlyEditedMapRecords(Long projectId, String userName) throws Exception;
+    public List<MapRecord> getRecentlyEditedMapRecords(Long projectId, String userName, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Gets the project specific algorithm handler.
@@ -690,7 +693,16 @@ public interface MappingService {
 	 */
 	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(MapProject mapProject) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
 
-
+	/**
+	 * Returns the recently edited map record count.
+	 *
+	 * @param projectId the project id
+	 * @param userName the user name
+	 * @param pfsParameter the pfs parameter
+	 * @return the recently edited map record count
+	 * @throws Exception the exception
+	 */
+	public int getRecentlyEditedMapRecordCount(Long projectId, String userName, PfsParameter pfsParameter) throws Exception;
 	
 	
 }

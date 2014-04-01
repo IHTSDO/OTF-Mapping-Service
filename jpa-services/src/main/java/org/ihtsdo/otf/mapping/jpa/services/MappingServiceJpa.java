@@ -948,9 +948,8 @@ public class MappingServiceJpa implements MappingService {
    * @see org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords(org.ihtsdo.otf.mapping.model.MapUser)
    */
   @Override
-  // TODO remove NEW records
   // TODO confirm return sorted by lastModifiedBy most recent at head
-  public List<MapRecord> getRecentlyEditedMapRecords(Long projectId, String userName)  throws Exception {
+  public List<MapRecord> getRecentlyEditedMapRecords(Long projectId, String userName, PfsParameter pfsParameter)  throws Exception {
   	
   	MapUser user = getMapUser(userName);
   	
@@ -965,6 +964,7 @@ public class MappingServiceJpa implements MappingService {
         .add(AuditEntity.relatedId("owner").eq(user.getId()))
         .addOrder(AuditEntity.property("lastModified").desc());
 
+  	int pfsCounter = 0;
     List<Object[]> allRevisions = (List<Object[]>) query.getResultList();
     for (Object[] revision : allRevisions) {
     	MapRecord record = (MapRecord)revision[0];
@@ -972,13 +972,57 @@ public class MappingServiceJpa implements MappingService {
     	record.getLastModifiedBy().getEmail();
     	// only save the most recent revision
     	if (record.getMapProjectId().equals(projectId) &&
-    			
-    			!editedRecords.keySet().contains(record.getConceptId()) )
-    			
-    	  editedRecords.put(record.getConceptId(), record);
+    			record.getWorkflowStatus() != WorkflowStatus.NEW &&
+    			!editedRecords.keySet().contains(record.getConceptId()) ) {
+    	  pfsCounter++;
+    	  if (pfsParameter != null && pfsCounter > pfsParameter.getMaxResults())
+    	  	continue;
+    		if (pfsParameter != null && pfsCounter >= pfsParameter.getStartIndex()) 	
+    	    editedRecords.put(record.getConceptId(), record);
+    	  
+    	}
   }
 
   	return new ArrayList<MapRecord>(editedRecords.values());
+  }
+  
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords(org.ihtsdo.otf.mapping.model.MapUser)
+   */
+  @Override
+  // TODO confirm return sorted by lastModifiedBy most recent at head
+  // TODO return MapREcordList with an additional field for totalCt
+  public int getRecentlyEditedMapRecordCount(Long projectId, String userName, PfsParameter pfsParameter)  throws Exception {
+  	
+  	MapUser user = getMapUser(userName);
+  	
+  	Map<String, MapRecord> editedRecords = new HashMap<>();
+  	
+  	AuditReader reader = AuditReaderFactory.get(manager);
+  	
+  	AuditQuery query =
+  			reader
+        .createQuery()
+        .forRevisionsOfEntity(MapRecordJpa.class, false, true)
+        .add(AuditEntity.relatedId("owner").eq(user.getId()))
+        .addOrder(AuditEntity.property("lastModified").desc());
+
+  	int pfsCounter = 0;
+    List<Object[]> allRevisions = (List<Object[]>) query.getResultList();
+    for (Object[] revision : allRevisions) {
+    	MapRecord record = (MapRecord)revision[0];
+    	// used to force reading the graph
+    	record.getLastModifiedBy().getEmail();
+    	// only save the most recent revision
+    	if (record.getMapProjectId().equals(projectId) &&
+    			record.getWorkflowStatus() != WorkflowStatus.NEW &&
+    			!editedRecords.keySet().contains(record.getConceptId()) ) {
+    	  pfsCounter++;
+    	  
+    	}
+  }
+
+  	return pfsCounter;
   }
   
 	// //////////////////////////////////
