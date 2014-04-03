@@ -6,3 +6,9 @@ html, body
 	padding: 0;
 	height: 100%;
 }
+
+body {
+	background-color: #EEE;
+	padding-top: 50px;
+	padding-bottom: 50px;
+}

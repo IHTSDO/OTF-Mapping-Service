@@ -1,74 +1,65 @@
-<div>
-
-	
-
+  <nav style="background-color: #FFFFFF" class="navbar navbar-default navbar-fixed-top" role="navigation">
   <span ng-transclude=""></span>
-
-  <div style="float: left; width: 100%;">
-    <a href="index.html#/"><img src="img/ihtsdo_logo.png"></a>
-  </div>
-  
-
-  <div class="navbar navbar-default">
-
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
       <div class="navbar-header">
-      
-	
-        <div style="text-align: right; color: black;">
-        
-        
-          <!--  User information -->
-          <span ng-show="currentUser.name != null">
-         	 Welcome back, {{currentUser.name}} ({{currentRole.name}})  &nbsp; | &nbsp;
-	      </span>  
-	      
-	               
-          <!--  Project focus and select -->
-          <span ng-show="currentUser.name != null">Current Project: 
- 
-	          <select ng-model="focusProject"
-	          		  ng-change="changeFocusProject()"
-	          		  ng-options="mapProject as mapProject.name for mapProject in mapProjects">
-	          </select>
-	            &nbsp; | &nbsp;
-          </span>
-            
-          <!--  Dashboard tools -->
-          <span
-            ng-show="currentRole.name == 'Viewer'" title="Dashboard"><a
-            href="index.html#/project/projects/"><i class="glyphicon glyphicon-stats"></i></a></span>
-          <span ng-show="currentRole.name == 'Specialist'" title="Dashboard"><a
-            href="index.html#/specialist/dash"><i class="glyphicon glyphicon-stats"></i></a></span>
-          <span ng-show="currentRole.name =='Lead'" title="Dashboard"><a
-            href="index.html#/lead/dash"><i class="glyphicon glyphicon-stats"></i></a></span>
-          <span
-            ng-show="currentRole.name == 'Administrator'" title="Dashboard"><a
-            href="index.html#/admin/dash"><i class="glyphicon glyphicon-stats"></i></a></span> 
-          &nbsp;
-           <!--  Logout tools -->
-          <span
-            ng-show="currentUser.name != null" title="Log out"><a
-            href="index.html#/" ng-click="go('/project/projects/')"><i class="glyphicon glyphicon-log-out"></i></a></span> 
-          &nbsp;
-           <!--  Help tools -->
-          <span ng-show="currentRole.name == 'Viewer'" title="Help">
-          <a href="doc/viewerHelp.html" target="_blank"><i class="glyphicon glyphicon-question-sign"></i></a></span>
-          &nbsp;
-          <span ng-show="currentRole.name == 'Specialist'" title="Help">
-          <a href="doc/specialistHelp.html" target="_blank"><i class="glyphicon glyphicon-question-sign"></i></a></span>
-          &nbsp;
-          <span ng-show="currentRole.name == 'Lead'" title="Help">
-          <a href="doc/leadHelp.html" target="_blank"><i class="glyphicon glyphicon-question-sign"></i></a></span>
-          &nbsp;
-          <span ng-show="currentRole.name == 'Administrator'" title="Help">
-          <a href="doc/administratorHelp.html" target="_blank"><i class="glyphicon glyphicon-question-sign"></i></a></span>
-          &nbsp;
-        </div>
-            <div class="container">
+        <button type="button" class="navbar-toggle" data-toggle="collapse"
+          data-target="#bs-example-navbar-collapse-1">
+          <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span>
+          <span class="icon-bar"></span> <span class="icon-bar"></span>
+        </button>
+        <img class="pull-left" src="img/ihtsdo_logo.png" height="50px"> <a
+          class="navbar-brand" href="#">OTF Mapping Tool</a>
       </div>
+
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav navbar-right">
+          <li><span class="navbar-text" ng-show="currentUser.name != null">{{currentUser.name}}
+              ({{currentRole.name}})</span></li>
+          <li><span class="navbar-text" ng-show="currentUser.name != null">Current
+              Project: <select style="max-width: 200px" ng-model="focusProject"
+              ng-change="changeFocusProject()"
+              ng-options="mapProject as mapProject.name for mapProject in mapProjects">
+            </select>
+          </span></li>
+          <li><span class="navbar-text"> <!--  Dashboard tools --> <span
+              ng-show="currentRole.name == 'Viewer'" title="Dashboard"><a
+                href="index.html#/project/projects/"><i
+                  class="glyphicon glyphicon-stats"></i></a></span> <span
+              ng-show="currentRole.name == 'Specialist'" title="Dashboard"><a
+                href="index.html#/specialist/dash"><i
+                  class="glyphicon glyphicon-stats"></i></a></span> <span
+              ng-show="currentRole.name =='Lead'" title="Dashboard"><a
+                href="index.html#/lead/dash"><i
+                  class="glyphicon glyphicon-stats"></i></a></span> <span
+              ng-show="currentRole.name == 'Administrator'" title="Dashboard"><a
+                href="index.html#/admin/dash"><i
+                  class="glyphicon glyphicon-stats"></i></a></span> &nbsp; <!--  Logout tools -->
+              <span ng-show="currentUser.name != null" title="Log out"><a
+                href="index.html#/" ng-click="go('/project/projects/')"><i
+                  class="glyphicon glyphicon-log-out"></i></a></span> &nbsp; <!--  Help tools -->
+              <span ng-show="currentRole.name == 'Viewer'" title="Help">
+                <a href="doc/viewerHelp.html" target="_blank"><i
+                  class="glyphicon glyphicon-question-sign"></i></a>
+            </span> &nbsp; <span ng-show="currentRole.name == 'Specialist'"
+              title="Help"> <a href="doc/specialistHelp.html"
+                target="_blank"><i class="glyphicon glyphicon-question-sign"></i></a>
+            </span> &nbsp; <span ng-show="currentRole.name == 'Lead'" title="Help">
+                <a href="doc/leadHelp.html" target="_blank"><i
+                  class="glyphicon glyphicon-question-sign"></i></a>
+            </span> &nbsp; <span ng-show="currentRole.name == 'Administrator'"
+              title="Help"> <a href="doc/administratorHelp.html"
+                target="_blank"><i class="glyphicon glyphicon-question-sign"></i></a></span>
+              &nbsp;
+          </span></li>
+        </ul>
+
+      </div>
+      <!-- /.navbar-collapse -->
     </div>
-  </div>
-</div>
+    <!-- /.container-fluid -->
+  </nav>
 
 
 
