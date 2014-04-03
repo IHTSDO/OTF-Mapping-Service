@@ -19,7 +19,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 	$scope.focusProject = localStorageService.get('focusProject');
 
 	// pagination variables
-	$scope.recordsPerPage = 7;
+	$scope.recordsPerPage = 3;
 	
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	

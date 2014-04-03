@@ -9,6 +9,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -37,6 +38,9 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	@Id
 	@GeneratedValue
 	private Long id;
+	
+	@ManyToOne(targetEntity=WorkflowJpa.class, optional=false)
+	private Workflow workflow;
 	
 	/** The terminology. */
 	@Column(nullable = false)
@@ -87,7 +91,17 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
+
+	@Override
+	public Workflow getWorkflow() {
+		return workflow;
+	}
+
+	@Override
+	public void setWorkflow(Workflow workflow) {
+		this.workflow = workflow;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */

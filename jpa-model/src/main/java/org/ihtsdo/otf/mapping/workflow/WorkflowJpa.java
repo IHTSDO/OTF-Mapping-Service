@@ -29,12 +29,12 @@ public class WorkflowJpa implements Workflow {
 	@GeneratedValue
 	private Long id;
 	
-  /**  The map project. */
-  @OneToOne(targetEntity = MapProjectJpa.class, fetch = FetchType.LAZY)
+    /**  The map project. */
+    @OneToOne(targetEntity = MapProjectJpa.class, fetch = FetchType.LAZY)
 	private MapProject mapProject;
 	
 	/**  The tracking records for unmapped in scope concepts. */
-	@OneToMany(targetEntity = WorkflowTrackingRecordJpa.class)
+	@OneToMany(mappedBy="workflow", targetEntity = WorkflowTrackingRecordJpa.class)
 	@IndexedEmbedded(targetElement = WorkflowTrackingRecordJpa.class)
 	private Set<WorkflowTrackingRecord> trackingRecords = new HashSet<>();
 	

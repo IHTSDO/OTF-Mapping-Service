@@ -177,11 +177,6 @@ mapProjectApp.config(['$routeProvider',
       //////////////////////////////
 	  // DASHBOARDS
 	  //////////////////////////////
-	
-	  $routeProvider.when('/sorttest', {
-		  controller: 'SortTestCtrl',
-		  templateUrl: 'sorttest.html'
-	  });
 	  
 	  $routeProvider.when('/specialist/dash', {
 		  templateUrl: 'partials/project-list.html'
@@ -219,11 +214,6 @@ mapProjectApp.config(['$routeProvider',
 			controller: 'RecordConceptListCtrl'
 	  });
 	  
-	  $routeProvider.when('/record/conceptId/:conceptId/create', {
-		  templateUrl: 'partials/record-create.html',
-		  controller: 'RecordCreateCtrl'
-	  });
-	  
 	  $routeProvider.when('/record/recordId/:recordId', {
 		  templateUrl: 'partials/record-dashboard.html',
 		  controller: 'MapRecordDashboardCtrl'
@@ -236,8 +226,6 @@ mapProjectApp.config(['$routeProvider',
 	  ///////////////////////////////
 	  // HOME and ERROR ROUTES
 	  ///////////////////////////////
-	  
-	 
 	  
 	  $routeProvider.when('/', {
 		  templateUrl: 'partials/login.html',
