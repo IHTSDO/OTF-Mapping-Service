@@ -12,6 +12,7 @@ import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 
 /**
  * Goal which makes lucene indexes based on hibernate-search annotations.
@@ -106,6 +107,15 @@ public class LuceneReindexMojo extends AbstractMojo {
       fullTextEntityManager.purgeAll(MapRecordJpa.class);
       fullTextEntityManager.flushToIndexes();
       fullTextEntityManager.createIndexer(MapRecordJpa.class)
+          .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+          .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
+          .startAndWait();
+      
+      // Tree Positions
+      getLog().info("  Creating indexes for TreePositionJpa");
+      fullTextEntityManager.purgeAll(TreePositionJpa.class);
+      fullTextEntityManager.flushToIndexes();
+      fullTextEntityManager.createIndexer(TreePositionJpa.class)
           .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
           .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
           .startAndWait();

@@ -13,7 +13,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	});
 }).controller('mapEntryWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $modal, localStorageService){
 
-	// watch for user change
+	// watch for entry change
 	$scope.$on('mapRecordWidget.notification.changeSelectedEntry', function(event, parameters) { 	
 		console.debug("MapEntryWidget: Detected change in selected entry");
 		console.debug(parameters);
@@ -132,6 +132,18 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		computeRelation(entry);
 		
 	};
+	
+	// watch for concept selection from terminology browser
+	$scope.$on('terminologyBrowser.selectConcept', function(event, parameters) { 	
+		console.debug("MapEntryWidget: Detected selectConcept from terminologyBrowser");
+		console.debug(parameters);
+		
+		$scope.entry.targetId = parameters.concept.terminologyId;
+		$scope.entry.targetName = parameters.concept.defaultPreferredName;
+		computeRelation($scope.entry);
+	});	
+	
+	
 	
 	$scope.clearTargetConcept = function(entry) {
 		console.debug("clearTargetConcept() called");

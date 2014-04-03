@@ -2,11 +2,15 @@ package org.ihtsdo.otf.mapping.rf2.pojo;
 
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 
+// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link TreePosition}.
  *
@@ -22,11 +26,23 @@ public class TreePositionImpl implements TreePosition {
 	/** The terminology. */
 	private String terminology;
 
-	/** The concept id */
-	private String conceptId;
+	/** The terminology id. */
+	private String terminologyId;
 
 	/** The terminology version. */
 	private String terminologyVersion;
+	
+	/** The default preferred name. */
+	private String defaultPreferredName;
+	
+	/** The count of children. */
+	private int childrenCount;
+	
+	/** The terminology note */
+	private String terminologyNote;
+	
+	/** The child tree positions. */
+	private List<TreePosition> children = new ArrayList<>();
 
 	/**
 	 * Instantiates an empty {@link TreePositionImpl}.
@@ -82,55 +98,79 @@ public class TreePositionImpl implements TreePosition {
 
 	
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getTerminology()
+	 */
 	@Override
 	public String getTerminology() {
 		return terminology;
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#setTerminology(java.lang.String)
+	 */
 	@Override
 	public void setTerminology(String terminology) {
 		this.terminology = terminology;
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getTerminologyVersion()
+	 */
 	@Override
 	public String getTerminologyVersion() {
 		return terminologyVersion;
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#setTerminologyVersion(java.lang.String)
+	 */
 	@Override
 	public void setTerminologyVersion(String terminologyVersion) {
 		this.terminologyVersion = terminologyVersion;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getTerminologyId()
+	 */
 	@Override
-	public String getConceptId() {
-		return conceptId;
+	public String getTerminologyId() {
+		return terminologyId;
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#setTerminologyId(java.lang.String)
+	 */
 	@Override
-	public void setConceptId(String conceptId) {
-		this.conceptId = conceptId;
+	public void setTerminologyId(String terminologyId) {
+		this.terminologyId = terminologyId;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "TreePositionImpl [ancestorPath=" + ancestorPath + ", terminology="
-				+ terminology + ", conceptId=" + conceptId + ", terminologyVersion="
+				+ terminology + ", terminologyId=" + terminologyId + ", terminologyVersion="
 				+ terminologyVersion + "]";
 	}
 
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result =
 				prime * result + ((ancestorPath == null) ? 0 : ancestorPath.hashCode());
-		result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
+		result = prime * result + ((terminologyId == null) ? 0 : terminologyId.hashCode());
 		result =
 				prime * result + ((terminology == null) ? 0 : terminology.hashCode());
 		result =
@@ -141,6 +181,9 @@ public class TreePositionImpl implements TreePosition {
 	}
 
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -155,10 +198,10 @@ public class TreePositionImpl implements TreePosition {
 				return false;
 		} else if (!ancestorPath.equals(other.ancestorPath))
 			return false;
-		if (conceptId == null) {
-			if (other.conceptId != null)
+		if (terminologyId == null) {
+			if (other.terminologyId != null)
 				return false;
-		} else if (!conceptId.equals(other.conceptId))
+		} else if (!terminologyId.equals(other.terminologyId))
 			return false;
 		if (terminology == null) {
 			if (other.terminology != null)
@@ -171,6 +214,88 @@ public class TreePositionImpl implements TreePosition {
 		} else if (!terminologyVersion.equals(other.terminologyVersion))
 			return false;
 		return true;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#setChildren(java.util.List)
+	 */
+	@Override
+	public void setChildren(List<TreePosition> children) {
+		this.children = children;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getChildren()
+	 */
+	@Override
+	public List<TreePosition> getChildren() {
+		return this.children;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getDefaultPreferredName()
+	 */
+	@Override
+	public String getDefaultPreferredName() {
+		return this.defaultPreferredName;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#setDefaultPreferredName(java.lang.String)
+	 */
+	@Override
+	public void setDefaultPreferredName(String defaultPreferredName) {
+		this.defaultPreferredName = defaultPreferredName;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#getChildrenCount()
+	 */
+	@Override
+	public int getChildrenCount() {
+		return this.childrenCount;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.rf2.TreePosition#setChildrenCount(int)
+	 */
+	@Override
+	public void setChildrenCount(int childrenCount) {
+		this.childrenCount = childrenCount;
+	}
+
+
+	@Override
+	public String getTerminologyNote() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void setTerminologyNote(String terminologyNote) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void addChild(TreePosition treePosition) {
+		this.children.add(treePosition);
+		
+	}
+
+
+	@Override
+	public void addChildren(List<TreePosition> treePositions) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

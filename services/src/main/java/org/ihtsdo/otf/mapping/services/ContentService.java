@@ -1,10 +1,13 @@
 package org.ihtsdo.otf.mapping.services;
 
+import java.text.ParseException;
+import java.util.List;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -165,4 +168,49 @@ public interface ContentService {
 	 */
 	public SearchResultList findDescendantsFromTreePostions(String conceptId,
 		String terminology, String terminologyVersion ) throws Exception;
+
+
+
+	/**
+	 * Gets the local trees.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the local trees
+	 */
+	public List<TreePosition> getLocalTrees(String terminologyId, String terminology,
+			String terminologyVersion);
+
+	/**
+	 * Gets the tree positions for concept.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the tree positions for concept
+	 */
+	public List<TreePosition> getTreePositionsForConcept(String terminologyId,
+			String terminology, String terminologyVersion);
+
+	/**
+	 * Gets the tree position children.
+	 *
+	 * @param treePosition the tree position
+	 * @return the tree position children
+	 */
+	public List<TreePosition> getTreePositionChildren(TreePosition treePosition);
+
+	/**
+	 * Gets the root tree positions for a given terminology
+	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the root tree positions for terminology
+	 */
+	public List<TreePosition> getRootTreePositionsForTerminology(String terminology,
+			String terminologyVersion);
+
+	public List<TreePosition> getTreePositionsForConceptQuery(
+			String terminology, String terminologyVersion, String query) throws Exception;
 }
