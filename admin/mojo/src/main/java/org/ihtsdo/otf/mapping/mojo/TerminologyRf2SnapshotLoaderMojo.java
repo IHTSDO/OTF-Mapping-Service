@@ -187,7 +187,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         throw new MojoFailureException("Specified loader." + terminology
             + ".input.data directory does not exist: " + coreInputDirString);
       }
-
       // set the parameters for determining defaultPreferredNames
       dpnTypeId =
           Long.valueOf(properties
@@ -241,6 +240,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
       SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); // format for
       // logging
+      try {
+      /**
 
       // Prepare sorted input files
       File sortedFileDir = new File(coreInputDir, "/RF2-sorted-temp/");
@@ -254,7 +255,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
                   + "s");
 
       openSortedFileReaders(sortedFileDir);
-      try {
 
         // load Concepts
         if (conceptsByConcept != null) {
@@ -357,7 +357,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
                   + getElapsedTime(startTime).toString() + "s" + " (Ended at "
                   + ft.format(new Date()) + ")");
         }
-
+*/
         // creating tree positions
         // first get isaRelType from metadata
         MetadataService metadataService = new MetadataServiceJpa();
@@ -371,14 +371,16 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         ContentService contentService = new ContentServiceJpa();
         getLog().info("Start creating tree positions.");
 
-        // ASSUMPTION: Walk up tree to the root (assumes a single root)
+        // Walk up tree to the root 
+        // ASSUMPTION: single root
         String conceptId = isaRelType;
         String rootId = null;
         OUTER:
         while (true) {
+          getLog().info("  Walk up tree from " + conceptId);
           Concept c = contentService.getConcept(conceptId, terminology, version);
           for (Relationship r : c.getRelationships()) {
-            if (r.getTypeId() == Long.valueOf(isaRelType)) {
+            if (r.isActive() && r.getTypeId().equals(Long.valueOf(isaRelType))) {
               conceptId = r.getDestinationConcept().getTerminologyId();
               continue OUTER;
             }              
@@ -386,6 +388,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
           rootId = conceptId;
           break;
         }
+        getLog().info("  Compute tree from rootId " + conceptId);
         contentService.computeTreePositions(terminology, version, isaRelType,
             rootId);
 
