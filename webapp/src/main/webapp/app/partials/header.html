@@ -16,11 +16,12 @@
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav navbar-right">
           <li><span class="navbar-text" ng-show="currentUser.name != null">{{currentUser.name}}
-              ({{currentRole.name}})</span>
-              <!--  Logout tools -->
+              ({{currentRole.name}})
+              <!--  Logout tools --> &nbsp;
               <span ng-show="currentUser.name != null" title="Log out"><a
                 href="index.html#/" ng-click="go('/project/projects/')"><i
-                  class="glyphicon glyphicon-log-out"></i></a>&nbsp; </span>
+                  class="glyphicon glyphicon-log-out"></i></a> </span>
+              </span>
           </li>
           <li><span class="navbar-text" ng-show="currentUser.name != null">Current
               Project: <select style="max-width: 200px" ng-model="focusProject"
@@ -42,7 +43,8 @@
                     class="glyphicon glyphicon-stats"></i></a></span> <span
                 ng-show="currentRole.name == 'Administrator'" title="Dashboard"><a
                   href="index.html#/admin/dash"><i
-                    class="glyphicon glyphicon-stats"></i></a> &nbsp; </span>
+                    class="glyphicon glyphicon-stats"></i></a></span>
+                    &nbsp;
               <!--  Help tools (by role) -->
               <span ng-show="currentRole.name == 'Viewer'" title="Help">
                 <a href="doc/viewerHelp.html" target="_blank"><i
