@@ -1,39 +1,32 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html ng-app="mapProjectApp">
 <head>
-<meta http-equiv="Content-Language" content="en" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>OTF Mapping Test WebApp</title>
-
-
-
-<style type="text/css" media="all"></style>
-
-    
+  <meta http-equiv="Content-Language" content="en" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>OTF Mapping Test WebApp</title>
+  <style type="text/css" media="all"></style>
     <!-- build:css css/sample.min.css  -->
-    
 
     <!-- dashboard style  -->
     <link href="css/main.css" rel="stylesheet">
     <link href="components/font-awesome/css/font-awesome.css" rel="stylesheet">
-    
+
     <!-- Bootstrap core CSS  -->
     <link href="components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
 
 	<!--  OTF Webapp override CSS -->
 	<link rel="stylesheet" href="css/app.css">
 
-<!--  angular includes -->
-<script type="text/javascript" src="components/angular/angular.js"></script>
-<script type="text/javascript" src="components/angular/angular-route.js"></script>
-<script type="text/javascript" src="components/angular-local-storage/angular-local-storage.js"></script>
-<script type="text/javascript" src="components/angular/sortable.js"></script>
-<script type="text/javascript" src="components/angular/cookies.js"></script>
-       
-    
-<script src="js/controllers.js"></script>
-<script src="js/app.js"></script>
+  <!--  angular includes -->
+  <script type="text/javascript" src="components/angular/angular.js"></script>
+  <script type="text/javascript" src="components/angular/angular-route.js"></script>
+  <script type="text/javascript"
+    src="components/angular-local-storage/angular-local-storage.js"></script>
+  <script type="text/javascript" src="components/angular/sortable.js"></script>
+  <script type="text/javascript" src="components/angular/cookies.js"></script>
 
+  <script src="js/controllers.js"></script>
+  <script src="js/app.js"></script>
 
  <!-- build:js js/jquery.min.js -->
     <script type="text/javascript" src="components/jquery/jquery.js"></script>
@@ -43,19 +36,20 @@
     <script type="text/javascript" src="components/jquery-ui/ui/jquery.ui.core.js"></script>
     <script type="text/javascript" src="components/jquery-ui/ui/jquery.ui.widget.js"></script>
     <script type="text/javascript" src="components/jquery-ui/ui/jquery.ui.mouse.js"></script>
-    <script type="text/javascript" src="components/jquery-ui/ui/jquery.ui.sortable.js"></script>
+  <script type="text/javascript"
+    src="components/jquery-ui/ui/jquery.ui.sortable.js"></script>
     <!-- endbuild   -->
 
-    <!-- build:js js/angular.min.js -->    
+  <!-- build:js js/angular.min.js -->
     <script type="text/javascript" src="components/angular/angular.js"></script>
     <!-- endbuild -->
 
     <!-- build:js js/sample.min.js -->
     <!-- angular-bootstrap -->
-    <script type="text/javascript" src="components/angular-bootstrap/ui-bootstrap.js"></script> 
-    <script type="text/javascript" src="components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-
-    
+  <script type="text/javascript"
+    src="components/angular-bootstrap/ui-bootstrap.js"></script>
+  <script type="text/javascript"
+    src="components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
 
     <!-- scripts -->
     <script type="text/javascript" src="js/adf.js"></script>
@@ -64,7 +58,6 @@
     <script type="text/javascript" src="js/widget.js"></script>
     <script type="text/javascript" src="js/dashboard.js"></script>
 
- 
     <script type="text/javascript" src="js/widgets/mapProjectList/mapProjectList.js"></script>
     <script type="text/javascript" src="js/widgets/metadataList/metadataList.js"></script>
 	<script type="text/javascript" src="js/widgets/mapRecord/mapRecord.js"></script>
@@ -77,24 +70,12 @@
 	
     
 </head>
-
 <body>
 
-   
-	
   <otf-header-directive></otf-header-directive>
-	
-
   <div class="container">
     <div ng-view></div>
-
   </div>
-<!-- 
-  <otf-footer-directive></otf-footer-directive> -->
-
-
-	
-
+  <otf-footer-directive></otf-footer-directive>
 </body>
-
 </html>
