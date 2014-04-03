@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -22,6 +23,8 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -313,6 +316,52 @@ public class WorkflowServiceRest {
 		}
 	}
 
+	 @GET
+  @Path("/set/done/{id:[0-9][0-9]*}")
+  @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
+	@ApiOperation(value = "Set record to editing done", notes = "Updates the map record and sets workflow to editing done.")
+  public void setWorkflowToEditingDone(
+		@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
+
+    try {
+
+      MappingService mappingService = new MappingServiceJpa();
+      MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
+      
+    	mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+      
+      MapRecord result = mappingService.updateMapRecord(mapRecord);
+      mappingService.close();
+      return;
+    } catch (Exception e) {
+      throw new WebApplicationException(e);
+    }
+
+  }
+
+	@GET
+  @Path("/set/inProgress/{id:[0-9][0-9]*}")
+  @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
+	@ApiOperation(value = "Set record to editing done", notes = "Updates the map record and sets workflow to editing in progress.")
+  public void setWorkflowToEditingInProgress(
+		@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
+
+    try {
+
+      MappingService mappingService = new MappingServiceJpa();
+      MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
+      
+    	mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+      
+      MapRecord result = mappingService.updateMapRecord(mapRecord);
+      mappingService.close();
+      return;
+    } catch (Exception e) {
+      throw new WebApplicationException(e);
+    }
+
+  }
+  
 	/**
 	 * Returns the records assigned to user.
 	 *

@@ -29,6 +29,8 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 @Entity
 @Table(name = "workflow_tracking_records")
 @Indexed
+// TODO:  Add unique constraints based on the three terminology fields
+// TODO:  Add workflow id (also make unique constraint)
 public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 
 	/** The id. */
@@ -65,7 +67,6 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	@IndexedEmbedded(targetElement = MapRecordJpa.class)
 	private Set<MapRecord> mapRecords = new HashSet<>();
 
-	
 	/**  The assigned users. */
 	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
 	@IndexedEmbedded(targetElement=MapUserJpa.class)

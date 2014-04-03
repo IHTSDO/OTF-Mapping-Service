@@ -1,6 +1,8 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -981,17 +983,35 @@ public class MappingServiceJpa implements MappingService {
     	    editedRecords.put(record.getConceptId(), record);
     	  
     	}
-  }
+    }
+    // handle all lazy initializations
+    for (MapRecord mapRecord : editedRecords.values()) {
+    	for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+    		mapEntry.getMapNotes().size();
+    		mapEntry.getMapAdvices().size();
+    	} 	
+    }
+    // reverse sort chronologically
+    List<MapRecord> sortedEditedRecords = new ArrayList<>(editedRecords.values());
+    Collections.sort(sortedEditedRecords, new Comparator() {
+      public int compare(Object o1, Object o2) {
 
-  	return new ArrayList<MapRecord>(editedRecords.values());
+          long x1 = ((MapRecord) o1).getLastModified();
+          long x2 = ((MapRecord) o2).getLastModified();
+
+          if (x1 != x2) {
+              return new Long(x2 - x1).intValue();
+          } 
+          return 0;
+      }
+  });
+    return sortedEditedRecords;
   }
   
   /* (non-Javadoc)
    * @see org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords(org.ihtsdo.otf.mapping.model.MapUser)
    */
   @Override
-  // TODO confirm return sorted by lastModifiedBy most recent at head
-  // TODO return MapREcordList with an additional field for totalCt
   public int getRecentlyEditedMapRecordCount(Long projectId, String userName, PfsParameter pfsParameter)  throws Exception {
   	
   	MapUser user = getMapUser(userName);
@@ -1018,7 +1038,7 @@ public class MappingServiceJpa implements MappingService {
     			record.getWorkflowStatus() != WorkflowStatus.NEW &&
     			!editedRecords.keySet().contains(record.getConceptId()) ) {
     	  pfsCounter++;
-    	  
+    	  editedRecords.put(record.getConceptId(), record);
     	}
   }
 

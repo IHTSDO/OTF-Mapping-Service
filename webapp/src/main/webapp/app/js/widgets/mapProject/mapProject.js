@@ -11,7 +11,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
         templateUrl: 'js/widgets/mapProject/mapProject.html',
         edit: {}
       });
-  }).controller('MapProjectWidgetCtrl', function($scope, $http, localStorageService){
+  }).controller('MapProjectWidgetCtrl', function($scope, $http, $rootScope, localStorageService){
 	 
 	  // get the project
 	  $scope.project = localStorageService.get('focusProject');
@@ -23,4 +23,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
           
           console.debug($scope.project);
 	  });	
+  	  
+  	  // broadcast page to help mechanism
+  	  $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'mainDashboard'});  
   });
