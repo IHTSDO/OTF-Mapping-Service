@@ -5,6 +5,7 @@ import java.util.Set;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Interface WorkflowTrackingRecord.
  *
@@ -25,6 +26,20 @@ public interface WorkflowTrackingRecord {
 	 * @param id the id
 	 */
 	public void setId(Long id);
+	
+	/**
+	 * Gets the workflow.
+	 *
+	 * @return the workflow
+	 */
+	public Workflow getWorkflow();
+
+	/**
+	 * Sets the workflow.
+	 *
+	 * @param workflow the new workflow
+	 */
+	public void setWorkflow(Workflow workflow);
 	
 	/**
 	 * Sets the terminology id.
@@ -165,4 +180,6 @@ public interface WorkflowTrackingRecord {
 	 * @param mapRecord the map record
 	 */
 	public void removeMapRecord(MapRecord mapRecord);
+
+	
 }
