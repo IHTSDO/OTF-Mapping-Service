@@ -53,6 +53,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   	  		$scope.isFlagsOpen = false;
   		};
   		
+  		// broadcast page to help mechanism  
+  		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
+  		
   		// initialize local variables
   		var recordId = 		$routeParams.recordId; 
   		var currentLocalId = 0;   // used for addition of new entries without hibernate id
@@ -70,6 +73,23 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   	    	  $scope.error = $scope.error + "Could not retrieve map record. ";
   	     
   	      }).then(function() {
+  	      	    // set the workflow to editing in progress
+				console.debug("Setting the workflow to editing in progress.");
+				  $http({
+					  url: root_workflow + "set/inProgress/" + recordId,
+					  dataType: "json",
+					  method: "GET",
+					  headers: {
+						  "Content-Type": "application/json"
+					  }
+				  }).success(function(data) {
+					 $scope.recordError = "";
+				  }).error(function(data) {
+					 $scope.recordError = "Error setting workflow to editing in progress.";
+				  });
+			  
+		    	
+	          }).then(function() {
 
   	    	  // obtain the record project
   	    	 $http({
@@ -155,7 +175,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   		/**
   		 * MAP RECORD FUNCTIONS
   		 */
-  		$scope.saveMapRecord = function() {
+  		$scope.finishMapRecord = function() {
   			
   			///////////////////////////
   			// Group and MapPriority //
@@ -237,11 +257,119 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					  }).error(function(data) {
 						 $scope.recordSuccess = "";
 						 $scope.recordError = "Error saving record.";
+					  }).then(function(data) {
+							console.debug("Setting the workflow to done.");
+							  $http({
+								  url: root_workflow + "set/done/" + recordId,
+								  dataType: "json",
+								  method: "GET",
+								  headers: {
+									  "Content-Type": "application/json"
+								  }
+							  }).success(function(data) {
+								 $scope.recordError = "";
+							  }).error(function(data) {
+								 $scope.recordError = "Error setting workflow to editing done.";
+							  });
+						  
+
+						  
 					  });
 				  
 				  // otherwise, display the errors
 				  } else {
-					  console.debug("Validation failed!");
+					 $scope.recordSuccess = "";
+				  }
+				  
+			  });
+  		};
+  		
+  		$scope.saveMapRecord = function() {
+  			
+  			///////////////////////////
+  			// Group and MapPriority //
+  			///////////////////////////
+  			
+  			// if not group structured project
+  			if ($scope.project.groupStructure == false) {
+  				
+  				// cycle over entries and assign map priority based on position
+  				for (var i = 0; i < $scope.entries.length; i++) {
+  					$scope.entries[i].mapPriority = i+1;
+  				}
+  				
+  				$scope.record.mapEntry = $scope.entries;
+  				
+  			// if group structured project
+  			} else {
+  				
+  				var entries = new Array();
+  				
+  				// cycle over each group bin
+  				for (var i = 0; i < $scope.entries.length; i++) {
+  					
+  					// cycle over entries in each group bin
+  					for (var j = 0; j < $scope.entries[i].length; j++) {
+  						
+  						console.debug("Assigning group and priority to " + i + " " + j);
+  						$scope.entries[i][j].mapGroup = i;
+  						$scope.entries[i][j].mapPriority = j+1;
+  						
+  						entries.push($scope.entries[i][j]);
+  						
+  					}
+  				}
+  				
+  				console.debug("modified:");
+  				console.debug(entries);
+  				
+  				$scope.record.mapEntry = entries;
+  			}
+  			
+  			console.debug("Validating the map record");
+			// validate the record
+			$http({
+				  url: root_validation + "record/validate",
+				  dataType: "json",
+				  data: $scope.record,
+				  method: "POST",
+				  headers: {
+					  "Content-Type": "application/json"
+				  }
+			  }).success(function(data) {
+				  console.debug("validation results:");
+				  console.debug(data);
+				  $scope.validationResult = data;
+			  }).error(function(data) {
+				  $scope.validationResult = null;
+				  console.debug("Failed to validate map record");
+			  }).then(function(data) {
+				
+				  // if no error messages were returned, save the record
+				  if ($scope.validationResult.errors.length == 0)  {
+					  
+					  // assign the current user to the lastModifiedBy field
+					  $scope.record.lastModifiedBy = user;
+					  
+					  $http({
+						  url: root_mapping + "record/update",
+						  dataType: "json",
+						  data: $scope.record,
+						  method: "POST",
+						  headers: {
+							  "Content-Type": "application/json"
+						  }
+					  }).success(function(data) {
+						 $scope.record = data;
+						 $scope.recordSuccess = "Record saved.";
+						 $scope.recordError = "";
+					  }).error(function(data) {
+						 $scope.recordSuccess = "";
+						 $scope.recordError = "Error saving record.";
+					  });
+				  
+				  // otherwise, display the errors
+				  } else {
 					 $scope.recordSuccess = "";
 				  }
 				  
