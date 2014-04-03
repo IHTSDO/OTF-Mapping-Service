@@ -118,7 +118,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                   }]
                                 }
                                 
-                                /*, {
+                                , {
                                   columns: [{
                                     class: 'col-md-12',
                                     widgets: [{
@@ -137,7 +137,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
 	                                      title: "Metadata"
 	                                  }]
                                   }]
-                                }*/]
+                                }]
                         	  
 	
                             };

@@ -82,7 +82,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#computeWorkflow(org.ihtsdo.otf.mapping.model.MapProject)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#	Workflow(org.ihtsdo.otf.mapping.model.MapProject)
 	 */
 	@Override
 	public void computeWorkflow(MapProject project) throws Exception {

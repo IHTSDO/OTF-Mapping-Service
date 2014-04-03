@@ -120,8 +120,8 @@ public class ContentServiceJpa implements ContentService {
 	 * org.ihtsdo.otf.mapping.services.ContentService#getConcept(java.lang.Long)
 	 */
 	@Override
-	public Concept getConcept(Long conceptId) {
-		Concept c = manager.find(ConceptJpa.class, conceptId);
+	public Concept getConcept(Long terminologyId) {
+		Concept c = manager.find(ConceptJpa.class, terminologyId);
 		return c;
 	}
 
@@ -183,7 +183,7 @@ public class ContentServiceJpa implements ContentService {
       List<TreePosition> treePositions = query.getResultList();
       List<Concept> concepts = new ArrayList<> ();
       for (TreePosition treePosition : treePositions) {
-        concepts.add(getConcept(treePosition.getConceptId(),terminology,terminologyVersion));
+        concepts.add(getConcept(treePosition.getTerminologyId(),terminology,terminologyVersion));
       }
       return concepts;
     } catch (NoResultException e) {
@@ -437,20 +437,20 @@ public class ContentServiceJpa implements ContentService {
 	 * @see org.ihtsdo.otf.mapping.services.ContentService#findTreePositionsForConcept(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public SearchResultList findTreePositionsForConcept(String conceptId,
+	public SearchResultList findTreePositionsForConcept(String terminologyId,
 			String terminology, String terminologyVersion) {
 		javax.persistence.Query query =
 				manager
 				.createQuery("select tp.id, tp.ancestorPath from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId");
 		query.setParameter("terminology", terminology);
 		query.setParameter("terminologyVersion", terminologyVersion);
-		query.setParameter("conceptId", conceptId);
+		query.setParameter("terminologyId", terminologyId);
 		SearchResultList searchResultList = new SearchResultListJpa();
 		for (Object result : query.getResultList()) {
 			Object[] values = (Object[]) result;
 			SearchResult searchResult = new SearchResultJpa();
 			searchResult.setId(Long.parseLong(values[0].toString()));
-			searchResult.setTerminologyId(conceptId);
+			searchResult.setTerminologyId(terminologyId);
 			searchResult.setTerminology(terminology);
 			searchResult.setTerminologyVersion(terminologyVersion);
 			searchResult.setValue(values[1].toString());
