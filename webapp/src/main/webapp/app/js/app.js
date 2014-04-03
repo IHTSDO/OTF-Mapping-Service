@@ -11,6 +11,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.mapRecord',
                                                      'mapProjectApp.widgets.mapEntry',  
                                                      'mapProjectApp.widgets.assignedList', 
+                                                     'mapProjectApp.widgets.editedList',  
                                                      'mapProjectApp.widgets.workAvailable',
                                                      'LocalStorageModule',
                                                      'ngCookies'/*,
@@ -118,14 +119,22 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                   columns: [{
                                     class: 'col-md-12',
                                     widgets: [{
-	                                      type: "metadataList",
-	                                      config: {
-	                                          terminology: "SNOMEDCT"
-	                                      },
-	                                      title: "Metadata"
+	                                      type: "editedList",
+	                                      title: "Recently Edited"
 	                                  }]
                                   }]
-                                }]
+                                }, {
+                                    columns: [{
+                                        class: 'col-md-12',
+                                        widgets: [{
+    	                                      type: "metadataList",
+    	                                      config: {
+    	                                          terminology: "SNOMEDCT"
+    	                                      },
+    	                                      title: "Metadata"
+    	                                  }]
+                                      }]
+                                    }]
                         	  
 	
                             };
@@ -215,20 +224,7 @@ mapProjectApp.config(['$routeProvider',
 	  });
 		
 	  
-	  //////////////////////////////
-	  // CONTENT SERVICES
-	  //////////////////////////////
-	  
-	  
-	  
-	  
-	  //////////////////////////////
-	  // QUERY SERVICES
-	  //////////////////////////////
 
-	  //////////////////////////////
-	  // METADATA SERVICES
-	  //////////////////////////////
 
 	  
 	  ///////////////////////////////

@@ -197,6 +197,8 @@ angular.module('adf')
 	          		  return true;
 	          	  } else if (widget == 'assignedList' && $scope.currentRole.value > 1) {
 	          		  return true;
+	          	  } else if (widget == 'editedList' && $scope.currentRole.value > 1) {
+	          		  return true;
 	          	  }
 	          	  else if (widget = "availableWork") return true;
 	        	  return false;

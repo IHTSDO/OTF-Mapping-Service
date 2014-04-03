@@ -11,7 +11,7 @@ angular.module('mapProjectApp.widgets.mapProjectList', ['adf.provider'])
         templateUrl: 'js/widgets/mapProjectList/mapProjectList.html',
         edit: {}
       });
-  }).controller('mpCtrl', function($scope, $http){
+  }).controller('mpCtrl', function($scope, $rootScope, $http){
 	  // initialize as empty to indicate still initializing database connection
 	  $scope.projects = [];
       $http({
@@ -27,4 +27,7 @@ angular.module('mapProjectApp.widgets.mapProjectList', ['adf.provider'])
     	  $scope.error = "Error";
       });
 
-	    });
+      // broadcast page to help mechanism
+  	  $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'mainDashboard'});  
+  
+  });
