@@ -241,7 +241,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); // format for
       // logging
       try {
-      /**
 
       // Prepare sorted input files
       File sortedFileDir = new File(coreInputDir, "/RF2-sorted-temp/");
@@ -357,7 +356,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
                   + getElapsedTime(startTime).toString() + "s" + " (Ended at "
                   + ft.format(new Date()) + ")");
         }
-*/
+
         // creating tree positions
         // first get isaRelType from metadata
         MetadataService metadataService = new MetadataServiceJpa();
