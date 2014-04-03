@@ -110,6 +110,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			
 			/* Create a workflow tracking record and persist it */
 			WorkflowTrackingRecord trackingRecord = new WorkflowTrackingRecordJpa();
+			trackingRecord.setWorkflow(workflow);;
 			trackingRecord.setTerminology(concept.getTerminology());
 			trackingRecord.setTerminologyId(concept.getTerminologyId());
 			trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
@@ -459,6 +460,22 @@ public class WorkflowServiceJpa implements WorkflowService {
 
 	}
 	
+	
+	@SuppressWarnings("unchecked")
+	public List<WorkflowTrackingRecord> getAvailableTrackingRecordsForWorkflowAndUser(Long workflowId, Long userId) {
+		
+		// return workflow tracking records where:
+		// - this user is not in the list of assigned users
+		// - the list of assigned users has 0 or 1 elements
+		// - the workfowId matches the id of this workflow
+		 javax.persistence.Query query = manager.createQuery(
+					"SELECT tr FROM WorkflowTrackingRecordJpa tr "
+				+ 	"WHERE NOT EXISTS (from tr.assignedUsers as user where user.id = " + userId.toString() 
+				+	 ") AND size(tr.assignedUsers) < 2 AND workflow_id = " + workflowId.toString());
+		
+		return (List<WorkflowTrackingRecord>) query.getResultList();
+	}
+	
 	// TODO DIscuss model change to have WorkflowTrackingRecords directly connected to Workflow
 	// 		i.e. WorkflowTrackingRecord->Workflow (analogous to Record->Entry)
 	// 		this would enable searching and sorting in the hibernate environment
@@ -469,31 +486,12 @@ public class WorkflowServiceJpa implements WorkflowService {
 	public SearchResultList findAvailableWork(Workflow workflow,
 			MapUser mapUser, PfsParameter pfsParameter) {
 		
+		System.out.println("find available work for " + workflow.getId().toString() + ", " + mapUser.getId().toString());
+		
 		// create return object
 		SearchResultList results = new SearchResultListJpa();
 		
-		
-		//////////////
-		// TESTING ///
-		//////////////
-		
-		List<WorkflowTrackingRecord> trackingRecords = new ArrayList<>();
-		
-		javax.persistence.Query query;
-		
-		/*for (WorkflowTrackingRecord tr : trackingRecords) {
-			System.out.println("  " + tr.getId().toString() + " - " + tr.getAssignedUsers().size());
-		}*/
-
-		// from records where users have been assigned, return those where user count < 2 and this user has not been assigned
-		query = manager.createQuery("SELECT tr FROM WorkflowTrackingRecordJpa tr WHERE NOT EXISTS (from tr.assignedUsers as user where user.id = " + mapUser.getId().toString() + ") AND size(tr.assignedUsers) < 2");
-		System.out.println("IN user query returned " + Integer.toString(query.getResultList().size()) + " results");
-		
-		trackingRecords.addAll(query.getResultList());
-		
-		System.out.println(Integer.toString(trackingRecords.size()) + " available tracking records found");
-		
-				//new ArrayList<WorkflowTrackingRecord>(workflow.getTrackingRecordsForUnmappedInScopeConcepts());
+		List<WorkflowTrackingRecord> trackingRecords = getAvailableTrackingRecordsForWorkflowAndUser(workflow.getId(), mapUser.getId());
 		
 		// sort list of tracking records (see TODO above)
 		Collections.sort(
@@ -531,7 +529,8 @@ public class WorkflowServiceJpa implements WorkflowService {
 			
 			WorkflowTrackingRecord trackingRecord = trackingRecords.get(i);
 			
-							
+						
+			// currently a redundant check
 			if (!trackingRecord.getAssignedUsers().contains(mapUser) &&
 					trackingRecord.getAssignedUsers().size() < 2) {
 					

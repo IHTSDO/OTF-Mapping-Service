@@ -22,7 +22,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.batchSize = $scope.batchSizes[2];
 	
 	// pagination variables
-	$scope.conceptsPerPage = 20;
+	$scope.conceptsPerPage = 10;
 
 	// retrieve focus project, current user, and user list
 	$scope.focusProject = localStorageService.get('focusProject');
@@ -70,7 +70,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": (page-1)*$scope.conceptsPerPage,
-			 	 	 "maxResults": $scope.conceptsPerPage, 
+			 	 	 "maxResults": $scope.conceptsPerPage-1, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 
@@ -142,8 +142,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			var trackingRecords = data.searchResult;
 			var conceptListValid = true;
 			
-			// if user is viewing concepts (TODO add), check that first result matches first displayed result
-			// TODO More robust check
+			// if user is viewing concepts , check that first result matches first displayed result
 			if (isConceptListOpen == true) {
 				for (var i = 0; i < $scope.$scope.trackingRecordPerPage; i++) {
 					if (trackingRecords[i].id != $scope.availableWork[i].id) {
