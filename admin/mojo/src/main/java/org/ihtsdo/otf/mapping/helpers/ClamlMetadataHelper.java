@@ -146,6 +146,12 @@ public class ClamlMetadataHelper {
         defaultCharacteristicTypeConcept);
     manager.persist(defaultCharacteristicTypeConcept);
 
+    Concept isaConcept =
+        createNewActiveConcept("" + metadataCounter++, terminology,
+            terminologyVersion, "Isa", effectiveTime);
+    conceptMap.put("isa", isaConcept);
+    manager.persist(isaConcept);
+
     //
     // Go back and fill in missing references
     // i.e. because "defaultModule" didn't exist when
@@ -334,12 +340,6 @@ public class ClamlMetadataHelper {
             terminologyVersion, "Relationship type", effectiveTime);
     conceptMap.put("relationshipType", relationshipTypeConcept);
     manager.persist(relationshipTypeConcept);
-
-    Concept isaConcept =
-        createNewActiveConcept("" + metadataCounter++, terminology,
-            terminologyVersion, "Isa", effectiveTime);
-    conceptMap.put("isa", isaConcept);
-    manager.persist(isaConcept);
 
     Concept asteriskToDaggerConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
