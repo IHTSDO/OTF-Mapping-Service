@@ -365,9 +365,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 				
 				ContentService contentService = new ContentServiceJpa();
 				getLog().info("Start creating tree positions.");
-                for (String root: metadataService.getTreeRoots(terminology, version)) {
+                for (Concept root: contentService.getConceptTreeRoots(terminology, version)) {
 				contentService.computeTreePositions(terminology, version,
-						isaRelType, root);
+						isaRelType, root.getTerminologyId());
                 }
                 contentService.close();
 				

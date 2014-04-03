@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -148,6 +149,47 @@ public class ContentServiceJpa implements ContentService {
           "ContentService.getConcept(): Concept query for terminologyId = "
               + terminologyId + ", terminology = " + terminology
               + ", terminologyVersion = " + terminologyVersion
+              + " returned no results!");
+      return null;
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.ContentService#getConceptTreeRoots(java
+   * .lang.String, java.lang.String)
+   */
+  @Override
+  public List<Concept> getConceptTreeRoots(String terminology,
+    String terminologyVersion) throws Exception {
+
+    // find concepts with blank ancestor positions
+    javax.persistence.Query query =
+        manager.createQuery("select t from TreePositionJpa t "
+            + "where t.ancestorPath = '' and terminology = :terminology "
+            + "and terminologyVersion = :terminologyVersion ");
+
+    /*
+     * Try to retrieve the single expected result If zero or more than one
+     * result are returned, log error and set result to null
+     */
+    try {
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+      @SuppressWarnings("unchecked")
+      List<TreePosition> treePositions = query.getResultList();
+      List<Concept> concepts = new ArrayList<> ();
+      for (TreePosition treePosition : treePositions) {
+        concepts.add(getConcept(treePosition.getConceptId(),terminology,terminologyVersion));
+      }
+      return concepts;
+    } catch (NoResultException e) {
+      // log result and return null
+      Logger.getLogger(this.getClass()).warn(
+          "ContentService.getConceptTreeRoots(): Concept query for terminology = "
+              + terminology + ", terminologyVersion = " + terminologyVersion
               + " returned no results!");
       return null;
     }
@@ -509,10 +551,8 @@ public class ContentServiceJpa implements ContentService {
     EntityTransaction tx = manager.getTransaction();
     tx.begin();
 
-    Queue<Map<Concept, TreePosition>> conceptQueue =
-        new LinkedList<>();
-    Set<Map<Concept, TreePosition>> conceptSet =
-        new HashSet<>();
+    Queue<Map<Concept, TreePosition>> conceptQueue = new LinkedList<>();
+    Set<Map<Concept, TreePosition>> conceptSet = new HashSet<>();
     int tpCounter = 0;
 
     // get the concept and add it as first element of concept list
@@ -597,8 +637,7 @@ public class ContentServiceJpa implements ContentService {
               }
             }
             if (!setContainsChild) {
-              Map<Concept, TreePosition> lhm =
-                  new HashMap<>();
+              Map<Concept, TreePosition> lhm = new HashMap<>();
               lhm.put(c_rel, tp);
               conceptSet.add(lhm);
               conceptQueue.add(lhm);
@@ -635,4 +674,5 @@ public class ContentServiceJpa implements ContentService {
   public void setTransactionPerOperation(boolean transactionPerOperation) {
     this.transactionPerOperation = transactionPerOperation;
   }
+
 }

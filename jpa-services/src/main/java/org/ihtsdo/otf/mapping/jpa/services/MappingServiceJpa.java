@@ -886,14 +886,6 @@ public class MappingServiceJpa implements MappingService {
 		}
 
 	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#computeMapAdviceAndMapRelationsForMapRecord(org.ihtsdo.otf.mapping.model.MapRecord)
-	 */
-	@SuppressWarnings({
-		"unused", "unchecked", "rawtypes"
-	})
-	
 	
 	/**
 	 * Takes a map entry and computes any auto-generated advice for its entries
@@ -965,7 +957,8 @@ public class MappingServiceJpa implements MappingService {
         .add(AuditEntity.relatedId("owner").eq(user.getId()))
         .addOrder(AuditEntity.property("lastModified").desc());
 
-    List<Object[]> allRevisions = (List<Object[]>) query.getResultList();
+    @SuppressWarnings("unchecked")
+    List<Object[]> allRevisions = query.getResultList();
     for (Object[] revision : allRevisions) {
     	MapRecord record = (MapRecord)revision[0];
     	// used to force reading the graph
@@ -978,7 +971,7 @@ public class MappingServiceJpa implements MappingService {
     	  editedRecords.put(record.getConceptId(), record);
   }
 
-  	return new ArrayList<MapRecord>(editedRecords.values());
+  	return new ArrayList<>(editedRecords.values());
   }
   
 	// //////////////////////////////////
