@@ -8,7 +8,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		title: 'Assigned To Me',
 		description: 'Displays a list of assigned records',
 		controller: 'assignedListCtrl',
-		templateUrl: 'js/widgets/assignedList/assignedList2.html',
+		templateUrl: 'js/widgets/assignedList/assignedList.html',
 		edit: {}
 	});
 }).controller('assignedListCtrl', function($scope, $rootScope, $http, localStorageService){
@@ -19,7 +19,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.focusProject = localStorageService.get('focusProject');
 
 	// pagination variables
-	$scope.conceptsPerPage = 10;
+	$scope.conceptsPerPage = 3;
 	
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
@@ -63,7 +63,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
-			$scope.nAssignedRecords = data.count;
+			$scope.nAssignedRecords = data.totalCount;
 			$scope.assignedRecords = data.mapRecord;
 			console.debug($scope.assignedRecords);
 		}).error(function(error) {

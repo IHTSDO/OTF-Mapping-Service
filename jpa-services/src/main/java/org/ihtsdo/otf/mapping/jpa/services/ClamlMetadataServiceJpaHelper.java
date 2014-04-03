@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,10 +69,8 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getModules(String terminology, String version)
     throws Exception {
-    Map<Long, String> map = new HashMap<>();
-
     ContentService contentService = new ContentServiceJpa();
-    String rootId = "";
+    String rootId = null;
     SearchResultList results =
         contentService.findConcepts("Module", new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
@@ -84,19 +81,10 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
         break;
       }
     }
+    if (rootId == null)
+      throw new Exception("Module concept cannot be found.");
 
-    Set<Concept> descendants =
-        contentService.getDescendants(rootId, terminology, version,
-            getIsaRelationshipType(terminology, version));
-
-    for (Concept descendant : descendants) {
-      if (descendant.isActive()) {
-        map.put(new Long(descendant.getTerminologyId()),
-            descendant.getDefaultPreferredName());
-      }
-    }
-    contentService.close();
-    return map;
+    return getDescendantMap(contentService, rootId, terminology, version);
   }
 
   /*
@@ -149,7 +137,6 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getSimpleMapRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
-
     return new HashMap<>();
   }
 
@@ -163,7 +150,22 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getSimpleRefSets(String terminology, String version)
     throws NumberFormatException, Exception {
-    return new HashMap<>();
+    ContentService contentService = new ContentServiceJpa();
+    String rootId = null;
+    SearchResultList results =
+        contentService.findConcepts("Simple refsets", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Simple refsets")) {
+        rootId = result.getTerminologyId();
+        break;
+      }
+    }
+    if (rootId == null)
+      throw new Exception("Simple refsets concept cannot be found.");
+
+    return getDescendantMap(contentService, rootId, terminology, version);
   }
 
   /*
@@ -189,10 +191,8 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getDefinitionStatuses(String terminology,
     String version) throws NumberFormatException, Exception {
-    Map<Long, String> map = new HashMap<>();
-
     ContentService contentService = new ContentServiceJpa();
-    String rootId = "";
+    String rootId = null;
     SearchResultList results =
         contentService.findConcepts("Definition status", new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
@@ -203,19 +203,10 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
         break;
       }
     }
+    if (rootId == null)
+      throw new Exception("Definition status concept cannot be found.");
 
-    Set<Concept> descendants =
-        contentService.getDescendants(rootId, terminology, version,
-            getIsaRelationshipType(terminology, version));
-
-    for (Concept descendant : descendants) {
-      if (descendant.isActive()) {
-        map.put(new Long(descendant.getTerminologyId()),
-            descendant.getDefaultPreferredName());
-      }
-    }
-    contentService.close();
-    return map;
+    return getDescendantMap(contentService, rootId, terminology, version);
   }
 
   /*
@@ -228,10 +219,8 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getDescriptionTypes(String terminology,
     String version) throws NumberFormatException, Exception {
-    Map<Long, String> map = new HashMap<>();
-
     ContentService contentService = new ContentServiceJpa();
-    String rootId = "";
+    String rootId = null;
     SearchResultList results =
         contentService.findConcepts("Description type", new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
@@ -242,19 +231,10 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
         break;
       }
     }
+    if (rootId == null)
+      throw new Exception("Description type concept cannot be found.");
 
-    Set<Concept> descendants =
-        contentService.getDescendants(rootId, terminology, version,
-            getIsaRelationshipType(terminology, version));
-
-    for (Concept descendant : descendants) {
-      if (descendant.isActive()) {
-        map.put(new Long(descendant.getTerminologyId()),
-            descendant.getDefaultPreferredName());
-      }
-    }
-    contentService.close();
-    return map;
+    return getDescendantMap(contentService, rootId, terminology, version);
   }
 
   /*
@@ -267,10 +247,8 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getCaseSignificances(String terminology,
     String version) throws NumberFormatException, Exception {
-    Map<Long, String> map = new HashMap<>();
-
     ContentService contentService = new ContentServiceJpa();
-    String rootId = "";
+    String rootId = null;
     SearchResultList results =
         contentService.findConcepts("Case significance", new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
@@ -281,18 +259,10 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
         break;
       }
     }
-    Set<Concept> descendants =
-        contentService.getDescendants(rootId, terminology, version,
-            getIsaRelationshipType(terminology, version));
+    if (rootId == null)
+      throw new Exception("Case significance concept cannot be found.");
 
-    for (Concept descendant : descendants) {
-      if (descendant.isActive()) {
-        map.put(new Long(descendant.getTerminologyId()),
-            descendant.getDefaultPreferredName());
-      }
-    }
-    contentService.close();
-    return map;
+    return getDescendantMap(contentService, rootId, terminology, version);
   }
 
   /*
@@ -305,11 +275,9 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getRelationshipTypes(String terminology,
     String version) throws NumberFormatException, Exception {
-    Map<Long, String> map = new HashMap<>();
-
     // find all active descendants of 106237007
     ContentService contentService = new ContentServiceJpa();
-    String rootId = "";
+    String rootId = null;
     SearchResultList results =
         contentService.findConcepts("Relationship type", new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
@@ -320,18 +288,10 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
         break;
       }
     }
-    Set<Concept> descendants =
-        contentService.getDescendants(rootId, terminology, version,
-            getIsaRelationshipType(terminology, version));
+    if (rootId == null)
+      throw new Exception("Relationship type concept cannot be found.");
 
-    for (Concept descendant : descendants) {
-      if (descendant.isActive()) {
-        map.put(new Long(descendant.getTerminologyId()),
-            descendant.getDefaultPreferredName());
-      }
-    }
-    contentService.close();
-    return map;
+    return getDescendantMap(contentService, rootId, terminology, version);
   }
 
   /*
@@ -365,7 +325,22 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getRelationshipCharacteristicTypes(
     String terminology, String version) throws NumberFormatException, Exception {
-    return new HashMap<>();
+    ContentService contentService = new ContentServiceJpa();
+    String rootId = null;
+    SearchResultList results =
+        contentService.findConcepts("Characteristic type", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Characteristic type")) {
+        rootId = result.getTerminologyId();
+        break;
+      }
+    }
+    if (rootId == null)
+      throw new Exception("Characteristic type concept cannot be found.");
+
+    return getDescendantMap(contentService, rootId, terminology, version);
   }
 
   /*
@@ -378,10 +353,8 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getRelationshipModifiers(String terminology,
     String version) throws NumberFormatException, Exception {
-    Map<Long, String> map = new HashMap<>();
-
     ContentService contentService = new ContentServiceJpa();
-    String rootId = "";
+    String rootId = null;
     SearchResultList results =
         contentService.findConcepts("Modifier", new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
@@ -392,8 +365,71 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
         break;
       }
     }
+    if (rootId == null)
+      throw new Exception("Modifier concept cannot be found.");
+
+    return getDescendantMap(contentService, rootId, terminology, version);
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#close()
+   */
+  @Override
+  public void close() {
+    // no-op - this is just helper class
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologies()
+   */
+  @Override
+  public List<String> getTerminologies() {
+    // no-op - this is just helper class
+    return null;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String)
+   */
+  @Override
+  public List<String> getVersions(String terminology) {
+    // no-op - this is just helper class
+    return null;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang.String)
+   */
+  @Override
+  public String getLatestVersion(String terminology) {
+    // no-op - this is just helper class
+    return null;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions()
+   */
+  @Override
+  public Map<String, String> getTerminologyLatestVersions() {
+    // no-op - this is just helper class
+    return null;
+  }
+
+
+  /**
+   * Returns the descendant map for the specified parameters.
+   * 
+   * @param contentService the content service
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the descendant map
+   */
+  private Map<Long, String> getDescendantMap(ContentService contentService,
+    String terminologyId, String terminology, String version) throws Exception {
+    Map<Long, String> map = new HashMap<>();
     Set<Concept> descendants =
-        contentService.getDescendants(rootId, terminology, version,
+        contentService.getDescendants(terminologyId, terminology, version,
             getIsaRelationshipType(terminology, version));
 
     for (Concept descendant : descendants) {
@@ -405,41 +441,4 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
     contentService.close();
     return map;
   }
-
-  @Override
-  public void close() {
-    // no-op - this is just helper class
-  }
-
-  @Override
-  public List<String> getTerminologies() {
-    // no-op - this is just helper class
-    return null;
-  }
-
-  @Override
-  public List<String> getVersions(String terminology) {
-    // no-op - this is just helper class
-    return null;
-  }
-
-  @Override
-  public String getLatestVersion(String terminology) {
-    // no-op - this is just helper class
-    return null;
-  }
-
-  @Override
-  public Map<String, String> getTerminologyLatestVersions() {
-    // no-op - this is just helper class
-    return null;
-  }
-
-  @Override
-  public List<String> getTreeRoots(String terminology, String version)
-    throws Exception {
-    List<String> list = new ArrayList<>();
-    return list;
-  }
-
 }

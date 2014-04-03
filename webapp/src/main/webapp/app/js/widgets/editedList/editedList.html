@@ -1,0 +1,34 @@
+<pagination total-items="nRecords" page="recordPage"
+  class="pagination-sm"
+  num-pages="numRecordPages"
+  on-select-page="retrieveEditedWork(page)"></pagination>
+
+{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
+
+<table class="table">
+
+	<thead>
+		<tr>
+			<th style="width: 10%; padding: 5px;"></th>
+			<th style="width: 15%; padding: 5px;">Id</th>
+			<th style="width: 30%; padding: 5px;">Name</th>
+            <th style="width: 35%; padding: 5px;">Target Id</th>
+            <th style="width: 10%; padding: 5px;">Last Modified</th>
+
+		</tr>
+
+	</thead>
+
+	<tbody>
+
+		<tr ng-repeat="record in editedRecords">
+
+			<td style="width: 10%; padding: 5px;"><a href="#/record/conceptId/{{record.conceptId}}">View</a></td>
+			<td>{{record.conceptId}}</td>
+			<td>{{record.conceptName}}</td>
+            <td ng-show="record.mapEntry[1] != null && record.mapEntry[1].targetId != ''">multiple ids</td>
+            <td ng-show="record.mapEntry[1] == null">{{record.mapEntry[0].targetId}}</td>
+            <td>{{record.lastModified  | date:'MM-dd-yyyy'}}</td>
+	</tbody>
+
+</table>
