@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -415,20 +414,7 @@ public class MetadataServiceJpa implements MetadataService {
 		}
 	}
 
-    /* (non-Javadoc)
-     * @see org.ihtsdo.otf.mapping.services.MetadataService#getTreeRoots(java.lang.String, java.lang.String)
-     */
-    @Override
-    public List<String> getTreeRoots(String terminology, String version)
-        throws Exception {
-      if (helperMap.containsKey(terminology)) {
-        return helperMap.get(terminology).getTreeRoots(terminology,version);
-      } else {
-          // return an empty map
-          return new ArrayList<>();
-      }
-    }
-    
+
     /*
 	 * (non-Javadoc)
 	 * 

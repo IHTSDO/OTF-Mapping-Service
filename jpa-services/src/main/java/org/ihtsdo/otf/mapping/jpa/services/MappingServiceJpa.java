@@ -888,14 +888,6 @@ public class MappingServiceJpa implements MappingService {
 		}
 
 	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#computeMapAdviceAndMapRelationsForMapRecord(org.ihtsdo.otf.mapping.model.MapRecord)
-	 */
-	@SuppressWarnings({
-		"unused", "unchecked", "rawtypes"
-	})
-	
 	
 	/**
 	 * Takes a map entry and computes any auto-generated advice for its entries
