@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -326,7 +325,22 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
   @Override
   public Map<Long, String> getRelationshipCharacteristicTypes(
     String terminology, String version) throws NumberFormatException, Exception {
-    return new HashMap<>();
+    ContentService contentService = new ContentServiceJpa();
+    String rootId = null;
+    SearchResultList results =
+        contentService.findConcepts("Characteristic type", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Characteristic type")) {
+        rootId = result.getTerminologyId();
+        break;
+      }
+    }
+    if (rootId == null)
+      throw new Exception("Characteristic type concept cannot be found.");
+
+    return getDescendantMap(contentService, rootId, terminology, version);
   }
 
   /*
@@ -357,41 +371,50 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
     return getDescendantMap(contentService, rootId, terminology, version);
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#close()
+   */
   @Override
   public void close() {
     // no-op - this is just helper class
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologies()
+   */
   @Override
   public List<String> getTerminologies() {
     // no-op - this is just helper class
     return null;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String)
+   */
   @Override
   public List<String> getVersions(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang.String)
+   */
   @Override
   public String getLatestVersion(String terminology) {
     // no-op - this is just helper class
     return null;
   }
 
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions()
+   */
   @Override
   public Map<String, String> getTerminologyLatestVersions() {
     // no-op - this is just helper class
     return null;
   }
 
-  @Override
-  public List<String> getTreeRoots(String terminology, String version)
-    throws Exception {
-    List<String> list = new ArrayList<>();
-    return list;
-  }
 
   /**
    * Returns the descendant map for the specified parameters.
