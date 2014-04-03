@@ -12,6 +12,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.mapEntry',  
                                                      'mapProjectApp.widgets.assignedList', 
                                                      'mapProjectApp.widgets.workAvailable',
+                                                     'mapProjectApp.widgets.terminologyBrowser',
                                                      'LocalStorageModule',
                                                      'ngCookies'/*,
                                                      'textAngular'*/
@@ -84,7 +85,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                           var currentUser = localStorageService.get('currentUser');
                           var currentRole = localStorageService.get('currentRole');
                           
-                          if (!model && currentRole.value >= 3) { // lead or higher privledge
+                          if (!model) { // lead or higher privledge
                             // set default model for demo purposes
                         	model = {
                         			  
@@ -114,7 +115,9 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
 	                                      title: "Assigned to Me"
 	                                  }]
                                   }]
-                                }, {
+                                }
+                                
+                                /*, {
                                   columns: [{
                                     class: 'col-md-12',
                                     widgets: [{
@@ -125,25 +128,28 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
 	                                      title: "Metadata"
 	                                  }]
                                   }]
-                                }]
+                                }*/]
                         	  
 	
                             };
                           } else if (!model) { // viewer or specialist
                               // set default model for demo purposes
                               model = {
-                                structure: "4-8",                          
+                                structure: "6-6",                          
                               rows: [{
-                                  columns: [{
-                                    class: 'col-md-4',
-                                    widgets: [{
-                                        type: "mapProjectList",
-                                        config: {},
-                                        title: "Map Projects"
+                            	  columns: [{
+                                      class: 'col-md-6',
+                                      widgets: [{
+  	                                      type: "terminologyBrowser",
+  	                                      config: {
+  	                                          terminology: "ICD10",
+  	                                          terminologyVersion: "2010"                	 
+  	                                      },
+  	                                      title: "ICD10 Browser"
+  	                                  }]
                                     }]
                                   }]
-                                }]
-                              };
+                                }
                             }
                           $scope.name = name;
                           $scope.model = model;
