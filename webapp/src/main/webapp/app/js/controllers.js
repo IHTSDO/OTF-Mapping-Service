@@ -57,6 +57,8 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
       console.debug("Dashboard change detected by MapRecordDashboard");
       localStorageService.set(name, model);
     });
+    
+
   });
 
 //////////////////////////////
@@ -72,6 +74,9 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	// broadcast user/role information clearing to rest of app
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', newvalue: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentRole', newvalue: null});  
+	
+	// broadcast page to help mechanism
+	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
 	
 	// set all local variables to null
 	$scope.user = null;
@@ -205,8 +210,8 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 /*
  * Controller for retrieving and displaying records associated with a concept
  */
-mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams', '$sce', '$location', 'localStorageService', 
-   function ($scope, $http, $routeParams, $sce, $location, localStorageService) {
+mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams', '$sce', '$rootScope', '$location', 'localStorageService', 
+   function ($scope, $http, $routeParams, $sce, $rootScope, $location, localStorageService) {
 	
 	// scope variables
 	$scope.error = "";		// initially empty
@@ -228,6 +233,11 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		  $scope.focusProject = parameters.focusProject;
 		  $scope.filterRecords();
 	  });	
+	  
+
+      // broadcast page to help mechanism
+      $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'concept'});
+
 	
 	// retrieve projects information   
 	$http({
@@ -324,6 +334,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
     		    		  }).success(function(data) {
     		    			  	  console.debug(data);
     		    		          $scope.concept.children = data.searchResult;
+    		    		 
     		    		  }).error(function(error) {
     		    		    	  $scope.error = $scope.error + "Could not retrieve Concept children. ";    
     		    		  });
@@ -1421,6 +1432,8 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
           $location.path("record/projectId/" + parameters.focusProject.id);
 	  });	
 	  
+  	  // broadcast page to help mechanism
+  	  $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'records'});
 	  
  
   
@@ -1654,9 +1667,13 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 }]);
 
 mapProjectAppControllers.controller('MapProjectDetailCtrl', 
-		['$scope', '$http', '$routeParams', '$sce', 'localStorageService',
-		 function ($scope, $http, $routeParams, $sce, localStorageService) {
-					
+		['$scope', '$http', '$routeParams', '$sce', '$rootScope', 'localStorageService',
+		 function ($scope, $http, $routeParams, $sce, $rootScope, localStorageService) {
+			
+		  	  // broadcast page to help mechanism
+		  	  $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'project'});
+			  
+		
 			// retrieve project information
 			 $http({
 		        url: root_mapping + "project/id/" + $routeParams.projectId,
@@ -1771,7 +1788,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 		      
 		      });
 			
-
+			
 		
 			// function to return trusted html code (for tooltip content)
 			$scope.to_trusted = function(html_code) {
@@ -2024,6 +2041,12 @@ mapProjectAppControllers.directive('otfHeaderDirective', ['$rootScope', 'localSt
         		console.debug("HEADER: Detected change in map projects");
         		scope.mapProjects = localStorageService.get('mapProjects');		
         	});
+        	
+        	scope.$on('localStorageModule.notification.page', function(event, parameters) { 	
+        		console.debug("HEADER:  Detected change in page");
+        		scope.page = parameters.newvalue;
+
+        	});	
         	
         	// retrieve local variables on header load or refresh
         	scope.currentUser = 	localStorageService.get('currentUser'); 

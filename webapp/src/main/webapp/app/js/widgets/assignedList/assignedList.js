@@ -50,7 +50,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": (page-1)*$scope.conceptsPerPage,
-			 	 	 "maxResults": $scope.conceptsPerPage, 
+			 	 	 "maxResults": $scope.conceptsPerPage-1, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 		
@@ -63,7 +63,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
-			$scope.nAssignedRecords = 4;
+			$scope.nAssignedRecords = data.totalCount;
 			$scope.assignedRecords = data.mapRecord;
 			console.debug($scope.assignedRecords);
 		}).error(function(error) {

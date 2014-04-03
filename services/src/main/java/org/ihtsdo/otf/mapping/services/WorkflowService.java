@@ -179,4 +179,5 @@ public interface WorkflowService {
 	 */
 	public SearchResultList findAvailableWork(Workflow workflow, MapUser mapUser,
 			PfsParameter pfsParameter);
+	
 }

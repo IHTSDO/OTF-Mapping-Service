@@ -106,7 +106,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		validationResult.merge(performUniversalValidationChecks(mapRecord));
 		validationResult.merge(validateTargetCodes(mapRecord));
 		
-		mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
 		return validationResult;
 	}
 	
