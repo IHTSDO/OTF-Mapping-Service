@@ -222,13 +222,4 @@ public interface MetadataService {
 	public Map<Long, String> getRelationshipModifiers(String terminology,
 		String version) throws Exception;
 
-	/**
-	 * Returns the tree roots.
-	 *
-	 * @param terminology the terminology
-	 * @param version the version
-	 * @return the tree roots
-	 * @throws Exception the exception
-	 */
-	public List<String> getTreeRoots(String terminology, String version) throws Exception;
 }

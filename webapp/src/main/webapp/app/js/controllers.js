@@ -103,6 +103,9 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', newvalue: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentRole', newvalue: null});  
 
+	// broadcast page to help mechanism
+	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
+	
 	// set all local variables to null
 	$scope.user = null;
 	$scope.users = null;
@@ -235,8 +238,8 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 /*
  * Controller for retrieving and displaying records associated with a concept
  */
-mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams', '$sce', '$location', 'localStorageService', 
-                                                              function ($scope, $http, $routeParams, $sce, $location, localStorageService) {
+mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams', '$sce', '$rootScope', '$location', 'localStorageService', 
+   function ($scope, $http, $routeParams, $sce, $rootScope, $location, localStorageService) {
 
 	// scope variables
 	$scope.error = "";		// initially empty
@@ -259,6 +262,11 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		$scope.filterRecords();
 	});	
 
+
+      // broadcast page to help mechanism
+      $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'concept'});
+
+	
 	// retrieve projects information   
 	$http({
 		url: root_mapping + "project/projects",
@@ -354,6 +362,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				}).success(function(data) {
 					console.debug(data);
 					$scope.concept.children = data.searchResult;
+    		    		 
 				}).error(function(error) {
 					$scope.error = $scope.error + "Could not retrieve Concept children. ";    
 				});
@@ -1450,10 +1459,12 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		console.debug("ProjectRecordCtrl:  Detected change in focus project");      
 		$location.path("record/projectId/" + parameters.focusProject.id);
 	});	
-
-
-
-
+	  
+  	  // broadcast page to help mechanism
+  	  $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'records'});
+	  
+ 
+  
 	// retrieve project information
 	$http({
 		url: root_mapping + "project/id/" + $scope.projectId,
@@ -1684,9 +1695,13 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 }]);
 
 mapProjectAppControllers.controller('MapProjectDetailCtrl', 
-		['$scope', '$http', '$routeParams', '$sce', 'localStorageService',
-		 function ($scope, $http, $routeParams, $sce, localStorageService) {
+		['$scope', '$http', '$routeParams', '$sce', '$rootScope', 'localStorageService',
+		 function ($scope, $http, $routeParams, $sce, $rootScope, localStorageService) {
 
+		  	  // broadcast page to help mechanism
+		  	  $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'project'});
+			  
+		
 			// retrieve project information
 			$http({
 				url: root_mapping + "project/id/" + $routeParams.projectId,
@@ -1802,7 +1817,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 			});
 
 
-
+		
 			// function to return trusted html code (for tooltip content)
 			$scope.to_trusted = function(html_code) {
 				return $sce.trustAsHtml(html_code);
@@ -2055,6 +2070,12 @@ mapProjectAppControllers.directive('otfHeaderDirective', ['$rootScope', 'localSt
 				scope.mapProjects = localStorageService.get('mapProjects');		
 			});
 
+        	scope.$on('localStorageModule.notification.page', function(event, parameters) { 	
+        		console.debug("HEADER:  Detected change in page");
+        		scope.page = parameters.newvalue;
+
+        	});	
+        	
 			// retrieve local variables on header load or refresh
 			scope.currentUser = 	localStorageService.get('currentUser'); 
 			scope.currentRole = 	localStorageService.get('currentRole');         
