@@ -22,7 +22,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
 	 * - Concept has at least 3 digits in terminology id
 	 * - Concept does not contain a dash (-) character
 	 * @param mapRecord
-	 * @return
+	 * @return the validation result
 	 * @throws Exception 
 	 */
 	@Override

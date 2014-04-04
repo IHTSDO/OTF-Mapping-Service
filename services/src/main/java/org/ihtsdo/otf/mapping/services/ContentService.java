@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.services;
 
-import java.text.ParseException;
-
 import java.util.List;
 import java.util.Set;
 
@@ -80,7 +78,7 @@ public interface ContentService {
 	 * @throws Exception the exception
 	 */
 	public SearchResultList findDescendants(String terminologyId, String terminology,
-			String terminologyVersion, Long typeId) throws Exception;
+			String terminologyVersion, String typeId) throws Exception;
 
 	/**
 	 * Returns the descendants.
@@ -93,7 +91,7 @@ public interface ContentService {
 	 * @throws Exception the exception
 	 */
 	public Set<Concept> getDescendants(String terminologyId, String terminology,
-			String terminologyVersion, Long typeId) throws Exception;
+			String terminologyVersion, String typeId) throws Exception;
 
 	/**
 	 * Find children.
@@ -212,8 +210,25 @@ public interface ContentService {
 	public List<TreePosition> getRootTreePositionsForTerminology(String terminology,
 			String terminologyVersion);
 
+	/**
+	 * Returns the tree positions for concept query.
+	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param query the query
+	 * @return the tree positions for concept query
+	 * @throws Exception the exception
+	 */
 	public List<TreePosition> getTreePositionsForConceptQuery(
 			String terminology, String terminologyVersion, String query) throws Exception;
 
+	/**
+	 * Returns the concept tree roots.
+	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the concept tree roots
+	 * @throws Exception the exception
+	 */
 	public List<Concept> getConceptTreeRoots(String terminology, String terminologyVersion) throws Exception;
 }

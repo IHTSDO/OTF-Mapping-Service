@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.rf2;
 
 import java.util.List;
-import java.util.List;
 
 
 // TODO: Auto-generated Javadoc
@@ -151,9 +150,21 @@ public interface TreePosition {
 
 
   
+  /**
+   * Adds the child tree position.  This is not a persisted
+   * field, only used for data transfer.
+   *
+   * @param treePosition the tree position
+   */
   public void addChild(TreePosition treePosition);
 
 
+  /**
+   * Adds the children.  This is not a persisted
+   * field, only used for data transfer.
+   *
+   * @param treePositions the tree positions
+   */
   public void addChildren(List<TreePosition> treePositions);
 
 

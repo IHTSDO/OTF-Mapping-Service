@@ -8,10 +8,24 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ValidationService;
 
+// TODO: Auto-generated Javadoc
+/**
+ * Reference implementation of the {@link ValidationService}.
+ *
+ * @author ${author}
+ */
 public class ValidationServiceJpa implements ValidationService {
 
-	public ValidationServiceJpa() { }
+	/**
+	 * Instantiates an empty {@link ValidationServiceJpa}.
+	 */
+	public ValidationServiceJpa() {
+	  // do nothing
+	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.ValidationService#validateMapRecord(org.ihtsdo.otf.mapping.model.MapRecord)
+	 */
 	@Override
 	public ValidationResult validateMapRecord(MapRecord mapRecord) throws Exception {
 		

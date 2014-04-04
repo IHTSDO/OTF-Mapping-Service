@@ -52,16 +52,16 @@ public class MetadataServiceRest {
 		try {
 			// call jpa service and get complex map return type
 			MetadataService metadataService = new MetadataServiceJpa();
-			Map<String, Map<Long, String>> mapOfMaps = metadataService.getAllMetadata(terminology, version);
+			Map<String, Map<String, String>> mapOfMaps = metadataService.getAllMetadata(terminology, version);
 			
 			// convert complex map to KeyValuePair objects for easy transformation to XML/JSON
 			KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
-			for (Map.Entry<String, Map<Long, String>> entry : mapOfMaps.entrySet()) {
+			for (Map.Entry<String, Map<String, String>> entry : mapOfMaps.entrySet()) {
 		    String metadataType = entry.getKey();
-		    Map<Long, String> metadataPairs = entry.getValue();
+		    Map<String, String> metadataPairs = entry.getValue();
 		    KeyValuePairList keyValuePairList = new KeyValuePairList();
 		    keyValuePairList.setName(metadataType);
-		    for (Map.Entry<Long, String> pairEntry : metadataPairs.entrySet()) {
+		    for (Map.Entry<String, String> pairEntry : metadataPairs.entrySet()) {
 		    	KeyValuePair keyValuePair = new KeyValuePair(pairEntry.getKey().toString(), pairEntry.getValue());
 		      keyValuePairList.addKeyValuePair(keyValuePair);
 		    }

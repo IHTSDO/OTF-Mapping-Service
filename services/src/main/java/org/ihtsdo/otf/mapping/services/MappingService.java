@@ -272,10 +272,9 @@ public interface MappingService {
 	 * Update map record.
 	 *
 	 * @param mapRecord the map record
-	 * @return the map record
 	 * @throws Exception the exception
 	 */
-	public MapRecord updateMapRecord(MapRecord mapRecord) throws Exception;
+	public void updateMapRecord(MapRecord mapRecord) throws Exception;
 	
 	/**
 	 * Update map entry.
@@ -620,7 +619,6 @@ public interface MappingService {
 	/**
 	 * Compute map relation.
 	 *
-	 * @param mapRecord the map record
 	 * @param mapEntry the map entry
 	 * @return the map relation
 	 * @throws ClassNotFoundException 
@@ -632,7 +630,6 @@ public interface MappingService {
     /**
 	 * Compute map advice.
 	 *
-	 * @param mapRecord the map record
 	 * @param mapEntry the map entry
 	 * @return the list
 	 * @throws ClassNotFoundException 

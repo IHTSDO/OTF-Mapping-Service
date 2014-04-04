@@ -360,7 +360,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         // creating tree positions
         // first get isaRelType from metadata
         MetadataService metadataService = new MetadataServiceJpa();
-        Map<Long, String> hierRelTypeMap =
+        Map<String, String> hierRelTypeMap =
             metadataService.getHierarchicalRelationshipTypes(terminology,
                 version);
         String isaRelType =

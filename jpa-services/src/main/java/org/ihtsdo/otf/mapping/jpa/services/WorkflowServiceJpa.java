@@ -110,7 +110,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			
 			/* Create a workflow tracking record and persist it */
 			WorkflowTrackingRecord trackingRecord = new WorkflowTrackingRecordJpa();
-			trackingRecord.setWorkflow(workflow);;
+			trackingRecord.setWorkflow(workflow);
 			trackingRecord.setTerminology(concept.getTerminology());
 			trackingRecord.setTerminologyId(concept.getTerminologyId());
 			trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
@@ -461,6 +461,13 @@ public class WorkflowServiceJpa implements WorkflowService {
 	}
 	
 	
+	/**
+	 * Returns the available tracking records for workflow and user.
+	 *
+	 * @param workflowId the workflow id
+	 * @param userId the user id
+	 * @return the available tracking records for workflow and user
+	 */
 	@SuppressWarnings("unchecked")
 	public List<WorkflowTrackingRecord> getAvailableTrackingRecordsForWorkflowAndUser(Long workflowId, Long userId) {
 		
@@ -473,7 +480,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 				+ 	"WHERE NOT EXISTS (from tr.assignedUsers as user where user.id = " + userId.toString() 
 				+	 ") AND size(tr.assignedUsers) < 2 AND workflow_id = " + workflowId.toString());
 		
-		return (List<WorkflowTrackingRecord>) query.getResultList();
+		return query.getResultList();
 	}
 	
 	// TODO DIscuss model change to have WorkflowTrackingRecords directly connected to Workflow

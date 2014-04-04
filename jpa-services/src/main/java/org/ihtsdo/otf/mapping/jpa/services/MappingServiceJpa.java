@@ -831,10 +831,9 @@ public class MappingServiceJpa implements MappingService {
 	 * Update a map record.
 	 * 
 	 * @param mapRecord the map record to be updated
-	 * @return the map record
 	 */
 	@Override
-	public MapRecord updateMapRecord(MapRecord mapRecord) {
+	public void updateMapRecord(MapRecord mapRecord) {
 
 		// update timestamp
 		mapRecord.setLastModified((new java.util.Date()).getTime());
@@ -848,10 +847,8 @@ public class MappingServiceJpa implements MappingService {
 			tx.begin();
 			manager.merge(mapRecord);
 			tx.commit();
-			return mapRecord;
 		} else {
 			manager.merge(mapRecord);
-			return mapRecord;
 		}
 
 	}
@@ -909,7 +906,8 @@ public class MappingServiceJpa implements MappingService {
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
-	public List<MapAdvice> computeMapAdvice(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+	@Override
+  public List<MapAdvice> computeMapAdvice(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 
 		MapRecord mapRecord = mapEntry.getMapRecord();
 		
@@ -924,7 +922,10 @@ public class MappingServiceJpa implements MappingService {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordRevisions(java.lang.Long)
 	 */
-	@Override
+	@SuppressWarnings({
+      "unchecked", "rawtypes", "unused"
+  })
+  @Override
 	public List<MapRecord> getMapRecordRevisions(Long mapRecordId) {
 
 		AuditReader reader = AuditReaderFactory.get(manager);
@@ -941,6 +942,9 @@ public class MappingServiceJpa implements MappingService {
   /* (non-Javadoc)
    * @see org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords(org.ihtsdo.otf.mapping.model.MapUser)
    */
+  @SuppressWarnings({
+      "unchecked"
+  })
   @Override
   // TODO confirm return sorted by lastModifiedBy most recent at head
   public List<MapRecord> getRecentlyEditedMapRecords(Long projectId, String userName, PfsParameter pfsParameter)  throws Exception {
@@ -959,7 +963,7 @@ public class MappingServiceJpa implements MappingService {
         .addOrder(AuditEntity.property("lastModified").desc());
 
   	int pfsCounter = 0;
-    List<Object[]> allRevisions = (List<Object[]>) query.getResultList();
+    List<Object[]> allRevisions = query.getResultList();
     for (Object[] revision : allRevisions) {
     	MapRecord record = (MapRecord)revision[0];
     	// used to force reading the graph
@@ -985,11 +989,12 @@ public class MappingServiceJpa implements MappingService {
     }
     // reverse sort chronologically
     List<MapRecord> sortedEditedRecords = new ArrayList<>(editedRecords.values());
-    Collections.sort(sortedEditedRecords, new Comparator() {
-      public int compare(Object o1, Object o2) {
+    Collections.sort(sortedEditedRecords, new Comparator<MapRecord>() {
+      @Override
+      public int compare(MapRecord o1, MapRecord o2) {
 
-          long x1 = ((MapRecord) o1).getLastModified();
-          long x2 = ((MapRecord) o2).getLastModified();
+          long x1 = o1.getLastModified();
+          long x2 = o2.getLastModified();
 
           if (x1 != x2) {
               return new Long(x2 - x1).intValue();
@@ -1020,7 +1025,8 @@ public class MappingServiceJpa implements MappingService {
         .addOrder(AuditEntity.property("lastModified").desc());
 
   	int pfsCounter = 0;
-    List<Object[]> allRevisions = (List<Object[]>) query.getResultList();
+    @SuppressWarnings("unchecked")
+    List<Object[]> allRevisions = query.getResultList();
     for (Object[] revision : allRevisions) {
     	MapRecord record = (MapRecord)revision[0];
     	// used to force reading the graph
@@ -1884,7 +1890,7 @@ public class MappingServiceJpa implements MappingService {
 
 		// get hierarchical rel
 		MetadataService metadataService = new MetadataServiceJpa();
-		Map<Long, String> hierarchicalRelationshipTypeMap =
+		Map<String, String> hierarchicalRelationshipTypeMap =
 				metadataService.getHierarchicalRelationshipTypes(terminology,
 						terminologyVersion);
 		if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
@@ -1897,7 +1903,8 @@ public class MappingServiceJpa implements MappingService {
 					"Map project source terminology has too few hierarchical relationship types - "
 							+ terminology);
 		}
-		long hierarchicalRelationshipType =
+		// ASSUMPTION: only a single "isa" type
+		String hierarchicalRelationshipType =
 				hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
 
 		// get descendants
@@ -2445,7 +2452,7 @@ public class MappingServiceJpa implements MappingService {
 		// Get map relation id->name mapping
 		MetadataService metadataService = new MetadataServiceJpa();
 
-		Map<Long, String> relationIdNameMap = metadataService.getMapRelations(mapProject.getSourceTerminology(),
+		Map<String, String> relationIdNameMap = metadataService.getMapRelations(mapProject.getSourceTerminology(),
 				mapProject.getSourceTerminologyVersion());
 		Logger.getLogger(this.getClass()).debug("    relationIdNameMap = " + relationIdNameMap);
 
@@ -2455,7 +2462,7 @@ public class MappingServiceJpa implements MappingService {
 			mapRelationIdMap.put(mapRelation.getTerminologyId(), mapRelation);
 		}
 
-		Map<Long, String> hierarchicalRelationshipTypeMap = metadataService.getHierarchicalRelationshipTypes(mapProject.getSourceTerminology(), 
+		Map<String, String> hierarchicalRelationshipTypeMap = metadataService.getHierarchicalRelationshipTypes(mapProject.getSourceTerminology(), 
 				mapProject.getSourceTerminologyVersion());
 		if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
 			throw new IllegalStateException(
@@ -2467,7 +2474,8 @@ public class MappingServiceJpa implements MappingService {
 					"Map project source terminology has too few hierarchical relationship types - "
 							+ mapProject.getSourceTerminology());
 		}
-		long hierarchicalRelationshipType =
+		// ASSUMPTION: only one "isa" type
+		String hierarchicalRelationshipType =
 				hierarchicalRelationshipTypeMap.entrySet().iterator().next().getKey();
 
 		boolean prevTransactionPerOperationSetting = getTransactionPerOperation();

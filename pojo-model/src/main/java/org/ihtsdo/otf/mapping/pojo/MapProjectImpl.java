@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.pojo;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -96,12 +95,7 @@ public class MapProjectImpl implements MapProject {
 	
 	/** The name of the handler class for project specific algorithms */
 	private String projectSpecificAlgorithmHandlerClass;
-	
-	/** The instantiated handler for project specific algorithms */
-	private ProjectSpecificAlgorithmHandler algorithmHandler;
-	
-	
-	
+		
 	/**
 	 * Return the id.
 	 *

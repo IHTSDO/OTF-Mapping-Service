@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -24,7 +23,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
-import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -52,15 +50,19 @@ import com.wordnik.swagger.annotations.ApiParam;
 @SuppressWarnings("static-method")
 public class WorkflowServiceRest {
 
-
 	/**
 	 * Instantiates an empty {@link WorkflowServiceRest}.
 	 */
 	public WorkflowServiceRest() {
-
+	  // do nothing
 	}
 
 
+	/**
+	 * Compute workflow.
+	 *
+	 * @param mapProjectId the map project id
+	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Compute workflow for project by id", notes = "Computes workflow given a project id.")
@@ -87,6 +89,7 @@ public class WorkflowServiceRest {
 	 *
 	 * @param mapProjectId the map project id
 	 * @param userId the user id
+	 * @param pfsParameter the paging parameter
 	 * @return the search result list
 	 */
 	@POST
@@ -171,6 +174,14 @@ public class WorkflowServiceRest {
 		}
 	}
 
+	/**
+	 * Assign user to concept.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @param userName the user name
+	 * @return the map record
+	 */
 	@POST
 	@Path("/assign/projectId/{id}/concept/{terminologyId}/user/{userName}")
 	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
@@ -204,6 +215,15 @@ public class WorkflowServiceRest {
 		}
 	}
 
+	/**
+	 * Assign user to concept.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @param recordId the record id
+	 * @param userName the user name
+	 * @return the response
+	 */
 	@GET
 	@Path("/assign/id/{id}/concept/{terminologyId}/record/{recordId}/user/{userName}")
 	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
@@ -239,6 +259,14 @@ public class WorkflowServiceRest {
 		return null;
 	}
 
+	/**
+	 * Assign batch to user.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userName the user name
+	 * @param terminologyIds the terminology ids
+	 * @return the map record list
+	 */
 	@POST
 	@Path("/assign/batch/projectId/{projectId}/user/{userName}")
 	@ApiOperation(value = "Assign user to batch of concepts.", notes = "Assigns the given user to the given concept.", response = Response.class)
@@ -284,6 +312,13 @@ public class WorkflowServiceRest {
 		}
 	}
 
+	/**
+	 * Unassign user to concept.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @param userName the user name
+	 */
 	@POST
 	@Path("/unassign/projectId/{projectId}/conceptId/{terminologyId}/user/{userName}")
 	@ApiOperation(value = "Unssign user from a concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
@@ -316,7 +351,12 @@ public class WorkflowServiceRest {
 		}
 	}
 
-	 @GET
+	 /**
+ 	 * Sets the workflow to editing done.
+ 	 *
+ 	 * @param mapRecordId the workflow to editing done
+ 	 */
+ 	@GET
   @Path("/set/done/{id:[0-9][0-9]*}")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
 	@ApiOperation(value = "Set record to editing done", notes = "Updates the map record and sets workflow to editing done.")
@@ -330,7 +370,7 @@ public class WorkflowServiceRest {
       
     	mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
       
-      MapRecord result = mappingService.updateMapRecord(mapRecord);
+      mappingService.updateMapRecord(mapRecord);
       mappingService.close();
       return;
     } catch (Exception e) {
@@ -339,6 +379,11 @@ public class WorkflowServiceRest {
 
   }
 
+	/**
+	 * Sets the workflow to editing in progress.
+	 *
+	 * @param mapRecordId the workflow to editing in progress
+	 */
 	@GET
   @Path("/set/inProgress/{id:[0-9][0-9]*}")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
@@ -353,7 +398,7 @@ public class WorkflowServiceRest {
       
     	mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
       
-      MapRecord result = mappingService.updateMapRecord(mapRecord);
+      mappingService.updateMapRecord(mapRecord);
       mappingService.close();
       return;
     } catch (Exception e) {
@@ -365,7 +410,8 @@ public class WorkflowServiceRest {
 	/**
 	 * Returns the records assigned to user.
 	 *
-	 * @param userId the user id
+	 * @param mapProjectId the map project id
+	 * @param userName the user name
 	 * @return the records assigned to user
 	 */
 	@GET
@@ -383,7 +429,7 @@ public class WorkflowServiceRest {
 			MapUser user = mappingService.getMapUser(userName);
 
 			Set<MapRecord> mapRecords = workflowService.getMapRecordsAssignedToUser(project, user);
-			List<MapRecord> mapRecordsList = new ArrayList<MapRecord>(mapRecords);
+			List<MapRecord> mapRecordsList = new ArrayList<>(mapRecords);
 			assigned.setMapRecords(mapRecordsList);
 
 			mappingService.close();

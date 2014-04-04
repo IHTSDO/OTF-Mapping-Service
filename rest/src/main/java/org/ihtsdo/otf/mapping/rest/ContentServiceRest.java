@@ -11,7 +11,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
@@ -210,7 +209,7 @@ public class ContentServiceRest {
 			ContentService contentService = new ContentServiceJpa();
 			
 			SearchResultList results = contentService.findDescendants(terminologyId, terminology,
-				terminologyVersion, new Long("116680003")); // TODO Change this to metadata reference
+				terminologyVersion, "116680003"); // TODO Change this to metadata reference
 		
 			contentService.close();
 			return results;
@@ -311,6 +310,9 @@ public class ContentServiceRest {
 	/**
 	 * Finds tree positions for concept.
 	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
 	 * @return the search result list
 	 */
 	@GET
@@ -341,6 +343,8 @@ public class ContentServiceRest {
 	/**
 	 * Finds tree positions for concept.
 	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
 	 * @return the search result list
 	 */
 	@GET
@@ -367,8 +371,11 @@ public class ContentServiceRest {
 	}
 	
 	/**
-	 * Finds tree positions for concept query
+	 * Finds tree positions for concept query.
 	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param query the query
 	 * @return the root-level trees corresponding to the query
 	 */
 	@GET
