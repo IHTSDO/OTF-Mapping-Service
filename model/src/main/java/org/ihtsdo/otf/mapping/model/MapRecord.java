@@ -85,6 +85,7 @@ public interface MapRecord {
 	
 	/**
 	 * Sets the last modified date, in ms since 1970
+	 * @param lastModified the last modified date
 	 */
 	public void setLastModified(Long lastModified);
 	

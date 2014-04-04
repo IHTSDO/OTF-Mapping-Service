@@ -21,7 +21,7 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
 	 * - Concept exists
 	 * - Concept is a leaf node (i.e. no children)
 	 * @param mapRecord
-	 * @return
+	 * @return the validation result
 	 * @throws Exception 
 	 */
 	@Override

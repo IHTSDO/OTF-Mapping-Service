@@ -9,18 +9,12 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
-import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
-import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
-import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MetadataService;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -88,9 +82,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 * Given a map record and a map entry, returns the computed map relation (if applicable)
 	 * This must be overwritten for each project specific handler.
 	 * @param mapRecord
-	 * @return
+	 * @return computed map relation
 	 */
-	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) {
+	@Override
+  public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) {
 		return null;
 	}
 
@@ -123,6 +118,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
 	
 	
+	/**
+	 * Perform universal validation checks.
+	 *
+	 * @param mapRecord the map record
+	 * @return the validation result
+	 */
 	public ValidationResult performUniversalValidationChecks(MapRecord mapRecord) {
 		Map<Integer, List<MapEntry>> entryGroups = getEntryGroups(mapRecord);
 		
@@ -185,11 +186,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 * Function to check a map record for duplicate entries within map groups.
 	 *
 	 * @param mapRecord the map record
-	 * @param mapProject the map project for this record
-	 * @param entryGroups the binned entry lists by group
 	 * @return a list of errors detected
 	 */
-	public ValidationResult checkMapRecordForDuplicateEntries(MapRecord mapRecord) {
+	@SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordForDuplicateEntries(MapRecord mapRecord) {
 
 		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for duplicate entries within map groups...");
 
@@ -226,7 +226,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 * Function to check proper use of TRUE rules.
 	 *
 	 * @param mapRecord the map record
-	 * @param mapProject the map project for this record
 	 * @param entryGroups the binned entry lists by group
 	 * @return a list of errors detected
 	 */
@@ -271,11 +270,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 * Function to check higher level groups do not have only NC target codes.
 	 *
 	 * @param mapRecord the map record
-	 * @param mapProject the map project for this record
 	 * @param entryGroups the binned entry lists by group
 	 * @return a list of errors detected
 	 */
-	public ValidationResult checkMapRecordNcNodes(MapRecord mapRecord, Map<Integer, List<MapEntry>> entryGroups) {
+	@SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordNcNodes(MapRecord mapRecord, Map<Integer, List<MapEntry>> entryGroups) {
 
 		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for high-level groups with only NC target codes...");
 
@@ -313,7 +312,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 * Function to check that all advices attached are allowable by the project.
 	 *
 	 * @param mapRecord the map record
-	 * @param mapProject the map project for this record
 	 * @param entryGroups the binned entry lists by group
 	 * @return a list of errors detected
 	 */
@@ -350,16 +348,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 * @param mapRecord the map record
 	 * @return a map of group->entry list
 	 */
-	public Map<Integer, List<MapEntry>> getEntryGroups(MapRecord mapRecord) {
+	@SuppressWarnings("static-method")
+  public Map<Integer, List<MapEntry>> getEntryGroups(MapRecord mapRecord) {
 
-		Map<Integer, List<MapEntry>> entryGroups = new HashMap<Integer, List<MapEntry>>();
+		Map<Integer, List<MapEntry>> entryGroups = new HashMap<>();
 
 		for (MapEntry entry : mapRecord.getMapEntries()) {
 
 			// if no existing set for this group, create a blank set
 			List<MapEntry> entryGroup = entryGroups.get(entry.getMapGroup());
 			if (entryGroup == null) {
-				entryGroup = new ArrayList<MapEntry>();
+				entryGroup = new ArrayList<>();
 			} 
 
 			// add this entry to group and put it in group map

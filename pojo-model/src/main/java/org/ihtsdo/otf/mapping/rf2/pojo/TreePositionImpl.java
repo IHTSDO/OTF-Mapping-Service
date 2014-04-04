@@ -39,7 +39,8 @@ public class TreePositionImpl implements TreePosition {
 	private int childrenCount;
 	
 	/** The terminology note */
-	private String terminologyNote;
+	@SuppressWarnings("unused")
+  private String terminologyNote;
 	
 	/** The child tree positions. */
 	private List<TreePosition> children = new ArrayList<>();

@@ -298,7 +298,7 @@ public class ContentServiceJpa implements ContentService {
 	 */
 	@Override
 	public SearchResultList findDescendants(String terminologyId,
-			String terminology, String terminologyVersion, Long typeId) {
+			String terminology, String terminologyVersion, String typeId) {
 
 		// convert concept set to search results
 		SearchResultList results = new SearchResultListJpa();
@@ -332,7 +332,7 @@ public class ContentServiceJpa implements ContentService {
 	 */
 	@Override
 	public Set<Concept> getDescendants(String terminologyId, String terminology,
-			String terminologyVersion, Long typeId) {
+			String terminologyVersion, String typeId) {
 
 		Queue<Concept> conceptQueue = new LinkedList<>();
 		Set<Concept> conceptSet = new HashSet<>();
@@ -635,7 +635,7 @@ public class ContentServiceJpa implements ContentService {
 										if (tpCounter % commitCt == 0) {
 											Logger.getLogger(this.getClass()).info(
 													"  Committing changes - " + tpCounter);				
-											tx.commit();;
+											tx.commit();
 											tx.begin();
 										}
 
@@ -732,7 +732,8 @@ public class ContentServiceJpa implements ContentService {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.ContentService#getLocalTrees(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public List<TreePosition> getLocalTrees(String terminologyId, String terminology,
+	@Override
+  public List<TreePosition> getLocalTrees(String terminologyId, String terminology,
 			String terminologyVersion) {
 		
 		// get tree positions for concept (may be multiple)
@@ -748,7 +749,7 @@ public class ContentServiceJpa implements ContentService {
 			if (treePosition.getChildrenCount() > 0) {
 				
 				// retrieve the children
-				treePosition.setChildren(new ArrayList<TreePosition>(getTreePositionChildren(treePosition)));
+				treePosition.setChildren(new ArrayList<>(getTreePositionChildren(treePosition)));
 				
 				// debug -- remove later
 				System.out.println("Found " + Integer.toString(treePosition.getChildren().size()) + " children for path " + treePosition.getAncestorPath() + "~" + treePosition.getTerminologyId() + ", expected " + Integer.toString(treePosition.getChildrenCount()));
@@ -883,7 +884,7 @@ public class ContentServiceJpa implements ContentService {
 		}
 		
 		// merge tree positions (i.e. combine children of same node)
-		for (TreePosition treePosition : fullTreePositions) {
+		for (@SuppressWarnings("unused") TreePosition treePosition : fullTreePositions) {
 			// do nothing for now
 		}
 			
@@ -897,7 +898,8 @@ public class ContentServiceJpa implements ContentService {
 	 * @param treePositions the tree positions
 	 * @return the list
 	 */
-	private static List<TreePosition> mergeTreePositions(List<TreePosition> treePositions) {
+	@SuppressWarnings("unused")
+  private static List<TreePosition> mergeTreePositions(List<TreePosition> treePositions) {
 		
 		// merge top level
 		// NOTE:  if 2 or less trees, no action taken

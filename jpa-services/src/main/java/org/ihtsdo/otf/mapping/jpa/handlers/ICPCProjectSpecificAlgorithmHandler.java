@@ -20,7 +20,7 @@ public class ICPCProjectSpecificAlgorithmHandler extends DefaultProjectSpecificA
 	 * For ICD9, a target code is valid if:
 	 * - Concept exists
 	 * @param mapRecord
-	 * @return
+	 * @return the validation result
 	 * @throws Exception 
 	 */
 	@Override

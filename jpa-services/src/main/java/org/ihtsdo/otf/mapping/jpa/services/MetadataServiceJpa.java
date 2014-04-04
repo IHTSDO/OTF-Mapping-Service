@@ -19,9 +19,7 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
- * The class for MetadataServiceJpa.
- * 
- * @author ${author}
+ * Reference implementation of {@link MetadataService}
  */
 public class MetadataServiceJpa implements MetadataService {
 
@@ -105,67 +103,67 @@ public class MetadataServiceJpa implements MetadataService {
 	 * .String, java.lang.String)
 	 */
 	@Override
-	public Map<String, Map<Long, String>> getAllMetadata(String terminology,
+	public Map<String, Map<String, String>> getAllMetadata(String terminology,
 		String version) throws Exception {
-		Map<String, Map<Long, String>> idNameMapList =
+		Map<String, Map<String, String>> idNameMapList =
 				new HashMap<>();
-		Map<Long, String> modulesIdNameMap = getModules(terminology, version);
+		Map<String, String> modulesIdNameMap = getModules(terminology, version);
 		if (modulesIdNameMap != null) {
 			idNameMapList.put("modules", modulesIdNameMap);
 		}
-		Map<Long, String> atvIdNameMap =
+		Map<String, String> atvIdNameMap =
 				getAttributeValueRefSets(terminology, version);
 		if (atvIdNameMap != null) {
 			idNameMapList.put("attributeValueRefSets", atvIdNameMap);
 		}
-		Map<Long, String> csIdNameMap = getCaseSignificances(terminology, version);
+		Map<String, String> csIdNameMap = getCaseSignificances(terminology, version);
 		if (csIdNameMap != null) {
 			idNameMapList.put("caseSignificances", csIdNameMap);
 		}
-		Map<Long, String> cmIdNameMap = getComplexMapRefSets(terminology, version);
+		Map<String, String> cmIdNameMap = getComplexMapRefSets(terminology, version);
 		if (cmIdNameMap != null) {
 			idNameMapList.put("complexMapRefSets", cmIdNameMap);
 		}
-		Map<Long, String> dsIdNameMap = getDefinitionStatuses(terminology, version);
+		Map<String, String> dsIdNameMap = getDefinitionStatuses(terminology, version);
 		if (dsIdNameMap != null) {
 			idNameMapList.put("definitionStatuses", dsIdNameMap);
 		}
-		Map<Long, String> dtIdNameMap = getDescriptionTypes(terminology, version);
+		Map<String, String> dtIdNameMap = getDescriptionTypes(terminology, version);
 		if (dtIdNameMap != null) {
 			idNameMapList.put("descriptionTypes", dtIdNameMap);
 		}
-		Map<Long, String> lIdNameMap = getLanguageRefSets(terminology, version);
+		Map<String, String> lIdNameMap = getLanguageRefSets(terminology, version);
 		if (lIdNameMap != null) {
 			idNameMapList.put("languageRefSets", lIdNameMap);
 		}
-		Map<Long, String> mrIdNameMap = getMapRelations(terminology, version);
+		Map<String, String> mrIdNameMap = getMapRelations(terminology, version);
 		if (mrIdNameMap != null) {
 			idNameMapList.put("mapRelations", mrIdNameMap);
 		}
-		Map<Long, String> rctIdNameMap =
+		Map<String, String> rctIdNameMap =
 				getRelationshipCharacteristicTypes(terminology, version);
 		if (rctIdNameMap != null) {
 			idNameMapList.put("relationshipCharacteristicTypes", rctIdNameMap);
 		}
-		Map<Long, String> rmIdNameMap =
+		Map<String, String> rmIdNameMap =
 				getRelationshipModifiers(terminology, version);
 		if (rmIdNameMap != null) {
 			idNameMapList.put("relationshipModifiers", rmIdNameMap);
 		}
-		Map<Long, String> rtIdNameMap = getRelationshipTypes(terminology, version);
+		Map<String, String> rtIdNameMap = getRelationshipTypes(terminology, version);
 		if (rtIdNameMap != null) {
 			idNameMapList.put("relationshipTypes", rtIdNameMap);
 		}
-		Map<Long, String> hierRtIdNameMap =
+		Map<String, String> hierRtIdNameMap =
 				getHierarchicalRelationshipTypes(terminology, version);
 		if (hierRtIdNameMap != null) {
 			idNameMapList.put("hierarchicalRelationshipTypes", hierRtIdNameMap);
 		}
-		Map<Long, String> smIdNameMap = getSimpleMapRefSets(terminology, version);
+		Map<String, String> smIdNameMap = getSimpleMapRefSets(terminology, version);
 		if (smIdNameMap != null) {
 			idNameMapList.put("simpleMapRefSets", smIdNameMap);
 		}
-		Map<Long, String> sIdNameMap = getSimpleRefSets(terminology, version);
+		Map<String, String> sIdNameMap = getSimpleRefSets(terminology, version);
 		if (sIdNameMap != null) {
 			idNameMapList.put("simpleRefSets", sIdNameMap);
 		}
@@ -180,7 +178,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * , java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getModules(String terminology, String version)
+	public Map<String, String> getModules(String terminology, String version)
 		throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getModules(terminology, version);
@@ -198,7 +196,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * (java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getAttributeValueRefSets(String terminology,
+	public Map<String, String> getAttributeValueRefSets(String terminology,
 		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getAttributeValueRefSets(terminology,
@@ -217,7 +215,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getComplexMapRefSets(String terminology,
+	public Map<String, String> getComplexMapRefSets(String terminology,
 		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getComplexMapRefSets(terminology,
@@ -236,7 +234,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getLanguageRefSets(String terminology, String version)
+	public Map<String, String> getLanguageRefSets(String terminology, String version)
 		throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology)
@@ -255,7 +253,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getSimpleMapRefSets(String terminology,
+	public Map<String, String> getSimpleMapRefSets(String terminology,
 		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getSimpleMapRefSets(terminology,
@@ -274,7 +272,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * .String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getSimpleRefSets(String terminology, String version)
+	public Map<String, String> getSimpleRefSets(String terminology, String version)
 		throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getSimpleRefSets(terminology, version);
@@ -292,7 +290,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * .String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getMapRelations(String terminology, String version)
+	public Map<String, String> getMapRelations(String terminology, String version)
 		throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getMapRelations(terminology, version);
@@ -310,7 +308,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getDefinitionStatuses(String terminology,
+	public Map<String, String> getDefinitionStatuses(String terminology,
 		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getDefinitionStatuses(terminology,
@@ -329,7 +327,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getDescriptionTypes(String terminology,
+	public Map<String, String> getDescriptionTypes(String terminology,
 		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getDescriptionTypes(terminology,
@@ -348,7 +346,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getCaseSignificances(String terminology,
+	public Map<String, String> getCaseSignificances(String terminology,
 		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getCaseSignificances(terminology,
@@ -367,7 +365,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getRelationshipTypes(String terminology,
+	public Map<String, String> getRelationshipTypes(String terminology,
 		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipTypes(terminology,
@@ -385,7 +383,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getHierarchicalRelationshipTypes(String terminology,
+	public Map<String, String> getHierarchicalRelationshipTypes(String terminology,
 		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getHierarchicalRelationshipTypes(
@@ -403,7 +401,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * getRelationshipCharacteristicTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getRelationshipCharacteristicTypes(
+	public Map<String, String> getRelationshipCharacteristicTypes(
 		String terminology, String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipCharacteristicTypes(
@@ -423,7 +421,7 @@ public class MetadataServiceJpa implements MetadataService {
 	 * (java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<Long, String> getRelationshipModifiers(String terminology,
+	public Map<String, String> getRelationshipModifiers(String terminology,
 		String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipModifiers(terminology,

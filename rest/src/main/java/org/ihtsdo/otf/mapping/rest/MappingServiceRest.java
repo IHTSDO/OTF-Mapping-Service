@@ -642,9 +642,10 @@ public class MappingServiceRest {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
-      MapRecord result = mappingService.updateMapRecord(mapRecord);
+      mappingService.updateMapRecord(mapRecord);
       mappingService.close();
-      return result;
+      // TODO: this should not return a record, change the client
+      return mapRecord;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -1094,6 +1095,14 @@ public class MappingServiceRest {
 
   }
  
+  /**
+   * Returns the recently edited map records.
+   *
+   * @param mapProjectId the map project id
+   * @param userName the user name
+   * @param pfsParameter the pfs parameter
+   * @return the recently edited map records
+   */
   @POST
   @Path("/recentRecords/{id}/{userName}")
   @ApiOperation(value = "Find recently edited map records", notes = "Returns recently edited map records for given userName in either JSON or XML format", response = MapRecordList.class)
@@ -1125,8 +1134,9 @@ public class MappingServiceRest {
 	}
   
   /**
-   * Updates a map record
-   * @param mapRecord the map record to be added
+   * Updates a map record.
+   *
+   * @param mapEntry the map entry
    * @return Response the response
    */
   @POST

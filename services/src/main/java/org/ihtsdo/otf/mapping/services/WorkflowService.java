@@ -92,7 +92,7 @@ public interface WorkflowService {
 	 * @param project the project
 	 * @param concept the concept
 	 * @param user the user
-	 * @return 
+	 * @return the map record resulting from the assignment
 	 *
 	 * @throws Exception the exception
 	 */
@@ -106,6 +106,7 @@ public interface WorkflowService {
 	 * @param user the user
 	 *
 	 * @throws Exception the exception
+	 * TODO: if the previous method returns a map record, so should this one
 	 */
 	public void assignUserToConcept(MapProject project, Concept concept, MapRecord initialRecord, MapUser user) throws Exception;
 
