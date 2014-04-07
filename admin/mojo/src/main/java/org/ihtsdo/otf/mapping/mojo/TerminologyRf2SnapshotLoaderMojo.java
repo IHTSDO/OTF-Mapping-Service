@@ -358,7 +358,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         }
 
         manager.clear();
-        manager.flush();
         
         // creating tree positions
         // first get isaRelType from metadata
