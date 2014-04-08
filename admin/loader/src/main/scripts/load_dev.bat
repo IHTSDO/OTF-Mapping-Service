@@ -51,7 +51,7 @@ del /Q mvn.log
 echo     Load ICD10 ...%date% %time%
 
 cd %OTF_MAPPING_HOME%/admin/loader
-call %MVN_HOME%/bin/mvn -PICD10-Drun.config=dev install 1> mvn.log
+call %MVN_HOME%/bin/mvn -PICD10 -Drun.config=dev install 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log

@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
@@ -166,6 +167,17 @@ public interface WorkflowService {
 	public List<WorkflowTrackingRecord> getAvailableTrackingRecordsForProjectAndUser(
 			Long mapProjectId, Long userId);
 
+	
+
+	/**
+	 * Compare finished map records.
+	 *
+	 * @param mapProject the map project
+	 * @return the map
+	 * @throws Exception the exception
+	 */
+	public Map<Long, Long> compareFinishedMapRecords(MapProject mapProject) throws Exception;
+	
 	
 	/**
 	 * Gets the tracking records for unmapped in scope concepts.

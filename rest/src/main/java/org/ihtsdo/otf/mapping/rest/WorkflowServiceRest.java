@@ -355,7 +355,7 @@ public class WorkflowServiceRest {
   @Path("/set/done/{id:[0-9][0-9]*}")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
 	@ApiOperation(value = "Set record to editing done", notes = "Updates the map record and sets workflow to editing done.")
-  public void setWorkflowToEditingDone(
+  public boolean setWorkflowToEditingDone(
 		@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
 
     try {
@@ -367,7 +367,7 @@ public class WorkflowServiceRest {
       
       mappingService.updateMapRecord(mapRecord);
       mappingService.close();
-      return;
+      return true;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -383,7 +383,7 @@ public class WorkflowServiceRest {
   @Path("/set/inProgress/{id:[0-9][0-9]*}")
   @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
 	@ApiOperation(value = "Set record to editing done", notes = "Updates the map record and sets workflow to editing in progress.")
-  public void setWorkflowToEditingInProgress(
+  public boolean setWorkflowToEditingInProgress(
 		@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
 
     try {
@@ -395,7 +395,7 @@ public class WorkflowServiceRest {
       
       mappingService.updateMapRecord(mapRecord);
       mappingService.close();
-      return;
+      return true;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
