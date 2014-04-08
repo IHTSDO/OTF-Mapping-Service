@@ -1,6 +1,8 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,14 +11,15 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class DefaultProjectSpecificAlgorithmHandler.
  */
@@ -367,6 +370,228 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		}
 
 		return entryGroups;
+	}
+
+	@Override
+	public ValidationResult compareMapRecords(MapRecord record1,
+		MapRecord record2) {
+		ValidationResult validationResult = new ValidationResultJpa();
+		
+		// compare mapProjectId
+		if (record1.getMapProjectId() != record2.getMapProjectId())
+			validationResult.addError("Map Project Ids don't match! " + 
+					record1.getMapProjectId() + " " + record2.getMapProjectId());
+		
+		// compare conceptId
+		if (record1.getConceptId() != record2.getConceptId())
+			validationResult.addError("Concept Ids don't match! " +
+					record1.getConceptId() + " " + record2.getConceptId());
+		
+	   // compare mapPrinciples
+	   Comparator principlesComparator = new Comparator() {
+	      public int compare(Object o1, Object o2) {
+
+	          String x1 = ((MapPrinciple) o1).getPrincipleId();
+	          String x2 = ((MapPrinciple) o2).getPrincipleId();
+
+	          if (!x1.equals(x2)) {
+	              return x1.compareTo(x2);
+	          } 
+	          return 0;
+	      }
+	   };
+	   List<MapPrinciple> principles1 = new ArrayList<>(record1.getMapPrinciples());	   
+	   Collections.sort(principles1, principlesComparator);
+	   List<MapPrinciple> principles2 = new ArrayList<>(record2.getMapPrinciples());	   
+	   Collections.sort(principles2, principlesComparator);
+	   
+	   if (principles1.size() != principles2.size())
+				validationResult.addWarning("Map Principles count doesn't match! " +
+						principles1.toString() + " " + principles2.toString());
+	   else {
+	  	 for (int i=0; i<principles1.size(); i++) {
+	  		 if (!principles1.get(i).getPrincipleId().equals(principles2.get(i).getPrincipleId()))
+	  			 validationResult.addWarning("Map Principles content doesn't match! " +
+	  					 principles1.toString() + " " + principles2.toString());
+	  	 }
+	   }	   
+	   
+	   // check force map lead review flag
+	   if (record1.isFlagForMapLeadReview()) {
+	  	 validationResult.addError("Specialist 1 indicated the need for map lead review.");
+	   }
+	   if (record2.isFlagForMapLeadReview()) {
+	  	 validationResult.addError("Specialist 2 indicated the need for map lead review.");
+	   } 
+	  	 
+	   // check consensus review flag
+	   if (record1.isFlagForConsensusReview()) {
+	  	 validationResult.addError("Specialist 1 indicated consensus review is required.");
+	   }
+	   if (record2.isFlagForConsensusReview()) {
+	  	 validationResult.addError("Specialist 2 indicated consensus review is required.");
+	   }
+	   
+	   // compare mapEntries
+	   // organize map entries by group
+	   Map<Integer, List<MapEntry>> groupToMapEntryList1 = new HashMap<Integer, List<MapEntry>>();
+	   for (MapEntry entry : record1.getMapEntries()) {
+	  	 if (groupToMapEntryList1.containsKey(entry.getMapGroup())) {
+	  	   List<MapEntry> entryList = groupToMapEntryList1.get(entry.getMapGroup());
+	  	   entryList.add(entry);
+	  	 } else {
+	  		 List<MapEntry> entryList = new ArrayList<>();
+	  		 entryList.add(entry);
+	  		 groupToMapEntryList1.put(entry.getMapGroup(), entryList);
+	  	 }
+	   }
+	   Map<Integer, List<MapEntry>> groupToMapEntryList2 = new HashMap<Integer, List<MapEntry>>();
+	   for (MapEntry entry : record2.getMapEntries()) {
+	  	 if (groupToMapEntryList2.containsKey(entry.getMapGroup())) {
+	  	   List<MapEntry> entryList = groupToMapEntryList2.get(entry.getMapGroup());
+	  	   entryList.add(entry);
+	  	 } else {
+	  		 List<MapEntry> entryList = new ArrayList<>();
+	  		 entryList.add(entry);
+	  		 groupToMapEntryList2.put(entry.getMapGroup(), entryList);
+	  	 }
+	   }
+	   
+	   // for each group
+	   for (int i=1; i< Math.max(groupToMapEntryList1.size(), groupToMapEntryList2.size()) + 1; i++) {
+	  	 List<MapEntry> entries1 = groupToMapEntryList1.get(new Integer(i));
+	  	 List<MapEntry> entries2 = groupToMapEntryList2.get(new Integer(i));
+	  	 
+	  	 // error if different numbers of entries
+	  	 if (entries1 == null) {
+	  		 validationResult.addError("Record 1 Group " + i + " has no entries!");
+	  		 continue;
+	  	 } else if (entries2 == null) {
+	  		 validationResult.addError("Record 2 Group " + i + " has no entries!");
+	  		 continue;
+		   } else if (entries1.size() != entries2.size()) {
+	  		 validationResult.addError("Groups have different entry counts!  Record 1, Group " + i + ":" + entries1.size() +
+	  				 " Record 2, Group " + i + ":" + entries2.size());
+	  	 }
+	  	 
+	  	 // create string lists for entry comparison
+	  	 List<String> stringEntries1 = new ArrayList<>();
+	  	 List<String> stringEntries2 = new ArrayList<>();
+	  	 for (MapEntry entry1 : entries1) {
+	  		 stringEntries1.add(convertToString(entry1));
+	  	 }
+	  	 for (MapEntry entry2 : entries2) {
+	  		 stringEntries2.add(convertToString(entry2));
+	  	 }
+	  	 
+	  	 // check for matching entries in different order
+	  	 boolean outOfOrderFlag = false;
+	  	 boolean missingEntry = false;
+	  	 for (int d=0; d<Math.max(stringEntries1.size(), stringEntries2.size()); d++) {
+	  		 if (stringEntries1.get(d) == null || stringEntries2.get(d) == null) {
+	  			 // already reported differing number of entries
+	  			 break;
+	  		 }
+	  		 if (stringEntries1.get(d).equals(stringEntries2.get(d)))
+	  			 continue;
+	  		 else if (stringEntries2.contains(stringEntries1.get(d))) 
+	  			 outOfOrderFlag = true;
+	  		 else
+	  			 missingEntry = true;
+	  	 }
+	  	 if (!outOfOrderFlag && !missingEntry) {
+	  		 continue; //to next group for comparison
+	  	 }
+	  	 if (outOfOrderFlag && !missingEntry) {
+	  		 validationResult.addWarning("Group " + i + " has all the same entries but in different orders.");
+	  	   continue; // to next group for comparison
+	  	 }
+	  	 
+	  	 // check for details of missing entries
+	  	 boolean matchFound = false;
+	  	 for (int d=0; d<entries1.size(); d++) {
+	  	   for (int f=0; f<entries2.size(); f++) {
+	  	  	 if(entries1.get(d).getRule().equals(entries2.get(f).getRule()) &&
+	  	  			 entries1.get(d).getTargetId().equals(entries2.get(f).getTargetId()) &&
+	  	  			 !entries1.get(d).getMapRelation().getId().equals(entries2.get(f).getMapRelation().getId()))
+	  	  		 matchFound = true;
+	  	   }	  
+		  	 if (matchFound) {
+		  		 validationResult.addError("Record " + convertToString(entries1.get(d)) + " matches an entry from record 2 on rule and target code but not on relation id.");	 
+		  	 }
+		  	 matchFound = false;
+	     }
+	  	 for (int d=0; d<entries1.size(); d++) {
+	  	   for (int f=0; f<entries2.size(); f++) {
+	  	  	 if(entries1.get(d).getRule().equals(entries2.get(f).getRule()) &&
+	  	  			 entries1.get(d).getTargetId().equals(entries2.get(f).getTargetId()) &&
+	  	  			 !entries1.get(d).getMapAdvices().equals(entries2.get(f).getMapAdvices()))
+	  	  		 matchFound = true;
+	  	   }	  
+		  	 if (matchFound) {
+		  		 validationResult.addError("Record " + convertToString(entries1.get(d)) + " matches an entry from record 2 on rule and target code but not on advice.");	 
+		  	 }
+		  	 matchFound = false;
+	     }
+	  	 for (int d=0; d<entries1.size(); d++) {
+	  	   for (int f=0; f<entries2.size(); f++) {
+	  	  	 if(entries1.get(d).getRule().equals(entries2.get(f).getRule()) &&
+	  	  			 !entries1.get(d).getTargetId().equals(entries2.get(f).getTargetId()))
+	  	  		 matchFound = true;
+	  	   }	  
+		  	 if (matchFound) {
+		  		 validationResult.addError("Record " + convertToString(entries1.get(d)) + " matches an entry from record 2 on rule but not on target code.");	 
+		  	 }
+		  	 matchFound = false;
+	     }	   
+	  	 for (int d=0; d<entries1.size(); d++) {
+	  	   for (int f=0; f<entries2.size(); f++) {
+	  	  	 if(entries1.get(d).getRule().equals(entries2.get(f).getRule()))
+	  	  		 matchFound = true;
+	  	   }	  
+		  	 if (!matchFound) {
+		  		 validationResult.addError("Record " + convertToString(entries1.get(d)) + " does not match any entry from record 2 on rule.");	 
+		  	 }
+		  	 matchFound = false;
+	     }	   
+	   
+	   }	   
+	   
+	   // TODO: Do we do this here?
+	   if (validationResult.getErrors().size() > 0) {
+	     record1.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+	     record2.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+	   }
+
+		return validationResult;
+	}
+	
+	private String convertToString(MapEntry mapEntry) {
+		
+		// check map advices
+	  Comparator advicesComparator = new Comparator() {
+      public int compare(Object o1, Object o2) {
+
+          String x1 = ((MapAdvice) o1).getName();
+          String x2 = ((MapAdvice) o2).getName();
+
+          if (!x1.equals(x2)) {
+              return x1.compareTo(x2);
+          } 
+          return 0;
+      }
+    };
+   
+    List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());	   
+    Collections.sort(advices, advicesComparator);
+   
+    StringBuffer sb = new StringBuffer();
+    sb.append(mapEntry.getTargetId() + " " + mapEntry.getRule() + " " + mapEntry.getMapRelation().getId());
+    for (MapAdvice mapAdvice : advices) {
+   	  sb.append(mapAdvice.getObjectId() + " ");
+    }
+  
+		return sb.toString();
 	}
 
 	/**

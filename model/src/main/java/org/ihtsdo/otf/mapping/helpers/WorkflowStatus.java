@@ -16,8 +16,8 @@ public enum WorkflowStatus  {
 	EDITING_DONE, //(can transition to CONFILCT_DETECTED, CONSENSUS_NEEDED, or READY_FOR_PUBLICATION)
 	/**  The conflict detected. */
   CONFLICT_DETECTED, //(can transition to CONFLICT_RESOLVED)
-	/**  The conflict resolved. */
-  CONFLICT_RESOLVED, //(can transition to READY_FOR_PUBLICATION)
+	/**  The conflict in progress. */
+  CONFLICT_IN_PROGRESS, //(can transition to READY_FOR_PUBLICATION)
 	/**  The consensus needed. */
   CONSENSUS_NEEDED, //(can transition to CONSENSUS_RESOVLED)
 	/**  The consensus resolved. */

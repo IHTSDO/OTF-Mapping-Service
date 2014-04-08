@@ -640,7 +640,7 @@ public class ContentServiceJpa implements ContentService {
 						}
 						tp.setChildrenCount(childCounter);
 						
-						Logger.getLogger(this.getClass()).info(
+										Logger.getLogger(this.getClass()).debug(
 								"  Create tree position - " + tp.getAncestorPath() + ", "
 										+ c_rel.getTerminologyId());
 						tpCounter++;
