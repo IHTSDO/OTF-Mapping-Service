@@ -88,4 +88,12 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	 */
 	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry);
 	
+	/**
+	 * Compute map record conflicts.
+	 *
+	 * @param record1 the record1
+	 * @param record2 the record2
+	 * @return the validation result
+	 */
+	public ValidationResult compareMapRecords(MapRecord record1, MapRecord record2);
 }
