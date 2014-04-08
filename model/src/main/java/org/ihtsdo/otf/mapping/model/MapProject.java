@@ -436,7 +436,49 @@ public interface MapProject  {
 	 * @param ageRange the age range
 	 */
 	public void removePresetAgeRange(MapAgeRange ageRange);
-	
-	
 
+	/**
+	 * Gets the map relations.
+	 *
+	 * @return the map relations
+	 */
+	public Set<MapRelation> getMapRelations();
+
+	/**
+	 * Sets the map relations.
+	 *
+	 * @param mapRelations the new map relations
+	 */
+	public void setMapRelations(Set<MapRelation> mapRelations);
+
+	
+	/**
+	 * Adds the map relation.
+	 *
+	 * @param mr the mr
+	 */
+	public void addMapRelation(MapRelation mr);
+	
+	/**
+	 * Removes the map relation.
+	 *
+	 * @param mr the mr
+	 */
+	public void removeMapRelation(MapRelation mr);
+
+	/**
+	 * Gets the project specific algorithm handler class.
+	 *
+	 * @return the project specific algorithm handler class
+	 */
+	public String getProjectSpecificAlgorithmHandlerClass();
+
+	/**
+	 * Sets the project specific algorithm handler class.
+	 *
+	 * @param projectSpecificAlgorithmHandlerClass the new project specific algorithm handler class
+	 */
+	public void setProjectSpecificAlgorithmHandlerClass(
+			String projectSpecificAlgorithmHandlerClass);
+	
 }

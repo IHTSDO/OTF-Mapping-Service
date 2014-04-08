@@ -20,11 +20,16 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 public class SearchResultListJpa implements SearchResultList {
 	
 	/** The results */
-	private List<SearchResult> searchResults = new ArrayList<SearchResult>();
+	private List<SearchResult> searchResults = new ArrayList<>();
+	
+	/** The total count of items */
+	private Long totalCount;
 
 	/** The default constructor */
 	public SearchResultListJpa() {
 	}
+	
+	// TODO Add totalCount with methods and comments
 	
 	/**
 	 * @return the count
@@ -33,6 +38,17 @@ public class SearchResultListJpa implements SearchResultList {
 	@XmlElement(name = "count")
 	public int getCount() {
 		return searchResults.size();
+	}
+	
+	@Override
+	@XmlElement(name = "totalCount")
+	public Long getTotalCount() {
+		return totalCount;
+	}
+
+	@Override
+	public void setTotalCount(Long totalCount) {
+		this.totalCount = totalCount;
 	}
 
 	/**

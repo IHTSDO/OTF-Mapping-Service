@@ -5,18 +5,17 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlID;
 
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapRecord}.
  * Includes hibernate tags for persistence
  *
- * @author ${author}
  */
 public class MapRecordImpl implements MapRecord {
 	
@@ -28,6 +27,10 @@ public class MapRecordImpl implements MapRecord {
 	
 	/** The timestamp. */
 	private Long timestamp;
+	
+	private MapUser lastModifiedBy;
+	
+	private Long lastModified;
 	
 	/** The map project id. */
 	private Long mapProjectId;
@@ -50,6 +53,9 @@ public class MapRecordImpl implements MapRecord {
 	/**  The map principles. */
 	private Set<MapPrinciple> mapPrinciples;
 	
+	/**  The originIds. */
+	private Set<Long> originIds;
+	
 	/**  The flag for map lead review. */
 	private boolean flagForMapLeadReview = false;
   
@@ -59,7 +65,9 @@ public class MapRecordImpl implements MapRecord {
   /**  The flag for consensus review. */
   private boolean flagForConsensusReview = false;
 
-
+  /**  The workflow status. */
+  private WorkflowStatus workflowStatus;
+  
 	/**
 	 * Return the id.
 	 *
@@ -94,6 +102,7 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getOwner()
 	 */
+	@Override
 	public MapUser getOwner() {
 		return owner;
 	}
@@ -101,6 +110,7 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setOwner(org.ihtsdo.otf.mapping.model.MapUser)
 	 */
+	@Override
 	public void setOwner(MapUser owner) {
 		this.owner = owner;
 	}
@@ -108,6 +118,7 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getTimestamp()
 	 */
+	@Override
 	public Long getTimestamp() {
 		return timestamp;
 	}
@@ -115,9 +126,34 @@ public class MapRecordImpl implements MapRecord {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setTimestamp(java.lang.Long)
 	 */
+	@Override
 	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getLastModifiedBy()
+	 */
+	@Override
+	public MapUser getLastModifiedBy() {
+		return lastModifiedBy;
+	}
+
+	@Override
+	public void setLastModifiedBy(MapUser mapUser) {
+		this.lastModifiedBy = mapUser;
+	}
+
+	@Override
+	public Long getLastModified() {
+		return this.lastModified;
+	}
+
+	@Override
+	public void setLastModified(Long lastModified) {
+		this.lastModified = lastModified;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapProjectId()
@@ -292,36 +328,77 @@ public class MapRecordImpl implements MapRecord {
 		}
 		
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getOriginIds()
+	 */
+	@Override
+	public Set<Long> getOriginIds() {
+		return originIds;
+	}
 
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setOriginIds(java.util.Set)
+	 */
+	@Override
+	public void setOriginIds(Set<Long> originIds) {
+		this.originIds = originIds;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addOrigin(java.lang.Long)
+	 */
+	@Override
+	public void addOrigin(Long origin) {
+		this.originIds.add(origin);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeOrigin(java.lang.Long)
+	 */
+	@Override
+	public void removeOrigin(Long origin) {
+		originIds.remove(origin);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((conceptId == null) ? 0 : conceptId.hashCode());
-		result = prime * result
-				+ ((conceptName == null) ? 0 : conceptName.hashCode());
-		result = prime
+		result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
+		result =
+				prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
+		result =
+				prime
 				* result
-				+ ((countDescendantConcepts == null) ? 0
-						: countDescendantConcepts.hashCode());
+						+ ((countDescendantConcepts == null) ? 0 : countDescendantConcepts
+								.hashCode());
 		result = prime * result + (flagForConsensusReview ? 1231 : 1237);
 		result = prime * result + (flagForEditorialReview ? 1231 : 1237);
 		result = prime * result + (flagForMapLeadReview ? 1231 : 1237);
-		result = prime * result
-				+ ((mapEntries == null) ? 0 : mapEntries.hashCode());
-		result = prime * result
-				+ ((mapNotes == null) ? 0 : mapNotes.hashCode());
-		result = prime * result
+		result =
+				prime * result + ((mapEntries == null) ? 0 : mapEntries.hashCode());
+		result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
+		result =
+				prime * result
 				+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
-		result = prime * result
-				+ ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
+		result =
+				prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
+		result = prime * result + ((originIds == null) ? 0 : originIds.hashCode());
 		result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-		result = prime * result
-				+ ((timestamp == null) ? 0 : timestamp.hashCode());
+		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -344,8 +421,7 @@ public class MapRecordImpl implements MapRecord {
 		if (countDescendantConcepts == null) {
 			if (other.countDescendantConcepts != null)
 				return false;
-		} else if (!countDescendantConcepts
-				.equals(other.countDescendantConcepts))
+		} else if (!countDescendantConcepts.equals(other.countDescendantConcepts))
 			return false;
 		if (flagForConsensusReview != other.flagForConsensusReview)
 			return false;
@@ -373,6 +449,11 @@ public class MapRecordImpl implements MapRecord {
 				return false;
 		} else if (!mapProjectId.equals(other.mapProjectId))
 			return false;
+		if (originIds == null) {
+			if (other.originIds != null)
+				return false;
+		} else if (!originIds.equals(other.originIds))
+			return false;
 		if (owner == null) {
 			if (other.owner != null)
 				return false;
@@ -392,7 +473,8 @@ public class MapRecordImpl implements MapRecord {
 	@Override
 	public String toString() {
 		return "MapRecordImpl [id=" + id + ", conceptId=" + conceptId
-				+ ", mapNotes=" + mapNotes + ", mapEntries=" + mapEntries + "]";
+				+ ", mapNotes=" + mapNotes + ", mapEntries=" + mapEntries
+				+ ", originIds=" + originIds + "]";
 	}
 
 	/* (non-Javadoc)
@@ -443,6 +525,25 @@ public class MapRecordImpl implements MapRecord {
 		flagForConsensusReview = flag;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setWorkflowStatus(java.lang.String)
+	 */
+	@Override
+	public void setWorkflowStatus(WorkflowStatus workflowStatus) {
+		this.workflowStatus = workflowStatus;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getWorkflowStatus()
+	 */
+	@Override
+	public WorkflowStatus getWorkflowStatus() {
+		return workflowStatus;
+	}
+
+
+
+	
 	
 
 

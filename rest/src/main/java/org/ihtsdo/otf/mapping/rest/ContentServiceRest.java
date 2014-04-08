@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.rest;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -14,11 +13,13 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipList;
+import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionList;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -33,6 +34,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
 	MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
+@SuppressWarnings("static-method")
 public class ContentServiceRest {
 
 	/** The terminology versions. */
@@ -45,19 +47,18 @@ public class ContentServiceRest {
 	public ContentServiceRest() {
 
 		// TODO: wire this to metadata service (getTerminologyLatestVesrions)
-		terminologyLatestVersions = new HashMap<String, String>();
+		terminologyLatestVersions = new HashMap<>();
 		terminologyLatestVersions.put("SNOMEDCT", "20140131");
 	}
 
 	/**
 	 * Returns the concept for id, terminology, and terminology version
-	 * 
-	 * @param id the id
+	 * @param terminologyId the terminology id
 	 * @param terminology the concept terminology
-	 * @param version the concept terminologyVersion
+	 * @param terminologyVersion the terminology version
 	 * @return the concept
 	 */
-	@GET
+    @GET
 	@Path("/concept/{terminology}/{version}/id/{terminologyId}")
 	@ApiOperation(value = "Find concept by id, version, and terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
 	@Produces({
@@ -75,9 +76,11 @@ public class ContentServiceRest {
 			ContentService contentService = new ContentServiceJpa();
 			Concept c = contentService.getConcept(terminologyId, terminology, terminologyVersion);
 			
-			// Make sure to read descriptions and relationships (prevents serialization error)
-			for (Description d : c.getDescriptions()) { d.getLanguageRefSetMembers(); }
-			for (Relationship r : c.getRelationships()) { r.getDestinationConcept(); }
+			if (c != null) {
+				// Make sure to read descriptions and relationships (prevents serialization error)
+				for (Description d : c.getDescriptions()) { d.getLanguageRefSetMembers(); }
+				for (Relationship r : c.getRelationships()) { r.getDestinationConcept(); }
+			}
 			
 			contentService.close();
 			return c;
@@ -90,9 +93,9 @@ public class ContentServiceRest {
 	/**
 	 * Returns the inverse relationships for a concept (currently not marked for serialization in Concept)
 	 * 
-	 * @param id the id
+	 * @param terminologyId the id
 	 * @param terminology the concept terminology
-	 * @param version the concept terminologyVersion
+	 * @param terminologyVersion the concept terminologyVersion
 	 * @return the concept
 	 */
 	@GET
@@ -129,7 +132,7 @@ public class ContentServiceRest {
 	 * Returns the concept for id, terminology. Looks in the latest version of the
 	 * terminology.
 	 * 
-	 * @param id the id
+	 * @param terminologyId the id
 	 * @param terminology the concept terminology
 	 * @return the concept
 	 */
@@ -184,7 +187,7 @@ public class ContentServiceRest {
 	
 	/**
 	 * Returns the descendants of a concept as mapped by relationships and inverse relationships
-	 * @param id the terminology id
+	 * @param terminologyId the terminology id
 	 * @param terminology the terminology
 	 * @param terminologyVersion the terminology version
 	 * @return the search result list
@@ -206,7 +209,7 @@ public class ContentServiceRest {
 			ContentService contentService = new ContentServiceJpa();
 			
 			SearchResultList results = contentService.findDescendants(terminologyId, terminology,
-				terminologyVersion, new Long("116680003")); // TODO Change this to metadata reference
+				terminologyVersion, "116680003"); // TODO Change this to metadata reference
 		
 			contentService.close();
 			return results;
@@ -247,4 +250,184 @@ public class ContentServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
+	
+	// FOR TESTING ONLY!!
+	/**
+	 * Returns the immediate children of a concept given terminology information
+	 * @return the search result list
+	 */
+	@GET
+	@Path("/concept/treePositions")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public SearchResultList computeTreePositions() {
+	
+		
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			contentService.setTransactionPerOperation(true);
+			
+			contentService.computeTreePositions("SNOMEDCT",
+				"20140131", "116680003", "138875005"); 
+			/**Set<TreePosition> results = contentService.computeTreePositions("SNOMEDCT",
+					"20140131", new Long("116680003"), new Long("371772001"));*/
+			contentService.close();
+			return new SearchResultListJpa();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Clears tree positions.
+	 *
+	 * @return the search result list
+	 */
+	@GET
+	@Path("/concept/treePositions/clear")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public SearchResultList clearTreePositions() {
+	
+		
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			
+			contentService.clearTreePositions("SNOMEDCT",
+				"20140131"); 
+		
+			contentService.close();
+			return new SearchResultListJpa();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Finds tree positions for concept.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the search result list
+	 */
+	@GET
+	@Path("/tree/concept/{terminology}/{terminologyVersion}/id/{terminologyId}")
+	@ApiOperation(value = "Get the local tree (position and children) for a particular concept", notes = "Returns a tree structure representing the position of a concept in a terminology and its children", response = TreePositionList.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public TreePositionList getLocalTreePositionsForConcept(
+			@ApiParam(value = "terminology id of concept", required = true) @PathParam("terminologyId") String terminologyId,
+			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
+			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion			
+			) {
+			
+		
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			
+			TreePositionList localTrees = new TreePositionList();
+			localTrees.setTreePositions(contentService.getLocalTrees(terminologyId, terminology, terminologyVersion)); 
+			contentService.close();
+			return localTrees;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Finds tree positions for concept.
+	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the search result list
+	 */
+	@GET
+	@Path("/tree/terminology/{terminology}/{terminologyVersion}")
+	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public TreePositionList getRootTreePositionsForTerminology(
+			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
+			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion			
+			) {
+			
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			
+			TreePositionList localTrees = new TreePositionList();
+			localTrees.setTreePositions(contentService.getRootTreePositionsForTerminology(terminology, terminologyVersion)); 
+			contentService.close();
+			return localTrees;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Finds tree positions for concept query.
+	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param query the query
+	 * @return the root-level trees corresponding to the query
+	 */
+	@GET
+	@Path("/tree/terminology/{terminology}/{terminologyVersion}/query/{query}")
+	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public TreePositionList getRootTreePositionsForConceptQuery(
+			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
+			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,			
+			@ApiParam(value = "paging/filtering/sorting object", required = true) @PathParam("query") String query) {
+			
+		
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /tree/concept/" + terminology + "/" + terminologyVersion + "/query/" + query);
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			
+			TreePositionList localTrees = new TreePositionList();
+			localTrees.setTreePositions(contentService.getTreePositionsForConceptQuery(terminology, terminologyVersion, query)); 
+			contentService.close();
+			return localTrees;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Finds descendants from tree positions.
+	 *
+	 * @return the search result list
+	 */
+	@GET
+	@Path("/concept/treePositions/descendantfind")
+	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public SearchResultList findDescendantsFromTreePostions() {
+			
+		try {
+			ContentService contentService = new ContentServiceJpa();
+			Logger.getLogger(this.getClass()).info("start");
+			SearchResultList results = contentService.findDescendantsFromTreePostions("110091001", "SNOMEDCT",
+				"20140131"); 
+			contentService.close();
+
+			Logger.getLogger(this.getClass()).info("end");
+			return results;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
 }

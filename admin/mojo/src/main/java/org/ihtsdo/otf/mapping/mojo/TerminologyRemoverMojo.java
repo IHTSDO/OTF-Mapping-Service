@@ -17,7 +17,6 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -181,9 +180,11 @@ public class TerminologyRemoverMojo extends AbstractMojo {
 				metadataService.close();
 				
 				ContentService contentService = new ContentServiceJpa();
-				getLog().info("Start removing tree positions from " + terminology + ".");
-				for (String version: versions)
-				  contentService.clearTreePositions(terminology, version);
+				
+				for (String version: versions) {
+					getLog().info("Start removing tree positions from " + terminology + ", " + version + ".");
+					contentService.clearTreePositions(terminology, version);
+				}
 				contentService.close();
 				
 				

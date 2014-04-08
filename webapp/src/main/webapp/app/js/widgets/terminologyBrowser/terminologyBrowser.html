@@ -1,0 +1,76 @@
+<form>
+	<input ng-model="query">
+	<button ng-click="getRootTreeWithQuery()">Search</button>
+</form>
+		
+<p></p>
+{{searchStatus}}
+<!--  Root - level 0 -->
+<ul style="list-style-type: none; padding-left: 0px;">
+
+	<li ng-repeat="node0 in terminologyTree" sort-by="node0.terminologyId">
+	
+		<!--  Concept Details --> 
+		<a ng-show="node0.childrenCount > 0"><i class="glyphicon" ng-click="toggleChildren(node0)" ng-class="{'glyphicon-chevron-down': node0.isOpen, 'glyphicon-chevron-right': !node0.isOpen}"></i></a>
+		&nbsp <a ng-click="selectConcept(node0)">{{node0.terminologyId}}</a>, {{truncate(node0.defaultPreferredName)}} 
+		
+		<!--  Children - level 1 -->		
+		<ul style="list-style-type: none; padding-left: 15px;" ng-show="node0.isOpen">
+		
+			<li ng-repeat="node1 in node0.children" sort-by="node1.terminologyId">
+			
+				<!--  Concept Details --> 
+				<a ng-show="node1.childrenCount > 0"><i class="glyphicon"	ng-click="toggleChildren(node1)" ng-class="{'glyphicon-chevron-down': node1.isOpen, 'glyphicon-chevron-right': !node1.isOpen}"></i></a>
+				&nbsp <a ng-click="selectConcept(node1)">{{node1.terminologyId}}</a>, {{truncate(node1.defaultPreferredName)}} 
+				
+				<!--  Children - level 2 -->
+				<ul style="list-style-type: none; padding-left: 15px;" ng-show="node1.isOpen">
+				
+					<li ng-repeat="node2 in node1.children">
+					
+						<!--  Concept Details --> 
+						<a ng-show="node2.childrenCount > 0"><i class="glyphicon"	ng-click="toggleChildren(node2)" ng-class="{'glyphicon-chevron-down': node2.isOpen, 'glyphicon-chevron-right': !node2.isOpen}"></i></a>
+						&nbsp <a ng-click="selectConcept(node2)">{{node2.terminologyId}}</a>, {{truncate(node2.defaultPreferredName)}} 
+										
+						<!--  Children - level 3 -->
+						<ul style="list-style-type: none; padding-left: 15px;" ng-show="node2.isOpen">
+						
+							<li ng-repeat="node3 in node2.children">
+							
+								<!--  Concept Details --> 
+								<a ng-show="node3.childrenCount > 0" ng-show="node3.isOpen"><i class="glyphicon"	ng-click="toggleChildren(node3)" ng-class="{'glyphicon-chevron-down': node3.isOpen, 'glyphicon-chevron-right': !node3.isOpen}"></i></a>
+								&nbsp <a ng-click="selectConcept(node3)">{{node3.terminologyId}}</a>, {{truncate(node3.defaultPreferredName)}}  
+								
+								<!--  Children - level 4 -->
+								<ul style="list-style-type: none; padding-left: 15px;">
+								
+									<li ng-repeat="node4 in node3.children">
+									
+										<!--  Concept Details --> 
+										<a ng-show="node4.childrenCount > 0" ng-show="node4.isOpen"><i class="glyphicon"	ng-click="toggleChildren(node4)" ng-class="{'glyphicon-chevron-down': node4.isOpen, 'glyphicon-chevron-right': !node4.isOpen}"></i></a>
+										&nbsp <a ng-click="selectConcept(node4)">{{node4.terminologyId}}</a>, {{truncate(node4.defaultPreferredName)}} 
+																		
+										<!--  Children - level 5 -->										
+										<ul style="list-style-type; padding-left: 15px: none;">
+										
+											<li ng-repeat="node5 in node4.children">
+											
+												<!--  Concept Details --> 
+												<a ng-show="node5.childrenCount > 0"><i class="glyphicon"	ng-click="toggleChildren(node5)" ng-class="{'glyphicon-chevron-down': node5.isOpen, 'glyphicon-chevron-right': !node5.isOpen}"></i></a>
+												&nbsp <a ng-click="selectConcept(node5)">{{node5.terminologyId}}</a>, {{truncate(node5.defaultPreferredName)}} 
+											</li>
+										</ul>
+
+									</li>
+								</ul>
+
+							</li>
+						</ul>
+
+					</li>
+				</ul>
+
+			</li>
+		</ul>
+	</li>
+</ul>

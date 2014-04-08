@@ -20,17 +20,15 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Metadata Services REST package.
- *
- * @author ${author}
+ * Metadata Services REST package.
  */
 @Path("/metadata")
 @Api(value = "/metadata", description = "Operations providing metadata.")
 @Produces({
 		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
+@SuppressWarnings("static-method")
 public class MetadataServiceRest {
 
 	/**
@@ -40,7 +38,7 @@ public class MetadataServiceRest {
 	 * @param version the version
 	 * @return the all metadata
 	 */
-	@GET
+  @GET
 	@Path("/all/{terminology}/{version}")
 	@ApiOperation(value = "Get all metadata", notes = "Returns all metadata in either JSON or XML format", response = KeyValuePairLists.class)
 	@Produces({
@@ -54,16 +52,16 @@ public class MetadataServiceRest {
 		try {
 			// call jpa service and get complex map return type
 			MetadataService metadataService = new MetadataServiceJpa();
-			Map<String, Map<Long, String>> mapOfMaps = metadataService.getAllMetadata(terminology, version);
+			Map<String, Map<String, String>> mapOfMaps = metadataService.getAllMetadata(terminology, version);
 			
 			// convert complex map to KeyValuePair objects for easy transformation to XML/JSON
 			KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
-			for (Map.Entry<String, Map<Long, String>> entry : mapOfMaps.entrySet()) {
+			for (Map.Entry<String, Map<String, String>> entry : mapOfMaps.entrySet()) {
 		    String metadataType = entry.getKey();
-		    Map<Long, String> metadataPairs = entry.getValue();
+		    Map<String, String> metadataPairs = entry.getValue();
 		    KeyValuePairList keyValuePairList = new KeyValuePairList();
 		    keyValuePairList.setName(metadataType);
-		    for (Map.Entry<Long, String> pairEntry : metadataPairs.entrySet()) {
+		    for (Map.Entry<String, String> pairEntry : metadataPairs.entrySet()) {
 		    	KeyValuePair keyValuePair = new KeyValuePair(pairEntry.getKey().toString(), pairEntry.getValue());
 		      keyValuePairList.addKeyValuePair(keyValuePair);
 		    }
@@ -104,6 +102,11 @@ public class MetadataServiceRest {
 		}
 	}
 
+  /**
+   * Returns the all terminologies latest versions.
+   *
+   * @return the all terminologies latest versions
+   */
   @GET
 	@Path("/terminologies/latest/")
 	@ApiOperation(value = "Get all terminologies and their latest versions", notes = "Returns list of terminologies and their latest versions in either JSON or XML format", response = KeyValuePairList.class)
@@ -126,6 +129,11 @@ public class MetadataServiceRest {
 		}
 	}
 
+  /**
+   * Returns the all terminologies versions.
+   *
+   * @return the all terminologies versions
+   */
   @GET
 	@Path("/terminologies/")
 	@ApiOperation(value = "Get all terminologies and all their versions", notes = "Returns list of terminologies and their versions in either JSON or XML format", response = KeyValuePairList.class)

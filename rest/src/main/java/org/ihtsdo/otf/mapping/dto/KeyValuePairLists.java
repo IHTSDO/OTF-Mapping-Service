@@ -18,7 +18,7 @@ public class KeyValuePairLists {
 
 
 	/** The key value pair lists. */
-	private List<KeyValuePairList> keyValuePairLists = new ArrayList<KeyValuePairList>();
+	private List<KeyValuePairList> keyValuePairLists = new ArrayList<>();
 
 
 	/**

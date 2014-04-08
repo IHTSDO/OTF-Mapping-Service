@@ -3,6 +3,8 @@ package org.ihtsdo.otf.mapping.model;
 import java.util.List;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Interface MapRecord.
@@ -59,6 +61,33 @@ public interface MapRecord {
 	 * @return the timestamp
 	 */
 	public Long getTimestamp();
+	
+	/**
+	 * Gets the last modified by.
+	 *
+	 * @return the last modified by
+	 */
+	public MapUser getLastModifiedBy();
+	
+	/**
+	 * Sets the last modified by.
+	 *
+	 * @param mapUser the new last modified by
+	 */
+	public void setLastModifiedBy(MapUser mapUser);
+	
+	/**
+	 * Gets the last modified date, in ms since 1970.
+	 *
+	 * @return the last modified date
+	 */
+	public Long getLastModified();
+	
+	/**
+	 * Sets the last modified date, in ms since 1970
+	 * @param lastModified the last modified date
+	 */
+	public void setLastModified(Long lastModified);
 	
 	/**
 	 * Returns the map project id.
@@ -248,4 +277,49 @@ public interface MapRecord {
 	 */
 	public void setFlagForConsensusReview(boolean flag);
 	
+
+  /**
+   * Returns the originIds.
+   *
+   * @return the originIds
+   */
+  public Set<Long> getOriginIds();
+	
+
+	/**
+	 * Sets the originIds.
+	 *
+	 * @param originIds the originIds
+	 */
+	public void setOriginIds(Set<Long> originIds);
+	
+
+	/**
+	 * Adds the origin.
+	 *
+	 * @param origin the origin
+	 */
+	public void addOrigin(Long origin);
+	
+
+	/**
+	 * Removes the origin.
+	 *
+	 * @param origin the origin
+	 */
+	public void removeOrigin(Long origin);
+	
+	/**
+	 * Sets the workflow status.
+	 *
+	 * @param workflowStatus the workflow status
+	 */
+	public void setWorkflowStatus(WorkflowStatus workflowStatus);
+	
+	/**
+	 * Returns the workflow status.
+	 *
+	 * @return the workflow status
+	 */
+	public WorkflowStatus getWorkflowStatus();
 }

@@ -5,7 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -14,50 +13,48 @@ import org.ihtsdo.otf.mapping.model.MapAgeRange;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Represents an age range.
+ *
+ * @author ${author}
+ */
 @Entity
 @Table(name = "map_age_ranges")
 @Audited
 @XmlRootElement(name="mapAgeRange")
 @JsonIgnoreProperties(ignoreUnknown = true)
-
-// Unique Constraints on All Values
 public class MapAgeRangeJpa implements MapAgeRange {
 	
-	// TODO
-	// make all fields required
-	// test on value = -1 to indicate a null bound
-	// boolean -> defaults to false
-	// add comments to javadoc
-	
-	// add methods hasLowerBound, hasUpperBound
-	// -> add this to serialization
-	
-	/** The id */
+	/** The id. */
 	@Id
 	@GeneratedValue
 	private Long id;
 
-	/** The age range preset name */
+	/** The age range preset name. */
 	@Column(nullable = false)
 	private String name;
 	
-	/** The lower bound parameters */
+	/** The lower bound parameters. */
 	@Column(nullable = false)
 	private Integer 	lowerValue;
 	
+	/** The lower units. */
 	@Column(nullable = false)
 	private String 	lowerUnits;
 	
+	/** The lower inclusive. */
 	@Column(nullable = false)
 	private boolean	lowerInclusive;
 	
-	/** The upper bound parameters */
+	/** The upper bound parameters. */
 	@Column(nullable = false)
 	private Integer	upperValue;
 	
+	/** The upper units. */
 	@Column(nullable = false)
 	private String	upperUnits;
 	
+	/** The upper inclusive. */
 	@Column(nullable = false)
 	private boolean	upperInclusive;
 	
@@ -92,87 +89,139 @@ public class MapAgeRangeJpa implements MapAgeRange {
 		return id.toString();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#getName()
+	 */
 	@Override
 	public String getName() {
 		return this.name;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#setName(java.lang.String)
+	 */
 	@Override
 	public void setName(String name) {
 		this.name = name;	
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#getLowerValue()
+	 */
 	@Override
 	public Integer getLowerValue() {
 		return this.lowerValue;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#setLowerValue(java.lang.Integer)
+	 */
 	@Override
 	public void setLowerValue(Integer value) {
 		this.lowerValue = value;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#getLowerUnits()
+	 */
 	@Override
 	public String getLowerUnits() {
 		return this.lowerUnits;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#setLowerUnits(java.lang.String)
+	 */
 	@Override
 	public void setLowerUnits(String units) {
 		this.lowerUnits = units;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#getLowerInclusive()
+	 */
 	@Override
 	public boolean getLowerInclusive() {
 		return this.lowerInclusive;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#setLowerInclusive(boolean)
+	 */
 	@Override
 	public void setLowerInclusive(boolean inclusive) {
 		this.lowerInclusive = inclusive;
 		
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#getUpperValue()
+	 */
 	@Override
 	public Integer getUpperValue() {
 		return this.upperValue;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#setUpperValue(java.lang.Integer)
+	 */
 	@Override
 	public void setUpperValue(Integer value) {
 		this.upperValue = value;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#getUpperUnits()
+	 */
 	@Override
 	public String getUpperUnits() {
 		return this.upperUnits;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#setUpperUnits(java.lang.String)
+	 */
 	@Override
 	public void setUpperUnits(String units) {
 		this.upperUnits = units;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#getUpperInclusive()
+	 */
 	@Override
 	public boolean getUpperInclusive() {
 		return this.upperInclusive;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAgeRange#setUpperInclusive(boolean)
+	 */
 	@Override
 	public void setUpperInclusive(boolean inclusive) {
 		this.upperInclusive = inclusive;
 	}
 	
+    /**
+     * Returns <code>true</code> if lowerValue is -1.
+     */
 	@Override
-	@XmlElement(name = "hasLowerBound")
 	public boolean hasLowerBound() {
-		return this.lowerValue == -1;
+		return this.lowerValue == -1 ? false : true;
 	}
 
+    /**
+     * Returns <code>true</code> if upperValue is -1.
+     */
 	@Override
-	@XmlElement(name = "hasUpperBound")
 	public boolean hasUpperBound() {
-		return this.upperValue == -1;
+		return this.upperValue == -1 ? false : true;
 	}
 	
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -191,6 +240,9 @@ public class MapAgeRangeJpa implements MapAgeRange {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -232,6 +284,9 @@ public class MapAgeRangeJpa implements MapAgeRange {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "MapAgeRangeJpa [name=" + name + ", lowerValue=" + lowerValue

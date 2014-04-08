@@ -17,7 +17,10 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 public class MapRecordList {
 
 	/** The map records. */
-	private List<MapRecord> mapRecords = new ArrayList<MapRecord>();
+	private List<MapRecord> mapRecords = new ArrayList<>();
+	
+	/** The total count of all records, not just the ones that may be in this mapRecords list*/
+	int totalCount = 0;
 
 	/**
 	 * Instantiates a new map record list.
@@ -53,7 +56,7 @@ public class MapRecordList {
 	 *            the new map records
 	 */
 	public void setMapRecords(List<MapRecord> mapRecords) {
-		this.mapRecords = new ArrayList<MapRecord>();
+		this.mapRecords = new ArrayList<>();
 		if (mapRecords != null) {
 			this.mapRecords.addAll(mapRecords);
 		}
@@ -95,5 +98,21 @@ public class MapRecordList {
 		return mapRecords.size();
 	}
 	
-
+	/**
+	 * Return the total count as an xml element
+	 * @return the total number of objects
+	 */
+	@XmlElement(name = "totalCount")
+	public int getTotalCount() {
+		return totalCount;
+	}
+	
+	/**
+	 * Sets the total count.
+	 *
+	 * @param totalCount the total count
+	 */
+	public void setTotalCount(int totalCount) {
+		this.totalCount = totalCount;
+	}
 }

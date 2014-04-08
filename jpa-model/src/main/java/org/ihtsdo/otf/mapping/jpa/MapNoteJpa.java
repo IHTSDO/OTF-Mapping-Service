@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -37,6 +38,7 @@ public class MapNoteJpa implements MapNote {
 	
 	/** The user. */
 	@ManyToOne(targetEntity=MapUserJpa.class)
+    @JoinColumn(nullable = false)
 	private MapUser user;
 	
 	/** The note. */
@@ -45,7 +47,7 @@ public class MapNoteJpa implements MapNote {
 	
 	/** The timestamp. */
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(nullable = false)
+    @Column(nullable = false)
 	private Date timestamp;
 	
 	/** Default constructor */
@@ -92,7 +94,7 @@ public class MapNoteJpa implements MapNote {
 	@XmlID
 	@Override
 	public String getObjectId() {
-		return id.toString();
+		return (this.id == null ? null : id.toString());
 	}
 
 	/* (non-Javadoc)

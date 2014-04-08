@@ -41,7 +41,7 @@
 			}
 
 			// Load jQuery
-			document.write( "<script id='jquery-js' src='" + src + "'><\x2Fscript>" );
+			document.write( "<script id='jquery-js' src='" + src + "'></script>" );
 		})();
 	</script>
 	<script src="data/testrunner.js"></script>
@@ -277,7 +277,7 @@ Z</textarea>
 			<button id="buttonWithoutTabIndex"></button>
 			<textarea id="textareaWithoutTabIndex"></textarea>
 			<menu type="popup">
-				<menuitem id="menuitemWithoutTabIndex" command="submitbutton" default/>
+				<menuitem id="menuitemWithoutTabIndex" command="submitbutton"  />
 			</menu>
 		</div>
 
@@ -330,7 +330,7 @@ Z</textarea>
 	</div>
 	</dl>
 	<map name="imgmap" id="imgmap">
-		<area shape="rect" coords="0,0,200,50">
+		<area shape="rect" coords="0,0,200,50"></area>
 	</map>
 
 </body>

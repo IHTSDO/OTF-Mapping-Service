@@ -19,419 +19,426 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  */
 public class ClamlMetadataServiceJpaHelper implements MetadataService {
 
-	/**
-	 * Returns the isa relationship type.
-	 * 
-	 * @param terminology the terminology
-	 * @param version the version
-	 * @return the isa relationship type
-	 * @throws Exception the exception
-	 */
-	private static Long getIsaRelationshipType(String terminology, String version)
-		throws Exception {
-		ContentService contentService = new ContentServiceJpa();
-		SearchResultList results =
-				contentService.findConcepts("Isa", new PfsParameterJpa());
-		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology)
-					&& result.getTerminologyVersion().equals(version)
-					&& result.getValue().equals("Isa")) {
-				
-				contentService.close();
-				return new Long(result.getTerminologyId());
-			}
-		}
-		contentService.close();
-		return -1L;
-	}
+  /**
+   * Returns the isa relationship type.
+   * 
+   * @param terminology the terminology
+   * @param version the version
+   * @return the isa relationship type
+   * @throws Exception the exception
+   */
+  private static String getIsaRelationshipType(String terminology, String version)
+    throws Exception {
+    ContentService contentService = new ContentServiceJpa();
+    SearchResultList results =
+        contentService.findConcepts("Isa", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Isa")) {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getAllMetadata(java.lang
-	 * .String, java.lang.String)
-	 */
-	@Override
-	public Map<String, Map<Long, String>> getAllMetadata(String terminology,
-		String version) {
-		// no-op - this is just helper class
-		return null;
-	}
+        contentService.close();
+        return new String(result.getTerminologyId());
+      }
+    }
+    contentService.close();
+    return "-1";
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getModules(java.lang.String
-	 * , java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getModules(String terminology, String version)
-		throws Exception {
-		Map<Long, String> map = new HashMap<Long, String>();
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getAllMetadata(java.lang
+   * .String, java.lang.String)
+   */
+  @Override
+  public Map<String, Map<String, String>> getAllMetadata(String terminology,
+    String version) {
+    // no-op - this is just helper class
+    return null;
+  }
 
-		ContentService contentService = new ContentServiceJpa();
-		String rootId = "";
-		SearchResultList results =
-				contentService.findConcepts("Module", new PfsParameterJpa());
-		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology)
-					&& result.getTerminologyVersion().equals(version)
-					&& result.getValue().equals("Module")) {
-				rootId = result.getTerminologyId();
-				break;
-			}
-		}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getModules(java.lang.String
+   * , java.lang.String)
+   */
+  @Override
+  public Map<String, String> getModules(String terminology, String version)
+    throws Exception {
+    ContentService contentService = new ContentServiceJpa();
+    String rootId = null;
+    SearchResultList results =
+        contentService.findConcepts("Module", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Module")) {
+        rootId = result.getTerminologyId();
+        break;
+      }
+    }
+    if (rootId == null)
+      throw new Exception("Module concept cannot be found.");
 
-		Set<Concept> descendants =
-				contentService.getDescendants(rootId, terminology, version,
-						getIsaRelationshipType(terminology, version));
+    return getDescendantMap(contentService, rootId, terminology, version);
+  }
 
-		for (Concept descendant : descendants) {
-			if (descendant.isActive()) {
-				map.put(new Long(descendant.getTerminologyId()),
-						descendant.getDefaultPreferredName());
-			}
-		}
-		contentService.close();
-		return map;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getAttributeValueRefSets
+   * (java.lang.String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getAttributeValueRefSets(String terminology,
+    String version) throws NumberFormatException, Exception {
+    return new HashMap<>();
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getAttributeValueRefSets
-	 * (java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getAttributeValueRefSets(String terminology,
-		String version) throws NumberFormatException, Exception {
-		return new HashMap<Long, String>();
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getComplexMapRefSets(java
+   * .lang.String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getComplexMapRefSets(String terminology,
+    String version) throws NumberFormatException, Exception {
+    return new HashMap<>();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getComplexMapRefSets(java
-	 * .lang.String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getComplexMapRefSets(String terminology,
-		String version) throws NumberFormatException, Exception {
-		return new HashMap<Long, String>();
+  }
 
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getLanguageRefSets(java
+   * .lang.String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getLanguageRefSets(String terminology, String version)
+    throws NumberFormatException, Exception {
+    return new HashMap<>();
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getLanguageRefSets(java
-	 * .lang.String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getLanguageRefSets(String terminology, String version)
-		throws NumberFormatException, Exception {
-		return new HashMap<Long, String>();
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getSimpleMapRefSets(java
+   * .lang.String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getSimpleMapRefSets(String terminology,
+    String version) throws NumberFormatException, Exception {
+    return new HashMap<>();
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getSimpleMapRefSets(java
-	 * .lang.String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getSimpleMapRefSets(String terminology,
-		String version) throws NumberFormatException, Exception {
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getSimpleRefSets(java.lang
+   * .String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getSimpleRefSets(String terminology, String version)
+    throws NumberFormatException, Exception {
+    ContentService contentService = new ContentServiceJpa();
+    String rootId = null;
+    SearchResultList results =
+        contentService.findConcepts("Simple refsets", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Simple refsets")) {
+        rootId = result.getTerminologyId();
+        break;
+      }
+    }
+    if (rootId == null)
+      throw new Exception("Simple refsets concept cannot be found.");
 
-		return new HashMap<Long, String>();
-	}
+    return getDescendantMap(contentService, rootId, terminology, version);
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getSimpleRefSets(java.lang
-	 * .String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getSimpleRefSets(String terminology, String version)
-		throws NumberFormatException, Exception {
-		return new HashMap<Long, String>();
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getMapRelations(java.lang
+   * .String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getMapRelations(String terminology, String version)
+    throws NumberFormatException, Exception {
+    return new HashMap<>();
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getMapRelations(java.lang
-	 * .String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getMapRelations(String terminology, String version)
-		throws NumberFormatException, Exception {
-		return new HashMap<Long, String>();
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getDefinitionStatuses(java
+   * .lang.String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getDefinitionStatuses(String terminology,
+    String version) throws NumberFormatException, Exception {
+    ContentService contentService = new ContentServiceJpa();
+    String rootId = null;
+    SearchResultList results =
+        contentService.findConcepts("Definition status", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Definition status")) {
+        rootId = result.getTerminologyId();
+        break;
+      }
+    }
+    if (rootId == null)
+      throw new Exception("Definition status concept cannot be found.");
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getDefinitionStatuses(java
-	 * .lang.String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getDefinitionStatuses(String terminology,
-		String version) throws NumberFormatException, Exception {
-		Map<Long, String> map = new HashMap<Long, String>();
+    return getDescendantMap(contentService, rootId, terminology, version);
+  }
 
-		ContentService contentService = new ContentServiceJpa();
-		String rootId = "";
-		SearchResultList results =
-				contentService.findConcepts("Definition status", new PfsParameterJpa());
-		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology)
-					&& result.getTerminologyVersion().equals(version)
-					&& result.getValue().equals("Definition status")) {
-				rootId = result.getTerminologyId();
-				break;
-			}
-		}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getDescriptionTypes(java
+   * .lang.String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getDescriptionTypes(String terminology,
+    String version) throws NumberFormatException, Exception {
+    ContentService contentService = new ContentServiceJpa();
+    String rootId = null;
+    SearchResultList results =
+        contentService.findConcepts("Description type", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Description type")) {
+        rootId = result.getTerminologyId();
+        break;
+      }
+    }
+    if (rootId == null)
+      throw new Exception("Description type concept cannot be found.");
 
-		Set<Concept> descendants =
-				contentService.getDescendants(rootId, terminology, version,
-						getIsaRelationshipType(terminology, version));
+    return getDescendantMap(contentService, rootId, terminology, version);
+  }
 
-		for (Concept descendant : descendants) {
-			if (descendant.isActive()) {
-				map.put(new Long(descendant.getTerminologyId()),
-						descendant.getDefaultPreferredName());
-			}
-		}
-		contentService.close();
-		return map;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getCaseSignificances(java
+   * .lang.String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getCaseSignificances(String terminology,
+    String version) throws NumberFormatException, Exception {
+    ContentService contentService = new ContentServiceJpa();
+    String rootId = null;
+    SearchResultList results =
+        contentService.findConcepts("Case significance", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Case significance")) {
+        rootId = result.getTerminologyId();
+        break;
+      }
+    }
+    if (rootId == null)
+      throw new Exception("Case significance concept cannot be found.");
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getDescriptionTypes(java
-	 * .lang.String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getDescriptionTypes(String terminology,
-		String version) throws NumberFormatException, Exception {
-		Map<Long, String> map = new HashMap<Long, String>();
+    return getDescendantMap(contentService, rootId, terminology, version);
+  }
 
-		ContentService contentService = new ContentServiceJpa();
-		String rootId = "";
-		SearchResultList results =
-				contentService.findConcepts("Description type", new PfsParameterJpa());
-		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology)
-					&& result.getTerminologyVersion().equals(version)
-					&& result.getValue().equals("Description type")) {
-				rootId = result.getTerminologyId();
-				break;
-			}
-		}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipTypes(java
+   * .lang.String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getRelationshipTypes(String terminology,
+    String version) throws NumberFormatException, Exception {
+    // find all active descendants of 106237007
+    ContentService contentService = new ContentServiceJpa();
+    String rootId = null;
+    SearchResultList results =
+        contentService.findConcepts("Relationship type", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Relationship type")) {
+        rootId = result.getTerminologyId();
+        break;
+      }
+    }
+    if (rootId == null)
+      throw new Exception("Relationship type concept cannot be found.");
 
-		Set<Concept> descendants =
-				contentService.getDescendants(rootId, terminology, version,
-						getIsaRelationshipType(terminology, version));
+    return getDescendantMap(contentService, rootId, terminology, version);
+  }
 
-		for (Concept descendant : descendants) {
-			if (descendant.isActive()) {
-				map.put(new Long(descendant.getTerminologyId()),
-						descendant.getDefaultPreferredName());
-			}
-		}
-		contentService.close();
-		return map;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#
+   * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getHierarchicalRelationshipTypes(String terminology,
+    String version) throws NumberFormatException, Exception {
+    Map<String, String> map = new HashMap<>();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getCaseSignificances(java
-	 * .lang.String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getCaseSignificances(String terminology,
-		String version) throws NumberFormatException, Exception {
-		Map<Long, String> map = new HashMap<Long, String>();
+    // find all active descendants of 106237007
+    ContentService contentService = new ContentServiceJpa();
+    Concept isaRel =
+        contentService.getConcept(getIsaRelationshipType(terminology, version)
+            .toString(), terminology, version);
+    map.put(new String(isaRel.getTerminologyId()),
+        isaRel.getDefaultPreferredName());
+    contentService.close();
+    return map;
+  }
 
-		ContentService contentService = new ContentServiceJpa();
-		String rootId = "";
-		SearchResultList results =
-				contentService.findConcepts("Case significance", new PfsParameterJpa());
-		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology)
-					&& result.getTerminologyVersion().equals(version)
-					&& result.getValue().equals("Case significance")) {
-				rootId = result.getTerminologyId();
-				break;
-			}
-		}
-		Set<Concept> descendants =
-				contentService.getDescendants(rootId, terminology, version,
-						getIsaRelationshipType(terminology, version));
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#
+   * getRelationshipCharacteristicTypes(java.lang.String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getRelationshipCharacteristicTypes(
+    String terminology, String version) throws NumberFormatException, Exception {
+    ContentService contentService = new ContentServiceJpa();
+    String rootId = null;
+    SearchResultList results =
+        contentService.findConcepts("Characteristic type", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Characteristic type")) {
+        rootId = result.getTerminologyId();
+        break;
+      }
+    }
+    if (rootId == null)
+      throw new Exception("Characteristic type concept cannot be found.");
 
-		for (Concept descendant : descendants) {
-			if (descendant.isActive()) {
-				map.put(new Long(descendant.getTerminologyId()),
-						descendant.getDefaultPreferredName());
-			}
-		}
-		contentService.close();
-		return map;
-	}
+    return getDescendantMap(contentService, rootId, terminology, version);
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipTypes(java
-	 * .lang.String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getRelationshipTypes(String terminology,
-		String version) throws NumberFormatException, Exception {
-		Map<Long, String> map = new HashMap<Long, String>();
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipModifiers
+   * (java.lang.String, java.lang.String)
+   */
+  @Override
+  public Map<String, String> getRelationshipModifiers(String terminology,
+    String version) throws NumberFormatException, Exception {
+    ContentService contentService = new ContentServiceJpa();
+    String rootId = null;
+    SearchResultList results =
+        contentService.findConcepts("Modifier", new PfsParameterJpa());
+    for (SearchResult result : results.getSearchResults()) {
+      if (result.getTerminology().equals(terminology)
+          && result.getTerminologyVersion().equals(version)
+          && result.getValue().equals("Modifier")) {
+        rootId = result.getTerminologyId();
+        break;
+      }
+    }
+    if (rootId == null)
+      throw new Exception("Modifier concept cannot be found.");
 
-		// find all active descendants of 106237007
-		ContentService contentService = new ContentServiceJpa();
-		String rootId = "";
-		SearchResultList results =
-				contentService.findConcepts("Relationship type", new PfsParameterJpa());
-		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology)
-					&& result.getTerminologyVersion().equals(version)
-					&& result.getValue().equals("Relationship type")) {
-				rootId = result.getTerminologyId();
-				break;
-			}
-		}
-		Set<Concept> descendants =
-				contentService.getDescendants(rootId, terminology, version,
-						getIsaRelationshipType(terminology, version));
+    return getDescendantMap(contentService, rootId, terminology, version);
+  }
 
-		for (Concept descendant : descendants) {
-			if (descendant.isActive()) {
-				map.put(new Long(descendant.getTerminologyId()),
-						descendant.getDefaultPreferredName());
-			}
-		}
-		contentService.close();
-		return map;
-	}
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#close()
+   */
+  @Override
+  public void close() {
+    // no-op - this is just helper class
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#
-	 * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getHierarchicalRelationshipTypes(String terminology,
-		String version) throws NumberFormatException, Exception {
-		Map<Long, String> map = new HashMap<Long, String>();
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologies()
+   */
+  @Override
+  public List<String> getTerminologies() {
+    // no-op - this is just helper class
+    return null;
+  }
 
-		// find all active descendants of 106237007
-		ContentService contentService = new ContentServiceJpa();
-		Concept isaRel =
-				contentService.getConcept(getIsaRelationshipType(terminology,
-						version).toString(),terminology, version);
-		map.put(new Long(isaRel.getTerminologyId()),
-				isaRel.getDefaultPreferredName());
-		contentService.close();
-		return map;
-	}
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String)
+   */
+  @Override
+  public List<String> getVersions(String terminology) {
+    // no-op - this is just helper class
+    return null;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.services.MetadataService#
-	 * getRelationshipCharacteristicTypes(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getRelationshipCharacteristicTypes(
-		String terminology, String version) throws NumberFormatException, Exception {
-		return new HashMap<Long, String>();
-	}
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang.String)
+   */
+  @Override
+  public String getLatestVersion(String terminology) {
+    // no-op - this is just helper class
+    return null;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getRelationshipModifiers
-	 * (java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Map<Long, String> getRelationshipModifiers(String terminology,
-		String version) throws NumberFormatException, Exception {
-		Map<Long, String> map = new HashMap<Long, String>();
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions()
+   */
+  @Override
+  public Map<String, String> getTerminologyLatestVersions() {
+    // no-op - this is just helper class
+    return null;
+  }
 
-		ContentService contentService = new ContentServiceJpa();
-		String rootId = "";
-		SearchResultList results =
-				contentService.findConcepts("Modifier", new PfsParameterJpa());
-		for (SearchResult result : results.getSearchResults()) {
-			if (result.getTerminology().equals(terminology)
-					&& result.getTerminologyVersion().equals(version)
-					&& result.getValue().equals("Modifier")) {
-				rootId = result.getTerminologyId();
-				break;
-			}
-		}
-		Set<Concept> descendants =
-				contentService.getDescendants(rootId, terminology, version,
-						getIsaRelationshipType(terminology, version));
 
-		for (Concept descendant : descendants) {
-			if (descendant.isActive()) {
-				map.put(new Long(descendant.getTerminologyId()),
-						descendant.getDefaultPreferredName());
-			}
-		}
-		contentService.close();
-		return map;
-	}
+  /**
+   * Returns the descendant map for the specified parameters.
+   * 
+   * @param contentService the content service
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the descendant map
+   */
+  private Map<String, String> getDescendantMap(ContentService contentService,
+    String terminologyId, String terminology, String version) throws Exception {
+    Map<String, String> map = new HashMap<>();
+    Set<Concept> descendants =
+        contentService.getDescendants(terminologyId, terminology, version,
+            getIsaRelationshipType(terminology, version));
 
-	@Override
-	public void close() {
-		// no-op - this is just helper class
-	}
-
-	@Override
-	public List<String> getTerminologies() {
-		// no-op - this is just helper class
-		return null;
-	}
-
-	@Override
-	public List<String> getVersions(String terminology) {
-		// no-op - this is just helper class
-		return null;
-	}
-
-	@Override
-	public String getLatestVersion(String terminology) {
-		// no-op - this is just helper class
-		return null;
-	}
-
-	@Override
-	public Map<String, String> getTerminologyLatestVersions() {
-		// no-op - this is just helper class
-		return null;
-	}
-
+    for (Concept descendant : descendants) {
+      if (descendant.isActive()) {
+        map.put(new String(descendant.getTerminologyId()),
+            descendant.getDefaultPreferredName());
+      }
+    }
+    contentService.close();
+    return map;
+  }
 }

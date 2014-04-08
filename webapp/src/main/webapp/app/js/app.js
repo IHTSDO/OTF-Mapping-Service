@@ -7,7 +7,16 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'adf',  
                                                      'mapProjectApp.widgets.mapProjectList', 
                                                      'mapProjectApp.widgets.metadataList',
-                                                     'LocalStorageModule'
+                                                     'mapProjectApp.widgets.mapProject',
+                                                     'mapProjectApp.widgets.mapRecord',
+                                                     'mapProjectApp.widgets.mapEntry',  
+                                                     'mapProjectApp.widgets.assignedList', 
+                                                     'mapProjectApp.widgets.editedList',  
+                                                     'mapProjectApp.widgets.workAvailable',
+                                                     'mapProjectApp.widgets.terminologyBrowser',
+                                                     'LocalStorageModule',
+                                                     'ngCookies'/*,
+                                                     'textAngular'*/
                         ])
                         .value('prefix', '')
                         .config(function (dashboardProvider) {
@@ -29,7 +38,11 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                 }, {
                                   class: 'col-md-8',
                                   widgets: []
+                                }, {
+                                  class: 'col-md-4',
+                                  widgets: []
                                 }]
+                                
                               }]
                             })
                             .structure('12/4-4-4', {
@@ -69,45 +82,83 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                         .controller('dashboardCtrl', function ($rootScope, $scope, localStorageService) {
                           var name = 'default';
                           var model = localStorageService.get(name);
-                          if (!model && $rootScope.role.value >= 3) { // lead or higher privledge
+                          
+                          var currentUser = localStorageService.get('currentUser');
+                          var currentRole = localStorageService.get('currentRole');
+                          
+                          if (!model) { // lead or higher privledge
                             // set default model for demo purposes
-                            model = {
-                              structure: "4-8",                          
-                            rows: [{
-                                columns: [{
-                                  class: 'col-md-4',
-                                  widgets: [{
-                                      type: "mapProjectList",
-                                      config: {},
-                                      title: "Map Projects"
+                        	model = {
+                        			  
+                        	  structure: "12/6-6/12",
+                        	  rows: [{
+                                  columns: [{
+                                    class: 'col-md-12',
+                                    widgets: [{
+	                                      type: "mapProject",
+	                                      config: {},
+	                                      title: "Map Project"
+	                                  }]
                                   }]
                                 }, {
-                                  class: 'col-md-8',
-                                  widgets: [{
-                                      type: "metadataList",
-                                      config: {
-                                          terminology: "SNOMEDCT"
-                                      },
-                                      title: "Metadata"
+                                  columns: [{
+                                    class: 'col-md-6',
+                                    widgets: [{
+	                                      type: "workAvailable",
+	                                      config: {},
+	                                      title: "Available Work"
+	                                  }]
+                                  }, {
+                                    class: 'col-md-6',
+                                    widgets: [{
+	                                      type: "assignedList",
+	                                      config: {},
+	                                      title: "Assigned to Me"
+	                                  }]
+                                  }]
+                                }
+                                
+                                , {
+                                  columns: [{
+                                    class: 'col-md-12',
+                                    widgets: [{
+	                                      type: "editedList",
+	                                      title: "Recently Edited"
+	                                  }]
+                                  }]
+                                }, {
+                                    columns: [{
+                                        class: 'col-md-12',
+                                        widgets: [{
+	                                      type: "metadataList",
+	                                      config: {
+	                                          terminology: "SNOMEDCT"
+	                                      },
+	                                      title: "Metadata"
+	                                  }]
                                   }]
                                 }]
-                              }]
+                        	  
+	
                             };
                           } else if (!model) { // viewer or specialist
                               // set default model for demo purposes
                               model = {
-                                structure: "4-8",                          
+                                structure: "6-6",                          
                               rows: [{
-                                  columns: [{
-                                    class: 'col-md-4',
-                                    widgets: [{
-                                        type: "mapProjectList",
-                                        config: {},
-                                        title: "Map Projects"
+                            	  columns: [{
+                                      class: 'col-md-6',
+                                      widgets: [{
+  	                                      type: "terminologyBrowser",
+  	                                      config: {
+  	                                          terminology: "ICD10",
+  	                                          terminologyVersion: "2010"                	 
+  	                                      },
+  	                                      title: "ICD10 Browser"
+  	                                  }]
                                     }]
                                   }]
-                                }]
-                              };
+                                }
                             }
                           $scope.name = name;
                           $scope.model = model;
@@ -126,11 +177,6 @@ mapProjectApp.config(['$routeProvider',
       //////////////////////////////
 	  // DASHBOARDS
 	  //////////////////////////////
-	
-	  $routeProvider.when('/sorttest', {
-		  controller: 'SortTestCtrl',
-		  templateUrl: 'sorttest.html'
-	  });
 	  
 	  $routeProvider.when('/specialist/dash', {
 		  templateUrl: 'partials/project-list.html'
@@ -168,38 +214,18 @@ mapProjectApp.config(['$routeProvider',
 			controller: 'RecordConceptListCtrl'
 	  });
 	  
-	  $routeProvider.when('/record/conceptId/:conceptId/create', {
-		  templateUrl: 'partials/record-create.html',
-		  controller: 'RecordCreateCtrl'
-	  });
-	  
 	  $routeProvider.when('/record/recordId/:recordId', {
-		  templateUrl: 'partials/record-detail.html',
-		  controller: 'MapRecordDetailCtrl'
+		  templateUrl: 'partials/record-dashboard.html',
+		  controller: 'MapRecordDashboardCtrl'
 	  });
 		
 	  
-	  //////////////////////////////
-	  // CONTENT SERVICES
-	  //////////////////////////////
-	  
-	  
-	  
-	  
-	  //////////////////////////////
-	  // QUERY SERVICES
-	  //////////////////////////////
 
-	  //////////////////////////////
-	  // METADATA SERVICES
-	  //////////////////////////////
 
 	  
 	  ///////////////////////////////
 	  // HOME and ERROR ROUTES
 	  ///////////////////////////////
-	  
-	 
 	  
 	  $routeProvider.when('/', {
 		  templateUrl: 'partials/login.html',

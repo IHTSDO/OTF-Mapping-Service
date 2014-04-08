@@ -1,0 +1,12 @@
+<div ng-show="project != null">
+
+	<h4>{{project.name}}</h4>
+	
+	<a href="#/project/id/{{project.id}}" class="btn">Project Details</a>
+	<a href="#/record/projectId/{{project.id}}" class="btn">Map Records</a>
+</div>
+<div ng-show="project == null">
+
+	Select a project.
+
+</div>

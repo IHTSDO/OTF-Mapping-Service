@@ -126,49 +126,50 @@ public class SearchResultJpa implements SearchResult {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((value == null) ? 0 : value.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result
-				+ ((terminologyId == null) ? 0 : terminologyId.hashCode());
+		result =
+				prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+		result =
+				prime * result
+						+ ((terminologyId == null) ? 0 : terminologyId.hashCode());
+		result =
+				prime
+						* result
+						+ ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
 
+
+
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		SearchResultJpa other = (SearchResultJpa) obj;
-		if (value == null) {
-			if (other.value != null) {
+		if (terminology == null) {
+			if (other.terminology != null)
 				return false;
-			}
-		} else if (!value.equals(other.value)) {
+		} else if (!terminology.equals(other.terminology))
 			return false;
-		}
-		if (id == null) {
-			if (other.id != null) {
-				return false;
-			}
-		} else if (!id.equals(other.id)) {
-			return false;
-		}
 		if (terminologyId == null) {
-			if (other.terminologyId != null) {
+			if (other.terminologyId != null)
 				return false;
-			}
-		} else if (!terminologyId.equals(other.terminologyId)) {
+		} else if (!terminologyId.equals(other.terminologyId))
 			return false;
-		}
-		
-		
+		if (terminologyVersion == null) {
+			if (other.terminologyVersion != null)
+				return false;
+		} else if (!terminologyVersion.equals(other.terminologyVersion))
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
 		return true;
 	}
 

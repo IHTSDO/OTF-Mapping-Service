@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Interface for services to retrieve (get) metadata objects.
+ * Services to retrieve metadata objects.
  */
 public interface MetadataService {
 
@@ -60,7 +60,7 @@ public interface MetadataService {
 	 * @return all metadata
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<String, Map<Long, String>> getAllMetadata(String terminology,
+	public Map<String, Map<String, String>> getAllMetadata(String terminology,
 		String version) throws Exception;
 
 	/**
@@ -71,7 +71,7 @@ public interface MetadataService {
 	 * @return the modules
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getModules(String terminology, String version)
+	public Map<String, String> getModules(String terminology, String version)
 		throws Exception;
 
 	/**
@@ -82,7 +82,7 @@ public interface MetadataService {
 	 * @return the attribute value ref sets
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getAttributeValueRefSets(String terminology,
+	public Map<String, String> getAttributeValueRefSets(String terminology,
 		String version) throws Exception;
 
 	/**
@@ -93,7 +93,7 @@ public interface MetadataService {
 	 * @return the complex map ref sets
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getComplexMapRefSets(String terminology,
+	public Map<String, String> getComplexMapRefSets(String terminology,
 		String version) throws Exception;
 
 	/**
@@ -104,7 +104,7 @@ public interface MetadataService {
 	 * @return the language refsets
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getLanguageRefSets(String terminology, String version)
+	public Map<String, String> getLanguageRefSets(String terminology, String version)
 		throws Exception;
 
 	/**
@@ -115,7 +115,7 @@ public interface MetadataService {
 	 * @return the simple map refsets
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getSimpleMapRefSets(String terminology,
+	public Map<String, String> getSimpleMapRefSets(String terminology,
 		String version) throws Exception;
 
 	/**
@@ -126,7 +126,7 @@ public interface MetadataService {
 	 * @return the simple refsets
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getSimpleRefSets(String terminology, String version)
+	public Map<String, String> getSimpleRefSets(String terminology, String version)
 		throws Exception;
 
 	/**
@@ -137,7 +137,7 @@ public interface MetadataService {
 	 * @return the map relations
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getMapRelations(String terminology, String version)
+	public Map<String, String> getMapRelations(String terminology, String version)
 		throws Exception;
 
 	/**
@@ -148,7 +148,7 @@ public interface MetadataService {
 	 * @return the definition statuses
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getDefinitionStatuses(String terminology,
+	public Map<String, String> getDefinitionStatuses(String terminology,
 		String version) throws Exception;
 
 	/**
@@ -159,7 +159,7 @@ public interface MetadataService {
 	 * @return the description types
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getDescriptionTypes(String terminology,
+	public Map<String, String> getDescriptionTypes(String terminology,
 		String version) throws Exception;
 
 	/**
@@ -170,7 +170,7 @@ public interface MetadataService {
 	 * @return the case significances
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getCaseSignificances(String terminology,
+	public Map<String, String> getCaseSignificances(String terminology,
 		String version) throws Exception;
 
 	/**
@@ -181,7 +181,7 @@ public interface MetadataService {
 	 * @return the relationship types
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getRelationshipTypes(String terminology,
+	public Map<String, String> getRelationshipTypes(String terminology,
 		String version) throws Exception;
 
 	/**
@@ -197,7 +197,7 @@ public interface MetadataService {
 	 * @return the relationship types
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getHierarchicalRelationshipTypes(String terminology,
+	public Map<String, String> getHierarchicalRelationshipTypes(String terminology,
 		String version) throws Exception;
 
 	/**
@@ -208,7 +208,7 @@ public interface MetadataService {
 	 * @return the relationship characteristic types
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getRelationshipCharacteristicTypes(
+	public Map<String, String> getRelationshipCharacteristicTypes(
 		String terminology, String version) throws Exception;
 
 	/**
@@ -219,7 +219,7 @@ public interface MetadataService {
 	 * @return the relationship modifiers
 	 * @throws Exception if anything goes wrong
 	 */
-	public Map<Long, String> getRelationshipModifiers(String terminology,
+	public Map<String, String> getRelationshipModifiers(String terminology,
 		String version) throws Exception;
 
 }
