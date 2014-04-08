@@ -537,21 +537,6 @@ public class WorkflowServiceJpa implements WorkflowService {
 
 	@Override
 	public Map<Long, Long> compareFinishedMapRecords(MapProject mapProject) throws Exception {
-	 
-	@Override
-	public Set<WorkflowTrackingRecord> getTrackingRecordsForUnmappedInScopeConcepts(MapProject mapProject) {
-		Set<WorkflowTrackingRecord> unmappedTrackingRecords = new HashSet<>();
-		for (WorkflowTrackingRecord trackingRecord : getWorkflowTrackingRecords(mapProject)) {
-			if (!trackingRecord.isHasDiscrepancy())
-				unmappedTrackingRecords.add(trackingRecord);
-		}
-		return unmappedTrackingRecords;
-	}
-
-	@Override
-	public SearchResultList findMapRecordsAssignedToUser(MapProject project,
-			MapUser user, PfsParameter pfsParameter) {
-		
 		Map<MapRecord, MapRecord> finishedPairsForComparison = new HashMap<MapRecord, MapRecord>();
 		Map<Long, Long> conflicts = new HashMap<Long, Long>();
 		
@@ -585,6 +570,22 @@ public class WorkflowServiceJpa implements WorkflowService {
 		}
 		return conflicts;
 	}
+	
+	@Override
+	public Set<WorkflowTrackingRecord> getTrackingRecordsForUnmappedInScopeConcepts(MapProject mapProject) {
+		Set<WorkflowTrackingRecord> unmappedTrackingRecords = new HashSet<>();
+		for (WorkflowTrackingRecord trackingRecord : getWorkflowTrackingRecords(mapProject)) {
+			if (!trackingRecord.isHasDiscrepancy())
+				unmappedTrackingRecords.add(trackingRecord);
+		}
+		return unmappedTrackingRecords;
+	}
+
+	@Override
+	public SearchResultList findMapRecordsAssignedToUser(MapProject project,
+			MapUser user, PfsParameter pfsParameter) {
+		
+		
 
 
 
