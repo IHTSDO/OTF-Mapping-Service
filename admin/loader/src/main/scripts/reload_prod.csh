@@ -12,7 +12,7 @@ echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
 
-echo "    Run updatedb with hibernate.hbm2ddl.auto = create ...`/bin/date`"
+echo "    Run updatedb with hibernate.hbm2ddl.auto = update ...`/bin/date`"
 cd $OTF_MAPPING_HOME/admin/updatedb
 mvn -Drun.config=prod -Dhibernate.hbm2ddl.auto=update install >&! mvn.log
 if ($status != 0) then
