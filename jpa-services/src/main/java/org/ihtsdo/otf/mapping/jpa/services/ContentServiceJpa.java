@@ -626,7 +626,7 @@ public class ContentServiceJpa implements ContentService {
 										tp.setTerminologyId(c_rel.getTerminologyId());
 										tp.setDefaultPreferredName(c_rel.getDefaultPreferredName());
 										tp.setChildrenCount(c_rel.getInverseRelationships().size());
-										Logger.getLogger(this.getClass()).info(
+										Logger.getLogger(this.getClass()).debug(
 												"  Create tree position - " + tp.getAncestorPath() + ", "
 														+ c_rel.getTerminologyId());
 										tpCounter++;

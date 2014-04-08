@@ -357,6 +357,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
                   + ft.format(new Date()) + ")");
         }
 
+        manager.clear();
+        
         // creating tree positions
         // first get isaRelType from metadata
         MetadataService metadataService = new MetadataServiceJpa();
