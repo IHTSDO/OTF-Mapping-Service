@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
@@ -180,5 +181,16 @@ public interface WorkflowService {
 	 */
 	public SearchResultList findAvailableWork(Workflow workflow, MapUser mapUser,
 			PfsParameter pfsParameter);
+	
+
+	/**
+	 * Compare finished map records.
+	 *
+	 * @param mapProject the map project
+	 * @return the map
+	 * @throws Exception the exception
+	 */
+	public Map<Long, Long> compareFinishedMapRecords(MapProject mapProject) throws Exception;
+	
 	
 }

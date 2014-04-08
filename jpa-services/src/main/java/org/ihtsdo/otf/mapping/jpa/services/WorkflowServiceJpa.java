@@ -3,8 +3,11 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -19,8 +22,10 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -616,6 +621,45 @@ public class WorkflowServiceJpa implements WorkflowService {
 							+ "is no active transaction");
 		tx.commit();
 	}
+
+	@Override
+	public Map<Long, Long> compareFinishedMapRecords(MapProject mapProject) throws Exception {
+	 
+		Map<MapRecord, MapRecord> finishedPairsForComparison = new HashMap<MapRecord, MapRecord>();
+		Map<Long, Long> conflicts = new HashMap<Long, Long>();
+		
+		MappingService mappingService = new MappingServiceJpa();
+		List<MapRecord> allMapRecords = mappingService.getMapRecordsForMapProject(mapProject.getId());
+		List<MapRecord> finishedMapRecords = new ArrayList<>();
+		for (MapRecord mapRecord : allMapRecords) {
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE))
+				finishedMapRecords.add(mapRecord);
+		}
+		MapRecord[] mapRecords = finishedMapRecords.toArray(new MapRecord[0]);
+		for (int i=0; i<mapRecords.length; i++) {
+			for (int j=0; j<mapRecords.length; j++) {
+				if (mapRecords[i].getConceptId().equals(mapRecords[j].getConceptId()) &&
+						mapRecords[i].getLastModified() < mapRecords[j].getLastModified() &&
+						mapRecords[i].getId() != mapRecords[j].getId()) {
+							finishedPairsForComparison.put(mapRecords[i], mapRecords[j]);
+				}
+			}
+		}
+		for (Entry<MapRecord, MapRecord> entry : finishedPairsForComparison.entrySet()) {
+		  DefaultProjectSpecificAlgorithmHandler handler = new DefaultProjectSpecificAlgorithmHandler();
+		  ValidationResult result = handler.compareMapRecords(entry.getKey(), entry.getValue());
+		  if (!result.isValid()) {
+		  	conflicts.put(entry.getKey().getId(), entry.getValue().getId());
+			     entry.getKey().setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+			     mappingService.updateMapRecord(entry.getKey());
+			     entry.getValue().setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+			     mappingService.updateMapRecord(entry.getValue());
+		  }
+		}
+		return conflicts;
+	}
+
+
 
 	
 }
