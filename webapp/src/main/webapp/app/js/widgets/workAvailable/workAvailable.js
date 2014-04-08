@@ -29,6 +29,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.currentUser = localStorageService.get('currentUser');
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.mapUsers = localStorageService.get('mapUsers');
+	$scope.isConceptListOpen = false;
 
 	console.debug('LIST OF USERS:');
 	console.debug($scope.mapUsers);
@@ -44,7 +45,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		$scope.focusProject = parameters.focusProject;
 	});
 	
-	// coupled with $watch below, this avoids premature work fetching
+	// on unassign notification, refresh the available work widget
 	$scope.$on('assignedListWidget.notification.unassignWork', function(event, parameters) { 	
 		console.debug("WorkAvailableCtrl:  Detected unassign work notification");
 		$scope.retrieveAvailableWork(1);
@@ -139,11 +140,13 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			}	
 		}).success(function(data) {
 			
+			console.debug("Claim batch:  Checking against viewed concepts");
+			
 			var trackingRecords = data.searchResult;
 			var conceptListValid = true;
 			
 			// if user is viewing concepts , check that first result matches first displayed result
-			if (isConceptListOpen == true) {
+			if ($scope.isConceptListOpen == true) {
 				for (var i = 0; i < $scope.$scope.trackingRecordPerPage; i++) {
 					if (trackingRecords[i].id != $scope.availableWork[i].id) {
 						retrieveAvailableWork(1);
@@ -179,6 +182,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				
 				});
 			}
+		}).error(function(data) {
+			console.debug("Could not retrieve available work when assigning batch.");
 		});
 				
 			

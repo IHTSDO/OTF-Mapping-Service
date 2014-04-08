@@ -9,9 +9,9 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.workflow.Workflow;
 import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a service for answering questions and performing actions
  * related to workflow management.
@@ -25,7 +25,7 @@ public interface WorkflowService {
 	 * @return the workflow
 	 * @throws Exception the exception
 	 */
-	public Workflow getWorkflow(MapProject project)  throws Exception;
+	public List<WorkflowTrackingRecord> getWorkflowTrackingRecords(MapProject project)  throws Exception;
 
 	/**
 	 * Compute workflow.
@@ -48,45 +48,20 @@ public interface WorkflowService {
 	/**
 	 * Removes the workflow tracking record.
 	 *
-	 * @param project the project
-	 * @param record the record
+	 * @param workflowTrackingRecordId the workflow tracking record id
 	 * @throws Exception the exception
 	 */
-	public void removeWorkflowTrackingRecord(MapProject project, WorkflowTrackingRecord record) throws Exception;
+	public void removeWorkflowTrackingRecord(Long workflowTrackingRecordId) throws Exception;
 	
 	/**
 	 * Update workflow tracking record.
 	 *
-	 * @param project the project
 	 * @param record the record
 	 * @throws Exception the exception
 	 */
-	public void updateWorkflowTrackingRecord(MapProject project, WorkflowTrackingRecord record) throws Exception;
-
-	/**
-	 * Returns the workflows.
-	 *
-	 * @return the workflows
-	 * @throws Exception the exception
-	 */
-	public List<Workflow> getWorkflows() throws Exception;
-
-	/**
-	 * Adds the workflow.
-	 *
-	 * @param project the project
-	 * @throws Exception the exception
-	 */
-	public void addWorkflow(MapProject project) throws Exception;
-
-	/**
-	 * Removes the workflow.
-	 *
-	 * @param project the project
-	 * @throws Exception the exception
-	 */
-	public void removeWorkflow(MapProject project) throws Exception;
-
+	void updateWorkflowTrackingRecord(WorkflowTrackingRecord record)
+			throws Exception;
+	
 	/**
 	 * Assign user to concept.
 	 * @param project the project
@@ -133,8 +108,8 @@ public interface WorkflowService {
 	
 	/**
 	 * Closes the manager associated with service.
-	 * 
-	 * @exception Exception the exception
+	 *
+	 * @throws Exception the exception
 	 */
 	public void close() throws Exception;
 
@@ -173,12 +148,52 @@ public interface WorkflowService {
 	/**
 	 * Find available work.
 	 *
-	 * @param workflow the workflow
+	 * @param mapProject the map project
 	 * @param mapUser the map user
 	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
 	 */
-	public SearchResultList findAvailableWork(Workflow workflow, MapUser mapUser,
+	public SearchResultList findAvailableWork(MapProject mapProject, MapUser mapUser,
 			PfsParameter pfsParameter);
+
+	/**
+	 * Gets the available tracking records for workflow and user.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userId the user id
+	 * @return the available tracking records for workflow and user
+	 */
+	public List<WorkflowTrackingRecord> getAvailableTrackingRecordsForProjectAndUser(
+			Long mapProjectId, Long userId);
+
 	
+	/**
+	 * Gets the tracking records for unmapped in scope concepts.
+	 *
+	 * @param mapProject the map project
+	 * @return the tracking records for unmapped in scope concepts
+	 */
+	public Set<WorkflowTrackingRecord> getTrackingRecordsForUnmappedInScopeConcepts(MapProject mapProject);
+
+	/**
+	 * Gets the tracking records for conflict concepts.
+	 *
+	 * @param mapProject the map project
+	 * @return the tracking records for conflict concepts
+	 */
+	public Set<WorkflowTrackingRecord> getTrackingRecordsForConflictConcepts(
+			MapProject mapProject);
+
+	/**
+	 * Find map records assigned to user.
+	 *
+	 * @param project the project
+	 * @param user the user
+	 * @param pfsParameter the pfs parameter
+	 * @return the sets the
+	 */
+	public SearchResultList findMapRecordsAssignedToUser(MapProject project,
+			MapUser user, PfsParameter pfsParameter);
 }
+
+

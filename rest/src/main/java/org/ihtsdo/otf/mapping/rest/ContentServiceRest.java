@@ -19,7 +19,6 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipList;
-import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionList;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -307,101 +306,7 @@ public class ContentServiceRest {
 		}
 	}
 	
-	/**
-	 * Finds tree positions for concept.
-	 *
-	 * @param terminologyId the terminology id
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
-	 * @return the search result list
-	 */
-	@GET
-	@Path("/tree/concept/{terminology}/{terminologyVersion}/id/{terminologyId}")
-	@ApiOperation(value = "Get the local tree (position and children) for a particular concept", notes = "Returns a tree structure representing the position of a concept in a terminology and its children", response = TreePositionList.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public TreePositionList getLocalTreePositionsForConcept(
-			@ApiParam(value = "terminology id of concept", required = true) @PathParam("terminologyId") String terminologyId,
-			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion			
-			) {
-			
-		
-		try {
-			ContentService contentService = new ContentServiceJpa();
-			
-			TreePositionList localTrees = new TreePositionList();
-			localTrees.setTreePositions(contentService.getLocalTrees(terminologyId, terminology, terminologyVersion)); 
-			contentService.close();
-			return localTrees;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
 	
-	/**
-	 * Finds tree positions for concept.
-	 *
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
-	 * @return the search result list
-	 */
-	@GET
-	@Path("/tree/terminology/{terminology}/{terminologyVersion}")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public TreePositionList getRootTreePositionsForTerminology(
-			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion			
-			) {
-			
-		try {
-			ContentService contentService = new ContentServiceJpa();
-			
-			TreePositionList localTrees = new TreePositionList();
-			localTrees.setTreePositions(contentService.getRootTreePositionsForTerminology(terminology, terminologyVersion)); 
-			contentService.close();
-			return localTrees;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	/**
-	 * Finds tree positions for concept query.
-	 *
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
-	 * @param query the query
-	 * @return the root-level trees corresponding to the query
-	 */
-	@GET
-	@Path("/tree/terminology/{terminology}/{terminologyVersion}/query/{query}")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public TreePositionList getRootTreePositionsForConceptQuery(
-			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,			
-			@ApiParam(value = "paging/filtering/sorting object", required = true) @PathParam("query") String query) {
-			
-		
-		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /tree/concept/" + terminology + "/" + terminologyVersion + "/query/" + query);
-		try {
-			ContentService contentService = new ContentServiceJpa();
-			
-			TreePositionList localTrees = new TreePositionList();
-			localTrees.setTreePositions(contentService.getTreePositionsForConceptQuery(terminology, terminologyVersion, query)); 
-			contentService.close();
-			return localTrees;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
 	
 	/**
 	 * Finds descendants from tree positions.

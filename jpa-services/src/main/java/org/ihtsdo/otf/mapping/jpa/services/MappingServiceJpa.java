@@ -53,6 +53,7 @@ import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -62,8 +63,10 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -178,18 +181,17 @@ public class MappingServiceJpa implements MappingService {
 		query.setParameter("id", id);
 
 		try {
-			System.out.println("GetMapProject(Long id)");
 			m = (MapProject) query.getSingleResult();
 			m.getScopeConcepts().size();
 			m.getScopeExcludedConcepts().size();
 			return m;
-			
+
 		} catch (NoResultException e) {
 			Logger.getLogger(this.getClass()).warn(
 					"Map project query for id = " + id + " returned no results!");
 			return null;
 		}
-		
+
 
 	}
 
@@ -240,8 +242,8 @@ public class MappingServiceJpa implements MappingService {
 					+ " returned no results!");
 			return null;
 		}
-		
-		
+
+
 		return m;
 	}
 
@@ -261,7 +263,7 @@ public class MappingServiceJpa implements MappingService {
 				manager.createQuery("select m from MapProjectJpa m");
 
 		m = query.getResultList();
-		
+
 		for (MapProject project : m) {
 			project.getScopeConcepts().size();
 			project.getScopeExcludedConcepts().size();
@@ -709,7 +711,7 @@ public class MappingServiceJpa implements MappingService {
 					"Returning record_id... "
 							+ ((r != null) ? r.getId().toString() : "null"));
 
-			
+
 			return r;
 
 		} catch (NoResultException e) {
@@ -885,13 +887,13 @@ public class MappingServiceJpa implements MappingService {
 		}
 
 	}
-	
+
 	/**
 	 * Takes a map entry and computes any auto-generated advice for its entries
 	 */
 	@Override
 	public MapRelation computeMapRelation(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-	
+
 		MapRecord mapRecord = getMapRecord(mapEntry.getMapRecord().getId());
 		MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
 		ProjectSpecificAlgorithmHandler algorithmHandler = 
@@ -899,7 +901,7 @@ public class MappingServiceJpa implements MappingService {
 
 		return algorithmHandler.computeMapRelation(mapRecord, mapEntry);
 	}
-	
+
 	/**
 	 * Takes a map record and computes any auto-generated advice for its entries
 	 * @throws ClassNotFoundException 
@@ -907,10 +909,10 @@ public class MappingServiceJpa implements MappingService {
 	 * @throws InstantiationException 
 	 */
 	@Override
-  public List<MapAdvice> computeMapAdvice(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+	public List<MapAdvice> computeMapAdvice(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 
 		MapRecord mapRecord = mapEntry.getMapRecord();
-		
+
 		ProjectSpecificAlgorithmHandler algorithmHandler = 
 				getProjectSpecificAlgorithmHandler(getMapProject(mapRecord.getMapProjectId()));
 
@@ -923,9 +925,9 @@ public class MappingServiceJpa implements MappingService {
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordRevisions(java.lang.Long)
 	 */
 	@SuppressWarnings({
-      "unchecked", "rawtypes", "unused"
-  })
-  @Override
+		"unchecked", "rawtypes", "unused"
+	})
+	@Override
 	public List<MapRecord> getMapRecordRevisions(Long mapRecordId) {
 
 		AuditReader reader = AuditReaderFactory.get(manager);
@@ -939,110 +941,110 @@ public class MappingServiceJpa implements MappingService {
 		return query;
 	}
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords(org.ihtsdo.otf.mapping.model.MapUser)
-   */
-  @SuppressWarnings({
-      "unchecked"
-  })
-  @Override
-  // TODO confirm return sorted by lastModifiedBy most recent at head
-  public List<MapRecord> getRecentlyEditedMapRecords(Long projectId, String userName, PfsParameter pfsParameter)  throws Exception {
-  	
-  	MapUser user = getMapUser(userName);
-  	
-  	Map<String, MapRecord> editedRecords = new HashMap<>();
-  	
-  	AuditReader reader = AuditReaderFactory.get(manager);
-  	
-  	AuditQuery query =
-  			reader
-        .createQuery()
-        .forRevisionsOfEntity(MapRecordJpa.class, false, true)
-        .add(AuditEntity.relatedId("owner").eq(user.getId()))
-        .addOrder(AuditEntity.property("lastModified").desc());
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords(org.ihtsdo.otf.mapping.model.MapUser)
+	 */
+	@SuppressWarnings({
+		"unchecked"
+	})
+	@Override
+	// TODO confirm return sorted by lastModifiedBy most recent at head
+	public List<MapRecord> getRecentlyEditedMapRecords(Long projectId, String userName, PfsParameter pfsParameter)  throws Exception {
 
-  	int pfsCounter = 0;
-    List<Object[]> allRevisions = query.getResultList();
-    for (Object[] revision : allRevisions) {
-    	MapRecord record = (MapRecord)revision[0];
-    	// used to force reading the graph
-    	record.getLastModifiedBy().getEmail();
-    	// only save the most recent revision
-    	if (record.getMapProjectId().equals(projectId) &&
-    			record.getWorkflowStatus() != WorkflowStatus.NEW &&
-    			!editedRecords.keySet().contains(record.getConceptId()) ) {
-    	  pfsCounter++;
-    	  if (pfsParameter != null && pfsCounter > pfsParameter.getMaxResults())
-    	  	continue;
-    		if (pfsParameter != null && pfsCounter >= pfsParameter.getStartIndex()) 	
-    	    editedRecords.put(record.getConceptId(), record);
-    	  
-    	}
-    }
-    // handle all lazy initializations
-    for (MapRecord mapRecord : editedRecords.values()) {
-    	for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-    		mapEntry.getMapNotes().size();
-    		mapEntry.getMapAdvices().size();
-    	} 	
-    }
-    // reverse sort chronologically
-    List<MapRecord> sortedEditedRecords = new ArrayList<>(editedRecords.values());
-    Collections.sort(sortedEditedRecords, new Comparator<MapRecord>() {
-      @Override
-      public int compare(MapRecord o1, MapRecord o2) {
+		MapUser user = getMapUser(userName);
 
-          long x1 = o1.getLastModified();
-          long x2 = o2.getLastModified();
+		Map<String, MapRecord> editedRecords = new HashMap<>();
 
-          if (x1 != x2) {
-              return new Long(x2 - x1).intValue();
-          } 
-          return 0;
-      }
-  });
-    return sortedEditedRecords;
-  }
-  
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords(org.ihtsdo.otf.mapping.model.MapUser)
-   */
-  @Override
-  public int getRecentlyEditedMapRecordCount(Long projectId, String userName, PfsParameter pfsParameter)  throws Exception {
-  	
-  	MapUser user = getMapUser(userName);
-  	
-  	Map<String, MapRecord> editedRecords = new HashMap<>();
-  	
-  	AuditReader reader = AuditReaderFactory.get(manager);
-  	
-  	AuditQuery query =
-  			reader
-        .createQuery()
-        .forRevisionsOfEntity(MapRecordJpa.class, false, true)
-        .add(AuditEntity.relatedId("owner").eq(user.getId()))
-        .addOrder(AuditEntity.property("lastModified").desc());
+		AuditReader reader = AuditReaderFactory.get(manager);
 
-  	int pfsCounter = 0;
-    @SuppressWarnings("unchecked")
-    List<Object[]> allRevisions = query.getResultList();
-    for (Object[] revision : allRevisions) {
-    	MapRecord record = (MapRecord)revision[0];
-    	// used to force reading the graph
-    	record.getLastModifiedBy().getEmail();
-    	// only save the most recent revision
-    	if (record.getMapProjectId().equals(projectId) &&
-    			record.getWorkflowStatus() != WorkflowStatus.NEW &&
-    			!editedRecords.keySet().contains(record.getConceptId()) ) {
-    	  pfsCounter++;
-    	  editedRecords.put(record.getConceptId(), record);
-    	}
-  }
+		AuditQuery query =
+				reader
+				.createQuery()
+				.forRevisionsOfEntity(MapRecordJpa.class, false, true)
+				.add(AuditEntity.relatedId("owner").eq(user.getId()))
+				.addOrder(AuditEntity.property("lastModified").desc());
 
-  	return pfsCounter;
-  }
-  
+		int pfsCounter = 0;
+		List<Object[]> allRevisions = query.getResultList();
+		for (Object[] revision : allRevisions) {
+			MapRecord record = (MapRecord)revision[0];
+			// used to force reading the graph
+			record.getLastModifiedBy().getEmail();
+			// only save the most recent revision
+			if (record.getMapProjectId().equals(projectId) &&
+					record.getWorkflowStatus() != WorkflowStatus.NEW &&
+					!editedRecords.keySet().contains(record.getConceptId()) ) {
+				pfsCounter++;
+				if (pfsParameter != null && pfsCounter > pfsParameter.getMaxResults())
+					continue;
+				if (pfsParameter != null && pfsCounter >= pfsParameter.getStartIndex()) 	
+					editedRecords.put(record.getConceptId(), record);
+
+			}
+		}
+		// handle all lazy initializations
+		for (MapRecord mapRecord : editedRecords.values()) {
+			for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+				mapEntry.getMapNotes().size();
+				mapEntry.getMapAdvices().size();
+			} 	
+		}
+		// reverse sort chronologically
+		List<MapRecord> sortedEditedRecords = new ArrayList<>(editedRecords.values());
+		Collections.sort(sortedEditedRecords, new Comparator<MapRecord>() {
+			@Override
+			public int compare(MapRecord o1, MapRecord o2) {
+
+				long x1 = o1.getLastModified();
+				long x2 = o2.getLastModified();
+
+				if (x1 != x2) {
+					return new Long(x2 - x1).intValue();
+				} 
+				return 0;
+			}
+		});
+		return sortedEditedRecords;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getRecentlyEditedMapRecords(org.ihtsdo.otf.mapping.model.MapUser)
+	 */
+	@Override
+	public int getRecentlyEditedMapRecordCount(Long projectId, String userName, PfsParameter pfsParameter)  throws Exception {
+
+		MapUser user = getMapUser(userName);
+
+		Map<String, MapRecord> editedRecords = new HashMap<>();
+
+		AuditReader reader = AuditReaderFactory.get(manager);
+
+		AuditQuery query =
+				reader
+				.createQuery()
+				.forRevisionsOfEntity(MapRecordJpa.class, false, true)
+				.add(AuditEntity.relatedId("owner").eq(user.getId()))
+				.addOrder(AuditEntity.property("lastModified").desc());
+
+		int pfsCounter = 0;
+		@SuppressWarnings("unchecked")
+		List<Object[]> allRevisions = query.getResultList();
+		for (Object[] revision : allRevisions) {
+			MapRecord record = (MapRecord)revision[0];
+			// used to force reading the graph
+			record.getLastModifiedBy().getEmail();
+			// only save the most recent revision
+			if (record.getMapProjectId().equals(projectId) &&
+					record.getWorkflowStatus() != WorkflowStatus.NEW &&
+					!editedRecords.keySet().contains(record.getConceptId()) ) {
+				pfsCounter++;
+				editedRecords.put(record.getConceptId(), record);
+			}
+		}
+
+		return pfsCounter;
+	}
+
 	// //////////////////////////////////
 	// Other query services
 	// //////////////////////////////////
@@ -2800,20 +2802,155 @@ public class MappingServiceJpa implements MappingService {
 			manager.merge(mapAgeRange);
 		}
 	}
-	
-	
+
+	///////////////////////////////////////
+	// MAP USER PREFERENCES FUNCTIONS
+	///////////////////////////////////////
+
+	/**
+	 * Retrieve all map user preferences
+	 * 
+	 * @return a List of MapUserPreferencess
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<MapUserPreferences> getMapUserPreferences() {
+
+		List<MapUserPreferences> m = null;
+
+		// construct query
+		javax.persistence.Query query =
+				manager.createQuery("select m from MapUserPreferencesJpa m");
+
+		// Try query
+
+		m = query.getResultList();
+
+		return m;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#addMapUserPreferences(org.ihtsdo.otf.mapping.model.MapUserPreferences)
+	 */
+	@Override
+	public MapUserPreferences addMapUserPreferences(MapUserPreferences mapUserPreferences) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+
+			tx.begin();
+			manager.persist(mapUserPreferences);
+			tx.commit();
+
+		} else {
+			manager.persist(mapUserPreferences);
+		}
+
+		return mapUserPreferences;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#removeMapUserPreferences(java.lang.Long)
+	 */
+	@Override
+	public void removeMapUserPreferences(Long mapUserPreferencesId) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+			tx.begin();
+			MapUserPreferences mar = manager.find(MapUserPreferencesJpa.class, mapUserPreferencesId);
+			if (manager.contains(mar)) {
+				manager.remove(mar);
+			} else {
+				manager.remove(manager.merge(mar));
+			}
+			tx.commit();
+		} else {
+			MapUserPreferences mar = manager.find(MapUserPreferencesJpa.class, mapUserPreferencesId);
+			if (manager.contains(mar)) {
+				manager.remove(mar);
+			} else {
+				manager.remove(manager.merge(mar));
+			}
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MappingService#updateMapUserPreferences(org.ihtsdo
+	 * .otf.mapping.model.MapUserPreferences)
+	 */
+	@Override
+	public void updateMapUserPreferences(MapUserPreferences mapUserPreferences) {
+		if (getTransactionPerOperation()) {
+			EntityTransaction tx = manager.getTransaction();
+
+			tx.begin();
+			manager.merge(mapUserPreferences);
+			tx.commit();
+		} else {
+			manager.merge(mapUserPreferences);
+		}
+	}
+
 	@Override
 	@XmlTransient
 	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(MapProject mapProject) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-		
+
 		ProjectSpecificAlgorithmHandler algorithmHandler = 
 				(ProjectSpecificAlgorithmHandler) Class.forName("org.ihtsdo.otf.mapping.jpa.handlers." + mapProject.getProjectSpecificAlgorithmHandlerClass())
 				.newInstance();
-				
+
 		algorithmHandler.setMapProject(mapProject); 
 		return algorithmHandler;
 
-		
+
 	}
 
+	/**
+	 * Sets the valid field for tree positions, given a map project id.
+	 *
+	 * @param treePositions the tree positions
+	 * @param mapProjectId the map project id
+	 * @return the revised list of tree positions
+	 * @throws Exception the exception
+	 */
+	@Override
+	public List<TreePosition> setTreePositionValidCodes(
+			List<TreePosition> treePositions, Long mapProjectId) throws Exception {
+
+		// get the map project and its algorithm handler
+		MapProject mapProject = getMapProject(mapProjectId);
+		ProjectSpecificAlgorithmHandler algorithmHandler = getProjectSpecificAlgorithmHandler(mapProject);
+		
+		setTreePositionValidCodesHelper(treePositions, algorithmHandler);
+		
+		return treePositions;
+	}
+	
+	/**
+	 * Helper function to recursively cycle over nodes and their children.
+	 * Instantiated to prevent necessity for retrieving algorithm handler at each level.
+	 * Note: Not necessary to return objects, tree positions are persisted objects
+	 *
+	 * @param treePositions the tree positions
+	 * @param algorithmHandler the algorithm handler
+	 * @throws Exception the exception
+	 */
+	public void setTreePositionValidCodesHelper(
+			List<TreePosition> treePositions, ProjectSpecificAlgorithmHandler algorithmHandler) throws Exception {
+		
+		// cycle over all tree positions and check target code, recursively cycle over children
+		for (TreePosition tp : treePositions) {
+			
+			System.out.println("Checking valid for " + tp.getTerminologyId());
+			
+			tp.setValid(algorithmHandler.isTargetCodeValid(tp.getTerminologyId()));
+			
+			setTreePositionValidCodesHelper(tp.getChildren(), algorithmHandler);
+		}
+	}
+	
 }

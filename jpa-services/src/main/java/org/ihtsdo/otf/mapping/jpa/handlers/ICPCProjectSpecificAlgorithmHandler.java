@@ -17,8 +17,11 @@ public class ICPCProjectSpecificAlgorithmHandler extends DefaultProjectSpecificA
 
 	
 	/**
-	 * For ICD9, a target code is valid if:
+	 * For ICPC, a target code is valid if:
 	 * - Concept exists
+	 * - Concept has at least 3 characters
+	 * - The second character is a number (e.g. XVII is invalid, but B10 is)
+	 * - Concept does not contain a dash (-) character
 	 * @param mapRecord
 	 * @return the validation result
 	 * @throws Exception 
@@ -103,6 +106,28 @@ public class ICPCProjectSpecificAlgorithmHandler extends DefaultProjectSpecificA
 		// if relation not found, return null
 		return null;
 		
+	}
+	
+	@Override
+	public boolean isTargetCodeValid(String terminologyId) throws Exception {
+		
+		// check code for validity
+		if (!terminologyId.matches(".[0-9].*") || terminologyId.contains("-")) {
+			return false;
+		}
+		
+		// second, verify concept exists in database
+		ContentService contentService = new ContentServiceJpa();
+		Concept concept = contentService.getConcept(terminologyId, mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+
+		if (concept == null) {
+			contentService.close();
+			return false;
+		}
+		
+		// otherwise, return true
+		contentService.close();
+		return true;
 	}
 
 

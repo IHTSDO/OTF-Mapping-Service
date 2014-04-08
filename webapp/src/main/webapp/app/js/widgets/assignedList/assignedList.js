@@ -19,7 +19,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.focusProject = localStorageService.get('focusProject');
 
 	// pagination variables
-	$scope.conceptsPerPage = 3;
+	$scope.conceptsPerPage = 10;
 	
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
@@ -50,7 +50,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": (page-1)*$scope.conceptsPerPage,
-			 	 	 "maxResults": $scope.conceptsPerPage-1, 
+			 	 	 "maxResults": $scope.conceptsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 		
@@ -58,13 +58,14 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			url: root_workflow + "assigned/id/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
 			dataType: "json",
 			data: pfsParameterObj,
-			method: "GET",
+			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
+			$scope.assignedRecordPage = page;
 			$scope.nAssignedRecords = data.totalCount;
-			$scope.assignedRecords = data.mapRecord;
+			$scope.assignedRecords = data.searchResult;
 			console.debug($scope.assignedRecords);
 		}).error(function(error) {
 			$scope.error = "Error";
@@ -90,7 +91,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	// function to relinquish work (i.e. unassign the user)
 	$scope.unassignWork = function(record) {
 		$http({
-			url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/conceptId/" + record.conceptId + "/user/" + $scope.user.userName,
+			url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/conceptId/" + record.terminologyId + "/user/" + $scope.user.userName,
 			dataType: "json",
 			method: "POST",
 			headers: {
@@ -98,6 +99,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			}
 		}).success(function(data) {
 			$scope.assignedRecords.removeElement(record);
+			$scope.nAssignedRecords = Math.max(0, $scope.nAssignedRecords-1);
 			$rootScope.$broadcast('assignedListWidget.notification.unassignWork',
 					{key: 'mapRecord', mapRecord: record});
 			
