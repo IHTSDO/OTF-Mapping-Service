@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -57,78 +56,77 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  */
 public class MapRecordRemoverMojo extends AbstractMojo {
 
-	/**
-	 * The specified refSetId
-	 * @parameter
-	 */
-	private String refSetId = null;
+  /**
+   * The specified refSetId
+   * @parameter
+   */
+  private String refSetId = null;
 
-	/**
-	 * Instantiates a {@link MapRecordRemoverMojo} from the specified parameters.
-	 * 
-	 */
-	public MapRecordRemoverMojo() {
-		// Do nothing
-	}
+  /**
+   * Instantiates a {@link MapRecordRemoverMojo} from the specified parameters.
+   * 
+   */
+  public MapRecordRemoverMojo() {
+    // Do nothing
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.maven.plugin.Mojo#execute()
-	 */
-	@Override
-	public void execute() throws MojoExecutionException {
-		getLog().info("Starting removing map records for project - " + refSetId);
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
+  @Override
+  public void execute() throws MojoExecutionException {
+    getLog().info("Starting removing map records for project - " + refSetId);
 
-		if (refSetId == null) {
-			throw new MojoExecutionException(
-					"You must specify a refSetId.");
-		}
+    if (refSetId == null) {
+      throw new MojoExecutionException("You must specify a refSetId.");
+    }
 
-		try {
+    try {
 
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.setTransactionPerOperation(false);
-			mappingService.beginTransaction();
-			Set<MapProject> mapProjects = new HashSet<MapProject>();
+      MappingService mappingService = new MappingServiceJpa();
+      mappingService.setTransactionPerOperation(false);
+      mappingService.beginTransaction();
+      Set<MapProject> mapProjects = new HashSet<MapProject>();
 
-			getLog().info("Start removing map records for refSetId - " + refSetId);
-			for (MapProject mapProject : mappingService.getMapProjects()) {
-				for (String id : refSetId.split(",")) {
-					if (mapProject.getRefSetId().equals(id)) {
-						mapProjects.add(mapProject);
-					}
-				}
-			}
+      getLog().info("Start removing map records for refSetId - " + refSetId);
+      for (MapProject mapProject : mappingService.getMapProjects()) {
+        for (String id : refSetId.split(",")) {
+          if (mapProject.getRefSetId().equals(id)) {
+            mapProjects.add(mapProject);
+          }
+        }
+      }
 
-			if (mapProjects.isEmpty()) {
-				throw new MojoFailureException(
-						"Failed to find project(s) for specified parameters.");
-			}
+      if (mapProjects.isEmpty()) {
+        getLog().info("NO PROJECTS FOUND " + refSetId);
+        return;
+      }
 
-			// Remove map record and entry notes
-			int ct = 0;
-			for (MapProject mapProject : mapProjects) {
-				getLog().debug("    Remove map records for " + mapProject.getName());
-				for (MapRecord record : mappingService
-						.getMapRecordsForMapProjectId(mapProject.getId())) {
-					getLog().info(
-							"    Removing map record " + record.getId() + " from "
-									+ mapProject.getName());
-					mappingService.removeMapRecord(record.getId());
-					if (++ct % 500 == 0) {
-						getLog().info("      " + ct + " notes processed");
-					}
-				}
-			}
-			mappingService.commit();
-			getLog().info("done ...");
+      // Remove map record and entry notes
+      int ct = 0;
+      for (MapProject mapProject : mapProjects) {
+        getLog().debug("    Remove map records for " + mapProject.getName());
+        for (MapRecord record : mappingService
+            .getMapRecordsForMapProject(mapProject.getId())) {
+          getLog().info(
+              "    Removing map record " + record.getId() + " from "
+                  + mapProject.getName());
+          mappingService.removeMapRecord(record.getId());
+          if (++ct % 500 == 0) {
+            getLog().info("      " + ct + " records processed");
+          }
+        }
+      }
+      mappingService.commit();
+      getLog().info("done ...");
 
-			mappingService.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoExecutionException("Unexpected exception:", e);
-		}
-	}
+      mappingService.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoExecutionException("Unexpected exception:", e);
+    }
+  }
 
 }

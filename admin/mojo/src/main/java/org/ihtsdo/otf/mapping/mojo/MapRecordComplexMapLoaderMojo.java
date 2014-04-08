@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -86,7 +87,7 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 				getLog().info(
 						"  Generating records for " + mapProject.getName() + ", "
 								+ mapProject.getId());
-				mappingService.createMapRecordsForMapProject(mapProject);
+				mappingService.createMapRecordsForMapProject(mapProject.getId(), WorkflowStatus.PUBLISHED);
 			}
 
 			getLog().info("done ...");

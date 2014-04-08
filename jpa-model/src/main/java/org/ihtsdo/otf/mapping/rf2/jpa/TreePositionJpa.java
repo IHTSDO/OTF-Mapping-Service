@@ -1,12 +1,26 @@
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 /**
@@ -14,7 +28,13 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
  *
  */
 @Entity
-@Table(name = "tree_positions")
+@Indexed
+@Table(name = "tree_positions",  uniqueConstraints={
+	   @UniqueConstraint(columnNames={"ancestorPath", "id"}),
+	   @UniqueConstraint(columnNames={"terminologyId", "id"})
+	})
+@XmlRootElement
+
 public class TreePositionJpa implements TreePosition {
 
 	/** The id. */
@@ -23,7 +43,7 @@ public class TreePositionJpa implements TreePosition {
 	private Long id;
 	
 	/** The ancestor path. */
-	@Column(nullable = false, length = 400)
+	@Column(nullable = false, length = 255)
 	private String ancestorPath;
 	
 	/** The terminology. */
@@ -32,12 +52,30 @@ public class TreePositionJpa implements TreePosition {
 
 	/** The concept id */
 	@Column(nullable = false)
-	private String conceptId;
+	private String terminologyId;
 
 	/** The terminology version. */
 	@Column(nullable = false)
 	private String terminologyVersion;
+	
+	/** The default preferred name. */
+	@Column(nullable = false, length = 256)
+	private String defaultPreferredName;
 
+	/** The children count */
+	@Column(nullable = false)
+	private int childrenCount;
+	
+	/** Terminology notes */
+	@Transient
+	private String terminologyNote;
+
+	/** 
+	 * The children of this TreePosition (NOT persisted)
+	 * Not persisted -- used for terminology browsing
+	 */
+	@Transient
+	private List<TreePosition> children = new ArrayList<>();
 
 	/**
 	 * Instantiates an empty {@link TreePosition}.
@@ -93,6 +131,7 @@ public class TreePositionJpa implements TreePosition {
 
 
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)	
 	public String getTerminology() {
 		return terminology;
 	}
@@ -105,6 +144,7 @@ public class TreePositionJpa implements TreePosition {
 
 
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)	
 	public String getTerminologyVersion() {
 		return terminologyVersion;
 	}
@@ -117,30 +157,99 @@ public class TreePositionJpa implements TreePosition {
 
 
 	@Override
-	public String getConceptId() {
-		return conceptId;
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
+	public String getTerminologyId() {
+		return terminologyId;
 	}
 
 
 	@Override
-	public void setConceptId(String conceptId) {
-		this.conceptId = conceptId;
+	public void setTerminologyId(String terminologyId) {
+		this.terminologyId = terminologyId;
 	}
+	
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)	
+	public String getDefaultPreferredName() {
+		return defaultPreferredName;
+	}
+
+	@Override
+	public void setDefaultPreferredName(String defaultPreferredName) {
+		this.defaultPreferredName = defaultPreferredName;
+	}
+
+	@Override
+	public int getChildrenCount() {
+		return childrenCount;
+	}
+
+	@Override
+	public void setChildrenCount(int childrenCount) {
+		this.childrenCount = childrenCount;
+	}
+	
+	/**
+	 * Transient required as this is used only for display purposes.
+	 */
+	@Override
+	@Transient
+	public String getTerminologyNote() {
+		return terminologyNote;
+	}
+
+	@Override
+	public void setTerminologyNote(String terminologyNote) {
+		this.terminologyNote = terminologyNote;
+	}
+
+
+	/**
+	 * This is not a persisted set, only used for XML/JSON serialization
+	 */
+	@Override
+	@Transient
+	@XmlElement(type=TreePositionJpa.class)
+	public List<TreePosition> getChildren() {
+		
+		System.out.println(Integer.toString(children.size()));
+		
+		Collections.sort(this.children, 
+				new Comparator<TreePosition>() {
+					@Override
+					public int compare(TreePosition tp1, TreePosition tp2) {
+						return tp1.getTerminologyId().compareTo(tp2.getTerminologyId());
+					}
+				}
+				);
+		return children;
+	}
+
+	@Override
+	public void setChildren(List<TreePosition> children) {
+		this.children = children;
+	}
+
 
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result =
-				prime * result + ((ancestorPath == null) ? 0 : ancestorPath.hashCode());
-		result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
-		result =
-				prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-		result =
-				prime
-						* result
-						+ ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+		result = prime * result
+				+ ((ancestorPath == null) ? 0 : ancestorPath.hashCode());
+		result = prime
+				* result
+				+ ((defaultPreferredName == null) ? 0 : defaultPreferredName
+						.hashCode());
+		result = prime * result
+				+ ((terminology == null) ? 0 : terminology.hashCode());
+		result = prime * result
+				+ ((terminologyId == null) ? 0 : terminologyId.hashCode());
+		result = prime
+				* result
+				+ ((terminologyVersion == null) ? 0 : terminologyVersion
+						.hashCode());
 		return result;
 	}
 
@@ -159,15 +268,20 @@ public class TreePositionJpa implements TreePosition {
 				return false;
 		} else if (!ancestorPath.equals(other.ancestorPath))
 			return false;
-		if (conceptId == null) {
-			if (other.conceptId != null)
+		if (defaultPreferredName == null) {
+			if (other.defaultPreferredName != null)
 				return false;
-		} else if (!conceptId.equals(other.conceptId))
+		} else if (!defaultPreferredName.equals(other.defaultPreferredName))
 			return false;
 		if (terminology == null) {
 			if (other.terminology != null)
 				return false;
 		} else if (!terminology.equals(other.terminology))
+			return false;
+		if (terminologyId == null) {
+			if (other.terminologyId != null)
+				return false;
+		} else if (!terminologyId.equals(other.terminologyId))
 			return false;
 		if (terminologyVersion == null) {
 			if (other.terminologyVersion != null)
@@ -180,11 +294,33 @@ public class TreePositionJpa implements TreePosition {
 
 	@Override
 	public String toString() {
-		return "TreePositionJpa [ancestorPath=" + ancestorPath + ", terminology="
-				+ terminology + ", conceptId=" + conceptId + ", terminologyVersion="
-				+ terminologyVersion + "]";
+		String childrenStr = "";
+		for (TreePosition child : this.getChildren()) {
+			childrenStr += child.getTerminologyId() + "-";
+		}
+		return "TreePositionJpa [ancestorPath=" + ancestorPath
+				+ ", terminology=" + terminology + ", terminologyId="
+				+ terminologyId + ", terminologyVersion=" + terminologyVersion
+				+ ", defaultPreferredName=" + defaultPreferredName
+				+ ", childrenCount=" + childrenCount + ", terminologyNote="
+				+ terminologyNote + ", children=" + childrenStr + "]";
 	}
 
+
+	@Override
+	public void addChild(TreePosition treePosition) {
+		this.children.add(treePosition);
+		
+	}
+	
+	@Override
+	public void addChildren(List<TreePosition> treePositions) {
+		this.children.addAll(treePositions);
+		
+	}
+
+
+	
 
 
 }

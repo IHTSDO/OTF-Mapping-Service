@@ -1,10 +1,7 @@
 package org.ihtsdo.otf.mapping.pojo;
 
-import javax.xml.bind.annotation.XmlID;
-
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapAdvice}.
  * Includes hibernate tags for MEME database.
@@ -14,6 +11,7 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 public class MapAdviceImpl implements MapAdvice {
 
 	/** The id. */
+	
 	private Long id;
 	
 	/** The name. */
@@ -21,6 +19,12 @@ public class MapAdviceImpl implements MapAdvice {
 	
 	/** The detail. */
 	private String detail;
+	
+	/** Flag for whether this advice is valid for a null target. */
+	private boolean isAllowableForNullTarget;
+	
+	/** The is computable. */
+	private boolean isComputed;
 	
 	/**
 	 * Return the id
@@ -44,7 +48,6 @@ public class MapAdviceImpl implements MapAdvice {
 	 * Returns the id in string form
 	 * @return the id in string form
 	 */
-	@XmlID
 	@Override
 	public String getObjectId() {
 		return id.toString();
@@ -81,6 +84,38 @@ public class MapAdviceImpl implements MapAdvice {
 	@Override
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#isAllowableForNullTarget()
+	 */
+	@Override
+	public boolean isAllowableForNullTarget() {
+		return isAllowableForNullTarget;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setAllowableForNullTarget(boolean)
+	 */
+	@Override
+	public void setAllowableForNullTarget(boolean isAllowableForNullTarget) {
+		this.isAllowableForNullTarget = isAllowableForNullTarget;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#isComputable()
+	 */
+	@Override
+	public boolean isComputed() {
+		return isComputed;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setComputable(boolean)
+	 */
+	@Override
+	public void setComputed(boolean isComputed) {
+		this.isComputed = isComputed;
 	}
 
 	/* (non-Javadoc)

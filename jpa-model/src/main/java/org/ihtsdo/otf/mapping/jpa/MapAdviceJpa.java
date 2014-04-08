@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -17,8 +18,9 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+// TODO: Auto-generated Javadoc
 /**
- * JPA enabled map advice
+ * JPA enabled map advice.
  */
 @Entity
 @Table(name = "map_advices")
@@ -39,6 +41,14 @@ public class MapAdviceJpa implements MapAdvice {
 	/** The detail. */
 	@Column(nullable = false, unique = true, length = 255)
 	private String detail;
+	
+	/** Flag for whether this advice is valid for a null target. */
+	@Column(nullable = false)
+	private boolean isAllowableForNullTarget;
+	
+	/** The is computable. */
+	@Column(nullable = false)
+	private boolean isComputed;
 	
 	/**
 	 * Instantiates an empty {@link MapAdviceJpa}.
@@ -62,7 +72,8 @@ public class MapAdviceJpa implements MapAdvice {
 	}
 
 	/**
-	 * Return the id
+	 * Return the id.
+	 *
 	 * @return the id
 	 */
 	@Override
@@ -71,7 +82,8 @@ public class MapAdviceJpa implements MapAdvice {
 	}
 	
 	/**
-	 * Set the id
+	 * Set the id.
+	 *
 	 * @param id the id
 	 */
 	@Override
@@ -80,7 +92,8 @@ public class MapAdviceJpa implements MapAdvice {
 	}
 	
 	/**
-	 * Returns the id in string form
+	 * Returns the id in string form.
+	 *
 	 * @return the id in string form
 	 */
 	@XmlID
@@ -125,6 +138,40 @@ public class MapAdviceJpa implements MapAdvice {
 	@Override
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#isAllowableForNullTarget()
+	 */
+	@Override
+	@XmlAttribute(name = "isAllowableForNullTarget")
+	public boolean isAllowableForNullTarget() {
+		return isAllowableForNullTarget;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setAllowableForNullTarget(boolean)
+	 */
+	@Override
+	public void setAllowableForNullTarget(boolean isAllowableForNullTarget) {
+		this.isAllowableForNullTarget = isAllowableForNullTarget;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#isComputable()
+	 */
+	@Override
+	@XmlAttribute(name = "isComputed")
+	public boolean isComputed() {
+		return isComputed;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapAdvice#setComputable(boolean)
+	 */
+	@Override
+	public void setComputed(boolean isComputed) {
+		this.isComputed = isComputed;
 	}
 
 	/* (non-Javadoc)

@@ -1,5 +1,7 @@
 package org.ihtsdo.otf.mapping.rf2;
 
+import java.util.List;
+
 
 // TODO: Auto-generated Javadoc
 /**
@@ -17,7 +19,7 @@ public interface TreePosition {
 
 
 	/**
-	 * Sets the id.
+	 * Lists the id.
 	 *
 	 * @param id the id
 	 */
@@ -31,7 +33,7 @@ public interface TreePosition {
 	public String getTerminology();
 
 	/**
-	 * Sets the terminology.
+	 * Lists the terminology.
 	 *
 	 * @param terminology the terminology
 	 */
@@ -45,7 +47,7 @@ public interface TreePosition {
 	public String getTerminologyVersion();
 
 	/**
-	 * Sets the terminology version.
+	 * Lists the terminology version.
 	 *
 	 * @param terminologyVersion the terminology version
 	 */
@@ -62,23 +64,109 @@ public interface TreePosition {
 
 
 	/**
-	 * Sets the ancestor path.
+	 * Lists the ancestor path.
 	 *
 	 * @param path the ancestor path
 	 */
 	public void setAncestorPath(String path);
 
   /**
-   * Returns the concept id.
+   * Returns the terminology id.
    *
-   * @return the concept id
+   * @return the terminology id
    */
-  public String getConceptId();
+  public String getTerminologyId();
   
   /**
-   * Sets the concept id.
+   * Lists the terminology id.
    *
-   * @param conceptId the concept id
+   * @param terminologyId the terminology id
    */
-  public void setConceptId(String conceptId);
+  public void setTerminologyId(String terminologyId);
+
+
+  /**
+   * Lists the children.
+   *
+   * @param children the new children
+   */
+  public void setChildren(List<TreePosition> children);
+
+
+  /**
+   * Gets the children.
+   *
+   * @return the children
+   */
+  public List<TreePosition> getChildren();
+
+
+  /**
+   * Gets the default preferred name.
+   *
+   * @return the default preferred name
+   */
+  public String getDefaultPreferredName();
+
+
+  /**
+   * Lists the default preferred name.
+   *
+   * @param defaultPreferredName the new default preferred name
+   */
+  public void setDefaultPreferredName(String defaultPreferredName);
+
+
+  /**
+   * Gets the children count.
+   *
+   * @return the children count
+   */
+  public int getChildrenCount();
+	
+
+  /**
+   * Lists the children count.
+   *
+   * @param childrenCount the new children count
+   */
+  public void setChildrenCount(int childrenCount);
+
+
+  /**
+   * Gets the terminology note.
+   *
+   * @return the terminology note
+   */
+  public String getTerminologyNote();
+
+
+  /**
+   * Lists the terminology note.
+   *
+   * @param terminologyNote the new terminology note
+   */
+  public void setTerminologyNote(String terminologyNote);
+
+
+  
+  /**
+   * Adds the child tree position.  This is not a persisted
+   * field, only used for data transfer.
+   *
+   * @param treePosition the tree position
+   */
+  public void addChild(TreePosition treePosition);
+
+
+  /**
+   * Adds the children.  This is not a persisted
+   * field, only used for data transfer.
+   *
+   * @param treePositions the tree positions
+   */
+  public void addChildren(List<TreePosition> treePositions);
+
+
+
 }

@@ -1,0 +1,35 @@
+
+
+
+<pagination total-items="nAssignedRecords" page="AssignedRecordPage"
+	max-size="TrackingRecordsPerPage" class="pagination-sm"
+	boundary-links="true" rotate="true" num-pages="numAssignedRecordPages"
+	on-select-page="retrieveAssignedWork(page)"></pagination>
+
+Total assigned: {{nAssignedRecords}}
+
+<table class="table">
+
+	<thead>
+		<tr>
+			<th style="width: 10%; padding: 5px;"></th>
+			<th style="width: 15%; padding: 5px;">Id</th>
+			<th style="width: 60%; padding: 5px;">Name</th>
+			<th style="width: 10%; padding: 5px;"></th>
+
+		</tr>
+
+	</thead>
+
+	<tbody>
+
+		<tr ng-repeat="record in assignedRecords">
+
+			<td style="width: 10%; padding: 5px;"><a href="#/record/recordId/{{record.id}}">Edit</a></td>
+
+			<td style="width: 15%; padding: 5px;">{{record.conceptId}}</td>
+			<td style="width: 60%; padding: 5px;">{{record.conceptName}}</td>
+			<td style="width: 10%; padding: 5px;"><a ng-click="unassignWork(record)">Return</a></td>
+	</tbody>
+
+</table>

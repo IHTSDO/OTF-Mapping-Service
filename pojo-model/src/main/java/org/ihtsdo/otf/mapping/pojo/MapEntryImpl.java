@@ -7,8 +7,8 @@ import javax.xml.bind.annotation.XmlID;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
-import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapRecord;
+import org.ihtsdo.otf.mapping.model.MapRelation;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -34,20 +34,14 @@ public class MapEntryImpl implements MapEntry {
 	/** The map advices. */
 	private Set<MapAdvice> mapAdvices;
 	
-	/** The map principles. */
-	private Set<MapPrinciple> mapPrinciples;
-
 	/** The rule. */
 	private String rule;
 
 	/** The index. */
 	private int mapPriority;
 
-	/** The relation id. */
-	private String relationId;
-	
-	/** The relation name. */
-	private String relationName;
+	/** The map relation */
+	private MapRelation mapRelation;
 	
 	/** The map record. */
 	private MapRecord mapRecord;
@@ -154,6 +148,17 @@ public class MapEntryImpl implements MapEntry {
 		this.targetName = targetName;
 		
 	}
+	
+
+	@Override
+	public MapRelation getMapRelation() {
+		return this.mapRelation;
+	}
+
+	@Override
+	public void setMapRelation(MapRelation mapRelation) {
+		this.mapRelation = mapRelation;		
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getAdvices()
@@ -188,38 +193,6 @@ public class MapEntryImpl implements MapEntry {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapPrinciples()
-	 */
-	@Override
-	public Set<MapPrinciple> getMapPrinciples() {
-		return mapPrinciples;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapPrinciples(java.util.Set)
-	 */
-	@Override
-	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
-		this.mapPrinciples = mapPrinciples;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#addMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
-	 */
-	@Override
-	public void addMapPrinciple(MapPrinciple mapPrinciple) {
-		mapPrinciples.add(mapPrinciple);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#removeMapPrinciple(org.ihtsdo.otf.mapping.model.MapPrinciple)
-	 */
-	@Override
-	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
-		mapPrinciples.remove(mapPrinciple);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getRule()
 	 */
 	@Override
@@ -249,39 +222,6 @@ public class MapEntryImpl implements MapEntry {
 	@Override
 	public void setMapPriority(int mapPriority) {
 		this.mapPriority = mapPriority;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getRelationId()
-	 */
-	@Override
-	public String getRelationId() {
-		return relationId;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setRelationId(java.lang.String)
-	 */
-	@Override
-	public void setRelationId(String relationId) {
-		this.relationId = relationId;
-	}
-
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#getRelationName()
-	 */
-	@Override
-	public String getRelationName() {
-		return relationName;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapEntry#setRelationName(java.lang.String)
-	 */
-	@Override
-	public void setRelationName(String relationName) {
-		this.relationName = relationName;
 	}
 
 	/* (non-Javadoc)
@@ -334,107 +274,60 @@ public class MapEntryImpl implements MapEntry {
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + mapPriority;
 		result = prime * result
-				+ ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
-		result = prime * result
-				+ ((mapNotes == null) ? 0 : mapNotes.hashCode());
-		result = prime * result
-				+ ((mapRecord == null) ? 0 : mapRecord.hashCode());
-		result = prime * result
-				+ ((relationId == null) ? 0 : relationId.hashCode());
+				+ ((mapRelation == null) ? 0 : mapRelation.hashCode());
 		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
-		result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());
+		result = prime * result
+				+ ((targetId == null) ? 0 : targetId.hashCode());
+		result = prime * result
+				+ ((targetName == null) ? 0 : targetName.hashCode());
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		MapEntryImpl other = (MapEntryImpl) obj;
-		if (id == null) {
-			if (other.id != null) {
+		if (mapRelation == null) {
+			if (other.mapRelation != null)
 				return false;
-			}
-		} else if (!id.equals(other.id)) {
+		} else if (!mapRelation.equals(other.mapRelation))
 			return false;
-		}
-		if (mapPriority != other.mapPriority) {
-			return false;
-		}
-		if (mapAdvices == null) {
-			if (other.mapAdvices != null) {
-				return false;
-			}
-		} else if (!mapAdvices.equals(other.mapAdvices)) {
-			return false;
-		}
-		if (mapNotes == null) {
-			if (other.mapNotes != null) {
-				return false;
-			}
-		} else if (!mapNotes.equals(other.mapNotes)) {
-			return false;
-		}
-		if (mapRecord == null) {
-			if (other.mapRecord != null) {
-				return false;
-			}
-		} else if (!mapRecord.equals(other.mapRecord)) {
-			return false;
-		}
-		if (relationId == null) {
-			if (other.relationId != null) {
-				return false;
-			}
-		} else if (!relationId.equals(other.relationId)) {
-			return false;
-		}
 		if (rule == null) {
-			if (other.rule != null) {
+			if (other.rule != null)
 				return false;
-			}
-		} else if (!rule.equals(other.rule)) {
+		} else if (!rule.equals(other.rule))
 			return false;
-		}
 		if (targetId == null) {
-			if (other.targetId != null) {
+			if (other.targetId != null)
 				return false;
-			}
-		} else if (!targetId.equals(other.targetId)) {
+		} else if (!targetId.equals(other.targetId))
 			return false;
-		}
+		if (targetName == null) {
+			if (other.targetName != null)
+				return false;
+		} else if (!targetName.equals(other.targetName))
+			return false;
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
-		return "MapEntryImpl [id=" + id + ", mapNotes=" + mapNotes + ", targetId="
-				+ targetId + ", mapAdvices=" + mapAdvices + ", rule=" + rule + ", mapPriority="
-				+ mapPriority + ", relationId=" + relationId + ", mapRecord=" + mapRecord
-				+ "]";
+		return "MapEntryImpl [id=" + id + ", mapNotes=" + mapNotes
+				+ ", targetId=" + targetId + ", targetName=" + targetName
+				+ ", mapAdvices=" + mapAdvices + ", rule=" + rule
+				+ ", mapPriority=" + mapPriority + ", mapRelation="
+				+ mapRelation + ", mapRecord=" + mapRecord + ", mapGroup="
+				+ mapGroup + ", mapBlock=" + mapBlock + "]";
 	}
 
 

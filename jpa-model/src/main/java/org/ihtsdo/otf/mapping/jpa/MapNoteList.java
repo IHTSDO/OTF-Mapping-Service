@@ -17,7 +17,7 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 public class MapNoteList {
 
 	/** The map notes. */
-	private List<MapNote> mapNotes = new ArrayList<MapNote>();
+	private List<MapNote> mapNotes = new ArrayList<>();
 
 	/**
 	 * Instantiates a new map note list.
@@ -53,7 +53,7 @@ public class MapNoteList {
 	 *            the new map notes
 	 */
 	public void setMapNotes(List<MapNote> mapNotes) {
-		this.mapNotes = new ArrayList<MapNote>();
+		this.mapNotes = new ArrayList<>();
 		this.mapNotes.addAll(mapNotes);
 		
 		
