@@ -88,4 +88,12 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	 */
 	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry);
 	
+	/**
+	 * Checks if is target code valid for this project.
+	 *
+	 * @param terminologyId the terminology id
+	 * @return true, if is target code valid
+	 * @throws Exception 
+	 */
+	public boolean isTargetCodeValid(String terminologyId) throws Exception;
 }

@@ -115,4 +115,33 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
 
 		}
 	}
+	
+	@Override
+	public boolean isTargetCodeValid(String terminologyId) throws Exception {
+		
+		ContentService contentService = new ContentServiceJpa();
+		
+		// get concept
+		Concept concept = contentService.getConcept(terminologyId, mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+
+		// verify that concept exists
+		if (concept == null) {
+			contentService.close();
+			return false;
+
+		// if concept exists, verify that it is a leaf node (no children)
+		} else if (contentService
+				.findDescendantsFromTreePostions(	concept.getTerminologyId(), 
+						concept.getTerminology(), 
+						concept.getTerminologyVersion() )
+						.getCount() != 0) {
+			contentService.close();
+			return false;
+
+		}
+
+		// otherwise, return true
+		contentService.close();
+		return true;
+	}
 }

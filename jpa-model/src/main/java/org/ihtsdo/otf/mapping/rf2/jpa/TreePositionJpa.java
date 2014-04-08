@@ -61,6 +61,11 @@ public class TreePositionJpa implements TreePosition {
 	/** The default preferred name. */
 	@Column(nullable = false, length = 256)
 	private String defaultPreferredName;
+	
+	// TODO:  Calculate this at generation or compute each time to account for changing rules?
+	/** Flag for whether this tree position is assignable (not persisted) */
+	@Transient
+	private boolean valid;
 
 	/** The children count */
 	@Column(nullable = false)
@@ -211,9 +216,7 @@ public class TreePositionJpa implements TreePosition {
 	@Transient
 	@XmlElement(type=TreePositionJpa.class)
 	public List<TreePosition> getChildren() {
-		
-		System.out.println(Integer.toString(children.size()));
-		
+	
 		Collections.sort(this.children, 
 				new Comparator<TreePosition>() {
 					@Override
@@ -228,6 +231,32 @@ public class TreePositionJpa implements TreePosition {
 	@Override
 	public void setChildren(List<TreePosition> children) {
 		this.children = children;
+	}
+	
+
+
+	@Override
+	public void addChild(TreePosition treePosition) {
+		this.children.add(treePosition);
+		
+	}
+	
+	@Override
+	public void addChildren(List<TreePosition> treePositions) {
+		this.children.addAll(treePositions);
+		
+	}
+
+	@Override
+	@Transient
+	@XmlElement
+	public boolean isValid() {
+		return valid;
+	}
+
+	@Override
+	public void setValid(boolean valid) {
+		this.valid = valid;
 	}
 
 
@@ -306,18 +335,6 @@ public class TreePositionJpa implements TreePosition {
 				+ terminologyNote + ", children=" + childrenStr + "]";
 	}
 
-
-	@Override
-	public void addChild(TreePosition treePosition) {
-		this.children.add(treePosition);
-		
-	}
-	
-	@Override
-	public void addChildren(List<TreePosition> treePositions) {
-		this.children.addAll(treePositions);
-		
-	}
 
 
 	

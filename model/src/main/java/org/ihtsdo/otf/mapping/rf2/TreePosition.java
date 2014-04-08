@@ -168,5 +168,21 @@ public interface TreePosition {
   public void addChildren(List<TreePosition> treePositions);
 
 
+  /**
+   * Sets the valid. Like children, not a persisted field.
+   *
+   * @param valid the new valid
+   */
+  public void setValid(boolean valid);
+
+
+  /**
+   * Checks if is valid. Like children, not a persisted field.
+   *
+   * @return true, if is valid
+   */
+  public boolean isValid();
+
+
 
 }

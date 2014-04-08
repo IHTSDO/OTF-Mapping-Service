@@ -31,13 +31,20 @@ import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationList;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserList;
+import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
+import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesList;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
+import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionList;
+import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -127,6 +134,34 @@ public class MappingServiceRest {
       mapLeads.sortMapUsers();
       mappingService.close();
       return mapLeads;
+    } catch (Exception e) {
+      throw new WebApplicationException(e);
+    }
+  }
+  
+  /**
+   * Returns all map leads in either JSON or XML format
+   * 
+   * @return the map leads
+   */
+  @GET
+  @Path("/userPreferences/userPreferences/")
+  @ApiOperation(value = "Get all map user preference objects", notes = "Returns all MapUserPreferences in either JSON or XML format", response = MapUserPreferences.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public MapUserPreferencesList getMapUserPreferences() {
+
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Mapping): /userPreferences/userPreferences");
+
+    try {
+      MappingService mappingService = new MappingServiceJpa();
+      MapUserPreferencesList mapUserPreferences = new MapUserPreferencesList();
+      mapUserPreferences.setMapUserPreferences(mappingService.getMapUserPreferences());
+      mapUserPreferences.sortMapUserPreferences();
+      mappingService.close();
+      return mapUserPreferences;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -569,6 +604,34 @@ public class MappingServiceRest {
     }
 
   }
+  
+  /**
+   * Adds a map user preferences object
+   * @param mapUserPreferences the map user preferences object to be added
+   * @return result the newly created map user preferences object
+   */
+  @PUT
+  @Path("/userPreferences/add")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @ApiOperation(value = "Add a user preferences object", notes = "Adds a MapUserPreferences", response = MapUserPreferencesJpa.class)
+  public MapUserPreferences addMapUserPreferences(
+    @ApiParam(value = "The map user preferences object to add", required = true) MapUserPreferencesJpa mapUserPreferences) {
+
+    try {
+      MappingService mappingService = new MappingServiceJpa();
+      MapUserPreferences result = mappingService.addMapUserPreferences(mapUserPreferences);
+      mappingService.close();
+      return result;
+    } catch (Exception e) {
+      throw new WebApplicationException(e);
+    }
+
+  }
 
   // ///////////////////////////////////////////////////
   // MapProject: Update (@POST) functions
@@ -589,7 +652,6 @@ public class MappingServiceRest {
   public Response updateMapProject(
     @ApiParam(value = "The map project to update. Must exist in mapping database. Must be in Json or Xml format", required = true) MapProjectJpa mapProject) {
 
-    System.out.println("-> Update Project");
     try {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.updateMapProject(mapProject);
@@ -646,6 +708,34 @@ public class MappingServiceRest {
       mappingService.close();
       // TODO: this should not return a record, change the client
       return mapRecord;
+    } catch (Exception e) {
+      throw new WebApplicationException(e);
+    }
+
+  }
+  
+  /**
+   * Updates a map record
+   * @param mapRecord the map record to be added
+   * @return Response the response
+   */
+  @POST
+  @Path("/userPreferences/update")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @ApiOperation(value = "Update a set of map user preferences", notes = "Updates a set of map user preferences", response = MapUserPreferencesJpa.class)
+  public void updateMapUserPreferences(
+    @ApiParam(value = "The map user preferences to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapUserPreferencesJpa mapUserPreferences) {
+
+    try {
+      MappingService mappingService = new MappingServiceJpa();
+      mappingService.updateMapUserPreferences(mapUserPreferences);
+      mappingService.close();
+   
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -774,6 +864,27 @@ public class MappingServiceRest {
     try {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.removeMapRecord(mapRecord.getId());
+      mappingService.close();
+      return null;
+    } catch (Exception e) {
+      throw new WebApplicationException(e);
+    }
+  }
+  
+  /**
+   * Removes a set of map user preferences
+   * @param MapUserPreferencesId the id of the map user preferences object to be deleted
+   * @return Response the response
+   */
+  @DELETE
+  @Path("/userPreferences/id/{id:[0-9][0-9]*}")
+  @ApiOperation(value = "Removes a set of map user preferences", notes = "Removes a set of map user preferencest", response = MapUserPreferencesJpa.class)
+  public Response removeMapUserPreferences(
+    @ApiParam(value = "Id of map user preferences object to remove", required = true) @PathParam("id") Long MapUserPreferencesId) {
+
+    try {
+      MappingService mappingService = new MappingServiceJpa();
+      mappingService.removeMapUserPreferences(MapUserPreferencesId);
       mappingService.close();
       return null;
     } catch (Exception e) {
@@ -1161,6 +1272,8 @@ public class MappingServiceRest {
 	  }
   }
   
+ 
+  
  /*
   @GET
   @Path("/relation/compute")
@@ -1205,5 +1318,134 @@ public class MappingServiceRest {
 	  }
 	  
   }*/
+  
+  /**
+	 * Finds tree positions for concept.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param mapProjectId the contextual project of this tree, used for determining valid codes
+	 * @return the search result list
+	 */
+  // http://localhost:8080/mapping-rest/mapping/tree/projectId/1/concept/ICD10/2010/id/I
+	@GET
+	@Path("/tree/projectId/{projectId}/concept/{terminology}/{terminologyVersion}/id/{terminologyId}")
+	@ApiOperation(value = "Get the local tree (position and children) for a particular concept", notes = "Returns a tree structure representing the position of a concept in a terminology and its children", response = TreePositionList.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public TreePositionList getLocalTreePositionsForConcept(
+			@ApiParam(value = "terminology id of concept", required = true) @PathParam("terminologyId") String terminologyId,
+			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
+			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+			@ApiParam(value = "id of map project this tree will be displayed for", required = true) @PathParam("projectId") Long mapProjectId			
+			
+			) {
+			
+		
+		try {
+			// get the local tree positions from content service
+			ContentService contentService = new ContentServiceJpa();
+			List<TreePosition> treePositions = contentService.getLocalTrees(terminologyId, terminology, terminologyVersion); 
+			contentService.close();
+			
+			// set the valid codes using mapping service
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.setTreePositionValidCodes(treePositions, mapProjectId);
+			mappingService.close();
+			
+			// construct and return the tree position list object
+			TreePositionList treePositionList = new TreePositionList();
+			treePositionList.setTreePositions(treePositions);
+			return treePositionList;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Gets root-level tree positions for terminology.
+	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the search result list
+	 */
+	@GET
+	@Path("/tree/projectId/{projectId}/terminology/{terminology}/{terminologyVersion}")
+	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public TreePositionList getRootTreePositionsForTerminology(
+			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
+			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+			@ApiParam(value = "id of map project this tree will be displayed for", required = true) @PathParam("projectId") Long mapProjectId				
+			) {
+			
+		try {
+			
+			// get the root tree positions from content service
+			ContentService contentService = new ContentServiceJpa();
+			List<TreePosition> treePositions = contentService.getRootTreePositionsForTerminology(terminology, terminologyVersion); 
+			contentService.close();
+			
+			// set the valid codes using mapping service
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.setTreePositionValidCodes(treePositions, mapProjectId);
+			mappingService.close();
+			
+			// construct and return the tree position list object
+			TreePositionList treePositionList = new TreePositionList();
+			treePositionList.setTreePositions(treePositions);
+			return treePositionList;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Finds tree positions for concept query.
+	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param query the query
+	 * @return the root-level trees corresponding to the query
+	 */
+	@GET
+	@Path("/tree/projectId/{projectId}/terminology/{terminology}/{terminologyVersion}/query/{query}")
+	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public TreePositionList getRootTreePositionsForConceptQuery(
+			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
+			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,			
+			@ApiParam(value = "paging/filtering/sorting object", required = true) @PathParam("query") String query,
+			@ApiParam(value = "id of map project this tree will be displayed for", required = true) @PathParam("projectId") Long mapProjectId	) {
+			
+		
+		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /tree/concept/" + terminology + "/" + terminologyVersion + "/query/" + query);
+		try {
+			
+			// get the tree positions from concept service
+			ContentService contentService = new ContentServiceJpa();
+			List<TreePosition> treePositions = contentService.getTreePositionsForConceptQuery(terminology, terminologyVersion, query); 
+			contentService.close();
+			
+			// set the valid codes using mapping service
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.setTreePositionValidCodes(treePositions, mapProjectId);
+			mappingService.close();
+			
+			// construct and return the tree position list object
+			TreePositionList treePositionList = new TreePositionList();
+			treePositionList.setTreePositions(treePositions);
+			return treePositionList;
+			
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
   
 }
