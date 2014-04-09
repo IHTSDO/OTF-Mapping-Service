@@ -593,4 +593,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
   
 		return sb.toString();
 	}
+
+	/**
+	 * For default project, all target codes are considered valid.
+	 * @throws Exception 
+	 */
+	@Override
+	public boolean isTargetCodeValid(String terminologyId) throws Exception {
+		return true;
+	}
 }

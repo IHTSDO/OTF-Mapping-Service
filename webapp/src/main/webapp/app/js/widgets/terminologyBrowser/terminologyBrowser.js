@@ -24,16 +24,28 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 	$scope.terminology = terminology.name;
 	$scope.terminologyVersion = terminology.version;
+	$scope.focusProject = localStorageService.get('focusProject');
 	
-	console.debug(terminology);
+	// watch for project change and modify the local variable if necessary
+	// coupled with $watch below, this avoids premature work fetching
+	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
+		console.debug("TerminologyBrowserWidgetCtrl:  Detected change in focus project");
+		$scope.focusProject = parameters.focusProject;
+	});
 	
-	getRootTree();
-	
+	// on any change of focusProject, retrieve new available work
+	$scope.$watch('focusProject', function() {
+
+		if ($scope.focusProject != null) {
+			getRootTree();
+		}
+	});
+
 	// function to get the root nodes
 	function getRootTree() {
 	
 		$http({
-			url: root_content + "tree/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion,
+			url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion,
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
 		}).then (function(response) {
@@ -53,7 +65,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		$scope.searchStatus = "Searching...";
 		$scope.terminologyTree = [];
 		$http({
-			url: root_content + "tree/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion + "/query/" + $scope.query,
+			url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion + "/query/" + $scope.query,
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
 		}).then (function(response) {
@@ -75,7 +87,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		
 		$timeout(function() {
 			$http({
-				url: root_content + "tree/concept/" + $scope.terminology + "/" + $scope.terminologyVersion + "/id/" + terminologyId,
+				url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/concept/" + $scope.terminology + "/" + $scope.terminologyVersion + "/id/" + terminologyId,
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).then (function(response) {

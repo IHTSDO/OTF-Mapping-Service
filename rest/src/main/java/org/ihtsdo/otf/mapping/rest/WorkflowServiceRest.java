@@ -17,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
@@ -34,7 +35,6 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
-import org.ihtsdo.otf.mapping.workflow.Workflow;
 import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
 
 import com.wordnik.swagger.annotations.Api;
@@ -112,9 +112,8 @@ public class WorkflowServiceRest {
 
 			// retrieve the workflow and tracking records
 			WorkflowService workflowService = new WorkflowServiceJpa();
-
-			Workflow workflow = workflowService.getWorkflow(project);	
-			SearchResultList trackingRecordsList = workflowService.findAvailableWork(workflow, user, pfsParameter);
+	
+			SearchResultList trackingRecordsList = workflowService.findAvailableWork(project, user, pfsParameter);
 
 			workflowService.close();
 
@@ -149,8 +148,7 @@ public class WorkflowServiceRest {
 			SearchResultList searchResultList = new SearchResultListJpa();
 
 			/** call getWorkflow and get the tracking records for unmapped in scope concepts.*/
-			Workflow workflow = workflowService.getWorkflow(project);
-			Set<WorkflowTrackingRecord> trackingRecords = workflow.getTrackingRecordsForUnmappedInScopeConcepts();
+			Set<WorkflowTrackingRecord> trackingRecords = workflowService.getTrackingRecordsForUnmappedInScopeConcepts(project);
 			for (WorkflowTrackingRecord trackingRecord : trackingRecords) {
 				/** don't add cases where there are 2 assigned users already */
 				/** don't add cases where this specialist is already an assigned user */	
@@ -273,15 +271,13 @@ public class WorkflowServiceRest {
 	@Produces({
 		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public MapRecordList assignBatchToUser(
+	public Response assignBatchToUser(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("projectId") String mapProjectId, 
 			@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName, 
 			@ApiParam(value = "List of terminology ids to be assigned", required = true) List<String> terminologyIds) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info("RESTful call: assignBatchToUser");
-
-		MapRecordList mapRecordList = new MapRecordList();
-
+		
 		WorkflowService workflowService = new WorkflowServiceJpa();
 		MappingService mappingService = new MappingServiceJpa();
 		ContentService contentService = new ContentServiceJpa();
@@ -295,17 +291,16 @@ public class WorkflowServiceRest {
 				Concept concept = contentService.getConcept(terminologyId, project.getSourceTerminology(), 
 						project.getSourceTerminologyVersion());
 
+				workflowService.assignUserToConcept(project, concept, user);
 
-				MapRecord mapRecord = workflowService.assignUserToConcept(project, concept, user);
-
-				mapRecordList.addMapRecord(mapRecord);
+				
 			}
 
 			mappingService.close();
 			workflowService.close();
 			contentService.close();
 
-			return mapRecordList;
+			return null;
 
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
@@ -406,14 +401,14 @@ public class WorkflowServiceRest {
     }
 
   }
-  
-	/**
+  /*
+	*//**
 	 * Returns the records assigned to user.
 	 *
 	 * @param mapProjectId the map project id
 	 * @param userName the user name
 	 * @return the records assigned to user
-	 */
+	 *//*
 	@GET
 	@Path("/assigned/id/{id}/user/{user}")
 	@ApiOperation(value = "Returns records assigned to given user.", notes = "Returns work assigned to a given user.", response = MapRecordList.class)
@@ -435,6 +430,38 @@ public class WorkflowServiceRest {
 			mappingService.close();
 			workflowService.close();
 			return assigned;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}*/
+	
+	/**
+	 * Returns the paged/filtered records assigned to user.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userName the user name
+	 * @return the records assigned to user
+	 */
+	@POST
+	@Path("/assigned/id/{id}/user/{user}")
+	@ApiOperation(value = "Returns records assigned to given user.", notes = "Returns work assigned to a given user.", response = SearchResultList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
+	public SearchResultList findRecordsAssignedToUser(
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
+			@ApiParam(value = "UserName of user", required = true) @PathParam("user")  String userName,
+			@ApiParam(value = "Paging/sorting/filtering object", required = true) PfsParameterJpa pfsParameter) {
+	
+		try {
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			MappingService mappingService = new MappingServiceJpa();
+			
+			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
+			MapUser user = mappingService.getMapUser(userName);
+			SearchResultList results = workflowService.findMapRecordsAssignedToUser(project, user, pfsParameter);
+
+			mappingService.close();
+			workflowService.close();
+			return results;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}

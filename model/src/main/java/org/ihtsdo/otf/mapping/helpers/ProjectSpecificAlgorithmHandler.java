@@ -96,4 +96,12 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	 * @return the validation result
 	 */
 	public ValidationResult compareMapRecords(MapRecord record1, MapRecord record2);
+	/**
+	 * Checks if is target code valid for this project.
+	 *
+	 * @param terminologyId the terminology id
+	 * @return true, if is target code valid
+	 * @throws Exception 
+	 */
+	public boolean isTargetCodeValid(String terminologyId) throws Exception;
 }

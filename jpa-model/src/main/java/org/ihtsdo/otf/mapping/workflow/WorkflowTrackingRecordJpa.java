@@ -19,8 +19,10 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
@@ -39,8 +41,9 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	@GeneratedValue
 	private Long id;
 	
-	@ManyToOne(targetEntity=WorkflowJpa.class, optional=false)
-	private Workflow workflow;
+	/** The map project */
+	@ManyToOne(targetEntity=MapProjectJpa.class)
+	private MapProject mapProject;
 	
 	/** The terminology. */
 	@Column(nullable = false)
@@ -93,14 +96,15 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	}
 
 	@Override
-	public Workflow getWorkflow() {
-		return workflow;
+	public MapProject getMapProject() {
+		return this.mapProject;
 	}
 
 	@Override
-	public void setWorkflow(Workflow workflow) {
-		this.workflow = workflow;
+	public void setMapProject(MapProject mapProject) {
+		this.mapProject = mapProject;
 	}
+
 
 	/**
 	 * {@inheritDoc}

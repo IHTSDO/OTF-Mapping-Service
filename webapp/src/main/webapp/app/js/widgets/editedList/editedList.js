@@ -19,7 +19,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 	$scope.focusProject = localStorageService.get('focusProject');
 
 	// pagination variables
-	$scope.recordsPerPage = 3;
+	$scope.recordsPerPage = 10;
 	
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
@@ -64,17 +64,12 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
-
-			$scope.recordPage = page;
 			
+			$scope.recordPage = page;
 			$scope.nRecords = data.totalCount;
 			$scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
-			console.debug($scope.nRecords);
-			
-			console.debug($scope.numRecordPages);
 			 
 			$scope.editedRecords = data.mapRecord;
-			console.debug($scope.editedRecords);
 			
 
 			 
