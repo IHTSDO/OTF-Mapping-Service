@@ -1,0 +1,281 @@
+<div id="comparing-concepts-wrapper" class="row splitter_panel">
+
+  <div id="comparing-concept-details" class="top_panel splitter_panel">
+  
+    <div class="col-md-6 left_panel" style="padding: 2px; margin: 2px;">
+
+      <!--  CONCEPT PANEL -->
+      <accordion> <accordion-group is-open="isConceptOpen">
+      <accordion-heading> Source Concept <i
+        class="pull-right glyphicon"
+        ng-class="{'glyphicon-chevron-down': isConceptOpen, 'glyphicon-chevron-right': !isConceptOpen}"></i>
+      </accordion-heading>
+
+
+
+      <table>
+
+        <tr>
+          <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
+          <td style="vertical-align: top; padding: 5px;">{{concept.terminology}},
+            {{concept.terminologyId}}</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top; padding: 5px;"><strong>Name</strong></td>
+          <td style="vertical-align: top; padding: 5px;">{{concept.defaultPreferredName}}</td>
+        </tr>
+
+      </table>
+      </accordion-group> </accordion>
+
+      <!--  ENTRIES PANEL -->
+      <accordion> <accordion-group is-open="isEntriesOpen">
+      <accordion-heading> Entries <i
+        class="pull-right glyphicon"
+        ng-class="{'glyphicon-chevron-down': isEntriesOpen, 'glyphicon-chevron-right': !isEntriesOpen}"></i>
+      </accordion-heading>
+
+      <div ng-show="project.groupStructure == true">
+
+        <accordion close-others="false">
+
+        <div ui-sortable ng-model="groups1">
+
+          <!--  first-level accordion groups -->
+          <accordion-group ng-repeat="group in groups1" is-open="true">
+
+          <accordion-heading> <span
+            style="text-align: left;">Map Group <span
+            ng-show="entries1[group].length == 0"> &nbsp <i
+              class="glyphicon glyphicon-remove-circle"
+              ng-click="removeMapGroup(group)"></i>
+          </span>
+          </span> <span class="pull-right"><i class="glyphicon glyphicon-move"></i></span>
+          </accordion-heading>
+
+
+
+          <div ui-sortable ng-model="entries1[group]">
+            <p ng-repeat="entry in entries1[group] track by entry.localId"
+              ng-click="selectEntry(entry)">
+
+              <a ng-show="entry.targetId != null && entry.targetId != ''"><span
+                ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
+                {{entry.targetId}} {{entry.targetName}}</a> <a
+                ng-show="entry.targetId == null || entry.targetId === ''">[Empty
+                Entry]</a>
+            </p>
+          </div>
+          <!--  end sortable entries --> </accordion-group>
+          <!--  end Group accordion group -->
+
+        </div>
+        <!--  end sortable groups --> </accordion>
+        <!--  end group accordion -->
+      </div>
+
+      <!--  for no group structure in project -->
+      <div ng-show="project.groupStructure == false"">
+
+        <div ui-sortable ng-model="entries1">
+          <p ng-repeat="entry in entries1" ng-click="selectEntry(entry)">
+            <a ng-show="entry.targetId != null && entry.targetId != ''"> <span
+              ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span>
+              {{entry.targetId}} {{entry.targetName}}
+            </a> <a ng-show="entry.targetId == null || entry.targetId === ''">[Empty
+              Entry]</a>
+          </p>
+        </div>
+      </div>
+
+      </accordion-group> <!--  end entries accordion group --> </accordion>
+      <!--  end entries accordion -->
+
+      <!--  PRINCIPLES PANEL -->
+      <accordion> <accordion-group is-open="isPrinciplesOpen">
+      <accordion-heading> Principles <i
+        class="pull-right glyphicon"
+        ng-class="{'glyphicon-chevron-down': isPrinciplesOpen, 'glyphicon-chevron-right': !isPrinciplesOpen}"></i>
+      </accordion-heading>
+
+      <div ng-show="record1.mapPrinciple.length > 0">
+        <div ng-repeat="principle in record1.mapPrinciple">
+          {{principle.principleId}}: {{principle.name}}</div>
+      </div>
+      </accordion-group> </accordion>
+
+      <!--  NOTES PANEL -->
+      <accordion> <accordion-group is-open="isNotesOpen">
+      <accordion-heading> Notes <i
+        class="pull-right glyphicon"
+        ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
+      </accordion-heading>
+
+      <div ng-show="record1.mapNote.length > 0">
+        <div ng-repeat="note in record1.mapNote">[{{note.user.userName}}]
+          {{note.note}}</div>
+      </div>
+      </accordion-group> </accordion>
+
+
+
+
+      <button class="btn btn-sm btn-primary" ng-click="finishMapRecord()">Start
+        here</button>
+      <p></p>
+      <span style="color: green;">{{recordSuccess}}</span> <span
+        style="color: red;" ng-show="validationResult.errors.length > 0">
+        Errors detected:
+        <ul>
+          <li ng-repeat="error in validationResult.errors">{{error}}</li>
+        </ul>
+      </span> <span style="color: orange;"
+        ng-show="validationResult.warnings.length > 0"> Warnings:
+        <ul>
+          <li ng-repeat="warning in validationResult.warnings">{{warning}}</li>
+        </ul>
+      </span>
+    </div>
+  
+  
+    <div class="vsplitter" style="left: 615px;"></div> 
+    
+    <div class="headerDivider"></div> 
+    
+    <!--  RIGHT PANEL -->
+    <div class="col-md-6 right_panel" style="padding: 2px; margin: 2px;">
+
+      <!--  CONCEPT PANEL -->
+      <accordion> <accordion-group is-open="isConceptOpen">
+      <accordion-heading> Source Concept <i
+        class="pull-right glyphicon"
+        ng-class="{'glyphicon-chevron-down': isConceptOpen, 'glyphicon-chevron-right': !isConceptOpen}"></i>
+      </accordion-heading>
+
+
+
+      <table>
+
+        <tr>
+          <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
+          <td style="vertical-align: top; padding: 5px;">{{concept.terminology}},
+            {{concept.terminologyId}}</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top; padding: 5px;"><strong>Name</strong></td>
+          <td style="vertical-align: top; padding: 5px;">{{concept.defaultPreferredName}}</td>
+        </tr>
+
+      </table>
+      </accordion-group> </accordion>
+
+      <!--  ENTRIES PANEL -->
+      <accordion> <accordion-group is-open="isEntriesOpen">
+      <accordion-heading> Entries <i
+        class="pull-right glyphicon"
+        ng-class="{'glyphicon-chevron-down': isEntriesOpen, 'glyphicon-chevron-right': !isEntriesOpen}"></i>
+      </accordion-heading>
+
+      <div ng-show="project.groupStructure == true">
+
+        <accordion close-others="false">
+
+        <div ui-sortable ng-model="groups2">
+
+          <!--  first-level accordion groups -->
+          <accordion-group ng-repeat="group in groups2" is-open="true">
+
+          <accordion-heading> <span
+            style="text-align: left;">Map Group <span
+            ng-show="entries2[group].length == 0"> &nbsp <i
+              class="glyphicon glyphicon-remove-circle"
+              ng-click="removeMapGroup(group)"></i>
+          </span>
+          </span> <span class="pull-right"><i class="glyphicon glyphicon-move"></i></span>
+          </accordion-heading>
+
+
+
+          <div ui-sortable ng-model="entries2[group]">
+            <p ng-repeat="entry in entries2[group] track by entry.localId"
+              ng-click="selectEntry(entry)">
+
+              <a ng-show="entry.targetId != null && entry.targetId != ''"><span
+                ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
+                {{entry.targetId}} {{entry.targetName}}</a> <a
+                ng-show="entry.targetId == null || entry.targetId === ''">[Empty
+                Entry]</a>
+            </p>
+          </div>
+          <!--  end sortable entries --> </accordion-group>
+          <!--  end Group accordion group -->
+
+        </div>
+        <!--  end sortable groups --> </accordion>
+        <!--  end group accordion -->
+      </div>
+
+      <!--  for no group structure in project -->
+      <div ng-show="project.groupStructure == false"">
+
+        <div ui-sortable ng-model="entries2">
+          <p ng-repeat="entry in entries2" ng-click="selectEntry(entry)">
+            <a ng-show="entry.targetId != null && entry.targetId != ''"> <span
+              ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span>
+              {{entry.targetId}} {{entry.targetName}}
+            </a> <a ng-show="entry.targetId == null || entry.targetId === ''">[Empty
+              Entry]</a>
+          </p>
+        </div>
+      </div>
+
+      </accordion-group> <!--  end entries accordion group --> </accordion>
+      <!--  end entries accordion -->
+
+      <!--  PRINCIPLES PANEL -->
+      <accordion> <accordion-group is-open="isPrinciplesOpen">
+      <accordion-heading> Principles <i
+        class="pull-right glyphicon"
+        ng-class="{'glyphicon-chevron-down': isPrinciplesOpen, 'glyphicon-chevron-right': !isPrinciplesOpen}"></i>
+      </accordion-heading>
+
+      <div ng-show="record2.mapPrinciple.length > 0">
+        <div ng-repeat="principle in record2.mapPrinciple">
+          {{principle.principleId}}: {{principle.name}}</div>
+      </div>
+      </accordion-group> </accordion>
+
+      <!--  NOTES PANEL -->
+      <accordion> <accordion-group is-open="isNotesOpen">
+      <accordion-heading> Notes <i
+        class="pull-right glyphicon"
+        ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
+      </accordion-heading>
+
+      <div ng-show="record2.mapNote.length > 0">
+        <div ng-repeat="note in record2.mapNote">[{{note.user.userName}}]
+          {{note.note}}</div>
+      </div>
+      </accordion-group> </accordion>
+
+
+
+
+      <button class="btn btn-sm btn-primary" ng-click="finishMapRecord()">Start
+        here</button>
+      <p></p>
+      <span style="color: green;">{{recordSuccess}}</span> <span
+        style="color: red;" ng-show="validationResult.errors.length > 0">
+        Errors detected:
+        <ul>
+          <li ng-repeat="error in validationResult.errors">{{error}}</li>
+        </ul>
+      </span> <span style="color: orange;"
+        ng-show="validationResult.warnings.length > 0"> Warnings:
+        <ul>
+          <li ng-repeat="warning in validationResult.warnings">{{warning}}</li>
+        </ul>
+      </span>
+    </div>
+  </div>
+</div>

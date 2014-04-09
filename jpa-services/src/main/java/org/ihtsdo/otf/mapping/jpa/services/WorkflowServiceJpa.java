@@ -639,8 +639,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		for (int i=0; i<mapRecords.length; i++) {
 			for (int j=0; j<mapRecords.length; j++) {
 				if (mapRecords[i].getConceptId().equals(mapRecords[j].getConceptId()) &&
-						mapRecords[i].getLastModified() < mapRecords[j].getLastModified() &&
-						mapRecords[i].getId() != mapRecords[j].getId()) {
+						mapRecords[i].getId() < mapRecords[j].getId()) {
 							finishedPairsForComparison.put(mapRecords[i], mapRecords[j]);
 				}
 			}
@@ -648,14 +647,44 @@ public class WorkflowServiceJpa implements WorkflowService {
 		for (Entry<MapRecord, MapRecord> entry : finishedPairsForComparison.entrySet()) {
 		  DefaultProjectSpecificAlgorithmHandler handler = new DefaultProjectSpecificAlgorithmHandler();
 		  ValidationResult result = handler.compareMapRecords(entry.getKey(), entry.getValue());
+	  	// make new map record
+	  	MapRecord newMapRecord = new MapRecordJpa(entry.getKey());
+		  // assign conflicting records as origin ids and add their origin ids as well
+	  	newMapRecord.addOrigin(entry.getKey().getId());
+	  	newMapRecord.addOrigins(entry.getKey().getOriginIds());
+	  	newMapRecord.addOrigin(entry.getValue().getId());
+	  	newMapRecord.addOrigins(entry.getValue().getOriginIds());
+	  	// get concept
+	  	ContentService contentService = new ContentServiceJpa();
+	  	Concept concept = contentService.getConcept(new Long(entry.getKey().getConceptId()));
+		  contentService.close();
+		  WorkflowTrackingRecord trackingRecord = getWorkflowTrackingRecord(mapProject, concept);
+	    
 		  if (!result.isValid()) {
 		  	conflicts.put(entry.getKey().getId(), entry.getValue().getId());
-			     entry.getKey().setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
-			     mappingService.updateMapRecord(entry.getKey());
-			     entry.getValue().setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
-			     mappingService.updateMapRecord(entry.getValue());
+		  	//assign new record conflict detected
+		  	newMapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+			  // set owner to default
+		  	MapUser mapUser = mappingService.getMapUser("default");
+		  	newMapRecord.setOwner(mapUser);
+	  	  // update workflowtrackingrecord
+		    trackingRecord.setHasDiscrepancy(true);
+		    trackingRecord.addMapRecord(newMapRecord);
+		  } else {
+		  	// make new map record that is a copy of one of the other ones
+		  	// add to it all the notes from the other one
+		  	// set origin ids + ids of two records
+		  	// TODO: confirm the first steps are the same
+		  	// TODO: who is the owner? set it
+		  	// set workflowStatus to ready for publication
+		  	newMapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+		  	// delete these 2 records and delete the tracking record
+		  	mappingService.removeMapRecord(entry.getKey().getId());
+		  	mappingService.removeMapRecord(entry.getValue().getId());
+		  	removeWorkflowTrackingRecord(mapProject, trackingRecord);
 		  }
 		}
+		mappingService.close();
 		return conflicts;
 	}
 
