@@ -593,7 +593,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		  	// delete these 2 records and delete the tracking record
 		  	mappingService.removeMapRecord(entry.getKey().getId());
 		  	mappingService.removeMapRecord(entry.getValue().getId());
-		  	removeWorkflowTrackingRecord(mapProject, trackingRecord);
+		  	removeWorkflowTrackingRecord(trackingRecord.getId());
 		  }
 		}
 		mappingService.close();
@@ -614,11 +614,6 @@ public class WorkflowServiceJpa implements WorkflowService {
 	public SearchResultList findMapRecordsAssignedToUser(MapProject project,
 			MapUser user, PfsParameter pfsParameter) {
 		
-		
-
-
-
-	
 		List<MapRecord> mapRecordsAssigned = new ArrayList<>();
 		
 		// cycle over all tracking records
