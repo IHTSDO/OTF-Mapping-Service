@@ -14,7 +14,9 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -621,21 +623,21 @@ public interface MappingService {
 	 *
 	 * @param mapEntry the map entry
 	 * @return the map relation
-	 * @throws ClassNotFoundException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @throws InstantiationException the instantiation exception
+	 * @throws IllegalAccessException the illegal access exception
+	 * @throws ClassNotFoundException the class not found exception
 	 */
 	public MapRelation computeMapRelation(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
 	
     /**
-	 * Compute map advice.
-	 *
-	 * @param mapEntry the map entry
-	 * @return the list
-	 * @throws ClassNotFoundException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
-	 */
+     * Compute map advice.
+     *
+     * @param mapEntry the map entry
+     * @return the list
+     * @throws InstantiationException the instantiation exception
+     * @throws IllegalAccessException the illegal access exception
+     * @throws ClassNotFoundException the class not found exception
+     */
 	public List<MapAdvice> computeMapAdvice(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
 	
     /**
@@ -684,9 +686,9 @@ public interface MappingService {
 	 *
 	 * @param mapProject the map project
 	 * @return the project specific algorithm handler
-	 * @throws ClassNotFoundException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @throws InstantiationException the instantiation exception
+	 * @throws IllegalAccessException the illegal access exception
+	 * @throws ClassNotFoundException the class not found exception
 	 */
 	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(MapProject mapProject) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
 
@@ -700,6 +702,46 @@ public interface MappingService {
 	 * @throws Exception the exception
 	 */
 	public int getRecentlyEditedMapRecordCount(Long projectId, String userName, PfsParameter pfsParameter) throws Exception;
+
+	/**
+	 * Gets the map user preferences.
+	 *
+	 * @return the map user preferences
+	 */
+	public List<MapUserPreferences> getMapUserPreferences();
+
+	/**
+	 * Adds the map user preferences.
+	 *
+	 * @param mapUserPreferences the map user preferences
+	 * @return the map user preferences
+	 */
+	public MapUserPreferences addMapUserPreferences(
+			MapUserPreferences mapUserPreferences);
+
+	/**
+	 * Update map user preferences.
+	 *
+	 * @param mapUserPreferences the map user preferences
+	 */
+	public void updateMapUserPreferences(MapUserPreferences mapUserPreferences);
+
+	/**
+	 * Removes the map user preferences.
+	 *
+	 * @param mapUserPreferencesId the map user preferences id
+	 */
+	public void removeMapUserPreferences(Long mapUserPreferencesId);
+
+	/**
+	 * Given a list of tree positions and a map project id, sets the valid codes for each node
+	 * @param treePositions
+	 * @param mapProjectId 
+	 * @throws Exception 
+	 */
+	public List<TreePosition> setTreePositionValidCodes(
+			List<TreePosition> treePositions, Long mapProjectId) throws Exception;
+
 	
 	
 }

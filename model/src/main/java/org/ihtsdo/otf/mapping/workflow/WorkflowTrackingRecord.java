@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.workflow;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
@@ -28,18 +29,18 @@ public interface WorkflowTrackingRecord {
 	public void setId(Long id);
 	
 	/**
-	 * Gets the workflow.
+	 * Gets the map project.
 	 *
-	 * @return the workflow
+	 * @return the map project.
 	 */
-	public Workflow getWorkflow();
-
+	public MapProject getMapProject();
+	
 	/**
-	 * Sets the workflow.
+	 * Sets the map project.
 	 *
-	 * @param workflow the new workflow
+	 * @param workflow the new map project.
 	 */
-	public void setWorkflow(Workflow workflow);
+	public void setMapProject(MapProject mapProject);
 	
 	/**
 	 * Sets the terminology id.
