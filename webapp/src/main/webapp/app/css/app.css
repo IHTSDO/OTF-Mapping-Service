@@ -12,3 +12,11 @@ body {
 	padding-top: 50px;
 	padding-bottom: 50px;
 }
+
+.headerDivider {
+     border-left:1px solid #38546d; 
+     border-right:1px solid #16222c; 
+     position:absolute;
+     left:50%;
+     right:50%; 
+}

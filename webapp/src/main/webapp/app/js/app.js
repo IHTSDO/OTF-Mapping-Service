@@ -14,6 +14,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.editedList',  
                                                      'mapProjectApp.widgets.workAvailable',
                                                      'mapProjectApp.widgets.terminologyBrowser',
+                                                     'mapProjectApp.widgets.compareRecords',
                                                      'LocalStorageModule',
                                                      'ngCookies'/*,
                                                      'textAngular'*/
@@ -116,9 +117,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
 	                                      title: "Assigned to Me"
 	                                  }]
                                   }]
-                                }
-                                
-                                , {
+                                }, {
                                   columns: [{
                                     class: 'col-md-12',
                                     widgets: [{
@@ -126,6 +125,14 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
 	                                      title: "Recently Edited"
 	                                  }]
                                   }]
+                                }, {
+                                    columns: [{
+                                      class: 'col-md-12',
+                                      widgets: [{
+  	                                      type: "compareRecords",
+  	                                      title: "Compare Records"
+  	                                  }]
+                                    }]
                                 }, {
                                     columns: [{
                                         class: 'col-md-12',

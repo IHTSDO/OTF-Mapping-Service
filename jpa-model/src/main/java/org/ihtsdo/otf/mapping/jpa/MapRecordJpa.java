@@ -672,15 +672,30 @@ public class MapRecordJpa implements MapRecord {
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setWorkflowStatus(org.ihtsdo.otf.mapping.helpers.WorkflowStatus)
+	 */
 	@Override
 	public void setWorkflowStatus(WorkflowStatus workflowStatus) {
 		this.workflowStatus = workflowStatus;
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getWorkflowStatus()
+	 */
 	@Override
 	public WorkflowStatus getWorkflowStatus() {
 		return workflowStatus;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addOrigins(java.util.Set)
+	 */
+	@Override
+	public void addOrigins(Set<Long> origins) {
+		originIds.addAll(origins);
 	}
 
 
