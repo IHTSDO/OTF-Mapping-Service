@@ -15,6 +15,63 @@ mapProjectAppControllers.run(function() {
 
 });
 
+mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, localStorageService) {
+	
+	setModel();
+	
+	$scope.focusProject = localStorageService.get('focusProject');
+
+	var currentUser = localStorageService.get('currentUser');
+	var currentRole = localStorageService.get('currentRole');
+
+
+	function setModel() {
+		$scope.name = 'ResolveConflictsDashboard';
+		if (!$scope.model) {
+			$scope.model = {
+      			  
+              	  structure: "12/6-6/12",
+              	  rows: [{
+                          columns: [{
+                            class: 'col-md-12',
+                            widgets: [{
+                                  type: "compareRecords",
+                                  title: "Compare Records"
+                              }]
+                          }]
+                      }]
+              	  
+
+                  };
+		}
+	};
+
+	console.debug("CONTROLLER MODEL");
+	console.debug($scope.model);
+
+	$scope.$on('adfDashboardChanged', function (event, name, model) {
+		console.debug("Dashboard change detected by ResolveConflictsDashboard");
+		localStorageService.set(name, model);
+	});
+
+	// watch for project change
+	// TODO A project change while viewing a record should return you to dashboard
+	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
+		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
+		$scope.project = parameters.focusProject;
+
+		console.debug($scope.project);
+	});	
+
+	// on any change of focusProject, retrieve new available work
+	$scope.$watch('focusProject', function() {
+		console.debug('ResolveConflictsDashboardCtrl:  Detected project set/change');
+		setModel();
+
+
+	});
+});
+
 
 mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $routeParams, localStorageService) {
 	

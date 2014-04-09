@@ -125,7 +125,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
 	                                      title: "Recently Edited"
 	                                  }]
                                   }]
-                                }, {
+                                },/** {
                                     columns: [{
                                       class: 'col-md-12',
                                       widgets: [{
@@ -133,7 +133,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
   	                                      title: "Compare Records"
   	                                  }]
                                     }]
-                                }, {
+                                },*/ {
                                     columns: [{
                                         class: 'col-md-12',
                                         widgets: [{
@@ -196,6 +196,8 @@ mapProjectApp.config(['$routeProvider',
 	  $routeProvider.when('/admin/dash', {
 		  templateUrl: 'partials/project-list.html'
 	  });
+	  
+	  
 	
       //////////////////////////////
 	  // MAPPING SERVICES
@@ -226,7 +228,10 @@ mapProjectApp.config(['$routeProvider',
 		  controller: 'MapRecordDashboardCtrl'
 	  });
 		
-	  
+	  $routeProvider.when('/record/conflicts', {
+		  templateUrl: 'partials/record-dashboard.html',
+		  controller: 'ResolveConflictsDashboardCtrl'
+	  });	  
 
 
 	  
