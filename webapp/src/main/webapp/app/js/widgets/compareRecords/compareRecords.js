@@ -53,7 +53,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  		        headers: { "Content-Type": "application/json"}	
 	  	      }).success(function(data) {
 	  	    	  $scope.record1 = data;
-	  	    	 
+	  	    	  $scope.record2 = data;
 	  	      }).error(function(error) {
 	  	    	  $scope.error = $scope.error + "Could not retrieve map record. ";
 	  	     
@@ -225,13 +225,6 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 
 	  		  };
 	  		  
-	  		// Sets the scope variable for the active entry
-	  		  // TODO: get rid of this
-	  		$scope.selectEntry = function(entry) {
-	  			console.debug("Select entry");
-	  			$rootScope.$broadcast('compareRecordsWidget.notification.changeSelectedEntry',{key: 'changeSelectedEntry', entry: angular.copy(entry), record: $scope.record1, project: $scope.project});  
-	  	         
-	  		};
 
 	 
 	  		/////////////////////////

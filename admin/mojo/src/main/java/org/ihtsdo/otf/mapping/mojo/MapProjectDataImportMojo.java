@@ -172,8 +172,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				MapAdviceJpa mapAdvice = new MapAdviceJpa();
 				mapAdvice.setName(st.nextToken());
 				mapAdvice.setDetail(st.nextToken());
-				mapAdvice.setAllowableForNullTarget(st.nextToken().equals("true") ? true : false);
-				mapAdvice.setComputed(st.nextToken().equals("true") ? true : false);
+				mapAdvice.setAllowableForNullTarget(st.nextToken().toLowerCase().equals("true") ? true : false);
+				mapAdvice.setComputed(st.nextToken().toLowerCase().equals("true") ? true : false);
 				mappingService.addMapAdvice(mapAdvice);
 			}
 			
@@ -188,8 +188,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapRelation.setTerminologyId(st.nextToken());
 				mapRelation.setAbbreviation(st.nextToken());
 				mapRelation.setName(st.nextToken());
-				mapRelation.setAllowableForNullTarget(st.nextToken().equals("true") ? true : false);
-				mapRelation.setComputed(st.nextToken().equals("true") ? true : false);
+				mapRelation.setAllowableForNullTarget(st.nextToken().toLowerCase().equals("true") ? true : false);
+				mapRelation.setComputed(st.nextToken().toLowerCase().equals("true") ? true : false);
 				mappingService.addMapRelation(mapRelation);
 			}
 			
@@ -230,10 +230,10 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapAgeRange.setName(fields[1]);
 				mapAgeRange.setLowerValue(fields[2].equals("") || fields[2].equals("null") ? null : new Integer(fields[2]));
 				mapAgeRange.setLowerUnits(fields[3]);
-				mapAgeRange.setLowerInclusive(fields[4].equals("true") ? true : false);
+				mapAgeRange.setLowerInclusive(fields[4].toLowerCase().equals("true") ? true : false);
 				mapAgeRange.setUpperValue(fields[5].equals("") || fields[5].equals("null") ? null : new Integer(fields[5]));
 				mapAgeRange.setUpperUnits(fields[6]);
-				mapAgeRange.setUpperInclusive(fields[7].equals("true") ? true : false);
+				mapAgeRange.setUpperInclusive(fields[7].toLowerCase().equals("true") ? true : false);
 		
 				// if this age range is not in hash set, add it
 				MapAgeRange newAgeRange = null;
@@ -285,12 +285,12 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapProject.setSourceTerminologyVersion(fields[4]);
 				mapProject.setDestinationTerminology(fields[5]);
 				mapProject.setDestinationTerminologyVersion(fields[6]);
-				mapProject.setBlockStructure(fields[7].equals("true") ? true : false);
-				mapProject.setGroupStructure(fields[8].equals("true") ? true : false);
-				mapProject.setPublished(fields[9].equals("true") ? true : false);
+				mapProject.setBlockStructure(fields[7].toLowerCase().equals("true") ? true : false);
+				mapProject.setGroupStructure(fields[8].toLowerCase().equals("true") ? true : false);
+				mapProject.setPublished(fields[9].toLowerCase().equals("true") ? true : false);
 				mapProject.setMapRelationStyle(fields[10]);
 				mapProject.setMapPrincipleSourceDocument(fields[11]);
-				mapProject.setRuleBased(fields[12].equals("true") ? true : false);
+				mapProject.setRuleBased(fields[12].toLowerCase().equals("true") ? true : false);
 				mapProject.setMapRefsetPattern(fields[13]);
 				mapProject.setProjectSpecificAlgorithmHandlerClass(fields[14]);
 
@@ -338,7 +338,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				for (String specialist : mapSpecialists.split(",")) {
 
 					for (MapUser ml : mappingService.getMapUsers()) {
-						if (ml.getUserName().equals(specialist))
+						if (ml.getUserName().toLowerCase().equals(specialist))
 							mapProject.addMapSpecialist(ml);
 					}
 				}

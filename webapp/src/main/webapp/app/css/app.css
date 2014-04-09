@@ -13,10 +13,17 @@ body {
 	padding-bottom: 50px;
 }
 
-.headerDivider {
-     border-left:1px solid #38546d; 
-     border-right:1px solid #16222c; 
-     position:absolute;
-     left:50%;
-     right:50%; 
+p {
+  margin: 0 0 0px;
+}
+
+.panel-heading {
+padding: 5px 5px;
+border-bottom: 1px solid transparent;
+border-top-left-radius: 3px;
+border-top-right-radius: 3px;
+}
+
+.panel-body {
+padding: 10px;
 }

@@ -2,7 +2,7 @@
 
   <div id="comparing-concept-details" class="top_panel splitter_panel">
   
-    <div class="col-md-6 left_panel" style="padding: 2px; margin: 2px;">
+    <div class="col-md-6 left_panel" style="padding: 4px; margin: 4px;">
 
       <!--  CONCEPT PANEL -->
       <accordion> <accordion-group is-open="isConceptOpen">
@@ -45,25 +45,20 @@
           <accordion-group ng-repeat="group in groups1" is-open="true">
 
           <accordion-heading> <span
-            style="text-align: left;">Map Group <span
-            ng-show="entries1[group].length == 0"> &nbsp <i
-              class="glyphicon glyphicon-remove-circle"
-              ng-click="removeMapGroup(group)"></i>
-          </span>
+            style="text-align: left;">Map Group 
           </span> <span class="pull-right"><i class="glyphicon glyphicon-move"></i></span>
           </accordion-heading>
 
 
 
           <div ui-sortable ng-model="entries1[group]">
-            <p ng-repeat="entry in entries1[group] track by entry.localId"
-              ng-click="selectEntry(entry)">
+            <p ng-repeat="entry in entries1[group] track by entry.localId">
 
-              <a ng-show="entry.targetId != null && entry.targetId != ''"><span
+              <span ng-show="entry.targetId != null && entry.targetId != ''"><span
                 ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
-                {{entry.targetId}} {{entry.targetName}}</a> <a
+                {{entry.targetId}} {{entry.targetName}}</span> <span
                 ng-show="entry.targetId == null || entry.targetId === ''">[Empty
-                Entry]</a>
+                Entry]</span>
             </p>
           </div>
           <!--  end sortable entries --> </accordion-group>
@@ -78,12 +73,12 @@
       <div ng-show="project.groupStructure == false"">
 
         <div ui-sortable ng-model="entries1">
-          <p ng-repeat="entry in entries1" ng-click="selectEntry(entry)">
-            <a ng-show="entry.targetId != null && entry.targetId != ''"> <span
+          <p ng-repeat="entry in entries1">
+            <span ng-show="entry.targetId != null && entry.targetId != ''"> <span
               ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span>
               {{entry.targetId}} {{entry.targetName}}
-            </a> <a ng-show="entry.targetId == null || entry.targetId === ''">[Empty
-              Entry]</a>
+            </span> <span ng-show="entry.targetId == null || entry.targetId === ''">[Empty
+              Entry]</span>
           </p>
         </div>
       </div>
@@ -143,7 +138,7 @@
     <div class="headerDivider"></div> 
     
     <!--  RIGHT PANEL -->
-    <div class="col-md-6 right_panel" style="padding: 2px; margin: 2px;">
+    <div class="col-md-6 right_panel" style="padding: 4px; margin: 4px;">
 
       <!--  CONCEPT PANEL -->
       <accordion> <accordion-group is-open="isConceptOpen">
@@ -186,25 +181,20 @@
           <accordion-group ng-repeat="group in groups2" is-open="true">
 
           <accordion-heading> <span
-            style="text-align: left;">Map Group <span
-            ng-show="entries2[group].length == 0"> &nbsp <i
-              class="glyphicon glyphicon-remove-circle"
-              ng-click="removeMapGroup(group)"></i>
-          </span>
+            style="text-align: left;">Map Group 
           </span> <span class="pull-right"><i class="glyphicon glyphicon-move"></i></span>
           </accordion-heading>
 
 
 
           <div ui-sortable ng-model="entries2[group]">
-            <p ng-repeat="entry in entries2[group] track by entry.localId"
-              ng-click="selectEntry(entry)">
+            <p ng-repeat="entry in entries2[group] track by entry.localId">
 
-              <a ng-show="entry.targetId != null && entry.targetId != ''"><span
+              <span ng-show="entry.targetId != null && entry.targetId != ''"><span
                 ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
-                {{entry.targetId}} {{entry.targetName}}</a> <a
+                {{entry.targetId}} {{entry.targetName}}</span> <span
                 ng-show="entry.targetId == null || entry.targetId === ''">[Empty
-                Entry]</a>
+                Entry]</span>
             </p>
           </div>
           <!--  end sortable entries --> </accordion-group>
@@ -219,12 +209,12 @@
       <div ng-show="project.groupStructure == false"">
 
         <div ui-sortable ng-model="entries2">
-          <p ng-repeat="entry in entries2" ng-click="selectEntry(entry)">
-            <a ng-show="entry.targetId != null && entry.targetId != ''"> <span
+          <p ng-repeat="entry in entries2">
+            <span ng-show="entry.targetId != null && entry.targetId != ''"> <span
               ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span>
               {{entry.targetId}} {{entry.targetName}}
-            </a> <a ng-show="entry.targetId == null || entry.targetId === ''">[Empty
-              Entry]</a>
+            </span> <span ng-show="entry.targetId == null || entry.targetId === ''">[Empty
+              Entry]</span>
           </p>
         </div>
       </div>
