@@ -46,21 +46,45 @@
                     class="glyphicon glyphicon-stats"></i></a></span>
                     &nbsp;
               <!--  Help tools (by role) -->
-              <span ng-show="currentRole.name == 'Viewer'" title="Help">
+              <span ng-show="page == 'mainDashboard' && currentRole.name == 'Viewer'" title="Help">
                 <a href="doc/viewerHelp.html" target="_blank"><i
                   class="glyphicon glyphicon-question-sign"></i></a> &nbsp; 
               </span> 
-              <span ng-show="currentRole.name == 'Specialist'"
+              <span ng-show="page == 'mainDashboard' && currentRole.name == 'Specialist'"
               title="Help"> <a href="doc/specialistHelp.html"
                 target="_blank"><i class="glyphicon glyphicon-question-sign">
                 </i></a> &nbsp;
               </span>  
-              <span ng-show="currentRole.name == 'Lead'" title="Help">
+              <span ng-show="page == 'mainDashboard' && currentRole.name == 'Lead'" title="Help">
                 <a href="doc/leadHelp.html" target="_blank"><i
                   class="glyphicon glyphicon-question-sign"></i></a>&nbsp;
               </span> 
-              <span ng-show="currentRole.name == 'Administrator'"
+              <span ng-show="page == 'mainDashboard' && currentRole.name == 'Administrator'"
               title="Help"> <a href="doc/administratorHelp.html"
+                target="_blank"><i class="glyphicon glyphicon-question-sign">
+                </i></a>&nbsp;
+              </span>
+              <span ng-show="page == 'login'" title="Help"> <a href="doc/loginHelp.html"
+                target="_blank"><i class="glyphicon glyphicon-question-sign">
+                </i></a>&nbsp;
+              </span>
+              <span ng-show="page == 'editDashboard'" title="Help"> <a href="doc/editDashboardHelp.html"
+                target="_blank"><i class="glyphicon glyphicon-question-sign">
+                </i></a>&nbsp;
+              </span>
+              <span ng-show="page == 'concept'" title="Help"> <a href="doc/conceptHelp.html"
+                target="_blank"><i class="glyphicon glyphicon-question-sign">
+                </i></a>&nbsp;
+              </span>
+              <span ng-show="page == 'project'" title="Help"> <a href="doc/projectHelp.html"
+                target="_blank"><i class="glyphicon glyphicon-question-sign">
+                </i></a>&nbsp;
+              </span>
+              <span ng-show="page == 'records'" title="Help"> <a href="doc/recordsHelp.html"
+                target="_blank"><i class="glyphicon glyphicon-question-sign">
+                </i></a>&nbsp;
+              </span>
+              <span ng-show="page == 'resolveConflictsDashboard'" title="Help"> <a href="doc/resolveConflictsDashboardHelp.html"
                 target="_blank"><i class="glyphicon glyphicon-question-sign">
                 </i></a>&nbsp;
               </span>

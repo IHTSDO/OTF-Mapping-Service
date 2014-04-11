@@ -100,7 +100,7 @@ mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($
 });
 
 
-mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $routeParams, localStorageService) {
+mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $routeParams, $rootScope, localStorageService) {
 	
 	setModel();
 	
@@ -145,6 +145,9 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 			};
 
 		}
+		// broadcast page to help mechanism  
+		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
+		
 	};
 
 	console.debug("CONTROLLER MODEL");
@@ -171,6 +174,8 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 
 
 	});
+	
+		
 });
 
 
@@ -191,7 +196,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
 	
 	// set all local variables to null
-	$scope.user = null;
+	$scope.user = null; 
 	$scope.users = null;
 	$scope.error = null;
 
