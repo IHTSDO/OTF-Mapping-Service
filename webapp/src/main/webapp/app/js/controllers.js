@@ -39,7 +39,34 @@ mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($
                                   title: "Compare Records"
                               }]
                           }]
-                      }]
+                      }, {  // new row
+                    
+                    	  columns: [{
+								class: 'col-md-6',
+								widgets: [{
+									type: "mapRecord",
+									config: { recordId: $routeParams.recordId},
+									title: "Map Record"
+								}]
+							}, {
+								class: 'col-md-6',
+								widgets: [{
+									type: "mapEntry",
+									config: { entry: $scope.entry},
+									title: "Map Entry"
+								}, {
+									type: "terminologyBrowser",
+									config: { 
+										terminology: $scope.focusProject.destinationTerminology,
+										terminologyVersion: $scope.focusProject.destinationTerminologyVersion
+									},
+									title: $scope.focusProject.destinationTerminology + " Terminology Browser"
+								
+								}],
+							} // end second column
+						] // end columns
+                    	  
+                      }] // end second row
               	  
 
                   };

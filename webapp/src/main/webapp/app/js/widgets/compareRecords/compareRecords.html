@@ -1,34 +1,33 @@
-<div id="comparing-concepts-wrapper" class="row splitter_panel">
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
 
-  <div id="comparing-concept-details" class="top_panel splitter_panel">
-  
-    <div class="col-md-6 left_panel" style="padding: 4px; margin: 4px;">
+<!--[if IE]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+<script>
+	jQuery(function($) {
+		$('#widget').height(500).split({
+			orientation : 'horizontal',
+			position : '70%'
+		});
+		$('#recordsSplitter').split({
+			orientation : 'vertical',
+			position : '50%'
+		});
+	});
+</script>
 
-      <!--  CONCEPT PANEL -->
-      <accordion> <accordion-group is-open="isConceptOpen">
-      <accordion-heading> Source Concept <i
-        class="pull-right glyphicon"
-        ng-class="{'glyphicon-chevron-down': isConceptOpen, 'glyphicon-chevron-right': !isConceptOpen}"></i>
-      </accordion-heading>
+
+</head>
+<body>
 
 
+  <div id="widget">
+    <div id="recordsSplitter">
+      <div class="a">
 
-      <table>
-
-        <tr>
-          <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
-          <td style="vertical-align: top; padding: 5px;">{{concept.terminology}},
-            {{concept.terminologyId}}</td>
-        </tr>
-        <tr>
-          <td style="vertical-align: top; padding: 5px;"><strong>Name</strong></td>
-          <td style="vertical-align: top; padding: 5px;">{{concept.defaultPreferredName}}</td>
-        </tr>
-
-      </table>
-      </accordion-group> </accordion>
-
-      <!--  ENTRIES PANEL -->
+<!--  ENTRIES PANEL -->
       <accordion> <accordion-group is-open="isEntriesOpen">
       <accordion-heading> Entries <i
         class="pull-right glyphicon"
@@ -46,7 +45,7 @@
 
           <accordion-heading> <span
             style="text-align: left;">Map Group 
-          </span> <span class="pull-right"><i class="glyphicon glyphicon-move"></i></span>
+          </span> 
           </accordion-heading>
 
 
@@ -112,59 +111,14 @@
       </div>
       </accordion-group> </accordion>
 
-
-
-
-      <button class="btn btn-sm btn-primary" ng-click="finishMapRecord()">Start
-        here</button>
-      <p></p>
-      <span style="color: green;">{{recordSuccess}}</span> <span
-        style="color: red;" ng-show="validationResult.errors.length > 0">
-        Errors detected:
-        <ul>
-          <li ng-repeat="error in validationResult.errors">{{error}}</li>
-        </ul>
-      </span> <span style="color: orange;"
-        ng-show="validationResult.warnings.length > 0"> Warnings:
-        <ul>
-          <li ng-repeat="warning in validationResult.warnings">{{warning}}</li>
-        </ul>
-      </span>
-    </div>
-  
-  
-    <div class="vsplitter" style="left: 615px;"></div> 
-    
-    <div class="headerDivider"></div> 
-    
-    <!--  RIGHT PANEL -->
-    <div class="col-md-6 right_panel" style="padding: 4px; margin: 4px;">
-
-      <!--  CONCEPT PANEL -->
-      <accordion> <accordion-group is-open="isConceptOpen">
-      <accordion-heading> Source Concept <i
-        class="pull-right glyphicon"
-        ng-class="{'glyphicon-chevron-down': isConceptOpen, 'glyphicon-chevron-right': !isConceptOpen}"></i>
-      </accordion-heading>
-
-
-
-      <table>
-
-        <tr>
-          <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
-          <td style="vertical-align: top; padding: 5px;">{{concept.terminology}},
-            {{concept.terminologyId}}</td>
-        </tr>
-        <tr>
-          <td style="vertical-align: top; padding: 5px;"><strong>Name</strong></td>
-          <td style="vertical-align: top; padding: 5px;">{{concept.defaultPreferredName}}</td>
-        </tr>
-
-      </table>
-      </accordion-group> </accordion>
-
-      <!--  ENTRIES PANEL -->
+      <button class="btn btn-sm btn-primary" style="margin: 4px" ng-click="populateMapRecord(record1)">Start
+        here</button> 
+      
+      
+      </div> <!-- end class a -->
+      <div class="b">
+ 
+       <!--  ENTRIES PANEL -->
       <accordion> <accordion-group is-open="isEntriesOpen">
       <accordion-heading> Entries <i
         class="pull-right glyphicon"
@@ -182,7 +136,7 @@
 
           <accordion-heading> <span
             style="text-align: left;">Map Group 
-          </span> <span class="pull-right"><i class="glyphicon glyphicon-move"></i></span>
+          </span> 
           </accordion-heading>
 
 
@@ -248,24 +202,25 @@
       </div>
       </accordion-group> </accordion>
 
+      <button class="btn btn-sm btn-primary" style="margin: 4px" ng-click="populateMapRecord(record2)">Start
+        here</button> 
+      
+      </div> <!--  end class b -->
+    </div> <!--  end recordsSplitter -->
+    
+    <div id="report">
+      <accordion> <accordion-group is-open="isReportOpen">
+      <accordion-heading> Conflict Report <i
+        class="pull-right glyphicon"
+        ng-class="{'glyphicon-chevron-down': isReportOpen, 'glyphicon-chevron-right': !isReportOpen}"></i>
+      </accordion-heading>
 
+      <!-- <div ng-show="record2.mapNote.length > 0">
+        <div ng-repeat="note in record2.mapNote">[{{note.user.userName}}]
+          {{note.note}}</div>
+      </div> -->
+      </accordion-group> </accordion></div>
+  </div> <!-- end widget -->
 
-
-      <button class="btn btn-sm btn-primary" ng-click="finishMapRecord()">Start
-        here</button>
-      <p></p>
-      <span style="color: green;">{{recordSuccess}}</span> <span
-        style="color: red;" ng-show="validationResult.errors.length > 0">
-        Errors detected:
-        <ul>
-          <li ng-repeat="error in validationResult.errors">{{error}}</li>
-        </ul>
-      </span> <span style="color: orange;"
-        ng-show="validationResult.warnings.length > 0"> Warnings:
-        <ul>
-          <li ng-repeat="warning in validationResult.warnings">{{warning}}</li>
-        </ul>
-      </span>
-    </div>
-  </div>
-</div>
+</body>
+</html>

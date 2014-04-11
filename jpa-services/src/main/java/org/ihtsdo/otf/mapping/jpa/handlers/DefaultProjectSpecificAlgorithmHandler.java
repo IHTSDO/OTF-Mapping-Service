@@ -556,12 +556,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	     }	   
 	   
 	   }	   
-	   
-	   // TODO: Do we do this here?
-	   if (validationResult.getErrors().size() > 0) {
-	     record1.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
-	     record2.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
-	   }
 
 		return validationResult;
 	}
