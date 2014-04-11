@@ -40,7 +40,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  		
 	  		
 	  		// broadcast page to help mechanism  
-	  		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
+	  		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'resolveConflictsDashboard'});  
 	  		
 	  		// initialize local variables
 	  		var recordId = 		$routeParams.recordId; 
