@@ -12,7 +12,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		edit: {}
 	});
   })
-	.controller('compareRecordsCtrl', function($scope, $rootScope, $http, $routeParams, localStorageService){
+	.controller('compareRecordsCtrl', function($scope, $rootScope, $http, $routeParams, $location, localStorageService){
 		  
 	        /////////////////////////////////////
 	        // Map Record Controller Functions //
@@ -36,6 +36,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  		$scope.isEntriesOpen = true;
 	  		$scope.isPrinciplesOpen = true;
 	  		$scope.isNotesOpen = true;
+	  		$scope.isReportOpen = true;
 	  		
 	  		
 	  		// broadcast page to help mechanism  
@@ -82,6 +83,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  	     		        headers: { "Content-Type": "application/json"}	
 	  	 		      }).success(function(data) {
 	  	     		    	  $scope.concept = data;
+	  	     		    	  setTitle($scope.concept.terminologyId, $scope.concept.defaultPreferredName);
 	  	 		      }).error(function(error) {
 	  	     		    	  $scope.error = $scope.error + "Could not retrieve record concept. ";
 	  	 		      });
@@ -104,8 +106,6 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  		// construct an object containing entries, either:
 	  		// 1) a 1-d array, if project has no group structure
 	  		// 2) a 2-d array, with structure [group][mapPriority]
-	  		
-	  		// TODO: rework for 2
 	  		function initializeEntries() {
 	  			
 	  		  // INITIALIZE FIRST RECORD
@@ -187,27 +187,6 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  		/**
 	  		 * MAP ENTRY FUNCTIONS
 	  		 */
-	  		
-	  		// Returns all entries belonging to a particular map group
-	  		// TODO: rework for 2 groups; is this used?
-	        /**  $scope.getEntries = function(mapGroup) {
-	  		  
-	  		  // if no argument, return all entries
-	  		  if (mapGroup == null) {
-	  			  return $scope.entries2.mapEntry;
-	  		  }
-	  		  
-	  		  // cycle over map entries and extract those with this map group
-	  		  var entries = new Array();
-	  		  
-	  		  for (var i = 0; i < $scope.record1.mapEntry.length; i++) {
-	  			  if (parseInt($scope.record1.mapEntry[i].mapGroup, 10) === parseInt(mapGroup, 10)) {
-	  				  entries.push($scope.record1.mapEntry[i]);
-	  			  };
-	  		  };
-	  		  
-	  		  return entries;  
-	  	    }; */
 	  	    
 	  	    // Returns a summary string for the entry rule type
 	  	    $scope.getRuleSummary = function(entry) {
@@ -272,5 +251,12 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				    });
 			  };
 
+			  function setTitle(id, term) {
+				    $scope.model.title = "Compare Records: " + id + "  " + term;
+			  };
+			  
+		  	  $scope.populateMapRecord = function(record) {
+				  $location.path("/record/conflicts/" + record.id);	
+			  };
 
 	    });
