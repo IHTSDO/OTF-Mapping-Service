@@ -2,10 +2,19 @@
   class="navbar navbar-default navbar-fixed-bottom">
   <span ng-transclude=""></span>
   <div class="navbar-inner navbar-content-center">
-    <ul class="nav navbar-nav">
-      <li><a href="http://www.ihtsdo.org/"">Copyright
-          @2014 IHTSDO</a></li>
-    </ul>
+    <div class="nav navbar-nav">
+              &nbsp;
+              <span ng-show="page == 'login'">Login Page</span>
+              <span ng-show="page == 'editDashboard'">Edit Record Page</span>
+              <span ng-show="page == 'concept'">Concept Page</span>
+              <span ng-show="page == 'project'">Map Project Details</span>
+              <span ng-show="page == 'records'">Map Record Details</span>
+              <span ng-show="page == 'resolveConflictsDashboard'">Resolve Conflicts Page</span>
+              <span ng-show="page == 'mainDashboard'">Main Dashboard</span>
+              &nbsp;
+      <a href="http://www.ihtsdo.org/">Copyright
+          @2014 IHTSDO</a>
+    </div>
   </div>
 </nav>
 
