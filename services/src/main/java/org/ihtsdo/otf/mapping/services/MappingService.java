@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Map;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
@@ -418,7 +419,7 @@ public interface MappingService {
 	 *
 	 * @param mapProjectId the map project id
 	 * @param complexMapRefSetMembers the complex map ref set members
-	 * @param workflowStatus TODO
+	 * @param workflowStatus the workflow status
 	 * @throws Exception the exception
 	 */
 	public void createMapRecordsForMapProject(Long mapProjectId, 
@@ -734,13 +735,25 @@ public interface MappingService {
 	public void removeMapUserPreferences(Long mapUserPreferencesId);
 
 	/**
-	 * Given a list of tree positions and a map project id, sets the valid codes for each node
-	 * @param treePositions
-	 * @param mapProjectId 
-	 * @throws Exception 
+	 * Given a list of tree positions and a map project id, sets the valid codes for each node.
+	 *
+	 * @param treePositions the tree positions
+	 * @param mapProjectId the map project id
+	 * @return the list
+	 * @throws Exception the exception
 	 */
 	public List<TreePosition> setTreePositionValidCodes(
 			List<TreePosition> treePositions, Long mapProjectId) throws Exception;
+
+	/**
+	 * Compare finished map records.
+	 *
+	 * @param mapProject the map project
+	 * @return the map
+	 * @throws Exception the exception
+	 */
+	public Map<Long, Long> compareFinishedMapRecords(MapProject mapProject)
+			throws Exception;
 
 	
 	

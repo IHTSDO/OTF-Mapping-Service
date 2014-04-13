@@ -16,7 +16,7 @@
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav navbar-right">
           <li><span class="navbar-text" ng-show="currentUser.name != null">{{currentUser.name}}
-              ({{currentRole.name}})
+              ({{currentRole}})
               <!--  Logout tools --> &nbsp;
               <span ng-show="currentUser.name != null" title="Log out"><a
                 href="index.html#/" ng-click="go('/project/projects/')"><i
@@ -32,34 +32,34 @@
           <li><span class="navbar-text"> 
               <!--  Dashboard tools --> 
               <span
-                ng-show="currentRole.name == 'Viewer'" title="Dashboard"><a
+                ng-show="currentRole === 'Viewer'" title="Dashboard"><a
                   href="index.html#/project/projects/"><i
                     class="glyphicon glyphicon-stats"></i></a></span> <span
-                ng-show="currentRole.name == 'Specialist'" title="Dashboard"><a
+                ng-show="currentRole === 'Specialist'" title="Dashboard"><a
                   href="index.html#/specialist/dash"><i
                      class="glyphicon glyphicon-stats"></i></a></span> <span
-                ng-show="currentRole.name =='Lead'" title="Dashboard"><a
+                ng-show="currentRole === 'Lead'" title="Dashboard"><a
                   href="index.html#/lead/dash"><i
                     class="glyphicon glyphicon-stats"></i></a></span> <span
-                ng-show="currentRole.name == 'Administrator'" title="Dashboard"><a
+                ng-show="currentRole === 'Administrator'" title="Dashboard"><a
                   href="index.html#/admin/dash"><i
                     class="glyphicon glyphicon-stats"></i></a></span>
                     &nbsp;
               <!--  Help tools (by role) -->
-              <span ng-show="currentRole.name == 'Viewer'" title="Help">
+              <span ng-show="currentRole === 'Viewer'" title="Help">
                 <a href="doc/viewerHelp.html" target="_blank"><i
                   class="glyphicon glyphicon-question-sign"></i></a> &nbsp; 
               </span> 
-              <span ng-show="currentRole.name == 'Specialist'"
+              <span ng-show="currentRole === 'Specialist'"
               title="Help"> <a href="doc/specialistHelp.html"
                 target="_blank"><i class="glyphicon glyphicon-question-sign">
                 </i></a> &nbsp;
               </span>  
-              <span ng-show="currentRole.name == 'Lead'" title="Help">
+              <span ng-show="currentRole === 'Lead'" title="Help">
                 <a href="doc/leadHelp.html" target="_blank"><i
                   class="glyphicon glyphicon-question-sign"></i></a>&nbsp;
               </span> 
-              <span ng-show="currentRole.name == 'Administrator'"
+              <span ng-show="currentRole === 'Administrator'"
               title="Help"> <a href="doc/administratorHelp.html"
                 target="_blank"><i class="glyphicon glyphicon-question-sign">
                 </i></a>&nbsp;

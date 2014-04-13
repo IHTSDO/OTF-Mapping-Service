@@ -133,7 +133,7 @@ public interface ContentService {
 	 *
 	 * @param terminology the terminology
 	 * @param terminologyVersion the terminology version
-	 * @param typeId TODO
+	 * @param typeId the type id
 	 * @param rootId the root id
 	 * @throws Exception the exception
 	 */
