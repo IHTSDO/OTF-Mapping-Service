@@ -3,10 +3,11 @@
  */
 package org.ihtsdo.otf.mapping.rest;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -17,14 +18,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
-import org.ihtsdo.otf.mapping.jpa.MapRecordList;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
@@ -41,8 +42,9 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
+// TODO: Auto-generated Javadoc
 /**
- * The Workflow Services REST package
+ * The Workflow Services REST package.
  */
 @Path("/workflow")
 @Api(value = "/workflow", description = "Operations supporting workflow.")
@@ -54,7 +56,7 @@ public class WorkflowServiceRest {
 	 * Instantiates an empty {@link WorkflowServiceRest}.
 	 */
 	public WorkflowServiceRest() {
-	  // do nothing
+		// do nothing
 	}
 
 
@@ -88,96 +90,334 @@ public class WorkflowServiceRest {
 	 * Finds available work for the specified map project and user.
 	 *
 	 * @param mapProjectId the map project id
-	 * @param userId the user id
+	 * @param user the user id
 	 * @param pfsParameter the paging parameter
 	 * @return the search result list
 	 */
 	@POST
-	@Path("/work/projectId/{id:[0-9][0-9]*}/userId/{userid:[0-9][0-9]*}")
+	@Path("/availableWork/projectId/{id:[0-9][0-9]*}/user/{userName}")
 	@ApiOperation(value = "Get available work.", notes = "Returns available work for a given user on a given map project.", response = SearchResultList.class)
+	@Consumes( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList getAvailableWork(
+	public SearchResultList findAvailableWork(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId, 
-			@ApiParam(value = "Id of map user", required = true) @PathParam("userid") Long userId,
+			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
+		try {
+			
+			
+			// retrieve the project and user
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			MapUser mapUser = mappingService.getMapUser(userName);
+			mappingService.close();
+			
+			Logger.getLogger(WorkflowServiceRest.class).info("RESTful call for project " + mapProject.getName() + " and user " + mapUser.getName() + " for index [" + pfsParameter.getStartIndex() + ":" + (pfsParameter.getMaxResults()-1) + "]");
+
+
+			// retrieve the workflow tracking records
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			List<WorkflowTrackingRecord> trackingRecords = workflowService.getAvailableWork(mapProject, mapUser);
+			workflowService.close();
+			
+			// sort list of tracking records
+			Collections.sort(
+				trackingRecords,
+				new Comparator<WorkflowTrackingRecord>() {
+					@Override
+					public int compare(WorkflowTrackingRecord w1, WorkflowTrackingRecord w2) {
+						return w1.getSortKey().compareTo(w2.getSortKey());
+					}
+				});
+			
+			// initialize results list and set total count
+			SearchResultList results = new SearchResultListJpa();
+			results.setTotalCount(new Long(trackingRecords.size()));
+
+			// set the start and end points (paging)
+			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
+					? pfsParameter.getStartIndex() : 0);
+			int endIndex = (pfsParameter != null && pfsParameter.getMaxResults() != -1 
+					? Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), trackingRecords.size()) - 1 : trackingRecords.size());
+			
+			System.out.println("Available: Returning items from " + startIndex + " to " + endIndex);
+			
+			
+			// for each requested object, construct a search result
+			for (WorkflowTrackingRecord trackingRecord : trackingRecords.subList(startIndex, endIndex)) {
+				SearchResult result = new SearchResultJpa();
+				result.setTerminologyId(trackingRecord.getTerminologyId());
+				result.setValue(trackingRecord.getDefaultPreferredName());
+				results.addSearchResult(result);
+				System.out.println("     Available -> " + result.getTerminologyId());
+			}
+			
+			return results;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	
+	//Request URL:http://localhost:8080/mapping-rest/workflow/assignedWork/id/1/user/dmo
+	/**
+	 * Finds assigned work for the specified map project and user.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param user the user id
+	 * @param pfsParameter the paging parameter
+	 * @return the search result list
+	 */
+	@POST
+	@Path("/assignedWork/projectId/{id:[0-9][0-9]*}/user/{userName}")
+	@ApiOperation(value = "Get assigned work.", notes = "Returns assigned work for a given user on a given map project.", response = SearchResultList.class)
+	@Consumes( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findAssignedWork(
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId, 
+			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
 		try {
 
 			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
-
-			MapProject project = mappingService.getMapProject(mapProjectId);
-			MapUser user = mappingService.getMapUser(userId);
-
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			MapUser mapUser = mappingService.getMapUser(userName);
 			mappingService.close();
+			
+			Logger.getLogger(WorkflowServiceRest.class).info("RESTful call for project " + mapProject.getName() + " and user " + mapUser.getName() + " for index [" + pfsParameter.getStartIndex() + ":" + (pfsParameter.getMaxResults()-1) + "]");
 
-			// retrieve the workflow and tracking records
+
+			// retrieve the workflow tracking records
 			WorkflowService workflowService = new WorkflowServiceJpa();
-	
-			SearchResultList trackingRecordsList = workflowService.findAvailableWork(project, user, pfsParameter);
-
+			List<MapRecord> mapRecords = workflowService.getAssignedWork(mapProject, mapUser);
 			workflowService.close();
-
-			return trackingRecordsList;
+			
+			// sort list of tracking records
+			Collections.sort(
+				mapRecords,
+				new Comparator<MapRecord>() {
+					@Override
+					public int compare(MapRecord w1, MapRecord w2) {
+						return w1.getConceptName().compareTo(w2.getConceptName());
+					}
+				});
+			
+			// initialize results list and set total count
+			SearchResultList results = new SearchResultListJpa();
+			results.setTotalCount(new Long(mapRecords.size()));
+			
+//			System.out.println(mapRecords.size() + " assigned records");
+//
+//			// set the start and end points (paging)
+//			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
+//					? pfsParameter.getStartIndex() : 0);
+//			int endIndex = (pfsParameter != null && pfsParameter.getMaxResults() != -1 
+//					? Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), mapRecords.size()) - 1 : mapRecords.size());
+//			
+//			System.out.println("Assigned: Returning items from " + startIndex + " to " + endIndex);
+//			
+			// for each requested object, construct a search result
+			for (MapRecord mapRecord : mapRecords) { //.subList(startIndex, endIndex)) {
+				SearchResult result = new SearchResultJpa();
+				result.setId(mapRecord.getId());
+				result.setTerminologyId(mapRecord.getConceptId());
+				result.setValue(mapRecord.getConceptName());
+				results.addSearchResult(result);
+				
+				System.out.println("     Assigned -> " + result.getTerminologyId());
+			}
+			
+			return results;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
-
+	
 	/**
-	 * Finds available work for the specified map project and user.
+	 * Finds available conflicts for the specified map project and user.
 	 *
 	 * @param mapProjectId the map project id
-	 * @param userId the user id
+	 * @param user the user id
+	 * @param pfsParameter the paging parameter
 	 * @return the search result list
 	 */
-	@GET
-	@Path("/work/id/{id:[0-9][0-9]*}/user/{userid:[0-9][0-9]*}")
-	@ApiOperation(value = "Find available work.", notes = "Returns available work for a given user on a given map project.", response = SearchResultList.class)
+	@POST
+	@Path("/availableConflicts/projectId/{id:[0-9][0-9]*}/user/{userName}")
+	@ApiOperation(value = "Get available conflicts.", notes = "Returns available conflicts for a given user on a given map project.", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findAvailableWork(
+	public SearchResultList findAvailableConflicts(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId, 
-			@ApiParam(value = "Id of map user", required = true) @PathParam("userid") Long userId) {
+			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
 		try {
+
+			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
-			MapProject project = mappingService.getMapProject(mapProjectId);
-			MapUser user = mappingService.getMapUser(userId);
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			MapUser mapUser = mappingService.getMapUser(userName);
 			mappingService.close();
 
+			// retrieve the workflow tracking records
 			WorkflowService workflowService = new WorkflowServiceJpa();
-
-			SearchResultList searchResultList = new SearchResultListJpa();
-
-			/** call getWorkflow and get the tracking records for unmapped in scope concepts.*/
-			Set<WorkflowTrackingRecord> trackingRecords = workflowService.getTrackingRecordsForUnmappedInScopeConcepts(project);
-			for (WorkflowTrackingRecord trackingRecord : trackingRecords) {
-				/** don't add cases where there are 2 assigned users already */
-				/** don't add cases where this specialist is already an assigned user */	
-				if (trackingRecord.getAssignedUsers().size() >= 2 ||
-						trackingRecord.getAssignedUsers().contains(user)) {
-					continue; 
-				} else {
-					SearchResult searchResult = new SearchResultJpa();
-					searchResult.setTerminology(trackingRecord.getTerminology());
-					searchResult.setTerminologyId(trackingRecord.getTerminologyId());
-					searchResult.setTerminologyVersion(trackingRecord.getTerminologyVersion());
-					searchResult.setValue(trackingRecord.getDefaultPreferredName());
-					searchResultList.addSearchResult(searchResult);
-				}   	
-			}
+			List<WorkflowTrackingRecord> trackingRecords = workflowService.getAvailableConflicts(mapProject, mapUser);
 			workflowService.close();
+			
+			// sort list of tracking records
+			Collections.sort(
+				trackingRecords,
+				new Comparator<WorkflowTrackingRecord>() {
+					@Override
+					public int compare(WorkflowTrackingRecord w1, WorkflowTrackingRecord w2) {
+						return w1.getSortKey().compareTo(w2.getSortKey());
+					}
+				});
+			
+			// initialize results list and set total count
+			SearchResultList results = new SearchResultListJpa();
+			results.setTotalCount(new Long(trackingRecords.size()));
 
-			return searchResultList;
+			/*// set the start and end points (paging)
+			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
+					? pfsParameter.getStartIndex() : 0);
+			int endIndex = (pfsParameter != null && pfsParameter.getMaxResults() != -1 
+					? Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), trackingRecords.size()) - 1 : trackingRecords.size());
+			
+			System.out.println("Returning items from " + startIndex + " to " + endIndex);
+			*/	
+			// for each requested object, construct a search result
+			for (WorkflowTrackingRecord trackingRecord : trackingRecords) {
+				SearchResult result = new SearchResultJpa();
+				result.setTerminologyId(trackingRecord.getTerminologyId());
+				result.setValue(trackingRecord.getDefaultPreferredName());
+				results.addSearchResult(result);
+				
+				System.out.println("    -> Conflict for " + trackingRecord.getTerminologyId());
+			}
+			
+			return results;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
-
+	
 	/**
-	 * Assign user to concept.
+	 * Finds available conflicts for the specified map project and user.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userName the user name
+	 * @param pfsParameter the paging parameter
+	 * @return the search result list
+	 */
+	@POST
+	@Path("/assignedConflicts/projectId/{id:[0-9][0-9]*}/user/{userName}")
+	@ApiOperation(value = "Get available conflicts.", notes = "Returns available conflicts for a given user on a given map project.", response = SearchResultList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findAssignedConflicts(
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId, 
+			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
+		try {
+
+			// retrieve the project and user
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			MapUser mapUser = mappingService.getMapUser(userName);
+			mappingService.close();
+
+			// retrieve the map records
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			List<MapRecord> mapRecords = workflowService.getAssignedConflicts(mapProject, mapUser);
+			workflowService.close();
+			
+			// sort list of tracking records
+			Collections.sort(
+				mapRecords,
+				new Comparator<MapRecord>() {
+					@Override
+					public int compare(MapRecord w1, MapRecord w2) {
+						return w1.getConceptName().compareTo(w2.getConceptName());
+					}
+				});
+			
+			// initialize results list and set total count
+			SearchResultList results = new SearchResultListJpa();
+			results.setTotalCount(new Long(mapRecords.size()));
+
+			/*// set the start and end points (paging)
+			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
+					? pfsParameter.getStartIndex() : 0);
+			int endIndex = (pfsParameter != null && pfsParameter.getMaxResults() != -1 
+					? Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), mapRecords.size()) - 1 : mapRecords.size());
+			
+			System.out.println("Returning items from " + startIndex + " to " + endIndex);
+			*/
+			
+			// for each requested object, construct a search result
+			for (MapRecord mapRecord : mapRecords) {
+				SearchResult result = new SearchResultJpa();
+				result.setTerminologyId(mapRecord.getConceptId());
+				result.setValue(mapRecord.getConceptName());
+				results.addSearchResult(result);
+			}
+			
+			return results;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Assign user to to work (concept mapping or conflict resolution).
 	 *
 	 * @param mapProjectId the map project id
 	 * @param terminologyId the terminology id
 	 * @param userName the user name
+	 * @param mapRecord the map record (can be null)
+	 * @return the map record
+	 */
+	@POST
+	@Path("/assign/record/projectId/{id}/concept/{terminologyId}/user/{userName}")
+	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
+	@Produces({
+		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public Response assignWorkFromRecord(
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
+			@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId,
+			@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Initial MapRecord to copy", required = true) MapRecordJpa mapRecord) {
+		try {
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			MappingService mappingService = new MappingServiceJpa();
+			ContentService contentService = new ContentServiceJpa();
+
+			MapProject mapProject = mappingService.getMapProject(new Long(mapProjectId));
+			MapUser mapUser = mappingService.getMapUser(userName);
+			Concept concept = contentService.getConcept(terminologyId, mapProject.getSourceTerminology(), 
+					mapProject.getSourceTerminologyVersion());
+
+			
+			workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord, WorkflowAction.ASSIGN_FROM_INITIAL_RECORD);
+
+			mappingService.close();
+			workflowService.close();
+			contentService.close();
+
+			return null;
+
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	/*
+	 * Assign user to to work (concept mapping or conflict resolution).
+	 *
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @param userName the user name
+	 * @param mapRecord the map record (can be null)
 	 * @return the map record
 	 */
 	@POST
@@ -186,7 +426,7 @@ public class WorkflowServiceRest {
 	@Produces({
 		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public MapRecord assignUserToConcept(
+	public Response assignWork(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
 			@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId,
 			@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName) {
@@ -195,66 +435,65 @@ public class WorkflowServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			ContentService contentService = new ContentServiceJpa();
 
-			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
-			MapUser user = mappingService.getMapUser(userName);
-			Concept concept = contentService.getConcept(terminologyId, project.getSourceTerminology(), 
-					project.getSourceTerminologyVersion());
+			MapProject mapProject = mappingService.getMapProject(new Long(mapProjectId));
+			MapUser mapUser = mappingService.getMapUser(userName);
+			Concept concept = contentService.getConcept(terminologyId, mapProject.getSourceTerminology(), 
+					mapProject.getSourceTerminologyVersion());
 
-			MapRecord mapRecord = workflowService.assignUserToConcept(project, concept, user);
 
+			workflowService.processWorkflowAction(mapProject, concept, mapUser, null, WorkflowAction.ASSIGN_FROM_SCRATCH);
+		
+			
 			mappingService.close();
 			workflowService.close();
 			contentService.close();
 
-			return mapRecord;
+			return null;
 
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
-
+	
 	/**
-	 * Assign user to concept.
+	 * Unassign user from work.
 	 *
 	 * @param mapProjectId the map project id
 	 * @param terminologyId the terminology id
-	 * @param recordId the record id
 	 * @param userName the user name
-	 * @return the response
+	 * @return the map record
 	 */
-	@GET
-	@Path("/assign/id/{id}/concept/{terminologyId}/record/{recordId}/user/{userName}")
-	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
+	@POST
+	@Path("/unassign/projectId/{id}/concept/{terminologyId}/user/{userName}")
+	@ApiOperation(value = "Unassign user from work.", notes = "Ununassigns the user from either concept mapping or conflict resolution.", response = Response.class)
 	@Produces({
 		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public Response assignUserToConcept(
+	public Response unassignWork(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
-			@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId, 
-			@ApiParam(value = "Id of map record", required = true) @PathParam("recordId") String recordId,
+			@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId,
 			@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName) {
 		try {
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			MappingService mappingService = new MappingServiceJpa();
 			ContentService contentService = new ContentServiceJpa();
-			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
-			MapUser user = mappingService.getMapUser(userName);
-			MapRecord record = mappingService.getMapRecord(new Long(recordId));
-			Concept concept = contentService.getConcept(terminologyId, project.getSourceTerminology(), 
-					project.getSourceTerminologyVersion());
 
-			workflowService.assignUserToConcept(project, concept, record, user);
+			MapProject mapProject = mappingService.getMapProject(new Long(mapProjectId));
+			MapUser mapUser = mappingService.getMapUser(userName);
+			Concept concept = contentService.getConcept(terminologyId, mapProject.getSourceTerminology(), 
+					mapProject.getSourceTerminologyVersion());
 
-
+			workflowService.processWorkflowAction(mapProject, concept, mapUser, null, WorkflowAction.UNASSIGN);
+			
 			mappingService.close();
 			workflowService.close();
 			contentService.close();
 
+			return null;
 
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
-		return null;
 	}
 
 	/**
@@ -263,37 +502,36 @@ public class WorkflowServiceRest {
 	 * @param mapProjectId the map project id
 	 * @param userName the user name
 	 * @param terminologyIds the terminology ids
-	 * @return the map record list
+	 * @return the Response
 	 */
 	@POST
 	@Path("/assign/batch/projectId/{projectId}/user/{userName}")
-	@ApiOperation(value = "Assign user to batch of concepts.", notes = "Assigns the given user to the given concept.", response = Response.class)
+	@ApiOperation(value = "Assign user to batch of concepts.", notes = "Assigns the given user to a batch of concepts.", response = Response.class)
 	@Produces({
 		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public Response assignBatchToUser(
+	public Response assignBatch(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("projectId") String mapProjectId, 
 			@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName, 
 			@ApiParam(value = "List of terminology ids to be assigned", required = true) List<String> terminologyIds) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info("RESTful call: assignBatchToUser");
-		
+
 		WorkflowService workflowService = new WorkflowServiceJpa();
 		MappingService mappingService = new MappingServiceJpa();
 		ContentService contentService = new ContentServiceJpa();
 
 
 		try {
-			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
-			MapUser user = mappingService.getMapUser(userName);
+			MapProject mapProject = mappingService.getMapProject(new Long(mapProjectId));
+			MapUser mapUser = mappingService.getMapUser(userName);
 
 			for (String terminologyId : terminologyIds) {
-				Concept concept = contentService.getConcept(terminologyId, project.getSourceTerminology(), 
-						project.getSourceTerminologyVersion());
+				Concept concept = contentService.getConcept(terminologyId, mapProject.getSourceTerminology(), 
+						mapProject.getSourceTerminologyVersion());
 
-				workflowService.assignUserToConcept(project, concept, user);
+				workflowService.processWorkflowAction(mapProject, concept, mapUser, null, WorkflowAction.ASSIGN_FROM_SCRATCH);
 
-				
 			}
 
 			mappingService.close();
@@ -308,164 +546,72 @@ public class WorkflowServiceRest {
 	}
 
 	/**
-	 * Unassign user to concept.
+	 * Finish with a concept mapping or conflict resolution.
 	 *
 	 * @param mapProjectId the map project id
 	 * @param terminologyId the terminology id
 	 * @param userName the user name
+	 * @param mapRecord the map record
+	 * @return the Response
 	 */
 	@POST
-	@Path("/unassign/projectId/{projectId}/conceptId/{terminologyId}/user/{userName}")
-	@ApiOperation(value = "Unssign user from a concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
-	@Produces({
-		MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public void unassignUserToConcept(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("projectId") String mapProjectId, 
-			@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId,
-			@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName) {
+	@Path("/finish")
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
+	@ApiOperation(value = "Set record to finished", notes = "Updates the map record and sets workflow to editing done.")
+	public Response finishWork(
+			@ApiParam(value = "The map record", required = true) MapRecordJpa mapRecord) {
+		
 		try {
-			WorkflowService workflowService = new WorkflowServiceJpa();
+			// get the map project and map user
 			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
+			MapUser mapUser = mapRecord.getOwner();
+			mappingService.close();
+			
+			// get the concept
 			ContentService contentService = new ContentServiceJpa();
-
-			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
-			MapUser user = mappingService.getMapUser(userName);
-			Concept concept = contentService.getConcept(terminologyId, project.getSourceTerminology(), 
-					project.getSourceTerminologyVersion());
-
-			workflowService.unassignUserFromConcept(project, concept, user);
-			
-			mappingService.close();
-			workflowService.close();
+			Concept concept = contentService.getConcept(mapRecord.getConceptId(), mapProject.getSourceTerminology(), 
+					mapProject.getSourceTerminologyVersion());
 			contentService.close();
-
-
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
-	 /**
- 	 * Sets the workflow to editing done.
- 	 *
- 	 * @param mapRecordId the workflow to editing done
- 	 */
- 	@GET
-  @Path("/set/done/{id:[0-9][0-9]*}")
-  @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
-	@ApiOperation(value = "Set record to editing done", notes = "Updates the map record and sets workflow to editing done.")
-  public boolean setWorkflowToEditingDone(
-		@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
-
-    try {
-
-      MappingService mappingService = new MappingServiceJpa();
-      MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
-      
-    	mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
-      
-      mappingService.updateMapRecord(mapRecord);
-      mappingService.close();
-      return true;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
-
-  }
-
-	/**
-	 * Sets the workflow to editing in progress.
-	 *
-	 * @param mapRecordId the workflow to editing in progress
-	 */
-	@GET
-  @Path("/set/inProgress/{id:[0-9][0-9]*}")
-  @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
-	@ApiOperation(value = "Set record to editing done", notes = "Updates the map record and sets workflow to editing in progress.")
-  public boolean setWorkflowToEditingInProgress(
-		@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
-
-    try {
-
-      MappingService mappingService = new MappingServiceJpa();
-      MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
-      
-    	mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
-      
-      mappingService.updateMapRecord(mapRecord);
-      mappingService.close();
-      return true;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
-
-  }
-  /*
-	*//**
-	 * Returns the records assigned to user.
-	 *
-	 * @param mapProjectId the map project id
-	 * @param userName the user name
-	 * @return the records assigned to user
-	 *//*
-	@GET
-	@Path("/assigned/id/{id}/user/{user}")
-	@ApiOperation(value = "Returns records assigned to given user.", notes = "Returns work assigned to a given user.", response = MapRecordList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
-	public MapRecordList getRecordsAssignedToUser(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
-			@ApiParam(value = "UserName of user", required = true) @PathParam("user")  String userName) {
-		MapRecordList assigned = new MapRecordList();
-		try {
+			
+			// execute the workflow call
 			WorkflowService workflowService = new WorkflowServiceJpa();
-			MappingService mappingService = new MappingServiceJpa();
-			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
-			MapUser user = mappingService.getMapUser(userName);
-
-			Set<MapRecord> mapRecords = workflowService.getMapRecordsAssignedToUser(project, user);
-			List<MapRecord> mapRecordsList = new ArrayList<>(mapRecords);
-			assigned.setMapRecords(mapRecordsList);
-
-			mappingService.close();
+			workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord, WorkflowAction.FINISH_EDITING);
 			workflowService.close();
-			return assigned;
+		
+			return null;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
-	}*/
+
+	}
 	
 	/**
-	 * Returns the paged/filtered records assigned to user.
+	 * Save map record (do not update workflow).
 	 *
-	 * @param mapProjectId the map project id
-	 * @param userName the user name
-	 * @return the records assigned to user
+	 * @param mapRecord the map record
+	 * @return the Response
 	 */
 	@POST
-	@Path("/assigned/id/{id}/user/{user}")
-	@ApiOperation(value = "Returns records assigned to given user.", notes = "Returns work assigned to a given user.", response = SearchResultList.class)
+	@Path("/save")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
-	public SearchResultList findRecordsAssignedToUser(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
-			@ApiParam(value = "UserName of user", required = true) @PathParam("user")  String userName,
-			@ApiParam(value = "Paging/sorting/filtering object", required = true) PfsParameterJpa pfsParameter) {
-	
+	@ApiOperation(value = "Set record to editing done", notes = "Updates the map record and sets workflow to editing done.")
+	public Response saveWork(
+			@ApiParam(value = "MapRecord to save", required = true) MapRecordJpa mapRecord) {
+		
 		try {
-			WorkflowService workflowService = new WorkflowServiceJpa();
-			MappingService mappingService = new MappingServiceJpa();
 			
-			MapProject project = mappingService.getMapProject(new Long(mapProjectId));
-			MapUser user = mappingService.getMapUser(userName);
-			SearchResultList results = workflowService.findMapRecordsAssignedToUser(project, user, pfsParameter);
-
+			// TODO Need to make this call agnostic (i.e. perhaps add another enum action)
+			MappingService mappingService = new MappingServiceJpa();
+			mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+			mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
-			workflowService.close();
-			return results;
+			
+			return null;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
-	}
 
+	}
 
 }

@@ -443,7 +443,7 @@ public class MappingServiceRest {
   }
 
   /**
-   * Returns delimited page of MapRecords given a paging/filtering/sorting
+   * Returns delimited page of Published or Ready For Publication MapRecords given a paging/filtering/sorting
    * parameters object
    * 
    * @param mapProjectId the map project id

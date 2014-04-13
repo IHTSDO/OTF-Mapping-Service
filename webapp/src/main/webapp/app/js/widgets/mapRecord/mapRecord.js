@@ -243,7 +243,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					  $scope.record.lastModifiedBy = $scope.user;
 					  
 					  $http({
-						  url: root_mapping + "record/update",
+						  url: root_workflow + "finish",
 						  dataType: "json",
 						  data: $scope.record,
 						  method: "POST",
@@ -257,23 +257,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					  }).error(function(data) {
 						 $scope.recordSuccess = "";
 						 $scope.recordError = "Error saving record.";
-					  }).then(function(data) {
-							console.debug("Setting the workflow to done.");
-							  $http({
-								  url: root_workflow + "set/done/" + recordId,
-								  dataType: "json",
-								  method: "GET",
-								  headers: {
-									  "Content-Type": "application/json"
-								  }
-							  }).success(function(data) {
-								 $scope.recordError = "";
-							  }).error(function(data) {
-								 $scope.recordError = "Error setting workflow to editing done.";
-							  });
-						  
-
-						  
 					  });
 				  
 				  // otherwise, display the errors
@@ -352,7 +335,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					  $scope.record.lastModifiedBy = $scope.user;
 					  
 					  $http({
-						  url: root_mapping + "record/update",
+						  url: root_workflow + "save",
 						  dataType: "json",
 						  data: $scope.record,
 						  method: "POST",

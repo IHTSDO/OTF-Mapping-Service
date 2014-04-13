@@ -14,7 +14,6 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.editedList',  
                                                      'mapProjectApp.widgets.workAvailable',
                                                      'mapProjectApp.widgets.terminologyBrowser',
-                                                     'mapProjectApp.widgets.compareRecords',
                                                      'LocalStorageModule',
                                                      'ngCookies'/*,
                                                      'textAngular'*/
@@ -80,100 +79,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                             });
 
                         })
-                        .controller('dashboardCtrl', function ($rootScope, $scope, localStorageService) {
-                          var name = 'default';
-                          var model = localStorageService.get(name);
-                          
-                          var currentUser = localStorageService.get('currentUser');
-                          var currentRole = localStorageService.get('currentRole');
-                          
-                          if (!model) { // lead or higher privledge
-                            // set default model for demo purposes
-                        	model = {
-                        			  
-                        	  structure: "12/6-6/12",
-                        	  rows: [{
-                                  columns: [{
-                                    class: 'col-md-12',
-                                    widgets: [{
-	                                      type: "mapProject",
-	                                      config: {},
-	                                      title: "Map Project"
-	                                  }]
-                                  }]
-                                }, {
-                                  columns: [{
-                                    class: 'col-md-6',
-                                    widgets: [{
-	                                      type: "workAvailable",
-	                                      config: {},
-	                                      title: "Available Work"
-	                                  }]
-                                  }, {
-                                    class: 'col-md-6',
-                                    widgets: [{
-	                                      type: "assignedList",
-	                                      config: {},
-	                                      title: "Assigned to Me"
-	                                  }]
-                                  }]
-                                }, {
-                                  columns: [{
-                                    class: 'col-md-12',
-                                    widgets: [{
-	                                      type: "editedList",
-	                                      title: "Recently Edited"
-	                                  }]
-                                  }]
-                                },/** {
-                                    columns: [{
-                                      class: 'col-md-12',
-                                      widgets: [{
-  	                                      type: "compareRecords",
-  	                                      title: "Compare Records"
-  	                                  }]
-                                    }]
-                                },*/ {
-                                    columns: [{
-                                        class: 'col-md-12',
-                                        widgets: [{
-	                                      type: "metadataList",
-	                                      config: {
-	                                          terminology: "SNOMEDCT"
-	                                      },
-	                                      title: "Metadata"
-	                                  }]
-                                  }]
-                                }]
-                        	  
-	
-                            };
-                          } else if (!model) { // viewer or specialist
-                              // set default model for demo purposes
-                              model = {
-                                structure: "6-6",                          
-                              rows: [{
-                            	  columns: [{
-                                      class: 'col-md-6',
-                                      widgets: [{
-  	                                      type: "terminologyBrowser",
-  	                                      config: {
-  	                                          terminology: "ICD10",
-  	                                          terminologyVersion: "2010"                	 
-  	                                      },
-  	                                      title: "ICD10 Browser"
-  	                                  }]
-                                    }]
-                                  }]
-                                }
-                            }
-                          $scope.name = name;
-                          $scope.model = model;
-
-                          $scope.$on('adfDashboardChanged', function (event, name, model) {
-                            localStorageService.set(name, model);
-                          });
-                        });
+                        
 
 
 
@@ -196,8 +102,6 @@ mapProjectApp.config(['$routeProvider',
 	  $routeProvider.when('/admin/dash', {
 		  templateUrl: 'partials/project-list.html'
 	  });
-	  
-	  
 	
       //////////////////////////////
 	  // MAPPING SERVICES
@@ -228,10 +132,7 @@ mapProjectApp.config(['$routeProvider',
 		  controller: 'MapRecordDashboardCtrl'
 	  });
 		
-	  $routeProvider.when('/record/conflicts/:recordId', {
-		  templateUrl: 'partials/record-dashboard.html',
-		  controller: 'ResolveConflictsDashboardCtrl'
-	  });	  
+	  
 
 
 	  

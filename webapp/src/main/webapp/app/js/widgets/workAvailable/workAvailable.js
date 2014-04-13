@@ -49,6 +49,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.$on('assignedListWidget.notification.unassignWork', function(event, parameters) { 	
 		console.debug("WorkAvailableCtrl:  Detected unassign work notification");
 		$scope.retrieveAvailableWork(1);
+		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
+			$scope.retrieveAvailableConflicts(1);
+		}
 	});
 
 	// on any change of focusProject, retrieve new available work
@@ -57,9 +60,39 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 
 		if ($scope.focusProject != null) {
 			$scope.retrieveAvailableWork(1);
+			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
+				$scope.retrieveAvailableConflicts(1);
+			}
 		}
 	});
 
+	$scope.retrieveAvailableConflicts = function(page) {
+		console.debug('workAvailableCtrl: Retrieving available work');
+
+		// clear the existing work
+		$scope.availableConflicts = [];
+			
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": (page-1)*$scope.conceptsPerPage,
+			 	 	 "maxResults": $scope.conceptsPerPage, 
+			 	 	 "sortField": 'sortKey',
+			 	 	 "filterString": null};  
+
+		$http({
+			url: root_workflow + "availableConflicts/projectId/" + $scope.focusProject.id + "/user/" + $scope.currentUser.userName,
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			$scope.availableConflicts = data.searchResult;
+			$scope.nAvailableConflicts = data.totalCount;
+		});
+	};
+	
 
 	// get a page of available work
 	$scope.retrieveAvailableWork = function(page) {
@@ -71,13 +104,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": (page-1)*$scope.conceptsPerPage,
-			 	 	 "maxResults": $scope.conceptsPerPage-1, 
+			 	 	 "maxResults": $scope.conceptsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 
 		$http({
-			url: root_workflow + "work/projectId/" + $scope.focusProject.id +
-			"/userId/" + $scope.currentUser.id,
+			url: root_workflow + "availableWork/projectId/" + $scope.focusProject.id + "/user/" + $scope.currentUser.userName,
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -95,6 +127,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		
 		$scope.trackingRecordsPerPage = trackingRecordsPerPage;
 		$scope.numRecordPages = Math.ceil($scope.nTrackingRecords / trackingRecordsPerPage);
+
+	
+		$scope.numAvailableConflictsPages = Math.ceil($scope.nAvailableConflicts / trackingRecordsPerPage);
 	};
 	
 	// assign a single concept to the current user
@@ -106,7 +141,6 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
 								 "/concept/" + trackingRecord.terminologyId +
 								 "/user/" + $scope.currentUser.userName,
-			dataType: "json",
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
@@ -125,13 +159,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": 0,
-			 	 	 "maxResults": $scope.batchSize-1, 
+			 	 	 "maxResults": $scope.batchSize, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 		
 		$http({
-			url: root_workflow + "work/projectId/" + $scope.focusProject.id +
-			"/userId/" + $scope.currentUser.id,
+			url: root_workflow + "availableWork/projectId/" + $scope.focusProject.id + "/user/" + $scope.currentUser.userName,
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -147,7 +180,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			
 			// if user is viewing concepts , check that first result matches first displayed result
 			if ($scope.isConceptListOpen == true) {
-				for (var i = 0; i < $scope.$scope.trackingRecordPerPage; i++) {
+				for (var i = 0; i < $scope.trackingRecordPerPage; i++) {
 					if (trackingRecords[i].id != $scope.availableWork[i].id) {
 						retrieveAvailableWork(1);
 						alert("One or more of the concepts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
@@ -162,7 +195,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				console.debug(trackingRecords);
 				
 				var terminologyIds = [];
-				for (var i = 0; i < trackingRecords.length; i++) {
+				for (var i = 0; i < $scope.batchSize; i++) {
 					terminologyIds.push(trackingRecords[i].terminologyId);
 				}
 				

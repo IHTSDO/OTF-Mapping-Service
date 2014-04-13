@@ -17,9 +17,10 @@
 	        <th style="width: 5%;"></th>
 	        <th style="width: 8%;">Group Id</th>
 	        <th style="width: 10%;">Map Priority</th>
-	        <th style="width: 13%;" >Rule</th>
+	        <th style="width: 15%;" >Rule</th>
 			<th style="width: 10%;">Target</th>
-			<th style="width: 18%;">Target Name</th>
+			<th style="width: 20%;">Target Name</th>
+			<th style="width: 15%;">Status</th>
 			<th style="width: 5%;"></th>
 		</tr>
 	</thead>
@@ -32,8 +33,11 @@
 			<td></td>
 			<td></td>
 			<td colspan=2>Empty record, owned by {{record.owner.name}}</td>
-			<td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
-			
+			<td>{{record.workflowStatus}}</td>
+			<td><span ng-show="isEditable(record)">
+				<a href="index.html#/record/recordId/{{record.id}}">Edit</a>
+				</span>
+	        </td>
 		</tr>
 	
 		<tr ng-repeat = "entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
@@ -57,8 +61,10 @@
 	        <td><span ng-show = "getRuleBasedForRecord(record) == true">{{entry.rule}}</span></td>
 			<td>{{entry.targetId}}</td>
 			<td>{{entry.targetName}}</td>
-			<td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
-				
+			<td>{{record.workflowStatus}}</td>
+			<td><span ng-show="isEditable(record)">
+				<a href="index.html#/record/recordId/{{record.id}}">Edit</a>
+				</span>
 	        </td>
 			
 		</tr>
@@ -72,7 +78,7 @@
 	
 </div>
 
-<form>
+<form ng-show = "currentRole != 'Viewer'">
 <input type="submit" value="Add Map Record to Project" ng-click="createMapRecord(focusProject, conceptId)">
 </form>
 
@@ -90,7 +96,7 @@
 	        <th style="width: 13%;" >Rule</th>
 			<th style="width: 10%;">Target</th>
 			<th style="width: 18%;">Target Name</th>
-			<th style="width: 5%;"></th>
+			<th style="width: 10%;">Status</th>
 		</tr>
 	</thead>
 	
@@ -131,9 +137,7 @@
 	       	</td>
 			<td>{{entry.targetId}}</td>
 			<td>{{entry.targetName}}</td>
-			<td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
-				
-	        </td>
+			<td>{{record.workflowStatus}}</td>	
 			
 		</tr>
 	
