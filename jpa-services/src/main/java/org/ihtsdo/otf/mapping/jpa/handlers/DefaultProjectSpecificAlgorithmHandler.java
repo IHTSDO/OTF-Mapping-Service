@@ -4,25 +4,34 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
+import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
+import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
 
-/**
- * The Class DefaultProjectSpecificAlgorithmHandler.
- */
 public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAlgorithmHandler {
 
 	/** The map project. */
@@ -70,6 +79,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		return false;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#computeMapAdvice(org.ihtsdo.otf.mapping.model.MapRecord, org.ihtsdo.otf.mapping.model.MapEntry)
+	 */
 	@Override
 	/**
 	 * Given a map record and a map entry, returns any computed advice.
@@ -84,7 +96,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	/**
 	 * Given a map record and a map entry, returns the computed map relation (if applicable)
 	 * This must be overwritten for each project specific handler.
-	 * @param mapRecord
+	 *
+	 * @param mapRecord the map record
+	 * @param mapEntry the map entry
 	 * @return computed map relation
 	 */
 	@Override
@@ -372,6 +386,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		return entryGroups;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#compareMapRecords(org.ihtsdo.otf.mapping.model.MapRecord, org.ihtsdo.otf.mapping.model.MapRecord)
+	 */
 	@Override
 	public ValidationResult compareMapRecords(MapRecord record1,
 		MapRecord record2) {
@@ -388,7 +405,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 					record1.getConceptId() + " " + record2.getConceptId());
 		
 	   // compare mapPrinciples
-	   Comparator principlesComparator = new Comparator() {
+	   Comparator<Object> principlesComparator = new Comparator<Object>() {
 	      public int compare(Object o1, Object o2) {
 
 	          String x1 = ((MapPrinciple) o1).getPrincipleId();
@@ -566,10 +583,16 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		return validationResult;
 	}
 	
+	/**
+	 * Convert to string.
+	 *
+	 * @param mapEntry the map entry
+	 * @return the string
+	 */
 	private String convertToString(MapEntry mapEntry) {
 		
 		// check map advices
-	  Comparator advicesComparator = new Comparator() {
+	  Comparator<Object> advicesComparator = new Comparator<Object>() {
       public int compare(Object o1, Object o2) {
 
           String x1 = ((MapAdvice) o1).getName();
@@ -596,10 +619,387 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
 	/**
 	 * For default project, all target codes are considered valid.
-	 * @throws Exception 
+	 *
+	 * @param terminologyId the terminology id
+	 * @return true, if is target code valid
+	 * @throws Exception the exception
 	 */
 	@Override
 	public boolean isTargetCodeValid(String terminologyId) throws Exception {
 		return true;
+	}
+	
+	/**
+	 * Assign a new map record from existing record, performing any necessary workflow actions
+	 * 
+	 * Conditions:
+	 * - Only valid workflow paths are QA_PATH and FIX_ERROR_PATH
+	 * - Only valid workflow statuses are READY_FOR_PUBLICATION and PUBLISHED
+	 * 
+	 * Default Behavior:
+	 * - Create a new record with origin ids set to the existing record (and its antecedents)
+	 * - Add the record to the tracking record
+	 * - Return the tracking record.
+	 *
+	 * @param trackingRecord the tracking record
+	 * @param mapRecord the map record
+	 * @param mapUser the map user
+	 * @return the workflow tracking record
+	 * @throws Exception 
+	 */
+	@Override
+	public WorkflowTrackingRecord assignFromInitialRecord(WorkflowTrackingRecord trackingRecord, MapRecord mapRecord, MapUser mapUser) throws Exception {
+		
+		// check for valid workflow status
+		if (! ( mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED) 
+				|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)) ) {
+		
+			throw new Exception("assignFromInitialRecord given Map Record with invalid workflow status");
+		}
+		
+		// check for valid workflow path
+		if (! (trackingRecord.getWorkflowPath().equals(WorkflowPath.QA_PATH) 
+				|| trackingRecord.getWorkflowPath().equals(WorkflowPath.FIX_ERROR_PATH))) {
+			
+			throw new Exception("assignFromInitialRecord called with invalid workflow path");
+		}
+		
+		// copy existing record into new record and set id to null
+		MapRecord newRecord = new MapRecordJpa(mapRecord);
+		newRecord.setId(null);
+		
+		// add the origin id
+		newRecord.addOrigin(mapRecord.getId());
+		
+		// set the owner and last modified by (timestamp automatically set in map record constructor)
+		newRecord.setOwner(mapUser);
+		newRecord.setLastModifiedBy(mapUser);
+		
+		// add the new map record using mapping service
+		MappingService mappingService = new MappingServiceJpa();
+		mapRecord = mappingService.addMapRecord(newRecord);
+		mappingService.close();
+		
+		// add newly persisted record to tracking record		
+		trackingRecord.addMapRecord(newRecord);
+		trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
+		
+		return trackingRecord;
+	}
+	
+	/**
+	 * Assign a map user to a concept for this project
+	 * 
+	 * Conditions:
+	 * - Only valid workflow paths:  NON_LEGACY_PATH, LEGACY_PATH, and CONSENSUS_PATH
+	 * 	 Note that QA_PATH and FIX_ERROR_PATH should never call this method
+	 * - Only valid workflow statuses: Any status preceding CONFLICT_DETECTED and CONFLICT_DETECTED
+	 *
+	 * Default Behavior:
+	 * - Create a record with workflow status based on current workflow status
+	 * - Add the record to the tracking record
+	 * - Return the tracking record
+	 */
+	@Override
+	public WorkflowTrackingRecord assignFromScratch(WorkflowTrackingRecord trackingRecord, Concept concept, MapUser mapUser) throws Exception {
+		
+		// create new record
+		MapRecord mapRecord = new MapRecordJpa();
+		mapRecord.setMapProjectId(mapProject.getId());
+		mapRecord.setConceptId(concept.getTerminologyId());
+		mapRecord.setConceptName(concept.getDefaultPreferredName());
+		mapRecord.setOwner(mapUser);
+		mapRecord.setLastModifiedBy(mapUser);
+		
+		// TODO Add countDescendantConcepts
+		
+		// determine the workflow status of this record based on tracking record
+		switch (trackingRecord.getWorkflowPath()) {
+		case NON_LEGACY_PATH:
+			
+			// if a "new" tracking record (i.e. prior to conflict detection), add a NEW record
+			if (trackingRecord.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) < 0) {
+				mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH: NEW");
+				
+				
+			// otherwise, if this is a tracking record with conflict detected, add a CONFLICT_IN_PROGRESS record
+			} else if (trackingRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+				mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_IN_PROGRESS);
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH: CONFLICT_IN_PROGRESS");
+			
+			// otherwise, this call has been made erroneously
+			} else {
+				throw new Exception("assignFromScratch called with invalid Workflow Status");
+			}
+		case LEGACY_PATH:
+			// TODO Implement this - Phase 2
+			break;
+		case CONSENSUS_PATH:
+			// TODO Implement this - Phase 2
+			break;
+		default:
+			throw new Exception("assignFromScratch called with erroneous Workflow Path.");
+		}
+		
+		// open content service to get descendant count
+		ContentService contentService = new ContentServiceJpa();
+		mapRecord.setCountDescendantConcepts( new Long(
+				contentService.findDescendantsFromTreePostions(concept.getTerminologyId(), concept.getTerminology(), concept.getTerminologyVersion())
+				.getCount()));
+		contentService.close();
+		
+		// add the map record via mapping service
+		MappingService mappingService = new MappingServiceJpa();
+		mapRecord = mappingService.addMapRecord(mapRecord);
+		mappingService.close();
+		
+		// add this record to the tracking record
+		trackingRecord.addMapRecord(mapRecord);
+		
+		// return the tracking record
+		return trackingRecord;
+	}
+	
+	/**
+	 * Unassigns a user from a concept, and performs any other necessary workflow actions
+	 * 
+	 * Conditions:
+	 * - Valid workflow paths: All
+	 * - Valid workflow status: All except READY_FOR_PUBLICATION, PUBLISHED
+	 * @throws Exception 
+	 */
+	@Override
+	public WorkflowTrackingRecord unassign(WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception {
+
+		// open the required services for use in all cases
+		WorkflowService workflowService = new WorkflowServiceJpa();
+		MappingService mappingService = new MappingServiceJpa();
+		
+		// switch on workflow path
+		switch (trackingRecord.getWorkflowPath()) {
+		case NON_LEGACY_PATH:
+			
+			MapRecord mapRecord = null;
+			
+			// find the map record this user is assigned to
+			for (MapRecord mr : trackingRecord.getMapRecords()) {
+				if (mr.getOwner().equals(mapUser)) {
+					mapRecord = mr;
+				}
+			}
+			
+			if (mapRecord == null) throw new Exception("unassign called for concept that does not have specified user assigned");
+
+			
+			// remove this record from the tracking record and update
+			// necessary to remove map record reference
+			trackingRecord.removeMapRecord(mapRecord);
+			
+			workflowService.updateWorkflowTrackingRecord(trackingRecord); 
+			
+			// determine action based on record's workflow status
+			switch (mapRecord.getWorkflowStatus()) {
+			
+			// standard removal cases, no special action required
+			case NEW: 
+			case EDITING_IN_PROGRESS: 
+			case EDITING_DONE:
+			case CONFLICT_IN_PROGRESS:
+				break;
+				
+			// where a conflict is detected, two cases to handle
+			// (1) any lead-claimed resolution record is now invalid, and should be deleted (no conflict remaining)
+			// (2) a specialist's record is now not in conflict, and should be reverted to EDITING_DONE
+			case CONFLICT_DETECTED:
+				
+				for (MapRecord mr : trackingRecord.getMapRecords()) {
+					
+					// if another specialist's record, revert to EDITING_DONE
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+						mr.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+										
+					// if a lead has claimed a conflict for resolution, delete the resolution record
+					} else {
+						mappingService.removeMapRecord(mr.getId());
+					}
+				}
+
+				break;
+				
+			// this record is a lead resolving a conflict, no special action required
+			case CONSENSUS_NEEDED:
+				// TODO Phase 2
+				break;
+			case CONSENSUS_RESOLVED:
+				// TODO Phase 2
+				break;
+			
+			// If REVIEW is detected, something has gone horribly wrong for the NON_LEGACY_PATH
+			case REVIEW:
+				throw new Exception("Unassign:  A user has been improperly assigned to a review record");
+			
+			// throw an exception if somehow an invalid workflow status is found
+			default:
+				throw new Exception("unassign found a map record with invalid workflow status");
+			}
+				
+			// after performing special actions, remove the record from the database
+			mappingService.removeMapRecord(mapRecord.getId());
+			
+			mappingService.close();
+			workflowService.close();
+			
+			return trackingRecord;
+
+		case LEGACY_PATH:
+			// TODO Phase 2
+			break;
+			
+		// If unassignment for error fixing, need to reset the existing record from REVIEW
+		case FIX_ERROR_PATH:
+			
+			// TODO Determine behavior
+			// 		My inclination is to return to READY_FOR_PUBLICATION by default
+			//			Despite no changes made, a user has "tampered" with the PUBLISHED state
+			//		However, a case could be made that a PUBLISHED record could be returned to that state
+			//			This would require an audit trail call
+			
+			for (MapRecord mr : trackingRecord.getMapRecords()) {
+				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW)) {
+					mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+					mappingService.updateMapRecord(mr);
+				}
+			}
+			
+			
+			break;
+		case QA_PATH:
+			// TODO Phase 2
+			break;
+		case CONSENSUS_PATH:
+			// TODO Phase 2
+			break;
+			
+		default:
+			break;
+		}
+	
+		// default return
+		return trackingRecord;
+		
+		
+	}
+	
+	/**
+	 * Updates workflow information when a specialist or lead clicks "Finished"
+	 * @throws Exception 
+	 */
+	@Override
+	public WorkflowTrackingRecord finishEditing(WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception {
+		
+		// open the services
+		WorkflowService workflowService = new WorkflowServiceJpa();
+		MappingService mappingService = new MappingServiceJpa();
+		
+		// find the record assigned to this user
+		MapRecord mapRecord = null;
+		for (MapRecord mr : trackingRecord.getMapRecords()) {
+			if (mr.getOwner().equals(mapUser)) mapRecord = mr;
+		}
+		if (mapRecord == null) throw new Exception("finishEditing:  Record for user could not be found");
+		
+		// switch on workflow path
+		switch (trackingRecord.getWorkflowPath()) {
+		case NON_LEGACY_PATH:
+		
+			// case 1:  A specialist is finished with a record
+			if (trackingRecord.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) < 0) {
+				
+				// set this record to EDITING_DONE
+				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+				mappingService.updateMapRecord(mapRecord);
+				
+				List<MapRecord> mapRecords = new ArrayList<>(trackingRecord.getMapRecords());
+				
+				// check if two specialists have completed work
+				if (trackingRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)
+						&& mapRecords.size() == 2) {
+					
+					ValidationResult validationResult = compareMapRecords(mapRecords.get(0), mapRecords.get(1));
+			
+					// if map records validation is successful
+					if (validationResult.isValid() == true) {
+						
+						// create a new record with default user and mark it with READY_FOR_PUBLICATION
+						MapRecord newRecord = new MapRecordJpa(mapRecord);
+						newRecord.setId(null);
+						newRecord.setOwner(mapUser);
+						newRecord.setLastModifiedBy(mapUser);
+						newRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+						
+						// construct and set the new origin ids
+						Set<Long> originIds = new HashSet<>();
+						originIds.add(mapRecords.get(0).getId());
+						originIds.add(mapRecords.get(1).getId());
+						originIds.addAll(mapRecords.get(0).getOriginIds());
+						originIds.addAll(mapRecords.get(1).getOriginIds());
+						newRecord.setOriginIds(originIds);
+						
+						// add the new record
+						mappingService.addMapRecord(newRecord);
+						
+						// delete the tracking record (no longer needed)
+						workflowService.removeWorkflowTrackingRecord(trackingRecord.getId());
+						
+						// delete the existing records
+						mappingService.removeMapRecord(mapRecords.get(0).getId());
+						mappingService.removeMapRecord(mapRecords.get(1).getId());
+					
+						return null;
+					
+					} else {
+					}
+				// otherwise, only one specialist has finished work, do nothing else
+				} else {
+					return trackingRecord;
+				}
+				
+			// case 2:  A lead is finished with a conflict resolution	
+			} else if (trackingRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)) {
+				
+				for (MapRecord mr : trackingRecord.getMapRecords()) {
+					// remove the CONFLICT_DETECTED records
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+						mappingService.removeMapRecord(mr.getId());
+					} else {
+						mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+						mappingService.updateMapRecord(mr);
+					}
+				}
+						
+				// delete the workflow tracking record
+				workflowService.removeWorkflowTrackingRecord(trackingRecord.getId());
+				
+				return null;
+			}
+			
+
+		
+			break;
+			
+		case FIX_ERROR_PATH:
+			break;
+			
+		case LEGACY_PATH:
+		case QA_PATH:
+		case CONSENSUS_PATH:
+			// TODO Phase2
+		default:
+			throw new Exception("finishEditing: Unexpected workflow path");
+		}
+		
+		return trackingRecord;
+		
 	}
 }

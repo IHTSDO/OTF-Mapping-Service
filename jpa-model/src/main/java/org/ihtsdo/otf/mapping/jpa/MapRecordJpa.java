@@ -150,7 +150,7 @@ public class MapRecordJpa implements MapRecord {
 	public MapRecordJpa(MapRecord cMapRecord) {
 		this.id = cMapRecord.getId();
 		this.owner = cMapRecord.getOwner();
-		this.timestamp = cMapRecord.getTimestamp();
+		this.timestamp = (new Date()).getTime(); // overwrite last modified by
 		this.mapProjectId = cMapRecord.getMapProjectId();
 		this.conceptId = cMapRecord.getConceptId();
 		this.conceptName = cMapRecord.getConceptName();
@@ -679,6 +679,7 @@ public class MapRecordJpa implements MapRecord {
 
 
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	public WorkflowStatus getWorkflowStatus() {
 		return workflowStatus;
 	}

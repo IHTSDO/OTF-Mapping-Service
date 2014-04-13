@@ -16,6 +16,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	// initialize as empty to indicate still initializing database connection
 	$scope.assignedRecords = [];
 	$scope.user = localStorageService.get('currentUser');
+	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
 
 	// pagination variables
@@ -42,8 +43,39 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 		if ($scope.focusProject != null) {
 			$scope.retrieveAssignedWork(1);
+			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+				$scope.retrieveAssignedConflicts(1);
+			}
 		}
 	});
+	
+	$scope.retrieveAssignedConflicts = function(page) {
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": (page-1)*$scope.conceptsPerPage,
+			 	 	 "maxResults": $scope.conceptsPerPage, 
+			 	 	 "sortField": 'sortKey',
+			 	 	 "filterString": null};  
+		
+		$http({
+			url: root_workflow + "assignedConflicts/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+			$scope.assignedConflictsPage = page;
+			$scope.nAssignedConflicts = data.totalCount;
+			$scope.assignedConflicts = data.searchResult;
+			$scope.numAssignedConflictsPages = Math.ceil(data.totalCount / $scope.conceptsPerPage);
+			console.debug('Assigned Conflicts:');
+			console.debug($scope.assignedConflicts);
+		}).error(function(error) {
+			$scope.error = "Error";
+		});
+	};
 	
 	$scope.retrieveAssignedWork = function(page) {
 
@@ -55,7 +87,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			 	 	 "filterString": null};  
 		
 		$http({
-			url: root_workflow + "assigned/id/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
+			url: root_workflow + "assignedWork/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -91,7 +123,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	// function to relinquish work (i.e. unassign the user)
 	$scope.unassignWork = function(record) {
 		$http({
-			url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/conceptId/" + record.terminologyId + "/user/" + $scope.user.userName,
+			url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/concept/" + record.terminologyId + "/user/" + $scope.user.userName,
 			dataType: "json",
 			method: "POST",
 			headers: {

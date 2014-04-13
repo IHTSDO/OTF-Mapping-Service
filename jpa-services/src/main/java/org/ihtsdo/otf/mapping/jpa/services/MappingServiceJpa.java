@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -43,6 +44,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
@@ -1325,9 +1327,16 @@ public class MappingServiceJpa implements MappingService {
 	public List<MapRecord> getMapRecordsForMapProject(Long mapProjectId,
 			PfsParameter pfsParameter) throws Exception {
 
+		// construct basic query
 		String full_query =
 				constructMapRecordForMapProjectIdQuery(mapProjectId,
 						pfsParameter == null ? new PfsParameterJpa() : pfsParameter);
+
+		// add published / ready for publication check
+		full_query +=
+				" AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')";
+
+		System.out.println(full_query);
 
 		FullTextEntityManager fullTextEntityManager =
 				Search.getFullTextEntityManager(manager);
@@ -2924,12 +2933,12 @@ public class MappingServiceJpa implements MappingService {
 		// get the map project and its algorithm handler
 		MapProject mapProject = getMapProject(mapProjectId);
 		ProjectSpecificAlgorithmHandler algorithmHandler = getProjectSpecificAlgorithmHandler(mapProject);
-		
+
 		setTreePositionValidCodesHelper(treePositions, algorithmHandler);
-		
+
 		return treePositions;
 	}
-	
+
 	/**
 	 * Helper function to recursively cycle over nodes and their children.
 	 * Instantiated to prevent necessity for retrieving algorithm handler at each level.
@@ -2941,16 +2950,58 @@ public class MappingServiceJpa implements MappingService {
 	 */
 	public void setTreePositionValidCodesHelper(
 			List<TreePosition> treePositions, ProjectSpecificAlgorithmHandler algorithmHandler) throws Exception {
-		
+
 		// cycle over all tree positions and check target code, recursively cycle over children
 		for (TreePosition tp : treePositions) {
-			
+
 			System.out.println("Checking valid for " + tp.getTerminologyId());
-			
+
 			tp.setValid(algorithmHandler.isTargetCodeValid(tp.getTerminologyId()));
-			
+
 			setTreePositionValidCodesHelper(tp.getChildren(), algorithmHandler);
 		}
 	}
-	
+
+	@Override
+	public Map<Long, Long> compareFinishedMapRecords(MapProject mapProject) throws Exception {
+		Map<MapRecord, MapRecord> finishedPairsForComparison = new HashMap<MapRecord, MapRecord>();
+		Map<Long, Long> conflicts = new HashMap<Long, Long>();
+
+		MappingService mappingService = new MappingServiceJpa();
+		List<MapRecord> allMapRecords = mappingService.getMapRecordsForMapProject(mapProject.getId());
+		List<MapRecord> finishedMapRecords = new ArrayList<>();
+		for (MapRecord mapRecord : allMapRecords) {
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE))
+				finishedMapRecords.add(mapRecord);
+		}
+		MapRecord[] mapRecords = finishedMapRecords.toArray(new MapRecord[0]);
+		for (int i=0; i<mapRecords.length; i++) {
+			for (int j=0; j<mapRecords.length; j++) {
+				if (mapRecords[i].getConceptId().equals(mapRecords[j].getConceptId()) &&
+						mapRecords[i].getLastModified() < mapRecords[j].getLastModified() &&
+						mapRecords[i].getId() != mapRecords[j].getId()) {
+					finishedPairsForComparison.put(mapRecords[i], mapRecords[j]);
+				}
+			}
+		}
+		for (Entry<MapRecord, MapRecord> entry : finishedPairsForComparison.entrySet()) {
+			// instantiate the algorithm handler for this project
+			ProjectSpecificAlgorithmHandler handler = 
+					(ProjectSpecificAlgorithmHandler) Class.forName("org.ihtsdo.otf.mapping.jpa.handlers." + mapProject.getProjectSpecificAlgorithmHandlerClass())
+					.newInstance();
+			handler.setMapProject(mapProject); 
+			
+			// compare map records
+			ValidationResult result = handler.compareMapRecords(entry.getKey(), entry.getValue());
+			if (!result.isValid()) {
+				conflicts.put(entry.getKey().getId(), entry.getValue().getId());
+				entry.getKey().setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+				mappingService.updateMapRecord(entry.getKey());
+				entry.getValue().setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+				mappingService.updateMapRecord(entry.getValue());
+			}
+		}
+		return conflicts;
+	}
+
 }

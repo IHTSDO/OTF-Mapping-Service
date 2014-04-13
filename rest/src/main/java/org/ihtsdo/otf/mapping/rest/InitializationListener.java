@@ -9,10 +9,8 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
-import org.ihtsdo.otf.mapping.services.WorkflowService;
 
 import com.sun.jersey.api.model.AbstractResourceModelContext;
 import com.sun.jersey.api.model.AbstractResourceModelListener;
@@ -34,10 +32,7 @@ public class InitializationListener implements AbstractResourceModelListener {
 	
 	  /**  The timer. */
   	private Timer timer;
-	  		
-		/**  The workflow service. */
-		private static WorkflowService workflowService;
-		
+
 		/**  The mapping service. */
 		private static MappingService mappingService;
 		
@@ -77,12 +72,11 @@ public class InitializationListener implements AbstractResourceModelListener {
           timer.cancel(); //Terminate the timer thread
           mappingService = new MappingServiceJpa();
           List<MapProject> mapProjects = mappingService.getMapProjects();
-      		workflowService = new WorkflowServiceJpa();
+      		
       		for (MapProject project : mapProjects) {
-      		  workflowService.compareFinishedMapRecords(project);
+      		  mappingService.compareFinishedMapRecords(project);
       		}
-      		mappingService.close();
-      		workflowService.close();
+      		mappingService.close();;
       	} catch (Exception e) {
       		Logger.getLogger(this.getClass()).error("Error running the process to compute list of finished records.");
       	}

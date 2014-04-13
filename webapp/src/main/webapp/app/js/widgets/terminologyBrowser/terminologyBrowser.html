@@ -14,10 +14,27 @@
 		<a ng-show="node0.childrenCount > 0"><i class="glyphicon" ng-click="toggleChildren(node0)" ng-class="{'glyphicon-chevron-down': node0.isOpen, 'glyphicon-chevron-right': !node0.isOpen}"></i></a>
 		<a ng-show="node0.childrenCount == 0"><i class="glyphicon glyphicon-leaf"></i></a>
 		
-		&nbsp 
-		<a ng-show="node0.valid == true" ng-click="selectConcept(node0)">{{node0.terminologyId}}</a> 
-		<span ng-show="node0.valid == false">{{node0.terminologyId}}</span>, {{truncate(node0.defaultPreferredName)}}
+		&nbsp
+		<a><i class="glyphicon glyphicon-info-sign" ng-click="getConceptDetails(node0.terminologyId)"></i></a>
+		&nbsp
 		
+		<strong><a ng-show="node0.valid == true" ng-click="selectConcept(node0)">{{node0.terminologyId}}</a> 
+		<span ng-show="node0.valid == false">{{node0.terminologyId}}</span></strong>, {{truncate(node0.defaultPreferredName)}}
+		
+		<div collapse="!(node0.terminologyId == currentConcept.terminologyId)">
+			
+			<div class="well well-sm">
+				<strong>Concept Details</strong><br>
+				<em>Terms</em><br>
+				<ul><li ng-repeat = "description in currentConcept.description">
+					{{description.active == true ? 'Active' : 'Inactive'}}, {{description.typeId}}, {{truncate(description.term)}}</li></ul>
+				<em>Relationships</em><br>
+				<ul><li ng-repeat = "relationship in currentConcept.relationship">
+					{{relationship.active == true ? 'Active' : 'Inactive'}}, {{relationship.typeId}}, {{truncate(relationship.destinationConceptId)}}, {{relationship.destinationConceptPreferredName}}
+				</li></ul>
+			</div> 
+		</div>
+		 
 		<!--  Children - level 1 -->		
 		<ul style="list-style-type: none; padding-left: 15px;" ng-show="node0.isOpen">
 		
@@ -27,7 +44,9 @@
 				<a ng-show="node1.childrenCount > 0"><i class="glyphicon" ng-click="toggleChildren(node1)" ng-class="{'glyphicon-chevron-down': node1.isOpen, 'glyphicon-chevron-right': !node1.isOpen}"></i></a>
 				<a ng-show="node1.childrenCount == 0"><i class="glyphicon glyphicon-leaf"></i></a>
 				
-				&nbsp 
+				&nbsp
+				<a><i class="glyphicon glyphicon-info-sign" ng-click="getConceptDetails(node1.terminologyId)"></i></a>
+				&nbsp
 				<strong></strong><a ng-show="node1.valid == true" ng-click="selectConcept(node1)">{{node1.terminologyId}}</a> 
 				<span ng-show="node1.valid == false">{{node1.terminologyId}}</span></strong>, {{truncate(node1.defaultPreferredName)}}
 				
@@ -41,6 +60,8 @@
 						<a ng-show="node2.childrenCount == 0"><i class="glyphicon glyphicon-leaf"></i></a>
 						
 						&nbsp 
+						<a><i class="glyphicon glyphicon-info-sign" ng-click="getConceptDetails(node2.terminologyId)"></i></a>
+						&nbsp
 						<a ng-show="node2.valid == true" ng-click="selectConcept(node2)">{{node2.terminologyId}}</a> 
 						<span ng-show="node2.valid == false">{{node2.terminologyId}}</span>, {{truncate(node2.defaultPreferredName)}}
 										
@@ -53,6 +74,8 @@
 								<a ng-show="node3.childrenCount > 0"><i class="glyphicon" ng-click="toggleChildren(node3)" ng-class="{'glyphicon-chevron-down': node3.isOpen, 'glyphicon-chevron-right': !node3.isOpen}"></i></a>
 								<a ng-show="node3.childrenCount == 0"><i class="glyphicon glyphicon-leaf"></i></a>
 								
+								&nbsp
+								<a><i class="glyphicon glyphicon-info-sign" ng-click="getConceptDetails(node3.terminologyId)"></i></a>
 								&nbsp 
 								<a ng-show="node3.valid == true" ng-click="selectConcept(node3)">{{node3.terminologyId}}</a> 
 								<span ng-show="node3.valid == false">{{node3.terminologyId}}</span>, {{truncate(node3.defaultPreferredName)}}
@@ -67,6 +90,8 @@
 										<a ng-show="node4.childrenCount == 0"><i class="glyphicon glyphicon-leaf"></i></a>
 										
 										&nbsp 
+										<a><i class="glyphicon glyphicon-info-sign" ng-click="getConceptDetails(node4.terminologyId)"></i></a>
+										&nbsp
 										<a ng-show="node4.valid == true" ng-click="selectConcept(node4)">{{node4.terminologyId}}</a> 
 										<span ng-show="node4.valid == false">{{node4.terminologyId}}</span>, {{truncate(node4.defaultPreferredName)}}
 										
@@ -80,6 +105,8 @@
 												<a ng-show="node5.childrenCount == 0"><i class="glyphicon glyphicon-leaf"></i></a>
 												
 												&nbsp 
+												<a><i class="glyphicon glyphicon-info-sign" ng-click="getConceptDetails(node5.terminologyId)"></i></a>
+												&nbsp
 												<a ng-show="node5.valid == true" ng-click="selectConcept(node5)">{{node5.terminologyId}}</a> 
 												<span ng-show="node5.valid == false">{{node5.terminologyId}}</span>, {{truncate(node5.defaultPreferredName)}}
 											
@@ -92,6 +119,8 @@
 														<a ng-show="node6.childrenCount > 0"><i class="glyphicon" ng-click="toggleChildren(node6)" ng-class="{'glyphicon-chevron-down': node6.isOpen, 'glyphicon-chevron-right': !node6.isOpen}"></i></a>
 														<a ng-show="node6.childrenCount == 0"><i class="glyphicon glyphicon-leaf"></i></a>
 														
+														&nbsp
+														<a><i class="glyphicon glyphicon-info-sign" ng-click="getConceptDetails(node6.terminologyId)"></i></a>
 														&nbsp 
 														<a ng-show="node6.valid == true" ng-click="selectConcept(node6)">{{node6.terminologyId}}</a> 
 														<span ng-show="node6.valid == false">{{node6.terminologyId}}</span>, {{truncate(node6.defaultPreferredName)}}
@@ -106,6 +135,8 @@
 																<a ng-show="node7.childrenCount == 0"><i class="glyphicon glyphicon-leaf"></i></a>
 																
 																&nbsp 
+																<a><i class="glyphicon glyphicon-info-sign" ng-click="getConceptDetails(node7.terminologyId)"></i></a>
+																&nbsp
 																<a ng-show="node7.valid == true" ng-click="selectConcept(node7)">{{node7.terminologyId}}</a> 
 																<span ng-show="node7.valid == false">{{node7.terminologyId}}</span>, {{truncate(node7.defaultPreferredName)}}
 															
@@ -119,6 +150,8 @@
 																		<a ng-show="node8.childrenCount == 0"><i class="glyphicon glyphicon-leaf"></i></a>
 																		
 																		&nbsp 
+																		<a><i class="glyphicon glyphicon-info-sign" ng-click="getConceptDetails(node8.terminologyId)"></i></a>
+																		&nbsp
 																		<a ng-show="node8.valid == true" ng-click="selectConcept(node8)">{{node8.terminologyId}}</a> 
 																		<span ng-show="node8.valid == false">{{node8.terminologyId}}</span>, {{truncate(node8.defaultPreferredName)}}
 																	
@@ -132,6 +165,8 @@
 																				<a ng-show="node9.childrenCount == 0"><i class="glyphicon glyphicon-leaf"></i></a>
 																				
 																				&nbsp 
+																				<a><i class="glyphicon glyphicon-info-sign" ng-click="getConceptDetails(node9.terminologyId)"></i></a>
+																				&nbsp
 																				<a ng-show="node9.valid == true" ng-click="selectConcept(node9)">{{node9.terminologyId}}</a> 
 																				<span ng-show="node9.valid == false">{{node9.terminologyId}}</span>, {{truncate(node9.defaultPreferredName)}}
 																			</li>

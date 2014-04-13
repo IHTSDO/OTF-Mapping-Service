@@ -26,6 +26,9 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	$scope.terminologyVersion = terminology.version;
 	$scope.focusProject = localStorageService.get('focusProject');
 	
+	// initialize currently displayed concept as empty object
+	$scope.currentConcept = {};
+	
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
@@ -143,6 +146,39 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 		}
 		
+	};
+	
+	// function for toggling retrieval and display of concept details
+	$scope.getConceptDetails = function(terminologyId, isConceptDetailCollapsed) {
+		
+		console.debug('terminologyId' in $scope.currentConcept);
+		
+		// if called when currently displayed, clear current concept
+		if ('terminologyId' in $scope.currentConcept && $scope.currentConcept.terminologyId === terminologyId) {
+			$scope.currentConcept = {};
+		
+		// otherwise, retrieve and display this concept
+		} else {
+
+			console.debug("Retrieving concept information for " + terminologyId);
+			
+			// retrieve the concept
+			$http({
+				url: root_content + "concept/" + $scope.terminology + "/" + $scope.terminologyVersion + "/id/" + terminologyId,
+				method: "GET",
+				headers: { "Content-Type": "application/json"}	
+			
+			// on success, set the scope concept
+			}).success (function(response) {
+				
+				$scope.currentConcept = response;
+				
+			// otherwise display an error message
+			}).error(function(response) {
+				$scope.concept = [];
+				$scope.concept.name = "Error retrieving concept";
+			});
+		};
 	};
 	
 	$scope.truncate = function(string) {
