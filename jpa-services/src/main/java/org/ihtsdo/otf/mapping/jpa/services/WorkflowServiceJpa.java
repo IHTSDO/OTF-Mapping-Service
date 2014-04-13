@@ -403,6 +403,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 
 		if (getTransactionPerOperation()) {
 			EntityTransaction tx = manager.getTransaction();
+			tx.begin();
 			tx.commit();
 		}
 		

@@ -15,6 +15,94 @@ mapProjectAppControllers.run(function() {
 
 });
 
+mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, $rootScope, localStorageService) {
+
+	setModel();
+
+	$scope.focusProject = localStorageService.get('focusProject');
+
+	var currentUser = localStorageService.get('currentUser');
+	var currentRole = localStorageService.get('currentRole');
+
+
+	function setModel() {
+	$scope.name = 'ResolveConflictsDashboard';
+	if (!$scope.model) {
+	$scope.model = {
+	      
+	               structure: "12/6-6/12",
+	               rows: [{
+	                          columns: [{
+	                            class: 'col-md-12',
+	                            widgets: [{
+	                                  type: "compareRecords",
+	                                  title: "Compare Records"
+	                              }]
+	                          }]
+	                      }, { // new row
+	                    
+	                     columns: [{
+	                    	 class: 'col-md-6',
+	                    	 widgets: [{
+	                    		 type: "mapRecord",
+	                    		 config: { recordId: $routeParams.recordId},
+	                    		 title: "Map Record"
+	                    	 }]
+	                     }, {
+	                    	 class: 'col-md-6',
+	                    	 widgets: [{
+	                    		 type: "mapEntry",
+	                    		 config: { entry: $scope.entry},
+	                    		 title: "Map Entry"
+	                    	 }, {
+	                    		 type: "terminologyBrowser",
+	                    		 config: {
+	                    			 terminology: $scope.focusProject.destinationTerminology,
+	                    			 terminologyVersion: $scope.focusProject.destinationTerminologyVersion
+	                    		 },
+	                    		 title: $scope.focusProject.destinationTerminology + " Terminology Browser"
+
+	                    	 }],
+	                     } // end second column
+	                     ] // end columns
+	                    
+	                      }] // end second row
+	              
+
+	                  };
+		}
+		// broadcast page to help mechanism  
+		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
+		};
+
+		console.debug("CONTROLLER MODEL");
+		console.debug($scope.model);
+
+		$scope.$on('adfDashboardChanged', function (event, name, model) {
+			console.debug("Dashboard change detected by ResolveConflictsDashboard");
+			localStorageService.set(name, model);
+		});
+
+		// watch for project change
+		// TODO A project change while viewing a record should return you to dashboard
+		$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+			console.debug("MapProjectWidgetCtrl: Detected change in focus project");
+			$scope.project = parameters.focusProject;
+
+			console.debug($scope.project);
+		});	
+
+		// on any change of focusProject, retrieve new available work
+		$scope.$watch('focusProject', function() {
+			console.debug('ResolveConflictsDashboardCtrl: Detected project set/change');
+			setModel();
+
+
+		});
+	});
+
+
+
 mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scope, localStorageService) {
 	$scope.modelName = 'userDashboard';
 	$scope.model = {};
