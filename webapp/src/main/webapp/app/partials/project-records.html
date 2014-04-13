@@ -82,7 +82,7 @@
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
 		
-		<td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
+		<td><span ng-show="currentRole === 'Specialist' || currentRole === 'Lead' || currentRole === 'Admin'"><a  href="index.html#/record/recordId/{{record.id}}">Edit</a></span></td>
 		
         
         
