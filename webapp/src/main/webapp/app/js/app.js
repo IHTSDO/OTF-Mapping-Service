@@ -14,6 +14,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.editedList',  
                                                      'mapProjectApp.widgets.workAvailable',
                                                      'mapProjectApp.widgets.terminologyBrowser',
+                                                     'mapProjectApp.widgets.compareRecords',
                                                      'LocalStorageModule',
                                                      'ngCookies'/*,
                                                      'textAngular'*/
@@ -130,6 +131,11 @@ mapProjectApp.config(['$routeProvider',
 	  $routeProvider.when('/record/recordId/:recordId', {
 		  templateUrl: 'partials/record-dashboard.html',
 		  controller: 'MapRecordDashboardCtrl'
+	  });
+	  
+	  $routeProvider.when('/record/conflicts/:recordId', {
+		  templateUrl: 'partials/record-dashboard.html',
+		  controller: 'ResolveConflictsDashboardCtrl'
 	  });
 		
 	  
