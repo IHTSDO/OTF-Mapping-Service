@@ -12,3 +12,40 @@ body {
 	padding-top: 50px;
 	padding-bottom: 50px;
 }
+
+p {
+  margin: 0 0 0px;
+}
+
+.panel-heading {
+padding: 5px 5px;
+border-bottom: 1px solid transparent;
+border-top-left-radius: 3px;
+border-top-right-radius: 3px;
+}
+
+.panel-body {
+padding: 7px;
+}
+
+/** from bootstrap.css - changes margin between panels in a group */
+.panel-group {
+margin-bottom: 10px;
+}
+
+/** from bootstrap.css - changes panel titles from 16 to 14 px */
+.panel-title {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 15px;
+  color: inherit;
+}
+
+/** from bootstrap.css - changes font-size from 14 to 13 px */
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.42857143;
+  color: #333;
+  background-color: #fff;
+}

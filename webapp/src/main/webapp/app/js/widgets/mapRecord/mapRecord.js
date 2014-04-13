@@ -54,7 +54,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   		};
   		
   		// broadcast page to help mechanism  
-  		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
+  		//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
   		
   		// initialize local variables
   		var recordId = 		$routeParams.recordId; 
