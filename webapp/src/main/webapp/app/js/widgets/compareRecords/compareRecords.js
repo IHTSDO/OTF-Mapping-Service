@@ -43,12 +43,77 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'resolveConflictsDashboard'});  
 	  		
 	  		// initialize local variables
-	  		var recordId = 		$routeParams.recordId; 
+	  		var conceptId=		$routeParams.conceptId;
 	  		var currentLocalId = 0;   // used for addition of new entries without hibernate id
+	  		// TODO get from focus project
+	  		var project = 1;
 	  		
-	  		// obtain the record
+  	    	  // obtain the record project
+	  	    	 $http({
+	  	 			 url: root_mapping + "project/id/" + project,
+	  	 			 dataType: "json",
+	  	 		        method: "GET",
+	  	 		        headers: { "Content-Type": "application/json"}	
+	  		      }).success(function(data) {
+	  	 		    	  $scope.project = data;
+	  		      }).error(function(error) {
+	  	 		    	  $scope.error = $scope.error + "Could not retrieve map project. ";
+    
+	  	          }).then(function() {
+	  	      	  // obtain the record concept
+	  		          $http({
+	  		     			 url: root_content + "concept/" 
+	  		 				  		+ $scope.project.sourceTerminology + "/"
+	  						  		+ $scope.project.sourceTerminologyVersion + "/"
+	  						  		+ "id/" + conceptId,
+	  						  	dataType: "json",
+	  		     		        method: "GET",
+	  		     		        headers: { "Content-Type": "application/json"}	
+	  		 		      }).success(function(data) {
+	  		     		    	  $scope.concept = data;
+	  		     		    	  setTitle($scope.concept.terminologyId, $scope.concept.defaultPreferredName);
+	  		 		      }).error(function(error) {
+	  		     		    	  $scope.error = $scope.error + "Could not retrieve record concept. ";
+	  		 		     	  	
+
+	  		  	      }).then(function() {
+	  	  		  		// obtain the records associated with the concept
+	  	  		  		$http({
+	  	  		  			 url: root_mapping + "record/conceptId/" + conceptId,
+	  	  		  			 dataType: "json",
+ 	  	  		  		        method: "GET",
+	  	  		  		        headers: { "Content-Type": "application/json"}	
+	  	  		  	      }).success(function(data) {
+	  	  		  	    	  $scope.record1 = data.mapRecord[0];
+	  	  		  	    	  $scope.record2 = data.mapRecord[1];
+	  	  		  	      }).error(function(error) {
+	  	  		  	    	  $scope.error = $scope.error + "Could not retrieve map record. ";
+	  	  		  	    	  
+	  	  		      /**}).then(function() {
+		  	  		  		// obtain the record
+		  	  		  		$http({
+		  	  		  			 url: root_mapping + "record/id/6140",
+		  	  		  			 dataType: "json",
+		  	  		  		        method: "GET",
+		  	  		  		        headers: { "Content-Type": "application/json"}	
+		  	  		  	      }).success(function(data) {
+		  	  		  	    	  $scope.record1 = data;
+		  	  		  	    	  $scope.record2 = data;
+		  	  		  	      }).error(function(error) {
+		  	  		  	    	  $scope.error = $scope.error + "Could not retrieve map record. "; */
+	  		  	      });
+	  		    	  
+	  		    	  // get the groups
+	  	        	  if ($scope.project.groupStructure == true)
+	  	        		  getGroups();
+	  	        	  
+	  	        	  // initialize the entries
+	  		    	  initializeEntries();
+	  	          });
+	            });
+	  		/**
 	  		$http({
-	  			 url: root_mapping + "record/id/6136",
+	  			 url: root_mapping + "record/id/6140",
 	  			 dataType: "json",
 	  		        method: "GET",
 	  		        headers: { "Content-Type": "application/json"}	
@@ -97,7 +162,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  		    	  initializeEntries();
 	  	          });
 	            });
-	  		
+	  		*/
 
 	  		///////////////////////////////
 	  		// Initialization Functions ///

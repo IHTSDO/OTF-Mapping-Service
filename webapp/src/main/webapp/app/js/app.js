@@ -133,7 +133,7 @@ mapProjectApp.config(['$routeProvider',
 		  controller: 'MapRecordDashboardCtrl'
 	  });
 	  
-	  $routeProvider.when('/record/conflicts/:recordId', {
+	  $routeProvider.when('/record/conflicts/:conceptId', {
 		  templateUrl: 'partials/record-dashboard.html',
 		  controller: 'ResolveConflictsDashboardCtrl'
 	  });
