@@ -193,7 +193,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 						ma.getTerminologyId() + "\t" + 
 						ma.getAbbreviation() + "\t" +
 						ma.getName() + "\t"  + 
-						ma.isAllowableForNullTarget() + 
+						ma.isAllowableForNullTarget() + "\t" +
 						ma.isComputed() + "\n");
 			}
 
