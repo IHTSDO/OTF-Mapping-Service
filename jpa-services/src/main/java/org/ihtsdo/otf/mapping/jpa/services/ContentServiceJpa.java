@@ -41,7 +41,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Content Services for the Jpa model.
  */
@@ -545,6 +544,8 @@ public class ContentServiceJpa implements ContentService {
 		Logger.getLogger(this.getClass()).info(
 				"Starting computeTreePositions - " + rootId + ", " + terminology);
 
+		System.gc();
+
 		// fail in createTreePositions if we�re not using
 		// getTransactionPerOperation (this allows us to control
 		// transaction scope from the service).
@@ -647,6 +648,8 @@ public class ContentServiceJpa implements ContentService {
 						manager.persist(tp);
 						// regularly commit at intervals
 						if (tpCounter % commitCt == 0) {
+						  
+					        // memory debugging					        
 							Logger.getLogger(this.getClass()).info(
 									"  Committing changes - " + tpCounter);				
 							tx.commit();
@@ -676,6 +679,11 @@ public class ContentServiceJpa implements ContentService {
 		Logger.getLogger(this.getClass()).info("  Finish computing tree positions");
 		tx.commit();
 
+		Runtime runtime = Runtime.getRuntime();
+		Logger.getLogger(this.getClass()).info("MEMORY USAGE:");
+		Logger.getLogger(this.getClass()).info(" Total: " + runtime.totalMemory());
+		Logger.getLogger(this.getClass()).info(" Free:  " + runtime.freeMemory());
+		Logger.getLogger(this.getClass()).info(" Max:   " + runtime.maxMemory());
 	}
 
 	/*
