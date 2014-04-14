@@ -2961,6 +2961,16 @@ public class MappingServiceJpa implements MappingService {
 			setTreePositionValidCodesHelper(tp.getChildren(), algorithmHandler);
 		}
 	}
+	
+	@Override
+	public ValidationResult compareMapRecords(MapRecord mapRecord1, MapRecord mapRecord2) {
+		
+		MapProject mapProject = getMapProject(mapRecord1.getMapProjectId());
+		ProjectSpecificAlgorithmHandler algorithmHandler = getProjectSpecificAlgorithmHandler(mapProject);
+		ValidationResult validationResult = algorithmHandler.compareMapRecords(mapRecord1, mapRecord2);
+		
+		return validationResult;
+	}
 
 	@Override
 	public Map<Long, Long> compareFinishedMapRecords(MapProject mapProject) throws Exception {

@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
@@ -1447,5 +1448,27 @@ public class MappingServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
-  
+	
+	@GET
+	@Path("/record/compare/{recordId1}/{recordId2}/")
+	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
+	@Produces({
+			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	})
+	public ValidationResult compareMapRecords(
+			@ApiParam(value = "id of first map record", required = true) @PathParam("recordId1") Long mapRecordId1,
+			@ApiParam(value = "id of second map record", required = true) @PathParam("recordId2") Long mapRecordId2	) {
+			
+		MappingService mappingService = new MappingServiceJpa();
+		MapRecord mapRecord1, mapRecord2;
+		try {
+			mapRecord1 = mappingService.getMapRecord(mapRecordId1);
+			mapRecord2 = mappingService.getMapRecord(mapRecordId2);
+			
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+		
+		return mappingService.compareMapRecords(mapRecord1, mapRecord2);
+	}
 }

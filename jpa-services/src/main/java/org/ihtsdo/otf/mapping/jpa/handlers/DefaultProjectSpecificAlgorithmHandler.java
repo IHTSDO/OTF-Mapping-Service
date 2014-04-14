@@ -896,6 +896,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		WorkflowService workflowService = new WorkflowServiceJpa();
 		MappingService mappingService = new MappingServiceJpa();
 		
+		// TODO If necessary, set the transaction per operation to false
+		
 		// find the record assigned to this user
 		MapRecord mapRecord = null;
 		for (MapRecord mr : trackingRecord.getMapRecords()) {
@@ -912,7 +914,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 				
 				// set this record to EDITING_DONE
 				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
-				mappingService.updateMapRecord(mapRecord);
+				
+				// TODO Make sure only one transaction per object in method
+				//mappingService.updateMapRecord(mapRecord);
 				
 				List<MapRecord> mapRecords = new ArrayList<>(trackingRecord.getMapRecords());
 				
@@ -953,9 +957,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 						return null;
 					
 					} else {
+						// conflict detected, change workflow status
+						mapRecords.get(0).setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+						mapRecords.get(1).setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+					
+						// update these map records
+						mappingService.updateMapRecord(mapRecords.get(0));
+						mappingService.updateMapRecord(mapRecords.get(1));
+					
 					}
 				// otherwise, only one specialist has finished work, do nothing else
 				} else {
+					
+					mappingService.updateMapRecord(mapRecord);
 					return trackingRecord;
 				}
 				

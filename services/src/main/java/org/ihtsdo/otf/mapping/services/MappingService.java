@@ -6,6 +6,7 @@ import java.util.Map;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
@@ -754,6 +755,16 @@ public interface MappingService {
 	 */
 	public Map<Long, Long> compareFinishedMapRecords(MapProject mapProject)
 			throws Exception;
+
+	/**
+	 * Compare map records.
+	 *
+	 * @param mapRecord1 the first map record
+	 * @param mapRecord2 the second map record
+	 * @return the validation result
+	 */
+	public ValidationResult compareMapRecords(MapRecord mapRecord1,
+			MapRecord mapRecord2);
 
 	
 	
