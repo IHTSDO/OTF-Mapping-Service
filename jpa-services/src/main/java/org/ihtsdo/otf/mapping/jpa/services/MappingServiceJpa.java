@@ -2963,7 +2963,7 @@ public class MappingServiceJpa implements MappingService {
 	}
 	
 	@Override
-	public ValidationResult compareMapRecords(MapRecord mapRecord1, MapRecord mapRecord2) {
+	public ValidationResult compareMapRecords(MapRecord mapRecord1, MapRecord mapRecord2) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		
 		MapProject mapProject = getMapProject(mapRecord1.getMapProjectId());
 		ProjectSpecificAlgorithmHandler algorithmHandler = getProjectSpecificAlgorithmHandler(mapProject);
