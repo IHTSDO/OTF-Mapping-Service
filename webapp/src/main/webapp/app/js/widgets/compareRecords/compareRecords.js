@@ -31,6 +31,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  		$scope.groups2 = 	null;
 	  		$scope.entries2 =    null;
 	  		
+	  		$scope.leadRecord = null;
+	  		
 	  		// initialize accordion variables
 	  		$scope.isConceptOpen = true;
 	  		$scope.isEntriesOpen = true;
@@ -43,11 +45,21 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'resolveConflictsDashboard'});  
 	  		
 	  		// initialize local variables
-	  		var conceptId=		$routeParams.conceptId;
+	  		var leadRecordId=		$routeParams.recordId;
 	  		var currentLocalId = 0;   // used for addition of new entries without hibernate id
 	  		// TODO get from focus project
 	  		var project = 1;
-	  		
+	  		// get leadRecord
+		  	$http({
+	  		  	url: root_mapping + "record/id/" + leadRecordId,
+	  		  	dataType: "json",
+	  		  	method: "GET",
+	  		  	headers: { "Content-Type": "application/json"}	
+	  		  }).success(function(data) {
+	  		  	    	  $scope.leadRecord = data;
+	  		  }).error(function(error) {
+	  		  	    	  $scope.error = $scope.error + "Could not retrieve map record. "; 
+ 	          }).then(function() {
   	    	  // obtain the record project
 	  	    	 $http({
 	  	 			 url: root_mapping + "project/id/" + project,
@@ -60,7 +72,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  	 		    	  $scope.error = $scope.error + "Could not retrieve map project. ";
     
 	  	          }).then(function() {
-	  	      	  // obtain the record concept
+	  	      	  // obtain the record concept - id from leadRecord
 	  		          $http({
 	  		     			 url: root_content + "concept/" 
 	  		 				  		+ $scope.project.sourceTerminology + "/"
@@ -78,6 +90,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 
 	  		  	      }).then(function() {
 	  	  		  		// obtain the records associated with the concept
+  	  		  	    	  // TODO change this call to call getRecordsInConflict()
 	  	  		  		$http({
 	  	  		  			 url: root_mapping + "record/conceptId/" + conceptId,
 	  	  		  			 dataType: "json",
@@ -88,20 +101,19 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  	  		  	    	  $scope.record2 = data.mapRecord[1];
 	  	  		  	      }).error(function(error) {
 	  	  		  	    	  $scope.error = $scope.error + "Could not retrieve map record. ";
-	  	  		  	    	  
-	  	  		      /**}).then(function() {
-		  	  		  		// obtain the record
+	  	  		  	      }).then(function() {
+		  	  		  		// obtain the validationResults from compareRecords
 		  	  		  		$http({
-		  	  		  			 url: root_mapping + "record/id/6140",
+		  	  		  			 url: root_mapping + "record/compare/" + record1.id + "/" + record2.id,
 		  	  		  			 dataType: "json",
 		  	  		  		        method: "GET",
 		  	  		  		        headers: { "Content-Type": "application/json"}	
 		  	  		  	      }).success(function(data) {
-		  	  		  	    	  $scope.record1 = data;
-		  	  		  	    	  $scope.record2 = data;
+		  	  		  	    	  $scope.validationResult = data;
 		  	  		  	      }).error(function(error) {
-		  	  		  	    	  $scope.error = $scope.error + "Could not retrieve map record. "; */
-	  		  	      });
+		  	  		  	    	  $scope.error = $scope.error + "Could not retrieve comparison report. ";   		  	      
+		  	  		  	      });
+	  	  		  	      });
 	  		    	  
 	  		    	  // get the groups
 	  	        	  if ($scope.project.groupStructure == true)
@@ -111,58 +123,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	  		    	  initializeEntries();
 	  	          });
 	            });
-	  		/**
-	  		$http({
-	  			 url: root_mapping + "record/id/6140",
-	  			 dataType: "json",
-	  		        method: "GET",
-	  		        headers: { "Content-Type": "application/json"}	
-	  	      }).success(function(data) {
-	  	    	  $scope.record1 = data;
-	  	    	  $scope.record2 = data;
-	  	      }).error(function(error) {
-	  	    	  $scope.error = $scope.error + "Could not retrieve map record. ";
-	  	     
-	  	      }).then(function() {
-
-	  	    	  // obtain the record project
-	  	    	 $http({
-	  	 			 url: root_mapping + "project/id/" + $scope.record1.mapProjectId,
-	  	 			 dataType: "json",
-	  	 		        method: "GET",
-	  	 		        headers: { "Content-Type": "application/json"}	
-	  		      }).success(function(data) {
-	  	 		    	  $scope.project = data;
-	  		      }).error(function(error) {
-	  	 		    	  $scope.error = $scope.error + "Could not retrieve map project. ";
-	  	          }).then(function() {
-	  	
-	  	        	  // obtain the record concept
-	  	        	 $http({
-	  	     			 url: root_content + "concept/" 
-	  	 				  		+ $scope.project.sourceTerminology + "/"
-	  					  		+ $scope.project.sourceTerminologyVersion + "/"
-	  					  		+ "id/" + $scope.record1.conceptId,
-	  					  	dataType: "json",
-	  	     		        method: "GET",
-	  	     		        headers: { "Content-Type": "application/json"}	
-	  	 		      }).success(function(data) {
-	  	     		    	  $scope.concept = data;
-	  	     		    	  setTitle($scope.concept.terminologyId, $scope.concept.defaultPreferredName);
-	  	 		      }).error(function(error) {
-	  	     		    	  $scope.error = $scope.error + "Could not retrieve record concept. ";
-	  	 		      });
-	  	        	 
-	  		    	  
-	  		    	  // get the groups
-	  	        	  if ($scope.project.groupStructure == true)
-	  	        		  getGroups();
-	  	        	  
-	  	        	  // initialize the entries
-	  		    	  initializeEntries();
-	  	          });
-	            });
-	  		*/
+ 	          });
+	  		
 
 	  		///////////////////////////////
 	  		// Initialization Functions ///
@@ -321,6 +283,9 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			  };
 			  
 		  	  $scope.populateMapRecord = function(record) {
+		  		  // save id
+		  		  // angular.copy record to leadRecord 
+		  		  // replace id
 				  $location.path("/record/conflicts/" + record.id);	
 			  };
 
