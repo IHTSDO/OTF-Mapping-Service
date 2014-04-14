@@ -279,10 +279,11 @@ public class WorkflowServiceJpa implements WorkflowService {
 				trackingRecord.setTerminologyId(concept.getTerminologyId());
 				trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
 				
+				// perform the assign action via the algorithm handler
 				trackingRecord = algorithmHandler.assignFromInitialRecord(trackingRecord, mapRecord, mapUser);
 				
-				if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: ASSIGN_FROM_INITIAL_RECORD - Unexpected error assigning from initial record.");
-				else addWorkflowTrackingRecord(trackingRecord);
+				// add the tracking record
+				addWorkflowTrackingRecord(trackingRecord);
 				
 				break;
 				
@@ -295,10 +296,12 @@ public class WorkflowServiceJpa implements WorkflowService {
 					throw new Exception("Could not find tracking record for assignment.");
 				}
 				
+				// perform the assignment via the algorithm handler
 				trackingRecord = algorithmHandler.assignFromScratch(trackingRecord, concept, mapUser);
 				
-				if (trackingRecord != null) updateWorkflowTrackingRecord(trackingRecord);
-				else throw new Exception("Unexpected error in assigning from scratch");
+				// update the tracking record
+				updateWorkflowTrackingRecord(trackingRecord);
+
 				
 				break;
 				
@@ -311,12 +314,15 @@ public class WorkflowServiceJpa implements WorkflowService {
 				
 				// expect existing (pre-computed) workflow tracking record to exist with this user assigned
 				if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: UNASSIGN - Could not find tracking record for unassignment.");
+				
+				// expect this user to be assigned to a map record in this tracking record
 				if (!trackingRecord.getAssignedUsers().contains(mapUser)) throw new Exception("ProcessWorkflowAction: UNASSIGN - User not assigned to record for unassignment request");
 				
+				// perform the unassign action via the algorithm handler
 				trackingRecord = algorithmHandler.unassign(trackingRecord, mapUser);
 				
-				if (trackingRecord != null) updateWorkflowTrackingRecord(trackingRecord);
-				else throw new Exception("Unexpected error in unassigning");
+				// update the tracking record
+				updateWorkflowTrackingRecord(trackingRecord);
 				
 				break;
 				
@@ -324,11 +330,13 @@ public class WorkflowServiceJpa implements WorkflowService {
 				
 				Logger.getLogger(WorkflowServiceJpa.class).info("FINISH_EDITING");
 				
-				
 				// expect existing (pre-computed) workflow tracking record to exist with this user assigned
 				if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: FINISH_EDITING - Could not find tracking record for unassignment.");
+				
+				// expect this user to be assigned to a map record in this tracking record
 				if (!trackingRecord.getAssignedUsers().contains(mapUser)) throw new Exception("User not assigned to record for unassignment request");
 				
+				// perform the finish editing action via the algorithm handler
 				trackingRecord = algorithmHandler.finishEditing(trackingRecord, mapUser);
 				
 				// if ready for publication, remove workflow tracking record

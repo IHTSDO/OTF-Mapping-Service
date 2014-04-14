@@ -32,8 +32,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 	$scope.$on('availableWork.notification.assignWork', function(event, parameters) {
 
-		console.debug("assignedListCtrl: Detected assignWork notificatoin from availableWork widget");
-		$scope.assignWork(parameters.assignedWork);
+		$scope.retrieveAssignedWork(1);
 
 	});
 
