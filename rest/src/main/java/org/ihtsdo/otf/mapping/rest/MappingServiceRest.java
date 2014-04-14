@@ -1457,7 +1457,7 @@ public class MappingServiceRest {
 	})
 	public ValidationResult compareMapRecords(
 			@ApiParam(value = "id of first map record", required = true) @PathParam("recordId1") Long mapRecordId1,
-			@ApiParam(value = "id of second map record", required = true) @PathParam("recordId2") Long mapRecordId2	) {
+			@ApiParam(value = "id of second map record", required = true) @PathParam("recordId2") Long mapRecordId2	) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 			
 		MappingService mappingService = new MappingServiceJpa();
 		MapRecord mapRecord1, mapRecord2;

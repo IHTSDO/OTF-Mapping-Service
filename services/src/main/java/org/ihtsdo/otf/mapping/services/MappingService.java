@@ -762,9 +762,12 @@ public interface MappingService {
 	 * @param mapRecord1 the first map record
 	 * @param mapRecord2 the second map record
 	 * @return the validation result
+	 * @throws ClassNotFoundException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
 	public ValidationResult compareMapRecords(MapRecord mapRecord1,
-			MapRecord mapRecord2);
+			MapRecord mapRecord2) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
 
 	
 	
