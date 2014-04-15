@@ -646,17 +646,6 @@ public class ContentServiceJpa implements ContentService {
 										+ c_rel.getTerminologyId());
 						tpCounter++;
 						manager.persist(tp);
-						// regularly commit at intervals
-						if (tpCounter % commitCt == 0) {
-						  
-					        // memory debugging					        
-							Logger.getLogger(this.getClass()).info(
-									"  Committing changes - " + tpCounter);				
-							tx.commit();
-							manager.clear();
-							tx.begin();
-							
-						}
 
 						// if set does not contain the source concept, add it to set and
 						// queue
@@ -675,6 +664,19 @@ public class ContentServiceJpa implements ContentService {
 						}
 					}
 				} // after iterating over children
+
+				// regularly commit at intervals
+                if (tpCounter % commitCt == 0) {
+                  
+                    // memory debugging                         
+                    Logger.getLogger(this.getClass()).info(
+                            "  Committing changes - " + tpCounter);             
+                    tx.commit();
+                    manager.clear();
+                    tx.begin();
+                    
+                }
+
 			}
 
 		}
