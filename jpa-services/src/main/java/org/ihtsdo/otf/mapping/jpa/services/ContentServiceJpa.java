@@ -145,7 +145,7 @@ public class ContentServiceJpa implements ContentService {
 			return c;
 		} catch (NoResultException e) {
 			// log result and return null
-			Logger.getLogger(this.getClass()).warn(
+			Logger.getLogger(this.getClass()).debug(
 					"ContentService.getConcept(): Concept query for terminologyId = "
 							+ terminologyId + ", terminology = " + terminology
 							+ ", terminologyVersion = " + terminologyVersion
@@ -653,7 +653,9 @@ public class ContentServiceJpa implements ContentService {
 							Logger.getLogger(this.getClass()).info(
 									"  Committing changes - " + tpCounter);				
 							tx.commit();
+							manager.clear();
 							tx.begin();
+							
 						}
 
 						// if set does not contain the source concept, add it to set and
