@@ -559,7 +559,7 @@ public class ContentServiceJpa implements ContentService {
 
 		Queue<Map<Concept, TreePosition>> conceptQueue = new LinkedList<>();
 		Set<Map<Concept, TreePosition>> conceptSet = new HashSet<>();
-		int tpCounter = 0;
+		int conceptCt = 0;
 		int childCounter = 0;
 		
 		// get the concept and add it as first element of concept list
@@ -582,7 +582,7 @@ public class ContentServiceJpa implements ContentService {
 			}
 			rootTp.setChildrenCount(childCounter);
 			manager.persist(rootTp);
-			tpCounter++;
+			conceptCt++;
 			hm.put(rootConcept, rootTp);
 			conceptQueue.add(hm);
 		}
@@ -598,6 +598,7 @@ public class ContentServiceJpa implements ContentService {
 
 			// if concept is active
 			if (currentConcept.isActive()) {
+              conceptCt++;
 
 				// relationship set and iterator
 				Set<Relationship> inv_relationships =
@@ -644,7 +645,6 @@ public class ContentServiceJpa implements ContentService {
 										Logger.getLogger(this.getClass()).debug(
 								"  Create tree position - " + tp.getAncestorPath() + ", "
 										+ c_rel.getTerminologyId());
-						tpCounter++;
 						manager.persist(tp);
 
 						// if set does not contain the source concept, add it to set and
@@ -666,11 +666,11 @@ public class ContentServiceJpa implements ContentService {
 				} // after iterating over children
 
 				// regularly commit at intervals
-                if (tpCounter % commitCt == 0) {
+                if (conceptCt % commitCt == 0) {
                   
                     // memory debugging                         
                     Logger.getLogger(this.getClass()).info(
-                            "  Committing changes - " + tpCounter);             
+                            "  Committing changes - " + conceptCt);             
                     tx.commit();
                     manager.clear();
                     tx.begin();
