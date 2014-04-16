@@ -545,6 +545,10 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 		var projects = [];
 		$scope.focusProject = [];
 
+		// retrieve current user and role
+		$scope.currentUser = localStorageService.get("currentUser");
+		$scope.currentRole = localStorageService.get("currentRole");
+		
 		// retrieve focus project on first call
 		$scope.focusProject = localStorageService.get("focusProject");
 	
@@ -554,10 +558,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 			$scope.focusProject = parameters.focusProject;
 			$scope.filterRecords();
 		});	
-		
-		// retrieve current user and role
-		$scope.currentUser = localStorageService.get("currentUser");
-		$scope.currentRole = localStorageService.get("currentRole");
+
 
 		// broadcast page to help mechanism
 		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'concept'});
@@ -669,6 +670,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 				
 				return true;
 				
+			} else if ($scope.currentUser.userName === record.ower.userName) {
+				return true;
 			} else return false;
 		};
 

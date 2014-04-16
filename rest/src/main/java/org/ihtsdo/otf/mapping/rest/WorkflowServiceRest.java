@@ -158,7 +158,6 @@ public class WorkflowServiceRest {
 	}
 	
 	
-	//Request URL:http://localhost:8080/mapping-rest/workflow/assignedWork/id/1/user/dmo
 	/**
 	 * Finds assigned work for the specified map project and user.
 	 *
@@ -356,6 +355,7 @@ public class WorkflowServiceRest {
 			// for each requested object, construct a search result
 			for (MapRecord mapRecord : mapRecords) {
 				SearchResult result = new SearchResultJpa();
+				result.setId(mapRecord.getId());
 				result.setTerminologyId(mapRecord.getConceptId());
 				result.setValue(mapRecord.getConceptName());
 				results.addSearchResult(result);

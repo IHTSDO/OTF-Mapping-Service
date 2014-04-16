@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapPrincipleListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
@@ -1472,6 +1473,22 @@ public class MappingServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
+	
+	@GET
+	@Path("/record/conflictRecords/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
+	public MapRecordList getRecordsInConflict(
+		@ApiParam(value = "id of the map lead's conflict-in-progress record", required = true) @PathParam("id") Long mapRecordId) throws Exception {
+			
+		MapRecordList records = new MapRecordListJpa();
+		
+		MappingService mappingService = new MappingServiceJpa();
+		records = mappingService.getRecordsInConflict(mapRecordId);
+		mappingService.close();
+		
+		return records;
+		}
+			
 	
 	/**
 	 * Compare map records.
