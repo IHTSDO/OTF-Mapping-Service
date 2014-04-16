@@ -559,19 +559,21 @@ public class ContentServiceJpa implements ContentService {
 		Logger.getLogger(this.getClass()).info(
 				"Starting computeTreePositions - " + rootId + ", " + terminology);
 
-		// fail in createTreePositions if we�re not using
-		// getTransactionPerOperation (this allows us to control
-		// transaction scope from the service).
-		int commitCt = 500;
+		// Set commit interval
+		int commitCt = 1000;
+
+		// Fail if not using transaction per operation.  This method manages its own transaction
 		if (!getTransactionPerOperation()) {
 			throw new Exception(
 					"createTreePositions requires getTransactionPerOperation mode.");
 		}
+
+		// Start transaction
 		EntityTransaction tx = manager.getTransaction();
 		tx.begin();
 
-		Queue<Map<Concept, TreePosition>> conceptQueue = new LinkedList<>();
-		Set<Map<Concept, TreePosition>> conceptSet = new HashSet<>();
+		// Queue of (conceptId, treePos ancestor path) tuples
+		Queue<Map<Long, String>> conceptAncPathQueue = new LinkedList<>();
 		int conceptCt = 0;
 		int childCounter = 0;
 		
@@ -580,7 +582,7 @@ public class ContentServiceJpa implements ContentService {
 
 		// if non-null result, seed the queue with this concept
 		if (rootConcept != null) {
-			Map<Concept, TreePosition> hm = new HashMap<>();
+			Map<Long, String> hm = new HashMap<>();
 			TreePosition rootTp = new TreePositionJpa("");
 			rootTp.setTerminology(terminology);
 			rootTp.setTerminologyVersion(terminologyVersion);
@@ -596,18 +598,17 @@ public class ContentServiceJpa implements ContentService {
 			rootTp.setChildrenCount(childCounter);
 			manager.persist(rootTp);
 			conceptCt++;
-			hm.put(rootConcept, rootTp);
-			conceptQueue.add(hm);
+			hm.put(rootConcept.getId(), rootTp.getAncestorPath());
+			conceptAncPathQueue.add(hm);
 		}
 
 		// while concepts remain to be checked
-		while (!conceptQueue.isEmpty()) {
+		while (!conceptAncPathQueue.isEmpty()) {
 
 			// retrieve this concept
-			Map<Concept, TreePosition> currentMap = conceptQueue.poll();
-			Concept currentConcept = currentMap.keySet().iterator().next();
-			currentConcept = getConcept(currentConcept.getId());
-			TreePosition currentTp = currentMap.get(currentConcept);
+			Map<Long, String> entry = conceptAncPathQueue.poll();
+			Concept currentConcept = getConcept(entry.keySet().iterator().next());
+			String ancPath = entry.get(currentConcept.getId());
 
 			// if concept is active
 			if (currentConcept.isActive()) {
@@ -617,8 +618,6 @@ public class ContentServiceJpa implements ContentService {
 				Set<Relationship> inv_relationships =
 						currentConcept.getInverseRelationships();
 				Iterator<Relationship> it_inv_rel = inv_relationships.iterator();
-
-
 
 				// iterate over inverse relationships (for each child)
 				while (it_inv_rel.hasNext()) {
@@ -633,48 +632,38 @@ public class ContentServiceJpa implements ContentService {
 
 						// get source concept from inverse relationship (i.e. child of
 						// concept)
-						Concept c_rel = rel.getSourceConcept();
+						Concept childConcept = rel.getSourceConcept();
 
 						TreePosition tp = new TreePositionJpa();
-						if (currentTp.getAncestorPath().equals(""))
-							tp.setAncestorPath(currentTp.getTerminologyId());
+						if (ancPath.equals(""))
+							tp.setAncestorPath(currentConcept.getTerminologyId());
 						else
-							tp.setAncestorPath(currentTp.getAncestorPath() + "~"
-									+ currentTp.getTerminologyId());
+							tp.setAncestorPath(ancPath + "~"
+									+ currentConcept.getTerminologyId());
 						tp.setTerminology(terminology);
 						tp.setTerminologyVersion(terminologyVersion);
-						tp.setTerminologyId(c_rel.getTerminologyId());
-						tp.setDefaultPreferredName(c_rel.getDefaultPreferredName());
+						tp.setTerminologyId(childConcept.getTerminologyId());
+						tp.setDefaultPreferredName(childConcept.getDefaultPreferredName());
 						
 						childCounter = 0;
 						
 						// this test should be the same as the above test
-						for (Relationship invrel : c_rel.getInverseRelationships()) {
+						for (Relationship invrel : childConcept.getInverseRelationships()) {
 							if (invrel.isActive() && invrel.getTypeId().toString().equals(typeId)
-									&& invrel.getSourceConcept().isActive()) childCounter++;
+									&& invrel.getSourceConcept().isActive()) {
+							  childCounter++;
+							}
 						}
 						tp.setChildrenCount(childCounter);
 						
-										Logger.getLogger(this.getClass()).debug(
+						Logger.getLogger(this.getClass()).debug(
 								"  Create tree position - " + tp.getAncestorPath() + ", "
-										+ c_rel.getTerminologyId());
+										+ childConcept.getTerminologyId());
 						manager.persist(tp);
 
-						// if set does not contain the source concept, add it to set and
-						// queue
-						boolean setContainsChild = false;
-						for (Map<Concept, TreePosition> map : conceptSet) {
-							if (map.containsKey(c_rel)) {
-								setContainsChild = true;
-								break;
-							}
-						}
-						if (!setContainsChild) {
-							Map<Concept, TreePosition> lhm = new HashMap<>();
-							lhm.put(c_rel, tp);
-							conceptSet.add(lhm);
-							conceptQueue.add(lhm);
-						}
+						Map<Long, String> lhm = new HashMap<>();
+						lhm.put(childConcept.getId(), tp.getAncestorPath());
+						conceptAncPathQueue.add(lhm);
 					}
 				} // after iterating over children
 
@@ -693,7 +682,7 @@ public class ContentServiceJpa implements ContentService {
                     Logger.getLogger(this.getClass()).info(" Total: " + runtime.totalMemory());
                     Logger.getLogger(this.getClass()).info(" Free:  " + runtime.freeMemory());
                     Logger.getLogger(this.getClass()).info(" Max:   " + runtime.maxMemory());
-                    Logger.getLogger(this.getClass()).info("Concept queue size: " + conceptQueue.size() + " " + new Date());
+                    Logger.getLogger(this.getClass()).info("Concept queue size: " + conceptAncPathQueue.size() + " " + new Date());
                 }
 			}
 		}
