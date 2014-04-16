@@ -108,7 +108,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 
 			// Look up map projects
 			getLog().info("  Lookup map projects");
-			List<MapProject> mapProjects = mappingService.getMapProjects();
+			List<MapProject> mapProjects = mappingService.getMapProjects().getMapProjects();
 
 			// Iterate through the file
 			mapNoteReader = new BufferedReader(new FileReader(new File(inputFile)));
@@ -142,7 +142,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
 				mapNote.setNote(note);
 
 				List<MapRecord> mapRecords =
-						mappingService.getMapRecordsForConcept(fields[5]);
+						mappingService.getMapRecordsForConcept(fields[5]).getMapRecords();
 
 				// Verify matching map records were found, otherwise fail
 				if (mapRecords != null && mapRecords.size() > 0) {

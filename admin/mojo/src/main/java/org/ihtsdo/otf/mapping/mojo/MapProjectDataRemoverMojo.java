@@ -85,9 +85,9 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
 
 			MappingService service = new MappingServiceJpa();
 			// Remove map projects
-			for (MapProject p : service.getMapProjects()) {
+			for (MapProject p : service.getMapProjects().getIterable()) {
 				getLog().info("  Remove map project - " + p.getName());
-				if (service.getMapRecordsForMapProject(p.getId()).size() != 0) {
+				if (service.getMapRecordsForMapProject(p.getId()).getTotalCount() != 0) {
 					throw new MojoFailureException(
 							"Attempt to delete a map project that has map records, delete the map records first");
 				}
@@ -95,25 +95,25 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
 			}
 
 			// Remove map users
-			for (MapUser l : service.getMapUsers()) {
+			for (MapUser l : service.getMapUsers().getIterable()) {
 				getLog().info("  Remove map user - " + l.getName());
 				service.removeMapUser(l.getId());
 			}
 
 			// Remove map advices
-			for (MapAdvice a : service.getMapAdvices()) {
+			for (MapAdvice a : service.getMapAdvices().getIterable()) {
 				getLog().info("  Remove map advice - " + a.getName());
 				service.removeMapAdvice(a.getId());
 			}
 			
 			// Remove map relations
-			for (MapRelation  a : service.getMapRelations()) {
+			for (MapRelation  a : service.getMapRelations().getIterable()) {
 				getLog().info("  Remove map relation - " + a.getName());
 				service.removeMapRelation (a.getId());
 			}
 
 			// Remove map principles
-			for (MapPrinciple p : service.getMapPrinciples()) {
+			for (MapPrinciple p : service.getMapPrinciples().getIterable()) {
 				getLog().info("  Remove map principle - " + p.getName());
 				service.removeMapPrinciple(p.getId());
 			}

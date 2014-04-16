@@ -1,6 +1,6 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -17,25 +17,27 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapPrincipleListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapUserPreferencesListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
-import org.ihtsdo.otf.mapping.jpa.MapAdviceList;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
-import org.ihtsdo.otf.mapping.jpa.MapPrincipleList;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
-import org.ihtsdo.otf.mapping.jpa.MapProjectList;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
-import org.ihtsdo.otf.mapping.jpa.MapRecordList;
 import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
-import org.ihtsdo.otf.mapping.jpa.MapRelationList;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
-import org.ihtsdo.otf.mapping.jpa.MapUserList;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
-import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -44,7 +46,6 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
-import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionList;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
@@ -85,11 +86,11 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/project/projects")
-  @ApiOperation(value = "Get all projects", notes = "Returns all MapProjects in either JSON or XML format", response = MapProjectList.class)
+  @ApiOperation(value = "Get all projects", notes = "Returns all MapProjects in either JSON or XML format", response = MapProjectListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapProjectList getMapProjects() {
+  public MapProjectListJpa getMapProjects() {
 
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping):  /project/projects");
@@ -102,9 +103,13 @@ public class MappingServiceRest {
       // if (! mappingService.isManagerOpen()) {
       // System.out.println("REST: service manager not open"); }
 
-      MapProjectList mapProjects = new MapProjectList();
-      mapProjects.setMapProjects(mappingService.getMapProjects());
-      mapProjects.sortMapProjects();
+      MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService.getMapProjects();
+      mapProjects.sortBy(new Comparator<MapProject> () {
+        @Override
+        public int compare(MapProject o1, MapProject o2) {
+          return o1.getName().compareTo(o2.getName());
+        }
+      });
       mappingService.close();
       return mapProjects;
     } catch (Exception e) {
@@ -119,20 +124,24 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/user/users/")
-  @ApiOperation(value = "Get all mapping users", notes = "Returns all MapUsers in either JSON or XML format", response = MapUserList.class)
+  @ApiOperation(value = "Get all mapping users", notes = "Returns all MapUsers in either JSON or XML format", response = MapUserListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapUserList getMapUsers() {
+  public MapUserListJpa getMapUsers() {
 
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping): /user/users");
 
     try {
       MappingService mappingService = new MappingServiceJpa();
-      MapUserList mapLeads = new MapUserList();
-      mapLeads.setMapUsers(mappingService.getMapUsers());
-      mapLeads.sortMapUsers();
+      MapUserListJpa mapLeads = (MapUserListJpa) mappingService.getMapUsers();
+      mapLeads.sortBy(new Comparator<MapUser> () {
+        @Override
+        public int compare(MapUser o1, MapUser o2) {
+          return o1.getName().compareTo(o2.getName());
+        }
+      });
       mappingService.close();
       return mapLeads;
     } catch (Exception e) {
@@ -151,16 +160,21 @@ public class MappingServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapUserPreferencesList getMapUserPreferences() {
+  public MapUserPreferencesListJpa getMapUserPreferences() {
 
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping): /userPreferences/userPreferences");
 
     try {
       MappingService mappingService = new MappingServiceJpa();
-      MapUserPreferencesList mapUserPreferences = new MapUserPreferencesList();
-      mapUserPreferences.setMapUserPreferences(mappingService.getMapUserPreferences());
-      mapUserPreferences.sortMapUserPreferences();
+      MapUserPreferencesListJpa mapUserPreferences = 
+          (MapUserPreferencesListJpa) mappingService.getMapUserPreferences();
+      mapUserPreferences.sortBy(new Comparator<MapUserPreferences> () {
+        @Override
+        public int compare(MapUserPreferences o1, MapUserPreferences o2) {
+          return o1.getMapUser().getName().compareTo(o2.getMapUser().getName());
+        }
+      });
       mappingService.close();
       return mapUserPreferences;
     } catch (Exception e) {
@@ -175,19 +189,24 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/record/records/")
-  @ApiOperation(value = "Get all records", notes = "Returns all MapRecords in either JSON or XML format", response = MapRecordList.class)
+  @ApiOperation(value = "Get all records", notes = "Returns all MapRecords in either JSON or XML format", response = MapRecordListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapRecordList getMapRecords() {
+  public MapRecordListJpa getMapRecords() {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
-      MapRecordList mapRecords = new MapRecordList();
-      mapRecords.setMapRecords(mappingService.getMapRecords());
-      mapRecords.sortMapRecords();
+      MapRecordListJpa mapRecordList = 
+          (MapRecordListJpa) mappingService.getMapRecords();
+      mapRecordList.sortBy(new Comparator<MapRecord> () {
+        @Override
+        public int compare(MapRecord o1, MapRecord o2) {
+          return o1.getId().compareTo(o2.getId());
+        }
+      });
       mappingService.close();
-      return mapRecords;
+      return mapRecordList;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -200,11 +219,11 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/user/id/{id:[0-9][0-9]*}/projects")
-  @ApiOperation(value = "Find all projects for user", notes = "Returns a MapUser's MapProjects in either JSON or XML format", response = MapProjectList.class)
+  @ApiOperation(value = "Find all projects for user", notes = "Returns a MapUser's MapProjects in either JSON or XML format", response = MapProjectListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapProjectList getMapProjectsForUser(
+  public MapProjectListJpa getMapProjectsForUser(
     @ApiParam(value = "Id of map lead to fetch projects for", required = true) @PathParam("id") Long mapLeadId) {
 
     Logger.getLogger(MappingServiceRest.class)
@@ -214,11 +233,15 @@ public class MappingServiceRest {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
-      MapProjectList mapProjects = new MapProjectList();
       MapUser mapLead = mappingService.getMapUser(mapLeadId);
-      mapProjects.setMapProjects(mappingService
-          .getMapProjectsForMapUser(mapLead));
-      mapProjects.sortMapProjects();
+      MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService
+          .getMapProjectsForMapUser(mapLead);
+      mapProjects.sortBy(new Comparator<MapProject> () {
+        @Override
+        public int compare(MapProject o1, MapProject o2) {
+          return o1.getName().compareTo(o2.getName());
+        }
+      });
       mappingService.close();
       return mapProjects;
     } catch (Exception e) {
@@ -321,7 +344,7 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/user/query/{string}")
-  @ApiOperation(value = "Find users by query", notes = "Returns map users for a query in either JSON or XML format", response = MapUserList.class)
+  @ApiOperation(value = "Find users by query", notes = "Returns map users for a query in either JSON or XML format", response = MapUserListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -382,7 +405,7 @@ public class MappingServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapRecordList getMapRecordsForConceptId(
+  public MapRecordListJpa getMapRecordsForConceptId(
     @ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("String") String conceptId) {
 
     Logger.getLogger(MappingServiceRest.class).info(
@@ -390,11 +413,10 @@ public class MappingServiceRest {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
-      MapRecordList mapRecords = new MapRecordList();
-      mapRecords.setMapRecords(mappingService
-          .getMapRecordsForConcept(conceptId));
+      MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
+          .getMapRecordsForConcept(conceptId);
       mappingService.close();
-      return mapRecords;
+      return mapRecordList;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -410,7 +432,7 @@ public class MappingServiceRest {
    */
   @POST
   @Path("/record/projectId/{id:[0-9][0-9]*}/nRecords")
-  @ApiOperation(value = "Find number of records by project id given filtering information", notes = "Returns count of MapRecords in database given a paging/filtering/sorting parameters object", response = MapRecordList.class)
+  @ApiOperation(value = "Find number of records by project id given filtering information", notes = "Returns count of MapRecords in database given a paging/filtering/sorting parameters object", response = MapRecordListJpa.class)
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -431,13 +453,15 @@ public class MappingServiceRest {
     try {
 
       MappingService mappingService = new MappingServiceJpa();
-      Long nRecords =
-          mappingService.getMapRecordCountForMapProject(mapProjectId,
-              pfsParameter);
+      pfsParameter.setStartIndex(1);
+      pfsParameter.setMaxResults(1);
+      int nRecords =
+          mappingService.getMapRecordsForMapProject(mapProjectId,
+              pfsParameter).getTotalCount();
       mappingService.close();
 
       // Jersey can't handle Long as return type, convert to string
-      return nRecords.toString();
+      return String.valueOf(nRecords);
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -454,7 +478,7 @@ public class MappingServiceRest {
    */
   @POST
   @Path("/record/projectId/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Find paged records by project id", notes = "Returns delimited page of MapRecords given a paging/filtering/sorting parameters object", response = MapRecordList.class)
+  @ApiOperation(value = "Find paged records by project id", notes = "Returns delimited page of MapRecords given a paging/filtering/sorting parameters object", response = MapRecordListJpa.class)
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -462,7 +486,7 @@ public class MappingServiceRest {
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @CookieParam(value = "userInfo")
-  public MapRecordList getMapRecordsForMapProjectId(
+  public MapRecordListJpa getMapRecordsForMapProjectId(
     @ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
 
@@ -479,11 +503,10 @@ public class MappingServiceRest {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
-      MapRecordList mapRecords = new MapRecordList();
-      mapRecords.setMapRecords(mappingService.getMapRecordsForMapProject(
-          mapProjectId, pfsParameter));
+      MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService.getMapRecordsForMapProject(
+          mapProjectId, pfsParameter);
       mappingService.close();
-      return mapRecords;
+      return mapRecordList;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -716,9 +739,8 @@ public class MappingServiceRest {
   }
   
   /**
-   * Updates a map record
-   * @param mapRecord the map record to be added
-   * @return Response the response
+   * Updates a map user pereferences object.
+   * @param mapUserPreferences the map user preferences
    */
   @POST
   @Path("/userPreferences/update")
@@ -757,21 +779,18 @@ public class MappingServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @ApiOperation(value = "Get record revision history", notes = "Retrieves revision history of a record", response = MapRecordList.class)
-  public MapRecordList getMapRecordRevisions(
+  @ApiOperation(value = "Get record revision history", notes = "Retrieves revision history of a record", response = MapRecordListJpa.class)
+  public MapRecordListJpa getMapRecordRevisions(
     @ApiParam(value = "Id of map record to get revisions for", required = true) @PathParam("id") Long mapRecordId) {
     Logger.getLogger(MappingServiceRest.class).info(
         "RESTful call (Mapping): /record/validate");
 
     try {
       MappingService mappingService = new MappingServiceJpa();
-      List<MapRecord> revisions =
-          mappingService.getMapRecordRevisions(mapRecordId);
-      MapRecordList results = new MapRecordList();
-      results.setMapRecords(revisions);
-
+      MapRecordListJpa revisions =
+          (MapRecordListJpa) mappingService.getMapRecordRevisions(mapRecordId);
       mappingService.close();
-      return results;
+      return revisions;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -969,19 +988,23 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/principle/principles/")
-  @ApiOperation(value = "Get all principles", notes = "Returns all MapPrinciples in either JSON or XML format", response = MapPrincipleList.class)
+  @ApiOperation(value = "Get all principles", notes = "Returns all MapPrinciples in either JSON or XML format", response = MapPrincipleListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapPrincipleList getMapPrinciples() {
+  public MapPrincipleListJpa getMapPrinciples() {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
-      MapPrincipleList mapPrinciples = new MapPrincipleList();
-      mapPrinciples.setmapPrinciples(mappingService.getMapPrinciples());
-      mapPrinciples.sortmapPrinciples();
+      MapPrincipleListJpa mapPrincipleList = (MapPrincipleListJpa) mappingService.getMapPrinciples();
+      mapPrincipleList.sortBy(new Comparator<MapPrinciple> () {
+        @Override
+        public int compare(MapPrinciple o1, MapPrinciple o2) {
+          return o1.getId().compareTo(o2.getId());
+        }
+      });
       mappingService.close();
-      return mapPrinciples;
+      return mapPrincipleList;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -1022,19 +1045,23 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/advice/advices/")
-  @ApiOperation(value = "Get all advices", notes = "Returns all MapAdvices in either JSON or XML format", response = MapAdviceList.class)
+  @ApiOperation(value = "Get all advices", notes = "Returns all MapAdvices in either JSON or XML format", response = MapAdviceListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapAdviceList getMapAdvices() {
+  public MapAdviceListJpa getMapAdvices() {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
-      MapAdviceList mapAdvices = new MapAdviceList();
-      mapAdvices.setMapAdvices(mappingService.getMapAdvices());
-      mapAdvices.sortMapAdvices();
+      MapAdviceListJpa mapAdviceList = (MapAdviceListJpa) mappingService.getMapAdvices();
+      mapAdviceList.sortBy(new Comparator<MapAdvice> () {
+        @Override
+        public int compare(MapAdvice o1, MapAdvice o2) {
+          return o1.getName().compareTo(o2.getName());
+        }
+      });
       mappingService.close();
-      return mapAdvices;
+      return mapAdviceList;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -1047,17 +1074,21 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/relation/relations/")
-  @ApiOperation(value = "Get all relations", notes = "Returns all MapRelations in either JSON or XML format", response = MapRelationList.class)
+  @ApiOperation(value = "Get all relations", notes = "Returns all MapRelations in either JSON or XML format", response = MapRelationListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapRelationList getMapRelations() {
+  public MapRelationListJpa getMapRelations() {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
-      MapRelationList mapRelations = new MapRelationList();
-      mapRelations.setMapRelations(mappingService.getMapRelations());
-      mapRelations.sortMapRelations();
+      MapRelationListJpa mapRelations = (MapRelationListJpa) mappingService.getMapRelations();
+      mapRelations.sortBy(new Comparator<MapRelation> () {
+        @Override
+        public int compare(MapRelation o1, MapRelation o2) {
+          return o1.getName().compareTo(o2.getName());
+        }
+      });
       mappingService.close();
       return mapRelations;
     } catch (Exception e) {
@@ -1077,21 +1108,21 @@ public class MappingServiceRest {
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @Path("/project/record/generate")
-  @ApiOperation(value = "Find map records based on project metadata", notes = "Retrieves map records given project metadata", response = MapRecordList.class)
+  @ApiOperation(value = "Find map records based on project metadata", notes = "Retrieves map records given project metadata", response = MapRecordListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapRecordList getMapRecordsForConceptId(
+  public MapRecordListJpa getMapRecordsForConceptId(
     @ApiParam(value = "Concept hibernate id", required = true) Long conceptId) {
-    MapRecordList results = new MapRecordList();
+    MapRecordListJpa mapRecordList = null;
     try {
       MappingService mappingService = new MappingServiceJpa();
-      results.setMapRecords(mappingService.getMapRecordsForConcept(conceptId));
+      mapRecordList = (MapRecordListJpa) mappingService.getMapRecordsForConcept(conceptId);
       mappingService.close();
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
-    return results;
+    return mapRecordList;
   }
 
   /**
@@ -1217,33 +1248,24 @@ public class MappingServiceRest {
    */
   @POST
   @Path("/recentRecords/{id}/{userName}")
-  @ApiOperation(value = "Find recently edited map records", notes = "Returns recently edited map records for given userName in either JSON or XML format", response = MapRecordList.class)
+  @ApiOperation(value = "Find recently edited map records", notes = "Returns recently edited map records for given userName in either JSON or XML format", response = MapRecordListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapRecordList getRecentlyEditedMapRecords(
+  public MapRecordListJpa getRecentlyEditedMapRecords(
   	@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
 		@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
 		@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
 	//TODO: PfsParameter, change to POST test with ProjectRecordController function
-  List<MapRecord> editedRecords = new ArrayList<>();
-  int totalCount;
     try {
       MappingService mappingService = new MappingServiceJpa();
-       
-      editedRecords = mappingService.getRecentlyEditedMapRecords(new Long(mapProjectId), userName, pfsParameter);
-      totalCount = mappingService.getRecentlyEditedMapRecordCount(new Long(mapProjectId), userName, pfsParameter);
-      
+      MapRecordListJpa recordList = (MapRecordListJpa) mappingService.getRecentlyEditedMapRecords(new Long(mapProjectId), userName, pfsParameter);
       mappingService.close();
+      return recordList;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
-    
-    MapRecordList recordList = new MapRecordList();
-    recordList.setMapRecords(editedRecords);
-    recordList.setTotalCount(totalCount);
-		return recordList;
-	}
+  }
   
   /**
    * Updates a map record.
@@ -1332,11 +1354,11 @@ public class MappingServiceRest {
   // http://localhost:8080/mapping-rest/mapping/tree/projectId/1/concept/ICD10/2010/id/I
 	@GET
 	@Path("/tree/projectId/{projectId}/concept/{terminology}/{terminologyVersion}/id/{terminologyId}")
-	@ApiOperation(value = "Get the local tree (position and children) for a particular concept", notes = "Returns a tree structure representing the position of a concept in a terminology and its children", response = TreePositionList.class)
+	@ApiOperation(value = "Get the local tree (position and children) for a particular concept", notes = "Returns a tree structure representing the position of a concept in a terminology and its children", response = TreePositionListJpa.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public TreePositionList getLocalTreePositionsForConcept(
+	public TreePositionListJpa getLocalTreePositionsForConcept(
 			@ApiParam(value = "terminology id of concept", required = true) @PathParam("terminologyId") String terminologyId,
 			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
@@ -1348,7 +1370,7 @@ public class MappingServiceRest {
 		try {
 			// get the local tree positions from content service
 			ContentService contentService = new ContentServiceJpa();
-			List<TreePosition> treePositions = contentService.getLocalTrees(terminologyId, terminology, terminologyVersion); 
+			List<TreePosition> treePositions = contentService.getLocalTrees(terminologyId, terminology, terminologyVersion).getTreePositions(); 
 			contentService.close();
 			
 			// set the valid codes using mapping service
@@ -1357,7 +1379,7 @@ public class MappingServiceRest {
 			mappingService.close();
 			
 			// construct and return the tree position list object
-			TreePositionList treePositionList = new TreePositionList();
+			TreePositionListJpa treePositionList = new TreePositionListJpa();
 			treePositionList.setTreePositions(treePositions);
 			return treePositionList;
 		} catch (Exception e) {
@@ -1370,15 +1392,16 @@ public class MappingServiceRest {
 	 *
 	 * @param terminology the terminology
 	 * @param terminologyVersion the terminology version
+	 * @param mapProjectId the map project id
 	 * @return the search result list
 	 */
 	@GET
 	@Path("/tree/projectId/{projectId}/terminology/{terminology}/{terminologyVersion}")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
+	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public TreePositionList getRootTreePositionsForTerminology(
+	public TreePositionListJpa getRootTreePositionsForTerminology(
 			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
 			@ApiParam(value = "id of map project this tree will be displayed for", required = true) @PathParam("projectId") Long mapProjectId				
@@ -1388,7 +1411,7 @@ public class MappingServiceRest {
 			
 			// get the root tree positions from content service
 			ContentService contentService = new ContentServiceJpa();
-			List<TreePosition> treePositions = contentService.getRootTreePositionsForTerminology(terminology, terminologyVersion); 
+			List<TreePosition> treePositions = contentService.getRootTreePositionsForTerminology(terminology, terminologyVersion).getTreePositions(); 
 			contentService.close();
 			
 			// set the valid codes using mapping service
@@ -1397,7 +1420,7 @@ public class MappingServiceRest {
 			mappingService.close();
 			
 			// construct and return the tree position list object
-			TreePositionList treePositionList = new TreePositionList();
+			TreePositionListJpa treePositionList = new TreePositionListJpa();
 			treePositionList.setTreePositions(treePositions);
 			return treePositionList;
 		} catch (Exception e) {
@@ -1411,15 +1434,16 @@ public class MappingServiceRest {
 	 * @param terminology the terminology
 	 * @param terminologyVersion the terminology version
 	 * @param query the query
+	 * @param mapProjectId the map project id
 	 * @return the root-level trees corresponding to the query
 	 */
 	@GET
 	@Path("/tree/projectId/{projectId}/terminology/{terminology}/{terminologyVersion}/query/{query}")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
+	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public TreePositionList getRootTreePositionsForConceptQuery(
+	public TreePositionListJpa getRootTreePositionsForConceptQuery(
 			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,			
 			@ApiParam(value = "paging/filtering/sorting object", required = true) @PathParam("query") String query,
@@ -1431,7 +1455,7 @@ public class MappingServiceRest {
 			
 			// get the tree positions from concept service
 			ContentService contentService = new ContentServiceJpa();
-			List<TreePosition> treePositions = contentService.getTreePositionsForConceptQuery(terminology, terminologyVersion, query); 
+			List<TreePosition> treePositions = contentService.getTreePositionsForConceptQuery(terminology, terminologyVersion, query).getTreePositions(); 
 			contentService.close();
 			
 			// set the valid codes using mapping service
@@ -1440,7 +1464,7 @@ public class MappingServiceRest {
 			mappingService.close();
 			
 			// construct and return the tree position list object
-			TreePositionList treePositionList = new TreePositionList();
+			TreePositionListJpa treePositionList = new TreePositionListJpa();
 			treePositionList.setTreePositions(treePositions);
 			return treePositionList;
 			
@@ -1449,9 +1473,19 @@ public class MappingServiceRest {
 		}
 	}
 	
+	/**
+	 * Compare map records.
+	 *
+	 * @param mapRecordId1 the map record id1
+	 * @param mapRecordId2 the map record id2
+	 * @return the validation result
+	 * @throws InstantiationException the instantiation exception
+	 * @throws IllegalAccessException the illegal access exception
+	 * @throws ClassNotFoundException the class not found exception
+	 */
 	@GET
 	@Path("/record/compare/{recordId1}/{recordId2}/")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
+	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
