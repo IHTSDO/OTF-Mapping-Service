@@ -348,6 +348,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
                   + ft.format(new Date()) + ")");
         }
 
+        conceptCache.clear();
+        closeAllSortedFiles();
+        
         // creating tree positions
         // first get isaRelType from metadata
         MetadataService metadataService = new MetadataServiceJpa();
@@ -397,7 +400,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
       // Clean-up
       factory.close();
-      closeAllSortedFiles();
 
     } catch (Throwable e) {
       e.printStackTrace();
