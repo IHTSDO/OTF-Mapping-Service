@@ -34,7 +34,7 @@
 </table>
 
 </tab>
-<tab heading="Assigned Conflicts">
+<tab heading="Assigned Conflicts" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 
 <pagination total-items="nAssignedConflicts" page="assignedConflictsPage"
 	class="pagination-sm" boundary-links="true" rotate="true" 

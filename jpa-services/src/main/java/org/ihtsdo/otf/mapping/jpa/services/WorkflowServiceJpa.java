@@ -340,14 +340,13 @@ public class WorkflowServiceJpa implements WorkflowService {
 				// perform the finish editing action via the algorithm handler
 				trackingRecord = algorithmHandler.finishEditing(trackingRecord, mapUser);
 				
-				// if ready for publication, remove workflow tracking record
-				if (trackingRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)) {
-					removeWorkflowTrackingRecord(trackingRecord.getId());
-					
-				// otherwise update workflow tracking record
-				} else {
+				// if tracking record has not been destroyed in the finish editing process, update it
+				if (trackingRecord != null) {
 					updateWorkflowTrackingRecord(trackingRecord);
-				}		
+				}	
+				
+				// TODO synchronizeWorkflowTrackingRecord, use detached object for comparison
+				// remove all service calls from the algorithm handler
 
 				break;
 				

@@ -54,7 +54,21 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   		};
   		
   		// broadcast page to help mechanism  
-  		//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
+  		//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'}); 
+  		
+  		// Watcher for Conflict Resolution Select Record Event
+  		$rootScope.$on('compareRecordsWidget.notification.selectRecord', function(event, parameters) { 	
+  	  		console.debug("received new record");
+  	  		console.debug(parameters);
+  	  		console.debug(parameters.record);
+  			$scope.record = parameters.record;
+  		});
+  		
+  		$scope.$watch('record', function() {
+  			console.debug('detected change in record, re-initializing entries');
+  			console.debug($scope.record);
+  			if ($scope.record != null && $scope.project != null) initializeEntries();
+  		}, true);
   		
   		// initialize local variables
   		var recordId = 		$routeParams.recordId; 
@@ -420,8 +434,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   			if (note === '' || note == null) {
   				$scope.errorAddRecordNote = "Note cannot be empty";
   			} else {
-  				
-  				console.debug($scope.record)
   				
   				// construct note object
   				var mapNote = new Object();

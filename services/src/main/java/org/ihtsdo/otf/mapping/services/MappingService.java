@@ -28,6 +28,7 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
+// TODO: Auto-generated Javadoc
 /**
  * Services for interacting with mapping objects.
  */
@@ -746,12 +747,21 @@ public interface MappingService {
 	 * @param mapRecord1 the first map record
 	 * @param mapRecord2 the second map record
 	 * @return the validation result
-	 * @throws ClassNotFoundException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @throws InstantiationException the instantiation exception
+	 * @throws IllegalAccessException the illegal access exception
+	 * @throws ClassNotFoundException the class not found exception
 	 */
 	public ValidationResult compareMapRecords(MapRecord mapRecord1,
 			MapRecord mapRecord2) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
+
+	/**
+	 * Given a map record, returns the origin map records giving rise to a conflict
+	 *
+	 * @param mapRecordId the map record id of the conflict resolution record
+	 * @return the records in conflict
+	 * @throws Exception 
+	 */
+	public MapRecordList getRecordsInConflict(Long mapRecordId) throws Exception;
 
 	
 	

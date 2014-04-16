@@ -3063,4 +3063,27 @@ public class MappingServiceJpa implements MappingService {
 		return conflicts;
 	}
 
+	@Override
+	public MapRecordList getRecordsInConflict(Long mapRecordId) throws Exception {
+		
+		System.out.println("getRecordsInConflict with record id = " + mapRecordId.toString());
+		
+		MapRecordList conflictRecords = new MapRecordListJpa();
+		
+		MapRecord mapRecord = getMapRecord(mapRecordId);
+		
+		if (mapRecord == null) throw new Exception("getRecordsInConflict: Could not find map record with id = " + mapRecordId.toString() + "!");
+		for (Long originId : mapRecord.getOriginIds()) {
+			MapRecord mr = getMapRecord(originId);
+			if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+				conflictRecords.addMapRecord(getMapRecord(originId));
+			}
+		}
+		
+		// set the total count for completeness (no paging here)
+		conflictRecords.setTotalCount(conflictRecords.getCount());
+		
+		return conflictRecords;
+	}
+
 }
