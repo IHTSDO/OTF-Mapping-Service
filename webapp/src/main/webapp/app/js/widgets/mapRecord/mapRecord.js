@@ -72,7 +72,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   	      }).error(function(error) {
   	    	  $scope.error = $scope.error + "Could not retrieve map record. ";
   	     
-  	      }).then(function() {
+  	      })/**.then(function() {
   	      	    // set the workflow to editing in progress
 				console.debug("Setting the workflow to editing in progress.");
 				  $http({
@@ -89,7 +89,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				  });
 			  
 		    	
-	          }).then(function() {
+	          })*/.then(function() {
 
   	    	  // obtain the record project
   	    	 $http({

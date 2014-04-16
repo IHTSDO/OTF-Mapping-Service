@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,11 +30,15 @@ import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.helpers.ConceptList;
+import org.ihtsdo.otf.mapping.helpers.ConceptListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.TreePositionList;
+import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
@@ -41,7 +46,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Content Services for the Jpa model.
  */
@@ -146,7 +150,7 @@ public class ContentServiceJpa implements ContentService {
 			return c;
 		} catch (NoResultException e) {
 			// log result and return null
-			Logger.getLogger(this.getClass()).warn(
+			Logger.getLogger(this.getClass()).debug(
 					"ContentService.getConcept(): Concept query for terminologyId = "
 							+ terminologyId + ", terminology = " + terminology
 							+ ", terminologyVersion = " + terminologyVersion
@@ -163,7 +167,7 @@ public class ContentServiceJpa implements ContentService {
 	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public List<Concept> getConceptTreeRoots(String terminology,
+	public ConceptList getConceptTreeRoots(String terminology,
 			String terminologyVersion) throws Exception {
 
 		// find concepts with blank ancestor positions
@@ -185,10 +189,13 @@ public class ContentServiceJpa implements ContentService {
 			for (TreePosition treePosition : treePositions) {
 				concepts.add(getConcept(treePosition.getTerminologyId(),terminology,terminologyVersion));
 			}
-			return concepts;
+			ConceptListJpa conceptList = new ConceptListJpa();
+			conceptList.setConcepts(concepts);
+			conceptList.setTotalCount(concepts.size());
+			return conceptList;
 		} catch (NoResultException e) {
 			// log result and return null
-			Logger.getLogger(this.getClass()).warn(
+			Logger.getLogger(this.getClass()).debug(
 					"ContentService.getConceptTreeRoots(): Concept query for terminology = "
 							+ terminology + ", terminologyVersion = " + terminologyVersion
 							+ " returned no results!");
@@ -249,7 +256,13 @@ public class ContentServiceJpa implements ContentService {
 
 			fullTextEntityManager.close();
 
-			results.sortSearchResultsById();
+			// Sort by ID
+			results.sortBy(new Comparator<SearchResult>() {
+              @Override
+              public int compare(SearchResult o1, SearchResult o2) {
+                return o1.getId().compareTo(o2.getId());
+              }
+			});
 
 			// closing fullTextEntityManager closes manager as well, recreate
 			manager = factory.createEntityManager();
@@ -558,7 +571,7 @@ public class ContentServiceJpa implements ContentService {
 
 		Queue<Map<Concept, TreePosition>> conceptQueue = new LinkedList<>();
 		Set<Map<Concept, TreePosition>> conceptSet = new HashSet<>();
-		int tpCounter = 0;
+		int conceptCt = 0;
 		int childCounter = 0;
 		
 		// get the concept and add it as first element of concept list
@@ -581,7 +594,7 @@ public class ContentServiceJpa implements ContentService {
 			}
 			rootTp.setChildrenCount(childCounter);
 			manager.persist(rootTp);
-			tpCounter++;
+			conceptCt++;
 			hm.put(rootConcept, rootTp);
 			conceptQueue.add(hm);
 		}
@@ -597,6 +610,7 @@ public class ContentServiceJpa implements ContentService {
 
 			// if concept is active
 			if (currentConcept.isActive()) {
+              conceptCt++;
 
 				// relationship set and iterator
 				Set<Relationship> inv_relationships =
@@ -643,15 +657,7 @@ public class ContentServiceJpa implements ContentService {
 										Logger.getLogger(this.getClass()).debug(
 								"  Create tree position - " + tp.getAncestorPath() + ", "
 										+ c_rel.getTerminologyId());
-						tpCounter++;
 						manager.persist(tp);
-						// regularly commit at intervals
-						if (tpCounter % commitCt == 0) {
-							Logger.getLogger(this.getClass()).info(
-									"  Committing changes - " + tpCounter);				
-							tx.commit();
-							tx.begin();
-						}
 
 						// if set does not contain the source concept, add it to set and
 						// queue
@@ -670,12 +676,34 @@ public class ContentServiceJpa implements ContentService {
 						}
 					}
 				} // after iterating over children
-			}
 
+				// regularly commit at intervals
+                if (conceptCt % commitCt == 0) {
+                  
+                    // memory debugging                         
+                    Logger.getLogger(this.getClass()).info(
+                            "  Committing changes - " + conceptCt);             
+                    tx.commit();
+                    manager.clear();
+                    tx.begin();
+
+                    Runtime runtime = Runtime.getRuntime();
+                    Logger.getLogger(this.getClass()).info("MEMORY USAGE:");
+                    Logger.getLogger(this.getClass()).info(" Total: " + runtime.totalMemory());
+                    Logger.getLogger(this.getClass()).info(" Free:  " + runtime.freeMemory());
+                    Logger.getLogger(this.getClass()).info(" Max:   " + runtime.maxMemory());
+
+                }
+			}
 		}
 		Logger.getLogger(this.getClass()).info("  Finish computing tree positions");
 		tx.commit();
 
+		Runtime runtime = Runtime.getRuntime();
+		Logger.getLogger(this.getClass()).info("MEMORY USAGE:");
+		Logger.getLogger(this.getClass()).info(" Total: " + runtime.totalMemory());
+		Logger.getLogger(this.getClass()).info(" Free:  " + runtime.freeMemory());
+		Logger.getLogger(this.getClass()).info(" Max:   " + runtime.maxMemory());
 	}
 
 	/*
@@ -706,11 +734,15 @@ public class ContentServiceJpa implements ContentService {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<TreePosition> getRootTreePositionsForTerminology(String terminology, String terminologyVersion) {
-		return manager.createQuery("select tp from TreePositionJpa tp where ancestorPath = '' and terminologyVersion = :terminologyVersion and terminology = :terminology")
+	public TreePositionList getRootTreePositionsForTerminology(String terminology, String terminologyVersion) {
+		List<TreePosition> treePositions = manager.createQuery("select tp from TreePositionJpa tp where ancestorPath = '' and terminologyVersion = :terminologyVersion and terminology = :terminology")
 				.setParameter("terminology", terminology)
 				.setParameter("terminologyVersion", terminologyVersion)
 				.getResultList();
+		TreePositionListJpa treePositionList = new TreePositionListJpa();
+		treePositionList.setTreePositions(treePositions);
+		treePositionList.setTotalCount(treePositions.size());
+		return treePositionList;
 	}
 
 	/* (non-Javadoc)
@@ -718,15 +750,18 @@ public class ContentServiceJpa implements ContentService {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<TreePosition> getTreePositionsForConcept(String terminologyId,
+	public TreePositionList getTreePositionsForConcept(String terminologyId,
 			String terminology, String terminologyVersion) {
 
-		return manager.createQuery("select tp from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId")
+	    List<TreePosition> treePositions =  manager.createQuery("select tp from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId")
 				.setParameter("terminology", terminology)
 				.setParameter("terminologyVersion", terminologyVersion)
 				.setParameter("terminologyId", terminologyId)
 				.getResultList();
-
+        TreePositionListJpa treePositionList = new TreePositionListJpa();
+        treePositionList.setTreePositions(treePositions);
+        treePositionList.setTotalCount(treePositions.size());
+        return treePositionList;
 	}
 
 	/* (non-Javadoc)
@@ -734,12 +769,16 @@ public class ContentServiceJpa implements ContentService {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<TreePosition> getTreePositionChildren(TreePosition treePosition) {
-		return manager.createQuery("select tp from TreePositionJpa tp where ancestorPath = :ancestorPath and terminology = :terminology and terminologyVersion = :terminologyVersion")
+	public TreePositionList getTreePositionChildren(TreePosition treePosition) {
+	  List<TreePosition> treePositions = manager.createQuery("select tp from TreePositionJpa tp where ancestorPath = :ancestorPath and terminology = :terminology and terminologyVersion = :terminologyVersion")
 				.setParameter("ancestorPath", (treePosition.getAncestorPath().length() == 0 ? "" : treePosition.getAncestorPath() + "~") + treePosition.getTerminologyId())
 				.setParameter("terminology", treePosition.getTerminology())
 				.setParameter("terminologyVersion", treePosition.getTerminologyVersion())
 				.getResultList();
+      TreePositionListJpa treePositionList = new TreePositionListJpa();
+      treePositionList.setTreePositions(treePositions);
+      treePositionList.setTotalCount(treePositions.size());
+      return treePositionList;
 	}
 
 
@@ -747,24 +786,22 @@ public class ContentServiceJpa implements ContentService {
 	 * @see org.ihtsdo.otf.mapping.services.ContentService#getLocalTrees(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public List<TreePosition> getLocalTrees(String terminologyId, String terminology,
+	public TreePositionList getLocalTrees(String terminologyId, String terminology,
 			String terminologyVersion) {
-
 		// get tree positions for concept (may be multiple)
-		List<TreePosition> localTrees = getTreePositionsForConcept(terminologyId, terminology, terminologyVersion);
+		TreePositionList localTrees = getTreePositionsForConcept(terminologyId, terminology, terminologyVersion);
 
 		// for each tree position
-		for (TreePosition treePosition : localTrees) {
+		for (TreePosition treePosition : localTrees.getTreePositions()) {
 
 			// if this tree position has children
 			if (treePosition.getChildrenCount() > 0) {
 
 				// retrieve the children
-				treePosition.setChildren(new ArrayList<>(getTreePositionChildren(treePosition)));
+				treePosition.setChildren(getTreePositionChildren(treePosition).getTreePositions());
 			}
 		}
-
-
+        localTrees.setTotalCount(localTrees.getTreePositions().size());
 		return localTrees;
 	}
 
@@ -791,7 +828,7 @@ public class ContentServiceJpa implements ContentService {
 			boolean ancestorFound = false;
 
 			// cycle over the tree positions for this ancestor
-			for (TreePosition tp : getTreePositionsForConcept(ancestors[i], treePosition.getTerminology(), treePosition.getTerminologyVersion())) {
+			for (TreePosition tp : getTreePositionsForConcept(ancestors[i], treePosition.getTerminology(), treePosition.getTerminologyVersion()).getTreePositions()) {
 
 				// check if this ancestor path matches the beginning of the original tree position's ancestor path
 				if (treePosition.getAncestorPath().startsWith(tp.getAncestorPath())) {
@@ -829,7 +866,7 @@ public class ContentServiceJpa implements ContentService {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<TreePosition> getTreePositionsForConceptQuery(
+	public TreePositionList getTreePositionsForConceptQuery(
 			String terminology, String terminologyVersion, String query) throws Exception {
 
 		// construct the query
@@ -891,8 +928,10 @@ public class ContentServiceJpa implements ContentService {
 			}
 		}
 
-		return fullTreePositions;
-
+		TreePositionListJpa treePositionList = new TreePositionListJpa();
+		treePositionList.setTreePositions(fullTreePositions);
+		treePositionList.setTotalCount(fullTreePositions.size());
+		return treePositionList;
 	}
 
 

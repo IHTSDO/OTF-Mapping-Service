@@ -12,13 +12,13 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.RelationshipListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
-import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipList;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -103,7 +103,7 @@ public class ContentServiceRest {
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public RelationshipList getInverseRelationshipsForConcept(
+	public RelationshipListJpa getInverseRelationshipsForConcept(
 		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
@@ -115,7 +115,7 @@ public class ContentServiceRest {
 			ContentService contentService = new ContentServiceJpa();
 			Concept c = contentService.getConcept(terminologyId, terminology, terminologyVersion);
 		
-			RelationshipList relationshipList = new RelationshipList();
+			RelationshipListJpa relationshipList = new RelationshipListJpa();
 			relationshipList.setRelationships(c.getInverseRelationships());
 					
 			contentService.close();
