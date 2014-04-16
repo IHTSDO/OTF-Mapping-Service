@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -692,7 +693,7 @@ public class ContentServiceJpa implements ContentService {
                     Logger.getLogger(this.getClass()).info(" Total: " + runtime.totalMemory());
                     Logger.getLogger(this.getClass()).info(" Free:  " + runtime.freeMemory());
                     Logger.getLogger(this.getClass()).info(" Max:   " + runtime.maxMemory());
-
+                    Logger.getLogger(this.getClass()).info("Concept queue size: " + conceptQueue.size() + " " + new Date());
                 }
 			}
 		}
