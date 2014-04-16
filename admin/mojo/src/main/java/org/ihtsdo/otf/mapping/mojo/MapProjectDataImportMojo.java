@@ -161,7 +161,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mappingService.addMapUser(mapUser);
 			}
 			
-			getLog().info("  " + Integer.toString(mappingService.getMapUsers().size()) + " users added.");
+			getLog().info("  " + Integer.toString(mappingService.getMapUsers().getTotalCount()) + " users added.");
 
 			
 			// Add map advices
@@ -177,7 +177,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mappingService.addMapAdvice(mapAdvice);
 			}
 			
-			getLog().info("  " + Integer.toString(mappingService.getMapAdvices().size()) + " advices added.");
+			getLog().info("  " + Integer.toString(mappingService.getMapAdvices().getTotalCount()) + " advices added.");
 
 			// Add map relations
 			getLog().info("Adding relations...");
@@ -193,7 +193,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mappingService.addMapRelation(mapRelation);
 			}
 			
-			getLog().info("  " + Integer.toString(mappingService.getMapRelations().size()) + " relations added.");
+			getLog().info("  " + Integer.toString(mappingService.getMapRelations().getTotalCount()) + " relations added.");
 
 			
 
@@ -209,7 +209,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mapPrinciple.setDetail(fields[3]);
 				mappingService.addMapPrinciple(mapPrinciple);
 			}
-			getLog().info("  " + Integer.toString(mappingService.getMapPrinciples().size()) + " principles added.");
+			getLog().info("  " + Integer.toString(mappingService.getMapPrinciples().getTotalCount()) + " principles added.");
 
 			// Add map age ranges
 			getLog().info("Adding project age ranges...");
@@ -297,7 +297,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				String mapAdvices = fields[15].replaceAll("\"", "");
 				if (!mapAdvices.equals("")) {
 					for (String advice : mapAdvices.split(",")) {
-						for (MapAdvice ml : mappingService.getMapAdvices()) {
+						for (MapAdvice ml : mappingService.getMapAdvices().getIterable()) {
 							if (ml.getName().equals(advice))
 								mapProject.addMapAdvice(ml);
 						}
@@ -307,7 +307,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				String mapRelations = fields[16].replaceAll("\"", "");
 				if (!mapRelations.equals("")) {
 					for (String terminologyId : mapRelations.split(",")) {
-						for (MapRelation ml : mappingService.getMapRelations()) {
+						for (MapRelation ml : mappingService.getMapRelations().getIterable()) {
 							if (ml.getTerminologyId().equals(terminologyId)) {
 								mapProject.addMapRelation(ml);
 							}
@@ -318,7 +318,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				String mapPrinciples = fields[17].replaceAll("\"", "");
 				if (!mapPrinciples.equals("")) {
 					for (String principle : mapPrinciples.split(",")) {
-						for (MapPrinciple ml : mappingService.getMapPrinciples()) {
+						for (MapPrinciple ml : mappingService.getMapPrinciples().getIterable()) {
 							if (ml.getPrincipleId().equals(principle)) {
 								mapProject.addMapPrinciple(ml);
 							}
@@ -328,7 +328,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
 				String mapLeads = fields[18].replaceAll("\"", "");
 				for (String lead : mapLeads.split(",")) {
-					for (MapUser ml : mappingService.getMapUsers()) {
+					for (MapUser ml : mappingService.getMapUsers().getIterable()) {
 						if (ml.getUserName().equals(lead))
 							mapProject.addMapLead(ml);
 					}
@@ -337,7 +337,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				String mapSpecialists = fields[19].replaceAll("\"", "");
 				for (String specialist : mapSpecialists.split(",")) {
 
-					for (MapUser ml : mappingService.getMapUsers()) {
+					for (MapUser ml : mappingService.getMapUsers().getIterable()) {
 						if (ml.getUserName().toLowerCase().equals(specialist))
 							mapProject.addMapSpecialist(ml);
 					}
@@ -357,7 +357,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				mappingService.addMapProject(mapProject);
 			}
 			
-			getLog().info("  " + Integer.toString(mappingService.getMapProjects().size()) + " projects added.");
+			getLog().info("  " + Integer.toString(mappingService.getMapProjects().getTotalCount()) + " projects added.");
 			
 
 			// Concepts In Scope Assignment

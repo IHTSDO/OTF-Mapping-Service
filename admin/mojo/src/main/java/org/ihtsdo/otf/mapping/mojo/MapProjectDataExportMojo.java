@@ -4,11 +4,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.util.Comparator;
 import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.jpa.MapUserList;
+import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
@@ -174,21 +175,27 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			
 			// export to mapspecialists.txt
 			MappingService mappingService = new MappingServiceJpa();
-			MapUserList mapUsers = new MapUserList();
-			mapUsers.setMapUsers(mappingService.getMapUsers());
-			mapUsers.sortMapUsers();
+			MapUserListJpa mapUsers = new MapUserListJpa();
+			mapUsers.setMapUsers(mappingService.getMapUsers().getMapUsers());
+			// Sort by name
+			mapUsers.sortBy(new Comparator<MapUser> () {
+			  @Override
+			  public int compare(MapUser o1, MapUser o2) {
+			    return o1.getName().compareTo(o2.getName());
+              }			  
+			});
 			for (MapUser ms : mapUsers.getMapUsers()) {
 				usersWriter.write(ms.getName() + "\t" + ms.getUserName() + "\t"
 						+ ms.getEmail() + "\n");
 			}
 
 			// export to mapadvices.txt
-			for (MapAdvice ma : mappingService.getMapAdvices()) {
+			for (MapAdvice ma : mappingService.getMapAdvices().getMapAdvices()) {
 				advicesWriter.write(ma.getName() + "\t" + ma.getDetail() + "\t" + ma.isAllowableForNullTarget() + "\t" + ma.isComputed() + "\n");
 			}
 			
 			// export to maprelations.txt
-			for (MapRelation ma : mappingService.getMapRelations()) {
+			for (MapRelation ma : mappingService.getMapRelations().getMapRelations()) {
 				relationsWriter.write(
 						ma.getTerminologyId() + "\t" + 
 						ma.getAbbreviation() + "\t" +
@@ -198,7 +205,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			}
 
 			// export to mapprinciples.txt
-			for (MapPrinciple ma : mappingService.getMapPrinciples()) {
+			for (MapPrinciple ma : mappingService.getMapPrinciples().getMapPrinciples()) {
 				String detail = ma.getDetail();
 				detail = detail.replace("\n", "<br>").replace("\r", "<br>");
 				principlesWriter.write(ma.getName() + "|" + ma.getPrincipleId() + "|"
@@ -206,7 +213,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 			}
 			
 			// export to mapprojects.txt
-			for (MapProject mpr : mappingService.getMapProjects()) {
+			for (MapProject mpr : mappingService.getMapProjects().getMapProjects()) {
 				StringBuffer mapAdvices = new StringBuffer();
 				for (MapAdvice ma : mpr.getMapAdvices()) {
 					mapAdvices.append(ma.getName()).append(",");
@@ -273,13 +280,13 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 					}
 			}
 			
-			for (MapProject mpr : mappingService.getMapProjects()) {
+			for (MapProject mpr : mappingService.getMapProjects().getMapProjects()) {
 				for (String concept : mpr.getScopeConcepts()) {
 					scopeIncludesWriter.write(mpr.getRefSetId() + "\t" + concept + "\n");
 				}
 			}
 			
-			for (MapProject mpr : mappingService.getMapProjects()) {
+			for (MapProject mpr : mappingService.getMapProjects().getMapProjects()) {
 				for (String concept : mpr.getScopeExcludedConcepts()) {
 					scopeExcludesWriter.write(mpr.getRefSetId() + "\t" + concept + "\n");
 				}

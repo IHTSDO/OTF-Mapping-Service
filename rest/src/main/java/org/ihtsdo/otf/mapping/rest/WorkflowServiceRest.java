@@ -8,7 +8,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -90,7 +89,7 @@ public class WorkflowServiceRest {
 	 * Finds available work for the specified map project and user.
 	 *
 	 * @param mapProjectId the map project id
-	 * @param user the user id
+	 * @param userName the username
 	 * @param pfsParameter the paging parameter
 	 * @return the search result list
 	 */
@@ -132,7 +131,7 @@ public class WorkflowServiceRest {
 			
 			// initialize results list and set total count
 			SearchResultList results = new SearchResultListJpa();
-			results.setTotalCount(new Long(trackingRecords.size()));
+			results.setTotalCount(trackingRecords.size());
 
 			// set the start and end points (paging)
 			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
@@ -164,7 +163,7 @@ public class WorkflowServiceRest {
 	 * Finds assigned work for the specified map project and user.
 	 *
 	 * @param mapProjectId the map project id
-	 * @param user the user id
+	 * @param userName the user name
 	 * @param pfsParameter the paging parameter
 	 * @return the search result list
 	 */
@@ -206,7 +205,7 @@ public class WorkflowServiceRest {
 			
 			// initialize results list and set total count
 			SearchResultList results = new SearchResultListJpa();
-			results.setTotalCount(new Long(mapRecords.size()));
+			results.setTotalCount(mapRecords.size());
 			
 //			System.out.println(mapRecords.size() + " assigned records");
 //
@@ -239,7 +238,7 @@ public class WorkflowServiceRest {
 	 * Finds available conflicts for the specified map project and user.
 	 *
 	 * @param mapProjectId the map project id
-	 * @param user the user id
+	 * @param userName the user name
 	 * @param pfsParameter the paging parameter
 	 * @return the search result list
 	 */
@@ -276,7 +275,7 @@ public class WorkflowServiceRest {
 			
 			// initialize results list and set total count
 			SearchResultList results = new SearchResultListJpa();
-			results.setTotalCount(new Long(trackingRecords.size()));
+			results.setTotalCount(trackingRecords.size());
 
 			/*// set the start and end points (paging)
 			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
@@ -343,7 +342,7 @@ public class WorkflowServiceRest {
 			
 			// initialize results list and set total count
 			SearchResultList results = new SearchResultListJpa();
-			results.setTotalCount(new Long(mapRecords.size()));
+			results.setTotalCount(mapRecords.size());
 
 			/*// set the start and end points (paging)
 			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
@@ -411,14 +410,14 @@ public class WorkflowServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
-	/*
-	 * Assign user to to work (concept mapping or conflict resolution).
+	
+	/**
+	 * Assigns work.
 	 *
 	 * @param mapProjectId the map project id
 	 * @param terminologyId the terminology id
 	 * @param userName the user name
-	 * @param mapRecord the map record (can be null)
-	 * @return the map record
+	 * @return the response
 	 */
 	@POST
 	@Path("/assign/projectId/{id}/concept/{terminologyId}/user/{userName}")
@@ -546,13 +545,10 @@ public class WorkflowServiceRest {
 	}
 
 	/**
-	 * Finish with a concept mapping or conflict resolution.
+	 * Finishes work.
 	 *
-	 * @param mapProjectId the map project id
-	 * @param terminologyId the terminology id
-	 * @param userName the user name
 	 * @param mapRecord the map record
-	 * @return the Response
+	 * @return the response
 	 */
 	@POST
 	@Path("/finish")

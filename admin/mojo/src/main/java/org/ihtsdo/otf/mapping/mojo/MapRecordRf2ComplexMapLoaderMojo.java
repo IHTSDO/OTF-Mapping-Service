@@ -185,7 +185,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 			// Set up map of refSetIds that we may encounter
 			MappingService mappingService = new MappingServiceJpa();
 			Map<String, MapProject> mapProjectMap = new HashMap<String, MapProject>();
-			for (MapProject project : mappingService.getMapProjects()) {
+			for (MapProject project : mappingService.getMapProjects().getIterable()) {
 				mapProjectMap.put(project.getRefSetId(), project);
 			}
 
