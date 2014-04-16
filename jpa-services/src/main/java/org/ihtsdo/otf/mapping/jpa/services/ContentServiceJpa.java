@@ -378,7 +378,7 @@ public class ContentServiceJpa implements ContentService {
 
 					// if relationship is active, typeId equals the provided typeId, and
 					// the source concept is active
-					if (rel.isActive() && rel.getTypeId().equals(typeId)
+					if (rel.isActive() && rel.getTypeId().equals(new Long(typeId))
 							&& rel.getSourceConcept().isActive()) {
 
 						// get source concept from inverse relationship (i.e. child of
