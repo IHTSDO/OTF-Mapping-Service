@@ -82,6 +82,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
 			WorkflowTrackingRecord ma = manager.find(WorkflowTrackingRecordJpa.class, workflowTrackingRecordId);
+			
 			if (manager.contains(ma)) {
 				manager.remove(ma);
 			} else {

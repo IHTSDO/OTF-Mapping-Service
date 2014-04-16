@@ -950,7 +950,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 						
 						Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH - No conflicts detected, ready for publication");
 						
-						
 						// create a new record with default user and mark it with READY_FOR_PUBLICATION
 						MapRecord newRecord = new MapRecordJpa(mapRecord);
 						newRecord.setId(null);
