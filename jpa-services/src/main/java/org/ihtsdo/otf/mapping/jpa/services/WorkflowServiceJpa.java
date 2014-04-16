@@ -141,7 +141,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			return (WorkflowTrackingRecord) query.getSingleResult();
 			
 		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).warn(
+			Logger.getLogger(this.getClass()).debug(
 					"WorkflowService.getWorkflowTrackingRecord(): Concept query for terminologyId = "
 							+ concept.getTerminologyId() + ", mapProjectId = " + mapProject.getId().toString() + " returned no results.");
 			return null;
