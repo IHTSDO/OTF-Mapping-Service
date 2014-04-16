@@ -688,11 +688,15 @@ public class ContentServiceJpa implements ContentService {
                     tx.commit();
                     manager.clear();
                     tx.begin();
-                    
+
+                    Runtime runtime = Runtime.getRuntime();
+                    Logger.getLogger(this.getClass()).info("MEMORY USAGE:");
+                    Logger.getLogger(this.getClass()).info(" Total: " + runtime.totalMemory());
+                    Logger.getLogger(this.getClass()).info(" Free:  " + runtime.freeMemory());
+                    Logger.getLogger(this.getClass()).info(" Max:   " + runtime.maxMemory());
+
                 }
-
 			}
-
 		}
 		Logger.getLogger(this.getClass()).info("  Finish computing tree positions");
 		tx.commit();
