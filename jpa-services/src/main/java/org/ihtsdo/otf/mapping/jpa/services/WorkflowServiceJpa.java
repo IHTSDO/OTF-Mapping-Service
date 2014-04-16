@@ -395,7 +395,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			addWorkflowTrackingRecord(trackingRecord);
 
 			// retrieve map records for this project and concept
-			List<MapRecord> mapRecords = mappingService.getMapRecordsForConcept(concept.getTerminologyId());
+			List<MapRecord> mapRecords = mappingService.getMapRecordsForConcept(concept.getTerminologyId()).getMapRecords();
 
 			// cycle over records retrieved
 			for (MapRecord mapRecord : mapRecords) {
