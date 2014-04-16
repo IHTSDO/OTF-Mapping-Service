@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
@@ -29,10 +30,8 @@ import org.ihtsdo.otf.mapping.model.MapUser;
  * Default implementatino of {@link WorkflowTrackingRecordJpa}.
  */
 @Entity
-@Table(name = "workflow_tracking_records")
-@Indexed
-// TODO:  Add unique constraints based on the three terminology fields
-// TODO:  Add workflow id (also make unique constraint)
+@Table(name = "workflow_tracking_records", uniqueConstraints = @UniqueConstraint(columnNames = {
+		"terminologyId", "terminology", "terminologyVersion"}))
 public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 
 	/** The id. */
@@ -70,7 +69,6 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	
 	/**  The map records. */
 	@OneToMany(targetEntity = MapRecordJpa.class)
-	@IndexedEmbedded(targetElement = MapRecordJpa.class)
 	private Set<MapRecord> mapRecords = new HashSet<>();
 	
 	/**
@@ -104,7 +102,6 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	 * {@inheritDoc}
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTerminologyVersion() {
 		return terminologyVersion;
 	}
@@ -137,7 +134,6 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	 * {@inheritDoc}
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTerminologyId() {
 		return terminologyId;
 	}
