@@ -1052,7 +1052,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     } catch (NoResultException e) {
       // Log and return null if there are no releases
-      getLog().info(
+      getLog().debug(
           "Concept query for terminologyId = " + terminologyId
               + ", terminology = " + terminology + ", terminologyVersion = "
               + terminologyVersion + " returned no results!");

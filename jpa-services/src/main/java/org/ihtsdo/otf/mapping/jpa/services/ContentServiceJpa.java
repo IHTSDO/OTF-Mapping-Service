@@ -195,7 +195,7 @@ public class ContentServiceJpa implements ContentService {
 			return conceptList;
 		} catch (NoResultException e) {
 			// log result and return null
-			Logger.getLogger(this.getClass()).warn(
+			Logger.getLogger(this.getClass()).debug(
 					"ContentService.getConceptTreeRoots(): Concept query for terminology = "
 							+ terminology + ", terminologyVersion = " + terminologyVersion
 							+ " returned no results!");
@@ -557,8 +557,6 @@ public class ContentServiceJpa implements ContentService {
 			String terminologyVersion, String typeId, String rootId) throws Exception {
 		Logger.getLogger(this.getClass()).info(
 				"Starting computeTreePositions - " + rootId + ", " + terminology);
-
-		System.gc();
 
 		// fail in createTreePositions if we�re not using
 		// getTransactionPerOperation (this allows us to control
