@@ -21,7 +21,7 @@ public interface WorkflowService {
 	 *
 	 * @param workflowTrackingRecord the workflow tracking record
 	 * @return the workflow tracking record
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	
 	public WorkflowTrackingRecord addWorkflowTrackingRecord(WorkflowTrackingRecord workflowTrackingRecord) throws Exception;
@@ -30,7 +30,7 @@ public interface WorkflowService {
 	 * Update workflow tracking record.
 	 *
 	 * @param workflowTrackingRecord the workflow tracking record
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public void updateWorkflowTrackingRecord(WorkflowTrackingRecord workflowTrackingRecord) throws Exception;
 	
@@ -38,7 +38,7 @@ public interface WorkflowService {
 	 * Removes the workflow tracking record.
 	 *
 	 * @param workflowTrackingRecordId the workflow tracking record id
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public void removeWorkflowTrackingRecord(Long workflowTrackingRecordId) throws Exception;
 	
@@ -62,7 +62,6 @@ public interface WorkflowService {
 	 *
 	 * @param mapProject the map project
 	 * @param concept the concept
-	 * @param mapUser the map user
 	 * @return the workflow tracking record
 	 */
 	public WorkflowTrackingRecord getWorkflowTrackingRecord(MapProject mapProject, Concept concept);
@@ -114,8 +113,14 @@ public interface WorkflowService {
 	public List<WorkflowTrackingRecord> getAvailableConsensusWork(MapProject mapProject);
 	
 	/**
-	 * Called by REST services, performs a specific action given a project, concept, and user
-	 * @throws Exception 
+	 * Called by REST services, performs a specific action given a project, concept, and user.
+	 *
+	 * @param mapProject the map project
+	 * @param concept the concept
+	 * @param mapUser the map user
+	 * @param mapRecord the map record
+	 * @param workflowAction the workflow action
+	 * @throws Exception the exception
 	 */
 	public void processWorkflowAction(MapProject mapProject, Concept concept, MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction) throws Exception;
 	
@@ -123,7 +128,7 @@ public interface WorkflowService {
 	 * Compute workflow.
 	 *
 	 * @param mapProject the map project
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public void computeWorkflow(MapProject mapProject) throws Exception;
 	
@@ -131,7 +136,7 @@ public interface WorkflowService {
 	 * Clear workflow for map project.
 	 *
 	 * @param mapProject the map project
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public void clearWorkflowForMapProject(MapProject mapProject) throws Exception;
 	
@@ -174,6 +179,17 @@ public interface WorkflowService {
 	 * @throws Exception the exception
 	 */
 	public void commit() throws Exception;
+
+	
+	/**
+	 * Synchronize workflow tracking record given the new version and the old version
+	 *
+	 * @param newRecord the new record, modified by processWorkflowAction
+	 * @param oldRecord the old record, from the database
+	 * @throws Exception 
+	 */
+	public void synchronizeWorkflowTrackingRecord(WorkflowTrackingRecord newTrackingRecord,
+			WorkflowTrackingRecord oldTrackingRecord) throws Exception;
 
 
 	

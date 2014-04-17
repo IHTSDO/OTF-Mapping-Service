@@ -94,11 +94,11 @@ public class MapProjectJpa implements MapProject {
 	private String destinationTerminologyVersion;
 	
 	/**  The RF2 refset pattern for this map project. */
-	@Column(nullable = true)
+	@Column(nullable = false)
 	private String mapRefsetPattern;
 	
 	/**  The relation behavior. */
-	@Column(nullable = true)
+	@Column(nullable = false)
 	private String mapRelationStyle;
 	
 	/**  The name of the mapping principle document. */
@@ -117,11 +117,11 @@ public class MapProjectJpa implements MapProject {
 	private ProjectSpecificAlgorithmHandler algorithmHandler;
 	
 	/** The preset age ranges */
-	@ManyToMany(targetEntity=MapAgeRangeJpa.class, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapAgeRangeJpa.class, fetch=FetchType.LAZY)
 	private Set<MapAgeRange> presetAgeRanges = new HashSet<>();
 
 	/** The map leads. */
-	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.LAZY)
 	@JoinTable(name="map_projects_map_leads",
 	   joinColumns=@JoinColumn(name="map_projects_id"),
 	   inverseJoinColumns=@JoinColumn(name="map_users_id"))
@@ -129,7 +129,7 @@ public class MapProjectJpa implements MapProject {
 	private Set<MapUser> mapLeads = new HashSet<>();
 	
 	/** The map specialists. */
-	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.LAZY)
 	@JoinTable(name="map_projects_map_specialists",
 			   joinColumns=@JoinColumn(name="map_projects_id"),
 			   inverseJoinColumns=@JoinColumn(name="map_users_id"))
@@ -137,17 +137,17 @@ public class MapProjectJpa implements MapProject {
 	private Set<MapUser> mapSpecialists = new HashSet<>();
 	
 	/** The allowable map principles for this MapProject. */
-	@ManyToMany(targetEntity=MapPrincipleJpa.class, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapPrincipleJpa.class, fetch=FetchType.LAZY)
 	@IndexedEmbedded(targetElement=MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
 	/** The allowable map advices for this MapProject. */
-	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapAdviceJpa.class, fetch=FetchType.LAZY)
 	@IndexedEmbedded(targetElement=MapAdviceJpa.class)
 	private Set<MapAdvice> mapAdvices = new HashSet<>();
 	
 	/** The allowable map relations for this MapProject. */
-	@ManyToMany(targetEntity=MapRelationJpa.class, fetch=FetchType.EAGER)
+	@ManyToMany(targetEntity=MapRelationJpa.class, fetch=FetchType.LAZY)
 	@IndexedEmbedded(targetElement=MapRelationJpa.class)
 	private Set<MapRelation> mapRelations = new HashSet<>();
 	
