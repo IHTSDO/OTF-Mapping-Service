@@ -236,6 +236,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	 */
 	@Override
 	public void addMapRecord(MapRecord mapRecord) {
+		if (this.mapRecords == null) this.mapRecords = new HashSet<MapRecord>();
 		this.mapRecords.add(mapRecord);
 	}
 

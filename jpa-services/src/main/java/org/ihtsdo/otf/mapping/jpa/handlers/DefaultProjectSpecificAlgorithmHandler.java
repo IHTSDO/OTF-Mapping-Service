@@ -208,8 +208,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	@SuppressWarnings("static-method")
   public ValidationResult checkMapRecordForDuplicateEntries(MapRecord mapRecord) {
 
-		// TODO Change logger to correct class
-		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for duplicate entries within map groups...");
+		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("  Checking map record for duplicate entries within map groups...");
 
 		ValidationResult validationResult = new ValidationResultJpa();
 		List<MapEntry> entries = mapRecord.getMapEntries();
@@ -234,7 +233,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		}
 
 		for (String error : validationResult.getErrors()) {
-			Logger.getLogger(MappingServiceJpa.class).info("    " + error);
+			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("    " + error);
 		}
 
 		return validationResult;
@@ -249,7 +248,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 */
 	public ValidationResult checkMapRecordTrueRules(MapRecord mapRecord, Map<Integer, List<MapEntry>> entryGroups) {
 
-		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for proper use of TRUE rules...");
+		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("  Checking map record for proper use of TRUE rules...");
 
 		ValidationResult validationResult = new ValidationResultJpa();
 
@@ -261,7 +260,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
 			for (MapEntry mapEntry : entryGroups.get(key)) {
 
-				Logger.getLogger(MappingServiceJpa.class).info("    Checking entry " + Integer.toString(mapEntry.getMapPriority()));
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("    Checking entry " + Integer.toString(mapEntry.getMapPriority()));
 
 				// add message if TRUE rule found at non-terminating entry
 				if (mapEntry.getMapPriority() != entryGroups.get(key).size() && mapEntry.getRule().equals("TRUE")) {
@@ -278,7 +277,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			}
 		}
 		for (String error : validationResult.getErrors()) {
-			Logger.getLogger(MappingServiceJpa.class).info("    " + error);
+			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("    " + error);
 		}
 
 		return validationResult;
@@ -294,7 +293,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	@SuppressWarnings("static-method")
   public ValidationResult checkMapRecordNcNodes(MapRecord mapRecord, Map<Integer, List<MapEntry>> entryGroups) {
 
-		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for high-level groups with only NC target codes...");
+		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("  Checking map record for high-level groups with only NC target codes...");
 
 		ValidationResult validationResult = new ValidationResultJpa();
 
@@ -320,7 +319,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
 
 		for (String error : validationResult.getErrors()) {
-			Logger.getLogger(MappingServiceJpa.class).info("    " + error);
+			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("    " + error);
 		}
 
 		return validationResult;
@@ -335,7 +334,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 */
 	public ValidationResult checkMapRecordAdvices(MapRecord mapRecord, Map<Integer, List<MapEntry>> entryGroups) {
 
-		Logger.getLogger(MappingServiceJpa.class).info("  Checking map record for valid map advices...");
+		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("  Checking map record for valid map advices...");
 
 		ValidationResult validationResult = new ValidationResultJpa();
 
@@ -353,7 +352,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		}
 
 		for (String error : validationResult.getErrors()) {
-			Logger.getLogger(MappingServiceJpa.class).info("    " + error);
+			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("    " + error);
 		}
 
 		return validationResult;
@@ -637,6 +636,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 * - Create a new record with origin ids set to the existing record (and its antecedents)
 	 * - Add the record to the tracking record
 	 * - Return the tracking record.
+	 * 
+	 * Expects the tracking record to be a detached Jpa entity.  Does not modify objects via services.
 	 *
 	 * @param trackingRecord the tracking record
 	 * @param mapRecord the map record
@@ -668,11 +669,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			// set the owner and last modified by (timestamp automatically set in map record constructor)
 			newRecord.setOwner(mapUser);
 			newRecord.setLastModifiedBy(mapUser);
-			
-			// add the new map record using mapping service
-			MappingService mappingService = new MappingServiceJpa();
-			mapRecord = mappingService.addMapRecord(newRecord);
-			mappingService.close();
 			
 			// add newly persisted record to tracking record		
 			trackingRecord.addMapRecord(newRecord);
@@ -772,11 +768,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 				.getCount()));
 		contentService.close();
 		
-		// add the map record via mapping service
-		MappingService mappingService = new MappingServiceJpa();
-		mapRecord = mappingService.addMapRecord(mapRecord);
-		mappingService.close();
-		
 		// add this record to the tracking record
 		trackingRecord.addMapRecord(mapRecord);
 		
@@ -794,9 +785,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 */
 	@Override
 	public WorkflowTrackingRecord unassign(WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception {
-
-		WorkflowService workflowService = new WorkflowServiceJpa();
-		MappingService mappingService = new MappingServiceJpa();
 		
 		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("Unassign called");
 		
@@ -818,12 +806,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			if (mapRecord == null) throw new Exception("unassign called for concept that does not have specified user assigned");
 
 			
-			// remove this record from the tracking record and update
-			// necessary to remove map record reference in tracking record database row (i.e. parent row/foreign-key constraint)
+			// remove this record from the tracking record
 			trackingRecord.removeMapRecord(mapRecord);
-			workflowService.updateWorkflowTrackingRecord(trackingRecord);
 				
-			// determine action based on record's workflow status
+			// determine action based on record's workflow status after removal of the unassigned record
 			switch (mapRecord.getWorkflowStatus()) {
 			
 			// standard removal cases, no special action required
@@ -845,8 +831,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 					
 					// if another specialist's record, revert to EDITING_DONE
 					if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
-						mr.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
-										
+						mr.setWorkflowStatus(WorkflowStatus.EDITING_DONE);					
 					}
 				}
 
@@ -868,10 +853,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			default:
 				throw new Exception("unassign found a map record with invalid workflow status");
 			}
-				
-			// after performing special actions, remove the record from the database
-			mappingService.removeMapRecord(mapRecord.getId());
-
 			
 			break;
 
@@ -891,7 +872,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			for (MapRecord mr : trackingRecord.getMapRecords()) {
 				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW)) {
 					mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-					mappingService.updateMapRecord(mr);
 				}
 			}
 			
@@ -907,12 +887,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		default:
 			break;
 		}
-		
-		// close services
-		mappingService.close();
-		workflowService.close();
 	
-		// default return
+		// return the tracking record
 		return trackingRecord;
 		
 		
@@ -920,25 +896,21 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	
 	/**
 	 * Updates workflow information when a specialist or lead clicks "Finished"
+	 * Expects the tracking record to be detached from persistence environment
+	 * 
 	 * @throws Exception 
 	 */
 	@Override
 	public WorkflowTrackingRecord finishEditing(WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception {
+	
 		
-		// open the mapping service
-		MappingService mappingService = new MappingServiceJpa();
-		
-		mappingService.setTransactionPerOperation(false);
-		mappingService.beginTransaction();
-		
-		// TODO If necessary, set the transaction per operation to false
 		
 		// find the record assigned to this user
 		MapRecord mapRecord = null;
 		for (MapRecord mr : trackingRecord.getMapRecords()) {
 			// find using mapping service instead of workflow service?
 			if (mr.getOwner().equals(mapUser)) {
-				mapRecord = mappingService.getMapRecord(mr.getId());
+				mapRecord = mr;
 			}
 		}
 		if (mapRecord == null) throw new Exception("finishEditing:  Record for user could not be found");
@@ -963,7 +935,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 					
 					Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH - Two records found");
 					
-					
 					ValidationResult validationResult = compareMapRecords(mapRecords.get(0), mapRecords.get(1));
 			
 					// if map records validation is successful
@@ -985,21 +956,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 						originIds.addAll(mapRecords.get(0).getOriginIds());
 						originIds.addAll(mapRecords.get(1).getOriginIds());
 						newRecord.setOriginIds(originIds);
+
+						// remove the previous records and add the new record
+						trackingRecord.setMapRecords(null);
+						trackingRecord.addMapRecord(newRecord);
 						
-						// add the new record
-						mappingService.addMapRecord(newRecord);
-						
-						// delete the workflow tracking record
-						WorkflowService workflowService = new WorkflowServiceJpa();
-						workflowService.removeWorkflowTrackingRecord(trackingRecord.getId());
-						workflowService.close();
-						
-						// delete the existing records
-						mappingService.removeMapRecord(mapRecords.get(0).getId());
-						mappingService.removeMapRecord(mapRecords.get(1).getId());
-						
-						// set the workflow tracking record to null (no longer exists)
-						trackingRecord = null;
 					
 					} else {
 						
@@ -1008,15 +969,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 						// conflict detected, change workflow status of all records and update records
 						for (MapRecord mr : mapRecords) {
 							mr.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
-							mappingService.updateMapRecord(mr);
 						}
 					}
 				// otherwise, only one specialist has finished work, do nothing else
 				} else {
-					
 					Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH - Single record, updating");
-					
-					mappingService.updateMapRecord(mapRecord);
 				}
 				
 			// case 2:  A lead is finished with a conflict resolution	
@@ -1027,21 +984,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 				
 				// extract the map records and delete the workflow tracking record
 				Set<MapRecord> mapRecords = trackingRecord.getMapRecords();
-				WorkflowService workflowService = new WorkflowServiceJpa();
-				workflowService.removeWorkflowTrackingRecord(trackingRecord.getId());
-				workflowService.close();
 				
 				// cycle over the records
 				for (MapRecord mr : mapRecords) {
 					
 					// remove the CONFLICT_DETECTED records
 					if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
-						mappingService.removeMapRecord(mr.getId());
+						trackingRecord.removeMapRecord(mr);
 					
 					// set the CONFLICT_IN_PROGRESS record to READY_FOR_PUBLICATION and update
 					} else {
 						mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-						mappingService.updateMapRecord(mr);
 					}
 				}
 							
@@ -1067,10 +1020,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 				
 				// if the original PUBLISHED/READY_FOR_PUBLICATION record (i.e. now has REVIEW), remove
 				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW)) {
-					mappingService.removeMapRecord(mr.getId());
+					trackingRecord.removeMapRecord(mr);
 				} else {
 					mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-					mappingService.updateMapRecord(mr);
 				}
 			}
 			
@@ -1091,10 +1043,43 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		default:
 			throw new Exception("finishEditing: Unexpected workflow path");
 		}
-		
-		mappingService.commit();
-		mappingService.close();
+
 		return trackingRecord;
 		
+	}
+
+	@Override
+	public WorkflowTrackingRecord saveForLater(
+			WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception {
+	
+		// find the record assigned to this user
+		MapRecord mapRecord = null;
+		for (MapRecord mr : trackingRecord.getMapRecords()) {
+			// find using mapping service instead of workflow service?
+			if (mr.getOwner().equals(mapUser)) {
+				mapRecord = mr;
+			}
+		}
+		if (mapRecord == null) throw new Exception("finishEditing:  Record for user could not be found");
+				
+		
+		switch(trackingRecord.getWorkflowPath()) {
+		case CONSENSUS_PATH:
+			break;
+		case FIX_ERROR_PATH:
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)) mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+			break;
+		case LEGACY_PATH:
+			break;
+		case NON_LEGACY_PATH:
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)) mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+			break;
+		case QA_PATH:
+			break;
+		default:
+			break;
+		
+		}
+				return trackingRecord;
 	}
 }
