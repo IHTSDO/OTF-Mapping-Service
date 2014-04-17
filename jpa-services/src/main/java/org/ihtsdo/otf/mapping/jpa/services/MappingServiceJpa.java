@@ -935,7 +935,12 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public MapRelation computeMapRelation(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 
+		
+		
 		MapRecord mapRecord = getMapRecord(mapEntry.getMapRecord().getId());
+		
+		
+		
 		MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
 		ProjectSpecificAlgorithmHandler algorithmHandler = 
 				getProjectSpecificAlgorithmHandler(mapProject);

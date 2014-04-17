@@ -86,24 +86,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   	      }).error(function(error) {
   	    	  $scope.error = $scope.error + "Could not retrieve map record. ";
   	     
-  	      })/**.then(function() {
-  	      	    // set the workflow to editing in progress
-				console.debug("Setting the workflow to editing in progress.");
-				  $http({
-					  url: root_workflow + "set/inProgress/" + recordId,
-					  dataType: "json",
-					  method: "GET",
-					  headers: {
-						  "Content-Type": "application/json"
-					  }
-				  }).success(function(data) {
-					 $scope.recordError = "";
-				  }).error(function(data) {
-					 $scope.recordError = "Error setting workflow to editing in progress.";
-				  });
-			  
-		    	
-	          })*/.then(function() {
+  	      }).then(function() {
+  	      	    
 
   	    	  // obtain the record project
   	    	 $http({
@@ -128,6 +112,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   	     		        headers: { "Content-Type": "application/json"}	
   	 		      }).success(function(data) {
   	     		    	  $scope.concept = data;
+  	     		    	  $scope.conceptBrowserUrl = $scope.getBrowserUrl();
   	 		      }).error(function(error) {
   	     		    	  $scope.error = $scope.error + "Could not retrieve record concept. ";
   	 		      });
@@ -141,6 +126,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   		    	  initializeEntries();
   	          });
             });
+  		
   		
 
   		///////////////////////////////
@@ -736,7 +722,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			  this.length = 0; //clear original array
 			  this.push.apply(this, array); //push all elements except the one we want to delete
 		  };
+		 
 		  
+		  $scope.getBrowserUrl = function() {
+			  return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true";
+		  };
 
 
     });
