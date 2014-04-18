@@ -682,7 +682,7 @@ public class ContentServiceJpa implements ContentService {
                     Logger.getLogger(this.getClass()).info(" Total: " + runtime.totalMemory());
                     Logger.getLogger(this.getClass()).info(" Free:  " + runtime.freeMemory());
                     Logger.getLogger(this.getClass()).info(" Max:   " + runtime.maxMemory());
-                    Logger.getLogger(this.getClass()).info("Concept queue size: " + conceptAncPathQueue.size() + " " + new Date());
+                    Logger.getLogger(this.getClass()).info("Queue size: " + conceptAncPathQueue.size() + " " + new Date());
                 }
 			}
 		}
