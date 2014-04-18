@@ -3,8 +3,14 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -17,8 +23,16 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
  *
  * @author Patrick
  */
+/*@Entity
+@Table(name="map_user_preferences",  uniqueConstraints={
+		   @UniqueConstraint(columnNames={"mapUser", "id"})})
+@XmlRootElement(name="mapUserPreferences")*/
 public class MapUserPreferencesJpa implements MapUserPreferences {
 
+	@Id
+	@GeneratedValue
+	private Long id;
+	
 	/** The map user id. */
 	@OneToOne(targetEntity=MapUserJpa.class)
 	private MapUser mapUser;

@@ -286,7 +286,10 @@ public class WorkflowServiceJpa implements WorkflowService {
 	@Override
 	public void processWorkflowAction(MapProject mapProject, Concept concept, MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction) throws Exception {
 		
-		// instantiate the algorithm handler for this project
+		// set the transaction per operation
+		
+		// instantiate the algorithm handler for this project\
+		// TODO We don't want the explicit binding for the handler path
 		ProjectSpecificAlgorithmHandler algorithmHandler = 
 				(ProjectSpecificAlgorithmHandler) Class.forName("org.ihtsdo.otf.mapping.jpa.handlers." + mapProject.getProjectSpecificAlgorithmHandlerClass())
 				.newInstance();
@@ -429,8 +432,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 	 * @throws Exception the exception
 	 */
 	@Override
+	// TODO Yeah, do stuff
 	public void synchronizeWorkflowTrackingRecord(WorkflowTrackingRecord newTrackingRecord, WorkflowTrackingRecord oldTrackingRecord) throws Exception {
-			
+		
 		MappingService mappingService = new MappingServiceJpa();
 		
 		// force lazy collection instantiation of map records, then detach/evict tracking record and all its map records
