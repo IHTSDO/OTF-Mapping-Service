@@ -150,7 +150,7 @@ public class MapRecordJpa implements MapRecord {
 	public MapRecordJpa(MapRecord cMapRecord) {
 		this.id = cMapRecord.getId();
 		this.owner = cMapRecord.getOwner();
-		this.timestamp = (new Date()).getTime(); // overwrite last modified by
+		this.timestamp = (new Date()).getTime(); // set timestamp to current time
 		this.mapProjectId = cMapRecord.getMapProjectId();
 		this.conceptId = cMapRecord.getConceptId();
 		this.conceptName = cMapRecord.getConceptName();
@@ -163,6 +163,8 @@ public class MapRecordJpa implements MapRecord {
 		this.flagForEditorialReview = cMapRecord.isFlagForEditorialReview();
 		this.flagForConsensusReview = cMapRecord.isFlagForConsensusReview();
 		this.workflowStatus = cMapRecord.getWorkflowStatus();
+		this.lastModified = (new Date()).getTime(); // overwrite last modified by
+		this.lastModifiedBy = cMapRecord.getOwner();
 	}
 
 	/**
@@ -654,8 +656,8 @@ public class MapRecordJpa implements MapRecord {
 		return "MapRecordJpa [owner=" + owner + ", timestamp=" + timestamp
 				+ ", mapProjectId=" + mapProjectId + ", conceptId=" + conceptId
 				+ ", conceptName=" + conceptName + ", countDescendantConcepts="
-				+ countDescendantConcepts + ", mapEntries=" + mapEntries
-				+ ", mapNotes=" + mapNotes + ", mapPrinciples=" + mapPrinciples
+				+ countDescendantConcepts + ", mapEntries=" + mapEntries.size()
+				+ ", mapNotes=" + mapNotes.size() + ", mapPrinciples=" + mapPrinciples.size()
 				+ ", originIds=" + originIds + ", flagForMapLeadReview="
 				+ flagForMapLeadReview + ", flagForEditorialReview="
 				+ flagForEditorialReview + ", flagForConsensusReview="

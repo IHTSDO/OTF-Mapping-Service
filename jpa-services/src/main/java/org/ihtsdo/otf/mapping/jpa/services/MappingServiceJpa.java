@@ -935,7 +935,12 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public MapRelation computeMapRelation(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 
+		
+		
 		MapRecord mapRecord = getMapRecord(mapEntry.getMapRecord().getId());
+		
+		
+		
 		MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
 		ProjectSpecificAlgorithmHandler algorithmHandler = 
 				getProjectSpecificAlgorithmHandler(mapProject);
@@ -1361,9 +1366,10 @@ public class MappingServiceJpa implements MappingService {
 						pfsParameter == null ? new PfsParameterJpa() : pfsParameter);
 
 		// add published / ready for publication check
-		full_query +=
+		// TODO Need to make this trigger on pfsParameters?  Remover doesn't work with this check in.
+		/*full_query +=
 				" AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')";
-
+*/
 		System.out.println(full_query);
 
 		FullTextEntityManager fullTextEntityManager =

@@ -311,7 +311,7 @@ public class MapEntryJpa implements MapEntry {
 	 * @param mapRecordId the map record id
 	 */
 	public void setMapRecordId(Long mapRecordId) {
-		if (this.mapRecord != null) {
+		if (this.mapRecord == null) {
 			System.out.println("Setting map record id to " + mapRecordId.toString());
 			this.mapRecord = new MapRecordJpa();
 			this.mapRecord.setId(mapRecordId);

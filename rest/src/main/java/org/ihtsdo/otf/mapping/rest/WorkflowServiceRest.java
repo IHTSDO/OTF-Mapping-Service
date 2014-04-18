@@ -137,20 +137,21 @@ public class WorkflowServiceRest {
 			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
 					? pfsParameter.getStartIndex() : 0);
 			int endIndex = (pfsParameter != null && pfsParameter.getMaxResults() != -1 
-					? Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), trackingRecords.size()) - 1 : trackingRecords.size());
+					? Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), trackingRecords.size()) : trackingRecords.size());
 			
 			System.out.println("Available: Returning items from " + startIndex + " to " + endIndex);
 			
-			
-			// for each requested object, construct a search result
-			for (WorkflowTrackingRecord trackingRecord : trackingRecords.subList(startIndex, endIndex)) {
-				SearchResult result = new SearchResultJpa();
-				result.setTerminologyId(trackingRecord.getTerminologyId());
-				result.setValue(trackingRecord.getDefaultPreferredName());
-				results.addSearchResult(result);
-				System.out.println("     Available -> " + result.getTerminologyId());
+			if (trackingRecords.size() != 0) {
+				
+				// for each requested object, construct a search result
+				for (WorkflowTrackingRecord trackingRecord : trackingRecords.subList(startIndex, endIndex)) {
+					SearchResult result = new SearchResultJpa();
+					result.setTerminologyId(trackingRecord.getTerminologyId());
+					result.setValue(trackingRecord.getDefaultPreferredName());
+					results.addSearchResult(result);
+					System.out.println("     Available -> " + result.getTerminologyId());
+				}
 			}
-			
 			return results;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
@@ -526,6 +527,7 @@ public class WorkflowServiceRest {
 			MapUser mapUser = mappingService.getMapUser(userName);
 
 			for (String terminologyId : terminologyIds) {
+				Logger.getLogger(WorkflowServiceRest.class).info("   Assigning " + terminologyId);
 				Concept concept = contentService.getConcept(terminologyId, mapProject.getSourceTerminology(), 
 						mapProject.getSourceTerminologyVersion());
 
@@ -558,10 +560,16 @@ public class WorkflowServiceRest {
 			@ApiParam(value = "The map record", required = true) MapRecordJpa mapRecord) {
 		
 		try {
-			// get the map project and map user
+			
 			MappingService mappingService = new MappingServiceJpa();
+			
+			// get the map project and map user
 			MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
 			MapUser mapUser = mapRecord.getOwner();
+			
+			// save the map record
+			System.out.println(mapRecord.getMapEntries().size());
+			mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
 			
 			// get the concept
@@ -597,11 +605,25 @@ public class WorkflowServiceRest {
 		
 		try {
 			
-			// TODO Need to make this call agnostic (i.e. perhaps add another enum action)
+			// get the map project and map user
 			MappingService mappingService = new MappingServiceJpa();
-			mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+			MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
+			MapUser mapUser = mapRecord.getOwner();
+			
+			// save the map record
 			mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
+			
+			// get the concept
+			ContentService contentService = new ContentServiceJpa();
+			Concept concept = contentService.getConcept(mapRecord.getConceptId(), mapProject.getSourceTerminology(), 
+			mapProject.getSourceTerminologyVersion());
+			contentService.close();
+			
+			// TODO Need to make this call agnostic (i.e. perhaps add another enum action)
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord, WorkflowAction.SAVE_FOR_LATER);
+			workflowService.close();
 			
 			return null;
 		} catch (Exception e) {
