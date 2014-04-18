@@ -759,6 +759,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		
 		// open content service to get descendant count
 		ContentService contentService = new ContentServiceJpa();
+		// NOTE: for high level concepts in the tree, this can be somewhat time consuming
+		// e.g. several minutes.  If problematic, we could pass a "limit" parameter and simply
+		// stop searching once we find a certain number of cases.
 		mapRecord.setCountDescendantConcepts( new Long(
 				contentService.findDescendantsFromTreePostions(concept.getTerminologyId(), concept.getTerminology(), concept.getTerminologyVersion())
 				.getCount()));
