@@ -692,6 +692,34 @@ public class MappingServiceRest {
     }
 
   }
+  
+  /**
+   * Gets a map user preferences object for a specified user
+   * @param userName 
+   * @return result the newly created map user preferences object
+   */
+  @PUT
+  @Path("/userPreferences/{userName}")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @ApiOperation(value = "Gets a user preferences object", notes = "Gets a MapUserPreferences", response = MapUserPreferencesJpa.class)
+  public MapUserPreferences getMapUserPreferences(
+    @ApiParam(value = "The map user preferences object to add", required = true) String userName) {
+
+    try {
+      MappingService mappingService = new MappingServiceJpa();
+      MapUserPreferences result = mappingService.getMapUserPreferences(userName);
+      mappingService.close();
+      return result;
+    } catch (Exception e) {
+      throw new WebApplicationException(e);
+    }
+
+  }
 
   // ///////////////////////////////////////////////////
   // MapProject: Update (@POST) functions

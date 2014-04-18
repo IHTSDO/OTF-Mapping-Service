@@ -24,16 +24,21 @@
 		<div collapse="!(node0.terminologyId == currentConcept.terminologyId)">
 			
 			<div class="well well-sm">
-				<strong>Concept Details</strong><br>
-				<em>Terms</em><br>
-				<ul><li ng-repeat = "description in currentConcept.description">
-					{{description.active == true ? 'Active' : 'Inactive'}}, {{description.typeId}}, {{truncate(description.term)}}</li></ul>
-				<em>Relationships</em><br>
-				<ul><li ng-repeat = "relationship in currentConcept.relationship">
-					{{relationship.active == true ? 'Active' : 'Inactive'}}, {{relationship.typeId}}, {{truncate(relationship.destinationConceptId)}}, {{relationship.destinationConceptPreferredName}}
-				</li></ul>
+				<strong>Descriptions</strong><br>
+				<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
+					<em>{{descriptionGroup.name}}</em>
+					<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
+				
+				</div>
+				<strong>Relationships</strong><br>
+				<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
+					<em>{{relationshipGroup.name}}</em>
+					<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
+				
+				</div>
 			</div> 
 		</div>
+		
 		 
 		<!--  Children - level 1 -->		
 		<ul style="list-style-type: none; padding-left: 15px;" ng-show="node0.isOpen">
@@ -49,6 +54,24 @@
 				&nbsp
 				<strong></strong><a ng-show="node1.valid == true" ng-click="selectConcept(node1)">{{node1.terminologyId}}</a> 
 				<span ng-show="node1.valid == false">{{node1.terminologyId}}</span></strong>, {{truncate(node1.defaultPreferredName)}}
+				
+				<div collapse="!(node1.terminologyId == currentConcept.terminologyId)">
+			
+				<div class="well well-sm">
+					<strong>Descriptions</strong><br>
+					<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
+						<em>{{descriptionGroup.name}}</em>
+						<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
+					
+					</div>
+					<strong>Relationships</strong><br>
+					<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
+						<em>{{relationshipGroup.name}}</em>
+						<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
+					
+					</div>
+				</div> 
+			</div>
 				
 				<!--  Children - level 2 -->
 				<ul style="list-style-type: none; padding-left: 15px;" ng-show="node1.isOpen">

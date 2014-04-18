@@ -755,13 +755,21 @@ public interface MappingService {
 			MapRecord mapRecord2) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
 
 	/**
-	 * Given a map record, returns the origin map records giving rise to a conflict
+	 * Given a map record, returns the origin map records giving rise to a conflict.
 	 *
 	 * @param mapRecordId the map record id of the conflict resolution record
 	 * @return the records in conflict
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public MapRecordList getRecordsInConflict(Long mapRecordId) throws Exception;
+
+	/**
+	 * Gets the map user preferences.
+	 *
+	 * @param userName the user name
+	 * @return the map user preferences
+	 */
+	public MapUserPreferences getMapUserPreferences(String userName);
 
 	
 	

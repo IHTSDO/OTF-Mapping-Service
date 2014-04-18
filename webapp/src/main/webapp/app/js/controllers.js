@@ -357,6 +357,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 //	Navigation
 
+	// TODO:  Much of this is app initialization, should be moved into a .run or .config section
 
 	mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService', '$rootScope', '$location', '$http',
 	                                                  function ($scope, localStorageService, $rootScope, $location, $http) {
@@ -375,6 +376,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 		$scope.user = null;
 		$scope.users = null;
 		$scope.error = null;
+		$scope.preferences = null;
 
 		// retrieve projects for focus controls
 		$http({
@@ -471,12 +473,23 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 			if ($scope.user == null) {
 				alert("You must specify a user");
 			} else {
+				
+				// retrieve the user preferences
+				$http({
+					url: root_mapping + "userPreferences/" + $scope.user.userName,
+					dataType: "json",
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json"
+					}	
+				}).success(function(data) {
+					$scope.preferences = data;
+					localStorageService.add('preferences', data);
+				});
 
 				// add the user information to local storage
 				localStorageService.add('currentUser', $scope.user);
 				localStorageService.add('currentRole', $scope.role.name);
-
-
 
 				// broadcast the user information to rest of app
 				$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', newvalue: $scope.user});
@@ -2355,7 +2368,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 				// retrieve local variables on header load or refresh
 				scope.currentUser = 	localStorageService.get('currentUser'); 
-				scope.currentRole = 	localStorageService.get('currentRole');         
+				scope.currentRole = 	localStorageService.get('currentRole');
+				scope.preferences =     localStorageService.get('preferences');
 				scope.mapProjects = 	localStorageService.get('mapProjects');
 				scope.focusProject = 	localStorageService.get('focusProject');
 
