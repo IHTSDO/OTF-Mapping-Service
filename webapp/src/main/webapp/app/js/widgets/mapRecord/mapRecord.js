@@ -725,7 +725,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		 
 		  
 		  $scope.getBrowserUrl = function() {
-			  return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true";
+			  return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
 		  };
 
 

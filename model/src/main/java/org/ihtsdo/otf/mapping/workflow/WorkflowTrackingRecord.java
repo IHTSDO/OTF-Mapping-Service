@@ -170,6 +170,14 @@ public interface WorkflowTrackingRecord {
 	 */
 	public void setWorkflowPath(WorkflowPath workflowPath);
 
+	
+	/**
+	 * Gets the lowest workflow status of associated map records
+	 *
+	 * @return the lowest workflow status
+	 */
+	WorkflowStatus getLowestWorkflowStatus();
+
 
 	
 }
