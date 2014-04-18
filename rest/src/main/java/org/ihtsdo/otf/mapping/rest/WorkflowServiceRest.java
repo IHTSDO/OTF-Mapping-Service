@@ -560,10 +560,16 @@ public class WorkflowServiceRest {
 			@ApiParam(value = "The map record", required = true) MapRecordJpa mapRecord) {
 		
 		try {
-			// get the map project and map user
+			
 			MappingService mappingService = new MappingServiceJpa();
+			
+			// get the map project and map user
 			MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
 			MapUser mapUser = mapRecord.getOwner();
+			
+			// save the map record
+			System.out.println(mapRecord.getMapEntries().size());
+			mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
 			
 			// get the concept
@@ -603,6 +609,9 @@ public class WorkflowServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
 			MapUser mapUser = mapRecord.getOwner();
+			
+			// save the map record
+			mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
 			
 			// get the concept

@@ -17,8 +17,6 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -28,8 +26,6 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MappingService;
-import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
 
 public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAlgorithmHandler {
@@ -930,7 +926,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 				List<MapRecord> mapRecords = new ArrayList<>(trackingRecord.getMapRecords());
 				
 				// check if two specialists have completed work
-				if (trackingRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)
+				if (trackingRecord.getLowestWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)
 						&& mapRecords.size() == 2) {
 					
 					Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH - Two records found");
@@ -1080,6 +1076,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			break;
 		
 		}
-				return trackingRecord;
+		return trackingRecord;
 	}
 }
