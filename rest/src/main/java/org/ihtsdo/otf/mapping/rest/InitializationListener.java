@@ -41,14 +41,13 @@ public class InitializationListener implements AbstractResourceModelListener {
     Logger.getLogger(this.getClass()).info(
         "Computing list of conflict records.");
 
+    // Set up a timer task to run at 2AM every day
     TimerTask task = new ComputeCompareFinishedRecordsTask();
     timer = new Timer();
-
     Calendar today = Calendar.getInstance();
     today.set(Calendar.HOUR_OF_DAY, 2);
     today.set(Calendar.MINUTE, 0);
     today.set(Calendar.SECOND, 0);
-
     timer.scheduleAtFixedRate(task, today.getTime(), 24 * 60 * 60 * 1000);
   }
 
@@ -69,13 +68,8 @@ public class InitializationListener implements AbstractResourceModelListener {
       try {
         System.out.format("Time's up!%n");
         timer.cancel(); // Terminate the timer thread
-        MappingService mappingService = new MappingServiceJpa();
-        MapProjectList mapProjects = mappingService.getMapProjects();
-        for (MapProject project : mapProjects.getMapProjects()) {
-          // DISABLED because we don't actually want this called in prod
-          // mappingService.compareFinishedMapRecords(project);
-        }
-        mappingService.close();
+
+        // For now, the timer is not doing anything
         
       } catch (Exception e) {
         Logger.getLogger(this.getClass()).error(
