@@ -192,10 +192,11 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			
 			if (conceptListValid == true) {
 				console.debug("Claimed batch:");
-				console.debug(trackingRecords);
 				
 				var terminologyIds = [];
 				for (var i = 0; i < $scope.batchSize; i++) {
+					console.debug(trackingRecords[i]);
+					
 					terminologyIds.push(trackingRecords[i].terminologyId);
 				}
 				
@@ -214,6 +215,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					$scope.retrieveAvailableWork(1);
 				
 				});
+			} else {
+				console.debug("Unexpected error in assigning batch");
 			}
 		}).error(function(data) {
 			console.debug("Could not retrieve available work when assigning batch.");

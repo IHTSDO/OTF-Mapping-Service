@@ -99,12 +99,20 @@ public class MappingServiceRest {
     try {
       MappingService mappingService = new MappingServiceJpa();
 
-      // if (! mappingService.isFactoryOpen()) {
-      // System.out.println("REST: service manager not open"); }
-      // if (! mappingService.isManagerOpen()) {
-      // System.out.println("REST: service manager not open"); }
-
       MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService.getMapProjects();
+      
+      // force instantiation of lazy collections
+      for (MapProject mp : mapProjects.getMapProjects()) {
+    	  mp.getScopeConcepts().size();
+    	  mp.getScopeExcludedConcepts().size();
+    	  mp.getMapAdvices().size();
+    	  mp.getMapRelations().size();
+    	  mp.getMapLeads().size();
+    	  mp.getMapSpecialists().size();
+    	  mp.getMapPrinciples().size();
+    	  mp.getPresetAgeRanges().size();
+      }
+      
       mapProjects.sortBy(new Comparator<MapProject> () {
         @Override
         public int compare(MapProject o1, MapProject o2) {
@@ -237,6 +245,17 @@ public class MappingServiceRest {
       MapUser mapLead = mappingService.getMapUser(mapLeadId);
       MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService
           .getMapProjectsForMapUser(mapLead);
+      
+      for (MapProject mapProject : mapProjects.getMapProjects()) {
+    	  mapProject.getScopeConcepts().size();
+          mapProject.getScopeExcludedConcepts().size();
+          mapProject.getMapAdvices().size();
+    	  mapProject.getMapRelations().size();
+    	  mapProject.getMapLeads().size();
+    	  mapProject.getMapSpecialists().size();
+    	  mapProject.getMapPrinciples().size();
+    	  mapProject.getPresetAgeRanges().size();
+      }
       mapProjects.sortBy(new Comparator<MapProject> () {
         @Override
         public int compare(MapProject o1, MapProject o2) {
@@ -273,6 +292,12 @@ public class MappingServiceRest {
       MapProject mapProject = mappingService.getMapProject(mapProjectId);
       mapProject.getScopeConcepts().size();
       mapProject.getScopeExcludedConcepts().size();
+      mapProject.getMapAdvices().size();
+	  mapProject.getMapRelations().size();
+	  mapProject.getMapLeads().size();
+	  mapProject.getMapSpecialists().size();
+	  mapProject.getMapPrinciples().size();
+	  mapProject.getPresetAgeRanges().size();
       mappingService.close();
       return mapProject;
     } catch (Exception e) {
@@ -569,7 +594,17 @@ public class MappingServiceRest {
       MappingService mappingService = new MappingServiceJpa();
       MapProject mp = mappingService.addMapProject(mapProject);
       mappingService.close();
-
+      
+      // force lazy instantiation of collections
+      mp.getScopeConcepts().size();
+      mp.getScopeExcludedConcepts().size();
+      mp.getMapAdvices().size();
+	  mp.getMapRelations().size();
+	  mp.getMapLeads().size();
+	  mp.getMapSpecialists().size();
+	  mp.getMapPrinciples().size();
+	  mp.getPresetAgeRanges().size();
+      
       return mp;
     } catch (Exception e) {
       throw new WebApplicationException(e);
@@ -650,6 +685,34 @@ public class MappingServiceRest {
     try {
       MappingService mappingService = new MappingServiceJpa();
       MapUserPreferences result = mappingService.addMapUserPreferences(mapUserPreferences);
+      mappingService.close();
+      return result;
+    } catch (Exception e) {
+      throw new WebApplicationException(e);
+    }
+
+  }
+  
+  /**
+   * Gets a map user preferences object for a specified user
+   * @param userName 
+   * @return result the newly created map user preferences object
+   */
+  @PUT
+  @Path("/userPreferences/{userName}")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @ApiOperation(value = "Gets a user preferences object", notes = "Gets a MapUserPreferences", response = MapUserPreferencesJpa.class)
+  public MapUserPreferences getMapUserPreferences(
+    @ApiParam(value = "The map user preferences object to add", required = true) String userName) {
+
+    try {
+      MappingService mappingService = new MappingServiceJpa();
+      MapUserPreferences result = mappingService.getMapUserPreferences(userName);
       mappingService.close();
       return result;
     } catch (Exception e) {

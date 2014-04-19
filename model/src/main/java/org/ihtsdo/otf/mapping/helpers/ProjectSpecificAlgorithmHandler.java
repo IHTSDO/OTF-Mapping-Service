@@ -152,13 +152,24 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 			MapUser mapUser) throws Exception;
 
 	/**
-	 * Set a user's editing on a map record to finished, performing any necessary workflow actions
+	 * Set a user's editing on a map record to finished, performing any necessary workflow actions.
+	 *
+	 * @param trackingRecord the tracking record
+	 * @param mapUser the map user
+	 * @return the workflow tracking record
+	 * @throws Exception the exception
+	 */
+	public WorkflowTrackingRecord finishEditing(WorkflowTrackingRecord trackingRecord,
+			MapUser mapUser) throws Exception;
+
+	/**
+	 * Performs workflow actions necessary when a map user wishes to save a record for further editing
 	 *
 	 * @param trackingRecord the tracking record
 	 * @param mapUser the map user
 	 * @return the workflow tracking record
 	 * @throws Exception 
 	 */
-	public WorkflowTrackingRecord finishEditing(WorkflowTrackingRecord trackingRecord,
-			MapUser mapUser) throws Exception;
+	public WorkflowTrackingRecord saveForLater(
+			WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception;
 }

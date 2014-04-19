@@ -172,6 +172,16 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 		return workflowStatus;
 
 	}
+	
+	@Override
+	public WorkflowStatus getLowestWorkflowStatus() {
+		WorkflowStatus workflowStatus = null;
+		for (MapRecord mapRecord : getMapRecords()) {
+			if (workflowStatus == null) workflowStatus = mapRecord.getWorkflowStatus();
+			else if (workflowStatus.compareTo(mapRecord.getWorkflowStatus()) > 0) workflowStatus = mapRecord.getWorkflowStatus();
+		}
+		return workflowStatus;
+	}
 
 
 	/* (non-Javadoc)
@@ -194,6 +204,8 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	public WorkflowPath getWorkflowPath() {
 		return workflowPath;
 	}
+	
+	
 
 	@Override
 	public void setWorkflowPath(WorkflowPath workflowPath) {
@@ -236,6 +248,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	 */
 	@Override
 	public void addMapRecord(MapRecord mapRecord) {
+		if (this.mapRecords == null) this.mapRecords = new HashSet<MapRecord>();
 		this.mapRecords.add(mapRecord);
 	}
 
