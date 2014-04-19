@@ -1366,9 +1366,10 @@ public class MappingServiceJpa implements MappingService {
 						pfsParameter == null ? new PfsParameterJpa() : pfsParameter);
 
 		// add published / ready for publication check
-		full_query +=
+		// TODO Need to make this trigger on pfsParameters?  Remover doesn't work with this check in.
+		/*full_query +=
 				" AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')";
-
+*/
 		System.out.println(full_query);
 
 		FullTextEntityManager fullTextEntityManager =
@@ -2865,6 +2866,13 @@ public class MappingServiceJpa implements MappingService {
 	// MAP USER PREFERENCES FUNCTIONS
 	///////////////////////////////////////
 
+	@Override
+	public MapUserPreferences getMapUserPreferences(String userName) {
+		javax.persistence.Query query = manager.createQuery("select m from MapUserPreferencesJpa m where userName = :userName")
+				.setParameter("userName", userName);
+		MapUserPreferences m = (MapUserPreferences) query.getFirstResult()
+	}
+	
 	/**
 	 * Retrieve all map user preferences
 	 * 
@@ -3090,5 +3098,7 @@ public class MappingServiceJpa implements MappingService {
 		
 		return conflictRecords;
 	}
+
+	
 
 }

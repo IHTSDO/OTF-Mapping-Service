@@ -16,6 +16,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -58,6 +59,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#addWorkflowTrackingRecord(org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord)
+	 */
 	@Override
 	public WorkflowTrackingRecord addWorkflowTrackingRecord(
 			WorkflowTrackingRecord workflowTrackingRecord) throws Exception {
@@ -74,6 +78,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 		return workflowTrackingRecord;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#removeWorkflowTrackingRecord(java.lang.Long)
+	 */
 	@Override
 	public void removeWorkflowTrackingRecord(Long workflowTrackingRecordId) throws Exception {
 
@@ -100,6 +107,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#updateWorkflowTrackingRecord(org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord)
+	 */
 	@Override
 	public void updateWorkflowTrackingRecord(WorkflowTrackingRecord record) throws Exception {
 		if (getTransactionPerOperation()) {
@@ -113,6 +123,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getWorkflowTrackingRecords()
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<WorkflowTrackingRecord> getWorkflowTrackingRecords() {
@@ -121,6 +134,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 				.getResultList();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getWorkflowTrackingRecordsForMapProject(org.ihtsdo.otf.mapping.model.MapProject)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<WorkflowTrackingRecord> getWorkflowTrackingRecordsForMapProject(
@@ -130,6 +146,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 				.getResultList();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getWorkflowTrackingRecord(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.rf2.Concept)
+	 */
 	@Override
 	public WorkflowTrackingRecord getWorkflowTrackingRecord(
 			MapProject mapProject, Concept concept) {
@@ -149,6 +168,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getAvailableWork(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser)
+	 */
 	@Override
 	public List<WorkflowTrackingRecord> getAvailableWork(MapProject mapProject,
 			MapUser mapUser) {
@@ -168,6 +190,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 		return trackingRecords;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getAvailableConflicts(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser)
+	 */
 	@Override
 	public List<WorkflowTrackingRecord> getAvailableConflicts(MapProject mapProject,
 			MapUser mapUser) {
@@ -187,6 +212,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 		return availableConflicts;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getAssignedWork(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser)
+	 */
 	@Override
 	public List<MapRecord> getAssignedWork(MapProject mapProject,
 			MapUser mapUser) {
@@ -208,6 +236,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 		return mapRecordsAssigned;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getAssignedConflicts(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser)
+	 */
 	@Override
 	public List<MapRecord> getAssignedConflicts(MapProject mapProject,
 			MapUser mapUser) {
@@ -230,6 +261,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 		return conflictsAssigned;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getAvailableConsensusWork(org.ihtsdo.otf.mapping.model.MapProject)
+	 */
 	@Override
 	public List<WorkflowTrackingRecord> getAvailableConsensusWork(MapProject mapProject) {
 		
@@ -244,10 +278,18 @@ public class WorkflowServiceJpa implements WorkflowService {
 		return consensusWorkflowTrackingRecords;
 	}
 
+	/**
+	 * Perform workflow actions based on a specified action.
+	 * ASSIGN_FROM_INITIAL_RECORD is the only routine that requires a map record to be passed in
+	 * All other cases that all required mapping information (e.g. map records) be current in the database (i.e. updateMapRecord has been called)
+	 */
 	@Override
 	public void processWorkflowAction(MapProject mapProject, Concept concept, MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction) throws Exception {
 		
-		// instantiate the algorithm handler for this project
+		// set the transaction per operation
+		
+		// instantiate the algorithm handler for this project\
+		// TODO We don't want the explicit binding for the handler path
 		ProjectSpecificAlgorithmHandler algorithmHandler = 
 				(ProjectSpecificAlgorithmHandler) Class.forName("org.ihtsdo.otf.mapping.jpa.handlers." + mapProject.getProjectSpecificAlgorithmHandlerClass())
 				.newInstance();
@@ -255,13 +297,19 @@ public class WorkflowServiceJpa implements WorkflowService {
 		
 		// locate any existing workflow tracking records for this project and concept
 		WorkflowTrackingRecord trackingRecord = getWorkflowTrackingRecord(mapProject, concept);
+		
+		// force a read of map records and users and detach the record for passing into project algorithm handler
+		// Rationale:  the algorithm handler is not expected to perform any actions requiring services
+		Logger.getLogger(WorkflowServiceJpa.class).info("Detaching...");
+		for (MapUser mu : trackingRecord.getAssignedUsers()) mu.getEmail(); // force retrieval of users by requesting email
+		trackingRecord.getWorkflowStatus(); // force retrieval of records by calculating workflow status
+		manager.detach(trackingRecord);
 
 		// switch on workflow action
 		switch (workflowAction) {
 			case ASSIGN_FROM_INITIAL_RECORD:
 				
 				Logger.getLogger(WorkflowServiceJpa.class).info("ASSIGN_FROM_INITIAL_RECORD");
-				
 				
 				// expect no tracking record, double-check
 				if (trackingRecord != null) {
@@ -283,8 +331,8 @@ public class WorkflowServiceJpa implements WorkflowService {
 				// perform the assign action via the algorithm handler
 				trackingRecord = algorithmHandler.assignFromInitialRecord(trackingRecord, mapRecord, mapUser);
 				
-				// add the tracking record
-				addWorkflowTrackingRecord(trackingRecord);
+				Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
+				synchronizeWorkflowTrackingRecord(trackingRecord, getWorkflowTrackingRecord(mapProject, concept));
 				
 				break;
 				
@@ -300,8 +348,8 @@ public class WorkflowServiceJpa implements WorkflowService {
 				// perform the assignment via the algorithm handler
 				trackingRecord = algorithmHandler.assignFromScratch(trackingRecord, concept, mapUser);
 				
-				// update the tracking record
-				updateWorkflowTrackingRecord(trackingRecord);
+				Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
+				synchronizeWorkflowTrackingRecord(trackingRecord, getWorkflowTrackingRecord(mapProject, concept));;
 
 				
 				break;
@@ -312,7 +360,6 @@ public class WorkflowServiceJpa implements WorkflowService {
 				
 				Logger.getLogger(WorkflowServiceJpa.class).info("UNASSIGN");
 				
-				
 				// expect existing (pre-computed) workflow tracking record to exist with this user assigned
 				if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: UNASSIGN - Could not find tracking record for unassignment.");
 				
@@ -322,9 +369,28 @@ public class WorkflowServiceJpa implements WorkflowService {
 				// perform the unassign action via the algorithm handler
 				trackingRecord = algorithmHandler.unassign(trackingRecord, mapUser);
 				
-				// update the tracking record
-				updateWorkflowTrackingRecord(trackingRecord);
+				Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
+				synchronizeWorkflowTrackingRecord(trackingRecord, getWorkflowTrackingRecord(mapProject, concept));
 				
+				break;
+				
+			case SAVE_FOR_LATER:
+				
+				Logger.getLogger(WorkflowServiceJpa.class).info("SAVE_FOR_LATER");
+				
+				// expect existing (pre-computed) workflow tracking record to exist with this user assigned
+				if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: SAVE_FOR_LATER - Could not find tracking record for unassignment.");
+				
+				// expect this user to be assigned to a map record in this tracking record
+				if (!trackingRecord.getAssignedUsers().contains(mapUser)) throw new Exception("SAVE_FOR_LATER - User not assigned to record");
+
+				Logger.getLogger(WorkflowServiceJpa.class).info("Performing action...");
+				
+				trackingRecord = algorithmHandler.saveForLater(trackingRecord, mapUser);
+				
+				Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
+				synchronizeWorkflowTrackingRecord(trackingRecord, getWorkflowTrackingRecord(mapProject, concept));
+
 				break;
 				
 			case FINISH_EDITING:
@@ -337,17 +403,15 @@ public class WorkflowServiceJpa implements WorkflowService {
 				// expect this user to be assigned to a map record in this tracking record
 				if (!trackingRecord.getAssignedUsers().contains(mapUser)) throw new Exception("User not assigned to record for unassignment request");
 				
-				// perform the finish editing action via the algorithm handler
+				
+				Logger.getLogger(WorkflowServiceJpa.class).info("Performing action...");
+				
+				// perform the action
 				trackingRecord = algorithmHandler.finishEditing(trackingRecord, mapUser);
 				
-				// if tracking record has not been destroyed in the finish editing process, update it
-				if (trackingRecord != null) {
-					updateWorkflowTrackingRecord(trackingRecord);
-				}	
+				Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
+				synchronizeWorkflowTrackingRecord(trackingRecord, getWorkflowTrackingRecord(mapProject, concept));
 				
-				// TODO synchronizeWorkflowTrackingRecord, use detached object for comparison
-				// remove all service calls from the algorithm handler
-
 				break;
 				
 			default: 
@@ -356,7 +420,123 @@ public class WorkflowServiceJpa implements WorkflowService {
 		
 		
 	}
+	
+	/**
+	 * Given a modified workflow tracking record and a as-in-database workflow tracking record,
+	 * merges any changes (add/update/delete records) from the newer tracking record
+	 * 
+	 * This method created to ensure that all map record changes are complete before workflow tracking record is modified.
+	 *
+	 * @param newTrackingRecord the new tracking record (MUST be detached)
+	 * @param oldTrackingRecord the old tracking record
+	 * @throws Exception the exception
+	 */
+	@Override
+	// TODO Yeah, do stuff
+	public void synchronizeWorkflowTrackingRecord(WorkflowTrackingRecord newTrackingRecord, WorkflowTrackingRecord oldTrackingRecord) throws Exception {
+		
+		MappingService mappingService = new MappingServiceJpa();
+		
+		// force lazy collection instantiation of map records, then detach/evict tracking record and all its map records
+		oldTrackingRecord.getWorkflowStatus(); // force lazy collection
+		manager.detach(oldTrackingRecord);
+		
+		// detach/evict tracking record and all its map records
+		newTrackingRecord.getWorkflowStatus(); // force lazy collection
+		manager.detach(newTrackingRecord);
+		
+		System.out.println(newTrackingRecord.getMapRecords().size() + " records in tracking record");
+		
+		manager.close();
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info("SYNC: checking for changes to workflow tracking record " + newTrackingRecord.getId().toString() + "...");
 
+		// check for record deletions
+		List<MapRecord> oldRecords = new ArrayList<>(oldTrackingRecord.getMapRecords());
+		for (int i = 0; i < oldRecords.size(); i++) {
+			
+			MapRecord mapRecord = oldRecords.get(i);
+			
+			// if this map record is not in the new tracking record, it should be deleted
+			if (getMapRecordInWorkflowTrackingRecord(newTrackingRecord, mapRecord.getId()) == null) {
+				Logger.getLogger(WorkflowServiceJpa.class).info("       Deleting record " + mapRecord.getId());
+				
+				// remove from the as-in-database record
+				oldTrackingRecord.removeMapRecord(mapRecord);
+				
+				// update in database to allow removal of map record (child field)
+				manager = factory.createEntityManager();
+				updateWorkflowTrackingRecord(oldTrackingRecord);
+				manager.close();
+				
+				// remove the map record
+				Logger.getLogger(WorkflowServiceJpa.class).info("       Updated tracking record successfully " + mapRecord.getId());
+				mappingService.removeMapRecord(mapRecord.getId());
+			}
+		}
+		
+		// update and/or add the new records
+		List<MapRecord> newRecords = new ArrayList<>(newTrackingRecord.getMapRecords());
+		for (int i = 0; i < newRecords.size(); i++) {
+			
+			MapRecord mapRecord = newRecords.get(i);
+
+			// if record is not present on tracking record, add it via mapping service
+			if (getMapRecordInWorkflowTrackingRecord(oldTrackingRecord, mapRecord.getId()) == null) {
+				
+				Logger.getLogger(WorkflowServiceJpa.class).info("       Found record to add");
+
+				mappingService.addMapRecord(mapRecord);
+				
+				Logger.getLogger(WorkflowServiceJpa.class).info("       --> Added record " + mapRecord.getId().toString());
+				
+			// otherwise, if map record has changed, update it
+			} else if (getMapRecordInWorkflowTrackingRecord(oldTrackingRecord, mapRecord.getId()).equals(mapRecord)) {
+				
+				Logger.getLogger(WorkflowServiceJpa.class).info(mapRecord.toString());
+				Logger.getLogger(WorkflowServiceJpa.class).info(mapRecord.getMapEntries().size());
+				Logger.getLogger(WorkflowServiceJpa.class).info(getMapRecordInWorkflowTrackingRecord(oldTrackingRecord, mapRecord.getId()).toString());
+				Logger.getLogger(WorkflowServiceJpa.class).info(getMapRecordInWorkflowTrackingRecord(oldTrackingRecord, mapRecord.getId()).getMapEntries().size());
+				
+			//	if (!mapRecord.equals(getMapRecordInWorkflowTrackingRecord(oldTrackingRecord, mapRecord.getId()))) {
+					Logger.getLogger(WorkflowServiceJpa.class).info("       Updating record " + mapRecord.getId());
+					mappingService.updateMapRecord(mapRecord);
+			//	}
+			}
+		}
+		
+		mappingService.close();
+		
+		manager = factory.createEntityManager();
+		
+		// check for workflow removal (i.e. one record with READY_FOR_PUBLICATION
+		if (newTrackingRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION) && 
+				newTrackingRecord.getMapRecords().size() == 1) {
+			Logger.getLogger(WorkflowServiceJpa.class).info("SYNC: Deleting workflow tracking record");
+			removeWorkflowTrackingRecord(newTrackingRecord.getId());
+		} else {
+			Logger.getLogger(WorkflowServiceJpa.class).info("SYNC: Updating workflow tracking record");
+			updateWorkflowTrackingRecord(newTrackingRecord);
+		}
+	}
+	
+	/**
+	 * Helper function for synchronizeWorkflowTrackingRecord. Gets a map record from a workflow tracking record.
+	 *
+	 * @param trackingRecord the tracking record
+	 * @param mapRecordId the map record id
+	 * @return the map record in workflow tracking record
+	 */
+	public MapRecord getMapRecordInWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord, Long mapRecordId) {
+		for (MapRecord mr : trackingRecord.getMapRecords()) {
+			if (mr.getId() == mapRecordId) return mr;
+		}
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#computeWorkflow(org.ihtsdo.otf.mapping.model.MapProject)
+	 */
 	@Override
 	public void computeWorkflow(MapProject mapProject) throws Exception {
 
@@ -422,6 +602,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#clearWorkflowForMapProject(org.ihtsdo.otf.mapping.model.MapProject)
+	 */
 	@Override
 	public void clearWorkflowForMapProject(MapProject mapProject) throws Exception {
 
@@ -431,6 +614,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#close()
+	 */
 	@Override
 	public void close() throws Exception {
 		if (manager.isOpen()) {
@@ -438,17 +624,26 @@ public class WorkflowServiceJpa implements WorkflowService {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getTransactionPerOperation()
+	 */
 	@Override
 	public boolean getTransactionPerOperation() throws Exception {
 		return transactionPerOperation;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#setTransactionPerOperation(boolean)
+	 */
 	@Override
 	public void setTransactionPerOperation(boolean transactionPerOperation)
 		throws Exception {
 		this.transactionPerOperation = transactionPerOperation;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#beginTransaction()
+	 */
 	@Override
 	public void beginTransaction() throws Exception {
 
@@ -463,6 +658,9 @@ public class WorkflowServiceJpa implements WorkflowService {
 		tx.begin();
 	}
 	 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#commit()
+	 */
 	@Override
 	public void commit() throws Exception {
 
