@@ -15,6 +15,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 	 
 	  // get the project
 	  $scope.project = localStorageService.get('focusProject');
+	  $scope.currentRole = localStorageService.get('currentRole');
 	  
 	  // watch for project change
   	  $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	

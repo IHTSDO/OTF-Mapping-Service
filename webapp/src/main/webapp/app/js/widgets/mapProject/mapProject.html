@@ -7,12 +7,17 @@
     <input type="button" value="Project Details" ng-click="goProjectDetails()">   
     <input type="button" value="Map Records" ng-click="goMapRecords()">
     
-    <input type="button" value="Compute Workflow" ng-click="computeWorkflow()">
-    <input type="button" ng-show={{glassPane}} value="glassPane is true">
-    <input type="button" ng-hide={{glassPane}} value="glassPane is false"> 
+    <input type="button" ng-show="currentRole === 'Administrator' || currentRole == 'Lead'" value="Compute Workflow" ng-click="computeWorkflow()">
+   
+   
+    <!-- GLASSPANE COMMENTED OUT FOR NOW -->
+    <!-- <input type="button" ng-show={{glassPane}} value="glassPane is true">
+    <input type="button" ng-hide={{glassPane}} value="glassPane is false">
     
     
-    <textarea ng-show={{glassPane}} class="top-layer">text</textarea>
+    <textarea ng-show={{glassPane}} class="top-layer">text</textarea>  -->
+    
+    
    <!-- <div ng-switch on={{glassPane}}>
       <textarea ng-switch-when="true" class="top-layer">text</textarea>
    </div>   -->
