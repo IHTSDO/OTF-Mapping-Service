@@ -502,16 +502,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	  		 stringEntries2.add(convertToString(entry2));
 	  	 }
 	  	 
-	  	 // TODO Bug fix -- if entries 1 list longer than entries 2 list, stringEntries1.get(d) throws IndexOutOfBoundsException
-	  	 
 	  	 // check for matching entries in different order
 	  	 boolean outOfOrderFlag = false;
 	  	 boolean missingEntry = false;
-	  	 for (int d=0; d<Math.max(stringEntries1.size(), stringEntries2.size()); d++) {
-	  		 if (stringEntries1.get(d) == null || stringEntries2.get(d) == null) {
-	  			 // already reported differing number of entries
-	  			 break;
-	  		 }
+	  	 
+	  	 for (int d=0; d<Math.min(stringEntries1.size(), stringEntries2.size()); d++) {
+	  		 
 	  		 if (stringEntries1.get(d).equals(stringEntries2.get(d)))
 	  			 continue;
 	  		 else if (stringEntries2.contains(stringEntries1.get(d))) 
