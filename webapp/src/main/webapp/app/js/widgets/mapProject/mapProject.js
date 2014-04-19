@@ -11,7 +11,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
         templateUrl: 'js/widgets/mapProject/mapProject.html',
         edit: {}
       });
-  }).controller('MapProjectWidgetCtrl', function($scope, $http, $rootScope, localStorageService){
+  }).controller('MapProjectWidgetCtrl', function($scope, $http, $rootScope, $location, localStorageService){
 	 
 	  // get the project
 	  $scope.project = localStorageService.get('focusProject');
@@ -26,4 +26,74 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
   	  
   	  // broadcast page to help mechanism
   	  $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'mainDashboard'});  
+  
+  	  
+		$scope.goProjectDetails = function () {
+			console.debug($scope.role);
+
+			var path = "/project/id/" + $scope.project.id;
+				// redirect page
+				$location.path(path);
+		};
+		
+		$scope.goMapRecords = function () {
+			console.debug($scope.role);
+
+			var path = "/record/projectId/" + $scope.project.id;
+				// redirect page
+				$location.path(path);
+		};
+  	  
+  	  
+      $scope.glassPane = false; 	
+      
+      $scope.computeWorkflow = function() {
+			console.debug("Computing workflow");
+		  	$scope.glassPane = true;
+		  	//setTimeout(function(){$scope.glassPane = true;}, 1);
+
+
+			var confirmWorkflow =  confirm("Are you sure you want to compute workflow?");
+			if (confirmWorkflow == true) {
+			// retrieve project information
+			$http({
+				url: root_workflow + "project/id/" + $routeParams.projectId,
+				dataType: "json",
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}	
+			}).success(function(data) {
+			  	$scope.glassPane = false;
+			}).error(function(error) {
+		    	  $scope.error = "Error";
+				  $scope.glassPane = false;
+		    });
+				
+				 /**
+				  * For testing only
+				  $scope.projects = [];
+			      $http({
+			        url: root_mapping + "project/projects",
+			        dataType: "json",
+			        method: "GET",
+			        headers: {
+			          "Content-Type": "application/json"
+			        }
+			      }).success(function(data) {
+			    	  $scope.projects = data.mapProject;
+
+					  	setTimeout(function(){$scope.glassPane = false;}, 1);
+			      }).error(function(error) {
+			    	  $scope.error = "Error";
+
+					  	setTimeout(function(){$scope.glassPane = false;}, 1);
+			      });*/ 
+
+				
+			}
+
+
+		};
+		
   });
