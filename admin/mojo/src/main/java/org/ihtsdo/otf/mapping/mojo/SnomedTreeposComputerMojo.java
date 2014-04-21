@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.io.File;
 import java.util.Map;
 
 import org.apache.maven.plugin.AbstractMojo;

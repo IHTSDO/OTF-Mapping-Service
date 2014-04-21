@@ -3,8 +3,6 @@
  */
 package org.ihtsdo.otf.mapping.rest;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -18,24 +16,18 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.mapping.helpers.SearchResult;
-import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
-import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
-import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
-import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -113,45 +105,12 @@ public class WorkflowServiceRest {
 			
 			Logger.getLogger(WorkflowServiceRest.class).info("RESTful call for project " + mapProject.getName() + " and user " + mapUser.getName() + " for index [" + pfsParameter.getStartIndex() + ":" + (pfsParameter.getMaxResults()-1) + "]");
 
-
 			// retrieve the workflow tracking records
 			WorkflowService workflowService = new WorkflowServiceJpa();
-			List<WorkflowTrackingRecord> trackingRecords = workflowService.getAvailableWork(mapProject, mapUser);
+			SearchResultList results = workflowService.findAvailableWork(mapProject, mapUser, pfsParameter);
 			workflowService.close();
 			
-			// sort list of tracking records
-			Collections.sort(
-				trackingRecords,
-				new Comparator<WorkflowTrackingRecord>() {
-					@Override
-					public int compare(WorkflowTrackingRecord w1, WorkflowTrackingRecord w2) {
-						return w1.getSortKey().compareTo(w2.getSortKey());
-					}
-				});
-			
-			// initialize results list and set total count
-			SearchResultList results = new SearchResultListJpa();
-			results.setTotalCount(trackingRecords.size());
-
-			// set the start and end points (paging)
-			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
-					? pfsParameter.getStartIndex() : 0);
-			int endIndex = (pfsParameter != null && pfsParameter.getMaxResults() != -1 
-					? Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), trackingRecords.size()) : trackingRecords.size());
-			
-			System.out.println("Available: Returning items from " + startIndex + " to " + endIndex);
-			
-			if (trackingRecords.size() != 0) {
-				
-				// for each requested object, construct a search result
-				for (WorkflowTrackingRecord trackingRecord : trackingRecords.subList(startIndex, endIndex)) {
-					SearchResult result = new SearchResultJpa();
-					result.setTerminologyId(trackingRecord.getTerminologyId());
-					result.setValue(trackingRecord.getDefaultPreferredName());
-					results.addSearchResult(result);
-					System.out.println("     Available -> " + result.getTerminologyId());
-				}
-			}
+		
 			return results;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
@@ -171,7 +130,6 @@ public class WorkflowServiceRest {
 	@Path("/assignedWork/projectId/{id:[0-9][0-9]*}/user/{userName}")
 	@ApiOperation(value = "Get assigned work.", notes = "Returns assigned work for a given user on a given map project.", response = SearchResultList.class)
 	@Consumes( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAssignedWork(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId, 
@@ -190,45 +148,12 @@ public class WorkflowServiceRest {
 
 			// retrieve the workflow tracking records
 			WorkflowService workflowService = new WorkflowServiceJpa();
-			List<MapRecord> mapRecords = workflowService.getAssignedWork(mapProject, mapUser);
+			SearchResultList results = workflowService.findAssignedWork(mapProject, mapUser, pfsParameter);
 			workflowService.close();
+						
+					
+						return results;
 			
-			// sort list of tracking records
-			Collections.sort(
-				mapRecords,
-				new Comparator<MapRecord>() {
-					@Override
-					public int compare(MapRecord w1, MapRecord w2) {
-						return w1.getConceptName().compareTo(w2.getConceptName());
-					}
-				});
-			
-			// initialize results list and set total count
-			SearchResultList results = new SearchResultListJpa();
-			results.setTotalCount(mapRecords.size());
-			
-//			System.out.println(mapRecords.size() + " assigned records");
-//
-//			// set the start and end points (paging)
-//			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
-//					? pfsParameter.getStartIndex() : 0);
-//			int endIndex = (pfsParameter != null && pfsParameter.getMaxResults() != -1 
-//					? Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), mapRecords.size()) - 1 : mapRecords.size());
-//			
-//			System.out.println("Assigned: Returning items from " + startIndex + " to " + endIndex);
-//			
-			// for each requested object, construct a search result
-			for (MapRecord mapRecord : mapRecords) { //.subList(startIndex, endIndex)) {
-				SearchResult result = new SearchResultJpa();
-				result.setId(mapRecord.getId());
-				result.setTerminologyId(mapRecord.getConceptId());
-				result.setValue(mapRecord.getConceptName());
-				results.addSearchResult(result);
-				
-				System.out.println("     Assigned -> " + result.getTerminologyId());
-			}
-			
-			return results;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -260,40 +185,8 @@ public class WorkflowServiceRest {
 
 			// retrieve the workflow tracking records
 			WorkflowService workflowService = new WorkflowServiceJpa();
-			List<WorkflowTrackingRecord> trackingRecords = workflowService.getAvailableConflicts(mapProject, mapUser);
+			SearchResultList results = workflowService.findAvailableConflicts(mapProject, mapUser, pfsParameter);
 			workflowService.close();
-			
-			// sort list of tracking records
-			Collections.sort(
-				trackingRecords,
-				new Comparator<WorkflowTrackingRecord>() {
-					@Override
-					public int compare(WorkflowTrackingRecord w1, WorkflowTrackingRecord w2) {
-						return w1.getSortKey().compareTo(w2.getSortKey());
-					}
-				});
-			
-			// initialize results list and set total count
-			SearchResultList results = new SearchResultListJpa();
-			results.setTotalCount(trackingRecords.size());
-
-			/*// set the start and end points (paging)
-			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
-					? pfsParameter.getStartIndex() : 0);
-			int endIndex = (pfsParameter != null && pfsParameter.getMaxResults() != -1 
-					? Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), trackingRecords.size()) - 1 : trackingRecords.size());
-			
-			System.out.println("Returning items from " + startIndex + " to " + endIndex);
-			*/	
-			// for each requested object, construct a search result
-			for (WorkflowTrackingRecord trackingRecord : trackingRecords) {
-				SearchResult result = new SearchResultJpa();
-				result.setTerminologyId(trackingRecord.getTerminologyId());
-				result.setValue(trackingRecord.getDefaultPreferredName());
-				results.addSearchResult(result);
-				
-				System.out.println("    -> Conflict for " + trackingRecord.getTerminologyId());
-			}
 			
 			return results;
 		} catch (Exception e) {
@@ -327,40 +220,8 @@ public class WorkflowServiceRest {
 
 			// retrieve the map records
 			WorkflowService workflowService = new WorkflowServiceJpa();
-			List<MapRecord> mapRecords = workflowService.getAssignedConflicts(mapProject, mapUser);
+			SearchResultList results = workflowService.findAssignedConflicts(mapProject, mapUser, pfsParameter);
 			workflowService.close();
-			
-			// sort list of tracking records
-			Collections.sort(
-				mapRecords,
-				new Comparator<MapRecord>() {
-					@Override
-					public int compare(MapRecord w1, MapRecord w2) {
-						return w1.getConceptName().compareTo(w2.getConceptName());
-					}
-				});
-			
-			// initialize results list and set total count
-			SearchResultList results = new SearchResultListJpa();
-			results.setTotalCount(mapRecords.size());
-
-			/*// set the start and end points (paging)
-			int startIndex = (pfsParameter != null && pfsParameter.getStartIndex() != 1 
-					? pfsParameter.getStartIndex() : 0);
-			int endIndex = (pfsParameter != null && pfsParameter.getMaxResults() != -1 
-					? Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), mapRecords.size()) - 1 : mapRecords.size());
-			
-			System.out.println("Returning items from " + startIndex + " to " + endIndex);
-			*/
-			
-			// for each requested object, construct a search result
-			for (MapRecord mapRecord : mapRecords) {
-				SearchResult result = new SearchResultJpa();
-				result.setId(mapRecord.getId());
-				result.setTerminologyId(mapRecord.getConceptId());
-				result.setValue(mapRecord.getConceptName());
-				results.addSearchResult(result);
-			}
 			
 			return results;
 		} catch (Exception e) {

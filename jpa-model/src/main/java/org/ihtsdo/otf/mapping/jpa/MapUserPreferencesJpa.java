@@ -1,18 +1,22 @@
 package org.ihtsdo.otf.mapping.jpa;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 
@@ -23,12 +27,13 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
  *
  * @author Patrick
  */
-/*@Entity
+@Entity
 @Table(name="map_user_preferences",  uniqueConstraints={
-		   @UniqueConstraint(columnNames={"mapUser", "id"})})
-@XmlRootElement(name="mapUserPreferences")*/
+		   @UniqueConstraint(columnNames={"mapUser_id", "id"})})
+@XmlRootElement(name="mapUserPreferences")
 public class MapUserPreferencesJpa implements MapUserPreferences {
 
+	/** The id. */
 	@Id
 	@GeneratedValue
 	private Long id;
@@ -38,23 +43,44 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
 	private MapUser mapUser;
 	
 	/** The time of last login (in ms since 1970). */
-	private Long lastLogin;
+	@Column(nullable = false)
+	private Long lastLogin = (new Date()).getTime();
 	
 	/** The map project id for the project last worked on. */
-	@ManyToOne(targetEntity=MapProjectJpa.class)
-	private MapProject lastProject;
+	@Column(nullable = false)
+	private Long mapProjectId;
 	
 	/** The map of name->model dashboards. */
-	// dashboardModel -> {model: {rows {columns ..... widgets }}}
+	@ElementCollection(fetch=FetchType.EAGER)
+	@CollectionTable(name="map_user_preferences_dashboard_models", joinColumns=@JoinColumn(name="id"))
+	@Column(nullable = true)
 	private Map<String, String> dashboardModels = new HashMap<>();
 	
 	/** Whether this user wants email notifications. */
+	@Column(nullable = false)
 	private boolean notifiedByEmail;
 	
 	/** Whether this user wants notifications in digest form. */
+	@Column(nullable = false)
 	private boolean digestForm;
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapUserPreferences#getId()
+	 */
+	@Override
+	public Long getId() {
+		return id;
+	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapUserPreferences#setId(java.lang.Long)
+	 */
+	@Override
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	
 	/**
 	 * Gets the map user.
 	 *
@@ -95,24 +121,22 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
 		this.lastLogin = lastLogin;
 	}
 
-	/**
-	 * Gets the last project.
-	 *
-	 * @return the last project
+	
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapUserPreferences#getLastMapProjectId()
 	 */
 	@Override
-	public MapProject getLastProject() {
-		return lastProject;
+	public Long getLastMapProjectId() {
+		return mapProjectId;
 	}
 
-	/**
-	 * Sets the last project.
-	 *
-	 * @param lastProject the new last project
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapUserPreferences#setLastMapProjectId(java.lang.Long)
 	 */
 	@Override
-	public void setLastProject(MapProject lastProject) {
-		this.lastProject = lastProject;
+	public void setLastMapProjectId(Long mapProjectId) {
+		this.mapProjectId = mapProjectId;
 	}
 
 	/**
