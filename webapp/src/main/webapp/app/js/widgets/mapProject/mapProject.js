@@ -13,6 +13,9 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
       });
   }).controller('MapProjectWidgetCtrl', function($scope, $http, $rootScope, $location, localStorageService){
 	 
+	  // initialize glass pane
+	  $scope.glassPane = false;
+	  
 	  // get the project
 	  $scope.project = localStorageService.get('focusProject');
 	  $scope.currentRole = localStorageService.get('currentRole');
@@ -51,8 +54,6 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
       $scope.computeWorkflow = function() {
 			console.debug("Computing workflow");
 		  	$scope.glassPane = true;
-		  	//setTimeout(function(){$scope.glassPane = true;}, 1);
-
 
 			var confirmWorkflow =  confirm("Are you sure you want to compute workflow?");
 			if (confirmWorkflow == true) {

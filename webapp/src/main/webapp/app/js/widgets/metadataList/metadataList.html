@@ -1,8 +1,6 @@
-
-
 <div>
 {{errorMetadata}} 
-<h5>Terminology: {{config.terminology}}</h5>
+<h5>Terminology: <select ng-model="terminology" ng-options="terminology as terminology for terminology in terminologies"></select></h5>
 <accordion> <accordion-group
   ng-repeat="keyValuePairList in keyValuePairLists | filter:query  | orderBy:keyValuePairList.name">
 <accordion-heading>
@@ -24,11 +22,4 @@
 </table>
 <p></p>
 </accordion-group> </accordion>
- 
-<p></p>
-All Terminology Versions:
-<p>{{latestTerminologiesStatus}}</p>
-<ul>
-<li ng-repeat = "keyValuePair in termVersionPairs.keyValuePair"> {{keyValuePair.key}} {{keyValuePair.value}}</li>
-</ul> 
 </div>

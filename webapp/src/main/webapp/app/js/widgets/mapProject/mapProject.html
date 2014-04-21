@@ -7,10 +7,11 @@
     <input type="button" value="Project Details" ng-click="goProjectDetails()">   
     <input type="button" value="Map Records" ng-click="goMapRecords()">
     
-    <input type="button" ng-show="currentRole === 'Administrator' || currentRole == 'Lead'" value="Compute Workflow" ng-click="computeWorkflow()">
-   
-   
-    <!-- GLASSPANE COMMENTED OUT FOR NOW -->
+    <span ng-show = "currentRole === 'Administrator' || currentRole == 'Lead'">
+	    <input type="button" ng-show="glassPane == false" value="Compute Workflow" ng-click="computeWorkflow()">
+	    <span ng-show = "glassPane == true">&nbsp Computing Workflow....</span>
+	</span>
+	    <!-- GLASSPANE COMMENTED OUT FOR NOW -->
     <!-- <input type="button" ng-show={{glassPane}} value="glassPane is true">
     <input type="button" ng-hide={{glassPane}} value="glassPane is false">
     

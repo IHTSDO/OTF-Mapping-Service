@@ -2,6 +2,8 @@ package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
 
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -17,13 +19,36 @@ import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
 public interface WorkflowService {
 
 	/**
-	 * Add workflow tracking record.
+	 * Gets the workflow tracking record.
+	 *
+	 * @param mapProject the map project
+	 * @param concept the concept
+	 * @return the workflow tracking record
+	 */
+	public WorkflowTrackingRecord getWorkflowTrackingRecord(MapProject mapProject, Concept concept);
+	
+	/**
+	 * Gets the workflow tracking records.
+	 *
+	 * @return the workflow tracking records
+	 */
+	public List<WorkflowTrackingRecord> getWorkflowTrackingRecords();
+	
+	/**
+	 * Gets the workflow tracking records for map project.
+	 *
+	 * @param mapProject the map project
+	 * @return the workflow tracking records for map project
+	 */
+	public List<WorkflowTrackingRecord> getWorkflowTrackingRecordsForMapProject(MapProject mapProject);
+
+	/**
+	 * Adds the workflow tracking record.
 	 *
 	 * @param workflowTrackingRecord the workflow tracking record
 	 * @return the workflow tracking record
 	 * @throws Exception the exception
 	 */
-	
 	public WorkflowTrackingRecord addWorkflowTrackingRecord(WorkflowTrackingRecord workflowTrackingRecord) throws Exception;
 	
 	/**
@@ -43,37 +68,13 @@ public interface WorkflowService {
 	public void removeWorkflowTrackingRecord(Long workflowTrackingRecordId) throws Exception;
 	
 	/**
-	 * Gets the workflow tracking records.
-	 *
-	 * @return the workflow tracking records
-	 */
-	public List<WorkflowTrackingRecord> getWorkflowTrackingRecords();
-	
-	/**
-	 * Gets the workflow tracking records for map project.
-	 *
-	 * @param mapProject the map project
-	 * @return the workflow tracking records for map project
-	 */
-	public List<WorkflowTrackingRecord> getWorkflowTrackingRecordsForMapProject(MapProject mapProject);
-	
-	/**
-	 * Gets the workflow tracking record.
-	 *
-	 * @param mapProject the map project
-	 * @param concept the concept
-	 * @return the workflow tracking record
-	 */
-	public WorkflowTrackingRecord getWorkflowTrackingRecord(MapProject mapProject, Concept concept);
-	
-	/**
 	 * Search Functions.
 	 *
 	 * @param mapProject the map project
 	 * @param mapUser the map user
 	 * @return the search result list
 	 */
-	public List<WorkflowTrackingRecord> getAvailableWork(MapProject mapProject, MapUser mapUser);
+	public SearchResultList findAvailableWork(MapProject mapProject, MapUser mapUser, PfsParameter pfsParameter);
 	
 	/**
 	 * Find available conflicts.
@@ -82,7 +83,7 @@ public interface WorkflowService {
 	 * @param mapUser the map user
 	 * @return the search result list
 	 */
-	public List<WorkflowTrackingRecord> getAvailableConflicts(MapProject mapProject, MapUser mapUser);
+	public SearchResultList findAvailableConflicts(MapProject mapProject, MapUser mapUser, PfsParameter pfsParameter);
 	
 	/**
 	 * Find assigned concepts.
@@ -91,8 +92,8 @@ public interface WorkflowService {
 	 * @param mapUser the map user
 	 * @return the search result list
 	 */
-	public List<MapRecord> getAssignedWork(MapProject mapProject,
-			MapUser mapUser);
+	public SearchResultList findAssignedWork(MapProject mapProject,
+			MapUser mapUser, PfsParameter pfsParameter);
 
 	
 	/**
@@ -102,7 +103,7 @@ public interface WorkflowService {
 	 * @param mapUser the map user
 	 * @return the search result list
 	 */
-	public List<MapRecord> getAssignedConflicts(MapProject mapProject, MapUser mapUser);
+	public SearchResultList findAssignedConflicts(MapProject mapProject, MapUser mapUser, PfsParameter pfsParameter);
 	
 	/**
 	 * Find available consensus work.
@@ -110,7 +111,7 @@ public interface WorkflowService {
 	 * @param mapProject the map project
 	 * @return the search result list
 	 */
-	public List<WorkflowTrackingRecord> getAvailableConsensusWork(MapProject mapProject);
+	public SearchResultList findAvailableConsensusWork(MapProject mapProject, PfsParameter pfsParameter);
 	
 	/**
 	 * Called by REST services, performs a specific action given a project, concept, and user.
@@ -123,6 +124,19 @@ public interface WorkflowService {
 	 * @throws Exception the exception
 	 */
 	public void processWorkflowAction(MapProject mapProject, Concept concept, MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction) throws Exception;
+	
+	
+	/**
+	 * Synchronize workflow tracking record given the new version and the old version
+	 *
+	 * @param newRecord the new record, modified by processWorkflowAction
+	 * @param oldRecord the old record, from the database
+	 * @throws Exception 
+	 */
+	public void synchronizeWorkflowTrackingRecord(WorkflowTrackingRecord newTrackingRecord,
+			WorkflowTrackingRecord oldTrackingRecord) throws Exception;
+
+
 	
 	/**
 	 * Compute workflow.
@@ -180,17 +194,6 @@ public interface WorkflowService {
 	 */
 	public void commit() throws Exception;
 
-	
-	/**
-	 * Synchronize workflow tracking record given the new version and the old version
-	 *
-	 * @param newRecord the new record, modified by processWorkflowAction
-	 * @param oldRecord the old record, from the database
-	 * @throws Exception 
-	 */
-	public void synchronizeWorkflowTrackingRecord(WorkflowTrackingRecord newTrackingRecord,
-			WorkflowTrackingRecord oldTrackingRecord) throws Exception;
-
 
 	
 	/* OLDER WORKFLOW SERVICES
@@ -201,7 +204,7 @@ public interface WorkflowService {
 	 * @return the workflow
 	 * @throws Exception the exception
 	 *//*
-	public List<WorkflowTrackingRecord> getWorkflowTrackingRecords(MapProject project)  throws Exception;
+	public SearchResultList findWorkflowTrackingRecords(MapProject project)  throws Exception;
 
 	*//**
 	 * Compute workflow.
@@ -339,7 +342,7 @@ public interface WorkflowService {
 	 * @param mapUser the map user
 	 * @return the available tracking records for workflow and user
 	 *//*
-	public List<WorkflowTrackingRecord> getAvailableTrackingRecordsForProjectAndUser(
+	public SearchResultList findAvailableTrackingRecordsForProjectAndUser(
 			MapProject mapProject, MapUser mapUser);
 	
 
@@ -389,7 +392,7 @@ public interface WorkflowService {
 	 * @param mapUser the map user
 	 * @return the available conflict records
 	 *//*
-	public List<WorkflowTrackingRecord> getAvailableConflictRecords(
+	public SearchResultList findAvailableConflictRecords(
 			MapProject mapProject, MapUser mapUser);
 
 	*//**

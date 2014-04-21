@@ -199,6 +199,12 @@ public class MappingServiceJpa implements MappingService {
 			m = (MapProject) query.getSingleResult();
 			m.getScopeConcepts().size();
 			m.getScopeExcludedConcepts().size();
+			m.getMapAdvices().size();
+			m.getMapRelations().size();
+			m.getMapLeads().size();
+			m.getMapSpecialists().size();
+			m.getMapPrinciples().size();
+			m.getPresetAgeRanges().size();
 			return m;
 
 		} catch (NoResultException e) {
@@ -226,6 +232,12 @@ public class MappingServiceJpa implements MappingService {
 			m = (MapProject) query.getSingleResult();
 			m.getScopeConcepts().size();
 			m.getScopeExcludedConcepts().size();
+			m.getMapAdvices().size();
+			m.getMapRelations().size();
+			m.getMapLeads().size();
+			m.getMapSpecialists().size();
+			m.getMapPrinciples().size();
+			m.getPresetAgeRanges().size();
 		} catch (NoResultException e) {
 			Logger.getLogger(this.getClass()).warn(
 					"Map project query for name = " + name + " returned no results!");
@@ -251,6 +263,12 @@ public class MappingServiceJpa implements MappingService {
 			m = (MapProject) query.getSingleResult();
 			m.getScopeConcepts().size();
 			m.getScopeExcludedConcepts().size();
+			m.getMapAdvices().size();
+			m.getMapRelations().size();
+			m.getMapLeads().size();
+			m.getMapSpecialists().size();
+			m.getMapPrinciples().size();
+			m.getPresetAgeRanges().size();
 		} catch (NoResultException e) {
 			Logger.getLogger(this.getClass()).warn(
 					"Map project query for refSetId = " + refSetId
@@ -279,9 +297,16 @@ public class MappingServiceJpa implements MappingService {
 
 		mapProjects = query.getResultList();
 
+		// force instantiation of lazy collections
 		for (MapProject project : mapProjects) {
 			project.getScopeConcepts().size();
 			project.getScopeExcludedConcepts().size();
+			project.getMapAdvices().size();
+			project.getMapRelations().size();
+			project.getMapLeads().size();
+			project.getMapSpecialists().size();
+			project.getMapPrinciples().size();
+			project.getPresetAgeRanges().size();
 		}
 
 		MapProjectListJpa mapProjectList = new MapProjectListJpa();
@@ -339,13 +364,13 @@ public class MappingServiceJpa implements MappingService {
 					.toString(), mp.getName()));
 		}
 
-        // Sort by ID
-        s.sortBy(new Comparator<SearchResult>() {
-          @Override
-          public int compare(SearchResult o1, SearchResult o2) {
-            return o1.getId().compareTo(o2.getId());
-          }
-        });
+		// Sort by ID
+		s.sortBy(new Comparator<SearchResult>() {
+			@Override
+			public int compare(SearchResult o1, SearchResult o2) {
+				return o1.getId().compareTo(o2.getId());
+			}
+		});
 
 		fullTextEntityManager.close();
 
@@ -530,15 +555,29 @@ public class MappingServiceJpa implements MappingService {
 		// iterate and check for presence of mapUser as specialist
 		for (MapProject mp : mpList.getMapProjects()) {
 
-			Set<MapUser> ms_set = mp.getMapSpecialists();
-
-			for (MapUser ms : ms_set) {
-				if (ms.equals(mapUser)) {
-					mp.getScopeConcepts().size();
-					mp.getScopeExcludedConcepts().size();
-					mpListReturn.add(mp);
+			for (MapUser ms : mp.getMapSpecialists()) {
+				if (ms.equals(mapUser)) { 
+					 mpListReturn.add(mp);
 				}
 			}
+			
+			for (MapUser ms : mp.getMapLeads()) {
+				if (ms.equals(mapUser)) { 
+					 mpListReturn.add(mp);
+				}
+			}
+		}
+		
+		// force instantiation of lazy collections
+		for (MapProject mp : mpListReturn) {
+			 mp.getScopeConcepts().size();
+			 mp.getScopeExcludedConcepts().size();
+			 mp.getMapAdvices().size();
+			 mp.getMapRelations().size();
+			 mp.getMapLeads().size();
+			 mp.getMapSpecialists().size();
+			 mp.getMapPrinciples().size();
+			 mp.getPresetAgeRanges().size();
 		}
 
 		MapProjectListJpa mapProjectList = new MapProjectListJpa();
@@ -592,13 +631,13 @@ public class MappingServiceJpa implements MappingService {
 			s.addSearchResult(new SearchResultJpa(ms.getId(), "", ms.getName()));
 		}
 
-        // Sort by ID
-        s.sortBy(new Comparator<SearchResult>() {
-          @Override
-          public int compare(SearchResult o1, SearchResult o2) {
-            return o1.getId().compareTo(o2.getId());
-          }
-        });
+		// Sort by ID
+		s.sortBy(new Comparator<SearchResult>() {
+			@Override
+			public int compare(SearchResult o1, SearchResult o2) {
+				return o1.getId().compareTo(o2.getId());
+			}
+		});
 
 		fullTextEntityManager.close();
 
@@ -815,13 +854,13 @@ public class MappingServiceJpa implements MappingService {
 					.toString(), mp.getConceptName()));
 		}
 
-        // Sort by ID
-        s.sortBy(new Comparator<SearchResult>() {
-          @Override
-          public int compare(SearchResult o1, SearchResult o2) {
-            return o1.getId().compareTo(o2.getId());
-          }
-        });
+		// Sort by ID
+		s.sortBy(new Comparator<SearchResult>() {
+			@Override
+			public int compare(SearchResult o1, SearchResult o2) {
+				return o1.getId().compareTo(o2.getId());
+			}
+		});
 
 		fullTextEntityManager.close();
 
@@ -935,12 +974,12 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public MapRelation computeMapRelation(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 
-		
-		
+
+
 		MapRecord mapRecord = getMapRecord(mapEntry.getMapRecord().getId());
-		
-		
-		
+
+
+
 		MapProject mapProject = getMapProject(mapRecord.getMapProjectId());
 		ProjectSpecificAlgorithmHandler algorithmHandler = 
 				getProjectSpecificAlgorithmHandler(mapProject);
@@ -978,10 +1017,10 @@ public class MappingServiceJpa implements MappingService {
 
 		AuditReader reader = AuditReaderFactory.get(manager);
 		@SuppressWarnings("unchecked")
-    List<MapRecord> revisions = 
-				reader.createQuery()
-				.forRevisionsOfEntity(MapRecordJpa.class, false, false)
-				.getResultList();
+		List<MapRecord> revisions = 
+		reader.createQuery()
+		.forRevisionsOfEntity(MapRecordJpa.class, false, false)
+		.getResultList();
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
 		mapRecordList.setMapRecords(revisions);
 		mapRecordList.setTotalCount(revisions.size());
@@ -1107,13 +1146,13 @@ public class MappingServiceJpa implements MappingService {
 					.getId().toString()));
 		}
 
-        // Sort by ID
-        s.sortBy(new Comparator<SearchResult>() {
-          @Override
-          public int compare(SearchResult o1, SearchResult o2) {
-            return o1.getId().compareTo(o2.getId());
-          }
-        });
+		// Sort by ID
+		s.sortBy(new Comparator<SearchResult>() {
+			@Override
+			public int compare(SearchResult o1, SearchResult o2) {
+				return o1.getId().compareTo(o2.getId());
+			}
+		});
 
 		return s;
 	}
@@ -1162,13 +1201,13 @@ public class MappingServiceJpa implements MappingService {
 			s.addSearchResult(new SearchResultJpa(ma.getId(), "", ma.getName()));
 		}
 
-        // Sort by ID
-        s.sortBy(new Comparator<SearchResult>() {
-          @Override
-          public int compare(SearchResult o1, SearchResult o2) {
-            return o1.getId().compareTo(o2.getId());
-          }
-        });
+		// Sort by ID
+		s.sortBy(new Comparator<SearchResult>() {
+			@Override
+			public int compare(SearchResult o1, SearchResult o2) {
+				return o1.getId().compareTo(o2.getId());
+			}
+		});
 
 		return s;
 	}
@@ -1217,13 +1256,13 @@ public class MappingServiceJpa implements MappingService {
 			s.addSearchResult(new SearchResultJpa(ma.getId(), "", ma.getName()));
 		}
 
-        // Sort by ID
-        s.sortBy(new Comparator<SearchResult>() {
-          @Override
-          public int compare(SearchResult o1, SearchResult o2) {
-            return o1.getId().compareTo(o2.getId());
-          }
-        });
+		// Sort by ID
+		s.sortBy(new Comparator<SearchResult>() {
+			@Override
+			public int compare(SearchResult o1, SearchResult o2) {
+				return o1.getId().compareTo(o2.getId());
+			}
+		});
 
 		return s;
 	}
@@ -1287,10 +1326,10 @@ public class MappingServiceJpa implements MappingService {
 			return null;
 		}
 		// return results
-        MapRecordListJpa mapRecordList = new MapRecordListJpa();
-        mapRecordList.setMapRecords(results);
-        mapRecordList.setTotalCount(results.size());
-        return mapRecordList;
+		MapRecordListJpa mapRecordList = new MapRecordListJpa();
+		mapRecordList.setMapRecords(results);
+		mapRecordList.setTotalCount(results.size());
+		return mapRecordList;
 	}
 	/**
 	 * Helper method to look up the count.
@@ -1341,11 +1380,16 @@ public class MappingServiceJpa implements MappingService {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForMapProject(java.lang.Long)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public MapRecordList getMapRecordsForMapProject(Long mapProjectId)
 			throws Exception {
 
-		return getMapRecordsForMapProject(mapProjectId, null);
+		javax.persistence.Query query = manager.createQuery("select m from MapRecordJpa m where mapProjectId = :mapProjectId")
+				.setParameter("mapProjectId", mapProjectId);
+		MapRecordList mapRecordList = new MapRecordListJpa();
+		mapRecordList.setMapRecords(query.getResultList());
+		return mapRecordList;
 	}
 
 	/*
@@ -1369,7 +1413,7 @@ public class MappingServiceJpa implements MappingService {
 		// TODO Need to make this trigger on pfsParameters?  Remover doesn't work with this check in.
 		/*full_query +=
 				" AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')";
-*/
+		 */
 		System.out.println(full_query);
 
 		FullTextEntityManager fullTextEntityManager =
@@ -1405,15 +1449,15 @@ public class MappingServiceJpa implements MappingService {
 
 		Logger.getLogger(this.getClass()).debug(
 				Integer.toString(m.size()) + " records retrieved");
-        MapRecordListJpa mapRecordList = new MapRecordListJpa();
-        mapRecordList.setMapRecords(m);
-        // TODO: this is not quite right because in a search
-        // environment the total record count is not matched by this
-        // but current implementation will limit overall count by paging settings 
-        // and it should not.  it can use other settings but not paging ones.
-        mapRecordList.setTotalCount(
-            getMapRecordCountForMapProject(mapProjectId, null));
-        return mapRecordList;
+		MapRecordListJpa mapRecordList = new MapRecordListJpa();
+		mapRecordList.setMapRecords(m);
+		// TODO: this is not quite right because in a search
+		// environment the total record count is not matched by this
+		// but current implementation will limit overall count by paging settings 
+		// and it should not.  it can use other settings but not paging ones.
+		mapRecordList.setTotalCount(
+				getMapRecordCountForMapProject(mapProjectId, null));
+		return mapRecordList;
 
 	}
 
@@ -2361,10 +2405,10 @@ public class MappingServiceJpa implements MappingService {
 
 		// Try query
 		mapRelations = query.getResultList();
-        mapRelations = query.getResultList();
-        MapRelationListJpa mapRelationList = new MapRelationListJpa();
-        mapRelationList.setMapRelations(mapRelations);
-        mapRelationList.setTotalCount(mapRelations.size());
+		mapRelations = query.getResultList();
+		MapRelationListJpa mapRelationList = new MapRelationListJpa();
+		mapRelationList.setMapRelations(mapRelations);
+		mapRelationList.setTotalCount(mapRelations.size());
 
 		return mapRelationList;
 	}
@@ -2870,9 +2914,11 @@ public class MappingServiceJpa implements MappingService {
 	public MapUserPreferences getMapUserPreferences(String userName) {
 		javax.persistence.Query query = manager.createQuery("select m from MapUserPreferencesJpa m where userName = :userName")
 				.setParameter("userName", userName);
-		MapUserPreferences m = (MapUserPreferences) query.getFirstResult()
+		MapUserPreferences m = (MapUserPreferences) query.getSingleResult();
+
+		return m;
 	}
-	
+
 	/**
 	 * Retrieve all map user preferences
 	 * 
@@ -2892,8 +2938,8 @@ public class MappingServiceJpa implements MappingService {
 
 		m = query.getResultList();
 		MapUserPreferencesListJpa mapUserPreferencesList = new MapUserPreferencesListJpa();
-        mapUserPreferencesList.setMapUserPreferences(m);
-        mapUserPreferencesList.setTotalCount(m.size());
+		mapUserPreferencesList.setMapUserPreferences(m);
+		mapUserPreferencesList.setTotalCount(m.size());
 		return mapUserPreferencesList;
 	}
 
@@ -2996,8 +3042,8 @@ public class MappingServiceJpa implements MappingService {
 		setTreePositionValidCodesHelper(treePositions, algorithmHandler);
 
 		TreePositionListJpa treePositionList = new TreePositionListJpa();
-        treePositionList.setTreePositions(treePositions);
-        treePositionList.setTotalCount(treePositions.size());
+		treePositionList.setTreePositions(treePositions);
+		treePositionList.setTotalCount(treePositions.size());
 		return treePositionList;
 	}
 
@@ -3023,14 +3069,14 @@ public class MappingServiceJpa implements MappingService {
 			setTreePositionValidCodesHelper(tp.getChildren(), algorithmHandler);
 		}
 	}
-	
+
 	@Override
 	public ValidationResult compareMapRecords(MapRecord mapRecord1, MapRecord mapRecord2) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-		
+
 		MapProject mapProject = getMapProject(mapRecord1.getMapProjectId());
 		ProjectSpecificAlgorithmHandler algorithmHandler = getProjectSpecificAlgorithmHandler(mapProject);
 		ValidationResult validationResult = algorithmHandler.compareMapRecords(mapRecord1, mapRecord2);
-		
+
 		return validationResult;
 	}
 
@@ -3062,7 +3108,7 @@ public class MappingServiceJpa implements MappingService {
 					(ProjectSpecificAlgorithmHandler) Class.forName("org.ihtsdo.otf.mapping.jpa.handlers." + mapProject.getProjectSpecificAlgorithmHandlerClass())
 					.newInstance();
 			handler.setMapProject(mapProject); 
-			
+
 			// compare map records
 			ValidationResult result = handler.compareMapRecords(entry.getKey(), entry.getValue());
 			if (!result.isValid()) {
@@ -3078,13 +3124,13 @@ public class MappingServiceJpa implements MappingService {
 
 	@Override
 	public MapRecordList getRecordsInConflict(Long mapRecordId) throws Exception {
-		
+
 		System.out.println("getRecordsInConflict with record id = " + mapRecordId.toString());
-		
+
 		MapRecordList conflictRecords = new MapRecordListJpa();
-		
+
 		MapRecord mapRecord = getMapRecord(mapRecordId);
-		
+
 		if (mapRecord == null) throw new Exception("getRecordsInConflict: Could not find map record with id = " + mapRecordId.toString() + "!");
 		for (Long originId : mapRecord.getOriginIds()) {
 			MapRecord mr = getMapRecord(originId);
@@ -3092,13 +3138,13 @@ public class MappingServiceJpa implements MappingService {
 				conflictRecords.addMapRecord(getMapRecord(originId));
 			}
 		}
-		
+
 		// set the total count for completeness (no paging here)
 		conflictRecords.setTotalCount(conflictRecords.getCount());
-		
+
 		return conflictRecords;
 	}
 
-	
+
 
 }

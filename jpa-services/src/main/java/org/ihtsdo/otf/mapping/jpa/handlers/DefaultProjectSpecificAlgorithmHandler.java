@@ -725,12 +725,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			
 			// if a "new" tracking record (i.e. prior to conflict detection), add a NEW record
 			if (trackingRecord.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) < 0) {
+				
 				mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH: NEW");
 				
 				
 			// otherwise, if this is a tracking record with conflict detected, add a CONFLICT_IN_PROGRESS record
 			} else if (trackingRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+				
 				mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_IN_PROGRESS);
 				
 				// get the origin ids from the tracking record
@@ -978,7 +980,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 				
 				
 				// extract the map records and delete the workflow tracking record
-				Set<MapRecord> mapRecords = trackingRecord.getMapRecords();
+				Set<MapRecord> mapRecords = new HashSet<>(trackingRecord.getMapRecords());
 				
 				// cycle over the records
 				for (MapRecord mr : mapRecords) {
