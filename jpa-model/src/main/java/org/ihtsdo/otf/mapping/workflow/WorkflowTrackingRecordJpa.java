@@ -25,7 +25,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
  */
 @Entity
 @Table(name = "workflow_tracking_records", uniqueConstraints = @UniqueConstraint(columnNames = {
-		"terminologyId", "terminology", "terminologyVersion"}))
+		"terminologyId", "terminology", "terminologyVersion", "mapProject_id"}))
 public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 
 	/** The id. */
@@ -248,7 +248,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	 */
 	@Override
 	public void addMapRecord(MapRecord mapRecord) {
-		if (this.mapRecords == null) this.mapRecords = new HashSet<MapRecord>();
+		if (this.mapRecords == null) this.mapRecords = new HashSet<>();
 		this.mapRecords.add(mapRecord);
 	}
 
