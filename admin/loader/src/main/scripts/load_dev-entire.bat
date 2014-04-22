@@ -95,7 +95,7 @@ del /Q mvn.log
 
 echo     Compute workflow ...%date% %time%
 cd %OTF_MAPPING_HOME%/admin/loader
-call %MVN_HOME%/bin/mvn -PComputeWorkflow -Drun.config=dev -Drefset.id=447563008,447562003,450993002 install 1> mvn.log
+call %MVN_HOME%/bin/mvn -PComputeWorkflow -Drun.config=dev -Drefset.id=447563008,447562003 install 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
