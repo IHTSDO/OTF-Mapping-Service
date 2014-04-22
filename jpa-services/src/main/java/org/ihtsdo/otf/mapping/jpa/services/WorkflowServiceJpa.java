@@ -712,7 +712,7 @@ public class WorkflowServiceJpa implements WorkflowService {
         Logger.getLogger(WorkflowServiceJpa.class).info("    Found = " + unmappedConceptsInScope.getTotalCount());
 
 		for (SearchResult sr : unmappedConceptsInScope.getSearchResults()) {
-          Logger.getLogger(WorkflowServiceJpa.class).info("  Create tracking record for " 
+          Logger.getLogger(WorkflowServiceJpa.class).debug("  Create tracking record for " 
               + sr.getTerminologyId());
 
 			// retrieve the concept for this result
@@ -732,6 +732,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			// get the tree positions for this concept and set the sort key to the first retrieved
 			SearchResultList treePositionsList = contentService.findTreePositionsForConcept(
 					concept.getTerminologyId(), concept.getTerminology(), concept.getTerminologyVersion());
+			Logger.getLogger(WorkflowServiceJpa.class).info("    id = " + concept.getTerminologyId());
 			trackingRecord.setSortKey(treePositionsList.getSearchResults().get(0).getValue());
 
 			// persist the workflow tracking record
@@ -741,7 +742,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			List<MapRecord> mapRecords = mappingService.getMapRecordsForConcept(concept.getTerminologyId()).getMapRecords();
 
 			// cycle over records retrieved
-            Logger.getLogger(WorkflowServiceJpa.class).info("    Find existing map records");
+            Logger.getLogger(WorkflowServiceJpa.class).debug("    Find existing map records");
 			for (MapRecord mapRecord : mapRecords) {
 
 				// if this record belongs to project, add it to tracking record
