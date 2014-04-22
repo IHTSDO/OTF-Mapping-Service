@@ -24,7 +24,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
-		$scope.project = parameters.focusProject;
+		$scope.focusProject = parameters.focusProject;
 
 		console.debug($scope.project);
 	});	

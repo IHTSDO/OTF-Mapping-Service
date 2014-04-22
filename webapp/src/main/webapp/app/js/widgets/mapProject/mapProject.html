@@ -1,12 +1,31 @@
+
+
 <div ng-show="project != null">
 
 	<h4>{{project.name}}</h4>
 	
-	<a href="#/project/id/{{project.id}}" class="btn">Project Details</a>
-	<a href="#/record/projectId/{{project.id}}" class="btn">Map Records</a>
+    <input type="button" value="Project Details" ng-click="goProjectDetails()">   
+    <input type="button" value="Map Records" ng-click="goMapRecords()">
+    
+    <span ng-show = "currentRole === 'Administrator' || currentRole == 'Lead'">
+	    <input type="button" ng-show="glassPane == false" value="Compute Workflow" ng-click="computeWorkflow()">
+	    <span ng-show = "glassPane == true">&nbsp Computing Workflow....</span>
+	</span>
+	    <!-- GLASSPANE COMMENTED OUT FOR NOW -->
+    <!-- <input type="button" ng-show={{glassPane}} value="glassPane is true">
+    <input type="button" ng-hide={{glassPane}} value="glassPane is false">
+    
+    
+    <textarea ng-show={{glassPane}} class="top-layer">text</textarea>  -->
+    
+    
+   <!-- <div ng-switch on={{glassPane}}>
+      <textarea ng-switch-when="true" class="top-layer">text</textarea>
+   </div>   -->
 </div>
 <div ng-show="project == null">
 
 	Select a project.
 
 </div>
+

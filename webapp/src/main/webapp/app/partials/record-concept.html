@@ -1,8 +1,5 @@
 <!--  partial for displaying records associated with a concept id -->
 <h3>{{concept.terminology}} Concept {{concept.terminologyId}}:  {{concept.defaultPreferredName}}</h3>  
-
-{{recordsInProject}}
-
 <!--  No map records for this project -->
 <div ng-show = "recordsInProject.length == 0">
 	<h4><img src="img/warning-circle_25px.png">&nbspNo Map Records exist for {{focusProject.name}}</h4>

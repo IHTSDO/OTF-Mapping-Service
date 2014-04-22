@@ -4,6 +4,10 @@ import java.util.Map;
 
 public interface MapUserPreferences {
 
+	public Long getId();
+	
+	public void setId(Long id);
+	
 	public MapUser getMapUser();
 
 	public void setMapUser(MapUser mapUser);
@@ -12,9 +16,9 @@ public interface MapUserPreferences {
 
 	public void setLastLogin(Long lastLogin);
 
-	public MapProject getLastProject();
+	public Long getLastMapProjectId();
 
-	public void setLastProject(MapProject lastProject);
+	public void setLastMapProjectId(Long lastProjectId);
 
 	public Map<String, String> getDashboardModels();
 
@@ -27,5 +31,4 @@ public interface MapUserPreferences {
 	public boolean isDigestForm();
 
 	public void setDigestForm(boolean digestForm);
-
 }
