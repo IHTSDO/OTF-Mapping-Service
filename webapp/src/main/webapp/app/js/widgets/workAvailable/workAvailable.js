@@ -136,6 +136,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	// TODO Insert check before assignment
 	// TODO Implement refresh after successful claim
 	$scope.assignWork = function(trackingRecord, mapUser) {
+		
+		if (mapUser == null) mapUser = $scope.currentUser;
 
 		$http({
 			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
@@ -156,6 +158,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	// assign a batch of records to the current user
 	$scope.assignBatch = function(mapUser, batchSize) {
 		
+		if (mapUser == null) mapUser = $scope.currentUser;
+		
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": 0,
@@ -164,7 +168,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			 	 	 "filterString": null};  
 		
 		$http({
-			url: root_workflow + "availableWork/projectId/" + $scope.focusProject.id + "/user/" + $scope.currentUser.userName,
+			url: root_workflow + "availableWork/projectId/" + $scope.focusProject.id + "/user/" + mapUser.userName,
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -179,7 +183,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			var conceptListValid = true;
 			
 			// if user is viewing concepts , check that first result matches first displayed result
-			if ($scope.isConceptListOpen == true) {
+			if ($scope.isConceptListOpen == true && $scope.currentUser.userName != mapUser.userName) {
 				for (var i = 0; i < $scope.trackingRecordPerPage; i++) {
 					if (trackingRecords[i].id != $scope.availableWork[i].id) {
 						retrieveAvailableWork(1);
@@ -200,9 +204,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					terminologyIds.push(trackingRecords[i].terminologyId);
 				}
 				
+				console.debug("Calling batch assignment API: " + root_workflow + "assign/batch/projectId/" + $scope.focusProject.id 
+									   + "/user/" + mapUser.userName);
+				
 				$http({
 					url: root_workflow + "assign/batch/projectId/" + $scope.focusProject.id 
-									   + "/user/" + $scope.currentUser.userName,	
+									   + "/user/" + mapUser.userName,	
 					dataType: "json",
 					data: terminologyIds,
 					method: "POST",
@@ -211,7 +218,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					}	
 				}).success(function(data) {
 					$rootScope.$broadcast('workAvailableWidget.notification.assignWork',
-							{key: 'trackingRecords', trackingRecords: data.mapRecord});
+							{key: 'trackingRecords', trackingRecords: null}); // TODO: This used to pass actual tracking records, but model structure changed.  Need to bring in line.  Currently using the notification to retrieve assigned work in AssignedList widget
 					$scope.retrieveAvailableWork(1);
 				
 				});

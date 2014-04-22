@@ -103,9 +103,28 @@ mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($
 
 
 
-mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scope, localStorageService) {
+mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scope, $http, localStorageService) {
 
 	$scope.currentRole = localStorageService.get('currentRole');
+	
+	console.debug('in dashboardCtrl');
+	
+	// watch for preferences change
+	$scope.$on('localStorageModule.notification.setUserPreferences', function(event, parameters) { 	
+		console.debug("dashboardCtrl:  Detected change in preferences");
+		if (parameters.userPreferences != null && parameters.userPreferences != undefined) {
+			$http({
+				url: root_mapping + "userPreferences/update",
+				dataType: "json",
+				data: parameters.userPreferences,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}	
+			}).success(function(data) {
+			});
+		}
+	});
 
 	// on successful user retrieval, construct the dashboard
 	$scope.$watch('currentRole', function() {
@@ -374,8 +393,10 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 		localStorageService.clearAll();
 
 		// broadcast user/role information clearing to rest of app
-		$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', newvalue: null});  
-		$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentRole', newvalue: null});  
+		$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: null});  
+		$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: null});  
+		$rootScope.$broadcast('localStorageModule.notification.setFocusProject', {key: 'focusProject', focusProject: null});
+		$rootScope.$broadcast('localStorageModule.notificatoin.setPreferences', {key: 'preferences', preferences: null});
 
 		// broadcast page to help mechanism
 		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
@@ -395,15 +416,16 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 				"Content-Type": "application/json"
 			}	
 		}).success(function(data) {
+			$scope.projects = data.mapProject;
 			localStorageService.add('mapProjects', data.mapProject);
-			localStorageService.add('focusProject', null);
 
 		}).error(function(error) {
 			$scope.error = $scope.error + "Could not retrieve map projects. "; 
 
 		}).then(function(data) {
-			$rootScope.$broadcast('localStorageModule.notification.setMapProjects',{key: 'mapProjects', newvalue: data.mapProject});  
-			$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', newvalue: null});  
+			console.debug("broadcasting projects");
+			console.debug($scope.projects);
+			$rootScope.$broadcast('localStorageModule.notification.setMapProjects',{key: 'mapProjects', mapProjects: $scope.projects});  
 
 		});
 
@@ -427,7 +449,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 						"Content-Type": "application/json"
 					}
 				}).success(function(metadata) {
-
+					// TODO Figure out how to store metadata (i.e. what format)
 				});
 
 			}
@@ -491,8 +513,21 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 						"Content-Type": "application/json"
 					}	
 				}).success(function(data) {
+					console.debug($scope.projects);
+					console.debug(data);
 					$scope.preferences = data;
-					localStorageService.add('preferences', data);
+					$scope.preferences.lastLogin = new Date().getTime();
+					localStorageService.add('preferences', $scope.preferences);
+					for (var i = 0; i < $scope.projects.length; i++)  {
+						if ($scope.projects[i].id === $scope.preferences.lastMapProjectId) {
+							$scope.focusProject = $scope.projects[i];
+						}
+					}
+					console.debug('Last project: ');
+					console.debug($scope.focusProject);
+					localStorageService.add('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setPreferences', {key: 'preferences', preferences: $scope.preferences});
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
 				});
 
 				// add the user information to local storage
@@ -500,8 +535,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 				localStorageService.add('currentRole', $scope.role.name);
 
 				// broadcast the user information to rest of app
-				$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', newvalue: $scope.user});
-				$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', newvalue: $scope.role.name});
+				$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.user});
+				$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role.name});
 
 				// redirect page
 				$location.path(path);
@@ -537,18 +572,6 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 	});
 
 
-
-
-//	Content Services
-
-
-
-
-
-//	Specialized Services
-
-
-
 	/*
 	 * Controller for retrieving and displaying records associated with a concept
 	 */
@@ -560,11 +583,12 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 		$scope.conceptId = $routeParams.conceptId;
 		$scope.recordsInProject = [];
 		$scope.recordsNotInProject = [];
-
-		// local variables
-		var records = [];
-		var projects = [];
+		$scope.recordsInProjectNotFound = false; // set to true after record retrieval returns no records for focus project
 		$scope.focusProject = [];
+		
+		// local variables
+		var projects = [];
+
 
 		// retrieve current user and role
 		$scope.currentUser = localStorageService.get("currentUser");
@@ -666,7 +690,6 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 				}	
 			}).success(function(data) {
 				$scope.records = data.mapRecord;
-				records = data.mapRecord;
 				$scope.filterRecords();
 			}).error(function(error) {
 				$scope.error = $scope.error + "Could not retrieve records. ";    
@@ -706,6 +729,9 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 					$scope.recordsNotInProject.push($scope.records[i]);
 				}
 			}
+			
+			// if no records for this project found, set flag
+			if ($scope.recordsInProject.length == 0) $scope.recordsInProjectNotFound = true;
 		};
 
 		$scope.getProject = function(record) {
@@ -2333,14 +2359,17 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 /////////////////////////////////////////////////////
 
 
-	mapProjectAppControllers.directive('otfHeaderDirective', ['$rootScope', 'localStorageService', function($rootScope, localStorageService) {
+	mapProjectAppControllers.directive(
+			'otfHeaderDirective', 
+			['$rootScope', '$http', 'localStorageService', 
+			 function($rootScope, $http, localStorageService) {
 
 		return {
 			templateUrl: './partials/header.html',
 			restrict: 'E', 
-			transclude: true,    // allows us �swap� our content for the calling html
+			transclude: true,    // allows us swap our content for the calling html
 			replace: true,        // tells the calling html to replace itself with what�s returned here
-			link: function(scope, element, attrs) { // to get scope, the element, and its attributes
+			link: function($scope, element, attrs) { // to get $scope, the element, and its attributes
 
 				/*
 				 * NOTE: None of these functions use passed parameters at this time.
@@ -2348,46 +2377,65 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 				 * 
 				 * This is a possible optimization location if local storage becomes unwieldy
 				 */
+				
+				// on any load or refresh, update with the most current versions
+				$scope.focusProject = localStorageService.get('focusProject');
+				$scope.currentUser  = localStorageService.get('currentUser');
+				$scope.currentRole  = localStorageService.get('currentRole');
+				$scope.preferences  = localStorageService.get('preferences');
+				$scope.mapProjects  = localStorageService.get('mapProjects');
 
 
 				// watch for user change
-				scope.$on('localStorageModule.notification.setUser', function(event, parameters) { 	
-					console.debug("HEADER: Detected change in current user");
-					scope.currentUser = parameters.newvalue;
-				});	
-
-				// watch for role change
-				scope.$on('localStorageModule.notification.setRole', function(event, parameters) { 	
-					console.debug("HEADER: Detected change in current role");
-					scope.currentRole = parameters.newvalue;
-				});	
-
-				// watch for change in available projects
-				scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {	
-					console.debug("HEADER: Detected change in map projects");
-					scope.mapProjects = localStorageService.get('mapProjects');		
+				$scope.$on('localStorageModule.notification.setUser', function(event, parameters) { 	
+					console.debug("HEADER: Detected change in current user: " + parameters.currentUser);
+					$scope.currentUser = parameters.currentUser;
+				});
+				
+				// watch for user preferences change
+				$scope.$on('localStorageModule.notification.setPreferences', function(event, parameters) { 	
+					console.debug("HEADER: Detected change in preferences");
+					$scope.preferences = parameters.preferences;
 				});
 
-				scope.$on('localStorageModule.notification.page', function(event, parameters) { 	
+				// watch for role change
+				$scope.$on('localStorageModule.notification.setRole', function(event, parameters) { 	
+					console.debug("HEADER: Detected change in current role: " + parameters.currentRole);
+					$scope.currentRole = parameters.currentRole;
+				});	
+				
+				// watch for focus project change
+				$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+					console.debug("HEADER: Detected change in focus project");
+					$scope.focusProject = parameters.focusProject;
+				});
+
+				// watch for change in available projects
+				$scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {	
+					console.debug("HEADER: Detected change in map projects");
+					$scope.mapProjects = parameters.mapProjects;
+				});
+
+				// watch for help notification events
+				$scope.$on('localStorageModule.notification.page', function(event, parameters) { 	
 					console.debug("HEADER:  Detected change in page");
-					scope.page = parameters.newvalue;
+					$scope.page = parameters.newvalue;
 
 				});	
 
-				// retrieve local variables on header load or refresh
-				scope.currentUser = 	localStorageService.get('currentUser'); 
-				scope.currentRole = 	localStorageService.get('currentRole');
-				scope.preferences =     localStorageService.get('preferences');
-				scope.mapProjects = 	localStorageService.get('mapProjects');
-				scope.focusProject = 	localStorageService.get('focusProject');
-
 				// function to change project from the header
-				scope.changeFocusProject = function() {
-					console.debug(scope.focusProject);
-					console.debug("changing project to " + scope.focusProject.name);
+				$scope.changeFocusProject = function() {
+					console.debug("changing project to " + $scope.focusProject.name);
 
-					localStorageService.add('focusProject', scope.focusProject);
-					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: scope.focusProject});  
+					// update and broadcast the new focus project
+					localStorageService.add('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+				
+					// update the user preferences
+					$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+					localStorageService.add('preferences', $scope.preferences);
+					$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+					
 				};
 			}
 		};

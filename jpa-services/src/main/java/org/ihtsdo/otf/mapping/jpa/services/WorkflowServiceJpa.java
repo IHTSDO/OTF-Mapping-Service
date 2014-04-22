@@ -200,7 +200,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		Collections.sort(availableWork, new Comparator<WorkflowTrackingRecord>() {
             @Override
             public int compare(WorkflowTrackingRecord tr1, WorkflowTrackingRecord tr2) {
-              return tr1.getDefaultPreferredName().compareTo(tr2.getDefaultPreferredName());
+              return tr1.getSortKey().compareTo(tr2.getSortKey());
             }
 		});
 		
@@ -252,7 +252,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		Collections.sort(availableConflicts, new Comparator<WorkflowTrackingRecord>() {
             @Override
             public int compare(WorkflowTrackingRecord tr1, WorkflowTrackingRecord tr2) {
-              return tr1.getDefaultPreferredName().compareTo(tr2.getDefaultPreferredName());
+            	return tr1.getSortKey().compareTo(tr2.getSortKey());
             }
 		});
 		
@@ -408,7 +408,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		Collections.sort(availableConsensus, new Comparator<WorkflowTrackingRecord>() {
             @Override
             public int compare(WorkflowTrackingRecord tr1, WorkflowTrackingRecord tr2) {
-              return tr1.getDefaultPreferredName().compareTo(tr2.getDefaultPreferredName());
+            	return tr1.getSortKey().compareTo(tr2.getSortKey());
             }
 		});
 

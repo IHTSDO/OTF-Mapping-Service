@@ -698,18 +698,17 @@ public class MappingServiceRest {
    * @param userName 
    * @return result the newly created map user preferences object
    */
-  @PUT
+  @GET
   @Path("/userPreferences/{userName}")
-  @Consumes({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @ApiOperation(value = "Gets a user preferences object", notes = "Gets a MapUserPreferences", response = MapUserPreferencesJpa.class)
   public MapUserPreferences getMapUserPreferences(
-    @ApiParam(value = "The map user preferences object to add", required = true) String userName) {
+    @ApiParam(value = "The map user preferences object to add", required = true) @PathParam("userName") String userName) {
 
+	Logger.getLogger(MappingServiceRest.class).info("RESTful call:  getMapUserPreferences for " + userName);
+	  
     try {
       MappingService mappingService = new MappingServiceJpa();
       MapUserPreferences result = mappingService.getMapUserPreferences(userName);
@@ -809,9 +808,6 @@ public class MappingServiceRest {
   @POST
   @Path("/userPreferences/update")
   @Consumes({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @ApiOperation(value = "Update a set of map user preferences", notes = "Updates a set of map user preferences", response = MapUserPreferencesJpa.class)
