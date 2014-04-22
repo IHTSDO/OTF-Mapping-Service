@@ -1690,7 +1690,7 @@ public class MappingServiceJpa implements MappingService {
 			if (c == null) {
 			  Logger.getLogger(this.getClass()).error("Scope concept " + conceptId + " does not exist.");
 			  continue;
-			  // TODO: fix this adn then throw an exception here
+			  // TODO: fix this and then throw an exception here
 			}
 			SearchResult sr = new SearchResultJpa();
 			sr.setId(c.getId());
@@ -1748,56 +1748,54 @@ public class MappingServiceJpa implements MappingService {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MappingService#findUnmappedConceptsInScope
-	 * (org.ihtsdo.otf.mapping.model.MapProject)
-	 */
-	@Override
-	public SearchResultList findUnmappedConceptsInScope(Long mapProjectId)
-			throws Exception {
-      Logger.getLogger(this.getClass()).info("Find unmapped concepts in scope for " 
-          + mapProjectId);
-		SearchResultList conceptsInScope = findConceptsInScope(mapProjectId);
-        Logger.getLogger(this.getClass()).info("  Project has " + conceptsInScope.getTotalCount() +
-            " concepts in scope");
-		SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MappingService#findUnmappedConceptsInScope
+   * (org.ihtsdo.otf.mapping.model.MapProject)
+   */
+  @Override
+  public SearchResultList findUnmappedConceptsInScope(Long mapProjectId)
+    throws Exception {
+    Logger.getLogger(this.getClass()).info(
+        "Find unmapped concepts in scope for " + mapProjectId);
+    // Get in scope concepts
+    SearchResultList conceptsInScope = findConceptsInScope(mapProjectId);
+    Logger.getLogger(this.getClass()).info(
+        "  Project has " + conceptsInScope.getTotalCount()
+            + " concepts in scope");
 
-		// take everything in scope for the project minus concepts with mappings
-		// (in that project) with workflow status of PUBLISHED or
-		// READY_FOR_PUBLICATION
-		for (SearchResult sr : conceptsInScope.getSearchResults()) {
-			// if concept has no associated map records, add to list
-			List<MapRecord> mapRecords =
-					getMapRecordsForConcept(sr.getTerminologyId()).getMapRecords();
-			boolean foundEndStage = false;
-			boolean mappingProjectFound = false;
-			for (MapRecord mapRecord : mapRecords) {
-			  if (mapRecord.getMapProjectId().equals(mapProjectId)) {
-			    mappingProjectFound = true;
-			  }
-			    
-			  if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
-						|| mapRecord.getWorkflowStatus().equals(
-								WorkflowStatus.READY_FOR_PUBLICATION)) {
-					foundEndStage = true;
-					break;
-				}
-			}
-			if (mappingProjectFound && !foundEndStage) {
-				unmappedConceptsInScope.addSearchResult(sr);
-			}
-		}
-		unmappedConceptsInScope.setTotalCount(unmappedConceptsInScope.getCount());
-		
-        Logger.getLogger(this.getClass()).info("  Project has " + 
-            unmappedConceptsInScope.getTotalCount() +
-            " unmapped concepts in scope");
+    //
+    // Look for concept ids that have publication records in the current project
+    //
+    Set<String> mappedConcepts = new HashSet<>();
+    for (MapRecord mapRecord : getMapRecordsForMapProject(mapProjectId)
+        .getIterable()) {
+      if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+          || mapRecord.getWorkflowStatus().equals(
+              WorkflowStatus.READY_FOR_PUBLICATION)) {
+        mappedConcepts.add(mapRecord.getConceptId());
+      }
+    }
 
-		return unmappedConceptsInScope;
-	}
+    //
+    // Keep any search results that do not have mapped concepts
+    //
+    SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
+    for (SearchResult sr : conceptsInScope.getSearchResults()) {
+      if (! mappedConcepts.contains(sr.getTerminologyId())) {
+        unmappedConceptsInScope.addSearchResult(sr);
+      }
+    }
+    unmappedConceptsInScope.setTotalCount(unmappedConceptsInScope.getCount());
+
+    Logger.getLogger(this.getClass()).info(
+        "  Project has " + unmappedConceptsInScope.getTotalCount()
+            + " unmapped concepts in scope");
+
+    return unmappedConceptsInScope;
+  }
 
 	/*
 	 * (non-Javadoc)
