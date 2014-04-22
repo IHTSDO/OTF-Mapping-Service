@@ -95,7 +95,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			for (MapProject mapProject : mapProjects) {
 				getLog().info(
-						"  Computig workflow for " + mapProject.getName() + ", "
+						"Computing workflow for " + mapProject.getName() + ", "
 								+ mapProject.getId());
 				workflowService.computeWorkflow(mapProject);
 			}
