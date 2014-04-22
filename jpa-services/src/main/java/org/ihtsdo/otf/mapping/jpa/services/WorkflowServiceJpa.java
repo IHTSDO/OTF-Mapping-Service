@@ -696,8 +696,10 @@ public class WorkflowServiceJpa implements WorkflowService {
 	 */
 	@Override
 	public void computeWorkflow(MapProject mapProject) throws Exception {
+      Logger.getLogger(WorkflowServiceJpa.class).info("Start computing workflow for " + mapProject.getName());
 
 		// Clear the workflow for this project
+      Logger.getLogger(WorkflowServiceJpa.class).info("  Clear old workflow");
 		clearWorkflowForMapProject(mapProject);
 
 		// open the services
@@ -705,9 +707,13 @@ public class WorkflowServiceJpa implements WorkflowService {
 		MappingService mappingService = new MappingServiceJpa();
 
 		// find the unmapped concepts in scope
+        Logger.getLogger(WorkflowServiceJpa.class).info("  Find unmapped concepts in scope");
 		SearchResultList unmappedConceptsInScope = mappingService.findUnmappedConceptsInScope(mapProject.getId());
+        Logger.getLogger(WorkflowServiceJpa.class).info("    Found = " + unmappedConceptsInScope.getTotalCount());
 
 		for (SearchResult sr : unmappedConceptsInScope.getSearchResults()) {
+          Logger.getLogger(WorkflowServiceJpa.class).info("  Create tracking record for " 
+              + sr.getTerminologyId());
 
 			// retrieve the concept for this result
 			Concept concept = contentService.getConcept(sr.getTerminologyId(), sr.getTerminology(), sr.getTerminologyVersion());
@@ -735,16 +741,19 @@ public class WorkflowServiceJpa implements WorkflowService {
 			List<MapRecord> mapRecords = mappingService.getMapRecordsForConcept(concept.getTerminologyId()).getMapRecords();
 
 			// cycle over records retrieved
+            Logger.getLogger(WorkflowServiceJpa.class).info("    Find existing map records");
 			for (MapRecord mapRecord : mapRecords) {
 
 				// if this record belongs to project, add it to tracking record
 				if (mapRecord.getMapProjectId().equals(mapProject.getId())) {				 
+	                Logger.getLogger(WorkflowServiceJpa.class).info("      found - " + 
+	                    mapRecord.getId() + " " + mapRecord.getOwner());
 					trackingRecord.addMapRecord(mapRecord);
 				}
 			}
 		}
 
-		Logger.getLogger(WorkflowServiceJpa.class).info("Done computing workflow");
+        Logger.getLogger(WorkflowServiceJpa.class).info("Done computing workflow");
 
 		if (getTransactionPerOperation()) {
 			EntityTransaction tx = manager.getTransaction();

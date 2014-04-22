@@ -34,9 +34,6 @@ public class InitializationListener implements AbstractResourceModelListener {
    */
   @Override
   public void onLoaded(AbstractResourceModelContext modelContext) {
-    Logger.getLogger(this.getClass()).info(
-        "Computing list of conflict records.");
-
     // Set up a timer task to run at 2AM every day
     TimerTask task = new ComputeCompareFinishedRecordsTask();
     timer = new Timer();

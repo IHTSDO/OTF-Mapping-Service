@@ -297,6 +297,7 @@ public class ContentServiceJpa implements ContentService {
 			searchResult.setValue(values[2].toString());
 			searchResultList.addSearchResult(searchResult);
 		}
+        searchResultList.setTotalCount(searchResultList.getCount());
 		return searchResultList;
 	}
 
@@ -467,6 +468,7 @@ public class ContentServiceJpa implements ContentService {
 			searchResult.setValue(values[1].toString());
 			searchResultList.addSearchResult(searchResult);
 		}
+        searchResultList.setTotalCount(searchResultList.getCount());
 		return searchResultList;
 	}
 
@@ -520,6 +522,7 @@ public class ContentServiceJpa implements ContentService {
 			searchResultList.addSearchResult(searchResult);
 		}
 
+        searchResultList.setTotalCount(searchResultList.getCount());
 		return searchResultList;
 	}
 

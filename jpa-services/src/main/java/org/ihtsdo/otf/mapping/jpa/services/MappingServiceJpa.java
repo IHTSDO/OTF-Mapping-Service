@@ -1668,7 +1668,9 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public SearchResultList findConceptsInScope(Long mapProjectId)
 			throws Exception {
-		MapProject project = getMapProject(mapProjectId);
+      Logger.getLogger(this.getClass()).info("Find concepts in scope for " + mapProjectId);
+
+      MapProject project = getMapProject(mapProjectId);
 		SearchResultList conceptsInScope = new SearchResultListJpa();
 
 		ContentService contentService = new ContentServiceJpa();
@@ -1676,9 +1678,20 @@ public class MappingServiceJpa implements MappingService {
 		String terminology = project.getSourceTerminology();
 		String terminologyVersion = project.getSourceTerminologyVersion();
 
-		for (String conceptId : project.getScopeConcepts()) {
+		// Avoid including the scope concepts themselves in the definition
+        // if we are looking for descendants
+		// e.g. "Clinical Finding" does not need to be mapped for SNOMED->ICD10
+		if (!project.isScopeDescendantsFlag()) {
+          Logger.getLogger(this.getClass()).info("  Project not using scope descendants flag - " + 
+              project.getScopeConcepts());
+		  for (String conceptId : project.getScopeConcepts()) {
 			Concept c =
 					contentService.getConcept(conceptId, terminology, terminologyVersion);
+			if (c == null) {
+			  Logger.getLogger(this.getClass()).error("Scope concept " + conceptId + " does not exist.");
+			  continue;
+			  // TODO: fix this adn then throw an exception here
+			}
 			SearchResult sr = new SearchResultJpa();
 			sr.setId(c.getId());
 			sr.setTerminologyId(c.getTerminologyId());
@@ -1686,23 +1699,27 @@ public class MappingServiceJpa implements MappingService {
 			sr.setTerminologyVersion(c.getTerminologyVersion());
 			sr.setValue(c.getDefaultPreferredName());
 			conceptsInScope.addSearchResult(sr);
+		  }
 		}
 
+		// Include descendants in scope.
 		if (project.isScopeDescendantsFlag()) {
-
+          Logger.getLogger(this.getClass()).info("  Project using scope descendants flag");
 			// for each scope concept, get descendants
 			for (String terminologyId : project.getScopeConcepts()) {
 				SearchResultList descendants =
-
 						contentService.findDescendantsFromTreePostions(terminologyId,
 								terminology, terminologyVersion);
 
+	            Logger.getLogger(this.getClass()).info("    Concept " + terminologyId + 
+	                " has " + descendants.getTotalCount() + " descendants");
 				// cycle over descendants
 				for (SearchResult sr : descendants.getSearchResults()) {
 					conceptsInScope.addSearchResult(sr);
 				}
 			}
 		}
+
 		contentService.close();
 		// get those excluded from scope
 		SearchResultList excludedResultList =
@@ -1716,9 +1733,10 @@ public class MappingServiceJpa implements MappingService {
 			}
 		}
 
+        finalConceptsInScope.setTotalCount(finalConceptsInScope.getCount());
 		Logger.getLogger(this.getClass()).info(
-				"Finished getting scope concepts. size:"
-						+ finalConceptsInScope.getCount());
+				"Finished getting scope concepts - "
+						+ finalConceptsInScope.getTotalCount());
 
 		/**
 		 * PrintWriter writer = new PrintWriter("C:/data/inScopeConcepts.txt",
@@ -1740,7 +1758,11 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public SearchResultList findUnmappedConceptsInScope(Long mapProjectId)
 			throws Exception {
+      Logger.getLogger(this.getClass()).info("Find unmapped concepts in scope for " 
+          + mapProjectId);
 		SearchResultList conceptsInScope = findConceptsInScope(mapProjectId);
+        Logger.getLogger(this.getClass()).info("  Project has " + conceptsInScope.getTotalCount() +
+            " concepts in scope");
 		SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
 
 		// take everything in scope for the project minus concepts with mappings
@@ -1751,17 +1773,28 @@ public class MappingServiceJpa implements MappingService {
 			List<MapRecord> mapRecords =
 					getMapRecordsForConcept(sr.getTerminologyId()).getMapRecords();
 			boolean foundEndStage = false;
+			boolean mappingProjectFound = false;
 			for (MapRecord mapRecord : mapRecords) {
-				if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
+			  if (mapRecord.getMapProjectId().equals(mapProjectId)) {
+			    mappingProjectFound = true;
+			  }
+			    
+			  if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
 						|| mapRecord.getWorkflowStatus().equals(
 								WorkflowStatus.READY_FOR_PUBLICATION)) {
 					foundEndStage = true;
 					break;
 				}
 			}
-			if (!foundEndStage)
+			if (mappingProjectFound && !foundEndStage) {
 				unmappedConceptsInScope.addSearchResult(sr);
+			}
 		}
+		unmappedConceptsInScope.setTotalCount(unmappedConceptsInScope.getCount());
+		
+        Logger.getLogger(this.getClass()).info("  Project has " + 
+            unmappedConceptsInScope.getTotalCount() +
+            " unmapped concepts in scope");
 
 		return unmappedConceptsInScope;
 	}
@@ -1818,7 +1851,7 @@ public class MappingServiceJpa implements MappingService {
 		String terminologyVersion = project.getSourceTerminologyVersion();
 
 		// add specified excluded concepts
-		for (String conceptId : project.getScopeExcludedConcepts()) {
+        for (String conceptId : project.getScopeExcludedConcepts()) {
 			Concept c =
 					contentService.getConcept(conceptId, terminology, terminologyVersion);
 			if (c != null) {
@@ -1850,9 +1883,10 @@ public class MappingServiceJpa implements MappingService {
 		}
 
 		contentService.close();
+		conceptsExcludedFromScope.setTotalCount(conceptsExcludedFromScope.getCount());
 		Logger.getLogger(this.getClass()).info(
-				"conceptsExcludedFromScope.size:"
-						+ conceptsExcludedFromScope.getCount());
+            "Concepts excluded from scope " +
+                    + conceptsExcludedFromScope.getTotalCount());
 		return conceptsExcludedFromScope;
 
 	}
