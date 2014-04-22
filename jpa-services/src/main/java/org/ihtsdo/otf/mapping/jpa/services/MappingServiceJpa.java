@@ -2912,10 +2912,31 @@ public class MappingServiceJpa implements MappingService {
 
 	@Override
 	public MapUserPreferences getMapUserPreferences(String userName) {
-		javax.persistence.Query query = manager.createQuery("select m from MapUserPreferencesJpa m where userName = :userName")
-				.setParameter("userName", userName);
-		MapUserPreferences m = (MapUserPreferences) query.getSingleResult();
-
+		
+		System.out.println("Finding user " + userName);
+		MapUser mapUser = getMapUser(userName);
+		javax.persistence.Query query = manager.createQuery("select m from MapUserPreferencesJpa m where mapUser_id = :mapUser_id")
+				.setParameter("mapUser_id", mapUser.getId());
+		
+		MapUserPreferences m;
+		try {
+			m = (MapUserPreferences) query.getSingleResult();
+		}
+			
+		// catch no result exception and create default user preferences
+		catch (NoResultException e) {
+			
+			// create object
+			m = new MapUserPreferencesJpa();
+			m.setMapUser(mapUser); // set the map user
+			MapProjectList mapProjects = getMapProjects();
+			m.setLastMapProjectId( mapProjects.getIterable().iterator().next().getId() ); // set a default project to 1st project found
+			
+			// add object
+			addMapUserPreferences(m);
+		} 
+		
+		// return preferences
 		return m;
 	}
 
