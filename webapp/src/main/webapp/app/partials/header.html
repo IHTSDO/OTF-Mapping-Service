@@ -5,78 +5,67 @@
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse"
-        data-target="#bs-example-navbar-collapse-1">
-        <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span>
-        <span class="icon-bar"></span> <span class="icon-bar"></span>
-      </button>
-      <img class="pull-left" src="img/ihtsdo_logo.png" height="50px"> <span
-        class="navbar-brand">OTF Mapping Tool</span>
+      <img class="pull-left" src="img/ihtsdo_logo.png" height="50px">
+      <p class="navbar-brand">OTF Mapping Tool</p>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav navbar-right">
-        <li><span class="navbar-text" ng-show="currentUser.name != null">{{currentUser.name}}
-            ({{currentRole}}) <!--  Logout tools --> &nbsp; <span
-            ng-show="currentUser.name != null" title="Log out"><a
+        <li>
+          <!--  Username and logout tool -->
+          <p class="navbar-text" ng-show="currentUser.name != null">
+            {{currentUser.name}} ({{currentRole}}) &nbsp; <a
+              ng-show="currentUser.name != null" title="Log out"
               href="index.html#/" ng-click="go('/project/projects/')"><i
-                class="glyphicon glyphicon-log-out"></i></a> </span>
-        </span></li>
-        <li><span class="navbar-text" ng-show="currentUser.name != null">Current
-            Project: <select style="max-width: 200px" ng-model="focusProject"
-            ng-change="changeFocusProject()"
-            ng-options="mapProject as mapProject.name for mapProject in mapProjects">
-          </select>
-        </span></li>
-        <li><span class="navbar-text"> 
-        <!--  Dashboard tools --> <span
-            ng-show="currentRole === 'Viewer'" title="Dashboard"><a
+              class="glyphicon glyphicon-log-out"></i></a>
+          </p>
+        </li>
+        <li>
+          <!-- Focus Project tool -->
+          <p class="navbar-text" ng-show="currentUser.name != null">
+            Current Project: <select style="max-width: 200px"
+              ng-model="focusProject" ng-change="changeFocusProject()"
+              ng-options="mapProject as mapProject.name for mapProject in mapProjects">
+            </select>
+          </p>
+        </li>
+        <li>
+          <p class="navbar-text">
+
+            <!-- Dashboard tool (by role) -->
+
+            <a ng-show="currentRole === 'Viewer'" title="Dashboard"
               href="index.html#/project/projects/"><i
-                class="glyphicon glyphicon-stats"></i></a></span> <span
-            ng-show="currentRole === 'Specialist'" title="Dashboard"><a
+              class="glyphicon glyphicon-stats"></i></a> 
+              
+            <a ng-show="currentRole === 'Specialist'" title="Dashboard"
               href="index.html#/specialist/dash"><i
-                class="glyphicon glyphicon-stats"></i></a></span> <span
-            ng-show="currentRole === 'Lead'" title="Dashboard"><a
+              class="glyphicon glyphicon-stats"></i></a> 
+                            
+            <a ng-show="currentRole === 'Lead'" title="Dashboard"
               href="index.html#/lead/dash"><i
-                class="glyphicon glyphicon-stats"></i></a></span> <span
-            ng-show="currentRole === 'Administrator'" title="Dashboard"><a
+                class="glyphicon glyphicon-stats"></i></a>
+            
+            <a ng-show="currentRole === 'Administrator'" title="Dashboard"
               href="index.html#/admin/dash"><i
-                class="glyphicon glyphicon-stats"></i></a></span> &nbsp; 
+                class="glyphicon glyphicon-stats"></i></a> 
                 
-          <!--  Help tools (by role) -->
-          <span ng-show="page == 'mainDashboard' && currentRole === 'Viewer'" title="Help"> <a
-              href="doc/viewerHelp.html" target="_blank"><i
-                class="glyphicon glyphicon-question-sign"></i></a> &nbsp;
-          </span> <span ng-show="page == 'mainDashboard' && currentRole === 'Specialist'" title="Help"> <a
-              href="doc/specialistHelp.html" target="_blank"><i
-                class="glyphicon glyphicon-question-sign"> </i></a> &nbsp;
-          </span> <span ng-show="page == 'mainDashboard' && currentRole === 'Lead'" title="Help"> <a
-              href="doc/leadHelp.html" target="_blank"><i
-                class="glyphicon glyphicon-question-sign"></i></a>&nbsp;
-          </span> <span ng-show="page == 'mainDashboard' && currentRole === 'Administrator'" title="Help">
-              <a href="doc/administratorHelp.html" target="_blank"><i
-                class="glyphicon glyphicon-question-sign"> </i></a>&nbsp;
-          </span> <span ng-show="page == 'login'" title="Help"> <a
-              href="doc/loginHelp.html" target="_blank"><i
-                class="glyphicon glyphicon-question-sign"> </i></a>&nbsp;
-          </span> <span ng-show="page == 'editDashboard'" title="Help"> <a
-              href="doc/editDashboardHelp.html" target="_blank"><i
-                class="glyphicon glyphicon-question-sign"> </i></a>&nbsp;
-          </span> <span ng-show="page == 'concept'" title="Help"> <a
-              href="doc/conceptHelp.html" target="_blank"><i
-                class="glyphicon glyphicon-question-sign"> </i></a>&nbsp;
-          </span> <span ng-show="page == 'project'" title="Help"> <a
-              href="doc/projectHelp.html" target="_blank"><i
-                class="glyphicon glyphicon-question-sign"> </i></a>&nbsp;
-          </span> <span ng-show="page == 'records'" title="Help"> <a
-              href="doc/recordsHelp.html" target="_blank"><i
-                class="glyphicon glyphicon-question-sign"> </i></a>&nbsp;
-          </span> <span ng-show="page == 'resolveConflictsDashboard'" title="Help">
-              <a href="doc/resolveConflictsDashboardHelp.html" target="_blank"><i
-                class="glyphicon glyphicon-question-sign"> </i></a>&nbsp;
-          </span>
-        </span></li>
+            &nbsp;
+             
+            <!-- Help tool -->
+ 
+            <a ng-show="page != 'mainDashboard'" title="Help"
+            href="doc/{{page}}Help.html"><i
+               class="glyphicon glyphicon-question-sign"></i></a>
+ 
+            <a ng-show="page == 'mainDashboard'" title="Help"
+             href="doc/{{currentRole}}DashboardHelp.html"><i
+                class="glyphicon glyphicon-question-sign"></i></a>
+ 
+            &nbsp;              
+          </p>
+        </li>
       </ul>
 
     </div>
