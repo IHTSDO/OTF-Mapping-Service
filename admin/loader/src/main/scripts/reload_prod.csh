@@ -61,7 +61,7 @@ echo "    Create ICD10 map records ...`/bin/date`"
 cd $OTF_MAPPING_HOME/admin/loader
 mvn -PCreateMapRecords -Drun.config=prod -Drefset.id=447562003 install >&! mvn.log
 if ($status != 0) then
-    echo "ERROR creating ICD10 and ICD9CM map records"
+    echo "ERROR creating ICD10 map records"
     cat mvn.log
     exit 1
 endif
@@ -70,7 +70,7 @@ echo "    Create ICD9CM map records ...`/bin/date`"
 cd $OTF_MAPPING_HOME/admin/loader
 mvn -PCreateMapRecords -Drun.config=prod -Drefset.id=447563008 install >&! mvn.log
 if ($status != 0) then
-    echo "ERROR creating ICD10 and ICD9CM map records"
+    echo "ERROR creating ICD9CM map records"
     cat mvn.log
     exit 1
 endif
@@ -92,6 +92,17 @@ if ($status != 0) then
     cat mvn.log
     exit 1
 endif
+
+echo "    Compute workflow ...`/bin/date`"
+cd $OTF_MAPPING_HOME/admin/loader
+mvn -PComputeWorkflow -Drun.config=prod -Drefset.id=447563008,447562003,450993002 install >&! mvn.log
+if ($status != 0) then
+    echo "ERROR computing workflow"
+    cat mvn.log
+    exit 1
+endif
+
+
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"
