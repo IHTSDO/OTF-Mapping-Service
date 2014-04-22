@@ -15,6 +15,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -87,6 +88,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
 	 * @return the map user
 	 */
 	@Override
+	@XmlElement(type = MapUserJpa.class, name = "mapUser")
 	public MapUser getMapUser() {
 		return mapUser;
 	}

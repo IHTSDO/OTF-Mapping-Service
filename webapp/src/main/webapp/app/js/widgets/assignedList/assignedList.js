@@ -29,9 +29,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	});	
 
 	$scope.$on('availableWork.notification.assignWork', function(event, parameters) {
-
 		$scope.retrieveAssignedWork(1);
-
+		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+			$scope.retrieveAssignedConflicts(1);
+		}
 	});
 
 	// on any change of focusProject, retrieve new available work
