@@ -104,13 +104,13 @@ mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($
 
 
 mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scope, localStorageService) {
-	$scope.modelName = 'userDashboard';
-	$scope.model = {};
 
 	$scope.currentRole = localStorageService.get('currentRole');
 
 	// on successful user retrieval, construct the dashboard
 	$scope.$watch('currentRole', function() {
+		
+		console.debug("Setting the dashboard based on role: " + $scope.currentRole);
 
 		/**
 		 * Viewer has the following widgets:
@@ -143,7 +143,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 			$scope.model = {
 
 					structure: "12/6-6/12",
-					rows: [{
+					rows: [{	
 						columns: [{
 							class: 'col-md-12',
 							widgets: [{
@@ -191,6 +191,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 			 */
 		} else if ($scope.currentRole === 'Lead') {
 
+			console.debug("Setting model for lead");
+			
 			$scope.model = {
 
 					structure: "12/6-6/12",
@@ -242,6 +244,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 						}]
 					}]
 			};
+			
+			console.debug($scope.model);
 
 			/** Admin has the following widgets
 			 * - MapProject
@@ -281,6 +285,10 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 		}
 
 		$scope.$on('adfDashboardChanged', function (event, name, model) {
+			console.debug('adfDashboardChanged in DashBoardCtrl');
+			console.debug(event);
+			console.debug(name);
+			console.debug(model);
 			$scope.model = model;
 		});
 	});
@@ -357,6 +365,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 //	Navigation
 
+	// TODO:  Much of this is app initialization, should be moved into a .run or .config section
 
 	mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService', '$rootScope', '$location', '$http',
 	                                                  function ($scope, localStorageService, $rootScope, $location, $http) {
@@ -375,6 +384,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 		$scope.user = null;
 		$scope.users = null;
 		$scope.error = null;
+		$scope.preferences = null;
 
 		// retrieve projects for focus controls
 		$http({
@@ -471,12 +481,23 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 			if ($scope.user == null) {
 				alert("You must specify a user");
 			} else {
+				
+				// retrieve the user preferences
+				$http({
+					url: root_mapping + "userPreferences/" + $scope.user.userName,
+					dataType: "json",
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json"
+					}	
+				}).success(function(data) {
+					$scope.preferences = data;
+					localStorageService.add('preferences', data);
+				});
 
 				// add the user information to local storage
 				localStorageService.add('currentUser', $scope.user);
 				localStorageService.add('currentRole', $scope.role.name);
-
-
 
 				// broadcast the user information to rest of app
 				$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', newvalue: $scope.user});
@@ -2355,7 +2376,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 				// retrieve local variables on header load or refresh
 				scope.currentUser = 	localStorageService.get('currentUser'); 
-				scope.currentRole = 	localStorageService.get('currentRole');         
+				scope.currentRole = 	localStorageService.get('currentRole');
+				scope.preferences =     localStorageService.get('preferences');
 				scope.mapProjects = 	localStorageService.get('mapProjects');
 				scope.focusProject = 	localStorageService.get('focusProject');
 

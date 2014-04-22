@@ -93,15 +93,18 @@ mapProjectApp.config(['$routeProvider',
 	  //////////////////////////////
 	  
 	  $routeProvider.when('/specialist/dash', {
-		  templateUrl: 'partials/project-list.html'
+		  templateUrl: 'partials/dashboard.html',
+		  controller: 'dashboardCtrl'
 	  });
 	  
 	  $routeProvider.when('/lead/dash', {
-		  templateUrl: 'partials/project-list.html'
+		  templateUrl: 'partials/dashboard.html',
+			  controller: 'dashboardCtrl'
 	  });
 	  
 	  $routeProvider.when('/admin/dash', {
-		  templateUrl: 'partials/project-list.html'
+		  templateUrl: 'partials/dashboard.html',
+		  controller: 'dashboardCtrl'
 	  });
 	
       //////////////////////////////
@@ -109,8 +112,8 @@ mapProjectApp.config(['$routeProvider',
 	  //////////////////////////////
 	  
 	  $routeProvider.when('/project/projects', {
-		  templateUrl: 'partials/project-list.html'//, 
-		  //controller: 'MapProjectListCtrl'
+		  templateUrl: 'partials/dashboard.html', 
+		  controller: 'dashboardCtrl'
 	  });
 	  
 	  $routeProvider.when('/record/projectId/:projectId', {

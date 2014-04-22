@@ -20,7 +20,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	});
 })
 
-.controller('terminologyBrowserWidgetCtrl', function($scope, $rootScope, $q, $timeout, $http, $routeParams, localStorageService, terminology){
+.controller('terminologyBrowserWidgetCtrl', function($scope, $rootScope, $q, $timeout, $http, $routeParams, localStorageService, metadataService, terminology){
 
 	$scope.terminology = terminology.name;
 	$scope.terminologyVersion = terminology.version;
@@ -28,6 +28,36 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	
 	// initialize currently displayed concept as empty object
 	$scope.currentConcept = {};
+	$scope.descTypes = {};
+	$scope.relTypes = {};
+	
+	// retrieve the metadata
+	metadataService.get(terminology.name).then(function(response) {
+		$scope.metadata = response.keyValuePairList;
+		
+		// find the description and relation type metadata and convert to normal JSON object structure
+		for (var i = 0; i < $scope.metadata.length; i++) {
+			if ($scope.metadata[i].name === 'descriptionTypes') {
+				
+				for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
+					$scope.descTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
+				}
+				
+			}
+			else if ($scope.metadata[i].name === 'relationshipTypes') {
+				for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
+					$scope.relTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
+				}
+			}
+		}
+		
+		console.debug("Desc types:");
+		console.debug($scope.descTypes);
+		
+		console.debug("Rel types:");
+		console.debug($scope.relTypes);
+		
+	});
 	
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
@@ -153,9 +183,10 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		
 		console.debug('terminologyId' in $scope.currentConcept);
 		
+		
 		// if called when currently displayed, clear current concept
 		if ('terminologyId' in $scope.currentConcept && $scope.currentConcept.terminologyId === terminologyId) {
-			$scope.currentConcept = {};
+			$scope.currentConcept = [];
 		
 		// otherwise, retrieve and display this concept
 		} else {
@@ -172,6 +203,65 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			}).success (function(response) {
 				
 				$scope.currentConcept = response;
+				$scope.currentConceptDescriptionGroups = [];
+				$scope.currentConceptRelationshipGroups = [];
+
+				// discover what description descTypes are present
+				var descTypes = {}
+				for (var i = 0; i < $scope.currentConcept.description.length; i++) {
+					
+					if (! ( $scope.currentConcept.description[i].typeId in descTypes )) {
+						
+						if ($scope.descTypes[$scope.currentConcept.description[i].typeId].indexOf('Preferred') == -1) {
+								descTypes[$scope.currentConcept.description[i].typeId] = 
+									$scope.descTypes[$scope.currentConcept.description[i].typeId];
+						}
+					}
+				};
+				console.debug(descTypes);
+				
+				// cycle over discovered descTypes
+				for (var key in descTypes) {
+					// get the descriptions for this type
+					var descGroup = {};
+					descGroup['name'] = descTypes[key];
+					descGroup['descriptions'] = getConceptElementsByTypeId($scope.currentConcept.description, key);
+					
+					
+					$scope.currentConceptDescriptionGroups.push(descGroup);
+				}
+				
+				console.debug($scope.currentConceptDescriptionGroups);
+				
+				// discover what relationship relTypes are present
+				var relTypes = {};
+				for (var i = 0; i < $scope.currentConcept.relationship.length; i++) {
+					
+					if (! ( $scope.currentConcept.relationship[i].typeId in relTypes )) {
+						
+						console.debug("TYPE ID:");
+						console.debug($scope.currentConcept.relationship[i].typeId);
+						
+						if ($scope.relTypes[$scope.currentConcept.relationship[i].typeId].indexOf('Isa') == -1) {
+								relTypes[$scope.currentConcept.relationship[i].typeId] = 
+									$scope.relTypes[$scope.currentConcept.relationship[i].typeId];
+						}
+					}
+				};
+				console.debug(relTypes);
+				
+				// cycle over discovered relTypes
+				for (var key in relTypes) {
+					// get the relationships for this type
+					var relGroup = {};
+					relGroup['name'] = relTypes[key];
+					relGroup['relationships'] = getConceptElementsByTypeId($scope.currentConcept.relationship, key);
+					
+					
+					$scope.currentConceptRelationshipGroups.push(relGroup);
+				}
+				
+				console.debug($scope.currentConceptRelationshipGroups);
 				
 			// otherwise display an error message
 			}).error(function(response) {
@@ -181,8 +271,20 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		};
 	};
 	
-	$scope.truncate = function(string) {
-		if (string.length > 100) return string.slice(0, 96) + "...";
+	// given a typeId and a list of elements, returns those elements with matching typeId
+	function getConceptElementsByTypeId(elements, typeId) {
+		var elementsByTypeId = [];
+		for (var i = 0; i < elements.length; i++) {
+			if (String(elements[i].typeId) === String(typeId)) {
+				elementsByTypeId.push(elements[i]);
+			}
+		}
+		return elementsByTypeId;
+	};
+	
+	$scope.truncate = function(string, length) {
+		if (length == null) length = 100;
+		if (string.length > length) return string.slice(0, length-3) + "...";
 		else return string;
 	};
 	
