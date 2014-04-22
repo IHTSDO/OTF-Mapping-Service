@@ -24,7 +24,7 @@
 		<div collapse="!(node0.terminologyId == currentConcept.terminologyId)">
 			
 			<div class="well well-sm">
-				<strong>Descriptions</strong><br>
+				<strong  ng-show= "descriptionGroup.length > 0">Descriptions</strong><br>
 				<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 					<em>{{descriptionGroup.name}}</em>
 					<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
@@ -58,7 +58,7 @@
 				<div collapse="!(node1.terminologyId == currentConcept.terminologyId)">
 			
 				<div class="well well-sm">
-					<strong>Descriptions</strong><br>
+					<strong  ng-show= "descriptionGroup.length > 0">Descriptions</strong><br>
 					<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 						<em>{{descriptionGroup.name}}</em>
 						<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
@@ -91,7 +91,7 @@
 						<div collapse="!(node2.terminologyId == currentConcept.terminologyId)">
 			
 							<div class="well well-sm">
-								<strong>Descriptions</strong><br>
+								<strong  ng-show= "descriptionGroup.length > 0">Descriptions</strong><br>
 								<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 									<em>{{descriptionGroup.name}}</em>
 									<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
@@ -124,7 +124,7 @@
 								<div collapse="!(node3.terminologyId == currentConcept.terminologyId)">
 			
 								<div class="well well-sm">
-									<strong>Descriptions</strong><br>
+									<strong  ng-show= "descriptionGroup.length > 0">Descriptions</strong><br>
 									<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 										<em>{{descriptionGroup.name}}</em>
 										<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
@@ -157,7 +157,7 @@
 										<div collapse="!(node4.terminologyId == currentConcept.terminologyId)">
 			
 											<div class="well well-sm">
-												<strong>Descriptions</strong><br>
+												<strong  ng-show= "descriptionGroup.length > 0">Descriptions</strong><br>
 												<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 													<em>{{descriptionGroup.name}}</em>
 													<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
@@ -190,7 +190,7 @@
 												<div collapse="!(node5.terminologyId == currentConcept.terminologyId)">
 			
 													<div class="well well-sm">
-														<strong>Descriptions</strong><br>
+														<strong  ng-show= "descriptionGroup.length > 0">Descriptions</strong><br>
 														<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 															<em>{{descriptionGroup.name}}</em>
 															<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
@@ -222,7 +222,7 @@
 														<div collapse="!(node6.terminologyId == currentConcept.terminologyId)">
 			
 															<div class="well well-sm">
-																<strong>Descriptions</strong><br>
+																<strong  ng-show= "descriptionGroup.length > 0">Descriptions</strong><br>
 																<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 																	<em>{{descriptionGroup.name}}</em>
 																	<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
@@ -255,7 +255,7 @@
 																<div collapse="!(node7.terminologyId == currentConcept.terminologyId)">
 			
 																	<div class="well well-sm">
-																		<strong>Descriptions</strong><br>
+																		<strong  ng-show= "descriptionGroup.length > 0">Descriptions</strong><br>
 																		<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 																			<em>{{descriptionGroup.name}}</em>
 																			<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
@@ -288,7 +288,7 @@
 																		<div collapse="!(node8.terminologyId == currentConcept.terminologyId)">
 			
 																			<div class="well well-sm">
-																				<strong>Descriptions</strong><br>
+																				<strong  ng-show= "descriptionGroup.length > 0">Descriptions</strong><br>
 																				<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 																					<em>{{descriptionGroup.name}}</em>
 																					<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
@@ -321,7 +321,7 @@
 																				<div collapse="!(node9.terminologyId == currentConcept.terminologyId)">
 			
 																					<div class="well well-sm">
-																						<strong>Descriptions</strong><br>
+																						<strong  ng-show= "descriptionGroup.length > 0">Descriptions</strong><br>
 																						<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 																							<em>{{descriptionGroup.name}}</em>
 																							<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>

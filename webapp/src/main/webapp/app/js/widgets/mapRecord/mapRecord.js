@@ -138,6 +138,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   		// 2) a 2-d array, with structure [group][mapPriority]
   		function initializeEntries() {
   			
+  			console.debug("Initializing map entries -- " + $scope.record.mapEntry.length + " found");
+  			
+  			
   			// calculate rule summaries and assign local id equivalent to hibernate id (needed for track by in ng-repeat)
   			for (var i = 0; i < $scope.record.mapEntry.length; i++) {
   				$scope.record.mapEntry[i].ruleSummary = 
@@ -169,6 +172,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
   				for (var i=0; i< $scope.entries.length; i++) {
   					$scope.entries[i] = sortByKey($scope.entries[i], 'mapPriority');
   				}
+  			}
+  			
+  			// if no entries on this record, assume new and create an entry
+  			if ($scope.record.mapEntry.length == 0) {
+  				$scope.addMapEntry(1);
+  			// otherwise, select the first entry
+  			} else {
+  				$scope.selectEntry($scope.record.mapEntry[1]);
   			}
   		}
   		
