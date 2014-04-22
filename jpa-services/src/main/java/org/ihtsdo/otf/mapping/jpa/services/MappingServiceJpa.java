@@ -1632,7 +1632,11 @@ public class MappingServiceJpa implements MappingService {
 		String terminology = project.getSourceTerminology();
 		String terminologyVersion = project.getSourceTerminologyVersion();
 
-		for (String conceptId : project.getScopeConcepts()) {
+		// Avoid including the scope concepts themselves in the definition
+        // if we are looking for descendants
+		// e.g. "Clinical Finding" does not need to be mapped for SNOMED->ICD10
+		if (!project.isScopeDescendantsFlag()) {
+		  for (String conceptId : project.getScopeConcepts()) {
 			Concept c =
 					contentService.getConcept(conceptId, terminology, terminologyVersion);
 			SearchResult sr = new SearchResultJpa();
@@ -1642,8 +1646,10 @@ public class MappingServiceJpa implements MappingService {
 			sr.setTerminologyVersion(c.getTerminologyVersion());
 			sr.setValue(c.getDefaultPreferredName());
 			conceptsInScope.addSearchResult(sr);
+		  }
 		}
 
+		// Include descendants in scope.
 		if (project.isScopeDescendantsFlag()) {
 
 			// for each scope concept, get descendants

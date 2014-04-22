@@ -204,7 +204,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       saxParser.parse(is, handler);
 
       tx.commit();
-      
+
       // creating tree positions
       // first get isaRelType from metadata
       MetadataService metadataService = new MetadataServiceJpa();
@@ -310,6 +310,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     /** The reference usage. */
     String referenceUsage = null;
 
+    /** The reference code. */
+    String referenceCode = null;
+
     /** The ref set member counter. */
     int refSetMemberCounter = 1;
 
@@ -341,7 +344,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     Map<String, Set<Concept>> relsMap = new HashMap<String, Set<Concept>>();
 
     /** Indicates rels are needed as a result of the SuperClass tag. */
-    boolean relsNeeded = false;
+    boolean isaRelNeeded = false;
 
     /**
      * The concept that is currently being built from the contents of a Class
@@ -376,7 +379,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
      */
     @Override
     public void startElement(String uri, String localName, String qName,
-      Attributes attributes) {
+      Attributes attributes) throws SAXException {
 
       // add current tag to stack
       tagStack.push(qName.toLowerCase());
@@ -443,7 +446,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           throw new IllegalStateException("Multiple SuperClass entries for "
               + code + " = " + parentCode + ", " + attributes.getValue("code"));
         parentCode = attributes.getValue("code");
-        relsNeeded = true;
+        isaRelNeeded = true;
         getLog().info(
             "  Class "
                 + (code != null ? code : (modifier + ":" + modifierCode))
@@ -536,12 +539,19 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             labelChars.append(" ");
           }
           labelChars.append(chars.toString().trim());
+        } else {
+          throw new SAXException(
+              "Unexpected place to find reference -- not in label tag");
         }
         // Clear "characters"
         chars = new StringBuilder();
 
         // Save reference usage
         referenceUsage = attributes.getValue("usage");
+        // the referenceCode is used when the value in the Reference tag
+        // doesn't actually resolve to a code. We need this because it is
+        // what we will ACTUALLY connect the relationship to
+        referenceCode = attributes.getValue("code");
       }
 
     }
@@ -654,23 +664,27 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               "  Class " + code + " has reference to " + reference + " "
                   + (referenceUsage == null ? "" : "(" + referenceUsage + ")"));
 
-          if (referenceUsage != null) {
-            // check if this reference already has a relationship
-            Set<Concept> concepts = new HashSet<Concept>();
-            if (relsMap.containsKey(reference + ":" + referenceUsage)) {
-              concepts = relsMap.get(reference + ":" + referenceUsage);
-            }
-            concepts.add(concept);
-            relsMap.put(reference + ":" + referenceUsage, concepts);
-          } else {
-            // check if this reference already has a relationship
-            Set<Concept> concepts = new HashSet<Concept>();
-            if (relsMap.containsKey(reference + ":" + rubricKind)) {
-              concepts = relsMap.get(reference + ":" + rubricKind);
-            }
-            concepts.add(concept);
-            relsMap.put(reference + ":" + rubricKind, concepts);
+          // If not "dagger" or "aster", it's just a normal reference
+          if (referenceUsage == null) {
+            referenceUsage = "reference";
           }
+
+          // IF the reference tag didn't have a code attribute, use the text
+          // instead
+          if (referenceCode == null) {
+            referenceCode = reference;
+          }
+          String key =
+              referenceCode + ":" + rubricId + ":" + referenceUsage + ":"
+                  + reference;
+          // check assumption: key is unique
+          if (relsMap.containsKey(key)) {
+            throw new Exception("Rels key already exists: " + key);
+          }
+          // because of checking assumption, will never have >1 in the set
+          Set<Concept> concepts = new HashSet<>();
+          concepts.add(concept);
+          relsMap.put(key, concepts);
         }
 
         // Encountered </ModifierClass>
@@ -698,7 +712,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
           // if relationships for this concept will be added at endDocument(),
           // save relevant data now in relsMap
-          if (relsNeeded) {
+          if (isaRelNeeded && concept.getTerminologyId() != null) {
             getLog().info("  Class " + code + " has parent " + parentCode);
             Set<Concept> children = new HashSet<Concept>();
             // check if this parentCode already has children
@@ -751,7 +765,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           currentSubClasses = new HashSet<String>();
           classUsage = null;
           referenceUsage = null;
-          relsNeeded = false;
+          isaRelNeeded = false;
         }
 
       } catch (Exception e) {
@@ -782,20 +796,66 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     @Override
     public void endDocument() throws SAXException {
       // Add relationships now that all concepts have been created
+      Map<String,Integer> relDisambiguation = new HashMap<>();
+      
       try {
         for (Map.Entry<String, Set<Concept>> mapEntry : relsMap.entrySet()) {
+
           String key = mapEntry.getKey();
-          String parentCode = key.substring(0, key.indexOf(":"));
-          String type = key.substring(key.indexOf(":") + 1);
+          String tokens[] = key.split(":");
+          String parentCode = null;
+          String id = null;
+          String type = null;
+
+          // handle reference case
+          if (tokens.length == 4) {
+            parentCode = tokens[0];
+            type = tokens[2];
+            id = tokens[1];
+            if (relDisambiguation.containsKey(id)) {
+              int ct = relDisambiguation.get(id);
+              ct++;
+              relDisambiguation.put(id, ct);
+              id = id + "~" + ct;
+            } else {
+              // TODO: find a better way to link descriptions and reference rels 
+              relDisambiguation.put(id, 1);
+              id = id + "~1";
+            }
+            // tokens[3]; -- nothing to do with tokens[3] at this point
+          }
+
+          // handle isa case
+          else if (tokens.length == 2) {
+            parentCode = tokens[0];
+            type = tokens[1];
+          }
+
+          // fail otherwise
+          else {
+            throw new SAXException(
+                "Unexpected number of tokens for relsMap entry "
+                    + tokens.length);
+          }
           if (type.equals("aster"))
             type = "dagger-to-asterisk";
           if (type.equals("dagger"))
             type = "asterisk-to-dagger";
           for (Concept childConcept : mapEntry.getValue()) {
+            getLog().info(
+                "  Create Relationship " + childConcept.getTerminologyId()
+                    + " " + type + " " + parentCode + " " + id);
             if (conceptMap.containsKey(parentCode)) {
               Relationship relationship = new RelationshipJpa();
-              relationship.setTerminologyId(new Integer(relIdCounter++)
-                  .toString());
+              // For reference, use the provided id
+              if (id != null) {
+                relationship.setTerminologyId(id);
+              }
+              // otherwise, make a new id
+              else {
+                relationship.setTerminologyId(new Integer(relIdCounter++)
+                    .toString());
+              }
               relationship.setEffectiveTime(dt.parse(effectiveTime));
               relationship.setActive(true);
               relationship.setModuleId(new Long(conceptMap.get("defaultModule")
@@ -820,6 +880,15 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               rels.add(relationship);
               childConcept.setRelationships(rels);
 
+            } else if (modifierMap.containsKey(parentCode)) {
+              // TODO: may need to do more with this case
+              // likely these are all "modifierLink" cases and we should simply ignore.
+              // Cartographer shows nothing for this.
+              getLog().info("    IGNORE rel to modifier");
+            } else {
+              //throw new SAXException("Problem inserting relationship, code "
+              //    + parentCode + " does not exist.");
+              getLog().info("    WARNING rel to illegal concept");
             }
           }
         }
