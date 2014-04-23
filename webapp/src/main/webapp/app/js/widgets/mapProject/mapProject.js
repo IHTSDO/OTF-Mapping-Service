@@ -12,9 +12,6 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
         edit: {}
       });
   }).controller('MapProjectWidgetCtrl', function($scope, $http, $rootScope, $location, localStorageService){
-	 
-	  // initialize glass pane
-	  $scope.glassPane = false;
 	  
 	  // get the project
 	  $scope.project = localStorageService.get('focusProject');
@@ -49,49 +46,28 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 		};
   	  
   	  
-      $scope.glassPane = false; 	
       
       $scope.computeWorkflow = function() {
 			console.debug("Computing workflow");
-		  	$scope.glassPane = true;
+		  	$rootScope.glassPane++;
 
 			var confirmWorkflow =  confirm("Are you sure you want to compute workflow?");
 			if (confirmWorkflow == true) {
 			// retrieve project information
 			$http({
-				url: root_workflow + "project/id/" + $scope.project.id,
+				/**url: root_workflow + "project/id/" + $scope.project.id,  RESET to POST*/
+				url: root_mapping + "project/projects/",
 				dataType: "json",
-				method: "POST",
+				method: "GET",
 				headers: {
 					"Content-Type": "application/json"
 				}	
 			}).success(function(data) {
-			  	$scope.glassPane = false;
+			  	$rootScope.glassPane--;
 			}).error(function(error) {
 		    	  $scope.error = "Error";
-				  $scope.glassPane = false;
+				  	$rootScope.glassPane--;
 		    });
-				
-				 /**
-				  * For testing only
-				  $scope.projects = [];
-			      $http({
-			        url: root_mapping + "project/projects",
-			        dataType: "json",
-			        method: "GET",
-			        headers: {
-			          "Content-Type": "application/json"
-			        }
-			      }).success(function(data) {
-			    	  $scope.projects = data.mapProject;
-
-					  	setTimeout(function(){$scope.glassPane = false;}, 1);
-			      }).error(function(error) {
-			    	  $scope.error = "Error";
-
-					  	setTimeout(function(){$scope.glassPane = false;}, 1);
-			      });*/ 
-
 				
 			}
 
