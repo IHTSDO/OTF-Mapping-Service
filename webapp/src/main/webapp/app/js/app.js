@@ -141,7 +141,54 @@ mapProjectApp.config(['$routeProvider',
 		  controller: 'ResolveConflictsDashboardCtrl'
 	  });
 		
+
 	  
+      //////////////////////////////
+	  // HELP PAGES
+	  //////////////////////////////
+	  
+	  /**$routeProvider.when('/help/:helpFile', {
+	  templateUrl: 'partials/doc/:helpFile'
+  	  });*/
+	  
+	  $routeProvider.when('/help/LeadDashboardHelp.html', {
+		  templateUrl: 'partials/doc/LeadDashboardHelp.html'
+	  });	  
+	  
+	  $routeProvider.when('/help/AdministratorDashboardHelp.html', {
+		  templateUrl: 'partials/doc/AdministratorDashboardHelp.html'
+	  });	  
+	  
+	  $routeProvider.when('/help/conceptHelp.html', {
+		  templateUrl: 'partials/doc/conceptHelp.html'
+	  });	  
+	  
+	  $routeProvider.when('/help/editDashboardHelp.html', {
+		  templateUrl: 'partials/doc/editDashboardHelp.html'
+	  });	  
+	  
+	  $routeProvider.when('/help/loginHelp.html', {
+		  templateUrl: 'partials/doc/loginHelp.html'
+	  });	  
+	  
+	  $routeProvider.when('/help/projectHelp.html', {
+		  templateUrl: 'partials/doc/projectHelp.html'
+	  });	  
+	  $routeProvider.when('/help/recordsHelp.html', {
+		  templateUrl: 'partials/doc/recordsHelp.html'
+	  });	  
+	  
+	  $routeProvider.when('/help/resolveConflictsDashboardHelp.html', {
+		  templateUrl: 'partials/doc/resolveConflictsDashboardHelp.html'
+	  });	  
+	  
+	  $routeProvider.when('/help/SpecialistDashboardHelp.html', {
+		  templateUrl: 'partials/doc/SpecialistDashboardHelp.html'
+	  });	  
+	  
+	  $routeProvider.when('/help/ViewerDashboardHelp.html', {
+		  templateUrl: 'partials/doc/ViewerDashboardHelp.html'
+	  });	  
 
 
 	  
