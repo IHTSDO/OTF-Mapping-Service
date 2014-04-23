@@ -7,12 +7,6 @@ html, body
 	/**height: 100%;*/
 }
 
-body {
-	background-color: #FFF;
-	padding-top: 50px;
-	padding-bottom: 40px;
-}
-
 p {
   margin: 0 0 0px;
 }
@@ -43,11 +37,10 @@ margin-bottom: 10px;
 
 /** from bootstrap.css - changes font-size from 14 to 13 px */
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 13px;
-  line-height: 1.42857143;
-  color: #333;
-  background-color: #fff;
+  background-color: #f1f1f1;
+  padding-top: 50px;
+  padding-bottom: 40px;
 }
 
 .navbar {
@@ -63,6 +56,5 @@ body {
     top: 0;
     left: 0;
     opacity: 0.5;
-    
     z-index: 10;
 }
