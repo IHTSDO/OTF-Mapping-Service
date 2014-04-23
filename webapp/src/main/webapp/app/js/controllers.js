@@ -11,10 +11,19 @@ var root_metadata = root_url + "metadata/";
 var root_validation = root_url + "validation/";
 var root_workflow = root_url + "workflow/";
 
-mapProjectAppControllers.run(function() {
-
+mapProjectAppControllers.run(function($rootScope) {
+	$rootScope.glassPane = 0;
 });
 
+/**mapProjectAppControllers.controller('GlassPaneCtrl', function ($scope,  $rootScope) {
+	console.debug("in the GlassPaneCtrl");
+	//$scope.glassPane = $rootScope.glassPane;
+	
+	// functions to increment/decrement  enable/disable
+});*/
+		
+		
+		
 mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, $rootScope, localStorageService) {
 
 	setModel();
@@ -401,7 +410,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 		// broadcast page to help mechanism
 		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
 
-		$rootScope.glassPane = false;
+
 		
 		// set all local variables to null
 		$scope.user = null;

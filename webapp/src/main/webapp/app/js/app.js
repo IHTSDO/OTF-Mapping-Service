@@ -148,7 +148,7 @@ mapProjectApp.config(['$routeProvider',
 	  //////////////////////////////
 	  
 	  /**$routeProvider.when('/help/:helpFile', {
-	  templateUrl: 'partials/doc/:helpFile'
+	  templateUrl: 'partials/doc/' + $routeParams.helpFile
   	  });*/
 	  
 	  $routeProvider.when('/help/LeadDashboardHelp.html', {
