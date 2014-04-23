@@ -401,6 +401,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 		// broadcast page to help mechanism
 		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
 
+		$rootScope.glassPane = false;
+		
 		// set all local variables to null
 		$scope.user = null;
 		$scope.users = null;
@@ -2148,22 +2150,6 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 				};
 
 
-				$scope.computeWorkflow = function() {
-					console.debug("Computing workflow");
-					// retrieve project information
-					$http({
-						url: root_workflow + "project/id/" + $routeParams.projectId,
-						dataType: "json",
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json"
-						}	
-					}).success(function(data) {
-					});
-
-
-				};
-
 
 				///////////////////////////////////////////////////////////////
 				// Functions to display and filter advices and principles
@@ -2361,8 +2347,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 	mapProjectAppControllers.directive(
 			'otfHeaderDirective', 
-			['$rootScope', '$http', 'localStorageService', 
-			 function($rootScope, $http, localStorageService) {
+			['$rootScope', '$http', '$location', 'localStorageService', 
+			 function($rootScope, $http, $location, localStorageService) {
 
 		return {
 			templateUrl: './partials/header.html',
@@ -2436,6 +2422,18 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 					localStorageService.add('preferences', $scope.preferences);
 					$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
 					
+				};
+				
+				$scope.goToHelp = function() {
+					var path;
+					if ($scope.page != 'mainDashboard') {
+					  path = "help/" + $scope.page + "Help.html";
+					} else {
+					  path = "help/" + $scope.currentRole + "DashboardHelp.html";
+					}
+					console.debug("go to help page " + path);
+					// redirect page
+					$location.path(path);
 				};
 			}
 		};
