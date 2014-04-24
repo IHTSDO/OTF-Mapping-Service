@@ -719,6 +719,11 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 		};
 		
 		$scope.isEditable = function(record) {
+			
+			console.debug('isEditable');
+			console.debug($scope.currentRole);
+			console.debug($scope.currentUser);
+			console.debug(record.owner);
 			if (($scope.currentRole === 'Specialist' ||
 				$scope.currentRole === 'Lead' ||
 				$scope.currentRole === 'Admin') &&
@@ -726,7 +731,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 				
 				return true;
 				
-			} else if ($scope.currentUser.userName === record.ower.userName) {
+			} else if ($scope.currentUser.userName === record.owner.userName) {
 				return true;
 			} else return false;
 		};

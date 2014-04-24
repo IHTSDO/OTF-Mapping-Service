@@ -140,14 +140,28 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		console.debug("Initializing map entries -- " + $scope.record.mapEntry.length + " found");
 
+		currentLocalId = 1;
+		
+		// find the maximum hibernate id value and set the current local id
+		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+			currentLocalId = Math.max($scope.record.mapEntry[i].id, currentLocalId);
+		}
 
 		// calculate rule summaries and assign local id equivalent to hibernate id (needed for track by in ng-repeat)
 		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
 			$scope.record.mapEntry[i].ruleSummary = 
 				$scope.getRuleSummary($scope.record.mapEntry[i]);
+			
+			// assign the entry localId to the hibernate Id
 			$scope.record.mapEntry[i].localId = $scope.record.mapEntry[i].id;
-
-			currentLocalId = Math.max($scope.record.mapEntry[i].localId, currentLocalId);
+		}
+		
+		// SAFETY CHECK:  Verify that all entries have a local id
+		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+			if ($scope.record.mapEntry[i].localId == null || $scope.record.mapEntry[i].localId == undefined) {
+				$scope.record.mapEntry[i].localId = currentLocalId + 1;
+				currentLocalId++;
+			}
 		}
 
 		// if no group structure, simply copy and sort
@@ -213,6 +227,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				// cycle over entries in each group bin
 				for (var j = 0; j < $scope.entries[i].length; j++) {
 
+					console.debug($scope.entries[i][j]);
 					console.debug("Assigning group and priority to " + i + " " + j);
 					$scope.entries[i][j].mapGroup = i;
 					$scope.entries[i][j].mapPriority = j+1;
