@@ -1,8 +1,8 @@
 <tabset>
 <tab heading="Available work">
 
-<table>
-<tbody>
+<table style="margin-top: 20px; margin-bottom: 20px;">
+<tbody >
 <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 	<td style="padding:5px;">Assign work to:</td>
 	<td style="padding:5px;"><select ng-model="assignedMapUser"
@@ -11,20 +11,16 @@
 </tr>
 <tr>
 	<td style="padding:5px";>Batch size:</td>
-	<td style="padding:5px;"><select ng-model="batchSize" ng-options="batchSize as batchSize for batchSize in batchSizes"></select></td>
+	<td style="padding:5px;"><select ng-model="batchSize" ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
+      &nbsp;
+      <button class="btn btn-sm btn-primary" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'" ng-click="assignBatch(assignedMapUser, batchSize)">Assign Batch</button>
+    <button class="btn btn-sm btn-primary" ng-show="currentRole === 'Specialist'" ng-click="assignBatch(currentUser, batchSize)">Claim Batch</button>
+  
+  </td>
 </tr>
-<tr>
-	<td style="padding:5px;"></td>
-	<td style="padding:5px;">
-		<button class="btn btn-sm btn-primary" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'" ng-click="assignBatch(assignedMapUser, batchSize)">Assign Batch</button>
-		<button class="btn btn-sm btn-primary" ng-show="currentRole === 'Specialist'" ng-click="assignBatch(currentUser, batchSize)">Claim Batch</button>
-	</td>
-</tr>
-	
 </tbody>
 </table>
 
-<hr>	
 <accordion>
 	<accordion-group is-open="isConceptListOpen">
 		<accordion-heading>
