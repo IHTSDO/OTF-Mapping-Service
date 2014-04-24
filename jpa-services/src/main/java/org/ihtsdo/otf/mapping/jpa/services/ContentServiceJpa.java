@@ -887,21 +887,22 @@ public class ContentServiceJpa implements ContentService {
 
 		// initialize the result set
 		List<TreePosition> fullTreePositions = new ArrayList<>();
+		
+		System.out.println("Found " + queriedTreePositions.size() + " results:");
+		for (TreePosition queriedTreePosition : queriedTreePositions) {
+			System.out.println(queriedTreePosition.getTerminologyId());
+		}
 
 		// for each query result, construct the full tree (i.e. up to root)
 		for (TreePosition queriedTreePosition : queriedTreePositions) {
 
 			TreePosition fullTreePosition = constructRootTreePosition(queriedTreePosition);
 			
-			manager.detach(fullTreePosition);
-			
 			System.out.println("Checking root " + fullTreePosition.getTerminologyId());
 			
 			// if this root is already present in the final list, add this position's children to existing root
 			if (fullTreePositions.contains(fullTreePosition)) {
 				
-				
-			
 				TreePosition existingTreePosition = fullTreePositions.get(fullTreePositions.indexOf(fullTreePosition));
 				
 				System.out.println("Found existing root at position " + fullTreePositions.indexOf(fullTreePosition)
@@ -909,7 +910,10 @@ public class ContentServiceJpa implements ContentService {
 				
 				existingTreePosition.addChildren(fullTreePosition.getChildren());
 				
-				System.out.println("  Added " + fullTreePosition.getChildren().size() + " children");
+				System.out.println("  Added " + fullTreePosition.getChildren().size() + " children:");
+				for(TreePosition tp : fullTreePosition.getChildren()) {
+					System.out.println(tp.getTerminologyId());
+				}
 				
 				fullTreePositions.set(
 						fullTreePositions.indexOf(fullTreePosition), 

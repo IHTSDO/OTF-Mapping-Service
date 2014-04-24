@@ -16,8 +16,8 @@
 <tr>
 	<td style="padding:5px;"></td>
 	<td style="padding:5px;">
-		<button ng-show="currentRole === 'Lead' || currentRole === 'Administrator'" class="btn btn-sm" ng-click="assignBatch(assignedMapUser, batchSize)">Assign Batch</button>
-		<button ng-show="currentRole === 'Specialist'" class="btn btn-sm" ng-click="assignBatch(searchResult, assignedMapUser)">Claim Batch</button>
+		<button class="btn btn-sm btn-primary" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'" ng-click="assignBatch(assignedMapUser, batchSize)">Assign Batch</button>
+		<button class="btn btn-sm btn-primary" ng-show="currentRole === 'Specialist'" ng-click="assignBatch(searchResult, assignedMapUser)">Claim Batch</button>
 	</td>
 </tr>
 	
@@ -65,7 +65,7 @@
 	</accordion-group>
 </accordion>
 </tab>
-<tab heading="Available Conflicts">
+<tab heading="Available Conflicts" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 	<pagination total-items="nAvailableConflicts" page="availableConflictsPage" max-size="5" class="pagination-sm" 
 					boundary-links="true" rotate="true" num-pages="numAvailableConflictsPages"
 					on-select-page="retrieveAvailableConflicts(page)"></pagination>
@@ -87,7 +87,7 @@
 				<tr ng-repeat="concept in availableConflicts">
 					
 					<td style="width: 15%; padding: 5px;">
-						<a ng-show="currentRole === 'Lead' || currentRole === 'Administrator'" ng-click="assignWork(concept, assignedMapUser)">Assign</button>
+						<a ng-click="assignWork(concept, assignedMapUser)">Claim</a>
 					</td>
 					<td style="width: 15%; padding: 5px;">{{concept.terminologyId}}</td>
 					<td style="width: 60%; padding: 5px;">{{concept.value}}</td>

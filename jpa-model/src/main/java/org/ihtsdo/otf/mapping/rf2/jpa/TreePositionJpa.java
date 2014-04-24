@@ -237,14 +237,28 @@ public class TreePositionJpa implements TreePosition {
 
 	@Override
 	public void addChild(TreePosition treePosition) {
-		this.children.add(treePosition);
+		
+		// check if this child is already present
+		int index = this.children.indexOf(treePosition);
+
+		// if present, add children of this tree position to the existing object
+		if (index != -1) {
+			this.children.get(index).addChildren(treePosition.getChildren());
+			
+		// otherwise, add it
+		} else {
+			this.children.add(treePosition);
+		}
 		
 	}
 	
 	@Override
 	public void addChildren(List<TreePosition> treePositions) {
-		this.children.addAll(treePositions);
 		
+		// for each child, call the addChild function
+		for (TreePosition tp : treePositions) {
+			this.addChild(tp);
+		}	
 	}
 
 	@Override

@@ -24,18 +24,24 @@
 		<div collapse="!(node0.terminologyId == currentConcept.terminologyId)">
 			
 			<div class="well well-sm">
-				<strong>Descriptions</strong><br>
+				
 				<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 					<em>{{descriptionGroup.name}}</em>
-					<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
+					<ul>
+						<li ng-repeat="description in descriptionGroup.descriptions">
+							{{truncate(description.term)}}
+							<span ng-show = "description.referencedConcepts.length > 0">
+								(
+								<span ng-repeat = "referencedConcept in description.referencedConcepts">
+									<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+								</span>
+								)
+							</span>
+						</li>
+					</ul>
 				
 				</div>
-				<strong>Relationships</strong><br>
-				<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
-					<em>{{relationshipGroup.name}}</em>
-					<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
-				
-				</div>
+				<div ng-show = "currentConceptDescriptionGroups.length == 0">No additional concept information.</div>
 			</div> 
 		</div>
 		
@@ -58,19 +64,25 @@
 				<div collapse="!(node1.terminologyId == currentConcept.terminologyId)">
 			
 				<div class="well well-sm">
-					<strong>Descriptions</strong><br>
-					<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
-						<em>{{descriptionGroup.name}}</em>
-						<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
-					
-					</div>
-					<strong>Relationships</strong><br>
-					<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
-						<em>{{relationshipGroup.name}}</em>
-						<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
-					
-					</div>
-				</div> 
+				
+				<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
+					<em>{{descriptionGroup.name}}</em>
+					<ul>
+						<li ng-repeat="description in descriptionGroup.descriptions">
+							{{truncate(description.term)}}
+							<span ng-show = "description.referencedConcepts.length > 0">
+								(
+								<span ng-repeat = "referencedConcept in description.referencedConcepts">
+									<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+								</span>
+								)
+							</span>
+						</li>
+					</ul>
+				
+				</div>
+				<div ng-show = "currentConceptDescriptionGroups.length == 0">No additional concept information.</div>
+			</div> 
 			</div>
 				
 				<!--  Children - level 2 -->
@@ -91,20 +103,26 @@
 						<div collapse="!(node2.terminologyId == currentConcept.terminologyId)">
 			
 							<div class="well well-sm">
-								<strong>Descriptions</strong><br>
+				
 								<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 									<em>{{descriptionGroup.name}}</em>
-									<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
+									<ul>
+										<li ng-repeat="description in descriptionGroup.descriptions">
+											{{truncate(description.term)}}
+											<span ng-show = "description.referencedConcepts.length > 0">
+												(
+												<span ng-repeat = "referencedConcept in description.referencedConcepts">
+													<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+												</span>
+												)
+											</span>
+										</li>
+									</ul>
 								
 								</div>
-								<strong>Relationships</strong><br>
-								<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
-									<em>{{relationshipGroup.name}}</em>
-									<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
-								
-								</div>
-							</div> 
-						</div>
+								<div ng-show = "currentConceptDescriptionGroups.length == 0">No additional concept information.</div>
+							</div>
+						</div> 
 										
 						<!--  Children - level 3 -->
 						<ul style="list-style-type: none; padding-left: 15px;" ng-show="node2.isOpen">
@@ -123,21 +141,27 @@
 		
 								<div collapse="!(node3.terminologyId == currentConcept.terminologyId)">
 			
-								<div class="well well-sm">
-									<strong>Descriptions</strong><br>
-									<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
-										<em>{{descriptionGroup.name}}</em>
-										<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
-									
-									</div>
-									<strong>Relationships</strong><br>
-									<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
-										<em>{{relationshipGroup.name}}</em>
-										<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
-									
-									</div>
-								</div> 
-							</div>
+									<div class="well well-sm">
+					
+										<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
+											<em>{{descriptionGroup.name}}</em>
+											<ul>
+												<li ng-repeat="description in descriptionGroup.descriptions">
+													{{truncate(description.term)}}
+													<span ng-show = "description.referencedConcepts.length > 0">
+														(
+														<span ng-repeat = "referencedConcept in description.referencedConcepts">
+															<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+														</span>
+														)
+													</span>
+												</li>
+											</ul>
+										
+										</div>
+										<div ng-show = "currentConceptDescriptionGroups.length == 0">No additional concept information.</div>
+									</div> 
+								</div>
 		
 								<!--  Children - level 4 -->
 								<ul style="list-style-type: none; padding-left: 15px;">
@@ -157,20 +181,27 @@
 										<div collapse="!(node4.terminologyId == currentConcept.terminologyId)">
 			
 											<div class="well well-sm">
-												<strong>Descriptions</strong><br>
+				
 												<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 													<em>{{descriptionGroup.name}}</em>
-													<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
+													<ul>
+														<li ng-repeat="description in descriptionGroup.descriptions">
+															{{truncate(description.term)}}
+															<span ng-show = "description.referencedConcepts.length > 0">
+																(
+																<span ng-repeat = "referencedConcept in description.referencedConcepts">
+																	<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																</span>
+																)
+															</span>
+														</li>
+													</ul>
 												
 												</div>
-												<strong>Relationships</strong><br>
-												<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
-													<em>{{relationshipGroup.name}}</em>
-													<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
-												
-												</div>
-											</div> 
+												<div ng-show = "currentConceptDescriptionGroups.length == 0">No additional concept information.</div>
+											</div>  
 										</div>
+										
 										
 										<!--  Children - level 5 -->										
 										<ul style="list-style-type; padding-left: 15px: none;">
@@ -190,18 +221,24 @@
 												<div collapse="!(node5.terminologyId == currentConcept.terminologyId)">
 			
 													<div class="well well-sm">
-														<strong>Descriptions</strong><br>
+				
 														<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 															<em>{{descriptionGroup.name}}</em>
-															<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
+															<ul>
+																<li ng-repeat="description in descriptionGroup.descriptions">
+																	{{truncate(description.term)}}
+																	<span ng-show = "description.referencedConcepts.length > 0">
+																		(
+																		<span ng-repeat = "referencedConcept in description.referencedConcepts">
+																			<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																		</span>
+																		)
+																	</span>
+																</li>
+															</ul>
 														
 														</div>
-														<strong>Relationships</strong><br>
-														<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
-															<em>{{relationshipGroup.name}}</em>
-															<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
-														
-														</div>
+														<div ng-show = "currentConceptDescriptionGroups.length == 0">No additional concept information.</div>
 													</div> 
 												</div>
 												<!--  Children - level 6 -->										
@@ -222,18 +259,24 @@
 														<div collapse="!(node6.terminologyId == currentConcept.terminologyId)">
 			
 															<div class="well well-sm">
-																<strong>Descriptions</strong><br>
+				
 																<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 																	<em>{{descriptionGroup.name}}</em>
-																	<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
+																	<ul>
+																		<li ng-repeat="description in descriptionGroup.descriptions">
+																			{{truncate(description.term)}}
+																			<span ng-show = "description.referencedConcepts.length > 0">
+																				(
+																				<span ng-repeat = "referencedConcept in description.referencedConcepts">
+																					<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																				</span>
+																				)
+																			</span>
+																		</li>
+																	</ul>
 																
 																</div>
-																<strong>Relationships</strong><br>
-																<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
-																	<em>{{relationshipGroup.name}}</em>
-																	<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
-																
-																</div>
+																<div ng-show = "currentConceptDescriptionGroups.length == 0">No additional concept information.</div>
 															</div> 
 														</div>
 													
@@ -255,18 +298,24 @@
 																<div collapse="!(node7.terminologyId == currentConcept.terminologyId)">
 			
 																	<div class="well well-sm">
-																		<strong>Descriptions</strong><br>
+				
 																		<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 																			<em>{{descriptionGroup.name}}</em>
-																			<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
+																			<ul>
+																				<li ng-repeat="description in descriptionGroup.descriptions">
+																					{{truncate(description.term)}}
+																					<span ng-show = "description.referencedConcepts.length > 0">
+																						(
+																						<span ng-repeat = "referencedConcept in description.referencedConcepts">
+																							<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																						</span>
+																						)
+																					</span>
+																				</li>
+																			</ul>
 																		
 																		</div>
-																		<strong>Relationships</strong><br>
-																		<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
-																			<em>{{relationshipGroup.name}}</em>
-																			<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
-																		
-																		</div>
+																		<div ng-show = "currentConceptDescriptionGroups.length == 0">No additional concept information.</div>
 																	</div> 
 																</div>
 															
@@ -288,19 +337,25 @@
 																		<div collapse="!(node8.terminologyId == currentConcept.terminologyId)">
 			
 																			<div class="well well-sm">
-																				<strong>Descriptions</strong><br>
+				
 																				<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 																					<em>{{descriptionGroup.name}}</em>
-																					<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
+																					<ul>
+																						<li ng-repeat="description in descriptionGroup.descriptions">
+																							{{truncate(description.term)}}
+																							<span ng-show = "description.referencedConcepts.length > 0">
+																								(
+																								<span ng-repeat = "referencedConcept in description.referencedConcepts">
+																									<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																								</span>
+																								)
+																							</span>
+																						</li>
+																					</ul>
 																				
 																				</div>
-																				<strong>Relationships</strong><br>
-																				<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
-																					<em>{{relationshipGroup.name}}</em>
-																					<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
-																				
-																				</div>
-																			</div> 
+																				<div ng-show = "currentConceptDescriptionGroups.length == 0">No additional concept information.</div>
+																			</div>  
 																		</div>
 																	
 																		<!--  Children - level 8 -->										
@@ -321,18 +376,24 @@
 																				<div collapse="!(node9.terminologyId == currentConcept.terminologyId)">
 			
 																					<div class="well well-sm">
-																						<strong>Descriptions</strong><br>
+				
 																						<div ng-repeat = "descriptionGroup in currentConceptDescriptionGroups">
 																							<em>{{descriptionGroup.name}}</em>
-																							<ul><li ng-repeat="description in descriptionGroup.descriptions">{{description.term}}</ul>
+																							<ul>
+																								<li ng-repeat="description in descriptionGroup.descriptions">
+																									{{truncate(description.term)}}
+																									<span ng-show = "description.referencedConcepts.length > 0">
+																										(
+																										<span ng-repeat = "referencedConcept in description.referencedConcepts">
+																											<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																										</span>
+																										)
+																									</span>
+																								</li>
+																							</ul>
 																						
 																						</div>
-																						<strong>Relationships</strong><br>
-																						<div ng-repeat = "relationshipGroup in currentConceptRelationshipGroups">
-																							<em>{{relationshipGroup.name}}</em>
-																							<ul><li ng-repeat="relationship in relationshipGroup.relationships">{{relationship.destinationConceptId}}, {{relationship.destinationConceptPreferredName}}</ul>
-																						
-																						</div>
+																						<div ng-show = "currentConceptDescriptionGroups.length == 0">No additional concept information.</div>
 																					</div> 
 																				</div>
 																			</li>

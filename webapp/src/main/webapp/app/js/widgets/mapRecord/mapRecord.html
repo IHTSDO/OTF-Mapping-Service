@@ -89,6 +89,30 @@
 	</accordion-group> <!--  end entries accordion group -->
 </accordion>		   <!--  end entries accordion -->
 
+<!--  NOTES PANEL -->
+<accordion>
+	<accordion-group is-open="isNotesOpen">
+		<accordion-heading>
+			Notes <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
+		</accordion-heading>
+		
+		<div ng-show="record.mapNote.length > 0">
+			<div ng-repeat="note in record.mapNote">
+				<button	disabled>[{{note.user.userName}}] {{note.note}}
+				<i class="glyphicon glyphicon-remove-circle" ng-click="removeRecordNote(record, note)"></i>		
+				</button>
+			</div>
+			<hr>
+		</div>
+		<span style="color:red">{{errorAddRecordNote}}</span>
+		<form>
+			<textarea ng-model="noteInput" class="form-control"></textarea>
+			<p></p>
+			<input class="pull-right" type="submit" value="Add Note" ng-click="addRecordNote(record, noteInput); noteInput=''">
+		</form>
+	</accordion-group>
+</accordion>
+
 <!--  PRINCIPLES PANEL -->
 <accordion>
 	<accordion-group is-open="isPrinciplesOpen">
@@ -116,29 +140,7 @@
 	</accordion-group>
 </accordion>
 
-<!--  NOTES PANEL -->
-<accordion>
-	<accordion-group is-open="isNotesOpen">
-		<accordion-heading>
-			Notes <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
-		</accordion-heading>
-		
-		<div ng-show="record.mapNote.length > 0">
-			<div ng-repeat="note in record.mapNote">
-				<button	disabled>[{{note.user.userName}}] {{note.note}}
-				<i class="glyphicon glyphicon-remove-circle" ng-click="removeRecordNote(record, note)"></i>		
-				</button>
-			</div>
-			<hr>
-		</div>
-		<span style="color:red">{{errorAddRecordNote}}</span>
-		<form>
-			<textarea ng-model="noteInput" class="form-control"></textarea>
-			<p></p>
-			<input class="pull-right" type="submit" value="Add Note" ng-click="addRecordNote(record, noteInput); noteInput=''">
-		</form>
-	</accordion-group>
-</accordion>
+
 
 
 <!--  FLAGS PANEL -->

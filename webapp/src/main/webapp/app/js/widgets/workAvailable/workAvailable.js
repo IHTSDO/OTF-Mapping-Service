@@ -53,6 +53,15 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			$scope.retrieveAvailableConflicts(1);
 		}
 	});
+	
+	// on unassign notification, refresh the available work widget
+	$scope.$on('mapProjectWidget.notification.workflowComputed', function(event, parameters) { 	
+		console.debug("WorkAvailableCtrl:  Detected recomputation of workflow");
+		$scope.retrieveAvailableWork(1);
+		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
+			$scope.retrieveAvailableConflicts(1);
+		}
+	});
 
 	// on any change of focusProject, retrieve new available work
 	$scope.$watch('focusProject', function() {
@@ -164,6 +173,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
 			$scope.availableWork.removeElement(trackingRecord);
+			$rootScope.$broadcast('workAvailableWidget.notification.assignWork',{key: 'assignedWork', assignedWork: data});  
 			$rootScope.$broadcast('availableWork.notification.assignWork',{key: 'assignedWork', assignedWork: data});  
 		}).error(function(error) {
 		  	$rootScope.glassPane--;
