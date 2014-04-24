@@ -1071,12 +1071,7 @@ public class MappingServiceJpa implements MappingService {
 		// create the mapRecordList and set total size
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
 		//mapRecordList.setTotalCount(editedRecords.size());
-			
-		// select the paginated results
-		editedRecords = editedRecords.subList(
-							pfsParameter.getStartIndex(), 
-							Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), editedRecords.size()));
-		
+
 		// handle all lazy initializations
 		for (MapRecord mapRecord : editedRecords) {
 			mapRecord.getOwner().getEmail();
