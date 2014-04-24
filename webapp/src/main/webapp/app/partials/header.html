@@ -64,13 +64,9 @@
              
             <!-- Help tool -->
  
-            <a ng-show="page != 'mainDashboard'" title="Help"
-            href="doc/{{page}}Help.html"><i
-               class="glyphicon glyphicon-question-sign"></i></a>
- 
-            <a ng-show="page == 'mainDashboard'" title="Help"
-             href="doc/{{currentRole}}DashboardHelp.html"><i
-                class="glyphicon glyphicon-question-sign"></i></a>
+            <span 
+            ng-click="goToHelp()"
+               class="glyphicon glyphicon-question-sign"></span>
  
             &nbsp;              
           </p>

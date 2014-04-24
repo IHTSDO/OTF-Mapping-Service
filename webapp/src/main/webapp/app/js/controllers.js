@@ -11,10 +11,24 @@ var root_metadata = root_url + "metadata/";
 var root_validation = root_url + "validation/";
 var root_workflow = root_url + "workflow/";
 
+<<<<<<< HEAD
 mapProjectAppControllers.run(function() {	
 
+=======
+mapProjectAppControllers.run(function($rootScope) {
+	$rootScope.glassPane = 0;
+>>>>>>> 08200cdb18a351969a0caa4e35db9af6eaca451b
 });
 
+/**mapProjectAppControllers.controller('GlassPaneCtrl', function ($scope,  $rootScope) {
+	console.debug("in the GlassPaneCtrl");
+	//$scope.glassPane = $rootScope.glassPane;
+	
+	// functions to increment/decrement  enable/disable
+});*/
+		
+		
+		
 mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, $rootScope, localStorageService) {
 
 	setModel();
@@ -401,6 +415,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 		// broadcast page to help mechanism
 		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
 
+
+		
 		// set all local variables to null
 		$scope.user = null;
 		$scope.users = null;
@@ -2027,6 +2043,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 
 				// retrieve project information
+
+			  	$rootScope.glassPane++;
 				$http({
 					url: root_mapping + "project/id/" + $routeParams.projectId,
 					dataType: "json",
@@ -2036,10 +2054,11 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 					}	
 				}).success(function(data) {
 					$scope.project = data;
+					$rootScope.glassPane--;
 					$scope.errorProject = "Project retrieved";
 				}).error(function(error) {
 					$scope.errorProject = "Could not retrieve project"; 
-
+					$rootScope.glassPane--;
 				}).then(function(data) {
 
 					// apply map type text styling
@@ -2074,6 +2093,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 					// find concept based on source terminology
 					for (var i = 0; i < len; i++) {
+						$rootScope.glassPane++;
 						$http({
 							url: root_content + "concept/" 
 							+ terminology +  "/" 
@@ -2086,6 +2106,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 								"Content-Type": "application/json"
 							}	
 						}).success(function(data) {
+							$rootScope.glassPane--;
 							var obj = {
 									key: data.terminologyId,
 									concept: data
@@ -2093,6 +2114,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 							scopeMap[obj.key] = obj.concept.defaultPreferredName;
 							$scope.scopeMap = scopeMap;
 						}).error(function(error) {
+							$rootScope.glassPane--;
 							console.debug("Could not retrieve concept");
 							$scope.error = $scope.error + "Could not retrieve Concept. ";    
 						});
@@ -2104,6 +2126,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 					// find concept based on source terminology
 					for (var i = 0; i < len; i++) {
+						$rootScope.glassPane++;
 						$http({
 							url: root_content + "concept/" 
 							+ terminology +  "/" 
@@ -2116,6 +2139,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 								"Content-Type": "application/json"
 							}	
 						}).success(function(data) {
+							$rootScope.glassPane--;
 							var obj = {
 									key: data.terminologyId,
 									concept: data
@@ -2123,6 +2147,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 							scopeExcludedMap[obj.key] = obj.concept.defaultPreferredName;
 							$scope.scopeExcludedMap = scopeExcludedMap;
 						}).error(function(error) {
+							$rootScope.glassPane--;
 							console.debug("Could not retrieve concept");
 							$scope.error = $scope.error + "Could not retrieve Concept. ";    
 						});
@@ -2147,22 +2172,6 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 					return $sce.trustAsHtml(html_code);
 				};
 
-
-				$scope.computeWorkflow = function() {
-					console.debug("Computing workflow");
-					// retrieve project information
-					$http({
-						url: root_workflow + "project/id/" + $routeParams.projectId,
-						dataType: "json",
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json"
-						}	
-					}).success(function(data) {
-					});
-
-
-				};
 
 
 				///////////////////////////////////////////////////////////////
@@ -2361,8 +2370,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 	mapProjectAppControllers.directive(
 			'otfHeaderDirective', 
-			['$rootScope', '$http', 'localStorageService', 
-			 function($rootScope, $http, localStorageService) {
+			['$rootScope', '$http', '$location', 'localStorageService', 
+			 function($rootScope, $http, $location, localStorageService) {
 
 		return {
 			templateUrl: './partials/header.html',
@@ -2474,6 +2483,18 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 					localStorageService.add('preferences', $scope.preferences);
 					$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
 					
+				};
+				
+				$scope.goToHelp = function() {
+					var path;
+					if ($scope.page != 'mainDashboard') {
+					  path = "help/" + $scope.page + "Help.html";
+					} else {
+					  path = "help/" + $scope.currentRole + "DashboardHelp.html";
+					}
+					console.debug("go to help page " + path);
+					// redirect page
+					$location.path(path);
 				};
 			}
 		};

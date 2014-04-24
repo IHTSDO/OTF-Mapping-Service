@@ -109,63 +109,63 @@ public class MetadataServiceJpa implements MetadataService {
 				new HashMap<>();
 		Map<String, String> modulesIdNameMap = getModules(terminology, version);
 		if (modulesIdNameMap != null) {
-			idNameMapList.put("modules", modulesIdNameMap);
+			idNameMapList.put("Modules", modulesIdNameMap);
 		}
 		Map<String, String> atvIdNameMap =
 				getAttributeValueRefSets(terminology, version);
 		if (atvIdNameMap != null) {
-			idNameMapList.put("attributeValueRefSets", atvIdNameMap);
+			idNameMapList.put("Attribute Value Refsets", atvIdNameMap);
 		}
 		Map<String, String> csIdNameMap = getCaseSignificances(terminology, version);
 		if (csIdNameMap != null) {
-			idNameMapList.put("caseSignificances", csIdNameMap);
+			idNameMapList.put("Case Significances", csIdNameMap);
 		}
 		Map<String, String> cmIdNameMap = getComplexMapRefSets(terminology, version);
 		if (cmIdNameMap != null) {
-			idNameMapList.put("complexMapRefSets", cmIdNameMap);
+			idNameMapList.put("Complex Map Refsets", cmIdNameMap);
 		}
 		Map<String, String> dsIdNameMap = getDefinitionStatuses(terminology, version);
 		if (dsIdNameMap != null) {
-			idNameMapList.put("definitionStatuses", dsIdNameMap);
+			idNameMapList.put("Definition Statuses", dsIdNameMap);
 		}
 		Map<String, String> dtIdNameMap = getDescriptionTypes(terminology, version);
 		if (dtIdNameMap != null) {
-			idNameMapList.put("descriptionTypes", dtIdNameMap);
+			idNameMapList.put("Description Types", dtIdNameMap);
 		}
 		Map<String, String> lIdNameMap = getLanguageRefSets(terminology, version);
 		if (lIdNameMap != null) {
-			idNameMapList.put("languageRefSets", lIdNameMap);
+			idNameMapList.put("Language Refsets", lIdNameMap);
 		}
 		Map<String, String> mrIdNameMap = getMapRelations(terminology, version);
 		if (mrIdNameMap != null) {
-			idNameMapList.put("mapRelations", mrIdNameMap);
+			idNameMapList.put("Map Relations", mrIdNameMap);
 		}
 		Map<String, String> rctIdNameMap =
 				getRelationshipCharacteristicTypes(terminology, version);
 		if (rctIdNameMap != null) {
-			idNameMapList.put("relationshipCharacteristicTypes", rctIdNameMap);
+			idNameMapList.put("Relationship Characteristic Types", rctIdNameMap);
 		}
 		Map<String, String> rmIdNameMap =
 				getRelationshipModifiers(terminology, version);
 		if (rmIdNameMap != null) {
-			idNameMapList.put("relationshipModifiers", rmIdNameMap);
+			idNameMapList.put("Relationship Modifiers", rmIdNameMap);
 		}
 		Map<String, String> rtIdNameMap = getRelationshipTypes(terminology, version);
 		if (rtIdNameMap != null) {
-			idNameMapList.put("relationshipTypes", rtIdNameMap);
+			idNameMapList.put("Relationship Types", rtIdNameMap);
 		}
 		Map<String, String> hierRtIdNameMap =
 				getHierarchicalRelationshipTypes(terminology, version);
 		if (hierRtIdNameMap != null) {
-			idNameMapList.put("hierarchicalRelationshipTypes", hierRtIdNameMap);
+			idNameMapList.put("Hierarchical Relationship Types", hierRtIdNameMap);
 		}
 		Map<String, String> smIdNameMap = getSimpleMapRefSets(terminology, version);
 		if (smIdNameMap != null) {
-			idNameMapList.put("simpleMapRefSets", smIdNameMap);
+			idNameMapList.put("Simple Map Refsets", smIdNameMap);
 		}
 		Map<String, String> sIdNameMap = getSimpleRefSets(terminology, version);
 		if (sIdNameMap != null) {
-			idNameMapList.put("simpleRefSets", sIdNameMap);
+			idNameMapList.put("Simple Refsets", sIdNameMap);
 		}
 		return idNameMapList;
 	}

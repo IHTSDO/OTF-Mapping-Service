@@ -88,6 +88,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 
+	  	$rootScope.glassPane++;
+
 		$http({
 			url: root_workflow + "availableConflicts/projectId/" + $scope.focusProject.id + "/user/" + $scope.currentUser.userName,
 			dataType: "json",
@@ -97,8 +99,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				"Content-Type": "application/json"
 			}	
 		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
 			$scope.availableConflicts = data.searchResult;
 			$scope.nAvailableConflicts = data.totalCount;
+		}).error(function(error) {
+		  	$rootScope.glassPane--;
 		});
 	};
 	
@@ -117,6 +123,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 
+	  	$rootScope.glassPane++;
+
 		$http({
 			url: root_workflow + "availableWork/projectId/" + $scope.focusProject.id + "/user/" + $scope.currentUser.userName,
 			dataType: "json",
@@ -126,8 +134,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				"Content-Type": "application/json"
 			}	
 		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
 			$scope.availableWork = data.searchResult;
 			$scope.nTrackingRecords = data.totalCount;
+		}).error(function(error) {
+		  	$rootScope.glassPane--;
 		});
 	};
 	
@@ -148,6 +160,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		
 		if (mapUser == null) mapUser = $scope.currentUser;
 
+	  	$rootScope.glassPane++;
+	  	
 		$http({
 			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
 								 "/concept/" + trackingRecord.terminologyId +
@@ -157,8 +171,15 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				"Content-Type": "application/json"
 			}	
 		}).success(function(data) {
+		  	$rootScope.glassPane--;
 			$scope.availableWork.removeElement(trackingRecord);
+<<<<<<< HEAD
 			$rootScope.$broadcast('workAvailableWidget.notification.assignWork',{key: 'assignedWork', assignedWork: data});  
+=======
+			$rootScope.$broadcast('availableWork.notification.assignWork',{key: 'assignedWork', assignedWork: data});  
+		}).error(function(error) {
+		  	$rootScope.glassPane--;
+>>>>>>> 08200cdb18a351969a0caa4e35db9af6eaca451b
 		});
 		
 	   
@@ -175,7 +196,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			 	 	 "maxResults": $scope.batchSize, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
-		
+
+	  	$rootScope.glassPane++;
 		$http({
 			url: root_workflow + "availableWork/projectId/" + $scope.focusProject.id + "/user/" + mapUser.userName,
 			dataType: "json",
@@ -185,7 +207,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				"Content-Type": "application/json"
 			}	
 		}).success(function(data) {
-			
+
+		  	$rootScope.glassPane--;
 			console.debug("Claim batch:  Checking against viewed concepts");
 			
 			var trackingRecords = data.searchResult;
@@ -215,7 +238,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				
 				console.debug("Calling batch assignment API: " + root_workflow + "assign/batch/projectId/" + $scope.focusProject.id 
 									   + "/user/" + mapUser.userName);
-				
+
+			  	$rootScope.glassPane++;
 				$http({
 					url: root_workflow + "assign/batch/projectId/" + $scope.focusProject.id 
 									   + "/user/" + mapUser.userName,	
@@ -226,15 +250,19 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 						"Content-Type": "application/json"
 					}	
 				}).success(function(data) {
+				  	$rootScope.glassPane--;
 					$rootScope.$broadcast('workAvailableWidget.notification.assignWork',
 							{key: 'trackingRecords', trackingRecords: null}); // TODO: This used to pass actual tracking records, but model structure changed.  Need to bring in line.  Currently using the notification to retrieve assigned work in AssignedList widget
-					$scope.retrieveAvailableWork(1);
-				
+					$scope.retrieveAvailableWork(1);				
+				}).error(function(data) {
+				  	$rootScope.glassPane--;
+					console.debug("Could not retrieve available work when assigning batch.");
 				});
 			} else {
 				console.debug("Unexpected error in assigning batch");
 			}
 		}).error(function(data) {
+		  	$rootScope.glassPane--;
 			console.debug("Could not retrieve available work when assigning batch.");
 		});
 				
