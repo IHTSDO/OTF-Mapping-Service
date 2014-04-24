@@ -39,13 +39,11 @@ margin-bottom: 10px;
 body {
   font-size: 13px;
   background-color: #f1f1f1;
-<<<<<<< HEAD
+
   padding-top: 80px;
-  padding-bottom: 40px;
-=======
-  padding-top: 50px;
   padding-bottom: 80px;
->>>>>>> fb2e3b18ec46c40c6a300f48c5e6c49bd0289c5c
+
+
 }
 
 .navbar {
