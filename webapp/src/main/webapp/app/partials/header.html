@@ -22,12 +22,22 @@
         </li>
         <li>
           <!-- Focus Project tool -->
-          <p class="navbar-text" ng-show="currentUser.name != null">
-            Current Project: <select style="max-width: 200px"
+          <div class="navbar-text dropdown" ng-show="currentUser.name != null">
+
+            Current Project: {{focusProject.name}}
+            <a class="dropdown-toggle"><i class="glyphicon glyphicon-edit"></i></a>
+		 	<ul class="dropdown-menu">
+	 			<li ng-repeat="mapProject in mapProjects">
+	 				<span ng-click="changeFocusProject(mapProject)">{{mapProject.name}}</span>
+	 			</li>
+ 			</ul>
+ 	
+		 
+            <!-- <select style="max-width: 200px"
               ng-model="focusProject" ng-change="changeFocusProject()"
               ng-options="mapProject as mapProject.name for mapProject in mapProjects">
-            </select>
-          </p>
+            </select> -->
+  
         </li>
         <li>
           <p class="navbar-text">

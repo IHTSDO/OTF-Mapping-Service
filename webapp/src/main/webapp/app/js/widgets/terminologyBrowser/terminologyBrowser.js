@@ -202,12 +202,15 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			// on success, set the scope concept
 			}).success (function(response) {
 				
+				// create the display elements
 				$scope.currentConcept = response;
 				$scope.currentConceptDescriptionGroups = [];
 				$scope.currentConceptRelationshipGroups = [];
-
+				
+				console.debug(response);
+				
 				// discover what description descTypes are present
-				var descTypes = {}
+				var descTypes = {};
 				for (var i = 0; i < $scope.currentConcept.description.length; i++) {
 					
 					if (! ( $scope.currentConcept.description[i].typeId in descTypes )) {
@@ -218,50 +221,72 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 						}
 					}
 				};
+				console.debug("Description Types found for concept:");
 				console.debug(descTypes);
 				
-				// cycle over discovered descTypes
-				for (var key in descTypes) {
-					// get the descriptions for this type
-					var descGroup = {};
-					descGroup['name'] = descTypes[key];
-					descGroup['descriptions'] = getConceptElementsByTypeId($scope.currentConcept.description, key);
-					
-					
-					$scope.currentConceptDescriptionGroups.push(descGroup);
-				}
-				
-				console.debug($scope.currentConceptDescriptionGroups);
-				
-				// discover what relationship relTypes are present
+				// discover what rel types are present
 				var relTypes = {};
 				for (var i = 0; i < $scope.currentConcept.relationship.length; i++) {
 					
 					if (! ( $scope.currentConcept.relationship[i].typeId in relTypes )) {
 						
-						console.debug("TYPE ID:");
-						console.debug($scope.currentConcept.relationship[i].typeId);
+						console.debug("Rel TypeId: " + $scope.currentConcept.relationship[i].typeId);
+						console.debug();
 						
+						// if this relationship is not an Isa relationship AND not a reference, add it to the relTypes
 						if ($scope.relTypes[$scope.currentConcept.relationship[i].typeId].indexOf('Isa') == -1) {
 								relTypes[$scope.currentConcept.relationship[i].typeId] = 
 									$scope.relTypes[$scope.currentConcept.relationship[i].typeId];
 						}
 					}
 				};
+				console.debug("Relationship Types found for concept:");
 				console.debug(relTypes);
+				
+				//////////////////
+				// DESCRIPTIONS //
+				//////////////////
+				
+				// cycle over discovered descTypes
+				for (var key in descTypes) {
+					// get the descriptions for this type
+					var descGroup = {};
+					descGroup['name'] = descTypes[key];
+					descGroup['descriptions'] = getFormattedDescriptions($scope.currentConcept.description, key, relTypes);
+					
+					
+					$scope.currentConceptDescriptionGroups.push(descGroup);
+				}
+				
+				console.debug("Extracted descriptions for concept:");
+				console.debug($scope.currentConceptDescriptionGroups);
+				
+				///////////////////
+				// RELATIONSHIPS //
+				///////////////////
+				
+				
 				
 				// cycle over discovered relTypes
 				for (var key in relTypes) {
 					// get the relationships for this type
-					var relGroup = {};
-					relGroup['name'] = relTypes[key];
-					relGroup['relationships'] = getConceptElementsByTypeId($scope.currentConcept.relationship, key);
 					
+					var relationships = getConceptElementsByTypeId($scope.currentConcept.relationship, key);
 					
-					$scope.currentConceptRelationshipGroups.push(relGroup);
+					if (relationships.length > 0) {
+					
+						var relGroup = {};
+						relGroup['name'] = relTypes[key];
+						
+						
+						relGroup['relationships'] = getConceptElementsByTypeId($scope.currentConcept.relationship, key);
+						
+						$scope.currentConceptRelationshipGroups.push(relGroup);
+					}
 				}
 				
 				console.debug($scope.currentConceptRelationshipGroups);
+
 				
 			// otherwise display an error message
 			}).error(function(response) {
@@ -280,6 +305,94 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			}
 		}
 		return elementsByTypeId;
+	};
+	
+	//////////////////////////////////////////////////////////////////
+	// REFERENCE HANDLING
+	//
+	// Used for ICD10 * and † display
+	// For each reference relationship:
+	// - find one or more descriptions matching this relationship
+	// - attach the reference information to this relationship
+	// - remove the description from the description list
+	/////////////////////////////////////////////////////////////////
+	
+	function getFormattedDescriptions(descriptions, typeId, relTypes) {
+		
+		console.debug('getFormattedDescriptionsn given relTypes:');
+		console.debug(relTypes);
+		
+		// first, get all descriptions for this TypeId
+		var descriptions = getConceptElementsByTypeId(descriptions, typeId);
+		
+		// format each description
+		for (var i = 0; i < descriptions.length; i++) {
+			descriptions[i] = formatDescription(descriptions[i], relTypes);
+		}
+		
+		return descriptions;
+		
+	};
+	
+	function formatDescription(description, relTypes) {
+		
+		console.debug("Formatting description: " + description.terminologyId + " - " + description.term);
+		console.debug('relTypes');
+		console.debug(relTypes);
+		var relationshipsForDescription = [];
+		
+		// find any relationship where the terminology id begins with the description terminology id
+		for (var i = 0; i < $scope.currentConcept.relationship.length; i++) {
+			if ($scope.currentConcept.relationship[i].terminologyId.indexOf(description.terminologyId) == 0) {
+				console.debug("    Found relationship: " + $scope.currentConcept.relationship[i].terminologyId);
+				relationshipsForDescription.push($scope.currentConcept.relationship[i]);
+			}
+		}
+		
+		console.debug("Found these relationships: ");
+		console.debug(relationshipsForDescription);
+		
+		if (relationshipsForDescription.length > 0) {
+			description.term += " (";
+			for (var i = 0; i < relationshipsForDescription.length; i++) {
+				
+				// add the target id
+				description.term += relationshipsForDescription[i].destinationConceptId;
+				
+				// if a asterik-to-dagger, add a *
+				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Asterisk') == 0) {
+					description.term += " *";
+				}
+				// if a dagger-to-asterik, add a †
+				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Dagger') == 0) {
+					description.term += " †";
+				}
+				
+				// add a comma if not the last element
+				description.term += (i == relationshipsForDescription.length -1 ? "" : ", ");
+				
+				// remove this relationship from the current concept (now represented in description)
+				$scope.currentConcept.relationship.removeElement(relationshipsForDescription[i]);
+					
+			}
+			description.term += ")";
+		}
+		
+		return description;
+		
+	}
+	
+	// function to remove an element by id or localid
+	// instantiated to negate necessity for equals methods for map objects
+	//   which may not be strictly identical via string or key comparison
+	Array.prototype.removeElement = function(elem) {
+		var array = new Array();
+		$.map(this, function(v,i){
+			if (v['terminologyId'] != elem['terminologyId']) array.push(v);
+		});
+
+		this.length = 0; //clear original array
+		this.push.apply(this, array); //push all elements except the one we want to delete
 	};
 	
 	$scope.truncate = function(string, length) {
