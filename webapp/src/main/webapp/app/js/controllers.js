@@ -81,8 +81,6 @@ mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($
 
 			};
 		}
-		// broadcast page to help mechanism  
-		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
 	};
 
 	console.debug("CONTROLLER MODEL");
@@ -367,6 +365,9 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 
 		}
 	};
+	
+	// broadcast page to help mechanism  
+	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
 
 	$scope.$on('adfDashboardChanged', function (event, name, model) {
 		console.debug("Dashboard change detected by MapRecordDashboard");
