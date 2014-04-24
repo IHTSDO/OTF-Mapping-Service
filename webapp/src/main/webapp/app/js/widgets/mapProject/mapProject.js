@@ -69,9 +69,9 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 				  	$rootScope.glassPane--;
 		    });
 				
+			} else {
+			  	$rootScope.glassPane--;		
 			}
-
-
 		};
 		
   });
