@@ -357,7 +357,8 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			for (var i = 0; i < relationshipsForDescription.length; i++) {
 				
 				// add the target id
-				description.term += relationshipsForDescription[i].destinationConceptId;
+				description.term += "<a ng-click='gotoConcept(" + relationshipsForDescription[i].destinationConceptId + ")'>"
+									+ relationshipsForDescription[i].destinationConceptId + "</a>";
 				
 				// if a asterik-to-dagger, add a *
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Asterisk') == 0) {
