@@ -62,6 +62,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 					"Content-Type": "application/json"
 				}	
 			}).success(function(data) {
+			  	$rootScope.$broadcast('mapProjectWidget.notification.workflowComputed');
 			  	$rootScope.glassPane--;
 			}).error(function(error) {
 		    	  $scope.error = "Error";

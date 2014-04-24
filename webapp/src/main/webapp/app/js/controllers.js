@@ -13,6 +13,7 @@ var root_workflow = root_url + "workflow/";
 
 mapProjectAppControllers.run(function($rootScope) {
 	$rootScope.glassPane = 0;
+
 });
 
 /**mapProjectAppControllers.controller('GlassPaneCtrl', function ($scope,  $rootScope) {
@@ -2382,14 +2383,51 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 				 * This is a possible optimization location if local storage becomes unwieldy
 				 */
 				
-				// on any load or refresh, update with the most current versions
-				$scope.focusProject = localStorageService.get('focusProject');
+				// On initialization, reset all values to null -- used to ensure watch functions work correctly
+				$scope.mapProjects 	= null;
+				$scope.currentUser 	= null;
+				$scope.currentRole 	= null;
+				$scope.preferences 	= null;
+				$scope.focusProject = null;
+				
+				// temporary variable to store focus project information
+				// used to ensure that focusProject is never set prior to mapProjects being set
+				// required to ensure the select list works properly, given async variable setting
+				var focusProjectTemp = null;
+				
+				// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
+				$scope.mapProjects  = localStorageService.get('mapProjects');
 				$scope.currentUser  = localStorageService.get('currentUser');
 				$scope.currentRole  = localStorageService.get('currentRole');
 				$scope.preferences  = localStorageService.get('preferences');
-				$scope.mapProjects  = localStorageService.get('mapProjects');
+				focusProjectTemp = localStorageService.get('focusProject');
+			
+				// Project Sync Checking:  watch focusProjectTemp
+				$scope.$watch('focusProjectTemp', function() {
+					
+					console.debug("HEADER: Change to focusProjectTemp");
+					
+					// if the map projects are set, assign the temp focus project to the focus project
+					if ($scope.mapProjects != null && $scope.mapProjects != undefined) {
+						console.debug("        mapProjects set, assigning focusProject to " + focusProjectTemp.name);
+						$scope.focusProject = focusProjectTemp;
+					}
+				});
+				
+				// Project Sync Checking:  watch mapProjects
+				$scope.$watch('mapProjects', function() {
+					
+					console.debug("HEADER: Change to mapProjects");
+					
+					// if the temp focus project already has a value, assign it to the focus project
+					if (focusProjectTemp != null && focusProjectTemp != undefined) {
+						console.debug("        focusProjectTemp set, assigning focusProject to " + focusProjectTemp.name);
+						$scope.focusProject = focusProjectTemp;
+					}
+				});
 
 
+				// Notifications from LoginPage (i.e. initialization of webapp on first visit)
 				// watch for user change
 				$scope.$on('localStorageModule.notification.setUser', function(event, parameters) { 	
 					console.debug("HEADER: Detected change in current user: " + parameters.currentUser);
@@ -2408,13 +2446,13 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 					$scope.currentRole = parameters.currentRole;
 				});	
 				
-				// watch for focus project change
+				// watch for focus project change (called when user clicks Login)
 				$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
 					console.debug("HEADER: Detected change in focus project");
-					$scope.focusProject = parameters.focusProject;
+					focusProjectTemp = parameters.focusProject;  // Project Sync Checking:  scope focus project is set via the $watch above
 				});
 
-				// watch for change in available projects
+				// watch for change in available projects (called by LoginCtrl on load of web application)
 				$scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {	
 					console.debug("HEADER: Detected change in map projects");
 					$scope.mapProjects = parameters.mapProjects;
@@ -2428,7 +2466,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 				});	
 
 				// function to change project from the header
-				$scope.changeFocusProject = function() {
+				$scope.changeFocusProject = function(mapProject) {
+					$scope.focusProject = mapProject;
 					console.debug("changing project to " + $scope.focusProject.name);
 
 					// update and broadcast the new focus project

@@ -304,6 +304,14 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		console.debug(record);
 		
 		var newLeadRecord = angular.copy(record);
+		
+		for (var i = 0; i < newLeadRecord.mapNote.length; i++) {
+			console.debug("nulling map note id");
+			newLeadRecord.mapNote[i].id = null;
+		}
+		
+		
+		
 		newLeadRecord.id = $scope.leadRecord.id;
 		newLeadRecord.workflowStatus = 'CONFLICT_IN_PROGRESS';
 		$rootScope.$broadcast('compareRecordsWidget.notification.selectRecord',{record: newLeadRecord});  
