@@ -2088,6 +2088,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 					// find concept based on source terminology
 					for (var i = 0; i < len; i++) {
+						$rootScope.glassPane++;
 						$http({
 							url: root_content + "concept/" 
 							+ terminology +  "/" 
@@ -2100,6 +2101,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 								"Content-Type": "application/json"
 							}	
 						}).success(function(data) {
+							$rootScope.glassPane--;
 							var obj = {
 									key: data.terminologyId,
 									concept: data
@@ -2107,6 +2109,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 							scopeMap[obj.key] = obj.concept.defaultPreferredName;
 							$scope.scopeMap = scopeMap;
 						}).error(function(error) {
+							$rootScope.glassPane--;
 							console.debug("Could not retrieve concept");
 							$scope.error = $scope.error + "Could not retrieve Concept. ";    
 						});
@@ -2118,6 +2121,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 					// find concept based on source terminology
 					for (var i = 0; i < len; i++) {
+						$rootScope.glassPane++;
 						$http({
 							url: root_content + "concept/" 
 							+ terminology +  "/" 
@@ -2130,6 +2134,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 								"Content-Type": "application/json"
 							}	
 						}).success(function(data) {
+							$rootScope.glassPane--;
 							var obj = {
 									key: data.terminologyId,
 									concept: data
@@ -2137,6 +2142,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 							scopeExcludedMap[obj.key] = obj.concept.defaultPreferredName;
 							$scope.scopeExcludedMap = scopeExcludedMap;
 						}).error(function(error) {
+							$rootScope.glassPane--;
 							console.debug("Could not retrieve concept");
 							$scope.error = $scope.error + "Could not retrieve Concept. ";    
 						});
