@@ -1034,65 +1034,61 @@ public class MappingServiceJpa implements MappingService {
 		"unchecked"
 	})
 	@Override
-	// TODO confirm return sorted by lastModifiedBy most recent at head
+	// TODO Support the following
+	//		Search by date ranges (.ge .le tests) based on pfsParameter filters
+	//		Support ascending or descending flag based on pfsParameter sortKey
 	public MapRecordList getRecentlyEditedMapRecords(Long projectId, String userName, PfsParameter pfsParameter)  throws Exception {
 
 		MapUser user = getMapUser(userName);
 
-		Map<String, MapRecord> editedRecords = new HashMap<>();
-
 		AuditReader reader = AuditReaderFactory.get(manager);
 
+		// construct the query
 		AuditQuery query =
 				reader
 				.createQuery()
-				.forRevisionsOfEntity(MapRecordJpa.class, false, true)
+				
+				// all revisions, returned as objects, finding deleted entries
+				.forRevisionsOfEntity(MapRecordJpa.class, true, true)
+				
+				// add mapProjectId and owner as constraints
+				.add(AuditEntity.property("mapProjectId").eq(1l))
 				.add(AuditEntity.relatedId("owner").eq(user.getId()))
-				.addOrder(AuditEntity.property("lastModified").desc());
+				
+				// exclude records with workflow status NEW
+				.add(AuditEntity.property("workflowStatus").ne(WorkflowStatus.NEW))
 
-		int pfsCounter = 0;
-		List<Object[]> allRevisions = query.getResultList();
-		for (Object[] revision : allRevisions) {
-			MapRecord record = (MapRecord)revision[0];
-			// used to force reading the graph
-			record.getLastModifiedBy().getEmail();
-			// only save the most recent revision
-			if (record.getMapProjectId().equals(projectId) &&
-					record.getWorkflowStatus() != WorkflowStatus.NEW &&
-					!editedRecords.keySet().contains(record.getConceptId()) ) {
-				pfsCounter++;
-				if (pfsParameter != null && pfsCounter > pfsParameter.getMaxResults())
-					continue;
-				if (pfsParameter != null && pfsCounter >= pfsParameter.getStartIndex()) 	
-					editedRecords.put(record.getConceptId(), record);
+				// sort by last modified (descending)
+				.addOrder(AuditEntity.property("lastModified").desc())
 
-			}
-		}
+				.setFirstResult(pfsParameter.getStartIndex())
+				.setMaxResults(pfsParameter.getMaxResults());
+		
+		
+		// execute the query
+		List<MapRecord> editedRecords = query.getResultList();
+		
+		// create the mapRecordList and set total size
+		MapRecordListJpa mapRecordList = new MapRecordListJpa();
+		//mapRecordList.setTotalCount(editedRecords.size());
+			
+		// select the paginated results
+		editedRecords = editedRecords.subList(
+							pfsParameter.getStartIndex(), 
+							Math.min(pfsParameter.getStartIndex() + pfsParameter.getMaxResults(), editedRecords.size()));
+		
 		// handle all lazy initializations
-		for (MapRecord mapRecord : editedRecords.values()) {
+		for (MapRecord mapRecord : editedRecords) {
+			mapRecord.getOwner().getEmail();
+			mapRecord.getLastModifiedBy().getEmail();
 			for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 				mapEntry.getMapNotes().size();
 				mapEntry.getMapAdvices().size();
 			} 	
 		}
-		// reverse sort chronologically
-		List<MapRecord> sortedEditedRecords = new ArrayList<>(editedRecords.values());
-		Collections.sort(sortedEditedRecords, new Comparator<MapRecord>() {
-			@Override
-			public int compare(MapRecord o1, MapRecord o2) {
-
-				long x1 = o1.getLastModified();
-				long x2 = o2.getLastModified();
-
-				if (x1 != x2) {
-					return new Long(x2 - x1).intValue();
-				} 
-				return 0;
-			}
-		});
-		MapRecordListJpa mapRecordList = new MapRecordListJpa();
-		mapRecordList.setMapRecords(sortedEditedRecords);
-		mapRecordList.setTotalCount(pfsCounter);
+		
+		// create the mapRecordList
+		mapRecordList.setMapRecords(editedRecords);
 		return mapRecordList;		
 	}
 

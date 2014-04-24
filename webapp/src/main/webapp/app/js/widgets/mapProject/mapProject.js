@@ -67,6 +67,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 				}	
 			}).success(function(data) {
 			  	$scope.glassPane = false;
+			  	$rootScope.$broadcast('mapProjectWidget.notification.workflowComputed');
 			}).error(function(error) {
 		    	  $scope.error = "Error";
 				  $scope.glassPane = false;

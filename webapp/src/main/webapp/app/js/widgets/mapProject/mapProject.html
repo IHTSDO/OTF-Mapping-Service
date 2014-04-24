@@ -4,11 +4,11 @@
 
 	<h4>{{project.name}}</h4>
 	
-    <input type="button" value="Project Details" ng-click="goProjectDetails()">   
-    <input type="button" value="Map Records" ng-click="goMapRecords()">
+    <button class="btn btn-sm btn-primary" ng-click="goProjectDetails()">Project Details</button> 
+    <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map Records</button>
     
     <span ng-show = "currentRole === 'Administrator' || currentRole == 'Lead'">
-	    <input type="button" ng-show="glassPane == false" value="Compute Workflow" ng-click="computeWorkflow()">
+	    <button class="btn btn-sm btn-primary" ng-show="glassPane == false" ng-click="computeWorkflow()">Compute Workflow</button>
 	    <span ng-show = "glassPane == true">&nbsp Computing Workflow....</span>
 	</span>
 	    <!-- GLASSPANE COMMENTED OUT FOR NOW -->
