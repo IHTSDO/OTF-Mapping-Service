@@ -1442,12 +1442,13 @@ public class MappingServiceJpa implements MappingService {
 				Integer.toString(m.size()) + " records retrieved");
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
 		mapRecordList.setMapRecords(m);
+		
 		// TODO: this is not quite right because in a search
 		// environment the total record count is not matched by this
 		// but current implementation will limit overall count by paging settings 
 		// and it should not.  it can use other settings but not paging ones.
 		mapRecordList.setTotalCount(
-				getMapRecordCountForMapProject(mapProjectId, null));
+				getMapRecordCountForMapProject(mapProjectId, pfsParameter));
 		return mapRecordList;
 
 	}
