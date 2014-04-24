@@ -24,19 +24,14 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	// pagination variables
 	$scope.conceptsPerPage = 10;
 
-	// retrieve focus project, current user, and user list
+	// retrieve focus project, current user, and current role
 	$scope.focusProject = localStorageService.get('focusProject');
 	$scope.currentUser = localStorageService.get('currentUser');
 	$scope.currentRole = localStorageService.get('currentRole');
-	$scope.mapUsers = localStorageService.get('mapUsers');
 	$scope.isConceptListOpen = false;
-
-	console.debug('LIST OF USERS:');
-	console.debug($scope.mapUsers);
 	
-	
-	
-	
+	// intiialize the user list
+	$scope.mapUsers = {};
 
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
@@ -68,6 +63,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		console.debug('my scope project changed!');
 
 		if ($scope.focusProject != null) {
+			
+			// construct the list of users
+			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
+			console.debug('Project Users:');
+			console.debug($scope.projectUsers);
+			
 			$scope.retrieveAvailableWork(1);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
 				$scope.retrieveAvailableConflicts(1);
@@ -173,6 +174,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
 			$scope.availableWork.removeElement(trackingRecord);
+			$scope.availableConflicts.removeElement(trackingRecord);
 			$rootScope.$broadcast('workAvailableWidget.notification.assignWork',{key: 'assignedWork', assignedWork: data});  
 			$rootScope.$broadcast('availableWork.notification.assignWork',{key: 'assignedWork', assignedWork: data});  
 		}).error(function(error) {
