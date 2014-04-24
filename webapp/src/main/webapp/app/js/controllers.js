@@ -2390,42 +2390,12 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 				$scope.preferences 	= null;
 				$scope.focusProject = null;
 				
-				// temporary variable to store focus project information
-				// used to ensure that focusProject is never set prior to mapProjects being set
-				// required to ensure the select list works properly, given async variable setting
-				var focusProjectTemp = null;
-				
 				// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 				$scope.mapProjects  = localStorageService.get('mapProjects');
 				$scope.currentUser  = localStorageService.get('currentUser');
 				$scope.currentRole  = localStorageService.get('currentRole');
 				$scope.preferences  = localStorageService.get('preferences');
-				focusProjectTemp = localStorageService.get('focusProject');
-			
-				// Project Sync Checking:  watch focusProjectTemp
-				$scope.$watch('focusProjectTemp', function() {
-					
-					console.debug("HEADER: Change to focusProjectTemp");
-					
-					// if the map projects are set, assign the temp focus project to the focus project
-					if ($scope.mapProjects != null && $scope.mapProjects != undefined) {
-						console.debug("        mapProjects set, assigning focusProject to " + focusProjectTemp.name);
-						$scope.focusProject = focusProjectTemp;
-					}
-				});
-				
-				// Project Sync Checking:  watch mapProjects
-				$scope.$watch('mapProjects', function() {
-					
-					console.debug("HEADER: Change to mapProjects");
-					
-					// if the temp focus project already has a value, assign it to the focus project
-					if (focusProjectTemp != null && focusProjectTemp != undefined) {
-						console.debug("        focusProjectTemp set, assigning focusProject to " + focusProjectTemp.name);
-						$scope.focusProject = focusProjectTemp;
-					}
-				});
-
+				$scope.focusProject = localStorageService.get('focusProject');
 
 				// Notifications from LoginPage (i.e. initialization of webapp on first visit)
 				// watch for user change
@@ -2449,7 +2419,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 				// watch for focus project change (called when user clicks Login)
 				$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
 					console.debug("HEADER: Detected change in focus project");
-					focusProjectTemp = parameters.focusProject;  // Project Sync Checking:  scope focus project is set via the $watch above
+					$scope.focusProject = parameters.focusProject;  
 				});
 
 				// watch for change in available projects (called by LoginCtrl on load of web application)
