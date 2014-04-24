@@ -62,12 +62,8 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 					"Content-Type": "application/json"
 				}	
 			}).success(function(data) {
-<<<<<<< HEAD
-			  	$scope.glassPane = false;
 			  	$rootScope.$broadcast('mapProjectWidget.notification.workflowComputed');
-=======
 			  	$rootScope.glassPane--;
->>>>>>> 08200cdb18a351969a0caa4e35db9af6eaca451b
 			}).error(function(error) {
 		    	  $scope.error = "Error";
 				  	$rootScope.glassPane--;

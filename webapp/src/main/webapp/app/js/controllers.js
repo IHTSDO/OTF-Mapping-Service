@@ -11,13 +11,9 @@ var root_metadata = root_url + "metadata/";
 var root_validation = root_url + "validation/";
 var root_workflow = root_url + "workflow/";
 
-<<<<<<< HEAD
-mapProjectAppControllers.run(function() {	
-
-=======
 mapProjectAppControllers.run(function($rootScope) {
 	$rootScope.glassPane = 0;
->>>>>>> 08200cdb18a351969a0caa4e35db9af6eaca451b
+
 });
 
 /**mapProjectAppControllers.controller('GlassPaneCtrl', function ($scope,  $rootScope) {
