@@ -54,7 +54,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			 	 	 "maxResults": $scope.conceptsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
-		
+
+	  	$rootScope.glassPane++;
+
 		$http({
 			url: root_workflow + "assignedConflicts/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
 			dataType: "json",
@@ -64,6 +66,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
 			$scope.assignedConflictsPage = page;
 			$scope.nAssignedConflicts = data.totalCount;
 			$scope.assignedConflicts = data.searchResult;
@@ -71,6 +75,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			console.debug('Assigned Conflicts:');
 			console.debug($scope.assignedConflicts);
 		}).error(function(error) {
+		  	$rootScope.glassPane--;
 			$scope.error = "Error";
 		});
 	};
@@ -83,7 +88,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			 	 	 "maxResults": $scope.conceptsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
-		
+
+	  	$rootScope.glassPane++;
+
 		$http({
 			url: root_workflow + "assignedWork/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
 			dataType: "json",
@@ -93,11 +100,14 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
 			$scope.assignedRecordPage = page;
 			$scope.nAssignedRecords = data.totalCount;
 			$scope.assignedRecords = data.searchResult;
 			console.debug($scope.assignedRecords);
 		}).error(function(error) {
+		  	$rootScope.glassPane--;
 			$scope.error = "Error";
 		});
 	};
