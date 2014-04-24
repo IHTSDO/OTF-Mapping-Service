@@ -20,6 +20,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 
 	// pagination variables
 	$scope.recordsPerPage = 10;
+	$scope.editedRecordsPage = 1;
 	
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
@@ -39,12 +40,14 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 		console.debug('editedListCtrl:  Detected project set/change');
 
 		if ($scope.focusProject != null) {
-			$scope.retrieveEditedWork(1);
+			$scope.retrieveEditedWork($scope.editedRecordsPage);
 		}
 	});
 	
 	$scope.retrieveEditedWork = function(page) {
 
+		// set the page
+		$scope.editedRecordsPage = page;
 		 
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
@@ -71,6 +74,8 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 			$scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
 			 
 			$scope.editedRecords = data.mapRecord;
+			console.debug("Edited records:")
+			console.debug($scope.editedRecords);
 						 
 		}).error(function(error) {
 		  	$rootScope.glassPane--;
