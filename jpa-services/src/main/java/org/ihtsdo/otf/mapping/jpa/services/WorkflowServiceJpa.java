@@ -732,8 +732,12 @@ public class WorkflowServiceJpa implements WorkflowService {
 			// get the tree positions for this concept and set the sort key to the first retrieved
 			SearchResultList treePositionsList = contentService.findTreePositionsForConcept(
 					concept.getTerminologyId(), concept.getTerminology(), concept.getTerminologyVersion());
-			Logger.getLogger(WorkflowServiceJpa.class).info("    id = " + concept.getTerminologyId());
-			trackingRecord.setSortKey(treePositionsList.getSearchResults().get(0).getValue());
+			// handle inactive concepts - which don't have tree positions
+			if (treePositionsList.getSearchResults().size() == 0) {
+			  trackingRecord.setSortKey("");
+			} else {
+			  trackingRecord.setSortKey(treePositionsList.getSearchResults().get(0).getValue());
+			}
 
 			// persist the workflow tracking record
 			addWorkflowTrackingRecord(trackingRecord);

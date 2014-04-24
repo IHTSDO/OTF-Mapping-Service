@@ -37,14 +37,14 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		
 		// find the description and relation type metadata and convert to normal JSON object structure
 		for (var i = 0; i < $scope.metadata.length; i++) {
-			if ($scope.metadata[i].name === 'descriptionTypes') {
+			if ($scope.metadata[i].name === 'Description Types') {
 				
 				for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
 					$scope.descTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
 				}
 				
 			}
-			else if ($scope.metadata[i].name === 'relationshipTypes') {
+			else if ($scope.metadata[i].name === 'Relationship Types') {
 				for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
 					$scope.relTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
 				}

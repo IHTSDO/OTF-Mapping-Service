@@ -52,7 +52,9 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 			 	 	 "maxResults": $scope.recordsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
-		
+
+	  	$rootScope.glassPane++;
+
 		$http({
 			url: root_mapping + "recentRecords/" + $scope.focusProject.id + "/" + $scope.user.userName,
 			dataType: "json",
@@ -62,27 +64,19 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
+		  	$rootScope.glassPane--;
 			
 			$scope.recordPage = page;
 			$scope.nRecords = data.totalCount;
 			$scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
 			 
 			$scope.editedRecords = data.mapRecord;
-			
-
-			 
+						 
 		}).error(function(error) {
+		  	$rootScope.glassPane--;
 			$scope.error = "Error";
 		});
 	};
 	
-	/**function getDate(timestamp) {
-		var d = new Date(timestamp);
-		alert(d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear());
-		$scope.date = d;
-	}*/
-	
-
-
 
 });

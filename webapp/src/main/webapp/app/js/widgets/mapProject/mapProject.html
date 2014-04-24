@@ -8,20 +8,15 @@
     <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map Records</button>
     
     <span ng-show = "currentRole === 'Administrator' || currentRole == 'Lead'">
+<<<<<<< HEAD
 	    <button class="btn btn-sm btn-primary" ng-show="glassPane == false" ng-click="computeWorkflow()">Compute Workflow</button>
 	    <span ng-show = "glassPane == true">&nbsp Computing Workflow....</span>
+=======
+	    <input type="button" value="Compute Workflow" ng-click="computeWorkflow()">	   
+>>>>>>> 08200cdb18a351969a0caa4e35db9af6eaca451b
 	</span>
-	    <!-- GLASSPANE COMMENTED OUT FOR NOW -->
-    <!-- <input type="button" ng-show={{glassPane}} value="glassPane is true">
-    <input type="button" ng-hide={{glassPane}} value="glassPane is false">
     
     
-    <textarea ng-show={{glassPane}} class="top-layer">text</textarea>  -->
-    
-    
-   <!-- <div ng-switch on={{glassPane}}>
-      <textarea ng-switch-when="true" class="top-layer">text</textarea>
-   </div>   -->
 </div>
 <div ng-show="project == null">
 
