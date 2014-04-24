@@ -111,6 +111,20 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		});
 	};
 	
+	// TODO Make this model object cleaner
+	// For now, expects that a referencedConcept will be a string of one of the following forms:
+	// 'conceptId', 'conceptId conceptMarker' where conceptMarker is † or *
+	$scope.gotoReferencedConcept = function(referencedConcept) {
+		
+		var splitString = referencedConcept.split(" ");
+		
+		$scope.query = splitString[0];
+		
+		console.debug("Setting query string to " + $scope.query);
+		
+		$scope.getRootTreeWithQuery();
+	}
+	
 
 	$scope.getLocalTree = function(terminologyId) {
 		
@@ -259,6 +273,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				}
 				
 				console.debug("Extracted descriptions for concept:");
+				console.debug($scope.currentConceptDescriptionGroups.length);
 				console.debug($scope.currentConceptDescriptionGroups);
 				
 				///////////////////
@@ -353,30 +368,30 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		console.debug(relationshipsForDescription);
 		
 		if (relationshipsForDescription.length > 0) {
-			description.term += " (";
+			description.referencedConcepts = [];
 			for (var i = 0; i < relationshipsForDescription.length; i++) {
 				
 				// add the target id
-				description.term += "<a ng-click='gotoConcept(" + relationshipsForDescription[i].destinationConceptId + ")'>"
-									+ relationshipsForDescription[i].destinationConceptId + "</a>";
+				var referencedConcept = relationshipsForDescription[i].destinationConceptId;
 				
 				// if a asterik-to-dagger, add a *
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Asterisk') == 0) {
-					description.term += " *";
+					referencedConcept += " *";
 				}
 				// if a dagger-to-asterik, add a †
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Dagger') == 0) {
-					description.term += " †";
+					referencedConcept += " †";
 				}
-				
+/*				
 				// add a comma if not the last element
-				description.term += (i == relationshipsForDescription.length -1 ? "" : ", ");
+				description.term += (i == relationshipsForDescription.length -1 ? "" : ", ");*/
+				
+				description.referencedConcepts.push(referencedConcept);
 				
 				// remove this relationship from the current concept (now represented in description)
 				$scope.currentConcept.relationship.removeElement(relationshipsForDescription[i]);
 					
 			}
-			description.term += ")";
 		}
 		
 		return description;
