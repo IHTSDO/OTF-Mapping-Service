@@ -190,7 +190,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": 0,
-			 	 	 "maxResults": $scope.batchSize, 
+			 	 	 "maxResults": batchSize, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 
@@ -224,13 +224,13 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			} 
 			
 			if (conceptListValid == true) {
-				console.debug("Claimed batch:");
+				console.debug("Claiming batch of size: " + batchSize);
 				
 				var terminologyIds = [];
-				for (var i = 0; i < $scope.batchSize; i++) {
-					console.debug(trackingRecords[i]);
+				for (var i = 0; i < batchSize; i++) {
 					
 					terminologyIds.push(trackingRecords[i].terminologyId);
+					console.debug('  -> Concept ' + trackingRecords[i].terminologyId);
 				}
 				
 				console.debug("Calling batch assignment API: " + root_workflow + "assign/batch/projectId/" + $scope.focusProject.id 

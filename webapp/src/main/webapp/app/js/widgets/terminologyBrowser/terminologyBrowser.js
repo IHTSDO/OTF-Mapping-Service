@@ -419,6 +419,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	
 	$scope.selectConcept = function(node) {
 		$rootScope.$broadcast('terminologyBrowser.selectConcept', {key: 'concept', concept: node});
+		window.scrollTo(0,0);
 	};
 });
 
