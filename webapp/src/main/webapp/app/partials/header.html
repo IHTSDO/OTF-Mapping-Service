@@ -5,7 +5,7 @@
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
       <img class="pull-left" src="img/logo.png" height="50px">
-      <p class="navbar-brand">IHTSDO Mapping Tool</p>
+      <p class="navbar-brand">&nbsp; IHTSDO Mapping Tool</p>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
@@ -26,7 +26,7 @@
 
             Current Project: {{focusProject.name}}
             &nbsp
-            <a class="dropdown-toggle"><i class="glyphicon glyphicon-edit"></i></a>
+            <a class="dropdown-toggle" title="Change Focus Project"><i class="glyphicon glyphicon-edit"></i></a>
 		 	<ul class="dropdown-menu">
 	 			<li ng-repeat="mapProject in mapProjects">
 	 				<span ng-click="changeFocusProject(mapProject)">{{mapProject.name}}</span>
