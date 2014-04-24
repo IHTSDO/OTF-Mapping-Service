@@ -21,6 +21,13 @@ if DEFINED OTF_MAPPING_HOME (echo OTF_MAPPING_HOME  = %OTF_MAPPING_HOME%) else (
 goto trailer)
 set error=0
 
+echo     Clear workflow ...%date% %time%
+cd %OTF_MAPPING_HOME%/admin/remover
+call %MVN_HOME%/bin/mvn -PClearWorkflow -Drun.config=dev -Drefset.id=447563008,447562003 install 1> mvn.log
+IF %ERRORLEVEL% NEQ 0 (set error=1
+goto trailer)
+del /Q mvn.log
+
 echo     Run updatedb with hibernate.hbm2ddl.auto = update ...%date% %time%
 cd %OTF_MAPPING_HOME%/admin/updatedb
 call %MVN_HOME%/bin/mvn -Drun.config=dev -Dhibernate.hbm2ddl.auto=update install 1> mvn.log

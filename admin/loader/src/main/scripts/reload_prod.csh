@@ -12,6 +12,15 @@ echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
 
+echo "    Clear workflow ...`/bin/date`"
+cd $OTF_MAPPING_HOME/admin/remover
+mvn -PClearWorkflow -Drun.config=prod -Drefset.id=447563008,447562003,450993002 install >&! mvn.log
+if ($status != 0) then
+    echo "ERROR clearing workflow"
+    cat mvn.log
+    exit 1
+endif
+
 echo "    Run updatedb with hibernate.hbm2ddl.auto = update ...`/bin/date`"
 cd $OTF_MAPPING_HOME/admin/updatedb
 mvn -Drun.config=prod -Dhibernate.hbm2ddl.auto=update install >&! mvn.log
@@ -101,8 +110,6 @@ if ($status != 0) then
     cat mvn.log
     exit 1
 endif
-
-
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"
