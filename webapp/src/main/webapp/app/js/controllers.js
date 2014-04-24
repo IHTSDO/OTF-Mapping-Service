@@ -2038,6 +2038,8 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 
 				// retrieve project information
+
+			  	$rootScope.glassPane++;
 				$http({
 					url: root_mapping + "project/id/" + $routeParams.projectId,
 					dataType: "json",
@@ -2047,10 +2049,11 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 					}	
 				}).success(function(data) {
 					$scope.project = data;
+					$rootScope.glassPane--;
 					$scope.errorProject = "Project retrieved";
 				}).error(function(error) {
 					$scope.errorProject = "Could not retrieve project"; 
-
+					$rootScope.glassPane--;
 				}).then(function(data) {
 
 					// apply map type text styling

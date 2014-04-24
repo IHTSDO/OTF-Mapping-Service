@@ -55,10 +55,9 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			if (confirmWorkflow == true) {
 			// retrieve project information
 			$http({
-				/**url: root_workflow + "project/id/" + $scope.project.id,  RESET to POST*/
-				url: root_mapping + "project/projects/",
+				url: root_workflow + "project/id/" + $scope.project.id,
 				dataType: "json",
-				method: "GET",
+				method: "POST",
 				headers: {
 					"Content-Type": "application/json"
 				}	
