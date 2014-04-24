@@ -388,10 +388,10 @@
             <dependencies>
               <dependency>
                 <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
+                <artifactId>mapping-admin-remover-config</artifactId>
                 <version>${project.version}</version>
                 <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
               </dependency>
             </dependencies>
             <executions>
