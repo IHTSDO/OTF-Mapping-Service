@@ -8,11 +8,8 @@
     <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map Records</button>
     
     <span ng-show = "currentRole === 'Administrator' || currentRole == 'Lead'">
-	    <button class="btn btn-sm btn-primary" ng-show="glassPane == false" ng-click="computeWorkflow()">Compute Workflow</button>
-	    <span ng-show = "glassPane == true">&nbsp Computing Workflow....</span>
-	    <input type="button" value="Compute Workflow" ng-click="computeWorkflow()">	   
-	</span>
-    
+	    <button class="btn btn-sm btn-primary" ng-click="computeWorkflow()">Compute Workflow</button>    
+	</span>    
     
 </div>
 <div ng-show="project == null">
