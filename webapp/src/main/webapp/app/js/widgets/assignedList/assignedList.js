@@ -29,6 +29,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	});	
 
 	$scope.$on('workAvailableWidget.notification.assignWork', function(event, parameters) {
+		console.debug('assignedlist: assignWork notification from workAvailableWidget');
 		$scope.retrieveAssignedWork(1);
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 			$scope.retrieveAssignedConflicts(1);
