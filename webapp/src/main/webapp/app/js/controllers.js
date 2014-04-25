@@ -16,14 +16,6 @@ mapProjectAppControllers.run(function($rootScope) {
 
 });
 
-/**mapProjectAppControllers.controller('GlassPaneCtrl', function ($scope,  $rootScope) {
-	console.debug("in the GlassPaneCtrl");
-	//$scope.glassPane = $rootScope.glassPane;
-
-	// functions to increment/decrement  enable/disable
-});*/
-
-
 
 mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, $rootScope, localStorageService) {
 
@@ -81,8 +73,6 @@ mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($
 
 			};
 		}
-		// broadcast page to help mechanism  
-		$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
 	};
 
 	console.debug("CONTROLLER MODEL");
@@ -324,7 +314,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 });
 
-mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $routeParams, localStorageService) {
+mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $rootScope, $routeParams, localStorageService) {
 
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
@@ -367,6 +357,9 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 
 		}
 	};
+	
+	// broadcast page to help mechanism  
+	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
 
 	$scope.$on('adfDashboardChanged', function (event, name, model) {
 		console.debug("Dashboard change detected by MapRecordDashboard");
