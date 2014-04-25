@@ -57,12 +57,18 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'}); 
 
 	// Watcher for Conflict Resolution Select Record Event
-	$rootScope.$on('compareRecordsWidget.notification.selectRecord', function(event, parameters) { 	
-		console.debug("received new record");
-		console.debug(parameters);
-		console.debug(parameters.record);
-		$scope.record = parameters.record;
-	});
+	$rootScope.$on('compareRecordsWidget.notification.selectRecord', function(event, parameters) {    
+        console.debug("received new record");
+        console.debug(parameters);
+        console.debug(parameters.record);
+        $scope.record = parameters.record;
+        
+        //get the groups
+        if ($scope.project.groupStructure == true)
+               getGroups();
+
+});
+
 
 	$scope.$watch('record', function() {
 		console.debug('detected change in record, re-initializing entries');
@@ -72,7 +78,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 	// initialize local variables
 	var recordId = 		$routeParams.recordId; 
-	var currentLocalId = 0;   // used for addition of new entries without hibernate id
+	var currentLocalId = 1;   // used for addition of new entries without hibernate id
 
 	// obtain the record
 	$http({
@@ -139,8 +145,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	function initializeEntries() {
 
 		console.debug("Initializing map entries -- " + $scope.record.mapEntry.length + " found");
-
-		currentLocalId = 1;
 		
 		// find the maximum hibernate id value and set the current local id
 		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
@@ -153,15 +157,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				$scope.getRuleSummary($scope.record.mapEntry[i]);
 			
 			// assign the entry localId to the hibernate Id
-			$scope.record.mapEntry[i].localId = $scope.record.mapEntry[i].id;
-		}
-		
-		// SAFETY CHECK:  Verify that all entries have a local id
-		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-			if ($scope.record.mapEntry[i].localId == null || $scope.record.mapEntry[i].localId == undefined) {
-				$scope.record.mapEntry[i].localId = currentLocalId + 1;
-				currentLocalId++;
-			}
+			$scope.record.mapEntry[i].localId = 	$scope.record.mapEntry[i].id;
 		}
 
 		// if no group structure, simply copy and sort
@@ -241,6 +237,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			console.debug(entries);
 
 			$scope.record.mapEntry = entries;
+			
+			// SAFETY CHECK:  Verify that all entries have a local id
+			for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+				if ($scope.record.mapEntry[i].localId == null || $scope.record.mapEntry[i].localId == undefined || $scope.record.mapEntry[i].localId === '') {
+					$scope.record.mapEntry[i].localId = currentLocalId + 1;
+					currentLocalId++;
+				}
+			}
 		}
 
 		console.debug("Validating the map record");
@@ -396,6 +400,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		} else {
 			$scope.errorAddRecordPrinciple = "";
 
+			// add localId to this principle
+			principle.localId = currentLocalId++;
+			
 			// check if principle already present
 			var principlePresent = false;
 			for (var i = 0; i < record.mapPrinciple.length; i++) {
@@ -413,7 +420,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 
 	$scope.removeRecordPrinciple = function(record, principle) {
-		record['mapPrinciple'].removeElement(principle);
+		record['mapPrinciple'] = removeJsonElement(record['mapPrinciple'], principle);
 		$scope.record = record;
 	};
 
@@ -425,6 +432,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 			// construct note object
 			var mapNote = new Object();
+			mapNote.localId = currentLocalId++;
 			mapNote.note = note;
 			mapNote.timestamp = (new Date()).getMilliseconds();
 			mapNote.user = localStorageService.get('currentUser');
@@ -446,8 +454,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 
 	$scope.removeRecordNote = function(record, note) {
+		console.debug("Removing note");
 		console.debug(note);
-		record['mapNote'].removeElement(note);
+		record['mapNote'] = removeJsonElement(record['mapNote'], note);
 		$scope.record = record;
 	};
 
@@ -724,6 +733,26 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		this.length = 0; //clear original array
 		this.push.apply(this, array); //push all elements except the one we want to delete
 	};
+	
+	function removeJsonElement(array, elem) {
+		
+		
+		
+		console.debug("Removing element");
+		var newArray = [];
+		for (var i = 0; i < array.length; i++) {
+			if (array[i].localId != elem.localId) {
+				console.debug("Pushing element " + array[i].id);
+				newArray.push(array[i]);
+			}
+		}
+		
+		console.debug("After remove, before return:")
+		console.debug(newArray)
+		return newArray;
+	}	
+	
+
 
 
 	$scope.getBrowserUrl = function() {
