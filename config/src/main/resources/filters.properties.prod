@@ -72,6 +72,6 @@ show.sql=false
 #
 # Lucene index base
 #
-lucene.indexBase=/var/lib/tomcat7/indexes
+lucene.indexBase=/var/lib/tomcat7/indexes/lucene/indexes
 
 
