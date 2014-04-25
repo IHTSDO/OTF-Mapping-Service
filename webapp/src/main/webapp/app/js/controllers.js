@@ -16,14 +16,6 @@ mapProjectAppControllers.run(function($rootScope) {
 
 });
 
-/**mapProjectAppControllers.controller('GlassPaneCtrl', function ($scope,  $rootScope) {
-	console.debug("in the GlassPaneCtrl");
-	//$scope.glassPane = $rootScope.glassPane;
-
-	// functions to increment/decrement  enable/disable
-});*/
-
-
 
 mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, $rootScope, localStorageService) {
 
@@ -322,7 +314,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 });
 
-mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $routeParams, localStorageService) {
+mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $rootScope, $routeParams, localStorageService) {
 
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
