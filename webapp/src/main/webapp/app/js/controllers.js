@@ -78,6 +78,9 @@ mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($
 	console.debug("CONTROLLER MODEL");
 	console.debug($scope.model);
 
+	// broadcast page to help mechanism  
+	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'resolveConflictsDashboard'});  
+
 	$scope.$on('adfDashboardChanged', function (event, name, model) {
 		console.debug("Dashboard change detected by ResolveConflictsDashboard");
 		localStorageService.set(name, model);

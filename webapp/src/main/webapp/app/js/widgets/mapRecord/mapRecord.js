@@ -57,12 +57,18 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'}); 
 
 	// Watcher for Conflict Resolution Select Record Event
-	$rootScope.$on('compareRecordsWidget.notification.selectRecord', function(event, parameters) { 	
-		console.debug("received new record");
-		console.debug(parameters);
-		console.debug(parameters.record);
-		$scope.record = parameters.record;
-	});
+	$rootScope.$on('compareRecordsWidget.notification.selectRecord', function(event, parameters) {    
+        console.debug("received new record");
+        console.debug(parameters);
+        console.debug(parameters.record);
+        $scope.record = parameters.record;
+        
+        //get the groups
+        if ($scope.project.groupStructure == true)
+               getGroups();
+
+});
+
 
 	$scope.$watch('record', function() {
 		console.debug('detected change in record, re-initializing entries');
