@@ -357,8 +357,22 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	};
 
 	// removes advice from a map entry
-	$scope.removeEntryAdvice = function(entry, advice) {	  
-		entry['mapAdvice'].removeElement(advice);
+	$scope.removeEntryAdvice = function(entry, advice) {	
+		
+		console.debug('Removing advice:');
+		console.debug(advice);
+		console.debug('Advices found:');
+		for (var i = 0; i < entry['mapAdvice'].length; i++) {
+			console.debug(entry['mapAdvice'][i]);
+		}
+		
+		entry.mapAdvice = removeJsonElement(entry.mapAdvice, advice);
+		
+		console.debug('Advices after removal:');
+		for (var i = 0; i < entry['mapAdvice'].length; i++) {
+			console.debug(entry['mapAdvice'][i]);
+		}
+		
 		$scope.entry = entry;  
 	};
 
@@ -373,7 +387,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	
 	$scope.clearMapRelation = function(mapRelation) {
 		$scope.entry.mapRelation = null;
-	}
+	};
 
 
 	// Function for MapAdvice and MapRelations, returns allowable lists based on null target and element properties
@@ -411,4 +425,21 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
 		});
 	};
+	
+	function removeJsonElement(array, elem) {
+		
+		console.debug("Removing element");
+		var newArray = [];
+		for (var i = 0; i < array.length; i++) {
+			if (array[i].id != elem.id) {
+				console.debug("Pushing element " + array[i].id);
+				newArray.push(array[i]);
+			}
+		}
+		
+		console.debug("After remove, before return:")
+		console.debug(newArray)
+		return newArray;
+	}
+	
 });

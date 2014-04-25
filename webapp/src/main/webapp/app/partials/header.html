@@ -24,7 +24,7 @@
           <!-- Focus Project tool -->
           <div class="navbar-text dropdown" ng-show="currentUser.name != null">
 
-            Current Project: {{focusProject.name}}
+            Project: {{focusProject.name}}
             &nbsp
             <a class="dropdown-toggle" title="Change Focus Project"><i class="glyphicon glyphicon-edit"></i></a>
 		 	<ul class="dropdown-menu">
@@ -65,9 +65,9 @@
              
             <!-- Help tool -->
  
-            <span 
+            <a title="Help"><span 
             ng-click="goToHelp()"
-               class="glyphicon glyphicon-question-sign"></span>
+               class="glyphicon glyphicon-question-sign"></span></a>
  
             &nbsp;              
           </p>

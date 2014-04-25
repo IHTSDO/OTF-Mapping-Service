@@ -32,7 +32,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 		$scope.goProjectDetails = function () {
 			console.debug($scope.role);
 
-			var path = "/project/id/" + $scope.project.id;
+			var path = "/project/details";
 				// redirect page
 				$location.path(path);
 		};
@@ -40,7 +40,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 		$scope.goMapRecords = function () {
 			console.debug($scope.role);
 
-			var path = "/record/projectId/" + $scope.project.id;
+			var path = "/project/records";
 				// redirect page
 				$location.path(path);
 		};

@@ -14,7 +14,10 @@
 		<table>
 		
 			<tr><td style="vertical-align: top; padding:5px;"><strong>Id</strong></td>
-				<td style="vertical-align: top; padding:5px;"><span ng-show="entry.targetId != null && entry.targetId != ''">{{project.destinationTerminology}}, {{entry.targetId}} &nbsp<button ng-click="clearTargetConcept(entry)">Clear</button></span></td>
+				<td style="vertical-align: top; padding:5px;">
+					<span ng-show="entry.targetId != null && entry.targetId != ''">{{project.destinationTerminology}}, {{entry.targetId}} &nbsp<button ng-click="clearTargetConcept(entry)">Clear</button></span>
+					<span ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">No Target Code Selected</span>
+				</td>
 			</tr>
 			<tr><td style="vertical-align: top; padding:5px;"><strong>Name</strong></td>
 				<td style="vertical-align: top; padding:5px;">{{entry.targetName}}</td>
