@@ -116,12 +116,12 @@ mapProjectApp.config(['$routeProvider',
 		  controller: 'dashboardCtrl'
 	  });
 	  
-	  $routeProvider.when('/record/projectId/:projectId', {
+	  $routeProvider.when('/project/records', {
 		  templateUrl: 'partials/project-records.html',
 	      controller: 'MapProjectRecordCtrl'
 	  });
 
-	  $routeProvider.when('/project/id/:projectId', {
+	  $routeProvider.when('/project/details', {
   		  templateUrl: 'partials/project-detail.html', 
   		  controller: 'MapProjectDetailCtrl'
   	  });

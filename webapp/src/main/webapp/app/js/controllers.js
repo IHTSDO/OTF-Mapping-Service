@@ -314,7 +314,7 @@ mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scop
 
 });
 
-mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $rootScope, $routeParams, localStorageService) {
+mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $rootScope, $routeParams, $location, localStorageService) {
 
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
@@ -323,6 +323,8 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 
 	function setModel() {
 		$scope.name = 'EditingDashboard';
+		console.debug("Setting record dashboard model");
+		console.debug($scope.model);
 		if (!$scope.model) {
 			$scope.model = {
 					structure: "6-6",                          
@@ -369,10 +371,32 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 	// watch for project change
 	// TODO A project change while viewing a record should return you to dashboard
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
-		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
-		$scope.project = parameters.focusProject;
+		console.debug("RecordDashboardCtrl:  Detected change in focus project");
+		
+		// set the model to empty
+		$scope.model = {
+				structure: "6-6",                          
+				rows: 
+					[{}]
+		};
+		
+		setModel();
+		
+		console.debug($scope.currentRole);
+		
+		var path = "";
 
-		console.debug($scope.project);
+		if ($scope.currentRole === "Specialist") {
+			path = "/specialist/dash";
+		} else if ($scope.currentRole === "Lead") {
+			path = "/lead/dash";
+		} else if ($scope.currentRole === "Administrator") {
+			path = "/admin/dash";
+		} else if ($scope.currentRole === "Viewer") {
+			path = "/project/projects/";
+		}
+		console.debug("redirecting to " + path);
+		$location.path(path);
 	});	
 
 	// on any change of focusProject, retrieve new available work
@@ -2019,8 +2043,8 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 }]);
 
 mapProjectAppControllers.controller('MapProjectDetailCtrl', 
-		['$scope', '$http', '$routeParams', '$sce', '$rootScope', 'localStorageService',
-		 function ($scope, $http, $routeParams, $sce, $rootScope, localStorageService) {
+		['$scope', '$http', '$sce', '$rootScope', '$location', 'localStorageService',
+		 function ($scope, $http, $sce, $rootScope, $location, localStorageService) {
 
 			// broadcast page to help mechanism
 			$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'project'});
@@ -2062,77 +2086,10 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 					$scope.focusProject.mapPrincipleDocument = null;
 				}
 
-
-				var scopeMap = {};
-				var len = $scope.focusProject.scopeConcepts.length;
-				var terminology = $scope.focusProject.sourceTerminology;
-				var terminologyVersion = $scope.focusProject.sourceTerminologyVersion;
-
-				if ($scope.focusProject.name.indexOf('ICPC') == -1) {
+				// set the scope maps
+				$scope.scopeMap = {};
+				$scope.scopeExcludedMap = {};
 				
-					// find concept based on source terminology
-					for (var i = 0; i < len; i++) {
-						$rootScope.glassPane++;
-						$http({
-							url: root_content + "concept/" 
-							+ terminology +  "/" 
-							+ terminologyVersion 
-							+ "/id/" 
-							+ $scope.focusProject.scopeConcepts[i],
-							dataType: "json",
-							method: "GET",
-							headers: {
-								"Content-Type": "application/json"
-							}	
-						}).success(function(data) {
-							$rootScope.glassPane--;
-							var obj = {
-									key: data.terminologyId,
-									concept: data
-							};  
-							scopeMap[obj.key] = obj.concept.defaultPreferredName;
-							$scope.scopeMap = scopeMap;
-						}).error(function(error) {
-							$rootScope.glassPane--;
-							console.debug("Could not retrieve concept");
-							$scope.error = $scope.error + "Could not retrieve Concept. ";    
-						});
-	
-					}
-
-					var scopeExcludedMap = {};
-					var len = $scope.focusProject.scopeExcludedConcepts.length;
-	
-					// find concept based on source terminology
-					for (var i = 0; i < len; i++) {
-						$rootScope.glassPane++;
-						$http({
-							url: root_content + "concept/" 
-							+ terminology +  "/" 
-							+ terminologyVersion 
-							+ "/id/" 
-							+ $scope.focusProject.scopeExcludedConcepts[i],
-							dataType: "json",
-							method: "GET",
-							headers: {
-								"Content-Type": "application/json"
-							}	
-						}).success(function(data) {
-							$rootScope.glassPane--;
-							var obj = {
-									key: data.terminologyId,
-									concept: data
-							};  
-							scopeExcludedMap[obj.key] = obj.concept.defaultPreferredName;
-							$scope.scopeExcludedMap = scopeExcludedMap;
-						}).error(function(error) {
-							$rootScope.glassPane--;
-							console.debug("Could not retrieve concept");
-							$scope.error = $scope.error + "Could not retrieve Concept. ";    
-						});
-	
-					}
-				}
 				// set pagination variables
 				$scope.pageSize = 5;
 				$scope.maxSize = 5;
@@ -2145,7 +2102,13 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 			});
 
-		
+			$scope.goMapRecords = function () {
+				console.debug($scope.role);
+
+				var path = "/project/records";
+					// redirect page
+					$location.path(path);
+			};
 
 
 			// function to return trusted html code (for tooltip content)
@@ -2199,18 +2162,44 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 			$scope.getPagedScopeConcepts = function (page) {
 				console.debug("Called paged scope concept for page " + page); 
-				//$scope.pagedScopeConcept = $scope.sortByKey($scope.focusProject.scopeConcepts, 'id')
-				//.filter(containsScopeConceptFilter);
-				//if ($scope.scopeMap == null)
+				
 				$scope.pagedScopeConcept = $scope.focusProject.scopeConcepts;
-				//else	 
-				//    $scope.pagedScopeConcept = $scope.scopeMap.filter(containsScopeConceptFilter);
-				//$scope.pagedScopeConcept = $scope.focusProject.scopeConcepts.sort(function(a,b){return $scope.scopeMap[a] - $scope.scopeMap[b];});
 				$scope.pagedScopeConceptCount = $scope.pagedScopeConcept.length;
+				
 				$scope.pagedScopeConcept = $scope.pagedScopeConcept
 				.slice((page-1)*$scope.pageSize,
 						page*$scope.pageSize);
+				
+				
+				// find concept based on source terminology
+				for (var i = 0; i < $scope.pagedScopeConcept.length; i++) {
+					$rootScope.glassPane++;
+					$http({
+						url: root_content + "concept/" 
+						+ $scope.focusProject.sourceTerminology +  "/" 
+						+ $scope.focusProject.sourceTerminologyVersion 
+						+ "/id/" 
+						+ $scope.focusProject.scopeConcepts[i],
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}	
+					}).success(function(data) {
+						$rootScope.glassPane--;
+						var obj = {
+								key: data.terminologyId,
+								concept: data
+						};  
+						$scope.scopeMap[obj.key] = obj.concept.defaultPreferredName;
+					}).error(function(error) {
+						$rootScope.glassPane--;
+						console.debug("Could not retrieve concept");
+						$scope.error = $scope.error + "Could not retrieve Concept. ";    
+					});
 
+				}
+				
 				console.debug($scope.pagedScopeConcept);
 			};
 
@@ -2222,6 +2211,36 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				$scope.pagedScopeExcludedConcept = $scope.pagedScopeExcludedConcept
 				.slice((page-1)*$scope.pageSize,
 						page*$scope.pageSize);
+				
+				
+				// fill the scope map for these variables
+				for (var i = 0; i < $scope.pagedScopeExcludedConcept.length; i++) {
+					$rootScope.glassPane++;
+					$http({
+						url: root_content + "concept/" 
+						+ $scope.focusProject.sourceTerminology +  "/" 
+						+ $scope.focusProject.sourceTerminologyVersion 
+						+ "/id/" 
+						+ $scope.focusProject.scopeExcludedConcepts[i],
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}	
+					}).success(function(data) {
+						$rootScope.glassPane--;
+						var obj = {
+								key: data.terminologyId,
+								concept: data
+						};  
+						$scope.scopeExcludedMap[obj.key] = obj.concept.defaultPreferredName;
+					}).error(function(error) {
+						$rootScope.glassPane--;
+						console.debug("Could not retrieve concept");
+						$scope.error = $scope.error + "Could not retrieve Concept. ";    
+					});
+				}
+				
 
 				console.debug($scope.pagedScopeExcludedConcept);
 			};
