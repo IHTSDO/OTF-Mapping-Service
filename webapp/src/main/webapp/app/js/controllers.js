@@ -434,10 +434,10 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 
 
 	// set all local variables to null
-	$scope.user = null;
-	$scope.users = null;
-	$scope.error = null;
-	$scope.preferences = null;
+	$scope.user = [];
+	$scope.users = [];
+	$scope.error = [];
+	$scope.preferences = [];
 
 	// retrieve projects for focus controls
 	$http({
