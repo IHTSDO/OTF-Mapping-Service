@@ -538,15 +538,17 @@ public class ContentServiceJpa implements ContentService {
 		query.setParameter("terminology", terminology);
 		query.setParameter("terminologyVersion", terminologyVersion);
 
+		int results = 0;
 		if (getTransactionPerOperation()) {
 			EntityTransaction tx = manager.getTransaction();
 			tx.begin();
-			query.executeUpdate();
+			results = query.executeUpdate();
 			tx.commit();
 		} else {
-			query.executeUpdate();
+			results = query.executeUpdate();
 		}
-
+		Logger.getLogger(this.getClass()).info("  deleted " + results + " entries");
+		
 	}
 
 	/*
