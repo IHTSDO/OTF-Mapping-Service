@@ -1052,7 +1052,7 @@ public class MappingServiceJpa implements MappingService {
 				.forRevisionsOfEntity(MapRecordJpa.class, true, true)
 				
 				// add mapProjectId and owner as constraints
-				.add(AuditEntity.property("mapProjectId").eq(1l))
+				.add(AuditEntity.property("mapProjectId").eq(projectId))
 				.add(AuditEntity.relatedId("owner").eq(user.getId()))
 				
 				// exclude records with workflow status NEW
