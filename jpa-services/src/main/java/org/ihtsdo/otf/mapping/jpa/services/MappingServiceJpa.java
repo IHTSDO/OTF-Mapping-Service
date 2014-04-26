@@ -1,8 +1,9 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1052,7 +1053,7 @@ public class MappingServiceJpa implements MappingService {
 				.forRevisionsOfEntity(MapRecordJpa.class, true, true)
 				
 				// add mapProjectId and owner as constraints
-				.add(AuditEntity.property("mapProjectId").eq(1l))
+				.add(AuditEntity.property("mapProjectId").eq(projectId))
 				.add(AuditEntity.relatedId("owner").eq(user.getId()))
 				
 				// exclude records with workflow status NEW
@@ -1747,6 +1748,7 @@ public class MappingServiceJpa implements MappingService {
    * org.ihtsdo.otf.mapping.services.MappingService#findUnmappedConceptsInScope
    * (org.ihtsdo.otf.mapping.model.MapProject)
    */
+  @SuppressWarnings("deprecation")
   @Override
   public SearchResultList findUnmappedConceptsInScope(Long mapProjectId)
     throws Exception {
@@ -1767,20 +1769,33 @@ public class MappingServiceJpa implements MappingService {
       if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
           || mapRecord.getWorkflowStatus().equals(
               WorkflowStatus.READY_FOR_PUBLICATION)) {
-        mappedConcepts.add(mapRecord.getConceptId());
+          mappedConcepts.add(mapRecord.getConceptId());        
       }
     }
-
+    
     //
     // Keep any search results that do not have mapped concepts
     //
+    ContentService contentService = new ContentServiceJpa();
     SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
     for (SearchResult sr : conceptsInScope.getSearchResults()) {
-      if (! mappedConcepts.contains(sr.getTerminologyId())) {
+
+      // Check that the concept has an effectiveTime >= 20140131
+      // TODO: remove this after optimizing the find available work to
+      //       efficiently handle 10K+ cases
+      Calendar c = Calendar.getInstance();
+      c.set(2013, 0, 1);
+      Concept concept = contentService.getConcept(sr.getId());
+      if (concept.getEffectiveTime().after(c.getTime())) {
+
+       if (! mappedConcepts.contains(sr.getTerminologyId())) {
         unmappedConceptsInScope.addSearchResult(sr);
+      }
+      
       }
     }
     unmappedConceptsInScope.setTotalCount(unmappedConceptsInScope.getCount());
+    contentService.close();
 
     Logger.getLogger(this.getClass()).info(
         "  Project has " + unmappedConceptsInScope.getTotalCount()
