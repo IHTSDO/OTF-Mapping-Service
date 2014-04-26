@@ -157,15 +157,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				$scope.getRuleSummary($scope.record.mapEntry[i]);
 			
 			// assign the entry localId to the hibernate Id
-			$scope.record.mapEntry[i].localId = $scope.record.mapEntry[i].id;
-		}
-		
-		// SAFETY CHECK:  Verify that all entries have a local id
-		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-			if ($scope.record.mapEntry[i].localId == null || $scope.record.mapEntry[i].localId == undefined) {
-				$scope.record.mapEntry[i].localId = currentLocalId + 1;
-				currentLocalId++;
-			}
+			$scope.record.mapEntry[i].localId = 	$scope.record.mapEntry[i].id;
 		}
 
 		// if no group structure, simply copy and sort
@@ -245,6 +237,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			console.debug(entries);
 
 			$scope.record.mapEntry = entries;
+			
+			// SAFETY CHECK:  Verify that all entries have a local id
+			for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+				if ($scope.record.mapEntry[i].localId == null || $scope.record.mapEntry[i].localId == undefined || $scope.record.mapEntry[i].localId === '') {
+					$scope.record.mapEntry[i].localId = currentLocalId + 1;
+					currentLocalId++;
+				}
+			}
 		}
 
 		console.debug("Validating the map record");
