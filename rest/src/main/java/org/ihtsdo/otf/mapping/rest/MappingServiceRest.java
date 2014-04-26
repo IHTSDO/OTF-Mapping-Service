@@ -159,13 +159,13 @@ public class MappingServiceRest {
   }
   
   /**
-   * Returns all map leads in either JSON or XML format
+   * Returns all map user preferences in either JSON or XML format
    * 
    * @return the map leads
    */
   @GET
   @Path("/userPreferences/userPreferences/")
-  @ApiOperation(value = "Get all map user preference objects", notes = "Returns all MapUserPreferences in either JSON or XML format", response = MapUserPreferences.class)
+  @ApiOperation(value = "Get all map user preference objects", notes = "Returns all MapUserPreferences in either JSON or XML format", response = MapUserPreferencesListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -222,7 +222,7 @@ public class MappingServiceRest {
   }
 
   /**
-   * Returns all map projects for a map lead in either JSON or XML format
+   * Returns all map projects for a map user
    * @param mapLeadId the map lead
    * @return the map projects
    */
@@ -458,7 +458,7 @@ public class MappingServiceRest {
    */
   @POST
   @Path("/record/projectId/{id:[0-9][0-9]*}/nRecords")
-  @ApiOperation(value = "Find number of records by project id given filtering information", notes = "Returns count of MapRecords in database given a paging/filtering/sorting parameters object", response = MapRecordListJpa.class)
+  @ApiOperation(value = "Get number of records", notes = "Returns count of MapRecords in database for a given filter", response = MapRecordListJpa.class)
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -504,7 +504,7 @@ public class MappingServiceRest {
    */
   @POST
   @Path("/record/projectId/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Find paged records by project id", notes = "Returns delimited page of MapRecords given a paging/filtering/sorting parameters object", response = MapRecordListJpa.class)
+  @ApiOperation(value = "Find paged records by project id", notes = "Returns delimited page of published or ready-for-publicatoin MapRecords given a paging/filtering/sorting parameters object", response = MapRecordListJpa.class)
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -546,7 +546,7 @@ public class MappingServiceRest {
    */
   @DELETE
   @Path("record/delete/projectId/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Deletes all records for a project id", notes = "Deletes all map records for a project id", response = Integer.class)
+  @ApiOperation(value = "Delete all project records", notes = "Deletes all map records for a project id", response = Integer.class)
   @Produces({
     MediaType.TEXT_PLAIN
   })
@@ -624,7 +624,7 @@ public class MappingServiceRest {
   @Path("/user/add")
   @ApiOperation(value = "Add a user", notes = "Adds a MapUser", response = MapUserJpa.class)
   public Response addMapUser(
-    @ApiParam(value = "The map userd to add. Must be in Json or Xml format", required = true) MapUserJpa mapUser) {
+    @ApiParam(value = "The map user to add. Must be in Json or Xml format", required = true) MapUserJpa mapUser) {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
@@ -652,7 +652,7 @@ public class MappingServiceRest {
   })
   @ApiOperation(value = "Add a record", notes = "Adds a MapRecord", response = MapRecordJpa.class)
   public MapRecord addMapRecord(
-    @ApiParam(value = "The map record to add", required = true) MapRecordJpa mapRecord) {
+    @ApiParam(value = "The map record to add. Must be in Json or XML format", required = true) MapRecordJpa mapRecord) {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
@@ -680,7 +680,7 @@ public class MappingServiceRest {
   })
   @ApiOperation(value = "Add a user preferences object", notes = "Adds a MapUserPreferences", response = MapUserPreferencesJpa.class)
   public MapUserPreferences addMapUserPreferences(
-    @ApiParam(value = "The map user preferences object to add", required = true) MapUserPreferencesJpa mapUserPreferences) {
+    @ApiParam(value = "The map user preferences object to add. Must be in Json or XML format", required = true) MapUserPreferencesJpa mapUserPreferences) {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
@@ -703,9 +703,9 @@ public class MappingServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @ApiOperation(value = "Gets a user preferences object", notes = "Gets a MapUserPreferences", response = MapUserPreferencesJpa.class)
+  @ApiOperation(value = "Gets a user preferences object", notes = "Gets a MapUserPreferences object for a given userName", response = MapUserPreferencesJpa.class)
   public MapUserPreferences getMapUserPreferences(
-    @ApiParam(value = "The map user preferences object to add", required = true) @PathParam("userName") String userName) {
+    @ApiParam(value = "The map user's user name", required = true) @PathParam("userName") String userName) {
 
 	Logger.getLogger(MappingServiceRest.class).info("RESTful call:  getMapUserPreferences for " + userName);
 	  
@@ -810,7 +810,7 @@ public class MappingServiceRest {
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @ApiOperation(value = "Update a set of map user preferences", notes = "Updates a set of map user preferences", response = MapUserPreferencesJpa.class)
+  @ApiOperation(value = "Update user preferences", notes = "Updates a set of map user preferences", response = MapUserPreferencesJpa.class)
   public void updateMapUserPreferences(
     @ApiParam(value = "The map user preferences to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapUserPreferencesJpa mapUserPreferences) {
 
@@ -839,7 +839,7 @@ public class MappingServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @ApiOperation(value = "Get record revision history", notes = "Retrieves revision history of a record", response = MapRecordListJpa.class)
+  @ApiOperation(value = "Get record revision history", notes = "Returns a map record's previous versions from the audit trail", response = MapRecordListJpa.class)
   public MapRecordListJpa getMapRecordRevisions(
     @ApiParam(value = "Id of map record to get revisions for", required = true) @PathParam("id") Long mapRecordId) {
     Logger.getLogger(MappingServiceRest.class).info(
@@ -958,7 +958,7 @@ public class MappingServiceRest {
    */
   @DELETE
   @Path("/userPreferences/id/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Removes a set of map user preferences", notes = "Removes a set of map user preferencest", response = MapUserPreferencesJpa.class)
+  @ApiOperation(value = "Remove user preferences", notes = "Removes a set of map user preferences", response = MapUserPreferencesJpa.class)
   public Response removeMapUserPreferences(
     @ApiParam(value = "Id of map user preferences object to remove", required = true) @PathParam("id") Long MapUserPreferencesId) {
 
@@ -989,7 +989,7 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/concept/{terminology}/{version}/id/{id}/threshold/{threshold:[0-9][0-9]*}")
-  @ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+  @ApiOperation(value = "Find unmapped descendants", notes = "Returns a concept's unmapped descendants given a concept id, terminology, terminology version, and low-level concept threshold", response = Concept.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -1023,7 +1023,7 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/principle/id/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Find principle by id", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrinciple.class)
+  @ApiOperation(value = "Get principle", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrinciple.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -1080,7 +1080,7 @@ public class MappingServiceRest {
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @Path("/principle/id/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Update principle by id", notes = "Updates a MapPrinciple. Must exist in mapping database. Must be in Json or Xml format", response = MapPrincipleJpa.class)
+  @ApiOperation(value = "Update principle", notes = "Updates a MapPrinciple. Must exist in mapping database. Must be in Json or Xml format", response = MapPrincipleJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -1157,43 +1157,14 @@ public class MappingServiceRest {
   }
 
   /**
-   * Generates map records based on a map projects metadata. Requires map
-   * project conceptId, source and destination terminologies, source and
-   * destination terminology versions be set.
-   * @param conceptId
-   * @return returns a list of map records
-   */
-  @POST
-  @Consumes({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  @Path("/project/record/generate")
-  @ApiOperation(value = "Find map records based on project metadata", notes = "Retrieves map records given project metadata", response = MapRecordListJpa.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  public MapRecordListJpa getMapRecordsForConceptId(
-    @ApiParam(value = "Concept hibernate id", required = true) Long conceptId) {
-    MapRecordListJpa mapRecordList = null;
-    try {
-      MappingService mappingService = new MappingServiceJpa();
-      mapRecordList = (MapRecordListJpa) mappingService.getMapRecordsForConcept(conceptId);
-      mappingService.close();
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
-    return mapRecordList;
-  }
-
-  /**
-   * Returns the map records for concept id.
+   * Find the concepts included in project scope
    * @param mapProjectId
    * 
    * @return the map records for concept id
    */
   @GET
   @Path("/scope/includes/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Find project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
+  @ApiOperation(value = "Find scope-included concepts", notes = "Returns concepts specifically included in project scope", response = MapProject.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -1220,9 +1191,10 @@ public class MappingServiceRest {
    * @param mapProjectId the map project id
    * @return the search result list
    */
+  
   @GET
   @Path("/scope/excludes/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Find project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
+  @ApiOperation(value = "Find scope-excluded concepts", notes = "Returns the concepts specifically excluded from a project's scope", response=SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -1250,12 +1222,12 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/scope/outofbounds/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Find project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
+  @ApiOperation(value = "Find concepts out of scope", notes = "Returns mapped concepts out of the project's scope", response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList findMappedConceptsOutOfScopeBounds(
-    @ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
+    @ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId) {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
@@ -1278,7 +1250,7 @@ public class MappingServiceRest {
    */
   @GET
   @Path("/scope/unmapped/{id:[0-9][0-9]*}")
-  @ApiOperation(value = "Find project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
+  @ApiOperation(value = "Find unmapped concepts in scope", notes = "Returns the unmapped concepts in a project's scope", response=SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -1308,7 +1280,7 @@ public class MappingServiceRest {
    */
   @POST
   @Path("/recentRecords/{id}/{userName}")
-  @ApiOperation(value = "Find recently edited map records", notes = "Returns recently edited map records for given userName in either JSON or XML format", response = MapRecordListJpa.class)
+  @ApiOperation(value = "Get user's edited map records", notes = "Returns paged recently edited map records for given userName and paging informatoin", response = MapRecordListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -1328,7 +1300,7 @@ public class MappingServiceRest {
   }
   
   /**
-   * Updates a map record.
+   * Computes a map relation (if any) for a map entry's current state
    *
    * @param mapEntry the map entry
    * @return Response the response
@@ -1341,7 +1313,7 @@ public class MappingServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @ApiOperation(value = "", notes = "", response = MapRelationJpa.class)
+  @ApiOperation(value = "Compute map relatoin", notes = "Computes a map relation given the current state of a map entry", response = MapRelationJpa.class)
   public MapRelation computeMapRelation(
     @ApiParam(value = "", required = true) MapEntryJpa mapEntry) {
 
@@ -1355,52 +1327,6 @@ public class MappingServiceRest {
 	  }
   }
   
- 
-  
- /*
-  @GET
-  @Path("/relation/compute")
-  @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-  @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-  @ApiOperation(value = "Compute an entry's map relation", notes = "Given a map entry and its associated map record, computes any map relation based on target and project parameters", response = MapRelationJpa.class)
-  public MapRelation computeMapRelation(
-    @ApiParam(value = "The map record.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord,
-    @ApiParam(value = "The map entry to compute the relation for.  Need not be in database.  Must be in Json or Xml format", required = true) MapEntryJpa mapEntry) {
-  
-	  
-	  try {
-		  MappingService mappingService = new MappingServiceJpa();
-		  MapRelation mapRelation = mappingService.computeMapRelation(mapRecord, mapEntry);
-		  mappingService.close();
-		  return mapRelation;
-	  } catch (Exception e) {
-		  throw new WebApplicationException(e);
-	  }
-	  
-  }
-  
-  @GET
-  @Path("/advice/compute")
-  @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-  @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-  @ApiOperation(value = "Compute an entry's map advice", notes = "Given a map entry and its associated map record, computes any map advice based on target and project parameters", response = MapRelationJpa.class)
-  public MapAdviceList computeMapAdvice(
-    @ApiParam(value = "The map record.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord,
-    @ApiParam(value = "The map entry to compute the advice for.  Need not be in database.  Must be in Json or Xml format", required = true) MapEntryJpa mapEntry) {
-  
-	  
-	  try {
-		  MappingService mappingService = new MappingServiceJpa();
-		  MapAdviceList mapAdviceList = new MapAdviceList();
-		  mapAdviceList.setMapAdvices(mappingService.computeMapAdvice(mapRecord, mapEntry));
-		  mappingService.close();
-		  return mapAdviceList;
-		  
-	  } catch (Exception e) {
-		  throw new WebApplicationException(e);
-	  }
-	  
-  }*/
   
   /**
 	 * Finds tree positions for concept.
@@ -1411,10 +1337,9 @@ public class MappingServiceRest {
 	 * @param mapProjectId the contextual project of this tree, used for determining valid codes
 	 * @return the search result list
 	 */
-  // http://localhost:8080/mapping-rest/mapping/tree/projectId/1/concept/ICD10/2010/id/I
 	@GET
 	@Path("/tree/projectId/{projectId}/concept/{terminology}/{terminologyVersion}/id/{terminologyId}")
-	@ApiOperation(value = "Get the local tree (position and children) for a particular concept", notes = "Returns a tree structure representing the position of a concept in a terminology and its children", response = TreePositionListJpa.class)
+	@ApiOperation(value = "Get concept's local tree", notes = "Returns a tree structure representing the position of a concept in a terminology and its children", response = TreePositionListJpa.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -1457,7 +1382,7 @@ public class MappingServiceRest {
 	 */
 	@GET
 	@Path("/tree/projectId/{projectId}/terminology/{terminology}/{terminologyVersion}")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
+	@ApiOperation(value = "Get top-level trees", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -1499,7 +1424,7 @@ public class MappingServiceRest {
 	 */
 	@GET
 	@Path("/tree/projectId/{projectId}/terminology/{terminology}/{terminologyVersion}/query/{query}")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
+	@ApiOperation(value = "Get tree positions for query", notes = "Returns tree structures representing results a given terminology, terminology version, and query ", response = TreePositionListJpa.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -1535,7 +1460,7 @@ public class MappingServiceRest {
 	
 	@GET
 	@Path("/record/conflictRecords/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
+	@ApiOperation(value = "Get specialist records in conflict", notes = "Return's a list of records in conflict for a lead's conflict resolution record", response = MapRecordListJpa.class)
 	public MapRecordList getRecordsInConflict(
 		@ApiParam(value = "id of the map lead's conflict-in-progress record", required = true) @PathParam("id") Long mapRecordId) throws Exception {
 			

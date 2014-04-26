@@ -59,7 +59,7 @@ public class ContentServiceRest {
 	 */
     @GET
 	@Path("/concept/{terminology}/{version}/id/{terminologyId}")
-	@ApiOperation(value = "Find concept by id, version, and terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Find concept by id, version, and terminology", notes = "Returns a concept in either xml json given a concept id, terminology, and terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -99,7 +99,7 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/{terminology}/{version}/id/{terminologyId}/inverseRelationships")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Get inverse relationships", notes = "Returns a concept's inverse relationships given a concept id, terminology, and terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -137,7 +137,7 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/{terminology}/id/terminologyId")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Get concept", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -193,7 +193,7 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/{terminology}/{version}/id/{terminologyId}/descendants")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Find concept's descendants", notes = "Returns a concept's descendants given a concept id, terminology, and terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -226,7 +226,7 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/{terminology}/{version}/id/{id:[0-9][0-9]*}/children")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Find concept's immediate children", notes = "Returns a concept's children in either xml json given a concept id, terminology, and terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -252,12 +252,12 @@ public class ContentServiceRest {
 	
 	// FOR TESTING ONLY!!
 	/**
-	 * Returns the immediate children of a concept given terminology information
+	 * Testing function
 	 * @return the search result list
 	 */
 	@GET
 	@Path("/concept/treePositions")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "TreePosition testing function", notes = "Implemented to test computation of tree positions.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -286,7 +286,7 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/treePositions/clear")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Clear tree positions", notes = "Clear's the pre-computed terminology hierarchies.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -315,7 +315,7 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/treePositions/descendantfind")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Find descendants", notes = "Returns a concept's descendants based on pre-computed terminology hierarchy.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
