@@ -9,7 +9,6 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class ICD10ProjectSpecificAlgorithmHandler.
  */

@@ -33,7 +33,6 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Workflow Services REST package.
  */

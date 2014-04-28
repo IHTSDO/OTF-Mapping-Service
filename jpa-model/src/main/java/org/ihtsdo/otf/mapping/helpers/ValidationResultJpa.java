@@ -5,7 +5,6 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class ValidationResultJpa.
  */

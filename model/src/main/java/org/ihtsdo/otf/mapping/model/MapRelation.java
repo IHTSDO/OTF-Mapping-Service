@@ -1,6 +1,6 @@
 package org.ihtsdo.otf.mapping.model;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Interface MapRelation.
  */

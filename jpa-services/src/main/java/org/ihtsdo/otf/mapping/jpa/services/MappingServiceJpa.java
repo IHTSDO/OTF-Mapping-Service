@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1748,7 +1747,6 @@ public class MappingServiceJpa implements MappingService {
    * org.ihtsdo.otf.mapping.services.MappingService#findUnmappedConceptsInScope
    * (org.ihtsdo.otf.mapping.model.MapProject)
    */
-  @SuppressWarnings("deprecation")
   @Override
   public SearchResultList findUnmappedConceptsInScope(Long mapProjectId)
     throws Exception {
