@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.pojo;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 
-// TODO: Auto-generated Javadoc
 /**
  * Implementation of MapRelation.
  */

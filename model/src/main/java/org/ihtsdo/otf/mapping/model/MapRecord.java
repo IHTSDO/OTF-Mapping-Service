@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Interface MapRecord.
  *

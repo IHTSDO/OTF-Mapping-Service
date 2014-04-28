@@ -2,7 +2,7 @@ package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.Set;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Interface ValidationResult.
  */

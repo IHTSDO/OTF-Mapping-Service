@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * JAXB enabled implementation of {@link MapAdviceList}.
  *

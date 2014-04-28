@@ -8,11 +8,9 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapNote}.
  *
- * @author ${author}
  */
 public class MapNoteImpl implements MapNote {
 

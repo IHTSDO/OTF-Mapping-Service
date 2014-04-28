@@ -42,7 +42,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Map Record Jpa object.
  *

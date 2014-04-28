@@ -21,7 +21,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 
-// TODO: Auto-generated Javadoc
 /**
  * Set of preferences for a user
  * Preferences are accessed via services.
