@@ -480,7 +480,6 @@ public class WorkflowServiceRest {
 			mapProject.getSourceTerminologyVersion());
 			contentService.close();
 			
-			// TODO Need to make this call agnostic (i.e. perhaps add another enum action)
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord, WorkflowAction.SAVE_FOR_LATER);
 			workflowService.close();

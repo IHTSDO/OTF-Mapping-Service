@@ -87,7 +87,6 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	$scope.retrieveTargetConcepts = function(query) {
 
 		// execute query for concepts
-		// TODO Change query format to match records
 		$http({
 			url: root_content + "concept/query/" + query,
 			dataType: "json",

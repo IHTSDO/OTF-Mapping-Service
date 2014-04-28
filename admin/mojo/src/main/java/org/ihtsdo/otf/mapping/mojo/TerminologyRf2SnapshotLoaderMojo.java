@@ -1591,7 +1591,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
             tx.begin();
           }
         } else {
-          // TODO: make sure there is a ticket for loading descriptions 
           getLog().debug(
               "attributeValueRefSetMember "
                   + attributeValueRefSetMember.getTerminologyId()

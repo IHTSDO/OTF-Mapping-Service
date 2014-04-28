@@ -121,9 +121,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	};
 
 	// adds work to the visual display
-	// TODO Add more explicit check to enforce contract
-	//      Currently notification is passed from available work after successful update
-	//      This may not be an ideal way to do it (i.e. this widget dependent)
 	$scope.assignWork = function(newRecords) {
 
 		$scope.assignedRecords = $scope.assignedRecords.concat(newRecords);

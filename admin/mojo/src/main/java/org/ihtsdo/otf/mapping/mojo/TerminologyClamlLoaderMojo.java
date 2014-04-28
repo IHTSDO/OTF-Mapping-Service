@@ -818,7 +818,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               relDisambiguation.put(id, ct);
               id = id + "~" + ct;
             } else {
-              // TODO: find a better way to link descriptions and reference rels 
               relDisambiguation.put(id, 1);
               id = id + "~1";
             }
@@ -881,10 +880,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               childConcept.setRelationships(rels);
 
             } else if (modifierMap.containsKey(parentCode)) {
-              // TODO: may need to do more with this case
-              // likely these are all "modifierLink" cases and we should simply ignore.
-              // Cartographer shows nothing for this.
-              getLog().info("    IGNORE rel to modifier");
+               getLog().info("    IGNORE rel to modifier");
             } else {
               //throw new SAXException("Problem inserting relationship, code "
               //    + parentCode + " does not exist.");

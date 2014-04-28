@@ -1034,9 +1034,6 @@ public class MappingServiceJpa implements MappingService {
 		"unchecked"
 	})
 	@Override
-	// TODO Support the following
-	//		Search by date ranges (.ge .le tests) based on pfsParameter filters
-	//		Support ascending or descending flag based on pfsParameter sortKey
 	public MapRecordList getRecentlyEditedMapRecords(Long projectId, String userName, PfsParameter pfsParameter)  throws Exception {
 
 		MapUser user = getMapUser(userName);
@@ -1401,7 +1398,7 @@ public class MappingServiceJpa implements MappingService {
 						pfsParameter == null ? new PfsParameterJpa() : pfsParameter);
 
 		// add published / ready for publication check
-		// TODO Need to make this trigger on pfsParameters?  Remover doesn't work with this check in.
+		//  Need to make this trigger on pfsParameters?  Remover doesn't work with this check in.
 		/*full_query +=
 				" AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')";
 		 */
@@ -1443,10 +1440,6 @@ public class MappingServiceJpa implements MappingService {
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
 		mapRecordList.setMapRecords(m);
 		
-		// TODO: this is not quite right because in a search
-		// environment the total record count is not matched by this
-		// but current implementation will limit overall count by paging settings 
-		// and it should not.  it can use other settings but not paging ones.
 		mapRecordList.setTotalCount(
 				getMapRecordCountForMapProject(mapProjectId, pfsParameter));
 		return mapRecordList;
@@ -1682,7 +1675,6 @@ public class MappingServiceJpa implements MappingService {
 			if (c == null) {
 			  Logger.getLogger(this.getClass()).error("Scope concept " + conceptId + " does not exist.");
 			  continue;
-			  // TODO: fix this and then throw an exception here
 			}
 			SearchResult sr = new SearchResultJpa();
 			sr.setId(c.getId());
@@ -1779,8 +1771,6 @@ public class MappingServiceJpa implements MappingService {
     for (SearchResult sr : conceptsInScope.getSearchResults()) {
 
       // Check that the concept has an effectiveTime >= 20140131
-      // TODO: remove this after optimizing the find available work to
-      //       efficiently handle 10K+ cases
       Calendar c = Calendar.getInstance();
       c.set(2013, 0, 1);
       Concept concept = contentService.getConcept(sr.getId());

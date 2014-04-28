@@ -87,7 +87,6 @@ mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($
 	});
 
 	// watch for project change
-	// TODO A project change while viewing a record should return you to dashboard
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
 		console.debug("MapProjectWidgetCtrl: Detected change in focus project");
 		$scope.project = parameters.focusProject;
@@ -372,7 +371,6 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 	});
 
 	// watch for project change
-	// TODO A project change while viewing a record should return you to dashboard
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("RecordDashboardCtrl:  Detected change in focus project");
 		
@@ -413,8 +411,6 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 
 
 //Navigation
-
-// TODO:  Much of this is app initialization, should be moved into a .run or .config section
 
 mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService', '$rootScope', '$location', '$http',
                                                   function ($scope, localStorageService, $rootScope, $location, $http) {
@@ -481,7 +477,6 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 					"Content-Type": "application/json"
 				}
 			}).success(function(metadata) {
-				// TODO Figure out how to store metadata (i.e. what format)
 			});
 
 		}
@@ -649,7 +644,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		console.debug("RecordConceptCtrl:  Focus Project change");
 		
 		// retrieve projects information to ensure display handled properly
-		// TODO Get this from local storage service
 		$http({
 			url: root_mapping + "project/projects",
 			dataType: "json",
@@ -955,11 +949,6 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 
 		 function ($scope, $http, $routeParams, $sce, $modal, localStorageService) {
 
-			/*$scope.items = new Array(2);
-		$scope.items[0] = ["FIRST", "SECOND", "THIRD", "FOURTH"];
-		$scope.items[1] = ["FIFTH ENTRY", "SIXTH ENTRY", "SEVENTH ENTRY", "EIGHTH ENTRY"];
-			 */
-
 			$scope.sortableOptions = {
 					placeholder: "entry",
 					connectWith: ".entry-container"
@@ -1052,7 +1041,6 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 					// otherwise, initialize group arrays
 				} else {
 
-					// TODO Clunky array assignment, consider revisiting
 					// initiailize entry arrays for distribution by group
 					$scope.entries = new Array(10);
 					for (var i=0; i < $scope.entries.length; i++) $scope.entries[i] = new Array();
@@ -1723,7 +1711,6 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 			$scope.retrieveTargetConcepts = function(query) {
 
 				// execute query for concepts
-				// TODO Change query format to match records
 				$http({
 					url: root_content + "concept/query/" + query,
 					dataType: "json",
@@ -1934,7 +1921,7 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 
 		return {"startIndex": (page-1)*$scope.recordsPerPage,
 			"maxResults": $scope.recordsPerPage, 
-			"sortField": null, // TODO: Replace this when sorting functional
+			"sortField": null, 
 			"filterString": $scope.query == null ? null : $scope.query};  // assigning simply to $scope.query when null produces undefined
 
 	}
@@ -1974,7 +1961,6 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		});
 	};
 
-	// TODO This is inefficient, consider implementing a batch request
 	function getUnmappedDescendants(index) {
 
 		// before processing this record, make call to start next async request
@@ -2080,7 +2066,6 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 
 				// determine if this project has a principles document
-				// TODO: THIS WILL BE CODED INTO PROJECT LATER
 				if ($scope.focusProject.destinationTerminology == "ICD10") {
 					$scope.focusProject.mapPrincipleDocumentPath = "doc/";
 					$scope.focusProject.mapPrincipleDocument = "ICD10_MappingPersonnelHandbook.docx";
@@ -2367,7 +2352,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 
 
-//Directives:  TODO Separate into different file
+//Directives: 
 /////////////////////////////////////////////////////
 
 

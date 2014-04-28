@@ -111,7 +111,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		});
 	};
 	
-	// TODO Make this model object cleaner
 	// For now, expects that a referencedConcept will be a string of one of the following forms:
 	// 'conceptId', 'conceptId conceptMarker' where conceptMarker is † or *
 	$scope.gotoReferencedConcept = function(referencedConcept) {
