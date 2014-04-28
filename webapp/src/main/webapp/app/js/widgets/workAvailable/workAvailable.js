@@ -155,8 +155,6 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	};
 	
 	// assign a single concept to the current user
-	// TODO Insert check before assignment
-	// TODO Implement refresh after successful claim
 	$scope.assignWork = function(trackingRecord, mapUser) {
 		
 		if (mapUser == null) mapUser = $scope.currentUser;
@@ -250,7 +248,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				}).success(function(data) {
 				  	$rootScope.glassPane--;
 					$rootScope.$broadcast('workAvailableWidget.notification.assignWork',
-							{key: 'trackingRecords', trackingRecords: null}); // TODO: This used to pass actual tracking records, but model structure changed.  Need to bring in line.  Currently using the notification to retrieve assigned work in AssignedList widget
+							{key: 'trackingRecords', trackingRecords: null}); 
 					$scope.retrieveAvailableWork(1);				
 				}).error(function(data) {
 				  	$rootScope.glassPane--;

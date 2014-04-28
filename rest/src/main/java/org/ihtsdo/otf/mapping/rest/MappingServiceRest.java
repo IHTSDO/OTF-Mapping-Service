@@ -793,7 +793,6 @@ public class MappingServiceRest {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.updateMapRecord(mapRecord);
       mappingService.close();
-      // TODO: this should not return a record, change the client
       return mapRecord;
     } catch (Exception e) {
       throw new WebApplicationException(e);
@@ -999,7 +998,6 @@ public class MappingServiceRest {
     @ApiParam(value = "concept terminology version", required = true) @PathParam("version") String terminologyVersion,
     @ApiParam(value = "threshold max number of descendants for a low-level concept", required = true) @PathParam("threshold") int threshold) {
 
-    // TODO Convert to Search Results
     try {
       MappingService mappingService = new MappingServiceJpa();
 
@@ -1288,8 +1286,7 @@ public class MappingServiceRest {
   	@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
 		@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
 		@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
-	//TODO: PfsParameter, change to POST test with ProjectRecordController function
-    try {
+  	try {
       MappingService mappingService = new MappingServiceJpa();
       MapRecordListJpa recordList = (MapRecordListJpa) mappingService.getRecentlyEditedMapRecords(new Long(mapProjectId), userName, pfsParameter);
       mappingService.close();

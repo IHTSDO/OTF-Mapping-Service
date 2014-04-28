@@ -44,8 +44,6 @@ public class ContentServiceRest {
 	 * Instantiates an empty {@link ContentServiceRest}.
 	 */
 	public ContentServiceRest() {
-
-		// TODO: wire this to metadata service (getTerminologyLatestVesrions)
 		terminologyLatestVersions = new HashMap<>();
 		terminologyLatestVersions.put("SNOMEDCT", "20140131");
 	}
@@ -208,7 +206,7 @@ public class ContentServiceRest {
 			ContentService contentService = new ContentServiceJpa();
 			
 			SearchResultList results = contentService.findDescendants(terminologyId, terminology,
-				terminologyVersion, "116680003"); // TODO Change this to metadata reference
+				terminologyVersion, "116680003"); 
 		
 			contentService.close();
 			return results;
@@ -241,7 +239,7 @@ public class ContentServiceRest {
 			ContentService contentService = new ContentServiceJpa();
 			
 			SearchResultList results = contentService.findChildren(id.toString(), terminology,
-				terminologyVersion, new Long("116680003")); // TODO Change this to metadata reference
+				terminologyVersion, new Long("116680003")); 
 		
 			contentService.close();
 			return results;
@@ -250,34 +248,6 @@ public class ContentServiceRest {
 		}
 	}
 	
-	// FOR TESTING ONLY!!
-	/**
-	 * Testing function
-	 * @return the search result list
-	 */
-	@GET
-	@Path("/concept/treePositions")
-	@ApiOperation(value = "TreePosition testing function", notes = "Implemented to test computation of tree positions.", response = Concept.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public SearchResultList computeTreePositions() {
-	
-		
-		try {
-			ContentService contentService = new ContentServiceJpa();
-			contentService.setTransactionPerOperation(true);
-			
-			contentService.computeTreePositions("SNOMEDCT",
-				"20140131", "116680003", "138875005"); 
-			/**Set<TreePosition> results = contentService.computeTreePositions("SNOMEDCT",
-					"20140131", new Long("116680003"), new Long("371772001"));*/
-			contentService.close();
-			return new SearchResultListJpa();
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
 	
 	/**
 	 * Clears tree positions.

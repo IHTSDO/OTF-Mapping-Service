@@ -146,11 +146,7 @@ mapProjectApp.config(['$routeProvider',
       //////////////////////////////
 	  // HELP PAGES
 	  //////////////////////////////
-	  
-	  /* TODO: something like this to avoid hardcoding all help files below
-	   * $routeProvider.when('/help/:helpFile', {
-	      templateUrl: 'partials/doc/' + $routeParams.helpFile
-  	  });*/
+
 	  
 	  $routeProvider.when('/help/LeadDashboardHelp.html', {
 		  templateUrl: 'partials/doc/LeadDashboardHelp.html'
