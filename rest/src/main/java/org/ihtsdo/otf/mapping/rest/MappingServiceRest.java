@@ -363,33 +363,6 @@ public class MappingServiceRest {
     }
   }
 
-  /**
-   * Returns all map users for a lucene query
-   * @param query the string query
-   * @return the map users
-   */
-  @GET
-  @Path("/user/query/{string}")
-  @ApiOperation(value = "Find users by query", notes = "Returns map users for a query in either JSON or XML format", response = MapUserListJpa.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  public SearchResultList findMapUsers(
-    @ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /user/query/" + query);
-
-    try {
-      MappingService mappingService = new MappingServiceJpa();
-      SearchResultList searchResultList =
-          mappingService.findMapUsers(query, new PfsParameterJpa());
-      mappingService.close();
-      return searchResultList;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
-  }
 
   /**
    * Returns the record for a given id (auto-generated) in JSON format
