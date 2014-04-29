@@ -374,6 +374,9 @@ public class MappingServiceJpa implements MappingService {
 
 		fullTextEntityManager.close();
 
+		// closing fullTextEntityManager also closes manager, recreate
+		manager = factory.createEntityManager();
+		
 		return s;
 	}
 
@@ -586,63 +589,6 @@ public class MappingServiceJpa implements MappingService {
 		return mapProjectList;
 	}
 
-	/**
-	 * Query for MapSpecialists.
-	 * 
-	 * @param query the query
-	 * @param pfsParameter the pfs parameter
-	 * @return the List of MapProjects
-	 * @throws Exception the exception
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public SearchResultList findMapUsers(String query, PfsParameter pfsParameter)
-			throws Exception {
-
-		SearchResultList s = new SearchResultListJpa();
-
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-		Query luceneQuery;
-
-		// construct luceneQuery based on URL format
-		if (query.indexOf(':') == -1) { // no fields indicated
-			MultiFieldQueryParser queryParser =
-					new MultiFieldQueryParser(Version.LUCENE_36,
-							fieldNames.toArray(new String[0]),
-							searchFactory.getAnalyzer(MapUserJpa.class));
-			queryParser.setAllowLeadingWildcard(false);
-			luceneQuery = queryParser.parse(query);
-
-		} else { // field:value
-			QueryParser queryParser =
-					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(MapUserJpa.class));
-			luceneQuery = queryParser.parse(query);
-		}
-
-		List<MapUser> m =
-				fullTextEntityManager
-				.createFullTextQuery(luceneQuery, MapUserJpa.class).getResultList();
-
-		for (MapUser ms : m) {
-			s.addSearchResult(new SearchResultJpa(ms.getId(), "", ms.getName()));
-		}
-
-		// Sort by ID
-		s.sortBy(new Comparator<SearchResult>() {
-			@Override
-			public int compare(SearchResult o1, SearchResult o2) {
-				return o1.getId().compareTo(o2.getId());
-			}
-		});
-
-		fullTextEntityManager.close();
-
-		return s;
-	}
 
 	/**
 	 * Update a map specialist.
@@ -864,6 +810,9 @@ public class MappingServiceJpa implements MappingService {
 
 		fullTextEntityManager.close();
 
+		// closing fullTextEntityManager also closes manager, recreate
+		manager = factory.createEntityManager();
+		
 		return s;
 		/*
 		 * for (MapRecord mr : m) { if (pfsParameter == null ||
@@ -1089,171 +1038,7 @@ public class MappingServiceJpa implements MappingService {
 	// Other query services
 	// //////////////////////////////////
 
-	/**
-	 * Service for finding MapEntrys by string query.
-	 * 
-	 * @param query the query string
-	 * @param pfsParameter the pfs parameter
-	 * @return the search result list
-	 * @throws Exception the exception
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter)
-			throws Exception {
-		SearchResultList s = new SearchResultListJpa();
 
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-		Query luceneQuery;
-
-		// construct luceneQuery based on URL format
-		if (query.indexOf(':') == -1) { // no fields indicated
-			MultiFieldQueryParser queryParser =
-					new MultiFieldQueryParser(Version.LUCENE_36,
-							fieldNames.toArray(new String[0]),
-							searchFactory.getAnalyzer(MapEntryJpa.class));
-			queryParser.setAllowLeadingWildcard(false);
-			luceneQuery = queryParser.parse(query);
-
-		} else { // field:value
-			QueryParser queryParser =
-					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(MapEntryJpa.class));
-			luceneQuery = queryParser.parse(query);
-		}
-
-		List<MapEntry> m =
-				fullTextEntityManager.createFullTextQuery(luceneQuery,
-						MapEntryJpa.class).getResultList();
-
-		for (MapEntry me : m) {
-			s.addSearchResult(new SearchResultJpa(me.getId(), "", me.getMapRecord()
-					.getId().toString()));
-		}
-
-		// Sort by ID
-		s.sortBy(new Comparator<SearchResult>() {
-			@Override
-			public int compare(SearchResult o1, SearchResult o2) {
-				return o1.getId().compareTo(o2.getId());
-			}
-		});
-
-		return s;
-	}
-
-	/**
-	 * Service for finding MapAdvices by string query.
-	 * 
-	 * @param query the query string
-	 * @param pfsParameter the pfs parameter
-	 * @return the search result list
-	 * @throws Exception the exception
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter)
-			throws Exception {
-		SearchResultList s = new SearchResultListJpa();
-
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-		Query luceneQuery;
-
-		// construct luceneQuery based on URL format
-		if (query.indexOf(':') == -1) { // no fields indicated
-			MultiFieldQueryParser queryParser =
-					new MultiFieldQueryParser(Version.LUCENE_36,
-							fieldNames.toArray(new String[0]),
-							searchFactory.getAnalyzer(MapAdviceJpa.class));
-			queryParser.setAllowLeadingWildcard(false);
-			luceneQuery = queryParser.parse(query);
-
-		} else { // field:value
-			QueryParser queryParser =
-					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(MapAdviceJpa.class));
-			luceneQuery = queryParser.parse(query);
-		}
-
-		List<MapAdvice> m =
-				fullTextEntityManager
-				.createFullTextQuery(luceneQuery, MapNoteJpa.class).getResultList();
-
-		for (MapAdvice ma : m) {
-			s.addSearchResult(new SearchResultJpa(ma.getId(), "", ma.getName()));
-		}
-
-		// Sort by ID
-		s.sortBy(new Comparator<SearchResult>() {
-			@Override
-			public int compare(SearchResult o1, SearchResult o2) {
-				return o1.getId().compareTo(o2.getId());
-			}
-		});
-
-		return s;
-	}
-
-	/**
-	 * Service for finding MapRelations by string query.
-	 * 
-	 * @param query the query string
-	 * @param pfsParameter the pfs parameter
-	 * @return the search result list
-	 * @throws Exception the exception
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public SearchResultList findMapRelations(String query,
-			PfsParameter pfsParameter) throws Exception {
-		SearchResultList s = new SearchResultListJpa();
-
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-		Query luceneQuery;
-
-		// construct luceneQuery based on URL format
-		if (query.indexOf(':') == -1) { // no fields indicated
-			MultiFieldQueryParser queryParser =
-					new MultiFieldQueryParser(Version.LUCENE_36,
-							fieldNames.toArray(new String[0]),
-							searchFactory.getAnalyzer(MapRelationJpa.class));
-			queryParser.setAllowLeadingWildcard(false);
-			luceneQuery = queryParser.parse(query);
-
-		} else { // field:value
-			QueryParser queryParser =
-					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(MapRelationJpa.class));
-			luceneQuery = queryParser.parse(query);
-		}
-
-		List<MapRelation> m =
-				fullTextEntityManager
-				.createFullTextQuery(luceneQuery, MapNoteJpa.class).getResultList();
-
-		for (MapRelation ma : m) {
-			s.addSearchResult(new SearchResultJpa(ma.getId(), "", ma.getName()));
-		}
-
-		// Sort by ID
-		s.sortBy(new Comparator<SearchResult>() {
-			@Override
-			public int compare(SearchResult o1, SearchResult o2) {
-				return o1.getId().compareTo(o2.getId());
-			}
-		});
-
-		return s;
-	}
 
 	// //////////////////////////////////////////////
 	// Descendant services
