@@ -21,7 +21,6 @@ public class MappingRevisionListener implements RevisionListener {
 		MappingRevisionEntity mappingRevisionEntity =
 				(MappingRevisionEntity) revisionEntity;
 
-		// TODO Update once we have a framework with real username
 		mappingRevisionEntity.setTimestamp(System.currentTimeMillis());
 		mappingRevisionEntity.setUserName("default");
 	}

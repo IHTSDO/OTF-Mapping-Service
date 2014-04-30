@@ -1,14 +1,14 @@
 package org.ihtsdo.otf.mapping.services;
 
-import java.util.List;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-// TODO: Auto-generated Javadoc
 /**
  * The interface for the content service.
  * 
@@ -133,7 +133,7 @@ public interface ContentService {
 	 *
 	 * @param terminology the terminology
 	 * @param terminologyVersion the terminology version
-	 * @param typeId TODO
+	 * @param typeId the type id
 	 * @param rootId the root id
 	 * @throws Exception the exception
 	 */
@@ -178,7 +178,7 @@ public interface ContentService {
 	 * @param terminologyVersion the terminology version
 	 * @return the local trees
 	 */
-	public List<TreePosition> getLocalTrees(String terminologyId, String terminology,
+	public TreePositionList getLocalTrees(String terminologyId, String terminology,
 			String terminologyVersion);
 
 	/**
@@ -189,7 +189,7 @@ public interface ContentService {
 	 * @param terminologyVersion the terminology version
 	 * @return the tree positions for concept
 	 */
-	public List<TreePosition> getTreePositionsForConcept(String terminologyId,
+	public TreePositionList getTreePositionsForConcept(String terminologyId,
 			String terminology, String terminologyVersion);
 
 	/**
@@ -198,7 +198,7 @@ public interface ContentService {
 	 * @param treePosition the tree position
 	 * @return the tree position children
 	 */
-	public List<TreePosition> getTreePositionChildren(TreePosition treePosition);
+	public TreePositionList getTreePositionChildren(TreePosition treePosition);
 
 	/**
 	 * Gets the root tree positions for a given terminology
@@ -207,7 +207,7 @@ public interface ContentService {
 	 * @param terminologyVersion the terminology version
 	 * @return the root tree positions for terminology
 	 */
-	public List<TreePosition> getRootTreePositionsForTerminology(String terminology,
+	public TreePositionList getRootTreePositionsForTerminology(String terminology,
 			String terminologyVersion);
 
 	/**
@@ -219,7 +219,7 @@ public interface ContentService {
 	 * @return the tree positions for concept query
 	 * @throws Exception the exception
 	 */
-	public List<TreePosition> getTreePositionsForConceptQuery(
+	public TreePositionList getTreePositionsForConceptQuery(
 			String terminology, String terminologyVersion, String query) throws Exception;
 
 	/**
@@ -230,5 +230,5 @@ public interface ContentService {
 	 * @return the concept tree roots
 	 * @throws Exception the exception
 	 */
-	public List<Concept> getConceptTreeRoots(String terminology, String terminologyVersion) throws Exception;
+	public ConceptList getConceptTreeRoots(String terminology, String terminologyVersion) throws Exception;
 }

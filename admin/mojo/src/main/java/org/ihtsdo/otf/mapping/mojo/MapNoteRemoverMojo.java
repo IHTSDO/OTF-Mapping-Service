@@ -89,7 +89,7 @@ public class MapNoteRemoverMojo extends AbstractMojo {
 			Set<MapProject> mapProjects = new HashSet<MapProject>();
 
 			getLog().info("Start removing map notes for project - " + refSetId);
-			for (MapProject mapProject : mappingService.getMapProjects()) {
+			for (MapProject mapProject : mappingService.getMapProjects().getMapProjects()) {
 				for (String id : refSetId.split(",")) {
 					if (mapProject.getRefSetId().equals(id)) {
 						mapProjects.add(mapProject);
@@ -108,7 +108,7 @@ public class MapNoteRemoverMojo extends AbstractMojo {
 			int ct = 0;
 			for (MapProject project : mapProjects) {
 				for (MapRecord record : mappingService
-						.getMapRecordsForMapProject(project.getId())) {
+						.getMapRecordsForMapProject(project.getId()).getMapRecords()) {
 					for (MapEntry entry : record.getMapEntries()) {
 						if (entry.getMapNotes().size() > 0) {
 							getLog().debug(

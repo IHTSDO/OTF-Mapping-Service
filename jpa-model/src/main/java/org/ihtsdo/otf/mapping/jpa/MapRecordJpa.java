@@ -42,7 +42,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Map Record Jpa object.
  *
@@ -150,7 +150,7 @@ public class MapRecordJpa implements MapRecord {
 	public MapRecordJpa(MapRecord cMapRecord) {
 		this.id = cMapRecord.getId();
 		this.owner = cMapRecord.getOwner();
-		this.timestamp = cMapRecord.getTimestamp();
+		this.timestamp = (new Date()).getTime(); // set timestamp to current time
 		this.mapProjectId = cMapRecord.getMapProjectId();
 		this.conceptId = cMapRecord.getConceptId();
 		this.conceptName = cMapRecord.getConceptName();
@@ -163,6 +163,8 @@ public class MapRecordJpa implements MapRecord {
 		this.flagForEditorialReview = cMapRecord.isFlagForEditorialReview();
 		this.flagForConsensusReview = cMapRecord.isFlagForConsensusReview();
 		this.workflowStatus = cMapRecord.getWorkflowStatus();
+		this.lastModified = (new Date()).getTime(); // overwrite last modified by
+		this.lastModifiedBy = cMapRecord.getOwner();
 	}
 
 	/**
@@ -390,15 +392,6 @@ public class MapRecordJpa implements MapRecord {
 	public void addMapEntry(MapEntry mapEntry) {
 		mapEntries.add(mapEntry);
 	}
-	
-	/*
-	 * TODO Service
-	 * 1) receive json object
-	 * 2) find the jpa object based on json objectId
-	 * 3) use the jpa object to set the mapentry/etc record field
-	 * 
-	 * Check other objects for 
-	 */
 	
 	/**
 	 * Function to correctly set the record object for map entries
@@ -663,8 +656,8 @@ public class MapRecordJpa implements MapRecord {
 		return "MapRecordJpa [owner=" + owner + ", timestamp=" + timestamp
 				+ ", mapProjectId=" + mapProjectId + ", conceptId=" + conceptId
 				+ ", conceptName=" + conceptName + ", countDescendantConcepts="
-				+ countDescendantConcepts + ", mapEntries=" + mapEntries
-				+ ", mapNotes=" + mapNotes + ", mapPrinciples=" + mapPrinciples
+				+ countDescendantConcepts + ", mapEntries=" + mapEntries.size()
+				+ ", mapNotes=" + mapNotes.size() + ", mapPrinciples=" + mapPrinciples.size()
 				+ ", originIds=" + originIds + ", flagForMapLeadReview="
 				+ flagForMapLeadReview + ", flagForEditorialReview="
 				+ flagForEditorialReview + ", flagForConsensusReview="
@@ -672,15 +665,31 @@ public class MapRecordJpa implements MapRecord {
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setWorkflowStatus(org.ihtsdo.otf.mapping.helpers.WorkflowStatus)
+	 */
 	@Override
 	public void setWorkflowStatus(WorkflowStatus workflowStatus) {
 		this.workflowStatus = workflowStatus;
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getWorkflowStatus()
+	 */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	public WorkflowStatus getWorkflowStatus() {
 		return workflowStatus;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addOrigins(java.util.Set)
+	 */
+	@Override
+	public void addOrigins(Set<Long> origins) {
+		originIds.addAll(origins);
 	}
 
 

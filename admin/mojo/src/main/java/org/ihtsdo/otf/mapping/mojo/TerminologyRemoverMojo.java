@@ -70,139 +70,138 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  */
 public class TerminologyRemoverMojo extends AbstractMojo {
 
-	/**
-	 * Name of terminology to be removed.
-	 * @parameter
-	 * @required
-	 */
-	private String terminology;
+  /**
+   * Name of terminology to be removed.
+   * @parameter
+   * @required
+   */
+  private String terminology;
 
-	/** The manager. */
-	private EntityManager manager;
+  /** The manager. */
+  private EntityManager manager;
 
-	int i;
+  int i;
 
-	/**
-	 * Instantiates a {@link TerminologyRemoverMojo} from the specified
-	 * parameters.
-	 * 
-	 */
-	public TerminologyRemoverMojo() {
+  /**
+   * Instantiates a {@link TerminologyRemoverMojo} from the specified
+   * parameters.
+   * 
+   */
+  public TerminologyRemoverMojo() {
 
-	}
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.maven.plugin.Mojo#execute()
-	 */
-	@Override
-	public void execute() throws MojoFailureException {
-		getLog().info("Starting removing " + terminology + " data ...");
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
+  @Override
+  public void execute() throws MojoFailureException {
+    getLog().info("Starting removing " + terminology + " data ...");
 
-		try {
-			// create Entitymanager
-			EntityManagerFactory factory =
-					Persistence.createEntityManagerFactory("MappingServiceDS");
-			manager = factory.createEntityManager();
+    try {
+      // create Entitymanager
+      EntityManagerFactory factory =
+          Persistence.createEntityManagerFactory("MappingServiceDS");
+      manager = factory.createEntityManager();
 
-			EntityTransaction tx = manager.getTransaction();
-			try {
+      EntityTransaction tx = manager.getTransaction();
+      try {
+        // remove Tree Positions
+        // first get all versions for this terminology
+        MetadataService metadataService = new MetadataServiceJpa();
+        List<String> versions = metadataService.getVersions(terminology);
+        metadataService.close();
 
-				// truncate all the tables that we are going to use first
-				tx.begin();
+        // truncate all the tables that we are going to use first
+        tx.begin();
 
-				// truncate RefSets
-				Query query =
-						manager
-								.createQuery("DELETE From SimpleRefSetMemberJpa rs where terminology = :terminology");
-				query.setParameter("terminology", terminology);
-				int deleteRecords = query.executeUpdate();
-				getLog().info("    simple_ref_set records deleted: " + deleteRecords);
+        // truncate RefSets
+        Query query =
+            manager
+                .createQuery("DELETE From SimpleRefSetMemberJpa rs where terminology = :terminology");
+        query.setParameter("terminology", terminology);
+        int deleteRecords = query.executeUpdate();
+        getLog().info("    simple_ref_set records deleted: " + deleteRecords);
 
-				query =
-						manager
-								.createQuery("DELETE From SimpleMapRefSetMemberJpa rs where terminology = :terminology");
-				query.setParameter("terminology", terminology);
-				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"    simple_map_ref_set records deleted: " + deleteRecords);
+        query =
+            manager
+                .createQuery("DELETE From SimpleMapRefSetMemberJpa rs where terminology = :terminology");
+        query.setParameter("terminology", terminology);
+        deleteRecords = query.executeUpdate();
+        getLog().info(
+            "    simple_map_ref_set records deleted: " + deleteRecords);
 
-				query =
-						manager
-								.createQuery("DELETE From ComplexMapRefSetMemberJpa rs where terminology = :terminology");
-				query.setParameter("terminology", terminology);
-				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"    complex_map_ref_set records deleted: " + deleteRecords);
+        query =
+            manager
+                .createQuery("DELETE From ComplexMapRefSetMemberJpa rs where terminology = :terminology");
+        query.setParameter("terminology", terminology);
+        deleteRecords = query.executeUpdate();
+        getLog().info(
+            "    complex_map_ref_set records deleted: " + deleteRecords);
 
-				query =
-						manager
-								.createQuery("DELETE From AttributeValueRefSetMemberJpa rs where terminology = :terminology");
-				query.setParameter("terminology", terminology);
-				deleteRecords = query.executeUpdate();
-				getLog().info(
-						"    attribute_value_ref_set records deleted: " + deleteRecords);
+        query =
+            manager
+                .createQuery("DELETE From AttributeValueRefSetMemberJpa rs where terminology = :terminology");
+        query.setParameter("terminology", terminology);
+        deleteRecords = query.executeUpdate();
+        getLog().info(
+            "    attribute_value_ref_set records deleted: " + deleteRecords);
 
-				query =
-						manager
-								.createQuery("DELETE From LanguageRefSetMemberJpa rs where terminology = :terminology");
-				query.setParameter("terminology", terminology);
-				deleteRecords = query.executeUpdate();
-				getLog().info("    language_ref_set records deleted: " + deleteRecords);
+        query =
+            manager
+                .createQuery("DELETE From LanguageRefSetMemberJpa rs where terminology = :terminology");
+        query.setParameter("terminology", terminology);
+        deleteRecords = query.executeUpdate();
+        getLog().info("    language_ref_set records deleted: " + deleteRecords);
 
-				// Truncate Terminology Elements
-				query =
-						manager
-								.createQuery("DELETE From DescriptionJpa d where terminology = :terminology");
-				query.setParameter("terminology", terminology);
-				deleteRecords = query.executeUpdate();
-				getLog().info("    description records deleted: " + deleteRecords);
-				query =
-						manager
-								.createQuery("DELETE From RelationshipJpa r where terminology = :terminology");
-				query.setParameter("terminology", terminology);
-				deleteRecords = query.executeUpdate();
-				getLog().info("    relationship records deleted: " + deleteRecords);
-				query =
-						manager
-								.createQuery("DELETE From ConceptJpa c where terminology = :terminology");
-				query.setParameter("terminology", terminology);
-				deleteRecords = query.executeUpdate();
-				getLog().info("    concept records deleted: " + deleteRecords);
+        // Truncate Terminology Elements
+        query =
+            manager
+                .createQuery("DELETE From DescriptionJpa d where terminology = :terminology");
+        query.setParameter("terminology", terminology);
+        deleteRecords = query.executeUpdate();
+        getLog().info("    description records deleted: " + deleteRecords);
+        query =
+            manager
+                .createQuery("DELETE From RelationshipJpa r where terminology = :terminology");
+        query.setParameter("terminology", terminology);
+        deleteRecords = query.executeUpdate();
+        getLog().info("    relationship records deleted: " + deleteRecords);
+        query =
+            manager
+                .createQuery("DELETE From ConceptJpa c where terminology = :terminology");
+        query.setParameter("terminology", terminology);
+        deleteRecords = query.executeUpdate();
+        getLog().info("    concept records deleted: " + deleteRecords);
 
-				tx.commit();
+        tx.commit();
 
-				// remove Tree Positions
-				// first get all versions for this terminology
-				MetadataService metadataService = new MetadataServiceJpa();
-				List<String> versions = metadataService.getVersions(terminology);
-				metadataService.close();
-				
-				ContentService contentService = new ContentServiceJpa();
-				
-				for (String version: versions) {
-					getLog().info("Start removing tree positions from " + terminology + ", " + version + ".");
-					contentService.clearTreePositions(terminology, version);
-				}
-				contentService.close();
-				
-				
-				getLog().info("done ...");
+        ContentService contentService = new ContentServiceJpa();
 
-			} catch (Exception e) {
-				tx.rollback();
-				throw e;
-			}
+        getLog().info("Start removing tree positions from " + terminology);
+        for (String version : versions) {
+          getLog().info(" version = " + version);
+          contentService.clearTreePositions(terminology, version);
+        }
+        contentService.close();
 
-			// Clean-up
-			manager.close();
-			factory.close();
+        getLog().info("done ...");
 
-		} catch (Throwable e) {
-			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
-		}
-	}
+      } catch (Exception e) {
+        tx.rollback();
+        throw e;
+      }
+
+      // Clean-up
+      manager.close();
+      factory.close();
+
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw new MojoFailureException("Unexpected exception:", e);
+    }
+  }
 
 }

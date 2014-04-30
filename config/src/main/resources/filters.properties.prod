@@ -68,3 +68,10 @@ base.url=http://mapping.snomedtools.org
 # JPA debugging settings
 #
 show.sql=false
+
+#
+# Lucene index base
+#
+lucene.indexBase=/var/lib/tomcat7/indexes/lucene/indexes
+
+

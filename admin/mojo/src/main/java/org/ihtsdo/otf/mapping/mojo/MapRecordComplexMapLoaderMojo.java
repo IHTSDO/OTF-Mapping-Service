@@ -74,7 +74,7 @@ public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 			MappingService mappingService = new MappingServiceJpa();
 			Set<MapProject> mapProjects = new HashSet<MapProject>();
 
-			for (MapProject mapProject : mappingService.getMapProjects()) {
+			for (MapProject mapProject : mappingService.getMapProjects().getIterable()) {
 				for (String id : refSetId.split(",")) {
 					if (mapProject.getRefSetId().equals(id)) {
 						mapProjects.add(mapProject);

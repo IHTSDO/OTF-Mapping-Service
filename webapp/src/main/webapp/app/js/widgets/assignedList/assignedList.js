@@ -16,24 +16,24 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	// initialize as empty to indicate still initializing database connection
 	$scope.assignedRecords = [];
 	$scope.user = localStorageService.get('currentUser');
+	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
 
 	// pagination variables
-	$scope.conceptsPerPage = 3;
+	$scope.conceptsPerPage = 10;
 	
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
-		$scope.project = parameters.focusProject;
-
-		console.debug($scope.project);
+		$scope.focusProject = parameters.focusProject;
 	});	
 
-	$scope.$on('availableWork.notification.assignWork', function(event, parameters) {
-
-		console.debug("assignedListCtrl: Detected assignWork notificatoin from availableWork widget");
-		$scope.assignWork(parameters.assignedWork);
-
+	$scope.$on('workAvailableWidget.notification.assignWork', function(event, parameters) {
+		console.debug('assignedlist: assignWork notification from workAvailableWidget');
+		$scope.retrieveAssignedWork(1);
+		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+			$scope.retrieveAssignedConflicts(1);
+		}
 	});
 
 	// on any change of focusProject, retrieve new available work
@@ -42,31 +42,73 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 		if ($scope.focusProject != null) {
 			$scope.retrieveAssignedWork(1);
+			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+				$scope.retrieveAssignedConflicts(1);
+			}
 		}
 	});
+	
+	$scope.retrieveAssignedConflicts = function(page) {
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": (page-1)*$scope.conceptsPerPage,
+			 	 	 "maxResults": $scope.conceptsPerPage, 
+			 	 	 "sortField": 'sortKey',
+			 	 	 "filterString": null};  
+
+	  	$rootScope.glassPane++;
+
+		$http({
+			url: root_workflow + "assignedConflicts/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
+			$scope.assignedConflictsPage = page;
+			$scope.nAssignedConflicts = data.totalCount;
+			$scope.assignedConflicts = data.searchResult;
+			$scope.numAssignedConflictsPages = Math.ceil(data.totalCount / $scope.conceptsPerPage);
+			console.debug('Assigned Conflicts:');
+			console.debug($scope.assignedConflicts);
+		}).error(function(error) {
+		  	$rootScope.glassPane--;
+			$scope.error = "Error";
+		});
+	};
 	
 	$scope.retrieveAssignedWork = function(page) {
 
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": (page-1)*$scope.conceptsPerPage,
-			 	 	 "maxResults": $scope.conceptsPerPage-1, 
+			 	 	 "maxResults": $scope.conceptsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
-		
+
+	  	$rootScope.glassPane++;
+
 		$http({
-			url: root_workflow + "assigned/id/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
+			url: root_workflow + "assignedWork/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
 			dataType: "json",
 			data: pfsParameterObj,
-			method: "GET",
+			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
+			$scope.assignedRecordPage = page;
 			$scope.nAssignedRecords = data.totalCount;
-			$scope.assignedRecords = data.mapRecord;
+			$scope.assignedRecords = data.searchResult;
 			console.debug($scope.assignedRecords);
 		}).error(function(error) {
+		  	$rootScope.glassPane--;
 			$scope.error = "Error";
 		});
 	};
@@ -79,9 +121,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	};
 
 	// adds work to the visual display
-	// TODO Add more explicit check to enforce contract
-	//      Currently notification is passed from available work after successful update
-	//      This may not be an ideal way to do it (i.e. this widget dependent)
 	$scope.assignWork = function(newRecords) {
 
 		$scope.assignedRecords = $scope.assignedRecords.concat(newRecords);
@@ -90,7 +129,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	// function to relinquish work (i.e. unassign the user)
 	$scope.unassignWork = function(record) {
 		$http({
-			url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/conceptId/" + record.conceptId + "/user/" + $scope.user.userName,
+			url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/concept/" + record.terminologyId + "/user/" + $scope.user.userName,
 			dataType: "json",
 			method: "POST",
 			headers: {
@@ -98,6 +137,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			}
 		}).success(function(data) {
 			$scope.assignedRecords.removeElement(record);
+			$scope.nAssignedRecords = Math.max(0, $scope.nAssignedRecords-1);
 			$rootScope.$broadcast('assignedListWidget.notification.unassignWork',
 					{key: 'mapRecord', mapRecord: record});
 			

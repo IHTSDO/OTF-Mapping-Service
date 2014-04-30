@@ -5,22 +5,18 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
-import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
-import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
@@ -28,10 +24,8 @@ import org.ihtsdo.otf.mapping.model.MapUser;
  * Default implementatino of {@link WorkflowTrackingRecordJpa}.
  */
 @Entity
-@Table(name = "workflow_tracking_records")
-@Indexed
-// TODO:  Add unique constraints based on the three terminology fields
-// TODO:  Add workflow id (also make unique constraint)
+@Table(name = "workflow_tracking_records", uniqueConstraints = @UniqueConstraint(columnNames = {
+		"terminologyId", "terminology", "terminologyVersion", "mapProject_id"}))
 public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 
 	/** The id. */
@@ -39,8 +33,9 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	@GeneratedValue
 	private Long id;
 	
-	@ManyToOne(targetEntity=WorkflowJpa.class, optional=false)
-	private Workflow workflow;
+	/** The map project */
+	@ManyToOne(targetEntity=MapProjectJpa.class)
+	private MapProject mapProject;
 	
 	/** The terminology. */
 	@Column(nullable = false)
@@ -57,24 +52,18 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	/**  The default preferred name. */
 	@Column(nullable = false)
 	private String defaultPreferredName;
-	
-	/**  The has discrepancy. */
-	@Column(unique = false, nullable = false)
-	private boolean hasDiscrepancy = false;
 
 	/**  The sort key. */
 	@Column(nullable = false)
 	private String sortKey;
 	
+	/** The workflow path. */
+	@Column(nullable = false)
+	private WorkflowPath workflowPath;
+	
 	/**  The map records. */
 	@OneToMany(targetEntity = MapRecordJpa.class)
-	@IndexedEmbedded(targetElement = MapRecordJpa.class)
 	private Set<MapRecord> mapRecords = new HashSet<>();
-
-	/**  The assigned users. */
-	@ManyToMany(targetEntity=MapUserJpa.class, fetch=FetchType.EAGER)
-	@IndexedEmbedded(targetElement=MapUserJpa.class)
-	private Set<MapUser> assignedUsers = new HashSet<>();
 	
 	/**
 	 * {@inheritDoc}
@@ -93,20 +82,20 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	}
 
 	@Override
-	public Workflow getWorkflow() {
-		return workflow;
+	public MapProject getMapProject() {
+		return this.mapProject;
 	}
 
 	@Override
-	public void setWorkflow(Workflow workflow) {
-		this.workflow = workflow;
+	public void setMapProject(MapProject mapProject) {
+		this.mapProject = mapProject;
 	}
+
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTerminologyVersion() {
 		return terminologyVersion;
 	}
@@ -139,7 +128,6 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	 * {@inheritDoc}
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTerminologyId() {
 		return terminologyId;
 	}
@@ -168,21 +156,33 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 		return defaultPreferredName;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#setHasDiscrepancy(boolean)
-	 */
 	@Override
-	public void setHasDiscrepancy(boolean hasDiscrepancy) {
-		this.hasDiscrepancy = hasDiscrepancy;
+	public WorkflowStatus getWorkflowStatus() {
+		
+		// initialize the workflowStatus
+		WorkflowStatus workflowStatus = WorkflowStatus.NEW;
+		
+		// cycle over tracking record's map records
+		for (MapRecord mapRecord : this.getMapRecords()) {
+			workflowStatus = mapRecord.getWorkflowStatus().compareTo(workflowStatus) > 0 ? 
+					mapRecord.getWorkflowStatus() : workflowStatus; 
+			
+		}
+		
+		return workflowStatus;
+
+	}
+	
+	@Override
+	public WorkflowStatus getLowestWorkflowStatus() {
+		WorkflowStatus workflowStatus = null;
+		for (MapRecord mapRecord : getMapRecords()) {
+			if (workflowStatus == null) workflowStatus = mapRecord.getWorkflowStatus();
+			else if (workflowStatus.compareTo(mapRecord.getWorkflowStatus()) > 0) workflowStatus = mapRecord.getWorkflowStatus();
+		}
+		return workflowStatus;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#isHasDiscrepancy()
-	 */
-	@Override
-	public boolean isHasDiscrepancy() {
-		return hasDiscrepancy;
-	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#setSortKey(java.lang.String)
@@ -199,38 +199,32 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	public String getSortKey() {
 		return sortKey;
 	}
+	
+	@Override
+	public WorkflowPath getWorkflowPath() {
+		return workflowPath;
+	}
+	
+	
+
+	@Override
+	public void setWorkflowPath(WorkflowPath workflowPath) {
+		this.workflowPath = workflowPath;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#getAssignedUsers()
 	 */
 	@Override
 	public Set<MapUser> getAssignedUsers() {
+		Set<MapUser> assignedUsers = new HashSet<>();
+		for (MapRecord mapRecord : this.getMapRecords()) {
+			assignedUsers.add(mapRecord.getOwner());
+		}
 		return assignedUsers;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#setAssignedUsers(java.util.Set)
-	 */
-	@Override
-	public void setAssignedUsers(Set<MapUser> assignedUsers) {
-		this.assignedUsers = assignedUsers;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#addAssignedSpecialist(org.ihtsdo.otf.mapping.model.MapUser)
-	 */
-	@Override
-	public void addAssignedUser(MapUser assignedUser) {
-		this.assignedUsers.add(assignedUser);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#removeAssignedSpecialist(org.ihtsdo.otf.mapping.model.MapUser)
-	 */
-	@Override
-	public void removeAssignedUser(MapUser assignedUser) {
-		this.assignedUsers.remove(assignedUser);
-	}
+	
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#getMapRecords()
@@ -254,6 +248,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 	 */
 	@Override
 	public void addMapRecord(MapRecord mapRecord) {
+		if (this.mapRecords == null) this.mapRecords = new HashSet<>();
 		this.mapRecords.add(mapRecord);
 	}
 
@@ -267,43 +262,32 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 
 	@Override
 	public String toString() {
-		return "WorkflowTrackingRecordJpa [id=" + id + ", terminology="
-				+ terminology + ", terminologyId=" + terminologyId
-				+ ", terminologyVersion=" + terminologyVersion
-				+ ", defaultPreferredName=" + defaultPreferredName
-				+ ", hasDiscrepancy=" + hasDiscrepancy + ", sortKey=" + sortKey
-				+ ", mapRecords=" + mapRecords + ", assignedUsers="
-				+ assignedUsers + "]";
+		return "WorkflowTrackingRecordJpa [id=" + id + ", mapProject="
+				+ mapProject + ", terminology=" + terminology
+				+ ", terminologyId=" + terminologyId + ", terminologyVersion="
+				+ terminologyVersion + ", defaultPreferredName="
+				+ defaultPreferredName + ", sortKey=" + sortKey
+				+ ", workflowPath=" + workflowPath + ", mapRecords="
+				+ mapRecords + ", getWorkflowStatus()=" + getWorkflowStatus()
+				+ ", getAssignedUsers()=" + getAssignedUsers() + "]";
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result =
-				prime
-						* result
-						+ ((assignedUsers == null) ? 0 : assignedUsers
-								.hashCode());
-		result =
-				prime
-						* result
-						+ ((defaultPreferredName == null) ? 0 : defaultPreferredName
-								.hashCode());
-		result = prime * result + (hasDiscrepancy ? 1231 : 1237);
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result =
-				prime * result + ((mapRecords == null) ? 0 : mapRecords.hashCode());
-		result = prime * result + ((sortKey == null) ? 0 : sortKey.hashCode());
-		result =
-				prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-		result =
-				prime * result
-						+ ((terminologyId == null) ? 0 : terminologyId.hashCode());
-		result =
-				prime
-						* result
-						+ ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+		result = prime * result
+				+ ((mapProject == null) ? 0 : mapProject.hashCode());
+		result = prime * result
+				+ ((terminology == null) ? 0 : terminology.hashCode());
+		result = prime * result
+				+ ((terminologyId == null) ? 0 : terminologyId.hashCode());
+		result = prime
+				* result
+				+ ((terminologyVersion == null) ? 0 : terminologyVersion
+						.hashCode());
+		result = prime * result
+				+ ((workflowPath == null) ? 0 : workflowPath.hashCode());
 		return result;
 	}
 
@@ -316,32 +300,10 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 		if (getClass() != obj.getClass())
 			return false;
 		WorkflowTrackingRecordJpa other = (WorkflowTrackingRecordJpa) obj;
-		if (assignedUsers == null) {
-			if (other.assignedUsers != null)
+		if (mapProject == null) {
+			if (other.mapProject != null)
 				return false;
-		} else if (!assignedUsers.equals(other.assignedUsers))
-			return false;
-		if (defaultPreferredName == null) {
-			if (other.defaultPreferredName != null)
-				return false;
-		} else if (!defaultPreferredName.equals(other.defaultPreferredName))
-			return false;
-		if (hasDiscrepancy != other.hasDiscrepancy)
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (mapRecords == null) {
-			if (other.mapRecords != null)
-				return false;
-		} else if (!mapRecords.equals(other.mapRecords))
-			return false;
-		if (sortKey == null) {
-			if (other.sortKey != null)
-				return false;
-		} else if (!sortKey.equals(other.sortKey))
+		} else if (!mapProject.equals(other.mapProject))
 			return false;
 		if (terminology == null) {
 			if (other.terminology != null)
@@ -357,6 +319,8 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 			if (other.terminologyVersion != null)
 				return false;
 		} else if (!terminologyVersion.equals(other.terminologyVersion))
+			return false;
+		if (workflowPath != other.workflowPath)
 			return false;
 		return true;
 	}

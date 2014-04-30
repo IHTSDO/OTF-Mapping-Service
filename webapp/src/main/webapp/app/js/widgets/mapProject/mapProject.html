@@ -1,12 +1,20 @@
+
+
 <div ng-show="project != null">
 
 	<h4>{{project.name}}</h4>
 	
-	<a href="#/project/id/{{project.id}}" class="btn">Project Details</a>
-	<a href="#/record/projectId/{{project.id}}" class="btn">Map Records</a>
+    <button class="btn btn-sm btn-primary" ng-click="goProjectDetails()">Project Details</button> 
+    <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map Records</button>
+    
+    <span ng-show = "currentRole === 'Administrator' || currentRole == 'Lead'">
+	    <button class="btn btn-sm btn-primary" ng-click="computeWorkflow()">Compute Workflow</button>    
+	</span>    
+    
 </div>
 <div ng-show="project == null">
 
 	Select a project.
 
 </div>
+

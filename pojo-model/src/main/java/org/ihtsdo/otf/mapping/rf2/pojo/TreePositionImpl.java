@@ -9,8 +9,6 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link TreePosition}.
  *
@@ -35,12 +33,14 @@ public class TreePositionImpl implements TreePosition {
 	/** The default preferred name. */
 	private String defaultPreferredName;
 	
+	/** Flag for whether this concept node is a valid target code */
+	private boolean valid;
+	
 	/** The count of children. */
 	private int childrenCount;
 	
 	/** The terminology note */
-	@SuppressWarnings("unused")
-  private String terminologyNote;
+	private String terminologyNote;
 	
 	/** The child tree positions. */
 	private List<TreePosition> children = new ArrayList<>();
@@ -274,14 +274,13 @@ public class TreePositionImpl implements TreePosition {
 
 	@Override
 	public String getTerminologyNote() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.terminologyNote;
 	}
 
 
 	@Override
 	public void setTerminologyNote(String terminologyNote) {
-		// TODO Auto-generated method stub
+		this.terminologyNote = terminologyNote;
 		
 	}
 
@@ -295,8 +294,20 @@ public class TreePositionImpl implements TreePosition {
 
 	@Override
 	public void addChildren(List<TreePosition> treePositions) {
-		// TODO Auto-generated method stub
+		this.children.addAll(treePositions);
 		
+	}
+
+
+	@Override
+	public void setValid(boolean valid) {
+		this.valid = valid;
+	}
+
+
+	@Override
+	public boolean isValid() {
+		return this.valid;
 	}
 
 

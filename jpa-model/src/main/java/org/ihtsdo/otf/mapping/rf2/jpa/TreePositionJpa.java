@@ -61,6 +61,10 @@ public class TreePositionJpa implements TreePosition {
 	/** The default preferred name. */
 	@Column(nullable = false, length = 256)
 	private String defaultPreferredName;
+	
+	/** Flag for whether this tree position is assignable (not persisted) */
+	@Transient
+	private boolean valid;
 
 	/** The children count */
 	@Column(nullable = false)
@@ -211,9 +215,7 @@ public class TreePositionJpa implements TreePosition {
 	@Transient
 	@XmlElement(type=TreePositionJpa.class)
 	public List<TreePosition> getChildren() {
-		
-		System.out.println(Integer.toString(children.size()));
-		
+	
 		Collections.sort(this.children, 
 				new Comparator<TreePosition>() {
 					@Override
@@ -228,6 +230,46 @@ public class TreePositionJpa implements TreePosition {
 	@Override
 	public void setChildren(List<TreePosition> children) {
 		this.children = children;
+	}
+	
+
+
+	@Override
+	public void addChild(TreePosition treePosition) {
+		
+		// check if this child is already present
+		int index = this.children.indexOf(treePosition);
+
+		// if present, add children of this tree position to the existing object
+		if (index != -1) {
+			this.children.get(index).addChildren(treePosition.getChildren());
+			
+		// otherwise, add it
+		} else {
+			this.children.add(treePosition);
+		}
+		
+	}
+	
+	@Override
+	public void addChildren(List<TreePosition> treePositions) {
+		
+		// for each child, call the addChild function
+		for (TreePosition tp : treePositions) {
+			this.addChild(tp);
+		}	
+	}
+
+	@Override
+	@Transient
+	@XmlElement
+	public boolean isValid() {
+		return valid;
+	}
+
+	@Override
+	public void setValid(boolean valid) {
+		this.valid = valid;
 	}
 
 
@@ -306,18 +348,6 @@ public class TreePositionJpa implements TreePosition {
 				+ terminologyNote + ", children=" + childrenStr + "]";
 	}
 
-
-	@Override
-	public void addChild(TreePosition treePosition) {
-		this.children.add(treePosition);
-		
-	}
-	
-	@Override
-	public void addChildren(List<TreePosition> treePositions) {
-		this.children.addAll(treePositions);
-		
-	}
 
 
 	

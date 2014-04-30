@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.rf2;
 import java.util.List;
 
 
-// TODO: Auto-generated Javadoc
+
 /**
  * Represents a tree position.
  *
@@ -166,6 +166,22 @@ public interface TreePosition {
    * @param treePositions the tree positions
    */
   public void addChildren(List<TreePosition> treePositions);
+
+
+  /**
+   * Sets the valid. Like children, not a persisted field.
+   *
+   * @param valid the new valid
+   */
+  public void setValid(boolean valid);
+
+
+  /**
+   * Checks if is valid. Like children, not a persisted field.
+   *
+   * @return true, if is valid
+   */
+  public boolean isValid();
 
 
 

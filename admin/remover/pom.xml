@@ -145,6 +145,40 @@
       </build>
     </profile>
     <profile>
+      <id>SNOMEDCT-treepos</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.ihtsdo.otf.mapping</groupId>
+                <artifactId>mapping-admin-remover-config</artifactId>
+                <version>${project.version}</version>
+                <scope>system</scope>
+                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <id>remove-snomed-treepos</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-snomed-treepos</goal>
+                </goals>
+                <configuration>
+                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+                  <terminology>SNOMEDCT</terminology>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
       <id>ICD10</id>
       <build>
         <plugins>
@@ -335,6 +369,40 @@
                   <goal>remove-map-records</goal>
                 </goals>
                 <configuration>
+                  <refSetId>${refset.id}</refSetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>ClearWorkflow</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.ihtsdo.otf.mapping</groupId>
+                <artifactId>mapping-admin-remover-config</artifactId>
+                <version>${project.version}</version>
+                <scope>system</scope>
+                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <id>clear-workflow</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>clear-workflow</goal>
+                </goals>
+                <configuration>
+                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <refSetId>${refset.id}</refSetId>
                 </configuration>
               </execution>

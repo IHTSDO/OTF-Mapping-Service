@@ -8,7 +8,6 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ValidationService;
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of the {@link ValidationService}.
  *

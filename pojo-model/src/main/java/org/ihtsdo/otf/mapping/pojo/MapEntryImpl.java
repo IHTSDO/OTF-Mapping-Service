@@ -10,7 +10,7 @@ import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * Reference implementation of {@link MapEntry}.
  * Includes hibernate tags for MEME database.
