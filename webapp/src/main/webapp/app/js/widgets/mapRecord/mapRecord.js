@@ -23,7 +23,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 	// initialize scope variables
 	$scope.record = 	null;
-	$scope.project = 	null;
+	$scope.project = 	localStorageService.get('focusProject');
 	$scope.concept = 	null;
 	$scope.groups = 	null;
 	$scope.entries =    null;
@@ -67,46 +67,41 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
         if ($scope.project.groupStructure == true)
                getGroups();
 
-});
+	});
+	
+	// on successful retrieval of project, get the record/concept
+	$scope.$watch('project', function() {
+		retrieveRecord();
+	});
 
 
-	$scope.$watch('record', function() {
+	/*$scope.$watch('record', function() {
 		console.debug('detected change in record, re-initializing entries');
 		console.debug($scope.record);
 		if ($scope.record != null && $scope.project != null) initializeEntries();
-	}, true);
+	}, true);*/
 
 	// initialize local variables
 	var recordId = 		$routeParams.recordId; 
 	var currentLocalId = 1;   // used for addition of new entries without hibernate id
+	
+	// function to initially retrieve the project
 
-	// obtain the record
-	$http({
-		url: root_mapping + "record/id/" + recordId,
-		dataType: "json",
-		method: "GET",
-		headers: { "Content-Type": "application/json"}	
-	}).success(function(data) {
-		$scope.record = data;
-
-	}).error(function(error) {
-		$scope.error = $scope.error + "Could not retrieve map record. ";
-
-	}).then(function() {
-
-
-		// obtain the record project
+	function retrieveRecord() {
+		// obtain the record
 		$http({
-			url: root_mapping + "project/id/" + $scope.record.mapProjectId,
+			url: root_mapping + "record/id/" + recordId,
 			dataType: "json",
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
 		}).success(function(data) {
-			$scope.project = data;
+			$scope.record = data;
+	
 		}).error(function(error) {
-			$scope.error = $scope.error + "Could not retrieve map project. ";
+			$scope.error = $scope.error + "Could not retrieve map record. ";
+	
 		}).then(function() {
-
+	
 			// obtain the record concept
 			$http({
 				url: root_content + "concept/" 
@@ -122,16 +117,17 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}).error(function(error) {
 				$scope.error = $scope.error + "Could not retrieve record concept. ";
 			});
-
-
+	
+	
 			// get the groups
 			if ($scope.project.groupStructure == true)
 				getGroups();
-
+	
 			// initialize the entries
 			initializeEntries();
+	
 		});
-	});
+	};
 
 
 
@@ -146,7 +142,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		console.debug("Initializing map entries -- " + $scope.record.mapEntry.length + " found");
 		
-		// find the maximum hibernate id value and set the current local id
+		// find the maximum hibernate id value
 		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
 			currentLocalId = Math.max($scope.record.mapEntry[i].id, currentLocalId);
 		}
@@ -238,13 +234,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 			$scope.record.mapEntry = entries;
 			
-			// SAFETY CHECK:  Verify that all entries have a local id
-			for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-				if ($scope.record.mapEntry[i].localId == null || $scope.record.mapEntry[i].localId == undefined || $scope.record.mapEntry[i].localId === '') {
-					$scope.record.mapEntry[i].localId = currentLocalId + 1;
-					currentLocalId++;
-				}
-			}
+			
 		}
 
 		console.debug("Validating the map record");
