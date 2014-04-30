@@ -19,14 +19,13 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 	$scope.focusProject = localStorageService.get('focusProject');
 
 	// pagination variables
-	$scope.recordsPerPage = 3;
+	$scope.recordsPerPage = 10;
+	$scope.editedRecordsPage = 1;
 	
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
-		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
-		$scope.project = parameters.focusProject;
-
-		console.debug($scope.project);
+		console.debug("editedListWidgetCtrl:  Detected change in focus project");
+		$scope.focusProject = parameters.focusProject;
 	});	
 
 	$scope.$on('availableWork.notification.editWork', function(event, parameters) {
@@ -41,12 +40,14 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 		console.debug('editedListCtrl:  Detected project set/change');
 
 		if ($scope.focusProject != null) {
-			$scope.retrieveEditedWork(1);
+			$scope.retrieveEditedWork($scope.editedRecordsPage);
 		}
 	});
 	
 	$scope.retrieveEditedWork = function(page) {
 
+		// set the page
+		$scope.editedRecordsPage = page;
 		 
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
@@ -54,7 +55,9 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 			 	 	 "maxResults": $scope.recordsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
-		
+
+	  	$rootScope.glassPane++;
+
 		$http({
 			url: root_mapping + "recentRecords/" + $scope.focusProject.id + "/" + $scope.user.userName,
 			dataType: "json",
@@ -64,32 +67,21 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
-
-			$scope.recordPage = page;
+		  	$rootScope.glassPane--;
 			
+			$scope.recordPage = page;
 			$scope.nRecords = data.totalCount;
 			$scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
-			console.debug($scope.nRecords);
-			
-			console.debug($scope.numRecordPages);
 			 
 			$scope.editedRecords = data.mapRecord;
+			console.debug("Edited records:")
 			console.debug($scope.editedRecords);
-			
-
-			 
+						 
 		}).error(function(error) {
+		  	$rootScope.glassPane--;
 			$scope.error = "Error";
 		});
 	};
 	
-	/**function getDate(timestamp) {
-		var d = new Date(timestamp);
-		alert(d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear());
-		$scope.date = d;
-	}*/
-	
-
-
 
 });

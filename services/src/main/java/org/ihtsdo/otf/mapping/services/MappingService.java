@@ -1,10 +1,20 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Map;
 
+import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
+import org.ihtsdo.otf.mapping.helpers.MapPrincipleList;
+import org.ihtsdo.otf.mapping.helpers.MapProjectList;
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
+import org.ihtsdo.otf.mapping.helpers.MapRelationList;
+import org.ihtsdo.otf.mapping.helpers.MapUserList;
+import org.ihtsdo.otf.mapping.helpers.MapUserPreferencesList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.TreePositionList;
+import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
@@ -14,13 +24,13 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-// TODO: Auto-generated Javadoc
+
 /**
- * Interface for services to retrieve (get) map objects.
- *
- * @author Patrick
+ * Services for interacting with mapping objects.
  */
 public interface MappingService {
 	
@@ -87,7 +97,7 @@ public interface MappingService {
 	 * @return a List of MapProjects
 	 * @throws Exception the exception
 	 */
-	public List<MapProject> getMapProjects() throws Exception;
+	public MapProjectList getMapProjects() throws Exception;
 	
 	/**
 	 * Retrieve all map users.
@@ -95,7 +105,7 @@ public interface MappingService {
 	 * @return a List of MapUsers
 	 * @throws Exception the exception
 	 */
-	public List<MapUser> getMapUsers() throws Exception;
+	public MapUserList getMapUsers() throws Exception;
 	
 	/**
 	 * Retrieve all map principles.
@@ -103,7 +113,7 @@ public interface MappingService {
 	 * @return a List of MapPrinciples
 	 * @throws Exception the exception
 	 */
-	public List<MapPrinciple> getMapPrinciples() throws Exception;
+	public MapPrincipleList getMapPrinciples() throws Exception;
 	
 	/**
 	 * Retrieve all map advices.
@@ -111,7 +121,7 @@ public interface MappingService {
 	 * @return a List of MapAdvices
 	 * @throws Exception the exception
 	 */
-	public List<MapAdvice> getMapAdvices() throws Exception;
+	public MapAdviceList getMapAdvices() throws Exception;
 	
 	/**
 	 * Retrieve all map projects assigned to a particular map user.
@@ -120,7 +130,7 @@ public interface MappingService {
 	 * @return a List of MapProjects
 	 * @throws Exception the exception
 	 */
-	public List<MapProject> getMapProjectsForMapUser(MapUser mapUser) throws Exception;
+	public MapProjectList getMapProjectsForMapUser(MapUser mapUser) throws Exception;
 	
 	/**
 	 * Retrieve all map records.
@@ -128,7 +138,7 @@ public interface MappingService {
 	 * @return a List of MapRecords
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> getMapRecords() throws Exception;
+	public MapRecordList getMapRecords() throws Exception;
 	
 	/**
 	 * Retrieve all map records associated with a given concept id.
@@ -152,25 +162,6 @@ public interface MappingService {
 	 */
 	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter) throws Exception;
 	
-	/**
-	 * Query for MapUsers.
-	 *
-	 * @param query the query
-	 * @param pfsParameter the paging, filtering, sorting parameter
-	 * @return the List of MapUsers
-	 * @throws Exception the exception
-	 */
-	public SearchResultList findMapUsers(String query, PfsParameter pfsParameter) throws Exception;
-	
-	/**
-	 * Query for MapAdvices.
-	 *
-	 * @param query the query
-	 * @param pfsParameter the paging, filtering, sorting parameter
-	 * @return the List of MapAdvices
-	 * @throws Exception the exception
-	 */
-	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/**
 	 * Query for MapRecords.
@@ -182,15 +173,6 @@ public interface MappingService {
 	 */
 	public SearchResultList findMapRecords(String query, PfsParameter pfsParameter) throws Exception;
 	
-	/**
-	 * Query for MapEntrys.
-	 *
-	 * @param query the query
-	 * @param pfsParameter the paging, filtering, sorting parameter
-	 * @return the List of MapEntrys
-	 * @throws Exception the exception
-	 */
-	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter) throws Exception;
 
 	////////////////////////////
 	// Addition services     ///
@@ -356,17 +338,7 @@ public interface MappingService {
 	///////////////////////////
 	// Other services       ///
 	///////////////////////////
-	
-	/**
-	 * Gets the map record count for map project id.
-	 *
-	 * @param mapProjectId the map project id
-	 * @param pfsParameter the pfs parameter
-	 * @return the map record count for map project id
-	 * @throws Exception the exception
-	 */
-	public Long getMapRecordCountForMapProject(Long mapProjectId,
-			PfsParameter pfsParameter) throws Exception;
+
 	
 	
 		
@@ -377,7 +349,7 @@ public interface MappingService {
 	 * @return the map records for concept id
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> getMapRecordsForConcept(String terminologyId) throws Exception;
+	public MapRecordList getMapRecordsForConcept(String terminologyId) throws Exception;
 
 	/**
 	 * Returns the unmapped descendants for concept.
@@ -416,7 +388,7 @@ public interface MappingService {
 	 *
 	 * @param mapProjectId the map project id
 	 * @param complexMapRefSetMembers the complex map ref set members
-	 * @param workflowStatus TODO
+	 * @param workflowStatus the workflow status
 	 * @throws Exception the exception
 	 */
 	public void createMapRecordsForMapProject(Long mapProjectId, 
@@ -438,7 +410,7 @@ public interface MappingService {
 	 * @return the map records for a project id
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> getMapRecordsForMapProject(Long mapProjectId) throws Exception;
+	public MapRecordList getMapRecordsForMapProject(Long mapProjectId) throws Exception;
 	
 	/**
 	 * Helper function which calls either a simple query or lucene query depending on filter parameters.
@@ -448,7 +420,7 @@ public interface MappingService {
 	 * @return the map records for map project id
 	 * @throws Exception the exception
 	 */
-	public List<MapRecord> getMapRecordsForMapProject(Long mapProjectId,
+	public MapRecordList getMapRecordsForMapProject(Long mapProjectId,
 			PfsParameter pfsParameter) throws Exception;
 
 	/**
@@ -457,7 +429,7 @@ public interface MappingService {
 	 * @param conceptId the concept id
 	 * @return the map records where this concept is referenced
 	 */
-	public List<MapRecord> getMapRecordsForConcept(Long conceptId);
+	public MapRecordList getMapRecordsForConcept(Long conceptId);
 
 	/**
 	 * Find concepts in scope.
@@ -575,25 +547,15 @@ public interface MappingService {
 	 * @param mapRecordId the map record id
 	 * @return the record revisions
 	 */
-	public List<MapRecord> getMapRecordRevisions(Long mapRecordId);
+	public MapRecordList getMapRecordRevisions(Long mapRecordId);
 
 	/**
 	 * Returns the map relations.
 	 *
 	 * @return the map relations
 	 */
-	public List<MapRelation> getMapRelations();
+	public MapRelationList getMapRelations();
 
-	/**
-	 * Finds map relations from the specified query.
-	 *
-	 * @param query the query
-	 * @param pfsParameter the pfs parameter
-	 * @return the search result list
-	 * @throws Exception the exception
-	 */
-	public SearchResultList findMapRelations(String query, PfsParameter pfsParameter)
-			throws Exception;
 
 	/**
 	 * Adds the map relation.
@@ -621,22 +583,22 @@ public interface MappingService {
 	 *
 	 * @param mapEntry the map entry
 	 * @return the map relation
-	 * @throws ClassNotFoundException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @throws InstantiationException the instantiation exception
+	 * @throws IllegalAccessException the illegal access exception
+	 * @throws ClassNotFoundException the class not found exception
 	 */
 	public MapRelation computeMapRelation(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
 	
     /**
-	 * Compute map advice.
-	 *
-	 * @param mapEntry the map entry
-	 * @return the list
-	 * @throws ClassNotFoundException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
-	 */
-	public List<MapAdvice> computeMapAdvice(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
+     * Compute map advice.
+     *
+     * @param mapEntry the map entry
+     * @return the list
+     * @throws InstantiationException the instantiation exception
+     * @throws IllegalAccessException the illegal access exception
+     * @throws ClassNotFoundException the class not found exception
+     */
+	public MapAdviceList computeMapAdvice(MapEntry mapEntry) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
 	
     /**
      * Gets the transaction per operation.
@@ -677,29 +639,100 @@ public interface MappingService {
      * @return the most recent map record revision
      * @throws Exception the exception
      */
-    public List<MapRecord> getRecentlyEditedMapRecords(Long projectId, String userName, PfsParameter pfsParameter) throws Exception;
+    public MapRecordList getRecentlyEditedMapRecords(Long projectId, String userName, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Gets the project specific algorithm handler.
 	 *
 	 * @param mapProject the map project
 	 * @return the project specific algorithm handler
-	 * @throws ClassNotFoundException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @throws InstantiationException the instantiation exception
+	 * @throws IllegalAccessException the illegal access exception
+	 * @throws ClassNotFoundException the class not found exception
 	 */
 	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(MapProject mapProject) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
+	
+	/**
+	 * Gets the map user preferences.
+	 *
+	 * @return the map user preferences
+	 */
+	public MapUserPreferencesList getMapUserPreferences();
 
 	/**
-	 * Returns the recently edited map record count.
+	 * Adds the map user preferences.
 	 *
-	 * @param projectId the project id
-	 * @param userName the user name
-	 * @param pfsParameter the pfs parameter
-	 * @return the recently edited map record count
+	 * @param mapUserPreferences the map user preferences
+	 * @return the map user preferences
+	 */
+	public MapUserPreferences addMapUserPreferences(
+			MapUserPreferences mapUserPreferences);
+
+	/**
+	 * Update map user preferences.
+	 *
+	 * @param mapUserPreferences the map user preferences
+	 */
+	public void updateMapUserPreferences(MapUserPreferences mapUserPreferences);
+
+	/**
+	 * Removes the map user preferences.
+	 *
+	 * @param mapUserPreferencesId the map user preferences id
+	 */
+	public void removeMapUserPreferences(Long mapUserPreferencesId);
+
+	/**
+	 * Given a list of tree positions and a map project id, sets the valid codes for each node.
+	 *
+	 * @param treePositions the tree positions
+	 * @param mapProjectId the map project id
+	 * @return the list
 	 * @throws Exception the exception
 	 */
-	public int getRecentlyEditedMapRecordCount(Long projectId, String userName, PfsParameter pfsParameter) throws Exception;
+	public TreePositionList setTreePositionValidCodes(
+			List<TreePosition> treePositions, Long mapProjectId) throws Exception;
+
+	/**
+	 * Compare finished map records.
+	 *
+	 * @param mapProject the map project
+	 * @return the map
+	 * @throws Exception the exception
+	 */
+	public Map<Long, Long> compareFinishedMapRecords(MapProject mapProject)
+			throws Exception;
+
+	/**
+	 * Compare map records.
+	 *
+	 * @param mapRecord1 the first map record
+	 * @param mapRecord2 the second map record
+	 * @return the validation result
+	 * @throws InstantiationException the instantiation exception
+	 * @throws IllegalAccessException the illegal access exception
+	 * @throws ClassNotFoundException the class not found exception
+	 */
+	public ValidationResult compareMapRecords(MapRecord mapRecord1,
+			MapRecord mapRecord2) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
+
+	/**
+	 * Given a map record, returns the origin map records giving rise to a conflict.
+	 *
+	 * @param mapRecordId the map record id of the conflict resolution record
+	 * @return the records in conflict
+	 * @throws Exception the exception
+	 */
+	public MapRecordList getRecordsInConflict(Long mapRecordId) throws Exception;
+
+	/**
+	 * Gets the map user preferences.
+	 *
+	 * @param userName the user name
+	 * @return the map user preferences
+	 */
+	public MapUserPreferences getMapUserPreferences(String userName);
+
 	
 	
 }

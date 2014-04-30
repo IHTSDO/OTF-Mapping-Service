@@ -353,6 +353,12 @@ public class ClamlMetadataHelper {
     conceptMap.put("dagger-to-asterisk", daggerToAsteriskConcept);
     manager.persist(daggerToAsteriskConcept);
 
+    Concept referenceConcept =
+        createNewActiveConcept("" + metadataCounter++, terminology,
+            terminologyVersion, "Reference", effectiveTime);
+    conceptMap.put("reference", referenceConcept);
+    manager.persist(referenceConcept);
+
     createIsaRelationship(metadataConcept, relationshipTypeConcept, ""
         + metadataCounter++, terminology, terminologyVersion, effectiveTime);
 
@@ -361,6 +367,10 @@ public class ClamlMetadataHelper {
         effectiveTime);
 
     createIsaRelationship(relationshipTypeConcept, daggerToAsteriskConcept,
+        new Integer(metadataCounter++).toString(), terminology,
+        terminologyVersion, effectiveTime);
+
+    createIsaRelationship(relationshipTypeConcept, referenceConcept,
         new Integer(metadataCounter++).toString(), terminology,
         terminologyVersion, effectiveTime);
 
@@ -571,6 +581,9 @@ public class ClamlMetadataHelper {
   public void createIsaRelationship(Concept parentConcept,
     Concept childConcept, String terminologyId, String terminology,
     String terminologyVersion, String effectiveTime) throws Exception {
+    if (parentConcept == null) {
+      throw new Exception("Parent concept may not be null");
+    }
     Relationship relationship = new RelationshipJpa();
     relationship.setTerminologyId(terminologyId);
     relationship.setEffectiveTime(dt.parse(effectiveTime));

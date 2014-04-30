@@ -9,21 +9,17 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
-import org.hibernate.search.annotations.Indexed;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class MapRelationJpa.
  */
 @Entity
-//add indexes
 @Table(name="map_relations")
 @Audited
-@Indexed
-@XmlRootElement(name = "mapRecord")
+@XmlRootElement(name = "mapRelation")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MapRelationJpa implements MapRelation {
 

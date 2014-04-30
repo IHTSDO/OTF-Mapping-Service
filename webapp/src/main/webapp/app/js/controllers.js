@@ -11,15 +11,16 @@ var root_metadata = root_url + "metadata/";
 var root_validation = root_url + "validation/";
 var root_workflow = root_url + "workflow/";
 
-mapProjectAppControllers.run(function() {
+mapProjectAppControllers.run(function($rootScope) {
+	$rootScope.glassPane = 0;
 
 });
 
 
-mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $routeParams, localStorageService) {
-	
+mapProjectAppControllers.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, $rootScope, localStorageService) {
+
 	setModel();
-	
+
 	$scope.focusProject = localStorageService.get('focusProject');
 
 	var currentUser = localStorageService.get('currentUser');
@@ -27,7 +28,305 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 
 
 	function setModel() {
-		$scope.name = 'MappingDashboard';
+		$scope.name = 'ResolveConflictsDashboard';
+		if (!$scope.model) {
+			$scope.model = {
+
+					structure: "12/6-6/12",
+					rows: [{
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "compareRecords",
+								title: "Compare Records"
+							}]
+						}]
+					}, { // new row
+
+						columns: [{
+							class: 'col-md-6',
+							widgets: [{
+								type: "mapRecord",
+								config: { recordId: $routeParams.recordId},
+								title: "Map Record"
+							}]
+						}, {
+							class: 'col-md-6',
+							widgets: [{
+								type: "mapEntry",
+								config: { entry: $scope.entry},
+								title: "Map Entry"
+							}, {
+								type: "terminologyBrowser",
+								config: {
+									terminology: $scope.focusProject.destinationTerminology,
+									terminologyVersion: $scope.focusProject.destinationTerminologyVersion
+								},
+								title: $scope.focusProject.destinationTerminology + " Terminology Browser"
+
+							}],
+						} // end second column
+						] // end columns
+
+					}] // end second row
+
+
+			};
+		}
+	};
+
+	console.debug("CONTROLLER MODEL");
+	console.debug($scope.model);
+
+	// broadcast page to help mechanism  
+	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'resolveConflictsDashboard'});  
+
+	$scope.$on('adfDashboardChanged', function (event, name, model) {
+		console.debug("Dashboard change detected by ResolveConflictsDashboard");
+		localStorageService.set(name, model);
+	});
+
+	// watch for project change
+	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+		console.debug("MapProjectWidgetCtrl: Detected change in focus project");
+		$scope.project = parameters.focusProject;
+
+		console.debug($scope.project);
+	});	
+
+	// on any change of focusProject, retrieve new available work
+	$scope.$watch('focusProject', function() {
+		console.debug('ResolveConflictsDashboardCtrl: Detected project set/change');
+		setModel();
+
+
+	});
+});
+
+
+
+mapProjectAppControllers.controller('dashboardCtrl', function ($rootScope, $scope, $http, localStorageService) {
+
+	$scope.currentRole = localStorageService.get('currentRole');
+
+	console.debug('in dashboardCtrl');
+
+	// watch for preferences change
+	$scope.$on('localStorageModule.notification.setUserPreferences', function(event, parameters) { 	
+		console.debug("dashboardCtrl:  Detected change in preferences");
+		if (parameters.userPreferences != null && parameters.userPreferences != undefined) {
+			$http({
+				url: root_mapping + "userPreferences/update",
+				dataType: "json",
+				data: parameters.userPreferences,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}	
+			}).success(function(data) {
+			});
+		}
+	});
+
+	// on successful user retrieval, construct the dashboard
+	$scope.$watch('currentRole', function() {
+
+		console.debug("Setting the dashboard based on role: " + $scope.currentRole);
+
+		/**
+		 * Viewer has the following widgets:
+		 * - MapProject
+		 */
+		if ($scope.currentRole === 'Viewer') {
+			$scope.model = {
+
+					structure: "12/6-6/12",
+					rows: [{
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "mapProject",
+								config: {},
+								title: "Map Project"
+							}]
+						}]
+					}]
+			};
+			/**
+			 * Specialist has the following widgets:
+			 * - MapProject
+			 * - WorkAvailable
+			 * - AssignedList
+			 * - EditedList
+			 */
+		} else if ($scope.currentRole === 'Specialist') {
+
+			$scope.model = {
+
+					structure: "12/6-6/12",
+					rows: [{	
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "mapProject",
+								config: {},
+								title: "Map Project"
+							}]
+						}]
+					}, {
+						columns: [{
+							class: 'col-md-6',
+							widgets: [{
+								type: "workAvailable",
+								config: {},
+								title: "Available Work"
+							}]
+						}, {
+							class: 'col-md-6',
+							widgets: [{
+								type: "assignedList",
+								config: {},
+								title: "Assigned to Me"
+							}]
+						}]
+					}
+
+					, {
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "editedList",
+								title: "Recently Edited"
+							}]
+						}]
+					}]
+			};
+
+			/**
+			 * Lead has the following widgets
+			 * -MapProject
+			 * - WorkAvailable
+			 * - AssignedList
+			 * - EditedList
+			 * - MetadataList
+			 */
+		} else if ($scope.currentRole === 'Lead') {
+
+			console.debug("Setting model for lead");
+
+			$scope.model = {
+
+					structure: "12/6-6/12",
+					rows: [{
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "mapProject",
+								config: {},
+								title: "Map Project"
+							}]
+						}]
+					}, {
+						columns: [{
+							class: 'col-md-6',
+							widgets: [{
+								type: "workAvailable",
+								config: {},
+								title: "Available Work"
+							}]
+						}, {
+							class: 'col-md-6',
+							widgets: [{
+								type: "assignedList",
+								config: {},
+								title: "Assigned to Me"
+							}]
+						}]
+					}
+
+					, {
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "editedList",
+								title: "Recently Edited"
+							}]
+						}]
+					}, {
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "metadataList",
+								config: {
+									terminology: "SNOMEDCT"
+								},
+								title: "Metadata"
+							}]
+						}]
+					}]
+			};
+
+			console.debug($scope.model);
+
+			/** Admin has the following widgets
+			 * - MapProject
+			 * - MetadataList
+			 * - AdminTools
+			 */
+		} else if ($scope.currentRole === 'Administrator') {
+
+			$scope.model = {
+
+					structure: "12/6-6/12",
+					rows: [{
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "mapProject",
+								config: {},
+								title: "Map Project"
+							}]
+						}]
+					},{
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "metadataList",
+								config: {
+									terminology: "SNOMEDCT"
+								},
+								title: "Metadata"
+							}]
+						}]
+					}]
+			};
+
+		} else {
+			alert("Invalid role detected by dashboard");
+		}
+
+		$scope.$on('adfDashboardChanged', function (event, name, model) {
+			console.debug('adfDashboardChanged in DashBoardCtrl');
+			console.debug(event);
+			console.debug(name);
+			console.debug(model);
+			$scope.model = model;
+		});
+	});
+
+});
+
+mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, $rootScope, $routeParams, $location, localStorageService) {
+
+	$scope.currentRole = localStorageService.get('currentRole');
+	$scope.focusProject = localStorageService.get('focusProject');
+
+	setModel();
+
+	function setModel() {
+		$scope.name = 'EditingDashboard';
+		console.debug("Setting record dashboard model");
+		console.debug($scope.model);
 		if (!$scope.model) {
 			$scope.model = {
 					structure: "6-6",                          
@@ -53,18 +352,18 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 										terminologyVersion: $scope.focusProject.destinationTerminologyVersion
 									},
 									title: $scope.focusProject.destinationTerminology + " Terminology Browser"
-								
+
 								}],
 							} // end second column
-						] // end columns
-					}] // end rows
+							] // end columns
+						}] // end rows
 			};
 
 		}
 	};
-
-	console.debug("CONTROLLER MODEL");
-	console.debug($scope.model);
+	
+	// broadcast page to help mechanism  
+	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
 
 	$scope.$on('adfDashboardChanged', function (event, name, model) {
 		console.debug("Dashboard change detected by MapRecordDashboard");
@@ -72,12 +371,33 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 	});
 
 	// watch for project change
-	// TODO A project change while viewing a record should return you to dashboard
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
-		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
-		$scope.project = parameters.focusProject;
+		console.debug("RecordDashboardCtrl:  Detected change in focus project");
+		
+		// set the model to empty
+		$scope.model = {
+				structure: "6-6",                          
+				rows: 
+					[{}]
+		};
+		
+		setModel();
+		
+		console.debug($scope.currentRole);
+		
+		var path = "";
 
-		console.debug($scope.project);
+		if ($scope.currentRole === "Specialist") {
+			path = "/specialist/dash";
+		} else if ($scope.currentRole === "Lead") {
+			path = "/lead/dash";
+		} else if ($scope.currentRole === "Administrator") {
+			path = "/admin/dash";
+		} else if ($scope.currentRole === "Viewer") {
+			path = "/project/projects/";
+		}
+		console.debug("redirecting to " + path);
+		$location.path(path);
 	});	
 
 	// on any change of focusProject, retrieve new available work
@@ -92,7 +412,6 @@ mapProjectAppControllers.controller('MapRecordDashboardCtrl', function ($scope, 
 
 //Navigation
 
-
 mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService', '$rootScope', '$location', '$http',
                                                   function ($scope, localStorageService, $rootScope, $location, $http) {
 
@@ -100,16 +419,21 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	localStorageService.clearAll();
 
 	// broadcast user/role information clearing to rest of app
-	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', newvalue: null});  
-	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentRole', newvalue: null});  
+	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: null});  
+	$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: null});  
+	$rootScope.$broadcast('localStorageModule.notification.setFocusProject', {key: 'focusProject', focusProject: null});
+	$rootScope.$broadcast('localStorageModule.notificatoin.setPreferences', {key: 'preferences', preferences: null});
 
 	// broadcast page to help mechanism
 	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
-	
+
+
+
 	// set all local variables to null
-	$scope.user = null;
-	$scope.users = null;
-	$scope.error = null;
+	$scope.user = [];
+	$scope.users = [];
+	$scope.error = [];
+	$scope.preferences = [];
 
 	// retrieve projects for focus controls
 	$http({
@@ -120,16 +444,44 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 			"Content-Type": "application/json"
 		}	
 	}).success(function(data) {
+		$scope.projects = data.mapProject;
 		localStorageService.add('mapProjects', data.mapProject);
-		localStorageService.add('focusProject', null);
 
 	}).error(function(error) {
 		$scope.error = $scope.error + "Could not retrieve map projects. "; 
 
 	}).then(function(data) {
-		$rootScope.$broadcast('localStorageModule.notification.setMapProjects',{key: 'mapProjects', newvalue: data.mapProject});  
-		$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', newvalue: null});  
+		console.debug("broadcasting projects");
+		console.debug($scope.projects);
+		$rootScope.$broadcast('localStorageModule.notification.setMapProjects',{key: 'mapProjects', mapProjects: $scope.projects});  
 
+	});
+
+	// retrieve metadata
+	$http({
+		url: root_metadata + "terminologies/latest",
+		dataType: "json",
+		method: "GET",
+		headers: {
+			"Content-Type": "application/json"
+		}
+	}).success(function(response) {
+		var keyValuePairs = response.keyValuePair;
+		for (var i = 0; i < keyValuePairs.length; i++) {
+			console.debug(keyValuePairs[i]);
+			$http({
+				url: root_metadata + "all/" + keyValuePairs[i].key + "/" + keyValuePairs[i].value,
+				dataType: "json",
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(metadata) {
+			});
+
+		}
+	}).error(function() {
+		console.debug("error loading response terminology info");
 	});
 
 
@@ -179,15 +531,39 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 			alert("You must specify a user");
 		} else {
 
+			// retrieve the user preferences
+			$http({
+				url: root_mapping + "userPreferences/" + $scope.user.userName,
+				dataType: "json",
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}	
+			}).success(function(data) {
+				console.debug($scope.projects);
+				console.debug(data);
+				$scope.preferences = data;
+				$scope.preferences.lastLogin = new Date().getTime();
+				localStorageService.add('preferences', $scope.preferences);
+				for (var i = 0; i < $scope.projects.length; i++)  {
+					if ($scope.projects[i].id === $scope.preferences.lastMapProjectId) {
+						$scope.focusProject = $scope.projects[i];
+					}
+				}
+				console.debug('Last project: ');
+				console.debug($scope.focusProject);
+				localStorageService.add('focusProject', $scope.focusProject);
+				$rootScope.$broadcast('localStorageModule.notification.setPreferences', {key: 'preferences', preferences: $scope.preferences});
+				$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+			});
+
 			// add the user information to local storage
 			localStorageService.add('currentUser', $scope.user);
-			localStorageService.add('currentRole', $scope.role);
-
-
+			localStorageService.add('currentRole', $scope.role.name);
 
 			// broadcast the user information to rest of app
-			$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', newvalue: $scope.user});
-			$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', newvalue: $scope.role});
+			$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.user});
+			$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role.name});
 
 			// redirect page
 			$location.path(path);
@@ -223,34 +599,28 @@ mapProjectAppControllers.controller('MapProjectListCtrl',
 });
 
 
-
-
-//Content Services
-
-
-
-
-
-//Specialized Services
-
-
-
 /*
  * Controller for retrieving and displaying records associated with a concept
  */
 mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams', '$sce', '$rootScope', '$location', 'localStorageService', 
-   function ($scope, $http, $routeParams, $sce, $rootScope, $location, localStorageService) {
+                                                              function ($scope, $http, $routeParams, $sce, $rootScope, $location, localStorageService) {
 
 	// scope variables
 	$scope.error = "";		// initially empty
 	$scope.conceptId = $routeParams.conceptId;
 	$scope.recordsInProject = [];
 	$scope.recordsNotInProject = [];
+	$scope.recordsInProjectNotFound = false; // set to true after record retrieval returns no records for focus project
+	$scope.focusProject = localStorageService.get("focusProject");
+	$scope.mapProjects = localStorageService.get("mapProjects");
 
 	// local variables
-	var records = [];
-	var projects = [];
-	$scope.focusProject = [];
+	var projects = localStorageService.get("mapProjects");
+
+
+	// retrieve current user and role
+	$scope.currentUser = localStorageService.get("currentUser");
+	$scope.currentRole = localStorageService.get("currentRole");
 
 	// retrieve focus project on first call
 	$scope.focusProject = localStorageService.get("focusProject");
@@ -263,25 +633,76 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	});	
 
 
-      // broadcast page to help mechanism
-      $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'concept'});
+	// broadcast page to help mechanism
+	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'concept'});
 
-	
-	// retrieve projects information   
-	$http({
-		url: root_mapping + "project/projects",
-		dataType: "json",
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json"
-		}	
-	}).success(function(data) {
-		projects = data.mapProject;
-	}).error(function(error) {
-		$scope.error = $scope.error + "Could not retrieve projects. "; 
+	// once focus project retrieved, retrieve the concept and records
+	$scope.$watch('focusProject', function() {
+		
+		$scope.recordsInProjectNotFound = false;
 
-	}).then(function() {
-		$scope.getRecordsForConcept();
+		console.debug("RecordConceptCtrl:  Focus Project change");
+		
+		// retrieve projects information to ensure display handled properly
+		$http({
+			url: root_mapping + "project/projects",
+			dataType: "json",
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			projects = data.mapProject;
+		}).error(function(error) {
+			$scope.error = $scope.error + "Could not retrieve projects. "; 
+
+		}).then(function() {
+
+			// get all records for this concept
+			$scope.getRecordsForConcept();
+		});
+
+
+		// find concept based on source terminology
+		$http({
+			url: root_content + "concept/" 
+			+ $scope.focusProject.sourceTerminology + "/" 
+			+ $scope.focusProject.sourceTerminologyVersion 
+			+ "/id/" 
+			+ $routeParams.conceptId,
+			dataType: "json",
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			$scope.concept = data;
+			$scope.findUnmappedDescendants();
+
+			// find children based on source terminology
+			$http({
+				url: root_content + "concept/" 
+				+ $scope.focusProject.sourceTerminology + "/" 
+				+ $scope.focusProject.sourceTerminologyVersion 
+				+ "/id/" 
+				+ $routeParams.conceptId
+				+ "/children",
+				dataType: "json",
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}	
+			}).success(function(data) {
+				console.debug(data);
+				$scope.concept.children = data.searchResult;
+
+			}).error(function(error) {
+				$scope.error = $scope.error + "Could not retrieve Concept children. ";    
+			});
+		}).error(function(error) {
+			console.debug("Could not retrieve concept");
+			$scope.error = $scope.error + "Could not retrieve Concept. ";    
+		});
 	});
 
 	// function to return trusted html code (for tooltip content)
@@ -300,79 +721,38 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			}	
 		}).success(function(data) {
 			$scope.records = data.mapRecord;
-			records = data.mapRecord;
 			$scope.filterRecords();
 		}).error(function(error) {
 			$scope.error = $scope.error + "Could not retrieve records. ";    
 		}).then(function() {
 
-			// set terminology based on first map record's map project
-			var terminology = "null";
-			var version = "null";
-
-			for (var i = 0; i < projects.length; i++) {
-				if (projects[i].id == records[0].mapProjectId) {
-					$scope.project = projects[i];
-					terminology = projects[i].sourceTerminology;
-					version = projects[i].sourceTerminologyVersion;
-					break;
-				}
-			}	  
-
 			// check relation style flags
-			if ($scope.project.mapRelationStyle === "MAP_CATEGORY_STYLE") {
+			if ($scope.focusProject.mapRelationStyle === "MAP_CATEGORY_STYLE") {
 				applyMapCategoryStyle();
 			}
 
-			if ($scope.project.mapRelationStyle === "RELATIONSHIP_STYLE") {
+			if ($scope.focusProject.mapRelationStyle === "RELATIONSHIP_STYLE") {
 				applyRelationshipStyle();
 			}
-
-
-
-			// find concept based on source terminology
-			$http({
-				url: root_content + "concept/" 
-				+ terminology + "/" 
-				+ version 
-				+ "/id/" 
-				+ $routeParams.conceptId,
-				dataType: "json",
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json"
-				}	
-			}).success(function(data) {
-				$scope.concept = data;
-				$scope.findUnmappedDescendants();
-
-				// find inverse relationships based on source terminology
-				$http({
-					url: root_content + "concept/" 
-					+ terminology + "/" 
-					+ version 
-					+ "/id/" 
-					+ $routeParams.conceptId
-					+ "/children",
-					dataType: "json",
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json"
-					}	
-				}).success(function(data) {
-					console.debug(data);
-					$scope.concept.children = data.searchResult;
-    		    		 
-				}).error(function(error) {
-					$scope.error = $scope.error + "Could not retrieve Concept children. ";    
-				});
-			}).error(function(error) {
-				console.debug("Could not retrieve concept");
-				$scope.error = $scope.error + "Could not retrieve Concept. ";    
-			});
-
-
 		});
+	};
+
+	$scope.isEditable = function(record) {
+
+		console.debug('isEditable');
+		console.debug($scope.currentRole);
+		console.debug($scope.currentUser);
+		console.debug(record.owner);
+		if (($scope.currentRole === 'Specialist' ||
+				$scope.currentRole === 'Lead' ||
+				$scope.currentRole === 'Admin') &&
+				(record.workflowStatus === 'PUBLISHED' || record.workflowStatus === 'READY_FOR_PUBLICATION')) {
+
+			return true;
+
+		} else if ($scope.currentUser.userName === record.owner.userName) {
+			return true;
+		} else return false;
 	};
 
 	$scope.filterRecords = function() {
@@ -385,6 +765,9 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				$scope.recordsNotInProject.push($scope.records[i]);
 			}
 		}
+
+		// if no records for this project found, set flag
+		if ($scope.recordsInProject.length == 0) $scope.recordsInProjectNotFound = true;
 	};
 
 	$scope.getProject = function(record) {
@@ -417,29 +800,22 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 	$scope.findUnmappedDescendants = function() {
 
-		$scope.concept.unmappedDescendants = [];
 
-		if ($scope.records.length > 0) {
-			if ($scope.records[0].countDescendantConcepts < 11) {
-
-				$http({
-					url: root_mapping + "concept/" 
-					+ $scope.concept.terminology + "/"
-					+ $scope.concept.terminologyVersion + "/"
-					+ "id/" + $scope.concept.terminologyId + "/"
-					+ "threshold/10",
-					dataType: "json",
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json"
-					}
-				}).success(function(data) {
-					if (data.count > 0) $scope.unmappedDescendantsPresent = true;
-					$scope.concept.unmappedDescendants = data.searchResult;
-				});
+		$http({
+			url: root_mapping + "concept/" 
+			+ $scope.concept.terminology + "/"
+			+ $scope.concept.terminologyVersion + "/"
+			+ "id/" + $scope.concept.terminologyId + "/"
+			+ "threshold/10",
+			dataType: "json",
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json"
 			}
-		}
-
+		}).success(function(data) {
+			if (data.count > 0) $scope.unmappedDescendantsPresent = true;
+			$scope.concept.unmappedDescendants = data.searchResult;
+		});
 	};
 
 	// given a record, retrieves associated project's ruleBased flag
@@ -535,7 +911,9 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 							"mapEntry": [],
 							"mapNote": [],
 							"mapPrinciple": [],
-							"owner" : localStorageService.get('currentUser')
+							"owner" : $scope.currentUser,
+							"lastModifiedBy" : $scope.currentUser,
+							"workflowStatus" : 'NEW'
 					};
 
 					// add the map record
@@ -570,11 +948,6 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 		['$scope', '$http', '$routeParams', '$sce', '$modal', 'localStorageService',
 
 		 function ($scope, $http, $routeParams, $sce, $modal, localStorageService) {
-
-			/*$scope.items = new Array(2);
-		$scope.items[0] = ["FIRST", "SECOND", "THIRD", "FOURTH"];
-		$scope.items[1] = ["FIFTH ENTRY", "SIXTH ENTRY", "SEVENTH ENTRY", "EIGHTH ENTRY"];
-			 */
 
 			$scope.sortableOptions = {
 					placeholder: "entry",
@@ -668,7 +1041,6 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 					// otherwise, initialize group arrays
 				} else {
 
-					// TODO Clunky array assignment, consider revisiting
 					// initiailize entry arrays for distribution by group
 					$scope.entries = new Array(10);
 					for (var i=0; i < $scope.entries.length; i++) $scope.entries[i] = new Array();
@@ -1339,7 +1711,6 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
 			$scope.retrieveTargetConcepts = function(query) {
 
 				// execute query for concepts
-				// TODO Change query format to match records
 				$http({
 					url: root_content + "concept/query/" + query,
 					dataType: "json",
@@ -1413,27 +1784,10 @@ mapProjectAppControllers.controller('MapRecordDetailCtrl',
  * - constructPfsParameterObj	creates a PfsParameter object from current paging/filtering/sorting parameters, consumed by RESTful service
  */
 
-mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', '$routeParams', '$sce', '$rootScope', '$location',
-                                                             function ($scope, $http, $routeParams, $sce, $rootScope, $location) {
+mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', '$routeParams', '$sce', '$rootScope', '$location', 'localStorageService',
+                                                             function ($scope, $http, $routeParams, $sce, $rootScope, $location, localStorageService) {
 
-	// header information (not used currently)
-	$scope.headers = [
-	                  {value: 'conceptId', title: 'Concept'},
-	                  {value: 'conceptName', title: 'Concept Name'},
-	                  {value: 'mapGroup', title: 'Group Id'},
-	                  {value: 'mapPriority', title: 'Map Priority'},
-	                  {value: 'rule', title: 'Rule'},
-	                  {value: 'targetId', title: 'Target'},
-	                  {value: 'targetName', title: 'Target Name'},
-	                  {value: 'actions', title: 'Actions'}
-	                  ];
 
-	// header sorting criteria initialization (not used currently)
-	$scope.filterCriteria = {
-			pageNumber: 1,
-			sortDir: 'asc',
-			sortedBy: 'conceptId'
-	};
 
 	// the project id, extracted from route params
 	$scope.projectId = $routeParams.projectId;
@@ -1457,48 +1811,30 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	// watch for changes to focus project
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("ProjectRecordCtrl:  Detected change in focus project");      
-		$location.path("record/projectId/" + parameters.focusProject.id);
+		$scope.focusProject = parameters.focusProject;
 	});	
-	  
-  	  // broadcast page to help mechanism
-  	  $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'records'});
-	  
- 
-  
-	// retrieve project information
-	$http({
-		url: root_mapping + "project/id/" + $scope.projectId,
-		dataType: "json",
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json"
-		}	
-	}).success(function(data) {
-		$scope.project = data;
-		$scope.errorProject = "Project retrieved";
-	}).error(function(error) {
-		$scope.errorProject = "Could not retrieve project"; 
-	}).then(function(data) {
+
+	// broadcast page to help mechanism
+	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'records'});
+
+	// retrieve the current global variables
+	$scope.focusProject = localStorageService.get('focusProject');
+	$scope.currentUser = localStorageService.get('currentUser');
+	$scope.currentRole = localStorageService.get('currentRole');
+
+	$scope.$watch('focusProject', function() {
+		$scope.projectId = $scope.focusProject.id;
+		$scope.getRecordsForProject();
+	});
 
 
-		// retrieve any concept associated with this project
-		$http({
-			url: root_content + "concept/id/" + $scope.project.refSetId,
-			dataType: "json",
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json"
-			}
-		}).success(function(data) {
-			$scope.concept = data;
-		}).error(function(error) {
-			$scope.errorConcept= "Error retrieving concept";
-		});
-	}).then(function(data) {
+	$scope.getRecordsForProject = function() {
+
+		$scope.project = $scope.focusProject;
 
 		// load first page
 		$scope.retrieveRecords(1);
-	});
+	};
 
 
 	// Constructs trusted html code from raw/untrusted html code
@@ -1515,6 +1851,8 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	// function to retrieve records for a specified page
 	$scope.retrieveRecords = function(page) {
 
+		console.debug('Retrieving records');
+		
 		// retrieve pagination information for the upcoming query
 		setPagination($scope.recordsPerPage);
 
@@ -1583,7 +1921,7 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 
 		return {"startIndex": (page-1)*$scope.recordsPerPage,
 			"maxResults": $scope.recordsPerPage, 
-			"sortField": null, // TODO: Replace this when sorting functional
+			"sortField": null, 
 			"filterString": $scope.query == null ? null : $scope.query};  // assigning simply to $scope.query when null produces undefined
 
 	}
@@ -1623,7 +1961,6 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		});
 	};
 
-	// TODO This is inefficient, consider implementing a batch request
 	function getUnmappedDescendants(index) {
 
 		// before processing this record, make call to start next async request
@@ -1695,115 +2032,52 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 }]);
 
 mapProjectAppControllers.controller('MapProjectDetailCtrl', 
-		['$scope', '$http', '$routeParams', '$sce', '$rootScope', 'localStorageService',
-		 function ($scope, $http, $routeParams, $sce, $rootScope, localStorageService) {
+		['$scope', '$http', '$sce', '$rootScope', '$location', 'localStorageService',
+		 function ($scope, $http, $sce, $rootScope, $location, localStorageService) {
 
-		  	  // broadcast page to help mechanism
-		  	  $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'project'});
-			  
-		
-			// retrieve project information
-			$http({
-				url: root_mapping + "project/id/" + $routeParams.projectId,
-				dataType: "json",
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json"
-				}	
-			}).success(function(data) {
-				$scope.project = data;
-				$scope.errorProject = "Project retrieved";
-			}).error(function(error) {
-				$scope.errorProject = "Could not retrieve project"; 
+			// broadcast page to help mechanism
+			$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'project'});
 
-			}).then(function(data) {
+			$scope.focusProject = localStorageService.get('focusProject');
+			
+			// watch for focus project change
+			$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+				console.debug("MapProjectDetailCtrl: Detected change in focus project");
+				$scope.focusProject = parameters.focusProject;  
+			});
+			
+			$scope.$watch('focusProject', function() {
+
+				console.debug('Formatting project details');
+
 
 				// apply map type text styling
-				if ($scope.project.mapType === "SIMPLE_MAP") $scope.mapTypeText = "Simple Mapping";
-				else if ($scope.project.mapType === "COMPLEX_MAP") $scope.mapTypeText = "Complex Mapping";
-				else if($scope.project.mapType === "EXTENDED_MAP") $scope.mapTypeText = "Extended Mapping";
+				if ($scope.focusProject.mapType === "SIMPLE_MAP") $scope.mapTypeText = "Simple Mapping";
+				else if ($scope.focusProject.mapType === "COMPLEX_MAP") $scope.mapTypeText = "Complex Mapping";
+				else if($scope.focusProject.mapType === "EXTENDED_MAP") $scope.mapTypeText = "Extended Mapping";
 				else $scope.mapTypeText = "No mapping type specified";
 
 				// apply relation style text styling
-				console.debug($scope.project.mapRelationStyle);
-				console.debug($scope.project.mapRelationStyle === "MAP_CATEGORY_STYLE");
-				if ($scope.project.mapRelationStyle === "MAP_CATEGORY_STYLE") $scope.mapRelationStyleText = "Map Category Style";
-				else if ($scope.project.mapRelationStyle === "RELATIONSHIP_STYLE") $scope.mapRelationStyleText = "Relationship Style";
+				console.debug($scope.focusProject.mapRelationStyle);
+				console.debug($scope.focusProject.mapRelationStyle === "MAP_CATEGORY_STYLE");
+				if ($scope.focusProject.mapRelationStyle === "MAP_CATEGORY_STYLE") $scope.mapRelationStyleText = "Map Category Style";
+				else if ($scope.focusProject.mapRelationStyle === "RELATIONSHIP_STYLE") $scope.mapRelationStyleText = "Relationship Style";
 				else $scope.mapRelationStyleText = "No relation style specified";
 
 
 				// determine if this project has a principles document
-				// TODO: THIS WILL BE CODED INTO PROJECT LATER
-				if ($scope.project.destinationTerminology == "ICD10") {
-					$scope.project.mapPrincipleDocumentPath = "doc/";
-					$scope.project.mapPrincipleDocument = "ICD10_MappingPersonnelHandbook.docx";
-					$scope.project.mapPrincipleDocumentName = "Mapping Personnel Handbook";
+				if ($scope.focusProject.destinationTerminology == "ICD10") {
+					$scope.focusProject.mapPrincipleDocumentPath = "doc/";
+					$scope.focusProject.mapPrincipleDocument = "ICD10_MappingPersonnelHandbook.docx";
+					$scope.focusProject.mapPrincipleDocumentName = "Mapping Personnel Handbook";
 				} else {
-					$scope.project.mapagedpPrincipleDocument = null;
+					$scope.focusProject.mapPrincipleDocument = null;
 				}
 
-
-				var scopeMap = {};
-				var len = $scope.project.scopeConcepts.length;
-				var terminology = $scope.project.sourceTerminology;
-				var terminologyVersion = $scope.project.sourceTerminologyVersion;
-
-				// find concept based on source terminology
-				for (var i = 0; i < len; i++) {
-					$http({
-						url: root_content + "concept/" 
-						+ terminology +  "/" 
-						+ terminologyVersion 
-						+ "/id/" 
-						+ $scope.project.scopeConcepts[i],
-						dataType: "json",
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json"
-						}	
-					}).success(function(data) {
-						var obj = {
-								key: data.terminologyId,
-								concept: data
-						};  
-						scopeMap[obj.key] = obj.concept.defaultPreferredName;
-						$scope.scopeMap = scopeMap;
-					}).error(function(error) {
-						console.debug("Could not retrieve concept");
-						$scope.error = $scope.error + "Could not retrieve Concept. ";    
-					});
-
-				}
-
-				var scopeExcludedMap = {};
-				var len = $scope.project.scopeExcludedConcepts.length;
-
-				// find concept based on source terminology
-				for (var i = 0; i < len; i++) {
-					$http({
-						url: root_content + "concept/" 
-						+ terminology +  "/" 
-						+ terminologyVersion 
-						+ "/id/" 
-						+ $scope.project.scopeExcludedConcepts[i],
-						dataType: "json",
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json"
-						}	
-					}).success(function(data) {
-						var obj = {
-								key: data.terminologyId,
-								concept: data
-						};  
-						scopeExcludedMap[obj.key] = obj.concept.defaultPreferredName;
-						$scope.scopeExcludedMap = scopeExcludedMap;
-					}).error(function(error) {
-						console.debug("Could not retrieve concept");
-						$scope.error = $scope.error + "Could not retrieve Concept. ";    
-					});
-
-				}
+				// set the scope maps
+				$scope.scopeMap = {};
+				$scope.scopeExcludedMap = {};
+				
 				// set pagination variables
 				$scope.pageSize = 5;
 				$scope.maxSize = 5;
@@ -1816,29 +2090,20 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 			});
 
+			$scope.goMapRecords = function () {
+				console.debug($scope.role);
 
-		
+				var path = "/project/records";
+					// redirect page
+					$location.path(path);
+			};
+
+
 			// function to return trusted html code (for tooltip content)
 			$scope.to_trusted = function(html_code) {
 				return $sce.trustAsHtml(html_code);
 			};
 
-
-			$scope.computeWorkflow = function() {
-				console.debug("Computing workflow");
-				// retrieve project information
-				$http({
-					url: root_workflow + "project/id/" + $routeParams.projectId,
-					dataType: "json",
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json"
-					}	
-				}).success(function(data) {
-				});
-
-
-			};
 
 
 			///////////////////////////////////////////////////////////////
@@ -1853,7 +2118,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 			$scope.getPagedAdvices = function (page) {
 
-				$scope.pagedAdvice = $scope.sortByKey($scope.project.mapAdvice, 'id')
+				$scope.pagedAdvice = $scope.sortByKey($scope.focusProject.mapAdvice, 'id')
 				.filter(containsAdviceFilter);
 				$scope.pagedAdviceCount = $scope.pagedAdvice.length;
 				$scope.pagedAdvice = $scope.pagedAdvice
@@ -1863,7 +2128,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 			$scope.getPagedRelations = function (page) {
 
-				$scope.pagedRelation = $scope.sortByKey($scope.project.mapRelation, 'id')
+				$scope.pagedRelation = $scope.sortByKey($scope.focusProject.mapRelation, 'id')
 				.filter(containsRelationFilter);
 				$scope.pagedRelationCount = $scope.pagedRelation.length;
 				$scope.pagedRelation = $scope.pagedRelation
@@ -1873,7 +2138,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 			$scope.getPagedPrinciples = function (page) {
 
-				$scope.pagedPrinciple = $scope.sortByKey($scope.project.mapPrinciple, 'id')
+				$scope.pagedPrinciple = $scope.sortByKey($scope.focusProject.mapPrinciple, 'id')
 				.filter(containsPrincipleFilter);
 				$scope.pagedPrincipleCount = $scope.pagedPrinciple.length;
 				$scope.pagedPrinciple = $scope.pagedPrinciple
@@ -1885,29 +2150,85 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 			$scope.getPagedScopeConcepts = function (page) {
 				console.debug("Called paged scope concept for page " + page); 
-				//$scope.pagedScopeConcept = $scope.sortByKey($scope.project.scopeConcepts, 'id')
-				//.filter(containsScopeConceptFilter);
-				//if ($scope.scopeMap == null)
-				$scope.pagedScopeConcept = $scope.project.scopeConcepts;
-				//else	 
-				//    $scope.pagedScopeConcept = $scope.scopeMap.filter(containsScopeConceptFilter);
-				//$scope.pagedScopeConcept = $scope.project.scopeConcepts.sort(function(a,b){return $scope.scopeMap[a] - $scope.scopeMap[b];});
+				
+				$scope.pagedScopeConcept = $scope.focusProject.scopeConcepts;
 				$scope.pagedScopeConceptCount = $scope.pagedScopeConcept.length;
+				
 				$scope.pagedScopeConcept = $scope.pagedScopeConcept
 				.slice((page-1)*$scope.pageSize,
 						page*$scope.pageSize);
+				
+				
+				// find concept based on source terminology
+				for (var i = 0; i < $scope.pagedScopeConcept.length; i++) {
+					$rootScope.glassPane++;
+					$http({
+						url: root_content + "concept/" 
+						+ $scope.focusProject.sourceTerminology +  "/" 
+						+ $scope.focusProject.sourceTerminologyVersion 
+						+ "/id/" 
+						+ $scope.focusProject.scopeConcepts[i],
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}	
+					}).success(function(data) {
+						$rootScope.glassPane--;
+						var obj = {
+								key: data.terminologyId,
+								concept: data
+						};  
+						$scope.scopeMap[obj.key] = obj.concept.defaultPreferredName;
+					}).error(function(error) {
+						$rootScope.glassPane--;
+						console.debug("Could not retrieve concept");
+						$scope.error = $scope.error + "Could not retrieve Concept. ";    
+					});
 
+				}
+				
 				console.debug($scope.pagedScopeConcept);
 			};
 
 			$scope.getPagedScopeExcludedConcepts = function (page) {
 				console.debug("Called paged scope excluded concept for page " + page);
-				$scope.pagedScopeExcludedConcept = $scope.sortByKey($scope.project.scopeExcludedConcepts, 'id')
+				$scope.pagedScopeExcludedConcept = $scope.sortByKey($scope.focusProject.scopeExcludedConcepts, 'id')
 				.filter(containsScopeExcludedConceptFilter);
 				$scope.pagedScopeExcludedConceptCount = $scope.pagedScopeExcludedConcept.length;
 				$scope.pagedScopeExcludedConcept = $scope.pagedScopeExcludedConcept
 				.slice((page-1)*$scope.pageSize,
 						page*$scope.pageSize);
+				
+				
+				// fill the scope map for these variables
+				for (var i = 0; i < $scope.pagedScopeExcludedConcept.length; i++) {
+					$rootScope.glassPane++;
+					$http({
+						url: root_content + "concept/" 
+						+ $scope.focusProject.sourceTerminology +  "/" 
+						+ $scope.focusProject.sourceTerminologyVersion 
+						+ "/id/" 
+						+ $scope.focusProject.scopeExcludedConcepts[i],
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}	
+					}).success(function(data) {
+						$rootScope.glassPane--;
+						var obj = {
+								key: data.terminologyId,
+								concept: data
+						};  
+						$scope.scopeExcludedMap[obj.key] = obj.concept.defaultPreferredName;
+					}).error(function(error) {
+						$rootScope.glassPane--;
+						console.debug("Could not retrieve concept");
+						$scope.error = $scope.error + "Could not retrieve Concept. ";    
+					});
+				}
+				
 
 				console.debug($scope.pagedScopeExcludedConcept);
 			};
@@ -2031,68 +2352,111 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 
 
-//Directives:  TODO Separate into different file
+//Directives: 
 /////////////////////////////////////////////////////
 
 
-mapProjectAppControllers.directive('otfHeaderDirective', ['$rootScope', 'localStorageService', function($rootScope, localStorageService) {
+mapProjectAppControllers.directive(
+		'otfHeaderDirective', 
+		['$rootScope', '$http', '$location', 'localStorageService', 
+		 function($rootScope, $http, $location, localStorageService) {
 
-	return {
-		templateUrl: './partials/header.html',
-		restrict: 'E', 
-		transclude: true,    // allows us �swap� our content for the calling html
-		replace: true,        // tells the calling html to replace itself with what�s returned here
-		link: function(scope, element, attrs) { // to get scope, the element, and its attributes
+			return {
+				templateUrl: './partials/header.html',
+				restrict: 'E', 
+				transclude: true,    // allows us swap our content for the calling html
+				replace: true,        // tells the calling html to replace itself with what�s returned here
+				link: function($scope, element, attrs) { // to get $scope, the element, and its attributes
 
-			/*
-			 * NOTE: None of these functions use passed parameters at this time.
-			 * Instead they explicitly retrieve the locally stored value from the localStorageService
-			 * 
-			 * This is a possible optimization location if local storage becomes unwieldy
-			 */
+					/*
+					 * NOTE: None of these functions use passed parameters at this time.
+					 * Instead they explicitly retrieve the locally stored value from the localStorageService
+					 * 
+					 * This is a possible optimization location if local storage becomes unwieldy
+					 */
 
+					// On initialization, reset all values to null -- used to ensure watch functions work correctly
+					$scope.mapProjects 	= null;
+					$scope.currentUser 	= null;
+					$scope.currentRole 	= null;
+					$scope.preferences 	= null;
+					$scope.focusProject = null;
 
-			// watch for user change
-			scope.$on('localStorageModule.notification.setUser', function(event, parameters) { 	
-				console.debug("HEADER: Detected change in current user");
-				scope.currentUser = parameters.newvalue;
-			});	
+					// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
+					$scope.mapProjects  = localStorageService.get('mapProjects');
+					$scope.currentUser  = localStorageService.get('currentUser');
+					$scope.currentRole  = localStorageService.get('currentRole');
+					$scope.preferences  = localStorageService.get('preferences');
+					$scope.focusProject = localStorageService.get('focusProject');
 
-			// watch for role change
-			scope.$on('localStorageModule.notification.setRole', function(event, parameters) { 	
-				console.debug("HEADER: Detected change in current role");
-				scope.currentRole = parameters.newvalue;
-			});	
+					// Notifications from LoginPage (i.e. initialization of webapp on first visit)
+					// watch for user change
+					$scope.$on('localStorageModule.notification.setUser', function(event, parameters) { 	
+						console.debug("HEADER: Detected change in current user: " + parameters.currentUser);
+						$scope.currentUser = parameters.currentUser;
+					});
 
-			// watch for change in available projects
-			scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {	
-				console.debug("HEADER: Detected change in map projects");
-				scope.mapProjects = localStorageService.get('mapProjects');		
-			});
+					// watch for user preferences change
+					$scope.$on('localStorageModule.notification.setPreferences', function(event, parameters) { 	
+						console.debug("HEADER: Detected change in preferences");
+						$scope.preferences = parameters.preferences;
+					});
 
-        	scope.$on('localStorageModule.notification.page', function(event, parameters) { 	
-        		console.debug("HEADER:  Detected change in page");
-        		scope.page = parameters.newvalue;
+					// watch for role change
+					$scope.$on('localStorageModule.notification.setRole', function(event, parameters) { 	
+						console.debug("HEADER: Detected change in current role: " + parameters.currentRole);
+						$scope.currentRole = parameters.currentRole;
+					});	
 
-        	});	
-        	
-			// retrieve local variables on header load or refresh
-			scope.currentUser = 	localStorageService.get('currentUser'); 
-			scope.currentRole = 	localStorageService.get('currentRole');         
-			scope.mapProjects = 	localStorageService.get('mapProjects');
-			scope.focusProject = 	localStorageService.get('focusProject');
+					// watch for focus project change (called when user clicks Login)
+					$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
+						console.debug("HEADER: Detected change in focus project");
+						$scope.focusProject = parameters.focusProject;  
+					});
 
-			// function to change project from the header
-			scope.changeFocusProject = function() {
-				console.debug(scope.focusProject);
-				console.debug("changing project to " + scope.focusProject.name);
+					// watch for change in available projects (called by LoginCtrl on load of web application)
+					$scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {	
+						console.debug("HEADER: Detected change in map projects");
+						$scope.mapProjects = parameters.mapProjects;
+					});
 
-				localStorageService.add('focusProject', scope.focusProject);
-				$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: scope.focusProject});  
+					// watch for help notification events
+					$scope.$on('localStorageModule.notification.page', function(event, parameters) { 	
+						console.debug("HEADER:  Detected change in page");
+						$scope.page = parameters.newvalue;
+
+					});	
+
+					// function to change project from the header
+					$scope.changeFocusProject = function(mapProject) {
+						$scope.focusProject = mapProject;
+						console.debug("changing project to " + $scope.focusProject.name);
+
+						// update and broadcast the new focus project
+						localStorageService.add('focusProject', $scope.focusProject);
+						$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+						// update the user preferences
+						$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+						localStorageService.add('preferences', $scope.preferences);
+						$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+
+					};
+
+					$scope.goToHelp = function() {
+						var path;
+						if ($scope.page != 'mainDashboard') {
+							path = "help/" + $scope.page + "Help.html";
+						} else {
+							path = "help/" + $scope.currentRole + "DashboardHelp.html";
+						}
+						console.debug("go to help page " + path);
+						// redirect page
+						$location.path(path);
+					};
+				}
 			};
-		}
-	};
-}]);
+		}]);
 
 mapProjectAppControllers.directive('otfFooterDirective', ['$rootScope', 'localStorageService', function($rootScope, localStorageService) {
 

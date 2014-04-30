@@ -9,7 +9,6 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class ICD10ProjectSpecificAlgorithmHandler.
  */
@@ -19,7 +18,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
 	/**
 	 * For ICD10, a target code is valid if:
 	 * - Concept exists
-	 * - Concept has at least 3 digits in terminology id
+	 * - Concept has at least 3 characters
+	 * - The second character is a number (e.g. XVII is invalid, but B10 is)
 	 * - Concept does not contain a dash (-) character
 	 * @param mapRecord
 	 * @return the validation result
@@ -33,7 +33,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
 		
 		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 			// first, check terminology id based on above rules
-			if (!mapEntry.getTargetId().matches("(.*?[0-9]){3,}") || mapEntry.getTargetId().contains("-")) {
+			if (!mapEntry.getTargetId().matches(".[0-9].*") || mapEntry.getTargetId().contains("-")) {
 				validationResult.addError(
 							 "Invalid target code " + mapEntry.getTargetId() + "!  For ICD10, valid target codes must contain 3 digits and must not contain a dash." 
 						+    " Entry:" +    (mapProject.isGroupStructure() ? " group " + Integer.toString(mapEntry.getMapGroup()) + "," : "")
@@ -106,6 +106,29 @@ public class ICD10ProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
 		return null;
 		
 	}
+	
+	@Override
+	public boolean isTargetCodeValid(String terminologyId) throws Exception {
+		
+		// check that code has at least three characters, that the second character is a number, and does not contain a dash
+		if (!terminologyId.matches(".[0-9].*") || terminologyId.contains("-")) {   //"(.*?[0-9]){3,}") || terminologyId.contains("-")) {
+			return false;
+		}
+		
+		// second, verify concept exists in database
+		ContentService contentService = new ContentServiceJpa();
+		Concept concept = contentService.getConcept(terminologyId, mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+
+		if (concept == null) {
+			contentService.close();
+			return false;
+		}
+		
+		// otherwise, return true
+		contentService.close();
+		return true;
+	}
+	
 
 
 }

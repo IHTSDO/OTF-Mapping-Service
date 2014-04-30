@@ -106,6 +106,8 @@ angular.module('adf')
     	
         var name = $scope.name;
         var model = $scope.adfModel;
+        console.debug('DASHBOARD.JS MODEL 1:');
+        console.debug(model);
         if ( ! model || ! model.rows ){
           var structureName = $scope.structure;
           var structure = dashboard.structures[structureName];
@@ -120,6 +122,9 @@ angular.module('adf')
             $log.error( 'could not find structure ' + structureName);
           }
         } 
+        
+        console.debug('DASHBOARD.JS MODEL 2:');
+        console.debug(model);
         
         if (model) {
           if (!model.title){
@@ -198,6 +203,8 @@ angular.module('adf')
 	          	  } else if (widget == 'assignedList' && $scope.currentRole.value > 1) {
 	          		  return true;
 	          	  } else if (widget == 'editedList' && $scope.currentRole.value > 1) {
+	          		  return true;
+	          	  } else if (widget == 'compareRecords' && $scope.currentRole.value > 1) {
 	          		  return true;
 	          	  }
 	          	  else if (widget = "availableWork") return true;

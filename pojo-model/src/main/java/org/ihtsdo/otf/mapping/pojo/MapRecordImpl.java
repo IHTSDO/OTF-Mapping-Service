@@ -541,6 +541,11 @@ public class MapRecordImpl implements MapRecord {
 		return workflowStatus;
 	}
 
+	@Override
+	public void addOrigins(Set<Long> origins) {
+		origins.addAll(origins);
+	}
+
 
 
 	

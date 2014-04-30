@@ -2,10 +2,12 @@ package org.ihtsdo.otf.mapping.workflow;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface WorkflowTrackingRecord.
  *
@@ -28,18 +30,18 @@ public interface WorkflowTrackingRecord {
 	public void setId(Long id);
 	
 	/**
-	 * Gets the workflow.
+	 * Gets the map project.
 	 *
-	 * @return the workflow
+	 * @return the map project.
 	 */
-	public Workflow getWorkflow();
-
+	public MapProject getMapProject();
+	
 	/**
-	 * Sets the workflow.
+	 * Sets the map project.
 	 *
-	 * @param workflow the new workflow
+	 * @param mapProject the new map project
 	 */
-	public void setWorkflow(Workflow workflow);
+	public void setMapProject(MapProject mapProject);
 	
 	/**
 	 * Sets the terminology id.
@@ -98,18 +100,11 @@ public interface WorkflowTrackingRecord {
 	public String getDefaultPreferredName();
 	
 	/**
-	 * Sets the checks for discrepancy.
+	 * The most advanced workflow status in the records set.
 	 *
-	 * @param hasDiscrepancy the checks for discrepancy
+	 * @return the computed workflow status
 	 */
-	public void setHasDiscrepancy(boolean hasDiscrepancy);
-	
-	/**
-	 * Indicates whether or not checks for discrepancy is the case.
-	 *
-	 * @return <code>true</code> if so, <code>false</code> otherwise
-	 */
-	public boolean isHasDiscrepancy();
+	public WorkflowStatus getWorkflowStatus();
 	
 	/**
 	 * Sets the sort key.
@@ -131,27 +126,6 @@ public interface WorkflowTrackingRecord {
 	 * @return the assigned specialists
 	 */
 	public Set<MapUser> getAssignedUsers();
-	
-	/**
-	 * Sets the assigned specialists.
-	 *
-	 * @param assignedUsers the assigned specialists
-	 */
-	public void setAssignedUsers(Set<MapUser> assignedUsers);
-	
-	/**
-	 * Adds the assigned specialist.
-	 *
-	 * @param assignedUser the assigned specialist
-	 */
-	public void addAssignedUser(MapUser assignedUser);
-	
-	/**
-	 * Removes the assigned specialist.
-	 *
-	 * @param assignedUser the assigned specialist
-	 */
-	public void removeAssignedUser(MapUser assignedUser);
 	
 	/**
 	 * Returns the map records.
@@ -180,6 +154,29 @@ public interface WorkflowTrackingRecord {
 	 * @param mapRecord the map record
 	 */
 	public void removeMapRecord(MapRecord mapRecord);
+
+	/**
+	 * Gets the workflow path.
+	 *
+	 * @return the workflow path
+	 */
+	public WorkflowPath getWorkflowPath();
+
+	/**
+	 * Sets the workflow path.
+	 *
+	 * @param workflowPath the new workflow path
+	 */
+	public void setWorkflowPath(WorkflowPath workflowPath);
+
+	
+	/**
+	 * Gets the lowest workflow status of associated map records
+	 *
+	 * @return the lowest workflow status
+	 */
+	WorkflowStatus getLowestWorkflowStatus();
+
 
 	
 }

@@ -125,9 +125,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
   /** The dpn acceptability id. */
   private Long dpnAcceptabilityId;
 
-  /** The manager. */
-  private EntityManager manager;
-
   /** hash sets for retrieving concepts. */
   private Map<String, Concept> conceptCache = new HashMap<>(); // used to
 
@@ -140,15 +137,9 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
   /** the number of objects to create before committing. */
   int commitCt = 200;
 
-  /** The memory max. */
-  long memoryMax = 0L;
-
-  /** The memory free. */
-  long memoryFree = 0L;
-
-  /** The memory total. */
-  long memoryTotal = 0L;
-
+  /** The factory. */
+  EntityManagerFactory factory = null;
+  
   /**
    * Instantiates a {@link TerminologyRf2SnapshotLoaderMojo} from the specified
    * parameters.
@@ -229,14 +220,14 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
               + Integer.toString(commitCt));
 
       // create Entitymanager
-      EntityManagerFactory factory =
+      factory =
           Persistence.createEntityManagerFactory("MappingServiceDS");
-      manager = factory.createEntityManager();
 
       Runtime runtime = Runtime.getRuntime();
-      getLog().info(String.valueOf(runtime.totalMemory()) + " total memory");
-      getLog().info(String.valueOf(runtime.freeMemory()) + " free memory");
-      getLog().info(String.valueOf(runtime.maxMemory()) + " max memory");
+      getLog().info("MEMORY USAGE:");
+      getLog().info(" Total: " + runtime.totalMemory());
+      getLog().info(" Free:  " + runtime.freeMemory());
+      getLog().info(" Max:   " + runtime.maxMemory());
 
       SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); // format for
       // logging
@@ -357,7 +348,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
                   + ft.format(new Date()) + ")");
         }
 
-        manager.clear();
+        conceptCache.clear();
+        closeAllSortedFiles();
         
         // creating tree positions
         // first get isaRelType from metadata
@@ -407,9 +399,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       }
 
       // Clean-up
-      manager.close();
       factory.close();
-      closeAllSortedFiles();
 
     } catch (Throwable e) {
       e.printStackTrace();
@@ -554,7 +544,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    */
   private void sortRf2Files(File coreInputDir, File outputDir) throws Exception {
 
-    // Check expecations and pre-conditions
+    // Check expectations and pre-conditions
     if (!outputDir.exists()
         || getLastModified(outputDir) < getLastModified(coreInputDir)) {
 
@@ -1034,7 +1024,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * @throws Exception the exception
    */
   private Concept getConcept(String terminologyId, String terminology,
-    String terminologyVersion) throws Exception {
+    String terminologyVersion, EntityManager manager) throws Exception {
 
     if (conceptCache.containsKey(terminologyId + terminology
         + terminologyVersion)) {
@@ -1064,7 +1054,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     } catch (NoResultException e) {
       // Log and return null if there are no releases
-      getLog().info(
+      getLog().debug(
           "Concept query for terminologyId = " + terminologyId
               + ", terminology = " + terminology + ", terminologyVersion = "
               + terminologyVersion + " returned no results!");
@@ -1118,7 +1108,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     String line = "";
     objectCt = 0;
 
-    // begin transcation
+    // begin transaction
+    EntityManager manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
     tx.begin();
 
@@ -1146,20 +1137,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         conceptCache.put(new String(fields[0] + concept.getTerminology()
             + concept.getTerminologyVersion()), concept);
 
-        // memory debugging
-        if (objectCt % commitCt == 0) {
-          Runtime runtime = Runtime.getRuntime();
-          if (memoryTotal < runtime.totalMemory()) {
-            memoryTotal = runtime.totalMemory();
-          }
-          if (memoryFree < runtime.freeMemory()) {
-            memoryTotal = runtime.freeMemory();
-          }
-          if (memoryMax < runtime.maxMemory()) {
-            memoryTotal = runtime.maxMemory();
-          }
-        }
-
         // regularly commit at intervals
         if (++objectCt % commitCt == 0) {
 
@@ -1173,14 +1150,16 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     // commit any remaining objects
     tx.commit();
     manager.clear();
+    manager.close();
+    defaultPreferredNames.clear();
 
     // print memory information
+    Runtime runtime = Runtime.getRuntime();
     getLog().info("MEMORY USAGE:");
-    getLog().info(" Total: " + memoryTotal);
-    getLog().info(" Free:  " + memoryFree);
-    getLog().info(" Max:   " + memoryMax);
+    getLog().info(" Total: " + runtime.totalMemory());
+    getLog().info(" Free:  " + runtime.freeMemory());
+    getLog().info(" Max:   " + runtime.maxMemory());
 
-    defaultPreferredNames.clear();
 
   }
 
@@ -1194,7 +1173,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     String line = "";
     objectCt = 0;
 
-    // begin transcation
+    // begin transaction
+    EntityManager manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
     tx.begin();
 
@@ -1218,10 +1198,10 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
         Concept sourceConcept =
             getConcept(fields[4], relationship.getTerminology(),
-                relationship.getTerminologyVersion());
+                relationship.getTerminologyVersion(), manager);
         Concept destinationConcept =
             getConcept(fields[5], relationship.getTerminology(),
-                relationship.getTerminologyVersion());
+                relationship.getTerminologyVersion(), manager);
 
         if (sourceConcept != null && destinationConcept != null) {
           relationship.setSourceConcept(sourceConcept);
@@ -1255,6 +1235,14 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     // commit any remaining objects
     tx.commit();
     manager.clear();
+    manager.close();
+    
+    // print memory information
+    Runtime runtime = Runtime.getRuntime();
+    getLog().info("MEMORY USAGE:");
+    getLog().info(" Total: " + runtime.totalMemory());
+    getLog().info(" Free:  " + runtime.freeMemory());
+    getLog().info(" Max:   " + runtime.maxMemory());
   }
 
   /**
@@ -1271,15 +1259,16 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     int langCt = 0; // counter for language ref set members
     int skipCt = 0; // counter for number of language ref set members skipped
 
+    // begin transaction
+    EntityManager manager = factory.createEntityManager();
+    EntityTransaction tx = manager.getTransaction();
+    tx.begin();
+
     // load and persist first description
-    description = getNextDescription();
+    description = getNextDescription(manager);
 
     // load first language ref set member
     language = getNextLanguage();
-
-    // begin transcation
-    EntityTransaction tx = manager.getTransaction();
-    tx.begin();
 
     // cycle over descriptions
     while (!description.getTerminologyId().equals("-1")) { // getNextDescription
@@ -1341,27 +1330,13 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       manager.persist(description);
 
       // get the next description
-      description = getNextDescription();
+      description = getNextDescription(manager);
 
       // increment description count
       descCt++;
 
       if (descCt % 100000 == 0) {
         getLog().info("-> descriptions: " + Integer.toString(descCt));
-      }
-
-      // memory debugging
-      if (descCt % commitCt == 0) {
-        Runtime runtime = Runtime.getRuntime();
-        if (memoryTotal < runtime.totalMemory()) {
-          memoryTotal = runtime.totalMemory();
-        }
-        if (memoryFree < runtime.freeMemory()) {
-          memoryTotal = runtime.freeMemory();
-        }
-        if (memoryMax < runtime.maxMemory()) {
-          memoryTotal = runtime.maxMemory();
-        }
       }
 
       // regularly commit at intervals
@@ -1376,17 +1351,19 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     // commit any remaining objects
     tx.commit();
     manager.clear();
-
+    manager.close();
+    
     getLog().info("      " + descCt + " descriptions loaded");
     getLog().info("      " + langCt + " language ref sets loaded");
     getLog().info(
         "      " + skipCt + " language ref sets skipped (no description)");
 
     // print memory information
+    Runtime runtime = Runtime.getRuntime();
     getLog().info("MEMORY USAGE:");
-    getLog().info(" Total: " + memoryTotal);
-    getLog().info(" Free:  " + memoryFree);
-    getLog().info(" Max:   " + memoryMax);
+    getLog().info(" Total: " + runtime.totalMemory());
+    getLog().info(" Free:  " + runtime.freeMemory());
+    getLog().info(" Max:   " + runtime.maxMemory());
   }
 
   /**
@@ -1395,8 +1372,12 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * @throws Exception the exception
    */
   private void setDefaultPreferredNames() throws Exception {
+
+    // Begin transaction
+    EntityManager manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
     tx.begin();
+
     Iterator<Concept> conceptIterator = conceptCache.values().iterator();
     objectCt = 0;
     int ct = 0;
@@ -1419,6 +1400,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         getLog().info(Integer.toString(ct));
       }
 
+      
       if (++objectCt % commitCt == 0) {
         tx.commit();
         manager.clear();
@@ -1428,6 +1410,15 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     tx.commit();
     manager.clear();
+    manager.close();
+    
+    // print memory information
+    Runtime runtime = Runtime.getRuntime();
+    getLog().info("MEMORY USAGE:");
+    getLog().info(" Total: " + runtime.totalMemory());
+    getLog().info(" Free:  " + runtime.freeMemory());
+    getLog().info(" Max:   " + runtime.maxMemory());
+    
   }
 
   /**
@@ -1436,7 +1427,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * @return the next description
    * @throws Exception the exception
    */
-  private Description getNextDescription() throws Exception {
+  private Description getNextDescription(EntityManager manager) throws Exception {
 
     String line, fields[];
     Description description = new DescriptionJpa();
@@ -1464,7 +1455,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         // set concept from cache
         Concept concept =
             getConcept(fields[4], description.getTerminology(),
-                description.getTerminologyVersion());
+                description.getTerminologyVersion(), manager);
 
         if (concept != null) {
           description.setConcept(concept);
@@ -1475,7 +1466,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         }
         // otherwise get next line
       } else {
-        description = getNextDescription();
+        description = getNextDescription(manager);
       }
     }
 
@@ -1554,7 +1545,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     String line = "";
     objectCt = 0;
 
-    // begin transcation
+    // begin transaction
+    EntityManager manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
     tx.begin();
 
@@ -1585,13 +1577,13 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         // Retrieve concept -- firstToken is referencedComponentId
         Concept concept =
             getConcept(fields[5], attributeValueRefSetMember.getTerminology(),
-                attributeValueRefSetMember.getTerminologyVersion());
+                attributeValueRefSetMember.getTerminologyVersion(), manager);
 
         if (concept != null) {
 
           attributeValueRefSetMember.setConcept(concept);
           manager.persist(attributeValueRefSetMember);
-
+          
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
             tx.commit();
@@ -1599,7 +1591,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
             tx.begin();
           }
         } else {
-          getLog().info(
+          getLog().debug(
               "attributeValueRefSetMember "
                   + attributeValueRefSetMember.getTerminologyId()
                   + " references non-existent concept " + fields[5]);
@@ -1610,6 +1602,14 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     // commit any remaining objects
     tx.commit();
     manager.clear();
+    manager.close();
+    
+    // print memory information
+    Runtime runtime = Runtime.getRuntime();
+    getLog().info("MEMORY USAGE:");
+    getLog().info(" Total: " + runtime.totalMemory());
+    getLog().info(" Free:  " + runtime.freeMemory());
+    getLog().info(" Max:   " + runtime.maxMemory());
   }
 
   /**
@@ -1623,7 +1623,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     String line = "";
     objectCt = 0;
 
-    // begin transcation
+    // begin transaction
+    EntityManager manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
     tx.begin();
 
@@ -1652,12 +1653,12 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         // Retrieve Concept -- firstToken is referencedComonentId
         Concept concept =
             getConcept(fields[5], simpleRefSetMember.getTerminology(),
-                simpleRefSetMember.getTerminologyVersion());
+                simpleRefSetMember.getTerminologyVersion(), manager);
 
         if (concept != null) {
           simpleRefSetMember.setConcept(concept);
           manager.persist(simpleRefSetMember);
-
+          
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
             tx.commit();
@@ -1675,7 +1676,15 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     // commit any remaining objects
     tx.commit();
     manager.clear();
-  }
+    manager.close();
+
+    // print memory information
+    Runtime runtime = Runtime.getRuntime();
+    getLog().info("MEMORY USAGE:");
+    getLog().info(" Total: " + runtime.totalMemory());
+    getLog().info(" Free:  " + runtime.freeMemory());
+    getLog().info(" Max:   " + runtime.maxMemory());
+}
 
   /**
    * Load SimpleMapRefSets (Crossmap).
@@ -1687,7 +1696,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     String line = "";
     objectCt = 0;
 
-    // begin transcation
+    // begin transaction
+    EntityManager manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
     tx.begin();
 
@@ -1717,7 +1727,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         // Retrieve concept -- firstToken is referencedComponentId
         Concept concept =
             getConcept(fields[5], simpleMapRefSetMember.getTerminology(),
-                simpleMapRefSetMember.getTerminologyVersion());
+                simpleMapRefSetMember.getTerminologyVersion(), manager);
 
         if (concept != null) {
           simpleMapRefSetMember.setConcept(concept);
@@ -1741,6 +1751,13 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     // commit any remaining objects
     tx.commit();
     manager.clear();
+    manager.close();
+    // print memory information
+    Runtime runtime = Runtime.getRuntime();
+    getLog().info("MEMORY USAGE:");
+    getLog().info(" Total: " + runtime.totalMemory());
+    getLog().info(" Free:  " + runtime.freeMemory());
+    getLog().info(" Max:   " + runtime.maxMemory());
   }
 
   /**
@@ -1753,7 +1770,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     String line = "";
     objectCt = 0;
 
-    // begin transcation
+    // begin transaction
+    EntityManager manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
     tx.begin();
 
@@ -1794,12 +1812,12 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         // set Concept
         Concept concept =
             getConcept(fields[5], complexMapRefSetMember.getTerminology(),
-                complexMapRefSetMember.getTerminologyVersion());
+                complexMapRefSetMember.getTerminologyVersion(), manager);
 
         if (concept != null) {
           complexMapRefSetMember.setConcept(concept);
           manager.persist(complexMapRefSetMember);
-
+          
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
             tx.commit();
@@ -1819,7 +1837,14 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     // commit any remaining objects
     tx.commit();
     manager.clear();
+    manager.close();
 
+    // print memory information
+    Runtime runtime = Runtime.getRuntime();
+    getLog().info("MEMORY USAGE:");
+    getLog().info(" Total: " + runtime.totalMemory());
+    getLog().info(" Free:  " + runtime.freeMemory());
+    getLog().info(" Max:   " + runtime.maxMemory());
   }
 
   /**
@@ -1835,7 +1860,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     String line = "";
     objectCt = 0;
 
-    // begin transcation
+    // begin transaction
+    EntityManager manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
     tx.begin();
 
@@ -1876,7 +1902,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         // set Concept
         Concept concept =
             getConcept(fields[5], complexMapRefSetMember.getTerminology(),
-                complexMapRefSetMember.getTerminologyVersion());
+                complexMapRefSetMember.getTerminologyVersion(), manager);
 
         if (concept != null) {
           complexMapRefSetMember.setConcept(concept);
@@ -1901,6 +1927,13 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     // commit any remaining objects
     tx.commit();
     manager.clear();
+    manager.close();
 
+    // print memory information
+    Runtime runtime = Runtime.getRuntime();
+    getLog().info("MEMORY USAGE:");
+    getLog().info(" Total: " + runtime.totalMemory());
+    getLog().info(" Free:  " + runtime.freeMemory());
+    getLog().info(" Max:   " + runtime.maxMemory());
   }
 }

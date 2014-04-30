@@ -2,7 +2,7 @@
 
 <p></p>
 
-<a href="#/project/id/{{project.id}}"><h3>{{project.name}}</h3></a>
+<a href="#/project/details"><h3>{{project.name}}</h3></a>
 <p></p>
 
 <p>{{errorRecords}} </p>
@@ -82,7 +82,7 @@
 		<td>{{entry.targetId}}</td>
 		<td>{{entry.targetName}}</td>
 		
-		<td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
+		<td><span ng-show="currentRole === 'Specialist' || currentRole === 'Lead' || currentRole === 'Admin'"><a  href="index.html#/record/recordId/{{record.id}}">Edit</a></span></td>
 		
         
         

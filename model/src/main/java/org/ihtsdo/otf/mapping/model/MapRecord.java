@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Interface MapRecord.
  *
@@ -301,7 +301,13 @@ public interface MapRecord {
 	 */
 	public void addOrigin(Long origin);
 	
-
+  /**
+   * Adds the origins.
+   *
+   * @param origins the origins
+   */
+  public void addOrigins(Set<Long> origins);
+  
 	/**
 	 * Removes the origin.
 	 *

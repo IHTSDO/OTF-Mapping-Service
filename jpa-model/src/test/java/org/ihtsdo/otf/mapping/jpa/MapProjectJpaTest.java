@@ -1,4 +1,4 @@
-/*package org.ihtsdo.otf.mapping.jpa;
+package org.ihtsdo.otf.mapping.jpa;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -25,98 +25,99 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-*//**
+/**
  * The Class MapProjectJpaTest.
  * 
  * Provides test cases 1. confirm MapProject data load returns expected data 2.
  * confirms indexed fields are indexed 3. confirms MapProject is audited and
  * changes are logged in audit table
- *//*
+ */
 public class MapProjectJpaTest {
 
-	*//** The manager. *//*
+	/** The manager. */
 	private static EntityManager manager;
 
-	*//** The factory. *//*
+	/** The factory. */
 	private static EntityManagerFactory factory;
 
-	*//** The full text entity manager. *//*
+	/** The full text entity manager. */
 	private static FullTextEntityManager fullTextEntityManager;
 
-	*//** The audit history reader. *//*
+	/** The audit history reader. */
 	private static AuditReader reader;
 
-	*//** The mapping to ICD10CM. *//*
+	/** The mapping to ICD10CM. */
 	private static MapProjectJpa mapProject1;
 
-	*//** The mapping to ICD9CM. *//*
+	/** The mapping to ICD9CM. */
 	private static MapProjectJpa mapProject3;
 
-	*//** The test ref set id. *//*
+	/** The test ref set id. */
 	private static String testRefSetId = "123456789";
 
-	*//** The test ref set id for the mapping to ICD9CM. *//*
+	/** The test ref set id for the mapping to ICD9CM. */
 	private static String testRefSetId3 = "345678912";
 
-	*//** The test name for the mapping to ICD10CM. *//*
+	/** The test name for the mapping to ICD10CM. */
 	private static String testName = "SNOMEDCT to ICD10CM Mapping";
 
-	*//** The updated test name. *//*
+	/** The updated test name. */
 	private static String testName2 = "Updated SNOMEDCT to ICD10CM Mapping";
 
-	*//** The test name for the mapping to ICD9CM. *//*
+	/** The test name for the mapping to ICD9CM. */
 	private static String testName3 = "SNOMEDCT to ICD9CM Mapping";
 
-	*//** The test source terminology. *//*
+	/** The test source terminology. */
 	private static String testSourceTerminology = "SNOMEDCT";
 
-	*//** The test source terminology for the mapping to ICD9CM. *//*
+	/** The test source terminology for the mapping to ICD9CM. */
 	private static String testSourceTerminology3 = "SNOMEDCT9";
 
-	*//** The test source terminology version. *//*
+	/** The test source terminology version. */
 	private static String testSourceTerminologyVersion = "20130731";
 
-	*//** The test source terminology version for the mapping to ICD9CM. *//*
+	/** The test source terminology version for the mapping to ICD9CM. */
 	private static String testSourceTerminologyVersion3 = "20130131";
 
-	*//** The test destination terminology. *//*
+	/** The test destination terminology. */
 	private static String testDestinationTerminology = "ICD10CM";
 
-	*//** The test destination terminology for the mapping to ICD9CM. *//*
+	/** The test destination terminology for the mapping to ICD9CM. */
 	private static String testDestinationTerminology3 = "ICD9CM";
 
-	*//** The test destination terminology version. *//*
+	/** The test destination terminology version. */
 	private static String testDestinationTerminologyVersion = "2010";
 
-	*//** The test destination terminology version for the mapping to ICD9CM. *//*
+	/** The test destination terminology version for the mapping to ICD9CM. */
 	private static String testDestinationTerminologyVersion3 = "2009";
 
-	*//** The test block structure. *//*
+	/** The test block structure. */
 	private static boolean testBlockStructure = true;
 
-	*//** The test group structure. *//*
+	/** The test group structure. */
 	private static boolean testGroupStructure = false;
 
-	*//** The test published. *//*
+	/** The test published. */
 	private static boolean testPublished = false;
+	
 
-	*//**
+
+	/**
 	 * Creates db tables, load test objects and create indexes to prepare for
 	 * test cases.
 	 * 
 	 * @throws Exception
 	 *             if anything goes wrong
-	 *//*
+	 */
 	@BeforeClass
 	public static void init() throws Exception {
 
-		// create Entitymanager
-		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
-		manager = factory.createEntityManager();
-		fullTextEntityManager = Search.getFullTextEntityManager(manager);
+		System.out.println("Ensuring test database is empty");
+		cleanUp();
+		
+		System.out.println("Initializing EditMappingServiceJpa");
 
-		fullTextEntityManager.purgeAll(MapProjectJpa.class);
-		fullTextEntityManager.flushToIndexes();
+		
 
 		// load test objects
 		EntityTransaction tx = manager.getTransaction();
@@ -126,7 +127,7 @@ public class MapProjectJpaTest {
 		tx.commit();
 
 		// create indexes
-		*//**
+		/**
 		 * try { FullTextEntityManager fullTextEntityManager =
 		 * Search.getFullTextEntityManager(manager);
 		 * fullTextEntityManager.purgeAll(ConceptJpa.class);
@@ -136,15 +137,14 @@ public class MapProjectJpaTest {
 		 * .threadsToLoadObjects(5).threadsForSubsequentFetching(20)
 		 * .startAndWait(); } catch (Throwable e) { e.printStackTrace();
 		 * fail("Indexing failed."); }
-		 *//*
+		 */
 
-		// create audit reader for history records
-		reader = AuditReaderFactory.get(manager);
+
 	}
 
-	*//**
+	/**
 	 * Test map project load.
-	 *//*
+	 */
 	@Test
 	public void testMapProjectLoad() {
 
@@ -157,12 +157,12 @@ public class MapProjectJpaTest {
 
 	}
 
-	*//**
+	/**
 	 * Load map projects.
 	 * 
 	 * @throws Exception
 	 *             the exception
-	 *//*
+	 */
 	private static void loadMapProjects() throws Exception {
 
 		// create initial map project mapping to ICD10CM
@@ -170,6 +170,7 @@ public class MapProjectJpaTest {
 
 		mapProject1.setName(testName);
 		mapProject1.setRefSetId(testRefSetId);
+		mapProject1.setRefSetName("refSetName1");
 		mapProject1.setSourceTerminology(testSourceTerminology);
 		mapProject1.setSourceTerminologyVersion(testSourceTerminologyVersion);
 		mapProject1.setDestinationTerminology(testDestinationTerminology);
@@ -178,6 +179,13 @@ public class MapProjectJpaTest {
 		mapProject1.setBlockStructure(testBlockStructure);
 		mapProject1.setGroupStructure(testGroupStructure);
 		mapProject1.setPublished(testPublished);
+		mapProject1.setMapRelationStyle("mapRelationStyle1");
+		mapProject1.setMapPrincipleSourceDocument("mapPrincipleSourceDocument1");
+		mapProject1.setRuleBased(true);
+		mapProject1.setMapRefsetPattern("mapRefsetPattern1");
+		mapProject1.setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass1");
+		mapProject1.setScopeDescendantsFlag(true);
+		mapProject1.setScopeExcludedDescendantsFlag(true);
 		manager.persist(mapProject1);
 
 		// create secondary map project mapping to ICD9CM
@@ -185,6 +193,7 @@ public class MapProjectJpaTest {
 
 		mapProject3.setName(testName3);
 		mapProject3.setRefSetId(testRefSetId3);
+		mapProject3.setRefSetName("refSetName3");
 		mapProject3.setSourceTerminology(testSourceTerminology3);
 		mapProject3.setSourceTerminologyVersion(testSourceTerminologyVersion3);
 		mapProject3.setDestinationTerminology(testDestinationTerminology3);
@@ -193,23 +202,31 @@ public class MapProjectJpaTest {
 		mapProject3.setBlockStructure(testBlockStructure);
 		mapProject3.setGroupStructure(testGroupStructure);
 		mapProject3.setPublished(testPublished);
+		mapProject3.setMapRelationStyle("mapRelationStyle3");
+		mapProject3.setMapPrincipleSourceDocument("mapPrincipleSourceDocument3");
+		mapProject3.setRuleBased(true);
+		mapProject3.setMapRefsetPattern("mapRefsetPattern3");
+		mapProject3.setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass3");
+		mapProject3.setScopeDescendantsFlag(true);
+		mapProject3.setScopeExcludedDescendantsFlag(true);
+		
 		manager.persist(mapProject3);
 
-		MapLeadJpa mapLeadBrian = new MapLeadJpa();
+		MapUserJpa mapLeadBrian = new MapUserJpa();
 		mapLeadBrian.setName("Brian");
 		mapLeadBrian.setUserName("bcarlsen");
 		mapLeadBrian.setEmail("bcarlsen@westcoastinformatics.com");
 		manager.persist(mapLeadBrian);
 		mapProject1.addMapLead(mapLeadBrian);
 
-		MapLeadJpa mapLeadRory = new MapLeadJpa();
+		MapUserJpa mapLeadRory = new MapUserJpa();
 		mapLeadRory.setName("Rory");
 		mapLeadRory.setUserName("rda");
 		mapLeadRory.setEmail("rda@ihtsdo.org");
 		manager.persist(mapLeadRory);
 		mapProject1.addMapLead(mapLeadRory);
 
-		MapSpecialistJpa mapSpecialistDeborah = new MapSpecialistJpa();
+		MapUserJpa mapSpecialistDeborah = new MapUserJpa();
 		mapSpecialistDeborah.setName("Deborah");
 		mapSpecialistDeborah.setUserName("dshapiro");
 		mapSpecialistDeborah.setEmail("dshapiro@westcoastinformatics.com");
@@ -221,9 +238,9 @@ public class MapProjectJpaTest {
 
 	}
 
-	*//**
+	/**
 	 * Confirm load.
-	 *//*
+	 */
 	@SuppressWarnings("static-method")
 	private void confirmLoad() {
 		javax.persistence.Query query = manager
@@ -240,12 +257,12 @@ public class MapProjectJpaTest {
 
 	}
 
-	*//**
+	/**
 	 * Test map project indexes.
 	 * 
 	 * @throws ParseException
 	 *             if lucene fails to parse query
-	 *//*
+	 */
 	@SuppressWarnings({
 			"static-method", "unchecked"
 	})
@@ -253,6 +270,14 @@ public class MapProjectJpaTest {
 	public void testMapProjectIndex() throws ParseException {
 
 		System.out.println("testMapProjectIndex()...");
+		
+		// create Entitymanager
+		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+		manager = factory.createEntityManager();
+		fullTextEntityManager = Search.getFullTextEntityManager(manager);
+
+		fullTextEntityManager.purgeAll(MapProjectJpa.class);
+		fullTextEntityManager.flushToIndexes();
 
 		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 
@@ -321,15 +346,17 @@ public class MapProjectJpaTest {
 
 	}
 
-	*//**
+	/**
 	 * Test map project audit reader history.
-	 *//*
+	 */
 	@SuppressWarnings("static-method")
 	@Test
 	public void testMapProjectAuditReader() {
 
 		System.out.println("testMapProjectAuditReader()...");
-
+		// create audit reader for history records
+		reader = AuditReaderFactory.get(manager);
+		
 		// report initial number of revisions on MapProject object
 		List<Number> revNumbers = reader.getRevisions(MapProjectJpa.class, 1L);
 		assertTrue(revNumbers.size() == 1);
@@ -338,7 +365,7 @@ public class MapProjectJpaTest {
 
 		// make a change to MapProject
 		EntityTransaction tx = manager.getTransaction();
-		MapSpecialistJpa mapSpecialistPatrick = new MapSpecialistJpa();
+		MapUserJpa mapSpecialistPatrick = new MapUserJpa();
 		tx.begin();
 		mapSpecialistPatrick.setName("Patrick");
 		mapSpecialistPatrick.setUserName("pgranvold");
@@ -365,11 +392,15 @@ public class MapProjectJpaTest {
 
 	}
 
-	*//**
+	/**
 	 * Clean up.
-	 *//*
-	@AfterClass
+	 */
 	public static void cleanUp() {
+		System.out.println("Cleaning up.");
+
+		// create new database connection
+		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+		manager = factory.createEntityManager();
 		EntityTransaction tx = manager.getTransaction();
 
 		// truncate tables
@@ -381,12 +412,8 @@ public class MapProjectJpaTest {
 		query.executeUpdate();
 		query = manager.createNativeQuery("DELETE FROM map_projects_map_leads");
 		query.executeUpdate();
-		query = manager.createNativeQuery("DELETE FROM map_leads");
-		query.executeUpdate();
 		query = manager
 				.createNativeQuery("DELETE FROM map_projects_map_specialists");
-		query.executeUpdate();
-		query = manager.createNativeQuery("DELETE FROM map_specialists");
 		query.executeUpdate();
 		query = manager.createNativeQuery("DELETE FROM map_projects");
 		query.executeUpdate();
@@ -398,20 +425,14 @@ public class MapProjectJpaTest {
 		query = manager
 				.createNativeQuery("DELETE FROM map_projects_map_leads_aud");
 		query.executeUpdate();
-		query = manager.createNativeQuery("DELETE FROM map_leads_aud");
-		query.executeUpdate();
 		query = manager
 				.createNativeQuery("DELETE FROM map_projects_map_specialists_aud");
-		query.executeUpdate();
-		query = manager.createNativeQuery("DELETE FROM map_specialists_aud");
 		query.executeUpdate();
 		query = manager.createNativeQuery("DELETE FROM map_projects_aud");
 		query.executeUpdate();
 		tx.commit();
 
-		manager.close();
-		factory.close();
+
 	}
 
 }
-*/

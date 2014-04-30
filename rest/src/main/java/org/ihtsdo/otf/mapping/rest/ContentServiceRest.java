@@ -12,14 +12,13 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.RelationshipListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
-import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipList;
-import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionList;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -45,8 +44,6 @@ public class ContentServiceRest {
 	 * Instantiates an empty {@link ContentServiceRest}.
 	 */
 	public ContentServiceRest() {
-
-		// TODO: wire this to metadata service (getTerminologyLatestVesrions)
 		terminologyLatestVersions = new HashMap<>();
 		terminologyLatestVersions.put("SNOMEDCT", "20140131");
 	}
@@ -60,7 +57,7 @@ public class ContentServiceRest {
 	 */
     @GET
 	@Path("/concept/{terminology}/{version}/id/{terminologyId}")
-	@ApiOperation(value = "Find concept by id, version, and terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Find concept by id, version, and terminology", notes = "Returns a concept in either xml json given a concept id, terminology, and terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -100,11 +97,11 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/{terminology}/{version}/id/{terminologyId}/inverseRelationships")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Get inverse relationships", notes = "Returns a concept's inverse relationships given a concept id, terminology, and terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
-	public RelationshipList getInverseRelationshipsForConcept(
+	public RelationshipListJpa getInverseRelationshipsForConcept(
 		@ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
 		@ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
 		@ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
@@ -116,7 +113,7 @@ public class ContentServiceRest {
 			ContentService contentService = new ContentServiceJpa();
 			Concept c = contentService.getConcept(terminologyId, terminology, terminologyVersion);
 		
-			RelationshipList relationshipList = new RelationshipList();
+			RelationshipListJpa relationshipList = new RelationshipListJpa();
 			relationshipList.setRelationships(c.getInverseRelationships());
 					
 			contentService.close();
@@ -138,7 +135,7 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/{terminology}/id/terminologyId")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Get concept", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -194,7 +191,7 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/{terminology}/{version}/id/{terminologyId}/descendants")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Find concept's descendants", notes = "Returns a concept's descendants given a concept id, terminology, and terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -209,7 +206,7 @@ public class ContentServiceRest {
 			ContentService contentService = new ContentServiceJpa();
 			
 			SearchResultList results = contentService.findDescendants(terminologyId, terminology,
-				terminologyVersion, "116680003"); // TODO Change this to metadata reference
+				terminologyVersion, "116680003"); 
 		
 			contentService.close();
 			return results;
@@ -227,7 +224,7 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/{terminology}/{version}/id/{id:[0-9][0-9]*}/children")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Find concept's immediate children", notes = "Returns a concept's children in either xml json given a concept id, terminology, and terminology version.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -242,7 +239,7 @@ public class ContentServiceRest {
 			ContentService contentService = new ContentServiceJpa();
 			
 			SearchResultList results = contentService.findChildren(id.toString(), terminology,
-				terminologyVersion, new Long("116680003")); // TODO Change this to metadata reference
+				terminologyVersion, new Long("116680003")); 
 		
 			contentService.close();
 			return results;
@@ -251,34 +248,6 @@ public class ContentServiceRest {
 		}
 	}
 	
-	// FOR TESTING ONLY!!
-	/**
-	 * Returns the immediate children of a concept given terminology information
-	 * @return the search result list
-	 */
-	@GET
-	@Path("/concept/treePositions")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public SearchResultList computeTreePositions() {
-	
-		
-		try {
-			ContentService contentService = new ContentServiceJpa();
-			contentService.setTransactionPerOperation(true);
-			
-			contentService.computeTreePositions("SNOMEDCT",
-				"20140131", "116680003", "138875005"); 
-			/**Set<TreePosition> results = contentService.computeTreePositions("SNOMEDCT",
-					"20140131", new Long("116680003"), new Long("371772001"));*/
-			contentService.close();
-			return new SearchResultListJpa();
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
 	
 	/**
 	 * Clears tree positions.
@@ -287,7 +256,7 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/treePositions/clear")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Clear tree positions", notes = "Clear's the pre-computed terminology hierarchies.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})
@@ -307,101 +276,7 @@ public class ContentServiceRest {
 		}
 	}
 	
-	/**
-	 * Finds tree positions for concept.
-	 *
-	 * @param terminologyId the terminology id
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
-	 * @return the search result list
-	 */
-	@GET
-	@Path("/tree/concept/{terminology}/{terminologyVersion}/id/{terminologyId}")
-	@ApiOperation(value = "Get the local tree (position and children) for a particular concept", notes = "Returns a tree structure representing the position of a concept in a terminology and its children", response = TreePositionList.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public TreePositionList getLocalTreePositionsForConcept(
-			@ApiParam(value = "terminology id of concept", required = true) @PathParam("terminologyId") String terminologyId,
-			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion			
-			) {
-			
-		
-		try {
-			ContentService contentService = new ContentServiceJpa();
-			
-			TreePositionList localTrees = new TreePositionList();
-			localTrees.setTreePositions(contentService.getLocalTrees(terminologyId, terminology, terminologyVersion)); 
-			contentService.close();
-			return localTrees;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
 	
-	/**
-	 * Finds tree positions for concept.
-	 *
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
-	 * @return the search result list
-	 */
-	@GET
-	@Path("/tree/terminology/{terminology}/{terminologyVersion}")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public TreePositionList getRootTreePositionsForTerminology(
-			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion			
-			) {
-			
-		try {
-			ContentService contentService = new ContentServiceJpa();
-			
-			TreePositionList localTrees = new TreePositionList();
-			localTrees.setTreePositions(contentService.getRootTreePositionsForTerminology(terminology, terminologyVersion)); 
-			contentService.close();
-			return localTrees;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	/**
-	 * Finds tree positions for concept query.
-	 *
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
-	 * @param query the query
-	 * @return the root-level trees corresponding to the query
-	 */
-	@GET
-	@Path("/tree/terminology/{terminology}/{terminologyVersion}/query/{query}")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionList.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public TreePositionList getRootTreePositionsForConceptQuery(
-			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,			
-			@ApiParam(value = "paging/filtering/sorting object", required = true) @PathParam("query") String query) {
-			
-		
-		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /tree/concept/" + terminology + "/" + terminologyVersion + "/query/" + query);
-		try {
-			ContentService contentService = new ContentServiceJpa();
-			
-			TreePositionList localTrees = new TreePositionList();
-			localTrees.setTreePositions(contentService.getTreePositionsForConceptQuery(terminology, terminologyVersion, query)); 
-			contentService.close();
-			return localTrees;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
 	
 	/**
 	 * Finds descendants from tree positions.
@@ -410,7 +285,7 @@ public class ContentServiceRest {
 	 */
 	@GET
 	@Path("/concept/treePositions/descendantfind")
-	@ApiOperation(value = "Find concept by id, terminology", notes = "Returns a concept in either xml json given a concept id, terminology - assumes latest terminology version.", response = Concept.class)
+	@ApiOperation(value = "Find descendants", notes = "Returns a concept's descendants based on pre-computed terminology hierarchy.", response = Concept.class)
 	@Produces({
 			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 	})

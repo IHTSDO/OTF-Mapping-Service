@@ -3,18 +3,24 @@
 <head>
   <meta http-equiv="Content-Language" content="en" />
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>OTF Mapping Test WebApp</title>
+  <link rel="icon" 
+      type="image/png" 
+      href="img/favicon.png" />
+  <title>IHTSDO Mapping Tool</title>
   <style type="text/css" media="all"></style>
     <!-- build:css css/sample.min.css  -->
 
+    <!-- JQuery splitter CSS  -->
+    <link href="components/jquery-splitter/jquery.splitter.css" rel="stylesheet">
+    
     <!-- dashboard style  -->
     <link href="css/main.css" rel="stylesheet">
     <link href="components/font-awesome/css/font-awesome.css" rel="stylesheet">
 
     <!-- Bootstrap core CSS  -->
     <link href="components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
-
-	<!--  OTF Webapp override CSS -->
+    
+	<!--  IHTSDO Mapping Tool webapp override CSS -->
 	<link rel="stylesheet" href="css/app.css">
 
   <!--  angular includes -->
@@ -36,8 +42,8 @@
     <script type="text/javascript" src="components/jquery-ui/ui/jquery.ui.core.js"></script>
     <script type="text/javascript" src="components/jquery-ui/ui/jquery.ui.widget.js"></script>
     <script type="text/javascript" src="components/jquery-ui/ui/jquery.ui.mouse.js"></script>
-  <script type="text/javascript"
-    src="components/jquery-ui/ui/jquery.ui.sortable.js"></script>
+    <script type="text/javascript" src="components/jquery-ui/ui/jquery.ui.sortable.js"></script>
+    <script type="text/javascript" src="components/jquery-splitter/jquery.splitter-0.14.0.js"></script>
     <!-- endbuild   -->
 
   <!-- build:js js/angular.min.js -->
@@ -66,8 +72,8 @@
 	<script type="text/javascript" src="js/widgets/workAvailable/workAvailable.js"></script>
 	<script type="text/javascript" src="js/widgets/assignedList/assignedList.js"></script>
 	<script type="text/javascript" src="js/widgets/editedList/editedList.js"></script>
-	<script type="text/javascript" src="js/widgets/terminologyBrowser/terminologyBrowser.js"></script>
-	
+	<script type="text/javascript" src="js/widgets/compareRecords/compareRecords.js"></script>
+    <script type="text/javascript" src="js/widgets/terminologyBrowser/terminologyBrowser.js"></script>	
     
 </head>
 <body>
@@ -75,7 +81,8 @@
   <otf-header-directive></otf-header-directive>
   <div class="container">
     <div ng-view></div>
-  </div>
+  </div> 
+  <div  ng-show="glassPane > 0" class="top-layer"></div>    
   <otf-footer-directive></otf-footer-directive>
 </body>
 </html>
