@@ -10,11 +10,6 @@ var root_metadata = root_url + "metadata/";
 var root_validation = root_url + "validation/";
 var root_workflow = root_url + "workflow/";
 
-mapProjectAppControllers.value('globals', {
-	test1: 'test1',
-	test2: 'test2'
-});
-
 mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 	$rootScope.glassPane = 0;
 	
