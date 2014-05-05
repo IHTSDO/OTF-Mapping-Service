@@ -74,15 +74,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		retrieveRecord();
 	});
 
-
-	/*$scope.$watch('record', function() {
-		console.debug('detected change in record, re-initializing entries');
-		console.debug($scope.record);
-		if ($scope.record != null && $scope.project != null) initializeEntries();
-	}, true);*/
-
 	// initialize local variables
-	var recordId = 		$routeParams.recordId; 
 	var currentLocalId = 1;   // used for addition of new entries without hibernate id
 	
 	// function to initially retrieve the project
@@ -90,7 +82,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	function retrieveRecord() {
 		// obtain the record
 		$http({
-			url: root_mapping + "record/id/" + recordId,
+			url: root_mapping + "record/id/" + $routeParams.recordId,
 			dataType: "json",
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
@@ -141,6 +133,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	function initializeEntries() {
 
 		console.debug("Initializing map entries -- " + $scope.record.mapEntry.length + " found");
+		console.debug($scope.record.mapEntry);
 		
 		// find the maximum hibernate id value
 		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
@@ -182,9 +175,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		// if no entries on this record, assume new and create an entry
 		if ($scope.record.mapEntry.length == 0) {
 			$scope.addMapEntry(1);
-			// otherwise, select the first entry
+			
+		// otherwise, select the first entry
 		} else {
-			$scope.selectEntry($scope.record.mapEntry[1]);
+			$scope.selectEntry($scope.record.mapEntry[0]);
 		}
 	}
 
@@ -506,6 +500,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	// Sets the scope variable for the active entry
 	$scope.selectEntry = function(entry) {
 		console.debug("Select entry");
+		console.debug(entry);
 		$rootScope.$broadcast('mapRecordWidget.notification.changeSelectedEntry',{key: 'changeSelectedEntry', entry: angular.copy(entry), record: $scope.record, project: $scope.project});  
 
 	};

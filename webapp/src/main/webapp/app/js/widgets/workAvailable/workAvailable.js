@@ -253,12 +253,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					}	
 				}).success(function(data) {
 				  	$rootScope.glassPane--;
-<<<<<<< HEAD
 					$rootScope.$broadcast('workAvailableWidget.notification.assignWork');
-=======
-					$rootScope.$broadcast('workAvailableWidget.notification.assignWork',
-							{key: 'trackingRecords', trackingRecords: null}); 
->>>>>>> 7dbcfd5d40bd5da7683d5268c2ff2f3cd0436dfa
 					$scope.retrieveAvailableWork(1);				
 				}).error(function(data) {
 				  	$rootScope.glassPane--;

@@ -111,13 +111,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		});
 	};
 	
-<<<<<<< HEAD
-	// Set the query to the requested referenced concept
-	// NOTE:  referencedConcept is expected to be an object of form {terminologyId, relType}
-=======
-	// For now, expects that a referencedConcept will be a string of one of the following forms:
->>>>>>> 7dbcfd5d40bd5da7683d5268c2ff2f3cd0436dfa
-	// 'conceptId', 'conceptId conceptMarker' where conceptMarker is † or *
 	$scope.gotoReferencedConcept = function(referencedConcept) {
 	
 		$scope.query = referencedConcept.terminologyId;	

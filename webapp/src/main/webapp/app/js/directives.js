@@ -2,7 +2,11 @@
 
 var mapProjectAppDirectives = angular.module('mapProjectAppDirectives', []);
 
-/* Directives */
+/////////////////////////////////////////////////////
+//Directives:
+/////////////////////////////////////////////////////
+
+
 mapProjectAppDirectives.directive('otfFooterDirective', ['$rootScope', 'localStorageService', function($rootScope, localStorageService) {
 
 	return {

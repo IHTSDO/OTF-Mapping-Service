@@ -120,11 +120,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		$scope.numRecordPages = Math.ceil($scope.nAssignedRecords / assignedRecordsPerPage);
 	};
 
-<<<<<<< HEAD
+
 	// on notification, update assigned work
-=======
-	// adds work to the visual display
->>>>>>> 7dbcfd5d40bd5da7683d5268c2ff2f3cd0436dfa
 	$scope.assignWork = function(newRecords) {
 
 		$scope.retrieveAssignedWork(1);
