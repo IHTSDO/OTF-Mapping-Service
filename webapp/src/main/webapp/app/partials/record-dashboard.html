@@ -1,7 +1,8 @@
-<div ng-show = "currentRole === 'Viewer'">
-	<h3>You do not have permission to edit records.</h3>
+<div ng-show="currentRole === 'Viewer'">
+  <h3>You do not have permission to edit records.</h3>
 </div>
 
-<div class="container" ng-show = "currentRole != 'Viewer'">
-  	<adf-dashboard name="{{name}}" structure="{{model.structure}}" adf-model="model" ng-cloak />
+<div class="container" ng-show="currentRole != 'Viewer'">
+  <adf-dashboard name="{{name}}" structure="{{model.structure}}"
+    adf-model="model" ng-cloak />
 </div>

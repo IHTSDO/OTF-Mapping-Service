@@ -1,78 +1,81 @@
 <!--  partial for displaying records associated with a concept id -->
-<h3>{{concept.terminology}} Concept {{concept.terminologyId}}:  {{concept.defaultPreferredName}}</h3>  
+<h3>{{concept.terminology}} Concept {{concept.terminologyId}}:
+  {{concept.defaultPreferredName}}</h3>
 <!--  No map records for this project -->
-<div ng-show = "recordsInProjectNotFound == true">
-	<h4><img src="img/warning-circle_25px.png">&nbspNo Map Records exist for {{focusProject.name}}</h4>
+<div ng-show="recordsInProjectNotFound == true">
+  <h4>
+    <img src="img/warning-circle_25px.png">&nbspNo Map Records exist for
+    {{focusProject.name}}
+  </h4>
 </div>
 
 <!--  Map Records Found for this project -->
-<div ng-show = "recordsInProject.length > 0">
-	<h4>Map Records for {{focusProject.name}}</h4>
-	<table class="table">
-	<thead>
-		<tr> 
-	        <th style="width: 5%;"></th>
-	        <th style="width: 8%;">Group Id</th>
-	        <th style="width: 10%;">Map Priority</th>
-	        <th style="width: 15%;" >Rule</th>
-			<th style="width: 10%;">Target</th>
-			<th style="width: 20%;">Target Name</th>
-			<th style="width: 15%;">Status</th>
-			<th style="width: 5%;"></th>
-		</tr>
-	</thead>
-	
-	<tbody ng-repeat="record in recordsInProject" style="border: 4px solid #ccc;">
-	
-		<tr ng-show = "record.mapEntry.length == 0">
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td colspan=2>Empty record, owned by {{record.owner.name}}</td>
-			<td>{{record.workflowStatus}}</td>
-			<td><span ng-show="isEditable(record)">
-				<a href="index.html#/record/recordId/{{record.id}}">Edit</a>
-				</span>
-	        </td>
-		</tr>
-	
-		<tr ng-repeat = "entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
-			<td>
-	        <span ng-show="entry.mapAdvice.length > 0">
-	          <div class="dropdown">
-	            <a class="dropdown-toggle"> 
-	            <img src="img/dialog-question.png" alt="question icon">
-	            </a>
-	            <span class="dropdown-menu">
-	            <p><strong>Advice</strong></p>
-	            <p></p>
-	            <p ng-repeat="advice in entry.mapAdvice" ng-bind-html="to_trusted(advice.detail)"></p>
-	          	</span>
-	          </div>
-	        </span>
-	         
-	        </td>
-			<td>{{entry.mapGroup}}</td>
-	        <td>{{entry.mapPriority}}</td>
-	        <td><span ng-show = "getRuleBasedForRecord(record) == true">{{entry.rule}}</span></td>
-			<td>{{entry.targetId}}</td>
-			<td>{{entry.targetName}}</td>
-			<td>{{record.workflowStatus}}</td>
-			<td><span ng-show="isEditable(record)">
-				<a href="index.html#/record/recordId/{{record.id}}">Edit</a>
-				</span>
-	        </td>
-			
-		</tr>
-	
-	
-	</tbody>
-	
-	
-	</table>
+<div ng-show="recordsInProject.length > 0">
+  <h4>Map Records for {{focusProject.name}}</h4>
+  <table class="table">
+    <thead>
+      <tr>
+        <th style="width: 5%;"></th>
+        <th style="width: 8%;">Group Id</th>
+        <th style="width: 10%;">Map Priority</th>
+        <th style="width: 15%;">Rule</th>
+        <th style="width: 10%;">Target</th>
+        <th style="width: 20%;">Target Name</th>
+        <th style="width: 15%;">Status</th>
+        <th style="width: 5%;"></th>
+      </tr>
+    </thead>
 
-	
+    <tbody ng-repeat="record in recordsInProject"
+      style="border: 4px solid #ccc;">
+
+      <tr ng-show="record.mapEntry.length == 0">
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td colspan=2>Empty record, owned by {{record.owner.name}}</td>
+        <td>{{record.workflowStatus}}</td>
+        <td><span ng-show="isEditable(record)"> <a
+            href="index.html#/record/recordId/{{record.id}}">Edit</a>
+        </span></td>
+      </tr>
+
+      <tr
+        ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
+        <td><span ng-show="entry.mapAdvice.length > 0">
+            <div class="dropdown">
+              <a class="dropdown-toggle"> <img src="img/dialog-question.png"
+                alt="question icon">
+              </a> <span class="dropdown-menu">
+                <p>
+                  <strong>Advice</strong>
+                </p>
+                <p></p>
+                <p ng-repeat="advice in entry.mapAdvice"
+                  ng-bind-html="to_trusted(advice.detail)"></p>
+              </span>
+            </div>
+        </span></td>
+        <td>{{entry.mapGroup}}</td>
+        <td>{{entry.mapPriority}}</td>
+        <td><span ng-show="getRuleBasedForRecord(record) == true">{{entry.rule}}</span></td>
+        <td>{{entry.targetId}}</td>
+        <td>{{entry.targetName}}</td>
+        <td>{{record.workflowStatus}}</td>
+        <td><span ng-show="isEditable(record)"> <a
+            href="index.html#/record/recordId/{{record.id}}">Edit</a>
+        </span></td>
+
+      </tr>
+
+
+    </tbody>
+
+
+  </table>
+
+
 </div>
 <!-- 
 <form ng-show = "currentRole != 'Viewer'">
@@ -81,132 +84,133 @@
  -->
 <hr>
 <div ng-show="recordsNotInProject.length > 0">
-	
-	<h4>Map Records for Other Projects</h4>
-	<table width="100%" class="table">
-	<thead>
-		<tr> 
-	        <th style="width: 5%;"></th>
-			<th style="width: 18%;">Project Name</th>
-	        <th style="width: 8%;">Group Id</th>
-	        <th style="width: 10%;">Map Priority</th>
-	        <th style="width: 13%;" >Rule</th>
-			<th style="width: 10%;">Target</th>
-			<th style="width: 18%;">Target Name</th>
-			<th style="width: 10%;">Status</th>
-		</tr>
-	</thead>
-	
-	<tbody ng-repeat="record in recordsNotInProject" style="border: 4px solid #ccc;">
-	
-		<tr ng-show = "record.mapEntry.length == 0">
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td colspan=2>Empty record, owned by {{record.owner.name}}</td>
-			<td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
-			
-		</tr>
-		<tr ng-repeat = "entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
-			<td>
-	        <span ng-show="entry.mapAdvice.length > 0">
-	          <div class="dropdown">
-	            <a class="dropdown-toggle"> 
-	            <img src="img/dialog-question.png" alt="question icon">
-	            </a>
-	            <span class="dropdown-menu">
-	            <p><strong>Advice</strong></p>
-	            <p></p>
-	            <p ng-repeat="advice in entry.mapAdvice" ng-bind-html="to_trusted(advice.detail)"></p>
-	          	</span>
-	          </div>
-	        </span>
-	         
-	        </td>
-			<td><a href="index.html#/project/details">{{getProjectName(record)}}</a></td>
-			<td>{{entry.mapGroup}}</td>
-	        <td>{{entry.mapPriority}}</td>
-	        <td>
-	        	<span ng-show = "getRuleBasedForRecord(record) == true">{{entry.rule}}</span>
-	        	<span ng-show = "getRuleBasedForRecord(record) == false">(Not Rule Based)</span>
-	       	</td>
-			<td>{{entry.targetId}}</td>
-			<td>{{entry.targetName}}</td>
-			<td>{{record.workflowStatus}}</td>	
-			
-		</tr>
-	
-	
-	</tbody>
-	</table>
+
+  <h4>Map Records for Other Projects</h4>
+  <table width="100%" class="table">
+    <thead>
+      <tr>
+        <th style="width: 5%;"></th>
+        <th style="width: 18%;">Project Name</th>
+        <th style="width: 8%;">Group Id</th>
+        <th style="width: 10%;">Map Priority</th>
+        <th style="width: 13%;">Rule</th>
+        <th style="width: 10%;">Target</th>
+        <th style="width: 18%;">Target Name</th>
+        <th style="width: 10%;">Status</th>
+      </tr>
+    </thead>
+
+    <tbody ng-repeat="record in recordsNotInProject"
+      style="border: 4px solid #ccc;">
+
+      <tr ng-show="record.mapEntry.length == 0">
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td colspan=2>Empty record, owned by {{record.owner.name}}</td>
+        <td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
+      </tr>
+      <tr
+        ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
+        <td><span ng-show="entry.mapAdvice.length > 0">
+            <div class="dropdown">
+              <a class="dropdown-toggle"> <img src="img/dialog-question.png"
+                alt="question icon">
+              </a> <span class="dropdown-menu">
+                <p>
+                  <strong>Advice</strong>
+                </p>
+                <p></p>
+                <p ng-repeat="advice in entry.mapAdvice"
+                  ng-bind-html="to_trusted(advice.detail)"></p>
+              </span>
+            </div>
+        </span></td>
+        <td><a href="index.html#/project/details">{{getProjectName(record)}}</a></td>
+        <td>{{entry.mapGroup}}</td>
+        <td>{{entry.mapPriority}}</td>
+        <td><span ng-show="getRuleBasedForRecord(record) == true">{{entry.rule}}</span>
+          <span ng-show="getRuleBasedForRecord(record) == false">(Not
+            Rule Based)</span></td>
+        <td>{{entry.targetId}}</td>
+        <td>{{entry.targetName}}</td>
+        <td>{{record.workflowStatus}}</td>
+
+      </tr>
+
+
+    </tbody>
+  </table>
 </div>
 
 
 <div ng-show="concept.relationship.length > 0 || concept.children.length > 0">
 
-	<h3>Concept Navigation</h3>
-	<p></p>
-	
-	<table width="100%">
+  <h3>Concept Navigation</h3>
+  <p></p>
 
-	<tbody style="border: 0px solid #ccc;">
-	<tr>
-		<td style="width:5%"></td>
-		<td style="width:95%">
-			
-			<!--  Navigation and Unmapped Descendants -->
-			<div class="dropdown" ng-show="concept.relationship.length > 0">
-					<a class="dropdown-toggle">Parents</a>	
-			 		<ul class="dropdown-menu">
-			 		<strong>Parents</strong>
-			 			<li ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
-			 				<a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:  {{relationship.destinationConceptPreferredName}}</a> 
-						</li>
-			 		</ul>
-			</div>
-			<div class="dropdown" ng-show="concept.children.length > 0">
-					<a class="dropdown-toggle">Children</a>	
-			 		<ul class="dropdown-menu">
-			 		<strong>Children</strong>
-			 			<li ng-repeat="concept in concept.children | orderBy: 'value'">
-			 				<a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:  {{concept.value}}</a> 
-						</li>
-			 		</ul>
-			</div>
-		</td>
-	</tr>
-	</table>
-	<p></p>
+  <table width="100%">
+
+    <tbody style="border: 0px solid #ccc;">
+      <tr>
+        <td style="width: 5%"></td>
+        <td style="width: 95%">
+          <!--  Navigation and Unmapped Descendants -->
+          <div class="dropdown" ng-show="concept.relationship.length > 0">
+            <a class="dropdown-toggle">Parents</a>
+            <ul class="dropdown-menu">
+              <strong>Parents</strong>
+              <li
+                ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
+                <a
+                href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:
+                  {{relationship.destinationConceptPreferredName}}</a>
+              </li>
+            </ul>
+          </div>
+          <div class="dropdown" ng-show="concept.children.length > 0">
+            <a class="dropdown-toggle">Children</a>
+            <ul class="dropdown-menu">
+              <strong>Children</strong>
+              <li ng-repeat="concept in concept.children | orderBy: 'value'">
+                <a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
+                  {{concept.value}}</a>
+              </li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+  </table>
+  <p></p>
 </div>
 
-<div ng-show = "concept.unmappedDescendants.length > 0">
+<div ng-show="concept.unmappedDescendants.length > 0">
 
-	<h3>Concept Alerts</h3>
-	<p></p>
-	<table width="100%">
+  <h3>Concept Alerts</h3>
+  <p></p>
+  <table width="100%">
 
-	<tbody style="border: 0px solid #ccc">
-	<tr>
-		<td align=center style="width:5%"><img src="img/warning.png" alt="question icon"></td>
-		<td style="width:95%">
-			
-			<div class="dropdown" ng-show="concept.unmappedDescendants.length > 0">
-			     <a class="dropdown-toggle">
-			     		
-			 			  Unmapped descendants.
-			     
-			     </a>
-			     <ul class="dropdown-menu">
-			       <strong>Unmapped Descendants</strong>
-			       <li ng-repeat="concept in concept.unmappedDescendants"><a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}: {{concept.value}}</a></li>
-			     </ul>
-			</div>
-	</td>
-	</tr>
-	</table>
-	<p></p>
+    <tbody style="border: 0px solid #ccc">
+      <tr>
+        <td align=center style="width: 5%"><img src="img/warning.png"
+          alt="question icon"></td>
+        <td style="width: 95%">
+
+          <div class="dropdown" ng-show="concept.unmappedDescendants.length > 0">
+            <a class="dropdown-toggle"> Unmapped descendants. </a>
+            <ul class="dropdown-menu">
+              <strong>Unmapped Descendants</strong>
+              <li ng-repeat="concept in concept.unmappedDescendants"><a
+                href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
+                  {{concept.value}}</a></li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+  </table>
+  <p></p>
 
 </div>
 

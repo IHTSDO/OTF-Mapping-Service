@@ -1,31 +1,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <!-- Module Metadata -->
-    <parent>
-        <groupId>org.ihtsdo.otf.mapping</groupId>
-        <artifactId>mapping-parent</artifactId>
-        <version>0.0.1</version>
-    </parent>
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.mapping</groupId>
+    <artifactId>mapping-parent</artifactId>
+    <version>0.0.1</version>
+  </parent>
 
-    <artifactId>mapping-services</artifactId>
-    <name>OTF RF2 Mapping Services</name>
-    <description>Conceptual model of OTF RF2 mapping services</description>
-    
-    <!-- Declare Project Dependency Versions -->
-    <dependencies>
+  <artifactId>mapping-services</artifactId>
+  <name>OTF RF2 Mapping Services</name>
+  <description>Conceptual model of OTF RF2 mapping services</description>
 
-        <!-- Model interfaces. -->
-        <dependency>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-model</artifactId>
-        </dependency>
-        
-    </dependencies>
+  <!-- Declare Project Dependency Versions -->
+  <dependencies>
 
-    <!-- Standard build profile, no special configuration needed -->
-    <build>
-    </build>
+    <!-- Model interfaces. -->
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-model</artifactId>
+    </dependency>
+
+  </dependencies>
+
+  <!-- Standard build profile, no special configuration needed -->
+  <build>
+  </build>
 
 </project>

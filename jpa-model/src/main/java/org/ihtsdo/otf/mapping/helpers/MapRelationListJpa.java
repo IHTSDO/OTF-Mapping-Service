@@ -98,7 +98,9 @@ public class MapRelationListJpa extends AbstractResultList<MapRelation>
     Collections.sort(mapRelations, comparator);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#contains(java.lang.Object)
    */
   @Override

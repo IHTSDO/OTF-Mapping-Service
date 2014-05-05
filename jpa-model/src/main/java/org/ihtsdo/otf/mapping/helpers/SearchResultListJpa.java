@@ -156,7 +156,7 @@ public class SearchResultListJpa extends AbstractResultList<SearchResult>
   public void sortBy(Comparator<SearchResult> comparator) {
     Collections.sort(searchResults, comparator);
   }
-  
+
   /*
    * (non-Javadoc)
    * 
@@ -166,6 +166,5 @@ public class SearchResultListJpa extends AbstractResultList<SearchResult>
   public Iterable<SearchResult> getIterable() {
     return searchResults;
   }
-
 
 }

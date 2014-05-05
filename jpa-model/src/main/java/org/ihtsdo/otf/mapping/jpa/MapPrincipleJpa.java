@@ -17,194 +17,196 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
 /**
  * The Map Principle Object for the Jpa Domain
  * @author Patrick
- *
+ * 
  */
 @Entity
 @Table(name = "map_principles")
 @Audited
-@XmlRootElement(name="mapPrinciple")
+@XmlRootElement(name = "mapPrinciple")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MapPrincipleJpa implements MapPrinciple {
 
-	@Id
-	@GeneratedValue
-	private Long id;
-	
-	@Column(nullable = true, length = 255)
-	private String principleId;
+  @Id
+  @GeneratedValue
+  private Long id;
 
-	@Column(nullable = false, length = 255)
-	private String name;
-	
-	@Column(nullable = true, length = 4000)
-	private String detail;
-	
-	@Column(nullable = true, length = 4000)
-	private String sectionRef;
-	
-	/** Default constructor */
-	public MapPrincipleJpa() {
-		// left empty
-	}
+  @Column(nullable = true, length = 255)
+  private String principleId;
 
-	/**
-	 * Return the id
-	 * @return the id
-	 */
-	@Override
-	public Long getId() {
-		return this.id;
-	}
-	
-	/**
-	 * Set the id
-	 * @param id the id
-	 */
-	@Override
-	public void setId(Long id) {
-		this.id = id;		
-	}
-	
-	/**
-	 * Returns the id in string form
-	 * @return the id in string form
-	 */
-	@XmlID
-	@Override
-	public String getObjectId() {
-		return id.toString();
-	}
+  @Column(nullable = false, length = 255)
+  private String name;
 
-	@Override
-	public String getPrincipleId() {
-		return this.principleId;
-	}
+  @Column(nullable = true, length = 4000)
+  private String detail;
 
-	@Override
-	public void setPrincipleId(String principleId) {
-		this.principleId = principleId;		
-	}
+  @Column(nullable = true, length = 4000)
+  private String sectionRef;
 
-	/**
-	 * Get the detail
-	 * @return the detail
-	 */
-	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-	public String getDetail() {
-		return this.detail;
-	}
+  /** Default constructor */
+  public MapPrincipleJpa() {
+    // left empty
+  }
 
-	/**
-	 * Set the detail
-	 * @param detail the detail
-	 */
-	@Override
-	public void setDetail(String detail) {
-		this.detail = detail;
-		
-	}
+  /**
+   * Return the id
+   * @return the id
+   */
+  @Override
+  public Long getId() {
+    return this.id;
+  }
 
-	/**
-	 * Get the name
-	 * @return the name
-	 */
-	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-	public String getName() {
-		return this.name;
-	}
+  /**
+   * Set the id
+   * @param id the id
+   */
+  @Override
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-	/**
-	 * Set the name
-	 * @param name the name
-	 */
-	@Override
-	public void setName(String name) {
-		this.name = name;
-		
-	}
+  /**
+   * Returns the id in string form
+   * @return the id in string form
+   */
+  @XmlID
+  @Override
+  public String getObjectId() {
+    return id.toString();
+  }
 
-	/**
-	 * Get the section reference
-	 * @return the section reference
-	 */
-	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-	public String getSectionRef() {
-		return this.sectionRef;
-	}
+  @Override
+  public String getPrincipleId() {
+    return this.principleId;
+  }
 
-	/**
-	 * Set the section reference
-	 * @param sectionRef the section reference
-	 */
-	@Override
-	public void setSectionRef(String sectionRef) {
-		this.sectionRef = sectionRef;
-		
-	}
+  @Override
+  public void setPrincipleId(String principleId) {
+    this.principleId = principleId;
+  }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((detail == null) ? 0 : detail.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result =
-				prime * result + ((principleId == null) ? 0 : principleId.hashCode());
-		result =
-				prime * result + ((sectionRef == null) ? 0 : sectionRef.hashCode());
-		return result;
-	}
+  /**
+   * Get the detail
+   * @return the detail
+   */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  public String getDetail() {
+    return this.detail;
+  }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MapPrincipleJpa other = (MapPrincipleJpa) obj;
-		if (detail == null) {
-			if (other.detail != null)
-				return false;
-		} else if (!detail.equals(other.detail))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (principleId == null) {
-			if (other.principleId != null)
-				return false;
-		} else if (!principleId.equals(other.principleId))
-			return false;
-		if (sectionRef == null) {
-			if (other.sectionRef != null)
-				return false;
-		} else if (!sectionRef.equals(other.sectionRef))
-			return false;
-		return true;
-	}
+  /**
+   * Set the detail
+   * @param detail the detail
+   */
+  @Override
+  public void setDetail(String detail) {
+    this.detail = detail;
 
-	@Override
-	public String toString() {
-		return "MapPrincipleJpa [id=" + id + ", name=" + name
-				+ ", detail=" + detail + ", sectionRef=" + sectionRef
-				+ "]";
-	}
+  }
+
+  /**
+   * Get the name
+   * @return the name
+   */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  public String getName() {
+    return this.name;
+  }
+
+  /**
+   * Set the name
+   * @param name the name
+   */
+  @Override
+  public void setName(String name) {
+    this.name = name;
+
+  }
+
+  /**
+   * Get the section reference
+   * @return the section reference
+   */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  public String getSectionRef() {
+    return this.sectionRef;
+  }
+
+  /**
+   * Set the section reference
+   * @param sectionRef the section reference
+   */
+  @Override
+  public void setSectionRef(String sectionRef) {
+    this.sectionRef = sectionRef;
+
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((detail == null) ? 0 : detail.hashCode());
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result =
+        prime * result + ((principleId == null) ? 0 : principleId.hashCode());
+    result =
+        prime * result + ((sectionRef == null) ? 0 : sectionRef.hashCode());
+    return result;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    MapPrincipleJpa other = (MapPrincipleJpa) obj;
+    if (detail == null) {
+      if (other.detail != null)
+        return false;
+    } else if (!detail.equals(other.detail))
+      return false;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    if (principleId == null) {
+      if (other.principleId != null)
+        return false;
+    } else if (!principleId.equals(other.principleId))
+      return false;
+    if (sectionRef == null) {
+      if (other.sectionRef != null)
+        return false;
+    } else if (!sectionRef.equals(other.sectionRef))
+      return false;
+    return true;
+  }
+
+  @Override
+  public String toString() {
+    return "MapPrincipleJpa [id=" + id + ", name=" + name + ", detail="
+        + detail + ", sectionRef=" + sectionRef + "]";
+  }
 
 }

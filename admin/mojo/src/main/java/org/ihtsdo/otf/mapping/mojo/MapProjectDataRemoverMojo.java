@@ -62,75 +62,74 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  */
 public class MapProjectDataRemoverMojo extends AbstractMojo {
 
-	/**
-	 * Instantiates a {@link MapProjectDataRemoverMojo} from the specified
-	 * parameters.
-	 * 
-	 */
-	public MapProjectDataRemoverMojo() {
-		// Do nothing
-	}
+  /**
+   * Instantiates a {@link MapProjectDataRemoverMojo} from the specified
+   * parameters.
+   * 
+   */
+  public MapProjectDataRemoverMojo() {
+    // Do nothing
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.maven.plugin.Mojo#execute()
-	 */
-	@Override
-	public void execute() throws MojoFailureException {
-		getLog().info("Starting removing map project data ...");
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
+  @Override
+  public void execute() throws MojoFailureException {
+    getLog().info("Starting removing map project data ...");
 
-		try {
+    try {
 
+      MappingService service = new MappingServiceJpa();
+      // Remove map projects
+      for (MapProject p : service.getMapProjects().getIterable()) {
+        getLog().info("  Remove map project - " + p.getName());
+        if (service.getMapRecordsForMapProject(p.getId()).getTotalCount() != 0) {
+          throw new MojoFailureException(
+              "Attempt to delete a map project that has map records, delete the map records first");
+        }
+        service.removeMapProject(p.getId());
+      }
 
-			MappingService service = new MappingServiceJpa();
-			// Remove map projects
-			for (MapProject p : service.getMapProjects().getIterable()) {
-				getLog().info("  Remove map project - " + p.getName());
-				if (service.getMapRecordsForMapProject(p.getId()).getTotalCount() != 0) {
-					throw new MojoFailureException(
-							"Attempt to delete a map project that has map records, delete the map records first");
-				}
-				service.removeMapProject(p.getId());
-			}
+      // Remove map users
+      for (MapUser l : service.getMapUsers().getIterable()) {
+        getLog().info("  Remove map user - " + l.getName());
+        service.removeMapUser(l.getId());
+      }
 
-			// Remove map users
-			for (MapUser l : service.getMapUsers().getIterable()) {
-				getLog().info("  Remove map user - " + l.getName());
-				service.removeMapUser(l.getId());
-			}
+      // Remove map advices
+      for (MapAdvice a : service.getMapAdvices().getIterable()) {
+        getLog().info("  Remove map advice - " + a.getName());
+        service.removeMapAdvice(a.getId());
+      }
 
-			// Remove map advices
-			for (MapAdvice a : service.getMapAdvices().getIterable()) {
-				getLog().info("  Remove map advice - " + a.getName());
-				service.removeMapAdvice(a.getId());
-			}
-			
-			// Remove map relations
-			for (MapRelation  a : service.getMapRelations().getIterable()) {
-				getLog().info("  Remove map relation - " + a.getName());
-				service.removeMapRelation (a.getId());
-			}
+      // Remove map relations
+      for (MapRelation a : service.getMapRelations().getIterable()) {
+        getLog().info("  Remove map relation - " + a.getName());
+        service.removeMapRelation(a.getId());
+      }
 
-			// Remove map principles
-			for (MapPrinciple p : service.getMapPrinciples().getIterable()) {
-				getLog().info("  Remove map principle - " + p.getName());
-				service.removeMapPrinciple(p.getId());
-			}
-			
-			// Remove map age ranges
-			for (MapAgeRange r : service.getMapAgeRanges()) {
-				getLog().info("  Remove map age range - " + r.getName());
-				service.removeMapAgeRange(r.getId());
-			}
-			
-			getLog().info("done ...");
+      // Remove map principles
+      for (MapPrinciple p : service.getMapPrinciples().getIterable()) {
+        getLog().info("  Remove map principle - " + p.getName());
+        service.removeMapPrinciple(p.getId());
+      }
 
-			service.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
-		}
-	}
+      // Remove map age ranges
+      for (MapAgeRange r : service.getMapAgeRanges()) {
+        getLog().info("  Remove map age range - " + r.getName());
+        service.removeMapAgeRange(r.getId());
+      }
+
+      getLog().info("done ...");
+
+      service.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoFailureException("Unexpected exception:", e);
+    }
+  }
 
 }

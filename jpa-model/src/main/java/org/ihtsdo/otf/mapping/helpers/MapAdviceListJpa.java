@@ -11,10 +11,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 
-
 /**
  * JAXB enabled implementation of {@link MapAdviceList}.
- *
+ * 
  * @author ${author}
  */
 @XmlRootElement(name = "mapAdviceList")
@@ -76,7 +75,7 @@ public class MapAdviceListJpa extends AbstractResultList<MapAdvice> implements
 
   /**
    * Return the count as an xml element.
-   *
+   * 
    * @return the number of objects in the list
    */
   @Override
@@ -95,7 +94,9 @@ public class MapAdviceListJpa extends AbstractResultList<MapAdvice> implements
     Collections.sort(mapAdvices, comparator);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#contains(java.lang.Object)
    */
   @Override

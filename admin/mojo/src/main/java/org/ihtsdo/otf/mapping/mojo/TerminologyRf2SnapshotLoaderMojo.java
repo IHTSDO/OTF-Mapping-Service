@@ -139,7 +139,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
   /** The factory. */
   EntityManagerFactory factory = null;
-  
+
   /**
    * Instantiates a {@link TerminologyRf2SnapshotLoaderMojo} from the specified
    * parameters.
@@ -220,8 +220,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
               + Integer.toString(commitCt));
 
       // create Entitymanager
-      factory =
-          Persistence.createEntityManagerFactory("MappingServiceDS");
+      factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 
       Runtime runtime = Runtime.getRuntime();
       getLog().info("MEMORY USAGE:");
@@ -233,18 +232,17 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       // logging
       try {
 
-      // Prepare sorted input files
-      File sortedFileDir = new File(coreInputDir, "/RF2-sorted-temp/");
+        // Prepare sorted input files
+        File sortedFileDir = new File(coreInputDir, "/RF2-sorted-temp/");
 
-      getLog().info("Preparing input files...");
-      long startTime = System.nanoTime();
-      sortRf2Files(coreInputDir, sortedFileDir);
-      getLog()
-          .info(
-              "    File preparation complete in " + getElapsedTime(startTime)
-                  + "s");
+        getLog().info("Preparing input files...");
+        long startTime = System.nanoTime();
+        sortRf2Files(coreInputDir, sortedFileDir);
+        getLog().info(
+            "    File preparation complete in " + getElapsedTime(startTime)
+                + "s");
 
-      openSortedFileReaders(sortedFileDir);
+        openSortedFileReaders(sortedFileDir);
 
         // load Concepts
         if (conceptsByConcept != null) {
@@ -350,7 +348,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
         conceptCache.clear();
         closeAllSortedFiles();
-        
+
         // creating tree positions
         // first get isaRelType from metadata
         MetadataService metadataService = new MetadataServiceJpa();
@@ -364,19 +362,19 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         ContentService contentService = new ContentServiceJpa();
         getLog().info("Start creating tree positions.");
 
-        // Walk up tree to the root 
+        // Walk up tree to the root
         // ASSUMPTION: single root
         String conceptId = isaRelType;
         String rootId = null;
-        OUTER:
-        while (true) {
+        OUTER: while (true) {
           getLog().info("  Walk up tree from " + conceptId);
-          Concept c = contentService.getConcept(conceptId, terminology, version);
+          Concept c =
+              contentService.getConcept(conceptId, terminology, version);
           for (Relationship r : c.getRelationships()) {
             if (r.isActive() && r.getTypeId().equals(Long.valueOf(isaRelType))) {
               conceptId = r.getDestinationConcept().getTerminologyId();
               continue OUTER;
-            }              
+            }
           }
           rootId = conceptId;
           break;
@@ -1160,7 +1158,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     getLog().info(" Free:  " + runtime.freeMemory());
     getLog().info(" Max:   " + runtime.maxMemory());
 
-
   }
 
   /**
@@ -1236,7 +1233,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     tx.commit();
     manager.clear();
     manager.close();
-    
+
     // print memory information
     Runtime runtime = Runtime.getRuntime();
     getLog().info("MEMORY USAGE:");
@@ -1352,7 +1349,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     tx.commit();
     manager.clear();
     manager.close();
-    
+
     getLog().info("      " + descCt + " descriptions loaded");
     getLog().info("      " + langCt + " language ref sets loaded");
     getLog().info(
@@ -1400,7 +1397,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         getLog().info(Integer.toString(ct));
       }
 
-      
       if (++objectCt % commitCt == 0) {
         tx.commit();
         manager.clear();
@@ -1411,14 +1407,14 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     tx.commit();
     manager.clear();
     manager.close();
-    
+
     // print memory information
     Runtime runtime = Runtime.getRuntime();
     getLog().info("MEMORY USAGE:");
     getLog().info(" Total: " + runtime.totalMemory());
     getLog().info(" Free:  " + runtime.freeMemory());
     getLog().info(" Max:   " + runtime.maxMemory());
-    
+
   }
 
   /**
@@ -1427,7 +1423,8 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * @return the next description
    * @throws Exception the exception
    */
-  private Description getNextDescription(EntityManager manager) throws Exception {
+  private Description getNextDescription(EntityManager manager)
+    throws Exception {
 
     String line, fields[];
     Description description = new DescriptionJpa();
@@ -1580,7 +1577,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
           attributeValueRefSetMember.setConcept(concept);
           manager.persist(attributeValueRefSetMember);
-          
+
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
             tx.commit();
@@ -1600,7 +1597,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     tx.commit();
     manager.clear();
     manager.close();
-    
+
     // print memory information
     Runtime runtime = Runtime.getRuntime();
     getLog().info("MEMORY USAGE:");
@@ -1655,7 +1652,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         if (concept != null) {
           simpleRefSetMember.setConcept(concept);
           manager.persist(simpleRefSetMember);
-          
+
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
             tx.commit();
@@ -1681,7 +1678,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     getLog().info(" Total: " + runtime.totalMemory());
     getLog().info(" Free:  " + runtime.freeMemory());
     getLog().info(" Max:   " + runtime.maxMemory());
-}
+  }
 
   /**
    * Load SimpleMapRefSets (Crossmap).
@@ -1814,7 +1811,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         if (concept != null) {
           complexMapRefSetMember.setConcept(concept);
           manager.persist(complexMapRefSetMember);
-          
+
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
             tx.commit();

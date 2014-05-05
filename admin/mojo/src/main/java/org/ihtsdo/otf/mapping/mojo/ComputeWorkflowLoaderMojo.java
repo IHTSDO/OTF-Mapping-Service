@@ -17,98 +17,97 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  * Sample execution:
  * 
  * <pre>
-    <profile>
-      <id>ComputeWorkflow</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.ihtsdo.otf.mapping</groupId>
-            <artifactId>mapping-admin-mojo</artifactId>
-            <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
-            <executions>
-              <execution>
-                <id>compute-workflow</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>compute-workflow</goal>
-                </goals>
-                <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                  <refSetId>${refset.id}</refSetId>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile> 
-
+ *     <profile>
+ *       <id>ComputeWorkflow</id>
+ *       <build>
+ *         <plugins>
+ *           <plugin>
+ *             <groupId>org.ihtsdo.otf.mapping</groupId>
+ *             <artifactId>mapping-admin-mojo</artifactId>
+ *             <version>${project.version}</version>
+ *             <dependencies>
+ *               <dependency>
+ *                 <groupId>org.ihtsdo.otf.mapping</groupId>
+ *                 <artifactId>mapping-admin-loader-config</artifactId>
+ *                 <version>${project.version}</version>
+ *                 <scope>system</scope>
+ *                 <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
+ *               </dependency>
+ *             </dependencies>
+ *             <executions>
+ *               <execution>
+ *                 <id>compute-workflow</id>
+ *                 <phase>package</phase>
+ *                 <goals>
+ *                   <goal>compute-workflow</goal>
+ *                 </goals>
+ *                 <configuration>
+ *                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
+ *                   <refSetId>${refset.id}</refSetId>
+ *                 </configuration>
+ *               </execution>
+ *             </executions>
+ *           </plugin>
+ *         </plugins>
+ *       </build>
+ *     </profile> 
+ * 
  * 
  * @goal compute-workflow
  * @phase package
  */
 public class ComputeWorkflowLoaderMojo extends AbstractMojo {
 
-	/**
-	 * The refSet id
-	 * @parameter refSetId
-	 */
-	private String refSetId = null;
+  /**
+   * The refSet id
+   * @parameter refSetId
+   */
+  private String refSetId = null;
 
-	/**
-	 * Executes the plugin.
-	 * 
-	 * @throws MojoExecutionException the mojo execution exception
-	 */
-	@Override
-	public void execute() throws MojoExecutionException {
-		getLog().info(
-				"Starting compute workflow - " + refSetId);
+  /**
+   * Executes the plugin.
+   * 
+   * @throws MojoExecutionException the mojo execution exception
+   */
+  @Override
+  public void execute() throws MojoExecutionException {
+    getLog().info("Starting compute workflow - " + refSetId);
 
-		if (refSetId == null) {
-			throw new MojoExecutionException("You must specify a refSetId.");
-		}
+    if (refSetId == null) {
+      throw new MojoExecutionException("You must specify a refSetId.");
+    }
 
-		try {
+    try {
 
-			MappingService mappingService = new MappingServiceJpa();
-			Set<MapProject> mapProjects = new HashSet<MapProject>();
+      MappingService mappingService = new MappingServiceJpa();
+      Set<MapProject> mapProjects = new HashSet<MapProject>();
 
-			for (MapProject mapProject : mappingService.getMapProjects().getIterable()) {
-				for (String id : refSetId.split(",")) {
-					if (mapProject.getRefSetId().equals(id)) {
-						mapProjects.add(mapProject);
-					}
-				}
-			}
+      for (MapProject mapProject : mappingService.getMapProjects()
+          .getIterable()) {
+        for (String id : refSetId.split(",")) {
+          if (mapProject.getRefSetId().equals(id)) {
+            mapProjects.add(mapProject);
+          }
+        }
+      }
 
-			// Compute workflow
-			WorkflowService workflowService = new WorkflowServiceJpa();
-			for (MapProject mapProject : mapProjects) {
-				getLog().info(
-						"Computing workflow for " + mapProject.getName() + ", "
-								+ mapProject.getId());
-				workflowService.computeWorkflow(mapProject);
-			}
+      // Compute workflow
+      WorkflowService workflowService = new WorkflowServiceJpa();
+      for (MapProject mapProject : mapProjects) {
+        getLog().info(
+            "Computing workflow for " + mapProject.getName() + ", "
+                + mapProject.getId());
+        workflowService.computeWorkflow(mapProject);
+      }
 
-			getLog().info("done ...");
-            mappingService.close();
-            workflowService.close();
+      getLog().info("done ...");
+      mappingService.close();
+      workflowService.close();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoExecutionException(
-					"Computing workflow failed.", e);
-		}
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoExecutionException("Computing workflow failed.", e);
+    }
 
-	}
+  }
 }
