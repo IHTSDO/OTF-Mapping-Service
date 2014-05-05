@@ -51,7 +51,7 @@ public class CompareMapRecordJpaTest {
 		
 		if (handler.compareMapRecords(record1, record2).isValid() == false) {
 			fail("testSingleGroupSingleEntryMatching failed!");
-		};
+		}
 	}
 	
 	@Test
@@ -79,7 +79,7 @@ public class CompareMapRecordJpaTest {
 		
 		if (handler.compareMapRecords(record1, record2).isValid() == true) {
 			fail("testSingleGroupSingleEntryDifferentRules failed!");
-		};
+		}
 	}
 	
 	@Test
@@ -107,7 +107,7 @@ public class CompareMapRecordJpaTest {
 		
 		if (handler.compareMapRecords(record1, record2).isValid() == true) {
 			fail("testSingleGroupSingleEntryDifferentRelationId failed!");
-		};
+		}
 	}
 	
 	
@@ -152,7 +152,7 @@ public class CompareMapRecordJpaTest {
 		
 		if (handler.compareMapRecords(record1, record2).isValid() == true) {
 			fail("testSingleGroupSingleEntryDifferentAdviceLists failed!");
-		};
+		}
 	}
 		
 	@Test
@@ -201,7 +201,7 @@ public class CompareMapRecordJpaTest {
 		
 		if (handler.compareMapRecords(record1, record2).isValid() == false) {
 			fail("testSingleGroupMultipleEntriesSameOrder failed!");
-		};
+		}
 	}
 	
 	@Test
@@ -250,7 +250,7 @@ public class CompareMapRecordJpaTest {
 		
 		if (handler.compareMapRecords(record1, record2).isValid() == false) {
 			fail("testSingleGroupMultipleEntriesDifferentOrder failed!");
-		};
+		}
 	}
 	
 	@Test
@@ -309,7 +309,7 @@ public class CompareMapRecordJpaTest {
 		
 		if (handler.compareMapRecords(record1, record2).isValid() == false) {
 			fail("testMultipleGroupsEntriesMatching failed!");
-		};
+		}
 	}
 	
 	@Test
@@ -376,7 +376,7 @@ public class CompareMapRecordJpaTest {
 		
 		if (handler.compareMapRecords(record1, record2).isValid() == true) {
 			fail("testMultipleGroupsFirstGroupMatching failed!");
-		};
+		}
 	}
 	
 	@Test
@@ -434,12 +434,12 @@ public class CompareMapRecordJpaTest {
 		
 		if (handler.compareMapRecords(record1, record2).isValid() == true) {
 			fail("testMultipleGroupsDifferentNumbersOfGroups failed!");
-		};
+		}
 	}
 
 	
 	@AfterClass
 	public static void cleanup() {
-		
+		// do nothing
 	}
 }

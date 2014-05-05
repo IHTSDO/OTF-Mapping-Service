@@ -190,7 +190,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			// This will eventually be a project specific check (i.e. for legacy handling)
 			if (!trackingRecord.getAssignedUsers().contains(mapUser) &&
 					trackingRecord.getAssignedUsers().size() < 2 &&
-					trackingRecord.getWorkflowStatus().compareTo(WorkflowStatus.EDITING_DONE) <= 0 ) {;
+					trackingRecord.getWorkflowStatus().compareTo(WorkflowStatus.EDITING_DONE) <= 0 ) {
 
 				availableWork.add(trackingRecord);
 			}
@@ -506,7 +506,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			trackingRecord = algorithmHandler.assignFromScratch(trackingRecord, concept, mapUser);
 
 			Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
-			synchronizeWorkflowTrackingRecord(trackingRecord, getWorkflowTrackingRecord(mapProject, concept));;
+			synchronizeWorkflowTrackingRecord(trackingRecord, getWorkflowTrackingRecord(mapProject, concept));
 
 
 			break;

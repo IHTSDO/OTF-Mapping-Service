@@ -671,6 +671,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			// add newly persisted record to tracking record		
 			trackingRecord.addMapRecord(newRecord);
 			
+			break;
+			
 		case CONSENSUS_PATH:
 			break;
 		case LEGACY_PATH:
@@ -719,11 +721,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		mapRecord.setConceptName(concept.getDefaultPreferredName());
 		mapRecord.setOwner(mapUser);
 		mapRecord.setLastModifiedBy(mapUser);
-<<<<<<< HEAD
-		
-=======
-				
->>>>>>> 7dbcfd5d40bd5da7683d5268c2ff2f3cd0436dfa
+
 		// determine the workflow status of this record based on tracking record
 		switch (trackingRecord.getWorkflowPath()) {
 		case NON_LEGACY_PATH:
@@ -755,6 +753,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			} else {
 				throw new Exception("assignFromScratch called with invalid Workflow Status");
 			}
+			break;
 		case LEGACY_PATH:
 			break;
 		case CONSENSUS_PATH:
@@ -1024,13 +1023,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			
 		case LEGACY_PATH:
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("LEGACY_PATH");
-			
+			break;
 		case QA_PATH:
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("QA_PATH");
-			
+			break;
 		case CONSENSUS_PATH:
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("CONSENSUS_PATH");
-			
+			break;
 		default:
 			throw new Exception("finishEditing: Unexpected workflow path");
 		}
