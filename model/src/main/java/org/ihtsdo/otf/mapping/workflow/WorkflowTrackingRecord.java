@@ -8,7 +8,6 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface WorkflowTrackingRecord.
  *

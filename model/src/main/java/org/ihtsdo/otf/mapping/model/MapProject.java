@@ -2,7 +2,7 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * Represents a map project.
  *

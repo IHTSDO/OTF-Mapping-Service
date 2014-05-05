@@ -890,9 +890,9 @@ public class ContentServiceJpa implements ContentService {
 		// initialize the result set
 		List<TreePosition> fullTreePositions = new ArrayList<>();
 		
-		System.out.println("Found " + queriedTreePositions.size() + " results:");
+		Logger.getLogger(ContentServiceJpa.class).info("Found " + queriedTreePositions.size() + " results:");
 		for (TreePosition queriedTreePosition : queriedTreePositions) {
-			System.out.println(queriedTreePosition.getTerminologyId());
+			Logger.getLogger(ContentServiceJpa.class).info(queriedTreePosition.getTerminologyId());
 		}
 
 		// for each query result, construct the full tree (i.e. up to root)
@@ -900,21 +900,21 @@ public class ContentServiceJpa implements ContentService {
 
 			TreePosition fullTreePosition = constructRootTreePosition(queriedTreePosition);
 			
-			System.out.println("Checking root " + fullTreePosition.getTerminologyId());
+			Logger.getLogger(ContentServiceJpa.class).info("Checking root " + fullTreePosition.getTerminologyId());
 			
 			// if this root is already present in the final list, add this position's children to existing root
 			if (fullTreePositions.contains(fullTreePosition)) {
 				
 				TreePosition existingTreePosition = fullTreePositions.get(fullTreePositions.indexOf(fullTreePosition));
 				
-				System.out.println("Found existing root at position " + fullTreePositions.indexOf(fullTreePosition)
+				Logger.getLogger(ContentServiceJpa.class).info("Found existing root at position " + fullTreePositions.indexOf(fullTreePosition)
 						+ " with " + existingTreePosition.getChildren().size());
 				
 				existingTreePosition.addChildren(fullTreePosition.getChildren());
 				
-				System.out.println("  Added " + fullTreePosition.getChildren().size() + " children:");
+				Logger.getLogger(ContentServiceJpa.class).info("  Added " + fullTreePosition.getChildren().size() + " children:");
 				for(TreePosition tp : fullTreePosition.getChildren()) {
-					System.out.println(tp.getTerminologyId());
+					Logger.getLogger(ContentServiceJpa.class).info(tp.getTerminologyId());
 				}
 				
 				fullTreePositions.set(

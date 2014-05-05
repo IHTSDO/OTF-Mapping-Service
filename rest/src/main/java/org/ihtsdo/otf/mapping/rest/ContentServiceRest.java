@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.ws.rs.GET;
@@ -16,10 +15,12 @@ import org.ihtsdo.otf.mapping.helpers.RelationshipListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -36,18 +37,12 @@ import com.wordnik.swagger.annotations.ApiParam;
 @SuppressWarnings("static-method")
 public class ContentServiceRest {
 
-	/** The terminology versions. */
-	private Map<String, String> terminologyLatestVersions = null;
 
 
 	/**
 	 * Instantiates an empty {@link ContentServiceRest}.
 	 */
 	public ContentServiceRest() {
-
-		// TODO: wire this to metadata service (getTerminologyLatestVesrions)
-		terminologyLatestVersions = new HashMap<>();
-		terminologyLatestVersions.put("SNOMEDCT", "20140131");
 	}
 
 	/**
@@ -150,9 +145,12 @@ public class ContentServiceRest {
 		
 		try {
 			ContentService contentService = new ContentServiceJpa();
-			Concept c = contentService.getConcept(terminologyId, terminology, terminologyLatestVersions.get(terminology));
+			MetadataService metadataService = new MetadataServiceJpa();
+			String version = metadataService.getLatestVersion(terminology);
+			Concept c = contentService.getConcept(terminologyId, terminology, version);
 			c.getDescriptions();
 			c.getRelationships();
+			metadataService.close();
 			contentService.close();
 			return c;
 		} catch (Exception e) {
@@ -206,10 +204,19 @@ public class ContentServiceRest {
 		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + terminologyId + "/descendants");
 		try {
 			ContentService contentService = new ContentServiceJpa();
+			MetadataService metadataService = new MetadataServiceJpa();
+			
+			String isaId = "";
+			Map<String, String> relTypesMap = metadataService.getHierarchicalRelationshipTypes(terminology, terminologyVersion);
+			for (Map.Entry<String, String> entry : relTypesMap.entrySet()) {
+				if (entry.getValue().toLowerCase().startsWith("is"))
+					isaId = entry.getKey();
+			}
 			
 			SearchResultList results = contentService.findDescendants(terminologyId, terminology,
-				terminologyVersion, "116680003"); // TODO Change this to metadata reference
+				terminologyVersion, isaId); 
 		
+			metadataService.close();
 			contentService.close();
 			return results;
 		} catch (Exception e) {
@@ -239,10 +246,19 @@ public class ContentServiceRest {
 		Logger.getLogger(ContentServiceJpa.class).info("RESTful call (Content): /concept/" + terminology + "/" + terminologyVersion + "/id/" + id.toString() + "/descendants");
 		try {
 			ContentService contentService = new ContentServiceJpa();
+			MetadataService metadataService = new MetadataServiceJpa();
+			
+			String isaId = "";
+			Map<String, String> relTypesMap = metadataService.getHierarchicalRelationshipTypes(terminology, terminologyVersion);
+			for (Map.Entry<String, String> entry : relTypesMap.entrySet()) {
+				if (entry.getValue().toLowerCase().startsWith("is"))
+					isaId = entry.getKey();
+			}
 			
 			SearchResultList results = contentService.findChildren(id.toString(), terminology,
-				terminologyVersion, new Long("116680003")); // TODO Change this to metadata reference
+				terminologyVersion, new Long(isaId)); 
 		
+			metadataService.close();
 			contentService.close();
 			return results;
 		} catch (Exception e) {
@@ -250,34 +266,6 @@ public class ContentServiceRest {
 		}
 	}
 	
-	// FOR TESTING ONLY!!
-	/**
-	 * Testing function
-	 * @return the search result list
-	 */
-	@GET
-	@Path("/concept/treePositions")
-	@ApiOperation(value = "TreePosition testing function", notes = "Implemented to test computation of tree positions.", response = Concept.class)
-	@Produces({
-			MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-	})
-	public SearchResultList computeTreePositions() {
-	
-		
-		try {
-			ContentService contentService = new ContentServiceJpa();
-			contentService.setTransactionPerOperation(true);
-			
-			contentService.computeTreePositions("SNOMEDCT",
-				"20140131", "116680003", "138875005"); 
-			/**Set<TreePosition> results = contentService.computeTreePositions("SNOMEDCT",
-					"20140131", new Long("116680003"), new Long("371772001"));*/
-			contentService.close();
-			return new SearchResultListJpa();
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
 	
 	/**
 	 * Clears tree positions.

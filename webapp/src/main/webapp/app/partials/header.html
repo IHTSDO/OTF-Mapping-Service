@@ -16,7 +16,7 @@
           <p class="navbar-text" ng-show="currentUser.name != null">
             {{currentUser.name}} ({{currentRole}}) &nbsp; <a
               ng-show="currentUser.name != null" title="Log out"
-              href="index.html#/" ng-click="go('/project/projects/')"><i
+              href="index.html#/" ng-click="go('/viewer/dash')"><i
               class="glyphicon glyphicon-log-out"></i></a>
           </p>
         </li>
@@ -46,7 +46,7 @@
             <!-- Dashboard tool (by role) -->
 
             <a ng-show="currentRole === 'Viewer'" title="Dashboard"
-              href="index.html#/project/projects/"><i
+              href="index.html#/viewer/dash"><i
               class="glyphicon glyphicon-stats"></i></a> 
               
             <a ng-show="currentRole === 'Specialist'" title="Dashboard"

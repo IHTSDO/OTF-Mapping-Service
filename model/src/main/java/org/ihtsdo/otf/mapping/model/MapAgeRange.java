@@ -1,6 +1,6 @@
 package org.ihtsdo.otf.mapping.model;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The interface for a preset age range used to construct rules for MapEntry.
  *

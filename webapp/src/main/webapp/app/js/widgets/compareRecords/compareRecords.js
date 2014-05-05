@@ -213,7 +213,6 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			// otherwise, initialize group arrays
 		} else {
 
-			// TODO Clunky array assignment, consider revisiting
 			// initiailize entry arrays for distribution by group
 			$scope.entries2 = new Array(10);
 

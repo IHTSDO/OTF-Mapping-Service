@@ -3,7 +3,7 @@ package org.ihtsdo.otf.mapping.rf2;
 import java.util.List;
 
 
-// TODO: Auto-generated Javadoc
+
 /**
  * Represents a tree position.
  *

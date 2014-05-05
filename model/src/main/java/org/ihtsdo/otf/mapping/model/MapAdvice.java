@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.model;
 
 
-// TODO: Auto-generated Javadoc
 /**
  * Represents a map lead role.
  *

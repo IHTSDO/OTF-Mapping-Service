@@ -1,77 +1,63 @@
-/*package org.ihtsdo.otf.mapping.rest;
+package org.ihtsdo.otf.mapping.rest;
 
 
-import java.util.List;
 
-import org.ihtsdo.otf.mapping.model.MapLead;
+import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.MapProjectList;
+import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapSpecialist;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 
-*//**
- * The Class MapProjectJpaTest.
- * 
- * Provides test cases
- * 1. confirm MapProject data load returns expected data
- * 2. confirms indexed fields are indexed
- * 3. confirms MapProject is audited and changes are logged in audit table
- *//*
+/**
+ * Retrieves some elements from a db that is already populated.
+ *
+ */
 public class MappingServiceRestTest {
 
-	*//** The edit mapping service *//*
+	/** The edit mapping service */
 	private static MappingServiceRest service = new MappingServiceRest();
 
-	*//**
-	 * Creates db tables, load test objects and create indexes to prepare for test
-	 * cases.
-	 *//*
+
+	/**
+	 * Initializes the tests.
+	 */
 	@BeforeClass
 	public static void init() {
 		
-		System.out.println("Initializing EditMappingServiceJpa");
+		Logger.getLogger(MappingServiceRestTest.class).info("Initializing MappingServiceRestTest");
 
 	}
 	
 	
-	*//** 
+	/** 
 	 * Test retrieval of existing database elements
 	 * @throws Exception the exception
-	 *//*
+	 */
 	@Test
 	public void testRetrieveElements() throws Exception {
-		System.out.println("Testing element add...");
+		Logger.getLogger(MappingServiceRestTest.class).info("Testing retrieval of elements...");
 		
-		// retrieve all, in JSON
-		List<MapProject> projects = service.getMapProjectsJson();
-		List<MapLead> leads = service.getMapLeadsJson();
-		List<MapSpecialist> specialists = service.getMapSpecialistsJson();
+		// retrieve all
+		MapProjectList projects = service.getMapProjects();
+		MapUserList users = service.getMapUsers();
 		
-		System.out.println(Integer.toString(projects.size()) + " projects found");
-		System.out.println(Integer.toString(specialists.size()) + " speciaists found");
-		System.out.println(Integer.toString(leads.size()) + " leads found");
+		Logger.getLogger(MappingServiceRestTest.class).info(Integer.toString(projects.getCount()) + " projects found");
+		Logger.getLogger(MappingServiceRestTest.class).info(Integer.toString(users.getCount()) + " users found");
 		
 		// retrieve individual projects
-		for (MapProject m : projects) {
-			service.getMapProjectForIdJson(m.getId());
-			service.getMapProjectForNameJson(m.getName());
+		for (MapProject m : projects.getMapProjects()) {
+			service.getMapProjectForId(m.getId());
 		}
 		
 		// retrieve projects by specialist
-		for (MapSpecialist m : specialists) {
-			service.getMapProjectsForSpecialistJson(m);
+		for (MapUser m : users.getMapUsers()) {
+			service.getMapProjectsForUser(m.getId());
 		}
-		
-		// retrieve projects by lead
-		for (MapLead m : leads) {
-			service.getMapProjectsForLeadJson(m);
-		}
-		
-		
 		
 	}
 	
 	
 }
-*/

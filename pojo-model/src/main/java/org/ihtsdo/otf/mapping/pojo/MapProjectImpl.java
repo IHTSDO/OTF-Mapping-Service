@@ -10,7 +10,6 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapProject}.
  * 

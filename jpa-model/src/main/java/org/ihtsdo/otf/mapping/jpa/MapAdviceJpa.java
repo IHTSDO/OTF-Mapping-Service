@@ -18,7 +18,6 @@ import org.ihtsdo.otf.mapping.model.MapAdvice;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
 /**
  * JPA enabled map advice.
  */

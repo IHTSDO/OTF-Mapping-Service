@@ -33,7 +33,6 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Workflow Services REST package.
  */
@@ -427,6 +426,12 @@ public class WorkflowServiceRest {
 			// get the map project and map user
 			MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
 			MapUser mapUser = mapRecord.getOwner();
+<<<<<<< HEAD
+=======
+			
+			// save the map record
+			mappingService.updateMapRecord(mapRecord);
+>>>>>>> 7dbcfd5d40bd5da7683d5268c2ff2f3cd0436dfa
 			mappingService.close();
 			
 			// get the concept
@@ -474,7 +479,10 @@ public class WorkflowServiceRest {
 			mapProject.getSourceTerminologyVersion());
 			contentService.close();
 			
+<<<<<<< HEAD
 			// process the workflow action
+=======
+>>>>>>> 7dbcfd5d40bd5da7683d5268c2ff2f3cd0436dfa
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord, WorkflowAction.SAVE_FOR_LATER);
 			workflowService.close();

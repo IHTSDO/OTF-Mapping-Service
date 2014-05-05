@@ -59,7 +59,6 @@ public class InitializationListener implements AbstractResourceModelListener {
     @Override
     public void run() {
       try {
-        System.out.format("Time's up!%n");
         timer.cancel(); // Terminate the timer thread
 
         // For now, the timer is not doing anything

@@ -672,15 +672,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			trackingRecord.addMapRecord(newRecord);
 			
 		case CONSENSUS_PATH:
-			// TODO Phase 2
 			break;
 		case LEGACY_PATH:
-			// TODO Phase 2
 			break;
 		case NON_LEGACY_PATH:
 			throw new Exception("Invalid assignFromInitialRecord call for NON_LEGACY_PATH workflow");
 		case QA_PATH:
-			// TODO Phase 2
 			break;
 		default:
 			throw new Exception("assignFromInitialRecord called with erroneous Workflow Path.");
@@ -722,7 +719,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		mapRecord.setConceptName(concept.getDefaultPreferredName());
 		mapRecord.setOwner(mapUser);
 		mapRecord.setLastModifiedBy(mapUser);
+<<<<<<< HEAD
 		
+=======
+				
+>>>>>>> 7dbcfd5d40bd5da7683d5268c2ff2f3cd0436dfa
 		// determine the workflow status of this record based on tracking record
 		switch (trackingRecord.getWorkflowPath()) {
 		case NON_LEGACY_PATH:
@@ -755,10 +756,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 				throw new Exception("assignFromScratch called with invalid Workflow Status");
 			}
 		case LEGACY_PATH:
-			// TODO Implement this - Phase 2
 			break;
 		case CONSENSUS_PATH:
-			// TODO Implement this - Phase 2
 			break;
 		default:
 			throw new Exception("assignFromScratch called with erroneous Workflow Path.");
@@ -845,10 +844,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 				
 			// this record is a lead resolving a conflict, no special action required
 			case CONSENSUS_NEEDED:
-				// TODO Phase 2
 				break;
 			case CONSENSUS_RESOLVED:
-				// TODO Phase 2
 				break;
 			
 			// If REVIEW is detected, something has gone horribly wrong for the NON_LEGACY_PATH
@@ -863,17 +860,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			break;
 
 		case LEGACY_PATH:
-			// TODO Phase 2
 			break;
 			
 		// If unassignment for error fixing, need to reset the existing record from REVIEW
 		case FIX_ERROR_PATH:
-			
-			// TODO Determine behavior
-			// 		My inclination is to return to READY_FOR_PUBLICATION by default
-			//			Despite no changes made, a user has "tampered" with the PUBLISHED state
-			//		However, a case could be made that a PUBLISHED record could be returned to that state
-			//			This would require an audit trail call
 			
 			for (MapRecord mr : trackingRecord.getMapRecords()) {
 				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW)) {
@@ -884,10 +874,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			
 			break;
 		case QA_PATH:
-			// TODO Phase 2
 			break;
 		case CONSENSUS_PATH:
-			// TODO Phase 2
 			break;
 			
 		default:
@@ -1035,15 +1023,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 			break;
 			
 		case LEGACY_PATH:
-			// TODO Phase2
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("LEGACY_PATH");
 			
 		case QA_PATH:
-			// TODO Phase2
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("QA_PATH");
 			
 		case CONSENSUS_PATH:
-			// TODO Phase2
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("CONSENSUS_PATH");
 			
 		default:

@@ -28,7 +28,7 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * Services for interacting with mapping objects.
  */
@@ -162,25 +162,6 @@ public interface MappingService {
 	 */
 	public SearchResultList findMapProjects(String query, PfsParameter pfsParameter) throws Exception;
 	
-	/**
-	 * Query for MapUsers.
-	 *
-	 * @param query the query
-	 * @param pfsParameter the paging, filtering, sorting parameter
-	 * @return the List of MapUsers
-	 * @throws Exception the exception
-	 */
-	public SearchResultList findMapUsers(String query, PfsParameter pfsParameter) throws Exception;
-	
-	/**
-	 * Query for MapAdvices.
-	 *
-	 * @param query the query
-	 * @param pfsParameter the paging, filtering, sorting parameter
-	 * @return the List of MapAdvices
-	 * @throws Exception the exception
-	 */
-	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter) throws Exception;
 	
 	/**
 	 * Query for MapRecords.
@@ -192,15 +173,6 @@ public interface MappingService {
 	 */
 	public SearchResultList findMapRecords(String query, PfsParameter pfsParameter) throws Exception;
 	
-	/**
-	 * Query for MapEntrys.
-	 *
-	 * @param query the query
-	 * @param pfsParameter the paging, filtering, sorting parameter
-	 * @return the List of MapEntrys
-	 * @throws Exception the exception
-	 */
-	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter) throws Exception;
 
 	////////////////////////////
 	// Addition services     ///
@@ -584,16 +556,6 @@ public interface MappingService {
 	 */
 	public MapRelationList getMapRelations();
 
-	/**
-	 * Finds map relations from the specified query.
-	 *
-	 * @param query the query
-	 * @param pfsParameter the pfs parameter
-	 * @return the search result list
-	 * @throws Exception the exception
-	 */
-	public SearchResultList findMapRelations(String query, PfsParameter pfsParameter)
-			throws Exception;
 
 	/**
 	 * Adds the map relation.

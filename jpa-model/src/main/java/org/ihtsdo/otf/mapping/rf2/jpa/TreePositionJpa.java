@@ -62,7 +62,6 @@ public class TreePositionJpa implements TreePosition {
 	@Column(nullable = false, length = 256)
 	private String defaultPreferredName;
 	
-	// TODO:  Calculate this at generation or compute each time to account for changing rules?
 	/** Flag for whether this tree position is assignable (not persisted) */
 	@Transient
 	private boolean valid;

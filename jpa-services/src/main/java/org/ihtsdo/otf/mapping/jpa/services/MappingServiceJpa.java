@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -375,6 +374,9 @@ public class MappingServiceJpa implements MappingService {
 
 		fullTextEntityManager.close();
 
+		// closing fullTextEntityManager also closes manager, recreate
+		manager = factory.createEntityManager();
+		
 		return s;
 	}
 
@@ -587,63 +589,6 @@ public class MappingServiceJpa implements MappingService {
 		return mapProjectList;
 	}
 
-	/**
-	 * Query for MapSpecialists.
-	 * 
-	 * @param query the query
-	 * @param pfsParameter the pfs parameter
-	 * @return the List of MapProjects
-	 * @throws Exception the exception
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public SearchResultList findMapUsers(String query, PfsParameter pfsParameter)
-			throws Exception {
-
-		SearchResultList s = new SearchResultListJpa();
-
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-		Query luceneQuery;
-
-		// construct luceneQuery based on URL format
-		if (query.indexOf(':') == -1) { // no fields indicated
-			MultiFieldQueryParser queryParser =
-					new MultiFieldQueryParser(Version.LUCENE_36,
-							fieldNames.toArray(new String[0]),
-							searchFactory.getAnalyzer(MapUserJpa.class));
-			queryParser.setAllowLeadingWildcard(false);
-			luceneQuery = queryParser.parse(query);
-
-		} else { // field:value
-			QueryParser queryParser =
-					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(MapUserJpa.class));
-			luceneQuery = queryParser.parse(query);
-		}
-
-		List<MapUser> m =
-				fullTextEntityManager
-				.createFullTextQuery(luceneQuery, MapUserJpa.class).getResultList();
-
-		for (MapUser ms : m) {
-			s.addSearchResult(new SearchResultJpa(ms.getId(), "", ms.getName()));
-		}
-
-		// Sort by ID
-		s.sortBy(new Comparator<SearchResult>() {
-			@Override
-			public int compare(SearchResult o1, SearchResult o2) {
-				return o1.getId().compareTo(o2.getId());
-			}
-		});
-
-		fullTextEntityManager.close();
-
-		return s;
-	}
 
 	/**
 	 * Update a map specialist.
@@ -865,6 +810,9 @@ public class MappingServiceJpa implements MappingService {
 
 		fullTextEntityManager.close();
 
+		// closing fullTextEntityManager also closes manager, recreate
+		manager = factory.createEntityManager();
+		
 		return s;
 		/*
 		 * for (MapRecord mr : m) { if (pfsParameter == null ||
@@ -1035,9 +983,6 @@ public class MappingServiceJpa implements MappingService {
 		"unchecked"
 	})
 	@Override
-	// TODO Support the following
-	//		Search by date ranges (.ge .le tests) based on pfsParameter filters
-	//		Support ascending or descending flag based on pfsParameter sortKey
 	public MapRecordList getRecentlyEditedMapRecords(Long projectId, String userName, PfsParameter pfsParameter)  throws Exception {
 
 		MapUser user = getMapUser(userName);
@@ -1093,171 +1038,7 @@ public class MappingServiceJpa implements MappingService {
 	// Other query services
 	// //////////////////////////////////
 
-	/**
-	 * Service for finding MapEntrys by string query.
-	 * 
-	 * @param query the query string
-	 * @param pfsParameter the pfs parameter
-	 * @return the search result list
-	 * @throws Exception the exception
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public SearchResultList findMapEntrys(String query, PfsParameter pfsParameter)
-			throws Exception {
-		SearchResultList s = new SearchResultListJpa();
 
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-		Query luceneQuery;
-
-		// construct luceneQuery based on URL format
-		if (query.indexOf(':') == -1) { // no fields indicated
-			MultiFieldQueryParser queryParser =
-					new MultiFieldQueryParser(Version.LUCENE_36,
-							fieldNames.toArray(new String[0]),
-							searchFactory.getAnalyzer(MapEntryJpa.class));
-			queryParser.setAllowLeadingWildcard(false);
-			luceneQuery = queryParser.parse(query);
-
-		} else { // field:value
-			QueryParser queryParser =
-					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(MapEntryJpa.class));
-			luceneQuery = queryParser.parse(query);
-		}
-
-		List<MapEntry> m =
-				fullTextEntityManager.createFullTextQuery(luceneQuery,
-						MapEntryJpa.class).getResultList();
-
-		for (MapEntry me : m) {
-			s.addSearchResult(new SearchResultJpa(me.getId(), "", me.getMapRecord()
-					.getId().toString()));
-		}
-
-		// Sort by ID
-		s.sortBy(new Comparator<SearchResult>() {
-			@Override
-			public int compare(SearchResult o1, SearchResult o2) {
-				return o1.getId().compareTo(o2.getId());
-			}
-		});
-
-		return s;
-	}
-
-	/**
-	 * Service for finding MapAdvices by string query.
-	 * 
-	 * @param query the query string
-	 * @param pfsParameter the pfs parameter
-	 * @return the search result list
-	 * @throws Exception the exception
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public SearchResultList findMapAdvices(String query, PfsParameter pfsParameter)
-			throws Exception {
-		SearchResultList s = new SearchResultListJpa();
-
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-		Query luceneQuery;
-
-		// construct luceneQuery based on URL format
-		if (query.indexOf(':') == -1) { // no fields indicated
-			MultiFieldQueryParser queryParser =
-					new MultiFieldQueryParser(Version.LUCENE_36,
-							fieldNames.toArray(new String[0]),
-							searchFactory.getAnalyzer(MapAdviceJpa.class));
-			queryParser.setAllowLeadingWildcard(false);
-			luceneQuery = queryParser.parse(query);
-
-		} else { // field:value
-			QueryParser queryParser =
-					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(MapAdviceJpa.class));
-			luceneQuery = queryParser.parse(query);
-		}
-
-		List<MapAdvice> m =
-				fullTextEntityManager
-				.createFullTextQuery(luceneQuery, MapNoteJpa.class).getResultList();
-
-		for (MapAdvice ma : m) {
-			s.addSearchResult(new SearchResultJpa(ma.getId(), "", ma.getName()));
-		}
-
-		// Sort by ID
-		s.sortBy(new Comparator<SearchResult>() {
-			@Override
-			public int compare(SearchResult o1, SearchResult o2) {
-				return o1.getId().compareTo(o2.getId());
-			}
-		});
-
-		return s;
-	}
-
-	/**
-	 * Service for finding MapRelations by string query.
-	 * 
-	 * @param query the query string
-	 * @param pfsParameter the pfs parameter
-	 * @return the search result list
-	 * @throws Exception the exception
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public SearchResultList findMapRelations(String query,
-			PfsParameter pfsParameter) throws Exception {
-		SearchResultList s = new SearchResultListJpa();
-
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
-
-		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-		Query luceneQuery;
-
-		// construct luceneQuery based on URL format
-		if (query.indexOf(':') == -1) { // no fields indicated
-			MultiFieldQueryParser queryParser =
-					new MultiFieldQueryParser(Version.LUCENE_36,
-							fieldNames.toArray(new String[0]),
-							searchFactory.getAnalyzer(MapRelationJpa.class));
-			queryParser.setAllowLeadingWildcard(false);
-			luceneQuery = queryParser.parse(query);
-
-		} else { // field:value
-			QueryParser queryParser =
-					new QueryParser(Version.LUCENE_36, "summary",
-							searchFactory.getAnalyzer(MapRelationJpa.class));
-			luceneQuery = queryParser.parse(query);
-		}
-
-		List<MapRelation> m =
-				fullTextEntityManager
-				.createFullTextQuery(luceneQuery, MapNoteJpa.class).getResultList();
-
-		for (MapRelation ma : m) {
-			s.addSearchResult(new SearchResultJpa(ma.getId(), "", ma.getName()));
-		}
-
-		// Sort by ID
-		s.sortBy(new Comparator<SearchResult>() {
-			@Override
-			public int compare(SearchResult o1, SearchResult o2) {
-				return o1.getId().compareTo(o2.getId());
-			}
-		});
-
-		return s;
-	}
 
 	// //////////////////////////////////////////////
 	// Descendant services
@@ -1402,11 +1183,11 @@ public class MappingServiceJpa implements MappingService {
 						pfsParameter == null ? new PfsParameterJpa() : pfsParameter);
 
 		// add published / ready for publication check
-		// TODO Need to make this trigger on pfsParameters?  Remover doesn't work with this check in.
+		//  Need to make this trigger on pfsParameters?  Remover doesn't work with this check in.
 		/*full_query +=
 				" AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')";
 		 */
-		System.out.println(full_query);
+		Logger.getLogger(MappingServiceJpa.class).info(full_query);
 
 		FullTextEntityManager fullTextEntityManager =
 				Search.getFullTextEntityManager(manager);
@@ -1444,10 +1225,6 @@ public class MappingServiceJpa implements MappingService {
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
 		mapRecordList.setMapRecords(m);
 		
-		// TODO: this is not quite right because in a search
-		// environment the total record count is not matched by this
-		// but current implementation will limit overall count by paging settings 
-		// and it should not.  it can use other settings but not paging ones.
 		mapRecordList.setTotalCount(
 				getMapRecordCountForMapProject(mapProjectId, pfsParameter));
 		return mapRecordList;
@@ -1683,7 +1460,6 @@ public class MappingServiceJpa implements MappingService {
 			if (c == null) {
 			  Logger.getLogger(this.getClass()).error("Scope concept " + conceptId + " does not exist.");
 			  continue;
-			  // TODO: fix this and then throw an exception here
 			}
 			SearchResult sr = new SearchResultJpa();
 			sr.setId(c.getId());
@@ -1748,7 +1524,6 @@ public class MappingServiceJpa implements MappingService {
    * org.ihtsdo.otf.mapping.services.MappingService#findUnmappedConceptsInScope
    * (org.ihtsdo.otf.mapping.model.MapProject)
    */
-  @SuppressWarnings("deprecation")
   @Override
   public SearchResultList findUnmappedConceptsInScope(Long mapProjectId)
     throws Exception {
@@ -1781,8 +1556,6 @@ public class MappingServiceJpa implements MappingService {
     for (SearchResult sr : conceptsInScope.getSearchResults()) {
 
       // Check that the concept has an effectiveTime >= 20140131
-      // TODO: remove this after optimizing the find available work to
-      //       efficiently handle 10K+ cases
       Calendar c = Calendar.getInstance();
       c.set(2013, 0, 1);
       Concept concept = contentService.getConcept(sr.getId());
@@ -2696,8 +2469,6 @@ public class MappingServiceJpa implements MappingService {
 							"      Computing descendant ct = "
 									+ mapRecord.getCountDescendantConcepts());
 
-					// mapRecord.setCountDescendantConcepts(0L);
-
 					// set the previous concept to this concept
 					prevConceptId = refSetMember.getConcept().getTerminologyId();
 
@@ -2952,7 +2723,7 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public MapUserPreferences getMapUserPreferences(String userName) {
 		
-		System.out.println("Finding user " + userName);
+		Logger.getLogger(MappingServiceJpa.class).info("Finding user " + userName);
 		MapUser mapUser = getMapUser(userName);
 		javax.persistence.Query query = manager.createQuery("select m from MapUserPreferencesJpa m where mapUser_id = :mapUser_id")
 				.setParameter("mapUser_id", mapUser.getId());
@@ -3122,7 +2893,7 @@ public class MappingServiceJpa implements MappingService {
 		// cycle over all tree positions and check target code, recursively cycle over children
 		for (TreePosition tp : treePositions) {
 
-			System.out.println("Checking valid for " + tp.getTerminologyId());
+			Logger.getLogger(MappingServiceJpa.class).info("Checking valid for " + tp.getTerminologyId());
 
 			tp.setValid(algorithmHandler.isTargetCodeValid(tp.getTerminologyId()));
 
@@ -3185,7 +2956,7 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public MapRecordList getRecordsInConflict(Long mapRecordId) throws Exception {
 
-		System.out.println("getRecordsInConflict with record id = " + mapRecordId.toString());
+		Logger.getLogger(MappingServiceJpa.class).info("getRecordsInConflict with record id = " + mapRecordId.toString());
 
 		MapRecordList conflictRecords = new MapRecordListJpa();
 

@@ -187,7 +187,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			// if this tracking record does not have this user assigned to it 
 			//   AND the total users assigned is less than 2
 			//   AND the workflow status is less than or equal to EDITING_DONE
-			// TODO: This will eventually be a project specific check (i.e. for legacy handling)
+			// This will eventually be a project specific check (i.e. for legacy handling)
 			if (!trackingRecord.getAssignedUsers().contains(mapUser) &&
 					trackingRecord.getAssignedUsers().size() < 2 &&
 					trackingRecord.getWorkflowStatus().compareTo(WorkflowStatus.EDITING_DONE) <= 0 ) {;
@@ -447,7 +447,6 @@ public class WorkflowServiceJpa implements WorkflowService {
 		// set the transaction per operation
 
 		// instantiate the algorithm handler for this project\
-		// TODO We don't want the explicit binding for the handler path
 		ProjectSpecificAlgorithmHandler algorithmHandler = 
 				(ProjectSpecificAlgorithmHandler) Class.forName("org.ihtsdo.otf.mapping.jpa.handlers." + mapProject.getProjectSpecificAlgorithmHandlerClass())
 				.newInstance();
@@ -535,7 +534,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			Logger.getLogger(WorkflowServiceJpa.class).info("SAVE_FOR_LATER");
 
 			// expect existing (pre-computed) workflow tracking record to exist with this user assigned
-			if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: SAVE_FOR_LATER - Could not find tracking record for unassignment.");
+			if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: SAVE_FOR_LATER - Could not find tracking record.");
 
 			// expect this user to be assigned to a map record in this tracking record
 			if (!trackingRecord.getAssignedUsers().contains(mapUser)) throw new Exception("SAVE_FOR_LATER - User not assigned to record");
@@ -554,10 +553,10 @@ public class WorkflowServiceJpa implements WorkflowService {
 			Logger.getLogger(WorkflowServiceJpa.class).info("FINISH_EDITING");
 
 			// expect existing (pre-computed) workflow tracking record to exist with this user assigned
-			if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: FINISH_EDITING - Could not find tracking record for unassignment.");
+			if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: FINISH_EDITING - Could not find tracking record to be finished.");
 
 			// expect this user to be assigned to a map record in this tracking record
-			if (!trackingRecord.getAssignedUsers().contains(mapUser)) throw new Exception("User not assigned to record for unassignment request");
+			if (!trackingRecord.getAssignedUsers().contains(mapUser)) throw new Exception("User not assigned to record for finishing request");
 
 
 			Logger.getLogger(WorkflowServiceJpa.class).info("Performing action...");
@@ -588,7 +587,6 @@ public class WorkflowServiceJpa implements WorkflowService {
 	 * @throws Exception the exception
 	 */
 	@Override
-	// TODO Yeah, do stuff
 	public void synchronizeWorkflowTrackingRecord(WorkflowTrackingRecord newTrackingRecord, WorkflowTrackingRecord oldTrackingRecord) throws Exception {
 
 		MappingService mappingService = new MappingServiceJpa();
@@ -601,7 +599,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		newTrackingRecord.getWorkflowStatus(); // force lazy collection
 		manager.detach(newTrackingRecord);
 
-		System.out.println(newTrackingRecord.getMapRecords().size() + " records in tracking record");
+		Logger.getLogger(WorkflowServiceJpa.class).info(newTrackingRecord.getMapRecords().size() + " records in tracking record");
 
 		manager.close();
 
@@ -654,7 +652,6 @@ public class WorkflowServiceJpa implements WorkflowService {
 				Logger.getLogger(WorkflowServiceJpa.class).info(getMapRecordInWorkflowTrackingRecord(oldTrackingRecord, mapRecord.getId()).toString());
 				Logger.getLogger(WorkflowServiceJpa.class).info(getMapRecordInWorkflowTrackingRecord(oldTrackingRecord, mapRecord.getId()).getMapEntries().size());
 
-				// TODO Figure out persistence problems to allow actual update only on equality check
 				//	if (!mapRecord.equals(getMapRecordInWorkflowTrackingRecord(oldTrackingRecord, mapRecord.getId()))) {
 				Logger.getLogger(WorkflowServiceJpa.class).info("       Updating record " + mapRecord.getId());
 				mappingService.updateMapRecord(mapRecord);
@@ -727,7 +724,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			trackingRecord.setTerminologyId(concept.getTerminologyId());
 			trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
 			trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
-			trackingRecord.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH); // TODO: Make this a project specific call later (phase 2)
+			trackingRecord.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH); // Make this a project specific call later (phase 2)
 
 			// get the tree positions for this concept and set the sort key to the first retrieved
 			SearchResultList treePositionsList = contentService.findTreePositionsForConcept(
@@ -844,22 +841,5 @@ public class WorkflowServiceJpa implements WorkflowService {
 							+ "is no active transaction");
 		tx.commit();
 	}
-
-	/*
-
-	@Override
-	public Set<WorkflowTrackingRecord> getTrackingRecordsForUnmappedInScopeConcepts(MapProject mapProject) {
-		Set<WorkflowTrackingRecord> unmappedTrackingRecords = new HashSet<>();
-		for (WorkflowTrackingRecord trackingRecord : getWorkflowTrackingRecords(mapProject)) {
-			if (trackingRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
-					|| trackingRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_IN_PROGRESS)
-					|| trackingRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE))
-				unmappedTrackingRecords.add(trackingRecord);
-		}
-		return unmappedTrackingRecords;
-	}
-
-	 */
-
 
 }

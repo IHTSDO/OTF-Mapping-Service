@@ -363,33 +363,6 @@ public class MappingServiceRest {
     }
   }
 
-  /**
-   * Returns all map users for a lucene query
-   * @param query the string query
-   * @return the map users
-   */
-  @GET
-  @Path("/user/query/{string}")
-  @ApiOperation(value = "Find users by query", notes = "Returns map users for a query in either JSON or XML format", response = MapUserListJpa.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  public SearchResultList findMapUsers(
-    @ApiParam(value = "lucene search string", required = true) @PathParam("string") String query) {
-
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /user/query/" + query);
-
-    try {
-      MappingService mappingService = new MappingServiceJpa();
-      SearchResultList searchResultList =
-          mappingService.findMapUsers(query, new PfsParameterJpa());
-      mappingService.close();
-      return searchResultList;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
-  }
 
   /**
    * Returns the record for a given id (auto-generated) in JSON format
@@ -785,16 +758,15 @@ public class MappingServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @ApiOperation(value = "Update a record", notes = "Updates a map record", response = MapRecordJpa.class)
-  public MapRecord updateMapRecord(
+  @ApiOperation(value = "Update a record", notes = "Updates a map record", response = Response.class)
+  public Response updateMapRecord(
     @ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.updateMapRecord(mapRecord);
       mappingService.close();
-      // TODO: this should not return a record, change the client
-      return mapRecord;
+      return null;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -811,13 +783,14 @@ public class MappingServiceRest {
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @ApiOperation(value = "Update user preferences", notes = "Updates a set of map user preferences", response = MapUserPreferencesJpa.class)
-  public void updateMapUserPreferences(
+  public Response updateMapUserPreferences(
     @ApiParam(value = "The map user preferences to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapUserPreferencesJpa mapUserPreferences) {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.updateMapUserPreferences(mapUserPreferences);
       mappingService.close();
+      return null;
    
     } catch (Exception e) {
       throw new WebApplicationException(e);
@@ -999,7 +972,6 @@ public class MappingServiceRest {
     @ApiParam(value = "concept terminology version", required = true) @PathParam("version") String terminologyVersion,
     @ApiParam(value = "threshold max number of descendants for a low-level concept", required = true) @PathParam("threshold") int threshold) {
 
-    // TODO Convert to Search Results
     try {
       MappingService mappingService = new MappingServiceJpa();
 
@@ -1288,8 +1260,7 @@ public class MappingServiceRest {
   	@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId, 
 		@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
 		@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
-	//TODO: PfsParameter, change to POST test with ProjectRecordController function
-    try {
+  	try {
       MappingService mappingService = new MappingServiceJpa();
       MapRecordListJpa recordList = (MapRecordListJpa) mappingService.getRecentlyEditedMapRecords(new Long(mapProjectId), userName, pfsParameter);
       mappingService.close();
