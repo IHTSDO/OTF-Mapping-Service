@@ -22,8 +22,14 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.batchSize = $scope.batchSizes[2];
 	
 	// pagination variables
-	$scope.conceptsPerPage = 10;
-
+	$scope.itemsPerPage = 10;
+	$scope.availableWorkPage = 1;
+	$scope.availableConflictsPage = 1;
+	
+	// initial titles
+	$scope.availableWorkTitle = "Available Work";
+	$scope.availableConflictsTitle = "Available Conflicts";
+	
 	// retrieve focus project, current user, and current role
 	$scope.focusProject = localStorageService.get('focusProject');
 	$scope.currentUser = localStorageService.get('currentUser');
@@ -43,18 +49,18 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	// on unassign notification, refresh the available work widget
 	$scope.$on('assignedListWidget.notification.unassignWork', function(event, parameters) { 	
 		console.debug("WorkAvailableCtrl:  Detected unassign work notification");
-		$scope.retrieveAvailableWork(1);
+		$scope.retrieveAvailableWork($scope.availableWorkPage);
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
-			$scope.retrieveAvailableConflicts(1);
+			$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 		}
 	});
 	
 	// on computation of workflow, refresh the available work widget
 	$scope.$on('mapProjectWidget.notification.workflowComputed', function(event, parameters) { 	
 		console.debug("WorkAvailableCtrl:  Detected recomputation of workflow");
-		$scope.retrieveAvailableWork(1);
+		$scope.retrieveAvailableWork($scope.availableWorkPage);
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
-			$scope.retrieveAvailableConflicts(1);
+			$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 		}
 	});
 
@@ -69,9 +75,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			console.debug('Project Users:');
 			console.debug($scope.projectUsers);
 			
-			$scope.retrieveAvailableWork(1);
+			$scope.retrieveAvailableWork($scope.availableWorkPage);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
-				$scope.retrieveAvailableConflicts(1);
+				$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 			}
 		}
 	});
@@ -84,8 +90,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
-					{"startIndex": (page-1)*$scope.conceptsPerPage,
-			 	 	 "maxResults": $scope.conceptsPerPage, 
+					{"startIndex": (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 
@@ -103,7 +109,13 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		  	$rootScope.glassPane--;
 
 			$scope.availableConflicts = data.searchResult;
+			
+			// set pagination
 			$scope.nAvailableConflicts = data.totalCount;
+			$scope.numAvailableConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+			
+			// set title
+			$scope.availableConflictsTitle = "Available Conflicts (" + data.totalCount + ")";
 		}).error(function(error) {
 		  	$rootScope.glassPane--;
 		});
@@ -119,8 +131,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
-					{"startIndex": (page-1)*$scope.conceptsPerPage,
-			 	 	 "maxResults": $scope.conceptsPerPage, 
+					{"startIndex": (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 
@@ -138,21 +150,21 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		  	$rootScope.glassPane--;
 
 			$scope.availableWork = data.searchResult;
-			$scope.nTrackingRecords = data.totalCount;
+			
+			// set pagination
+			$scope.nAvailableWork = data.totalCount;
+			$scope.numAvailableWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+			
+			// set title
+			$scope.availableWorkTitle = "Available Work (" + data.totalCount + ")";
+			console.debug($scope.numAvailableWorkPages);
+			console.debug(data.totalCount);
+
 		}).error(function(error) {
 		  	$rootScope.glassPane--;
 		});
 	};
-	
-	// set the pagination variables
-	function setPagination(trackingRecordsPerPage, nTrackingRecords) {
-		
-		$scope.trackingRecordsPerPage = trackingRecordsPerPage;
-		$scope.numRecordPages = Math.ceil($scope.nTrackingRecords / trackingRecordsPerPage);
 
-	
-		$scope.numAvailableConflictsPages = Math.ceil($scope.nAvailableConflicts / trackingRecordsPerPage);
-	};
 	
 	// assign a single concept to the current user
 	$scope.assignWork = function(trackingRecord, mapUser) {
@@ -194,7 +206,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
-					{"startIndex": 0,
+					{"startIndex": ($scope.availableWorkPage-1)*$scope.itemsPerPage,
 			 	 	 "maxResults": batchSize, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
@@ -218,9 +230,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			
 			// if user is viewing concepts , check that first result matches first displayed result
 			if ($scope.isConceptListOpen == true && $scope.currentUser.userName != mapUser.userName) {
-				for (var i = 0; i < $scope.trackingRecordPerPage; i++) {
+				for (var i = 0; i < $scope.itemsPerPage; i++) {
 					if (trackingRecords[i].id != $scope.availableWork[i].id) {
-						retrieveAvailableWork(1);
+						retrieveAvailableWork($scope.availableWorkPage);
 						alert("One or more of the concepts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
 						$scope.isConceptListOpen = false;
 						conceptListValid = false;

@@ -1,5 +1,5 @@
 <tabset>
-<tab heading="Available work">
+<tab heading="{{availableWorkTitle}}">
 
 <table style="margin-top: 20px; margin-bottom: 20px;">
 <tbody >
@@ -28,8 +28,8 @@
 		
 		</accordion-heading>
 		
-		<pagination total-items="nTrackingRecords" page="trackingRecordPage" max-size="5" class="pagination-sm" 
-					boundary-links="true" rotate="true" num-pages="numTrackingRecordPages"
+		<pagination total-items="nAvailableWork" page="availableWorkPage" max-size="5" class="pagination-sm" 
+					boundary-links="true" rotate="true" num-pages="numAvailableWorkPages"
 					on-select-page="retrieveAvailableWork(page)"></pagination>
 					
 		<table class="table">
@@ -61,7 +61,7 @@
 	</accordion-group>
 </accordion>
 </tab>
-<tab heading="Available Conflicts" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+<tab heading="{{availableConflictsTitle}}" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 	<pagination total-items="nAvailableConflicts" page="availableConflictsPage" max-size="5" class="pagination-sm" 
 					boundary-links="true" rotate="true" num-pages="numAvailableConflictsPages"
 					on-select-page="retrieveAvailableConflicts(page)"></pagination>

@@ -20,7 +20,13 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.focusProject = localStorageService.get('focusProject');
 
 	// pagination variables
-	$scope.conceptsPerPage = 10;
+	$scope.itemsPerPage = 10;
+	$scope.assignedWorkPage = 1;
+	$scope.assignedConflictsPage = 1;
+	
+	// initial tab titles
+	$scope.assignedWorkTitle = "Assigned Work";
+	$scope.assignedConflictsTitle = "Assigned Conflicts";
 	
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
@@ -30,29 +36,32 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 	$scope.$on('workAvailableWidget.notification.assignWork', function(event, parameters) {
 		console.debug('assignedlist: assignWork notification from workAvailableWidget');
-		$scope.retrieveAssignedWork(1);
+		$scope.retrieveAssignedWork($scope.assignedWorkPage);
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-			$scope.retrieveAssignedConflicts(1);
+			$scope.retrieveAssignedConflicts($scope.assignedConflictsPage);
 		}
 	});
 
 	// on any change of focusProject, retrieve new available work
-	$scope.$watch('focusProject', function() {
-		console.debug('assignedListCtrl:  Detected project set/change');
+	$scope.$watch(['focusProject', 'user'], function() {
+		console.debug('assignedListCtrl:  Detected project or user set/change');
 
-		if ($scope.focusProject != null) {
-			$scope.retrieveAssignedWork(1);
+		if ($scope.focusProject != null && $scope.user != null) {
+			$scope.retrieveAssignedWork($scope.assignedWorkPage);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-				$scope.retrieveAssignedConflicts(1);
+				$scope.retrieveAssignedConflicts($scope.assignedConflictsPage);
 			}
 		}
 	});
 	
 	$scope.retrieveAssignedConflicts = function(page) {
+		
+		console.debug('Retrieving Assigned Conflicts: page ' + page);
+		
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
-					{"startIndex": (page-1)*$scope.conceptsPerPage,
-			 	 	 "maxResults": $scope.conceptsPerPage, 
+					{"startIndex": (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 
@@ -70,11 +79,17 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		  	$rootScope.glassPane--;
 
 			$scope.assignedConflictsPage = page;
-			$scope.nAssignedConflicts = data.totalCount;
 			$scope.assignedConflicts = data.searchResult;
-			$scope.numAssignedConflictsPages = Math.ceil(data.totalCount / $scope.conceptsPerPage);
 			console.debug('Assigned Conflicts:');
 			console.debug($scope.assignedConflicts);
+			
+			// set pagination
+			$scope.nAssignedConflicts = data.totalCount;
+			$scope.numAssignedConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+			
+			// set title
+			$scope.assignedConflictsTitle = "Assigned Conflicts (" + data.totalCount + ")";
+			
 		}).error(function(error) {
 		  	$rootScope.glassPane--;
 			$scope.error = "Error";
@@ -82,11 +97,13 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	};
 	
 	$scope.retrieveAssignedWork = function(page) {
+		
+		console.debug('Retrieving Assigned Work: page ' + page);
 
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
-					{"startIndex": (page-1)*$scope.conceptsPerPage,
-			 	 	 "maxResults": $scope.conceptsPerPage, 
+					{"startIndex": (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "filterString": null};  
 
@@ -103,10 +120,21 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
 
-			$scope.assignedRecordPage = page;
-			$scope.nAssignedRecords = data.totalCount;
+			$scope.assignedWorkPage = page;
 			$scope.assignedRecords = data.searchResult;
 			console.debug($scope.assignedRecords);
+		
+			// set pagination
+			$scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+			$scope.nAssignedRecords = data.totalCount;
+			
+			// set title
+			$scope.assignedWorkTitle = "Assigned Work (" + $scope.nAssignedRecords + ")";
+			console.debug($scope.nAssignedRecords);
+			console.debug(data.totalCount);
+			console.debug($scope.assignedWorkTitle);
+			
+			
 		}).error(function(error) {
 		  	$rootScope.glassPane--;
 			$scope.error = "Error";
@@ -124,9 +152,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	// on notification, update assigned work
 	$scope.assignWork = function(newRecords) {
 
-		$scope.retrieveAssignedWork(1);
+		$scope.retrieveAssignedWork($scope.assignedWorkPage);
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-			$scope.retrieveAssignedConflicts(1);
+			$scope.retrieveAssignedConflicts($scope.assignedConflictsPage);
 		}
 	};
 
@@ -140,10 +168,18 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
-			$scope.assignedRecords.removeElement(record);
-			$scope.nAssignedRecords = Math.max(0, $scope.nAssignedRecords-1);
+
 			$rootScope.$broadcast('assignedListWidget.notification.unassignWork',
 					{key: 'mapRecord', mapRecord: record});
+			
+			console.debug('assignedListCtrl:  Detected project or user set/change');
+
+			if ($scope.focusProject != null && $scope.user != null) {
+				$scope.retrieveAssignedWork($scope.assignedWorkPage);
+				if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage);
+				}
+			}
 			
 		});
 	};

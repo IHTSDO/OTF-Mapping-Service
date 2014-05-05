@@ -216,6 +216,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 
 		// construct search result list
 		results.setTotalCount(availableWork.size());
+		
 		for (WorkflowTrackingRecord tr : availableWork.subList(startIndex, toIndex)) {
 			SearchResult result = new SearchResultJpa();
 			result.setTerminologyId(tr.getTerminologyId());
@@ -268,6 +269,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 
 		// construct search result list
 		results.setTotalCount(availableConflicts.size());
+		
 		for (WorkflowTrackingRecord tr : availableConflicts.subList(startIndex, toIndex)) {
 			SearchResult result = new SearchResultJpa();
 			result.setTerminologyId(tr.getTerminologyId());
@@ -286,26 +288,25 @@ public class WorkflowServiceJpa implements WorkflowService {
 	public SearchResultList findAssignedWork(MapProject mapProject,
 			MapUser mapUser, PfsParameter pfsParameter) {
 
-		List<MapRecord> assignedWork = new ArrayList<>();
+		List<WorkflowTrackingRecord> assignedWork = new ArrayList<>();
 		SearchResultList results = new SearchResultListJpa();
-
+		
 		// cycle over all tracking records
 		for (WorkflowTrackingRecord trackingRecord : getWorkflowTrackingRecordsForMapProject(mapProject)) {
+		
+			// cycle over map records to find the NEW or EDITING_IN_PROGRESS record assigned to this user
 			for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
-
-				// if this record is owned by user and has workflow status < EDITING_DONE, add to list
-				if (mapRecord.getOwner().equals(mapUser) &&
-						mapRecord.getWorkflowStatus().compareTo(WorkflowStatus.EDITING_DONE) < 0) {
-					assignedWork.add(mapRecord);
+				if (mapRecord.getOwner().equals(mapUser) && mapRecord.getWorkflowStatus().compareTo(WorkflowStatus.EDITING_DONE) < 0) {
+					assignedWork.add(trackingRecord);
 				}
 			}
 		}
 		
-		// sort the map records
-		Collections.sort(assignedWork, new Comparator<MapRecord>() {
+		// sort the tracking records
+		Collections.sort(assignedWork, new Comparator<WorkflowTrackingRecord>() {
             @Override
-            public int compare(MapRecord tr1, MapRecord tr2) {
-              return tr1.getConceptName().compareTo(tr2.getConceptName());
+            public int compare(WorkflowTrackingRecord tr1, WorkflowTrackingRecord tr2) {
+            	return tr1.getSortKey().compareTo(tr2.getSortKey());
             }
 		});
 		
@@ -318,17 +319,25 @@ public class WorkflowServiceJpa implements WorkflowService {
 			startIndex = pfsParameter.getStartIndex() == -1 ? 0 : pfsParameter.getStartIndex();
 			toIndex = pfsParameter.getMaxResults() == -1 ? assignedWork.size() : Math.min(assignedWork.size(), startIndex + pfsParameter.getMaxResults());
 		} 
-
-		// construct search result list
+		
+		// construct the search results
 		results.setTotalCount(assignedWork.size());
-		for (MapRecord mr : assignedWork.subList(startIndex, toIndex)) {
+		
+		for (WorkflowTrackingRecord trackingRecord : assignedWork.subList(startIndex, toIndex)) {
 			SearchResult result = new SearchResultJpa();
-			result.setTerminologyId(mr.getConceptId());
-			result.setValue(mr.getConceptName());
-			result.setId(mr.getId());
+			result.setTerminologyId(trackingRecord.getTerminologyId());
+			result.setValue(trackingRecord.getDefaultPreferredName());
+			
+			// get the record id
+			for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
+				if (mapRecord.getOwner().equals(mapUser)) {
+					result.setId(mapRecord.getId());
+				}
+			}
+			
 			results.addSearchResult(result);
 		}
-
+		
 		return results;
 	}
 
@@ -339,32 +348,29 @@ public class WorkflowServiceJpa implements WorkflowService {
 	public SearchResultList findAssignedConflicts(MapProject mapProject,
 			MapUser mapUser, PfsParameter pfsParameter) {
 
-		List<MapRecord> assignedConflicts = new ArrayList<>();
+		List<WorkflowTrackingRecord> assignedConflicts = new ArrayList<>();
 		SearchResultList results = new SearchResultListJpa();
-
+		
+		// cycle over all tracking records
 		for (WorkflowTrackingRecord trackingRecord : getWorkflowTrackingRecordsForMapProject(mapProject)) {
-
-			// cycle over all map records
+		
+			// cycle over map records to find the CONFLICT_DETECTED record assigned to this user
 			for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
-
-				// if this record is in conflict resolution and has this user assigned
-				if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS) 
-						&& mapRecord.getOwner().equals(mapUser)) {
-					assignedConflicts.add(mapRecord);
+				if (mapRecord.getOwner().equals(mapUser) && mapRecord.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) == 0) {
+					assignedConflicts.add(trackingRecord);
 				}
 			}
 		}
 		
-		// sort the map records
-		Collections.sort(assignedConflicts, new Comparator<MapRecord>() {
+		// sort the tracking records
+		Collections.sort(assignedConflicts, new Comparator<WorkflowTrackingRecord>() {
             @Override
-            public int compare(MapRecord tr1, MapRecord tr2) {
-              return tr1.getConceptName().compareTo(tr2.getConceptName());
+            public int compare(WorkflowTrackingRecord tr1, WorkflowTrackingRecord tr2) {
+            	return tr1.getSortKey().compareTo(tr2.getSortKey());
             }
 		});
 		
-
-		// set the default start index and the max results
+		// set the default start index and themax results
 		int startIndex = 0;
 		int toIndex = assignedConflicts.size();
 
@@ -373,17 +379,25 @@ public class WorkflowServiceJpa implements WorkflowService {
 			startIndex = pfsParameter.getStartIndex() == -1 ? 0 : pfsParameter.getStartIndex();
 			toIndex = pfsParameter.getMaxResults() == -1 ? assignedConflicts.size() : Math.min(assignedConflicts.size(), startIndex + pfsParameter.getMaxResults());
 		} 
-
-		// construct search result list
+		
+		// construct the search results
 		results.setTotalCount(assignedConflicts.size());
-		for (MapRecord mr : assignedConflicts.subList(startIndex, toIndex)) {
+		
+		for (WorkflowTrackingRecord trackingRecord : assignedConflicts.subList(startIndex, toIndex)) {
 			SearchResult result = new SearchResultJpa();
-			result.setTerminologyId(mr.getConceptId());
-			result.setValue(mr.getConceptName());
-			result.setId(mr.getId());
+			result.setTerminologyId(trackingRecord.getTerminologyId());
+			result.setValue(trackingRecord.getDefaultPreferredName());
+			
+			// get the record id
+			for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
+				if (mapRecord.getOwner().equals(mapUser)) {
+					result.setId(mapRecord.getId());
+				}
+			}
+			
 			results.addSearchResult(result);
 		}
-
+		
 		return results;
 	}
 

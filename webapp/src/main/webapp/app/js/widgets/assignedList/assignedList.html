@@ -1,8 +1,8 @@
 <tabset>
-<tab heading="Assigned Work">
+<tab heading="{{assignedWorkTitle}}">
 
 
-<pagination total-items="nAssignedRecords" page="assignedRecordPage"
+<pagination total-items="nAssignedRecords" page="assignedWorkPage"
 	class="pagination-sm" boundary-links="true" rotate="true" 
 	num-pages="numAssignedRecordPages"
 	on-select-page="retrieveAssignedWork(page)"></pagination>
@@ -34,7 +34,7 @@
 </table>
 
 </tab>
-<tab heading="Assigned Conflicts" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+<tab heading="{{assignedConflictsTitle}}" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 
 <pagination 
     total-items="nAssignedConflicts" page="assignedConflictsPage"

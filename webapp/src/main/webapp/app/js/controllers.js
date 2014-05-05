@@ -559,7 +559,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 			"Content-Type": "application/json"
 		}	
 	}).success(function(data) {
-		$scope.users = data.mapUser;
+		$scope.mapUsers = data.mapUser;
 		localStorageService.add('mapUsers', data.mapUser);
 	}).error(function(error) {
 		$scope.error = $scope.error + "Could not retrieve map users. "; 
@@ -623,11 +623,11 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 			});
 
 			// add the user information to local storage
-			localStorageService.add('currentUser', $scope.user);
+			localStorageService.add('currentUser', $scope.mapUser);
 			localStorageService.add('currentRole', $scope.role.name);
 
 			// broadcast the user information to rest of app
-			$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.user});
+			$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
 			$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role.name});
 
 			// redirect page
