@@ -1,6 +1,6 @@
 'use strict';
 
-var services = angular.modulle('mapProjectAppServices', [ui.boostrap]);
+var mapProjectAppServices = angular.module('mapProjectAppServices', []);
 
 /* Services */
 

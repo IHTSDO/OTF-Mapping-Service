@@ -534,7 +534,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 			Logger.getLogger(WorkflowServiceJpa.class).info("SAVE_FOR_LATER");
 
 			// expect existing (pre-computed) workflow tracking record to exist with this user assigned
-			if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: SAVE_FOR_LATER - Could not find tracking record for unassignment.");
+			if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: SAVE_FOR_LATER - Could not find tracking record.");
 
 			// expect this user to be assigned to a map record in this tracking record
 			if (!trackingRecord.getAssignedUsers().contains(mapUser)) throw new Exception("SAVE_FOR_LATER - User not assigned to record");
@@ -553,10 +553,10 @@ public class WorkflowServiceJpa implements WorkflowService {
 			Logger.getLogger(WorkflowServiceJpa.class).info("FINISH_EDITING");
 
 			// expect existing (pre-computed) workflow tracking record to exist with this user assigned
-			if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: FINISH_EDITING - Could not find tracking record for unassignment.");
+			if (trackingRecord == null) throw new Exception("ProcessWorkflowAction: FINISH_EDITING - Could not find tracking record to be finished.");
 
 			// expect this user to be assigned to a map record in this tracking record
-			if (!trackingRecord.getAssignedUsers().contains(mapUser)) throw new Exception("User not assigned to record for unassignment request");
+			if (!trackingRecord.getAssignedUsers().contains(mapUser)) throw new Exception("User not assigned to record for finishing request");
 
 
 			Logger.getLogger(WorkflowServiceJpa.class).info("Performing action...");
@@ -599,7 +599,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		newTrackingRecord.getWorkflowStatus(); // force lazy collection
 		manager.detach(newTrackingRecord);
 
-		System.out.println(newTrackingRecord.getMapRecords().size() + " records in tracking record");
+		Logger.getLogger(WorkflowServiceJpa.class).info(newTrackingRecord.getMapRecords().size() + " records in tracking record");
 
 		manager.close();
 
@@ -841,22 +841,5 @@ public class WorkflowServiceJpa implements WorkflowService {
 							+ "is no active transaction");
 		tx.commit();
 	}
-
-	/*
-
-	@Override
-	public Set<WorkflowTrackingRecord> getTrackingRecordsForUnmappedInScopeConcepts(MapProject mapProject) {
-		Set<WorkflowTrackingRecord> unmappedTrackingRecords = new HashSet<>();
-		for (WorkflowTrackingRecord trackingRecord : getWorkflowTrackingRecords(mapProject)) {
-			if (trackingRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
-					|| trackingRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_IN_PROGRESS)
-					|| trackingRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE))
-				unmappedTrackingRecords.add(trackingRecord);
-		}
-		return unmappedTrackingRecords;
-	}
-
-	 */
-
 
 }

@@ -1489,9 +1489,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     // if non-null
     if ((line = languageRefsetsByDescription.readLine()) != null) {
 
-      // for (int j = 0; j < line.length(); j++)
-      // System.out.print(line.charAt(j));
-
       line = line.replace("\r", "");
 
       fields = line.split("\t");

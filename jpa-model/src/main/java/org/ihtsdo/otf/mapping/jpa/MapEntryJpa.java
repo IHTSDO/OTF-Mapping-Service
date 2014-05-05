@@ -19,6 +19,7 @@ import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.apache.log4j.Logger;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.ContainedIn;
@@ -312,7 +313,7 @@ public class MapEntryJpa implements MapEntry {
 	 */
 	public void setMapRecordId(Long mapRecordId) {
 		if (this.mapRecord == null) {
-			System.out.println("Setting map record id to " + mapRecordId.toString());
+			Logger.getLogger(MapEntryJpa.class).info("Setting map record id to " + mapRecordId.toString());
 			this.mapRecord = new MapRecordJpa();
 			this.mapRecord.setId(mapRecordId);
 		}

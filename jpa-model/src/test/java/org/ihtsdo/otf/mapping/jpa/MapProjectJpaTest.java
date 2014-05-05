@@ -10,6 +10,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
@@ -21,7 +22,6 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -112,10 +112,10 @@ public class MapProjectJpaTest {
 	@BeforeClass
 	public static void init() throws Exception {
 
-		System.out.println("Ensuring test database is empty");
+		Logger.getLogger(MapProjectJpaTest.class).info("Ensuring test database is empty");
 		cleanUp();
 		
-		System.out.println("Initializing EditMappingServiceJpa");
+		Logger.getLogger(MapProjectJpaTest.class).info("Initializing EditMappingServiceJpa");
 
 		
 
@@ -149,7 +149,7 @@ public class MapProjectJpaTest {
 	public void testMapProjectLoad() {
 
 		EntityTransaction tx = manager.getTransaction();
-		System.out.println("testMapProjectLoad()...");
+		Logger.getLogger(MapProjectJpaTest.class).info("testMapProjectLoad()...");
 
 		tx.begin();
 		confirmLoad();
@@ -269,15 +269,13 @@ public class MapProjectJpaTest {
 	@Test
 	public void testMapProjectIndex() throws ParseException {
 
-		System.out.println("testMapProjectIndex()...");
+		Logger.getLogger(MapProjectJpaTest.class).info("testMapProjectIndex()...");
 		
 		// create Entitymanager
-		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
-		manager = factory.createEntityManager();
 		fullTextEntityManager = Search.getFullTextEntityManager(manager);
 
-		fullTextEntityManager.purgeAll(MapProjectJpa.class);
-		fullTextEntityManager.flushToIndexes();
+		//fullTextEntityManager.purgeAll(MapProjectJpa.class);
+		//fullTextEntityManager.flushToIndexes();
 
 		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 
@@ -353,14 +351,14 @@ public class MapProjectJpaTest {
 	@Test
 	public void testMapProjectAuditReader() {
 
-		System.out.println("testMapProjectAuditReader()...");
+		Logger.getLogger(MapProjectJpaTest.class).info("testMapProjectAuditReader()...");
 		// create audit reader for history records
 		reader = AuditReaderFactory.get(manager);
 		
 		// report initial number of revisions on MapProject object
 		List<Number> revNumbers = reader.getRevisions(MapProjectJpa.class, 1L);
 		assertTrue(revNumbers.size() == 1);
-		System.out.println("MapProject: " + 1L + " - Versions: "
+		Logger.getLogger(MapProjectJpaTest.class).info("MapProject: " + 1L + " - Versions: "
 				+ revNumbers.toString());
 
 		// make a change to MapProject
@@ -379,7 +377,7 @@ public class MapProjectJpaTest {
 		// report incremented number of revisions on MapProject object
 		revNumbers = reader.getRevisions(MapProjectJpa.class, 1L);
 		assertTrue(revNumbers.size() == 2);
-		System.out.println("MapProject: " + 1L + " - Versions: "
+		Logger.getLogger(MapProjectJpaTest.class).info("MapProject: " + 1L + " - Versions: "
 				+ revNumbers.toString());
 
 		// revert change to MapProject
@@ -396,7 +394,7 @@ public class MapProjectJpaTest {
 	 * Clean up.
 	 */
 	public static void cleanUp() {
-		System.out.println("Cleaning up.");
+		Logger.getLogger(MapProjectJpaTest.class).info("Cleaning up.");
 
 		// create new database connection
 		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
@@ -432,6 +430,10 @@ public class MapProjectJpaTest {
 		query.executeUpdate();
 		tx.commit();
 
+		fullTextEntityManager = Search.getFullTextEntityManager(manager);
+
+		fullTextEntityManager.purgeAll(MapProjectJpa.class);
+		fullTextEntityManager.flushToIndexes();
 
 	}
 

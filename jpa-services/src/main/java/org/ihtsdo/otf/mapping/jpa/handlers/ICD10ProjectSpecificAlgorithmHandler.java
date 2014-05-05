@@ -69,13 +69,11 @@ public class ICD10ProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
 		
 		// if entry has no target
 		if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
-			// System.out.println("No target -- returning null relation");
 			return null;
 		}
 		
 		// if rule is not set, return null
 		if (mapEntry.getRule() == null || mapEntry.getRule().isEmpty()) {
-			// System.out.println("No rule -- returning null relation");
 			return null;
 		}
 		
@@ -85,7 +83,6 @@ public class ICD10ProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
 			// retrieve the relations by terminology id
 			for (MapRelation relation : mapProject.getMapRelations()) {
 				if (relation.getTerminologyId().equals("447637006")) {
-					// System.out.println("Found TRUE relation");
 					return relation;
 				}
 			}
@@ -95,14 +92,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
 			// retrieve the relations by terminology id
 			for (MapRelation relation : mapProject.getMapRelations()) {
 				if (relation.getTerminologyId().equals("447639009")) {
-					// System.out.println("Found non-TRUE relation");
 					return relation;
 				}
 			}
 		}
 		
 		// if relation not found, return null
-		// System.out.println("No relation found");
 		return null;
 		
 	}

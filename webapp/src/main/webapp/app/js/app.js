@@ -82,9 +82,6 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                         })
                         
 
-
-
-
 mapProjectApp.config(['$routeProvider',
    function($routeProvider) {
 	
@@ -92,17 +89,7 @@ mapProjectApp.config(['$routeProvider',
 	  // DASHBOARDS
 	  //////////////////////////////
 	  
-	  $routeProvider.when('/specialist/dash', {
-		  templateUrl: 'partials/dashboard.html',
-		  controller: 'dashboardCtrl'
-	  });
-	  
-	  $routeProvider.when('/lead/dash', {
-		  templateUrl: 'partials/dashboard.html',
-			  controller: 'dashboardCtrl'
-	  });
-	  
-	  $routeProvider.when('/admin/dash', {
+	  $routeProvider.when('/:role/dash', {
 		  templateUrl: 'partials/dashboard.html',
 		  controller: 'dashboardCtrl'
 	  });
@@ -110,11 +97,6 @@ mapProjectApp.config(['$routeProvider',
       //////////////////////////////
 	  // MAPPING SERVICES
 	  //////////////////////////////
-	  
-	  $routeProvider.when('/project/projects', {
-		  templateUrl: 'partials/dashboard.html', 
-		  controller: 'dashboardCtrl'
-	  });
 	  
 	  $routeProvider.when('/project/records', {
 		  templateUrl: 'partials/project-records.html',
@@ -146,48 +128,11 @@ mapProjectApp.config(['$routeProvider',
       //////////////////////////////
 	  // HELP PAGES
 	  //////////////////////////////
-
 	  
-	  $routeProvider.when('/help/LeadDashboardHelp.html', {
-		  templateUrl: 'partials/doc/LeadDashboardHelp.html'
-	  });	  
+	  $routeProvider.when('/help/:type', {
+		  templateUrl: function(params){ return 'partials/doc/' + params.type; }
+	  });
 	  
-	  $routeProvider.when('/help/AdministratorDashboardHelp.html', {
-		  templateUrl: 'partials/doc/AdministratorDashboardHelp.html'
-	  });	  
-	  
-	  $routeProvider.when('/help/conceptHelp.html', {
-		  templateUrl: 'partials/doc/conceptHelp.html'
-	  });	  
-	  
-	  $routeProvider.when('/help/editDashboardHelp.html', {
-		  templateUrl: 'partials/doc/editDashboardHelp.html'
-	  });	  
-	  
-	  $routeProvider.when('/help/loginHelp.html', {
-		  templateUrl: 'partials/doc/loginHelp.html'
-	  });	  
-	  
-	  $routeProvider.when('/help/projectHelp.html', {
-		  templateUrl: 'partials/doc/projectHelp.html'
-	  });	  
-	  $routeProvider.when('/help/recordsHelp.html', {
-		  templateUrl: 'partials/doc/recordsHelp.html'
-	  });	  
-	  
-	  $routeProvider.when('/help/resolveConflictsDashboardHelp.html', {
-		  templateUrl: 'partials/doc/resolveConflictsDashboardHelp.html'
-	  });	  
-	  
-	  $routeProvider.when('/help/SpecialistDashboardHelp.html', {
-		  templateUrl: 'partials/doc/SpecialistDashboardHelp.html'
-	  });	  
-	  
-	  $routeProvider.when('/help/ViewerDashboardHelp.html', {
-		  templateUrl: 'partials/doc/ViewerDashboardHelp.html'
-	  });	  
-
-
 	  
 	  ///////////////////////////////
 	  // HOME and ERROR ROUTES

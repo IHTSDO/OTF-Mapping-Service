@@ -1187,7 +1187,7 @@ public class MappingServiceJpa implements MappingService {
 		/*full_query +=
 				" AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')";
 		 */
-		System.out.println(full_query);
+		Logger.getLogger(MappingServiceJpa.class).info(full_query);
 
 		FullTextEntityManager fullTextEntityManager =
 				Search.getFullTextEntityManager(manager);
@@ -2469,8 +2469,6 @@ public class MappingServiceJpa implements MappingService {
 							"      Computing descendant ct = "
 									+ mapRecord.getCountDescendantConcepts());
 
-					// mapRecord.setCountDescendantConcepts(0L);
-
 					// set the previous concept to this concept
 					prevConceptId = refSetMember.getConcept().getTerminologyId();
 
@@ -2725,7 +2723,7 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public MapUserPreferences getMapUserPreferences(String userName) {
 		
-		System.out.println("Finding user " + userName);
+		Logger.getLogger(MappingServiceJpa.class).info("Finding user " + userName);
 		MapUser mapUser = getMapUser(userName);
 		javax.persistence.Query query = manager.createQuery("select m from MapUserPreferencesJpa m where mapUser_id = :mapUser_id")
 				.setParameter("mapUser_id", mapUser.getId());
@@ -2895,7 +2893,7 @@ public class MappingServiceJpa implements MappingService {
 		// cycle over all tree positions and check target code, recursively cycle over children
 		for (TreePosition tp : treePositions) {
 
-			System.out.println("Checking valid for " + tp.getTerminologyId());
+			Logger.getLogger(MappingServiceJpa.class).info("Checking valid for " + tp.getTerminologyId());
 
 			tp.setValid(algorithmHandler.isTargetCodeValid(tp.getTerminologyId()));
 
@@ -2958,7 +2956,7 @@ public class MappingServiceJpa implements MappingService {
 	@Override
 	public MapRecordList getRecordsInConflict(Long mapRecordId) throws Exception {
 
-		System.out.println("getRecordsInConflict with record id = " + mapRecordId.toString());
+		Logger.getLogger(MappingServiceJpa.class).info("getRecordsInConflict with record id = " + mapRecordId.toString());
 
 		MapRecordList conflictRecords = new MapRecordListJpa();
 

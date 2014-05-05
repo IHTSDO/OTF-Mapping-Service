@@ -11,6 +11,8 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
 import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
@@ -22,13 +24,15 @@ import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * The Class MappingServiceTest.
  */
-public class MappingServiceTest {
+public class MappingServiceJpaTest {
 
 	/** The mapping service */
 	private static MappingServiceJpa service;
@@ -38,6 +42,10 @@ public class MappingServiceTest {
 
 	/** The factory. */
 	private static EntityManagerFactory factory;
+	
+	/** The audit history reader. */
+	private static AuditReader reader;
+
 
 	/**
 	 * Creates db tables, load test objects and create indexes to prepare for
@@ -46,33 +54,20 @@ public class MappingServiceTest {
 	@BeforeClass
 	public static void init() {
 
-		System.out.println("Ensuring test database is empty");
-		cleanup();
-		
-		System.out.println("Initializing EditMappingServiceJpa");
+		Logger.getLogger(MappingServiceJpaTest.class).info("Initializing MappingServiceTest");
 
 		// construct the mapping service
 		service = new MappingServiceJpa();
 
-		
-		 /* // create local connection entities for audit testing factory =
-		 * Persistence.createEntityManagerFactory("MappingServiceDS"); manager =
-		 * factory.createEntityManager(); fullTextEntityManager =
-		 * Search.getFullTextEntityManager(manager); reader =
-		 * AuditReaderFactory.get( manager );
-		 * 
-		 * fullTextEntityManager.purgeAll(MapProjectJpa.class);
-		 * fullTextEntityManager.flushToIndexes(); */
-		 
 	}
 
 	/**
-	 * Close services after complete
+	 * Cleanup database
 	 */
-	// @AfterClass
-	public static void cleanup() {
+	@After
+	public void cleanup() {
 
-		System.out.println("Cleaning up EditMappingServiceJpa");
+		Logger.getLogger(MappingServiceJpaTest.class).info("Cleaning up MappingServiceJpaTest");
 
 		// create new database connection
 		factory = Persistence.createEntityManagerFactory("MappingServiceDS");
@@ -86,6 +81,8 @@ public class MappingServiceTest {
 		////////////////////////////
 		// Delete from main tables
 		////////////////////////////
+		
+		// Note: Cleaning up using queries because of need to truncate audit tables
 		
 		// notes
 		query = manager.createNativeQuery("DELETE FROM map_entries_map_notes");
@@ -187,15 +184,13 @@ public class MappingServiceTest {
 		
 		tx.commit();
 
-		System.out.println("Cleanup complete");
+		Logger.getLogger(MappingServiceJpaTest.class).info("Cleanup complete");
 
-		//manager.close();
-		//factory.close();
 	}
 
 	private static void fail(String string) {
 
-		System.out.println("Failed: " + string);
+		Logger.getLogger(MappingServiceJpaTest.class).info("Failed: " + string);
 
 	}
 
@@ -204,10 +199,10 @@ public class MappingServiceTest {
 	 * 
 	 * @throws Exception
 	 */
-	@Test
-	public void testAddElements() throws Exception {
+	@Before
+	public void addElements() throws Exception {
 
-		System.out.println("Testing element add...");
+		Logger.getLogger(MappingServiceJpaTest.class).info("Testing element add...");
 
 		// ASSUMPTION: Database is unloaded, starting fresh
 
@@ -260,13 +255,13 @@ public class MappingServiceTest {
 
 		for (MapUser m : specialists) {
 			Logger.getLogger(this.getClass()).info(
-					"Adding map specialist " + m.getName());
+					"Adding map user " + m.getName());
 			service.addMapUser(m);
 		}
 
 		for (MapUser m : leads) {
 			Logger.getLogger(this.getClass())
-					.info("Adding map lead " + m.getName());
+					.info("Adding map user " + m.getName());
 			service.addMapUser(m);
 		}
 		
@@ -484,7 +479,7 @@ public class MappingServiceTest {
 
 		
 		for (MapProject m : projects) {
-			System.out.println("Adding map project " + m.getName());
+			Logger.getLogger(MappingServiceJpaTest.class).info("Adding map project " + m.getName());
 			service.addMapProject(m);
 		}
 	}
@@ -497,17 +492,13 @@ public class MappingServiceTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public void testRetrieveElements() throws Exception {
-		System.out.println("Testing element retrieval...");
+		Logger.getLogger(MappingServiceJpaTest.class).info("Testing element retrieval...");
 
 		// Test retrieval of all elements
 		
 		// get all objects
 		MapProjectList projects = service.getMapProjects();
 		MapUserList users = service.getMapUsers();
-
-		// test projects 
-		// 3 expected, see testAddElements() for project details
-		
 
 		if (projects.getCount() != 3) {
 			fail("Retrieval - getMapProjects():  Found " + Integer.toString(projects.getCount()) + " projects, expected 3");
@@ -553,7 +544,7 @@ public class MappingServiceTest {
 		// find project (query)
 		results = service.findMapProjects("ICD9CM", new PfsParameterJpa());
 		if (results.getSearchResults().get(0).getValue().compareTo("SNOMED to ICD9CM") != 0) {
-			fail("Retrieval - findMapProjects(): Could not search by name or terminology");
+			fail("Retrieval - findMapProjects(): Could not search by name of terminology");
 		}
 		
 		results = service.findMapProjects("Kathy", new PfsParameterJpa());
@@ -561,24 +552,15 @@ public class MappingServiceTest {
 			fail("Retrieval - findMapProjects(String query):  Could not search by lead name");
 		}
 		
-/*	// looks like MapUserJpa has to be indexed in order for these services to work
- *  // remove service or index class?	
- * // find user (query)
-		results = service.findMapUsers("rda", new PfsParameterJpa());
-		if (results.getSearchResults().get(0).getValue().compareTo("Rory Davidson") != 0) {
-			fail("Retrieval - findMapUsers(String query): Could not search by username");
-		}
-		*/
-		
 		// test project retrieval by user (lead/specialist)		
 		MapUser s = service.getMapUser(new Long(1));
 		if (service.getMapProjectsForMapUser(s).getCount() != 2) {
-			fail("Retrieval - findMapProjectsForMapSpecialist(MapSpecialist mapSpecialist): Failed to retrieve projects");
+			fail("Retrieval - getMapProjectsForMapUser(MapUser mapUser): Failed to retrieve projects");
 		}
 		
 		s = service.getMapUser(new Long(2));
 		if (service.getMapProjectsForMapUser(s).getCount() != 1) {
-			fail("Retrieval - findMapProjectsForMapLead(MapLead mapLead):  Failed to retrieve projects");
+			fail("Retrieval - getMapProjectsForMapUser(MapUser mapUser):  Failed to retrieve projects");
 		}
 		
 		// TODO find record, advice (query)
@@ -594,7 +576,7 @@ public class MappingServiceTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public void testUpdateElements() throws Exception {
-		System.out.println("Testing element update...");
+		Logger.getLogger(MappingServiceJpaTest.class).info("Testing element update...");
 
 		MapProjectList projects = service.getMapProjects();
 		MapUserList specialists = service.getMapUsers();
@@ -604,8 +586,7 @@ public class MappingServiceTest {
 		// test update and envers audit of map project
 		MapProject project_old = projects.getMapProjects().get(0);
 		MapProject project_new;
-		// List<Number> revNumbers = reader.getRevisions(MapProject.class,
-		// project_old); // TODO Reenable for audit testing
+		List<Number> revNumbers = reader.getRevisions(MapProject.class, project_old); 
 
 		project_old.setDestinationTerminology(changedValue);
 		service.updateMapProject(project_old);
@@ -615,14 +596,14 @@ public class MappingServiceTest {
 		if (!project_new.getDestinationTerminology().equals(changedValue)) {
 			fail("Failed to update project");
 		} else {
-			System.out.println("Project update successful");
+			Logger.getLogger(MappingServiceJpaTest.class).info("Project update successful");
 		}
 		// TODO Reenable for audit testing
 		
-		 /* if (reader.getRevisions(MapProject.class, project_old).size() !=
-		 * revNumbers.size() + 1) { fail(
-		 * "Failed to update revision table:  number of revisions has not increased by 1"
-		 * ); } */
+		  if (reader.getRevisions(MapProject.class, project_old).size() !=
+		  		revNumbers.size() + 1) { 
+		  	fail("Failed to update revision table:  number of revisions has not increased by 1");
+		  } 
 		 
 
 		// test update and envers audit of map specialist
@@ -639,7 +620,7 @@ public class MappingServiceTest {
 		if (!specialist_new.getEmail().equals(changedValue)) {
 			fail("Failed to update specialist");
 		} else {
-			System.out.println("Specialist update successful");
+			Logger.getLogger(MappingServiceJpaTest.class).info("Specialist update successful");
 		}
 		// TODO Reenable for audit testing
 		
@@ -662,7 +643,7 @@ public class MappingServiceTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public void testRemoveElements() throws Exception {
-		System.out.println("Testing element remove...");
+		Logger.getLogger(MappingServiceJpaTest.class).info("Testing element remove...");
 
 		// test delete and envers audit of map project
 		MapProjectList projects = service.getMapProjects();
@@ -671,8 +652,8 @@ public class MappingServiceTest {
 		MapProject project_removed = projects.getMapProjects().get(0);
 		MapUser user_removed = users.getMapUsers().get(0);
 
-		// test delete of specialist
-		System.out.println("Testing user removal...");
+		// test delete of user
+		Logger.getLogger(MappingServiceJpaTest.class).info("Testing user removal...");
 		service.removeMapUser(user_removed.getId());
 
 		if (service.getMapUser(user_removed.getId()) != null) {
@@ -680,13 +661,14 @@ public class MappingServiceTest {
 		}
 
 		// test delete of project
-		System.out.println("Testing project removal...");
+		Logger.getLogger(MappingServiceJpaTest.class).info("Testing project removal...");
 		service.removeMapProject(project_removed.getId());
 
 		if (service.getMapProject(project_removed.getId()) != null) {
 			fail("Remove project reported success, but project still present in database!");
 		}
 
+		cleanup();
 	}
 
 }

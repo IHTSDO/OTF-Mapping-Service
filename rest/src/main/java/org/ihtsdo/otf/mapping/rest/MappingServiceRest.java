@@ -758,15 +758,15 @@ public class MappingServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @ApiOperation(value = "Update a record", notes = "Updates a map record", response = MapRecordJpa.class)
-  public MapRecord updateMapRecord(
+  @ApiOperation(value = "Update a record", notes = "Updates a map record", response = Response.class)
+  public Response updateMapRecord(
     @ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.updateMapRecord(mapRecord);
       mappingService.close();
-      return mapRecord;
+      return null;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -783,13 +783,14 @@ public class MappingServiceRest {
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @ApiOperation(value = "Update user preferences", notes = "Updates a set of map user preferences", response = MapUserPreferencesJpa.class)
-  public void updateMapUserPreferences(
+  public Response updateMapUserPreferences(
     @ApiParam(value = "The map user preferences to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapUserPreferencesJpa mapUserPreferences) {
 
     try {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.updateMapUserPreferences(mapUserPreferences);
       mappingService.close();
+      return null;
    
     } catch (Exception e) {
       throw new WebApplicationException(e);

@@ -71,33 +71,24 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
 		// if null code
 		if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals("")) {
 
-			// System.out.println("ICD9CM Compute Relation: Null target");
-
 			// retrieve the cannot match relation
 			for (MapRelation relation : mapProject.getMapRelations()) {
 				if (relation.getTerminologyId().equals("447556008")) return relation;
 			}
 
 			// if cannot match relation not found, return null
-			// System.out.println("Failed to find null target relation!");
 			return null;
 
 			// otherwise, assign match relation if no relation specified
 		} else {
 
-			// System.out.println("ICD9CM Compute Relation: Non-Null target");
-
-
 			// if a relation is specified and is not the cannot match relation, return unchanged
 			if (mapEntry.getMapRelation() != null && !mapEntry.getMapRelation().getTerminologyId().equals("447556008")) {
 				
-				// System.out.println("ICD9CM Compute Relation:  Detected user-specified relation");
 				return mapEntry.getMapRelation();
 
 			// otherwise return exact match relation
 			} else {
-
-				// System.out.println("ICD9CM Compute Relation:  Returning exact match");
 
 				for (MapRelation relation : mapProject.getMapRelations()) {
 					if (relation.getTerminologyId().equals("447557004")) { 
@@ -106,7 +97,6 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
 				}
 				
 				// if relation not found, return null
-				// System.out.println("ICD9CM Compute Relation:  Failed to find exact match relation.");
 				return null;
 			}
 

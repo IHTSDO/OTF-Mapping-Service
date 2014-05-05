@@ -428,7 +428,6 @@ public class WorkflowServiceRest {
 			MapUser mapUser = mapRecord.getOwner();
 			
 			// save the map record
-			System.out.println(mapRecord.getMapEntries().size());
 			mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
 			
