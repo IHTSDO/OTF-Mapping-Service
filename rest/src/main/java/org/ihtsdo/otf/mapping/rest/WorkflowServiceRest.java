@@ -426,9 +426,6 @@ public class WorkflowServiceRest {
 			// get the map project and map user
 			MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
 			MapUser mapUser = mapRecord.getOwner();
-			
-			// save the map record
-			mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
 			
 			// get the concept

@@ -55,19 +55,32 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	
 	// on any change of focusProject, retrieve new available work
 	$scope.$watch('project', function() {
-		var path = "";
-
-		if ($scope.role === "Specialist") {
-			path = "/specialist/dash";
-		} else if ($scope.role === "Lead") {
-			path = "/lead/dash";
-		} else if ($scope.role === "Administrator") {
-			path = "/admin/dash";
-		} else if ($scope.role === "Viewer") {
-			path = "/project/projects/";
+		
+		console.debug('compareRecords:  Detected change in project');
+		
+		// if first visit, retrieve the conflict records
+		if ($scope.leadRecord == null) {
+			console.debug("First visit, getting conflict records");
+			$scope.getRecordsInConflict();
+		
+		// otherwise, return to dashboard (mismatch between record and project
+		} else {
+			console.debug("Redirecting");
+		
+			var path = "";
+	
+			if ($scope.role === "Specialist") {
+				path = "/specialist/dash";
+			} else if ($scope.role === "Lead") {
+				path = "/lead/dash";
+			} else if ($scope.role === "Administrator") {
+				path = "/admin/dash";
+			} else if ($scope.role === "Viewer") {
+				path = "/project/projects/";
+			}
+			console.debug("redirecting to " + path);
+			$location.path(path);
 		}
-		console.debug("redirecting to " + path);
-		$location.path(path);
 	});
 
 	$scope.getRecordsInConflict = function() {
