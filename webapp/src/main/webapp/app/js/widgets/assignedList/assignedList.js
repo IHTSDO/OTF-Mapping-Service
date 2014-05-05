@@ -120,13 +120,13 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		$scope.numRecordPages = Math.ceil($scope.nAssignedRecords / assignedRecordsPerPage);
 	};
 
-	// adds work to the visual display
-	// TODO Add more explicit check to enforce contract
-	//      Currently notification is passed from available work after successful update
-	//      This may not be an ideal way to do it (i.e. this widget dependent)
+	// on notification, update assigned work
 	$scope.assignWork = function(newRecords) {
 
-		$scope.assignedRecords = $scope.assignedRecords.concat(newRecords);
+		$scope.retrieveAssignedWork(1);
+		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+			$scope.retrieveAssignedConflicts(1);
+		}
 	};
 
 	// function to relinquish work (i.e. unassign the user)

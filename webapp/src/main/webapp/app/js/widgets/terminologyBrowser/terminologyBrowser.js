@@ -70,12 +70,12 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	$scope.$watch('focusProject', function() {
 
 		if ($scope.focusProject != null) {
-			getRootTree();
+			$scope.getRootTree();
 		}
 	});
 
 	// function to get the root nodes
-	function getRootTree() {
+	$scope.getRootTree = function() {
 	
 		$http({
 			url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion,
@@ -111,19 +111,15 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		});
 	};
 	
-	// TODO Make this model object cleaner
-	// For now, expects that a referencedConcept will be a string of one of the following forms:
+	// Set the query to the requested referenced concept
+	// NOTE:  referencedConcept is expected to be an object of form {terminologyId, relType}
 	// 'conceptId', 'conceptId conceptMarker' where conceptMarker is † or *
 	$scope.gotoReferencedConcept = function(referencedConcept) {
-		
-		var splitString = referencedConcept.split(" ");
-		
-		$scope.query = splitString[0];
-		
-		console.debug("Setting query string to " + $scope.query);
-		
+	
+		$scope.query = referencedConcept.terminologyId;	
+		console.debug("Setting query string to " + $scope.query);	
 		$scope.getRootTreeWithQuery();
-	}
+	};
 	
 
 	$scope.getLocalTree = function(terminologyId) {
@@ -334,7 +330,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	
 	function getFormattedDescriptions(descriptions, typeId, relTypes) {
 		
-		console.debug('getFormattedDescriptionsn given relTypes:');
+		console.debug('getFormattedDescriptions given relTypes:');
 		console.debug(relTypes);
 		
 		// first, get all descriptions for this TypeId
@@ -372,20 +368,17 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			for (var i = 0; i < relationshipsForDescription.length; i++) {
 				
 				// add the target id
-				var referencedConcept = relationshipsForDescription[i].destinationConceptId;
+				var referencedConcept = {};
+				referencedConcept.terminologyId = relationshipsForDescription[i].destinationConceptId;
 				
 				// if a asterik-to-dagger, add a *
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Asterisk') == 0) {
-					referencedConcept += " *";
+					referencedConcept.relType = "*";
 				}
 				// if a dagger-to-asterik, add a †
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Dagger') == 0) {
-					referencedConcept += " †";
+					referencedConcept.relType = "†";
 				}
-/*				
-				// add a comma if not the last element
-				description.term += (i == relationshipsForDescription.length -1 ? "" : ", ");*/
-				
 				description.referencedConcepts.push(referencedConcept);
 				
 				// remove this relationship from the current concept (now represented in description)

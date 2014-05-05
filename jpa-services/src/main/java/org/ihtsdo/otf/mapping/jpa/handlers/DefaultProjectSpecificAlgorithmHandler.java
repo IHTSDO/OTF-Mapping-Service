@@ -16,6 +16,7 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.helpers.ServiceException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -651,6 +652,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 				throw new Exception("assignFromInitialRecord given Map Record with invalid workflow status");
 			}
 			
+			// check that only one record exists for this tracking record
+			if (! (trackingRecord.getMapRecords().size() == 1)) {
+				throw new ServiceException("DefaultProjectSpecificHandlerException - assignFromInitialRecord: More than one record exists for FIX_ERROR_PATH assignment.");
+			}
+			
 			// copy existing record into new record and set id to null
 			MapRecord newRecord = new MapRecordJpa(mapRecord);
 			newRecord.setId(null);
@@ -717,14 +723,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		mapRecord.setOwner(mapUser);
 		mapRecord.setLastModifiedBy(mapUser);
 		
-		// TODO Add countDescendantConcepts
-		
 		// determine the workflow status of this record based on tracking record
 		switch (trackingRecord.getWorkflowPath()) {
 		case NON_LEGACY_PATH:
 			
 			// if a "new" tracking record (i.e. prior to conflict detection), add a NEW record
 			if (trackingRecord.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) < 0) {
+				
+				// check that this record is valid to be assigned (i.e. no more than one other specialist assigned)
+				if (trackingRecord.getAssignedUsers().size() >= 2) {
+					throw new ServiceException("DefaultProjectSpecificHandlerException - assignFromScratch:  Two users already assigned");
+				}
 				
 				mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("NON_LEGACY_PATH: NEW");

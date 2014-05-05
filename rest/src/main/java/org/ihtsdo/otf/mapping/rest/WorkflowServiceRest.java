@@ -427,10 +427,6 @@ public class WorkflowServiceRest {
 			// get the map project and map user
 			MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
 			MapUser mapUser = mapRecord.getOwner();
-			
-			// save the map record
-			System.out.println(mapRecord.getMapEntries().size());
-			mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
 			
 			// get the concept
@@ -460,7 +456,7 @@ public class WorkflowServiceRest {
 	@POST
 	@Path("/save")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })	
-	@ApiOperation(value = "Set record to editing done", notes = "Updates the map record and sets workflow to editing done.")
+	@ApiOperation(value = "Set record to editing in progress", notes = "Updates the map record and sets workflow to editing in progress.")
 	public Response saveWork(
 			@ApiParam(value = "MapRecord to save", required = true) MapRecordJpa mapRecord) {
 		
@@ -470,9 +466,6 @@ public class WorkflowServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
 			MapUser mapUser = mapRecord.getOwner();
-			
-			// save the map record
-			mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
 			
 			// get the concept
@@ -481,7 +474,7 @@ public class WorkflowServiceRest {
 			mapProject.getSourceTerminologyVersion());
 			contentService.close();
 			
-			// TODO Need to make this call agnostic (i.e. perhaps add another enum action)
+			// process the workflow action
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord, WorkflowAction.SAVE_FOR_LATER);
 			workflowService.close();

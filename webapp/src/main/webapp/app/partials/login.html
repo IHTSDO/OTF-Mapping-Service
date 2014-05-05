@@ -1,19 +1,17 @@
 <!-- Partial for login page -->
 
-
-
-<div ng-show="users.length == 0">
+<div ng-show="mapUsers.length == 0">
 
 	<h3>Initializing application.  Please wait.</h3>
 </div>
 
-<div ng-show="users.length > 0">
+<div ng-show="mapUsers.length > 0">
 	<form>
 	<table >
 	<tr> <td height="70px" colspan="2" style="vertical-align: bottom; padding-bottom: 15px"><strong>Please choose User and Role</strong></td></tr>
 	<tr>
 		<td style="padding:5px; width:5%;">Select User: </td>
-		<td style="padding:5px; width:20%;"><select ng-model="user" ng-options = "user as user.name for user in users"></select></td>
+		<td style="padding:5px; width:20%;"><select ng-model="mapUser" ng-options = "mapUser as mapUser.name for mapUser in mapUsers"></select></td>
 	</tr>
 	
 	
@@ -39,6 +37,7 @@
 	<p></p>
 	{{error}}
 </div>
+
 
 
 

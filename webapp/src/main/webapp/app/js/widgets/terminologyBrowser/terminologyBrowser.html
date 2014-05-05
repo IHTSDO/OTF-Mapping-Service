@@ -1,6 +1,7 @@
 <form>
 	<input ng-model="query">
 	<button ng-click="getRootTreeWithQuery()">Search</button>
+	<button ng-click="getRootTree()">Reset</button>
 </form>
 		
 <p></p>
@@ -33,7 +34,7 @@
 							<span ng-show = "description.referencedConcepts.length > 0">
 								(
 								<span ng-repeat = "referencedConcept in description.referencedConcepts">
-									<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+									<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}} {{referencedConcept.relType}}</a>
 								</span>
 								)
 							</span>
@@ -73,7 +74,7 @@
 							<span ng-show = "description.referencedConcepts.length > 0">
 								(
 								<span ng-repeat = "referencedConcept in description.referencedConcepts">
-									<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+									<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}} {{referencedConcept.relType}}</a>
 								</span>
 								)
 							</span>
@@ -112,7 +113,7 @@
 											<span ng-show = "description.referencedConcepts.length > 0">
 												(
 												<span ng-repeat = "referencedConcept in description.referencedConcepts">
-													<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+													<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}} {{referencedConcept.relType}}</a>
 												</span>
 												)
 											</span>
@@ -151,7 +152,7 @@
 													<span ng-show = "description.referencedConcepts.length > 0">
 														(
 														<span ng-repeat = "referencedConcept in description.referencedConcepts">
-															<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+															<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}} {{referencedConcept.relType}}</a>
 														</span>
 														)
 													</span>
@@ -190,7 +191,7 @@
 															<span ng-show = "description.referencedConcepts.length > 0">
 																(
 																<span ng-repeat = "referencedConcept in description.referencedConcepts">
-																	<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																	<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}} {{referencedConcept.relType}}</a>
 																</span>
 																)
 															</span>
@@ -230,7 +231,7 @@
 																	<span ng-show = "description.referencedConcepts.length > 0">
 																		(
 																		<span ng-repeat = "referencedConcept in description.referencedConcepts">
-																			<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																			<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}} {{referencedConcept.relType}}</a>
 																		</span>
 																		)
 																	</span>
@@ -268,7 +269,7 @@
 																			<span ng-show = "description.referencedConcepts.length > 0">
 																				(
 																				<span ng-repeat = "referencedConcept in description.referencedConcepts">
-																					<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																					<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}} {{referencedConcept.relType}}</a>
 																				</span>
 																				)
 																			</span>
@@ -307,7 +308,7 @@
 																					<span ng-show = "description.referencedConcepts.length > 0">
 																						(
 																						<span ng-repeat = "referencedConcept in description.referencedConcepts">
-																							<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																							<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}} {{referencedConcept.relType}}</a>
 																						</span>
 																						)
 																					</span>
@@ -346,7 +347,7 @@
 																							<span ng-show = "description.referencedConcepts.length > 0">
 																								(
 																								<span ng-repeat = "referencedConcept in description.referencedConcepts">
-																									<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																									<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}} {{referencedConcept.relType}}</a>
 																								</span>
 																								)
 																							</span>
@@ -385,7 +386,7 @@
 																									<span ng-show = "description.referencedConcepts.length > 0">
 																										(
 																										<span ng-repeat = "referencedConcept in description.referencedConcepts">
-																											<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept}}</a>
+																											<a ng-click = "gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}} {{referencedConcept.relType}}</a>
 																										</span>
 																										)
 																									</span>

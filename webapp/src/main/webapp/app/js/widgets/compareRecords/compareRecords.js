@@ -55,7 +55,19 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	
 	// on any change of focusProject, retrieve new available work
 	$scope.$watch('project', function() {
-		if ($scope.project != null) $scope.getRecordsInConflict();
+		var path = "";
+
+		if ($scope.role === "Specialist") {
+			path = "/specialist/dash";
+		} else if ($scope.role === "Lead") {
+			path = "/lead/dash";
+		} else if ($scope.role === "Administrator") {
+			path = "/admin/dash";
+		} else if ($scope.role === "Viewer") {
+			path = "/project/projects/";
+		}
+		console.debug("redirecting to " + path);
+		$location.path(path);
 	});
 
 	$scope.getRecordsInConflict = function() {
@@ -167,7 +179,6 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			// otherwise, initialize group arrays
 		} else {
 
-			// TODO Clunky array assignment, consider revisiting
 			// initialize entry arrays for distribution by group
 			$scope.entries1 = new Array(10);
 

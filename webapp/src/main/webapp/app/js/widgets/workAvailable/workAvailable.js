@@ -49,7 +49,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		}
 	});
 	
-	// on unassign notification, refresh the available work widget
+	// on computation of workflow, refresh the available work widget
 	$scope.$on('mapProjectWidget.notification.workflowComputed', function(event, parameters) { 	
 		console.debug("WorkAvailableCtrl:  Detected recomputation of workflow");
 		$scope.retrieveAvailableWork(1);
@@ -155,9 +155,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	};
 	
 	// assign a single concept to the current user
-	// TODO Insert check before assignment
-	// TODO Implement refresh after successful claim
 	$scope.assignWork = function(trackingRecord, mapUser) {
+		
 		
 		if (mapUser == null) mapUser = $scope.currentUser;
 
@@ -173,9 +172,14 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			}	
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
-			$scope.availableWork.removeElement(trackingRecord);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') $scope.availableConflicts.removeElement(trackingRecord);
-			$rootScope.$broadcast('workAvailableWidget.notification.assignWork',{key: 'assignedWork', assignedWork: data});  ;  
+			$rootScope.$broadcast('workAvailableWidget.notification.assignWork');
+			
+			$scope.retrieveAvailableWork($scope.trackingRecordPage);
+			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
+				$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
+			}
+			
 		}).error(function(error) {
 		  	$rootScope.glassPane--;
 		});
@@ -249,8 +253,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					}	
 				}).success(function(data) {
 				  	$rootScope.glassPane--;
-					$rootScope.$broadcast('workAvailableWidget.notification.assignWork',
-							{key: 'trackingRecords', trackingRecords: null}); // TODO: This used to pass actual tracking records, but model structure changed.  Need to bring in line.  Currently using the notification to retrieve assigned work in AssignedList widget
+					$rootScope.$broadcast('workAvailableWidget.notification.assignWork');
 					$scope.retrieveAvailableWork(1);				
 				}).error(function(data) {
 				  	$rootScope.glassPane--;
