@@ -67,7 +67,7 @@ import.input.dir=C:/data/ihtsdo-project-data
 #
 # Webapp base URL
 #
-base.url=http://localhost:8080
+base.url=
 
 #
 # JPA debugging settings

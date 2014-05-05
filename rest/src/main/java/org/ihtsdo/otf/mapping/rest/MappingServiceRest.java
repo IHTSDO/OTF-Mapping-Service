@@ -774,8 +774,9 @@ public class MappingServiceRest {
   }
   
   /**
-   * Updates a map user pereferences object.
+   * Updates a map user preferences object.
    * @param mapUserPreferences the map user preferences
+   * @return null
    */
   @POST
   @Path("/userPreferences/update")
@@ -1429,6 +1430,12 @@ public class MappingServiceRest {
 		}
 	}
 	
+	/**
+	 * Returns map records in conflict for a given conflict lead record.
+	 * @param mapRecordId
+	 * @return map records in conflict for a given conflict lead record
+	 * @throws Exception
+	 */
 	@GET
 	@Path("/record/conflictRecords/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Get specialist records in conflict", notes = "Return's a list of records in conflict for a lead's conflict resolution record", response = MapRecordListJpa.class)

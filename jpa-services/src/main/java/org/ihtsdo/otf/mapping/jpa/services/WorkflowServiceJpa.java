@@ -356,7 +356,7 @@ public class WorkflowServiceJpa implements WorkflowService {
 		
 			// cycle over map records to find the CONFLICT_DETECTED record assigned to this user
 			for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
-				if (mapRecord.getOwner().equals(mapUser) && mapRecord.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) == 0) {
+				if (mapRecord.getOwner().equals(mapUser) && mapRecord.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_IN_PROGRESS) == 0) {
 					assignedConflicts.add(trackingRecord);
 				}
 			}
@@ -695,7 +695,8 @@ public class WorkflowServiceJpa implements WorkflowService {
 	 * @param mapRecordId the map record id
 	 * @return the map record in workflow tracking record
 	 */
-	public MapRecord getMapRecordInWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord, Long mapRecordId) {
+	@SuppressWarnings("static-method")
+  public MapRecord getMapRecordInWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord, Long mapRecordId) {
 		for (MapRecord mr : trackingRecord.getMapRecords()) {
 			if (mr.getId() == mapRecordId) return mr;
 		}

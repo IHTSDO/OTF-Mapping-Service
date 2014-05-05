@@ -241,7 +241,6 @@ public class MapProjectJpaTest {
 	/**
 	 * Confirm load.
 	 */
-	@SuppressWarnings("static-method")
 	private void confirmLoad() {
 		javax.persistence.Query query = manager
 				.createQuery("select m from MapProjectJpa m where refSetId = :refSetId");
