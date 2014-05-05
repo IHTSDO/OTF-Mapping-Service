@@ -29,6 +29,9 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
 
+/**
+ * Reference implementation of {@link ProjectSpecificAlgorithmHandler}
+ */
 public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAlgorithmHandler {
 
 	/** The map project. */
@@ -403,7 +406,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		
 	   // compare mapPrinciples
 	   Comparator<Object> principlesComparator = new Comparator<Object>() {
-	      public int compare(Object o1, Object o2) {
+	      @Override
+        public int compare(Object o1, Object o2) {
 
 	          String x1 = ((MapPrinciple) o1).getPrincipleId();
 	          String x2 = ((MapPrinciple) o2).getPrincipleId();
@@ -448,7 +452,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	   
 	   // compare mapEntries
 	   // organize map entries by group
-	   Map<Integer, List<MapEntry>> groupToMapEntryList1 = new HashMap<Integer, List<MapEntry>>();
+	   Map<Integer, List<MapEntry>> groupToMapEntryList1 = new HashMap<>();
 	   for (MapEntry entry : record1.getMapEntries()) {
 	  	 if (groupToMapEntryList1.containsKey(entry.getMapGroup())) {
 	  	   List<MapEntry> entryList = groupToMapEntryList1.get(entry.getMapGroup());
@@ -459,7 +463,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	  		 groupToMapEntryList1.put(entry.getMapGroup(), entryList);
 	  	 }
 	   }
-	   Map<Integer, List<MapEntry>> groupToMapEntryList2 = new HashMap<Integer, List<MapEntry>>();
+	   Map<Integer, List<MapEntry>> groupToMapEntryList2 = new HashMap<>();
 	   for (MapEntry entry : record2.getMapEntries()) {
 	  	 if (groupToMapEntryList2.containsKey(entry.getMapGroup())) {
 	  	   List<MapEntry> entryList = groupToMapEntryList2.get(entry.getMapGroup());
@@ -582,6 +586,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		
 		// check map advices
 	  Comparator<Object> advicesComparator = new Comparator<Object>() {
+      @Override
       public int compare(Object o1, Object o2) {
 
           String x1 = ((MapAdvice) o1).getName();
@@ -636,7 +641,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 * @param mapRecord the map record
 	 * @param mapUser the map user
 	 * @return the workflow tracking record
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	@Override
 	public WorkflowTrackingRecord assignFromInitialRecord(WorkflowTrackingRecord trackingRecord, MapRecord mapRecord, MapUser mapUser) throws Exception {
@@ -703,13 +708,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 * 
 	 * Conditions:
 	 * - Only valid workflow paths:  NON_LEGACY_PATH, LEGACY_PATH, and CONSENSUS_PATH
-	 * 	 Note that QA_PATH and FIX_ERROR_PATH should never call this method
+	 * Note that QA_PATH and FIX_ERROR_PATH should never call this method
 	 * - Only valid workflow statuses: Any status preceding CONFLICT_DETECTED and CONFLICT_DETECTED
-	 *
+	 * 
 	 * Default Behavior:
 	 * - Create a record with workflow status based on current workflow status
 	 * - Add the record to the tracking record
-	 * - Return the tracking record
+	 * - Return the tracking record.
+	 *
+	 * @param trackingRecord the tracking record
+	 * @param concept the concept
+	 * @param mapUser the map user
+	 * @return the workflow tracking record
+	 * @throws Exception the exception
 	 */
 	@Override
 	public WorkflowTrackingRecord assignFromScratch(WorkflowTrackingRecord trackingRecord, Concept concept, MapUser mapUser) throws Exception {
@@ -784,8 +795,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	 * 
 	 * Conditions:
 	 * - Valid workflow paths: All
-	 * - Valid workflow status: All except READY_FOR_PUBLICATION, PUBLISHED
-	 * @throws Exception 
+	 * - Valid workflow status: All except READY_FOR_PUBLICATION, PUBLISHED.
+	 *
+	 * @param trackingRecord the tracking record
+	 * @param mapUser the map user
+	 * @return the workflow tracking record
+	 * @throws Exception the exception
 	 */
 	@Override
 	public WorkflowTrackingRecord unassign(WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception {
@@ -889,9 +904,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 	
 	/**
 	 * Updates workflow information when a specialist or lead clicks "Finished"
-	 * Expects the tracking record to be detached from persistence environment
-	 * 
-	 * @throws Exception 
+	 * Expects the tracking record to be detached from persistence environment.
+	 *
+	 * @param trackingRecord the tracking record
+	 * @param mapUser the map user
+	 * @return the workflow tracking record
+	 * @throws Exception the exception
 	 */
 	@Override
 	public WorkflowTrackingRecord finishEditing(WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception {
@@ -1038,6 +1056,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#saveForLater(org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord, org.ihtsdo.otf.mapping.model.MapUser)
+	 */
 	@Override
 	public WorkflowTrackingRecord saveForLater(
 			WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception {

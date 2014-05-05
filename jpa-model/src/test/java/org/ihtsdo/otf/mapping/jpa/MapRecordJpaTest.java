@@ -324,7 +324,8 @@ public void confirmMapEntryDelete() throws Exception {
 	 * @throws Exception
 	 *             the exception
 	 */
-	@Before
+	@SuppressWarnings("static-method")
+  @Before
 	public void addTestData() throws Exception {
 		
 		EntityTransaction tx = manager.getTransaction();
@@ -401,7 +402,9 @@ public void confirmMapEntryDelete() throws Exception {
 	/**
 	 * Removes all test data, called after each unit test.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({
+      "unchecked", "static-method"
+  })
 	@After
 	public void removeTestData() {
 		

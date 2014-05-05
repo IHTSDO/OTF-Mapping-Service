@@ -15,18 +15,31 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * Unit test for comparing map records.
+ */
 public class CompareMapRecordJpaTest {
 
+	/** The handler. */
 	private static DefaultProjectSpecificAlgorithmHandler handler;
 
 	
+	/**
+	 * Inits the.
+	 */
 	@BeforeClass
 	public static void init() {
 		handler = new DefaultProjectSpecificAlgorithmHandler();
 	  
 	}
 	
-	@Test
+	/**
+	 * Test single group single entry matching.
+	 *
+	 * @throws Exception the exception
+	 */
+    @SuppressWarnings("static-method")
+  @Test
 	public void testSingleGroupSingleEntryMatching() throws Exception {
 		
 		MapRecord record1 = new MapRecordJpa();
@@ -54,6 +67,12 @@ public class CompareMapRecordJpaTest {
 		}
 	}
 	
+	/**
+	 * Test single group single entry different rules.
+	 *
+	 * @throws Exception the exception
+	 */
+    @SuppressWarnings("static-method")
 	@Test
 	public void testSingleGroupSingleEntryDifferentRules() throws Exception {
 		
@@ -82,6 +101,12 @@ public class CompareMapRecordJpaTest {
 		}
 	}
 	
+	/**
+	 * Test single group single entry different relation id.
+	 *
+	 * @throws Exception the exception
+	 */
+    @SuppressWarnings("static-method")
 	@Test
 	public void testSingleGroupSingleEntryDifferentRelationId() throws Exception {
 		
@@ -111,6 +136,12 @@ public class CompareMapRecordJpaTest {
 	}
 	
 	
+	/**
+	 * Test single group single entry different advice lists.
+	 *
+	 * @throws Exception the exception
+	 */
+    @SuppressWarnings("static-method")
 	@Test
 	public void testSingleGroupSingleEntryDifferentAdviceLists() throws Exception {
 		
@@ -155,6 +186,12 @@ public class CompareMapRecordJpaTest {
 		}
 	}
 		
+	/**
+	 * Test single group multiple entries same order.
+	 *
+	 * @throws Exception the exception
+	 */
+    @SuppressWarnings("static-method")
 	@Test
 	public void testSingleGroupMultipleEntriesSameOrder() throws Exception {
 		
@@ -204,6 +241,12 @@ public class CompareMapRecordJpaTest {
 		}
 	}
 	
+	/**
+	 * Test single group multiple entries different order.
+	 *
+	 * @throws Exception the exception
+	 */
+    @SuppressWarnings("static-method")
 	@Test
 	public void testSingleGroupMultipleEntriesDifferentOrder() throws Exception {
 		
@@ -253,6 +296,12 @@ public class CompareMapRecordJpaTest {
 		}
 	}
 	
+	/**
+	 * Test multiple groups entries matching.
+	 *
+	 * @throws Exception the exception
+	 */
+    @SuppressWarnings("static-method")
 	@Test
 	public void testMultipleGroupsEntriesMatching() throws Exception {
 		
@@ -312,6 +361,12 @@ public class CompareMapRecordJpaTest {
 		}
 	}
 	
+	/**
+	 * Test multiple groups first group matching.
+	 *
+	 * @throws Exception the exception
+	 */
+    @SuppressWarnings("static-method")
 	@Test
 	public void testMultipleGroupsFirstGroupMatching() throws Exception {
 		
@@ -379,6 +434,12 @@ public class CompareMapRecordJpaTest {
 		}
 	}
 	
+	/**
+	 * Test multiple groups different numbers of groups.
+	 *
+	 * @throws Exception the exception
+	 */
+    @SuppressWarnings("static-method")
 	@Test
 	public void testMultipleGroupsDifferentNumbersOfGroups() throws Exception {
 		
@@ -438,6 +499,9 @@ public class CompareMapRecordJpaTest {
 	}
 
 	
+	/**
+	 * Cleanup.
+	 */
 	@AfterClass
 	public static void cleanup() {
 		// do nothing

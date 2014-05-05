@@ -695,7 +695,8 @@ public class WorkflowServiceJpa implements WorkflowService {
 	 * @param mapRecordId the map record id
 	 * @return the map record in workflow tracking record
 	 */
-	public MapRecord getMapRecordInWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord, Long mapRecordId) {
+	@SuppressWarnings("static-method")
+  public MapRecord getMapRecordInWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord, Long mapRecordId) {
 		for (MapRecord mr : trackingRecord.getMapRecords()) {
 			if (mr.getId() == mapRecordId) return mr;
 		}

@@ -63,7 +63,8 @@ public class MappingServiceJpaTest {
 	/**
 	 * Cleanup database
 	 */
-	@After
+	@SuppressWarnings("static-method")
+  @After
 	public void cleanup() {
 
 		Logger.getLogger(MappingServiceJpaTest.class).info("Cleaning up MappingServiceJpaTest");
@@ -639,7 +640,6 @@ public class MappingServiceJpaTest {
 	 * 
 	 * @throws Exception
 	 */
-	@SuppressWarnings("static-method")
 	@Test
 	public void testRemoveElements() throws Exception {
 		Logger.getLogger(MappingServiceJpaTest.class).info("Testing element remove...");

@@ -71,6 +71,7 @@ public interface WorkflowService {
 	 *
 	 * @param mapProject the map project
 	 * @param mapUser the map user
+     * @param pfsParameter the pfs parameter
 	 * @return the search result list
 	 */
 	public SearchResultList findAvailableWork(MapProject mapProject, MapUser mapUser, PfsParameter pfsParameter);
@@ -80,6 +81,7 @@ public interface WorkflowService {
 	 *
 	 * @param mapProject the map project
 	 * @param mapUser the map user
+     * @param pfsParameter the pfs parameter
 	 * @return the search result list
 	 */
 	public SearchResultList findAvailableConflicts(MapProject mapProject, MapUser mapUser, PfsParameter pfsParameter);
@@ -89,6 +91,7 @@ public interface WorkflowService {
 	 *
 	 * @param mapProject the map project
 	 * @param mapUser the map user
+     * @param pfsParameter the pfs parameter
 	 * @return the search result list
 	 */
 	public SearchResultList findAssignedWork(MapProject mapProject,
@@ -100,6 +103,7 @@ public interface WorkflowService {
 	 *
 	 * @param mapProject the map project
 	 * @param mapUser the map user
+     * @param pfsParameter the pfs parameter
 	 * @return the search result list
 	 */
 	public SearchResultList findAssignedConflicts(MapProject mapProject, MapUser mapUser, PfsParameter pfsParameter);
@@ -108,6 +112,7 @@ public interface WorkflowService {
 	 * Find available consensus work.
 	 *
 	 * @param mapProject the map project
+     * @param pfsParameter the pfs parameter
 	 * @return the search result list
 	 */
 	public SearchResultList findAvailableConsensusWork(MapProject mapProject, PfsParameter pfsParameter);
@@ -128,8 +133,8 @@ public interface WorkflowService {
 	/**
 	 * Synchronize workflow tracking record given the new version and the old version
 	 *
-	 * @param newRecord the new record, modified by processWorkflowAction
-	 * @param oldRecord the old record, from the database
+	 * @param newTrackingRecord the new record, modified by processWorkflowAction
+	 * @param oldTrackingRecord the old record, from the database
 	 * @throws Exception 
 	 */
 	public void synchronizeWorkflowTrackingRecord(WorkflowTrackingRecord newTrackingRecord,
