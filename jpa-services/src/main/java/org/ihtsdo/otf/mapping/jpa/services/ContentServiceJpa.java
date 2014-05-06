@@ -56,11 +56,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * Instantiates an empty {@link ContentServiceJpa}.
 	 */
 	public ContentServiceJpa() {
-		
-		// created once or if the factory has been closed
-		if (factory == null || !factory.isOpen()) {
-			super.openFactory();
-		}
+	  super();
 
 		// create on each instantiation
 		manager = factory.createEntityManager();

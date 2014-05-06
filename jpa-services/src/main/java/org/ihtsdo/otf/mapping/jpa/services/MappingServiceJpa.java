@@ -101,12 +101,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * Instantiates an empty {@link MappingServiceJpa}.
 	 */
 	public MappingServiceJpa() {
-
-		// created once or if the factory has been closed
-		if (factory == null || !factory.isOpen()) {
-			super.openFactory();
-		}
-
+	  super();
 		// created on each instantiation
 		manager = factory.createEntityManager();
 	}

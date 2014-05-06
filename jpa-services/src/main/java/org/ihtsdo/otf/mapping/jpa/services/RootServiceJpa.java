@@ -21,77 +21,88 @@ import org.ihtsdo.otf.mapping.services.RootService;
  */
 public class RootServiceJpa implements RootService {
 
-	/** The factory. */
-	protected static EntityManagerFactory factory;
+  /** The factory. */
+  protected static EntityManagerFactory factory;
 
-	/** The indexed field names. */
-	protected static Set<String> fieldNames;
+  /** The indexed field names. */
+  protected static Set<String> fieldNames;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.services.RootService#openFactory()
-	 */
-	@Override
-	public void openFactory() {
+  /**
+   * Instantiates an empty {@link RootServiceJpa}.
+   */
+  public RootServiceJpa() {
+    // created once or if the factory has closed
+    synchronized (factory) {
+      if (factory == null || !factory.isOpen()) {
+        openFactory();
+      }
+    }
+  }
 
-		// if factory has not been instantiated or has been closed, open it
-		if (factory == null || !factory.isOpen()) {
-			
-			Logger.getLogger(this.getClass()).info(
-					"Setting root service entity manager factory.");
-			factory = Persistence
-					.createEntityManagerFactory("MappingServiceDS");
-		}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.RootService#openFactory()
+   */
+  @Override
+  public void openFactory() {
 
-		// if the field names have not been set, initialize
-		if (fieldNames == null)
-			initializeFieldNames();
-	}
+    // if factory has not been instantiated or has been closed, open it
+    if (factory == null || !factory.isOpen()) {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.services.RootService#closeFactory()
-	 */
-	@Override
-	public void closeFactory() {
-		if (factory.isOpen()) {
-			factory.close();
-		}
-	}
+      Logger.getLogger(this.getClass()).info(
+          "Setting root service entity manager factory.");
+      factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
-	 */
-	@Override
-	public void initializeFieldNames() {
+    // if the field names have not been set, initialize
+    if (fieldNames == null)
+      initializeFieldNames();
+  }
 
-		if (fieldNames == null) {
-			fieldNames = new HashSet<>();
-			EntityManager manager = factory.createEntityManager();
-			FullTextEntityManager fullTextEntityManager = org.hibernate.search.jpa.Search
-					.getFullTextEntityManager(manager);
-			IndexReaderAccessor indexReaderAccessor = fullTextEntityManager
-					.getSearchFactory().getIndexReaderAccessor();
-			Set<String> indexedClassNames = fullTextEntityManager
-					.getSearchFactory().getStatistics().getIndexedClassNames();
-			for (String indexClass : indexedClassNames) {
-				IndexReader indexReader = indexReaderAccessor.open(indexClass);
-				try {
-					for (FieldInfo info : ReaderUtil
-							.getMergedFieldInfos(indexReader)) {
-						fieldNames.add(info.name);
-					}
-				} finally {
-					indexReaderAccessor.close(indexReader);
-				}
-			}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.RootService#closeFactory()
+   */
+  @Override
+  public void closeFactory() {
+    if (factory.isOpen()) {
+      factory.close();
+    }
+  }
 
-			fullTextEntityManager.close();
-		}
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
+   */
+  @Override
+  public void initializeFieldNames() {
+
+    if (fieldNames == null) {
+      fieldNames = new HashSet<>();
+      EntityManager manager = factory.createEntityManager();
+      FullTextEntityManager fullTextEntityManager =
+          org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
+      IndexReaderAccessor indexReaderAccessor =
+          fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
+      Set<String> indexedClassNames =
+          fullTextEntityManager.getSearchFactory().getStatistics()
+              .getIndexedClassNames();
+      for (String indexClass : indexedClassNames) {
+        IndexReader indexReader = indexReaderAccessor.open(indexClass);
+        try {
+          for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
+            fieldNames.add(info.name);
+          }
+        } finally {
+          indexReaderAccessor.close(indexReader);
+        }
+      }
+
+      fullTextEntityManager.close();
+    }
+  }
 
 }
