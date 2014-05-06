@@ -48,8 +48,8 @@ public class ValidationServiceRest {
   public ValidationResult validateMapRecord(
     @ApiParam(value = "The map record to validate.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Validation): /record/validate");
+    Logger.getLogger(ValidationServiceRest.class).info(
+        "RESTful call (Validation): /record/validate for map record id = " + mapRecord.getId().toString());
 
     try {
       return validationService.validateMapRecord(mapRecord);

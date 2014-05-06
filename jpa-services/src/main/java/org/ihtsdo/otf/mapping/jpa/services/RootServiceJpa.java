@@ -37,6 +37,7 @@ public class RootServiceJpa implements RootService {
 
 		// if factory has not been instantiated or has been closed, open it
 		if (factory == null || !factory.isOpen()) {
+			
 			Logger.getLogger(this.getClass()).info(
 					"Setting root service entity manager factory.");
 			factory = Persistence

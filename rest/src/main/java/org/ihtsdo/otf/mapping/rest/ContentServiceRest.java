@@ -61,7 +61,7 @@ public class ContentServiceRest {
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
 
-    Logger.getLogger(ContentServiceJpa.class).info(
+    Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId);
 
@@ -110,7 +110,7 @@ public class ContentServiceRest {
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
 
-    Logger.getLogger(ContentServiceJpa.class).info(
+    Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId
             + "/inverseRelationships");
@@ -150,7 +150,7 @@ public class ContentServiceRest {
     @ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology) {
 
-    Logger.getLogger(ContentServiceJpa.class).info(
+    Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/id/"
             + terminologyId);
 
@@ -183,7 +183,7 @@ public class ContentServiceRest {
   public SearchResultList findConcepts(
     @ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
 
-    Logger.getLogger(ContentServiceJpa.class).info(
+    Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/query/" + searchString);
     try {
       ContentService contentService = new ContentServiceJpa();
@@ -215,7 +215,7 @@ public class ContentServiceRest {
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
 
-    Logger.getLogger(ContentServiceJpa.class).info(
+    Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId + "/descendants");
     try {
@@ -261,7 +261,7 @@ public class ContentServiceRest {
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
 
-    Logger.getLogger(ContentServiceJpa.class).info(
+    Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + id.toString() + "/descendants");
     try {

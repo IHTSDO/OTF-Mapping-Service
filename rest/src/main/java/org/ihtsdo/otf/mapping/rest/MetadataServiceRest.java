@@ -10,6 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.dto.KeyValuePair;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairList;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairLists;
@@ -47,7 +48,10 @@ public class MetadataServiceRest {
   public KeyValuePairLists getAllMetadata(
     @ApiParam(value = "terminology string", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "terminology version string", required = true) @PathParam("version") String version) {
-    try {
+    
+	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /all/" + terminology + "/" + version);
+	  
+	  try {
       // call jpa service and get complex map return type
       MetadataService metadataService = new MetadataServiceJpa();
       Map<String, Map<String, String>> mapOfMaps =
@@ -90,6 +94,9 @@ public class MetadataServiceRest {
   })
   public KeyValuePairLists getAllMetadata(
     @ApiParam(value = "terminology string", required = true) @PathParam("terminology") String terminology) {
+	  
+	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /all/" + terminology); 
+	  
     try {
       MetadataService metadataService = new MetadataServiceJpa();
       String version = metadataService.getLatestVersion(terminology);
@@ -115,6 +122,9 @@ public class MetadataServiceRest {
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public KeyValuePairList getAllTerminologiesLatestVersions() {
+	  
+	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /terminologies/latest/");
+	  
     try {
       MetadataService metadataService = new MetadataServiceJpa();
       Map<String, String> terminologyVersionMap =
@@ -144,6 +154,8 @@ public class MetadataServiceRest {
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public KeyValuePairLists getAllTerminologiesVersions() {
+	  
+	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /terminologies");
     try {
       KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
       MetadataService metadataService = new MetadataServiceJpa();
