@@ -76,7 +76,8 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 //Navigation
 mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService', '$rootScope', '$location', '$http',
                                                   function ($scope, localStorageService, $rootScope, $location, $http) {
-
+    $scope.page =  'login';
+	
 	// if app has already been loaded, simply retrieve state variables from local storage service
 	$scope.mapUsers 	= localStorageService.get('mapUsers');
 	$scope.mapProjects 	= localStorageService.get('mapProjects');
@@ -101,7 +102,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	$rootScope.$broadcast('localStorageModule.notificatoin.setPreferences', {key: 'preferences', preferences: null});
 
 	// broadcast page to help mechanism
-	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
+	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
 
 	// set all local variables to null
 	$scope.mapUser = [];
@@ -181,7 +182,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	                {name:'Lead', value:3},
 	                {name:'Administrator', value:4}];
 	$scope.role = $scope.roles[0];  
-
+	
 	// login button directs to next page based on role selected
 	$scope.go = function () {
 
@@ -242,6 +243,34 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 			$location.path(path);
 		}
 	};
+	
+	// function to change project from the header
+	$scope.changeFocusProject = function(mapProject) {
+		$scope.focusProject = mapProject;
+		console.debug("changing project to " + $scope.focusProject.name);
+
+		// update and broadcast the new focus project
+		localStorageService.add('focusProject', $scope.focusProject);
+		$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+		// update the user preferences
+		$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+		localStorageService.add('preferences', $scope.preferences);
+		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+
+	};
+	
+	$scope.goToHelp = function() {
+		var path;
+		if ($scope.page != 'mainDashboard') {
+			path = "help/" + $scope.page + "Help.html";
+		} else {
+			path = "help/" + $scope.currentRole + "DashboardHelp.html";
+		}
+		console.debug("go to help page " + path);
+		// redirect page
+		$location.path(path);
+	};
 }]);
 
 
@@ -253,6 +282,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
                                                               function ($scope, $http, $routeParams, $sce, $rootScope, $location, localStorageService) {
 
 	// scope variables
+	$scope.page =  'concept';
 	$scope.error = "";		// initially empty
 	$scope.conceptId = $routeParams.conceptId;
 	$scope.recordsInProject = [];
@@ -281,7 +311,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 
 	// broadcast page to help mechanism
-	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'concept'});
+	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'concept'});
 
 	// once focus project retrieved, retrieve the concept and records
 	$scope.$watch('focusProject', function() {
@@ -584,6 +614,34 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			});
 		};	  
 	};
+	
+	// function to change project from the header
+	$scope.changeFocusProject = function(mapProject) {
+		$scope.focusProject = mapProject;
+		console.debug("changing project to " + $scope.focusProject.name);
+
+		// update and broadcast the new focus project
+		localStorageService.add('focusProject', $scope.focusProject);
+		$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+		// update the user preferences
+		$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+		localStorageService.add('preferences', $scope.preferences);
+		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+
+	};
+	
+	$scope.goToHelp = function() {
+		var path;
+		if ($scope.page != 'mainDashboard') {
+			path = "help/" + $scope.page + "Help.html";
+		} else {
+			path = "help/" + $scope.currentRole + "DashboardHelp.html";
+		}
+		console.debug("go to help page " + path);
+		// redirect page
+		$location.path(path);
+	};
 }]);
 
 
@@ -613,7 +671,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', '$routeParams', '$sce', '$rootScope', '$location', 'localStorageService',
                                                              function ($scope, $http, $routeParams, $sce, $rootScope, $location, localStorageService) {
 
-
+    $scope.page =  'records';
 
 	// the project id, extracted from route params
 	$scope.projectId = $routeParams.projectId;
@@ -641,10 +699,11 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	});	
 
 	// broadcast page to help mechanism
-	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'records'});
+	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'records'});
 
 	// retrieve the current global variables
 	$scope.focusProject = localStorageService.get('focusProject');
+	$scope.mapProjects = localStorageService.get("mapProjects");
 	$scope.currentUser = localStorageService.get('currentUser');
 	$scope.currentRole = localStorageService.get('currentRole');
 
@@ -854,17 +913,48 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		}
 	};
 
+	// function to change project from the header
+	$scope.changeFocusProject = function(mapProject) {
+		$scope.focusProject = mapProject;
+		console.debug("changing project to " + $scope.focusProject.name);
 
+		// update and broadcast the new focus project
+		localStorageService.add('focusProject', $scope.focusProject);
+		$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+		// update the user preferences
+		$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+		localStorageService.add('preferences', $scope.preferences);
+		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+
+	};
+	
+	$scope.goToHelp = function() {
+		var path;
+		if ($scope.page != 'mainDashboard') {
+			path = "help/" + $scope.page + "Help.html";
+		} else {
+			path = "help/" + $scope.currentRole + "DashboardHelp.html";
+		}
+		console.debug("go to help page " + path);
+		// redirect page
+		$location.path(path);
+	};
 }]);
 
 mapProjectAppControllers.controller('MapProjectDetailCtrl', 
 		['$scope', '$http', '$sce', '$rootScope', '$location', 'localStorageService',
 		 function ($scope, $http, $sce, $rootScope, $location, localStorageService) {
 
+		    $scope.page =  'project';
+		    
 			// broadcast page to help mechanism
-			$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'project'});
+			//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'project'});
 
+			$scope.currentRole = localStorageService.get('currentRole');
+			$scope.currentUser = localStorageService.get('currentUser');
 			$scope.focusProject = localStorageService.get('focusProject');
+			$scope.mapProjects = localStorageService.get("mapProjects");
 			
 			// watch for focus project change
 			$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -1164,17 +1254,35 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				});
 			};
 
+			// function to change project from the header
+			$scope.changeFocusProject = function(mapProject) {
+				$scope.focusProject = mapProject;
+				console.debug("changing project to " + $scope.focusProject.name);
 
+				// update and broadcast the new focus project
+				localStorageService.add('focusProject', $scope.focusProject);
+				$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
 
+				// update the user preferences
+				$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+				localStorageService.add('preferences', $scope.preferences);
+				$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+
+			};
+			
+			$scope.goToHelp = function() {
+				var path;
+				if ($scope.page != 'mainDashboard') {
+					path = "help/" + $scope.page + "Help.html";
+				} else {
+					path = "help/" + $scope.currentRole + "DashboardHelp.html";
+				}
+				console.debug("go to help page " + path);
+				// redirect page
+				$location.path(path);
+			};
 			////////////////////////////////////////////////////////
 			// END PRINCIPLE/ADVICE SORTING/FILTERING FUNCTIONS
 			////////////////////////////////////////////////////////
 		}]);
-
-
-
-
-
-
-
 

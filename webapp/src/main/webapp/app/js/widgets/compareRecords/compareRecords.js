@@ -45,7 +45,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	
 
 	// broadcast page to help mechanism  
-	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'resolveConflictsDashboard'});  
+	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'resolveConflictsDashboard'});  
 
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
@@ -76,7 +76,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			} else if ($scope.role === "Administrator") {
 				path = "/admin/dash";
 			} else if ($scope.role === "Viewer") {
-				path = "/project/projects/";
+				path = "/viewer/dash";
 			}
 			console.debug("redirecting to " + path);
 			$location.path(path);

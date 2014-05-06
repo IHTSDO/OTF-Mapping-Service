@@ -1,4 +1,6 @@
 <!--  partial for displaying records associated with a concept id -->
+<div ng-include src="'./partials/header.html'"></div>
+
 <h3>{{concept.terminology}} Concept {{concept.terminologyId}}:  {{concept.defaultPreferredName}}</h3>  
 <!--  No map records for this project -->
 <div ng-show = "recordsInProjectNotFound == true">
@@ -210,4 +212,4 @@
 
 </div>
 
-
+<div ng-include src="'./partials/footer.html'"></div>

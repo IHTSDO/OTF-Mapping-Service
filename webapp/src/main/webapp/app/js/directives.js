@@ -7,7 +7,7 @@ var mapProjectAppDirectives = angular.module('mapProjectAppDirectives', []);
 /////////////////////////////////////////////////////
 
 
-mapProjectAppDirectives.directive('otfFooterDirective', ['$rootScope', 'localStorageService', function($rootScope, localStorageService) {
+/*mapProjectAppDirectives.directive('otfFooterDirective', ['$rootScope', 'localStorageService', function($rootScope, localStorageService) {
 
 	return {
 		templateUrl: './partials/footer.html',
@@ -18,7 +18,7 @@ mapProjectAppDirectives.directive('otfFooterDirective', ['$rootScope', 'localSto
 			scope.user = localStorageService.get('currentUser');
 		}
 	};
-}]);
+}]);*/
 
 mapProjectAppDirectives.directive('otfEntry', function() {
 
@@ -34,7 +34,7 @@ mapProjectAppDirectives.directive('otfEntry', function() {
 	};
 });
 
-mapProjectAppDirectives.directive(
+/*mapProjectAppDirectives.directive(
 		'otfHeaderDirective', 
 		['$rootScope', '$http', '$location', 'localStorageService', 
 		 function($rootScope, $http, $location, localStorageService) {
@@ -46,12 +46,12 @@ mapProjectAppDirectives.directive(
 				replace: true,        // tells the calling html to replace itself with what�s returned here
 				link: function($scope, element, attrs) { // to get $scope, the element, and its attributes
 
-					/*
+					
 					 * NOTE: None of these functions use passed parameters at this time.
 					 * Instead they explicitly retrieve the locally stored value from the localStorageService
 					 * 
 					 * This is a possible optimization location if local storage becomes unwieldy
-					 */
+					 
 
 					// On initialization, reset all values to null -- used to ensure watch functions work correctly
 					$scope.mapProjects 	= null;
@@ -135,7 +135,7 @@ mapProjectAppDirectives.directive(
 				}
 			};
 		}]);
-
+*/
 
 mapProjectAppDirectives.directive('draggable', function() {
   return function(scope, element) {
