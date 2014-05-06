@@ -20,20 +20,6 @@ mapProjectAppDirectives.directive('otfFooterDirective', ['$rootScope', 'localSto
 	};
 }]);
 
-mapProjectAppDirectives.directive('otfEntry', function() {
-
-	return {
-		templateUrl: './partials/mapEntry.html',
-		restrict: 'E',
-		scope: true,
-		link: function(scope, element, attrs) {
-
-		}
-
-
-	};
-});
-
 mapProjectAppDirectives.directive(
 		'otfHeaderDirective', 
 		['$rootScope', '$http', '$location', 'localStorageService', 

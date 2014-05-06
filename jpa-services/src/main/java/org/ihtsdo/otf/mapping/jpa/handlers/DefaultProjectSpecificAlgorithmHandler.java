@@ -403,7 +403,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		
 	   // compare mapPrinciples
 	   Comparator<Object> principlesComparator = new Comparator<Object>() {
-	      public int compare(Object o1, Object o2) {
+	      @Override
+		public int compare(Object o1, Object o2) {
 
 	          String x1 = ((MapPrinciple) o1).getPrincipleId();
 	          String x2 = ((MapPrinciple) o2).getPrincipleId();
@@ -582,7 +583,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 		
 		// check map advices
 	  Comparator<Object> advicesComparator = new Comparator<Object>() {
-      public int compare(Object o1, Object o2) {
+      @Override
+	public int compare(Object o1, Object o2) {
 
           String x1 = ((MapAdvice) o1).getName();
           String x2 = ((MapAdvice) o2).getName();

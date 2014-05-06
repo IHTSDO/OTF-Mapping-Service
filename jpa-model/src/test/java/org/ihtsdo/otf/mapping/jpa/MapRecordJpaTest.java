@@ -33,7 +33,6 @@ import org.junit.BeforeClass;
 import org.junit.After;
 import org.junit.Test;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class MapRecordJpaTest.
  * 

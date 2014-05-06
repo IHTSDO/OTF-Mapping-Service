@@ -13,6 +13,24 @@ var root_workflow = root_url + "workflow/";
 mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 	$rootScope.glassPane = 0;
 	
+	/*// retrieve state variables
+	utilityService.getStateVariables().then(function (stateVariables) {
+		
+		// on promise return, set variables
+		$scope.focusProject 	= stateVariables.focusProject;
+		$scope.currentUser 		= stateVariables.currentUser;
+		$scope.currentRole 		= stateVariables.currentRole;
+		$scope.metadata 		= stateVariables.metadata;
+		$scope.mapProjects 		= stateVariables.mapProjects;
+		$scope.mapUsers 		= stateVariables.mapUsers;
+		
+		// call dependent functions
+		// e.g. retrieveRecords(), getProjectDetails(), what have you
+	});*/
+
+	
+	
+	
 	// retrieve projects
 	$http({
 		url: root_mapping + "project/projects",

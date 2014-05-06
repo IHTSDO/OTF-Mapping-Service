@@ -53,9 +53,11 @@ public class ValidationResultJpa implements ValidationResult {
 	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#addErrors(java.util.Set)
 	 */
 	@Override
-	public void addErrors(Set<String> errors) {
-		if (errors != null) {
+	public void addErrors(Set<String> errorSet) {
+		if (this.errors != null) {
 			this.errors.addAll(errors);
+		} else {
+			this.errors = new HashSet<String>(errorSet);
 		}
 	}
 	
@@ -95,8 +97,9 @@ public class ValidationResultJpa implements ValidationResult {
 	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#addWarnings(java.util.Set)
 	 */
 	@Override
-	public void addWarnings(Set<String> warnings) {
-		if (warnings != null) this.warnings.addAll(warnings);
+	public void addWarnings(Set<String> warningSet) {
+		if (this.warnings != null) this.warnings.addAll(warningSet);
+		else this.warnings = new HashSet<String>(warningSet);
 	}
 	
 	/* (non-Javadoc)

@@ -1,39 +1,20 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 
-import org.apache.log4j.Logger;
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.util.ReaderUtil;
-import org.hibernate.search.indexes.IndexReaderAccessor;
-import org.hibernate.search.jpa.FullTextEntityManager;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
  * Reference implementation of {@link MetadataService}
  */
-public class MetadataServiceJpa implements MetadataService {
-
-	/** The factory. */
-	private static EntityManagerFactory factory;
-
-	/** The full text entity manager. */
-	private FullTextEntityManager fullTextEntityManager;
+public class MetadataServiceJpa extends RootServiceJpa implements MetadataService {
 
 	/** The manager. */
 	private EntityManager manager;
-
-	/** The indexed field names. */
-	private Set<String> fieldNames;
 
 	/** The helper map. */
 	private Map<String, MetadataService> helperMap = null;
@@ -51,33 +32,10 @@ public class MetadataServiceJpa implements MetadataService {
 
 		// created once or if the factory has closed
 		if (factory == null || !factory.isOpen()) {
-			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+			super.openFactory();
 		}
 		// create on each instantiation
 		manager = factory.createEntityManager();
-
-		fieldNames = new HashSet<>();
-
-		fullTextEntityManager =
-				org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
-		IndexReaderAccessor indexReaderAccessor =
-				fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
-		Set<String> indexedClassNames =
-				fullTextEntityManager.getSearchFactory().getStatistics()
-						.getIndexedClassNames();
-		for (String indexClass : indexedClassNames) {
-			IndexReader indexReader = indexReaderAccessor.open(indexClass);
-			try {
-				for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
-					fieldNames.add(info.name);
-				}
-			} finally {
-				indexReaderAccessor.close(indexReader);
-			}
-		}
-
-		Logger.getLogger(this.getClass()).debug(
-				"ended init " + fieldNames.toString());
 	}
 
 	/**
@@ -89,9 +47,6 @@ public class MetadataServiceJpa implements MetadataService {
 	public void close() throws Exception {
 		if (manager.isOpen()) {
 			manager.close();
-		}
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
 		}
 	}
 

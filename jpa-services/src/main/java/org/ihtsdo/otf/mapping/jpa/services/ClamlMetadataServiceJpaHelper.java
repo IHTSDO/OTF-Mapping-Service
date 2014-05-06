@@ -17,7 +17,7 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  * 
  * @author ${author}
  */
-public class ClamlMetadataServiceJpaHelper implements MetadataService {
+public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements MetadataService {
 
   /**
    * Returns the isa relationship type.

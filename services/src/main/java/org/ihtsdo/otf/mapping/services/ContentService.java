@@ -14,7 +14,7 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
  * 
  * @author ${author}
  */
-public interface ContentService {
+public interface ContentService extends RootService {
 
 	/**
 	 * Closes the manager associated with service.y

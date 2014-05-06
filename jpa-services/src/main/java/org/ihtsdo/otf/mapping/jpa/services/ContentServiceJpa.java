@@ -13,21 +13,15 @@ import java.util.Queue;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
-import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 import org.hibernate.search.SearchFactory;
-import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
@@ -50,16 +44,10 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 /**
  * The Content Services for the Jpa model.
  */
-public class ContentServiceJpa implements ContentService {
-
-	/** The factory. */
-	private static EntityManagerFactory factory;
+public class ContentServiceJpa extends RootServiceJpa implements ContentService  {
 
 	/** The manager. */
 	private EntityManager manager;
-
-	/** The indexed field names. */
-	private static Set<String> fieldNames;
 
 	/** The transaction per operation. */
 	private boolean transactionPerOperation = true;
@@ -68,42 +56,14 @@ public class ContentServiceJpa implements ContentService {
 	 * Instantiates an empty {@link ContentServiceJpa}.
 	 */
 	public ContentServiceJpa() {
-
-		// created once or if the factory has closed
+		
+		// created once or if the factory has been closed
 		if (factory == null || !factory.isOpen()) {
-			Logger.getLogger(this.getClass()).info(
-					"Setting content service entity manager factory.");
-			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+			super.openFactory();
 		}
 
 		// create on each instantiation
 		manager = factory.createEntityManager();
-
-		if (fieldNames == null) {
-			fieldNames = new HashSet<>();
-			FullTextEntityManager fullTextEntityManager =
-					org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
-			IndexReaderAccessor indexReaderAccessor =
-					fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
-			Set<String> indexedClassNames =
-					fullTextEntityManager.getSearchFactory().getStatistics()
-					.getIndexedClassNames();
-			for (String indexClass : indexedClassNames) {
-				IndexReader indexReader = indexReaderAccessor.open(indexClass);
-				try {
-					for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
-						fieldNames.add(info.name);
-					}
-				} finally {
-					indexReaderAccessor.close(indexReader);
-				}
-			}
-
-			fullTextEntityManager.close();
-
-			// closing fullTextEntityManager closes manager as well, recreate
-			manager = factory.createEntityManager();
-		}
 	}
 
 	/*
