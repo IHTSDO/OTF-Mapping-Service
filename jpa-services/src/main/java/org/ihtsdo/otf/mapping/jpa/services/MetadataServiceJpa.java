@@ -1,39 +1,20 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 
-import org.apache.log4j.Logger;
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.util.ReaderUtil;
-import org.hibernate.search.indexes.IndexReaderAccessor;
-import org.hibernate.search.jpa.FullTextEntityManager;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
  * Reference implementation of {@link MetadataService}
  */
-public class MetadataServiceJpa implements MetadataService {
-
-	/** The factory. */
-	private static EntityManagerFactory factory;
-
-	/** The full text entity manager. */
-	private FullTextEntityManager fullTextEntityManager;
+public class MetadataServiceJpa extends RootServiceJpa implements MetadataService {
 
 	/** The manager. */
 	private EntityManager manager;
-
-	/** The indexed field names. */
-	private Set<String> fieldNames;
 
 	/** The helper map. */
 	private Map<String, MetadataService> helperMap = null;
@@ -42,42 +23,16 @@ public class MetadataServiceJpa implements MetadataService {
 	 * Instantiates an empty {@link MetadataServiceJpa}.
 	 */
 	public MetadataServiceJpa() {
-
+	  super();
+	  
 		helperMap = new HashMap<>();
 		helperMap.put("SNOMEDCT", new SnomedMetadataServiceJpaHelper());
 		helperMap.put("ICD10", new ClamlMetadataServiceJpaHelper());
 		helperMap.put("ICD9CM", new ClamlMetadataServiceJpaHelper());
 		helperMap.put("ICPC", new ClamlMetadataServiceJpaHelper());
 
-		// created once or if the factory has closed
-		if (factory == null || !factory.isOpen()) {
-			factory = Persistence.createEntityManagerFactory("MappingServiceDS");
-		}
 		// create on each instantiation
 		manager = factory.createEntityManager();
-
-		fieldNames = new HashSet<>();
-
-		fullTextEntityManager =
-				org.hibernate.search.jpa.Search.getFullTextEntityManager(manager);
-		IndexReaderAccessor indexReaderAccessor =
-				fullTextEntityManager.getSearchFactory().getIndexReaderAccessor();
-		Set<String> indexedClassNames =
-				fullTextEntityManager.getSearchFactory().getStatistics()
-						.getIndexedClassNames();
-		for (String indexClass : indexedClassNames) {
-			IndexReader indexReader = indexReaderAccessor.open(indexClass);
-			try {
-				for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
-					fieldNames.add(info.name);
-				}
-			} finally {
-				indexReaderAccessor.close(indexReader);
-			}
-		}
-
-		Logger.getLogger(this.getClass()).debug(
-				"ended init " + fieldNames.toString());
 	}
 
 	/**
@@ -89,9 +44,6 @@ public class MetadataServiceJpa implements MetadataService {
 	public void close() throws Exception {
 		if (manager.isOpen()) {
 			manager.close();
-		}
-		if (fullTextEntityManager.isOpen()) {
-			fullTextEntityManager.close();
 		}
 	}
 
@@ -105,8 +57,7 @@ public class MetadataServiceJpa implements MetadataService {
 	@Override
 	public Map<String, Map<String, String>> getAllMetadata(String terminology,
 		String version) throws Exception {
-		Map<String, Map<String, String>> idNameMapList =
-				new HashMap<>();
+    Map<String, Map<String, String>> idNameMapList = new HashMap<>();
 		Map<String, String> modulesIdNameMap = getModules(terminology, version);
 		if (modulesIdNameMap != null) {
 			idNameMapList.put("Modules", modulesIdNameMap);
@@ -116,15 +67,18 @@ public class MetadataServiceJpa implements MetadataService {
 		if (atvIdNameMap != null) {
 			idNameMapList.put("Attribute Value Refsets", atvIdNameMap);
 		}
-		Map<String, String> csIdNameMap = getCaseSignificances(terminology, version);
+    Map<String, String> csIdNameMap =
+        getCaseSignificances(terminology, version);
 		if (csIdNameMap != null) {
 			idNameMapList.put("Case Significances", csIdNameMap);
 		}
-		Map<String, String> cmIdNameMap = getComplexMapRefSets(terminology, version);
+    Map<String, String> cmIdNameMap =
+        getComplexMapRefSets(terminology, version);
 		if (cmIdNameMap != null) {
 			idNameMapList.put("Complex Map Refsets", cmIdNameMap);
 		}
-		Map<String, String> dsIdNameMap = getDefinitionStatuses(terminology, version);
+    Map<String, String> dsIdNameMap =
+        getDefinitionStatuses(terminology, version);
 		if (dsIdNameMap != null) {
 			idNameMapList.put("Definition Statuses", dsIdNameMap);
 		}
@@ -150,7 +104,8 @@ public class MetadataServiceJpa implements MetadataService {
 		if (rmIdNameMap != null) {
 			idNameMapList.put("Relationship Modifiers", rmIdNameMap);
 		}
-		Map<String, String> rtIdNameMap = getRelationshipTypes(terminology, version);
+    Map<String, String> rtIdNameMap =
+        getRelationshipTypes(terminology, version);
 		if (rtIdNameMap != null) {
 			idNameMapList.put("Relationship Types", rtIdNameMap);
 		}
@@ -234,8 +189,8 @@ public class MetadataServiceJpa implements MetadataService {
 	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<String, String> getLanguageRefSets(String terminology, String version)
-		throws Exception {
+  public Map<String, String> getLanguageRefSets(String terminology,
+    String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology)
 					.getLanguageRefSets(terminology, version);
@@ -383,8 +338,8 @@ public class MetadataServiceJpa implements MetadataService {
 	 * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<String, String> getHierarchicalRelationshipTypes(String terminology,
-		String version) throws Exception {
+  public Map<String, String> getHierarchicalRelationshipTypes(
+    String terminology, String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getHierarchicalRelationshipTypes(
 					terminology, version);
@@ -411,7 +366,6 @@ public class MetadataServiceJpa implements MetadataService {
 			return new HashMap<>();
 		}
 	}
-
 
     /*
 	 * (non-Javadoc)
@@ -515,8 +469,7 @@ public class MetadataServiceJpa implements MetadataService {
 								Object[].class);
 
 		List<Object[]> resultList = query.getResultList();
-		Map<String, String> resultMap =
-				new HashMap<>(resultList.size());
+    Map<String, String> resultMap = new HashMap<>(resultList.size());
 		for (Object[] result : resultList)
 			resultMap.put((String) result[0], (String) result[1]);
 		if (manager.isOpen()) {
@@ -526,7 +479,5 @@ public class MetadataServiceJpa implements MetadataService {
 		return resultMap;
 
 	}
-
-
 
 }

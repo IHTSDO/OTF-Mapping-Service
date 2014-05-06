@@ -91,7 +91,8 @@ public class MapRecordRemoverMojo extends AbstractMojo {
       Set<MapProject> mapProjects = new HashSet<MapProject>();
 
       getLog().info("Start removing map records for refSetId - " + refSetId);
-      for (MapProject mapProject : mappingService.getMapProjects().getIterable()) {
+      for (MapProject mapProject : mappingService.getMapProjects()
+          .getIterable()) {
         for (String id : refSetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
             mapProjects.add(mapProject);
@@ -108,8 +109,8 @@ public class MapRecordRemoverMojo extends AbstractMojo {
       int ct = 0;
       for (MapProject mapProject : mapProjects) {
         getLog().debug("    Remove map records for " + mapProject.getName());
-        for (MapRecord record : mappingService
-            .getMapRecordsForMapProject(mapProject.getId()).getMapRecords()) {
+        for (MapRecord record : mappingService.getMapRecordsForMapProject(
+            mapProject.getId()).getMapRecords()) {
           getLog().info(
               "    Removing map record " + record.getId() + " from "
                   + mapProject.getName());

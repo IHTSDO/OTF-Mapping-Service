@@ -1,98 +1,95 @@
-<tabset>
-<tab heading="{{availableWorkTitle}}">
+<tabset> <tab heading="{{availableWorkTitle}}">
 
 <table style="margin-top: 20px; margin-bottom: 20px;">
-<tbody >
-<tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-	<td style="padding:5px;">Assign work to:</td>
-	<td style="padding:5px;"><select ng-model="assignedMapUser"
-			ng-options = "mapUser as mapUser.name for mapUser in mapUsers">
-	</select></td>
-</tr>
-<tr>
-	<td style="padding:5px";>Batch size:</td>
-	<td style="padding:5px;"><select ng-model="batchSize" ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
-      &nbsp;
-      <button class="btn btn-sm btn-primary" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'" ng-click="assignBatch(assignedMapUser, batchSize)">Assign Batch</button>
-    <button class="btn btn-sm btn-primary" ng-show="currentRole === 'Specialist'" ng-click="assignBatch(currentUser, batchSize)">Claim Batch</button>
-  
-  </td>
-</tr>
-</tbody>
+  <tbody>
+    <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+      <td style="padding: 5px;">Assign work to:</td>
+      <td style="padding: 5px;"><select ng-model="assignedMapUser"
+        ng-options="mapUser as mapUser.name for mapUser in mapUsers">
+      </select></td>
+    </tr>
+    <tr>
+      <td style="padding: 5px";>Batch size:</td>
+      <td style="padding: 5px;"><select ng-model="batchSize"
+        ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
+        &nbsp;
+        <button class="btn btn-sm btn-primary"
+          ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
+          ng-click="assignBatch(assignedMapUser, batchSize)">Assign
+          Batch</button>
+        <button class="btn btn-sm btn-primary"
+          ng-show="currentRole === 'Specialist'"
+          ng-click="assignBatch(currentUser, batchSize)">Claim Batch</button></td>
+    </tr>
+  </tbody>
 </table>
 
-<accordion>
-	<accordion-group is-open="isConceptListOpen">
-		<accordion-heading>
-			Concepts Available for Assignment ({{nTrackingRecords}}) <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': isConceptListOpen, 'glyphicon-chevron-right': !isConceptListOpen}"></i>
-		
-		</accordion-heading>
-		
-		<pagination total-items="nAvailableWork" page="availableWorkPage" max-size="5" class="pagination-sm" 
-					boundary-links="true" rotate="true" num-pages="numAvailableWorkPages"
-					on-select-page="retrieveAvailableWork(page)"></pagination>
-					
-		<table class="table">
-		
-			<thead>
-				<tr>
-					<th style="width: 15%; padding: 5px;"></th>
-					<th style="width: 15%; padding: 5px;">Id</th>
-					<th style="width: 60%; padding: 5px;">Name</th>
-					
-				</tr>
-				
-			</thead>
-			
-			<tbody>
-			
-				<tr ng-repeat="concept in availableWork">
-					
-					<td style="width: 15%; padding: 5px;">
-						<a ng-show="currentRole == 'Specialist'" ng-click="assignWork(concept, currentUser)">Claim</a>
-						<a ng-show="currentRole === 'Lead' || currentRole === 'Administrator'" ng-click="assignWork(concept, assignedMapUser)">Assign</button>
-					</td>
-					<td style="width: 15%; padding: 5px;">{{concept.terminologyId}}</td>
-					<td style="width: 60%; padding: 5px;">{{concept.value}}</td>
-					
-			</tbody>
-		
-		</table>
-	</accordion-group>
-</accordion>
-</tab>
-<tab heading="{{availableConflictsTitle}}" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-	<pagination total-items="nAvailableConflicts" page="availableConflictsPage" max-size="5" class="pagination-sm" 
-					boundary-links="true" rotate="true" num-pages="numAvailableConflictsPages"
-					on-select-page="retrieveAvailableConflicts(page)"></pagination>
-					
-		<table class="table">
-		
-			<thead>
-				<tr>
-					<th style="width: 15%; padding: 5px;"></th>
-					<th style="width: 15%; padding: 5px;">Id</th>
-					<th style="width: 60%; padding: 5px;">Name</th>
-					
-				</tr>
-				
-			</thead>
-			
-			<tbody>
-			
-				<tr ng-repeat="concept in availableConflicts">
-					
-					<td style="width: 15%; padding: 5px;">
-						<a ng-click="assignWork(concept, assignedMapUser)">Claim</a>
-					</td>
-					<td style="width: 15%; padding: 5px;">{{concept.terminologyId}}</td>
-					<td style="width: 60%; padding: 5px;">{{concept.value}}</td>
-					
-			</tbody>
-		
-		</table>
+<accordion> <accordion-group is-open="isConceptListOpen">
+<accordion-heading> Concepts Available for Assignment
+<i class="pull-right glyphicon"
+  ng-class="{'glyphicon-chevron-down': isConceptListOpen, 'glyphicon-chevron-right': !isConceptListOpen}"></i>
 
-</tab>
-</tabset>
-		
-		
+</accordion-heading> <pagination total-items="nAvailableWork" page="availableWorkPage" max-size="5"
+  class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numAvailableWorkPages" on-select-page="retrieveAvailableWork(page)"></pagination>
+
+<table class="table">
+
+  <thead>
+    <tr>
+      <th style="width: 15%; padding: 5px;"></th>
+      <th style="width: 15%; padding: 5px;">Id</th>
+      <th style="width: 60%; padding: 5px;">Name</th>
+
+    </tr>
+
+  </thead>
+
+  <tbody>
+
+    <tr ng-repeat="concept in availableWork">
+
+      <td style="width: 15%; padding: 5px;"><a
+        ng-show="currentRole == 'Specialist'"
+        ng-click="assignWork(concept, currentUser)">Claim</a> <a
+        ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
+        ng-click="assignWork(concept, assignedMapUser)">Assign
+          </button></td>
+      <td style="width: 15%; padding: 5px;">{{concept.terminologyId}}</td>
+      <td style="width: 60%; padding: 5px;">{{concept.value}}</td>
+  </tbody>
+
+</table>
+</accordion-group> </accordion> </tab> <tab heading="{{availableConflictsTitle}}"
+  ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"> <pagination
+  total-items="nAvailableConflicts" page="availableConflictsPage" max-size="5"
+  class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numAvailableConflictsPages"
+  on-select-page="retrieveAvailableConflicts(page)"></pagination>
+
+<table class="table">
+
+  <thead>
+    <tr>
+      <th style="width: 15%; padding: 5px;"></th>
+      <th style="width: 15%; padding: 5px;">Id</th>
+      <th style="width: 60%; padding: 5px;">Name</th>
+
+    </tr>
+
+  </thead>
+
+  <tbody>
+
+    <tr ng-repeat="concept in availableConflicts">
+
+      <td style="width: 15%; padding: 5px;"><a
+        ng-click="assignWork(concept, assignedMapUser)">Claim</a></td>
+      <td style="width: 15%; padding: 5px;">{{concept.terminologyId}}</td>
+      <td style="width: 60%; padding: 5px;">{{concept.value}}</td>
+  </tbody>
+
+</table>
+
+</tab> </tabset>
+

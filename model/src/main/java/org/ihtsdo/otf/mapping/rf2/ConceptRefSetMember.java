@@ -1,19 +1,20 @@
 package org.ihtsdo.otf.mapping.rf2;
+
 /**
- * Represents a reference set member with associated Concept 
+ * Represents a reference set member with associated Concept
  */
 public interface ConceptRefSetMember extends RefSetMember {
-	
-	/**
-	 *  returns the Concept
-	 *  @return the Concept
-	 */
-	public Concept getConcept();
-	
-	/**
-	 *  sets the Concept
-	 *  @param concept the Concept
-	 */
-	public void setConcept(Concept concept);
+
+  /**
+   * returns the Concept
+   * @return the Concept
+   */
+  public Concept getConcept();
+
+  /**
+   * sets the Concept
+   * @param concept the Concept
+   */
+  public void setConcept(Concept concept);
 
 }

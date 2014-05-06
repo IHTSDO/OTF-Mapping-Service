@@ -96,14 +96,16 @@ public class MapUserListJpa extends AbstractResultList<MapUser> implements
     Collections.sort(mapUsers, comparator);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#contains(java.lang.Object)
    */
   @Override
   public boolean contains(MapUser element) {
     return mapUsers.contains(element);
   }
-  
+
   /*
    * (non-Javadoc)
    * 
@@ -113,6 +115,5 @@ public class MapUserListJpa extends AbstractResultList<MapUser> implements
   public Iterable<MapUser> getIterable() {
     return mapUsers;
   }
-
 
 }

@@ -110,7 +110,7 @@ public class LuceneReindexMojo extends AbstractMojo {
           .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
           .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
           .startAndWait();
-      
+
       // Tree Positions
       getLog().info("  Creating indexes for TreePositionJpa");
       fullTextEntityManager.purgeAll(TreePositionJpa.class);

@@ -98,14 +98,16 @@ public class MapPrincipleListJpa extends AbstractResultList<MapPrinciple>
     Collections.sort(mapPrinciples, comparator);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#contains(java.lang.Object)
    */
   @Override
   public boolean contains(MapPrinciple element) {
     return mapPrinciples.contains(element);
   }
-  
+
   /*
    * (non-Javadoc)
    * 
@@ -115,6 +117,5 @@ public class MapPrincipleListJpa extends AbstractResultList<MapPrinciple>
   public Iterable<MapPrinciple> getIterable() {
     return mapPrinciples;
   }
-
 
 }

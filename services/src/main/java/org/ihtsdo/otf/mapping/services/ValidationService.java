@@ -8,13 +8,13 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
  */
 public interface ValidationService {
 
-	
-	/**
-	 * Validate map record.
-	 *
-	 * @param mapRecord the map record
-	 * @return the validation result
-	 * @throws Exception the exception
-	 */
-	public ValidationResult validateMapRecord(MapRecord mapRecord) throws Exception;
+  /**
+   * Validate map record.
+   * 
+   * @param mapRecord the map record
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult validateMapRecord(MapRecord mapRecord)
+    throws Exception;
 }

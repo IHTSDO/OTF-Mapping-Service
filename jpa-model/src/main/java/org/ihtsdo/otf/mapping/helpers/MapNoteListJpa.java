@@ -96,14 +96,16 @@ public class MapNoteListJpa extends AbstractResultList<MapNote> implements
     Collections.sort(mapNotes, comparator);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#contains(java.lang.Object)
    */
   @Override
   public boolean contains(MapNote element) {
     return mapNotes.contains(element);
   }
-  
+
   /*
    * (non-Javadoc)
    * 

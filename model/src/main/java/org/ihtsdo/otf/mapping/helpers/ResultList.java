@@ -30,22 +30,22 @@ public interface ResultList<T> {
 
   /**
    * Sorts by the specified comparator.
-   *
+   * 
    * @param comparator the comparator
    */
   public void sortBy(Comparator<T> comparator);
 
   /**
    * Indicates whether or not the list contains the specified element.
-   *
+   * 
    * @param element the element
    * @return <code>true</code> if so; <code>false</code> otherwise
    */
   public boolean contains(T element);
-  
+
   /**
    * Returns the iterable.
-   *
+   * 
    * @return the iterable
    */
   public Iterable<T> getIterable();

@@ -17,7 +17,7 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  * 
  * @author ${author}
  */
-public class ClamlMetadataServiceJpaHelper implements MetadataService {
+public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements MetadataService {
 
   /**
    * Returns the isa relationship type.
@@ -27,8 +27,8 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
    * @return the isa relationship type
    * @throws Exception the exception
    */
-  private static String getIsaRelationshipType(String terminology, String version)
-    throws Exception {
+  private static String getIsaRelationshipType(String terminology,
+    String version) throws Exception {
     ContentService contentService = new ContentServiceJpa();
     SearchResultList results =
         contentService.findConcepts("Isa", new PfsParameterJpa());
@@ -122,8 +122,8 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
    * .lang.String, java.lang.String)
    */
   @Override
-  public Map<String, String> getLanguageRefSets(String terminology, String version)
-    throws NumberFormatException, Exception {
+  public Map<String, String> getLanguageRefSets(String terminology,
+    String version) throws NumberFormatException, Exception {
     return new HashMap<>();
   }
 
@@ -301,8 +301,8 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
    * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
    */
   @Override
-  public Map<String, String> getHierarchicalRelationshipTypes(String terminology,
-    String version) throws NumberFormatException, Exception {
+  public Map<String, String> getHierarchicalRelationshipTypes(
+    String terminology, String version) throws NumberFormatException, Exception {
     Map<String, String> map = new HashMap<>();
 
     // find all active descendants of 106237007
@@ -328,7 +328,8 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
     ContentService contentService = new ContentServiceJpa();
     String rootId = null;
     SearchResultList results =
-        contentService.findConcepts("Characteristic type", new PfsParameterJpa());
+        contentService.findConcepts("Characteristic type",
+            new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
       if (result.getTerminology().equals(terminology)
           && result.getTerminologyVersion().equals(version)
@@ -371,7 +372,9 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
     return getDescendantMap(contentService, rootId, terminology, version);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.services.MetadataService#close()
    */
   @Override
@@ -379,7 +382,9 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
     // no-op - this is just helper class
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologies()
    */
   @Override
@@ -388,8 +393,12 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getVersions(java.lang.String
+   * )
    */
   @Override
   public List<String> getVersions(String terminology) {
@@ -397,8 +406,12 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang
+   * .String)
    */
   @Override
   public String getLatestVersion(String terminology) {
@@ -406,15 +419,18 @@ public class ClamlMetadataServiceJpaHelper implements MetadataService {
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions()
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions
+   * ()
    */
   @Override
   public Map<String, String> getTerminologyLatestVersions() {
     // no-op - this is just helper class
     return null;
   }
-
 
   /**
    * Returns the descendant map for the specified parameters.

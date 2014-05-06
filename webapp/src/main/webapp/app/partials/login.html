@@ -9,16 +9,22 @@
 <div ng-show="mapUsers.length > 0">
 	<form>
 	<table >
-	<tr> <td height="70px" colspan="2" style="vertical-align: bottom; padding-bottom: 15px"><strong>Please choose User and Role</strong></td></tr>
 	<tr>
+        <td height="70px" colspan="2"
+          style="vertical-align: bottom; padding-bottom: 15px"><strong>Please
+            choose User and Role</strong></td>
+      </tr>
+      <tr>
 		<td style="padding:5px; width:5%;">Select User: </td>
-		<td style="padding:5px; width:20%;"><select ng-model="mapUser" ng-options = "mapUser as mapUser.name for mapUser in mapUsers"></select></td>
+        <td style="padding: 5px; width: 20%;"><select ng-model="mapUser"
+          ng-options="mapUser as mapUser.name for mapUser in mapUsers"></select></td>
 	</tr>
 	
 	
 	<tr>
 		<td style="padding:5px; width:5%;">Role:</td> 
-		<td style="padding:5px; width:20%;"><select ng-model="role" ng-options="r.name for r in roles"></select></td>
+        <td style="padding: 5px; width: 20%;"><select ng-model="role"
+          ng-options="r.name for r in roles"></select></td>
 	</tr>
 	
 	

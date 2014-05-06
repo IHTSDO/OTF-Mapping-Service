@@ -23,21 +23,20 @@
           <!-- Focus Project tool -->
           <div class="navbar-text dropdown" ng-show="currentUser.name != null">
 
-            Project: {{focusProject.name}}
-            &nbsp
-            <a class="dropdown-toggle" title="Change Focus Project"><i class="glyphicon glyphicon-edit"></i></a>
-		 	<ul class="dropdown-menu">
-	 			<li ng-repeat="mapProject in mapProjects">
-	 				<span ng-click="changeFocusProject(mapProject)">{{mapProject.name}}</span>
-	 			</li>
- 			</ul>
- 	
-		 
+            Project: {{focusProject.name}} &nbsp <a class="dropdown-toggle"
+              title="Change Focus Project"><i
+              class="glyphicon glyphicon-edit"></i></a>
+            <ul class="dropdown-menu">
+              <li ng-repeat="mapProject in mapProjects"><span
+                ng-click="changeFocusProject(mapProject)">{{mapProject.name}}</span>
+              </li>
+            </ul>
+
+
             <!-- <select style="max-width: 200px"
               ng-model="focusProject" ng-change="changeFocusProject()"
               ng-options="mapProject as mapProject.name for mapProject in mapProjects">
             </select> -->
-  
         </li>
         <li>
           <p class="navbar-text">
@@ -46,29 +45,21 @@
 
             <a ng-show="currentRole === 'Viewer'" title="Dashboard"
               href="index.html#/viewer/dash"><i
-              class="glyphicon glyphicon-stats"></i></a> 
-              
-            <a ng-show="currentRole === 'Specialist'" title="Dashboard"
+              class="glyphicon glyphicon-stats"></i></a> <a
+              ng-show="currentRole === 'Specialist'" title="Dashboard"
               href="index.html#/specialist/dash"><i
-              class="glyphicon glyphicon-stats"></i></a> 
-                            
-            <a ng-show="currentRole === 'Lead'" title="Dashboard"
+              class="glyphicon glyphicon-stats"></i></a> <a
+              ng-show="currentRole === 'Lead'" title="Dashboard"
               href="index.html#/lead/dash"><i
-                class="glyphicon glyphicon-stats"></i></a>
-            
-            <a ng-show="currentRole === 'Administrator'" title="Dashboard"
+              class="glyphicon glyphicon-stats"></i></a> <a
+              ng-show="currentRole === 'Administrator'" title="Dashboard"
               href="index.html#/admin/dash"><i
-                class="glyphicon glyphicon-stats"></i></a> 
-                
-            &nbsp;
-             
+              class="glyphicon glyphicon-stats"></i></a> &nbsp;
+
             <!-- Help tool -->
- 
-            <a title="Help"><span 
-            ng-click="goToHelp()"
-               class="glyphicon glyphicon-question-sign"></span></a>
- 
-            &nbsp;              
+
+            <a title="Help"><span ng-click="goToHelp()"
+              class="glyphicon glyphicon-question-sign"></span></a> &nbsp;
           </p>
         </li>
       </ul>

@@ -796,8 +796,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     @Override
     public void endDocument() throws SAXException {
       // Add relationships now that all concepts have been created
-      Map<String,Integer> relDisambiguation = new HashMap<>();
-      
+      Map<String, Integer> relDisambiguation = new HashMap<>();
+
       try {
         for (Map.Entry<String, Set<Concept>> mapEntry : relsMap.entrySet()) {
 
@@ -880,10 +880,10 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               childConcept.setRelationships(rels);
 
             } else if (modifierMap.containsKey(parentCode)) {
-               getLog().info("    IGNORE rel to modifier");
+              getLog().info("    IGNORE rel to modifier");
             } else {
-              //throw new SAXException("Problem inserting relationship, code "
-              //    + parentCode + " does not exist.");
+              // throw new SAXException("Problem inserting relationship, code "
+              // + parentCode + " does not exist.");
               getLog().info("    WARNING rel to illegal concept");
             }
           }
