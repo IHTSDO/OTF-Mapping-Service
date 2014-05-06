@@ -98,14 +98,16 @@ public class MapRecordListJpa extends AbstractResultList<MapRecord> implements
     Collections.sort(mapRecords, comparator);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#contains(java.lang.Object)
    */
   @Override
   public boolean contains(MapRecord element) {
     return mapRecords.contains(element);
   }
-  
+
   /*
    * (non-Javadoc)
    * 

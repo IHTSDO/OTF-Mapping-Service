@@ -1,118 +1,122 @@
 <div class="modal-header">
 
 
-	<h3>Edit Map Record</h3>
-	<table cellpadding="5px">
-		<tbody>
-			<tr><td><strong>Project</strong></td><td>{{project.name}}</td></tr>
-			<tr><td><strong>Concept</strong></td><td>{{concept.terminologyId}}: {{concept.defaultPreferredName}}</td></tr>
-		</tbody>
-	</table>
+  <h3>Edit Map Record</h3>
+  <table cellpadding="5px">
+    <tbody>
+      <tr>
+        <td><strong>Project</strong></td>
+        <td>{{project.name}}</td>
+      </tr>
+      <tr>
+        <td><strong>Concept</strong></td>
+        <td>{{concept.terminologyId}}: {{concept.defaultPreferredName}}</td>
+      </tr>
+    </tbody>
+  </table>
 
 </div>
 
 <div class="modal-body">
 
 
-	<h3>Map Entries</h3>
-	
-	<!--  first-level accordion for Map Group -->
-	<accordion close-others="false">
-	
-		<!--  first-level accordion groups -->
-		<accordion-group ng-repeat = "group in groups | orderBy: 'group'" >
-		
-			<accordion-heading>
-				Group {{group}} 
-				<span ng-show="getEntries(group).length == 0">
-					&nbsp<img src="img/fileclose.png" ng-click="removeMapGroup(group)">
-				</span>
-			</accordion-heading>
-			
-			<!--  second-level accordion for entries in a map group -->
-			<accordion close-others="false">
-			
-				<!--  second-level accordion groups -->
-				<accordion-group ng-repeat = "entry in getEntries(group) track by $index">
-			
-					<!--  entry summary -->
-					<accordion-heading>{{getRuleSummary(entry)}} {{entry.targetId}} {{entry.targetName}}</accordion-heading>
-			
-					<!--  entry template -->
-					<otf-entry></otf-entry>
-					
-					<p></p>
-					<!--  removal button -->
-					<div style="text-align: right"><button class="btn btn-danger btn-small" ng-click="removeMapEntry(entry); ">Delete Map Entry</button></td>
-					</div>
-					<table><tr>
-						<td style="width:80%"></td>
-						<td style="width:20%"></tr></table>
-				</accordion-group> <!-- end Entry accordion group -->
-				
-				<p></p>
-				<input ng-show="modeAddEntry[group] == false" type="submit" value="Add Map Entry" ng-click="entry = addMapEntry(group)">
-				<div ng-show="modeAddEntry[group] == true">
-					<p></p>
-					<h3>Add Map Entry to Group {{group}}</h3>
-					
-					<p></p>
-					<button class="btn btn-primary" ng-click="saveMapEntry(entry)">Save Map Entry</button>
-			    	<button class="btn btn-warning" ng-click="cancelMapEntry(group)">Cancel</button>
-					<p></p>
-					
-					<otf-entry></otf-entry>
-					
-					<p></p>	
-					<button class="btn btn-primary" ng-click="saveMapEntry(entry)">Save Map Entry</button>
-			    	<button class="btn btn-warning" ng-click="cancelMapEntry(group)">Cancel</button>
-			    	<p></p>
-				</div>
-			</accordion> <!-- end  second-level accordion -->
-			
-		</accordion-group> <!--  end Group accordion group -->
-		
-		<p></p>
-		<input type="submit" value="Add Map Group" ng-click="addMapGroup()">
-		
-	</accordion> <!--  first-level accordion -->
+  <h3>Map Entries</h3>
+
+  <!--  first-level accordion for Map Group -->
+  <accordion close-others="false"> <!--  first-level accordion groups -->
+  <accordion-group ng-repeat="group in groups | orderBy: 'group'">
+
+  <accordion-heading> Group {{group}} <span
+    ng-show="getEntries(group).length == 0"> &nbsp<img
+    src="img/fileclose.png" ng-click="removeMapGroup(group)">
+  </span> </accordion-heading> <!--  second-level accordion for entries in a map group --> <accordion
+    close-others="false"> <!--  second-level accordion groups --> <accordion-group
+    ng-repeat="entry in getEntries(group) track by $index"> <!--  entry summary -->
+  <accordion-heading>{{getRuleSummary(entry)}}
+  {{entry.targetId}} {{entry.targetName}}</accordion-heading> <!--  entry template --> <otf-entry></otf-entry>
+
+  <p></p>
+  <!--  removal button -->
+  <div style="text-align: right">
+    <button class="btn btn-danger btn-small" ng-click="removeMapEntry(entry); ">Delete
+      Map Entry</button>
+    </td>
+  </div>
+  <table>
+    <tr>
+      <td style="width: 80%"></td>
+      <td style="width: 20%">
+    </tr>
+  </table>
+  </accordion-group> <!-- end Entry accordion group -->
+
+  <p></p>
+  <input ng-show="modeAddEntry[group] == false" type="submit"
+    value="Add Map Entry" ng-click="entry = addMapEntry(group)">
+  <div ng-show="modeAddEntry[group] == true">
+    <p></p>
+    <h3>Add Map Entry to Group {{group}}</h3>
+
+    <p></p>
+    <button class="btn btn-primary" ng-click="saveMapEntry(entry)">Save
+      Map Entry</button>
+    <button class="btn btn-warning" ng-click="cancelMapEntry(group)">Cancel</button>
+    <p></p>
+
+    <otf-entry></otf-entry>
+
+    <p></p>
+    <button class="btn btn-primary" ng-click="saveMapEntry(entry)">Save
+      Map Entry</button>
+    <button class="btn btn-warning" ng-click="cancelMapEntry(group)">Cancel</button>
+    <p></p>
+  </div>
+  </accordion> <!-- end  second-level accordion --> </accordion-group> <!--  end Group accordion group -->
+
+  <p></p>
+  <input type="submit" value="Add Map Group" ng-click="addMapGroup()"> </accordion>
+  <!--  first-level accordion -->
 
 
-	<hr>
+  <hr>
 
-	<h3>Project Information</h3>
-	
-	<accordion>
-		<accordion-group>
-			<accordion-heading>Allowable Advice</accordion-heading>
-			<ul><li ng-repeat = "advice in project.mapAdvice | orderBy:'detail'">{{advice.detail}}</li></ul>	
-		</accordion-group>
-		<accordion-group>
-			<accordion-heading>Allowable Principles</accordion-heading>
-			<ul><li ng-repeat = "principle in project.mapPrinciple | orderBy:'id'">{{principle.principleId}}: {{principle.name}}</ul>
-		</accordion-group>
-	</accordion>
+  <h3>Project Information</h3>
+
+  <accordion> <accordion-group> <accordion-heading>Allowable
+  Advice</accordion-heading>
+  <ul>
+    <li ng-repeat="advice in project.mapAdvice | orderBy:'detail'">{{advice.detail}}</li>
+  </ul>
+  </accordion-group> <accordion-group> <accordion-heading>Allowable
+  Principles</accordion-heading>
+  <ul>
+    <li ng-repeat="principle in project.mapPrinciple | orderBy:'id'">{{principle.principleId}}:
+      {{principle.name}}
+  </ul>
+  </accordion-group> </accordion>
   <input type="checkbox" ng-model="record.flagForMapLeadReview"> &nbsp;
-  Map Lead Review<br>
-  <input type="checkbox" ng-model="record.flagForEditorialReview"> &nbsp;
-  Editorial Review<br>
-  <input type="checkbox" ng-model="record.flagForConsensusReview"> &nbsp;
-  Consensus Review<br>
+  Map Lead Review<br> <input type="checkbox"
+    ng-model="record.flagForEditorialReview"> &nbsp; Editorial Review<br>
+  <input type="checkbox" ng-model="record.flagForConsensusReview">
+  &nbsp; Consensus Review<br>
 </div>
 
 <div class="modal-footer">
-	<table width=100%>
-		<tr>			
-			<td style="width:29%;">
-			<button class="btn btn-primary" ng-show="modeAddEntryGlobal == false" ng-click="saveRecord()">Save Map Record</button>
-			<button class="btn btn-warning" ng-click="cancelRecord()">Cancel</button>
-			</td>
-			<td style="width:51%;"></td>
-			<td style="width:20%;">
-				<button class="btn btn-danger btn-small" ng-show="modeAddEntryGlobal == false"  ng-click="deleteRecord()">Delete Map Record</button>
-			</td>
-        </tr>
-	</table>
+  <table width=100%>
+    <tr>
+      <td style="width: 29%;">
+        <button class="btn btn-primary" ng-show="modeAddEntryGlobal == false"
+          ng-click="saveRecord()">Save Map Record</button>
+        <button class="btn btn-warning" ng-click="cancelRecord()">Cancel</button>
+      </td>
+      <td style="width: 51%;"></td>
+      <td style="width: 20%;">
+        <button class="btn btn-danger btn-small"
+          ng-show="modeAddEntryGlobal == false" ng-click="deleteRecord()">Delete
+          Map Record</button>
+      </td>
+    </tr>
+  </table>
 
-    
+
 </div>

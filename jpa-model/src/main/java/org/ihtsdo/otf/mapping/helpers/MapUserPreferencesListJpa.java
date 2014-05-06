@@ -100,7 +100,9 @@ public class MapUserPreferencesListJpa extends
     Collections.sort(mapUserPreferences, comparator);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#contains(java.lang.Object)
    */
   @Override

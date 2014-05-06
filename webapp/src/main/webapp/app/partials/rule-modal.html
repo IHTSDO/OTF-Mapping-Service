@@ -1,16 +1,19 @@
 <div class="modal-header">
-	<h3>Rule Constructor</h3>
+  <h3>Rule Constructor</h3>
 </div>
 
 <div class="modal-body">
 
-	<h4>Select Rule Category</h4>
-	
-	<select ng-model="ruleCategory" ng-change="ageRange = null; changeRuleCategory(ruleCategory)" ng-options = "category as category for category in ruleCategories"></select>	
-	
-	<div ng-show="ruleCategory === 'Age - Chronological' || ruleCategory === 'Age - At Onset'">
-		<hr>
-		<!-- <h4>Enter age range</h4>
+  <h4>Select Rule Category</h4>
+
+  <select ng-model="ruleCategory"
+    ng-change="ageRange = null; changeRuleCategory(ruleCategory)"
+    ng-options="category as category for category in ruleCategories"></select>
+
+  <div
+    ng-show="ruleCategory === 'Age - Chronological' || ruleCategory === 'Age - At Onset'">
+    <hr>
+    <!-- <h4>Enter age range</h4>
 
 		<table class="table">
 		<thead>
@@ -55,21 +58,25 @@
 			</tr>
 		</tbody>
 		</table> -->
-		
-		<h4>Select from preset age ranges</h4>
-		
-		<select ng-model="ageRange" ng-change="constructRule(ruleCategory, ageRange)" ng-options="presetAgeRange as presetAgeRange.stringName for presetAgeRange in presetAgeRanges"></select>
-		</div> <!-- END chronological age select -->
 
-	<div ng-show="rule.length > 0">
-		<hr>
-		<h3>Rule Preview:</h3>
-		<blockquote>{{rule}}</blockquote>
-	</div>
+    <h4>Select from preset age ranges</h4>
 
-</div> <!--  end of modal-body -->
+    <select ng-model="ageRange"
+      ng-change="constructRule(ruleCategory, ageRange)"
+      ng-options="presetAgeRange as presetAgeRange.stringName for presetAgeRange in presetAgeRanges"></select>
+  </div>
+  <!-- END chronological age select -->
 
-<div class="modal-footer">	
-	<button class="btn btn-primary" ng-click="saveRule(rule)">Add Rule</button>
-	<button class="btn btn-warning" ng-click="cancelRule(rule)">Cancel</button>
+  <div ng-show="rule.length > 0">
+    <hr>
+    <h3>Rule Preview:</h3>
+    <blockquote>{{rule}}</blockquote>
+  </div>
+
+</div>
+<!--  end of modal-body -->
+
+<div class="modal-footer">
+  <button class="btn btn-primary" ng-click="saveRule(rule)">Add Rule</button>
+  <button class="btn btn-warning" ng-click="cancelRule(rule)">Cancel</button>
 </div>

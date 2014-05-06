@@ -28,24 +28,35 @@ public class MapEntryListJpa extends AbstractResultList<MapEntry> implements
     // do nothing
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.helpers.MapEntryList#addMapEntry(org.ihtsdo.otf.mapping.model.MapEntry)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.MapEntryList#addMapEntry(org.ihtsdo.otf.
+   * mapping.model.MapEntry)
    */
   @Override
   public void addMapEntry(MapEntry MapEntry) {
     mapEntrys.add(MapEntry);
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.helpers.MapEntryList#removeMapEntry(org.ihtsdo.otf.mapping.model.MapEntry)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.MapEntryList#removeMapEntry(org.ihtsdo.otf
+   * .mapping.model.MapEntry)
    */
   @Override
   public void removeMapEntry(MapEntry MapEntry) {
     mapEntrys.remove(MapEntry);
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.helpers.MapEntryList#setmapEntrys(java.util.List)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.MapEntryList#setmapEntrys(java.util.List)
    */
   @Override
   public void setmapEntrys(List<MapEntry> mapEntrys) {
@@ -54,7 +65,9 @@ public class MapEntryListJpa extends AbstractResultList<MapEntry> implements
 
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.MapEntryList#getmapEntrys()
    */
   @Override
@@ -63,7 +76,9 @@ public class MapEntryListJpa extends AbstractResultList<MapEntry> implements
     return mapEntrys;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#getCount()
    */
   @Override
@@ -72,7 +87,9 @@ public class MapEntryListJpa extends AbstractResultList<MapEntry> implements
     return mapEntrys.size();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#sortBy(java.util.Comparator)
    */
   @Override
@@ -80,14 +97,16 @@ public class MapEntryListJpa extends AbstractResultList<MapEntry> implements
     Collections.sort(mapEntrys, comparator);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#contains(java.lang.Object)
    */
   @Override
   public boolean contains(MapEntry element) {
     return mapEntrys.contains(element);
   }
-  
+
   /*
    * (non-Javadoc)
    * 
@@ -97,6 +116,5 @@ public class MapEntryListJpa extends AbstractResultList<MapEntry> implements
   public Iterable<MapEntry> getIterable() {
     return mapEntrys;
   }
-
 
 }

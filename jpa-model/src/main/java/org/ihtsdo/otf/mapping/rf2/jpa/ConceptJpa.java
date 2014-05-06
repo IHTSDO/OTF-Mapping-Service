@@ -33,384 +33,387 @@ import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
  */
 @Entity
 @Table(name = "concepts", uniqueConstraints = @UniqueConstraint(columnNames = {
-		"terminologyId", "terminology", "terminologyVersion"
+    "terminologyId", "terminology", "terminologyVersion"
 }))
 @Audited
 @Indexed
 @XmlRootElement(name = "concept")
 public class ConceptJpa extends AbstractComponent implements Concept {
 
-	/** The definition status id. */
-	@Column(nullable = false)
-	private Long definitionStatusId;
+  /** The definition status id. */
+  @Column(nullable = false)
+  private Long definitionStatusId;
 
-	/** The descriptions. */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=DescriptionJpa.class) 
-	private Set<Description> descriptions = new HashSet<>();
+  /** The descriptions. */
+  @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = DescriptionJpa.class)
+  private Set<Description> descriptions = new HashSet<>();
 
-	/** The relationships. */
-	@OneToMany(mappedBy = "sourceConcept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=RelationshipJpa.class)
-	@IndexedEmbedded(targetElement=RelationshipJpa.class)
-	private Set<Relationship> relationships = new HashSet<>();
+  /** The relationships. */
+  @OneToMany(mappedBy = "sourceConcept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = RelationshipJpa.class)
+  @IndexedEmbedded(targetElement = RelationshipJpa.class)
+  private Set<Relationship> relationships = new HashSet<>();
 
-	/** The inverse relationships. */
-	@OneToMany(mappedBy = "destinationConcept", orphanRemoval = true, targetEntity=RelationshipJpa.class)
-	private Set<Relationship> inverseRelationships = new HashSet<>();
+  /** The inverse relationships. */
+  @OneToMany(mappedBy = "destinationConcept", orphanRemoval = true, targetEntity = RelationshipJpa.class)
+  private Set<Relationship> inverseRelationships = new HashSet<>();
 
-	/** The simple RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=SimpleRefSetMemberJpa.class)
-	private Set<SimpleRefSetMember> simpleRefSetMembers = new HashSet<>();
+  /** The simple RefSet members */
+  @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = SimpleRefSetMemberJpa.class)
+  private Set<SimpleRefSetMember> simpleRefSetMembers = new HashSet<>();
 
-	/** The simpleMap RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=SimpleMapRefSetMemberJpa.class)
-	private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = new HashSet<>();
+  /** The simpleMap RefSet members */
+  @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = SimpleMapRefSetMemberJpa.class)
+  private Set<SimpleMapRefSetMember> simpleMapRefSetMembers = new HashSet<>();
 
-	/** The complexMap RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=ComplexMapRefSetMemberJpa.class)
-	private Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<>();
-	
-	/** The attributeValue RefSet members */
-	@OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity=AttributeValueRefSetMemberJpa.class)
-	private Set<AttributeValueRefSetMember> attributeValueRefSetMembers = new HashSet<>();
+  /** The complexMap RefSet members */
+  @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = ComplexMapRefSetMemberJpa.class)
+  private Set<ComplexMapRefSetMember> complexMapRefSetMembers = new HashSet<>();
 
-	/** The default preferred name. */
-	@Column(nullable = false, length = 256)
-	private String defaultPreferredName;
+  /** The attributeValue RefSet members */
+  @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = AttributeValueRefSetMemberJpa.class)
+  private Set<AttributeValueRefSetMember> attributeValueRefSetMembers =
+      new HashSet<>();
 
-	/**
-	 * Returns the definition status id.
-	 * 
-	 * @return the definition status id
-	 */
-	@Override
-	public Long getDefinitionStatusId() {
-		return definitionStatusId;
-	}
+  /** The default preferred name. */
+  @Column(nullable = false, length = 256)
+  private String defaultPreferredName;
 
-	/**
-	 * Sets the definition status id.
-	 * 
-	 * @param definitionStatusId the definition status id
-	 */
-	@Override
-	public void setDefinitionStatusId(Long definitionStatusId) {
-		this.definitionStatusId = definitionStatusId;
-	}
+  /**
+   * Returns the definition status id.
+   * 
+   * @return the definition status id
+   */
+  @Override
+  public Long getDefinitionStatusId() {
+    return definitionStatusId;
+  }
 
-	/**
-	 * Returns the descriptions.
-	 * 
-	 * @return the descriptions
-	 */
-	@Override
-	@XmlElement(type=DescriptionJpa.class, name="description")
-    public Set<Description> getDescriptions() {
-		return descriptions;
-	}
+  /**
+   * Sets the definition status id.
+   * 
+   * @param definitionStatusId the definition status id
+   */
+  @Override
+  public void setDefinitionStatusId(Long definitionStatusId) {
+    this.definitionStatusId = definitionStatusId;
+  }
 
-	/**
-	 * Sets the descriptions.
-	 * 
-	 * @param descriptions the descriptions
-	 */
-	@Override
-	public void setDescriptions(Set<Description> descriptions) {
-		this.descriptions = descriptions;
-	}
+  /**
+   * Returns the descriptions.
+   * 
+   * @return the descriptions
+   */
+  @Override
+  @XmlElement(type = DescriptionJpa.class, name = "description")
+  public Set<Description> getDescriptions() {
+    return descriptions;
+  }
 
-	/**
-	 * Adds the description.
-	 * 
-	 * @param description the description
-	 */
-	@Override
-	public void addDescription(Description description) {
-		description.setConcept(this);
-		this.descriptions.add(description);
-	}
+  /**
+   * Sets the descriptions.
+   * 
+   * @param descriptions the descriptions
+   */
+  @Override
+  public void setDescriptions(Set<Description> descriptions) {
+    this.descriptions = descriptions;
+  }
 
-	/**
-	 * Removes the description.
-	 * 
-	 * @param description the description
-	 */
-	@Override
-	public void removeDescription(Description description) {
-		this.descriptions.remove(description);
-	}
+  /**
+   * Adds the description.
+   * 
+   * @param description the description
+   */
+  @Override
+  public void addDescription(Description description) {
+    description.setConcept(this);
+    this.descriptions.add(description);
+  }
 
-	/**
-	 * Returns the relationships.
-	 * 
-	 * @return the relationships
-	 */
-	@Override
-	@XmlElement(type=RelationshipJpa.class, name="relationship")
-    public Set<Relationship> getRelationships() {
-		return relationships;
-	}
+  /**
+   * Removes the description.
+   * 
+   * @param description the description
+   */
+  @Override
+  public void removeDescription(Description description) {
+    this.descriptions.remove(description);
+  }
 
-	/**
-	 * Sets the relationships.
-	 * 
-	 * @param relationships the relationships
-	 */
-	@Override
-	public void setRelationships(Set<Relationship> relationships) {
-		this.relationships = relationships;
-	}
+  /**
+   * Returns the relationships.
+   * 
+   * @return the relationships
+   */
+  @Override
+  @XmlElement(type = RelationshipJpa.class, name = "relationship")
+  public Set<Relationship> getRelationships() {
+    return relationships;
+  }
 
-	/**
-	 * Returns the inverse relationships.
-	 * 
-	 * @return the inverse relationships
-	 */
-	@XmlTransient
-	@Override
-    public Set<Relationship> getInverseRelationships() {
-		return inverseRelationships;
-	}
+  /**
+   * Sets the relationships.
+   * 
+   * @param relationships the relationships
+   */
+  @Override
+  public void setRelationships(Set<Relationship> relationships) {
+    this.relationships = relationships;
+  }
 
-	/**
-	 * Sets the inverse relationships.
-	 * 
-	 * @param inverseRelationships the inverse relationships
-	 */
-	@Override
-	public void setInverseRelationships(Set<Relationship> inverseRelationships) {
-		this.inverseRelationships = inverseRelationships;
-	}
+  /**
+   * Returns the inverse relationships.
+   * 
+   * @return the inverse relationships
+   */
+  @XmlTransient
+  @Override
+  public Set<Relationship> getInverseRelationships() {
+    return inverseRelationships;
+  }
 
-	/**
-	 * Returns the set of SimpleRefSetMembers
-	 * 
-	 * @return the set of SimpleRefSetMembers
-	 */
-	@XmlTransient
-	@Override
-	public Set<SimpleRefSetMember> getSimpleRefSetMembers() {
-		return this.simpleRefSetMembers;
-	}
+  /**
+   * Sets the inverse relationships.
+   * 
+   * @param inverseRelationships the inverse relationships
+   */
+  @Override
+  public void setInverseRelationships(Set<Relationship> inverseRelationships) {
+    this.inverseRelationships = inverseRelationships;
+  }
 
-	/**
-	 * Sets the set of SimpleRefSetMembers
-	 * 
-	 * @param simpleRefSetMembers the set of SimpleRefSetMembers
-	 */
-	@Override
-	public void setSimpleRefSetMembers(Set<SimpleRefSetMember> simpleRefSetMembers) {
-		this.simpleRefSetMembers = simpleRefSetMembers;
-	}
+  /**
+   * Returns the set of SimpleRefSetMembers
+   * 
+   * @return the set of SimpleRefSetMembers
+   */
+  @XmlTransient
+  @Override
+  public Set<SimpleRefSetMember> getSimpleRefSetMembers() {
+    return this.simpleRefSetMembers;
+  }
 
-	/**
-	 * Adds a SimpleRefSetMember to the set of SimpleRefSetMembers
-	 * 
-	 * @param simpleRefSetMember the SimpleRefSetMembers to be added
-	 */
-	@Override
-	public void addSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember) {
-		simpleRefSetMember.setConcept(this);
-		this.simpleRefSetMembers.add(simpleRefSetMember);
-	}
+  /**
+   * Sets the set of SimpleRefSetMembers
+   * 
+   * @param simpleRefSetMembers the set of SimpleRefSetMembers
+   */
+  @Override
+  public void setSimpleRefSetMembers(Set<SimpleRefSetMember> simpleRefSetMembers) {
+    this.simpleRefSetMembers = simpleRefSetMembers;
+  }
 
-	/**
-	 * Removes a SimpleRefSetMember from the set of SimpleRefSetMembers
-	 * 
-	 * @param simpleRefSetMember the SimpleRefSetMember to be removed
-	 */
-	@Override
-	public void removeSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember) {
-		this.simpleRefSetMembers.remove(simpleRefSetMember);
-	}
+  /**
+   * Adds a SimpleRefSetMember to the set of SimpleRefSetMembers
+   * 
+   * @param simpleRefSetMember the SimpleRefSetMembers to be added
+   */
+  @Override
+  public void addSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember) {
+    simpleRefSetMember.setConcept(this);
+    this.simpleRefSetMembers.add(simpleRefSetMember);
+  }
 
-	/**
-	 * Returns the set of SimpleMapRefSetMembers
-	 * 
-	 * @return the set of SimpleMapRefSetMembers
-	 */
-	@XmlTransient
-	@Override
-	public Set<SimpleMapRefSetMember> getSimpleMapRefSetMembers() {
-		return this.simpleMapRefSetMembers;
-	}
+  /**
+   * Removes a SimpleRefSetMember from the set of SimpleRefSetMembers
+   * 
+   * @param simpleRefSetMember the SimpleRefSetMember to be removed
+   */
+  @Override
+  public void removeSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember) {
+    this.simpleRefSetMembers.remove(simpleRefSetMember);
+  }
 
-	/**
-	 * Sets the set of SimpleMapRefSetMembers
-	 * 
-	 * @param simpleMapRefSetMembers the set of SimpleMapRefSetMembers
-	 */
-	@Override
-	public void setSimpleMapRefSetMembers(
-		Set<SimpleMapRefSetMember> simpleMapRefSetMembers) {
-		this.simpleMapRefSetMembers = simpleMapRefSetMembers;
-	}
+  /**
+   * Returns the set of SimpleMapRefSetMembers
+   * 
+   * @return the set of SimpleMapRefSetMembers
+   */
+  @XmlTransient
+  @Override
+  public Set<SimpleMapRefSetMember> getSimpleMapRefSetMembers() {
+    return this.simpleMapRefSetMembers;
+  }
 
-	/**
-	 * Adds a SimpleMapRefSetMember to the set of SimpleMapRefSetMembers
-	 * 
-	 * @param simpleMapRefSetMember the SimpleMapRefSetMembers to be added
-	 */
-	@Override
-	public void addSimpleMapRefSetMember(
-		SimpleMapRefSetMember simpleMapRefSetMember) {
-		simpleMapRefSetMember.setConcept(this);
-		this.simpleMapRefSetMembers.add(simpleMapRefSetMember);
-	}
+  /**
+   * Sets the set of SimpleMapRefSetMembers
+   * 
+   * @param simpleMapRefSetMembers the set of SimpleMapRefSetMembers
+   */
+  @Override
+  public void setSimpleMapRefSetMembers(
+    Set<SimpleMapRefSetMember> simpleMapRefSetMembers) {
+    this.simpleMapRefSetMembers = simpleMapRefSetMembers;
+  }
 
-	/**
-	 * Removes a SimpleMapRefSetMember from the set of SimpleMapRefSetMembers
-	 * 
-	 * @param simpleMapRefSetMember the SimpleMapRefSetMember to be removed
-	 */
-	@Override
-	public void removeSimpleMapRefSetMember(
-		SimpleMapRefSetMember simpleMapRefSetMember) {
-		this.simpleMapRefSetMembers.remove(simpleMapRefSetMember);
-	}
+  /**
+   * Adds a SimpleMapRefSetMember to the set of SimpleMapRefSetMembers
+   * 
+   * @param simpleMapRefSetMember the SimpleMapRefSetMembers to be added
+   */
+  @Override
+  public void addSimpleMapRefSetMember(
+    SimpleMapRefSetMember simpleMapRefSetMember) {
+    simpleMapRefSetMember.setConcept(this);
+    this.simpleMapRefSetMembers.add(simpleMapRefSetMember);
+  }
 
-	/**
-	 * Returns the set of ComplexMapRefSetMembers
-	 * 
-	 * @return the set of ComplexMapRefSetMembers
-	 */
-	@XmlTransient
-	@Override
-	public Set<ComplexMapRefSetMember> getComplexMapRefSetMembers() {
-		return this.complexMapRefSetMembers;
-	}
+  /**
+   * Removes a SimpleMapRefSetMember from the set of SimpleMapRefSetMembers
+   * 
+   * @param simpleMapRefSetMember the SimpleMapRefSetMember to be removed
+   */
+  @Override
+  public void removeSimpleMapRefSetMember(
+    SimpleMapRefSetMember simpleMapRefSetMember) {
+    this.simpleMapRefSetMembers.remove(simpleMapRefSetMember);
+  }
 
-	/**
-	 * Sets the set of ComplexMapRefSetMembers
-	 * 
-	 * @param complexMapRefSetMembers the set of ComplexMapRefSetMembers
-	 */
-	@Override
-	public void setComplexMapRefSetMembers(
-		Set<ComplexMapRefSetMember> complexMapRefSetMembers) {
-		this.complexMapRefSetMembers = complexMapRefSetMembers;
-	}
+  /**
+   * Returns the set of ComplexMapRefSetMembers
+   * 
+   * @return the set of ComplexMapRefSetMembers
+   */
+  @XmlTransient
+  @Override
+  public Set<ComplexMapRefSetMember> getComplexMapRefSetMembers() {
+    return this.complexMapRefSetMembers;
+  }
 
-	/**
-	 * Adds a ComplexMapRefSetMember to the set of ComplexMapRefSetMembers
-	 * 
-	 * @param complexMapRefSetMember the complexMapRefSetMembers to be added
-	 */
-	@Override
-	public void addComplexMapRefSetMember(
-		ComplexMapRefSetMember complexMapRefSetMember) {
-		complexMapRefSetMember.setConcept(this);
-		this.complexMapRefSetMembers.add(complexMapRefSetMember);
-	}
+  /**
+   * Sets the set of ComplexMapRefSetMembers
+   * 
+   * @param complexMapRefSetMembers the set of ComplexMapRefSetMembers
+   */
+  @Override
+  public void setComplexMapRefSetMembers(
+    Set<ComplexMapRefSetMember> complexMapRefSetMembers) {
+    this.complexMapRefSetMembers = complexMapRefSetMembers;
+  }
 
-	/**
-	 * Removes a ComplexMapRefSetMember from the set of ComplexMapRefSetMembers
-	 * 
-	 * @param complexMapRefSetMember the ComplexMapRefSetMember to be removed
-	 */
-	@Override
-	public void removeComplexMapRefSetMember(
-		ComplexMapRefSetMember complexMapRefSetMember) {
-		this.complexMapRefSetMembers.remove(complexMapRefSetMember);
-	}
+  /**
+   * Adds a ComplexMapRefSetMember to the set of ComplexMapRefSetMembers
+   * 
+   * @param complexMapRefSetMember the complexMapRefSetMembers to be added
+   */
+  @Override
+  public void addComplexMapRefSetMember(
+    ComplexMapRefSetMember complexMapRefSetMember) {
+    complexMapRefSetMember.setConcept(this);
+    this.complexMapRefSetMembers.add(complexMapRefSetMember);
+  }
 
-	/**
-	 * Returns the set of AttributeValueRefSetMembers
-	 * 
-	 * @return the set of AttributeValueRefSetMembers
-	 */
-	@XmlTransient
-	@Override
-	public Set<AttributeValueRefSetMember> getAttributeValueRefSetMembers() {
-		return this.attributeValueRefSetMembers;
-	}
+  /**
+   * Removes a ComplexMapRefSetMember from the set of ComplexMapRefSetMembers
+   * 
+   * @param complexMapRefSetMember the ComplexMapRefSetMember to be removed
+   */
+  @Override
+  public void removeComplexMapRefSetMember(
+    ComplexMapRefSetMember complexMapRefSetMember) {
+    this.complexMapRefSetMembers.remove(complexMapRefSetMember);
+  }
 
-	/**
-	 * Sets the set of AttributeValueRefSetMembers
-	 * 
-	 * @param attributeValueRefSetMembers the set of AttributeValueRefSetMembers
-	 */
-	@Override
-	public void setAttributeValueRefSetMembers(
-		Set<AttributeValueRefSetMember> attributeValueRefSetMembers) {
-		this.attributeValueRefSetMembers = attributeValueRefSetMembers;
-	}
+  /**
+   * Returns the set of AttributeValueRefSetMembers
+   * 
+   * @return the set of AttributeValueRefSetMembers
+   */
+  @XmlTransient
+  @Override
+  public Set<AttributeValueRefSetMember> getAttributeValueRefSetMembers() {
+    return this.attributeValueRefSetMembers;
+  }
 
-	/**
-	 * Adds a AttributeValueRefSetMember to the set of AttributeValueRefSetMembers
-	 * 
-	 * @param attributeValueRefSetMember the AttributeValueRefSetMembers to be
-	 *          added
-	 */
-	@Override
-	public void addAttributeValueRefSetMember(
-		AttributeValueRefSetMember attributeValueRefSetMember) {
-		attributeValueRefSetMember.setConcept(this);
-		this.attributeValueRefSetMembers.add(attributeValueRefSetMember);
-	}
+  /**
+   * Sets the set of AttributeValueRefSetMembers
+   * 
+   * @param attributeValueRefSetMembers the set of AttributeValueRefSetMembers
+   */
+  @Override
+  public void setAttributeValueRefSetMembers(
+    Set<AttributeValueRefSetMember> attributeValueRefSetMembers) {
+    this.attributeValueRefSetMembers = attributeValueRefSetMembers;
+  }
 
-	/**
-	 * Removes a AttributeValueRefSetMember from the set of
-	 * AttributeValueRefSetMembers
-	 * 
-	 * @param attributeValueRefSetMember the AttributeValueRefSetMember to be
-	 *          removed
-	 */
-	@Override
-	public void removeAttributeValueRefSetMember(
-		AttributeValueRefSetMember attributeValueRefSetMember) {
-		this.attributeValueRefSetMembers.remove(attributeValueRefSetMember);
-	}
+  /**
+   * Adds a AttributeValueRefSetMember to the set of AttributeValueRefSetMembers
+   * 
+   * @param attributeValueRefSetMember the AttributeValueRefSetMembers to be
+   *          added
+   */
+  @Override
+  public void addAttributeValueRefSetMember(
+    AttributeValueRefSetMember attributeValueRefSetMember) {
+    attributeValueRefSetMember.setConcept(this);
+    this.attributeValueRefSetMembers.add(attributeValueRefSetMember);
+  }
 
-	/**
-	 * Returns the default preferred name.
-	 * 
-	 * @return the default preferred name
-	 */
-	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.YES)
-	public String getDefaultPreferredName() {
-		return defaultPreferredName;
-	}
+  /**
+   * Removes a AttributeValueRefSetMember from the set of
+   * AttributeValueRefSetMembers
+   * 
+   * @param attributeValueRefSetMember the AttributeValueRefSetMember to be
+   *          removed
+   */
+  @Override
+  public void removeAttributeValueRefSetMember(
+    AttributeValueRefSetMember attributeValueRefSetMember) {
+    this.attributeValueRefSetMembers.remove(attributeValueRefSetMember);
+  }
 
-	/**
-	 * Sets the default preferred name.
-	 * 
-	 * @param defaultPreferredName the default preferred name
-	 */
-	@Override
-	public void setDefaultPreferredName(String defaultPreferredName) {
-		this.defaultPreferredName = defaultPreferredName;
-	}
+  /**
+   * Returns the default preferred name.
+   * 
+   * @return the default preferred name
+   */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.YES)
+  public String getDefaultPreferredName() {
+    return defaultPreferredName;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
+  /**
+   * Sets the default preferred name.
+   * 
+   * @param defaultPreferredName the default preferred name
+   */
+  @Override
+  public void setDefaultPreferredName(String defaultPreferredName) {
+    this.defaultPreferredName = defaultPreferredName;
+  }
 
-		return this.getId() + "," + this.getTerminology() + ","
-				+ this.getTerminologyId() + "," + this.getTerminologyVersion() + ","
-				+ this.getEffectiveTime() + "," + this.isActive() + ","
-				+ this.getModuleId() + "," + // end of basic component fields
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String toString() {
 
-				this.getDefinitionStatusId() + "," + this.getDefaultPreferredName(); // end
-																																							// of
-																																							// basic
-																																							// concept
-																																							// fields
-	}
+    return this.getId() + "," + this.getTerminology() + ","
+        + this.getTerminologyId() + "," + this.getTerminologyVersion() + ","
+        + this.getEffectiveTime() + "," + this.isActive() + ","
+        + this.getModuleId() + "," + // end of basic component fields
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		return true;
-	}
+        this.getDefinitionStatusId() + "," + this.getDefaultPreferredName(); // end
+                                                                             // of
+                                                                             // basic
+                                                                             // concept
+                                                                             // fields
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    return true;
+  }
 }

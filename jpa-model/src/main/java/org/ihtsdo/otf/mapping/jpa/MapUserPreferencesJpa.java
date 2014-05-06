@@ -22,183 +22,191 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 
 /**
- * Set of preferences for a user
- * Preferences are accessed via services.
- *
+ * Set of preferences for a user Preferences are accessed via services.
+ * 
  * @author Patrick
  */
 @Entity
-@Table(name="map_user_preferences",  uniqueConstraints={
-		   @UniqueConstraint(columnNames={"mapUser_id", "id"})})
-@XmlRootElement(name="mapUserPreferences")
+@Table(name = "map_user_preferences", uniqueConstraints = {
+  @UniqueConstraint(columnNames = {
+      "mapUser_id", "id"
+  })
+})
+@XmlRootElement(name = "mapUserPreferences")
 public class MapUserPreferencesJpa implements MapUserPreferences {
 
-	/** The id. */
-	@Id
-	@GeneratedValue
-	private Long id;
-	
-	/** The map user id. */
-	@OneToOne(targetEntity=MapUserJpa.class)
-	private MapUser mapUser;
-	
-	/** The time of last login (in ms since 1970). */
-	@Column(nullable = false)
-	private Long lastLogin = (new Date()).getTime();
-	
-	/** The map project id for the project last worked on. */
-	@Column(nullable = false)
-	private Long mapProjectId;
-	
-	/** The map of name->model dashboards. */
-	@ElementCollection(fetch=FetchType.EAGER)
-	@CollectionTable(name="map_user_preferences_dashboard_models", joinColumns=@JoinColumn(name="id"))
-	@Column(nullable = true)
-	private Map<String, String> dashboardModels = new HashMap<>();
-	
-	/** Whether this user wants email notifications. */
-	@Column(nullable = false)
-	private boolean notifiedByEmail;
-	
-	/** Whether this user wants notifications in digest form. */
-	@Column(nullable = false)
-	private boolean digestForm;
+  /** The id. */
+  @Id
+  @GeneratedValue
+  private Long id;
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapUserPreferences#getId()
-	 */
-	@Override
-	public Long getId() {
-		return id;
-	}
+  /** The map user id. */
+  @OneToOne(targetEntity = MapUserJpa.class)
+  private MapUser mapUser;
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapUserPreferences#setId(java.lang.Long)
-	 */
-	@Override
-	public void setId(Long id) {
-		this.id = id;
-	}
+  /** The time of last login (in ms since 1970). */
+  @Column(nullable = false)
+  private Long lastLogin = (new Date()).getTime();
 
-	
-	/**
-	 * Gets the map user.
-	 *
-	 * @return the map user
-	 */
-	@Override
-	@XmlElement(type = MapUserJpa.class, name = "mapUser")
-	public MapUser getMapUser() {
-		return mapUser;
-	}
+  /** The map project id for the project last worked on. */
+  @Column(nullable = false)
+  private Long mapProjectId;
 
-	/**
-	 * Sets the map user.
-	 *
-	 * @param mapUser the new map user
-	 */
-	@Override
-	public void setMapUser(MapUser mapUser) {
-		this.mapUser = mapUser;
-	}
+  /** The map of name->model dashboards. */
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(name = "map_user_preferences_dashboard_models", joinColumns = @JoinColumn(name = "id"))
+  @Column(nullable = true)
+  private Map<String, String> dashboardModels = new HashMap<>();
 
-	/**
-	 * Gets the last login.
-	 *
-	 * @return the last login
-	 */
-	@Override
-	public Long getLastLogin() {
-		return lastLogin;
-	}
+  /** Whether this user wants email notifications. */
+  @Column(nullable = false)
+  private boolean notifiedByEmail;
 
-	/**
-	 * Sets the last login.
-	 *
-	 * @param lastLogin the new last login
-	 */
-	@Override
-	public void setLastLogin(Long lastLogin) {
-		this.lastLogin = lastLogin;
-	}
+  /** Whether this user wants notifications in digest form. */
+  @Column(nullable = false)
+  private boolean digestForm;
 
-	
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapUserPreferences#getId()
+   */
+  @Override
+  public Long getId() {
+    return id;
+  }
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapUserPreferences#getLastMapProjectId()
-	 */
-	@Override
-	public Long getLastMapProjectId() {
-		return mapProjectId;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapUserPreferences#setId(java.lang.Long)
+   */
+  @Override
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.model.MapUserPreferences#setLastMapProjectId(java.lang.Long)
-	 */
-	@Override
-	public void setLastMapProjectId(Long mapProjectId) {
-		this.mapProjectId = mapProjectId;
-	}
+  /**
+   * Gets the map user.
+   * 
+   * @return the map user
+   */
+  @Override
+  @XmlElement(type = MapUserJpa.class, name = "mapUser")
+  public MapUser getMapUser() {
+    return mapUser;
+  }
 
-	/**
-	 * Gets the dashboard models.
-	 *
-	 * @return the dashboard models
-	 */
-	@Override
-	public Map<String, String> getDashboardModels() {
-		return dashboardModels;
-	}
+  /**
+   * Sets the map user.
+   * 
+   * @param mapUser the new map user
+   */
+  @Override
+  public void setMapUser(MapUser mapUser) {
+    this.mapUser = mapUser;
+  }
 
-	/**
-	 * Sets the dashboard models.
-	 *
-	 * @param dashboardModels the dashboard models
-	 */
-	@Override
-	public void setDashboardModels(Map<String, String> dashboardModels) {
-		this.dashboardModels = dashboardModels;
-	}
+  /**
+   * Gets the last login.
+   * 
+   * @return the last login
+   */
+  @Override
+  public Long getLastLogin() {
+    return lastLogin;
+  }
 
-	/**
-	 * Checks if is email notifications.
-	 *
-	 * @return true, if is email notifications
-	 */
-	@Override
-	public boolean isNotifiedByEmail() {
-		return notifiedByEmail;
-	}
+  /**
+   * Sets the last login.
+   * 
+   * @param lastLogin the new last login
+   */
+  @Override
+  public void setLastLogin(Long lastLogin) {
+    this.lastLogin = lastLogin;
+  }
 
-	/**
-	 * Sets the email notifications.
-	 *
-	 * @param notifiedByEmail the new email notifications
-	 */
-	@Override
-	public void setNotifiedByEmail(boolean notifiedByEmail) {
-		this.notifiedByEmail = notifiedByEmail;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.model.MapUserPreferences#getLastMapProjectId()
+   */
+  @Override
+  public Long getLastMapProjectId() {
+    return mapProjectId;
+  }
 
-	/**
-	 * Checks if is digest form.
-	 *
-	 * @return true, if is digest form
-	 */
-	@Override
-	public boolean isDigestForm() {
-		return digestForm;
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.model.MapUserPreferences#setLastMapProjectId(java
+   * .lang.Long)
+   */
+  @Override
+  public void setLastMapProjectId(Long mapProjectId) {
+    this.mapProjectId = mapProjectId;
+  }
 
-	/**
-	 * Sets the digest form.
-	 *
-	 * @param digestForm the new digest form
-	 */
-	@Override
-	public void setDigestForm(boolean digestForm) {
-		this.digestForm = digestForm;
-	}
-	
+  /**
+   * Gets the dashboard models.
+   * 
+   * @return the dashboard models
+   */
+  @Override
+  public Map<String, String> getDashboardModels() {
+    return dashboardModels;
+  }
+
+  /**
+   * Sets the dashboard models.
+   * 
+   * @param dashboardModels the dashboard models
+   */
+  @Override
+  public void setDashboardModels(Map<String, String> dashboardModels) {
+    this.dashboardModels = dashboardModels;
+  }
+
+  /**
+   * Checks if is email notifications.
+   * 
+   * @return true, if is email notifications
+   */
+  @Override
+  public boolean isNotifiedByEmail() {
+    return notifiedByEmail;
+  }
+
+  /**
+   * Sets the email notifications.
+   * 
+   * @param notifiedByEmail the new email notifications
+   */
+  @Override
+  public void setNotifiedByEmail(boolean notifiedByEmail) {
+    this.notifiedByEmail = notifiedByEmail;
+  }
+
+  /**
+   * Checks if is digest form.
+   * 
+   * @return true, if is digest form
+   */
+  @Override
+  public boolean isDigestForm() {
+    return digestForm;
+  }
+
+  /**
+   * Sets the digest form.
+   * 
+   * @param digestForm the new digest form
+   */
+  @Override
+  public void setDigestForm(boolean digestForm) {
+    this.digestForm = digestForm;
+  }
 
 }

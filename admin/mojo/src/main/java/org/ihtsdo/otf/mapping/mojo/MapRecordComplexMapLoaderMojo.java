@@ -49,55 +49,58 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  */
 public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
 
-	/**
-	 * The refSet id
-	 * @parameter refSetId
-	 */
-	private String refSetId = null;
+  /**
+   * The refSet id
+   * @parameter refSetId
+   */
+  private String refSetId = null;
 
-	/**
-	 * Executes the plugin.
-	 * 
-	 * @throws MojoExecutionException the mojo execution exception
-	 */
-	@Override
-	public void execute() throws MojoExecutionException {
-		getLog().info(
-				"Starting generating map records from complex map records - " + refSetId);
+  /**
+   * Executes the plugin.
+   * 
+   * @throws MojoExecutionException the mojo execution exception
+   */
+  @Override
+  public void execute() throws MojoExecutionException {
+    getLog().info(
+        "Starting generating map records from complex map records - "
+            + refSetId);
 
-		if (refSetId == null) {
-			throw new MojoExecutionException("You must specify a refSetId.");
-		}
+    if (refSetId == null) {
+      throw new MojoExecutionException("You must specify a refSetId.");
+    }
 
-		try {
+    try {
 
-			MappingService mappingService = new MappingServiceJpa();
-			Set<MapProject> mapProjects = new HashSet<MapProject>();
+      MappingService mappingService = new MappingServiceJpa();
+      Set<MapProject> mapProjects = new HashSet<MapProject>();
 
-			for (MapProject mapProject : mappingService.getMapProjects().getIterable()) {
-				for (String id : refSetId.split(",")) {
-					if (mapProject.getRefSetId().equals(id)) {
-						mapProjects.add(mapProject);
-					}
-				}
-			}
+      for (MapProject mapProject : mappingService.getMapProjects()
+          .getIterable()) {
+        for (String id : refSetId.split(",")) {
+          if (mapProject.getRefSetId().equals(id)) {
+            mapProjects.add(mapProject);
+          }
+        }
+      }
 
-			// Generate members
-			for (MapProject mapProject : mapProjects) {
-				getLog().info(
-						"  Generating records for " + mapProject.getName() + ", "
-								+ mapProject.getId());
-				mappingService.createMapRecordsForMapProject(mapProject.getId(), WorkflowStatus.PUBLISHED);
-			}
+      // Generate members
+      for (MapProject mapProject : mapProjects) {
+        getLog().info(
+            "  Generating records for " + mapProject.getName() + ", "
+                + mapProject.getId());
+        mappingService.createMapRecordsForMapProject(mapProject.getId(),
+            WorkflowStatus.PUBLISHED);
+      }
 
-			getLog().info("done ...");
-			mappingService.close();
+      getLog().info("done ...");
+      mappingService.close();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoExecutionException(
-					"Generating map records from complex maps failed.", e);
-		}
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoExecutionException(
+          "Generating map records from complex maps failed.", e);
+    }
 
-	}
+  }
 }

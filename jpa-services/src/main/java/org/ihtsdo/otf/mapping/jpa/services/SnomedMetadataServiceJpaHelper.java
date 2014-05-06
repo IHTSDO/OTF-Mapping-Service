@@ -127,8 +127,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
    * .lang.String, java.lang.String)
    */
   @Override
-  public Map<String, String> getLanguageRefSets(String terminology, String version)
-    throws NumberFormatException, Exception {
+  public Map<String, String> getLanguageRefSets(String terminology,
+    String version) throws NumberFormatException, Exception {
     Map<String, String> map = new HashMap<>();
 
     // find all active descendants of 900000000000506000
@@ -217,7 +217,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 609330002
     // 609330002 - Map category value
-     ContentService contentService = new ContentServiceJpa();
+    ContentService contentService = new ContentServiceJpa();
     Set<Concept> descendants =
         contentService.getDescendants("447634004", terminology, version,
             isaRelationshipType);
@@ -369,8 +369,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
    * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
    */
   @Override
-  public Map<String, String> getHierarchicalRelationshipTypes(String terminology,
-    String version) throws NumberFormatException, Exception {
+  public Map<String, String> getHierarchicalRelationshipTypes(
+    String terminology, String version) throws NumberFormatException, Exception {
     Map<String, String> map = new HashMap<>();
 
     // find all active descendants

@@ -5,101 +5,105 @@
 <a href="#/project/details"><h3>{{project.name}}</h3></a>
 <p></p>
 
-<p>{{errorRecords}} </p>
- 
+<p>{{errorRecords}}</p>
+
 <p>
 <form>
-	<input ng-model="query">
-	<input type="submit" value="Search" ng-click="retrieveRecords(1)">
-	<input type="submit" value="Reset" ng-click="resetSearch()">
+  <input ng-model="query"> <input type="submit" value="Search"
+    ng-click="retrieveRecords(1)"> <input type="submit" value="Reset"
+    ng-click="resetSearch()">
 </form>
 
 
 
 
-<table width="100%" class="table" >
-<thead>
-	<tr> 
-        <th style="width: 8%;"></th>
-		<th style="width: 9%;">Concept</th>
-		<th style="width: 18%;">Concept Name</th>
-        <th style="width: 8%;">Group Id</th>
-        <th style="width: 10%;">Map Priority</th>
-        <th style="width: 14%;" ng-show="project.ruleBased == true">Rule</th>
-		<th style="width: 9%;">Target</th>
-		<th style="width: 18%;">Target Name</th>
-		<th style="width: 5%;"></th>
-	</tr>
-</thead>
+<table width="100%" class="table">
+  <thead>
+    <tr>
+      <th style="width: 8%;"></th>
+      <th style="width: 9%;">Concept</th>
+      <th style="width: 18%;">Concept Name</th>
+      <th style="width: 8%;">Group Id</th>
+      <th style="width: 10%;">Map Priority</th>
+      <th style="width: 14%;" ng-show="project.ruleBased == true">Rule</th>
+      <th style="width: 9%;">Target</th>
+      <th style="width: 18%;">Target Name</th>
+      <th style="width: 5%;"></th>
+    </tr>
+  </thead>
 
-<tbody ng-repeat="record in records" style="border: 2px solid #ccc;" >
+  <tbody ng-repeat="record in records" style="border: 2px solid #ccc;">
 
-	<tr ng-repeat = "entry in record.mapEntry" style="" >
-		
-        <td>
-        <span ng-show="record.mapNote.length > 0">
-          <span class="dropdown">
-            <a class="dropdown-toggle"> 
-            <img src="img/notepad.png" alt="notepad icon">
-            </a>
-            <span class="dropdown-menu">
-            <strong>Notes</strong>
-            <p></p>
-            <p ng-repeat = "note in record.mapNote" ng-bind-html="to_trusted(note.note)"></p>
-            </span>
+    <tr ng-repeat="entry in record.mapEntry" style="">
+
+      <td><span ng-show="record.mapNote.length > 0"> <span
+          class="dropdown"> <a class="dropdown-toggle"> <img
+              src="img/notepad.png" alt="notepad icon">
+          </a> <span class="dropdown-menu"> <strong>Notes</strong>
+              <p></p>
+              <p ng-repeat="note in record.mapNote"
+                ng-bind-html="to_trusted(note.note)"></p>
           </span>
         </span>
-        <span ng-show="entry.mapAdvice.length > 0">
+      </span> <span ng-show="entry.mapAdvice.length > 0">
           <div class="dropdown">
-            <a class="dropdown-toggle"> 
-            <img src="img/dialog-question.png" alt="question icon">
-            </a>
-            <span class="dropdown-menu">
-            <strong>Advice</strong>
-            <p></p>
-            <p ng-repeat="advice in entry.mapAdvice" ng-bind-html="to_trusted(advice.detail)"></p>
-          	</span>
+            <a class="dropdown-toggle"> <img src="img/dialog-question.png"
+              alt="question icon">
+            </a> <span class="dropdown-menu"> <strong>Advice</strong>
+              <p></p>
+              <p ng-repeat="advice in entry.mapAdvice"
+                ng-bind-html="to_trusted(advice.detail)"></p>
+            </span>
           </div>
-        </span>
-        <span ng-show="record.unmappedDescendants.length > 0">
-          <span class="dropdown">
-            <a class="dropdown-toggle"> 
-            <img src="img/warning.png" alt="question icon">
-            </a>
+      </span> <span ng-show="record.unmappedDescendants.length > 0"> <span
+          class="dropdown"> <a class="dropdown-toggle"> <img
+              src="img/warning.png" alt="question icon">
+          </a>
             <ul class="dropdown-menu">
               <b>Unmapped Descendants</b>
-              <li ng-repeat="concept in record.unmappedDescendants"><a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}: {{concept.value}}</a></li>
+              <li ng-repeat="concept in record.unmappedDescendants"><a
+                href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
+                  {{concept.value}}</a></li>
             </ul>
-          </span>
         </span>
-         
-        </td>
-        <td><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
-		<td>{{record.conceptName}}</td>
-        <td>{{entry.mapGroup}}</td>
-        <td>{{entry.mapPriority}}</td>
-        <td ng-show="project.ruleBased == true">{{entry.rule}}</td>
-		<td>{{entry.targetId}}</td>
-		<td>{{entry.targetName}}</td>
-		
-		<td><span ng-show="currentRole === 'Specialist' || currentRole === 'Lead' || currentRole === 'Admin'"><a  href="index.html#/record/recordId/{{record.id}}">Edit</a></span></td>
-		
-        
-        
-  </tr>
+      </span></td>
+      <td><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
+      <td>{{record.conceptName}}</td>
+      <td>{{entry.mapGroup}}</td>
+      <td>{{entry.mapPriority}}</td>
+      <td ng-show="project.ruleBased == true">{{entry.rule}}</td>
+      <td>{{entry.targetId}}</td>
+      <td>{{entry.targetName}}</td>
 
-</tbody>
-{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
-<pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage" class="pagination-sm" 
-			boundary-links="true" rotate="true" num-pages="numRecordPages"
-			on-select-page="retrieveRecords(page)"></pagination>
+      <td><span
+        ng-show="currentRole === 'Specialist' || currentRole === 'Lead' || currentRole === 'Admin'"><a
+          href="index.html#/record/recordId/{{record.id}}">Edit</a></span></td>
+
+
+
+    </tr>
+
+  </tbody>
+  {{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
+  <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
+    class="pagination-sm" boundary-links="true" rotate="true"
+    num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
 
 
 </table>
 
-<p ng-show="unmappedDescendantsPresent"><img src="img/warning.png" alt="Unmapped Descendant Warning"> = This concept has unmapped descendants.</p>
-<p ng-show="mapNotesPresent"><img src="img/notepad.png" alt="Note(s) Present"> = This entry has notes.</p>
-<p ng-show="mapAdvicesPresent"><img src="img/dialog-question.png" alt="Advice(s) Present"> = This entry has advices.</p>
+<p ng-show="unmappedDescendantsPresent">
+  <img src="img/warning.png" alt="Unmapped Descendant Warning"> = This
+  concept has unmapped descendants.
+</p>
+<p ng-show="mapNotesPresent">
+  <img src="img/notepad.png" alt="Note(s) Present"> = This entry has
+  notes.
+</p>
+<p ng-show="mapAdvicesPresent">
+  <img src="img/dialog-question.png" alt="Advice(s) Present"> = This entry
+  has advices.
+</p>
 
 
 

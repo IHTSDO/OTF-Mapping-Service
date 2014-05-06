@@ -5,16 +5,16 @@ package org.ihtsdo.otf.mapping.rf2;
  */
 public interface AttributeValueRefSetMember extends ConceptRefSetMember {
 
-	/**
-	 *  returns the value id
-	 *  @return the value id
-	 * 
-	 */
-	public Long getValueId();
-	
-	/**
-	 * sets the value id
-	 * @param valueId the value id
-	*/
-	public void setValueId(long valueId);
+  /**
+   * returns the value id
+   * @return the value id
+   * 
+   */
+  public Long getValueId();
+
+  /**
+   * sets the value id
+   * @param valueId the value id
+   */
+  public void setValueId(long valueId);
 }

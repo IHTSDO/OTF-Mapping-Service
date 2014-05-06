@@ -1,25 +1,28 @@
 <div>
-{{errorMetadata}} 
-<h5>Terminology: <select ng-model="terminology" ng-options="terminology as terminology for terminology in terminologies"></select></h5>
-<accordion> <accordion-group
-  ng-repeat="keyValuePairList in keyValuePairLists | filter:query  | orderBy:keyValuePairList.name">
-<accordion-heading>
-<h5>{{keyValuePairList.name}}</h5>
-</accordion-heading>
+  {{errorMetadata}}
+  <h5>
+    Terminology: <select ng-model="terminology"
+      ng-options="terminology as terminology for terminology in terminologies"></select>
+  </h5>
+  <accordion> <accordion-group
+    ng-repeat="keyValuePairList in keyValuePairLists | filter:query  | orderBy:keyValuePairList.name">
+  <accordion-heading>
+  <h5>{{keyValuePairList.name}}</h5>
+  </accordion-heading>
 
-<p></p>
-<table class="table table-bordered" cellpadding=5>
-  <tr>
-    <th width="40%">Id</th>
-    <th width="60%">Name</th>
-  </tr>
-  <tbody>
-    <tr ng-repeat="keyValuePair in keyValuePairList.keyValuePair">
-      <td width="40%">{{keyValuePair.key}}</td>
-      <td width="60%">{{keyValuePair.value}}</td>
+  <p></p>
+  <table class="table table-bordered" cellpadding=5>
+    <tr>
+      <th width="40%">Id</th>
+      <th width="60%">Name</th>
     </tr>
-  </tbody>
-</table>
-<p></p>
-</accordion-group> </accordion>
+    <tbody>
+      <tr ng-repeat="keyValuePair in keyValuePairList.keyValuePair">
+        <td width="40%">{{keyValuePair.key}}</td>
+        <td width="60%">{{keyValuePair.value}}</td>
+      </tr>
+    </tbody>
+  </table>
+  <p></p>
+  </accordion-group> </accordion>
 </div>

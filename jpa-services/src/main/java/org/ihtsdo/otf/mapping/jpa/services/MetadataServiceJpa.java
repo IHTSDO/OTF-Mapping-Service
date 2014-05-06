@@ -60,8 +60,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	@Override
 	public Map<String, Map<String, String>> getAllMetadata(String terminology,
 		String version) throws Exception {
-		Map<String, Map<String, String>> idNameMapList =
-				new HashMap<>();
+    Map<String, Map<String, String>> idNameMapList = new HashMap<>();
 		Map<String, String> modulesIdNameMap = getModules(terminology, version);
 		if (modulesIdNameMap != null) {
 			idNameMapList.put("Modules", modulesIdNameMap);
@@ -71,15 +70,18 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 		if (atvIdNameMap != null) {
 			idNameMapList.put("Attribute Value Refsets", atvIdNameMap);
 		}
-		Map<String, String> csIdNameMap = getCaseSignificances(terminology, version);
+    Map<String, String> csIdNameMap =
+        getCaseSignificances(terminology, version);
 		if (csIdNameMap != null) {
 			idNameMapList.put("Case Significances", csIdNameMap);
 		}
-		Map<String, String> cmIdNameMap = getComplexMapRefSets(terminology, version);
+    Map<String, String> cmIdNameMap =
+        getComplexMapRefSets(terminology, version);
 		if (cmIdNameMap != null) {
 			idNameMapList.put("Complex Map Refsets", cmIdNameMap);
 		}
-		Map<String, String> dsIdNameMap = getDefinitionStatuses(terminology, version);
+    Map<String, String> dsIdNameMap =
+        getDefinitionStatuses(terminology, version);
 		if (dsIdNameMap != null) {
 			idNameMapList.put("Definition Statuses", dsIdNameMap);
 		}
@@ -105,7 +107,8 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 		if (rmIdNameMap != null) {
 			idNameMapList.put("Relationship Modifiers", rmIdNameMap);
 		}
-		Map<String, String> rtIdNameMap = getRelationshipTypes(terminology, version);
+    Map<String, String> rtIdNameMap =
+        getRelationshipTypes(terminology, version);
 		if (rtIdNameMap != null) {
 			idNameMapList.put("Relationship Types", rtIdNameMap);
 		}
@@ -189,8 +192,8 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 * .lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<String, String> getLanguageRefSets(String terminology, String version)
-		throws Exception {
+  public Map<String, String> getLanguageRefSets(String terminology,
+    String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology)
 					.getLanguageRefSets(terminology, version);
@@ -338,8 +341,8 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Map<String, String> getHierarchicalRelationshipTypes(String terminology,
-		String version) throws Exception {
+  public Map<String, String> getHierarchicalRelationshipTypes(
+    String terminology, String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getHierarchicalRelationshipTypes(
 					terminology, version);
@@ -366,7 +369,6 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 			return new HashMap<>();
 		}
 	}
-
 
     /*
 	 * (non-Javadoc)
@@ -470,8 +472,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 								Object[].class);
 
 		List<Object[]> resultList = query.getResultList();
-		Map<String, String> resultMap =
-				new HashMap<>(resultList.size());
+    Map<String, String> resultMap = new HashMap<>(resultList.size());
 		for (Object[] result : resultList)
 			resultMap.put((String) result[0], (String) result[1]);
 		if (manager.isOpen()) {
@@ -481,7 +482,5 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 		return resultMap;
 
 	}
-
-
 
 }

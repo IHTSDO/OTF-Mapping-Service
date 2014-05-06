@@ -1,17 +1,22 @@
 package org.ihtsdo.otf.mapping.helpers;
 
-
 /**
- * The Enum WorkflowPath, specifying which workflow path a particular tracking record is on
- *
- * @author ${author}
+ * Enums for workflow paths
  */
+public enum WorkflowPath {
 
-public enum WorkflowPath  {
+  /** The non legacy path. */
+  NON_LEGACY_PATH,
 
-	NON_LEGACY_PATH,
-	LEGACY_PATH,
-	FIX_ERROR_PATH,
-	QA_PATH,
-	CONSENSUS_PATH;
+  /** The legacy path. */
+  LEGACY_PATH,
+
+  /** The fix error path. */
+  FIX_ERROR_PATH,
+
+  /** The qa path. */
+  QA_PATH,
+
+  /** The consensus path. */
+  CONSENSUS_PATH;
 }

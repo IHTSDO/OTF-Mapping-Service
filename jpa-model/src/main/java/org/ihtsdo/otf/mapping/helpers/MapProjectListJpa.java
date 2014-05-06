@@ -100,7 +100,9 @@ public class MapProjectListJpa extends AbstractResultList<MapProject> implements
     Collections.sort(mapProjects, comparator);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.ihtsdo.otf.mapping.helpers.ResultList#contains(java.lang.Object)
    */
   @Override

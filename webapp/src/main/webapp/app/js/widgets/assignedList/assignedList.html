@@ -1,70 +1,68 @@
-<tabset>
-<tab heading="{{assignedWorkTitle}}">
-
-
-<pagination total-items="nAssignedRecords" page="assignedWorkPage"
-	class="pagination-sm" boundary-links="true" rotate="true" 
-	num-pages="numAssignedRecordPages"
-	on-select-page="retrieveAssignedWork(page)"></pagination>
+<tabset> <tab heading="{{assignedWorkTitle}}"> <pagination
+  total-items="nAssignedRecords" page="assignedWorkPage" class="pagination-sm"
+  boundary-links="true" rotate="true" num-pages="numAssignedRecordPages"
+  on-select-page="retrieveAssignedWork(page)"></pagination>
 
 <table class="table">
 
-	<thead>
-		<tr>
-			<th style="width: 10%; padding: 5px;"></th>
-			<th style="width: 15%; padding: 5px;">Id</th>
-			<th style="width: 60%; padding: 5px;">Name</th>
-			<th style="width: 10%; padding: 5px;"></th>
+  <thead>
+    <tr>
+      <th style="width: 10%; padding: 5px;"></th>
+      <th style="width: 15%; padding: 5px;">Id</th>
+      <th style="width: 60%; padding: 5px;">Name</th>
+      <th style="width: 10%; padding: 5px;"></th>
 
-		</tr>
+    </tr>
 
-	</thead>
+  </thead>
 
-	<tbody>
+  <tbody>
 
-		<tr ng-repeat="result in assignedRecords">
+    <tr ng-repeat="result in assignedRecords">
 
-			<td style="width: 10%; padding: 5px;"><a href="#/record/recordId/{{result.id}}">Edit</a></td>
+      <td style="width: 10%; padding: 5px;"><a
+        href="#/record/recordId/{{result.id}}">Edit</a></td>
 
-			<td style="width: 15%; padding: 5px;">{{result.terminologyId}}</td>
-			<td style="width: 60%; padding: 5px;">{{result.value}}</td>
-			<td style="width: 10%; padding: 5px;"><a ng-click="unassignWork(result)">Return</a></td>
-	</tbody>
+      <td style="width: 15%; padding: 5px;">{{result.terminologyId}}</td>
+      <td style="width: 60%; padding: 5px;">{{result.value}}</td>
+      <td style="width: 10%; padding: 5px;"><a
+        ng-click="unassignWork(result)">Return</a></td>
+  </tbody>
 
 </table>
 
-</tab>
-<tab heading="{{assignedConflictsTitle}}" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-
-<pagination 
-    total-items="nAssignedConflicts" page="assignedConflictsPage"
-	class="pagination-sm" boundary-links="true" rotate="true" 
-	num-pages="numAssignedConflictsPages"
-	on-select-page="retrieveAssignedConflicts(page)"></pagination>
+</tab> <tab heading="{{assignedConflictsTitle}}"
+  ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"> <pagination
+  total-items="nAssignedConflicts" page="assignedConflictsPage"
+  class="pagination-sm" boundary-links="true" rotate="true"
+  num-pages="numAssignedConflictsPages"
+  on-select-page="retrieveAssignedConflicts(page)"></pagination>
 <table class="table">
 
-	<thead>
-		<tr>
-			<th style="width: 10%; padding: 5px;"></th>
-			<th style="width: 15%; padding: 5px;">Id</th>
-			<th style="width: 60%; padding: 5px;">Name</th>
-			<th style="width: 10%; padding: 5px;"></th>
+  <thead>
+    <tr>
+      <th style="width: 10%; padding: 5px;"></th>
+      <th style="width: 15%; padding: 5px;">Id</th>
+      <th style="width: 60%; padding: 5px;">Name</th>
+      <th style="width: 10%; padding: 5px;"></th>
 
-		</tr>
+    </tr>
 
-	</thead>
+  </thead>
 
-	<tbody>
+  <tbody>
 
-		<tr ng-repeat="result in assignedConflicts">
+    <tr ng-repeat="result in assignedConflicts">
 
-			<td style="width: 10%; padding: 5px;"><a href="#/record/conflicts/{{result.id}}">Edit</a></td>
+      <td style="width: 10%; padding: 5px;"><a
+        href="#/record/conflicts/{{result.id}}">Edit</a></td>
 
-			<td style="width: 15%; padding: 5px;">{{result.terminologyId}}</td>
-			<td style="width: 60%; padding: 5px;">{{result.value}}</td>
-			<td style="width: 10%; padding: 5px;"><a ng-click="unassignWork(result)">Return</a></td>
-		</tr>
-	</tbody>
+      <td style="width: 15%; padding: 5px;">{{result.terminologyId}}</td>
+      <td style="width: 60%; padding: 5px;">{{result.value}}</td>
+      <td style="width: 10%; padding: 5px;"><a
+        ng-click="unassignWork(result)">Return</a></td>
+    </tr>
+  </tbody>
 
 </table>
 

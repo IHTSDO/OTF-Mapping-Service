@@ -90,11 +90,11 @@ public class SnomedTreeposRemoverMojo extends AbstractMojo {
       String terminologyVersion =
           metadataService.getTerminologyLatestVersions().get(terminology);
       metadataService.close();
-      
+
       ContentServiceJpa contentService = new ContentServiceJpa();
       contentService.clearTreePositions(terminology, terminologyVersion);
       contentService.close();
-      
+
       getLog().info("Finished removing " + terminology + " treepos data ...");
 
     } catch (Throwable e) {

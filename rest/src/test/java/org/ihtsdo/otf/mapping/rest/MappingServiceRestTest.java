@@ -36,7 +36,8 @@ public class MappingServiceRestTest {
 	 * Test retrieval of existing database elements
 	 * @throws Exception the exception
 	 */
-	@Test
+	@SuppressWarnings("static-method")
+  @Test
 	public void testRetrieveElements() throws Exception {
 		Logger.getLogger(MappingServiceRestTest.class).info("Testing retrieval of elements...");
 		

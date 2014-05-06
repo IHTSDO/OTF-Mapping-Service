@@ -6,81 +6,97 @@ import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
+
 /**
  * Concrete implementation of {@link SimpleMapRefSetMember}.
  */
 @Entity
-@Table ( name = "simple_map_refset_members")
+@Table(name = "simple_map_refset_members")
 @Audited
 public class SimpleMapRefSetMemberJpa extends AbstractConceptRefSetMember
-		implements SimpleMapRefSetMember {
-	
-	/** The map target */
-	@Column (nullable = false)
-	private String mapTarget;
+    implements SimpleMapRefSetMember {
 
-	/** returns the map target
-	 * @return the map target
-	 */
-	@Override
-	public String getMapTarget() {
-		return this.mapTarget;
-	}
+  /** The map target */
+  @Column(nullable = false)
+  private String mapTarget;
 
-	/** sets the map target
-	 * @param mapTarget the map target
-	 */
-	@Override
-	public void setMapTarget(String mapTarget) {
-		this.mapTarget = mapTarget;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		 return this.getId() + "," +
-				 this.getTerminology() + "," +
-				 this.getTerminologyId() + "," +
-				 this.getTerminologyVersion() + "," +
-				 this.getEffectiveTime() + "," +
-				 this.isActive() + "," +
+  /**
+   * returns the map target
+   * @return the map target
+   */
+  @Override
+  public String getMapTarget() {
+    return this.mapTarget;
+  }
 
-				 (this.getConcept() == null ? null : this.getConcept().getTerminologyId()) + "," +
-				 this.getMapTarget();
-			
-	}
+  /**
+   * sets the map target
+   * @param mapTarget the map target
+   */
+  @Override
+  public void setMapTarget(String mapTarget) {
+    this.mapTarget = mapTarget;
+  }
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((mapTarget == null) ? 0 : mapTarget.hashCode());
-		return result;
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String toString() {
+    return this.getId()
+        + ","
+        + this.getTerminology()
+        + ","
+        + this.getTerminologyId()
+        + ","
+        + this.getTerminologyVersion()
+        + ","
+        + this.getEffectiveTime()
+        + ","
+        + this.isActive()
+        + ","
+        +
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		SimpleMapRefSetMemberJpa other = (SimpleMapRefSetMemberJpa) obj;
-		if (mapTarget == null) {
-			if (other.mapTarget != null)
-				return false;
-		} else if (!mapTarget.equals(other.mapTarget))
-			return false;
-		return true;
-	}
+        (this.getConcept() == null ? null : this.getConcept()
+            .getTerminologyId()) + "," + this.getMapTarget();
+
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + ((mapTarget == null) ? 0 : mapTarget.hashCode());
+    return result;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rf2.jpa.AbstractConceptRefSetMember#equals(java.
+   * lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    SimpleMapRefSetMemberJpa other = (SimpleMapRefSetMemberJpa) obj;
+    if (mapTarget == null) {
+      if (other.mapTarget != null)
+        return false;
+    } else if (!mapTarget.equals(other.mapTarget))
+      return false;
+    return true;
+  }
 
 }

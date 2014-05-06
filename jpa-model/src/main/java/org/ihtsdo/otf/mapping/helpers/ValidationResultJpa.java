@@ -17,7 +17,9 @@ public class ValidationResultJpa implements ValidationResult {
 	/** The warnings. */
 	private Set<String> warnings = new HashSet<>();
 
-	/* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
 	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#isValid()
 	 */
 	@Override
@@ -25,7 +27,9 @@ public class ValidationResultJpa implements ValidationResult {
 		return errors.size() == 0;
 	}
 	
-	/* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
 	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#getErrors()
 	 */
 	@Override
@@ -33,24 +37,33 @@ public class ValidationResultJpa implements ValidationResult {
 		return errors;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#setErrors(java.util.Set)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#setErrors(java.util.Set)
 	 */
 	@Override
 	public void setErrors(Set<String> errors) {
 		this.errors = errors;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#addError(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#addError(java.lang.String)
 	 */
 	@Override
 	public void addError(String error) {
 		this.errors.add(error);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#addErrors(java.util.Set)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#addErrors(java.util.Set)
 	 */
 	@Override
 	public void addErrors(Set<String> errorSet) {
@@ -61,15 +74,21 @@ public class ValidationResultJpa implements ValidationResult {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#removeError(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#removeError(java.lang.String
+   * )
 	 */
 	@Override
 	public void removeError(String error) {
 		this.errors.remove(error);
 	}
 	
-	/* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
 	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#getWarnings()
 	 */
 	@Override
@@ -77,24 +96,34 @@ public class ValidationResultJpa implements ValidationResult {
 		return warnings;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#setWarnings(java.util.Set)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#setWarnings(java.util.Set)
 	 */
 	@Override
 	public void setWarnings(Set<String> warnings) {
 		this.warnings = warnings;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#addWarning(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#addWarning(java.lang.String
+   * )
 	 */
 	@Override
 	public void addWarning(String warning) {
 		this.warnings.add(warning);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#addWarnings(java.util.Set)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#addWarnings(java.util.Set)
 	 */
 	@Override
 	public void addWarnings(Set<String> warningSet) {
@@ -102,8 +131,12 @@ public class ValidationResultJpa implements ValidationResult {
 		else this.warnings = new HashSet<String>(warningSet);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.helpers.ValidationResult#removeWarning(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.helpers.ValidationResult#removeWarning(java.lang
+   * .String)
 	 */
 	@Override
 	public void removeWarning(String warning) {
@@ -118,5 +151,4 @@ public class ValidationResultJpa implements ValidationResult {
 		
 	}
 
-	
 }

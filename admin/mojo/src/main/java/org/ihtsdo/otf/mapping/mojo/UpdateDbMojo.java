@@ -45,36 +45,37 @@ import org.apache.maven.plugin.MojoFailureException;
  */
 public class UpdateDbMojo extends AbstractMojo {
 
-	/** The manager. */
-	private EntityManager manager;
+  /** The manager. */
+  private EntityManager manager;
 
-	/**
-	 * Instantiates a {@link UpdateDbMojo} from the specified parameters.
-	 *
-	 */
-	public UpdateDbMojo() {
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.maven.plugin.Mojo#execute()
-	 */
-	@Override
-	public void execute() throws MojoFailureException {
-		getLog().info("Start updating database schema...");
-		try {
-			EntityManagerFactory factory = Persistence.createEntityManagerFactory("MappingServiceDS");
-			manager = factory.createEntityManager();
-			manager.close();
-			factory.close();
-			getLog().info("done ...");
+  /**
+   * Instantiates a {@link UpdateDbMojo} from the specified parameters.
+   * 
+   */
+  public UpdateDbMojo() {
+  }
 
-		} catch (Throwable e) {
-			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
-		}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
+  @Override
+  public void execute() throws MojoFailureException {
+    getLog().info("Start updating database schema...");
+    try {
+      EntityManagerFactory factory =
+          Persistence.createEntityManagerFactory("MappingServiceDS");
+      manager = factory.createEntityManager();
+      manager.close();
+      factory.close();
+      getLog().info("done ...");
 
-	}
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw new MojoFailureException("Unexpected exception:", e);
+    }
+
+  }
 
 }
