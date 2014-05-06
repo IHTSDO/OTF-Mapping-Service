@@ -27,12 +27,15 @@ public class RootServiceJpa implements RootService {
   /** The indexed field names. */
   protected static Set<String> fieldNames;
 
+  /** The lock. */
+  private static String lock = "lock";
+
   /**
    * Instantiates an empty {@link RootServiceJpa}.
    */
   public RootServiceJpa() {
     // created once or if the factory has closed
-    synchronized (factory) {
+    synchronized (lock) {
       if (factory == null || !factory.isOpen()) {
         openFactory();
       }
