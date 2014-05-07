@@ -4,9 +4,23 @@
 	<h3>You do not have permission to edit records.</h3>
 </div>
 
-<div class="container" ng-show="currentRole != 'Viewer'">
-  <adf-dashboard name="{{name}}" structure="{{model.structure}}"
-    adf-model="model" ng-cloak />
+<div class="dashboard-container" ng-show="currentRole != 'Viewer'">
+
+  <div class="dashboard" ng-class="editClass">
+
+    <div ng-repeat="row in model.rows" class="row" ng-class="row.class">
+      <div ng-repeat="col in row.columns" class="column" ng-class="col.class"
+        ui-sortable="sortableOptions" ng-model="col.widgets">
+        <div class="widgets" ng-repeat="definition in col.widgets">
+          <adf-widget definition="definition" column="col"
+            edit-mode="{{editMode}}" />
+        </div>
+      </div>
+    </div>
+
+  </div>
+
 </div>
+
 
 <div ng-include src="'./partials/footer.html'"></div>

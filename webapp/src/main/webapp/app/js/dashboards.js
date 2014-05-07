@@ -4,6 +4,9 @@ var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', []);
 
 mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, $rootScope, $location, localStorageService) {
 
+	// model variable
+	$scope.model = null;
+	
 	// On initialization, reset all values to null -- used to ensure watch functions work correctly
 	$scope.mapProjects 	= null;
 	$scope.currentUser 	= null;
@@ -382,6 +385,8 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 
 mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $rootScope, $routeParams, $location, localStorageService) {
 
+	$scope.model = null;
+	
 	// On initialization, reset all values to null -- used to ensure watch functions work correctly
 	$scope.mapProjects 	= null;
 	$scope.currentUser 	= null;
@@ -404,39 +409,38 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 		$scope.name = 'EditingDashboard';
 		console.debug("Setting record dashboard model");
 		console.debug($scope.model);
-		if (!$scope.model) {
-			$scope.model = {
-					structure: "6-6",                          
-					rows: 
-						[{
-							columns: [{
-								class: 'col-md-6',
-								widgets: [{
-									type: "mapRecord",
-									config: { recordId: $routeParams.recordId},
-									title: "Map Record"
-								}]
+
+		$scope.model = {
+				structure: "6-6",                          
+				rows: 
+					[{
+						columns: [{
+							class: 'col-md-6',
+							widgets: [{
+								type: "mapRecord",
+								config: { recordId: $routeParams.recordId},
+								title: "Map Record"
+							}]
+						}, {
+							class: 'col-md-6',
+							widgets: [{
+								type: "mapEntry",
+								config: { entry: $scope.entry},
+								title: "Map Entry"
 							}, {
-								class: 'col-md-6',
-								widgets: [{
-									type: "mapEntry",
-									config: { entry: $scope.entry},
-									title: "Map Entry"
-								}, {
-									type: "terminologyBrowser",
-									config: { 
-										terminology: $scope.focusProject.destinationTerminology,
-										terminologyVersion: $scope.focusProject.destinationTerminologyVersion
-									},
-									title: $scope.focusProject.destinationTerminology + " Terminology Browser"
+								type: "terminologyBrowser",
+								config: { 
+									terminology: $scope.focusProject.destinationTerminology,
+									terminologyVersion: $scope.focusProject.destinationTerminologyVersion
+								},
+								title: $scope.focusProject.destinationTerminology + " Terminology Browser"
 
-								}],
-							} // end second column
-							] // end columns
-						}] // end rows
-			};
+							}],
+						} // end second column
+						] // end columns
+					}] // end rows
+		};
 
-		}
 	};
 	
 	// broadcast page to help mechanism  
@@ -452,11 +456,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 		console.debug("RecordDashboardCtrl:  Detected change in focus project");
 		
 		// set the model to empty
-		$scope.model = {
-				structure: "6-6",                          
-				rows: 
-					[{}]
-		};
+		$scope.model = null;
 		
 		setModel();
 		

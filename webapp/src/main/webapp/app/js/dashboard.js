@@ -225,6 +225,10 @@ angular.module('adf')
       },
       link: function ($scope, $element, $attr) {
         // pass attributes to scope
+    	  console.debug('attributes passed to scope:')
+    	  console.debug($attr.name);
+    	  console.debug($attr.structure);
+    	  console.debug($attr.adfModel);
         $scope.name = $attr.name;
         $scope.structure = $attr.structure;
         $scope.adfModel = $attr.adfModel;
