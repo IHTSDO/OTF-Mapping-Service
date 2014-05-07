@@ -49,12 +49,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 * Instantiates an empty {@link WorkflowServiceJpa}.
 	 */
 	public WorkflowServiceJpa() {
-
-		// created once or if the factory has been closed
-		if (factory == null || !factory.isOpen()) {
-			factory = Persistence
-					.createEntityManagerFactory("MappingServiceDS");
-		}
+	  super();
 
 		// created on each instantiation
 		manager = factory.createEntityManager();

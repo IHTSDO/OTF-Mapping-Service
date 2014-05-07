@@ -23,17 +23,14 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 * Instantiates an empty {@link MetadataServiceJpa}.
 	 */
 	public MetadataServiceJpa() {
-
+	  super();
+	  
 		helperMap = new HashMap<>();
 		helperMap.put("SNOMEDCT", new SnomedMetadataServiceJpaHelper());
 		helperMap.put("ICD10", new ClamlMetadataServiceJpaHelper());
 		helperMap.put("ICD9CM", new ClamlMetadataServiceJpaHelper());
 		helperMap.put("ICPC", new ClamlMetadataServiceJpaHelper());
 
-		// created once or if the factory has closed
-		if (factory == null || !factory.isOpen()) {
-			super.openFactory();
-		}
 		// create on each instantiation
 		manager = factory.createEntityManager();
 	}
