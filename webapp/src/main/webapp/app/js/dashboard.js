@@ -228,8 +228,8 @@ angular.module('adf')
         $scope.name = $attr.name;
         $scope.structure = $attr.structure;
         $scope.adfModel = $attr.adfModel;
-      },
-      templateUrl: './partials/dashboard.html'
+      }/*,
+      templateUrl: './partials/dashboard.html'*/
     	 
     };
   });

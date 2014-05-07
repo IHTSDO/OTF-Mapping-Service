@@ -2,12 +2,26 @@
 
 var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', []);
 
-mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, $rootScope, localStorageService) {
+mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, $rootScope, $location, localStorageService) {
 
-	setModel();
+	// On initialization, reset all values to null -- used to ensure watch functions work correctly
+	$scope.mapProjects 	= null;
+	$scope.currentUser 	= null;
+	$scope.currentRole 	= null;
+	$scope.preferences 	= null;
+	$scope.focusProject = null;
 
+	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
+	$scope.mapProjects  = localStorageService.get('mapProjects');
+	$scope.currentUser  = localStorageService.get('currentUser');
+	$scope.currentRole  = localStorageService.get('currentRole');
+	$scope.preferences  = localStorageService.get('preferences');
 	$scope.focusProject = localStorageService.get('focusProject');
-
+	
+	setModel();
+	
+    $scope.page = 'resolveConflictsDashboard';
+	
 	function setModel() {
 		$scope.name = 'ResolveConflictsDashboard';
 		if (!$scope.model) {
@@ -60,7 +74,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 	console.debug($scope.model);
 
 	// broadcast page to help mechanism  
-	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'resolveConflictsDashboard'});  
+	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'resolveConflictsDashboard'});  
 
 	$scope.$on('adfDashboardChanged', function (event, name, model) {
 		console.debug("Dashboard change detected by ResolveConflictsDashboard");
@@ -82,13 +96,55 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 
 
 	});
+	
+	// function to change project from the header
+	$scope.changeFocusProject = function(mapProject) {
+		$scope.focusProject = mapProject;
+		console.debug("changing project to " + $scope.focusProject.name);
+
+		// update and broadcast the new focus project
+		localStorageService.add('focusProject', $scope.focusProject);
+		$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+		// update the user preferences
+		$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+		localStorageService.add('preferences', $scope.preferences);
+		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+
+	};
+	
+	$scope.goToHelp = function() {
+		var path;
+		if ($scope.page != 'mainDashboard') {
+			path = "help/" + $scope.page + "Help.html";
+		} else {
+			path = "help/" + $scope.currentRole + "DashboardHelp.html";
+		}
+		console.debug("go to help page " + path);
+		// redirect page
+		$location.path(path);
+	};
 });
 
 
 
-mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope, $http, localStorageService) {
+mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope, $http, $location, localStorageService) {
 
-	$scope.currentRole = localStorageService.get('currentRole');
+	// On initialization, reset all values to null -- used to ensure watch functions work correctly
+	$scope.mapProjects 	= null;
+	$scope.currentUser 	= null;
+	$scope.currentRole 	= null;
+	$scope.preferences 	= null;
+	$scope.focusProject = null;
+	
+	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
+	$scope.mapProjects  = localStorageService.get('mapProjects');
+	$scope.currentUser  = localStorageService.get('currentUser');
+	$scope.currentRole  = localStorageService.get('currentRole');
+	$scope.preferences  = localStorageService.get('preferences');
+	$scope.focusProject = localStorageService.get('focusProject');
+	
+    $scope.page = 'mainDashboard';
 
 	console.debug('in dashboardCtrl');
 
@@ -295,13 +351,53 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		});
 	});
 
+	// function to change project from the header
+	$scope.changeFocusProject = function(mapProject) {
+		$scope.focusProject = mapProject;
+		console.debug("changing project to " + $scope.focusProject.name);
+
+		// update and broadcast the new focus project
+		localStorageService.add('focusProject', $scope.focusProject);
+		$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+		// update the user preferences
+		$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+		localStorageService.add('preferences', $scope.preferences);
+		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+
+	};
+	
+	$scope.goToHelp = function() {
+		var path;
+		if ($scope.page != 'mainDashboard') {
+			path = "help/" + $scope.page + "Help.html";
+		} else {
+			path = "help/" + $scope.currentRole + "DashboardHelp.html";
+		}
+		console.debug("go to help page " + path);
+		// redirect page
+		$location.path(path);
+	};
 });
 
 mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $rootScope, $routeParams, $location, localStorageService) {
 
-	$scope.currentRole = localStorageService.get('currentRole');
+	// On initialization, reset all values to null -- used to ensure watch functions work correctly
+	$scope.mapProjects 	= null;
+	$scope.currentUser 	= null;
+	$scope.currentRole 	= null;
+	$scope.preferences 	= null;
+	$scope.focusProject = null;
+	
+	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
+	$scope.mapProjects  = localStorageService.get('mapProjects');
+	$scope.currentUser  = localStorageService.get('currentUser');
+	$scope.currentRole  = localStorageService.get('currentRole');
+	$scope.preferences  = localStorageService.get('preferences');
 	$scope.focusProject = localStorageService.get('focusProject');
 
+    $scope.page = 'editDashboard';
+    
 	setModel();
 
 	function setModel() {
@@ -344,7 +440,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 	};
 	
 	// broadcast page to help mechanism  
-	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
+	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
 
 	$scope.$on('adfDashboardChanged', function (event, name, model) {
 		console.debug("Dashboard change detected by MapRecordDashboard");
@@ -385,7 +481,33 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 	$scope.$watch('focusProject', function() {
 		console.debug('RecordDashBoardCtrl:  Detected project set/change');
 		setModel();
-
-
 	});
+	
+	// function to change project from the header
+	$scope.changeFocusProject = function(mapProject) {
+		$scope.focusProject = mapProject;
+		console.debug("changing project to " + $scope.focusProject.name);
+
+		// update and broadcast the new focus project
+		localStorageService.add('focusProject', $scope.focusProject);
+		$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+		// update the user preferences
+		$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+		localStorageService.add('preferences', $scope.preferences);
+		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+
+	};
+	
+	$scope.goToHelp = function() {
+		var path;
+		if ($scope.page != 'mainDashboard') {
+			path = "help/" + $scope.page + "Help.html";
+		} else {
+			path = "help/" + $scope.currentRole + "DashboardHelp.html";
+		}
+		console.debug("go to help page " + path);
+		// redirect page
+		$location.path(path);
+	};
 });

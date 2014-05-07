@@ -28,6 +28,6 @@ angular.module('mapProjectApp.widgets.mapProjectList', ['adf.provider'])
       });
 
       // broadcast page to help mechanism
-  	  $rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'mainDashboard'});  
+  	  //$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'mainDashboard'});  
   
   });

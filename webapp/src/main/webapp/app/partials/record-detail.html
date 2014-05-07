@@ -1,7 +1,6 @@
-<h3>
-  Mapping <strong>{{project.sourceTerminology}}</strong> Concept
-  {{concept.terminologyId}} ({{concept.defaultPreferredName}}) to <strong>{{project.destinationTerminology}}</strong>
-</h3>
+<div ng-include src="'./partials/header.html'"></div>
+
+<h3>Mapping <strong>{{project.sourceTerminology}}</strong> Concept {{concept.terminologyId}} ({{concept.defaultPreferredName}}) to <strong>{{project.destinationTerminology}}</strong> </h3>
 
 <!--  left-panel -->
 <div style="float: left; width: 45%; padding: 10px;">
@@ -167,4 +166,6 @@
       style="color: red;">{{entryError}}</span>
   </div>
 
-</div>
+</div></div>
+
+<div ng-include src="'./partials/footer.html'"></div>
