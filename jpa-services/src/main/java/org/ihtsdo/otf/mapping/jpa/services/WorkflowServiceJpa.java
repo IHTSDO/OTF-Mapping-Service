@@ -19,6 +19,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -615,10 +616,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			trackingRecord = algorithmHandler.assignFromInitialRecord(
 					trackingRecord, mapRecord, mapUser);
 
-			Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
-			synchronizeWorkflowTrackingRecord(trackingRecord,
-					getWorkflowTrackingRecord(mapProject, concept));
-
 			break;
 
 		case ASSIGN_FROM_SCRATCH:
@@ -635,10 +632,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			// perform the assignment via the algorithm handler
 			trackingRecord = algorithmHandler.assignFromScratch(trackingRecord,
 					concept, mapUser);
-
-			Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
-			synchronizeWorkflowTrackingRecord(trackingRecord,
-					getWorkflowTrackingRecord(mapProject, concept));
 
 			break;
 
@@ -660,10 +653,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			// perform the unassign action via the algorithm handler
 			trackingRecord = algorithmHandler.unassign(trackingRecord, mapUser);
-
-			Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
-			synchronizeWorkflowTrackingRecord(trackingRecord,
-					getWorkflowTrackingRecord(mapProject, concept));
 
 			break;
 
@@ -688,10 +677,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			trackingRecord = algorithmHandler.saveForLater(trackingRecord,
 					mapUser);
-
-			Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
-			synchronizeWorkflowTrackingRecord(trackingRecord,
-					getWorkflowTrackingRecord(mapProject, concept));
 
 			break;
 
@@ -718,15 +703,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			trackingRecord = algorithmHandler.finishEditing(trackingRecord,
 					mapUser);
 
-			Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
-			synchronizeWorkflowTrackingRecord(trackingRecord,
-					getWorkflowTrackingRecord(mapProject, concept));
-
 			break;
 
 		default:
 			throw new Exception("Unknown action requested.");
 		}
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
+		synchronizeWorkflowTrackingRecord(trackingRecord,
+				getWorkflowTrackingRecord(mapProject, concept));
 
 	}
 
