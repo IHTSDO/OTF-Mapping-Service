@@ -142,15 +142,12 @@ public interface WorkflowService {
 
   /**
    * Synchronize workflow tracking record given the new version and the old
-   * version
-   * 
-   * @param newTrackingRecord the new record, modified by processWorkflowAction
-   * @param oldTrackingRecord the old record, from the database
-   * @throws Exception
+   * version.
+   *
+   * @param trackingRecord the tracking record
+   * @throws Exception the exception
    */
-  public void synchronizeWorkflowTrackingRecord(
-    WorkflowTrackingRecord newTrackingRecord,
-    WorkflowTrackingRecord oldTrackingRecord) throws Exception;
+  public WorkflowTrackingRecord synchronizeMapRecords(WorkflowTrackingRecord trackingRecord) throws Exception;
 
   /**
    * Compute workflow.

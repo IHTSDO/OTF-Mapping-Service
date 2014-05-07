@@ -76,10 +76,7 @@
       <td>{{entry.targetId}}</td>
       <td>{{entry.targetName}}</td>
 
-      <td><span
-        ng-show="currentRole === 'Specialist' || currentRole === 'Lead' || currentRole === 'Admin'"><a
-          href="index.html#/record/recordId/{{record.id}}">Edit</a></span></td>
-
+      <td><a ng-show="isEditable(record)" ng-click="editRecord(record)">Edit</a></td>
 
 
     </tr>

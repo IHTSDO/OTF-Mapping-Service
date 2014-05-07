@@ -291,7 +291,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 
   @Override
   public String toString() {
-    return "WorkflowTrackingRecordJpa [id=" + id + ", mapProject=" + mapProject
+    return "WorkflowTrackingRecordJpa [id=" + id + ", mapProject=" + mapProject.getId().toString()
         + ", terminology=" + terminology + ", terminologyId=" + terminologyId
         + ", terminologyVersion=" + terminologyVersion
         + ", defaultPreferredName=" + defaultPreferredName + ", sortKey="
