@@ -410,17 +410,6 @@ public interface MappingService {
   public MapRecordList getMapRecordsForMapProject(Long mapProjectId)
     throws Exception;
 
-  /**
-   * Helper function which calls either a simple query or lucene query depending
-   * on filter parameters.
-   * 
-   * @param mapProjectId the project id
-   * @param pfsParameter the page/filter/sort parameter object
-   * @return the map records for map project id
-   * @throws Exception the exception
-   */
-  public MapRecordList getMapRecordsForMapProject(Long mapProjectId,
-    PfsParameter pfsParameter) throws Exception;
 
   /**
    * Helper function for retrieving map records given a concept id.
@@ -741,5 +730,16 @@ public interface MappingService {
    * @return the map user preferences
    */
   public MapUserPreferences getMapUserPreferences(String userName);
+
+  /**
+   * Gets the published and ready for publication map records for map project.
+   *
+   * @param mapProjectId the map project id
+   * @param pfsParameter the pfs parameter
+   * @return the published and ready for publication map records for map project
+   * @throws Exception the exception
+   */
+  public MapRecordList getPublishedAndReadyForPublicationMapRecordsForMapProject(
+		Long mapProjectId, PfsParameter pfsParameter) throws Exception;
 
 }

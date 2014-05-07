@@ -623,9 +623,6 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 
 		console.debug('Retrieving records');
 		
-		// retrieve pagination information for the upcoming query
-		setPagination($scope.recordsPerPage);
-
 		// construct html parameters parameter
 		var pfsParameterObj = constructPfsParameterObj(page);
 		var query_url = root_mapping + "record/projectId/" + $scope.project.objectId;
@@ -642,7 +639,10 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		}).success(function(data) {
 			$scope.records = data.mapRecord;
 			$scope.statusRecordLoad = "";
-			$scope.recordPage = page;
+			
+			// set pagination variables
+			$scope.nRecords = data.totalCount;
+			$scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
 
 		}).error(function(error) {
 			$scope.errorRecord = "Error retrieving map records";
@@ -695,41 +695,6 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 			"filterString": $scope.query == null ? null : $scope.query};  // assigning simply to $scope.query when null produces undefined
 
 	}
-
-	// function to set the relevant pagination fields
-	function setPagination(recordsPerPage) {
-
-		// set scope variable for total records
-		getNRecords();
-
-		// set pagination variables
-		$scope.recordsPerPage = recordsPerPage;
-		$scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
-	};
-
-	// function query for the number of records associated with full set or query
-	function getNRecords() {
-
-		var query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/nRecords";
-		var pfsParameterObj = constructPfsParameterObj(1);
-
-		// retrieve the total number of records associated with this map project
-		$http({
-			url: query_url,
-			dataType: "json",
-			data: pfsParameterObj,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			}
-		}).success(function(data) {
-			$scope.nRecords = data;
-
-		}).error(function(error) {
-			$scope.nRecords = 0;
-			console.debug("getNRecords error");
-		});
-	};
 
 	function getUnmappedDescendants(index) {
 
