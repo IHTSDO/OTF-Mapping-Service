@@ -13,24 +13,6 @@ var root_workflow = root_url + "workflow/";
 mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 	$rootScope.glassPane = 0;
 	
-	/*// retrieve state variables
-	utilityService.getStateVariables().then(function (stateVariables) {
-		
-		// on promise return, set variables
-		$scope.focusProject 	= stateVariables.focusProject;
-		$scope.currentUser 		= stateVariables.currentUser;
-		$scope.currentRole 		= stateVariables.currentRole;
-		$scope.metadata 		= stateVariables.metadata;
-		$scope.mapProjects 		= stateVariables.mapProjects;
-		$scope.mapUsers 		= stateVariables.mapUsers;
-		
-		// call dependent functions
-		// e.g. retrieveRecords(), getProjectDetails(), what have you
-	});*/
-
-	
-	
-	
 	// retrieve projects
 	$http({
 		url: root_mapping + "project/projects",
@@ -57,21 +39,10 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 	}).success(function(response) {
 		var keyValuePairs = response.keyValuePair;
 		for (var i = 0; i < keyValuePairs.length; i++) {
-			console.debug(keyValuePairs[i]);
-			$http({
-				url: root_metadata + "all/" + keyValuePairs[i].key + "/" + keyValuePairs[i].value,
-				dataType: "json",
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json"
-				}
-			}).success(function(metadata) {
-				localStorageService.add('metadata', metadata);
-			});
-
+			console.debug("Retrieving metadata for " + keyValuePairs[i].key + ", " + keyValuePairs[i].value);		
+			addMetadataToLocalStorageService(keyValuePairs[i].key, keyValuePairs[i].value);
 		}
 	});
-
 
 	// retrieve users
 	$http({
@@ -86,6 +57,22 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 		$rootScope.$broadcast('localStorageModule.notification.setMapUsers',{key: 'mapUsers', mapUsers: data.mapUsers});  
 
 	});
+	
+	// function to add metadata to local storage service
+	// written to ensure correct handling of asynchronous responses
+	function addMetadataToLocalStorageService(terminology, version) {
+		$http({
+			url: root_metadata + "all/" + terminology + "/" + version,
+			dataType: "json",
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(response) {
+			console.debug("Adding metadata for " + terminology);
+			localStorageService.add('metadata_' + terminology, response.keyValuePairList);
+		});
+	}
 
 });
 
@@ -94,24 +81,8 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 //Navigation
 mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService', '$rootScope', '$location', '$http',
                                                   function ($scope, localStorageService, $rootScope, $location, $http) {
-
-	// if app has already been loaded, simply retrieve state variables from local storage service
-	$scope.mapUsers 	= localStorageService.get('mapUsers');
-	$scope.mapProjects 	= localStorageService.get('mapProjects');
-	$scope.metadata 	= localStorageService.get('metadata');
+		
 	
-	// to ensure that variables are set correctly on first load, watch for notifications
-	$scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) { 	
-		console.debug("LoginCtrl: initialization complete for MapProjects"); 
-		$scope.mapProjects = parameters.mapProjects;
-	});
-		
-	// to ensure that variables are set correctly on first load, watch for notifications
-	$scope.$on('localStorageModule.notification.setMapUsers', function(event, parameters) { 	
-		console.debug("LoginCtrl: initialization complete for MapUsers");    
-		$scope.mapUsers = parameters.mapUsers;
-	});
-		
 	// set the user, role, focus project, and preferences to null (i.e. clear) by broadcasting to rest of app
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: null});  
@@ -121,12 +92,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	// broadcast page to help mechanism
 	$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
 
-	// set all local variables to null
-	$scope.mapUser = [];
-	$scope.error = [];
-	$scope.preferences = [];
-
-	// retrieve projects for focus controls
+	// explicitly retrieve the available users and projects to guarantee availability on first visit
 	$http({
 		url: root_mapping + "project/projects",
 		dataType: "json",
@@ -134,47 +100,9 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		headers: {
 			"Content-Type": "application/json"
 		}	
-	}).success(function(data) {
-		$scope.projects = data.mapProject;
-		localStorageService.add('mapProjects', data.mapProject);
-
-	}).error(function(error) {
-		$scope.error = $scope.error + "Could not retrieve map projects. "; 
-
-	}).then(function(data) {
-		console.debug("broadcasting projects");
-		console.debug($scope.projects);
-		$rootScope.$broadcast('localStorageModule.notification.setMapProjects',{key: 'mapProjects', mapProjects: $scope.projects});  
-
-	});
-
-	// retrieve metadata
-	$http({
-		url: root_metadata + "terminologies/latest",
-		dataType: "json",
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json"
-		}
 	}).success(function(response) {
-		var keyValuePairs = response.keyValuePair;
-		for (var i = 0; i < keyValuePairs.length; i++) {
-			console.debug(keyValuePairs[i]);
-			$http({
-				url: root_metadata + "all/" + keyValuePairs[i].key + "/" + keyValuePairs[i].value,
-				dataType: "json",
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json"
-				}
-			}).success(function(metadata) {
-			});
-
-		}
-	}).error(function() {
-		console.debug("error loading response terminology info");
+		$scope.mapProjects = response.mapProject;
 	});
-
 
 	// retrieve users
 	$http({
@@ -184,20 +112,16 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		headers: {
 			"Content-Type": "application/json"
 		}	
-	}).success(function(data) {
-		$scope.mapUsers = data.mapUser;
-		localStorageService.add('mapUsers', data.mapUser);
-	}).error(function(error) {
-		$scope.error = $scope.error + "Could not retrieve map users. "; 
-
+	}).success(function(response) {
+		$scope.mapUsers = response.mapUser;
 	});
-
+	
 	// initial values for pick-list
 	$scope.roles = [
-	                {name:'Viewer', value:1},
-	                {name:'Specialist', value:2},
-	                {name:'Lead', value:3},
-	                {name:'Administrator', value:4}];
+	                'Viewer',
+	                'Specialist',
+	                'Lead',
+	                'Administrator'];
 	$scope.role = $scope.roles[0];  
 
 	// login button directs to next page based on role selected
@@ -207,19 +131,21 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 
 		var path = "";
 
-		if ($scope.role.name == "Specialist") {
+		if ($scope.role == "Specialist") {
 			path = "/specialist/dash";
-		} else if ($scope.role.name == "Lead") {
+		} else if ($scope.role == "Lead") {
 			path = "/lead/dash";
-		} else if ($scope.role.name == "Administrator") {
+		} else if ($scope.role == "Administrator") {
 			path = "/admin/dash";
-		} else if ($scope.role.name == "Viewer") {
+		} else if ($scope.role == "Viewer") {
 			path = "/viewer/dash";
 		}
 
 		// check that user has been selected
 		if ($scope.mapUser == null) {
 			alert("You must specify a user");
+		} else if ($scope.role == null) {
+			alert("You must specify a role");
 		} else {
 
 			// retrieve the user preferences
@@ -250,11 +176,11 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 
 			// add the user information to local storage
 			localStorageService.add('currentUser', $scope.mapUser);
-			localStorageService.add('currentRole', $scope.role.name);
+			localStorageService.add('currentRole', $scope.role);
 
 			// broadcast the user information to rest of app
 			$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
-			$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role.name});
+			$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role});
 
 			// redirect page
 			$location.path(path);
