@@ -410,52 +410,6 @@ public class MappingServiceRest {
 	}
 
 	/**
-	 * Returns the count of records associated with a map project given filters
-	 * query, ignoring paging and sorting information
-	 * 
-	 * @param mapProjectId
-	 *            the map project id
-	 * @param pfsParameter
-	 *            the paging/filtering/sorting parameters object
-	 * @return the number of records as a String object
-	 */
-	@POST
-	@Path("/record/projectId/{id:[0-9][0-9]*}/nRecords")
-	@ApiOperation(value = "Get number of records", notes = "Returns count of MapRecords in database for a given filter", response = MapRecordListJpa.class)
-	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Produces(MediaType.TEXT_PLAIN)
-	public String getMapRecordCountForMapProjectId(
-			@ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /record/projectId/"
-						+ mapProjectId.toString() + " with PfsParameter: "
-						+ "\n" + "     Index/Results = "
-						+ Integer.toString(pfsParameter.getStartIndex()) + "/"
-						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
-						+ "     Sort field    = " + pfsParameter.getSortField()
-						+ "     Filter String = "
-						+ pfsParameter.getFilterString());
-
-		try {
-
-			MappingService mappingService = new MappingServiceJpa();
-			pfsParameter.setStartIndex(1);
-			pfsParameter.setMaxResults(1);
-			int nRecords = mappingService.getMapRecordsForMapProject(
-					mapProjectId, pfsParameter).getTotalCount();
-			mappingService.close();
-
-			// Jersey can't handle Long as return type, convert to string
-			return String.valueOf(nRecords);
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
-	/**
 	 * Returns delimited page of Published or Ready For Publication MapRecords
 	 * given a paging/filtering/sorting parameters object
 	 * 
@@ -492,7 +446,7 @@ public class MappingServiceRest {
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
-					.getMapRecordsForMapProject(mapProjectId, pfsParameter);
+					.getPublishedAndReadyForPublicationMapRecordsForMapProject(mapProjectId, pfsParameter);
 			mappingService.close();
 			return mapRecordList;
 		} catch (Exception e) {

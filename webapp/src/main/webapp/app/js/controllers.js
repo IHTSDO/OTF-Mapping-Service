@@ -13,24 +13,6 @@ var root_workflow = root_url + "workflow/";
 mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 	$rootScope.glassPane = 0;
 	
-	/*// retrieve state variables
-	utilityService.getStateVariables().then(function (stateVariables) {
-		
-		// on promise return, set variables
-		$scope.focusProject 	= stateVariables.focusProject;
-		$scope.currentUser 		= stateVariables.currentUser;
-		$scope.currentRole 		= stateVariables.currentRole;
-		$scope.metadata 		= stateVariables.metadata;
-		$scope.mapProjects 		= stateVariables.mapProjects;
-		$scope.mapUsers 		= stateVariables.mapUsers;
-		
-		// call dependent functions
-		// e.g. retrieveRecords(), getProjectDetails(), what have you
-	});*/
-
-	
-	
-	
 	// retrieve projects
 	$http({
 		url: root_mapping + "project/projects",
@@ -62,21 +44,10 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 	}).success(function(response) {
 		var keyValuePairs = response.keyValuePair;
 		for (var i = 0; i < keyValuePairs.length; i++) {
-			console.debug(keyValuePairs[i]);
-			$http({
-				url: root_metadata + "all/" + keyValuePairs[i].key + "/" + keyValuePairs[i].value,
-				dataType: "json",
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json"
+			console.debug("Retrieving metadata for " + keyValuePairs[i].key + ", " + keyValuePairs[i].value);		
+			addMetadataToLocalStorageService(keyValuePairs[i].key, keyValuePairs[i].value);
 				}
-			}).success(function(metadata) {
-				localStorageService.add('metadata', metadata);
 			});
-
-		}
-	});
-
 
 	// retrieve users
 	$http({
@@ -92,6 +63,22 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 
 	});
 
+	// function to add metadata to local storage service
+	// written to ensure correct handling of asynchronous responses
+	function addMetadataToLocalStorageService(terminology, version) {
+		$http({
+			url: root_metadata + "all/" + terminology + "/" + version,
+			dataType: "json",
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(response) {
+			console.debug("Adding metadata for " + terminology);
+			localStorageService.add('metadata_' + terminology, response.keyValuePairList);
+});
+	}
+
 });
 
 
@@ -100,24 +87,8 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService', '$rootScope', '$location', '$http',
                                                   function ($scope, localStorageService, $rootScope, $location, $http) {
     $scope.page =  'login';
-	
-	// if app has already been loaded, simply retrieve state variables from local storage service
-	$scope.mapUsers 	= localStorageService.get('mapUsers');
-	$scope.mapProjects 	= localStorageService.get('mapProjects');
-	$scope.metadata 	= localStorageService.get('metadata');
-	
-	// to ensure that variables are set correctly on first load, watch for notifications
-	$scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) { 	
-		console.debug("LoginCtrl: initialization complete for MapProjects"); 
-		$scope.mapProjects = parameters.mapProjects;
-	});
 		
-	// to ensure that variables are set correctly on first load, watch for notifications
-	$scope.$on('localStorageModule.notification.setMapUsers', function(event, parameters) { 	
-		console.debug("LoginCtrl: initialization complete for MapUsers");    
-		$scope.mapUsers = parameters.mapUsers;
-	});
-		
+	
 	// set the user, role, focus project, and preferences to null (i.e. clear) by broadcasting to rest of app
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: null});  
@@ -127,12 +98,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	// broadcast page to help mechanism
 	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
 
-	// set all local variables to null
-	$scope.mapUser = [];
-	$scope.error = [];
-	$scope.preferences = [];
-
-	// retrieve projects for focus controls
+	// explicitly retrieve the available users and projects to guarantee availability on first visit
 	$http({
 		url: root_mapping + "project/projects",
 		dataType: "json",
@@ -140,47 +106,9 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		headers: {
 			"Content-Type": "application/json"
 		}	
-	}).success(function(data) {
-		$scope.projects = data.mapProject;
-		localStorageService.add('mapProjects', data.mapProject);
-
-	}).error(function(error) {
-		$scope.error = $scope.error + "Could not retrieve map projects. "; 
-
-	}).then(function(data) {
-		console.debug("broadcasting projects");
-		console.debug($scope.projects);
-		$rootScope.$broadcast('localStorageModule.notification.setMapProjects',{key: 'mapProjects', mapProjects: $scope.projects});  
-
-	});
-
-	// retrieve metadata
-	$http({
-		url: root_metadata + "terminologies/latest",
-		dataType: "json",
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json"
-		}
 	}).success(function(response) {
-		var keyValuePairs = response.keyValuePair;
-		for (var i = 0; i < keyValuePairs.length; i++) {
-			console.debug(keyValuePairs[i]);
-			$http({
-				url: root_metadata + "all/" + keyValuePairs[i].key + "/" + keyValuePairs[i].value,
-				dataType: "json",
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json"
-				}
-			}).success(function(metadata) {
+		$scope.mapProjects = response.mapProject;
 			});
-
-		}
-	}).error(function() {
-		console.debug("error loading response terminology info");
-	});
-
 
 	// retrieve users
 	$http({
@@ -190,20 +118,16 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		headers: {
 			"Content-Type": "application/json"
 		}	
-	}).success(function(data) {
-		$scope.mapUsers = data.mapUser;
-		localStorageService.add('mapUsers', data.mapUser);
-	}).error(function(error) {
-		$scope.error = $scope.error + "Could not retrieve map users. "; 
-
+	}).success(function(response) {
+		$scope.mapUsers = response.mapUser;
 	});
 
 	// initial values for pick-list
 	$scope.roles = [
-	                {name:'Viewer', value:1},
-	                {name:'Specialist', value:2},
-	                {name:'Lead', value:3},
-	                {name:'Administrator', value:4}];
+	                'Viewer',
+	                'Specialist',
+	                'Lead',
+	                'Administrator'];
 	$scope.role = $scope.roles[0];  
 	
 	// login button directs to next page based on role selected
@@ -213,19 +137,21 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 
 		var path = "";
 
-		if ($scope.role.name == "Specialist") {
+		if ($scope.role == "Specialist") {
 			path = "/specialist/dash";
-		} else if ($scope.role.name == "Lead") {
+		} else if ($scope.role == "Lead") {
 			path = "/lead/dash";
-		} else if ($scope.role.name == "Administrator") {
+		} else if ($scope.role == "Administrator") {
 			path = "/admin/dash";
-		} else if ($scope.role.name == "Viewer") {
+		} else if ($scope.role == "Viewer") {
 			path = "/viewer/dash";
 		}
 
 		// check that user has been selected
 		if ($scope.mapUser == null) {
 			alert("You must specify a user");
+		} else if ($scope.role == null) {
+			alert("You must specify a role");
 		} else {
 
 			// retrieve the user preferences
@@ -256,11 +182,11 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 
 			// add the user information to local storage
 			localStorageService.add('currentUser', $scope.mapUser);
-			localStorageService.add('currentRole', $scope.role.name);
+			localStorageService.add('currentRole', $scope.role);
 
 			// broadcast the user information to rest of app
 			$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
-			$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role.name});
+			$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role});
 
 			// redirect page
 			$location.path(path);
@@ -761,9 +687,6 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 
 		console.debug('Retrieving records');
 		
-		// retrieve pagination information for the upcoming query
-		setPagination($scope.recordsPerPage);
-
 		// construct html parameters parameter
 		var pfsParameterObj = constructPfsParameterObj(page);
 		var query_url = root_mapping + "record/projectId/" + $scope.project.objectId;
@@ -780,7 +703,10 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		}).success(function(data) {
 			$scope.records = data.mapRecord;
 			$scope.statusRecordLoad = "";
-			$scope.recordPage = page;
+
+			// set pagination variables
+			$scope.nRecords = data.totalCount;
+			$scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
 
 		}).error(function(error) {
 			$scope.errorRecord = "Error retrieving map records";
@@ -833,41 +759,6 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 			"filterString": $scope.query == null ? null : $scope.query};  // assigning simply to $scope.query when null produces undefined
 
 	}
-
-	// function to set the relevant pagination fields
-	function setPagination(recordsPerPage) {
-
-		// set scope variable for total records
-		getNRecords();
-
-		// set pagination variables
-		$scope.recordsPerPage = recordsPerPage;
-		$scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
-	};
-
-	// function query for the number of records associated with full set or query
-	function getNRecords() {
-
-		var query_url = root_mapping + "record/projectId/" + $scope.project.objectId + "/nRecords";
-		var pfsParameterObj = constructPfsParameterObj(1);
-
-		// retrieve the total number of records associated with this map project
-		$http({
-			url: query_url,
-			dataType: "json",
-			data: pfsParameterObj,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			}
-		}).success(function(data) {
-			$scope.nRecords = data;
-
-		}).error(function(error) {
-			$scope.nRecords = 0;
-			console.debug("getNRecords error");
-		});
-	};
 
 	function getUnmappedDescendants(index) {
 

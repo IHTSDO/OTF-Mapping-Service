@@ -118,4 +118,5 @@ public class MapRecordListJpa extends AbstractResultList<MapRecord> implements
     return mapRecords;
   }
 
+
 }

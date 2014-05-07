@@ -47,7 +47,7 @@ angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
 		}
 	};
 })
-.controller('metadataCtrl', function($scope, $http, metadataService, data) {
+.controller('metadataCtrl', function($scope, $http, localStorageService, data) {
 
 	// display data
 	$scope.keyValuePairLists = null;
@@ -72,9 +72,10 @@ angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
 	// watch for change to terminology
 	$scope.$watch('terminology', function() {
 		if ($scope.terminology != null && $scope.terminology != undefined) {
-			metadataService.get($scope.terminology).then(function(response) {
-				$scope.keyValuePairLists = response.keyValuePairList;
-			});
+			//metadataService.get($scope.terminology).then(function(response) {
+				$scope.keyValuePairLists = localStorageService.get('metadata_' + $scope.terminology);
+						//response.keyValuePairList;
+			//});
 		}
 	});
 

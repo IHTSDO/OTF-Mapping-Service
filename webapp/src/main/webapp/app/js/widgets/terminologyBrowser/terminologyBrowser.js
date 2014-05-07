@@ -25,39 +25,14 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	$scope.terminology = terminology.name;
 	$scope.terminologyVersion = terminology.version;
 	$scope.focusProject = localStorageService.get('focusProject');
+	$scope.metadata = localStorageService.get('metadata_' + terminology.name);
+	
+	console.debug(localStorageService.get('metadata_' + terminology.name));
 	
 	// initialize currently displayed concept as empty object
 	$scope.currentConcept = {};
 	$scope.descTypes = {};
 	$scope.relTypes = {};
-	
-	// retrieve the metadata
-	metadataService.get(terminology.name).then(function(response) {
-		$scope.metadata = response.keyValuePairList;
-		
-		// find the description and relation type metadata and convert to normal JSON object structure
-		for (var i = 0; i < $scope.metadata.length; i++) {
-			if ($scope.metadata[i].name === 'Description Types') {
-				
-				for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
-					$scope.descTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
-				}
-				
-			}
-			else if ($scope.metadata[i].name === 'Relationship Types') {
-				for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
-					$scope.relTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
-				}
-			}
-		}
-		
-		console.debug("Desc types:");
-		console.debug($scope.descTypes);
-		
-		console.debug("Rel types:");
-		console.debug($scope.relTypes);
-		
-	});
 	
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
@@ -67,9 +42,38 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	});
 	
 	// on any change of focusProject, retrieve new available work
-	$scope.$watch('focusProject', function() {
+	$scope.$watch(['focusProject', 'metadata'], function() {
 
-		if ($scope.focusProject != null) {
+		// once needed state variables are loaded, initialize and make first call
+		if ($scope.focusProject != null && $scope.metadata != null) {
+			
+			console.debug("STATE VARIABLES");
+			console.debug($scope.focusProject);
+			console.debug($scope.metadata);
+			
+			// find the description and relation type metadata and convert to normal JSON object structure
+			for (var i = 0; i < $scope.metadata.length; i++) {
+				if ($scope.metadata[i].name === 'Description Types') {
+					
+					for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
+						$scope.descTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
+					}
+					
+				}
+				else if ($scope.metadata[i].name === 'Relationship Types') {
+					for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
+						$scope.relTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
+					}
+				}
+			}
+			
+			console.debug("Desc types:");
+			console.debug($scope.descTypes);
+			
+			console.debug("Rel types:");
+			console.debug($scope.relTypes);
+			
+			// get the root trees
 			$scope.getRootTree();
 		}
 	});

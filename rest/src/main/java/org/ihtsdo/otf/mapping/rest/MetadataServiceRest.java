@@ -41,11 +41,11 @@ public class MetadataServiceRest {
    */
   @GET
   @Path("/all/{terminology}/{version}")
-  @ApiOperation(value = "Get all metadata", notes = "Returns all metadata in either JSON or XML format", response = KeyValuePairLists.class)
+  @ApiOperation(value = "Get metadata for terminology and version", notes = "Gets the key-value pairs representing metadata for a particular terminology and version", response = KeyValuePairLists.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public KeyValuePairLists getAllMetadata(
+  public KeyValuePairLists getMetadata(
     @ApiParam(value = "terminology string", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "terminology version string", required = true) @PathParam("version") String version) {
     
@@ -101,7 +101,7 @@ public class MetadataServiceRest {
       MetadataService metadataService = new MetadataServiceJpa();
       String version = metadataService.getLatestVersion(terminology);
       KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
-      keyValuePairLists = getAllMetadata(terminology, version);
+      keyValuePairLists = getMetadata(terminology, version);
 
       metadataService.close();
       return keyValuePairLists;

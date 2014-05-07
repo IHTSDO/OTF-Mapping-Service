@@ -1085,52 +1085,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return mapRecordList;
 	}
 
-	/**
-	 * Helper method to look up the count.
-	 * 
-	 * @param mapProjectId
-	 * @param pfsParameter
-	 * @return
-	 * @throws Exception
-	 */
-	private int getMapRecordCountForMapProject(Long mapProjectId,
-			PfsParameter pfsParameter) throws Exception {
-
-		// if no paging/filtering/sorting object, retrieve total number of
-		// records
-		if (pfsParameter == null
-				|| (pfsParameter.getFilterString() == null || pfsParameter
-						.getFilterString().equals(""))) {
-
-			javax.persistence.Query query = manager
-					.createQuery("select count(m) from MapRecordJpa m where mapProjectId = :mapProjectId");
-
-			query.setParameter("mapProjectId", mapProjectId);
-			return Integer.parseInt(query.getSingleResult().toString());
-
-			// otherwise require a lucene search based on filters
-		} else {
-			String full_query = constructMapRecordForMapProjectIdQuery(
-					mapProjectId, pfsParameter);
-			FullTextEntityManager fullTextEntityManager = Search
-					.getFullTextEntityManager(manager);
-
-			SearchFactory searchFactory = fullTextEntityManager
-					.getSearchFactory();
-			Query luceneQuery;
-
-			// construct luceneQuery based on URL format
-
-			QueryParser queryParser = new QueryParser(Version.LUCENE_36,
-					"summary", searchFactory.getAnalyzer(MapRecordJpa.class));
-			luceneQuery = queryParser.parse(full_query);
-
-			return fullTextEntityManager.createFullTextQuery(luceneQuery,
-					MapRecordJpa.class).getResultSize();
-
-		}
-
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -1162,22 +1116,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public MapRecordList getMapRecordsForMapProject(Long mapProjectId,
+	public MapRecordList getPublishedAndReadyForPublicationMapRecordsForMapProject(Long mapProjectId,
 			PfsParameter pfsParameter) throws Exception {
 
 		// construct basic query
 		String full_query = constructMapRecordForMapProjectIdQuery(
 				mapProjectId, pfsParameter == null ? new PfsParameterJpa()
 						: pfsParameter);
-
-		// add published / ready for publication check
-		// Need to make this trigger on pfsParameters? Remover doesn't work with
-		// this check in.
-		/*
-		 * full_query +=
-		 * " AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')"
-		 * ;
-		 */
+		
+		full_query +=
+		  " AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')";
+		 
 		Logger.getLogger(MappingServiceJpa.class).info(full_query);
 
 		FullTextEntityManager fullTextEntityManager = Search
@@ -1195,27 +1144,33 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, MapRecordJpa.class);
 
-		if (pfsParameter != null) {
-			if (pfsParameter.getStartIndex() != -1
-					&& pfsParameter.getMaxResults() != -1) {
-				ftquery.setFirstResult(pfsParameter.getStartIndex());
-				ftquery.setMaxResults(pfsParameter.getMaxResults());
-			}
-			if (pfsParameter.getSortField() != null) {
+		// if a sort field has been specified, add sort parameter
+		if (pfsParameter != null && pfsParameter.getSortField() != null) {
 				ftquery.setSort(new Sort(new SortField(pfsParameter
 						.getSortField(), SortField.STRING)));
-			}
 		}
-
+		
+		// get the results
 		List<MapRecord> m = ftquery.getResultList();
 
 		Logger.getLogger(this.getClass()).debug(
 				Integer.toString(m.size()) + " records retrieved");
-		MapRecordListJpa mapRecordList = new MapRecordListJpa();
-		mapRecordList.setMapRecords(m);
 
-		mapRecordList.setTotalCount(getMapRecordCountForMapProject(
-				mapProjectId, pfsParameter));
+		// set the total count
+		MapRecordListJpa mapRecordList = new MapRecordListJpa();
+		mapRecordList.setTotalCount(m.size());
+		
+		int fromIndex = 0;
+		int toIndex = m.size();
+		
+		if (pfsParameter != null) {
+			if (pfsParameter.getStartIndex() != -1) fromIndex = pfsParameter.getStartIndex();
+			if (pfsParameter.getMaxResults() != -1) toIndex = Math.min(m.size(), fromIndex + pfsParameter.getMaxResults());
+		}
+		
+		// extract the required sublist of map records
+		mapRecordList.setMapRecords(m.subList(fromIndex, toIndex));
+		
 		return mapRecordList;
 
 	}
