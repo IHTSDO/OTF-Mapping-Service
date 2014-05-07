@@ -7,6 +7,7 @@ import javax.persistence.Persistence;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.hibernate.CacheMode;
+import org.apache.lucene.util.Version;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
@@ -83,6 +84,8 @@ public class LuceneReindexMojo extends AbstractMojo {
       // full text entity manager
       FullTextEntityManager fullTextEntityManager =
           Search.getFullTextEntityManager(manager);
+          
+          fullTextEntityManager.setProperty("Version", Version.LUCENE_36);
 
       // Concepts
       getLog().info("  Creating indexes for ConceptJpa");
@@ -106,6 +109,7 @@ public class LuceneReindexMojo extends AbstractMojo {
       getLog().info("  Creating indexes for MapRecordJpa");
       fullTextEntityManager.purgeAll(MapRecordJpa.class);
       fullTextEntityManager.flushToIndexes();
+      fullTextEntityManager.setProperty(ROLE, ROLE);
       fullTextEntityManager.createIndexer(MapRecordJpa.class)
           .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
           .threadsToLoadObjects(4).threadsForSubsequentFetching(8)
