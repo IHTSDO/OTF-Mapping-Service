@@ -4,12 +4,22 @@ var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', []);
 
 mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, $rootScope, $location, localStorageService) {
 
-	setModel();
+	// On initialization, reset all values to null -- used to ensure watch functions work correctly
+	$scope.mapProjects 	= null;
+	$scope.currentUser 	= null;
+	$scope.currentRole 	= null;
+	$scope.preferences 	= null;
+	$scope.focusProject = null;
 
+	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
+	$scope.mapProjects  = localStorageService.get('mapProjects');
+	$scope.currentUser  = localStorageService.get('currentUser');
+	$scope.currentRole  = localStorageService.get('currentRole');
+	$scope.preferences  = localStorageService.get('preferences');
 	$scope.focusProject = localStorageService.get('focusProject');
-	$scope.mapProjects = localStorageService.get("mapProjects");
-	$scope.currentUser = localStorageService.get('currentUser');
-	$scope.currentRole = localStorageService.get('currentRole');
+	
+	setModel();
+	
     $scope.page = 'resolveConflictsDashboard';
 	
 	function setModel() {
@@ -120,10 +130,19 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 
 mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope, $http, $location, localStorageService) {
 
-	$scope.currentRole = localStorageService.get('currentRole');
-	$scope.currentUser = localStorageService.get('currentUser');
+	// On initialization, reset all values to null -- used to ensure watch functions work correctly
+	$scope.mapProjects 	= null;
+	$scope.currentUser 	= null;
+	$scope.currentRole 	= null;
+	$scope.preferences 	= null;
+	$scope.focusProject = null;
+	
+	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
+	$scope.mapProjects  = localStorageService.get('mapProjects');
+	$scope.currentUser  = localStorageService.get('currentUser');
+	$scope.currentRole  = localStorageService.get('currentRole');
+	$scope.preferences  = localStorageService.get('preferences');
 	$scope.focusProject = localStorageService.get('focusProject');
-	$scope.mapProjects = localStorageService.get("mapProjects");
 	
     $scope.page = 'mainDashboard';
 
@@ -363,10 +382,19 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 
 mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $rootScope, $routeParams, $location, localStorageService) {
 
-	$scope.currentRole = localStorageService.get('currentRole');
-	$scope.currentUser = localStorageService.get('currentUser');
+	// On initialization, reset all values to null -- used to ensure watch functions work correctly
+	$scope.mapProjects 	= null;
+	$scope.currentUser 	= null;
+	$scope.currentRole 	= null;
+	$scope.preferences 	= null;
+	$scope.focusProject = null;
+	
+	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
+	$scope.mapProjects  = localStorageService.get('mapProjects');
+	$scope.currentUser  = localStorageService.get('currentUser');
+	$scope.currentRole  = localStorageService.get('currentRole');
+	$scope.preferences  = localStorageService.get('preferences');
 	$scope.focusProject = localStorageService.get('focusProject');
-	$scope.mapProjects = localStorageService.get("mapProjects");
 
     $scope.page = 'editDashboard';
     

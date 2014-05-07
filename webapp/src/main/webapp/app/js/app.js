@@ -79,7 +79,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                               }]
                             });
 
-                        })
+                        });
                         
 
 mapProjectApp.config(['$routeProvider',

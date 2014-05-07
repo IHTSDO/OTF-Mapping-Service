@@ -39,12 +39,17 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 		headers: {
 			"Content-Type": "application/json"
 		}	
-	}).success(function(data) {
-		localStorageService.add('mapProjects', data.mapProject);
-		$rootScope.$broadcast('localStorageModule.notification.setMapProjects',{key: 'mapProjects', mapProjects: data.mapProject});  
 
+		}).success(
+			function(data) {
+				localStorageService.add('mapProjects', data.mapProject);
+				$rootScope.$broadcast(
+						'localStorageModule.notification.setMapProjects', {
+							key : 'mapProjects',
+							mapProjects : data.mapProject
+						});
 
-	});
+			});
 
 	// retrieve metadata
 	$http({
