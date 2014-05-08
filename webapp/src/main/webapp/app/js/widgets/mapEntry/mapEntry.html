@@ -97,7 +97,7 @@
           <hr>
         </div> <span style="color: red">{{errorAddAdvice}}</span>
         <form>
-          Add Advice: <select style="width: 60%;" sort-by="advice.name"
+          Add Advice: <select style="width: 60%;"
             ng-change="addEntryAdvice(entry, adviceInput)"
             ng-model="adviceInput"
             ng-options="advice as advice.detail for advice in allowableAdvices"></select>

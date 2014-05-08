@@ -23,6 +23,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 
 		// get the allowable advices
 		$scope.allowableAdvices = getAllowableElements(parameters.entry, parameters.project.mapAdvice);
+		sortByKey($scope.allowableAdvices, 'detail');
 		$scope.allowableMapRelations = getAllowableElements(parameters.entry, parameters.project.mapRelation);
 		});	
 
@@ -172,6 +173,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		
 		// get the allowable advices and relations
 		$scope.allowableAdvices = getAllowableElements(entry, $scope.project.mapAdvice);
+		sortByKey($scope.allowableAdvices, 'detail');
 		$scope.allowableMapRelations = getAllowableElements(entry, $scope.project.mapRelation);
 		
 	}
@@ -415,7 +417,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		
 		return allowableElements;
 	};
-
+	
 
 	// sort and return an array by string key
 	function sortByKey(array, key) {
