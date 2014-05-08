@@ -380,6 +380,18 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			return true;
 		} else return false;
 	};
+	
+	$scope.displayToViewer = function(record) {
+
+		console.debug('displayToViewer');
+		console.debug($scope.currentRole);
+		console.debug($scope.currentUser);
+		console.debug(record.owner);
+		if ($scope.currentRole === 'Viewer' &&
+				record.workflowStatus === 'READY_FOR_PUBLICATION') {
+			return false;
+		} else return true; 
+	};
 
 	$scope.filterRecords = function() {
 		$scope.recordsInProject = [];
