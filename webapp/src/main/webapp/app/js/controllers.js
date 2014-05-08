@@ -1137,7 +1137,7 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 
 				// otherwise check if upper-case principle filter matches upper-case element name or detail
 				if ( element.principleId.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
-				if ( element.detail.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
+				//if ( element.detail.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
 				if ( element.name.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
 				if ( element.sectionRef.toString().toUpperCase().indexOf( $scope.principleFilter.toString().toUpperCase()) != -1) return true;
 
@@ -1207,8 +1207,13 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				// redirect page
 				$location.path(path);
 			};
-			////////////////////////////////////////////////////////
-			// END PRINCIPLE/ADVICE SORTING/FILTERING FUNCTIONS
-			////////////////////////////////////////////////////////
+			
+			$scope.isEmailViewable = function(email) {
+				console.debug('isEmailViewable');
+				if (email.indexOf("ihtsdo.org") > -1) {
+					return true;
+				} else
+					return false;
+			};
 		}]);
 
