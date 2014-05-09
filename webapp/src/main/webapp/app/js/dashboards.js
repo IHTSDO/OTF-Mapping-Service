@@ -245,7 +245,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 			 * - WorkAvailable
 			 * - AssignedList
 			 * - EditedList
-			 * - MetadataList
 			 */
 		} else if ($scope.currentRole === 'Lead') {
 
@@ -287,17 +286,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 							widgets: [{
 								type: "editedList",
 								title: "Recently Edited"
-							}]
-						}]
-					}, {
-						columns: [{
-							class: 'col-md-12',
-							widgets: [{
-								type: "metadataList",
-								config: {
-									terminology: "SNOMEDCT"
-								},
-								title: "Metadata"
 							}]
 						}]
 					}]
