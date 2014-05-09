@@ -94,31 +94,6 @@
           </webResources>
         </configuration>
       </plugin>
-     <!--  <plugin>
-        <groupId>net.alchim31.maven</groupId>
-        <artifactId>yuicompressor-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compress</goal>
-            </goals>
-          </execution>
-        </executions> 
-        <configuration>
-          <sourceDirectory>src/main/webapp/app/js</sourceDirectory>
-          <excludes>
-            <exclude>**/components/angular/*js</exclude>
-            <exclude>**/components/angular-bootstrap/*js</exclude>
-            <exclude>**/components/angular-local-storage/*js</exclude>
-            <exclude>**/components/bootstrap/*js</exclude>
-            <exclude>**/components/es5-shim/*js</exclude>
-            <exclude>**/components/font-awesome/*js</exclude>
-            <exclude>**/components/jquery/*js</exclude>
-            <exclude>**/components/jquery-splitter/*js</exclude>
-            <exclude>**/components/jquery-ui/*js</exclude>
-          </excludes>
-        </configuration>       
-      </plugin> -->
     </plugins>
   </build>
 
