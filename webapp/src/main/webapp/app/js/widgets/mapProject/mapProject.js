@@ -24,10 +24,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
           
           console.debug($scope.project);
 	  });	
-  	  
-  	  // broadcast page to help mechanism
-  	  //$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'mainDashboard'});  
-  
+
   	  
 		$scope.goProjectDetails = function () {
 			console.debug($scope.role);

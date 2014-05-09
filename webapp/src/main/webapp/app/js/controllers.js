@@ -95,9 +95,6 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	$rootScope.$broadcast('localStorageModule.notification.setFocusProject', {key: 'focusProject', focusProject: null});
 	$rootScope.$broadcast('localStorageModule.notificatoin.setPreferences', {key: 'preferences', preferences: null});
 
-	// broadcast page to help mechanism
-	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'login'});
-
 	// explicitly retrieve the available users and projects to guarantee availability on first visit
 	$http({
 		url: root_mapping + "project/projects",
@@ -257,10 +254,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		$scope.focusProject = parameters.focusProject;
 		$scope.filterRecords();
 	});	
-
-
-	// broadcast page to help mechanism
-	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'concept'});
 
 	// once focus project retrieved, retrieve the concept and records
 	$scope.$watch('focusProject', function() {
@@ -659,9 +652,6 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		$scope.focusProject = parameters.focusProject;
 	});	
 
-	// broadcast page to help mechanism
-	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'records'});
-
 	// retrieve the current global variables
 	$scope.focusProject = localStorageService.get('focusProject');
 	$scope.mapProjects = localStorageService.get("mapProjects");
@@ -873,9 +863,6 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 		 function ($scope, $http, $sce, $rootScope, $location, localStorageService) {
 
 		    $scope.page =  'project';
-		    
-			// broadcast page to help mechanism
-			//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'project'});
 
 			$scope.currentRole = localStorageService.get('currentRole');
 			$scope.currentUser = localStorageService.get('currentUser');

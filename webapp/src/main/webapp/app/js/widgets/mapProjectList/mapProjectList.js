@@ -27,7 +27,4 @@ angular.module('mapProjectApp.widgets.mapProjectList', ['adf.provider'])
     	  $scope.error = "Error";
       });
 
-      // broadcast page to help mechanism
-  	  //$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'mainDashboard'});  
-  
   });

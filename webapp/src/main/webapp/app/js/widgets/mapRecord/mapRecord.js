@@ -53,9 +53,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		$scope.isFlagsOpen = false;
 	};
 
-	// broadcast page to help mechanism  
-	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'}); 
-
 	// Watcher for Conflict Resolution Select Record Event
 	$rootScope.$on('compareRecordsWidget.notification.selectRecord', function(event, parameters) {    
         console.debug("received new record");
