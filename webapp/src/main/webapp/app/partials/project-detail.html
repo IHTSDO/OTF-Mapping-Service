@@ -92,7 +92,8 @@
           <tr>
             <td>{{lead.name}}</td>
             <td>{{lead.userName}}</td>
-            <td>{{lead.email}}</td>
+            <td ng-show="isEmailViewable(lead.email)">{{lead.email}}</td>
+            <td ng-show="isEmailViewable(lead.email) == false">Private email</td>
           </tr>
         </tbody>
       </table></td>
@@ -115,7 +116,8 @@
           <tr>
             <td>{{specialist.name}}</td>
             <td>{{specialist.userName}}</td>
-            <td>{{specialist.email}}</td>
+            <td ng-show="isEmailViewable(specialist.email)">{{specialist.email}}</td>
+            <td ng-show="isEmailViewable(specialist.email) == false">Private email</td>
           </tr>
         </tbody>
       </table></td>

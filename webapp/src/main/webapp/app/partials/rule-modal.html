@@ -5,8 +5,7 @@
 <div class="modal-body">
 
   <h4>Select Rule Category</h4>
-
-  <select ng-model="ruleCategory"
+  <select ng-model="ruleCategory" ng-selected="ruleCategory"
     ng-change="ageRange = null; changeRuleCategory(ruleCategory)"
     ng-options="category as category for category in ruleCategories"></select>
 

@@ -2882,9 +2882,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			IllegalAccessException, ClassNotFoundException {
 
 		ProjectSpecificAlgorithmHandler algorithmHandler = (ProjectSpecificAlgorithmHandler) Class
-				.forName(
-						"org.ihtsdo.otf.mapping.jpa.handlers."
-								+ mapProject
+				.forName(mapProject
 										.getProjectSpecificAlgorithmHandlerClass())
 				.newInstance();
 
@@ -2997,9 +2995,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				.entrySet()) {
 			// instantiate the algorithm handler for this project
 			ProjectSpecificAlgorithmHandler handler = (ProjectSpecificAlgorithmHandler) Class
-					.forName(
-							"org.ihtsdo.otf.mapping.jpa.handlers."
-									+ mapProject
+					.forName(mapProject
 											.getProjectSpecificAlgorithmHandlerClass())
 					.newInstance();
 			handler.setMapProject(mapProject);

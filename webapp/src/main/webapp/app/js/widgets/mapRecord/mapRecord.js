@@ -15,7 +15,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	});
 })
 
-.controller('mapRecordWidgetCtrl', function($scope, $rootScope, $http, $routeParams, localStorageService){
+.controller('mapRecordWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $location, localStorageService){
 
 	/////////////////////////////////////
 	// Map Record Controller Functions //
@@ -52,9 +52,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		$scope.isNotesOpen = false;
 		$scope.isFlagsOpen = false;
 	};
-
-	// broadcast page to help mechanism  
-	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'}); 
 
 	// Watcher for Conflict Resolution Select Record Event
 	$rootScope.$on('compareRecordsWidget.notification.selectRecord', function(event, parameters) {    
@@ -122,7 +119,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 
 
-
 	///////////////////////////////
 	// Initialization Functions ///
 	///////////////////////////////
@@ -185,6 +181,48 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	/**
 	 * MAP RECORD FUNCTIONS
 	 */
+	$scope.finishAndNextMapRecord = function($location) {
+		$scope.finishMapRecord();
+		console.debug($scope.validationResult);
+		
+
+		console.debug('Retrieving Assigned Work');
+
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": 0,
+			 	 	 "maxResults": 1, 
+			 	 	 "sortField": 'sortKey',
+			 	 	 "filterString": null};  
+
+	  	$rootScope.glassPane++;
+
+		$http({
+			url: root_workflow + "assignedWork/projectId/" + $scope.project.id + "/user/" + $scope.user.userName,
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
+			$scope.assignedRecords = data.searchResult;
+			console.debug('in success' + $scope.assignedRecords[0].id);
+			
+			var path = "record/recordId/" + $scope.assignedRecords[0].id;
+			
+			console.debug("go to " + path);
+			// redirect page
+			$location.path(path);
+
+		}).error(function(error) {
+		  	$rootScope.glassPane--;
+			$scope.error = "Error";
+		});
+	};
+	
 	$scope.finishMapRecord = function() {
 
 		///////////////////////////
@@ -339,7 +377,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.record = data;
 			$scope.recordSuccess = "Record saved.";
 			$scope.recordError = "";
-			window.history.back();
+			//window.history.back(); 
 		}).error(function(data) {
 			$scope.recordSuccess = "";
 			$scope.recordError = "Error saving record.";

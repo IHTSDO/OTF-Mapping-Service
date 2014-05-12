@@ -76,9 +76,6 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 	console.debug("CONTROLLER MODEL");
 	console.debug($scope.model);
 
-	// broadcast page to help mechanism  
-	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'resolveConflictsDashboard'});  
-
 	$scope.$on('adfDashboardChanged', function (event, name, model) {
 		console.debug("Dashboard change detected by ResolveConflictsDashboard");
 		localStorageService.set(name, model);
@@ -259,7 +256,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 			 * - WorkAvailable
 			 * - AssignedList
 			 * - EditedList
-			 * - MetadataList
 			 */
 		} else if ($scope.currentRole === 'Lead') {
 
@@ -303,18 +299,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 								title: "Recently Edited"
 							}]
 						}]
-					}, {
-						columns: [{
-							class: 'col-md-12',
-							widgets: [{
-								type: "metadataList",
-								config: {
-									terminology: "SNOMEDCT"
-								},
-								title: "Metadata"
 							}]
-						}]
-					}]
 			};
 
 			console.debug($scope.model);
@@ -453,9 +438,6 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 		};
 
 	};
-
-	// broadcast page to help mechanism  
-	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
 
 	$scope.$on('adfDashboardChanged', function (event, name, model) {
 		console.debug("Dashboard change detected by MapRecordDashboard");

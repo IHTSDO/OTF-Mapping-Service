@@ -23,6 +23,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 
 		// get the allowable advices
 		$scope.allowableAdvices = getAllowableElements(parameters.entry, parameters.project.mapAdvice);
+		sortByKey($scope.allowableAdvices, 'detail');
 		$scope.allowableMapRelations = getAllowableElements(parameters.entry, parameters.project.mapRelation);
 		});	
 
@@ -172,6 +173,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		
 		// get the allowable advices and relations
 		$scope.allowableAdvices = getAllowableElements(entry, $scope.project.mapAdvice);
+		sortByKey($scope.allowableAdvices, 'detail');
 		$scope.allowableMapRelations = getAllowableElements(entry, $scope.project.mapRelation);
 		
 	}
@@ -189,6 +191,9 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			resolve: {
 				presetAgeRanges: function() {
 					return angular.copy($scope.project.mapAgeRange);
+				},
+				entry: function() {
+					return angular.copy($scope.entry);
 				}
 			}
 		});
@@ -216,18 +221,34 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	};
 
 	// controller for the modal
-	var RuleConstructorModalCtrl = function($scope, $http, $modalInstance, presetAgeRanges) {
+	var RuleConstructorModalCtrl = function($scope, $http, $modalInstance, presetAgeRanges, entry) {
 
 		$scope.ageRange={"name":"" , "lowerValue":"", "lowerInclusive":"", "lowerUnits":"", 
 				"upperValue":"", "upperInclusive":"", "upperUnits":""},
 
-				$scope.presetAgeRanges = presetAgeRanges;
+		$scope.presetAgeRanges = presetAgeRanges;
 
 		initializePresetAgeRanges();
 
 		console.debug($scope.presetAgeRanges);
+		console.debug(entry.rule);
+		
 		$scope.ruleCategories = ['TRUE', 'Gender - Male', 'Gender - Female', 'Age - Chronological', 'Age - At Onset'];
-
+		
+		
+		if (entry != null && entry.rule != null) {
+			if (entry.rule.indexOf('Male') > -1)
+			  $scope.ruleCategory = 'Gender - Male';
+			else if (entry.rule.indexOf('Female') > -1)
+			  $scope.ruleCategory = 'Gender - Female';
+			else if (entry.rule.indexOf('chronological') > -1)
+			  $scope.ruleCategory = 'Age - Chronological';
+			else if (entry.rule.indexOf('onset') > -1)
+			  $scope.ruleCategory = 'Age - At Onset';
+			else
+			  $scope.ruleCategory = 'TRUE';
+		} else 
+		    $scope.ruleCategory = 'TRUE'; 
 
 		$scope.saveRule = function() {
 			$modalInstance.close($scope.rule);
@@ -415,7 +436,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		
 		return allowableElements;
 	};
-
+	
 
 	// sort and return an array by string key
 	function sortByKey(array, key) {

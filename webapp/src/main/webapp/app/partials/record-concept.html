@@ -61,7 +61,7 @@
         <td><span ng-show="getRuleBasedForRecord(record) == true">{{entry.rule}}</span></td>
         <td>{{entry.targetId}}</td>
         <td>{{entry.targetName}}</td>
-        <td>{{record.workflowStatus}}</td>
+        <td ng-show="displayToViewer(record)">{{record.workflowStatus}}</td>
         <td><a ng-show="isEditable(record)" ng-click="editRecord(record)">Edit</a></td>
 
       </tr>
@@ -105,7 +105,7 @@
         <td colspan=2>Empty record, owned by {{record.owner.name}}</td>
         <td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
       </tr>
-      <tr
+      <tr ng-if="displayToViewer(record)"
         ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
         <td><span ng-show="entry.mapAdvice.length > 0">
             <div class="dropdown">

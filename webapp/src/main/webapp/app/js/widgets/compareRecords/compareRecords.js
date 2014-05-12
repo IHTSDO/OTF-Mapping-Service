@@ -43,10 +43,6 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.isNotesOpen = true;
 	$scope.isReportOpen = true;
 	
-
-	// broadcast page to help mechanism  
-	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'resolveConflictsDashboard'});  
-
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	

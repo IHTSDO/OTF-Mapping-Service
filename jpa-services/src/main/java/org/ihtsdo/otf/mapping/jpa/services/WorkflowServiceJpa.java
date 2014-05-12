@@ -562,9 +562,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		// instantiate the algorithm handler for this project\
 		ProjectSpecificAlgorithmHandler algorithmHandler = (ProjectSpecificAlgorithmHandler) Class
-				.forName(
-						"org.ihtsdo.otf.mapping.jpa.handlers."
-								+ mapProject
+				.forName(mapProject
 										.getProjectSpecificAlgorithmHandlerClass())
 				.newInstance();
 		algorithmHandler.setMapProject(mapProject);

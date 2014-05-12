@@ -6,7 +6,7 @@
 
 
   <accordion> <accordion-group is-open="isTargetOpen">
-  <accordion-heading> Target Concept <i
+  <accordion-heading> Target Code <i
     class="pull-right glyphicon"
     ng-class="{'glyphicon-chevron-down': isTargetOpen, 'glyphicon-chevron-right': !isTargetOpen}"></i>
   </accordion-heading>
@@ -24,7 +24,7 @@
           Target Code Selected</span></td>
     </tr>
     <tr>
-      <td style="vertical-align: top; padding: 5px;"><strong>Name</strong></td>
+      <td style="vertical-align: top; padding: 5px;"><strong>Preferred Term</strong></td>
       <td style="vertical-align: top; padding: 5px;">{{entry.targetName}}</td>
     </tr>
   </table>
@@ -97,7 +97,7 @@
           <hr>
         </div> <span style="color: red">{{errorAddAdvice}}</span>
         <form>
-          Add Advice: <select style="width: 60%;" sort-by="advice.name"
+          Add Advice: <select style="width: 60%;"
             ng-change="addEntryAdvice(entry, adviceInput)"
             ng-model="adviceInput"
             ng-options="advice as advice.detail for advice in allowableAdvices"></select>

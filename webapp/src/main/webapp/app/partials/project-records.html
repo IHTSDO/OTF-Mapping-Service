@@ -1,4 +1,4 @@
-<!--  partial for displaying records -->
+<!--  partial for displaying list of records -->
 <div ng-include src="'./partials/header.html'"></div>
 
 <p></p>
@@ -37,7 +37,7 @@
 
     <tr ng-repeat="entry in record.mapEntry" style="">
 
-      <td><span ng-show="record.mapNote.length > 0"> <span
+      <td><span ng-show="record.mapNote.length > 0 && currentRole != 'Viewer'"> <span
           class="dropdown"> <a class="dropdown-toggle"> <img
               src="img/notepad.png" alt="notepad icon">
           </a> <span class="dropdown-menu"> <strong>Notes</strong>
@@ -94,7 +94,7 @@
   <img src="img/warning.png" alt="Unmapped Descendant Warning"> = This
   concept has unmapped descendants.
 </p>
-<p ng-show="mapNotesPresent">
+<p ng-show="mapNotesPresent && currentRole != 'Viewer'">
   <img src="img/notepad.png" alt="Note(s) Present"> = This entry has
   notes.
 </p>
