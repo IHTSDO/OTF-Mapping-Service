@@ -3,7 +3,9 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
@@ -129,7 +131,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			tx.begin();
 			manager.merge(record);
 			tx.commit();
-			// manager.close();
 		} else {
 			manager.merge(record);
 		}
@@ -556,8 +557,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	public void processWorkflowAction(MapProject mapProject, Concept concept,
 			MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction)
 			throws Exception {
+		
+		setTransactionPerOperation(true);
 
-		// set the transaction per operation
+		// records in tracking record
+		System.out.println("Map record prior to workflow retrieval: " + mapRecord.toString());
 
 		// instantiate the algorithm handler for this project\
 		ProjectSpecificAlgorithmHandler algorithmHandler = (ProjectSpecificAlgorithmHandler) Class
@@ -575,12 +579,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// passing into project algorithm handler
 		// Rationale: the algorithm handler is not expected to perform any
 		// actions requiring services
-		Logger.getLogger(WorkflowServiceJpa.class).info("Detaching...");
 		for (MapUser mu : trackingRecord.getAssignedUsers())
 			mu.getEmail(); // force retrieval of users by requesting email
 		trackingRecord.getWorkflowStatus(); // force retrieval of records by
 											// calculating workflow status
-		manager.detach(trackingRecord);
+	
 
 		// switch on workflow action
 		switch (workflowAction) {
@@ -669,6 +672,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			if (!trackingRecord.getAssignedUsers().contains(mapUser))
 				throw new Exception(
 						"SAVE_FOR_LATER - User not assigned to record");
+			
+			// merge the passed in record into the persistence environment
+			manager.merge(mapRecord);
 
 			Logger.getLogger(WorkflowServiceJpa.class).info(
 					"Performing action...");
@@ -693,6 +699,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			if (!trackingRecord.getAssignedUsers().contains(mapUser))
 				throw new Exception(
 						"User not assigned to record for finishing request");
+			
+			// merge the passed in record into the persistence environment
+			manager.merge(mapRecord);
 
 			Logger.getLogger(WorkflowServiceJpa.class).info(
 					"Performing action...");
@@ -707,163 +716,105 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			throw new Exception("Unknown action requested.");
 		}
 		
+		
+		// records in tracking record
+		System.out.println("Map record after workflow retrieval: " + mapRecord.toString());
+		for (MapRecord mr : trackingRecord.getMapRecords()) System.out.println(mr.toString());
+		//manager.detach(trackingRecord);
+
+		
 		Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
-		synchronizeWorkflowTrackingRecord(trackingRecord,
-				getWorkflowTrackingRecord(mapProject, concept));
-
-	}
-
-	/**
-	 * Given a modified workflow tracking record and a as-in-database workflow
-	 * tracking record, merges any changes (add/update/delete records) from the
-	 * newer tracking record
-	 * 
-	 * This method created to ensure that all map record changes are complete
-	 * before workflow tracking record is modified.
-	 * 
-	 * @param newTrackingRecord
-	 *            the new tracking record (MUST be detached)
-	 * @param oldTrackingRecord
-	 *            the old tracking record
-	 * @throws Exception
-	 *             the exception
-	 */
-	@Override
-	public void synchronizeWorkflowTrackingRecord(
-			WorkflowTrackingRecord newTrackingRecord,
-			WorkflowTrackingRecord oldTrackingRecord) throws Exception {
-
-		MappingService mappingService = new MappingServiceJpa();
-
-		// force lazy collection instantiation of map records, then detach/evict
-		// tracking record and all its map records
-		oldTrackingRecord.getWorkflowStatus(); // force lazy collection
-		manager.detach(oldTrackingRecord);
-
-		// detach/evict tracking record and all its map records
-		newTrackingRecord.getWorkflowStatus(); // force lazy collection
-		manager.detach(newTrackingRecord);
-
-		Logger.getLogger(WorkflowServiceJpa.class).info(
-				newTrackingRecord.getMapRecords().size()
-						+ " records in tracking record");
-
-		manager.close();
-
-		Logger.getLogger(WorkflowServiceJpa.class).info(
-				"SYNC: checking for changes to workflow tracking record "
-						+ newTrackingRecord.getId().toString() + "...");
-
-		// check for record deletions
-		List<MapRecord> oldRecords = new ArrayList<>(
-				oldTrackingRecord.getMapRecords());
-		for (int i = 0; i < oldRecords.size(); i++) {
-
-			MapRecord mapRecord = oldRecords.get(i);
-
-			// if this map record is not in the new tracking record, it should
-			// be deleted
-			if (getMapRecordInWorkflowTrackingRecord(newTrackingRecord,
-					mapRecord.getId()) == null) {
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						"       Deleting record " + mapRecord.getId());
-
-				// remove from the as-in-database record
-				oldTrackingRecord.removeMapRecord(mapRecord);
-
-				// update in database to allow removal of map record (child
-				// field)
-				manager = factory.createEntityManager();
-				updateWorkflowTrackingRecord(oldTrackingRecord);
-				manager.close();
-
-				// remove the map record
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						"       Updated tracking record successfully");
-				mappingService.removeMapRecord(mapRecord.getId());
-			}
-		}
-
-		// update and/or add the new records
-		List<MapRecord> newRecords = new ArrayList<>(
-				newTrackingRecord.getMapRecords());
-		for (int i = 0; i < newRecords.size(); i++) {
-
-			MapRecord mapRecord = newRecords.get(i);
-
-			// if record is not present on tracking record, add it via mapping
-			// service
-			if (getMapRecordInWorkflowTrackingRecord(oldTrackingRecord,
-					mapRecord.getId()) == null) {
-
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						"       Found record to add");
-
-				mappingService.addMapRecord(mapRecord);
-
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						"       --> Added record "
-								+ mapRecord.getId().toString());
-
-				// otherwise, if map record has changed, update it
-			} else if (getMapRecordInWorkflowTrackingRecord(oldTrackingRecord,
-					mapRecord.getId()).equals(mapRecord)) {
-
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						mapRecord.toString());
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						mapRecord.getMapEntries().size());
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						getMapRecordInWorkflowTrackingRecord(oldTrackingRecord,
-								mapRecord.getId()).toString());
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						getMapRecordInWorkflowTrackingRecord(oldTrackingRecord,
-								mapRecord.getId()).getMapEntries().size());
-
-				// if
-				// (!mapRecord.equals(getMapRecordInWorkflowTrackingRecord(oldTrackingRecord,
-				// mapRecord.getId()))) {
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						"       Updating record " + mapRecord.getId());
-				mappingService.updateMapRecord(mapRecord);
-				// }
-			}
-		}
-
-		mappingService.close();
-
-		manager = factory.createEntityManager();
-
-		// check for workflow removal (i.e. one record with
-		// READY_FOR_PUBLICATION
-		if (newTrackingRecord.getWorkflowStatus().equals(
+		/*synchronizeWorkflowTrackingRecord(trackingRecord,
+				getWorkflowTrackingRecord(mapProject, concept));*/
+		
+		trackingRecord = synchronizeMapRecords(trackingRecord);
+		
+		// if the tracking record is ready for removal, delete it
+		if (trackingRecord.getWorkflowStatus().equals(
 				WorkflowStatus.READY_FOR_PUBLICATION)
-				&& newTrackingRecord.getMapRecords().size() == 1) {
+				&& trackingRecord.getMapRecords().size() == 1) {
 			Logger.getLogger(WorkflowServiceJpa.class).info(
 					"SYNC: Deleting workflow tracking record");
-			removeWorkflowTrackingRecord(newTrackingRecord.getId());
-		} else {
-			Logger.getLogger(WorkflowServiceJpa.class).info(
-					"SYNC: Updating workflow tracking record");
-			updateWorkflowTrackingRecord(newTrackingRecord);
+			removeWorkflowTrackingRecord(trackingRecord.getId());
+		
+		// else add the tracking record if new
+		} else if (trackingRecord.getId() == null) {
+			
+			addWorkflowTrackingRecord(trackingRecord);
+			
+		// otherwise update the tracking record
+		} else	{
+			updateWorkflowTrackingRecord(trackingRecord);
 		}
-	}
 
-	/**
-	 * Helper function for synchronizeWorkflowTrackingRecord. Gets a map record
-	 * from a workflow tracking record.
-	 * 
-	 * @param trackingRecord
-	 *            the tracking record
-	 * @param mapRecordId
-	 *            the map record id
-	 * @return the map record in workflow tracking record
-	 */
-	public MapRecord getMapRecordInWorkflowTrackingRecord(
-			WorkflowTrackingRecord trackingRecord, Long mapRecordId) {
+	}
+	
+	@Override
+	public WorkflowTrackingRecord synchronizeMapRecords(WorkflowTrackingRecord trackingRecord) throws Exception {
+		
+		// detach the currently persisted map records from the workflow service
+		// necessary to avoid conflict with mapping service, 
+		// as well as forced overwrite on retrieval of previous state
+		Set<MapRecord> newRecords = new HashSet<>();
 		for (MapRecord mr : trackingRecord.getMapRecords()) {
-			if (mr.getId() == mapRecordId)
-				return mr;
+			manager.detach(mr);
+			newRecords.add(mr);
+		}
+		
+		// retrieve the existing (i.e. in database) records by refreshing the tracking record
+		manager.refresh(trackingRecord);
+		Set<MapRecord> oldRecords = new HashSet<>(trackingRecord.getMapRecords());
+		
+		// Instantiate the mapping service
+		MappingService mappingService = new MappingServiceJpa();
+		
+		// cycle over new records to check for additions or updates
+		for (MapRecord mr : newRecords) {
+			if (getMapRecordInSet(oldRecords, mr.getId()) == null) {
+				System.out.println("Adding new record");
+				mappingService.addMapRecord(mr);
+			}
+			
+			// otherwise, check for update
+			else {
+				System.out.println(mr.toString());
+				System.out.println(getMapRecordInSet(oldRecords, mr.getId()));
+				
+				// if the old map record is changed, update it
+				if (! mr.equals(getMapRecordInSet(oldRecords, mr.getId()))) {
+					System.out.println("Updating record " + mr.getId().toString());
+					mappingService.updateMapRecord(mr);
+				}
+			}
+		}
+		
+		// cycle over old records to check for deletions
+		for (MapRecord mr : oldRecords) {
+			
+			// if old record is not in the new record set, delete it
+			if(getMapRecordInSet(newRecords, mr.getId()) == null) { 
+				System.out.println("Removing record " + mr.getId().toString());
+				mappingService.removeMapRecord(mr.getId());
+			}
+		}
+		
+		mappingService.close();
+		
+		// re-persist the detached records in WorkflowService
+		// and reconstruct the tracking record map records
+		trackingRecord.setMapRecords(null);
+		for (MapRecord mr : newRecords) {
+			MapRecord mapRecord = manager.find(MapRecordJpa.class, mr.getId());
+			trackingRecord.addMapRecord(mapRecord);
+		}
+		return trackingRecord;
+		
+		
+	}
+	
+	public MapRecord getMapRecordInSet(Set<MapRecord> mapRecords, Long mapRecordId) {
+		for (MapRecord mr : mapRecords) {
+			if (mr.getId().equals(mapRecordId)) return mr;
 		}
 		return null;
 	}
@@ -915,16 +866,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					.getTerminologyVersion());
 			trackingRecord.setDefaultPreferredName(concept
 					.getDefaultPreferredName());
-			trackingRecord.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH); // Make
-																			// this
-																			// a
-																			// project
-																			// specific
-																			// call
-																			// later
-																			// (phase
-																			// 2)
-
+			trackingRecord.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH); 
+			
 			// get the tree positions for this concept and set the sort key to
 			// the first retrieved
 			SearchResultList treePositionsList = contentService

@@ -37,9 +37,7 @@
         <td></td>
         <td colspan=2>Empty record, owned by {{record.owner.name}}</td>
         <td>{{record.workflowStatus}}</td>
-        <td><span ng-show="isEditable(record)"> <a
-            href="index.html#/record/recordId/{{record.id}}">Edit</a>
-        </span></td>
+        <td><a ng-show="isEditable(record)" ng-click="editRecord(record)">Edit</a></td>
       </tr>
 
       <tr
@@ -64,9 +62,7 @@
         <td>{{entry.targetId}}</td>
         <td>{{entry.targetName}}</td>
         <td ng-show="displayToViewer(record)">{{record.workflowStatus}}</td>
-        <td><span ng-show="isEditable(record)"> <a
-            href="index.html#/record/recordId/{{record.id}}">Edit</a>
-        </span></td>
+        <td><a ng-show="isEditable(record)" ng-click="editRecord(record)">Edit</a></td>
 
       </tr>
 

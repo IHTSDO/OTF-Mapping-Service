@@ -625,139 +625,133 @@ public class MapRecordJpa implements MapRecord {
     flagForConsensusReview = flag;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
-    result =
-        prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
-    result =
-        prime
-            * result
-            + ((countDescendantConcepts == null) ? 0 : countDescendantConcepts
-                .hashCode());
-    result = prime * result + (flagForConsensusReview ? 1231 : 1237);
-    result = prime * result + (flagForEditorialReview ? 1231 : 1237);
-    result = prime * result + (flagForMapLeadReview ? 1231 : 1237);
-    result =
-        prime * result + ((mapEntries == null) ? 0 : mapEntries.hashCode());
-    result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
-    result =
-        prime * result
-            + ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
-    result =
-        prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
-    result = prime * result + ((originIds == null) ? 0 : originIds.hashCode());
-    result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-    result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
-    result =
-        prime * result
-            + ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
-    return result;
-  }
+public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
+	result = prime * result
+			+ ((conceptName == null) ? 0 : conceptName.hashCode());
+	result = prime
+			* result
+			+ ((countDescendantConcepts == null) ? 0 : countDescendantConcepts
+					.hashCode());
+	result = prime * result + (flagForConsensusReview ? 1231 : 1237);
+	result = prime * result + (flagForEditorialReview ? 1231 : 1237);
+	result = prime * result + (flagForMapLeadReview ? 1231 : 1237);
+	result = prime * result
+			+ ((lastModified == null) ? 0 : lastModified.hashCode());
+	result = prime * result
+			+ ((lastModifiedBy == null) ? 0 : lastModifiedBy.hashCode());
+	result = prime * result
+			+ ((mapEntries == null) ? 0 : mapEntries.hashCode());
+	result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
+	result = prime * result
+			+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
+	result = prime * result
+			+ ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
+	result = prime * result + ((originIds == null) ? 0 : originIds.hashCode());
+	result = prime * result + ((owner == null) ? 0 : owner.hashCode());
+	result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
+	result = prime * result
+			+ ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
+	return result;
+}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    MapRecordJpa other = (MapRecordJpa) obj;
-    if (conceptId == null) {
-      if (other.conceptId != null)
-        return false;
-    } else if (!conceptId.equals(other.conceptId))
-      return false;
-    if (conceptName == null) {
-      if (other.conceptName != null)
-        return false;
-    } else if (!conceptName.equals(other.conceptName))
-      return false;
-    if (countDescendantConcepts == null) {
-      if (other.countDescendantConcepts != null)
-        return false;
-    } else if (!countDescendantConcepts.equals(other.countDescendantConcepts))
-      return false;
-    if (flagForConsensusReview != other.flagForConsensusReview)
-      return false;
-    if (flagForEditorialReview != other.flagForEditorialReview)
-      return false;
-    if (flagForMapLeadReview != other.flagForMapLeadReview)
-      return false;
-    if (mapEntries == null) {
-      if (other.mapEntries != null)
-        return false;
-    } else if (!mapEntries.equals(other.mapEntries))
-      return false;
-    if (mapNotes == null) {
-      if (other.mapNotes != null)
-        return false;
-    } else if (!mapNotes.equals(other.mapNotes))
-      return false;
-    if (mapPrinciples == null) {
-      if (other.mapPrinciples != null)
-        return false;
-    } else if (!mapPrinciples.equals(other.mapPrinciples))
-      return false;
-    if (mapProjectId == null) {
-      if (other.mapProjectId != null)
-        return false;
-    } else if (!mapProjectId.equals(other.mapProjectId))
-      return false;
-    if (originIds == null) {
-      if (other.originIds != null)
-        return false;
-    } else if (!originIds.equals(other.originIds))
-      return false;
-    if (owner == null) {
-      if (other.owner != null)
-        return false;
-    } else if (!owner.equals(other.owner))
-      return false;
-    if (timestamp == null) {
-      if (other.timestamp != null)
-        return false;
-    } else if (!timestamp.equals(other.timestamp))
-      return false;
-    if (workflowStatus == null) {
-      if (other.workflowStatus != null)
-        return false;
-    } else if (!workflowStatus.equals(other.workflowStatus))
-      return false;
-    return true;
-  }
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (obj == null)
+		return false;
+	if (getClass() != obj.getClass())
+		return false;
+	MapRecordJpa other = (MapRecordJpa) obj;
+	if (conceptId == null) {
+		if (other.conceptId != null)
+			return false;
+	} else if (!conceptId.equals(other.conceptId))
+		return false;
+	if (conceptName == null) {
+		if (other.conceptName != null)
+			return false;
+	} else if (!conceptName.equals(other.conceptName))
+		return false;
+	if (countDescendantConcepts == null) {
+		if (other.countDescendantConcepts != null)
+			return false;
+	} else if (!countDescendantConcepts.equals(other.countDescendantConcepts))
+		return false;
+	if (flagForConsensusReview != other.flagForConsensusReview)
+		return false;
+	if (flagForEditorialReview != other.flagForEditorialReview)
+		return false;
+	if (flagForMapLeadReview != other.flagForMapLeadReview)
+		return false;
+	if (lastModified == null) {
+		if (other.lastModified != null)
+			return false;
+	} else if (!lastModified.equals(other.lastModified))
+		return false;
+	if (lastModifiedBy == null) {
+		if (other.lastModifiedBy != null)
+			return false;
+	} else if (!lastModifiedBy.equals(other.lastModifiedBy))
+		return false;
+	if (mapEntries == null) {
+		if (other.mapEntries != null)
+			return false;
+	} else if (!mapEntries.equals(other.mapEntries))
+		return false;
+	if (mapNotes == null) {
+		if (other.mapNotes != null)
+			return false;
+	} else if (!mapNotes.equals(other.mapNotes))
+		return false;
+	if (mapPrinciples == null) {
+		if (other.mapPrinciples != null)
+			return false;
+	} else if (!mapPrinciples.equals(other.mapPrinciples))
+		return false;
+	if (mapProjectId == null) {
+		if (other.mapProjectId != null)
+			return false;
+	} else if (!mapProjectId.equals(other.mapProjectId))
+		return false;
+	if (originIds == null) {
+		if (other.originIds != null)
+			return false;
+	} else if (!originIds.equals(other.originIds))
+		return false;
+	if (owner == null) {
+		if (other.owner != null)
+			return false;
+	} else if (!owner.equals(other.owner))
+		return false;
+	if (timestamp == null) {
+		if (other.timestamp != null)
+			return false;
+	} else if (!timestamp.equals(other.timestamp))
+		return false;
+	if (workflowStatus != other.workflowStatus)
+		return false;
+	return true;
+}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
-  public String toString() {
-    return "MapRecordJpa [owner=" + owner + ", timestamp=" + timestamp
-        + ", mapProjectId=" + mapProjectId + ", conceptId=" + conceptId
-        + ", conceptName=" + conceptName + ", countDescendantConcepts="
-        + countDescendantConcepts + ", mapEntries=" + mapEntries.size()
-        + ", mapNotes=" + mapNotes.size() + ", mapPrinciples="
-        + mapPrinciples.size() + ", originIds=" + originIds
-        + ", flagForMapLeadReview=" + flagForMapLeadReview
-        + ", flagForEditorialReview=" + flagForEditorialReview
-        + ", flagForConsensusReview=" + flagForConsensusReview + workflowStatus
-        + "]";
-  }
+public String toString() {
+	return "MapRecordJpa [owner=" + owner + ", timestamp=" + timestamp
+			+ ", lastModifiedBy=" + lastModifiedBy + ", lastModified="
+			+ lastModified + ", mapProjectId=" + mapProjectId + ", conceptId="
+			+ conceptId + ", conceptName=" + conceptName
+			+ ", countDescendantConcepts=" + countDescendantConcepts
+			+ ", mapEntries=" + mapEntries + ", mapNotes=" + mapNotes
+			+ ", mapPrinciples=" + mapPrinciples + ", originIds=" + originIds
+			+ ", flagForMapLeadReview=" + flagForMapLeadReview
+			+ ", flagForEditorialReview=" + flagForEditorialReview
+			+ ", flagForConsensusReview=" + flagForConsensusReview
+			+ ", workflowStatus=" + workflowStatus + "]";
+}
 
   /*
    * (non-Javadoc)

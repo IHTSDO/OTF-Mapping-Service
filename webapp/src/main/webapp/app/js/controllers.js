@@ -386,6 +386,27 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		} else return true; 
 	};
 
+	$scope.editRecord = function(record) {
+
+		// assign the record along the FIX_ERROR_PATH
+		$rootScope.glassPane++;
+
+		$http({
+			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
+			"/concept/" + trackingRecord.terminologyId +
+			"/user/" + $scope.currentUser.userName,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			$rootScope.glassPane--;
+
+			// open the record edit view
+			window.location("index.html#/record/recordId/" + record.id);
+		});
+	};
+
 	$scope.filterRecords = function() {
 		$scope.recordsInProject = [];
 		$scope.recordsNotInProject = [];
@@ -855,6 +876,45 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		console.debug("go to help page " + path);
 		// redirect page
 		$location.path(path);
+	};
+
+	$scope.isEditable = function(record) {
+
+		console.debug('isEditable');
+		console.debug($scope.currentRole);
+		console.debug($scope.currentUser);
+		console.debug(record.owner);
+		if (($scope.currentRole === 'Specialist' ||
+				$scope.currentRole === 'Lead' ||
+				$scope.currentRole === 'Admin') &&
+				(record.workflowStatus === 'PUBLISHED' || record.workflowStatus === 'READY_FOR_PUBLICATION')) {
+
+			return true;
+
+		} else if ($scope.currentUser.userName === record.owner.userName) {
+			return true;
+		} else return false;
+	};
+
+	$scope.editRecord = function(record) {
+
+		// assign the record along the FIX_ERROR_PATH
+		$rootScope.glassPane++;
+
+		$http({
+			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
+			"/concept/" + trackingRecord.terminologyId +
+			"/user/" + $scope.currentUser.userName,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			$rootScope.glassPane--;
+
+			// open the record edit view
+			window.location("index.html#/record/recordId/" + record.id);
+		});
 	};
 }]);
 

@@ -455,7 +455,7 @@ public class MapEntryJpa implements MapEntry {
 
   @Override
   public String toString() {
-    return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord + ", mapNotes="
+    return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord.getId().toString() + ", mapNotes="
         + mapNotes + ", mapAdvices=" + mapAdvices + ", targetId=" + targetId
         + ", targetName=" + targetName + ", rule=" + rule + ", mapPriority="
         + mapPriority + ", mapRelation=" + mapRelation + ", mapBlock="
