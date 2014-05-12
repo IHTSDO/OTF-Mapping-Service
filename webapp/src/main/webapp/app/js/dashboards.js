@@ -1,12 +1,12 @@
 'use strict';
 
-var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', []);
+var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', ['adf', 'LocalStorageModule']);
 
 mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($scope, $routeParams, $rootScope, $location, localStorageService) {
 
 	// model variable
 	$scope.model = null;
-	
+
 	// On initialization, reset all values to null -- used to ensure watch functions work correctly
 	$scope.mapProjects 	= null;
 	$scope.currentUser 	= null;
@@ -20,11 +20,11 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 	$scope.currentRole  = localStorageService.get('currentRole');
 	$scope.preferences  = localStorageService.get('preferences');
 	$scope.focusProject = localStorageService.get('focusProject');
-	
+
 	setModel();
-	
-    $scope.page = 'resolveConflictsDashboard';
-	
+
+	$scope.page = 'resolveConflictsDashboard';
+
 	function setModel() {
 		$scope.name = 'ResolveConflictsDashboard';
 		if (!$scope.model) {
@@ -99,7 +99,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 
 
 	});
-	
+
 	// function to change project from the header
 	$scope.changeFocusProject = function(mapProject) {
 		$scope.focusProject = mapProject;
@@ -115,7 +115,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
 
 	};
-	
+
 	$scope.goToHelp = function() {
 		var path;
 		if ($scope.page != 'mainDashboard') {
@@ -139,15 +139,15 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
-	
+
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
 	$scope.currentUser  = localStorageService.get('currentUser');
 	$scope.currentRole  = localStorageService.get('currentRole');
 	$scope.preferences  = localStorageService.get('preferences');
 	$scope.focusProject = localStorageService.get('focusProject');
-	
-    $scope.page = 'mainDashboard';
+
+	$scope.page = 'mainDashboard';
 
 	console.debug('in dashboardCtrl');
 
@@ -168,16 +168,27 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		}
 	});
 
+	$scope.page = 'editDashboard';
+
+	// must instantiate a default dashboard on call
+	setModel();
+
 	// on successful user retrieval, construct the dashboard
 	$scope.$watch('currentRole', function() {
+		setModel();
+	});
+
+	function setModel() {
 
 		console.debug("Setting the dashboard based on role: " + $scope.currentRole);
+
+		$scope.name = 'Dashboard';
 
 		/**
 		 * Viewer has the following widgets:
 		 * - MapProject
 		 */
-		if ($scope.currentRole === 'Viewer') {
+		if (!$scope.currentRole || $scope.currentRole === 'Viewer') {
 			$scope.model = {
 
 					structure: "12/6-6/12",
@@ -344,17 +355,17 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		} else {
 			alert("Invalid role detected by dashboard");
 		}
+	}
 
-		$scope.$on('adfDashboardChanged', function (event, name, model) {
-			console.debug('adfDashboardChanged in DashBoardCtrl');
-			console.debug(event);
-			console.debug(name);
-			console.debug(model);
-			$scope.model = model;
-		});
+	$scope.$on('adfDashboardChanged', function (event, name, model) {
+		console.debug('adfDashboardChanged in DashBoardCtrl');
+		console.debug(event);
+		console.debug(name);
+		console.debug(model);
+		$scope.model = model;
 	});
 
-	// function to change project from the header
+//	function to change project from the header
 	$scope.changeFocusProject = function(mapProject) {
 		$scope.focusProject = mapProject;
 		console.debug("changing project to " + $scope.focusProject.name);
@@ -369,7 +380,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
 
 	};
-	
+
 	$scope.goToHelp = function() {
 		var path;
 		if ($scope.page != 'mainDashboard') {
@@ -386,14 +397,14 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $rootScope, $routeParams, $location, localStorageService) {
 
 	$scope.model = null;
-	
+
 	// On initialization, reset all values to null -- used to ensure watch functions work correctly
 	$scope.mapProjects 	= null;
 	$scope.currentUser 	= null;
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
-	
+
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
 	$scope.currentUser  = localStorageService.get('currentUser');
@@ -401,8 +412,8 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 	$scope.preferences  = localStorageService.get('preferences');
 	$scope.focusProject = localStorageService.get('focusProject');
 
-    $scope.page = 'editDashboard';
-    
+	$scope.page = 'editDashboard';
+
 	setModel();
 
 	function setModel() {
@@ -442,7 +453,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 		};
 
 	};
-	
+
 	// broadcast page to help mechanism  
 	//$rootScope.$broadcast('localStorageModule.notification.page',{key: 'page', newvalue: 'editDashboard'});  
 
@@ -454,14 +465,14 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("RecordDashboardCtrl:  Detected change in focus project");
-		
+
 		// set the model to empty
 		$scope.model = null;
-		
+
 		setModel();
-		
+
 		console.debug($scope.currentRole);
-		
+
 		var path = "";
 
 		if ($scope.currentRole === "Specialist") {
@@ -482,7 +493,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 		console.debug('RecordDashBoardCtrl:  Detected project set/change');
 		setModel();
 	});
-	
+
 	// function to change project from the header
 	$scope.changeFocusProject = function(mapProject) {
 		$scope.focusProject = mapProject;
@@ -498,7 +509,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
 
 	};
-	
+
 	$scope.goToHelp = function() {
 		var path;
 		if ($scope.page != 'mainDashboard') {

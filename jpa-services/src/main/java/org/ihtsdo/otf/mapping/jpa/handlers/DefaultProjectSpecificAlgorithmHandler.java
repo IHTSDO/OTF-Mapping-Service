@@ -906,8 +906,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		case NON_LEGACY_PATH:
 
 			// if a "new" tracking record (i.e. prior to conflict detection),
-			// add a
-			// NEW record
+			// add a NEW record
 			if (trackingRecord.getWorkflowStatus().compareTo(
 					WorkflowStatus.CONFLICT_DETECTED) < 0) {
 
@@ -924,8 +923,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						.info("NON_LEGACY_PATH: NEW");
 
 				// otherwise, if this is a tracking record with conflict
-				// detected, add
-				// a CONFLICT_IN_PROGRESS record
+				// detected, add a CONFLICT_IN_PROGRESS record
 			} else if (trackingRecord.getWorkflowStatus().equals(
 					WorkflowStatus.CONFLICT_DETECTED)) {
 
@@ -954,18 +952,18 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					"assignFromScratch called with erroneous Workflow Path.");
 		}
 
-		// open content service to get descendant count
 		ContentService contentService = new ContentServiceJpa();
-		// NOTE: for high level concepts in the tree, this can be somewhat time
-		// consuming
-		// e.g. several minutes. If problematic, we could pass a "limit"
-		// parameter
-		// and simply
-		// stop searching once we find a certain number of cases.
-		mapRecord.setCountDescendantConcepts(new Long(contentService
-				.findDescendantsFromTreePostions(concept.getTerminologyId(),
-						concept.getTerminology(),
-						concept.getTerminologyVersion()).getCount()));
+		mapRecord.setCountDescendantConcepts(
+				new Long(
+						// get the tree positions for this concept
+						contentService.getTreePositionsForConcept(
+								trackingRecord.getTerminologyId(), 
+								trackingRecord.getTerminology(), 
+								trackingRecord.getTerminologyVersion())
+								
+								.getTreePositions()			// get the list of tree positions
+								.get(0)						// get the first tree position
+								.getDescendantCount()));	// get the descendant count
 		contentService.close();
 
 		// add this record to the tracking record

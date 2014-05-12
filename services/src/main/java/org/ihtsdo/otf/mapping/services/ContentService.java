@@ -9,6 +9,7 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
+// TODO: Auto-generated Javadoc
 /**
  * The interface for the content service.
  * 
@@ -18,8 +19,8 @@ public interface ContentService extends RootService {
 
   /**
    * Closes the manager associated with service.y
-   * 
-   * @exception Exception the exception
+   *
+   * @throws Exception the exception
    */
   public void close() throws Exception;
 
@@ -69,21 +70,49 @@ public interface ContentService extends RootService {
     String terminologyVersion) throws Exception;
 
   /**
-   * Gets the descendants of a concept.
-   * 
+   * Finds descendants of a concept. Does not require PFS parameters object.
+   *
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
    * @param typeId the type id
+   * @return the search result list
+   */
+  public SearchResultList findDescendants(String terminologyId, String terminology,
+			String terminologyVersion, String typeId);
+
+  
+  /**
+   * Finds the descendants of a concept, subject to max results limitation in PFS parameters object
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param typeId the type id
+   * @param pfsParameter the pfs parameter containing the max results restriction
    * @return the set of concepts
    * @throws Exception the exception
    */
   public SearchResultList findDescendants(String terminologyId,
-    String terminology, String terminologyVersion, String typeId)
+    String terminology, String terminologyVersion, String typeId, PfsParameter pfsParameter)
     throws Exception;
 
   /**
-   * Returns the descendants.
+   * Gets the descendants of a concept.  Does not require PFS parameter object
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param typeId the type id
+   * @return the descendants
+   */
+  public Set<Concept> getDescendants(String terminologyId, String terminology,
+			String terminologyVersion, String typeId);
+
+
+  
+  /**
+   * Gets the descendants of a concept, subject to max results limitation
    * 
    * @param terminologyId the terminology id
    * @param terminology the terminology
@@ -93,7 +122,7 @@ public interface ContentService extends RootService {
    * @throws Exception the exception
    */
   public Set<Concept> getDescendants(String terminologyId, String terminology,
-    String terminologyVersion, String typeId) throws Exception;
+    String terminologyVersion, String typeId, PfsParameter pfsParameter) throws Exception;
 
   /**
    * Find children.
@@ -203,8 +232,8 @@ public interface ContentService extends RootService {
   public TreePositionList getTreePositionChildren(TreePosition treePosition);
 
   /**
-   * Gets the root tree positions for a given terminology
-   * 
+   * Gets the root tree positions for a given terminology.
+   *
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
    * @return the root tree positions for terminology
@@ -234,4 +263,7 @@ public interface ContentService extends RootService {
    */
   public ConceptList getConceptTreeRoots(String terminology,
     String terminologyVersion) throws Exception;
+
+
+
 }

@@ -444,6 +444,8 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements Met
   private Map<String, String> getDescendantMap(ContentService contentService,
     String terminologyId, String terminology, String version) throws Exception {
     Map<String, String> map = new HashMap<>();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants(terminologyId, terminology, version,
             getIsaRelationshipType(terminology, version));

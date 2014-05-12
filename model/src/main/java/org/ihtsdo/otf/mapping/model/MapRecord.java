@@ -323,4 +323,14 @@ public interface MapRecord {
    * @return the workflow status
    */
   public WorkflowStatus getWorkflowStatus();
+  
+  /**
+   * Checks if if another map record is functionally equivalent
+   * Added due to inconsistencies with equals() not checking
+   * child collections correctly
+   *
+   * @param mapRecord the map record
+   * @return true, if is equivalent
+   */
+  public boolean isEquivalent(MapRecord mapRecord);
 }

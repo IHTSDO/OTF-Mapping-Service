@@ -1789,11 +1789,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		String hierarchicalRelationshipType = hierarchicalRelationshipTypeMap
 				.entrySet().iterator().next().getKey();
 
-		// get descendants
+		// get descendants -- no pfsParameter, want all results
 		ContentService contentService = new ContentServiceJpa();
 		SearchResultList descendants = contentService.findDescendants(
 				terminologyId, terminology, terminologyVersion,
-				hierarchicalRelationshipType);
+				hierarchicalRelationshipType, null);
 
 		// if number of descendants <= low-level concept threshold, treat as
 		// high-level concept and report no unmapped
@@ -2227,8 +2227,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	public void createMapRecordsForMapProject(Long mapProjectId,
 			WorkflowStatus workflowStatus) throws Exception {
 		MapProject mapProject = getMapProject(mapProjectId);
-		Logger.getLogger(MappingServiceJpa.class).warn(
-				"Find map records from query for project - " + mapProjectId
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"Called createMapRecordsForMapProject for project - " + mapProjectId
 						+ " workflowStatus - " + workflowStatus);
 		if (!getTransactionPerOperation()) {
 			throw new IllegalStateException(
@@ -2248,7 +2248,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 		Logger.getLogger(MappingServiceJpa.class).warn(
 				"  " + complexMapRefSetMembers.size()
-						+ " map records processed (some skipped)");
+						+ " complex map refset members found (some skipped)");
 		createMapRecordsForMapProject(mapProjectId, complexMapRefSetMembers,
 				workflowStatus);
 	}
@@ -2344,9 +2344,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			List<ComplexMapRefSetMember> complexMapRefSetMembers,
 			WorkflowStatus workflowStatus) throws Exception {
 		MapProject mapProject = getMapProject(mapProjectId);
-		Logger.getLogger(this.getClass()).debug(
-				"  Starting create map records for map project - "
-						+ mapProject.getName());
+		Logger.getLogger(MappingServiceJpa.class).debug(
+				"  Creating map records for map project - "
+						+ mapProject.getName() + ", assigning workflow status " + WorkflowStatus.PUBLISHED);
 
 		// Verify application is letting the service manage transactions
 		if (!getTransactionPerOperation()) {
@@ -2363,7 +2363,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		Map<String, String> relationIdNameMap = metadataService
 				.getMapRelations(mapProject.getSourceTerminology(),
 						mapProject.getSourceTerminologyVersion());
-		Logger.getLogger(this.getClass()).debug(
+		Logger.getLogger(MappingServiceJpa.class).debug(
 				"    relationIdNameMap = " + relationIdNameMap);
 
 		// use the map relation id->name mapping to construct a hash set of
@@ -2412,7 +2412,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				// Skip inactive cases
 				if (!refSetMember.isActive()) {
-					Logger.getLogger(this.getClass()).debug(
+					Logger.getLogger(MappingServiceJpa.class).debug(
 							"Skipping refset member "
 									+ refSetMember.getTerminologyId());
 					continue;
@@ -2425,14 +2425,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 								.contains("MAP IS CONTEXT DEPENDENT FOR GENDER"))
 						&& !(refSetMember.getMapRule()
 								.matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]"))) {
-					Logger.getLogger(this.getClass()).debug(
+					Logger.getLogger(MappingServiceJpa.class).debug(
 							"    Skipping refset member exclusion rule "
 									+ refSetMember.getTerminologyId());
 					continue;
 				}
 
 				// retrieve the concept
-				Logger.getLogger(this.getClass()).debug(
+				Logger.getLogger(MappingServiceJpa.class).debug(
 						"    Get refset member concept");
 				Concept concept = refSetMember.getConcept();
 
@@ -2446,7 +2446,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// if different concept than previous ref set member, create new
 				// mapRecord
 				if (!concept.getTerminologyId().equals(prevConceptId)) {
-					Logger.getLogger(this.getClass()).debug(
+					Logger.getLogger(MappingServiceJpa.class).debug(
 							"    Creating map record for "
 									+ concept.getTerminologyId());
 
@@ -2461,13 +2461,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					// Need a tool to compute and save this for LLCs (e.g.
 					// having < 11
 					// descendants)
+					PfsParameter pfsParameter = new PfsParameterJpa();
+					pfsParameter.setMaxResults(100);
+					
 					mapRecord.setCountDescendantConcepts(new Long(
 							contentService.findDescendants(
 									concept.getTerminologyId(),
 									concept.getTerminology(),
 									concept.getTerminologyVersion(),
-									hierarchicalRelationshipType).getCount()));
-					Logger.getLogger(this.getClass()).debug(
+									hierarchicalRelationshipType,
+									pfsParameter).getCount()));
+					Logger.getLogger(MappingServiceJpa.class).debug(
 							"      Computing descendant ct = "
 									+ mapRecord.getCountDescendantConcepts());
 

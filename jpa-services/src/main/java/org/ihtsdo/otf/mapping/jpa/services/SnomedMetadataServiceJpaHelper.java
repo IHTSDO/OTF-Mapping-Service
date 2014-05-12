@@ -48,6 +48,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 900000000000443000
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("900000000000443000", terminology,
             version, isaRelationshipType);
@@ -76,6 +78,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 900000000000480006
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("900000000000480006", terminology,
             version, isaRelationshipType);
@@ -104,6 +108,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 447250001
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("447250001", terminology, version,
             isaRelationshipType);
@@ -133,6 +139,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 900000000000506000
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("900000000000506000", terminology,
             version, isaRelationshipType);
@@ -161,6 +169,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 900000000000496009
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("900000000000496009", terminology,
             version, isaRelationshipType);
@@ -189,6 +199,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 446609009
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("446609009", terminology, version,
             isaRelationshipType);
@@ -218,6 +230,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     // find all active descendants of 609330002
     // 609330002 - Map category value
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("447634004", terminology, version,
             isaRelationshipType);
@@ -233,6 +247,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 447247004
     // 447247004 - SNOMED CT source code not mappable to target coding scheme
+    // want all descendants, do not use pfsParameter
     descendants =
         contentService.getDescendants("447247004", terminology, version,
             isaRelationshipType);
@@ -264,6 +279,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 900000000000444006
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("900000000000444006", terminology,
             version, isaRelationshipType);
@@ -292,6 +309,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 900000000000446008
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("900000000000446008", terminology,
             version, isaRelationshipType);
@@ -320,6 +339,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 900000000000447004
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("900000000000447004", terminology,
             version, isaRelationshipType);
@@ -348,6 +369,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 106237007
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("106237007", terminology, version,
             isaRelationshipType);
@@ -397,6 +420,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 900000000000449001
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("900000000000449001", terminology,
             version, isaRelationshipType);
@@ -425,6 +450,8 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
     // find all active descendants of 900000000000450001
     ContentService contentService = new ContentServiceJpa();
+    
+    // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
         contentService.getDescendants("900000000000450001", terminology,
             version, isaRelationshipType);

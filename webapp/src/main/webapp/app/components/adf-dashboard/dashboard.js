@@ -39,19 +39,26 @@
 'use strict';
 
 angular.module('adf')
-  .directive('adfDashboard', function($rootScope, $log, $modal, dashboard, localStorageService){
-	
-	  
+  .directive('adfDashboard', function($rootScope, $log, $modal, dashboard){
+
+    function copyWidgets(source, target){
+      if ( source.widgets && source.widgets.length > 0 ){
+        var w = source.widgets.shift();
+        while (w){
+          target.widgets.push(w);
+          w = source.widgets.shift();
+        }
+      }
+    }
+
     function fillStructure(model, columns, counter){
       angular.forEach(model.rows, function(row){
         angular.forEach(row.columns, function(column){
           if (!column.widgets){
             column.widgets = [];
           }
-          if ( counter < columns.length ){
-            angular.forEach(columns[counter].widgets, function(widget){
-              column.widgets.push(widget);
-            });
+          if ( columns[counter] ){
+            copyWidgets(columns[counter], column);
             counter++;
           }
         });
@@ -77,6 +84,15 @@ angular.module('adf')
         counter = fillStructure(model, columns, counter);
       }
     }
+    
+    function createConfiguration(type){
+      var cfg = {};
+      var config = dashboard.widgets[type].config;
+      if (config){
+        cfg = angular.copy(config);
+      }
+      return cfg;
+    }
 
     return {
       replace: true,
@@ -85,14 +101,10 @@ angular.module('adf')
       scope: {
         structure: '@',
         name: '@',
+        collapsible: '@',
         adfModel: '='
       },
       controller: function($scope){
-    	  
-	    $scope.currentUser = localStorageService.get('currentUser');
-		$scope.currentRole = localStorageService.get('currentRole');
-    		  
-    	  
         // sortable options for drag and drop
         $scope.sortableOptions = {
           connectWith: ".column",
@@ -103,11 +115,9 @@ angular.module('adf')
           forcePlaceholderSize: true,
           opacity: 0.4
         };
-    	
+        
         var name = $scope.name;
         var model = $scope.adfModel;
-        console.debug('DASHBOARD.JS MODEL 1:');
-        console.debug(model);
         if ( ! model || ! model.rows ){
           var structureName = $scope.structure;
           var structure = dashboard.structures[structureName];
@@ -123,16 +133,12 @@ angular.module('adf')
           }
         } 
         
-        console.debug('DASHBOARD.JS MODEL 2:');
-        console.debug(model);
-        
         if (model) {
           if (!model.title){
             model.title = 'Dashboard';
           }
           $scope.model = model;
         } else {
-        	alert("model " + model);
           $log.error('could not find or create model');
         }
 
@@ -141,9 +147,6 @@ angular.module('adf')
         $scope.editClass = "";
 
         $scope.toggleEditMode = function(){
-        
-        	console.debug('toggleEditMode');
-        	
           $scope.editMode = ! $scope.editMode;
           if ($scope.editClass === ""){
             $scope.editClass = "edit";
@@ -161,7 +164,7 @@ angular.module('adf')
           editDashboardScope.structures = dashboard.structures;
           var instance = $modal.open({
             scope: editDashboardScope,
-            templateUrl: './partials/dashboard-edit.html'
+            templateUrl: 'partials/dashboard-edit.html'
           });
           $scope.changeStructure = function(name, structure){
             $log.info('change structure to ' + name);
@@ -179,43 +182,18 @@ angular.module('adf')
           addScope.widgets = dashboard.widgets;
           var opts = {
             scope: addScope,
-            templateUrl: './partials/widget-add.html'
+            templateUrl: 'partials/widget-add.html'
           };
           var instance = $modal.open(opts);
           addScope.addWidget = function(widget){
-        	var w = {
+            var w = {
               type: widget,
-              config: {}
+              config: createConfiguration(widget)
             };
             addScope.model.rows[0].columns[0].widgets.unshift(w);
             instance.close();
 
             addScope.$destroy();
-          };
-          addScope.isWidgetInRole = function(widget){
-        	  if ($scope.name === 'default') {
-	        	  if (widget == 'mapProjectList' && $scope.currentRole.value >= 1) { //$rootScope.role.value >= 1) {
-	            	  return true;
-	              } else if (widget == 'metadataList' && $scope.currentRole.value > 1) { //$rootScope.role.value >= 3) {
-	        	      return true;
-	          	  } else if (widget == 'mapProject') {
-	          		  return true;
-	          	  } else if (widget == 'assignedList' && $scope.currentRole.value > 1) {
-	          		  return true;
-	          	  } else if (widget == 'editedList' && $scope.currentRole.value > 1) {
-	          		  return true;
-	          	  } else if (widget == 'compareRecords' && $scope.currentRole.value > 1) {
-	          		  return true;
-	          	  }
-	          	  else if (widget = "availableWork") return true;
-	        	  return false;
-        	  } else if ($scope.name === 'mappingDashboard') {
-        		  if (widget == 'mapRecord' && $scope.currentRole.value >= 1) { //$rootScope.role.value >= 1) {
-	            	  return true;
-	              } else if (widget == 'mapEntry' && $scope.currentRole.value > 1) { //$rootScope.role.value >= 3) {
-	        	      return true;
-	          	  } 
-        	  }
           };
           addScope.closeDialog = function(){
             instance.close();
@@ -225,15 +203,13 @@ angular.module('adf')
       },
       link: function ($scope, $element, $attr) {
         // pass attributes to scope
-    	  console.debug('attributes passed to scope:')
-    	  console.debug($attr.name);
-    	  console.debug($attr.structure);
-    	  console.debug($attr.adfModel);
         $scope.name = $attr.name;
         $scope.structure = $attr.structure;
-        $scope.adfModel = $attr.adfModel;
-      }/*,
-      templateUrl: './partials/dashboard.html'*/
-    	 
+        //$scope.adfModel = $attr.adfModel;
+        
+        console.debug("name: " + $attr.name);
+        console.debug("structure: " + $attr.structure);
+      },
+      templateUrl: 'partials/dashboard.html'
     };
   });

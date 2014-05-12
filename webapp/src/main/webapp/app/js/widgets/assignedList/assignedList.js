@@ -25,7 +25,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.assignedConflictsPage = 1;
 	
 	// initial tab titles
-	$scope.assignedWorkTitle = "Assigned Work";
+	$scope.assignedWorkTitle = "Assigned Concepts";
 	$scope.assignedConflictsTitle = "Assigned Conflicts";
 	
 	// watch for project change
@@ -98,7 +98,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	
 	$scope.retrieveAssignedWork = function(page) {
 		
-		console.debug('Retrieving Assigned Work: page ' + page);
+		console.debug('Retrieving Assigned Concepts: page ' + page);
 
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
@@ -129,7 +129,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.nAssignedRecords = data.totalCount;
 			
 			// set title
-			$scope.assignedWorkTitle = "Assigned Work (" + $scope.nAssignedRecords + ")";
+			$scope.assignedWorkTitle = "Assigned Concepts (" + $scope.nAssignedRecords + ")";
 			console.debug($scope.nAssignedRecords);
 			console.debug(data.totalCount);
 			console.debug($scope.assignedWorkTitle);

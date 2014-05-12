@@ -643,5 +643,91 @@ public class MapRecordImpl implements MapRecord {
   public void addOrigins(Set<Long> origins) {
     origins.addAll(origins);
   }
+  
+
+  @Override
+  public boolean isEquivalent(MapRecord mapRecord) {
+	  
+	  // first check all the non-collection fields
+	  if (conceptId == null) {
+			if (mapRecord.getConceptId() != null)
+				return false;
+		} else if (!conceptId.equals(mapRecord.getConceptId()))
+			return false;
+		if (conceptName == null) {
+			if (mapRecord.getConceptName() != null)
+				return false;
+		} else if (!conceptName.equals(mapRecord.getConceptName()))
+			return false;
+		if (countDescendantConcepts == null) {
+			if (mapRecord.getCountDescendantConcepts() != null)
+				return false;
+		} else if (!countDescendantConcepts.equals(mapRecord.getCountDescendantConcepts()))
+			return false;
+		if (flagForConsensusReview != mapRecord.isFlagForConsensusReview())
+			return false;
+		if (flagForEditorialReview != mapRecord.isFlagForEditorialReview())
+			return false;
+		if (flagForMapLeadReview != mapRecord.isFlagForMapLeadReview())
+			return false;
+		if (lastModified == null) {
+			if (mapRecord.getLastModified() != null)
+				return false;
+		} else if (!lastModified.equals(mapRecord.getLastModified()))
+			return false;
+		if (lastModifiedBy == null) {
+			if (mapRecord.getLastModifiedBy() != null)
+				return false;
+		} else if (!lastModifiedBy.equals(mapRecord.getLastModifiedBy()))
+			return false;
+		
+		if (mapProjectId == null) {
+			if (mapRecord.getMapProjectId() != null)
+				return false;
+		} else if (!mapProjectId.equals(mapRecord.getMapProjectId()))
+			return false;
+		
+		if (owner == null) {
+			if (mapRecord.getOwner() != null)
+				return false;
+		} else if (!owner.equals(mapRecord.getOwner()))
+			return false;
+		if (timestamp == null) {
+			if (mapRecord.getTimestamp() != null)
+				return false;
+		} else if (!timestamp.equals(mapRecord.getTimestamp()))
+			return false;
+		if (workflowStatus != mapRecord.getWorkflowStatus())
+			return false;
+		
+		// check the collection fields
+		// * if not same length, return false
+		// * if each collection element not contained in the mapRecord, return false
+		// * don't care about order of collections
+		// * not currently checking advices (not used presently)
+		
+		// check entries
+		if (mapRecord.getMapEntries().size() != mapEntries.size()) return false;
+		for (MapEntry entry : mapEntries) {
+			if (!mapRecord.getMapEntries().contains(entry)) return false;
+		}
+		
+		// check notes
+		if (mapRecord.getMapNotes().size() != mapNotes.size()) return false;
+		for (MapNote note : mapNotes) {
+			if (!mapRecord.getMapNotes().contains(note)) return false;
+		}
+		
+		// check entries
+		if (mapRecord.getMapPrinciples().size() != mapPrinciples.size()) return false;
+		for (MapPrinciple principle : mapPrinciples) {
+			if (!mapRecord.getMapPrinciples().contains(principle)) return false;
+		}
+		
+		// if passed all checks, return true
+		return true;
+	  
+  }
+
 
 }

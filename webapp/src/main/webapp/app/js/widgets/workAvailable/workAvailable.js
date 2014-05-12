@@ -6,7 +6,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	
 	dashboardProvider
 	.widget('workAvailable', {
-		title: 'Available Work',
+		title: 'Available Concepts',
 		description: 'Module to assign work to users',
 		controller: 'workAvailableWidgetCtrl',
 		templateUrl: 'js/widgets/workAvailable/workAvailable.html',
@@ -27,7 +27,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.availableConflictsPage = 1;
 	
 	// initial titles
-	$scope.availableWorkTitle = "Available Work";
+	$scope.availableWorkTitle = "Available Concepts";
 	$scope.availableConflictsTitle = "Available Conflicts";
 	
 	// retrieve focus project, current user, and current role
@@ -156,7 +156,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			$scope.numAvailableWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
 			
 			// set title
-			$scope.availableWorkTitle = "Available Work (" + data.totalCount + ")";
+			$scope.availableWorkTitle = "Available Concepts (" + data.totalCount + ")";
 			console.debug($scope.numAvailableWorkPages);
 			console.debug(data.totalCount);
 

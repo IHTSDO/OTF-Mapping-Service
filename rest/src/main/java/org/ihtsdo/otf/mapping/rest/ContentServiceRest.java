@@ -231,6 +231,7 @@ public class ContentServiceRest {
           isaId = entry.getKey();
       }
 
+      // want all descendants, do not use PFS parameter
       SearchResultList results =
           contentService.findDescendants(terminologyId, terminology,
               terminologyVersion, isaId);

@@ -552,7 +552,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 * (e.g. map records) be current in the database (i.e. updateMapRecord has
 	 * been called)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	public void processWorkflowAction(MapProject mapProject, Concept concept,
 			MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction)
@@ -560,8 +559,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		
 		setTransactionPerOperation(true);
 
-		// records in tracking record
-		System.out.println("Map record prior to workflow retrieval: " + mapRecord.toString());
 
 		// instantiate the algorithm handler for this project\
 		ProjectSpecificAlgorithmHandler algorithmHandler = (ProjectSpecificAlgorithmHandler) Class
@@ -577,16 +574,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		WorkflowTrackingRecord trackingRecord = getWorkflowTrackingRecord(
 				mapProject, concept);
 
-		// force a read of map records and users and detach the record for
-		// passing into project algorithm handler
-		// Rationale: the algorithm handler is not expected to perform any
-		// actions requiring services
-		for (MapUser mu : trackingRecord.getAssignedUsers())
-			mu.getEmail(); // force retrieval of users by requesting email
-		trackingRecord.getWorkflowStatus(); // force retrieval of records by
-											// calculating workflow status
-	
-
+		
 		// switch on workflow action
 		switch (workflowAction) {
 		case ASSIGN_FROM_INITIAL_RECORD:
@@ -717,18 +705,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		default:
 			throw new Exception("Unknown action requested.");
 		}
-		
-		
-		// records in tracking record
-		System.out.println("Map record after workflow retrieval: " + mapRecord.toString());
-		for (MapRecord mr : trackingRecord.getMapRecords()) System.out.println(mr.toString());
-		//manager.detach(trackingRecord);
-
-		
-		Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
-		/*synchronizeWorkflowTrackingRecord(trackingRecord,
-				getWorkflowTrackingRecord(mapProject, concept));*/
-		
+			
+		Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");	
 		trackingRecord = synchronizeMapRecords(trackingRecord);
 		
 		// if the tracking record is ready for removal, delete it
@@ -783,7 +761,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				System.out.println(getMapRecordInSet(oldRecords, mr.getId()));
 				
 				// if the old map record is changed, update it
-				if (! mr.equals(getMapRecordInSet(oldRecords, mr.getId()))) {
+				if (! mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
 					System.out.println("Updating record " + mr.getId().toString());
 					mappingService.updateMapRecord(mr);
 				}
