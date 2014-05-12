@@ -622,9 +622,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 						// add this terminology id to the set of descendants
 						descendantConcepts.add(childConcept.getTerminologyId());
 						
-						// explicitly retrieve inverse relationships
-						//childConcept.getInverseRelationships().size();
-						
 						// call helper function on child concept
 						descendantConcepts.addAll(computeTreePositionsHelper(childConcept, typeId, conceptPath));
 
@@ -641,7 +638,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			if (++computeTreePositionGlobalCount % 1000 == 0) { 
 				
 				computeTreePositionTransaction.commit();
-				//manager.clear();
 				computeTreePositionTransaction.begin();
 				
 				Runtime runtime = Runtime.getRuntime();
