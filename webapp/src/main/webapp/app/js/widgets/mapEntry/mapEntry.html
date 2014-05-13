@@ -17,15 +17,29 @@
       <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
       <td style="vertical-align: top; padding: 5px;"><span
         ng-show="entry.targetId != null && entry.targetId != ''">{{project.destinationTerminology}},
-          {{entry.targetId}} &nbsp
+          {{entry.targetId}} &nbsp;
           <button ng-click="clearTargetConcept(entry)">Clear</button>
-      </span> <span
+      </span> <span style="color:lightgray;"
         ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">No
-          Target Code Selected</span></td>
+          Target Selected</span></td>
     </tr>
     <tr>
-      <td style="vertical-align: top; padding: 5px;"><strong>Preferred Term</strong></td>
-      <td style="vertical-align: top; padding: 5px;">{{entry.targetName}}</td>
+      <td ng-show="entry.targetId != null && entry.targetId != ''"
+       style="vertical-align: top; padding: 5px;"><strong>Preferred Term</strong></td>       
+      <td ng-show="entry.targetId != null && entry.targetId != ''" 
+       style="vertical-align: top; padding: 5px;">{{entry.targetName}}</td>
+      <td ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">
+        <strong>Reason</strong></td> 
+      <td ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">
+        {{entry.mapRelation.name}}</td> 
+    </tr>
+    <tr ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">
+      <td style="vertical-align: top; padding: 5px;"><strong>Reason</strong></td>
+      <td style="vertical-align: top; padding: 5px;"><select
+        style="width: 60%" ng-model="mapRelationInput"
+        ng-change="selectMapRelation(mapRelationInput)"
+        ng-options="mapRelation as mapRelation.displayName for mapRelation in allowableMapRelations"></select>
+      </td>
     </tr>
   </table>
 
@@ -41,10 +55,10 @@
 
     <tr ng-show="project.ruleBased == true">
       <td style="vertical-align: top; padding: 5px;"><strong>Rule</strong></td>
-      <td style="vertical-align: top; padding: 5px;">{{entry.rule}}
-        <p ng-show="entry.rule.length > 0"></p> <input type="submit"
+      <td style="vertical-align: top; padding: 5px;"><div style="display:inline;">{{entry.rule}}&nbsp;</div>
+        <div style="display:inline;" ng-show="entry.rule.length > 0"> <input type="submit"
         value="Set Rule" ng-click="openRuleConstructor(entry)">
-        </p>
+        </div>
       </td>
     </tr>
 
@@ -84,19 +98,25 @@
     </tr>
 
     <tr ng-show="project.mapRelationStyle != 'RELATIONSHIP_STYLE'">
-      <td style="vertical-align: top; padding: 5px;"><strong>Advice</strong></td>
-      <td style="vertical-align: top; padding: 5px;">
+      <td ng-show="entry.targetId != null && entry.targetId != ''"
+          style="vertical-align: top; padding: 5px;"><strong>Advice</strong></td>
+      <td ng-show="entry.targetId != null && entry.targetId != ''"
+          style="vertical-align: top; padding: 5px;">
         <div ng-show="entry.mapAdvice.length > 0">
           <div ng-repeat="advice in entry.mapAdvice">
             <button disabled>
-              {{advice.detail}} <i class="glyphicon glyphicon-remove-circle"
-                ng-click="removeEntryAdvice(entry, advice)"> </i>
+             <div style="display: inline;"> 
+               {{advice.detail}} 
+             </div>
+              <div style="display: inline; float: right; width: 3%;">
+                <i class="glyphicon glyphicon-remove"
+                 ng-click="removeEntryAdvice(entry, advice)"></i>
+              </div>
             </button>
-
           </div>
           <hr>
         </div> <span style="color: red">{{errorAddAdvice}}</span>
-        <form>
+        <form ng-show="entry.targetId != null && entry.targetId != ''">
           Add Advice: <select style="width: 60%;"
             ng-change="addEntryAdvice(entry, adviceInput)"
             ng-model="adviceInput"

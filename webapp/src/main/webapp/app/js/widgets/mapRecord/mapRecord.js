@@ -15,7 +15,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	});
 })
 
-.controller('mapRecordWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $location, localStorageService){
+.controller('mapRecordWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $location, $sce, localStorageService){
 
 	/////////////////////////////////////
 	// Map Record Controller Functions //
@@ -305,7 +305,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					$scope.record = data;
 					$scope.recordSuccess = "Record saved.";
 					$scope.recordError = "";
-					window.history.back();
+					//if (returnBack) {
+					  window.history.back();
+					//}
 				}).error(function(data) {
 					$scope.recordSuccess = "";
 					$scope.recordError = "Error saving record.";
@@ -757,13 +759,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 	
 	function removeJsonElement(array, elem) {
-		
-		
-		
+				
 		console.debug("Removing element");
 		var newArray = [];
 		for (var i = 0; i < array.length; i++) {
-			if (array[i].localId != elem.localId) {
+			if (array[i].id != elem.id) {
 				console.debug("Pushing element " + array[i].id);
 				newArray.push(array[i]);
 			}
@@ -774,7 +774,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		return newArray;
 	}	
 	
-
+	// function to return trusted html code (for tooltip content)
+	$scope.to_trusted = function(html_code) {
+		return $sce.trustAsHtml(html_code);
+	};
 
 
 	$scope.getBrowserUrl = function() {

@@ -21,14 +21,27 @@
 <table width="100%" class="table">
   <thead>
     <tr>
-      <th style="width: 8%;"></th>
-      <th style="width: 9%;">Concept</th>
-      <th style="width: 18%;">Concept Name</th>
-      <th style="width: 8%;">Group Id</th>
-      <th style="width: 10%;">Map Priority</th>
-      <th style="width: 14%;" ng-show="project.ruleBased == true">Rule</th>
-      <th style="width: 9%;">Target</th>
-      <th style="width: 18%;">Target Name</th>
+      <th style="width: 3%;"></th>
+      <th style="width: 35%;"><div tooltip-placement="top"
+        tooltip="Source Concept Name and Id">
+        <b>Concept Name</b>
+      </div></th>
+      <th style="width: 4%;"><div tooltip-placement="top"
+        tooltip="Group Id / Map Priority">
+        <b>Grp/Prty</b>
+      </div></th>
+      <th style="width: 14%;" ng-show="project.ruleBased == true"><div tooltip-placement="top"
+        tooltip="Map Rule">
+        <b>Rule</b>
+      </div></th>
+      <th style="width: 9%;"><div tooltip-placement="top"
+        tooltip="Target Code">
+        <b>Target</b>
+      </div></th>
+      <th style="width: 34%;"><div tooltip-placement="top"
+        tooltip="Target Preferred Name">
+        <b>Target Name</b>
+      </div></th>
       <th style="width: 5%;"></th>
     </tr>
   </thead>
@@ -68,10 +81,9 @@
             </ul>
         </span>
       </span></td>
-      <td><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
-      <td>{{record.conceptName}}</td>
-      <td>{{entry.mapGroup}}</td>
-      <td>{{entry.mapPriority}}</td>
+      <td><div>{{record.conceptName}}</div>
+          <div><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></div></td>
+      <td>{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</td>
       <td ng-show="project.ruleBased == true">{{entry.rule}}</td>
       <td>{{entry.targetId}}</td>
       <td>{{entry.targetName}}</td>
