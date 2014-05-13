@@ -20,6 +20,25 @@ p {
 	padding: 7px;
 }
 
+/** from bootstrap.css - widens the display for truncated term browser entries */
+.dropdown-menu {
+  min-width: 300px;
+  position: relative;
+}
+
+/** from bootstrap.css - less wasted space on advices and principles */
+hr {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+/** from bootstrap.css - changes advice and principles buttons to fill space */
+button[disabled] {
+  cursor: default;
+  width: 100%;
+  text-align: left;
+}
+
 /** from bootstrap.css - changes margin between panels in a group */
 .panel-group {
 	margin-bottom: 10px;

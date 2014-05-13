@@ -108,7 +108,11 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		}).then (function(response) {
 			console.debug("HTTP RESPONSE");
 			console.debug(response);
-			$scope.terminologyTree = response.data.treePosition;
+			
+			// limit result count to 10
+			for (var x =0; x < response.data.treePosition.length && x < 10; x++) {
+				  $scope.terminologyTree[x] = response.data.treePosition[x];
+			}
 			
 			$scope.expandAll($scope.terminologyTree);
 			$scope.searchStatus = "";
@@ -407,12 +411,20 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	
 	$scope.truncate = function(string, length) {
 		if (length == null) length = 100;
-		if (string.length > length) return string.slice(0, length-3) + "...";
+		if (string.length > length) return string.slice(0, length-3);
 		else return string;
 	};
 	
+	$scope.truncated = function(string, length) {
+		if (length == null) length = 100;
+		if (string.length > length) 
+			return true;
+		else 
+			return false;
+	};
+	
 	$scope.selectConcept = function(node) {
-		$rootScope.$broadcast('terminologyBrowser.selectConcept', {key: 'concept', concept: node});
+		$rootScope.$broadcast('terminologyBrowser.selectConcept' , {key: 'concept', concept: node});
 		window.scrollTo(0,0);
 	};
 });
