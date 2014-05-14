@@ -9,10 +9,9 @@
 
   <thead>
     <tr>
-      <th style="width: 5%; padding: 5px;"></th>
       <th style="width: 10%; padding: 5px;">Id</th>
-      <th style="width: 30%; padding: 5px;">Name</th>
-      <th style="width: 35%; padding: 5px;">Target Id</th>
+      <th style="width: 25%; padding: 5px;">Name</th>
+      <th style="width: 45%; padding: 5px;">Target Id</th>
       <th style="width: 15%; padding: 5px;">Last Modified</th>
 
     </tr>
@@ -24,14 +23,9 @@
     <tr ng-repeat="record in editedRecords">
 
       <td style="width: 10%; padding: 5px;"><a
-        href="#/record/conceptId/{{record.conceptId}}">View</a></td>
-      <td>{{record.conceptId}}</td>
+        href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
       <td>{{record.conceptName}}</td>
-      <td
-        ng-show="record.mapEntry[1] != null && record.mapEntry[1].targetId != ''">multiple
-        ids</td>
-      <td ng-show="record.mapEntry[1] == null">{{record.mapEntry[0].targetId}}
-        - {{record.mapEntry[0].targetName}}</td>
+      <td>{{getRecordSummary(record)}}</td>
       <td>{{record.lastModified | date:'MM-dd-yyyy HH:mm'}}</td>
   </tbody>
 

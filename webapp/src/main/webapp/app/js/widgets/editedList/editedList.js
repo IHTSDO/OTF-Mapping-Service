@@ -74,13 +74,108 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 			$scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
 			 
 			$scope.editedRecords = data.mapRecord;
-			console.debug("Edited records:")
+			console.debug("Edited records:");
 			console.debug($scope.editedRecords);
 						 
 		}).error(function(error) {
 		  	$rootScope.glassPane--;
 			$scope.error = "Error";
 		});
+	};
+	
+	// returns a short summary of the record based on number of entries
+	$scope.getRecordSummary = function(record) {
+		
+		// if no entries, return null
+		if (record.mapEntry.length == 0) {
+			return "";
+		}
+		
+		// if only one entry, display the full entry summary
+		else if (record.mapEntry.length == 1) {
+			return $scope.getEntrySummary(record.mapEntry[0]);
+		
+		// otherwise simply return a string indicating the number of entries and groups
+		} else if ($scope.focusProject.groupStructure == true) {
+			
+			var maxGroup = 0;
+			for (var i = 0; i < record.mapEntry.length; i++) {
+				if (record.mapEntry[i].mapGroup > maxGroup) {
+					maxGroup = record.mapEntry[i].mapGroup;
+				};
+			}
+			return "" + maxGroup + " groups, " + record.mapEntry.length + " entries";
+			
+		} else {
+			return "" + record.mapEntry.length + " entries";
+		};
+	};
+	
+	$scope.getEntrySummary = function(entry) {
+		
+		var entrySummary = "";
+	
+		// first get the rule
+		entrySummary += $scope.getRuleSummary(entry);
+		
+		// if target is null, check relation id
+		if (entry.targetId == null || entry.targetId === '') {
+			
+			// if relation id is null or empty, return empty entry string
+			if (entry.mapRelation == null || entry.mapRelation === '') {
+				entrySummary += '[NO TARGET OR RELATION]';
+			
+			// otherwise, return the relation abbreviation
+			} else {
+				entrySummary += entry.mapRelation.abbreviation;
+				
+			};
+		// otherwise return the target code and preferred name
+		} else {
+			entrySummary += entry.targetId + " " + entry.targetName;
+		};
+		
+		return entrySummary;
+		
+	};
+	
+	// Returns a summary string for the entry rule type
+	$scope.getRuleSummary = function(entry) {
+		
+		console.debug("Entered getRuleSummary");
+		
+		var ruleSummary = "";
+		
+		// first, rule summary
+		if ($scope.focusProject.ruleBased == true) {
+			
+			if (entry.rule.toUpperCase().indexOf("FEMALE") != -1) ruleSummary += "[FEMALE] ";
+			else if (entry.rule.toUpperCase().indexOf("MALE") != -1) ruleSummary += "[MALE] ";
+			else if (entry.rule.toUpperCase().indexOf("AGE") != -1) {
+
+				
+				var lowerBound = entry.rule.match(/(>= \d+ [a-zA-Z]*)/ );
+				var upperBound = entry.rule.match(/(< \d+ [a-zA-Z]*)/ );
+				
+				console.debug(lowerBound);
+				console.debug(upperBound);
+				
+				console.debug(lowerBound[0]);
+				console.debug(upperBound[0]);
+				ruleSummary += '[AGE ';
+				
+				if (lowerBound.length > 0) {
+					ruleSummary += lowerBound[0];
+					if (upperBound.length > 0) ruleSummary += ' AND ';
+				};
+				if (upperBound.length > 0) ruleSummary += upperBound[0];
+				
+				ruleSummary += '] ';				
+			} else if (entry.rule.toUpperCase().indexOf("TRUE") != -1) ruleSummary += "[TRUE] ";
+		};
+		
+		return ruleSummary;
+			
 	};
 	
 

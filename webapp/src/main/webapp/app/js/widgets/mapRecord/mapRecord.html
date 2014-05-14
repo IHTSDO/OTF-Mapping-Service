@@ -52,14 +52,21 @@
 
 
     <div ui-sortable ng-model="entries[group]">
-      <p ng-repeat="entry in entries[group] track by entry.localId"
-        ng-click="selectEntry(entry)">
-
+      <p ng-repeat="entry in entries[group] track by entry.localId">
+        
+        <a ng-click="selectEntry(entry)">{{getEntrySummary(entry)}}</a>
+       </p>
+<!-- 
+		 display rule based summary, if project is rule based
         <a ng-show="entry.targetId != null && entry.targetId != ''"><span
           ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
-          {{entry.targetId}} {{entry.targetName}}</a> <a
-          ng-show="entry.targetId == null || entry.targetId === ''">[Empty
-          Entry]</a>
+          
+           display target id, if target is non-null
+          {{entry.targetId}} {{entry.targetName}}</a> 
+          
+           display relation id and name, if target is null and relation is non-null
+          <a ng-show="entry.targetId == null || entry.targetId === ''">[Empty
+          Entry]</a> -->
       </p>
     </div>
     <!--  end sortable entries --> <br>
@@ -113,12 +120,8 @@
   <hr>
 </div>
 <span style="color: red">{{errorAddRecordNote}}</span>
-<form>
-  <textarea ng-model="noteInput" class="form-control"></textarea>
-  <p></p>
   <input class="pull-right" type="submit" value="Add Note"
-    ng-click="addRecordNote(record, noteInput); noteInput=''">
-</form>
+    ng-click="addRecordNote(record, noteInput)">
 </accordion-group> </accordion>
 
 <!--  PRINCIPLES PANEL -->
