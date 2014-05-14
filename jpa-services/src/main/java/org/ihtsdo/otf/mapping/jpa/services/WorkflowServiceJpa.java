@@ -576,12 +576,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		
 		Set<MapRecord> mapRecords = getMapRecordsForWorkflowTrackingRecord(trackingRecord);
 		
+		System.out.println(mapRecords.size());
+		if (mapRecord != null) System.out.println(mapRecord.toString());
+		
 		// if the record passed in updates an existing record, replace it in the set
-		for (MapRecord mr : mapRecords) {
-			if (mr.getId().equals(mapRecord.getId())) {
-				mapRecords.remove(mr);
-				mapRecords.add(mapRecord);
-				break;
+		if (mapRecord != null && mapRecord.getId() != null) {
+			for (MapRecord mr : mapRecords) {
+				if (mr.getId().equals(mapRecord.getId())) {
+					mapRecords.remove(mr);
+					mapRecords.add(mapRecord);
+					break;
+				}
 			}
 		}
 		

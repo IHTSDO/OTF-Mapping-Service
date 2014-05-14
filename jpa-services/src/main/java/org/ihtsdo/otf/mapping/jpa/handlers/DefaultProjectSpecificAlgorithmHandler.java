@@ -1224,10 +1224,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 						.info("NON_LEGACY_PATH - Conflict resolution detected");
 
-				// cycle over the records
-				for (MapRecord mr : newRecords) {
+				// cycle over the previously existing records
+				for (MapRecord mr : mapRecords) {
 
-					// remove the CONFLICT_DETECTED records
+					// remove the CONFLICT_DETECTED records from the revised set
 					if (mr.getWorkflowStatus().equals(
 							WorkflowStatus.CONFLICT_DETECTED)) {
 						newRecords.remove(mr);
