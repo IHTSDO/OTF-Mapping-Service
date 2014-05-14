@@ -1416,9 +1416,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				Concept c = contentService.getConcept(conceptId, terminology,
 						terminologyVersion);
 				if (c == null) {
-					Logger.getLogger(this.getClass()).error(
+					throw new Exception(
 							"Scope concept " + conceptId + " does not exist.");
-					continue;
 				}
 				SearchResult sr = new SearchResultJpa();
 				sr.setId(c.getId());

@@ -20,6 +20,13 @@
       ng-show="node0.valid == true" ng-click="selectConcept(node0)">{{node0.terminologyId}}</a>
       <span ng-show="node0.valid == false">{{node0.terminologyId}}</span></strong>,
     {{truncate(node0.defaultPreferredName)}}
+    <div style="display:inline;" ng-show=truncated(node0.defaultPreferredName) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{node0.defaultPreferredName}}</p>
+        </span>
+    </div>
+
 
     <div collapse="!(node0.terminologyId == currentConcept.terminologyId)">
 
@@ -29,7 +36,15 @@
           <em>{{descriptionGroup.name}}</em>
           <ul>
             <li ng-repeat="description in descriptionGroup.descriptions">
-              {{truncate(description.term)}} <span
+              {{truncate(description.term)}} 
+    <div style="display:inline;" ng-show=truncated(description.term) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{description.term}}</p>
+        </span>
+    </div>
+              
+              <span
               ng-show="description.referencedConcepts.length > 0"> ( <span
                 ng-repeat="referencedConcept in description.referencedConcepts">
                   <a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}}
@@ -59,7 +74,12 @@
         ng-show="node1.valid == true" ng-click="selectConcept(node1)">{{node1.terminologyId}}</a>
         <span ng-show="node1.valid == false">{{node1.terminologyId}}</span></strong>,
         {{truncate(node1.defaultPreferredName)}}
-
+    <div style="display:inline;" ng-show=truncated(node1.defaultPreferredName) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{node1.defaultPreferredName}}</p>
+        </span>
+    </div>
         <div collapse="!(node1.terminologyId == currentConcept.terminologyId)">
 
           <div class="well well-sm">
@@ -68,7 +88,14 @@
               <em>{{descriptionGroup.name}}</em>
               <ul>
                 <li ng-repeat="description in descriptionGroup.descriptions">
-                  {{truncate(description.term)}} <span
+                  {{truncate(description.term)}} 
+                      <div style="display:inline;" ng-show=truncated(description.term) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{description.term}}</p>
+        </span>
+    </div>
+                  <span
                   ng-show="description.referencedConcepts.length > 0"> (
                     <span
                     ng-repeat="referencedConcept in description.referencedConcepts">
@@ -98,7 +125,13 @@
             ng-show="node2.valid == true" ng-click="selectConcept(node2)">{{node2.terminologyId}}</a>
             <span ng-show="node2.valid == false">{{node2.terminologyId}}</span>,
             {{truncate(node2.defaultPreferredName)}}
-
+    <div style="display:inline;" ng-show=truncated(node2.defaultPreferredName) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{node2.defaultPreferredName}}</p>
+        </span>
+    </div>
+    
             <div
               collapse="!(node2.terminologyId == currentConcept.terminologyId)">
 
@@ -109,7 +142,14 @@
                   <em>{{descriptionGroup.name}}</em>
                   <ul>
                     <li ng-repeat="description in descriptionGroup.descriptions">
-                      {{truncate(description.term)}} <span
+                      {{truncate(description.term)}} 
+    <div style="display:inline;" ng-show=truncated(description.term) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{description.term}}</p>
+        </span>
+    </div>                      
+                      <span
                       ng-show="description.referencedConcepts.length > 0">
                         ( <span
                         ng-repeat="referencedConcept in description.referencedConcepts">
@@ -139,6 +179,12 @@
                 ng-show="node3.valid == true" ng-click="selectConcept(node3)">{{node3.terminologyId}}</a>
                 <span ng-show="node3.valid == false">{{node3.terminologyId}}</span>,
                 {{truncate(node3.defaultPreferredName)}}
+    <div style="display:inline;" ng-show=truncated(node3.defaultPreferredName) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{node3.defaultPreferredName}}</p>
+        </span>
+    </div>
 
                 <div
                   collapse="!(node3.terminologyId == currentConcept.terminologyId)">
@@ -151,7 +197,15 @@
                       <ul>
                         <li
                           ng-repeat="description in descriptionGroup.descriptions">
-                          {{truncate(description.term)}} <span
+                          {{truncate(description.term)}} 
+    <div style="display:inline;" ng-show=truncated(description.term) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{description.term}}</p>
+        </span>
+    </div>                          
+                          
+                          <span
                           ng-show="description.referencedConcepts.length > 0">
                             ( <span
                             ng-repeat="referencedConcept in description.referencedConcepts">
@@ -183,6 +237,12 @@
                     ng-click="selectConcept(node4)">{{node4.terminologyId}}</a>
                     <span ng-show="node4.valid == false">{{node4.terminologyId}}</span>,
                     {{truncate(node4.defaultPreferredName)}}
+    <div style="display:inline;" ng-show=truncated(node4.defaultPreferredName) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{node4.defaultPreferredName}}</p>
+        </span>
+    </div>
 
                     <div
                       collapse="!(node4.terminologyId == currentConcept.terminologyId)">
@@ -195,7 +255,14 @@
                           <ul>
                             <li
                               ng-repeat="description in descriptionGroup.descriptions">
-                              {{truncate(description.term)}} <span
+                              {{truncate(description.term)}} 
+    <div style="display:inline;" ng-show=truncated(description.term) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{description.term}}</p>
+        </span>
+    </div>                              
+                              <span
                               ng-show="description.referencedConcepts.length > 0">
                                 ( <span
                                 ng-repeat="referencedConcept in description.referencedConcepts">
@@ -228,6 +295,12 @@
                         ng-click="selectConcept(node5)">{{node5.terminologyId}}</a>
                         <span ng-show="node5.valid == false">{{node5.terminologyId}}</span>,
                         {{truncate(node5.defaultPreferredName)}}
+    <div style="display:inline;" ng-show=truncated(node5.defaultPreferredName) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{node5.defaultPreferredName}}</p>
+        </span>
+    </div>
 
                         <div
                           collapse="!(node5.terminologyId == currentConcept.terminologyId)">
@@ -240,7 +313,14 @@
                               <ul>
                                 <li
                                   ng-repeat="description in descriptionGroup.descriptions">
-                                  {{truncate(description.term)}} <span
+                                  {{truncate(description.term)}} 
+     <div style="display:inline;" ng-show=truncated(description.term) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{description.term}}</p>
+        </span>
+    </div>                                 
+                                  <span
                                   ng-show="description.referencedConcepts.length > 0">
                                     ( <span
                                     ng-repeat="referencedConcept in description.referencedConcepts">
@@ -273,6 +353,12 @@
                             ng-click="selectConcept(node6)">{{node6.terminologyId}}</a>
                             <span ng-show="node6.valid == false">{{node6.terminologyId}}</span>,
                             {{truncate(node6.defaultPreferredName)}}
+    <div style="display:inline;" ng-show=truncated(node6.defaultPreferredName) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{node6.defaultPreferredName}}</p>
+        </span>
+    </div>
 
                             <div
                               collapse="!(node6.terminologyId == currentConcept.terminologyId)">
@@ -285,7 +371,14 @@
                                   <ul>
                                     <li
                                       ng-repeat="description in descriptionGroup.descriptions">
-                                      {{truncate(description.term)}} <span
+                                      {{truncate(description.term)}} 
+    <div style="display:inline;" ng-show=truncated(description.term) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{description.term}}</p>
+        </span>
+    </div>                                      
+                                      <span
                                       ng-show="description.referencedConcepts.length > 0">
                                         ( <span
                                         ng-repeat="referencedConcept in description.referencedConcepts">
@@ -319,6 +412,12 @@
                                 ng-click="selectConcept(node7)">{{node7.terminologyId}}</a>
                                 <span ng-show="node7.valid == false">{{node7.terminologyId}}</span>,
                                 {{truncate(node7.defaultPreferredName)}}
+    <div style="display:inline;" ng-show=truncated(node7.defaultPreferredName) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{node7.defaultPreferredName}}</p>
+        </span>
+    </div>
 
                                 <div
                                   collapse="!(node7.terminologyId == currentConcept.terminologyId)">
@@ -331,7 +430,14 @@
                                       <ul>
                                         <li
                                           ng-repeat="description in descriptionGroup.descriptions">
-                                          {{truncate(description.term)}} <span
+                                          {{truncate(description.term)}} 
+    <div style="display:inline;" ng-show=truncated(description.term) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{description.term}}</p>
+        </span>
+    </div>                                          
+                                          <span
                                           ng-show="description.referencedConcepts.length > 0">
                                             ( <span
                                             ng-repeat="referencedConcept in description.referencedConcepts">
@@ -369,6 +475,12 @@
                                     <span ng-show="node8.valid == false">{{node8.terminologyId}}</span>,
                                     {{truncate(node8.defaultPreferredName)}}
 
+    <div style="display:inline;" ng-show=truncated(node8.defaultPreferredName) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{node8.defaultPreferredName}}</p>
+        </span>
+    </div>
                                     <div
                                       collapse="!(node8.terminologyId == currentConcept.terminologyId)">
 
@@ -380,7 +492,14 @@
                                           <ul>
                                             <li
                                               ng-repeat="description in descriptionGroup.descriptions">
-                                              {{truncate(description.term)}} <span
+                                              {{truncate(description.term)}} 
+    <div style="display:inline;" ng-show=truncated(description.term) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{description.term}}</p>
+        </span>
+    </div>                                              
+                                              <span
                                               ng-show="description.referencedConcepts.length > 0">
                                                 ( <span
                                                 ng-repeat="referencedConcept in description.referencedConcepts">
@@ -417,6 +536,12 @@
                                         ng-click="selectConcept(node9)">{{node9.terminologyId}}</a>
                                         <span ng-show="node9.valid == false">{{node9.terminologyId}}</span>,
                                         {{truncate(node9.defaultPreferredName)}}
+    <div style="display:inline;" ng-show=truncated(node9.defaultPreferredName) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{node9.defaultPreferredName}}</p>
+        </span>
+    </div>
 
                                         <div
                                           collapse="!(node9.terminologyId == currentConcept.terminologyId)">
@@ -430,6 +555,12 @@
                                                 <li
                                                   ng-repeat="description in descriptionGroup.descriptions">
                                                   {{truncate(description.term)}}
+    <div style="display:inline;" ng-show=truncated(description.term) class="dropdown"> 
+      <a class="dropdown-toggle">...</a>
+        <span style="width:100%" class="dropdown-menu">
+          <p> {{description.term}}</p>
+        </span>
+    </div>
                                                   <span
                                                   ng-show="description.referencedConcepts.length > 0">
                                                     ( <span

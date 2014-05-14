@@ -132,26 +132,40 @@
 <div ng-show="record.mapPrinciple.length > 0">
   <div ng-repeat="principle in record.mapPrinciple">
     <button disabled>
-      {{principle.principleId}}: {{principle.name}} <i
-        class="glyphicon glyphicon-remove-circle"
+      <div style="display: inline; float: left; width: 7%">
+        {{principle.principleId}}: 
+      </div>
+      <div style="display: inline;" class="dropdown"> 
+        <a class="dropdown-toggle"> 
+          <i class="glyphicon glyphicon-info-sign"></i>
+        </a> {{principle.name}} 
+        <div class="dropdown-menu">
+          <p>Reference: {{principle.sectionRef}}</p>
+          <p ng-bind-html="to_trusted(principle.detail)"></p>
+        </div>
+      </div>
+      <div style="display: inline; float: right; width: 3%;">
+        <i class="glyphicon glyphicon-remove"
         ng-click="removeRecordPrinciple(record, principle)"></i>
+      </div>
     </button>
   </div>
   <hr>
 </div>
 <span style="color: red">{{errorAddRecordPrinciple}}</span>
 <form>
-  <textarea ng-model="principleInput"
-    typeahead="principle as principle.principleId + ':  ' + principle.name for principle in project.mapPrinciple | filter:$viewValue | limitTo:8"
-    class="form-control" typeahead-min-length="0" typeahead-editable="false"></textarea>
-  <p></p>
-  <input class="pull-right" type="submit" value="Add Principle"
-    ng-click="addRecordPrinciple(record, principleInput)">
+  Add Principle: <select style="width: 75%;"
+    ng-change="addRecordPrinciple(record, principleInput)"
+    ng-model="principleInput"
+    ng-options="principle as principle.principleId + ':  ' + principle.name for principle in project.mapPrinciple | filter:$viewValue | limitTo:8"></select>
 </form>
+<hr>
+<div ng-show="project.mapPrincipleSourceDocument != null">
+        Principles taken from <a
+          href="doc/{{project.mapPrincipleSourceDocument}}" target="_blank">Map
+          Principles Document</a>
+</div>
 </accordion-group> </accordion>
-
-
-
 
 <!--  FLAGS PANEL -->
 <accordion> <accordion-group is-open="isFlagsOpen">
@@ -168,8 +182,7 @@ map lead review<br>
 
 <button class="btn btn-sm btn-primary" ng-click="finishMapRecord()">Finish</button>
 <!-- <button class="btn btn-sm btn-primary" ng-click="finishAndNextMapRecord()">Finish/Next</button>
- -->
- <button class="btn btn-sm btn-warning" ng-click="cancelMapRecord()">Cancel</button>
+ --><button class="btn btn-sm btn-warning" ng-click="cancelMapRecord()">Cancel</button>
  
 <button class="btn btn-sm btn-primary" style="float: right;"
   ng-click="saveMapRecord()">Save For Later</button>

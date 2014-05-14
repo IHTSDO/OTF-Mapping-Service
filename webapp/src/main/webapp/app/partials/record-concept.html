@@ -10,19 +10,38 @@
   </h4>
 </div>
 
+<hr>
 <!--  Map Records Found for this project -->
 <div ng-show="recordsInProject.length > 0">
-  <h4>Map Records for {{focusProject.name}}</h4>
+  <h4>{{focusProject.name}} Map Records</h4>
   <table class="table">
     <thead>
       <tr>
         <th style="width: 5%;"></th>
-        <th style="width: 8%;">Group Id</th>
-        <th style="width: 10%;">Map Priority</th>
-        <th style="width: 15%;">Rule</th>
-        <th style="width: 10%;">Target</th>
-        <th style="width: 20%;">Target Name</th>
-        <th style="width: 15%;">Status</th>
+        <th style="width: 4%;"><div tooltip-placement="top"
+        tooltip="Group Id / Map Priority">
+        <b>Grp/Prty</b>
+      </div></th>
+        <th style="width: 14%;"><div tooltip-placement="top"
+        tooltip="Map Rule">
+        <b>Rule</b>
+      </div></th>
+        <th style="width: 9%;"><div tooltip-placement="top"
+        tooltip="Target Code">
+        <b>Target</b>
+      </div></th>
+        <th style="width: 35%;"><div tooltip-placement="top"
+        tooltip="Target Preferred Name">
+        <b>Target Name</b>
+      </div></th>
+        <th style="width: 15%;"><div tooltip-placement="top"
+        tooltip="Workflow Status">
+        <b>Status</b>
+      </div></th>
+        <th style="width: 15%;" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"><div tooltip-placement="top"
+        tooltip="Owner">
+        <b>Owner</b>
+      </div></th>
         <th style="width: 5%;"></th>
       </tr>
     </thead>
@@ -56,12 +75,12 @@
               </span>
             </div>
         </span></td>
-        <td>{{entry.mapGroup}}</td>
-        <td>{{entry.mapPriority}}</td>
+        <td>{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</td>
         <td><span ng-show="getRuleBasedForRecord(record) == true">{{entry.rule}}</span></td>
         <td>{{entry.targetId}}</td>
         <td>{{entry.targetName}}</td>
         <td ng-show="displayToViewer(record)">{{record.workflowStatus}}</td>
+        <td ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">{{record.owner.name}}</td>
         <td><a ng-show="isEditable(record)" ng-click="editRecord(record)">Edit</a></td>
 
       </tr>
@@ -82,14 +101,35 @@
   <table width="100%" class="table">
     <thead>
       <tr>
-        <th style="width: 5%;"></th>
-        <th style="width: 18%;">Project Name</th>
-        <th style="width: 8%;">Group Id</th>
-        <th style="width: 10%;">Map Priority</th>
-        <th style="width: 13%;">Rule</th>
-        <th style="width: 10%;">Target</th>
-        <th style="width: 18%;">Target Name</th>
-        <th style="width: 10%;">Status</th>
+        <th style="width: 3%;"></th>
+        <th style="width: 18%;"><div tooltip-placement="top"
+        tooltip="Mapping Project Name">
+        <b>Project Name</b>
+      </div></th>
+        <th style="width: 4%;"><div tooltip-placement="top"
+        tooltip="Group Id / Map Priority">
+        <b>Grp/Prty</b>
+      </div></th>
+        <th style="width: 14%;"><div tooltip-placement="top"
+        tooltip="Map Rule">
+        <b>Rule</b>
+      </div></th>
+        <th style="width: 9%;"><div tooltip-placement="top"
+        tooltip="Target Code">
+        <b>Target</b>
+      </div></th>
+        <th style="width: 28%;"><div tooltip-placement="top"
+        tooltip="Target Preferred Name">
+        <b>Target Name</b>
+      </div></th>
+        <th style="width: 10%;"><div tooltip-placement="top"
+        tooltip="Workflow Status">
+        <b>Status</b>
+      </div></th>
+      <th style="width: 15%;" ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"><div tooltip-placement="top"
+        tooltip="Owner">
+        <b>Owner</b>
+      </div></th>
       </tr>
     </thead>
 
@@ -122,15 +162,15 @@
             </div>
         </span></td>
         <td><a href="index.html#/project/details">{{getProjectName(record)}}</a></td>
-        <td>{{entry.mapGroup}}</td>
-        <td>{{entry.mapPriority}}</td>
+        <td>{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</td>
         <td><span ng-show="getRuleBasedForRecord(record) == true">{{entry.rule}}</span>
           <span ng-show="getRuleBasedForRecord(record) == false">(Not
             Rule Based)</span></td>
         <td>{{entry.targetId}}</td>
         <td>{{entry.targetName}}</td>
         <td>{{record.workflowStatus}}</td>
-
+        <td ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">{{record.owner.name}}</td>
+        
       </tr>
 
 
@@ -138,7 +178,7 @@
   </table>
 </div>
 
-
+<hr>
 <div ng-show="concept.relationship.length > 0 || concept.children.length > 0">
 
   <h3>Concept Navigation</h3>
