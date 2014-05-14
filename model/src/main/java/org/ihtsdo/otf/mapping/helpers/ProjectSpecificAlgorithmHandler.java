@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.List;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -119,8 +120,8 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the workflow tracking record
    * @throws Exception
    */
-  public WorkflowTrackingRecord assignFromInitialRecord(
-    WorkflowTrackingRecord trackingRecord, MapRecord mapRecord, MapUser mapUser)
+  public Set<MapRecord> assignFromInitialRecord(
+    WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapRecord mapRecord, MapUser mapUser)
     throws Exception;
 
   /**
@@ -132,8 +133,8 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the workflow tracking record
    * @throws Exception
    */
-  public WorkflowTrackingRecord assignFromScratch(
-    WorkflowTrackingRecord trackingRecord, Concept concept, MapUser mapUser)
+  public Set<MapRecord> assignFromScratch(
+    WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, Concept concept, MapUser mapUser)
     throws Exception;
 
   /**
@@ -145,7 +146,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the workflow tracking record
    * @throws Exception
    */
-  public WorkflowTrackingRecord unassign(WorkflowTrackingRecord trackingRecord,
+  public Set<MapRecord> unassign(WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, 
     MapUser mapUser) throws Exception;
 
   /**
@@ -157,8 +158,8 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the workflow tracking record
    * @throws Exception the exception
    */
-  public WorkflowTrackingRecord finishEditing(
-    WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception;
+  public Set<MapRecord> finishEditing(
+    WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
 
   /**
    * Performs workflow actions necessary when a map user wishes to save a record
@@ -169,6 +170,6 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the workflow tracking record
    * @throws Exception
    */
-  public WorkflowTrackingRecord saveForLater(
-    WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception;
+  public Set<MapRecord> saveForLater(
+    WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
 }

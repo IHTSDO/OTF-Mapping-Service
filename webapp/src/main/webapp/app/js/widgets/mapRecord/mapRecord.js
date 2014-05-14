@@ -28,6 +28,12 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.groups = 	null;
 	$scope.entries =    null;
 	$scope.user = 		localStorageService.get('currentUser');
+	
+	// record change stack
+	$scope.recordStack = [];					// the stack of modified records
+	$scope.recordStackPosition = -1; 			// will be incremented to 0 upon initialization
+	$scope.recordStackInUse = false;			// flag for whether record change is due to user action
+	$scope.recordInitializationComplete = false;// flag for whether initialization complete
 
 	// initialize accordion variables
 	$scope.isConceptOpen = true;
@@ -70,6 +76,56 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.$watch('project', function() {
 		retrieveRecord();
 	});
+	
+	// watch the record for saving local revision history
+	$scope.$watch('record', function() {
+		
+		// if initializing, do nothing
+		if ($scope.recordInitializationComplete == true) {
+		
+			// if the record has changed but the in use flag is false, add the new revision and update the position
+			if ($scope.recordStackInUse == false) {
+				
+				// if not the last entry, discard any future revisions (i.e. record has changed from this saved state)
+				if ($scope.recordStackPosition != $scope.recordStack.length && $scope.recordStack != 0) {
+					$scope.recordStack = $scope.recordStack.slice(0, $scope.recordStackPosition + 1);
+				}
+				
+				// push the record onto the stack
+				$scope.recordStack.push($scope.record);
+				$scope.recordStackPosition++;
+				
+				console.debug('recordStack:  New version: ' + $scope.recordStackPosition);
+			// otherwise, do nothing, and set the in use flag to false
+			} else {
+				console.debug('recordStack:  New version, but stack in use');
+				
+				$scope.recordStackInUse = true;
+			}
+		} else {
+			console.debug('recordStack:  Change detected, due to initialization');
+		}
+	});
+	
+	// UNDO function: if not at the beginning of the stack, change the record to previous version
+	$scope.undoMapRecordChange = function() {
+		if ($scope.recordStackPosition > 0) {
+			$scope.recordStackInUse = true;
+			$scope.record = $scope.recordStack[$scope.recordStackPosition - 1];
+			$scope.entries = $scope.record.localEntries;
+			$scope.recordStackPosition--;
+		}
+	};
+	
+	// REDO function: if at the beginning of the stack, change record to next version
+	$scope.redoMapRecordChange = function() {
+		if ($scope.recordStackPosition < $scope.recordStack.length) {
+			$scope.recordStackInUse = true;
+			$scope.record = $scope.recordStack[$scope.recordStackPosition + 1];
+			$scope.entries = $scope.record.localEntries;
+			$scope.recordStackPosition++;
+		}
+	};
 
 	// initialize local variables
 	var currentLocalId = 1;   // used for addition of new entries without hibernate id
@@ -114,6 +170,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 			// initialize the entries
 			initializeEntries();
+			
+			// assign the local entries to the map record, triggers recordStack
+			console.debug("recordStack: Assigning local entries");
+			$scope.record.localEntries = $scope.entries;
 	
 		});
 	};
@@ -130,6 +190,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		console.debug("Initializing map entries -- " + $scope.record.mapEntry.length + " found");
 		console.debug($scope.record.mapEntry);
+		
+		$scope.recordInitializationComplete = false;
 		
 		// find the maximum hibernate id value
 		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
@@ -152,7 +214,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			// otherwise, initialize group arrays
 		} else {
 
-			// initiailize entry arrays for distribution by group
+			// initialize entry arrays for distribution by group
 			$scope.entries = new Array(10);
 
 			for (var i=0; i < $scope.entries.length; i++) $scope.entries[i] = new Array();
@@ -176,6 +238,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		} else {
 			$scope.selectEntry($scope.record.mapEntry[0]);
 		}
+		
+		$scope.recordInitializationComplete = true;
 	}
 
 	/**
@@ -377,7 +441,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.record = data;
 			$scope.recordSuccess = "Record saved.";
 			$scope.recordError = "";
-			//window.history.back(); 
+			window.history.back(); 
 		}).error(function(data) {
 			$scope.recordSuccess = "";
 			$scope.recordError = "Error saving record.";
@@ -391,24 +455,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		window.history.back();
 
-	};
-
-	$scope.deleteMapRecord = function() {
-		var confirmDelete = confirm("Deleting this map record will also destroy the map entries attached to this record.\n\nAre you sure you want to delete this record?");
-		if (confirmDelete == true) {
-
-			$http({
-				url: root_mapping + "record/delete",
-				dataType: "json",
-				data: $scope.record,
-				method: "DELETE",
-				headers: {"Content-Type": "application/json"}
-			}).success(function(data) {
-				window.history.back();
-			}).error(function(data) {
-				console.debug("ERROR deleting record");	  
-			});
-		}
 	};
 
 	$scope.addRecordPrinciple = function(record, principle) {
@@ -433,6 +479,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			if (principlePresent == true) {
 				$scope.errorAddRecordPrinciple = "The principle with id " + principle.principleId  + " is already attached to the map record";
 			} else {
+				console.debug('Adding principle');
 				$scope.record['mapPrinciple'].push(principle);
 			};
 
@@ -443,6 +490,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.removeRecordPrinciple = function(record, principle) {
 		record['mapPrinciple'] = removeJsonElement(record['mapPrinciple'], principle);
 		$scope.record = record;
+		
+		console.debug('Removed principle');
 	};
 
 	$scope.addRecordNote = function(record, note) {
@@ -660,6 +709,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			} else {
 				console.error("MapRecordWidget: Invalid action requested for entry modification");
 			}
+			
+			$scope.record.localEntries = $scope.entries;
 		}
 	});
 

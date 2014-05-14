@@ -798,9 +798,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 *             the exception
 	 */
 	@Override
-	public WorkflowTrackingRecord assignFromInitialRecord(
-			WorkflowTrackingRecord trackingRecord, MapRecord mapRecord,
-			MapUser mapUser) throws Exception {
+	public Set<MapRecord> assignFromInitialRecord(
+			WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords,
+			MapRecord mapRecord, MapUser mapUser) throws Exception {
+
+		Set<MapRecord> newRecords = new HashSet<>();
 
 		switch (trackingRecord.getWorkflowPath()) {
 
@@ -817,7 +819,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			}
 
 			// check that only one record exists for this tracking record
-			if (!(trackingRecord.getMapRecords().size() == 1)) {
+			if (!(trackingRecord.getMapRecordIds().size() == 1)) {
 				throw new Exception(
 						"DefaultProjectSpecificHandlerException - assignFromInitialRecord: More than one record exists for FIX_ERROR_PATH assignment.");
 			}
@@ -835,8 +837,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			newRecord.setOwner(mapUser);
 			newRecord.setLastModifiedBy(mapUser);
 
-			// add newly persisted record to tracking record
-			trackingRecord.addMapRecord(newRecord);
+			newRecords.add(newRecord);
 
 			break;
 
@@ -863,7 +864,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					"assignFromInitialRecord called with invalid workflow path");
 		}
 
-		return trackingRecord;
+		return newRecords;
 	}
 
 	/**
@@ -889,9 +890,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 *             the exception
 	 */
 	@Override
-	public WorkflowTrackingRecord assignFromScratch(
-			WorkflowTrackingRecord trackingRecord, Concept concept,
-			MapUser mapUser) throws Exception {
+	public Set<MapRecord> assignFromScratch(
+			WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords,
+			Concept concept, MapUser mapUser) throws Exception {
+
+		// the list of map records to return
+		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
 		// create new record
 		MapRecord mapRecord = new MapRecordJpa();
@@ -907,13 +911,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 			// if a "new" tracking record (i.e. prior to conflict detection),
 			// add a NEW record
-			if (trackingRecord.getWorkflowStatus().compareTo(
+			if (getWorkflowStatus(mapRecords).compareTo(
 					WorkflowStatus.CONFLICT_DETECTED) < 0) {
 
 				// check that this record is valid to be assigned (i.e. no more
 				// than
 				// one other specialist assigned)
-				if (trackingRecord.getAssignedUsers().size() >= 2) {
+				if (getMapUsers(mapRecords).size() >= 2) {
 					throw new Exception(
 							"DefaultProjectSpecificHandlerException - assignFromScratch:  Two users already assigned");
 				}
@@ -924,14 +928,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 				// otherwise, if this is a tracking record with conflict
 				// detected, add a CONFLICT_IN_PROGRESS record
-			} else if (trackingRecord.getWorkflowStatus().equals(
+			} else if (getWorkflowStatus(mapRecords).equals(
 					WorkflowStatus.CONFLICT_DETECTED)) {
 
 				mapRecord
 						.setWorkflowStatus(WorkflowStatus.CONFLICT_IN_PROGRESS);
 
 				// get the origin ids from the tracking record
-				for (MapRecord mr : trackingRecord.getMapRecords()) {
+				for (MapRecord mr : newRecords) {
 					mapRecord.addOrigin(mr.getId());
 				}
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
@@ -953,24 +957,24 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		}
 
 		ContentService contentService = new ContentServiceJpa();
-		mapRecord.setCountDescendantConcepts(
-				new Long(
-						// get the tree positions for this concept
-						contentService.getTreePositionsForConcept(
-								trackingRecord.getTerminologyId(), 
-								trackingRecord.getTerminology(), 
+		mapRecord.setCountDescendantConcepts(new Long(
+		// get the tree positions for this concept
+				contentService
+						.getTreePositionsForConcept(
+								trackingRecord.getTerminologyId(),
+								trackingRecord.getTerminology(),
 								trackingRecord.getTerminologyVersion())
-								
-								.getTreePositions()			// get the list of tree positions
-								.get(0)						// get the first tree position
-								.getDescendantCount()));	// get the descendant count
+
+						.getTreePositions() // get the list of tree positions
+						.get(0) // get the first tree position
+						.getDescendantCount())); // get the descendant count
 		contentService.close();
 
 		// add this record to the tracking record
-		trackingRecord.addMapRecord(mapRecord);
+		newRecords.add(mapRecord);
 
-		// return the tracking record
-		return trackingRecord;
+		// return the modified record set
+		return newRecords;
 	}
 
 	/**
@@ -989,12 +993,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 *             the exception
 	 */
 	@Override
-	public WorkflowTrackingRecord unassign(
-			WorkflowTrackingRecord trackingRecord, MapUser mapUser)
-			throws Exception {
+	public Set<MapRecord> unassign(WorkflowTrackingRecord trackingRecord,
+			Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
 
 		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
 				"Unassign called");
+
+		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
 		// switch on workflow path
 		switch (trackingRecord.getWorkflowPath()) {
@@ -1006,7 +1011,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			MapRecord mapRecord = null;
 
 			// find the map record this user is assigned to
-			for (MapRecord mr : trackingRecord.getMapRecords()) {
+			for (MapRecord mr : newRecords) {
 				if (mr.getOwner().equals(mapUser)) {
 					mapRecord = mr;
 				}
@@ -1017,7 +1022,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						"unassign called for concept that does not have specified user assigned");
 
 			// remove this record from the tracking record
-			trackingRecord.removeMapRecord(mapRecord);
+			newRecords.remove(mapRecord);
 
 			// determine action based on record's workflow status after removal
 			// of
@@ -1042,7 +1047,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			// reverted to EDITING_DONE
 			case CONFLICT_DETECTED:
 
-				for (MapRecord mr : trackingRecord.getMapRecords()) {
+				for (MapRecord mr : newRecords) {
 
 					// if another specialist's record, revert to EDITING_DONE
 					if (mr.getWorkflowStatus().equals(
@@ -1082,7 +1087,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// from REVIEW
 		case FIX_ERROR_PATH:
 
-			for (MapRecord mr : trackingRecord.getMapRecords()) {
+			for (MapRecord mr : newRecords) {
 				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW)) {
 					mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 				}
@@ -1098,8 +1103,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			break;
 		}
 
-		// return the tracking record
-		return trackingRecord;
+		// return the modified record set
+		return newRecords;
 
 	}
 
@@ -1116,13 +1121,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 *             the exception
 	 */
 	@Override
-	public WorkflowTrackingRecord finishEditing(
-			WorkflowTrackingRecord trackingRecord, MapUser mapUser)
-			throws Exception {
+	public Set<MapRecord> finishEditing(WorkflowTrackingRecord trackingRecord,
+			Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
+
+		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
 		// find the record assigned to this user
 		MapRecord mapRecord = null;
-		for (MapRecord mr : trackingRecord.getMapRecords()) {
+		for (MapRecord mr : newRecords) {
 			// find using mapping service instead of workflow service?
 			if (mr.getOwner().equals(mapUser)) {
 				mapRecord = mr;
@@ -1137,7 +1143,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		case NON_LEGACY_PATH:
 
 			// case 1: A specialist is finished with a record
-			if (trackingRecord.getWorkflowStatus().compareTo(
+			if (getWorkflowStatus(mapRecords).compareTo(
 					WorkflowStatus.CONFLICT_DETECTED) < 0) {
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
@@ -1146,11 +1152,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// set this record to EDITING_DONE
 				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 
-				List<MapRecord> mapRecords = new ArrayList<>(
-						trackingRecord.getMapRecords());
-
 				// check if two specialists have completed work
-				if (trackingRecord.getLowestWorkflowStatus().equals(
+				if (getLowestWorkflowStatus(mapRecords).equals(
 						WorkflowStatus.EDITING_DONE)
 						&& mapRecords.size() == 2) {
 
@@ -1158,8 +1161,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 							DefaultProjectSpecificAlgorithmHandler.class).info(
 							"NON_LEGACY_PATH - Two records found");
 
+					java.util.Iterator<MapRecord> record_iter = mapRecords
+							.iterator();
+					MapRecord mapRecord1 = record_iter.next();
+					MapRecord mapRecord2 = record_iter.next();
 					ValidationResult validationResult = compareMapRecords(
-							mapRecords.get(0), mapRecords.get(1));
+							mapRecord1, mapRecord2);
 
 					// if map records validation is successful
 					if (validationResult.isValid() == true) {
@@ -1180,15 +1187,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 						// construct and set the new origin ids
 						Set<Long> originIds = new HashSet<>();
-						originIds.add(mapRecords.get(0).getId());
-						originIds.add(mapRecords.get(1).getId());
-						originIds.addAll(mapRecords.get(0).getOriginIds());
-						originIds.addAll(mapRecords.get(1).getOriginIds());
+						originIds.add(mapRecord1.getId());
+						originIds.add(mapRecord2.getId());
+						originIds.addAll(mapRecord1.getOriginIds());
+						originIds.addAll(mapRecord2.getOriginIds());
 						newRecord.setOriginIds(originIds);
 
-						// remove the previous records and add the new record
-						trackingRecord.setMapRecords(null);
-						trackingRecord.addMapRecord(newRecord);
+						newRecords.clear();
+						newRecords.add(newRecord);
 
 					} else {
 
@@ -1199,7 +1205,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						// conflict detected, change workflow status of all
 						// records and
 						// update records
-						for (MapRecord mr : mapRecords) {
+						for (MapRecord mr : newRecords) {
 							mr.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
 						}
 					}
@@ -1212,24 +1218,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				}
 
 				// case 2: A lead is finished with a conflict resolution
-			} else if (trackingRecord.getWorkflowStatus().equals(
+			} else if (getWorkflowStatus(mapRecords).equals(
 					WorkflowStatus.CONFLICT_IN_PROGRESS)) {
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 						.info("NON_LEGACY_PATH - Conflict resolution detected");
 
-				// extract the map records and delete the workflow tracking
-				// record
-				Set<MapRecord> mapRecords = new HashSet<>(
-						trackingRecord.getMapRecords());
-
 				// cycle over the records
-				for (MapRecord mr : mapRecords) {
+				for (MapRecord mr : newRecords) {
 
 					// remove the CONFLICT_DETECTED records
 					if (mr.getWorkflowStatus().equals(
 							WorkflowStatus.CONFLICT_DETECTED)) {
-						trackingRecord.removeMapRecord(mr);
+						newRecords.remove(mr);
 
 						// set the CONFLICT_IN_PROGRESS record to
 						// READY_FOR_PUBLICATION
@@ -1253,19 +1254,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			// assumption check: should only be 2 records
 			// 1) The original record (now marked REVIEW)
 			// 2) The modified record
-			if (trackingRecord.getMapRecords().size() != 2) {
+			if (mapRecords.size() != 2) {
 				throw new Exception(
 						"finishEditing on FIX_ERROR_PATH:  Expected exactly two map records.");
 			}
 
 			// cycle over the records
-			for (MapRecord mr : trackingRecord.getMapRecords()) {
+			for (MapRecord mr : newRecords) {
 
 				// if the original PUBLISHED/READY_FOR_PUBLICATION record (i.e.
 				// now
 				// has REVIEW), remove
 				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW)) {
-					trackingRecord.removeMapRecord(mr);
+					newRecords.remove(mr);
 				} else {
 					mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 				}
@@ -1289,7 +1290,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			throw new Exception("finishEditing: Unexpected workflow path");
 		}
 
-		return trackingRecord;
+		return newRecords;
 
 	}
 
@@ -1302,13 +1303,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 * org.ihtsdo.otf.mapping.model.MapUser)
 	 */
 	@Override
-	public WorkflowTrackingRecord saveForLater(
-			WorkflowTrackingRecord trackingRecord, MapUser mapUser)
-			throws Exception {
+	public Set<MapRecord> saveForLater(WorkflowTrackingRecord trackingRecord,
+			Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
+
+		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
 		// find the record assigned to this user
 		MapRecord mapRecord = null;
-		for (MapRecord mr : trackingRecord.getMapRecords()) {
+		for (MapRecord mr : newRecords) {
 			// find using mapping service instead of workflow service?
 			if (mr.getOwner().equals(mapUser)) {
 				mapRecord = mr;
@@ -1337,6 +1339,32 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			break;
 
 		}
-		return trackingRecord;
+		return newRecords;
+	}
+
+	public WorkflowStatus getWorkflowStatus(Set<MapRecord> mapRecords) {
+		WorkflowStatus workflowStatus = WorkflowStatus.NEW;
+		for (MapRecord mr : mapRecords) {
+			if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
+				workflowStatus = mr.getWorkflowStatus();
+		}
+		return workflowStatus;
+	}
+
+	public WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
+		WorkflowStatus workflowStatus = WorkflowStatus.REVIEW;
+		for (MapRecord mr : mapRecords) {
+			if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
+				workflowStatus = mr.getWorkflowStatus();
+		}
+		return workflowStatus;
+	}
+
+	public Set<MapUser> getMapUsers(Set<MapRecord> mapRecords) {
+		Set<MapUser> mapUsers = new HashSet<>();
+		for (MapRecord mr : mapRecords) {
+			mapUsers.add(mr.getOwner());
+		}
+		return mapUsers;
 	}
 }

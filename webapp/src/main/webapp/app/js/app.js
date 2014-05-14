@@ -16,8 +16,8 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.terminologyBrowser',
                                                      'mapProjectApp.widgets.compareRecords',
                                                      'LocalStorageModule',
-                                                     'ngCookies'/*,
-                                                     'textAngular'*/
+                                                     'ngCookies',
+                                                     'textAngular'
                                                      ])
                                                      .value('prefix', '')
                                                      .config(function(dashboardProvider){

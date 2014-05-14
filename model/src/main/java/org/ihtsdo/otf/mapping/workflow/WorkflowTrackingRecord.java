@@ -3,10 +3,7 @@ package org.ihtsdo.otf.mapping.workflow;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
-import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapRecord;
-import org.ihtsdo.otf.mapping.model.MapUser;
 
 /**
  * The Interface WorkflowTrackingRecord.
@@ -100,13 +97,6 @@ public interface WorkflowTrackingRecord {
   public String getDefaultPreferredName();
 
   /**
-   * The most advanced workflow status in the records set.
-   * 
-   * @return the computed workflow status
-   */
-  public WorkflowStatus getWorkflowStatus();
-
-  /**
    * Sets the sort key.
    * 
    * @param sortKey the sort key
@@ -121,39 +111,32 @@ public interface WorkflowTrackingRecord {
   public String getSortKey();
 
   /**
-   * Returns the assigned specialists.
-   * 
-   * @return the assigned specialists
-   */
-  public Set<MapUser> getAssignedUsers();
-
-  /**
    * Returns the map records.
    * 
    * @return the map records
    */
-  public Set<MapRecord> getMapRecords();
+  public Set<Long> getMapRecordIds();
 
   /**
    * Sets the map records.
    * 
-   * @param mapRecords the map records
+   * @param mapRecordIds the map records
    */
-  public void setMapRecords(Set<MapRecord> mapRecords);
+  public void setMapRecordIds(Set<Long> mapRecordIds);
 
   /**
    * Adds the map record.
    * 
    * @param mapRecord the map record
    */
-  public void addMapRecord(MapRecord mapRecord);
+  public void addMapRecordId(Long mapRecordId);
 
   /**
    * Removes the map record.
    * 
    * @param mapRecord the map record
    */
-  public void removeMapRecord(MapRecord mapRecord);
+  public void removeMapRecordId(Long mapRecordId);
 
   /**
    * Gets the workflow path.
@@ -168,12 +151,5 @@ public interface WorkflowTrackingRecord {
    * @param workflowPath the new workflow path
    */
   public void setWorkflowPath(WorkflowPath workflowPath);
-
-  /**
-   * Gets the lowest workflow status of associated map records
-   * 
-   * @return the lowest workflow status
-   */
-  WorkflowStatus getLowestWorkflowStatus();
 
 }

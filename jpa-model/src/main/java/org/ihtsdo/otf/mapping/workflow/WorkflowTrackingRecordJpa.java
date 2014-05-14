@@ -3,22 +3,20 @@ package org.ihtsdo.otf.mapping.workflow;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
-import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
-import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapRecord;
-import org.ihtsdo.otf.mapping.model.MapUser;
 
 /**
  * Default implementatino of {@link WorkflowTrackingRecordJpa}.
@@ -62,9 +60,10 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
   @Column(nullable = false)
   private WorkflowPath workflowPath;
 
-  /** The map records. */
-  @OneToMany(targetEntity = MapRecordJpa.class)
-  private Set<MapRecord> mapRecords = new HashSet<>();
+  @ElementCollection
+  @CollectionTable(name = "workflow_tracking_record_map_record_ids", joinColumns = @JoinColumn(name = "id"))
+  @Column(nullable = true)
+  private Set<Long> mapRecordIds = new HashSet<>();
 
   /**
    * {@inheritDoc}
@@ -164,36 +163,6 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
     return defaultPreferredName;
   }
 
-  @Override
-  public WorkflowStatus getWorkflowStatus() {
-
-    // initialize the workflowStatus
-    WorkflowStatus workflowStatus = WorkflowStatus.NEW;
-
-    // cycle over tracking record's map records
-    for (MapRecord mapRecord : this.getMapRecords()) {
-      workflowStatus =
-          mapRecord.getWorkflowStatus().compareTo(workflowStatus) > 0
-              ? mapRecord.getWorkflowStatus() : workflowStatus;
-
-    }
-
-    return workflowStatus;
-
-  }
-
-  @Override
-  public WorkflowStatus getLowestWorkflowStatus() {
-    WorkflowStatus workflowStatus = null;
-    for (MapRecord mapRecord : getMapRecords()) {
-      if (workflowStatus == null)
-        workflowStatus = mapRecord.getWorkflowStatus();
-      else if (workflowStatus.compareTo(mapRecord.getWorkflowStatus()) > 0)
-        workflowStatus = mapRecord.getWorkflowStatus();
-    }
-    return workflowStatus;
-  }
-
   /*
    * (non-Javadoc)
    * 
@@ -226,41 +195,27 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
     this.workflowPath = workflowPath;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#getAssignedUsers()
-   */
-  @Override
-  public Set<MapUser> getAssignedUsers() {
-    Set<MapUser> assignedUsers = new HashSet<>();
-    for (MapRecord mapRecord : this.getMapRecords()) {
-      assignedUsers.add(mapRecord.getOwner());
-    }
-    return assignedUsers;
-  }
 
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#getMapRecords()
+   * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#getMapRecordIds()
    */
   @Override
-  public Set<MapRecord> getMapRecords() {
-    return mapRecords;
+  public Set<Long> getMapRecordIds() {
+    return mapRecordIds;
   }
 
   /*
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#setMapRecords(java
+   * org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#setMapRecordIds(java
    * .util.Set)
    */
   @Override
-  public void setMapRecords(Set<MapRecord> mapRecords) {
-    this.mapRecords = mapRecords;
+  public void setMapRecordIds(Set<Long> mapRecordIds) {
+    this.mapRecordIds = mapRecordIds;
   }
 
   /*
@@ -271,10 +226,11 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
    * .ihtsdo.otf.mapping.model.MapRecord)
    */
   @Override
-  public void addMapRecord(MapRecord mapRecord) {
-    if (this.mapRecords == null)
-      this.mapRecords = new HashSet<>();
-    this.mapRecords.add(mapRecord);
+  public void addMapRecordId(Long mapRecordId) {
+    if (this.mapRecordIds == null)
+      this.mapRecordIds = new HashSet<>();
+    System.out.println("WorkflowTrackingRecord:  Adding map record id: " + mapRecordId.toString());
+    this.mapRecordIds.add(mapRecordId);
   }
 
   /*
@@ -285,73 +241,98 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
    * org.ihtsdo.otf.mapping.model.MapRecord)
    */
   @Override
-  public void removeMapRecord(MapRecord mapRecord) {
-    this.mapRecords.remove(mapRecord);
+  public void removeMapRecordId(Long mapRecordId) {
+    this.mapRecordIds.remove(mapRecordId);
   }
 
   @Override
-  public String toString() {
-    return "WorkflowTrackingRecordJpa [id=" + id + ", mapProject=" + mapProject.getId().toString()
-        + ", terminology=" + terminology + ", terminologyId=" + terminologyId
-        + ", terminologyVersion=" + terminologyVersion
-        + ", defaultPreferredName=" + defaultPreferredName + ", sortKey="
-        + sortKey + ", workflowPath=" + workflowPath + ", mapRecords="
-        + mapRecords + ", getWorkflowStatus()=" + getWorkflowStatus()
-        + ", getAssignedUsers()=" + getAssignedUsers() + "]";
-  }
+public String toString() {
+	return "WorkflowTrackingRecordJpa [id=" + id + ", mapProject=" + mapProject.getId()
+			+ ", terminology=" + terminology + ", terminologyId="
+			+ terminologyId + ", terminologyVersion=" + terminologyVersion
+			+ ", defaultPreferredName=" + defaultPreferredName + ", sortKey="
+			+ sortKey + ", workflowPath=" + workflowPath + ", mapRecordIds="
+			+ mapRecordIds + "]";
+}
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result =
-        prime * result + ((mapProject == null) ? 0 : mapProject.hashCode());
-    result =
-        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-    result =
-        prime * result
-            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-    result =
-        prime
-            * result
-            + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
-    result =
-        prime * result + ((workflowPath == null) ? 0 : workflowPath.hashCode());
-    return result;
-  }
+public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime
+			* result
+			+ ((defaultPreferredName == null) ? 0 : defaultPreferredName
+					.hashCode());
+	result = prime * result + ((id == null) ? 0 : id.hashCode());
+	result = prime * result
+			+ ((mapProject == null) ? 0 : mapProject.hashCode());
+	result = prime * result
+			+ ((mapRecordIds == null) ? 0 : mapRecordIds.hashCode());
+	result = prime * result + ((sortKey == null) ? 0 : sortKey.hashCode());
+	result = prime * result
+			+ ((terminology == null) ? 0 : terminology.hashCode());
+	result = prime * result
+			+ ((terminologyId == null) ? 0 : terminologyId.hashCode());
+	result = prime
+			* result
+			+ ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+	result = prime * result
+			+ ((workflowPath == null) ? 0 : workflowPath.hashCode());
+	return result;
+}
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    WorkflowTrackingRecordJpa other = (WorkflowTrackingRecordJpa) obj;
-    if (mapProject == null) {
-      if (other.mapProject != null)
-        return false;
-    } else if (!mapProject.equals(other.mapProject))
-      return false;
-    if (terminology == null) {
-      if (other.terminology != null)
-        return false;
-    } else if (!terminology.equals(other.terminology))
-      return false;
-    if (terminologyId == null) {
-      if (other.terminologyId != null)
-        return false;
-    } else if (!terminologyId.equals(other.terminologyId))
-      return false;
-    if (terminologyVersion == null) {
-      if (other.terminologyVersion != null)
-        return false;
-    } else if (!terminologyVersion.equals(other.terminologyVersion))
-      return false;
-    if (workflowPath != other.workflowPath)
-      return false;
-    return true;
-  }
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (obj == null)
+		return false;
+	if (getClass() != obj.getClass())
+		return false;
+	WorkflowTrackingRecordJpa other = (WorkflowTrackingRecordJpa) obj;
+	if (defaultPreferredName == null) {
+		if (other.defaultPreferredName != null)
+			return false;
+	} else if (!defaultPreferredName.equals(other.defaultPreferredName))
+		return false;
+	if (id == null) {
+		if (other.id != null)
+			return false;
+	} else if (!id.equals(other.id))
+		return false;
+	if (mapProject == null) {
+		if (other.mapProject != null)
+			return false;
+	} else if (!mapProject.equals(other.mapProject))
+		return false;
+	if (mapRecordIds == null) {
+		if (other.mapRecordIds != null)
+			return false;
+	} else if (!mapRecordIds.equals(other.mapRecordIds))
+		return false;
+	if (sortKey == null) {
+		if (other.sortKey != null)
+			return false;
+	} else if (!sortKey.equals(other.sortKey))
+		return false;
+	if (terminology == null) {
+		if (other.terminology != null)
+			return false;
+	} else if (!terminology.equals(other.terminology))
+		return false;
+	if (terminologyId == null) {
+		if (other.terminologyId != null)
+			return false;
+	} else if (!terminologyId.equals(other.terminologyId))
+		return false;
+	if (terminologyVersion == null) {
+		if (other.terminologyVersion != null)
+			return false;
+	} else if (!terminologyVersion.equals(other.terminologyVersion))
+		return false;
+	if (workflowPath != other.workflowPath)
+		return false;
+	return true;
+}
 
 }

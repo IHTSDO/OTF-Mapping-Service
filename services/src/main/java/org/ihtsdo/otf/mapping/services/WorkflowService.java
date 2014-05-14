@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -78,9 +79,10 @@ public interface WorkflowService {
    * @param mapUser the map user
    * @param pfsParameter the pfs parameter
    * @return the search result list
+ * @throws Exception 
    */
   public SearchResultList findAvailableWork(MapProject mapProject,
-    MapUser mapUser, PfsParameter pfsParameter);
+    MapUser mapUser, PfsParameter pfsParameter) throws Exception;
 
   /**
    * Find available conflicts.
@@ -89,9 +91,10 @@ public interface WorkflowService {
    * @param mapUser the map user
    * @param pfsParameter the pfs parameter
    * @return the search result list
+ * @throws Exception 
    */
   public SearchResultList findAvailableConflicts(MapProject mapProject,
-    MapUser mapUser, PfsParameter pfsParameter);
+    MapUser mapUser, PfsParameter pfsParameter) throws Exception;
 
   /**
    * Find assigned concepts.
@@ -100,9 +103,10 @@ public interface WorkflowService {
    * @param mapUser the map user
    * @param pfsParameter the pfs parameter
    * @return the search result list
+ * @throws Exception 
    */
   public SearchResultList findAssignedWork(MapProject mapProject,
-    MapUser mapUser, PfsParameter pfsParameter);
+    MapUser mapUser, PfsParameter pfsParameter) throws Exception;
 
   /**
    * Find assigned conflicts.
@@ -111,9 +115,10 @@ public interface WorkflowService {
    * @param mapUser the map user
    * @param pfsParameter the pfs parameter
    * @return the search result list
+ * @throws Exception 
    */
   public SearchResultList findAssignedConflicts(MapProject mapProject,
-    MapUser mapUser, PfsParameter pfsParameter);
+    MapUser mapUser, PfsParameter pfsParameter) throws Exception;
 
   /**
    * Find available consensus work.
@@ -121,9 +126,10 @@ public interface WorkflowService {
    * @param mapProject the map project
    * @param pfsParameter the pfs parameter
    * @return the search result list
+ * @throws Exception 
    */
   public SearchResultList findAvailableConsensusWork(MapProject mapProject,
-    PfsParameter pfsParameter);
+    PfsParameter pfsParameter) throws Exception;
 
   /**
    * Called by REST services, performs a specific action given a project,
@@ -145,9 +151,15 @@ public interface WorkflowService {
    * version.
    *
    * @param trackingRecord the tracking record
+   * @param mapRecords the map records
+   * @return the sets the
    * @throws Exception the exception
    */
-  public WorkflowTrackingRecord synchronizeMapRecords(WorkflowTrackingRecord trackingRecord) throws Exception;
+
+
+  Set<MapRecord> synchronizeMapRecords(WorkflowTrackingRecord trackingRecord,
+		Set<MapRecord> mapRecords) throws Exception;
+
 
   /**
    * Compute workflow.

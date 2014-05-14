@@ -824,17 +824,18 @@ public boolean equals(Object obj) {
 
   @Override
 public String toString() {
-	return "MapRecordJpa [owner=" + owner + ", timestamp=" + timestamp
-			+ ", lastModifiedBy=" + lastModifiedBy + ", lastModified="
-			+ lastModified + ", mapProjectId=" + mapProjectId + ", conceptId="
-			+ conceptId + ", conceptName=" + conceptName
-			+ ", countDescendantConcepts=" + countDescendantConcepts
-			+ ", mapEntries=" + mapEntries + ", mapNotes=" + mapNotes
-			+ ", mapPrinciples=" + mapPrinciples + ", originIds=" + originIds
-			+ ", flagForMapLeadReview=" + flagForMapLeadReview
-			+ ", flagForEditorialReview=" + flagForEditorialReview
-			+ ", flagForConsensusReview=" + flagForConsensusReview
-			+ ", workflowStatus=" + workflowStatus + "]";
+	return "MapRecordJpa [id=" + id + ", owner=" + owner + ", timestamp="
+			+ timestamp + ", lastModifiedBy=" + lastModifiedBy
+			+ ", lastModified=" + lastModified + ", mapProjectId="
+			+ mapProjectId + ", conceptId=" + conceptId + ", conceptName="
+			+ conceptName + ", countDescendantConcepts="
+			+ countDescendantConcepts + ", mapEntries=" + mapEntries.size()
+			+ ", mapNotes=" + mapNotes + ", mapPrinciples=" + mapPrinciples
+			+ ", originIds=" + originIds + ", flagForMapLeadReview="
+			+ flagForMapLeadReview + ", flagForEditorialReview="
+			+ flagForEditorialReview + ", flagForConsensusReview="
+			+ flagForConsensusReview + ", workflowStatus=" + workflowStatus
+			+ "]";
 }
 
   /*

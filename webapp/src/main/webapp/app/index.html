@@ -46,9 +46,6 @@
     <script type="text/javascript" src="components/jquery-splitter/jquery.splitter-0.14.0.js"></script>
     <!-- endbuild   -->
 
-  <!-- build:js js/angular.min.js -->
-    <script type="text/javascript" src="components/angular/angular.min.js"></script>
-    <!-- endbuild -->
 
     <!-- build:js js/sample.min.js -->
     <!-- angular-bootstrap -->
@@ -63,6 +60,10 @@
     <script type="text/javascript" src="components/adf-dashboard/widget-content.js"></script>
     <script type="text/javascript" src="components/adf-dashboard/widget.js"></script>
     <script type="text/javascript" src="components/adf-dashboard/dashboard.js"></script>
+    
+    <script type="text/javascript" src="components/textAngular/textAngular-sanitize.js"></script>
+    <script type="text/javascript" src="components/textAngular/textAngularSetup.js"></script>
+    <script type="text/javascript" src="components/textAngular/textAngular.js"></script>
     
     <!-- OTF Angular controls -->
     <script type="text/javascript" src="js/directives.js"></script>
@@ -83,6 +84,7 @@
     
 </head>
 <body>
+<div ng-include src="'./partials/header.html'"></div>
 
   <div class="container">
     <div ng-view></div>

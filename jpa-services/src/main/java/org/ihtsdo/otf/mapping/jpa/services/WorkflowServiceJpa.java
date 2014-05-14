@@ -21,7 +21,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
-import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -211,7 +210,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 */
 	@Override
 	public SearchResultList findAvailableWork(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) {
+			MapUser mapUser, PfsParameter pfsParameter) throws Exception {
 
 		List<WorkflowTrackingRecord> availableWork = new ArrayList<>();
 		SearchResultList results = new SearchResultListJpa();
@@ -223,12 +222,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			// AND the workflow status is less than or equal to EDITING_DONE
 			// This will eventually be a project specific check (i.e. for legacy
 			// handling)
-			if (!trackingRecord.getAssignedUsers().contains(mapUser)
-					&& trackingRecord.getAssignedUsers().size() < 2
-					&& trackingRecord.getWorkflowStatus().compareTo(
+			
+			Set<MapRecord> mapRecords = getMapRecordsForWorkflowTrackingRecord(trackingRecord);
+			
+			if (!getMapUsersFromMapRecords(mapRecords).contains(mapUser)
+					&& getMapUsersFromMapRecords(mapRecords).size() < 2
+					&& getWorkflowStatusFromMapRecords(mapRecords).compareTo(
 							WorkflowStatus.EDITING_DONE) <= 0) {
 
-				availableWork.add(trackingRecord);
+						availableWork.add(trackingRecord);
 			}
 		}
 
@@ -281,7 +283,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 */
 	@Override
 	public SearchResultList findAvailableConflicts(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) {
+			MapUser mapUser, PfsParameter pfsParameter) throws Exception {
 
 		List<WorkflowTrackingRecord> availableConflicts = new ArrayList<>();
 		SearchResultList results = new SearchResultListJpa();
@@ -290,7 +292,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		for (WorkflowTrackingRecord trackingRecord : getWorkflowTrackingRecordsForMapProject(mapProject)) {
 
 			// if this record is marked conflict detected
-			if (trackingRecord.getWorkflowStatus().equals(
+			if (getWorkflowStatusForWorkflowTrackingRecord(trackingRecord).equals(
 					WorkflowStatus.CONFLICT_DETECTED)) {
 
 				// add the search result
@@ -346,7 +348,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 */
 	@Override
 	public SearchResultList findAssignedWork(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) {
+			MapUser mapUser, PfsParameter pfsParameter) throws Exception {
 
 		List<WorkflowTrackingRecord> assignedWork = new ArrayList<>();
 		SearchResultList results = new SearchResultListJpa();
@@ -356,7 +358,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			// cycle over map records to find the NEW or EDITING_IN_PROGRESS
 			// record assigned to this user
-			for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
+			for (MapRecord mapRecord : getMapRecordsForWorkflowTrackingRecord(trackingRecord)) {
 				if (mapRecord.getOwner().equals(mapUser)
 						&& mapRecord.getWorkflowStatus().compareTo(
 								WorkflowStatus.EDITING_DONE) < 0) {
@@ -399,7 +401,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			result.setValue(trackingRecord.getDefaultPreferredName());
 
 			// get the record id
-			for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
+			for (MapRecord mapRecord : getMapRecordsForWorkflowTrackingRecord(trackingRecord)) {
 				if (mapRecord.getOwner().equals(mapUser)) {
 					result.setId(mapRecord.getId());
 				}
@@ -421,7 +423,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 */
 	@Override
 	public SearchResultList findAssignedConflicts(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) {
+			MapUser mapUser, PfsParameter pfsParameter) throws Exception {
 
 		List<WorkflowTrackingRecord> assignedConflicts = new ArrayList<>();
 		SearchResultList results = new SearchResultListJpa();
@@ -431,7 +433,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			// cycle over map records to find the CONFLICT_DETECTED record
 			// assigned to this user
-			for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
+			for (MapRecord mapRecord : getMapRecordsForWorkflowTrackingRecord(trackingRecord)) {
 				if (mapRecord.getOwner().equals(mapUser)
 						&& mapRecord.getWorkflowStatus().compareTo(
 								WorkflowStatus.CONFLICT_IN_PROGRESS) == 0) {
@@ -474,7 +476,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			result.setValue(trackingRecord.getDefaultPreferredName());
 
 			// get the record id
-			for (MapRecord mapRecord : trackingRecord.getMapRecords()) {
+			for (MapRecord mapRecord : getMapRecordsForWorkflowTrackingRecord(trackingRecord)) {
 				if (mapRecord.getOwner().equals(mapUser)) {
 					result.setId(mapRecord.getId());
 				}
@@ -495,7 +497,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 */
 	@Override
 	public SearchResultList findAvailableConsensusWork(MapProject mapProject,
-			PfsParameter pfsParameter) {
+			PfsParameter pfsParameter) throws Exception {
 
 		List<WorkflowTrackingRecord> availableConsensus = new ArrayList<>();
 		SearchResultList results = new SearchResultListJpa();
@@ -503,7 +505,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// find all the consensus workflow records
 		for (WorkflowTrackingRecord tr : getWorkflowTrackingRecordsForMapProject(mapProject)) {
 
-			if (tr.getWorkflowStatus().equals(WorkflowStatus.CONSENSUS_NEEDED)) {
+			if (getWorkflowStatusForWorkflowTrackingRecord(tr).equals(WorkflowStatus.CONSENSUS_NEEDED)) {
 				availableConsensus.add(tr);
 			}
 		}
@@ -571,6 +573,19 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// concept
 		WorkflowTrackingRecord trackingRecord = getWorkflowTrackingRecord(
 				mapProject, concept);
+		
+		Set<MapRecord> mapRecords = getMapRecordsForWorkflowTrackingRecord(trackingRecord);
+		
+		// if the record passed in updates an existing record, replace it in the set
+		for (MapRecord mr : mapRecords) {
+			if (mr.getId().equals(mapRecord.getId())) {
+				mapRecords.remove(mr);
+				mapRecords.add(mapRecord);
+				break;
+			}
+		}
+		
+		System.out.println("Entered process workflow action: " + trackingRecord.getMapRecordIds());
 
 		
 		// switch on workflow action
@@ -602,8 +617,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					.getDefaultPreferredName());
 
 			// perform the assign action via the algorithm handler
-			trackingRecord = algorithmHandler.assignFromInitialRecord(
-					trackingRecord, mapRecord, mapUser);
+			mapRecords = algorithmHandler.assignFromInitialRecord(
+					trackingRecord, mapRecords, mapRecord, mapUser);
 
 			break;
 
@@ -619,7 +634,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			}
 
 			// perform the assignment via the algorithm handler
-			trackingRecord = algorithmHandler.assignFromScratch(trackingRecord,
+			mapRecords = algorithmHandler.assignFromScratch(trackingRecord, mapRecords,
 					concept, mapUser);
 
 			break;
@@ -636,12 +651,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			// expect this user to be assigned to a map record in this tracking
 			// record
-			if (!trackingRecord.getAssignedUsers().contains(mapUser))
+			if (!getMapUsersForWorkflowTrackingRecord(trackingRecord).contains(mapUser))
 				throw new Exception(
 						"ProcessWorkflowAction: UNASSIGN - User not assigned to record for unassignment request");
 
 			// perform the unassign action via the algorithm handler
-			trackingRecord = algorithmHandler.unassign(trackingRecord, mapUser);
+			mapRecords = algorithmHandler.unassign(trackingRecord, mapRecords, mapUser);
 
 			break;
 
@@ -657,17 +672,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			// expect this user to be assigned to a map record in this tracking
 			// record
-			if (!trackingRecord.getAssignedUsers().contains(mapUser))
+			if (!getMapUsersForWorkflowTrackingRecord(trackingRecord).contains(mapUser))
 				throw new Exception(
 						"SAVE_FOR_LATER - User not assigned to record");
-			
-			// merge the passed in record into the persistence environment
-			manager.merge(mapRecord);
 
 			Logger.getLogger(WorkflowServiceJpa.class).info(
 					"Performing action...");
 
-			trackingRecord = algorithmHandler.saveForLater(trackingRecord,
+			mapRecords = algorithmHandler.saveForLater(trackingRecord, mapRecords,
 					mapUser);
 
 			break;
@@ -684,18 +696,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			// expect this user to be assigned to a map record in this tracking
 			// record
-			if (!trackingRecord.getAssignedUsers().contains(mapUser))
+			if (!getMapUsersForWorkflowTrackingRecord(trackingRecord).contains(mapUser))
 				throw new Exception(
 						"User not assigned to record for finishing request");
-			
-			// merge the passed in record into the persistence environment
-			manager.merge(mapRecord);
 
 			Logger.getLogger(WorkflowServiceJpa.class).info(
 					"Performing action...");
 
 			// perform the action
-			trackingRecord = algorithmHandler.finishEditing(trackingRecord,
+			mapRecords = algorithmHandler.finishEditing(trackingRecord, mapRecords,
 					mapUser);
 
 			break;
@@ -704,13 +713,20 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			throw new Exception("Unknown action requested.");
 		}
 			
-		Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");	
-		trackingRecord = synchronizeMapRecords(trackingRecord);
+		Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
+		System.out.println(trackingRecord.getTerminologyId());
+		
+		Set<MapRecord> syncedRecords = synchronizeMapRecords(trackingRecord, mapRecords);
+		trackingRecord.setMapRecordIds(null);
+		for (MapRecord mr : syncedRecords) {
+			System.out.println("Post-sync:  Adding map record " + mr.getId().toString());
+			trackingRecord.addMapRecordId(mr.getId());
+		}
 		
 		// if the tracking record is ready for removal, delete it
-		if (trackingRecord.getWorkflowStatus().equals(
+		if (getWorkflowStatusForWorkflowTrackingRecord(trackingRecord).equals(
 				WorkflowStatus.READY_FOR_PUBLICATION)
-				&& trackingRecord.getMapRecords().size() == 1) {
+				&& trackingRecord.getMapRecordIds().size() == 1) {
 			Logger.getLogger(WorkflowServiceJpa.class).info(
 					"SYNC: Deleting workflow tracking record");
 			removeWorkflowTrackingRecord(trackingRecord.getId());
@@ -718,38 +734,54 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// else add the tracking record if new
 		} else if (trackingRecord.getId() == null) {
 			
+			System.out.println("Adding tracking record");
 			addWorkflowTrackingRecord(trackingRecord);
 			
 		// otherwise update the tracking record
 		} else	{
+			System.out.println("Updating tracking record");
+			System.out.println(trackingRecord.toString());
 			updateWorkflowTrackingRecord(trackingRecord);
 		}
 
 	}
 	
 	@Override
-	public WorkflowTrackingRecord synchronizeMapRecords(WorkflowTrackingRecord trackingRecord) throws Exception {
+	public Set<MapRecord> synchronizeMapRecords(WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords) throws Exception {
 		
 		// detach the currently persisted map records from the workflow service
 		// necessary to avoid conflict with mapping service, 
 		// as well as forced overwrite on retrieval of previous state
 		Set<MapRecord> newRecords = new HashSet<>();
-		for (MapRecord mr : trackingRecord.getMapRecords()) {
+		System.out.println("NEW RECORDS -- " + mapRecords.size());
+		for (MapRecord mr : mapRecords) {
 			manager.detach(mr);
 			newRecords.add(mr);
+			System.out.println("  " + mr.toString());
 		}
 		
-		// retrieve the existing (i.e. in database) records by refreshing the tracking record
-		manager.refresh(trackingRecord);
-		Set<MapRecord> oldRecords = new HashSet<>(trackingRecord.getMapRecords());
 		
 		// Instantiate the mapping service
 		MappingService mappingService = new MappingServiceJpa();
+		
+		// retrieve the existing (i.e. in database) records
+		Set<MapRecord> oldRecords = new HashSet<>();
+		System.out.println("Sync: oldrecords = " + trackingRecord.getMapRecordIds());
+		if (trackingRecord.getMapRecordIds() != null) {
+			for (Long id : trackingRecord.getMapRecordIds()) {
+				System.out.println("Finding record " + id.toString());
+				oldRecords.add(mappingService.getMapRecord(id));
+			}
+		}
+		
+		System.out.println("OLD RECORDS -- " + oldRecords.size());
+		for (MapRecord mr : oldRecords) System.out.println("  " + mr.toString());
 		
 		// cycle over new records to check for additions or updates
 		for (MapRecord mr : newRecords) {
 			if (getMapRecordInSet(oldRecords, mr.getId()) == null) {
 				System.out.println("Adding new record");
+				System.out.println(mr.toString());
 				mappingService.addMapRecord(mr);
 			}
 			
@@ -766,6 +798,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			}
 		}
 		
+
+		
 		// cycle over old records to check for deletions
 		for (MapRecord mr : oldRecords) {
 			
@@ -778,14 +812,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		
 		mappingService.close();
 		
-		// re-persist the detached records in WorkflowService
-		// and reconstruct the tracking record map records
-		trackingRecord.setMapRecords(null);
-		for (MapRecord mr : newRecords) {
-			MapRecord mapRecord = manager.find(MapRecordJpa.class, mr.getId());
-			trackingRecord.addMapRecord(mapRecord);
-		}
-		return trackingRecord;
+		return newRecords;
 		
 		
 	}
@@ -878,7 +905,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					Logger.getLogger(WorkflowServiceJpa.class).info(
 							"      found - " + mapRecord.getId() + " "
 									+ mapRecord.getOwner());
-					trackingRecord.addMapRecord(mapRecord);
+					trackingRecord.addMapRecordId(mapRecord.getId());
 				}
 			}
 		}
@@ -913,7 +940,55 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 
 	}
+	
+	public Set<MapRecord> getMapRecordsForWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord) throws Exception {
+		Set<MapRecord> mapRecords = new HashSet<>();
+		MappingService mappingService = new MappingServiceJpa();
+		if (trackingRecord.getMapRecordIds() != null) {
+			for (Long id : trackingRecord.getMapRecordIds()) {
+				System.out.println("getMapRecordsForWorkflowTrackingRecord: Found record " + id.toString());
+				mapRecords.add(mappingService.getMapRecord(id));
+			}
+		}
+		mappingService.close();
+		return mapRecords;
+	}
+	
+	public Set<MapUser> getMapUsersForWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord) throws Exception {
+		return getMapUsersFromMapRecords(getMapRecordsForWorkflowTrackingRecord(trackingRecord));
+	}
+	
+	public WorkflowStatus getWorkflowStatusForWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord) throws Exception {
+		return getWorkflowStatusFromMapRecords(getMapRecordsForWorkflowTrackingRecord(trackingRecord));
+	}
 
+	public WorkflowStatus getLowestWorkflowStatusForWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord) throws Exception {
+		return getLowestWorkflowStatusFromMapRecords(getMapRecordsForWorkflowTrackingRecord(trackingRecord));
+	}
+	
+	public Set<MapUser> getMapUsersFromMapRecords(Set<MapRecord> mapRecords) {
+		Set<MapUser> mapUsers = new HashSet<>();
+		for (MapRecord mr : mapRecords) {
+			mapUsers.add(mr.getOwner());
+		}
+		return mapUsers;
+	}
+	
+	public WorkflowStatus getWorkflowStatusFromMapRecords(Set<MapRecord> mapRecords) {
+		WorkflowStatus workflowStatus = WorkflowStatus.NEW;
+		for (MapRecord mr : mapRecords) {
+			if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0) workflowStatus = mr.getWorkflowStatus();
+		}
+		return workflowStatus;
+	}
+
+	public WorkflowStatus getLowestWorkflowStatusFromMapRecords(Set<MapRecord> mapRecords) {
+		WorkflowStatus workflowStatus = WorkflowStatus.REVIEW;
+		for (MapRecord mr : mapRecords) {
+			if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0) workflowStatus = mr.getWorkflowStatus();
+		}
+		return workflowStatus;
+	}
 	/*
 	 * (non-Javadoc)
 	 * 
