@@ -20,6 +20,8 @@ var mapProjectAppDirectives = angular.module('mapProjectAppDirectives', []);
 	};
 }]);*/
 
+
+
 /*mapProjectAppDirectives.directive(
 		'otfHeaderDirective', 
 		['$rootScope', '$http', '$location', 'localStorageService', 

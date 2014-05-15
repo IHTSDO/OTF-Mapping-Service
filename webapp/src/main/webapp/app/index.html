@@ -15,27 +15,27 @@
     
     <!-- dashboard style  -->
     <link href="css/main.css" rel="stylesheet">
-    <link href="components/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <link href="components/font-awesome/css/font-awesome.css" rel="stylesheet">
 
     <!-- Bootstrap core CSS  -->
-    <link href="components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
     
 	<!--  IHTSDO Mapping Tool webapp override CSS -->
 	<link rel="stylesheet" href="css/app.css">
 
   <!--  angular includes -->
-  <script type="text/javascript" src="components/angular/angular.min.js"></script>
+  <script type="text/javascript" src="components/angular/angular.js"></script>
   <script type="text/javascript" src="components/angular/angular-route.js"></script>
   <script type="text/javascript"
     src="components/angular-local-storage/angular-local-storage.js"></script>
-
+  <script type="text/javascript" src="components/angular/sortable.js"></script>
   <script type="text/javascript" src="components/angular/cookies.js"></script>
 
   <script src="js/controllers.js"></script>
   <script src="js/app.js"></script>
 
  <!-- build:js js/jquery.min.js -->
-    <script type="text/javascript" src="components/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="components/jquery/jquery.js"></script>
     <!-- endbuild -->
 
     <!-- build:js js/jquery.ui.sortable.min.js -->
@@ -46,15 +46,15 @@
     <script type="text/javascript" src="components/jquery-splitter/jquery.splitter-0.14.0.js"></script>
     <!-- endbuild   -->
     
-      <script type="text/javascript" src="components/angular/sortable.js"></script>
-
-
+    <!--  MUST REDECLARE ANGULAR FOR FULL FUNCTIONALITY -->
+    <script type="text/javascript" src="components/angular/angular.js"></script>
+    
     <!-- build:js js/sample.min.js -->
     <!-- angular-bootstrap -->
   <script type="text/javascript"
-    src="components/angular-bootstrap/ui-bootstrap.min.js"></script>
+    src="components/angular-bootstrap/ui-bootstrap.js"></script>
   <script type="text/javascript"
-    src="components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    src="components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
 
     <!-- ADF Dashboard scripts -->
     <script type="text/javascript" src="components/adf-dashboard/adf.js"></script>
@@ -63,9 +63,9 @@
     <script type="text/javascript" src="components/adf-dashboard/widget.js"></script>
     <script type="text/javascript" src="components/adf-dashboard/dashboard.js"></script>
     
-    <script type="text/javascript" src="components/textAngular/textAngular-sanitize.js"></script>
+   <!--  <script type="text/javascript" src="components/textAngular/textAngular-sanitize.js"></script>
     <script type="text/javascript" src="components/textAngular/textAngularSetup.js"></script>
-    <script type="text/javascript" src="components/textAngular/textAngular.js"></script>
+    <script type="text/javascript" src="components/textAngular/textAngular.js"></script> -->
     
     <!-- OTF Angular controls -->
     <script type="text/javascript" src="js/directives.js"></script>

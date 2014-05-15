@@ -3,7 +3,7 @@
 
 //Declare app level module
 var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
-                                                     'mapProjectAppControllers',                                                
+                                                     'mapProjectAppControllers',
                                                      'adf',  
                                                      'mapProjectApp.widgets.mapProjectList', 
                                                      'mapProjectApp.widgets.metadataList',
@@ -16,8 +16,8 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.terminologyBrowser',
                                                      'mapProjectApp.widgets.compareRecords',
                                                      'LocalStorageModule',
-                                                     'ngCookies',
-                                                     'textAngular'
+                                                     'ngCookies'
+                                                     //'textAngular'
                                                      ])
                                                      .value('prefix', '')
                                                      .config(function(dashboardProvider){
