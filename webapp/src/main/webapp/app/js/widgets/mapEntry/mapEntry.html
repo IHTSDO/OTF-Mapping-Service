@@ -11,7 +11,7 @@
     ng-class="{'glyphicon-chevron-down': isTargetOpen, 'glyphicon-chevron-right': !isTargetOpen}"></i>
   </accordion-heading>
 
-  <table>
+  <table style="width: 100%;">
 
     <tr>
       <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
@@ -28,15 +28,15 @@
        style="vertical-align: top; padding: 5px;"><strong>Preferred Term</strong></td>       
       <td ng-show="entry.targetId != null && entry.targetId != ''" 
        style="vertical-align: top; padding: 5px;">{{entry.targetName}}</td>
-      <td ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">
+      <td ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
         <strong>Reason</strong></td> 
-      <td ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">
+      <td ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
         {{entry.mapRelation.name}}</td> 
     </tr>
-    <tr ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">
-      <td style="vertical-align: top; padding: 5px;"><strong>Reason</strong></td>
+    <tr ng-show="allowableMapRelations.length > 1 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
+      <td style="vertical-align: top; padding: 5px;"><strong>Select</strong></td>
       <td style="vertical-align: top; padding: 5px;"><select
-        style="width: 60%" ng-model="mapRelationInput"
+        style="width: 80%" ng-model="mapRelationInput"
         ng-change="selectMapRelation(mapRelationInput)"
         ng-options="mapRelation as mapRelation.displayName for mapRelation in allowableMapRelations"></select>
       </td>
@@ -62,8 +62,8 @@
       </td>
     </tr>
 
-    <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'">
-
+    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
+    <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'"> -->
       <td style="vertical-align: top; padding: 5px;"><strong>Relation
           Id</strong></td>
       <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.terminologyId}}
@@ -72,16 +72,17 @@
       </td>
     </tr>
 
-    <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'">
+    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
+    <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'"> -->
       <td style="vertical-align: top; padding: 5px;"><strong>Relation
           Name</strong></td>
       <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.name}}</td>
 
     </tr>
 
-    <tr
-      ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length > 0">
-      <td style="vertical-align: top; padding: 5px;">Select</td>
+    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
+    <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length > 0">
+     -->  <td style="vertical-align: top; padding: 5px;">Select</td>
       <td style="vertical-align: top; padding: 5px;"><select
         style="width: 60%" ng-model="mapRelationInput"
         ng-change="selectMapRelation(mapRelationInput)"
@@ -90,15 +91,16 @@
 
     </tr>
 
-    <tr
+   <!--  <tr
       ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length == 0">
       <td style="vertical-align: top; padding: 5px;"></td>
       <td style="vertical-align: top; padding: 5px;">No map relations are
         available for this target.</td>
-    </tr>
+    </tr> -->
 
-    <tr ng-show="project.mapRelationStyle != 'RELATIONSHIP_STYLE'">
-      <td ng-show="entry.targetId != null && entry.targetId != ''"
+    <tr ng-show="allowableAdvices.length > 0">
+    <!-- <tr ng-show="project.mapRelationStyle != 'RELATIONSHIP_STYLE'">
+     -->  <td ng-show="entry.targetId != null && entry.targetId != ''"
           style="vertical-align: top; padding: 5px;"><strong>Advice</strong></td>
       <td ng-show="entry.targetId != null && entry.targetId != ''"
           style="vertical-align: top; padding: 5px;">

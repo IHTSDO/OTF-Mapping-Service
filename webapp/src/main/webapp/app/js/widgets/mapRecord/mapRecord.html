@@ -52,22 +52,10 @@
 
 
     <div ui-sortable ng-model="entries[group]">
-      <p ng-repeat="entry in entries[group] track by entry.localId">
+       <p ng-repeat="entry in entries[group] track by entry.localId">
         
-        <a ng-click="selectEntry(entry)">{{getEntrySummary(entry)}}</a>
+         <a ng-click="selectEntry(entry)">{{getEntrySummary(entry)}}</a>
        </p>
-<!-- 
-		 display rule based summary, if project is rule based
-        <a ng-show="entry.targetId != null && entry.targetId != ''"><span
-          ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
-          
-           display target id, if target is non-null
-          {{entry.targetId}} {{entry.targetName}}</a> 
-          
-           display relation id and name, if target is null and relation is non-null
-          <a ng-show="entry.targetId == null || entry.targetId === ''">[Empty
-          Entry]</a> -->
-      </p>
     </div>
     <!--  end sortable entries --> <br>
     <input class="pull-right" type="submit" value="Add Map Entry"

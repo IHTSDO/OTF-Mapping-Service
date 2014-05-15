@@ -69,6 +69,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
         //get the groups
         if ($scope.project.groupStructure == true)
                getGroups();
+        
+		// This MUST not be removed for "Start here" to work
+		initializeEntries();
+		
 
 	});
 	
@@ -662,7 +666,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		currentLocalId += 1;
 
-		newEntry.ruleSummary = $scope.getRuleSummary(newEntry);
+		newEntry.ruleSummary = $scope.getRuleSummary(newEntry) ;
 
 		if ($scope.project.groupStructure == true) {
 			$scope.entries[group].push(newEntry);
@@ -702,7 +706,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						}
 					}
 				} else {
-
 					// cycle over each group bin's entry list
 					for (var i = 0; i < $scope.entries.length; i++) {
 						for (var j = 0; j < $scope.entries[i].length; j++) {
@@ -791,6 +794,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		while ($scope.groups.indexOf(i) != -1) i++;
 
 		$scope.groups.push(i);
+		$scope.addMapEntry(i);
 	};
 
 	// Removes a map group if it exists

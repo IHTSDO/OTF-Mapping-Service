@@ -1,14 +1,16 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.TreePositionList;
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
@@ -122,6 +124,66 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   }
 
   @Override
+  public List<MapAdvice> computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
+    Set<MapAdvice> advices = mapEntry.getMapAdvices();
+  	/*For any mapRelation value other than 447637006, 
+  	 * Find the allowed project advice that matches (on string, case-insensitive) 
+  	 * and return that value. Throw an exception if no corresponding advice is found.
+  	 */
+    if (mapEntry.getMapRelation() != null && !mapEntry.getMapRelation().getTerminologyId().equals("447637006")) {
+    	boolean adviceFound = false;
+    	for (MapAdvice advice : mapProject.getMapAdvices()) {
+        if (advice.getName().toLowerCase().equals(mapEntry.getMapRelation().getName())) {
+          advices.add(advice);
+          adviceFound = true;
+        }
+      }
+    	if (!adviceFound)
+    		throw new Exception ("Advice was not found in mapProject " + mapProject.getName() + 
+    				" that matches mapRelation " + mapEntry.getMapRelation().getName() + ":" +
+    				mapEntry.getMapRelation().getTerminologyId());
+    }
+    
+    //ALSO, if the descendant count for the concept of the map record > 10,
+    //also add 'DESCENDANTS NOT EXHAUSTIVELY MAPPED' advice.    
+    
+		// get hierarchical rel
+		MetadataService metadataService = new MetadataServiceJpa();
+		Map<String, String> hierarchicalRelationshipTypeMap = metadataService
+				.getHierarchicalRelationshipTypes(mapProject.getDestinationTerminology(),
+						mapProject.getDestinationTerminologyVersion());
+		if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
+			throw new IllegalStateException(
+					"Map project source terminology has too many hierarchical relationship types - "
+							+ mapProject.getDestinationTerminology());
+		}
+		if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
+			throw new IllegalStateException(
+					"Map project source terminology has too few hierarchical relationship types - "
+							+ mapProject.getDestinationTerminology());
+		}
+		// ASSUMPTION: only a single "isa" type
+		String hierarchicalRelationshipType = hierarchicalRelationshipTypeMap
+				.entrySet().iterator().next().getKey();
+    
+		// find number of descendants
+    ContentServiceJpa contentService = new ContentServiceJpa();
+    SearchResultList results = contentService.findDescendants(mapRecord.getConceptId(), mapProject.getDestinationTerminology(),
+    		mapProject.getDestinationTerminologyVersion(), hierarchicalRelationshipType);
+    contentService.close();
+    if (results.getTotalCount() > 10) {
+    	for (MapAdvice advice : mapProject.getMapAdvices()) {
+        if (advice.getName().toLowerCase().equals("DESCENDANTS NOT EXHAUSTIVELY MAPPED".toLowerCase())) {
+          advices.add(advice);
+        }
+      }    	
+    }
+    	
+    return new ArrayList<MapAdvice>(advices);
+  }
+
+  
+  @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
 
     // check that code has at least three characters, that the second character
@@ -217,7 +279,7 @@ public void computeTargetTerminologyNotesHelper(TreePosition treePosition, Conte
 		  Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
 				  "   " + simpleRefSetMember.getRefSetId());
 		if (simpleRefSetMember.getRefSetId().equals(asteriskRefSetId)) treePosition.setTerminologyNote("*");
-		else if (simpleRefSetMember.getRefSetId().equals(daggerRefSetId)) treePosition.setTerminologyNote("â€ ");
+		else if (simpleRefSetMember.getRefSetId().equals(daggerRefSetId)) treePosition.setTerminologyNote("†");
 	}
 
 	// if this tree position has children, set their terminology notes recursively
