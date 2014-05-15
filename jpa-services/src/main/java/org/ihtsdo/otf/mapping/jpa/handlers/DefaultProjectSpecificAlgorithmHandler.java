@@ -110,7 +110,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 * @return
 	 */
 	public List<MapAdvice> computeMapAdvice(MapRecord mapRecord,
-			MapEntry mapEntry) {
+			MapEntry mapEntry) throws Exception {
 		return null;
 	}
 

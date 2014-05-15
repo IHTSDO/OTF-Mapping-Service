@@ -927,8 +927,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				.getMapProjectId()));
 
 		MapAdviceListJpa mapAdviceList = new MapAdviceListJpa();
-		mapAdviceList.setMapAdvices(algorithmHandler.computeMapAdvice(
-				mapRecord, mapEntry));
+		try {
+			mapAdviceList.setMapAdvices(algorithmHandler.computeMapAdvice(
+					mapRecord, mapEntry));
+		} catch (Exception e) {
+			throw new InstantiationException(e.toString());
+		}
 		mapAdviceList.setTotalCount(mapAdviceList.getMapAdvices().size());
 		return mapAdviceList;
 	}

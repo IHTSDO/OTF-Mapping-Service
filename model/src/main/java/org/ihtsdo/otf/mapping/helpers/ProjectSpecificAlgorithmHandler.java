@@ -77,7 +77,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @param mapEntry the map entry
    * @return the list
    */
-  public List<MapAdvice> computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry);
+  public List<MapAdvice> computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception;
 
   /**
    * Compute map relations.
