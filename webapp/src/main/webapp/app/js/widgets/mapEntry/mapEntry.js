@@ -140,7 +140,11 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		
 		$scope.entry.targetId = parameters.concept.terminologyId;
 		$scope.entry.targetName = parameters.concept.defaultPreferredName;
-		computeRelation($scope.entry);
+		
+		// get the allowable advices and relations
+		$scope.allowableAdvices = getAllowableElements($scope.entry, $scope.project.mapAdvice);
+		sortByKey($scope.allowableAdvices, 'detail');
+		$scope.allowableMapRelations = getAllowableElements($scope.entry, $scope.project.mapRelation);
 	});	
 	
 	
@@ -395,6 +399,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				$scope.adviceInput = "?";
 			}
 		}
+		$scope.entry.mapRelation = null;
 	};
 
 	// removes advice from a map entry
@@ -421,8 +426,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	// Relation functions ///
 	/////////////////////////
 	
-	$scope.selectMapRelation = function(mapRelation) {
-		
+	$scope.selectMapRelation = function(mapRelation) {		
 		$scope.entry.mapRelation = mapRelation;
 	};
 	
@@ -448,7 +452,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				if ( (nullTarget == true && elements[i].isAllowableForNullTarget == true) ||
 						(nullTarget == false && elements[i].isAllowableForNullTarget == false) ) {
 	
-					elements[i].displayName = (elements[i].abbreviation === 'none' ? '' : elements[i].abbreviation + ": ") + elements[i].name;
+					elements[i].displayName = (elements[i].abbreviation === 'none' ? elements[i].name : elements[i].abbreviation )  ;
 					
 					allowableElements.push(elements[i]);
 			}
