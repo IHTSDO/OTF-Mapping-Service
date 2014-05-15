@@ -1327,7 +1327,7 @@ public class MappingServiceRest {
 	@Path("/relation/compute")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Compute map relatoin", notes = "Computes a map relation given the current state of a map entry", response = MapRelationJpa.class)
+	@ApiOperation(value = "Compute map relation", notes = "Computes a map relation given the current state of a map entry", response = MapRelationJpa.class)
 	public MapRelation computeMapRelation(
 			@ApiParam(value = "", required = true) MapEntryJpa mapEntry) {
 

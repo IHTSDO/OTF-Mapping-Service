@@ -751,7 +751,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		StringBuffer sb = new StringBuffer();
 		sb.append(mapEntry.getTargetId() + " " + mapEntry.getRule() + " "
-				+ mapEntry.getMapRelation().getId());
+				+ (mapEntry.getMapRelation() != null ? mapEntry.getMapRelation().getId() : ""));
 		for (MapAdvice mapAdvice : advices) {
 			sb.append(mapAdvice.getObjectId() + " ");
 		}
