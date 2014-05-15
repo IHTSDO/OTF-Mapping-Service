@@ -272,7 +272,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		    $scope.ruleCategory = 'TRUE'; 
 
 		$scope.saveRule = function() {
-			$modalInstance.close($scope.rule);
+			$modalInstance.close($scope.rule, $scope.ruleSummary);
 		};
 
 		$scope.cancelRule = function() {

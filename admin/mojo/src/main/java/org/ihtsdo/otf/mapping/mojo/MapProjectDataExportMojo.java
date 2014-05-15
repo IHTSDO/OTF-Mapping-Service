@@ -248,7 +248,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
           mprMapSpecialists.deleteCharAt(mprMapSpecialists.length() - 1);
 
         projectsWriter.write(mpr.getName() + "\t" + mpr.getRefSetId() + "\t"
-            + mpr.getRefSetName() + "\t" + mpr.getSourceTerminology() + "\t"
+            + mpr.isPublished() + "\t" + mpr.getSourceTerminology() + "\t"
             + mpr.getSourceTerminologyVersion() + "\t"
             + mpr.getDestinationTerminology() + "\t"
             + mpr.getDestinationTerminologyVersion() + "\t"

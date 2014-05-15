@@ -273,19 +273,14 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				// cycle over discovered descTypes
 				for (var key in descTypes) {
 					
-					if (key === descTypePreferred) {
-						
-						descGroup['name'] = descTypes[key];
-						descGroup['descriptions'] = getFormattedDescriptions(conceptDetails, key, relTypes);
-						
-					} else {
+					
 					
 						// get the formatted descriptions for this type
 						var descGroup = {};
 						descGroup['name'] = descTypes[key];
 						descGroup['descriptions'] = getFormattedDescriptions(conceptDetails, key, relTypes);
 						conceptDetailsDescriptionGroups.push(descGroup);
-					}
+					
 				}
 
 				console.debug("Extracted description groups for concept:");
@@ -296,7 +291,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				console.debug()
 
 				conceptDetails.descriptionGroups = conceptDetailsDescriptionGroups;
-				conceptDetails.preferredDescription = conceptDetailsPreferredDescription;
+				//conceptDetails.preferredDescription = conceptDetailsPreferredDescription;
 
 				///////////////////
 				// RELATIONSHIPS //
