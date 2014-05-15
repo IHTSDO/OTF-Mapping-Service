@@ -2948,6 +2948,28 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			setTreePositionValidCodesHelper(tp.getChildren(), algorithmHandler);
 		}
 	}
+	
+	@Override
+	public TreePositionList setTreePositionTerminologyNotes(
+			List<TreePosition> treePositions, Long mapProjectId)
+			throws Exception {
+		
+		Logger.getLogger(MappingServiceJpa.class).info("Setting tree position terminology notes");
+		
+		// get the map project and its algorithm handler
+		MapProject mapProject = getMapProject(mapProjectId);
+		ProjectSpecificAlgorithmHandler algorithmHandler = getProjectSpecificAlgorithmHandler(mapProject);
+
+		// construct the tree position list
+		TreePositionListJpa treePositionList = new TreePositionListJpa();
+		treePositionList.setTreePositions(treePositions);
+		treePositionList.setTotalCount(treePositions.size());
+		
+		// compute the target terminology notes
+		algorithmHandler.computeTargetTerminologyNotes(treePositionList);
+		
+		return treePositionList;
+	}
 
 	@Override
 	public ValidationResult compareMapRecords(MapRecord mapRecord1,

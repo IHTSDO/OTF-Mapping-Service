@@ -105,6 +105,9 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public boolean isTargetCodeValid(String terminologyId) throws Exception;
+  
+  public void computeTargetTerminologyNotes(TreePositionList treePositions)
+		throws Exception;
 
   /**
    * Assign a new map record from existing record, performing any necessary
@@ -172,4 +175,5 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    */
   public Set<MapRecord> saveForLater(
     WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
+;
 }

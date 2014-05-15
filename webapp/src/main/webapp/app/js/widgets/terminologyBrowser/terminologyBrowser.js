@@ -226,13 +226,21 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 				// discover what description descTypes are present
 				var descTypes = {};
+				
+				// special variable for the preferred desc type
+				var descTypePreferred = null;
+
 				for (var i = 0; i < conceptDetails.description.length; i++) {
 
 					if (! ( conceptDetails.description[i].typeId in descTypes )) {
 
-						if ($scope.descTypes[conceptDetails.description[i].typeId].indexOf('Preferred') == -1) {
-							descTypes[conceptDetails.description[i].typeId] = 
-								$scope.descTypes[conceptDetails.description[i].typeId];
+						//if ($scope.descTypes[conceptDetails.description[i].typeId].indexOf('Preferred') == -1) {
+						descTypes[conceptDetails.description[i].typeId] = 
+							$scope.descTypes[conceptDetails.description[i].typeId];
+						//}
+
+						if ($scope.descTypes[conceptDetails.description[i].typeId].indexOf('Preferred') != -1) {
+							descTypePreferred = $scope.descTypes[conceptDetails.description[i].typeId];
 						}
 					}
 				};
@@ -264,20 +272,31 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 				// cycle over discovered descTypes
 				for (var key in descTypes) {
-					// get the descriptions for this type
-					var descGroup = {};
-					descGroup['name'] = descTypes[key];
-					descGroup['descriptions'] = getFormattedDescriptions(conceptDetails, key, relTypes);
-
-
-					conceptDetailsDescriptionGroups.push(descGroup);
+					
+					if (key === descTypePreferred) {
+						
+						descGroup['name'] = descTypes[key];
+						descGroup['descriptions'] = getFormattedDescriptions(conceptDetails, key, relTypes);
+						
+					} else {
+					
+						// get the formatted descriptions for this type
+						var descGroup = {};
+						descGroup['name'] = descTypes[key];
+						descGroup['descriptions'] = getFormattedDescriptions(conceptDetails, key, relTypes);
+						conceptDetailsDescriptionGroups.push(descGroup);
+					}
 				}
 
-				console.debug("Extracted descriptions for concept:");
+				console.debug("Extracted description groups for concept:");
 				console.debug(conceptDetailsDescriptionGroups.length);
 				console.debug(conceptDetailsDescriptionGroups);
+				
+				console.debug("Extracted preferred type for concept:");
+				console.debug()
 
 				conceptDetails.descriptionGroups = conceptDetailsDescriptionGroups;
+				conceptDetails.preferredDescription = conceptDetailsPreferredDescription;
 
 				///////////////////
 				// RELATIONSHIPS //
@@ -287,8 +306,10 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 				// cycle over discovered relTypes
 				for (var key in relTypes) {
+					
+					if (key )
+					
 					// get the relationships for this type
-
 					var relationships = getConceptElementsByTypeId(conceptDetails.relationship, key);
 
 					if (relationships.length > 0) {
@@ -349,10 +370,10 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 		// first, get all descriptions for this TypeId
 		var descriptions = getConceptElementsByTypeId(concept.description, typeId);
-
+		
 		// format each description
 		for (var i = 0; i < descriptions.length; i++) {
-			descriptions[i] = formatDescription(concept.description[i], relTypes, concept);
+			descriptions[i] = formatDescription(descriptions[i], relTypes, concept);
 		}
 
 		return descriptions;
@@ -368,7 +389,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 		// find any relationship where the terminology id begins with the description terminology id
 		for (var i = 0; i < concept.relationship.length; i++) {
-			console.debug(concept.relationship[i].terminologyId + ' compared to ' + description.terminologyId + ' -> ' + concept.relationship[i].terminologyId.indexOf(description.terminologyId);
+			console.debug(concept.relationship[i].terminologyId + ' compared to ' + description.terminologyId + ' -> ' + concept.relationship[i].terminologyId.indexOf(description.terminologyId));
 			if (concept.relationship[i].terminologyId.indexOf(description.terminologyId) == 0) {
 				console.debug("    Found relationship: " + concept.relationship[i].terminologyId);
 				relationshipsForDescription.push(concept.relationship[i]);
@@ -386,7 +407,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				var referencedConcept = {};
 				referencedConcept.terminologyId = relationshipsForDescription[i].destinationConceptId;
 
-				// if a asterik-to-dagger, add a *
+				// if a asterisk-to-dagger, add a *
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Asterisk') == 0) {
 					referencedConcept.relType = "*";
 				}
@@ -405,10 +426,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		return description;
 
 	}
-
-	$scope.isConceptOpen = function(terminologyId) {
-		return ($scope.currentOpenConcepts.hasElementByTerminologyid(terminologyId));
-	};
 
 	$scope.getDescriptionGroups = function(terminologyId) {
 

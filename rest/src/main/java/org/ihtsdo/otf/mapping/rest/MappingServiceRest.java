@@ -1388,6 +1388,7 @@ public class MappingServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.setTreePositionValidCodes(treePositions,
 					mapProjectId);
+			mappingService.setTreePositionTerminologyNotes(treePositions, mapProjectId);
 			mappingService.close();
 
 			// construct and return the tree position list object
@@ -1472,7 +1473,7 @@ public class MappingServiceRest {
 			@ApiParam(value = "id of map project this tree will be displayed for", required = true) @PathParam("projectId") Long mapProjectId) {
 
 		Logger.getLogger(ContentServiceJpa.class).info(
-				"RESTful call (Content): /tree/concept/" + terminology + "/"
+				"RESTful call (Mapping): /tree/concept/" + terminology + "/"
 						+ terminologyVersion + "/query/" + query);
 		try {
 
@@ -1487,6 +1488,7 @@ public class MappingServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.setTreePositionValidCodes(treePositions,
 					mapProjectId);
+			mappingService.setTreePositionTerminologyNotes(treePositions, mapProjectId);
 			mappingService.close();
 
 			// construct and return the tree position list object

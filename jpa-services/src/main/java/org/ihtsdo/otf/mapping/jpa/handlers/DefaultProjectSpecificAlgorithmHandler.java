@@ -11,12 +11,14 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -25,7 +27,9 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
 
 /**
@@ -1367,4 +1371,16 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		}
 		return mapUsers;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#computeTargetTerminologyNotes(org.ihtsdo.otf.mapping.helpers.TreePositionList)
+	 */
+	@Override
+	public void computeTargetTerminologyNotes(TreePositionList treePositions)
+			throws Exception {
+		
+		// DO NOTHING -- Override in project specific handlers if necessary
+	}
+
+	
 }
