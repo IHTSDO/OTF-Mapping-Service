@@ -78,4 +78,5 @@ show.sql=false
 # Lucene index base
 #
 lucene.indexBase=${user.home}/mapping/lucene/indexes
+lucene.version=LUCENE_36
 
