@@ -209,16 +209,12 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	};
 	
 	$scope.goEditRecord = function (id) {
-		console.debug($scope.role);
-
 		var path = "/record/recordId/" + id;
 			// redirect page
 			$location.path(path);
 	};
 
 	$scope.goEditConflict = function (id) {
-		console.debug($scope.role);
-
 		var path = "/record/conflicts/" + id;
 			// redirect page
 			$location.path(path);

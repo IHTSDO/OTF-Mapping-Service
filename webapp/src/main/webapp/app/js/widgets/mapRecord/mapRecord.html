@@ -183,7 +183,9 @@ map lead review<br>
   ng-click="saveMapRecord()">Save For Later</button>
 
 <p></p>
+<p></p>
 <span style="color: green;">{{recordSuccess}}</span>
+<span style="color: red;">{{recordError}}</span>
 <span style="color: red;" ng-show="validationResult.errors.length > 0">
   Errors detected:
   <ul>

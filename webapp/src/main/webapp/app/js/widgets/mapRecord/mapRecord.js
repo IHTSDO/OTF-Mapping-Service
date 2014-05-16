@@ -355,6 +355,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.validationResult = data;
 		}).error(function(data) {
 			$scope.validationResult = null;
+			$scope.recordError = "Unexpected error reported by server.  Contact an admin.";
 			console.debug("Failed to validate map record");
 		}).then(function(data) {
 
@@ -406,8 +407,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						  window.history.back();
 						//}
 					}).error(function(data) {
+						console.debug('SERVER ERROR');
 						$scope.recordSuccess = "";
-						$scope.recordError = "Error saving record.";
+						$scope.recordError = "Unexpected server error.  Try saving your work for later, and contact an admin.";
 					});
 				
 				// if the warning checks were not passed, save the warnings

@@ -21,7 +21,7 @@
     <tr ng-repeat="result in assignedRecords">
 
       <td style="width: 10%; padding: 5px;"><a
-        href="#/record/recordId/{{result.id}}">Edit</a>
+              title="Edit"><i ng-click="goEditRecord(result.id)" class="glyphicon glyphicon glyphicon-pencil"></i></a>
         <i ng-show = "result.terminologyVersion === 'EDITING_IN_PROGRESS'"
               class="glyphicon glyphicon-saved"
               tooltip-placement="right"
@@ -59,8 +59,9 @@
 
     <tr ng-repeat="result in assignedConflicts">
 
-      <td style="width: 10%; padding: 5px;"><a
-        href="#/record/conflicts/{{result.id}}">Edit</a>
+      <td style="width: 10%; padding: 5px;">;"><a
+              title="Edit"><i ng-click="goEditConflict(result.id)"
+              class="glyphicon glyphicon glyphicon-pencil"></i></a>
         
         <i ng-show = "result.terminologyVersion === 'CONFLICT_IN_PROGRESS'"
               class="glyphicon glyphicon-saved"
