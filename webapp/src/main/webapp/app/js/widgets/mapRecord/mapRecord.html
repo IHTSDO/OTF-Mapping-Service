@@ -108,8 +108,12 @@
   <hr>
 </div>
 <span style="color: red">{{errorAddRecordNote}}</span>
+<form>
+  <textarea style="width:100%;" ng-model="noteInput"></textarea>
+
   <input class="pull-right" type="submit" value="Add Note"
     ng-click="addRecordNote(record, noteInput)">
+</form>
 </accordion-group> </accordion>
 
 <!--  PRINCIPLES PANEL -->
@@ -191,5 +195,10 @@ map lead review<br>
   <ul>
     <li ng-repeat="warning in validationResult.warnings">{{warning}}</li>
   </ul>
+  <div ng-show = "savedValidationWarnings.length > 0">
+    <p></p>
+  	<strong>To ignore warnings, click Finish or Finish/Next</strong>
+  </div>
 </span>
+
 

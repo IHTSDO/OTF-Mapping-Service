@@ -983,7 +983,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				// add mapProjectId and owner as constraints
 				.add(AuditEntity.property("mapProjectId").eq(projectId))
-				.add(AuditEntity.relatedId("owner").eq(user.getId()))
+				//.add(AuditEntity.relatedId("owner").eq(user.getId()))
+				.add(AuditEntity.or(AuditEntity.relatedId("owner").eq(user.getId()), AuditEntity.relatedId("lastModifiedBy").eq(user.getId())))
 
 				// exclude records with workflow status NEW
 				.add(AuditEntity.property("workflowStatus").ne(

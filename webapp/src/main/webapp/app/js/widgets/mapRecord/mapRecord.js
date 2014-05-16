@@ -29,6 +29,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.entries =    null;
 	$scope.user = 		localStorageService.get('currentUser');
 	
+	// validation result storage variable
+	$scope.savedValidationWarnings = [];
+	
 	// record change stack
 	$scope.recordStack = [];					// the stack of modified records
 	$scope.recordStackPosition = -1; 			// will be incremented to 0 upon initialization
@@ -355,34 +358,66 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			console.debug("Failed to validate map record");
 		}).then(function(data) {
 
-			// if no error messages were returned, save the record
+			// if no error messages were returned, stop and display
 			if ($scope.validationResult.errors.length == 0)  {
-
-				// assign the current user to the lastModifiedBy field
-				$scope.record.lastModifiedBy = $scope.user;
-
-				$http({
-					url: root_workflow + "finish",
-					dataType: "json",
-					data: $scope.record,
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json"
+				
+				var warningCheckPassed = true;
+				
+				// if warnings found, check if this is a second click
+				if ($scope.validationResult.warnings.length != 0) {
+					
+					// if the same number of warnings are present
+					if ($scope.savedValidationWarnings.length == $scope.validationResult.warnings.length) {
+						
+						// check that the warnings are the same
+						for (var i = 0; i < $scope.savedValidationWarnings.length; i++) {
+							if ($scope.savedValidationWarnings[i] != $scope.validationResult.warnings[i]) {
+								warningCheckPassed = false;
+							}
+								
+								
+						}
+					
+					// if a different number of warnings, automatic fail
+					} else {
+						warningCheckPass = false;
 					}
-				}).success(function(data) {
-					$scope.record = data;
-					$scope.recordSuccess = "Record saved.";
-					$scope.recordError = "";
-					//if (returnBack) {
-					  window.history.back();
-					//}
-				}).error(function(data) {
-					$scope.recordSuccess = "";
-					$scope.recordError = "Error saving record.";
-				});
+				}
+				
+				// if the warning checks are passed, save the record
+				if (warningCheckPassed == true) {
+					
+					// assign the current user to the lastModifiedBy field
+					$scope.record.lastModifiedBy = $scope.user;
+	
+					$http({
+						url: root_workflow + "finish",
+						dataType: "json",
+						data: $scope.record,
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.record = data;
+						$scope.recordSuccess = "Record saved.";
+						$scope.recordError = "";
+						//if (returnBack) {
+						  window.history.back();
+						//}
+					}).error(function(data) {
+						$scope.recordSuccess = "";
+						$scope.recordError = "Error saving record.";
+					});
+				
+				// if the warning checks were not passed, save the warnings
+				} else {
+					$scope.savedValidationWarnings = $scope.validationResult.warnings;
+				}
 
-				// otherwise, display the errors
-			} else {
+				
+			// if errors found, clear the recordSuccess field
+			}  else {
 				$scope.recordSuccess = "";
 			}
 
@@ -608,26 +643,22 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 		// first, rule summary
 		if ($scope.project.ruleBased == true) {
-			if (entry.rule.toUpperCase().indexOf("FEMALE") != -1) ruleSummary += "[FEMALE]";
-			else if (entry.rule.toUpperCase().indexOf("MALE") != -1) ruleSummary += "[MALE]";
+			if (entry.rule.toUpperCase().indexOf("TRUE") != -1) ruleSummary += "[TRUE] ";
+			else if (entry.rule.toUpperCase().indexOf("FEMALE") != -1) ruleSummary += "[FEMALE] ";
+			else if (entry.rule.toUpperCase().indexOf("MALE") != -1) ruleSummary += "[MALE] ";
 			else if (entry.rule.toUpperCase().indexOf("AGE") != -1) {
 
 				
 				var lowerBound = entry.rule.match(/(>= \d+ [a-zA-Z]*)/ );
 				var upperBound = entry.rule.match(/(< \d+ [a-zA-Z]*)/ );
-				
-				console.debug(lowerBound);
-				console.debug(upperBound);
-				
-				console.debug(lowerBound[0]);
-				console.debug(upperBound[0]);
+
 				ruleSummary += '[AGE ';
 				
-				if (lowerBound.length > 0) {
+				if (lowerBound != null && lowerBound != '' && lowerBound.length > 0) {
 					ruleSummary += lowerBound[0];
-					if (upperBound.length > 0) ruleSummary += ' AND ';
+					if (upperBound != null && upperBound != '' && upperBound.length > 0) ruleSummary += ' AND ';
 				}
-				if (upperBound.length > 0) ruleSummary += upperBound[0];
+				if (upperBound != null && upperBound != '' && upperBound.length > 0) ruleSummary += upperBound[0];
 				
 				ruleSummary += '] ';				
 			}

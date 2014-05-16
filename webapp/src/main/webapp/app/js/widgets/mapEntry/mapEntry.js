@@ -215,30 +215,25 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		
 		// first, rule summary
 		if ($scope.project.ruleBased == true) {
-			if (entry.rule.toUpperCase().indexOf("FEMALE") != -1) ruleSummary += "[FEMALE]";
-			else if (entry.rule.toUpperCase().indexOf("MALE") != -1) ruleSummary += "[MALE]";
+			if (entry.rule.toUpperCase().indexOf("TRUE") != -1) ruleSummary += "[TRUE] ";
+			else if (entry.rule.toUpperCase().indexOf("FEMALE") != -1) ruleSummary += "[FEMALE] ";
+			else if (entry.rule.toUpperCase().indexOf("MALE") != -1) ruleSummary += "[MALE] ";
 			else if (entry.rule.toUpperCase().indexOf("AGE") != -1) {
 
-				// find lower and upper bounds matching the pattern:
-				// > [number] [units] OR >= [number] [units]
+				
 				var lowerBound = entry.rule.match(/(>= \d+ [a-zA-Z]*)/ );
 				var upperBound = entry.rule.match(/(< \d+ [a-zA-Z]*)/ );
-				
-				console.debug(lowerBound);
-				console.debug(upperBound);
 
 				ruleSummary += '[AGE ';
 				
-				if (lowerBound != null && lowerBound.length > 0) {
+				if (lowerBound != null && lowerBound != '' && lowerBound.length > 0) {
 					ruleSummary += lowerBound[0];
-					
-					// if also an upper bound, add an AND separator
-					if (upperBound.length > 0) ruleSummary += ' AND ';
+					if (upperBound != null && upperBound != '' && upperBound.length > 0) ruleSummary += ' AND ';
 				}
-				if (upperBound != null && upperBound.length > 0) ruleSummary += upperBound[0];
+				if (upperBound != null && upperBound != '' && upperBound.length > 0) ruleSummary += upperBound[0];
 				
-				ruleSummary += ']';				
-			} 
+				ruleSummary += '] ';				
+			}
 		}
 		
 		return ruleSummary;

@@ -142,14 +142,12 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 	// Returns a summary string for the entry rule type
 	$scope.getRuleSummary = function(entry) {
 		
-		console.debug("Entered getRuleSummary");
-		
 		var ruleSummary = "";
 		
 		// first, rule summary
 		if ($scope.focusProject.ruleBased == true) {
-			
-			if (entry.rule.toUpperCase().indexOf("FEMALE") != -1) ruleSummary += "[FEMALE] ";
+			if (entry.rule.toUpperCase().indexOf("TRUE") != -1) ruleSummary += "[TRUE] ";
+			else if (entry.rule.toUpperCase().indexOf("FEMALE") != -1) ruleSummary += "[FEMALE] ";
 			else if (entry.rule.toUpperCase().indexOf("MALE") != -1) ruleSummary += "[MALE] ";
 			else if (entry.rule.toUpperCase().indexOf("AGE") != -1) {
 
@@ -159,20 +157,18 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 				
 				console.debug(lowerBound);
 				console.debug(upperBound);
-				
-				console.debug(lowerBound[0]);
-				console.debug(upperBound[0]);
+
 				ruleSummary += '[AGE ';
 				
-				if (lowerBound.length > 0) {
+				if (lowerBound != null && lowerBound != '' && lowerBound.length > 0) {
 					ruleSummary += lowerBound[0];
-					if (upperBound.length > 0) ruleSummary += ' AND ';
-				};
-				if (upperBound.length > 0) ruleSummary += upperBound[0];
+					if (upperBound != null && upperBound != '' && upperBound.length > 0) ruleSummary += ' AND ';
+				}
+				if (upperBound != null && upperBound != '' && upperBound.length > 0) ruleSummary += upperBound[0];
 				
 				ruleSummary += '] ';				
-			} else if (entry.rule.toUpperCase().indexOf("TRUE") != -1) ruleSummary += "[TRUE] ";
-		};
+			}
+		}
 		
 		return ruleSummary;
 			

@@ -250,20 +250,39 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	 * MAP ENTRY FUNCTIONS
 	 */
 
-//	Returns a summary string for the entry rule type
+	// Returns a summary string for the entry rule type
 	$scope.getRuleSummary = function(entry) {
-		if ($scope.project.mapRelationStyle === "RELATIONSHIP_STYLE") {
-			return "";
-		} else {
+		
+		var ruleSummary = "";
+		
+		// first, rule summary
+		if ($scope.project.ruleBased == true) {
+			if (entry.rule.toUpperCase().indexOf("TRUE") != -1) ruleSummary += "[TRUE] ";
+			else if (entry.rule.toUpperCase().indexOf("FEMALE") != -1) ruleSummary += "[FEMALE] ";
+			else if (entry.rule.toUpperCase().indexOf("MALE") != -1) ruleSummary += "[MALE] ";
+			else if (entry.rule.toUpperCase().indexOf("AGE") != -1) {
 
-			if (entry.rule.toUpperCase().indexOf("GENDER") != -1) return "[GENDER]";
-			else if (entry.rule.toUpperCase().indexOf("FEMALE") != -1) return "[FEMALE]";
-			else if (entry.rule.toUpperCase().indexOf("MALE") != -1) return "[MALE]";
-			else if (entry.rule.toUpperCase().indexOf("AGE") != -1) return "[AGE]";
-			else if (entry.rule.toUpperCase().indexOf("TRUE") != -1) return "[TRUE]";
-			else return "";
-		} 	
+				
+				var lowerBound = entry.rule.match(/(>= \d+ [a-zA-Z]*)/ );
+				var upperBound = entry.rule.match(/(< \d+ [a-zA-Z]*)/ );
+				
+				console.debug(lowerBound);
+				console.debug(upperBound);
 
+				ruleSummary += '[AGE ';
+				
+				if (lowerBound != null && lowerBound != '' && lowerBound.length > 0) {
+					ruleSummary += lowerBound[0];
+					if (upperBound != null && upperBound != '' && upperBound.length > 0) ruleSummary += ' AND ';
+				}
+				if (upperBound != null && upperBound != '' && upperBound.length > 0) ruleSummary += upperBound[0];
+				
+				ruleSummary += '] ';				
+			}
+		}
+		
+		return ruleSummary;
+			
 	};
 
 

@@ -400,10 +400,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			result.setTerminologyId(trackingRecord.getTerminologyId());
 			result.setValue(trackingRecord.getDefaultPreferredName());
 
-			// get the record id
+			// get the record id and the workflow status
 			for (MapRecord mapRecord : getMapRecordsForWorkflowTrackingRecord(trackingRecord)) {
 				if (mapRecord.getOwner().equals(mapUser)) {
 					result.setId(mapRecord.getId());
+					result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
 				}
 			}
 
@@ -435,8 +436,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			// assigned to this user
 			for (MapRecord mapRecord : getMapRecordsForWorkflowTrackingRecord(trackingRecord)) {
 				if (mapRecord.getOwner().equals(mapUser)
-						&& mapRecord.getWorkflowStatus().compareTo(
-								WorkflowStatus.CONFLICT_IN_PROGRESS) == 0) {
+						&& (mapRecord.getWorkflowStatus().compareTo(
+								WorkflowStatus.CONFLICT_NEW) == 0 
+								||	mapRecord.getWorkflowStatus().compareTo(
+										WorkflowStatus.CONFLICT_IN_PROGRESS) == 0)){
 					assignedConflicts.add(trackingRecord);
 				}
 			}
@@ -479,6 +482,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			for (MapRecord mapRecord : getMapRecordsForWorkflowTrackingRecord(trackingRecord)) {
 				if (mapRecord.getOwner().equals(mapUser)) {
 					result.setId(mapRecord.getId());
+					result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
 				}
 			}
 

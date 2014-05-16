@@ -18,7 +18,10 @@ public enum WorkflowStatus {
                 // READY_FOR_PUBLICATION)
 
   /** The conflict detected. */
-  CONFLICT_DETECTED, // (can transition to CONFLICT_RESOLVED)
+  CONFLICT_DETECTED, // (can transition to READY_FOR_PUBLICATION)
+  
+  /** The unedited conflict state */
+  CONFLICT_NEW, // (can transition to CONFLICT_IN_PROGRESS, READY_FOR_PUBLICATION)
 
   /** The conflict in progress. */
   CONFLICT_IN_PROGRESS, // (can transition to READY_FOR_PUBLICATION)

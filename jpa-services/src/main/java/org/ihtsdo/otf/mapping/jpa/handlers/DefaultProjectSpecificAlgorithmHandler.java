@@ -928,19 +928,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						.info("NON_LEGACY_PATH: NEW");
 
 				// otherwise, if this is a tracking record with conflict
-				// detected, add a CONFLICT_IN_PROGRESS record
+				// detected, add a CONFLICT_NEW record
 			} else if (getWorkflowStatus(mapRecords).equals(
 					WorkflowStatus.CONFLICT_DETECTED)) {
 
 				mapRecord
-						.setWorkflowStatus(WorkflowStatus.CONFLICT_IN_PROGRESS);
+						.setWorkflowStatus(WorkflowStatus.CONFLICT_NEW);
 
 				// get the origin ids from the tracking record
 				for (MapRecord mr : newRecords) {
 					mapRecord.addOrigin(mr.getId());
 				}
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-						.info("NON_LEGACY_PATH: CONFLICT_IN_PROGRESS");
+						.info("NON_LEGACY_PATH: CONFLICT_NEW");
 
 				// otherwise, this call has been made erroneously
 			} else {
@@ -1034,10 +1034,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			case NEW:
 			case EDITING_IN_PROGRESS:
 			case EDITING_DONE:
+			case CONFLICT_NEW:
 			case CONFLICT_IN_PROGRESS:
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-						.info("Unassign: NON_LEGACY_PATH -- CONFLICT_IN_PROGRESS");
+						.info("Unassign: NON_LEGACY_PATH -- " + mapRecord.getWorkflowStatus());
 
 				break;
 
@@ -1048,6 +1049,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			// reverted to EDITING_DONE
 			case CONFLICT_DETECTED:
 
+				MapRecord recordToRemove = null;
 				for (MapRecord mr : newRecords) {
 
 					// if another specialist's record, revert to EDITING_DONE
@@ -1055,7 +1057,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 							WorkflowStatus.CONFLICT_DETECTED)) {
 						mr.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 					}
+					
+					// if the lead's record, delete
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)) {
+						recordToRemove = mr;
+					}
 				}
+				
+				if (recordToRemove != null) newRecords.remove(recordToRemove);
 
 				break;
 
@@ -1219,8 +1228,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				}
 
 				// case 2: A lead is finished with a conflict resolution
-			} else if (getWorkflowStatus(mapRecords).equals(
-					WorkflowStatus.CONFLICT_IN_PROGRESS)) {
+				//		   Determined by workflow status of:
+				//			 CONFLICT_NEW (i.e. conflict was resolved immediately)
+				//			 CONFLICT_IN_PROGRESS (i.e. conflict had been previously saved for later)
+			} else if (
+					getWorkflowStatus(mapRecords).equals(WorkflowStatus.CONFLICT_NEW) ||
+					getWorkflowStatus(mapRecords).equals(WorkflowStatus.CONFLICT_IN_PROGRESS)) {
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 						.info("NON_LEGACY_PATH - Conflict resolution detected");
@@ -1233,7 +1246,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 							WorkflowStatus.CONFLICT_DETECTED)) {
 						newRecords.remove(mr);
 
-						// set the CONFLICT_IN_PROGRESS record to
+						// set the CONFLICT_NEW or CONFLICT_IN_PROGRESS record to
 						// READY_FOR_PUBLICATION
 						// and update
 					} else {
@@ -1333,6 +1346,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		case NON_LEGACY_PATH:
 			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW))
 				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW))
+				mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_IN_PROGRESS);
 			break;
 		case QA_PATH:
 			break;

@@ -87,6 +87,7 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService', '$rootScope', '$location', '$http',
                                                   function ($scope, localStorageService, $rootScope, $location, $http) {
     $scope.page =  'login';
+    $scope.mapUsers = [];
 		
 	
 	// set the user, role, focus project, and preferences to null (i.e. clear) by broadcasting to rest of app
