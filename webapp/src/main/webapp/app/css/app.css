@@ -20,6 +20,13 @@ p {
 	padding: 7px;
 }
 
+.icon-flipped {
+transform: scaleX(-1);
+-moz-transform: scaleX(-1);
+-webkit-transform: scaleX(-1);
+-ms-transform: scaleX(-1);
+}
+
 /** from bootstrap.css - widens the display for truncated term browser entries */
 .dropdown-menu {
   min-width: 300px;

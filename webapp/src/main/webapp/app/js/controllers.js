@@ -393,7 +393,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 		$http({
 			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
-			"/concept/" + trackingRecord.terminologyId +
+			"/concept/" + record.conceptId +
 			"/user/" + $scope.currentUser.userName,
 			method: "POST",
 			headers: {
@@ -404,6 +404,8 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 			// open the record edit view
 			window.location("index.html#/record/recordId/" + record.id);
+		}).error(function(error) {
+			$rootScope.glassPane--;
 		});
 	};
 
@@ -903,17 +905,19 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 
 		$http({
 			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
-			"/concept/" + trackingRecord.terminologyId +
-			"/user/" + $scope.currentUser.userName,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			}	
+			 "/concept/" + record.conceptId +
+			 "/user/" + $scope.currentUser.userName,
+			 method: "POST",
+			 headers: {
+				 "Content-Type": "application/json"
+			 }	
 		}).success(function(data) {
 			$rootScope.glassPane--;
 
 			// open the record edit view
 			window.location("index.html#/record/recordId/" + record.id);
+		}).error(function(error) {
+		  	$rootScope.glassPane--;
 		});
 	};
 }]);

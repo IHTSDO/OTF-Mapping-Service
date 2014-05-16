@@ -11,7 +11,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		templateUrl: 'js/widgets/assignedList/assignedList.html',
 		edit: {}
 	});
-}).controller('assignedListCtrl', function($scope, $rootScope, $http, localStorageService){
+}).controller('assignedListCtrl', function($scope, $rootScope, $http, $location, localStorageService){
 	
 	// initialize as empty to indicate still initializing database connection
 	$scope.assignedRecords = [];
@@ -207,5 +207,20 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
 		});
 	};
+	
+	$scope.goEditRecord = function (id) {
+		console.debug($scope.role);
 
+		var path = "/record/recordId/" + id;
+			// redirect page
+			$location.path(path);
+	};
+
+	$scope.goEditConflict = function (id) {
+		console.debug($scope.role);
+
+		var path = "/record/conflicts/" + id;
+			// redirect page
+			$location.path(path);
+	};
 });

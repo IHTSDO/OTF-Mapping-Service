@@ -7,10 +7,10 @@
 
   <thead>
     <tr>
-      <th style="width: 10%; padding: 5px;"></th>
+      <th style="width: 2%; padding: 5px;"></th>
       <th style="width: 15%; padding: 5px;">Id</th>
-      <th style="width: 60%; padding: 5px;">Name</th>
-      <th style="width: 10%; padding: 5px;"></th>
+      <th style="width: 80%; padding: 5px;">Name</th>
+      <th style="width: 3%; padding: 5px;"></th>
 
     </tr>
 
@@ -20,13 +20,17 @@
 
     <tr ng-repeat="result in assignedRecords">
 
-      <td style="width: 10%; padding: 5px;"><a
-        href="#/record/recordId/{{result.id}}">Edit</a></td>
-
+      <td style="width: 2%; padding: 5px;"><a
+              title="Edit"
+              ng-click="goEditRecord(result.id)"><i
+              class="glyphicon glyphicon glyphicon-pencil"></i></a>
+      </td>
       <td style="width: 15%; padding: 5px;">{{result.terminologyId}}</td>
-      <td style="width: 60%; padding: 5px;">{{result.value}}</td>
-      <td style="width: 10%; padding: 5px;"><a
-        ng-click="unassignWork(result)">Return</a></td>
+      <td style="width: 80%; padding: 5px;">{{result.value}}</td>
+      <td style="width: 3%; padding: 5px;"><a
+              title="Return"
+              ng-click="unassignWork(result)"><i
+              class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
   </tbody>
 
 </table>
@@ -41,10 +45,10 @@
 
   <thead>
     <tr>
-      <th style="width: 10%; padding: 5px;"></th>
+      <th style="width: 2%; padding: 5px;"></th>
       <th style="width: 15%; padding: 5px;">Id</th>
-      <th style="width: 60%; padding: 5px;">Name</th>
-      <th style="width: 10%; padding: 5px;"></th>
+      <th style="width: 80%; padding: 5px;">Name</th>
+      <th style="width: 3%; padding: 5px;"></th>
 
     </tr>
 
@@ -54,13 +58,16 @@
 
     <tr ng-repeat="result in assignedConflicts">
 
-      <td style="width: 10%; padding: 5px;"><a
-        href="#/record/conflicts/{{result.id}}">Edit</a></td>
-
+      <td style="width: 2%; padding: 5px;"><a
+              title="Edit"
+              ng-click="goEditConflict(result.id)"><i
+              class="glyphicon glyphicon glyphicon-pencil"></i></a></td>
       <td style="width: 15%; padding: 5px;">{{result.terminologyId}}</td>
-      <td style="width: 60%; padding: 5px;">{{result.value}}</td>
-      <td style="width: 10%; padding: 5px;"><a
-        ng-click="unassignWork(result)">Return</a></td>
+      <td style="width: 80%; padding: 5px;">{{result.value}}</td>
+      <td style="width: 3%; padding: 5px;"><a
+              title="Return"
+              ng-click="unassignWork(result)"><i
+              class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
     </tr>
   </tbody>
 

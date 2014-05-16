@@ -81,7 +81,12 @@
         <td>{{entry.targetName}}</td>
         <td ng-show="displayToViewer(record)">{{record.workflowStatus}}</td>
         <td ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">{{record.owner.name}}</td>
-        <td><a ng-show="isEditable(record)" ng-click="editRecord(record)">Edit</a></td>
+        <td><a
+              title="Edit"
+              ng-show="isEditable(record)" 
+              ng-click="editRecord(record)"><i
+              class="glyphicon glyphicon glyphicon-pencil"></i></a>
+        </td>
 
       </tr>
 

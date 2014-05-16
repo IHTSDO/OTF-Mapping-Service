@@ -21,8 +21,7 @@
 <table width="100%" class="table">
   <thead>
     <tr>
-      <th style="width: 3%;"></th>
-      <th style="width: 35%;"><div tooltip-placement="top"
+      <th style="width: 39%;"><div tooltip-placement="top"
         tooltip="Source Concept Name and Id">
         <b>Concept Name</b>
       </div></th>
@@ -34,12 +33,9 @@
         tooltip="Map Rule">
         <b>Rule</b>
       </div></th>
-      <th style="width: 9%;"><div tooltip-placement="top"
-        tooltip="Target Code">
-        <b>Target</b>
-      </div></th>
-      <th style="width: 34%;"><div tooltip-placement="top"
-        tooltip="Target Preferred Name">
+
+      <th style="width: 42%;"><div tooltip-placement="top"
+        tooltip="Target Preferred Name and Code">
         <b>Target Name</b>
       </div></th>
       <th style="width: 5%;"></th>
@@ -50,7 +46,10 @@
 
     <tr ng-repeat="entry in record.mapEntry" style="">
 
-      <td><span ng-show="record.mapNote.length > 0 && currentRole != 'Viewer'"> <span
+     
+      <td><div>{{record.conceptName}}</div>
+          <div><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
+      <span ng-show="record.mapNote.length > 0 && currentRole != 'Viewer'"> <span
           class="dropdown"> <a class="dropdown-toggle"> <img
               src="img/notepad.png" alt="notepad icon">
           </a> <span class="dropdown-menu"> <strong>Notes</strong>
@@ -60,7 +59,7 @@
           </span>
         </span>
       </span> <span ng-show="entry.mapAdvice.length > 0">
-          <div class="dropdown">
+          <span class="dropdown">
             <a class="dropdown-toggle"> <img src="img/dialog-question.png"
               alt="question icon">
             </a> <span class="dropdown-menu"> <strong>Advice</strong>
@@ -68,7 +67,7 @@
               <p ng-repeat="advice in entry.mapAdvice"
                 ng-bind-html="to_trusted(advice.detail)"></p>
             </span>
-          </div>
+          </span>
       </span> <span ng-show="record.unmappedDescendants.length > 0"> <span
           class="dropdown"> <a class="dropdown-toggle"> <img
               src="img/warning.png" alt="question icon">
@@ -80,17 +79,19 @@
                   {{concept.value}}</a></li>
             </ul>
         </span>
-      </span></td>
-      <td><div>{{record.conceptName}}</div>
-          <div><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></div></td>
+      </span>          
+       </div>   
+      </td>
       <td>{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</td>
       <td ng-show="project.ruleBased == true">{{entry.rule}}</td>
-      <td>{{entry.targetId}}</td>
-      <td>{{entry.targetName}}</td>
-
-      <td><a ng-show="isEditable(record)" ng-click="editRecord(record)">Edit</a></td>
-
-
+      <td><div>{{entry.targetName}}</div>
+          <div>{{entry.targetId}}</div></td>
+      <td><a
+              title="Edit"
+              ng-show="isEditable(record)" 
+              ng-click="editRecord(record)"><i
+              class="glyphicon glyphicon glyphicon-pencil"></i></a>
+      </td>
     </tr>
 
   </tbody>
