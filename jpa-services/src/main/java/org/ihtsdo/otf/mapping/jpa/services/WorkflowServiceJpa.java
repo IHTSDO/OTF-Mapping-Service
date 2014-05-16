@@ -554,6 +554,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 * (e.g. map records) be current in the database (i.e. updateMapRecord has
 	 * been called)
 	 */
+	@SuppressWarnings("unused")
 	@Override
 	public void processWorkflowAction(MapProject mapProject, Concept concept,
 			MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction)

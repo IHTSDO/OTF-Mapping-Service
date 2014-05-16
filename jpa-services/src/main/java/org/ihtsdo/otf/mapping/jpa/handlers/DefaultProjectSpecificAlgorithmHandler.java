@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
@@ -1367,4 +1368,16 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		}
 		return mapUsers;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#computeTargetTerminologyNotes(org.ihtsdo.otf.mapping.helpers.TreePositionList)
+	 */
+	@Override
+	public void computeTargetTerminologyNotes(TreePositionList treePositions)
+			throws Exception {
+		
+		// DO NOTHING -- Override in project specific handlers if necessary
+	}
+
+	
 }

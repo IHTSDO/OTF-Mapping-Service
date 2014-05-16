@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -15,6 +17,8 @@ import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
@@ -209,5 +213,79 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
     contentService.close();
     return true;
   }
+  
+  @Override
+public void computeTargetTerminologyNotes(TreePositionList treePositionList)
+			throws Exception {
+	
+	  Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
+			  "Computing target terminology notes.");
+	  
+	  // open the metadata service and get the relationship types
+	  MetadataService metadataService = new MetadataServiceJpa();
+	  Map<String, String> simpleRefSets = metadataService.getSimpleRefSets(mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 
+	  
+	  // find the dagger-to-asterisk and asterisk-to-dagger types
+	  String asteriskRefSetId = null;
+	  String daggerRefSetId = null;
+	  
+	  for (String key : simpleRefSets.keySet()) {
+		  if (simpleRefSets.get(key).equals("Asterisk refset")) asteriskRefSetId = key;
+		  if (simpleRefSets.get(key).equals("Dagger refset")) daggerRefSetId = key;
+	  }
+	  
+	  
+	  if (asteriskRefSetId == null) 
+		  Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
+				  "Could not find Asterisk refset");
+	  
+	  if (daggerRefSetId == null) 
+		  Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).warn(
+				  "Could not find Dagger refset");
+	  
+	  Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
+			  "  Asterisk to dagger relationship type found: " + asteriskRefSetId);
+	  
+	  Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
+			  "  Dagger to asterisk relationship type found: " + daggerRefSetId);
+
+	  // open one content service to handle all concept retrieval
+	  ContentService contentService = new ContentServiceJpa();
+
+	  // for each tree position initially passed in, call the recursive helper
+	  for (TreePosition tp : treePositionList.getTreePositions()) {
+
+		  computeTargetTerminologyNotesHelper(tp, contentService, asteriskRefSetId, daggerRefSetId);
+	  }
+  }
+
+public void computeTargetTerminologyNotesHelper(TreePosition treePosition, ContentService contentService, String asteriskRefSetId, String daggerRefSetId) throws Exception {
+	
+	  Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
+			  "Computing target terminology note for " + treePosition.getTerminologyId());
+
+	// initially set the note to an empty string
+	treePosition.setTerminologyNote("");
+	
+	// get the concept
+	Concept concept = contentService.getConcept(
+			treePosition.getTerminologyId(), 
+			mapProject.getDestinationTerminology(), 
+			mapProject.getDestinationTerminologyVersion());
+	
+	// cycle over the simple ref set members
+	for (SimpleRefSetMember simpleRefSetMember : concept.getSimpleRefSetMembers()) {
+		  Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
+				  "   " + simpleRefSetMember.getRefSetId());
+		if (simpleRefSetMember.getRefSetId().equals(asteriskRefSetId)) treePosition.setTerminologyNote("*");
+		else if (simpleRefSetMember.getRefSetId().equals(daggerRefSetId)) treePosition.setTerminologyNote("�");
+	}
+
+	// if this tree position has children, set their terminology notes recursively
+	for (TreePosition child : treePosition.getChildren()) {
+		computeTargetTerminologyNotesHelper(child, contentService, asteriskRefSetId, daggerRefSetId);
+	}
+	
+}
 }

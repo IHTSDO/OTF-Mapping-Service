@@ -28,6 +28,7 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
+// TODO: Auto-generated Javadoc
 /**
  * Services for interacting with mapping objects.
  */
@@ -688,6 +689,17 @@ public interface MappingService {
    */
   public TreePositionList setTreePositionValidCodes(
     List<TreePosition> treePositions, Long mapProjectId) throws Exception;
+  
+  /**
+   * Computes any display notes for tree position, depending on project algorithm handler
+   *
+   * @param treePositions the tree positions
+   * @param mapProjectId the map project id
+   * @return the tree position list
+   * @throws Exception the exception
+   */
+  public TreePositionList setTreePositionTerminologyNotes(
+		    List<TreePosition> treePositions, Long mapProjectId) throws Exception;
 
   /**
    * Compare finished map records.

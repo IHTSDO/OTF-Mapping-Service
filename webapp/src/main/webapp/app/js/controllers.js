@@ -1,6 +1,6 @@
 'use strict';
 
-var mapProjectAppControllers = angular.module('mapProjectAppControllers', ['ui.bootstrap', 'mapProjectAppDirectives', 'mapProjectAppServices', 'mapProjectAppDashboards']);
+var mapProjectAppControllers = angular.module('mapProjectAppControllers', ['ui.bootstrap', 'ui.sortable', 'mapProjectAppDirectives', 'mapProjectAppServices', 'mapProjectAppDashboards']);
 
 var root_url = "${base.url}/mapping-rest/";
 

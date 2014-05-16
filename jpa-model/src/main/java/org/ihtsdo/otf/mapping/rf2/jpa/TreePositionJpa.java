@@ -30,13 +30,7 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
  */
 @Entity
 @Indexed
-@Table(name = "tree_positions", uniqueConstraints = {
-		@UniqueConstraint(columnNames = {
-				"ancestorPath", "id"
-		}), @UniqueConstraint(columnNames = {
-				"terminologyId", "id"
-		})
-})
+@Table(name = "tree_positions")
 @XmlRootElement
 public class TreePositionJpa implements TreePosition {
 
@@ -46,7 +40,8 @@ public class TreePositionJpa implements TreePosition {
 	private Long id;
 
 	/** The ancestor path. */
-	@Column(nullable = false, length = 255)
+	
+	@Column(nullable = false, length = 4000)
 	private String ancestorPath;
 
 	/** The terminology. */

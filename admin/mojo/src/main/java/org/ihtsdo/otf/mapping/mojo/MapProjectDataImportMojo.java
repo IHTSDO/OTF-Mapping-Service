@@ -20,6 +20,7 @@ import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
@@ -27,6 +28,8 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -302,7 +305,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         MapProjectJpa mapProject = new MapProjectJpa();
         mapProject.setName(fields[0]);
         mapProject.setRefSetId(fields[1]);
-        mapProject.setRefSetName(fields[2]);
+        mapProject.setPublished(fields[2].equals("true") ? true : false);
         mapProject.setSourceTerminology(fields[3]);
         mapProject.setSourceTerminologyVersion(fields[4]);
         mapProject.setDestinationTerminology(fields[5]);
@@ -381,6 +384,19 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           mapProject.setPresetAgeRanges(projectAgeRanges.get(mapProject
               .getRefSetId()));
         }
+        
+        // look up the refset concept name
+        ContentService contentService = new ContentServiceJpa();
+        Concept refSetConcept = contentService.getConcept(
+        		mapProject.getRefSetId(),
+        		mapProject.getSourceTerminology(),
+        		mapProject.getSourceTerminologyVersion());
+        
+        // throw an exception if the concept does not exist
+        if (refSetConcept == null) {
+        	throw new Exception("Project import could not retrieve ref set name");
+        }    
+        mapProject.setRefSetName(refSetConcept.getDefaultPreferredName());
 
         mappingService.addMapProject(mapProject);
       }
