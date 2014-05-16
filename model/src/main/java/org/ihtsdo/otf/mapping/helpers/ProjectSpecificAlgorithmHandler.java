@@ -175,5 +175,4 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    */
   public Set<MapRecord> saveForLater(
     WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
-;
 }

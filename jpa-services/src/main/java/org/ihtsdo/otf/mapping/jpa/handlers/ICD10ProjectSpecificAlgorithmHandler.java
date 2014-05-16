@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -221,8 +223,6 @@ public void computeTargetTerminologyNotes(TreePositionList treePositionList)
 	  
 	  // open the metadata service and get the relationship types
 	  MetadataService metadataService = new MetadataServiceJpa();
-	  Map<String, String> relationshipTypes = metadataService.getRelationshipTypes(mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
-
 	  Map<String, String> simpleRefSets = metadataService.getSimpleRefSets(mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 
 	  
@@ -279,7 +279,7 @@ public void computeTargetTerminologyNotesHelper(TreePosition treePosition, Conte
 		  Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
 				  "   " + simpleRefSetMember.getRefSetId());
 		if (simpleRefSetMember.getRefSetId().equals(asteriskRefSetId)) treePosition.setTerminologyNote("*");
-		else if (simpleRefSetMember.getRefSetId().equals(daggerRefSetId)) treePosition.setTerminologyNote("†");
+		else if (simpleRefSetMember.getRefSetId().equals(daggerRefSetId)) treePosition.setTerminologyNote("ï¿½");
 	}
 
 	// if this tree position has children, set their terminology notes recursively
