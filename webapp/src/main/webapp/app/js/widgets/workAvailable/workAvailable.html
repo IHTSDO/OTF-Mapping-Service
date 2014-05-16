@@ -37,9 +37,9 @@
 
   <thead>
     <tr>
-      <th style="width: 15%; padding: 5px;"></th>
-      <th style="width: 15%; padding: 5px;">Id</th>
-      <th style="width: 60%; padding: 5px;">Name</th>
+      <th style="width: 3%; padding: 5px;"></th>
+      <th style="width: 17%; padding: 5px;">Id</th>
+      <th style="width: 80%; padding: 5px;">Name</th>
 
     </tr>
 
@@ -49,14 +49,19 @@
 
     <tr ng-repeat="concept in availableWork">
 
-      <td style="width: 15%; padding: 5px;"><a
-        ng-show="currentRole == 'Specialist'"
-        ng-click="assignWork(concept, currentUser)">Claim</a> <a
-        ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
-        ng-click="assignWork(concept, assignedMapUser)">Assign
-          </button></td>
-      <td style="width: 15%; padding: 5px;">{{concept.terminologyId}}</td>
-      <td style="width: 60%; padding: 5px;">{{concept.value}}</td>
+      <td style="width: 3%; padding: 5px;"><a
+              title="Claim"              
+              ng-show="currentRole == 'Specialist'"
+              ng-click="assignWork(concept, currentUser)"><i
+              class="glyphicon glyphicon-import"></i></a>
+              <a
+              title="Assign"              
+              ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
+              ng-click="assignWork(concept, assignedMapUser)"><i
+              class="glyphicon glyphicon-import"></i></a>
+      </td>
+      <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
+      <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
   </tbody>
 
 </table>
@@ -73,9 +78,9 @@
 
   <thead>
     <tr>
-      <th style="width: 15%; padding: 5px;"></th>
-      <th style="width: 15%; padding: 5px;">Id</th>
-      <th style="width: 60%; padding: 5px;">Name</th>
+      <th style="width: 3%; padding: 5px;"></th>
+      <th style="width: 17%; padding: 5px;">Id</th>
+      <th style="width: 80%; padding: 5px;">Name</th>
 
     </tr>
 
@@ -85,10 +90,12 @@
 
     <tr ng-repeat="concept in availableConflicts">
 
-      <td style="width: 15%; padding: 5px;"><a
-        ng-click="assignWork(concept, assignedMapUser)">Claim</a></td>
-      <td style="width: 15%; padding: 5px;">{{concept.terminologyId}}</td>
-      <td style="width: 60%; padding: 5px;">{{concept.value}}</td>
+      <td style="width: 3%; padding: 5px;"><a
+              title="Claim"
+              ng-click="assignWork(concept, assignedMapUser)"><i
+              class="glyphicon glyphicon-import"></i></a></td>
+      <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
+      <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
   </tbody>
 
 </table>
