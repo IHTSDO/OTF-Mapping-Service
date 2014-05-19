@@ -332,6 +332,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					console.debug("Assigning group and priority to " + i + " " + j);
 					$scope.entries[i][j].mapGroup = i;
 					$scope.entries[i][j].mapPriority = j+1;
+					$scope.entries[i][j].mapPriority = j+1;
 
 					entries.push($scope.entries[i][j]);
 
@@ -339,6 +340,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}
 
 			console.debug("modified:");
+			console.debug("modified2:");
 			console.debug(entries);
 
 			$scope.record.mapEntry = entries;
