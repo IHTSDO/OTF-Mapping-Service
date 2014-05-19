@@ -40,12 +40,17 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 	public ValidationResult validateTargetCodes(MapRecord mapRecord)
 			throws Exception {
 
+		Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
+				"Validating target codes");
+
 		ValidationResult validationResult = new ValidationResultJpa();
 		ContentService contentService = new ContentServiceJpa();
 
 		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 
+			// check the target codee only if this entry does not has a map relation specified
 			if (mapEntry.getMapRelation() == null ) {
+				
 				// first, check terminology id based on above rules
 				if ( !mapEntry.getTargetId().equals("") && (!mapEntry.getTargetId().matches(".[0-9].*")
 						|| mapEntry.getTargetId().contains("-"))) {

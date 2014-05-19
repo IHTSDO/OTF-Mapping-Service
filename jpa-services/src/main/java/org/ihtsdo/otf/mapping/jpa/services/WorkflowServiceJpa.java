@@ -581,9 +581,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		
 		Set<MapRecord> mapRecords = getMapRecordsForWorkflowTrackingRecord(trackingRecord);
 		
-		System.out.println(mapRecords.size());
-		if (mapRecord != null) System.out.println(mapRecord.toString());
-		
 		// if the record passed in updates an existing record, replace it in the set
 		if (mapRecord != null && mapRecord.getId() != null) {
 			for (MapRecord mr : mapRecords) {
@@ -594,8 +591,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				}
 			}
 		}
-		
-		System.out.println("Entered process workflow action: " + trackingRecord.getMapRecordIds());
 
 		
 		// switch on workflow action
@@ -604,32 +599,36 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			Logger.getLogger(WorkflowServiceJpa.class).info(
 					"ASSIGN_FROM_INITIAL_RECORD");
-
-			// expect no tracking record, double-check
-			if (trackingRecord != null) {
-				throw new Exception(
-						"ProcessWorkflowAction: ASSIGN_FROM_INITIAL_RECORD - Found tracking record for published record where none was expected!");
+			
+			// if a tracking record is found, perform no action (this record is already assigned)
+			if (trackingRecord == null) {
+	
+				// expect a map record to be passed in
+				if (mapRecord == null) {
+					throw new Exception(
+							"ProcessWorkflowAction: ASSIGN_FROM_INITIAL_RECORD - Call to assign from intial record must include an existing map record");
+				}
+	
+				trackingRecord = new WorkflowTrackingRecordJpa();
+				trackingRecord.setMapProject(mapProject);
+				trackingRecord.setTerminology(concept.getTerminology());
+				trackingRecord.setTerminologyVersion(concept
+						.getTerminologyVersion());
+				trackingRecord.setTerminologyId(concept.getTerminologyId());
+				trackingRecord.setDefaultPreferredName(concept
+						.getDefaultPreferredName());
+				trackingRecord.addMapRecordId(mapRecord.getId());
+				
+				// only FIX_ERROR_PATH valid, QA_PATH in Phase 2
+				trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
+	
+				// perform the assign action via the algorithm handler
+				mapRecords = algorithmHandler.assignFromInitialRecord(
+						trackingRecord, mapRecords, mapRecord, mapUser);
+			} else {
+				// do nothing
 			}
-
-			// expect a map record to be passed in
-			if (mapRecord == null) {
-				throw new Exception(
-						"ProcessWorkflowAction: ASSIGN_FROM_INITIAL_RECORD - Call to assign from intial record must include an existing map record");
-			}
-
-			trackingRecord = new WorkflowTrackingRecordJpa();
-			trackingRecord.setMapProject(mapProject);
-			trackingRecord.setTerminology(concept.getTerminology());
-			trackingRecord.setTerminologyVersion(concept
-					.getTerminologyVersion());
-			trackingRecord.setTerminologyId(concept.getTerminologyId());
-			trackingRecord.setDefaultPreferredName(concept
-					.getDefaultPreferredName());
-
-			// perform the assign action via the algorithm handler
-			mapRecords = algorithmHandler.assignFromInitialRecord(
-					trackingRecord, mapRecords, mapRecord, mapUser);
-
+	
 			break;
 
 		case ASSIGN_FROM_SCRATCH:
@@ -951,10 +950,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 	}
 	
+	@Override
 	public Set<MapRecord> getMapRecordsForWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord) throws Exception {
 		Set<MapRecord> mapRecords = new HashSet<>();
 		MappingService mappingService = new MappingServiceJpa();
-		if (trackingRecord.getMapRecordIds() != null) {
+		if (trackingRecord != null && trackingRecord.getMapRecordIds() != null) {
 			for (Long id : trackingRecord.getMapRecordIds()) {
 				System.out.println("getMapRecordsForWorkflowTrackingRecord: Found record " + id.toString());
 				mapRecords.add(mappingService.getMapRecord(id));
@@ -964,18 +964,22 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return mapRecords;
 	}
 	
+	@Override
 	public Set<MapUser> getMapUsersForWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord) throws Exception {
 		return getMapUsersFromMapRecords(getMapRecordsForWorkflowTrackingRecord(trackingRecord));
 	}
 	
+	@Override
 	public WorkflowStatus getWorkflowStatusForWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord) throws Exception {
 		return getWorkflowStatusFromMapRecords(getMapRecordsForWorkflowTrackingRecord(trackingRecord));
 	}
 
+	@Override
 	public WorkflowStatus getLowestWorkflowStatusForWorkflowTrackingRecord(WorkflowTrackingRecord trackingRecord) throws Exception {
 		return getLowestWorkflowStatusFromMapRecords(getMapRecordsForWorkflowTrackingRecord(trackingRecord));
 	}
 	
+	@Override
 	public Set<MapUser> getMapUsersFromMapRecords(Set<MapRecord> mapRecords) {
 		Set<MapUser> mapUsers = new HashSet<>();
 		for (MapRecord mr : mapRecords) {
@@ -984,6 +988,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return mapUsers;
 	}
 	
+	@Override
 	public WorkflowStatus getWorkflowStatusFromMapRecords(Set<MapRecord> mapRecords) {
 		WorkflowStatus workflowStatus = WorkflowStatus.NEW;
 		for (MapRecord mr : mapRecords) {
@@ -992,6 +997,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return workflowStatus;
 	}
 
+	@Override
 	public WorkflowStatus getLowestWorkflowStatusFromMapRecords(Set<MapRecord> mapRecords) {
 		WorkflowStatus workflowStatus = WorkflowStatus.REVIEW;
 		for (MapRecord mr : mapRecords) {
@@ -999,6 +1005,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 		return workflowStatus;
 	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

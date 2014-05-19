@@ -776,14 +776,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 	/**
 	 * Assign a new map record from existing record, performing any necessary
-	 * workflow actions
+	 * workflow actions based on workflow status
 	 * 
-	 * Conditions: - Only valid workflow paths are QA_PATH and FIX_ERROR_PATH -
-	 * Only valid workflow statuses are READY_FOR_PUBLICATION and PUBLISHED
+	 * - READY_FOR_PUBLICATION, PUBLICATION -> FIX_ERROR_PATH: 
+	 * 		Create a new record with origin ids set to the
+	 * 		existing record (and its antecedents) - Add the record to the tracking
+	 * 		record - Return the tracking record.
 	 * 
-	 * Default Behavior: - Create a new record with origin ids set to the
-	 * existing record (and its antecedents) - Add the record to the tracking
-	 * record - Return the tracking record.
+	 * - NEW, EDITING_IN_PROGRESS, EDITING_DONE, CONFLICT_NEW, CONFLICT_IN_PROGRESS
+	 * 		Invalid workflow statuses, should never be called with a record of this nature
 	 * 
 	 * Expects the tracking record to be a detached Jpa entity. Does not modify
 	 * objects via services.
@@ -804,7 +805,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			MapRecord mapRecord, MapUser mapUser) throws Exception {
 
 		Set<MapRecord> newRecords = new HashSet<>();
-
+		
 		switch (trackingRecord.getWorkflowPath()) {
 
 		case FIX_ERROR_PATH:
@@ -821,6 +822,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 			// check that only one record exists for this tracking record
 			if (!(trackingRecord.getMapRecordIds().size() == 1)) {
+				System.out.println(trackingRecord.toString());
 				throw new Exception(
 						"DefaultProjectSpecificHandlerException - assignFromInitialRecord: More than one record exists for FIX_ERROR_PATH assignment.");
 			}
@@ -829,16 +831,21 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			MapRecord newRecord = new MapRecordJpa(mapRecord);
 			newRecord.setId(null);
 
-			// add the origin id
+			// set origin ids
 			newRecord.addOrigin(mapRecord.getId());
-
-			// set the owner and last modified by (timestamp automatically set
-			// in
-			// map record constructor)
+			newRecord.addOrigins(mapRecord.getOriginIds());
+			
+			// set other relevant fields
 			newRecord.setOwner(mapUser);
 			newRecord.setLastModifiedBy(mapUser);
+			newRecord.setWorkflowStatus(WorkflowStatus.NEW);
 
+			// add the record to the list
 			newRecords.add(newRecord);
+			
+			// set the workflow status of the old record to review and add it to new records
+			mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW);
+			newRecords.add(mapRecord);
 
 			break;
 
@@ -853,16 +860,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			break;
 		default:
 			throw new Exception(
-					"assignFromInitialRecord called with erroneous Workflow Path.");
+					"assignFromInitialRecord called with invalid Workflow Path.");
 
-		}
-
-		// check for valid workflow path
-		if (!(trackingRecord.getWorkflowPath().equals(WorkflowPath.QA_PATH) || trackingRecord
-				.getWorkflowPath().equals(WorkflowPath.FIX_ERROR_PATH))) {
-
-			throw new Exception(
-					"assignFromInitialRecord called with invalid workflow path");
 		}
 
 		return newRecords;
@@ -1392,6 +1391,60 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			throws Exception {
 		
 		// DO NOTHING -- Override in project specific handlers if necessary
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#isRecordEditableByUser(org.ihtsdo.otf.mapping.model.MapRecord, org.ihtsdo.otf.mapping.model.MapUser)
+	 */
+	@Override
+	public boolean isRecordEditableByUser(MapRecord mapRecord, MapUser mapUser) throws Exception {
+		
+		// check that this user is on this project
+		if (!mapProject.getMapSpecialists().contains(mapUser) &&
+				!mapProject.getMapLeads().contains(mapUser)) {
+			return false;
+		}
+		
+		switch (mapRecord.getWorkflowStatus()) {
+		
+		// neither lead nor specialist can modify a CONFLICT_DETECTED record
+		case CONFLICT_DETECTED:
+			return false;
+			
+		// the following cases can only be edited by an owner who is a lead for this project
+		case CONFLICT_IN_PROGRESS:
+		case CONFLICT_NEW:
+			if (mapRecord.getOwner().equals(mapUser) && mapProject.getMapLeads().contains(mapUser)) return true;
+			else return false;
+			
+		// consensus record handling - Phase 2
+		case CONSENSUS_NEEDED:
+		case CONSENSUS_RESOLVED:
+			return false;
+		
+		// initial editing stages can be edited only by owner
+		case EDITING_DONE:
+		case EDITING_IN_PROGRESS:
+		case NEW:
+			if (mapRecord.getOwner().equals(mapUser)) return true;
+			else return false;
+			
+		// published and ready_for_publication records are available to either specialists or leads
+		case PUBLISHED:
+		case READY_FOR_PUBLICATION:
+			return true;
+			
+		// review records are not editable
+		case REVIEW:
+			return false;
+			
+		// if a non-specified case, throw error
+		default:
+			throw new Exception("Invalid Workflow Status " + mapRecord.getWorkflowStatus().toString() + " when checking editable for map record");
+
+		}
+
 	}
 
 	

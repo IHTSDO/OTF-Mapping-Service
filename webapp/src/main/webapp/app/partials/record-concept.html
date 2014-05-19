@@ -88,7 +88,7 @@
         <td ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">{{record.owner.name}}</td>
         <td><a
               title="Edit"
-              ng-show="isEditable(record)" 
+              ng-show="record.isEditable == 'true'" 
               ng-click="editRecord(record)"><i
               class="glyphicon glyphicon glyphicon-pencil"></i></a>
         </td>
