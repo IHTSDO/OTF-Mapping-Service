@@ -7,10 +7,10 @@
 
   <thead>
     <tr>
-      <th style="width: 10%; padding: 5px;"></th>
+      <th style="width: 2%; padding: 5px;"></th>
       <th style="width: 15%; padding: 5px;">Id</th>
-      <th style="width: 60%; padding: 5px;">Name</th>
-      <th style="width: 10%; padding: 5px;"></th>
+      <th style="width: 80%; padding: 5px;">Name</th>
+      <th style="width: 3%; padding: 5px;"></th>
 
     </tr>
 
@@ -25,13 +25,17 @@
         <i ng-show = "result.terminologyVersion === 'EDITING_IN_PROGRESS'"
               class="glyphicon glyphicon-saved"
               tooltip-placement="right"
-        		tooltip="This conflict has been previously edited."></i>
+        		tooltip="This record has been previously edited."></i>
         </td>
 
       <td style="width: 15%; padding: 5px;">{{result.terminologyId}}</td>
       <td style="width: 60%; padding: 5px;">{{result.value}}</td>
       <td style="width: 10%; padding: 5px;"><a
-        ng-click="unassignWork(result)">Return</a></td>
+              title="Return"
+              ng-click="unassignWork(result)"><i
+              class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a>
+         
+</td>
   </tbody>
 
 </table>
@@ -46,10 +50,10 @@
 
   <thead>
     <tr>
-      <th style="width: 10%; padding: 5px;"></th>
+      <th style="width: 2%; padding: 5px;"></th>
       <th style="width: 15%; padding: 5px;">Id</th>
-      <th style="width: 60%; padding: 5px;">Name</th>
-      <th style="width: 10%; padding: 5px;"></th>
+      <th style="width: 80%; padding: 5px;">Name</th>
+      <th style="width: 3%; padding: 5px;"></th>
 
     </tr>
 
@@ -72,9 +76,14 @@
       <td style="width: 15%; padding: 5px;">{{result.terminologyId}}</td>
       <td style="width: 60%; padding: 5px;">{{result.value}}</td>
       <td style="width: 10%; padding: 5px;"><a
-        ng-click="unassignWork(result)">Return</a></td>
+              title="Return"
+              ng-click="unassignWork(result)"><i
+              class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a>
+</td>
     </tr>
   </tbody>
+
+
 
 </table>
 

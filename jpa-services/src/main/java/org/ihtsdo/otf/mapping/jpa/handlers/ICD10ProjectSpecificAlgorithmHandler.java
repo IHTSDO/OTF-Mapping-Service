@@ -36,46 +36,49 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
    * @return the validation result
    * @throws Exception
    */
-  @Override
-  public ValidationResult validateTargetCodes(MapRecord mapRecord)
-    throws Exception {
+	@Override
+	public ValidationResult validateTargetCodes(MapRecord mapRecord)
+			throws Exception {
 
-    ValidationResult validationResult = new ValidationResultJpa();
-    ContentService contentService = new ContentServiceJpa();
+		ValidationResult validationResult = new ValidationResultJpa();
+		ContentService contentService = new ContentServiceJpa();
 
-    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-      // first, check terminology id based on above rules
-      if (!mapEntry.getTargetId().matches(".[0-9].*")
-          || mapEntry.getTargetId().contains("-")) {
-        validationResult
-            .addError("Invalid target code "
-                + mapEntry.getTargetId()
-                + "!  For ICD10, valid target codes must contain 3 digits and must not contain a dash."
-                + " Entry:"
-                + (mapProject.isGroupStructure() ? " group "
-                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                + " map priority "
-                + Integer.toString(mapEntry.getMapPriority()));
+		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 
-      }
+			if (mapEntry.getMapRelation() != null ) {
+				// first, check terminology id based on above rules
+				if ( !mapEntry.getTargetId().matches(".[0-9].*")
+						|| mapEntry.getTargetId().contains("-")) {
+					validationResult
+					.addError("Invalid target code "
+							+ mapEntry.getTargetId()
+							+ "!  For ICD10, valid target codes must contain 3 digits and must not contain a dash."
+							+ " Entry:"
+							+ (mapProject.isGroupStructure() ? " group "
+									+ Integer.toString(mapEntry.getMapGroup()) + "," : "")
+									+ " map priority "
+									+ Integer.toString(mapEntry.getMapPriority()));
 
-      // second, verify concept exists
-      Concept concept =
-          contentService.getConcept(mapEntry.getTargetId(),
-              mapProject.getDestinationTerminology(),
-              mapProject.getDestinationTerminologyVersion());
+				}
 
-      if (concept == null) {
-        validationResult.addError("Target code "
-            + mapEntry.getTargetId()
-            + " not found in database!"
-            + " Entry:"
-            + (mapProject.isGroupStructure() ? " group "
-                + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-            + " map  priority " + Integer.toString(mapEntry.getMapPriority()));
+				// second, verify concept exists
+				Concept concept =
+						contentService.getConcept(mapEntry.getTargetId(),
+								mapProject.getDestinationTerminology(),
+								mapProject.getDestinationTerminologyVersion());
 
-      }
-    }
+				if (concept == null) {
+					validationResult.addError("Target code "
+							+ mapEntry.getTargetId()
+							+ " not found in database!"
+							+ " Entry:"
+							+ (mapProject.isGroupStructure() ? " group "
+									+ Integer.toString(mapEntry.getMapGroup()) + "," : "")
+									+ " map  priority " + Integer.toString(mapEntry.getMapPriority()));
+
+				}
+			}
+		}
 
     contentService.close();
     return validationResult;
@@ -185,6 +188,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
   }
 
   
+  // TODO Implement this in the validation routines for checking target codes
+  // i.e. that routine should call this
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
 

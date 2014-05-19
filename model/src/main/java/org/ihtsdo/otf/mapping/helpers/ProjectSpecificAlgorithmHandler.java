@@ -12,6 +12,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Interface ProjectSpecificAlgorithmHandler.
  */
@@ -72,10 +73,11 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   /**
    * Compute map advice and map relations. Must be overwritten for each project
    * handler.
-   * 
+   *
    * @param mapRecord the map record
    * @param mapEntry the map entry
    * @return the list
+   * @throws Exception the exception
    */
   public List<MapAdvice> computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception;
 
@@ -106,6 +108,12 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    */
   public boolean isTargetCodeValid(String terminologyId) throws Exception;
   
+  /**
+   * Compute target terminology notes.
+   *
+   * @param treePositions the tree positions
+   * @throws Exception the exception
+   */
   public void computeTargetTerminologyNotes(TreePositionList treePositions)
 		throws Exception;
 
@@ -115,26 +123,28 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * 
    * Default Behavior: - Create a new record with origin ids set to the existing
    * record (and its antecedents) - Add the record to the tracking record -
-   * Return the tracking record
-   * 
+   * Return the tracking record.
+   *
    * @param trackingRecord the tracking record
+   * @param mapRecords the map records
    * @param mapRecord the map record
    * @param mapUser the map user
    * @return the workflow tracking record
-   * @throws Exception
+   * @throws Exception the exception
    */
   public Set<MapRecord> assignFromInitialRecord(
     WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapRecord mapRecord, MapUser mapUser)
     throws Exception;
 
   /**
-   * Assign a map record from scratch, performing any necessary workflow actions
-   * 
+   * Assign a map record from scratch, performing any necessary workflow actions.
+   *
    * @param trackingRecord the tracking record
+   * @param mapRecords the map records
    * @param concept the concept
    * @param mapUser the map user
    * @return the workflow tracking record
-   * @throws Exception
+   * @throws Exception the exception
    */
   public Set<MapRecord> assignFromScratch(
     WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, Concept concept, MapUser mapUser)
@@ -142,12 +152,13 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 
   /**
    * Unassign a map record from a user, performing any necessary workflow
-   * actions
-   * 
+   * actions.
+   *
    * @param trackingRecord the tracking record
+   * @param mapRecords the map records
    * @param mapUser the map user
    * @return the workflow tracking record
-   * @throws Exception
+   * @throws Exception the exception
    */
   public Set<MapRecord> unassign(WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, 
     MapUser mapUser) throws Exception;
@@ -155,8 +166,9 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   /**
    * Set a user's editing on a map record to finished, performing any necessary
    * workflow actions.
-   * 
+   *
    * @param trackingRecord the tracking record
+   * @param mapRecords the map records
    * @param mapUser the map user
    * @return the workflow tracking record
    * @throws Exception the exception
@@ -166,12 +178,13 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 
   /**
    * Performs workflow actions necessary when a map user wishes to save a record
-   * for further editing
-   * 
+   * for further editing.
+   *
    * @param trackingRecord the tracking record
+   * @param mapRecords the map records
    * @param mapUser the map user
    * @return the workflow tracking record
-   * @throws Exception
+   * @throws Exception the exception
    */
   public Set<MapRecord> saveForLater(
     WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
