@@ -225,8 +225,8 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 /*
  * Controller for retrieving and displaying records associated with a concept
  */
-mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$routeParams', '$sce', '$rootScope', '$location', 'localStorageService', 
-                                                              function ($scope, $http, $routeParams, $sce, $rootScope, $location, localStorageService) {
+mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http', '$q', '$routeParams', '$sce', '$rootScope', '$location', 'localStorageService', 
+                                                              function ($scope, $http, $q, $routeParams, $sce, $rootScope, $location, localStorageService) {
 
 	// scope variables
 	$scope.page =  'concept';
@@ -356,24 +356,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			}
 		});
 	};
-
-	$scope.isEditable = function(record) {
-
-		console.debug('isEditable');
-		console.debug($scope.currentRole);
-		console.debug($scope.currentUser);
-		console.debug(record.owner);
-		if (($scope.currentRole === 'Specialist' ||
-				$scope.currentRole === 'Lead' ||
-				$scope.currentRole === 'Admin') &&
-				(record.workflowStatus === 'PUBLISHED' || record.workflowStatus === 'READY_FOR_PUBLICATION')) {
-
-			return true;
-
-		} else if ($scope.currentUser.userName === record.owner.userName) {
-			return true;
-		} else return false;
-	};
 	
 	$scope.displayToViewer = function(record) {
 		if ($scope.currentRole === 'Viewer' &&
@@ -382,28 +364,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		} else return true; 
 	};
 
-	$scope.editRecord = function(record) {
-
-		// assign the record along the FIX_ERROR_PATH
-		$rootScope.glassPane++;
-
-		$http({
-			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
-			"/concept/" + record.conceptId +
-			"/user/" + $scope.currentUser.userName,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			}	
-		}).success(function(data) {
-			$rootScope.glassPane--;
-
-			// open the record edit view
-			window.location("index.html#/record/recordId/" + record.id);
-		}).error(function(error) {
-			$rootScope.glassPane--;
-		});
-	};
 
 	$scope.filterRecords = function() {
 		$scope.recordsInProject = [];
@@ -415,10 +375,79 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				$scope.recordsNotInProject.push($scope.records[i]);
 			}
 		}
+		
+		// for records in project, check if this user can edit these records
+		console.debug($scope.recordsInProject);
+		for (var i = 0; i < $scope.recordsInProject.length; i++) {
 
+			setEditable($scope.recordsInProject[i]);
+		}
+ 
 		// if no records for this project found, set flag
 		if ($scope.recordsInProject.length == 0) $scope.recordsInProjectNotFound = true;
 	};
+	
+	function setEditable(record) {
+		
+		console.debug("Checking editable");
+
+		$http({
+			url: root_workflow + "record/isEditable/" + $scope.currentUser.userName,
+			method: "POST",
+			dataType: 'json',
+			data: record,
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(response) {
+			record.isEditable = response;
+		});
+	};
+	
+	$scope.editRecord = function(record) {
+
+		// assign the record along the FIX_ERROR_PATH
+		$rootScope.glassPane++;
+
+		console.debug("Edit record clicked, assigning record if necessary");
+		$http({
+			url: root_workflow + "assign/record/projectId/" + $scope.focusProject.id +
+			 "/concept/" + record.conceptId +
+			 "/user/" + $scope.currentUser.userName,
+			 method: "POST",
+			 dataType: 'json',
+			 data: record,
+			 headers: {
+				 "Content-Type": "application/json"
+			 }		
+		}).success(function(data) {
+			console.debug('Assignment successful');
+			$http({
+				url: root_workflow + "assignedRecord/projectId/" + $scope.focusProject.id +
+				 "/concept/" + record.conceptId +
+				 "/user/" + $scope.currentUser.userName,
+				 method: "GET",
+				 dataType: 'json',
+				 data: record,
+				 headers: {
+					 "Content-Type": "application/json"
+				 }
+			}).success(function(data) {
+				console.debug(data);
+				$rootScope.glassPane--;
+				
+				// open the record edit view
+				$location.path("record/recordId/" + data.id);
+			}).error(function(data) {
+				$rootScope.glassPane--;
+			});
+
+			
+		}).error(function(error) {
+		  	$rootScope.glassPane--;
+		});
+	};
+	
 
 	$scope.getProject = function(record) {
 		for (var i = 0; i < projects.length; i++) {
@@ -899,19 +928,36 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		// assign the record along the FIX_ERROR_PATH
 		$rootScope.glassPane++;
 
+		console.debug("Edit record clicked, assigning record if necessary");
 		$http({
-			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
+			url: root_workflow + "assign/record/projectId/" + $scope.focusProject.id +
 			 "/concept/" + record.conceptId +
 			 "/user/" + $scope.currentUser.userName,
 			 method: "POST",
+			 dataType: 'json',
+			 data: record,
 			 headers: {
 				 "Content-Type": "application/json"
-			 }	
+			 }		
 		}).success(function(data) {
-			$rootScope.glassPane--;
+			console.debug('Assignment successful');
+			$http({
+				url: root_workflow + "assignedRecord/projectId/" + $scope.focusProject.id +
+				 "/concept/" + record.conceptId +
+				 "/user/" + $scope.currentUser.userName,
+				 method: "GET",
+				 dataType: 'json',
+				 data: record,
+				 headers: {
+					 "Content-Type": "application/json"
+				 }
+			}).success(function(data) {
+				
+				// open the record edit view
+				$location.path("index.html#/record/recordId/" + data.id);
+			});
 
-			// open the record edit view
-			window.location("index.html#/record/recordId/" + record.id);
+			
 		}).error(function(error) {
 		  	$rootScope.glassPane--;
 		});

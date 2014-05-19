@@ -20,12 +20,19 @@
 
     <tr ng-repeat="result in assignedRecords">
 
-      <td style="width: 3%; padding: 5px;"><a
-              title="Edit"><i ng-click="goEditRecord(result.id)" class="glyphicon glyphicon glyphicon-pencil"></i></a>
-        <i ng-show = "result.terminologyVersion === 'EDITING_IN_PROGRESS'"
-              class="glyphicon glyphicon-saved"
-              tooltip-placement="right"
-        		tooltip="This record has been previously edited."></i>
+      <td style="width: 3%; padding: 5px;">
+      
+        <!-- Display a pushpin if this record has previously been edited -->
+      	<a title='Continue working on this concept' ng-show="result.terminologyVersion === 'EDITING_IN_PROGRESS'">
+      		<i ng-click="goEditRecord(result.id)" class="glyphicon glyphicon-pushpin"></i>
+    	</a>
+    	
+    	<!-- Display a pencil if this record has not yet been edited -->
+    	<a title='Start work on this concept' ng-show="result.terminologyVersion != 'EDITING_IN_PROGRESS'">
+      		<i ng-click="goEditRecord(result.id)" class="glyphicon glyphicon-pencil"></i>
+    	</a>
+              
+     
         </td>
 
       <td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>

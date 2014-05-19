@@ -6,6 +6,7 @@ package org.ihtsdo.otf.mapping.rest;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -16,6 +17,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -23,11 +25,13 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -593,6 +597,70 @@ public class WorkflowServiceRest {
 			throw new WebApplicationException(e);
 		}
 
+	}
+	
+	@POST
+	@Path("/record/isEditable/{userName}")
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Set record to editing in progress", notes = "Updates the map record and sets workflow to editing in progress.")
+	public boolean isEditable(
+			@ApiParam(value = "Name of map user", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "MapRecord to save", required = true) MapRecordJpa mapRecord) throws Exception {
+		
+		// get the map user and map project
+		MappingService mappingService = new MappingServiceJpa();
+		MapUser mapUser = mappingService.getMapUser(userName);
+		MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
+		
+		ProjectSpecificAlgorithmHandler algorithmHandler =
+		        mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+		mappingService.close();
+		
+		return algorithmHandler.isRecordEditableByUser(mapRecord, mapUser);
+
+	}
+	
+	/**
+	 * Gets the assigned map record for concept and map user, if it exists
+	 *
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @param userName the user name
+	 * @return the assigned map record for concept and map user
+	 * @throws Exception the exception
+	 */
+	@GET
+	@Path("/assignedRecord/projectId/{id}/concept/{terminologyId}/user/{userName}")
+	@ApiOperation(value = "Unassign user from work.", notes = "Ununassigns the user from either concept mapping or conflict resolution.", response = Response.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecord getAssignedMapRecordForConceptAndMapUser(
+			@ApiParam(value = "Map Project id", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Terminology id of concept", required = true) @PathParam("terminologyId") String terminologyId,
+			@ApiParam(value = "Name of map user", required = true) @PathParam("userName") String userName) throws Exception {
+		
+		MappingService mappingService = new MappingServiceJpa();
+		MapUser mapUser = mappingService.getMapUser(userName);
+		MapProject mapProject = mappingService.getMapProject(mapProjectId);
+		mappingService.close();
+		
+		ContentService contentService = new ContentServiceJpa();
+		Concept concept = contentService.getConcept(terminologyId, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+		contentService.close();
+		
+		WorkflowService workflowService = new WorkflowServiceJpa();
+		WorkflowTrackingRecord trackingRecord = workflowService.getWorkflowTrackingRecord(mapProject, concept);
+		
+		for (MapRecord mr : workflowService.getMapRecordsForWorkflowTrackingRecord(trackingRecord)) {
+			if (mr.getOwner().equals(mapUser)) {
+				workflowService.close();
+				return mr;
+			}
+		}
+		
+		workflowService.close();
+		
+		return null;
+	
 	}
 
 }
