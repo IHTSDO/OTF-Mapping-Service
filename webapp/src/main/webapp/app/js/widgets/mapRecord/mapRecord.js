@@ -252,12 +252,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	/**
 	 * MAP RECORD FUNCTIONS
 	 */
-	$scope.finishAndNextMapRecord = function($location) {
-		$scope.finishMapRecord();
-		console.debug($scope.validationResult);
-		
+	$scope.finishAndNextMapRecord = function() {
+		$scope.finishMapRecord(false);
 
-		console.debug('Retrieving Assigned Work');
+		console.debug('Retrieving Assigned Work for Finish/Next');
 
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
@@ -280,21 +278,30 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		  	$rootScope.glassPane--;
 
 			$scope.assignedRecords = data.searchResult;
-			console.debug('in success' + $scope.assignedRecords[0].id);
+			console.debug('finish/next in success' + $scope.assignedRecords);
 			
 			var path = "record/recordId/" + $scope.assignedRecords[0].id;
-			
-			console.debug("go to " + path);
-			// redirect page
-			$location.path(path);
+
+			// if there were no errors finishing the record, go to the next record
+			console.debug($scope.validationResult);
+			if ($scope.validationResult.errors.length == 0) {
+				if ($scope.assignedRecords[0].id != $scope.record.id) {
+			      console.debug("finish/next go to " + path);
+			      // redirect page
+			      $location.path(path);
+				} else {
+					window.history.back();
+				}
+			}
 
 		}).error(function(error) {
 		  	$rootScope.glassPane--;
 			$scope.error = "Error";
 		});
+		
 	};
 	
-	$scope.finishMapRecord = function() {
+	$scope.finishMapRecord = function(returnBack) {
 
 		///////////////////////////
 		// Group and MapPriority //
@@ -403,9 +410,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						$scope.record = data;
 						$scope.recordSuccess = "Record saved.";
 						$scope.recordError = "";
-						//if (returnBack) {
+						if (returnBack) {
 						  window.history.back();
-						//}
+						}
 					}).error(function(data) {
 						console.debug('SERVER ERROR');
 						$scope.recordSuccess = "";
