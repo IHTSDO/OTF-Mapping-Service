@@ -860,16 +860,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			break;
 		default:
 			throw new Exception(
-					"assignFromInitialRecord called with erroneous Workflow Path.");
+					"assignFromInitialRecord called with invalid Workflow Path.");
 
-		}
-
-		// check for valid workflow path
-		if (!(trackingRecord.getWorkflowPath().equals(WorkflowPath.QA_PATH) || trackingRecord
-				.getWorkflowPath().equals(WorkflowPath.FIX_ERROR_PATH))) {
-
-			throw new Exception(
-					"assignFromInitialRecord called with invalid workflow path");
 		}
 
 		return newRecords;
