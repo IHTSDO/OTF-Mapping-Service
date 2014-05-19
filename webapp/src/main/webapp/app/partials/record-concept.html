@@ -54,9 +54,14 @@
         <td></td>
         <td></td>
         <td></td>
-        <td colspan=2>Empty record, owned by {{record.owner.name}}</td>
-        <td>{{record.workflowStatus}}</td>
-        <td><a ng-show="isEditable(record)" ng-click="editRecord(record)">Edit</a></td>
+        <td>Empty Entry</td>
+        <td ng-show="displayToViewer(record)">{{record.workflowStatus}}</td>
+        <td ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">{{record.owner.name}}</td>
+        <td><a
+              title="Edit"
+              ng-show="isEditable(record)" 
+              ng-click="editRecord(record)"><i
+              class="glyphicon glyphicon glyphicon-pencil"></i></a></td>
       </tr>
 
       <tr
@@ -147,8 +152,10 @@
         <td></td>
         <td></td>
         <td></td>
-        <td colspan=2>Empty record, owned by {{record.owner.name}}</td>
-        <td><a href="index.html#/record/recordId/{{record.id}}">Edit</a>
+        <td>Empty Entry</td>
+        <td ng-show="displayToViewer(record)">{{record.workflowStatus}}</td>
+        <td ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">{{record.owner.name}}</td>
+        
       </tr>
       <tr ng-if="displayToViewer(record)"
         ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">

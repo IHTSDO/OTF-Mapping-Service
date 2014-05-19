@@ -256,7 +256,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		var ruleSummary = "";
 		
 		// first, rule summary
-		if ($scope.project.ruleBased == true) {
+		if ($scope.project.ruleBased == true && entry.rule != null && entry.rule != undefined) {
 			if (entry.rule.toUpperCase().indexOf("TRUE") != -1) ruleSummary += "[TRUE] ";
 			else if (entry.rule.toUpperCase().indexOf("FEMALE") != -1) ruleSummary += "[FEMALE] ";
 			else if (entry.rule.toUpperCase().indexOf("MALE") != -1) ruleSummary += "[MALE] ";
@@ -353,6 +353,33 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		newLeadRecord.id = $scope.leadRecord.id;
 		newLeadRecord.workflowStatus = 'CONFLICT_IN_PROGRESS';
 		$rootScope.$broadcast('compareRecordsWidget.notification.selectRecord',{record: newLeadRecord});  
+		
+	};
+
+	$scope.getEntrySummary = function(entry) {
+		
+		var entrySummary = "" ;
+		// first get the rule
+		entrySummary += $scope.getRuleSummary(entry);
+		
+		// if target is null, check relation id
+		if (entry.targetId == null || entry.targetId === '') {
+			
+			// if relation id is null or empty, return empty entry string
+			if (entry.mapRelation == null || entry.mapRelation === '') {
+				entrySummary += '[NO TARGET OR RELATION]';
+			
+			// otherwise, return the relation abbreviation
+			} else {
+				entrySummary += entry.mapRelation.abbreviation;
+				
+			}
+		// otherwise return the target code and preferred name
+		} else {
+			entrySummary += entry.targetId + " " + entry.targetName;
+		}
+		
+		return entrySummary;
 		
 	};
 

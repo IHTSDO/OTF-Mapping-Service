@@ -28,10 +28,10 @@ transform: scaleX(-1);
 }
 
 /** from bootstrap.css - widens the display for truncated term browser entries */
-.dropdown-menu {
+ .dropdown-menu {
   min-width: 300px;
   position: relative;
-}
+} 
 
 /** from bootstrap.css - less wasted space on advices and principles */
 hr {

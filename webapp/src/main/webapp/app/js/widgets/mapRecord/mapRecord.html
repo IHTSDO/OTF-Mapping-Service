@@ -170,13 +170,13 @@
 for consensus review<br>
 <input type="checkbox" ng-model="record.flagForEditorialReview"> Flag
 for editorial review<br>
-<input type="checkbox" ng-model="record.flagForMapLeadReview"> Flag for
+<input type="checkbox" ng-model="record.flagForMapLeadReview" ng-show="page != 'resolveConflictsDashboard'"> Flag for
 map lead review<br>
 
 </accordion-group> </accordion>
 
 <button class="btn btn-sm btn-primary" ng-click="finishMapRecord(true)">Finish</button>
-<button class="btn btn-sm btn-primary" ng-click="finishAndNextMapRecord()">Finish/Next</button>
+<button class="btn btn-sm btn-primary" ng-show="page != 'resolveConflictsDashboard'" ng-click="finishAndNextMapRecord()">Finish/Next</button>
 <button class="btn btn-sm btn-warning" ng-click="cancelMapRecord()">Cancel</button>
  
 <button class="btn btn-sm btn-primary" style="float: right;"

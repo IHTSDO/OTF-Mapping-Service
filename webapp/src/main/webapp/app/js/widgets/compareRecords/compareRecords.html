@@ -54,8 +54,7 @@
                 <span ng-show="entry.targetId != null && entry.targetId != ''"><span
                   ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
                   {{entry.targetId}} {{entry.targetName}}</span> <span
-                  ng-show="entry.targetId == null || entry.targetId === ''">[Empty
-                  Entry]</span>
+                  ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
               </p>
             </div>
             <!--  end sortable entries --> </accordion-group>
@@ -74,8 +73,7 @@
               <span ng-show="entry.targetId != null && entry.targetId != ''">
                 <span ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span>
                 {{entry.targetId}} {{entry.targetName}}
-              </span> <span ng-show="entry.targetId == null || entry.targetId === ''">[Empty
-                Entry]</span>
+              </span> <span ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
             </p>
           </div>
         </div>
@@ -140,8 +138,7 @@
                 <span ng-show="entry.targetId != null && entry.targetId != ''"><span
                   ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
                   {{entry.targetId}} {{entry.targetName}}</span> <span
-                  ng-show="entry.targetId == null || entry.targetId === ''">[Empty
-                  Entry]</span>
+                  ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
               </p>
             </div>
             <!--  end sortable entries --> </accordion-group>
@@ -160,8 +157,7 @@
               <span ng-show="entry.targetId != null && entry.targetId != ''">
                 <span ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span>
                 {{entry.targetId}} {{entry.targetName}}
-              </span> <span ng-show="entry.targetId == null || entry.targetId === ''">[Empty
-                Entry]</span>
+              </span> <span ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
             </p>
           </div>
         </div>

@@ -45,10 +45,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
 		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 
-			if (mapEntry.getMapRelation() != null ) {
+			if (mapEntry.getMapRelation() == null ) {
 				// first, check terminology id based on above rules
-				if ( !mapEntry.getTargetId().matches(".[0-9].*")
-						|| mapEntry.getTargetId().contains("-")) {
+				if ( !mapEntry.getTargetId().equals("") && (!mapEntry.getTargetId().matches(".[0-9].*")
+						|| mapEntry.getTargetId().contains("-"))) {
 					validationResult
 					.addError("Invalid target code "
 							+ mapEntry.getTargetId()
@@ -58,17 +58,15 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 									+ Integer.toString(mapEntry.getMapGroup()) + "," : "")
 									+ " map priority "
 									+ Integer.toString(mapEntry.getMapPriority()));
-
-				}
-
-				// second, verify concept exists
-				Concept concept =
+					
+					// second, verify concept exists
+				  Concept concept =
 						contentService.getConcept(mapEntry.getTargetId(),
 								mapProject.getDestinationTerminology(),
 								mapProject.getDestinationTerminologyVersion());
 
-				if (concept == null) {
-					validationResult.addError("Target code "
+				  if (concept == null) {
+					  validationResult.addError("Target code "
 							+ mapEntry.getTargetId()
 							+ " not found in database!"
 							+ " Entry:"
@@ -76,7 +74,12 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 									+ Integer.toString(mapEntry.getMapGroup()) + "," : "")
 									+ " map  priority " + Integer.toString(mapEntry.getMapPriority()));
 
+				  }
+				} else if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals("")) {
+					validationResult.addError("A reason must be selected from the picklist when no target is assigned.");
 				}
+
+
 			}
 		}
 
