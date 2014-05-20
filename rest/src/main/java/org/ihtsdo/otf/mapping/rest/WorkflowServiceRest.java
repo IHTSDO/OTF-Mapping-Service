@@ -599,6 +599,14 @@ public class WorkflowServiceRest {
 
 	}
 	
+	/**
+	 * Indicates whether or the record is editable by the user.
+	 *
+	 * @param userName the user name
+	 * @param mapRecord the map record
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 * @throws Exception the exception
+	 */
 	@POST
 	@Path("/record/isEditable/{userName}")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })

@@ -9,7 +9,6 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-// TODO: Auto-generated Javadoc
 /**
  * The interface for the content service.
  * 
@@ -118,6 +117,7 @@ public interface ContentService extends RootService {
    * @param terminology the terminology
    * @param terminologyVersion the terminology version
    * @param typeId the type id
+   * @param pfsParameter the pfs parameter
    * @return the descendants
    * @throws Exception the exception
    */
