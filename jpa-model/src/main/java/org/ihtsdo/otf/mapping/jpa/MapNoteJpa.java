@@ -68,6 +68,21 @@ public class MapNoteJpa implements MapNote {
     this.note = note;
     this.timestamp = timestamp;
   }
+  
+  public MapNoteJpa(MapNote mapNote, boolean deepCopy) {
+  
+	// if deep copy not indicated, copy id and timestamp
+	if (deepCopy == false) {
+		this.id = mapNote.getId();
+		this.timestamp = mapNote.getTimestamp();
+	}
+	
+	// copy basic type fields (non-persisted objects)
+	this.note = mapNote.getNote();
+	
+	// copy objects/collections excluded from deep copy (i.e. retain persistence references)
+	this.user = new MapUserJpa(mapNote.getUser());
+  }
 
   /**
    * Return the id

@@ -23,7 +23,6 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-// TODO: Auto-generated Javadoc
 /**
  * Concrete implementation of {@link TreePosition} for use with JPA.
  * 

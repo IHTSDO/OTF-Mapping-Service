@@ -62,9 +62,7 @@ public class MapEntryJpa implements MapEntry {
   private Set<MapNote> mapNotes = new HashSet<>();
 
   /** The map advices. */
-  @ManyToMany(targetEntity = MapAdviceJpa.class, cascade = {
-      CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH
-  }, fetch = FetchType.EAGER)
+  @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.EAGER)
   @IndexedEmbedded(targetElement = MapAdviceJpa.class)
   private Set<MapAdvice> mapAdvices = new HashSet<>();
 
@@ -84,7 +82,7 @@ public class MapEntryJpa implements MapEntry {
   @Column(nullable = false)
   private int mapPriority;
 
-  @OneToOne(targetEntity = MapRelationJpa.class)
+  @OneToOne(targetEntity = MapRelationJpa.class, fetch = FetchType.EAGER)
   private MapRelation mapRelation;
 
   /** The mapBlock. */
@@ -100,6 +98,80 @@ public class MapEntryJpa implements MapEntry {
    */
   public MapEntryJpa() {
     // empty
+  }
+  
+  
+  /**
+   * Constructor using fields 
+   * 
+   * @param id
+   * @param mapRecord
+   * @param mapNotes
+   * @param mapAdvices
+   * @param targetId
+   * @param targetName
+   * @param rule
+   * @param mapPriority
+   * @param mapRelation
+   * @param mapBlock
+   * @param mapGroup
+   */
+  public MapEntryJpa(Long id, MapRecord mapRecord, Set<MapNote> mapNotes,
+		Set<MapAdvice> mapAdvices, String targetId, String targetName,
+		String rule, int mapPriority, MapRelation mapRelation, int mapBlock,
+		int mapGroup) {
+	super();
+	this.id = id;
+	this.mapRecord = mapRecord;
+	this.mapNotes = mapNotes;
+	this.mapAdvices = mapAdvices;
+	this.targetId = targetId;
+	this.targetName = targetName;
+	this.rule = rule;
+	this.mapPriority = mapPriority;
+	this.mapRelation = mapRelation;
+	this.mapBlock = mapBlock;
+	this.mapGroup = mapGroup;
+}
+
+
+
+/**
+   * Deep copy constructor
+   */
+  public MapEntryJpa(MapEntry mapEntry, boolean deepCopy) {
+	  super();
+	  
+	  System.out.println("Deep copying entry.");
+
+	  // if deep copy not indicated, copy id, otherwise leave null
+	  if (deepCopy == false) this.id = mapEntry.getId();
+	  this.mapRecord = mapEntry.getMapRecord();
+
+	  // copy basic type fields (non-persisted objects)
+	  this.targetId = mapEntry.getTargetId();
+	  this.targetName = mapEntry.getTargetName();
+	  this.rule = mapEntry.getRule();
+	  this.mapPriority = mapEntry.getMapPriority();
+	  this.mapBlock = mapEntry.getMapBlock();
+	  this.mapGroup = mapEntry.getMapGroup();
+	
+	  // copy advices
+	  for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
+		  addMapAdvice(new MapAdviceJpa(mapAdvice));
+	  }
+	  
+	  // copy entries
+	  if (mapEntry.getMapRelation() != null) {
+		  this.mapRelation = new MapRelationJpa(mapEntry.getMapRelation());
+	  }
+	  
+	  // copy notes
+	  for (MapNote mapNote : mapRecord.getMapNotes()) {
+		  addMapNote(new MapNoteJpa(mapNote, deepCopy));
+	  }
+	  
+	  System.out.println("  " + toString());
   }
 
   /**

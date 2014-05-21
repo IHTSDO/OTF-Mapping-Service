@@ -45,8 +45,39 @@ public class MapUserJpa implements MapUser {
   /** The default constructor */
   public MapUserJpa() {
   }
-
+  
   /**
+   * Instantiates a new map user jpa.
+   *
+   * @param id the id
+   * @param userName the user name
+   * @param name the name
+   * @param email the email
+   */
+  public MapUserJpa(Long id, String userName, String name, String email) {
+	super();
+	this.id = id;
+	this.userName = userName;
+	this.name = name;
+	this.email = email;
+}
+  
+  /**
+   * Instantiates a new map user jpa.
+   *
+   * @param mapUser the map user
+   */
+  public MapUserJpa(MapUser mapUser) {
+	  super();
+	  this.id = mapUser.getId();
+	  this.userName = mapUser.getUserName();
+	  this.name = mapUser.getName();
+	  this.email = mapUser.getEmail();
+  }
+
+
+
+/**
    * Return the id
    * @return the id
    */

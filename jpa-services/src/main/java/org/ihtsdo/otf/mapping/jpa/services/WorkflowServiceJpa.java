@@ -21,6 +21,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -609,6 +610,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 							"ProcessWorkflowAction: ASSIGN_FROM_INITIAL_RECORD - Call to assign from intial record must include an existing map record");
 				}
 	
+				// create a new tracking record for FIX_ERROR_PATH or QA_PATH
 				trackingRecord = new WorkflowTrackingRecordJpa();
 				trackingRecord.setMapProject(mapProject);
 				trackingRecord.setTerminology(concept.getTerminology());
@@ -618,6 +620,22 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				trackingRecord.setDefaultPreferredName(concept
 						.getDefaultPreferredName());
 				trackingRecord.addMapRecordId(mapRecord.getId());
+				
+				// get the tree positions for this concept and set the sort key to
+				// the first retrieved
+				ContentService contentService = new ContentServiceJpa();
+				SearchResultList treePositionsList = contentService
+						.findTreePositionsForConcept(concept.getTerminologyId(),
+								concept.getTerminology(),
+								concept.getTerminologyVersion());
+				
+				// handle inactive concepts - which don't have tree positions
+				if (treePositionsList.getSearchResults().size() == 0) {
+					trackingRecord.setSortKey("");
+				} else {
+					trackingRecord.setSortKey(treePositionsList.getSearchResults()
+							.get(0).getValue());
+				}
 				
 				// only FIX_ERROR_PATH valid, QA_PATH in Phase 2
 				trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
@@ -723,7 +741,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 			
 		Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
-		System.out.println(trackingRecord.getTerminologyId());
 		
 		Set<MapRecord> syncedRecords = synchronizeMapRecords(trackingRecord, mapRecords);
 		trackingRecord.setMapRecordIds(null);
@@ -743,7 +760,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// else add the tracking record if new
 		} else if (trackingRecord.getId() == null) {
 			
-			System.out.println("Adding tracking record");
+			System.out.println("Adding tracking record " + trackingRecord.toString());
 			addWorkflowTrackingRecord(trackingRecord);
 			
 		// otherwise update the tracking record
@@ -755,6 +772,31 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 	}
 	
+	
+	/**
+	 * Algorithm has gotten needlessly complex due to conflicting service changes and algorithm handler changes.
+	 * However, the basic process is this:
+	 * 
+	 * 1) 	Function takes a set of map records returned from the algorithm handler
+	 *     	These map records may have a hibernate id (updated/unchanged) or not (added)
+	 * 2)	The passed map records are detached from the persistence environment.
+	 * 3)	The existing (in database) records are re-retrieved from the database.
+	 * 		Note that this is why the passed map records are detached -- otherwise they are overwritten.
+	 * 4)	Each record in the detached set is checked against the 'refreshed' database record set
+	 * 		- if the detached record is not in the set, then it has been added
+	 * 		- if the detached record is in the set, check it for updates
+	 * 			- if it has been changed, update it
+	 * 			- if no change, disregard
+	 *  5)  Each record in the 'refreshed' databased record set is checked against the new set
+	 *  	- if the refreshed record is not in the new set, delete it from the database
+	 *  6)  Return the detached set as re-synchronized with the database
+	 *  
+	 *  Note on naming conventions used in this method:
+	 *  - mapRecords:  		the set of records passed in as argument
+	 *  - newRecords:  		The set of records passed in as argument after persistence detaching
+	 *  - oldRecords:  		The set of records retrieved by id from the database for comparison
+	 *  - syncedRecords: 	The synchronized set of records for return from this routine
+	 */
 	@Override
 	public Set<MapRecord> synchronizeMapRecords(WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords) throws Exception {
 		
@@ -762,64 +804,81 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// necessary to avoid conflict with mapping service, 
 		// as well as forced overwrite on retrieval of previous state
 		Set<MapRecord> newRecords = new HashSet<>();
+		Set<MapRecord> oldRecords = new HashSet<>();
+		Set<MapRecord> syncedRecords = new HashSet<>();
+		
+		// detach the map records
 		System.out.println("NEW RECORDS -- " + mapRecords.size());
 		for (MapRecord mr : mapRecords) {
 			manager.detach(mr);
 			newRecords.add(mr);
-			System.out.println("  " + mr.toString());
+			System.out.println("  Detached record: " + mr.toString());
 		}
-		
 		
 		// Instantiate the mapping service
 		MappingService mappingService = new MappingServiceJpa();
-		
-		// retrieve the existing (i.e. in database) records
-		Set<MapRecord> oldRecords = new HashSet<>();
-		System.out.println("Sync: oldrecords = " + trackingRecord.getMapRecordIds());
+
+		// retrieve the old (existing) records
+		System.out.println("OLD RECORDS -- " + trackingRecord.getMapRecordIds());
 		if (trackingRecord.getMapRecordIds() != null) {
 			for (Long id : trackingRecord.getMapRecordIds()) {
-				System.out.println("Finding record " + id.toString());
 				oldRecords.add(mappingService.getMapRecord(id));
 			}
 		}
-		
-		System.out.println("OLD RECORDS -- " + oldRecords.size());
 		for (MapRecord mr : oldRecords) System.out.println("  " + mr.toString());
 		
 		// cycle over new records to check for additions or updates
 		for (MapRecord mr : newRecords) {
 			if (getMapRecordInSet(oldRecords, mr.getId()) == null) {
-				System.out.println("Adding new record");
-				System.out.println(mr.toString());
+				System.out.println("Adding record: Adding detached entries to new record");
+				System.out.println("  " + mr.toString());
+				
+				// deep copy the detached record into a new persistence-environment record
+				// this routine also duplicates child collections to avoid detached object errors
+				MapRecord newRecord = new MapRecordJpa(mr, true);
+				
+				// add the record to the database
+				System.out.println("  Record id before add: " + mr.getId());
 				mappingService.addMapRecord(mr);
+				System.out.println("  Record id after add:  " + mr.getId());
+				
+				// add the record to the return list
+				syncedRecords.add(newRecord);
 			}
-			
+
 			// otherwise, check for update
 			else {
-				System.out.println(mr.toString());
-				System.out.println(getMapRecordInSet(oldRecords, mr.getId()));
-				
 				// if the old map record is changed, update it
 				if (! mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
 					System.out.println("Updating record " + mr.getId().toString());
 					mappingService.updateMapRecord(mr);
 				}
+				
+				syncedRecords.add(mr);
 			}
 		}
 		
-
+		System.out.println("New records after synchronization");
+		for (MapRecord mr : syncedRecords) {
+			System.out.println("  " + mr.toString());
+		}
 		
 		// cycle over old records to check for deletions
 		for (MapRecord mr : oldRecords) {
 			
+			System.out.println("Checking delete for record " + mr.toString());
+			
 			// if old record is not in the new record set, delete it
-			if(getMapRecordInSet(newRecords, mr.getId()) == null) { 
+			if(getMapRecordInSet(syncedRecords, mr.getId()) == null) { 
 				System.out.println("Removing record " + mr.getId().toString());
 				mappingService.removeMapRecord(mr.getId());
 			}
 		}
 		
+		// close the service
 		mappingService.close();
+		
+		
 		
 		return newRecords;
 		
@@ -827,8 +886,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	}
 	
 	public MapRecord getMapRecordInSet(Set<MapRecord> mapRecords, Long mapRecordId) {
+		if (mapRecordId == null) return null;
+		
+		System.out.println(mapRecordId);
+		System.out.println(mapRecords.size());
+		
 		for (MapRecord mr : mapRecords) {
-			if (mr.getId().equals(mapRecordId)) return mr;
+			System.out.println(mr.toString());
+			System.out.println("Comparing" + mr.getId() + " " + mapRecordId);
+			if (mapRecordId.equals(mr.getId())) return mr;
 		}
 		return null;
 	}
