@@ -69,10 +69,10 @@ public class MapNoteJpa implements MapNote {
     this.timestamp = timestamp;
   }
   
-  public MapNoteJpa(MapNote mapNote, boolean deepCopy) {
+  public MapNoteJpa(MapNote mapNote, boolean keepIds) {
   
 	// if deep copy not indicated, copy id and timestamp
-	if (deepCopy == false) {
+	if (keepIds == false) {
 		this.id = mapNote.getId();
 		this.timestamp = mapNote.getTimestamp();
 	}

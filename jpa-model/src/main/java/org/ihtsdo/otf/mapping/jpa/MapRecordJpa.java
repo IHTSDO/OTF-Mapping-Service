@@ -148,12 +148,12 @@ public class MapRecordJpa implements MapRecord {
 	 * Instantiates a {@link MapRecordJpa} from the specified parameters.
 	 *
 	 * @param mapRecord the map record to be copied
-	 * @param deepCopy true: copy persisted objects into new JPA objects
+	 * @param keepIds true: copy persisted objects into new JPA objects
 	 */
-	public MapRecordJpa(MapRecord mapRecord, boolean deepCopy) {
+	public MapRecordJpa(MapRecord mapRecord, boolean keepIds) {
 
 		// if deep copy not indicated, copy id and timestamp
-		if (deepCopy == false) {
+		if (keepIds == false) {
 			this.id = mapRecord.getId();
 			this.timestamp = mapRecord.getTimestamp();
 		}
@@ -180,10 +180,10 @@ public class MapRecordJpa implements MapRecord {
 
 		// copy objects/collections with deep copy potential
 		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-			addMapEntry(new MapEntryJpa(mapEntry, deepCopy));
+			addMapEntry(new MapEntryJpa(mapEntry, keepIds));
 		}
 		for (MapNote mapNote : mapRecord.getMapNotes()) {
-			addMapNote(new MapNoteJpa(mapNote, deepCopy));
+			addMapNote(new MapNoteJpa(mapNote, keepIds));
 		}
 	}
 

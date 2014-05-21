@@ -95,7 +95,7 @@ public class ClearWorkflowRemoverMojo extends AbstractMojo {
       WorkflowService workflowService = new WorkflowServiceJpa();
       for (MapProject mapProject : mapProjects) {
         getLog().info(
-            "Computing workflow for " + mapProject.getName() + ", "
+            "Clearing workflow for " + mapProject.getName() + ", "
                 + mapProject.getId());
         workflowService.clearWorkflowForMapProject(mapProject);
       }

@@ -139,13 +139,13 @@ public class MapEntryJpa implements MapEntry {
 /**
    * Deep copy constructor
    */
-  public MapEntryJpa(MapEntry mapEntry, boolean deepCopy) {
+  public MapEntryJpa(MapEntry mapEntry, boolean keepIds) {
 	  super();
 	  
 	  System.out.println("Deep copying entry.");
 
 	  // if deep copy not indicated, copy id, otherwise leave null
-	  if (deepCopy == false) this.id = mapEntry.getId();
+	  if (keepIds == false) this.id = mapEntry.getId();
 	  this.mapRecord = mapEntry.getMapRecord();
 
 	  // copy basic type fields (non-persisted objects)
@@ -168,7 +168,7 @@ public class MapEntryJpa implements MapEntry {
 	  
 	  // copy notes
 	  for (MapNote mapNote : mapRecord.getMapNotes()) {
-		  addMapNote(new MapNoteJpa(mapNote, deepCopy));
+		  addMapNote(new MapNoteJpa(mapNote, keepIds));
 	  }
 	  
 	  System.out.println("  " + toString());
