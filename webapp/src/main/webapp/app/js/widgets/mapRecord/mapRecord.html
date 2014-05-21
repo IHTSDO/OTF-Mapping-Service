@@ -100,9 +100,11 @@
 <div ng-show="record.mapNote.length > 0">
   <div ng-repeat="note in record.mapNote">
     <button disabled>
-      [{{note.user.userName}}] {{note.note}} <i
-        class="glyphicon glyphicon-remove-circle"
+      [{{note.user.userName}}] {{note.note}} 
+      <div style="display: inline; float: right; width: 3%;">
+        <i class="glyphicon glyphicon-remove"
         ng-click="removeRecordNote(record, note)"></i>
+      </div>
     </button>
   </div>
   <hr>
