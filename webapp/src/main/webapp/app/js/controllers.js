@@ -741,6 +741,9 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		var pfsParameterObj = constructPfsParameterObj(page);
 		var query_url = root_mapping + "record/projectId/" + $scope.project.objectId;
 
+
+		$rootScope.glassPane++;
+		
 		// retrieve map records
 		$http({
 			url: query_url,
@@ -751,6 +754,8 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
+
+			$rootScope.glassPane--;
 			$scope.records = data.mapRecord;
 			$scope.statusRecordLoad = "";
 
@@ -759,6 +764,8 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 			$scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
 
 		}).error(function(error) {
+
+			$rootScope.glassPane--;
 			$scope.errorRecord = "Error retrieving map records";
 			console.debug("changeRecordPage error");
 		}).then(function(data) {
