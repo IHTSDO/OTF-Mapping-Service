@@ -389,8 +389,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	
 	function setEditable(record) {
 		
-		console.debug("Checking editable");
-
 		$http({
 			url: root_workflow + "record/isEditable/" + $scope.currentUser.userName,
 			method: "POST",
@@ -437,7 +435,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				$rootScope.glassPane--;
 				
 				// open the record edit view
-				$location.path("record/recordId/" + data.id);
+				$location.path("/record/recordId/" + data.id);
 			}).error(function(data) {
 				$rootScope.glassPane--;
 			});
@@ -535,87 +533,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		}
 	};
 
-	$scope.createMapRecord = function(project) {
-
-		if (!(project == null) && !(project === "")) {
-
-			// get the project
-			var countDescendantConcepts;
-
-			// find concept based on source terminology
-			$http({
-				url: root_content + "concept/" 
-				+ project.sourceTerminology + "/" 
-				+ project.sourceTerminologyVersion 
-				+ "/id/" 
-				+ $scope.conceptId,
-				dataType: "json",
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json"
-				}	
-			}).success(function(data) {
-
-				$scope.concept = data;
-
-			}).then(function(data) {
-
-
-				// get descendant count
-				$http({
-					url: root_content + "concept/" 
-					+ project.sourceTerminology + "/" 
-					+ project.sourceTerminologyVersion 
-					+ "/id/" 
-					+ $scope.conceptId
-					+ "/descendants",
-					dataType: "json",
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json"
-					}	
-				}).success(function(data) {    
-					countDescendantConcepts = data.count;
-				}).error(function(data) {
-					countDescendantConcepts = 0;
-				}).then(function() {
-
-					// construct the map record
-					var record = {
-							"id" : "",
-							"mapProjectId" : project.id,
-							"conceptId" : $scope.concept.terminologyId,
-							"conceptName" : $scope.concept.defaultPreferredName,
-							"countDescendantConcepts": countDescendantConcepts,
-							"mapEntry": [],
-							"mapNote": [],
-							"mapPrinciple": [],
-							"owner" : $scope.currentUser,
-							"lastModifiedBy" : $scope.currentUser,
-							"workflowStatus" : 'NEW'
-					};
-
-					// add the map record
-					$http({
-						url: root_mapping + "record/add",
-						dataType: "json",
-						method: "PUT",
-						data: record,
-						headers: {
-							"Content-Type": "application/json"
-						}	
-					}).success(function(data) {    
-						record = data;
-					}).error(function(data) {
-
-					}).then(function() {
-
-						$location.path("/record/recordId/" + record.id);
-					});
-				});
-			});
-		};	  
-	};
 	
 	// function to change project from the header
 	$scope.changeFocusProject = function(mapProject) {
@@ -914,10 +831,6 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 
 	$scope.isEditable = function(record) {
 
-		console.debug('isEditable');
-		console.debug($scope.currentRole);
-		console.debug($scope.currentUser);
-		console.debug(record.owner);
 		if (($scope.currentRole === 'Specialist' ||
 				$scope.currentRole === 'Lead' ||
 				$scope.currentRole === 'Admin') &&
@@ -960,8 +873,10 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 				 }
 			}).success(function(data) {
 				
+				$rootScope.glassPane--;
+				
 				// open the record edit view
-				$location.path("index.html#/record/recordId/" + data.id);
+				$location.path("/record/recordId/" + data.id);
 			});
 
 			
