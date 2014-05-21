@@ -26,17 +26,12 @@
             Project: {{focusProject.name}} &nbsp <a class="dropdown-toggle"
               title="Change Focus Project"><i
               class="glyphicon glyphicon-edit"></i></a>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu" style="position: absolute">
               <li ng-repeat="mapProject in mapProjects"><span
                 ng-click="changeFocusProject(mapProject)">{{mapProject.name}}</span>
               </li>
             </ul>
 
-
-            <!-- <select style="max-width: 200px"
-              ng-model="focusProject" ng-change="changeFocusProject()"
-              ng-options="mapProject as mapProject.name for mapProject in mapProjects">
-            </select> -->
         </li>
         <li>
           <p class="navbar-text">

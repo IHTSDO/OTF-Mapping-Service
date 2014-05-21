@@ -925,8 +925,7 @@ public class MappingServiceRest {
 
 	/**
 	 * Removes a set of map user preferences
-	 * 
-	 * @param MapUserPreferencesId
+	 * @param mapUserPreferencesId
 	 *            the id of the map user preferences object to be deleted
 	 * @return Response the response
 	 */

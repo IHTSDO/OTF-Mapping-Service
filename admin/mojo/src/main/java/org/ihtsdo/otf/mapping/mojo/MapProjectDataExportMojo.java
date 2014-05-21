@@ -214,7 +214,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
       for (MapProject mpr : mappingService.getMapProjects().getMapProjects()) {
         StringBuffer mapAdvices = new StringBuffer();
         for (MapAdvice ma : mpr.getMapAdvices()) {
-          mapAdvices.append(ma.getName()).append(",");
+          mapAdvices.append(ma.getName()).append(";");
         }
         if (mapAdvices.length() > 1)
           mapAdvices.deleteCharAt(mapAdvices.length() - 1);

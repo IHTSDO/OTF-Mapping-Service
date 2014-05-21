@@ -325,7 +325,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
         String mapAdvices = fields[15].replaceAll("\"", "");
         if (!mapAdvices.equals("")) {
-          for (String advice : mapAdvices.split(",")) {
+          for (String advice : mapAdvices.split(";")) {
             for (MapAdvice ml : mappingService.getMapAdvices().getIterable()) {
               if (ml.getName().equals(advice))
                 mapProject.addMapAdvice(ml);
