@@ -289,13 +289,13 @@ public void computeTargetTerminologyNotesHelper(TreePosition treePosition, Conte
 		  Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
 				  "   " + simpleRefSetMember.getRefSetId());
 		if (simpleRefSetMember.getRefSetId().equals(asteriskRefSetId)) treePosition.setTerminologyNote("*");
-		else if (simpleRefSetMember.getRefSetId().equals(daggerRefSetId)) treePosition.setTerminologyNote("+");
+		else if (simpleRefSetMember.getRefSetId().equals(daggerRefSetId)) treePosition.setTerminologyNote("\u0134"); 
 	}
 
 	// if this tree position has children, set their terminology notes recursively
 	for (TreePosition child : treePosition.getChildren()) {
 		computeTargetTerminologyNotesHelper(child, contentService, asteriskRefSetId, daggerRefSetId);
-	}
+	}	
 	
 }
 }
