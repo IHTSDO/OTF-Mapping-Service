@@ -23,14 +23,14 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-// TODO: Auto-generated Javadoc
 /**
  * Concrete implementation of {@link TreePosition} for use with JPA.
  * 
  */
 @Entity
 @Indexed
-@Table(name = "tree_positions")
+@Table(name = "tree_positions", uniqueConstraints = @UniqueConstraint(columnNames = {
+	    "terminologyId", "terminology", "terminologyVersion", "ancestorPath"}))
 @XmlRootElement
 public class TreePositionJpa implements TreePosition {
 

@@ -827,9 +827,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						"DefaultProjectSpecificHandlerException - assignFromInitialRecord: More than one record exists for FIX_ERROR_PATH assignment.");
 			}
 
-			// copy existing record into new record and set id to null
-			MapRecord newRecord = new MapRecordJpa(mapRecord);
-			newRecord.setId(null);
+			// deep copy the map record
+			MapRecord newRecord = new MapRecordJpa(mapRecord, true);
+			
+			System.out.println("AlgorithmHandler:  deep copied record: " + newRecord.toString());
 
 			// set origin ids
 			newRecord.addOrigin(mapRecord.getId());
@@ -1184,11 +1185,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 								DefaultProjectSpecificAlgorithmHandler.class)
 								.info("NON_LEGACY_PATH - No conflicts detected, ready for publication");
 
-						// create a new record with default user and mark it
-						// with
+						// deep copy the record and mark the new record
 						// READY_FOR_PUBLICATION
-						MapRecord newRecord = new MapRecordJpa(mapRecord);
-						newRecord.setId(null);
+						MapRecord newRecord = new MapRecordJpa(mapRecord, true);
 						newRecord.setOwner(mapUser);
 						newRecord.setLastModifiedBy(mapUser);
 						newRecord

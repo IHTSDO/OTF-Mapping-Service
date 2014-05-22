@@ -62,8 +62,6 @@ public class MapProjectJpa implements MapProject {
 	/** Whether this project is viewable by public roles. */
 	@Column(unique = false, nullable = false)
 	private boolean isPublic;
-
-
 	/**
 	 * Indicates whether there is block structure for map records of this project.
 	 */
@@ -184,6 +182,86 @@ public class MapProjectJpa implements MapProject {
 	 */
 	public MapProjectJpa() {
 	}
+	
+	
+
+	/**
+	 * Instantiates a new map project jpa.
+	 *
+	 * @param id the id
+	 * @param name the name
+	 * @param isPublic the is public
+	 * @param blockStructure the block structure
+	 * @param groupStructure the group structure
+	 * @param published the published
+	 * @param refSetId the ref set id
+	 * @param refSetName the ref set name
+	 * @param sourceTerminology the source terminology
+	 * @param sourceTerminologyVersion the source terminology version
+	 * @param destinationTerminology the destination terminology
+	 * @param destinationTerminologyVersion the destination terminology version
+	 * @param mapRefsetPattern the map refset pattern
+	 * @param mapRelationStyle the map relation style
+	 * @param mapPrincipleSourceDocument the map principle source document
+	 * @param ruleBased the rule based
+	 * @param projectSpecificAlgorithmHandlerClass the project specific algorithm handler class
+	 * @param algorithmHandler the algorithm handler
+	 * @param presetAgeRanges the preset age ranges
+	 * @param mapLeads the map leads
+	 * @param mapSpecialists the map specialists
+	 * @param mapPrinciples the map principles
+	 * @param mapAdvices the map advices
+	 * @param mapRelations the map relations
+	 * @param scopeConcepts the scope concepts
+	 * @param scopeExcludedConcepts the scope excluded concepts
+	 * @param scopeDescendantsFlag the scope descendants flag
+	 * @param scopeExcludedDescendantsFlag the scope excluded descendants flag
+	 */
+	public MapProjectJpa(Long id, String name, boolean isPublic,
+			boolean blockStructure, boolean groupStructure, boolean published,
+			String refSetId, String refSetName, String sourceTerminology,
+			String sourceTerminologyVersion, String destinationTerminology,
+			String destinationTerminologyVersion, String mapRefsetPattern,
+			String mapRelationStyle, String mapPrincipleSourceDocument,
+			boolean ruleBased, String projectSpecificAlgorithmHandlerClass,
+			ProjectSpecificAlgorithmHandler algorithmHandler,
+			Set<MapAgeRange> presetAgeRanges, Set<MapUser> mapLeads,
+			Set<MapUser> mapSpecialists, Set<MapPrinciple> mapPrinciples,
+			Set<MapAdvice> mapAdvices, Set<MapRelation> mapRelations,
+			Set<String> scopeConcepts, Set<String> scopeExcludedConcepts,
+			boolean scopeDescendantsFlag, boolean scopeExcludedDescendantsFlag) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.isPublic = isPublic;
+		this.blockStructure = blockStructure;
+		this.groupStructure = groupStructure;
+		this.published = published;
+		this.refSetId = refSetId;
+		this.refSetName = refSetName;
+		this.sourceTerminology = sourceTerminology;
+		this.sourceTerminologyVersion = sourceTerminologyVersion;
+		this.destinationTerminology = destinationTerminology;
+		this.destinationTerminologyVersion = destinationTerminologyVersion;
+		this.mapRefsetPattern = mapRefsetPattern;
+		this.mapRelationStyle = mapRelationStyle;
+		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+		this.ruleBased = ruleBased;
+		this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
+		this.algorithmHandler = algorithmHandler;
+		this.presetAgeRanges = presetAgeRanges;
+		this.mapLeads = mapLeads;
+		this.mapSpecialists = mapSpecialists;
+		this.mapPrinciples = mapPrinciples;
+		this.mapAdvices = mapAdvices;
+		this.mapRelations = mapRelations;
+		this.scopeConcepts = scopeConcepts;
+		this.scopeExcludedConcepts = scopeExcludedConcepts;
+		this.scopeDescendantsFlag = scopeDescendantsFlag;
+		this.scopeExcludedDescendantsFlag = scopeExcludedDescendantsFlag;
+	}
+
+
 
 	/**
 	 * Return the id.
