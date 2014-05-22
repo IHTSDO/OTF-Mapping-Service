@@ -903,7 +903,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     public void addModifierClass() throws Exception {
 
       // create concept if it doesn't exist
-      if (!conceptMap.containsKey(code)) {
+      if (!conceptMap.containsKey(code) || code == null) {
         concept.setTerminologyId(modifier + modifierCode);
         concept.setEffectiveTime(dt.parse(effectiveTime));
         concept.setActive(true);
