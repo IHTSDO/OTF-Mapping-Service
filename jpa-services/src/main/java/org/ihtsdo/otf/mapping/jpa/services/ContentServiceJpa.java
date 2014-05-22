@@ -560,11 +560,11 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		computeTreePositionTransaction = manager.getTransaction();
 		computeTreePositionMaxMemoryUsage = 0L;
 		computeTreePositionLastTime = System.currentTimeMillis();
-		computeTreePositionCommitCt = 100;
+		computeTreePositionCommitCt = 200;
 
 		
-		System.setOut(new PrintStream(new FileOutputStream("C:/Users/Patrick/Documents/WCI/Working Notes/TreePositionRuns/computeTreePositions_" + System.currentTimeMillis() + ".txt")));
-		System.out.println("ComputeTreePositions run for " +(new Date()).toString());
+		//System.setOut(new PrintStream(new FileOutputStream("C:/Users/Patrick/Documents/WCI/Working Notes/TreePositionRuns/computeTreePositions_" + System.currentTimeMillis() + ".txt")));
+		//System.out.println("ComputeTreePositions run for " +(new Date()).toString());
 
 
 		// get the root concept
@@ -605,8 +605,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	public Set<String> computeTreePositionsHelper(String terminologyId, String terminology, String terminologyVersion, String typeId, String ancestorPath) {
 
-		int childrenCount = 0;
-
 		Set<String> descendantConcepts = new HashSet<>();
 
 		// get the concept
@@ -635,8 +633,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			// persist the tree position
 			manager.persist(tp);
 
-			System.out.println(loggerPrefix + 
-					"Creating tree position " + tp.toString());
+			//System.out.println(loggerPrefix + 
+			//		"Creating tree position " + tp.toString());
 
 			// inverse relationship set and iterator
 			Set<Relationship> inv_relationships =
@@ -689,11 +687,11 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 			} 
 			
-			System.out.println(loggerPrefix + 
+			/*System.out.println(loggerPrefix + 
 					" Calculation complete (" + computeTreePositionGlobalCount + "): " + tp.toString());
 			System.out.println(loggerPrefix + 
 					" " + childrenTerminologyIds.size() + " children, " + descendantConcepts.size() + " descendants");
-
+*/
 			// set the children count
 			tp.setChildrenCount(childrenTerminologyIds.size());
 
@@ -727,11 +725,11 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 						"\t" + Math.floor(runtime.totalMemory() / 1024 / 1024) + 
 						"\t" + Double.toString(computeTreePositionCommitCt / elapsedTime));
 						
-				System.out.println(
+				/*System.out.println(
 						"*** Tree Positions: " + computeTreePositionGlobalCount 
 						+ ", Current memory usage: " + Math.floor(runtime.totalMemory() / 1024 / 1024) 
 						+ "MB, Commit interval: " 
-						+ "s, Average speed: " + Double.toString(computeTreePositionCommitCt / elapsedTime) + " tree positisions / s");
+						+ "s, Average speed: " + Double.toString(computeTreePositionCommitCt / elapsedTime) + " tree positisions / s");*/
 
 			}
 		}
