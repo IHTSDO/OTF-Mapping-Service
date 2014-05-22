@@ -334,17 +334,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 								title: "Metadata"
 							}]
 						}]
-					},{
-						columns: [{
-							class: 'col-md-12',
-							widgets: [{
-								type: "projectDetails",
-								config: {
-									terminology: "SNOMEDCT"
-								},
-								title: "Project Details"
-							}]
-						}]
+
 					}]
 			};
 
