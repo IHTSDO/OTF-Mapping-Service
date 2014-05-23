@@ -283,6 +283,16 @@ public interface WorkflowService {
    */
   public void commit() throws Exception;
 
+  /**
+   * Generate random conflict data.
+   *
+   * @param mapProject the map project
+   * @param numDesiredConflicts the num desired conflicts
+   * @throws Exception the exception
+   */
+  public void generateRandomConflictData(MapProject mapProject, int numDesiredConflicts)
+		throws Exception;
+
   
 
 }

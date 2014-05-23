@@ -13,6 +13,10 @@
     <button class="btn btn-sm btn-primary" ng-click="computeWorkflow()">Compute
       Workflow</button>
   </span>
+  
+  <button class="btn btn-sm btn-primary" 
+  		  ng-click="generateTestData()"
+  		  ng-show="currentRole === 'Administrator'">Generate Test Data</button>
 
 </div>
 <div ng-show="project == null">Select a project.</div>

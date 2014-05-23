@@ -573,7 +573,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 * @param workflowAction the workflow action
 	 * @throws Exception the exception
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	public void processWorkflowAction(MapProject mapProject, Concept concept,
 			MapUser mapUser, MapRecord mapRecord, WorkflowAction workflowAction)
@@ -936,6 +935,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	public void computeWorkflow(MapProject mapProject) throws Exception {
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"Start computing workflow for " + mapProject.getName());
+		
+		
+		
+		
 
 		// Clear the workflow for this project
 		Logger.getLogger(WorkflowServiceJpa.class).info("  Clear old workflow");
@@ -952,6 +955,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				.findUnmappedConceptsInScope(mapProject.getId());
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"    Found = " + unmappedConceptsInScope.getTotalCount());
+		
+		setTransactionPerOperation(false);
+		int commitCt = 1000;
+		int trackingRecordCt = 0;
+		
+		beginTransaction();
 
 		for (SearchResult sr : unmappedConceptsInScope.getSearchResults()) {
 			Logger.getLogger(WorkflowServiceJpa.class).debug(
@@ -988,9 +997,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						.get(0).getValue());
 			}
 
-			// persist the workflow tracking record
-			addWorkflowTrackingRecord(trackingRecord);
-
 			// retrieve map records for this project and concept
 			List<MapRecord> mapRecords = mappingService
 					.getMapRecordsForConcept(concept.getTerminologyId())
@@ -1008,6 +1014,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 									+ mapRecord.getOwner());
 					trackingRecord.addMapRecordId(mapRecord.getId());
 				}
+			}
+			
+			// persist the workflow tracking record
+			addWorkflowTrackingRecord(trackingRecord);
+
+			if (++trackingRecordCt % commitCt == 0)  {
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"  " + trackingRecordCt + " tracking records created");
+				commit();
 			}
 		}
 
@@ -1056,6 +1071,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 * @throws Exception 
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public void generateRandomConflictData(MapProject mapProject, int numDesiredConflicts) throws Exception {
 		
 		Logger.getLogger(WorkflowServiceJpa.class).info(
@@ -1080,13 +1096,33 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		List<WorkflowTrackingRecord> conflictTrackingRecords = new ArrayList<>();
 		
 		// the list of specialists and leads on this project (for convenience)
-		List<MapUser> mapSpecialists = new ArrayList<>(mapProject.getMapSpecialists());
-		List<MapUser> mapLeads = new ArrayList<>(mapProject.getMapLeads());
+		List<MapUser> mapSpecialists = new ArrayList<>();
+		List<MapUser> mapLeads = new ArrayList<>();
 		
+		// select only the 'real' (human) users
+		Logger.getLogger(WorkflowServiceJpa.class).info(
+				" Specialists found:");
+		for (MapUser mapSpecialist : mapProject.getMapSpecialists()) {
+			if (!mapSpecialist.getName().matches("Loader Record|Legacy Record|Default|string")) {
+				mapSpecialists.add(mapSpecialist);
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"  " + mapSpecialist.getName());
+			}
+		}
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info(
+				" Leads found:");
+		for (MapUser mapLead : mapProject.getMapLeads()) {
+			mapLeads.add(mapLead);
+			Logger.getLogger(WorkflowServiceJpa.class).info(
+					"  " + mapLead.getName());
+		}
+		
+	
+		// throw exceptions if the user set is not sufficient
 		if (mapSpecialists.size() < 2) {
 			throw new Exception("Cannot generate random conflicts with less than two specialists attached to the project");
 		}
-		
 		if (mapLeads.size() == 0) {
 			throw new Exception("Cannot generate random conflicts without a lead attached to the project");
 		}
@@ -1109,12 +1145,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				
 				// conflict available to lead
 				case CONFLICT_DETECTED:
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							"   Available conflict: " + trackingRecord.getTerminologyId());
 					leadTrackingRecords.add(trackingRecord);
 					break;
 					
 				// assigned conflict is added to final set
 				case CONFLICT_IN_PROGRESS:
 				case CONFLICT_NEW:
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							"   Assigned conflict: " + trackingRecord.getTerminologyId());
+
 					conflictTrackingRecords.add(trackingRecord);
 					break;
 					
@@ -1132,6 +1173,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					// if only one record present, available to another specialist
 					if (trackingRecord.getMapRecordIds().size() == 1) {
 						specialistTrackingRecords.add(trackingRecord);
+						Logger.getLogger(WorkflowServiceJpa.class).info(
+								"   CONFLICT_DETECTED:       Concept " + trackingRecord.getTerminologyId());
+						Logger.getLogger(WorkflowServiceJpa.class).info(
+								"   Available Concept: " + trackingRecord.getTerminologyId());
 					}
 					
 					break;
@@ -1176,10 +1221,19 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				}
 			}
 		}
+		
+		// generate a set of valid target concepts
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"   Target set has " + targetCodes.size() + " concepts.");
 
 		
 		int nRecordsAssignedToSpecialist = 0;
 		int nRecordsSavedForLater = 0;
+		
+
+		// generate a set of valid target concepts
+		Logger.getLogger(WorkflowServiceJpa.class).info(
+				"  Begin assigning random work...");
 		
 		// perform assignment loop until :
 		// - the number of desired conflicts is reached OR
@@ -1192,6 +1246,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				
 				// get the first available CONFLICT_DETECTED tracking record
 				WorkflowTrackingRecord trackingRecord = leadTrackingRecords.get(0);
+				
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"   Procesing CONFLICT_DETECTED for " + trackingRecord.getTerminologyId() + ", " + trackingRecord.getDefaultPreferredName());
 				
 				// get the concept for this tracking record
 				Concept concept = contentService.getConcept(
@@ -1211,12 +1268,20 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// remove this workflow tracking record from the conflict available list
 				leadTrackingRecords.remove(trackingRecord);
 				
+
+				// generate a set of valid target concepts
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"    Conflict assigned to " + mapLead.getName());
+				
 			// otherwise, randomly assign a specialist to a record and modify the record
 			} else {
 				
 				// get a random tracking record available to a specialist (range: [0:size-1])
 				WorkflowTrackingRecord trackingRecord = 
 						specialistTrackingRecords.get(rand.nextInt(specialistTrackingRecords.size()));
+				
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"   Procesing available Concept for " + trackingRecord.getTerminologyId() + ", " + trackingRecord.getDefaultPreferredName());
 				
 				// get the concept for this record
 				Concept concept = contentService.getConcept(
@@ -1241,8 +1306,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						|| rand.nextInt(4) == 0) {									  // randomly save some for later anyway
 					processWorkflowAction(mapProject, concept, mapSpecialist, mapRecord, WorkflowAction.SAVE_FOR_LATER);
 					nRecordsSavedForLater++;
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							"    Editing saved for later by " + mapSpecialist.getName());
 				} else {
 					processWorkflowAction(mapProject, concept, mapSpecialist, mapRecord, WorkflowAction.FINISH_EDITING);
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							"    Editing finished by " + mapSpecialist.getName());
 				}
 				
 				// check if a conflict has arisen
@@ -1253,6 +1322,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					
 					// remove the tracking record from th
 					specialistTrackingRecords.remove(trackingRecord);
+					
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							"    New conflict detected!");
 				}
 				
 				// increment the counter
@@ -1268,7 +1340,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"   Records assigned to specialists: " + nRecordsAssignedToSpecialist);
 		Logger.getLogger(WorkflowServiceJpa.class).info(
-				"   Records 'saved for later':       " + nRecordsAssignedToSpecialist);
+				"   Records 'saved for later':       " + nRecordsSavedForLater);
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"   Conflicts assigned to leads:     " + conflictTrackingRecords.size());
 	}

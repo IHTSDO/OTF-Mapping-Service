@@ -615,6 +615,10 @@ public class WorkflowServiceRest {
 			@ApiParam(value = "Name of map user", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "MapRecord to save", required = true) MapRecordJpa mapRecord) throws Exception {
 		
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /record/isEditable/" + userName
+				+ " for map record with id = " + mapRecord.getId().toString());
+		
 		// get the map user and map project
 		MappingService mappingService = new MappingServiceJpa();
 		MapUser mapUser = mappingService.getMapUser(userName);
@@ -646,6 +650,9 @@ public class WorkflowServiceRest {
 			@ApiParam(value = "Terminology id of concept", required = true) @PathParam("terminologyId") String terminologyId,
 			@ApiParam(value = "Name of map user", required = true) @PathParam("userName") String userName) throws Exception {
 		
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /assignedRecord/projectId/" + mapProjectId + "/concept/" + terminologyId + "/user/" + userName);
+		
 		MappingService mappingService = new MappingServiceJpa();
 		MapUser mapUser = mappingService.getMapUser(userName);
 		MapProject mapProject = mappingService.getMapProject(mapProjectId);
@@ -669,6 +676,26 @@ public class WorkflowServiceRest {
 		
 		return null;
 	
+	}
+	
+	@POST
+	@Path("/project/id/{id:[0-9][0-9]*}/nConflicts/{nConflicts:[0-9][0-9]*}")
+	@ApiOperation(value = "Unassign user from work.", notes = "Ununassigns the user from either concept mapping or conflict resolution.", response = Response.class)
+	public void generateRandomConflicts(
+			@ApiParam(value = "Map Project id", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Number of conflicts to randomly generate", required = true) @PathParam("nConflicts") int nConflicts
+			) throws Exception {
+		
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /project/id/" + mapProjectId + "/nConflicts/" + nConflicts);
+		
+		MappingService mappingService = new MappingServiceJpa();
+		MapProject mapProject = mappingService.getMapProject(mapProjectId);
+		mappingService.close();
+		
+		WorkflowService workflowService = new WorkflowServiceJpa();
+		workflowService.generateRandomConflictData(mapProject, nConflicts);
+		workflowService.close();
 	}
 
 }
