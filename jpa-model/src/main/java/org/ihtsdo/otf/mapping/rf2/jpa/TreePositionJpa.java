@@ -29,8 +29,9 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
  */
 @Entity
 @Indexed
+// @UniqueConstraint here is being used to create an index, not to enforce uniqueness
 @Table(name = "tree_positions", uniqueConstraints = @UniqueConstraint(columnNames = {
-	    "terminologyId", "terminology", "terminologyVersion", "ancestorPath"}))
+	    "terminologyId", "terminology", "terminologyVersion", "id"}))
 @XmlRootElement
 public class TreePositionJpa implements TreePosition {
 

@@ -32,6 +32,7 @@ import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
  * Concrete implementation of {@link Concept} for use with JPA.
  */
 @Entity
+//@UniqueConstraint here is being used to create an index, not to enforce uniqueness
 @Table(name = "concepts", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "terminology", "terminologyVersion"
 }))
