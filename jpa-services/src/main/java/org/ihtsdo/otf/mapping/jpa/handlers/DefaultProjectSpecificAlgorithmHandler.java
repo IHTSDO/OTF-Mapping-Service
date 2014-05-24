@@ -248,8 +248,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	public ValidationResult checkMapRecordForDuplicateEntries(
 			MapRecord mapRecord) {
 
-		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-				.info("  Checking map record for duplicate entries within map groups...");
+//		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+//				.info("  Checking map record for duplicate entries within map groups...");
 
 		ValidationResult validationResult = new ValidationResultJpa();
 		List<MapEntry> entries = mapRecord.getMapEntries();
@@ -299,8 +299,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	public ValidationResult checkMapRecordTrueRules(MapRecord mapRecord,
 			Map<Integer, List<MapEntry>> entryGroups) {
 
-		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-				"  Checking map record for proper use of TRUE rules...");
+//		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+//				"  Checking map record for proper use of TRUE rules...");
 
 		ValidationResult validationResult = new ValidationResultJpa();
 
@@ -368,8 +368,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	public ValidationResult checkMapRecordNcNodes(MapRecord mapRecord,
 			Map<Integer, List<MapEntry>> entryGroups) {
 
-		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-				.info("  Checking map record for high-level groups with only NC target codes...");
+//		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+//				.info("  Checking map record for high-level groups with only NC target codes...");
 
 		ValidationResult validationResult = new ValidationResultJpa();
 
@@ -419,8 +419,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	public ValidationResult checkMapRecordAdvices(MapRecord mapRecord,
 			Map<Integer, List<MapEntry>> entryGroups) {
 
-		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-				"  Checking map record for valid map advices...");
+//		Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+//				"  Checking map record for valid map advices...");
 
 		ValidationResult validationResult = new ValidationResultJpa();
 

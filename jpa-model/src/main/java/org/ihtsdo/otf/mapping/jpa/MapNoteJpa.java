@@ -48,7 +48,7 @@ public class MapNoteJpa implements MapNote {
   /** The timestamp. */
   @Temporal(TemporalType.TIMESTAMP)
   @Column(nullable = false)
-  private Date timestamp;
+  private Date timestamp = new Date();
 
   /** Default constructor */
   public MapNoteJpa() {

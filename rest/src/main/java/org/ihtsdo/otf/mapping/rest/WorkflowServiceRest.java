@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -444,6 +445,75 @@ public class WorkflowServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
+	 
+ 	/**
+ 	 * Unassign user from all assigned work.
+ 	 *
+ 	 * @param mapProjectId the map project id
+ 	 * @param userName the user name
+ 	 * @param terminologyIds the terminology ids
+ 	 * @return the map record
+ 	 */
+	@POST
+	@Path("/unassign/projectId/{id}/user/{userName}")
+	@ApiOperation(value = "Unassign user from all currently assigned work.", notes = "Ununassigns the user from all currently assigned work, including all types of records, both edited and unedited.", response = Response.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public Response unassignAllWork(
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName) {
+		
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /unassign/projectId/"
+						+ mapProjectId.toString()
+						+ "/user/" + userName);
+		
+		try {
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			MappingService mappingService = new MappingServiceJpa();
+			ContentService contentService = new ContentServiceJpa();
+
+			// get the project and user
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			MapUser mapUser = mappingService.getMapUser(userName);
+			
+			// find the assigned work and assigned conflicts
+			SearchResultList assignedConcepts = workflowService.findAssignedWork(mapProject, mapUser, null);
+			SearchResultList assignedConflicts = workflowService.findAssignedConflicts(mapProject, mapUser, null);
+			
+			// unassign both types of work
+			for (SearchResult searchResult : assignedConcepts.getSearchResults()) {
+				System.out.println(searchResult.toString());
+				Concept concept = contentService.getConcept(
+						searchResult.getTerminologyId(),
+						mapProject.getSourceTerminology(),
+						mapProject.getSourceTerminologyVersion());
+				System.out.println(concept);
+				System.out.println("Concept: " + concept.getTerminologyId());
+				
+				workflowService.processWorkflowAction(mapProject, concept, mapUser, null, WorkflowAction.UNASSIGN);
+			}
+			for (SearchResult searchResult : assignedConflicts.getSearchResults()) {
+				Concept concept = contentService.getConcept(
+						searchResult.getTerminologyId(),
+						mapProject.getSourceTerminology(),
+						mapProject.getSourceTerminologyVersion());
+
+				MapRecord mapRecord = mappingService.getMapRecord(searchResult.getId());
+
+				workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord, WorkflowAction.UNASSIGN);
+			}
+			
+
+			mappingService.close();
+			workflowService.close();
+			contentService.close();
+
+			return null;
+
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
 
 	/**
 	 * Assign batch to user.
@@ -643,7 +713,7 @@ public class WorkflowServiceRest {
 	 */
 	@GET
 	@Path("/assignedRecord/projectId/{id}/concept/{terminologyId}/user/{userName}")
-	@ApiOperation(value = "Unassign user from work.", notes = "Ununassigns the user from either concept mapping or conflict resolution.", response = Response.class)
+	@ApiOperation(value = "Return record for concept and user.", notes = "Given concept and user information, finds and returns the assigned map record.", response = Response.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecord getAssignedMapRecordForConceptAndMapUser(
 			@ApiParam(value = "Map Project id", required = true) @PathParam("id") Long mapProjectId,

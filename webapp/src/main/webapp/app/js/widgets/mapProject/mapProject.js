@@ -70,31 +70,37 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			  	$rootScope.glassPane--;		
 			}
 		};
-		
-		 $scope.generateTestData = function() {
+
+		$scope.generateTestData = function() {
+
+			if ($scope.nConflicts == undefined || $scope.nConflicts == null) {
+				alert("You must specify the number of conflicts to be generated.")
+			} else {
+
 				console.debug("Generating test data");
-			  	$rootScope.glassPane++;
+				$rootScope.glassPane++;
 
 				var confirmGenerate =  confirm("Are you sure you want to generate test data?");
 				if (confirmGenerate == true) {
-				// retrieve project information
-				$http({
-					url: root_workflow + "project/id/" + $scope.project.id + "/nConflicts/5",
-					dataType: "json",
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json"
-					}	
-				}).success(function(data) {
-				  	$rootScope.glassPane--;
-				}).error(function(error) {
-			    	  $scope.error = "Error generating test data.";
-					  	$rootScope.glassPane--;
-			    });
-					
+					// retrieve project information
+					$http({
+						url: root_workflow + "project/id/" + $scope.project.id + "/nConflicts/" + $scope.nConflicts,
+						dataType: "json",
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						}	
+					}).success(function(data) {
+						$rootScope.glassPane--;
+					}).error(function(error) {
+						$scope.error = "Error generating test data.";
+						$rootScope.glassPane--;
+					});
+
 				} else {
-				  	$rootScope.glassPane--;		
+					$rootScope.glassPane--;		
 				}
-			};
+			}
+		};
 		
   });

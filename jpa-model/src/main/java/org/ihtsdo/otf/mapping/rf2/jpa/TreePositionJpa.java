@@ -29,8 +29,7 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
  */
 @Entity
 @Indexed
-@Table(name = "tree_positions", uniqueConstraints = @UniqueConstraint(columnNames = {
-	    "terminologyId", "terminology", "terminologyVersion", "ancestorPath"}))
+@Table(name = "tree_positions")
 @XmlRootElement
 public class TreePositionJpa implements TreePosition {
 

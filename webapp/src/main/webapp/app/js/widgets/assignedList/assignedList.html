@@ -1,7 +1,11 @@
-<tabset> <tab heading="{{assignedWorkTitle}}"> <pagination
+
+  
+  <tabset> <tab heading="{{assignedWorkTitle}}"> <pagination
   total-items="nAssignedRecords" page="assignedWorkPage" class="pagination-sm" max-size="5"
   boundary-links="true" rotate="true" num-pages="numAssignedRecordPages"
   on-select-page="retrieveAssignedWork(page)"></pagination>
+   
+
 
 <table class="table">
 
@@ -43,7 +47,9 @@
         class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
   </tbody>
 
+
 </table>
+
 
 </tab> <tab heading="{{assignedConflictsTitle}}"
   ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"> <pagination
@@ -52,6 +58,11 @@
   num-pages="numAssignedConflictsPages" max-size="5"
   on-select-page="retrieveAssignedConflicts(page)"></pagination>
 <table class="table">
+
+ <a ng-show="assignedConflicts.length > 0"
+        title="Return All"
+        ng-click="unassignAllConflicts(result)"><i
+        class="glyphicon glyphicon-share-alt icon-rotate icon-flipped pull-right"></i></a>
 
   <thead>
     <tr>
@@ -91,4 +102,11 @@
 
 </table>
 
+
 </tab>
+
+ <a
+        title="Return All Work"
+        ng-click="unassignAllWork()"><i
+        class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"
+         ng-show="assignedRecords.length > 0 || assignedConflicts.length > 0"></i></a>&nbsp

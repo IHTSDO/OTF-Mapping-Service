@@ -171,8 +171,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 			$rootScope.$broadcast('assignedListWidget.notification.unassignWork',
 					{key: 'mapRecord', mapRecord: record});
-			
-			console.debug('assignedListCtrl:  Detected project or user set/change');
 
 			if ($scope.focusProject != null && $scope.user != null) {
 				$scope.retrieveAssignedWork($scope.assignedWorkPage);
@@ -183,7 +181,38 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 		});
 	};
+
+	// Unassigns all work (both concepts and conflicts) for the current user
+	$scope.unassignAllWork = function() {
+		
+		var confirmUnassign =  confirm("Are you sure you want to return all work? Any editing performed on your assigned work will be lost.");
+		if (confirmUnassign == true) {
+		
+			$rootScope.glassPane++;
+			
+			$http({
+				url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
+				dataType: "json",
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$scope.retrieveAssignedWork($scope.assignedWorkPage);
+				if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage);
+				}
+				$rootScope.$broadcast('assignedListWidget.notification.unassignWork');
+				$rootScope.glassPane--;
+			}).error(function(data) {
+				$rootScope.glassPane--;
+			});
+		}
+	}
 	
+	$scope.unassignAllConflicts = function() {
+		
+	}
 	// remove an element from an array by key
 	Array.prototype.removeElement = function(elem) {
 

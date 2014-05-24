@@ -841,7 +841,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	@Override
 	public void updateMapRecord(MapRecord mapRecord) {
 
-		// update timestamp
+		// update last modified timestamp
 		mapRecord.setLastModified((new java.util.Date()).getTime());
 
 		// first assign the map record to its children
@@ -849,6 +849,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		if (getTransactionPerOperation()) {
 
+			Logger.getLogger(MappingServiceJpa.class).info(mapRecord.toString());
+			Logger.getLogger(MappingServiceJpa.class).info("Timestamp: " + mapRecord.getTimestamp());
 			tx = manager.getTransaction();
 			tx.begin();
 			manager.merge(mapRecord);

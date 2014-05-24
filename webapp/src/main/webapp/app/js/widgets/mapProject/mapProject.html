@@ -14,10 +14,14 @@
       Workflow</button>
   </span>
   
+  <hr>
+  <form>
   <button class="btn btn-sm btn-primary" 
   		  ng-click="generateTestData()"
   		  ng-show="currentRole === 'Administrator'">Generate Test Data</button>
 
+  Maximum umber of conflicts: <input style="width:50px;" value="5" ng-model="nConflicts"> 
+  </form>
 </div>
 <div ng-show="project == null">Select a project.</div>
 
