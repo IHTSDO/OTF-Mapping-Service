@@ -5,4 +5,3 @@
 
 -- NOTE: this works with Oracle and MySQL but may not work for other environments.
 CREATE INDEX x_map_records_AUD_1 on map_records_AUD (lastModifiedBy_id);
-

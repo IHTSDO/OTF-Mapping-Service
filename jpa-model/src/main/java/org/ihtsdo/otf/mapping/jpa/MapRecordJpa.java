@@ -47,7 +47,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * 
  */
 @Entity
-// add indexes
+//@UniqueConstraint here is being used to create an index, not to enforce uniqueness
 @Table(name = "map_records", uniqueConstraints = {
 		@UniqueConstraint(columnNames = {
 				"mapProjectId", "id"

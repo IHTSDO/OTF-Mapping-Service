@@ -171,14 +171,11 @@ public class SearchResultJpa implements SearchResult {
     return true;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
   @Override
-  public String toString() {
-    return "SearchResultJpa [id=" + id + ", value=" + value + "]";
-  }
+public String toString() {
+	return "SearchResultJpa [id=" + id + ", terminologyId=" + terminologyId
+			+ ", terminology=" + terminology + ", terminologyVersion="
+			+ terminologyVersion + ", value=" + value + "]";
+}
 
 }

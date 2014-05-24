@@ -27,6 +27,7 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
  * @author Patrick
  */
 @Entity
+//@UniqueConstraint here is being used to create an index, not to enforce uniqueness
 @Table(name = "map_user_preferences", uniqueConstraints = {
   @UniqueConstraint(columnNames = {
       "mapUser_id", "id"

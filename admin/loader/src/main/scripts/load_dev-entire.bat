@@ -20,7 +20,7 @@ if DEFINED MVN_HOME (echo MVN_HOME  = %MVN_HOME%) else (echo MVN_HOME must be de
 goto trailer)
 if DEFINED OTF_MAPPING_HOME (echo OTF_MAPPING_HOME  = %OTF_MAPPING_HOME%) else (echo OTF_MAPPING_HOME must be defined
 goto trailer)
-set MAVEN_OPTS = -Xmx4000M
+set MAVEN_OPTS = -XX:MaxPermSize=512m -Xmx3300M
 set error=0
 
 echo     Run updatedb with hibernate.hbm2ddl.auto = create ...%date% %time%
@@ -32,7 +32,7 @@ del /Q mvn.log
 
 echo     Clear indexes ...%date% %time%
 cd %OTF_MAPPING_HOME%/admin/lucene
-call %MVN_HOME%/bin/mvn -Drun.config=dev install 1> mvn.log
+call %MVN_HOME%/bin/mvn -Drun.config=dev-entire install 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
@@ -95,7 +95,7 @@ del /Q mvn.log
 
 echo     Compute workflow ...%date% %time%
 cd %OTF_MAPPING_HOME%/admin/loader
-call %MVN_HOME%/bin/mvn -PComputeWorkflow -Drun.config=dev -Drefset.id=447563008,447562003 install 1> mvn.log
+call %MVN_HOME%/bin/mvn -PComputeWorkflow -Drun.config=dev-entire -Drefset.id=447563008,447562003 install 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
