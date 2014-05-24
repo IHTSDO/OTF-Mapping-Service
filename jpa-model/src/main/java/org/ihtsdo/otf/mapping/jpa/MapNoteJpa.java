@@ -69,6 +69,12 @@ public class MapNoteJpa implements MapNote {
     this.timestamp = timestamp;
   }
   
+  /**
+   * Instantiates a {@link MapNoteJpa} from the specified parameters.
+   *
+   * @param mapNote the map note
+   * @param keepIds the keep ids
+   */
   public MapNoteJpa(MapNote mapNote, boolean keepIds) {
   
 	// if deep copy not indicated, copy id and timestamp

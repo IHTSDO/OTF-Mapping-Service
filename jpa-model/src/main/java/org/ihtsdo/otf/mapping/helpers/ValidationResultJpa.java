@@ -70,7 +70,7 @@ public class ValidationResultJpa implements ValidationResult {
 		if (this.errors != null) {
 			this.errors.addAll(errors);
 		} else {
-			this.errors = new HashSet<String>(errorSet);
+			this.errors = new HashSet<>(errorSet);
 		}
 	}
 	
@@ -128,7 +128,7 @@ public class ValidationResultJpa implements ValidationResult {
 	@Override
 	public void addWarnings(Set<String> warningSet) {
 		if (this.warnings != null) this.warnings.addAll(warningSet);
-		else this.warnings = new HashSet<String>(warningSet);
+		else this.warnings = new HashSet<>(warningSet);
 	}
 	
   /*

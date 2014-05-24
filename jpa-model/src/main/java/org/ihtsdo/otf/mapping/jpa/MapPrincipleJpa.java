@@ -71,8 +71,18 @@ public class MapPrincipleJpa implements MapPrinciple {
 		this.sectionRef = sectionRef;
 	}
 	
+	/**
+	 * Instantiates a {@link MapPrincipleJpa} from the specified parameters.
+	 *
+	 * @param mapPrinciple the map principle
+	 */
 	public MapPrincipleJpa(MapPrinciple mapPrinciple) {
-		
+	  id = mapPrinciple.getId();
+	  detail = mapPrinciple.getDetail();
+	  name = mapPrinciple.getName();
+	  principleId = mapPrinciple.getPrincipleId();
+	  sectionRef = mapPrinciple.getSectionRef();
+
 	}
 
 

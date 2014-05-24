@@ -137,8 +137,11 @@ public class MapEntryJpa implements MapEntry {
 
 
 /**
-   * Deep copy constructor
-   */
+ * Deep copy constructor.
+ *
+ * @param mapEntry the map entry
+ * @param keepIds the keep ids
+ */
   public MapEntryJpa(MapEntry mapEntry, boolean keepIds) {
 	  super();
 	  
