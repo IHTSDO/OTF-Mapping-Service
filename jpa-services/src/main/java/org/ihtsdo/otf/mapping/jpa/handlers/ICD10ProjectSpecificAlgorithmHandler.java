@@ -192,7 +192,7 @@ DefaultProjectSpecificAlgorithmHandler {
 			}    	
 		}
 
-		return new ArrayList<MapAdvice>(advices);
+		return new ArrayList<>(advices);
 	}
 
 
@@ -273,7 +273,16 @@ DefaultProjectSpecificAlgorithmHandler {
 		}
 	}
 
-	public void computeTargetTerminologyNotesHelper(TreePosition treePosition, ContentService contentService, String asteriskRefSetId, String daggerRefSetId) throws Exception {
+	/**
+	 * Compute target terminology notes helper.
+	 *
+	 * @param treePosition the tree position
+	 * @param contentService the content service
+	 * @param asteriskRefSetId the asterisk ref set id
+	 * @param daggerRefSetId the dagger ref set id
+	 * @throws Exception the exception
+	 */
+	private void computeTargetTerminologyNotesHelper(TreePosition treePosition, ContentService contentService, String asteriskRefSetId, String daggerRefSetId) throws Exception {
 
 		Logger.getLogger(ICD10ProjectSpecificAlgorithmHandler.class).info(
 				"Computing target terminology note for " + treePosition.getTerminologyId());

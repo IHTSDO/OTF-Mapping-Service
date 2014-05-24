@@ -14,7 +14,6 @@ import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
-import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -1356,7 +1355,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		return newRecords;
 	}
 
-	public WorkflowStatus getWorkflowStatus(Set<MapRecord> mapRecords) {
+	/**
+	 * Returns the workflow status.
+	 *
+	 * @param mapRecords the map records
+	 * @return the workflow status
+	 */
+	private WorkflowStatus getWorkflowStatus(Set<MapRecord> mapRecords) {
 		WorkflowStatus workflowStatus = WorkflowStatus.NEW;
 		for (MapRecord mr : mapRecords) {
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
@@ -1365,7 +1370,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		return workflowStatus;
 	}
 
-	public WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
+	/**
+	 * Returns the lowest workflow status.
+	 *
+	 * @param mapRecords the map records
+	 * @return the lowest workflow status
+	 */
+	private WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
 		WorkflowStatus workflowStatus = WorkflowStatus.REVIEW;
 		for (MapRecord mr : mapRecords) {
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
@@ -1374,7 +1385,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		return workflowStatus;
 	}
 
-	public Set<MapUser> getMapUsers(Set<MapRecord> mapRecords) {
+	/**
+	 * Returns the map users.
+	 *
+	 * @param mapRecords the map records
+	 * @return the map users
+	 */
+	private Set<MapUser> getMapUsers(Set<MapRecord> mapRecords) {
 		Set<MapUser> mapUsers = new HashSet<>();
 		for (MapRecord mr : mapRecords) {
 			mapUsers.add(mr.getOwner());
