@@ -1,10 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -601,7 +598,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * @param terminologyVersion
 	 * @param typeId
 	 * @param ancestorPath
-	 * @return
+	 * @return tree positions at this level
 	 */
 	public Set<String> computeTreePositionsHelper(String terminologyId, String terminology, String terminologyVersion, String typeId, String ancestorPath) {
 
@@ -621,7 +618,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 			// logging information
 			int ancestorCount = ancestorPath.length() - ancestorPath.replaceAll("~", "").length();
-			String loggerPrefix = "";
+			@SuppressWarnings("unused")
+      String loggerPrefix = "";
 			for (int i = 0; i < ancestorCount; i++) loggerPrefix += "  ";
 
 			tp.setAncestorPath(ancestorPath);

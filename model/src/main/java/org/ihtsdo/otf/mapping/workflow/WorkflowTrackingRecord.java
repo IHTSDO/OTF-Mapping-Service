@@ -127,14 +127,14 @@ public interface WorkflowTrackingRecord {
   /**
    * Adds the map record.
    * 
-   * @param mapRecord the map record
+   * @param mapRecordId the map record id
    */
   public void addMapRecordId(Long mapRecordId);
 
   /**
    * Removes the map record.
    * 
-   * @param mapRecord the map record
+   * @param mapRecordId the map record id
    */
   public void removeMapRecordId(Long mapRecordId);
 

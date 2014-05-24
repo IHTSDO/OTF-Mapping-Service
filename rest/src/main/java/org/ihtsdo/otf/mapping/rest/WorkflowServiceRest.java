@@ -451,7 +451,6 @@ public class WorkflowServiceRest {
  	 *
  	 * @param mapProjectId the map project id
  	 * @param userName the user name
- 	 * @param terminologyIds the terminology ids
  	 * @return the map record
  	 */
 	@POST
@@ -748,6 +747,13 @@ public class WorkflowServiceRest {
 	
 	}
 	
+	/**
+	 * Generate random conflicts.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param nConflicts the n conflicts
+	 * @throws Exception the exception
+	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/nConflicts/{nConflicts:[0-9][0-9]*}")
 	@ApiOperation(value = "Unassign user from work.", notes = "Ununassigns the user from either concept mapping or conflict resolution.", response = Response.class)

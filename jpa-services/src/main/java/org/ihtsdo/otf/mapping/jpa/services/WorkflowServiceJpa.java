@@ -920,7 +920,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 * @param mapRecordId the map record id
 	 * @return the map record in set
 	 */
-	public MapRecord getMapRecordInSet(Set<MapRecord> mapRecords, Long mapRecordId) {
+	private MapRecord getMapRecordInSet(Set<MapRecord> mapRecords, Long mapRecordId) {
 		if (mapRecordId == null) return null;
 			
 		for (MapRecord mr : mapRecords) {
@@ -1408,7 +1408,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				"   Conflicts assigned to leads:     " + conflictTrackingRecords.size());
 	}
 	
-	public MapUser getAssignableSpecialist(WorkflowTrackingRecord trackingRecord, List<MapUser> mapUsers) throws Exception {
+	/**
+	 * Returns the assignable specialist.
+	 *
+	 * @param trackingRecord the tracking record
+	 * @param mapUsers the map users
+	 * @return the assignable specialist
+	 * @throws Exception the exception
+	 */
+	private MapUser getAssignableSpecialist(WorkflowTrackingRecord trackingRecord, List<MapUser> mapUsers) throws Exception {
 		
 		// discard any users already assigned to this record
 		for (MapUser mapUser : getMapUsersForWorkflowTrackingRecord(trackingRecord)) {
@@ -1424,7 +1432,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		
 	}
 	
-	public MapUser getAssignableLead(WorkflowTrackingRecord trackingRecord, List<MapUser> mapUsers) throws Exception {
+	/**
+	 * Returns the assignable lead.
+	 *
+	 * @param trackingRecord the tracking record
+	 * @param mapUsers the map users
+	 * @return the assignable lead
+	 * @throws Exception the exception
+	 */
+	private MapUser getAssignableLead(WorkflowTrackingRecord trackingRecord, List<MapUser> mapUsers) throws Exception {
 		
 		// discard any users already assigned to this record
 		for (MapUser mapUser : getMapUsersForWorkflowTrackingRecord(trackingRecord)) {
@@ -1439,6 +1455,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return mapUsers.get(rand.nextInt(mapUsers.size()));
 	}
 	
+	/**
+	 * Randomize map record.
+	 *
+	 * @param mapProject the map project
+	 * @param mapRecord the map record
+	 * @param targetConcepts the target concepts
+	 */
 	public void randomizeMapRecord(MapProject mapProject, MapRecord mapRecord, List<Concept> targetConcepts) {
 		
 		Logger.getLogger(WorkflowServiceJpa.class).info(
@@ -1564,7 +1587,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}	
 	}
 	
-	public String computeAgeRuleString(String initString, MapAgeRange ageRange) {
+	/**
+	 * Compute age rule string.
+	 *
+	 * @param initString the init string
+	 * @param ageRange the age range
+	 * @return the string
+	 */
+	private String computeAgeRuleString(String initString, MapAgeRange ageRange) {
 		
 		String rule = "";
 		
@@ -1664,7 +1694,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return workflowStatus;
 	}
 	
-	public MapRecord getMapRecordForWorkflowTrackingRecordAndMapUser(WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception {
+	/**
+	 * Returns the map record for workflow tracking record and map user.
+	 *
+	 * @param trackingRecord the tracking record
+	 * @param mapUser the map user
+	 * @return the map record for workflow tracking record and map user
+	 * @throws Exception the exception
+	 */
+	private MapRecord getMapRecordForWorkflowTrackingRecordAndMapUser(WorkflowTrackingRecord trackingRecord, MapUser mapUser) throws Exception {
 		for (MapRecord mapRecord : getMapRecordsForWorkflowTrackingRecord(trackingRecord)) {
 			if (mapRecord.getOwner().equals(mapUser)) return mapRecord;
 		}
