@@ -184,7 +184,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 
       // Set up map of refSetIds that we may encounter
       MappingService mappingService = new MappingServiceJpa();
-      Map<String, MapProject> mapProjectMap = new HashMap<String, MapProject>();
+      Map<String, MapProject> mapProjectMap = new HashMap<>();
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
         mapProjectMap.put(project.getRefSetId(), project);
       }
@@ -236,7 +236,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
     // Set up sets for any map records we encounter
     String line = null;
     Map<String, List<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
-        new HashMap<String, List<ComplexMapRefSetMember>>();
+        new HashMap<>();
     for (MapProject mapProject : mapProjectMap.values()) {
       complexMapRefSetMemberMap.put(mapProject.getRefSetId(),
           new ArrayList<ComplexMapRefSetMember>());

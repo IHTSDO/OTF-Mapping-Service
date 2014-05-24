@@ -88,7 +88,7 @@ public class MapRecordRemoverMojo extends AbstractMojo {
       MappingService mappingService = new MappingServiceJpa();
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
-      Set<MapProject> mapProjects = new HashSet<MapProject>();
+      Set<MapProject> mapProjects = new HashSet<>();
 
       getLog().info("Start removing map records for refSetId - " + refSetId);
       for (MapProject mapProject : mappingService.getMapProjects()

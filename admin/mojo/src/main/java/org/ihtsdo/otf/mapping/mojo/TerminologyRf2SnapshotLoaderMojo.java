@@ -129,7 +129,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
   private Map<String, Concept> conceptCache = new HashMap<>(); // used to
 
   /** hash set for storing default preferred names. */
-  Map<Long, String> defaultPreferredNames = new HashMap<Long, String>();
+  Map<Long, String> defaultPreferredNames = new HashMap<>();
 
   /** counter for objects created, reset in each load section */
   int objectCt; //

@@ -182,8 +182,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               effectiveTime, manager);
       conceptMap = helper.createMetadata();
 
-      childToParentCodeMap = new HashMap<String, String>();
-      parentCodeHasChildrenMap = new HashMap<String, Boolean>();
+      childToParentCodeMap = new HashMap<>();
+      parentCodeHasChildrenMap = new HashMap<>();
 
       // Prep SAX parser
       SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -320,7 +320,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     String reference = null;
 
     /** The current sub classes. */
-    Set<String> currentSubClasses = new HashSet<String>();
+    Set<String> currentSubClasses = new HashSet<>();
 
     /**
      * This is a code => modifier map. The modifier must then be looked up in
@@ -328,20 +328,20 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
      * associated with it.
      */
     Map<String, List<String>> classToModifierMap =
-        new HashMap<String, List<String>>();
+        new HashMap<>();
 
     /**
      * This is a code => modifier map. If a code is modified but also blocked by
      * an entry in here, do not make children from the template classes.
      */
     Map<String, List<String>> classToExcludedModifierMap =
-        new HashMap<String, List<String>>();
+        new HashMap<>();
 
     /**
      * The rels map for holding data for relationships that will be built after
      * all concepts are created.
      */
-    Map<String, Set<Concept>> relsMap = new HashMap<String, Set<Concept>>();
+    Map<String, Set<Concept>> relsMap = new HashMap<>();
 
     /** Indicates rels are needed as a result of the SuperClass tag. */
     boolean isaRelNeeded = false;
@@ -357,12 +357,12 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
     /** The modifier map. */
     Map<String, Map<String, Concept>> modifierMap =
-        new HashMap<String, Map<String, Concept>>();
+        new HashMap<>();
 
     /**
      * Tag stack.
      */
-    Stack<String> tagStack = new Stack<String>();
+    Stack<String> tagStack = new Stack<>();
 
     /**
      * Instantiates a new local handler.
@@ -390,7 +390,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         String name = attributes.getValue("name");
         if (name != null && name.equalsIgnoreCase("toplevelsort")) {
           String value = attributes.getValue("value");
-          roots = new ArrayList<String>();
+          roots = new ArrayList<>();
           for (String code : value.split(" ")) {
             getLog().info("  Adding root: " + code.trim());
             roots.add(code.trim());
@@ -469,7 +469,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       if (qName.equalsIgnoreCase("modifiedby")) {
         String modifiedByCode = attributes.getValue("code");
         getLog().info("  Class " + code + " modified by " + modifiedByCode);
-        List<String> currentModifiers = new ArrayList<String>();
+        List<String> currentModifiers = new ArrayList<>();
         if (classToModifierMap.containsKey(code)) {
           currentModifiers = classToModifierMap.get(code);
         }
@@ -483,7 +483,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         getLog().info(
             "  Class and subclasses of " + code + " exclude modifier "
                 + excludeModifierCode);
-        List<String> currentModifiers = new ArrayList<String>();
+        List<String> currentModifiers = new ArrayList<>();
         if (classToExcludedModifierMap.containsKey(code)) {
           currentModifiers = classToExcludedModifierMap.get(code);
         }
@@ -509,7 +509,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               getLog().info(
                   "  Class and subclasses of " + code + " exclude modifier "
                       + excludeModifierCode);
-              currentModifiers = new ArrayList<String>();
+              currentModifiers = new ArrayList<>();
               if (classToExcludedModifierMap.containsKey(code)) {
                 currentModifiers = classToExcludedModifierMap.get(code);
               }
@@ -693,7 +693,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         // Add that to the overall map for the corresponding modifier
         if (qName.equalsIgnoreCase("modifierclass")) {
           Map<String, Concept> modifierCodeToClassMap =
-              new HashMap<String, Concept>();
+              new HashMap<>();
           if (modifierMap.containsKey(modifier)) {
             modifierCodeToClassMap = modifierMap.get(modifier);
           }
@@ -714,7 +714,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           // save relevant data now in relsMap
           if (isaRelNeeded && concept.getTerminologyId() != null) {
             getLog().info("  Class " + code + " has parent " + parentCode);
-            Set<Concept> children = new HashSet<Concept>();
+            Set<Concept> children = new HashSet<>();
             // check if this parentCode already has children
             if (relsMap.containsKey(parentCode + ":" + "isa")) {
               children = relsMap.get(parentCode + ":" + "isa");
@@ -762,7 +762,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           rubricKind = null;
           rubricId = null;
           concept = new ConceptJpa();
-          currentSubClasses = new HashSet<String>();
+          currentSubClasses = new HashSet<>();
           classUsage = null;
           referenceUsage = null;
           isaRelNeeded = false;
@@ -873,7 +873,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               relationship.setTypeId(new Long(conceptMap.get(type)
                   .getTerminologyId()));
               relationship.setRelationshipGroup(new Integer(0));
-              Set<Relationship> rels = new HashSet<Relationship>();
+              Set<Relationship> rels = new HashSet<>();
               if (childConcept.getRelationships() != null)
                 rels = childConcept.getRelationships();
               rels.add(relationship);
@@ -950,9 +950,9 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       // that are not blocked by excluded modifiers
       String cmpCode = codeToModify;
       Map<String, String> modifiersToMatchedCodeMap =
-          new HashMap<String, String>();
+          new HashMap<>();
       Map<String, String> excludedModifiersToMatchedCodeMap =
-          new HashMap<String, String>();
+          new HashMap<>();
       while (cmpCode.length() > 2) {
         getLog().info("    Determine if " + cmpCode + " has modifiers");
 
@@ -1107,7 +1107,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       getLog().info(
           "    CHECK OVERRIDE " + code + ", " + cmpCode + ", " + modifier);
 
-      Set<String> overrideCodes = new HashSet<String>();
+      Set<String> overrideCodes = new HashSet<>();
 
       // 4TH AND 5TH
       overrideCodes.add("V09");
