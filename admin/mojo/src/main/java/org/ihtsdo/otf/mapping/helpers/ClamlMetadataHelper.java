@@ -100,7 +100,7 @@ public class ClamlMetadataHelper {
   public Map<String, Concept> createMetadata() throws Exception {
     EntityTransaction tx = manager.getTransaction();
     tx.begin();
-    conceptMap = new HashMap<String, Concept>();
+    conceptMap = new HashMap<>();
 
     // terminology id counter, start at 1
     int metadataCounter = 1;
@@ -602,7 +602,7 @@ public class ClamlMetadataHelper {
     relationship.setSourceConcept(childConcept);
     // default "isa" type
     relationship.setTypeId(new Long(conceptMap.get("isa").getTerminologyId()));
-    Set<Relationship> rels = new HashSet<Relationship>();
+    Set<Relationship> rels = new HashSet<>();
     rels.add(relationship);
     childConcept.setRelationships(rels);
   }

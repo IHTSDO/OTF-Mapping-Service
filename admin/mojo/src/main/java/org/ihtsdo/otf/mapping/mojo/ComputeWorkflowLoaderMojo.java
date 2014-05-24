@@ -80,7 +80,7 @@ public class ComputeWorkflowLoaderMojo extends AbstractMojo {
     try {
 
       MappingService mappingService = new MappingServiceJpa();
-      Set<MapProject> mapProjects = new HashSet<MapProject>();
+      Set<MapProject> mapProjects = new HashSet<>();
 
       for (MapProject mapProject : mappingService.getMapProjects()
           .getIterable()) {

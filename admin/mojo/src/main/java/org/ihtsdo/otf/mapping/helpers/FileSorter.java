@@ -237,10 +237,10 @@ public class FileSorter {
 
     int currentSize = 0; // counter for current file size
     String line; // current file line
-    List<String> lines = new ArrayList<String>(10000); // set of lines to be
+    List<String> lines = new ArrayList<>(10000); // set of lines to be
                                                        // sorted via
                                                        // Collections.sort
-    List<String> splitFiles = new ArrayList<String>();
+    List<String> splitFiles = new ArrayList<>();
 
     // open file
     File fileIn = new File(inputFile);

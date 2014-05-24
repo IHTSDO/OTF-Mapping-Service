@@ -86,7 +86,7 @@ public class MapNoteRemoverMojo extends AbstractMojo {
     try {
 
       MappingService mappingService = new MappingServiceJpa();
-      Set<MapProject> mapProjects = new HashSet<MapProject>();
+      Set<MapProject> mapProjects = new HashSet<>();
 
       getLog().info("Start removing map notes for project - " + refSetId);
       for (MapProject mapProject : mappingService.getMapProjects()
