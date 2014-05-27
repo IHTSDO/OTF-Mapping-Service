@@ -4,8 +4,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <!-- Module Metadata -->
-  <!-- Parent is TBD <parent> <groupId>org.ihtsdo.otf</groupId> <artifactId>otf-parent</artifactId> 
-    <version>0.0.1-SNAPSHOT</version> <relativePath/> </parent> -->
+  <!-- Parent is TBD <parent> <groupId>org.ihtsdo.otf</groupId> <artifactId>otf-parent</artifactId>
+  <version>0.0.1-SNAPSHOT</version> <relativePath/> </parent> -->
 
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>mapping-parent</artifactId>
@@ -237,8 +237,32 @@
           <version>${maven.war.plugin.version}</version>
         </plugin>
 
+        <plugin>
+          <groupId>external.atlassian.jgitflow</groupId>
+          <artifactId>jgitflow-maven-plugin</artifactId>
+          <version>1.0-m1.1</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <enableSshAgent>true</enableSshAgent>
+            <noDeploy>true</noDeploy>
+          </configuration>
+        </plugin>
+
       </plugins>
     </pluginManagement>
   </build>
+
+  <distributionManagement>
+    <repository>
+      <id>ihtsdo-public-nexus</id>
+      <name>IHTSDO Public Nexus Releases</name>
+      <url>https://maven.ihtsdotools.org/content/repositories/releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>ihtsdo-public-nexus</id>
+      <name>IHTSDO Public Nexus Snapshots</name>
+      <url>https://maven.ihtsdotools.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
 
 </project>
