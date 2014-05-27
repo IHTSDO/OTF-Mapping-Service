@@ -5,7 +5,7 @@
   <!-- Module Metadata -->
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
-    <artifactId>mapping-parent</artifactId>
+    <artifactId>otf-mapping-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
@@ -25,5 +25,4 @@
     </dependency>
 
   </dependencies>
-
 </project>
