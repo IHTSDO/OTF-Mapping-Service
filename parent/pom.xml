@@ -252,6 +252,20 @@
     </pluginManagement>
   </build>
 
+  <!-- Sub-modules -->
+  <modules>
+    <module>parent</module>
+    <module>config</module>
+    <module>model</module>
+    <module>pojo-model</module>
+    <module>jpa-model</module>
+    <module>services</module>
+    <module>jpa-services</module>
+    <module>rest</module>
+    <module>webapp</module>
+    <module>admin</module>
+  </modules>
+
   <distributionManagement>
     <repository>
       <id>ihtsdo-public-nexus</id>
