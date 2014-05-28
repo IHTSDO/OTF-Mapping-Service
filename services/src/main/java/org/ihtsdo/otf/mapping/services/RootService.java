@@ -7,16 +7,19 @@ public interface RootService {
 
 	/**
 	 * Open the factory
+	 * @throws Exception 
 	 */
-	public void openFactory();
+	public void openFactory() throws Exception;
 	
 	/**
 	 * Close the factory
+	 * @throws Exception 
 	 */
-	public void closeFactory();
+	public void closeFactory() throws Exception;
 	
 	/**
 	 * Initialize field names.
+	 * @throws Exception 
 	 */
-	public void initializeFieldNames();
+	public void initializeFieldNames() throws Exception;
 }

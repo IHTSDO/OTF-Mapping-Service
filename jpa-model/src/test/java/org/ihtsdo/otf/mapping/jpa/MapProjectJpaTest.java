@@ -3,7 +3,10 @@ package org.ihtsdo.otf.mapping.jpa;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileReader;
 import java.util.List;
+import java.util.Properties;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -267,7 +270,7 @@ public class MapProjectJpaTest {
 
     Logger.getLogger(MapProjectJpaTest.class).info("testMapProjectIndex()...");
 
-    // create Entitymanager
+    // create Entity Manager
     fullTextEntityManager = Search.getFullTextEntityManager(manager);
 
     // fullTextEntityManager.purgeAll(MapProjectJpa.class);
@@ -393,11 +396,19 @@ public class MapProjectJpaTest {
 
   /**
    * Clean up.
+   * @throws Exception 
    */
-  public static void cleanUp() {
+  public static void cleanUp() throws Exception {
     Logger.getLogger(MapProjectJpaTest.class).info("Cleaning up.");
 
     // create new database connection
+    String configFileName = System.getProperty("run.config.test");
+    Logger.getLogger(MapProjectJpaTest.class).info("  run.config.test = " + configFileName);
+    Properties config = new Properties();
+    FileReader in = new FileReader(new File(configFileName)); 
+    config.load(in);
+    in.close();
+    Logger.getLogger(MapProjectJpaTest.class).info("  properties = " + config);
     factory = Persistence.createEntityManagerFactory("MappingServiceDS");
     manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();

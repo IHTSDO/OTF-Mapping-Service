@@ -57,8 +57,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 	/**
 	 * Instantiates an empty {@link WorkflowServiceJpa}.
+	 * @throws Exception 
 	 */
-	public WorkflowServiceJpa() {
+	public WorkflowServiceJpa() throws Exception {
 	  super();
 
 		// created on each instantiation

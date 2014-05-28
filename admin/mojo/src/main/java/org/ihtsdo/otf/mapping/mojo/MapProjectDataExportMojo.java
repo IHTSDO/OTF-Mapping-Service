@@ -2,7 +2,7 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.Comparator;
 import java.util.Properties;
@@ -29,15 +29,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
  *       <version>${project.version}</version>
- *       <dependencies>
- *         <dependency>
- *           <groupId>org.ihtsdo.otf.mapping</groupId>
- *           <artifactId>mapping-admin-export-config</artifactId>
- *           <version>${project.version}</version>
- *           <scope>system</scope>
- *           <systemPath>${project.build.directory}/mapping-admin-export-${project.version}.jar</systemPath>
- *         </dependency>
- *       </dependencies>
  *       <executions>
  *         <execution>
  *           <id>export-project-data</id>
@@ -45,9 +36,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *           <goals>
  *             <goal>export-project-data</goal>
  *           </goals>
- *           <configuration>
- *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
- *           </configuration>
  *         </execution>
  *       </executions>
  *     </plugin>
@@ -58,15 +46,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * @phase package
  */
 public class MapProjectDataExportMojo extends AbstractMojo {
-
-  /**
-   * Properties file.
-   * 
-   * @parameter 
-   *            expression="${project.build.directory}/generated-sources/org/ihtsdo"
-   * @required
-   */
-  private File propertiesFile;
 
   /**
    * Instantiates a {@link MapProjectDataExportMojo} from the specified
@@ -88,16 +67,17 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 
     try {
 
-      FileInputStream propertiesInputStream = null;
-
-      // load Properties file
-      Properties properties = new Properties();
-      propertiesInputStream = new FileInputStream(propertiesFile);
-      properties.load(propertiesInputStream);
+      String configFileName = System.getProperty("run.config");
+      getLog().info("  run.config = " + configFileName);
+      Properties config = new Properties();
+      FileReader in = new FileReader(new File(configFileName)); 
+      config.load(in);
+      in.close();
+      getLog().info("  properties = " + config);
 
       // set the output directory
-      String outputDirString = properties.getProperty("export.output.dir");
-      propertiesInputStream.close();
+      String outputDirString = config.getProperty("export.output.dir");
+
       File outputDir = new File(outputDirString);
       if (!outputDir.exists()) {
         throw new MojoFailureException(

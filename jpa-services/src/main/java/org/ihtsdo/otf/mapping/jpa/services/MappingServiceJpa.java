@@ -99,8 +99,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Instantiates an empty {@link MappingServiceJpa}.
+	 * @throws Exception 
 	 */
-	public MappingServiceJpa() {
+	public MappingServiceJpa() throws Exception {
 	  super();
 		// created on each instantiation
 		manager = factory.createEntityManager();
@@ -2392,9 +2393,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					"Map project source terminology has too few hierarchical relationship types - "
 							+ mapProject.getSourceTerminology());
 		}
-		// ASSUMPTION: only one "isa" type
-		String hierarchicalRelationshipType = hierarchicalRelationshipTypeMap
-				.entrySet().iterator().next().getKey();
 
 		boolean prevTransactionPerOperationSetting = getTransactionPerOperation();
 		setTransactionPerOperation(false);
@@ -2469,13 +2467,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					PfsParameter pfsParameter = new PfsParameterJpa();
 					pfsParameter.setMaxResults(100);
 					
-					mapRecord.setCountDescendantConcepts(new Long(
-							contentService.findDescendants(
-									concept.getTerminologyId(),
-									concept.getTerminology(),
-									concept.getTerminologyVersion(),
-									hierarchicalRelationshipType,
-									pfsParameter).getCount()));
+					TreePositionList treePositionList = 
+					    contentService.getTreePositionsForConcept(concept.getTerminologyId(),
+                                    concept.getTerminology(),
+                                    concept.getTerminologyVersion());
+					long descCt = 0;
+					if (treePositionList.getCount() > 0) {
+					  descCt = treePositionList.getTreePositions().get(0).getDescendantCount();
+					}
+					mapRecord.setCountDescendantConcepts(descCt);
 					Logger.getLogger(MappingServiceJpa.class).debug(
 							"      Computing descendant ct = "
 									+ mapRecord.getCountDescendantConcepts());

@@ -25,15 +25,6 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  *             <groupId>org.ihtsdo.otf.mapping</groupId>
  *             <artifactId>mapping-admin-mojo</artifactId>
  *             <version>${project.version}</version>
- *             <dependencies>
- *               <dependency>
- *                 <groupId>org.ihtsdo.otf.mapping</groupId>
- *                 <artifactId>mapping-admin-loader-config</artifactId>
- *                 <version>${project.version}</version>
- *                 <scope>system</scope>
- *                 <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
- *               </dependency>
- *             </dependencies>
  *             <executions>
  *               <execution>
  *                 <id>compute-workflow</id>
@@ -42,7 +33,6 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  *                   <goal>compute-workflow</goal>
  *                 </goals>
  *                 <configuration>
- *                   <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
  *                   <refSetId>${refset.id}</refSetId>
  *                 </configuration>
  *               </execution>
@@ -51,7 +41,7 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  *         </plugins>
  *       </build>
  *     </profile> 
- * 
+ * </pre>
  * 
  * @goal compute-workflow
  * @phase package

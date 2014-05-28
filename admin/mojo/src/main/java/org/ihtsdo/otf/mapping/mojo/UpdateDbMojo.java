@@ -1,5 +1,9 @@
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.io.File;
+import java.io.FileReader;
+import java.util.Properties;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -15,15 +19,6 @@ import org.apache.maven.plugin.MojoFailureException;
  *      <groupId>org.ihtsdo.otf.mapping</groupId>
  *      <artifactId>mapping-admin-mojo</artifactId>
  *      <version>${project.version}</version>
- *      <dependencies>
- *        <dependency>
- *          <groupId>org.ihtsdo.otf.mapping</groupId>
- *          <artifactId>mapping-admin-updatedb-config</artifactId>
- *          <version>${project.version}</version>
- *          <scope>system</scope>
- *          <systemPath>${project.build.directory}/mapping-admin-updatedb-${project.version}.jar</systemPath>
- *        </dependency>
- *      </dependencies>
  *      <executions>
  *        <execution>
  *          <id>updatedb</id>
@@ -31,9 +26,6 @@ import org.apache.maven.plugin.MojoFailureException;
  *          <goals>
  *            <goal>updatedb</goal>
  *          </goals>
- *          <configuration>
- *            <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
- *          </configuration>
  *        </execution>
  *      </executions>
  *    </plugin>
@@ -64,8 +56,15 @@ public class UpdateDbMojo extends AbstractMojo {
   public void execute() throws MojoFailureException {
     getLog().info("Start updating database schema...");
     try {
+      String configFileName = System.getProperty("run.config");
+      getLog().info("  run.config = " + configFileName);
+      Properties config = new Properties();
+      FileReader in = new FileReader(new File(configFileName)); 
+      config.load(in);
+      in.close();
+      getLog().info("  properties = " + config);
       EntityManagerFactory factory =
-          Persistence.createEntityManagerFactory("MappingServiceDS");
+          Persistence.createEntityManagerFactory("MappingServiceDS", config);
       manager = factory.createEntityManager();
       manager.close();
       factory.close();

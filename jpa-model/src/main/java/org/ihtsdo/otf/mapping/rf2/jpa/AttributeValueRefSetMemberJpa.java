@@ -4,7 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
 
 /**
@@ -12,7 +11,7 @@ import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
  */
 @Entity
 @Table(name = "attribute_value_refset_members")
-@Audited
+//@Audited
 public class AttributeValueRefSetMemberJpa extends AbstractConceptRefSetMember
     implements AttributeValueRefSetMember {
 

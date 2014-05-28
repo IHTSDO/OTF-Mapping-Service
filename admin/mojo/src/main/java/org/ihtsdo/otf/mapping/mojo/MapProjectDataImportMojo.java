@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,15 +41,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
  *       <version>${project.version}</version>
- *      <dependencies>
- *          <dependency>
- *           <groupId>org.ihtsdo.otf.mapping</groupId>
- *           <artifactId>mapping-admin-import-config</artifactId>
- *           <version>${project.version}</version>
- *           <scope>system</scope>
- *           <systemPath>${project.build.directory}/mapping-admin-import-${project.version}.jar</systemPath>
- *         </dependency>
- *       </dependencies>
  *       <executions>
  *         <execution>
  *           <id>import-project-data</id>
@@ -58,9 +48,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *           <goals>
  *             <goal>import-project-data</goal>
  *           </goals>
- *           <configuration>
- *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
- *           </configuration>
  *         </execution>
  *       </executions>
  *     </plugin>
@@ -71,15 +58,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * @phase package
  */
 public class MapProjectDataImportMojo extends AbstractMojo {
-
-  /**
-   * Properties file.
-   * 
-   * @parameter 
-   *            expression="${project.build.directory}/generated-sources/org/ihtsdo"
-   * @required
-   */
-  private File propertiesFile;
 
   /**
    * Instantiates a {@link MapProjectDataImportMojo} from the specified
@@ -95,21 +73,22 @@ public class MapProjectDataImportMojo extends AbstractMojo {
    * 
    * @see org.apache.maven.plugin.Mojo#execute()
    */
+  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoFailureException {
     getLog().info("Starting importing metadata ...");
     try {
 
-      FileInputStream propertiesInputStream = null;
-
-      // load Properties file
-      Properties properties = new Properties();
-      propertiesInputStream = new FileInputStream(propertiesFile);
-      properties.load(propertiesInputStream);
+      String configFileName = System.getProperty("run.config");
+      getLog().info("  run.config = " + configFileName);
+      Properties config = new Properties();
+      FileReader in = new FileReader(new File(configFileName)); 
+      config.load(in);
+      in.close();
+      getLog().info("  properties = " + config);
 
       // set the input directory
-      String inputDirString = properties.getProperty("import.input.dir");
-      propertiesInputStream.close();
+      String inputDirString = config.getProperty("import.input.dir");
       File inputDir = new File(inputDirString);
       if (!inputDir.exists()) {
         throw new MojoFailureException(
@@ -162,6 +141,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         mapUser.setUserName(st.nextToken());
         mapUser.setEmail(st.nextToken());
         mappingService.addMapUser(mapUser);
+        getLog().info("  " + mapUser.getUserName());
       }
 
       getLog().info(
@@ -181,6 +161,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         mapAdvice.setComputed(st.nextToken().toLowerCase().equals("true")
             ? true : false);
         mappingService.addMapAdvice(mapAdvice);
+        getLog().info("  " + mapAdvice.getName());
       }
 
       getLog().info(
@@ -203,6 +184,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         mapRelation.setComputed(st.nextToken().toLowerCase().equals("true")
             ? true : false);
         mappingService.addMapRelation(mapRelation);
+        getLog().info("  " + mapRelation.getName());
       }
 
       getLog().info(
@@ -221,6 +203,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         mapPrinciple.setSectionRef(fields[2]);
         mapPrinciple.setDetail(fields[3]);
         mappingService.addMapPrinciple(mapPrinciple);
+        getLog().info("  " + mapPrinciple.getPrincipleId());
       }
       getLog().info(
           "  "
@@ -232,9 +215,9 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
       // Instantiate sets for checking uniqueness and saving project-specific
       // information
-      Set<MapAgeRange> ageRanges = new HashSet<MapAgeRange>();
+      Set<MapAgeRange> ageRanges = new HashSet<>();
       Map<String, Set<MapAgeRange>> projectAgeRanges =
-          new HashMap<String, Set<MapAgeRange>>();
+          new HashMap<>();
 
       // cycle through the project age ranges
       while ((line = agerangesReader.readLine()) != null) {
@@ -284,13 +267,13 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
           // otherwise instantiate a new list
         } else {
-          newAgeRanges = new HashSet<MapAgeRange>();
+          newAgeRanges = new HashSet<>();
           newAgeRanges.add(newAgeRange);
         }
 
         // replace the list
         projectAgeRanges.put(refSetId, newAgeRanges);
-
+        getLog().info("  " + mapAgeRange.toString());
       }
       getLog().info(
           "  " + Integer.toString(mappingService.getMapAgeRanges().size())
@@ -322,6 +305,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
             : false);
         mapProject.setMapRefsetPattern(fields[13]);
         mapProject.setProjectSpecificAlgorithmHandlerClass(fields[14]);
+        getLog().info("  " + mapProject.getRefSetId());
+        getLog().info("  " + mapProject.getName());
 
         String mapAdvices = fields[15].replaceAll("\"", "");
         if (!mapAdvices.equals("")) {
@@ -410,7 +395,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
       // hashmap of project id -> Set of concept terminology ids
       Map<Long, Set<String>> projectToConceptsInScope =
-          new HashMap<Long, Set<String>>();
+          new HashMap<>();
 
       // cycle over the includes file
 
@@ -430,7 +415,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
         // otherwise add project with list of concepts
         else {
-          Set<String> conceptsInScope = new HashSet<String>();
+          Set<String> conceptsInScope = new HashSet<>();
           conceptsInScope.add(fields[1]);
           projectToConceptsInScope.put(projectId, conceptsInScope);
         }
@@ -458,7 +443,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
       // map of project ids -> set of concept terminology Ids
       Map<Long, Set<String>> projectToConceptsExcludedFromScope =
-          new HashMap<Long, Set<String>>();
+          new HashMap<>();
 
       // cycle over the exclude file
       while ((line = scopeExcludesReader.readLine()) != null) {
@@ -476,7 +461,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         // otherwise, insert project into hash set with the excluded concept
         // list
         else {
-          Set<String> conceptsExcludedFromScope = new HashSet<String>();
+          Set<String> conceptsExcludedFromScope = new HashSet<>();
           conceptsExcludedFromScope.add(fields[1]);
           projectToConceptsExcludedFromScope.put(projectId,
               conceptsExcludedFromScope);

@@ -17,99 +17,8 @@
 
 
   <profiles>
-    <profile>
-      <id>run</id>
-      <activation>
-        <property>
-          <name>run.config</name>
-        </property>
-      </activation>
 
-      <properties>
-        <!-- This can be overridden to use "create" instead -->
-        <hibernate.hbm2ddl.auto>none</hibernate.hbm2ddl.auto>
-      </properties>
-
-      <build>
-        <plugins>
-
-
-          <!-- Unpack the filters.properties files -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>unpack</id>
-                <phase>generate-sources</phase>
-                <goals>
-                  <goal>unpack</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>org.ihtsdo.otf.mapping</groupId>
-                      <artifactId>mapping-config</artifactId>
-                      <version>${project.version}</version>
-                      <type>zip</type>
-                    </artifactItem>
-                  </artifactItems>
-                  <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <!-- filter and copy persistence.xml -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-resources-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-resources</id>
-                <phase>generate-resources</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/config</outputDirectory>
-                  <filters>
-                    <filter>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</filter>
-                  </filters>
-                  <resources>
-                    <resource>
-                      <directory>src/main/config</directory>
-                      <filtering>true</filtering>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <!-- Build a .jar file -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <version>2.4</version>
-            <executions>
-              <execution>
-                <phase>test</phase>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-                <configuration>
-                  <classesDirectory>${project.build.directory}/config</classesDirectory>
-                  <includes>
-                    <include>**/*</include>
-                  </includes>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <!-- Execute the mojo -->
+    <!-- Load SNOMED -->
     <profile>
       <id>SNOMEDCT</id>
       <build>
@@ -118,15 +27,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>load-rf2-snapshot</id>
@@ -135,7 +35,6 @@
                   <goal>load-rf2-snapshot</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <terminology>SNOMEDCT</terminology>
                 </configuration>
               </execution>
@@ -144,6 +43,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Load SNOMED tree positions only -->
     <profile>
       <id>SNOMEDCT-treepos</id>
       <build>
@@ -152,15 +53,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>compute-snomed-treepos</id>
@@ -169,7 +61,6 @@
                   <goal>compute-snomed-treepos</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <terminology>SNOMEDCT</terminology>
                 </configuration>
               </execution>
@@ -178,6 +69,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Load ICD10 -->
     <profile>
       <id>ICD10</id>
       <build>
@@ -186,15 +79,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>load-claml</id>
@@ -203,7 +87,6 @@
                   <goal>load-claml</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <terminology>ICD10</terminology>
                 </configuration>
               </execution>
@@ -212,6 +95,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Load ICD9CM -->
     <profile>
       <id>ICD9CM</id>
       <build>
@@ -220,15 +105,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>load-claml</id>
@@ -237,7 +113,6 @@
                   <goal>load-claml</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <terminology>ICD9CM</terminology>
                 </configuration>
               </execution>
@@ -246,6 +121,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Load ICPC -->
     <profile>
       <id>ICPC</id>
       <build>
@@ -254,15 +131,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>load-claml</id>
@@ -271,7 +139,6 @@
                   <goal>load-claml</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <terminology>ICPC</terminology>
                 </configuration>
               </execution>
@@ -280,6 +147,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Load map records from RF2 map file -->
     <profile>
       <id>MapRecords</id>
       <build>
@@ -288,15 +157,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>load-rf2-complex-map</id>
@@ -304,15 +164,14 @@
                 <goals>
                   <goal>load-rf2-complex-map</goal>
                 </goals>
-                <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
-                </configuration>
               </execution>
             </executions>
           </plugin>
         </plugins>
       </build>
     </profile>
+
+    <!-- Create map records from content tables -->
     <profile>
       <id>CreateMapRecords</id>
       <build>
@@ -321,15 +180,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>create-map-records-from-complex-map</id>
@@ -338,7 +188,6 @@
                   <goal>create-map-records-from-complex-map</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <refSetId>${refset.id}</refSetId>
                 </configuration>
               </execution>
@@ -347,6 +196,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Load map notes from file -->
     <profile>
       <id>MapNotes</id>
       <build>
@@ -355,15 +206,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>load-map-notes</id>
@@ -372,7 +214,6 @@
                   <goal>load-map-notes</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                 </configuration>
               </execution>
             </executions>
@@ -380,6 +221,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Compute workflow for a map project -->
     <profile>
       <id>ComputeWorkflow</id>
       <build>
@@ -388,15 +231,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-loader-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>compute-workflow</id>
@@ -405,14 +239,15 @@
                   <goal>compute-workflow</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <refSetId>${refset.id}</refSetId>
                 </configuration>
               </execution>
             </executions>
           </plugin>
+
         </plugins>
       </build>
     </profile>
+
   </profiles>
 </project>

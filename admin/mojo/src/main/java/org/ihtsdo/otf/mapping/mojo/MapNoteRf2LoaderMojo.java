@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -30,15 +29,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
  *       <version>${project.version}</version>
- *       <dependencies>
- *         <dependency>
- *           <groupId>org.ihtsdo.otf.mapping</groupId>
- *           <artifactId>mapping-admin-loader-config</artifactId>
- *           <version>${project.version}</version>
- *           <scope>system</scope>
- *           <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
- *         </dependency>
- *       </dependencies>
  *       <executions>
  *         <execution>
  *           <id>load-map-notes</id>
@@ -46,9 +36,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *           <goals>
  *             <goal>load-map-notes</goal>
  *           </goals>
- *           <configuration>
- *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
- *           </configuration>
  *         </execution>
  *       </executions>
  *     </plugin>
@@ -60,38 +47,31 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 public class MapNoteRf2LoaderMojo extends AbstractMojo {
 
   /**
-   * Properties file.
-   * 
-   * @parameter 
-   *            expression="${project.build.directory}/generated-sources/org/ihtsdo"
-   * @required
-   */
-  private File propertiesFile;
-
-  /**
    * Executes the plugin.
    * 
    * @throws MojoExecutionException the mojo execution exception
    */
+  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Start loading map notes data ...");
 
-    FileInputStream propertiesInputStream = null;
     BufferedReader mapNoteReader = null;
     try {
 
-      // load Properties file
-      Properties properties = new Properties();
-      propertiesInputStream = new FileInputStream(propertiesFile);
-      properties.load(propertiesInputStream);
-      propertiesInputStream.close();
+      String configFileName = System.getProperty("run.config");
+      getLog().info("  run.config = " + configFileName);
+      Properties config = new Properties();
+      FileReader in = new FileReader(new File(configFileName));
+      config.load(in);
+      in.close();
+      getLog().info("  properties = " + config);
 
       // Set date format for parsing "effectiveTime"
       final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
 
       // set the input directory
-      String inputFile = properties.getProperty("loader.mapnotes.input.data");
+      String inputFile = config.getProperty("loader.mapnotes.input.data");
       if (!new File(inputFile).exists()) {
         throw new MojoFailureException(
             "Specified loader.mapnotes.input.data directory does not exist: "
@@ -187,11 +167,6 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
       try {
         mapNoteReader.close();
       } catch (IOException e1) {
-        // do nothing
-      }
-      try {
-        propertiesInputStream.close();
-      } catch (IOException e) {
         // do nothing
       }
     }

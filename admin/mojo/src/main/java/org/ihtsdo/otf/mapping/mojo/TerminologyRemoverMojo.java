@@ -16,7 +16,10 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.io.File;
+import java.io.FileReader;
 import java.util.List;
+import java.util.Properties;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -39,15 +42,6 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
  *       <version>${project.version}</version>
- *       <dependencies>
- *         <dependency>
- *           <groupId>org.ihtsdo.otf.mapping</groupId>
- *           <artifactId>mapping-admin-remover-config</artifactId>
- *           <version>${project.version}</version>
- *           <scope>system</scope>
- *           <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
- *         </dependency>
- *       </dependencies>
  *       <executions>
  *         <execution>
  *           <id>remove-terminology</id>
@@ -56,7 +50,6 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  *             <goal>remove-terminology</goal>
  *           </goals>
  *           <configuration>
- *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
  *             <terminology>SNOMEDCT</terminology>
  *           </configuration>
  *         </execution>
@@ -77,18 +70,13 @@ public class TerminologyRemoverMojo extends AbstractMojo {
    */
   private String terminology;
 
-  /** The manager. */
-  private EntityManager manager;
-
-  int i;
-
   /**
    * Instantiates a {@link TerminologyRemoverMojo} from the specified
    * parameters.
    * 
    */
   public TerminologyRemoverMojo() {
-
+    // do nothing
   }
 
   /*
@@ -101,10 +89,17 @@ public class TerminologyRemoverMojo extends AbstractMojo {
     getLog().info("Starting removing " + terminology + " data ...");
 
     try {
-      // create Entitymanager
+      // create Entity Manager
+      String configFileName = System.getProperty("run.config");
+      getLog().info("  run.config = " + configFileName);
+      Properties config = new Properties();
+      FileReader in = new FileReader(new File(configFileName)); 
+      config.load(in);
+      in.close();
+      getLog().info("  properties = " + config);
       EntityManagerFactory factory =
-          Persistence.createEntityManagerFactory("MappingServiceDS");
-      manager = factory.createEntityManager();
+          Persistence.createEntityManagerFactory("MappingServiceDS", config);
+      EntityManager manager = factory.createEntityManager();
 
       EntityTransaction tx = manager.getTransaction();
       try {
@@ -117,6 +112,8 @@ public class TerminologyRemoverMojo extends AbstractMojo {
         // truncate all the tables that we are going to use first
         tx.begin();
 
+        // TODO: use APIs here instead of delete statements!
+        
         // truncate RefSets
         Query query =
             manager

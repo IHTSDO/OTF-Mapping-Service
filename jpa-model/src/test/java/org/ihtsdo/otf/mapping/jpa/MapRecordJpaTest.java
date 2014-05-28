@@ -3,8 +3,11 @@ package org.ihtsdo.otf.mapping.jpa;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileReader;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -74,8 +77,15 @@ public class MapRecordJpaTest {
   @BeforeClass
   public static void init() throws Exception {
 
-    // create Entitymanager
-    factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+    // create Entity Manager
+    String configFileName = System.getProperty("run.config.test");
+    Logger.getLogger(MapRecordJpaTest.class).info("  run.config.test = " + configFileName);
+    Properties config = new Properties();
+    FileReader in = new FileReader(new File(configFileName)); 
+    config.load(in);
+    in.close();
+    Logger.getLogger(MapRecordJpaTest.class).info("  properties = " + config);
+    factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
     manager = factory.createEntityManager();
     fullTextEntityManager = Search.getFullTextEntityManager(manager);
 

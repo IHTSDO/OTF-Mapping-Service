@@ -21,8 +21,9 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 
 	/**
 	 * Instantiates an empty {@link MetadataServiceJpa}.
+	 * @throws Exception 
 	 */
-	public MetadataServiceJpa() {
+	public MetadataServiceJpa() throws Exception {
 	  super();
 	  
 		helperMap = new HashMap<>();

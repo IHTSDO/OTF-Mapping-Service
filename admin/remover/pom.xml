@@ -17,99 +17,8 @@
 
 
   <profiles>
-    <profile>
-      <id>run</id>
-      <activation>
-        <property>
-          <name>run.config</name>
-        </property>
-      </activation>
 
-      <properties>
-        <!-- This can be overridden to use "create" instead -->
-        <hibernate.hbm2ddl.auto>none</hibernate.hbm2ddl.auto>
-      </properties>
-
-      <build>
-        <plugins>
-
-
-          <!-- Unpack the filters.properties files -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>unpack</id>
-                <phase>generate-sources</phase>
-                <goals>
-                  <goal>unpack</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>org.ihtsdo.otf.mapping</groupId>
-                      <artifactId>mapping-config</artifactId>
-                      <version>${project.version}</version>
-                      <type>zip</type>
-                    </artifactItem>
-                  </artifactItems>
-                  <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <!-- filter and copy persistence.xml -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-resources-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-resources</id>
-                <phase>generate-resources</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/config</outputDirectory>
-                  <filters>
-                    <filter>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</filter>
-                  </filters>
-                  <resources>
-                    <resource>
-                      <directory>src/main/config</directory>
-                      <filtering>true</filtering>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <!-- Build a .jar file -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <version>2.4</version>
-            <executions>
-              <execution>
-                <phase>test</phase>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-                <configuration>
-                  <classesDirectory>${project.build.directory}/config</classesDirectory>
-                  <includes>
-                    <include>**/*</include>
-                  </includes>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <!-- Execute the mojo -->
+    <!-- Remove SNOMED -->
     <profile>
       <id>SNOMEDCT</id>
       <build>
@@ -118,15 +27,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-remover-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>remove-terminology</id>
@@ -135,7 +35,6 @@
                   <goal>remove-terminology</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <terminology>SNOMEDCT</terminology>
                 </configuration>
               </execution>
@@ -144,6 +43,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Remove SNOMED tree positions only -->
     <profile>
       <id>SNOMEDCT-treepos</id>
       <build>
@@ -152,15 +53,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-remover-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>remove-snomed-treepos</id>
@@ -169,7 +61,6 @@
                   <goal>remove-snomed-treepos</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <terminology>SNOMEDCT</terminology>
                 </configuration>
               </execution>
@@ -178,6 +69,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Remove ICD10 -->
     <profile>
       <id>ICD10</id>
       <build>
@@ -186,15 +79,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-remover-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>remove-terminology</id>
@@ -203,7 +87,6 @@
                   <goal>remove-terminology</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <terminology>ICD10</terminology>
                 </configuration>
               </execution>
@@ -212,6 +95,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Remove ICD9CM -->
     <profile>
       <id>ICD9CM</id>
       <build>
@@ -220,15 +105,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-remover-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>remove-terminology</id>
@@ -237,7 +113,6 @@
                   <goal>remove-terminology</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <terminology>ICD9CM</terminology>
                 </configuration>
               </execution>
@@ -246,6 +121,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Remove ICPC -->
     <profile>
       <id>ICPC</id>
       <build>
@@ -254,15 +131,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-remover-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>remove-terminology</id>
@@ -271,7 +139,6 @@
                   <goal>remove-terminology</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <terminology>ICPC</terminology>
                 </configuration>
               </execution>
@@ -280,6 +147,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Remove map project data -->
     <profile>
       <id>MapProjectData</id>
       <build>
@@ -288,15 +157,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-remover-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>remove-map-projects</id>
@@ -310,6 +170,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Remove map notes -->
     <profile>
       <id>MapNotes</id>
       <build>
@@ -318,15 +180,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-remover-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>remove-map-notes</id>
@@ -336,7 +189,6 @@
                 </goals>
                 <configuration>
                   <refSetId>${refset.id}</refSetId>
-                  <projectId>${project.id}</projectId>
                 </configuration>
               </execution>
             </executions>
@@ -344,6 +196,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Remove Map records -->
     <profile>
       <id>MapRecords</id>
       <build>
@@ -352,15 +206,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-remover-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>remove-map-records</id>
@@ -377,6 +222,8 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Clear workflo -->
     <profile>
       <id>ClearWorkflow</id>
       <build>
@@ -385,15 +232,6 @@
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-remover-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>clear-workflow</id>
@@ -402,7 +240,6 @@
                   <goal>clear-workflow</goal>
                 </goals>
                 <configuration>
-                  <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
                   <refSetId>${refset.id}</refSetId>
                 </configuration>
               </execution>
@@ -411,5 +248,6 @@
         </plugins>
       </build>
     </profile>
+
   </profiles>
 </project>

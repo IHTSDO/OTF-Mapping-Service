@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.mojo;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -56,15 +55,6 @@ import com.google.common.io.Files;
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
  *       <version>${project.version}</version>
- *       <dependencies>
- *         <dependency>
- *           <groupId>org.ihtsdo.otf.mapping</groupId>
- *           <artifactId>mapping-admin-loader-config</artifactId>
- *           <version>${project.version}</version>
- *          <scope>system</scope>
- *            <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
- *         </dependency>
- *       </dependencies>
  *       <executions>
  *         <execution>
  *           <id>load-rf2-snapshot</id>
@@ -73,7 +63,6 @@ import com.google.common.io.Files;
  *             <goal>load-rf2-snapshot</goal>
  *           </goals>
  *           <configuration>
- *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
  *             <terminology>SNOMEDCT</terminology>
  *           </configuration>
  *         </execution>
@@ -86,15 +75,6 @@ import com.google.common.io.Files;
  * @phase package
  */
 public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
-
-  /**
-   * Properties file.
-   * 
-   * @parameter 
-   *            expression="${project.build.directory}/generated-sources/org/ihtsdo"
-   * @required
-   */
-  private File propertiesFile;
 
   /**
    * Name of terminology to be loaded.
@@ -154,25 +134,29 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * 
    * @see org.apache.maven.plugin.Mojo#execute()
    */
+  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoFailureException {
     getLog().info("Starting loading RF2 data ...");
 
-    FileInputStream propertiesInputStream = null;
     try {
 
       // Track system level information
       long startTimeOrig = System.nanoTime();
 
-      // load Properties file
-      Properties properties = new Properties();
-      propertiesInputStream = new FileInputStream(propertiesFile);
-      properties.load(propertiesInputStream);
-      propertiesInputStream.close();
-
+      // create Entity Manager
+      String configFileName = System.getProperty("run.config");
+      getLog().info("  run.config = " + configFileName);
+      Properties config = new Properties();
+      FileReader in = new FileReader(new File(configFileName)); 
+      config.load(in);
+      in.close();
+      getLog().info("  properties = " + config);
+      factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
+     
       // set the input directory
       String coreInputDirString =
-          properties.getProperty("loader." + terminology + ".input.data");
+          config.getProperty("loader." + terminology + ".input.data");
       File coreInputDir = new File(coreInputDirString);
       if (!coreInputDir.exists()) {
         throw new MojoFailureException("Specified loader." + terminology
@@ -180,13 +164,13 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       }
       // set the parameters for determining defaultPreferredNames
       dpnTypeId =
-          Long.valueOf(properties
+          Long.valueOf(config
               .getProperty("loader.defaultPreferredNames.typeId"));
       dpnRefSetId =
-          Long.valueOf(properties
+          Long.valueOf(config
               .getProperty("loader.defaultPreferredNames.refSetId"));
       dpnAcceptabilityId =
-          Long.valueOf(properties
+          Long.valueOf(config
               .getProperty("loader.defaultPreferredNames.acceptabilityId"));
 
       //
@@ -218,9 +202,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       getLog().info(
           "Commit settings: Objects committed in blocks of "
               + Integer.toString(commitCt));
-
-      // create Entitymanager
-      factory = Persistence.createEntityManagerFactory("MappingServiceDS");
 
       Runtime runtime = Runtime.getRuntime();
       getLog().info("MEMORY USAGE:");
@@ -402,12 +383,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     } catch (Throwable e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);
-    } finally {
-      try {
-        propertiesInputStream.close();
-      } catch (IOException e) {
-        // do nothing
-      }
     }
   }
 

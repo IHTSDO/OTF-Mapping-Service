@@ -35,15 +35,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
  *       <version>${project.version}</version>
- *       <dependencies>
- *         <dependency>
- *           <groupId>org.ihtsdo.otf.mapping</groupId>
- *           <artifactId>mapping-admin-remover-config</artifactId>
- *           <version>${project.version}</version>
- *           <scope>system</scope>
- *           <systemPath>${project.build.directory}/mapping-admin-remover-${project.version}.jar</systemPath>
- *         </dependency>
- *       </dependencies>
  *       <executions>
  *         <execution>
  *           <id>remove-map-projects</id>

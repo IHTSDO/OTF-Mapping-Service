@@ -539,12 +539,16 @@ public class WorkflowServiceRest {
 						+ mapProjectId.toString() 
 						+ "/user/" + userName);
 
-		WorkflowService workflowService = new WorkflowServiceJpa();
-		MappingService mappingService = new MappingServiceJpa();
-		ContentService contentService = new ContentServiceJpa();
+        WorkflowService workflowService = null;
+        MappingService mappingService = null;
+        ContentService contentService = null;
 
 		try {
-			MapProject mapProject = mappingService.getMapProject(new Long(
+	        workflowService = new WorkflowServiceJpa();
+	        mappingService = new MappingServiceJpa();
+	        contentService = new ContentServiceJpa();
+
+		  MapProject mapProject = mappingService.getMapProject(new Long(
 					mapProjectId));
 			MapUser mapUser = mappingService.getMapUser(userName);
 

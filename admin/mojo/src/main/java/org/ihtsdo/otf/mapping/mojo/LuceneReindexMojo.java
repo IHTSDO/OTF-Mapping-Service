@@ -1,5 +1,9 @@
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.io.File;
+import java.io.FileReader;
+import java.util.Properties;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -25,25 +29,13 @@ import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
  *        <groupId>org.ihtsdo.otf.mapping</groupId>
  *        <artifactId>mapping-admin-mojo</artifactId>
  *        <version>${project.version}</version>
- *        <dependencies>
- *          <dependency>
- *            <groupId>org.ihtsdo.otf.mapping</groupId>
- *            <artifactId>mapping-admin-lucene-config</artifactId>
- *            <version>${project.version}</version>
- *            <scope>system</scope>
- *            <systemPath>${project.build.directory}/mapping-admin-lucene-${project.version}.jar</systemPath>
- *          </dependency>
- *        </dependencies>
  *        <executions>
  *          <execution>
- *            <id>make-indexes</id>
+ *            <id>reindex</id>
  *            <phase>package</phase>
  *            <goals>
- *              <goal>make-indexes</goal>
+ *              <goal>reindex</goal>
  *            </goals>
- *            <configuration>
- *              <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
- *            </configuration>
  *          </execution>
  *        </executions>
  *      </plugin>
@@ -75,9 +67,16 @@ public class LuceneReindexMojo extends AbstractMojo {
     getLog().info("Starting reindexing ...");
 
     try {
+      String configFileName = System.getProperty("run.config");
+      getLog().info("  run.config = " + configFileName);
+      Properties config = new Properties();
+      FileReader in = new FileReader(new File(configFileName)); 
+      config.load(in);
+      in.close();
+      getLog().info("  properties = " + config);
 
       EntityManagerFactory factory =
-          Persistence.createEntityManagerFactory("MappingServiceDS");
+          Persistence.createEntityManagerFactory("MappingServiceDS", config);
 
       manager = factory.createEntityManager();
 

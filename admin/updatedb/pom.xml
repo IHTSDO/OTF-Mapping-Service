@@ -25,100 +25,21 @@
       </activation>
 
       <properties>
-        <!-- This can be overridden to use "create" instead -->
+        <!-- This can be overridden to use "create" instead via -D....=create -->
+        <!-- NOTE: this setting alone, as a maven property filters down to the
+                   HBM2DDL tool and causes it to work, no need for environment
+                   or config file properties -->
         <hibernate.hbm2ddl.auto>update</hibernate.hbm2ddl.auto>
       </properties>
 
       <build>
         <plugins>
 
-          <!-- Unpack the filters.properties files -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>unpack</id>
-                <phase>generate-sources</phase>
-                <goals>
-                  <goal>unpack</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>org.ihtsdo.otf.mapping</groupId>
-                      <artifactId>mapping-config</artifactId>
-                      <version>${project.version}</version>
-                      <type>zip</type>
-                    </artifactItem>
-                  </artifactItems>
-                  <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <!-- filter and copy persistence.xml -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-resources-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-resources</id>
-                <phase>generate-resources</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/config</outputDirectory>
-                  <filters>
-                    <filter>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</filter>
-                  </filters>
-                  <resources>
-                    <resource>
-                      <directory>src/main/config</directory>
-                      <filtering>true</filtering>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <!-- Build a .jar file -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <version>2.4</version>
-            <executions>
-              <execution>
-                <phase>test</phase>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-                <configuration>
-                  <classesDirectory>${project.build.directory}/config</classesDirectory>
-                  <includes>
-                    <include>**/*</include>
-                  </includes>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
           <!-- Execute the mojo -->
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
             <version>${project.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>org.ihtsdo.otf.mapping</groupId>
-                <artifactId>mapping-admin-updatedb-config</artifactId>
-                <version>${project.version}</version>
-                <scope>system</scope>
-                <systemPath>${project.build.directory}/mapping-admin-updatedb-${project.version}.jar</systemPath>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <id>updatedb</id>

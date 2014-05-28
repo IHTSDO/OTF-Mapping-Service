@@ -20,6 +20,15 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements MetadataService {
 
   /**
+   * Instantiates an empty {@link ClamlMetadataServiceJpaHelper}.
+   *
+   * @throws Exception the exception
+   */
+  public ClamlMetadataServiceJpaHelper() throws Exception {
+    super();
+  }
+
+  /**
    * Returns the isa relationship type.
    * 
    * @param terminology the terminology

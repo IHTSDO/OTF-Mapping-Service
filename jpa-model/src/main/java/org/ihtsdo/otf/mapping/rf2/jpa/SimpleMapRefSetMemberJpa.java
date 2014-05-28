@@ -4,7 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 
 /**
@@ -12,7 +11,7 @@ import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
  */
 @Entity
 @Table(name = "simple_map_refset_members")
-@Audited
+//@Audited
 public class SimpleMapRefSetMemberJpa extends AbstractConceptRefSetMember
     implements SimpleMapRefSetMember {
 

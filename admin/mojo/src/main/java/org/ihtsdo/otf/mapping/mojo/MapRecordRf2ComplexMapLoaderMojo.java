@@ -2,9 +2,7 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -38,15 +36,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
  *       <version>${project.version}</version>
- *       <dependencies>
- *         <dependency>
- *           <groupId>org.ihtsdo.otf.mapping</groupId>
- *           <artifactId>mapping-admin-loader-config</artifactId>
- *           <version>${project.version}</version>
- *           <scope>system</scope>
- *           <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
- *         </dependency>
- *       </dependencies>
  *       <executions>
  *         <execution>
  *           <id>load-rf2-complex-map</id>
@@ -54,9 +43,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *           <goals>
  *             <goal>load-rf2-complex-map</goal>
  *           </goals>
- *           <configuration>
- *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
- *           </configuration>
  *         </execution>
  *       </executions>
  *     </plugin>
@@ -68,14 +54,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 
   /**
-   * Properties file.
-   * @parameter 
-   *            expression="${project.build.directory}/generated-sources/org/ihtsdo"
-   * @required
-   */
-  private File propertiesFile;
-
-  /**
    * Executes the plugin.
    * @throws MojoExecutionException the mojo execution exception
    */
@@ -83,17 +61,18 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     getLog().info("Starting loading complex map data ...");
 
-    FileInputStream propertiesInputStream = null;
     try {
 
-      // load Properties file to determine file name
-      Properties properties = new Properties();
-      propertiesInputStream = new FileInputStream(propertiesFile);
-      properties.load(propertiesInputStream);
-      propertiesInputStream.close();
+      String configFileName = System.getProperty("run.config");
+      getLog().info("  run.config = " + configFileName);
+      Properties config = new Properties();
+      FileReader in = new FileReader(new File(configFileName)); 
+      config.load(in);
+      in.close();
+      getLog().info("  properties = " + config);
 
       // set the input directory
-      String inputFile = properties.getProperty("loader.complexmap.input.data");
+      String inputFile = config.getProperty("loader.complexmap.input.data");
       if (!new File(inputFile).exists()) {
         throw new MojoFailureException(
             "Specified loader.complexmap.input.data directory does not exist: "
@@ -208,13 +187,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
       e.printStackTrace();
       throw new MojoExecutionException(
           "Loading of Unpublished RF2 Complex Maps failed.", e);
-    } finally {
-      try {
-        propertiesInputStream.close();
-      } catch (IOException e) {
-        // do nothing
-      }
-    }
+    } 
 
   }
 

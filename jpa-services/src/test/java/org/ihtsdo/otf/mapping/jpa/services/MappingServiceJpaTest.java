@@ -1,9 +1,13 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -48,9 +52,10 @@ public class MappingServiceJpaTest {
   /**
    * Creates db tables, load test objects and create indexes to prepare for test
    * cases.
+   * @throws Exception 
    */
   @BeforeClass
-  public static void init() {
+  public static void init() throws Exception {
 
     Logger.getLogger(MappingServiceJpaTest.class).info(
         "Initializing MappingServiceTest");
@@ -62,16 +67,24 @@ public class MappingServiceJpaTest {
 
   /**
    * Cleanup database
+   * @throws Exception 
+   * @throws FileNotFoundException 
    */
-  @SuppressWarnings("static-method")
   @After
-  public void cleanup() {
+  public void cleanup() throws Exception {
 
     Logger.getLogger(MappingServiceJpaTest.class).info(
         "Cleaning up MappingServiceJpaTest");
 
     // create new database connection
-    factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+    String configFileName = System.getProperty("run.config.test");
+    Logger.getLogger(this.getClass()).info("  run.config.test = " + configFileName);
+    Properties config = new Properties();
+    FileReader in = new FileReader(new File(configFileName)); 
+    config.load(in);
+    in.close();
+    Logger.getLogger(this.getClass()).info("  properties = " + config);
+    factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
     manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
 

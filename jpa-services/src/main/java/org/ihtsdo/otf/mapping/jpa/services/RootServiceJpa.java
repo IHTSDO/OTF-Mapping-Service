@@ -1,6 +1,9 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.io.File;
+import java.io.FileReader;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -32,8 +35,9 @@ public class RootServiceJpa implements RootService {
 
   /**
    * Instantiates an empty {@link RootServiceJpa}.
+   * @throws Exception 
    */
-  public RootServiceJpa() {
+  public RootServiceJpa() throws Exception {
     // created once or if the factory has closed
     synchronized (lock) {
       if (factory == null || !factory.isOpen()) {
@@ -48,14 +52,21 @@ public class RootServiceJpa implements RootService {
    * @see org.ihtsdo.otf.mapping.services.RootService#openFactory()
    */
   @Override
-  public void openFactory() {
+  public void openFactory() throws Exception {
 
     // if factory has not been instantiated or has been closed, open it
     if (factory == null || !factory.isOpen()) {
 
       Logger.getLogger(this.getClass()).info(
           "Setting root service entity manager factory.");
-      factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+      String configFileName = System.getProperty("run.config");
+      Logger.getLogger(this.getClass()).info("  run.config = " + configFileName);
+      Properties config = new Properties();
+      FileReader in = new FileReader(new File(configFileName)); 
+      config.load(in);
+      in.close();
+      Logger.getLogger(this.getClass()).info("  properties = " + config);
+      factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
     }
 
     // if the field names have not been set, initialize
@@ -69,7 +80,7 @@ public class RootServiceJpa implements RootService {
    * @see org.ihtsdo.otf.mapping.services.RootService#closeFactory()
    */
   @Override
-  public void closeFactory() {
+  public void closeFactory() throws Exception {
     if (factory.isOpen()) {
       factory.close();
     }
@@ -81,7 +92,7 @@ public class RootServiceJpa implements RootService {
    * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
    */
   @Override
-  public void initializeFieldNames() {
+  public void initializeFieldNames() throws Exception {
 
     if (fieldNames == null) {
       fieldNames = new HashSet<>();

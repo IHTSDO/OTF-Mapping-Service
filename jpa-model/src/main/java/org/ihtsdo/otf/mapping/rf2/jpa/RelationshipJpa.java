@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
@@ -22,8 +21,8 @@ import org.ihtsdo.otf.mapping.rf2.Relationship;
 @Table(name = "relationships", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "terminology", "terminologyVersion"
 }))
+//@Audited
 @XmlRootElement(name = "relationship")
-@Audited
 public class RelationshipJpa extends AbstractComponent implements Relationship {
 
   /** The source concept. */

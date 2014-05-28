@@ -15,7 +15,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
@@ -34,7 +33,7 @@ import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 @Table(name = "descriptions", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "terminology", "terminologyVersion"
 }))
-@Audited
+//@Audited
 @XmlRootElement(name = "description")
 public class DescriptionJpa extends AbstractComponent implements Description {
 

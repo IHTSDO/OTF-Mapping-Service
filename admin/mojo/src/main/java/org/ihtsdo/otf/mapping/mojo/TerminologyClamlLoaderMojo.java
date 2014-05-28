@@ -59,15 +59,6 @@ import org.xml.sax.helpers.DefaultHandler;
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
  *       <version>${project.version}</version>
- *       <dependencies>
- *         <dependency>
- *           <groupId>org.ihtsdo.otf.mapping</groupId>
- *           <artifactId>mapping-admin-loader-config</artifactId>
- *           <version>${project.version}</version>
- *           <scope>system</scope>
- *           <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
- *         </dependency>
- *       </dependencies>
  *       <executions>
  *         <execution>
  *           <id>load-claml</id>
@@ -76,7 +67,6 @@ import org.xml.sax.helpers.DefaultHandler;
  *             <goal>load-claml</goal>
  *           </goals>
  *           <configuration>
- *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
  *             <terminology>ICD10</terminology>
  *           </configuration>
  *         </execution>
@@ -89,15 +79,6 @@ import org.xml.sax.helpers.DefaultHandler;
 public class TerminologyClamlLoaderMojo extends AbstractMojo {
 
   final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
-
-  /**
-   * Properties file.
-   * 
-   * @parameter 
-   *            expression="${project.build.directory}/generated-sources/org/ihtsdo"
-   * @required
-   */
-  private File propertiesFile;
 
   /**
    * Name of terminology to be loaded.
@@ -116,7 +97,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
   /** The terminology version. */
   String terminologyVersion;
 
-  /** The manager. */
+  /** The manager - class variable because of SAX parser. */
   EntityManager manager;
 
   /** The concept map. */
@@ -146,21 +127,27 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     getLog().info("Starting loading " + terminology + " data ...");
 
-    FileInputStream propertiesInputStream = null;
     FileInputStream fis = null;
     InputStream inputStream = null;
     Reader reader = null;
+    FileReader in = null;
     try {
 
-      // load Properties file
-      Properties properties = new Properties();
-      propertiesInputStream = new FileInputStream(propertiesFile);
-      properties.load(propertiesInputStream);
-      propertiesInputStream.close();
+      // create Entity manager
+      String configFileName = System.getProperty("run.config");
+      getLog().info("  run.config = " + configFileName);
+      Properties config = new Properties();
+      in = new FileReader(new File(configFileName)); 
+      config.load(in);
+      in.close(); 
+      getLog().info("  properties = " + config);
+      EntityManagerFactory emFactory =
+          Persistence.createEntityManagerFactory("MappingServiceDS", config);
+      manager = emFactory.createEntityManager();
 
       // set the input directory
       String inputFile =
-          properties.getProperty("loader." + terminology + ".input.data");
+          config.getProperty("loader." + terminology + ".input.data");
       if (!new File(inputFile).exists()) {
         throw new MojoFailureException("Specified loader." + terminology
             + ".input.data directory does not exist: " + inputFile);
@@ -170,10 +157,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       // open input file and get effective time and version
       findVersion(inputFile);
 
-      // create Entitymanager
-      EntityManagerFactory emFactory =
-          Persistence.createEntityManagerFactory("MappingServiceDS");
-      manager = emFactory.createEntityManager();
 
       // create Metadata
       getLog().info("  Create metadata classes");
@@ -230,11 +213,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           "Conversion of Claml to RF2 objects failed", e);
     } finally {
       try {
-        propertiesInputStream.close();
-      } catch (IOException e) {
-        // do nothing
-      }
-      try {
         fis.close();
       } catch (IOException e) {
         // do nothing
@@ -246,6 +224,11 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       }
       try {
         reader.close();
+      } catch (IOException e) {
+        // do nothing
+      }
+      try {
+        in.close();
       } catch (IOException e) {
         // do nothing
       }

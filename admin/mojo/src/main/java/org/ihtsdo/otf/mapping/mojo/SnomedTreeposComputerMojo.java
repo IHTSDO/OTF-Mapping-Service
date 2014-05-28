@@ -18,15 +18,6 @@ import org.ihtsdo.otf.mapping.services.ContentService;
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
  *       <version>${project.version}</version>
- *       <dependencies>
- *         <dependency>
- *           <groupId>org.ihtsdo.otf.mapping</groupId>
- *           <artifactId>mapping-admin-loader-config</artifactId>
- *           <version>${project.version}</version>
- *          <scope>system</scope>
- *            <systemPath>${project.build.directory}/mapping-admin-loader-${project.version}.jar</systemPath>
- *         </dependency>
- *       </dependencies>
  *       <executions>
  *         <execution>
  *           <id>compute-snomed-treepos</id>
@@ -35,7 +26,6 @@ import org.ihtsdo.otf.mapping.services.ContentService;
  *             <goal>compute-snomed-treepos</goal>
  *           </goals>
  *           <configuration>
- *             <propertiesFile>${project.build.directory}/generated-resources/resources/filters.properties.${run.config}</propertiesFile>
  *             <terminology>SNOMEDCT</terminology>
  *           </configuration>
  *         </execution>

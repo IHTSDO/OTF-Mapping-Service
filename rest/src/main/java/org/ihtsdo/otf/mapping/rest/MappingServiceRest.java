@@ -1535,12 +1535,6 @@ public class MappingServiceRest {
 	 * @param mapRecordId2
 	 *            the map record id2
 	 * @return the validation result
-	 * @throws InstantiationException
-	 *             the instantiation exception
-	 * @throws IllegalAccessException
-	 *             the illegal access exception
-	 * @throws ClassNotFoundException
-	 *             the class not found exception
 	 */
 	@GET
 	@Path("/record/compare/{recordId1}/{recordId2}/")
@@ -1549,9 +1543,8 @@ public class MappingServiceRest {
 	public ValidationResult compareMapRecords(
 			@ApiParam(value = "id of first map record", required = true) @PathParam("recordId1") Long mapRecordId1,
 			@ApiParam(value = "id of second map record", required = true) @PathParam("recordId2") Long mapRecordId2)
-			throws InstantiationException, IllegalAccessException,
-			ClassNotFoundException {
-
+			 {
+	  try {
 		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Mapping): /record/compare/"
 						+ mapRecordId1.toString() + "/"
@@ -1567,5 +1560,8 @@ public class MappingServiceRest {
 		}
 
 		return mappingService.compareMapRecords(mapRecord1, mapRecord2);
+	  } catch (Exception e) {
+	    throw new WebApplicationException(e);
+	  }
 	}
 }
