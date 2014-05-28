@@ -25,4 +25,55 @@
     </dependency>
 
   </dependencies>
+
+  <!-- Standard build profile, no special configuration needed -->
+  <build>
+    <plugins>
+
+      <plugin>
+        <groupId>org.vafer</groupId>
+        <artifactId>jdeb</artifactId>
+        <version>1.1.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jdeb</goal>
+            </goals>
+            <configuration>
+              <deb>${project.build.directory}/${packageName}-${project.version}-all.deb</deb>
+              <classifier>all</classifier>
+              <controlDir>${basedir}/src/deb/control</controlDir>
+              <snapshotExpand>true</snapshotExpand>
+              <snapshotEnv>BUILD_NUMBER</snapshotEnv>
+              <signPackage>false</signPackage>
+              <dataSet>
+                <data>
+                  <src>${basedir}/src/html</src>
+                  <type>directory</type>
+                  <mapper>
+                    <type>directory</type>
+                    <prefix>/var/www</prefix>
+                  </mapper>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/srv/http/${packageName}</prefix>
+                    <filemode>0644</filemode>
+                  </mapper>
+                </data>
+                <data>
+                  <src>${basedir}/src/nginx/web.conf</src>
+                  <dst>/etc/nginx/conf.d/${packageName}.conf</dst>
+                  <type>file</type>
+                  <conffile>true</conffile>
+                </data>
+              </dataSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
 </project>
