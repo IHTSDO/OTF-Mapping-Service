@@ -6,15 +6,12 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../parent</relativePath>
   </parent>
   <artifactId>mapping-rest</artifactId>
   <packaging>war</packaging>
   <name>OTF RF2 REST Services</name>
-
-  <properties>
-    <default.run.config>dev</default.run.config>
-  </properties>
 
   <dependencies>
     <dependency>
@@ -124,122 +121,5 @@
       <artifactId>swagger-jersey-jaxrs_2.10</artifactId>
     </dependency>
   </dependencies>
-
-  <!-- This profile configuration is designed to let this build with a default setting 
-    of dev that can be overridden for prod -->
-  <profiles>
-    <profile>
-      <id>run</id>
-      <activation>
-        <property>
-          <name>run.config</name>
-        </property>
-      </activation>
-      <properties>
-        <default.run.config>${run.config}</default.run.config>
-      </properties>
-    </profile>
-  </profiles>
-
-  <!-- Always build, use dev configuration by default -->
-  <build>
-    <plugins>
-
-      <!-- Unpack the filters.properties files -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>unpack</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.ihtsdo.otf.mapping</groupId>
-                  <artifactId>mapping-config</artifactId>
-                  <version>${project.version}</version>
-                  <type>zip</type>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <!-- filter and copy persistence.xml -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>src/main/resources</outputDirectory>
-              <filters>
-                <filter>${project.build.directory}/generated-resources/resources/filters.properties.${default.run.config}</filter>
-              </filters>
-              <resources>
-                <resource>
-                  <directory>src/main/config</directory>
-                  <filtering>true</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-test-resources</id>
-            <phase>generate-test-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>src/test/resources</outputDirectory>
-              <filters>
-                <!-- Always assume "dev" configuration for running test -->
-                <filter>${project.build.directory}/generated-resources/resources/filters.properties.${default.run.config}</filter>
-              </filters>
-              <resources>
-                <resource>
-                  <directory>src/test/config</directory>
-                  <filtering>true</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <configuration>
-          <filters>
-            <filter>${project.build.directory}/generated-resources/resources/filters.properties.${default.run.config}</filter>
-          </filters>
-          <webResources>
-            <resource>
-              <directory>src/main/webapp</directory>
-              <!-- enable filtering -->
-              <filtering>true</filtering>
-              <includes>
-                <include>**/web.xml</include>
-                <include>index.html</include>
-              </includes>
-            </resource>
-          </webResources>
-        </configuration>
-      </plugin>
-
-    </plugins>
-
-  </build>
 
 </project>

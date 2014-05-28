@@ -409,7 +409,7 @@ public class MapProjectJpaTest {
     config.load(in);
     in.close();
     Logger.getLogger(MapProjectJpaTest.class).info("  properties = " + config);
-    factory = Persistence.createEntityManagerFactory("MappingServiceDS");
+    factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
     manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();
 

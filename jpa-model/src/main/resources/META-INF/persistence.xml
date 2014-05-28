@@ -8,7 +8,6 @@
 
     <!-- JPA persistence provider. -->
     <provider>org.hibernate.ejb.HibernatePersistence</provider>
-
     <!-- List managed classes -->
     <class>org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent</class>
     <class>org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa</class>
@@ -34,7 +33,5 @@
     <class>org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa</class>
     <class>org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa</class>
     <class>org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecordJpa</class>
-
-    <!-- Properties are driven from an external file -->
   </persistence-unit>
 </persistence>
