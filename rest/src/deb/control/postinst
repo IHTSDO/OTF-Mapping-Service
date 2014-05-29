@@ -6,7 +6,7 @@
 
 APP_NAME=[[packageName]]
 
-vardirs="run logs"
+vardirs="run logs data/ihtsdo-project-data"
 
 dir=/var/opt/$APP_NAME
 test -d $dir || mkdir -p $dir && chmod 700 $dir && chown $APP_NAME $dir
@@ -23,11 +23,10 @@ status=$( supervisorctl status $APP_NAME | awk '{print $2}' )
 
 case $status in
   RUNNING)
-    supervisorctl reread $APP_NAME
-    supervisorctl restart $APP_NAME
+    supervisorctl update $APP_NAME | grep updated || supervisorctl restart $APP_NAME
     ;;
   STOPPED)
-    supervisorctl reread $APP_NAME
+    supervisorctl update $APP_NAME | grep updated && supervisorctl stop $APP_NAME
     ;;
   such)
     # 'No such process'

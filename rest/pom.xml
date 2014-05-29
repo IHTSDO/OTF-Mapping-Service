@@ -11,9 +11,14 @@
     <relativePath>../parent</relativePath>
   </parent>
 
-  <artifactId>rest</artifactId>
+  <artifactId>mapping-rest</artifactId>
   <packaging>war</packaging>
   <name>OTF RF2 REST Services</name>
+
+  <properties>
+    <execFinalName>exec-${project.build.finalName}.jar</execFinalName>
+    <packageName>${project.parent.artifactId}-rest</packageName>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -148,99 +153,6 @@
   <build>
     <finalName>${project.artifactId}</finalName>
     <plugins>
-      <!-- Unpack the filters.properties files -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>unpack</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.ihtsdo.otf.mapping</groupId>
-                  <artifactId>mapping-config</artifactId>
-                  <version>${project.version}</version>
-                  <type>zip</type>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <!-- filter and copy persistence.xml -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>src/main/resources</outputDirectory>
-              <filters>
-                <filter>${project.build.directory}/generated-resources/resources/filters.properties.${default.run.config}</filter>
-              </filters>
-              <resources>
-                <resource>
-                  <directory>src/main/config</directory>
-                  <filtering>true</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-test-resources</id>
-            <phase>generate-test-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>src/test/resources</outputDirectory>
-              <filters>
-                <!-- Always assume "dev" configuration for running test -->
-                <filter>${project.build.directory}/generated-resources/resources/filters.properties.${default.run.config}</filter>
-              </filters>
-              <resources>
-                <resource>
-                  <directory>src/test/config</directory>
-                  <filtering>true</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <configuration>
-          <filters>
-            <filter>${project.build.directory}/generated-resources/resources/filters.properties.${default.run.config}</filter>
-          </filters>
-          <webResources>
-            <resource>
-              <directory>src/main/webapp</directory>
-              <!-- enable filtering -->
-              <filtering>true</filtering>
-              <includes>
-                <include>**/web.xml</include>
-                <include>index.html</include>
-              </includes>
-            </resource>
-          </webResources>
-        </configuration>
-      </plugin>
-
       <plugin>
         <groupId>org.apache.tomcat.maven</groupId>
         <artifactId>tomcat7-maven-plugin</artifactId>
@@ -253,7 +165,7 @@
             </goals>
             <phase>package</phase>
             <configuration>
-              <path>/api</path>
+              <path>/mapping-rest</path>
               <finalName>exec-${project.build.finalName}.jar</finalName>
               <enableNaming>true</enableNaming>
             </configuration>
@@ -306,6 +218,15 @@
                     <filemode>0640</filemode>
                   </mapper>
                 </data>
+ <!-- Moved to ansible, kept for reference
+               <data>
+                  <src>${basedir}/..</src>
+                  <type>directory</type>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/opt/${packageName}/lib/admin</prefix>
+                  </mapper>
+                </data>-->
  <!--               <data>
                   <src>${basedir}/src/deb/log4j.xml</src>
                   <dst>/etc/opt/${packageName}/log4j.xml</dst>
