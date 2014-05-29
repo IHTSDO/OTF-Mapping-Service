@@ -5,6 +5,7 @@
 
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>ihtsdo-mapping-service</artifactId>
+  <packaging>pom</packaging>
   <version>0.0.1-SNAPSHOT</version>
 
   <!-- Sub-modules -->
