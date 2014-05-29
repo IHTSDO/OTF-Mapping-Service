@@ -1,0 +1,137 @@
+<div ng-show="entry == null">
+
+  <h4>No entry selected</h4>
+</div>
+<div ng-show="entry != null">
+
+
+  <accordion> <accordion-group is-open="isTargetOpen">
+  <accordion-heading> Target Code <i
+    class="pull-right glyphicon"
+    ng-class="{'glyphicon-chevron-down': isTargetOpen, 'glyphicon-chevron-right': !isTargetOpen}"></i>
+  </accordion-heading>
+
+  <table style="width: 100%;">
+
+    <tr>
+      <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
+      <td style="vertical-align: top; padding: 5px;"><span
+        ng-show="entry.targetId != null && entry.targetId != ''">{{project.destinationTerminology}},
+          {{entry.targetId}} &nbsp;
+          <button ng-click="clearTargetConcept(entry)">Clear</button>
+      </span> <span style="color:lightgray;"
+        ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">No
+          Target Selected</span></td>
+    </tr>
+    <tr>
+      <td ng-show="entry.targetId != null && entry.targetId != ''"
+       style="vertical-align: top; padding: 5px;"><strong>Preferred Term</strong></td>       
+      <td ng-show="entry.targetId != null && entry.targetId != ''" 
+       style="vertical-align: top; padding: 5px;">{{entry.targetName}}</td>
+      <td ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
+        <strong>Reason</strong></td> 
+      <td ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
+        {{entry.mapRelation.name}}</td> 
+    </tr>
+    <tr ng-show="allowableMapRelations.length > 1 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
+      <td style="vertical-align: top; padding: 5px;"><strong>Select</strong></td>
+      <td style="vertical-align: top; padding: 5px;"><select
+        style="width: 80%" ng-model="mapRelationInput"
+        ng-change="selectMapRelation(mapRelationInput)"
+        ng-options="mapRelation as mapRelation.displayName for mapRelation in allowableMapRelations"></select>
+      </td>
+    </tr>
+  </table>
+
+  </accordion-group> </accordion>
+
+  <accordion> <accordion-group is-open="isParametersOpen">
+  <accordion-heading> Mapping Parameters <i
+    class="pull-right glyphicon"
+    ng-class="{'glyphicon-chevron-down': isParametersOpen, 'glyphicon-chevron-right': !isParametersOpen}"></i>
+  </accordion-heading>
+
+  <table style="padding: 5px">
+
+    <tr ng-show="project.ruleBased == true">
+      <td style="vertical-align: top; padding: 5px;"><strong>Rule</strong></td>
+      <td style="vertical-align: top; padding: 5px;"><div style="display:inline;">{{entry.rule}}&nbsp;</div>
+        <div style="display:inline;" ng-show="entry.rule.length > 0"> <input type="submit"
+        value="Set Rule" ng-click="openRuleConstructor(entry)">
+        </div>
+      </td>
+    </tr>
+
+    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
+    <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'"> -->
+      <td style="vertical-align: top; padding: 5px;"><strong>Relation
+          Id</strong></td>
+      <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.terminologyId}}
+        <span ng-show="entry.mapRelation != null"><button
+            ng-click="clearMapRelation(entry)">Clear</button>
+      </td>
+    </tr>
+
+    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
+    <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'"> -->
+      <td style="vertical-align: top; padding: 5px;"><strong>Relation
+          Name</strong></td>
+      <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.name}}</td>
+
+    </tr>
+
+    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
+    <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length > 0">
+     -->  <td style="vertical-align: top; padding: 5px;">Select</td>
+      <td style="vertical-align: top; padding: 5px;"><select
+        style="width: 60%" ng-model="mapRelationInput"
+        ng-change="selectMapRelation(mapRelationInput)"
+        ng-options="mapRelation as mapRelation.displayName for mapRelation in allowableMapRelations"></select>
+      </td>
+
+    </tr>
+
+   <!--  <tr
+      ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length == 0">
+      <td style="vertical-align: top; padding: 5px;"></td>
+      <td style="vertical-align: top; padding: 5px;">No map relations are
+        available for this target.</td>
+    </tr> -->
+
+    <tr ng-show="allowableAdvices.length > 0">
+    <!-- <tr ng-show="project.mapRelationStyle != 'RELATIONSHIP_STYLE'">
+     -->  <td ng-show="entry.targetId != null && entry.targetId != ''"
+          style="vertical-align: top; padding: 5px;"><strong>Advice</strong></td>
+      <td ng-show="entry.targetId != null && entry.targetId != ''"
+          style="vertical-align: top; padding: 5px;">
+        <div ng-show="entry.mapAdvice.length > 0">
+          <div ng-repeat="advice in entry.mapAdvice">
+            <button disabled>
+             <div style="display: inline;"> 
+               {{advice.detail}} 
+             </div>
+              <div style="display: inline; float: right; width: 3%;">
+                <i class="glyphicon glyphicon-remove"
+                 ng-click="removeEntryAdvice(entry, advice)"></i>
+              </div>
+            </button>
+          </div>
+          <hr>
+        </div> <span style="color: red">{{errorAddAdvice}}</span>
+        <form ng-show="entry.targetId != null && entry.targetId != ''">
+          Add Advice: <select style="width: 60%;"
+            ng-change="addEntryAdvice(entry, adviceInput)"
+            ng-model="adviceInput"
+            ng-options="advice as advice.detail for advice in allowableAdvices"></select>
+        </form>
+      </td>
+    </tr>
+  </table>
+  </accordion-group> </accordion>
+
+  <button class="btn btn-sm btn-primary" ng-click="saveEntry()">Save
+    Map Entry</button>
+  <button class="btn btn-sm btn-warning" ng-click="cancelEntry()">Cancel
+    Changes</button>
+  <button class="btn btn-sm btn-danger" ng-click="deleteEntry()">Delete
+    Map Entry</button>
