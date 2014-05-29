@@ -1,0 +1,27 @@
+
+
+<div ng-show="project != null">
+
+  <h4>{{project.name}}</h4>
+
+  <button class="btn btn-sm btn-primary" ng-click="goProjectDetails()">Project
+    Details</button>
+  <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
+    Records</button>
+
+  <span ng-show="currentRole === 'Administrator'">
+    <button class="btn btn-sm btn-primary" ng-click="computeWorkflow()">Compute
+      Workflow</button>
+  </span>
+  
+  <hr>
+  <form>
+  <button class="btn btn-sm btn-primary" 
+  		  ng-click="generateTestData()"
+  		  ng-show="currentRole === 'Administrator'">Generate Test Data</button>
+
+  Maximum umber of conflicts: <input style="width:50px;" value="5" ng-model="nConflicts"> 
+  </form>
+</div>
+<div ng-show="project == null">Select a project.</div>
+
