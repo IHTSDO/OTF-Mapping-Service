@@ -15,6 +15,10 @@
   <description>OTF RF2 webapp</description>
   <packaging>war</packaging>
 
+  <properties>
+    <packageName>${project.parent.artifactId}-web</packageName>
+  </properties>
+
   <!-- Declare Project Dependency Versions -->
   <dependencies>
 
@@ -29,7 +33,6 @@
   <!-- Standard build profile, no special configuration needed -->
   <build>
     <plugins>
-
       <plugin>
         <groupId>org.vafer</groupId>
         <artifactId>jdeb</artifactId>
@@ -49,7 +52,7 @@
               <signPackage>false</signPackage>
               <dataSet>
                 <data>
-                  <src>${basedir}/src/html</src>
+                  <src>${basedir}/src/main/webapp/app</src>
                   <type>directory</type>
                   <mapper>
                     <type>directory</type>
