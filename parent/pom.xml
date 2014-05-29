@@ -8,7 +8,7 @@
   <version>0.0.1-SNAPSHOT</version> <relativePath/> </parent> -->
 
   <groupId>org.ihtsdo.otf.mapping</groupId>
-  <artifactId>mapping-parent</artifactId>
+  <artifactId>otf-mapping-service</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>IHTSDO Mapping Service Parent</name>
@@ -251,20 +251,6 @@
       </plugins>
     </pluginManagement>
   </build>
-
-  <!-- Sub-modules -->
-  <modules>
-    <module>parent</module>
-    <module>config</module>
-    <module>model</module>
-    <module>pojo-model</module>
-    <module>jpa-model</module>
-    <module>services</module>
-    <module>jpa-services</module>
-    <module>rest</module>
-    <module>webapp</module>
-    <module>admin</module>
-  </modules>
 
   <distributionManagement>
     <repository>
