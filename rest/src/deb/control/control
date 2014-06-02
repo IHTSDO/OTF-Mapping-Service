@@ -2,7 +2,7 @@ Package: [[packageName]]
 Version: [[version]]
 Priority: optional
 Architecture: all
-Depends: openjdk-7-jdk, supervisor, maven, csh
+Depends: openjdk-7-jdk, supervisor
 Maintainer: DevOps Support <devops@ihtsdo.org>
 Description: [[name]]
 Distribution: stable
