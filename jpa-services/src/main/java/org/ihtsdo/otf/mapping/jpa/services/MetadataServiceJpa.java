@@ -11,7 +11,8 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 /**
  * Reference implementation of {@link MetadataService}
  */
-public class MetadataServiceJpa extends RootServiceJpa implements MetadataService {
+public class MetadataServiceJpa extends RootServiceJpa implements
+MetadataService {
 
 	/** The manager. */
 	private EntityManager manager;
@@ -21,11 +22,11 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 
 	/**
 	 * Instantiates an empty {@link MetadataServiceJpa}.
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public MetadataServiceJpa() throws Exception {
-	  super();
-	  
+		super();
+
 		helperMap = new HashMap<>();
 		helperMap.put("SNOMEDCT", new SnomedMetadataServiceJpaHelper());
 		helperMap.put("ICD10", new ClamlMetadataServiceJpaHelper());
@@ -57,8 +58,8 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, Map<String, String>> getAllMetadata(String terminology,
-		String version) throws Exception {
-    Map<String, Map<String, String>> idNameMapList = new HashMap<>();
+			String version) throws Exception {
+		Map<String, Map<String, String>> idNameMapList = new HashMap<>();
 		Map<String, String> modulesIdNameMap = getModules(terminology, version);
 		if (modulesIdNameMap != null) {
 			idNameMapList.put("Modules", modulesIdNameMap);
@@ -68,18 +69,18 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 		if (atvIdNameMap != null) {
 			idNameMapList.put("Attribute Value Refsets", atvIdNameMap);
 		}
-    Map<String, String> csIdNameMap =
-        getCaseSignificances(terminology, version);
+		Map<String, String> csIdNameMap =
+				getCaseSignificances(terminology, version);
 		if (csIdNameMap != null) {
 			idNameMapList.put("Case Significances", csIdNameMap);
 		}
-    Map<String, String> cmIdNameMap =
-        getComplexMapRefSets(terminology, version);
+		Map<String, String> cmIdNameMap =
+				getComplexMapRefSets(terminology, version);
 		if (cmIdNameMap != null) {
 			idNameMapList.put("Complex Map Refsets", cmIdNameMap);
 		}
-    Map<String, String> dsIdNameMap =
-        getDefinitionStatuses(terminology, version);
+		Map<String, String> dsIdNameMap =
+				getDefinitionStatuses(terminology, version);
 		if (dsIdNameMap != null) {
 			idNameMapList.put("Definition Statuses", dsIdNameMap);
 		}
@@ -105,8 +106,8 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 		if (rmIdNameMap != null) {
 			idNameMapList.put("Relationship Modifiers", rmIdNameMap);
 		}
-    Map<String, String> rtIdNameMap =
-        getRelationshipTypes(terminology, version);
+		Map<String, String> rtIdNameMap =
+				getRelationshipTypes(terminology, version);
 		if (rtIdNameMap != null) {
 			idNameMapList.put("Relationship Types", rtIdNameMap);
 		}
@@ -135,7 +136,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getModules(String terminology, String version)
-		throws Exception {
+			throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getModules(terminology, version);
 		} else {
@@ -153,7 +154,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getAttributeValueRefSets(String terminology,
-		String version) throws Exception {
+			String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getAttributeValueRefSets(terminology,
 					version);
@@ -172,7 +173,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getComplexMapRefSets(String terminology,
-		String version) throws Exception {
+			String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getComplexMapRefSets(terminology,
 					version);
@@ -190,8 +191,8 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 * .lang.String, java.lang.String)
 	 */
 	@Override
-  public Map<String, String> getLanguageRefSets(String terminology,
-    String version) throws Exception {
+	public Map<String, String> getLanguageRefSets(String terminology,
+			String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology)
 					.getLanguageRefSets(terminology, version);
@@ -210,7 +211,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getSimpleMapRefSets(String terminology,
-		String version) throws Exception {
+			String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getSimpleMapRefSets(terminology,
 					version);
@@ -229,7 +230,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getSimpleRefSets(String terminology, String version)
-		throws Exception {
+			throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getSimpleRefSets(terminology, version);
 		} else {
@@ -247,7 +248,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getMapRelations(String terminology, String version)
-		throws Exception {
+			throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getMapRelations(terminology, version);
 		} else {
@@ -265,7 +266,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getDefinitionStatuses(String terminology,
-		String version) throws Exception {
+			String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getDefinitionStatuses(terminology,
 					version);
@@ -284,7 +285,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getDescriptionTypes(String terminology,
-		String version) throws Exception {
+			String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getDescriptionTypes(terminology,
 					version);
@@ -303,7 +304,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getCaseSignificances(String terminology,
-		String version) throws Exception {
+			String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getCaseSignificances(terminology,
 					version);
@@ -322,7 +323,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getRelationshipTypes(String terminology,
-		String version) throws Exception {
+			String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipTypes(terminology,
 					version);
@@ -339,8 +340,8 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 * getHierarchicalRelationshipTypes(java.lang.String, java.lang.String)
 	 */
 	@Override
-  public Map<String, String> getHierarchicalRelationshipTypes(
-    String terminology, String version) throws Exception {
+	public Map<String, String> getHierarchicalRelationshipTypes(
+			String terminology, String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getHierarchicalRelationshipTypes(
 					terminology, version);
@@ -358,7 +359,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getRelationshipCharacteristicTypes(
-		String terminology, String version) throws Exception {
+			String terminology, String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipCharacteristicTypes(
 					terminology, version);
@@ -368,7 +369,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 		}
 	}
 
-    /*
+	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see
@@ -377,7 +378,7 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 */
 	@Override
 	public Map<String, String> getRelationshipModifiers(String terminology,
-		String version) throws Exception {
+			String version) throws Exception {
 		if (helperMap.containsKey(terminology)) {
 			return helperMap.get(terminology).getRelationshipModifiers(terminology,
 					version);
@@ -393,15 +394,13 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 * @see org.ihtsdo.otf.mapping.services.MetadataService#getTerminologies()
 	 */
 	@Override
-	public List<String> getTerminologies() {
+	public List<String> getTerminologies() throws Exception {
+
 
 		javax.persistence.Query query =
 				manager.createQuery("SELECT distinct c.terminology from ConceptJpa c");
 		@SuppressWarnings("unchecked")
 		List<String> terminologies = query.getResultList();
-		if (manager.isOpen()) {
-			manager.close();
-		}
 		return terminologies;
 
 	}
@@ -414,71 +413,64 @@ public class MetadataServiceJpa extends RootServiceJpa implements MetadataServic
 	 * )
 	 */
 	@Override
-	public List<String> getVersions(String terminology) {
-
+	public List<String> getVersions(String terminology) throws Exception {
 		javax.persistence.Query query =
 				manager
-						.createQuery("SELECT distinct c.terminologyVersion from ConceptJpa c where terminology = :terminology");
+				.createQuery("SELECT distinct c.terminologyVersion from ConceptJpa c where terminology = :terminology");
 
-		query.setParameter("terminology", terminology);
-		@SuppressWarnings("unchecked")
-		List<String> versions = query.getResultList();
-		if (manager.isOpen()) {
-			manager.close();
+				query.setParameter("terminology", terminology);
+			@SuppressWarnings("unchecked")
+			List<String> versions = query.getResultList();
+			return versions;
+
 		}
-		return versions;
 
-	}
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang
+		 * .String)
+		 */
+		@Override
+		public String getLatestVersion(String terminology) throws Exception {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getLatestVersion(java.lang
-	 * .String)
-	 */
-	@Override
-	public String getLatestVersion(String terminology) {
 
-		javax.persistence.Query query =
-				manager
-						.createQuery("SELECT max(c.terminologyVersion) from ConceptJpa c where terminology = :terminology");
+					javax.persistence.Query query =
+					manager
+					.createQuery("SELECT max(c.terminologyVersion) from ConceptJpa c where terminology = :terminology");
 
 		query.setParameter("terminology", terminology);
 		String version = query.getSingleResult().toString();
-		if (manager.isOpen()) {
-			manager.close();
-		}
 		return version;
 
-	}
+			}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions
-	 * ()
-	 */
-	@Override
-	public Map<String, String> getTerminologyLatestVersions() {
 
-		javax.persistence.TypedQuery<Object[]> query =
-				manager
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyLatestVersions
+			 * ()
+			 */
+			@Override
+			public Map<String, String> getTerminologyLatestVersions() throws Exception {
+
+
+						javax.persistence.TypedQuery<Object[]> query =
+						manager
 						.createQuery(
 								"SELECT c.terminology, max(c.terminologyVersion) from ConceptJpa c group by c.terminology",
 								Object[].class);
 
-		List<Object[]> resultList = query.getResultList();
-    Map<String, String> resultMap = new HashMap<>(resultList.size());
-		for (Object[] result : resultList)
-			resultMap.put((String) result[0], (String) result[1]);
-		if (manager.isOpen()) {
-			manager.close();
-		}
+						List<Object[]> resultList = query.getResultList();
+						Map<String, String> resultMap = new HashMap<>(resultList.size());
+						for (Object[] result : resultList)
+							resultMap.put((String) result[0], (String) result[1]);
 
-		return resultMap;
+						return resultMap;
 
-	}
+				}
 
-}
+			}

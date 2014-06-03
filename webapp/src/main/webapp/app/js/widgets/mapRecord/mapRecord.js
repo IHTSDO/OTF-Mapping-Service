@@ -1,4 +1,3 @@
-
 'use strict';
 
 angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
@@ -503,7 +502,17 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	// discard changes
 	$scope.cancelMapRecord = function() {
 
-		window.history.back();
+		$http({
+			url: root_workflow + "cancel",
+			dataType: "json",
+			data: $scope.record,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+			window.history.back();
+		});
 
 	};
 

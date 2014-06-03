@@ -10,6 +10,7 @@ var root_content = root_url + "content/";
 var root_metadata = root_url + "metadata/";
 var root_validation = root_url + "validation/";
 var root_workflow = root_url + "workflow/";
+var root_security = root_url + "security/";
 
 mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 	$rootScope.glassPane = 0;
@@ -89,6 +90,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
                                                   function ($scope, localStorageService, $rootScope, $location, $http) {
     $scope.page =  'login';
     $scope.mapUsers = [];
+    $scope.userName = '';
 		
 	
 	// set the user, role, focus project, and preferences to null (i.e. clear) by broadcasting to rest of app
@@ -137,107 +139,136 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		var path = "";
 
 		// check that user has been selected
-		if ($scope.mapUser == null) {
+		if ($scope.userName == null) {
 			alert("You must specify a user");
+		} else if ($scope.password == null) {
+			alert("You must enter a password");
 		} else {
-
-			// retrieve the user preferences
+		
+			
+			// authenticate the user
+			var query_url = root_security + "authenticate/" + $scope.userName;
+			
+			console.debug($scope.userName);
+			
 			$http({
-				url: root_mapping + "userPreferences/" + $scope.mapUser.userName,
+				url: query_url,
 				dataType: "json",
-				method: "GET",
+				data: $scope.password,
+				method: "POST",
 				headers: {
-					"Content-Type": "application/json"
-				}	
-			}).success(function(data) {
-				console.debug($scope.mapProjects);
-				console.debug(data);
-				$scope.preferences = data;
-				$scope.preferences.lastLogin = new Date().getTime();
-				localStorageService.add('preferences', $scope.preferences);
-				for (var i = 0; i < $scope.mapProjects.length; i++)  {
-					if ($scope.mapProjects[i].id === $scope.preferences.lastMapProjectId) {
-						$scope.focusProject = $scope.mapProjects[i];
-					}
-				}
-				console.debug('Last project: ');
-				console.debug($scope.focusProject);
-				localStorageService.add('focusProject', $scope.focusProject);
-				$rootScope.$broadcast('localStorageModule.notification.setPreferences', {key: 'preferences', preferences: $scope.preferences});
-				$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
-
-			}).error(function(error) {
-				$scope.error = $scope.error + "Could not retrieve user preferences. "; 
-
-			}).then(function(data) {
-				$http({
-					url: root_mapping + "user/id/" + $scope.mapUser.id + "/projects",
-					dataType: "json",
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json"
-					}	
-				}).success(function(data) {
+					"Content-Type": "text/plain"
+				}}).success(function(data) {
 					console.debug(data);
-					// check if user has role in focusProject
-					var found = 0;
-					for (var i = 0; i < data.mapProject.length; i++) {
-						if (data.mapProject[i].id === $scope.focusProject.id) {
-							found = 1;
-						} 
+				
+					localStorageService.add('userToken', data);
+					
+					// find the mapUser object
+					for (var i = 0; i < $scope.mapUsers.length; i++)  {
+						if ($scope.mapUsers[i].userName === $scope.userName) {
+							$scope.mapUser = $scope.mapUsers[i];
+						}
 					}
-
-					// otherwise change focusProject
-					if (found == 0 && data.mapProject.length > 0) {
-						$scope.focusProject = data.mapProject[0];
-						console.debug($scope.focusProject);
-						localStorageService.add('focusProject', $scope.focusProject);
-						$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  			
-					}
-				}).error(function(error) {
-					$scope.error = $scope.error + "Could not retrieve user role. "; 
-				}).then(function(data) {
+					
+					// retrieve the user preferences
 					$http({
-						url: root_mapping + "userRole/" + $scope.mapUser.userName + "/projectId/" + $scope.focusProject.id,
+						url: root_mapping + "userPreferences/" + $scope.userName,
 						dataType: "json",
 						method: "GET",
 						headers: {
 							"Content-Type": "application/json"
 						}	
 					}).success(function(data) {
+						console.debug($scope.mapProjects);
 						console.debug(data);
-						$scope.role = data.searchResult[0].value ;
-						
-
-
-						if ($scope.role == "Specialist") {
-							path = "/specialist/dash";
-						} else if ($scope.role == "Lead") {
-							path = "/lead/dash";
-						} else if ($scope.role == "Administrator") {
-							path = "/admin/dash";
-						} else  {
-							path = "/viewer/dash";
+						$scope.preferences = data;
+						$scope.preferences.lastLogin = new Date().getTime();
+						localStorageService.add('preferences', $scope.preferences);
+						for (var i = 0; i < $scope.mapProjects.length; i++)  {
+							if ($scope.mapProjects[i].id === $scope.preferences.lastMapProjectId) {
+								$scope.focusProject = $scope.mapProjects[i];
+							}
 						}
+						console.debug('Last project: ');
+						console.debug($scope.focusProject);
+						localStorageService.add('focusProject', $scope.focusProject);
+						$rootScope.$broadcast('localStorageModule.notification.setPreferences', {key: 'preferences', preferences: $scope.preferences});
+						$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
 
-						// add the user information to local storage
-						localStorageService.add('currentUser', $scope.mapUser);
-						localStorageService.add('currentRole', $scope.role);
-
-						// broadcast the user information to rest of app
-						$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
-						$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role});
-					
-						// redirect page
-						$location.path(path);
-						
 					}).error(function(error) {
-						$scope.error = $scope.error + "Could not retrieve user role. "; 
-					});		
-			});
+						$scope.error = $scope.error + "Could not retrieve user preferences. "; 
 
-			});
+					}).then(function(data) {
+						$http({
+							url: root_mapping + "user/id/" + $scope.mapUser.id + "/projects",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}	
+						}).success(function(data) {
+							console.debug(data);
+							// check if user has role in focusProject
+							var found = 0;
+							for (var i = 0; i < data.mapProject.length; i++) {
+								if (data.mapProject[i].id === $scope.focusProject.id) {
+									found = 1;
+								} 
+							}
 
+							// otherwise change focusProject
+							if (found == 0 && data.mapProject.length > 0) {
+								$scope.focusProject = data.mapProject[0];
+								console.debug($scope.focusProject);
+								localStorageService.add('focusProject', $scope.focusProject);
+								$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  			
+							}
+						}).error(function(error) {
+							$scope.error = $scope.error + "Could not retrieve user role. "; 
+						}).then(function(data) {
+							$http({
+								url: root_mapping + "userRole/" + $scope.userName + "/projectId/" + $scope.focusProject.id,
+								dataType: "json",
+								method: "GET",
+								headers: {
+									"Content-Type": "application/json"
+								}	
+							}).success(function(data) {
+								console.debug(data);
+								$scope.role = data.searchResult[0].value ;
+						
+
+
+								if ($scope.role == "Specialist") {
+									path = "/specialist/dash";
+								} else if ($scope.role == "Lead") {
+									path = "/lead/dash";
+								} else if ($scope.role == "Administrator") {
+									path = "/admin/dash";
+								} else  {
+									path = "/viewer/dash";
+								}
+
+								// add the user information to local storage
+								localStorageService.add('currentUser', $scope.mapUser);
+								localStorageService.add('currentRole', $scope.role);
+
+								// broadcast the user information to rest of app
+								$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
+								$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role});
+					
+								// redirect page
+								$location.path(path);
+						
+							}).error(function(error) {
+								$scope.error = error + "Could not retrieve user role. "; 
+							});		
+						});
+
+					});
+				}).error(function(error) {
+					$scope.error = error.replace(/"/g, '');
+				});
 		}
 	};
 	

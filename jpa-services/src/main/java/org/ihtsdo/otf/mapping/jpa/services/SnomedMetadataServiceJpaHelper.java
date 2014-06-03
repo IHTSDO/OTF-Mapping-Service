@@ -11,9 +11,7 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
- * The Class SnomedMetadataServiceJpaHelper.
- * 
- * @author ${author}
+ * Implementation of {@link MetadataService} for SNOMEDCT.
  */
 public class SnomedMetadataServiceJpaHelper implements MetadataService {
 

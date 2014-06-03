@@ -134,7 +134,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * 
    * @see org.apache.maven.plugin.Mojo#execute()
    */
-  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoFailureException {
     getLog().info("Starting loading RF2 data ...");
@@ -148,12 +147,13 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       String configFileName = System.getProperty("run.config");
       getLog().info("  run.config = " + configFileName);
       Properties config = new Properties();
-      FileReader in = new FileReader(new File(configFileName)); 
+      FileReader in = new FileReader(new File(configFileName));
       config.load(in);
       in.close();
       getLog().info("  properties = " + config);
-      factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
-     
+      factory =
+          Persistence.createEntityManagerFactory("MappingServiceDS", config);
+
       // set the input directory
       String coreInputDirString =
           config.getProperty("loader." + terminology + ".input.data");
@@ -630,9 +630,12 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         coreIdentifierInputFile = f;
       }
     }
-    getLog().info(
-        "  Core Identifier Input File = " + coreIdentifierInputFile.toString()
-            + " " + coreIdentifierInputFile.exists());
+    if (coreIdentifierInputFile != null) {
+      getLog().info(
+          "  Core Identifier Input File = "
+              + coreIdentifierInputFile.toString() + " "
+              + coreIdentifierInputFile.exists());
+    }
 
     for (File f : coreTerminologyInputDir.listFiles()) {
       if (f.getName().contains("sct2_TextDefinition_")) {
