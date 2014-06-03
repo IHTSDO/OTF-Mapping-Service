@@ -109,7 +109,7 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
       }
 
       // Remove map age ranges
-      for (MapAgeRange r : service.getMapAgeRanges()) {
+      for (MapAgeRange r : service.getMapAgeRanges().getIterable()) {
         getLog().info("  Remove map age range - " + r.getName());
         service.removeMapAgeRange(r.getId());
       }

@@ -21,6 +21,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -30,6 +31,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
  * Goal which imports project data from text files.
@@ -276,13 +278,14 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         getLog().info("  " + mapAgeRange.toString());
       }
       getLog().info(
-          "  " + Integer.toString(mappingService.getMapAgeRanges().size())
+          "  " + Integer.toString(mappingService.getMapAgeRanges().getCount())
               + " ageranges added from "
               + Integer.toString(projectAgeRanges.size()) + " map projects.");
 
       // Add map projects
       getLog().info("Adding projects...");
 
+      MetadataService metadataService = new MetadataServiceJpa();
       while ((line = projectsReader.readLine()) != null) {
         String[] fields = line.split("\t");
         MapProjectJpa mapProject = new MapProjectJpa();
@@ -290,9 +293,19 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         mapProject.setRefSetId(fields[1]);
         mapProject.setPublished(fields[2].equals("true") ? true : false);
         mapProject.setSourceTerminology(fields[3]);
-        mapProject.setSourceTerminologyVersion(fields[4]);
+        // Override setting from the file and use the current version in the DB.
+        String terminologyVersion = metadataService.getTerminologyLatestVersions().get(fields[3]);
+        if (terminologyVersion == null) {
+          throw new Exception("Unexpected failure to find current version of " + fields[3]);
+        }
+        mapProject.setSourceTerminologyVersion(terminologyVersion);
         mapProject.setDestinationTerminology(fields[5]);
-        mapProject.setDestinationTerminologyVersion(fields[6]);
+        // Override setting from the file and use the current version in the DB.
+        terminologyVersion = metadataService.getTerminologyLatestVersions().get(fields[5]);
+        if (terminologyVersion == null) {
+          throw new Exception("Unexpected failure to find current version of " + fields[5]);
+        }
+        mapProject.setDestinationTerminologyVersion(terminologyVersion);
         mapProject.setBlockStructure(fields[7].toLowerCase().equals("true")
             ? true : false);
         mapProject.setGroupStructure(fields[8].toLowerCase().equals("true")
@@ -394,6 +407,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
         mappingService.addMapProject(mapProject);
       }
+
+      metadataService.close();
 
       getLog().info(
           "  "

@@ -17,18 +17,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
-import org.ihtsdo.otf.mapping.helpers.MapPrincipleListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
-import org.ihtsdo.otf.mapping.helpers.MapUserPreferencesListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
-import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
@@ -38,7 +37,6 @@ import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -70,13 +68,9 @@ public class MappingServiceRest {
 
 	}
 
-	// ///////////////////////////////////////////////////
-	// Mapping Objects: Retrieval (@GET) functions
-	// - getMapProjects()
-	// - getMapUsers()
-	// - getMapProjectForId(Long mapProjectId)
-	// - findMapProjectsForQuery(String query)
-	// ///////////////////////////////////////////////////
+	/////////////////////////////////////////////////////
+	// SCRUD functions:  Map Projects
+	/////////////////////////////////////////////////////
 
 	/**
 	 * Returns all map projects in either JSON or XML format
@@ -104,6 +98,7 @@ public class MappingServiceRest {
 				mp.getScopeExcludedConcepts().size();
 				mp.getMapAdvices().size();
 				mp.getMapRelations().size();
+				mp.getMapAdministrators().size();
 				mp.getMapLeads().size();
 				mp.getMapSpecialists().size();
 				mp.getMapPrinciples().size();
@@ -122,93 +117,164 @@ public class MappingServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
-
+	
 	/**
-	 * Returns all map leads in either JSON or XML format
+	 * Returns the project for a given id (auto-generated) in JSON format
 	 * 
-	 * @return the map leads
+	 * @param mapProjectId
+	 *            the mapProjectId
+	 * @return the mapProject
 	 */
 	@GET
-	@Path("/user/users/")
-	@ApiOperation(value = "Get all mapping users", notes = "Returns all MapUsers in either JSON or XML format", response = MapUserListJpa.class)
+	@Path("/project/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapUserListJpa getMapUsers() {
+	public MapProject getMapProjectForId(
+			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /user/users");
+				"RESTful call (Mapping): /project/id/"
+						+ mapProjectId.toString());
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			MapUserListJpa mapLeads = (MapUserListJpa) mappingService
-					.getMapUsers();
-			mapLeads.sortBy(new Comparator<MapUser>() {
-				@Override
-				public int compare(MapUser o1, MapUser o2) {
-					return o1.getName().compareTo(o2.getName());
-				}
-			});
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			mapProject.getScopeConcepts().size();
+			mapProject.getScopeExcludedConcepts().size();
+			mapProject.getMapAdvices().size();
+			mapProject.getMapRelations().size();
+			mapProject.getMapAdministrators().size();
+			mapProject.getMapLeads().size();
+			mapProject.getMapSpecialists().size();
+			mapProject.getMapPrinciples().size();
+			mapProject.getPresetAgeRanges().size();
 			mappingService.close();
-			return mapLeads;
+			return mapProject;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Adds a map project
+	 * 
+	 * @param mapProject
+	 *            the map project to be added
+	 * @return returns the added map project object
+	 */
+	@PUT
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/project/add")
+	@ApiOperation(value = "Add a project", notes = "Adds a MapProject", response = MapProjectJpa.class)
+	public MapProject addMapProject(
+			@ApiParam(value = "The map project to add. Must be in Json or Xml format", required = true) MapProjectJpa mapProject) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /project/add");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mp = mappingService.addMapProject(mapProject);
+			mappingService.close();
+
+			// force lazy instantiation of collections
+			mp.getScopeConcepts().size();
+			mp.getScopeExcludedConcepts().size();
+			mp.getMapAdvices().size();
+			mp.getMapRelations().size();
+			mp.getMapAdministrators().size();
+			mp.getMapLeads().size();
+			mp.getMapSpecialists().size();
+			mp.getMapPrinciples().size();
+			mp.getPresetAgeRanges().size();
+
+			return mp;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+
+	}
+	
+	/**
+	 * Updates a map project
+	 * 
+	 * @param mapProject
+	 *            the map project to be added
+	 * @return Response the response
+	 */
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/project/update")
+	@ApiOperation(value = "Update a project", notes = "Updates a map project", response = MapProjectJpa.class)
+	public void updateMapProject(
+			@ApiParam(value = "The map project to update. Must exist in mapping database. Must be in Json or Xml format", required = true) MapProjectJpa mapProject) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /project/update");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.updateMapProject(mapProject);
+			mappingService.close();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+
+	}
+	
+	/**
+	 * Removes a map project.
+	 * 
+	 * @param mapProjectId
+	 *            the map project object to delete
+	 * @return Response the response
+	 */
+	@DELETE
+	@Path("/project/delete")
+	@ApiOperation(value = "Remove a project", notes = "Removes a map project", response = MapProject.class)
+	public void removeMapProject(
+			@ApiParam(value = "Map project object to delete", required = true)MapProjectJpa mapProject) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /project/delete for "
+						+ mapProject.getName());
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.removeMapProject(mapProject.getId());
+			mappingService.close();
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
 
 	/**
-	 * Returns all map user preferences in either JSON or XML format
+	 * Returns all map projects for a lucene query
 	 * 
-	 * @return the map leads
+	 * @param query
+	 *            the string query
+	 * @return the map projects
 	 */
 	@GET
-	@Path("/userPreferences/userPreferences/")
-	@ApiOperation(value = "Get all map user preference objects", notes = "Returns all MapUserPreferences in either JSON or XML format", response = MapUserPreferencesListJpa.class)
+	@Path("/project/query/{String}")
+	@ApiOperation(value = "Find projects by query", notes = "Returns map projects for a query in either JSON or XML format", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapUserPreferencesListJpa getMapUserPreferences() {
+	public SearchResultList findMapProjects(
+			@ApiParam(value = "lucene search string", required = true) @PathParam("String") String query) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /userPreferences/userPreferences");
+				"RESTful call (Mapping): /project/query/" + query);
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			MapUserPreferencesListJpa mapUserPreferences = (MapUserPreferencesListJpa) mappingService
-					.getMapUserPreferences();
-			mapUserPreferences.sortBy(new Comparator<MapUserPreferences>() {
-				@Override
-				public int compare(MapUserPreferences o1, MapUserPreferences o2) {
-					return o1.getMapUser().getName()
-							.compareTo(o2.getMapUser().getName());
-				}
-			});
+			SearchResultList searchResultList = mappingService.findMapProjects(
+					query, new PfsParameterJpa());
 			mappingService.close();
-			return mapUserPreferences;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
+			return searchResultList;
 
-	/**
-	 * Returns all map records in either JSON or XML format
-	 * 
-	 * @return the map records
-	 */
-	@GET
-	@Path("/record/records/")
-	@ApiOperation(value = "Get all records", notes = "Returns all MapRecords in either JSON or XML format", response = MapRecordListJpa.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecordListJpa getMapRecords() {
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
-					.getMapRecords();
-			mapRecordList.sortBy(new Comparator<MapRecord>() {
-				@Override
-				public int compare(MapRecord o1, MapRecord o2) {
-					return o1.getId().compareTo(o2.getId());
-				}
-			});
-			mappingService.close();
-			return mapRecordList;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -243,6 +309,7 @@ public class MappingServiceRest {
 				mapProject.getScopeExcludedConcepts().size();
 				mapProject.getMapAdvices().size();
 				mapProject.getMapRelations().size();
+				mapProject.getMapAdministrators().size();
 				mapProject.getMapLeads().size();
 				mapProject.getMapSpecialists().size();
 				mapProject.getMapPrinciples().size();
@@ -261,72 +328,42 @@ public class MappingServiceRest {
 		}
 	}
 
+	
+	/////////////////////////////////////////////////////
+	// SCRUD functions:  Map Users
+	/////////////////////////////////////////////////////
+
 	/**
-	 * Returns the project for a given id (auto-generated) in JSON format
+	 * Returns all map leads in either JSON or XML format
 	 * 
-	 * @param mapProjectId
-	 *            the mapProjectId
-	 * @return the mapProject
+	 * @return the map leads
 	 */
 	@GET
-	@Path("/project/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
+	@Path("/user/users/")
+	@ApiOperation(value = "Get all mapping users", notes = "Returns all MapUsers in either JSON or XML format", response = MapUserListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapProject getMapProjectForId(
-			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
+	public MapUserListJpa getMapUsers() {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /project/id/"
-						+ mapProjectId.toString());
+				"RESTful call (Mapping): /user/users");
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			MapProject mapProject = mappingService.getMapProject(mapProjectId);
-			mapProject.getScopeConcepts().size();
-			mapProject.getScopeExcludedConcepts().size();
-			mapProject.getMapAdvices().size();
-			mapProject.getMapRelations().size();
-			mapProject.getMapLeads().size();
-			mapProject.getMapSpecialists().size();
-			mapProject.getMapPrinciples().size();
-			mapProject.getPresetAgeRanges().size();
+			MapUserListJpa mapLeads = (MapUserListJpa) mappingService
+					.getMapUsers();
+			mapLeads.sortBy(new Comparator<MapUser>() {
+				@Override
+				public int compare(MapUser o1, MapUser o2) {
+					return o1.getName().compareTo(o2.getName());
+				}
+			});
 			mappingService.close();
-			return mapProject;
+			return mapLeads;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
-
-	/**
-	 * Returns all map projects for a lucene query
-	 * 
-	 * @param query
-	 *            the string query
-	 * @return the map projects
-	 */
-	@GET
-	@Path("/project/query/{String}")
-	@ApiOperation(value = "Find projects by query", notes = "Returns map projects for a query in either JSON or XML format", response = SearchResultList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findMapProjects(
-			@ApiParam(value = "lucene search string", required = true) @PathParam("String") String query) {
-
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /project/query/" + query);
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			SearchResultList searchResultList = mappingService.findMapProjects(
-					query, new PfsParameterJpa());
-			mappingService.close();
-			return searchResultList;
-
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
-	}
-
+	
 	/**
 	 * Returns the user for a given id (auto-generated) in JSON format
 	 * 
@@ -353,6 +390,367 @@ public class MappingServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
+	
+
+	/**
+	 * Adds a map user
+	 * 
+	 * @param mapUser
+	 *            the map user
+	 * @return Response the response
+	 */
+	@PUT
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/user/add")
+	@ApiOperation(value = "Add a user", notes = "Adds a MapUser", response = MapUserJpa.class)
+	public MapUser addMapUser(
+			@ApiParam(value = "The map user to add. Must be in Json or Xml format", required = true) MapUserJpa mapUser) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /user/add");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.addMapUser(mapUser);
+			mappingService.close();
+			return null;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+
+	}
+	
+	/**
+	 * Updates a map user
+	 * 
+	 * @param mapUser
+	 *            the map user to be added
+	 * @return Response the response
+	 */
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/user/update")
+	@ApiOperation(value = "Update a user", notes = "Updates a map user", response = MapUserJpa.class)
+	public void updateMapUser(
+			@ApiParam(value = "The map user to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapUserJpa mapUser) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /user/update");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.updateMapUser(mapUser);
+			mappingService.close();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+
+	/**
+	 * Removes a map user
+	 * 
+	 * @param mapUserId
+	 *            the map user object to delete
+	 * @return Response the response
+	 */
+	@DELETE
+	@Path("/user/delete")
+	@ApiOperation(value = "Remove a user", notes = "Removes a map user", response = MapUser.class)
+	public void removeMapUser(
+			@ApiParam(value = "The map user object to delete", required = true) MapUserJpa mapUser) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /user/delete for user " + mapUser.getName());
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.removeMapUser(mapUser.getId());
+			mappingService.close();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/////////////////////////////////////////////////////
+	// SCRUD functions:  Map Advice, to be added later
+	/////////////////////////////////////////////////////
+	
+	/////////////////////////////////////////////////////
+	// SCRUD functions:  Map Relation
+	/////////////////////////////////////////////////////
+
+	/**
+	 * Returns all map relations in either JSON or XML format
+	 * 
+	 * @return the map relations
+	 */
+	@GET
+	@Path("/relation/relations")
+	@ApiOperation(value = "Get all relations", notes = "Returns all MapRelations in either JSON or XML format", response = MapRelationListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRelationListJpa getMapRelations() {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /relation/relations");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapRelationListJpa mapRelations = (MapRelationListJpa) mappingService
+					.getMapRelations();
+			mapRelations.sortBy(new Comparator<MapRelation>() {
+				@Override
+				public int compare(MapRelation o1, MapRelation o2) {
+					return o1.getName().compareTo(o2.getName());
+				}
+			});
+			mappingService.close();
+			return mapRelations;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/////////////////////////////////////////////////////
+	// SCRUD functions:  Map Principles
+	/////////////////////////////////////////////////////
+	
+	/**
+	 * Returns the map principle for id.
+	 * 
+	 * @param mapPrincipleId
+	 *            the map principle id
+	 * @return the map principle for id
+	 */
+	@GET
+	@Path("/principle/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Get principle", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrinciple.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapPrinciple getMapPrincipleForId(
+			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /principle/id/"
+						+ mapPrincipleId.toString());
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapPrinciple mapPrinciple = mappingService
+					.getMapPrinciple(mapPrincipleId);
+			mappingService.close();
+			return mapPrinciple;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Adds a map user preferences object
+	 * 
+	 * @param mapPrinciple
+	 *            the map user preferences object to be added
+	 * @return result the newly created map user preferences object
+	 */
+	@PUT
+	@Path("/principle/add")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Add a user preferences object", notes = "Adds a MapPrinciple", response = MapPrincipleJpa.class)
+	public MapPrinciple addMapPrinciple(
+			@ApiParam(value = "The map user preferences object to add. Must be in Json or XML format", required = true) MapPrincipleJpa mapPrinciple) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /userPreferences/add");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapPrinciple result = mappingService
+					.addMapPrinciple(mapPrinciple);
+			mappingService.close();
+			return result;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+
+	}
+
+	/**
+	 * Updates a map principle
+	 * 
+	 * @param mapPrinciple
+	 * @return the response
+	 */
+	@POST
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/principle/update")
+	@ApiOperation(value = "Update principle", notes = "Updates a MapPrinciple. Must exist in mapping database. Must be in Json or Xml format", response = MapPrincipleJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public void updateMapPrincipleForId(
+			@ApiParam(value = "Map Principle to update", required = true) MapPrincipleJpa mapPrinciple) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /principle/update");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.updateMapPrinciple(mapPrinciple);
+			mappingService.close();
+
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Removes a set of map user preferences
+	 * @param principleId
+	 *            the id of the map user preferences object to be deleted
+	 * @return Response the response
+	 */
+	@DELETE
+	@Path("/principle/remove")
+	@ApiOperation(value = "Remove user preferences", notes = "Removes a set of map user preferences")
+	public void removeMapPrinciple(
+			@ApiParam(value = "Map user preferences object to remove", required = true) MapPrincipleJpa principle) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /principle/remove for id "
+						+ principle.getId().toString());
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.removeMapPrinciple(principle.getId());
+			mappingService.close();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/////////////////////////////////////////////////////
+	// SCRUD functions:  Map User Preferences
+	/////////////////////////////////////////////////////
+
+	/**
+	 * Gets a map user preferences object for a specified user
+	 * 
+	 * @param userName
+	 * @return result the newly created map user preferences object
+	 */
+	@GET
+	@Path("/userPreferences/{userName}")
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Gets a user preferences object", notes = "Gets a MapUserPreferences object for a given userName", response = MapUserPreferencesJpa.class)
+	public MapUserPreferences getMapUserPreferences(
+			@ApiParam(value = "The map user's user name", required = true) @PathParam("userName") String userName) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call:  /userPreferences/" + userName);
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapUserPreferences result = mappingService
+					.getMapUserPreferences(userName);
+			mappingService.close();
+			return result;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Adds a map user preferences object
+	 * 
+	 * @param mapUserPreferences
+	 *            the map user preferences object to be added
+	 * @return result the newly created map user preferences object
+	 */
+	@PUT
+	@Path("/userPreferences/add")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Add a user preferences object", notes = "Adds a MapUserPreferences", response = MapUserPreferencesJpa.class)
+	public MapUserPreferences addMapUserPreferences(
+			@ApiParam(value = "The map user preferences object to add. Must be in Json or XML format", required = true) MapUserPreferencesJpa mapUserPreferences) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /userPreferences/add");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapUserPreferences result = mappingService
+					.addMapUserPreferences(mapUserPreferences);
+			mappingService.close();
+			return result;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+
+	}
+
+	/**
+	 * Updates a map user preferences object.
+	 * 
+	 * @param mapUserPreferences
+	 *            the map user preferences
+	 * @return null
+	 */
+	@POST
+	@Path("/userPreferences/update")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Update user preferences", notes = "Updates a set of map user preferences", response = MapUserPreferencesJpa.class)
+	public void updateMapUserPreferences(
+			@ApiParam(value = "The map user preferences to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapUserPreferencesJpa mapUserPreferences) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /userPreferences/update");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.updateMapUserPreferences(mapUserPreferences);
+			mappingService.close();
+
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+
+	}
+	
+	/**
+	 * Removes a set of map user preferences
+	 * @param mapUserPreferencesId
+	 *            the id of the map user preferences object to be deleted
+	 * @return Response the response
+	 */
+	@DELETE
+	@Path("/userPreferences/remove")
+	@ApiOperation(value = "Remove user preferences", notes = "Removes a set of map user preferences")
+	public void removeMapUserPreferences(
+			@ApiParam(value = "Map user preferences object to remove", required = true) MapUserPreferencesJpa mapUserPreferences) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /userPreferences/remove for id "
+						+ mapUserPreferences.getId().toString());
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.removeMapUserPreferences(mapUserPreferences.getId());
+			mappingService.close();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/////////////////////////////////////////////////////
+	// SCRUD functions:  Map Record
+	/////////////////////////////////////////////////////
 
 	/**
 	 * Returns the record for a given id (auto-generated) in JSON format
@@ -376,6 +774,92 @@ public class MappingServiceRest {
 			MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
 			mappingService.close();
 			return mapRecord;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+
+	/**
+	 * Adds a map record
+	 * 
+	 * @param mapRecord
+	 *            the map record to be added
+	 * @return Response the response
+	 */
+	@PUT
+	@Path("/record/add")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Add a record", notes = "Adds a MapRecord", response = MapRecordJpa.class)
+	public MapRecord addMapRecord(
+			@ApiParam(value = "The map record to add. Must be in Json or XML format", required = true) MapRecordJpa mapRecord) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /record/add");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecord result = mappingService.addMapRecord(mapRecord);
+			mappingService.close();
+			return result;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Updates a map record
+	 * 
+	 * @param mapRecord
+	 *            the map record to be added
+	 * @return Response the response
+	 */
+	@POST
+	@Path("/record/update")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Update a record", notes = "Updates a map record", response = Response.class)
+	public void updateMapRecord(
+			@ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /record/update");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.updateMapRecord(mapRecord);
+			mappingService.close();
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Removes a map record given the object
+	 * 
+	 * @param mapRecord
+	 *            the map record to delete
+	 * @return Response the response
+	 */
+	@DELETE
+	@Path("/record/delete")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Remove a record", notes = "Removes a map record", response = MapRecordJpa.class)
+	public Response removeMapRecord(
+			@ApiParam(value = "Map Record object to delete", required = true) MapRecordJpa mapRecord) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /record/delete with map record id = "
+						+ mapRecord.toString());
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.removeMapRecord(mapRecord.getId());
+			mappingService.close();
+			return null;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -485,326 +969,7 @@ public class MappingServiceRest {
 			throw new WebApplicationException(e);
 		}
 	}
-
-	// ///////////////////////////////////////////////////
-	// MapProject: Add (@PUT) functions
-	// - addMapProject
-	// - addMapSpecialist
-	// - addMapUser
-	// ///////////////////////////////////////////////////
-
-	/**
-	 * Adds a map project
-	 * 
-	 * @param mapProject
-	 *            the map project to be added
-	 * @return returns the added map project object
-	 */
-	@PUT
-	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/project/add")
-	@ApiOperation(value = "Add a project", notes = "Adds a MapProject", response = MapProjectJpa.class)
-	public MapProject addMapProject(
-			@ApiParam(value = "The map project to add. Must be in Json or Xml format", required = true) MapProjectJpa mapProject) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /project/add");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapProject mp = mappingService.addMapProject(mapProject);
-			mappingService.close();
-
-			// force lazy instantiation of collections
-			mp.getScopeConcepts().size();
-			mp.getScopeExcludedConcepts().size();
-			mp.getMapAdvices().size();
-			mp.getMapRelations().size();
-			mp.getMapLeads().size();
-			mp.getMapSpecialists().size();
-			mp.getMapPrinciples().size();
-			mp.getPresetAgeRanges().size();
-
-			return mp;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
-	}
-
-	/**
-	 * Adds a map lead
-	 * 
-	 * @param mapUser
-	 *            the map user
-	 * @return Response the response
-	 */
-	@PUT
-	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/user/add")
-	@ApiOperation(value = "Add a user", notes = "Adds a MapUser", response = MapUserJpa.class)
-	public Response addMapUser(
-			@ApiParam(value = "The map user to add. Must be in Json or Xml format", required = true) MapUserJpa mapUser) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /user/add");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.addMapUser(mapUser);
-			mappingService.close();
-			return null;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
-	}
-
-	/**
-	 * Adds a map record
-	 * 
-	 * @param mapRecord
-	 *            the map record to be added
-	 * @return Response the response
-	 */
-	@PUT
-	@Path("/record/add")
-	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Add a record", notes = "Adds a MapRecord", response = MapRecordJpa.class)
-	public MapRecord addMapRecord(
-			@ApiParam(value = "The map record to add. Must be in Json or XML format", required = true) MapRecordJpa mapRecord) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /record/add");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapRecord result = mappingService.addMapRecord(mapRecord);
-			mappingService.close();
-			return result;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
-	}
-
-	/**
-	 * Adds a map user preferences object
-	 * 
-	 * @param mapUserPreferences
-	 *            the map user preferences object to be added
-	 * @return result the newly created map user preferences object
-	 */
-	@PUT
-	@Path("/userPreferences/add")
-	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Add a user preferences object", notes = "Adds a MapUserPreferences", response = MapUserPreferencesJpa.class)
-	public MapUserPreferences addMapUserPreferences(
-			@ApiParam(value = "The map user preferences object to add. Must be in Json or XML format", required = true) MapUserPreferencesJpa mapUserPreferences) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /userPreferences/add");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapUserPreferences result = mappingService
-					.addMapUserPreferences(mapUserPreferences);
-			mappingService.close();
-			return result;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
-	}
-
-	/**
-	 * Gets a map user preferences object for a specified user
-	 * 
-	 * @param userName
-	 * @return result the newly created map user preferences object
-	 */
-	@GET
-	@Path("/userPreferences/{userName}")
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Gets a user preferences object", notes = "Gets a MapUserPreferences object for a given userName", response = MapUserPreferencesJpa.class)
-	public MapUserPreferences getMapUserPreferences(
-			@ApiParam(value = "The map user's user name", required = true) @PathParam("userName") String userName) {
-
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call:  /userPreferences/" + userName);
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapUserPreferences result = mappingService
-					.getMapUserPreferences(userName);
-			mappingService.close();
-			return result;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
-	}
-
-	/**
-	 * Gets a map user's role for a given map project
-	 * 
-	 * @param userName
-	 * @param projectId
-	 * @return result the role
-	 */
-	@GET
-	@Path("/userRole/{userName}/projectId/{id:[0-9][0-9]*}")
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Gets the role.", notes = "Gets the role for the given userName and projectId", response = SearchResultList.class)
-	public SearchResultList getMapUserRole(
-			@ApiParam(value = "The map user's user name", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId) {
-
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call:  /userRole/" + userName + "/projectId/" + mapProjectId);
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			SearchResultList result = mappingService
-					.getMapUserRole(userName, mapProjectId);
-			mappingService.close();
-			return result;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
-	}
 	
-	// ///////////////////////////////////////////////////
-	// MapProject: Update (@POST) functions
-	// - updateMapProject
-	// - updateMapSpecialist
-	// - updateMapUser
-	// ///////////////////////////////////////////////////
-
-	/**
-	 * Updates a map project
-	 * 
-	 * @param mapProject
-	 *            the map project to be added
-	 * @return Response the response
-	 */
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("/project/update")
-	@ApiOperation(value = "Update a project", notes = "Updates a map project", response = MapProjectJpa.class)
-	public Response updateMapProject(
-			@ApiParam(value = "The map project to update. Must exist in mapping database. Must be in Json or Xml format", required = true) MapProjectJpa mapProject) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /project/update");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.updateMapProject(mapProject);
-			mappingService.close();
-			return null;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
-	}
-
-	/**
-	 * Updates a map user
-	 * 
-	 * @param mapUser
-	 *            the map user to be added
-	 * @return Response the response
-	 */
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("/user/update")
-	@ApiOperation(value = "Update a user", notes = "Updates a map user", response = MapUserJpa.class)
-	public Response updateMapUser(
-			@ApiParam(value = "The map user to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapUserJpa mapUser) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /user/update");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.updateMapUser(mapUser);
-			mappingService.close();
-			return null;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
-	/**
-	 * Updates a map record
-	 * 
-	 * @param mapRecord
-	 *            the map record to be added
-	 * @return Response the response
-	 */
-	@POST
-	@Path("/record/update")
-	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Update a record", notes = "Updates a map record", response = Response.class)
-	public Response updateMapRecord(
-			@ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /record/update");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.updateMapRecord(mapRecord);
-			mappingService.close();
-			return null;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
-	}
-
-	/**
-	 * Updates a map user preferences object.
-	 * 
-	 * @param mapUserPreferences
-	 *            the map user preferences
-	 * @return null
-	 */
-	@POST
-	@Path("/userPreferences/update")
-	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Update user preferences", notes = "Updates a set of map user preferences", response = MapUserPreferencesJpa.class)
-	public Response updateMapUserPreferences(
-			@ApiParam(value = "The map user preferences to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapUserPreferencesJpa mapUserPreferences) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /userPreferences/update");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.updateMapUserPreferences(mapUserPreferences);
-			mappingService.close();
-			return null;
-
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
-	}
-
 	/**
 	 * Returns the map record revisions.
 	 * 
@@ -834,152 +999,111 @@ public class MappingServiceRest {
 		}
 
 	}
-
-	// ///////////////////////////////////////////////////
-	// MapProject: Removal (@DELETE) functions
-	// - removeMapProject
-	// - removeMapSpecialist
-	// - removeMapUser
-	// ///////////////////////////////////////////////////
-
+	
+	////////////////////////////////////////////
+	// Relation and Advice Computation
+	///////////////////////////////////////////
+	
 	/**
-	 * Removes a map project
+	 * Computes a map relation (if any) for a map entry's current state
 	 * 
-	 * @param mapProjectId
-	 *            the id of the map project to be deleted
+	 * @param mapEntry
+	 *            the map entry
 	 * @return Response the response
 	 */
-	@DELETE
-	@Path("/project/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Remove a project", notes = "Removes a map project", response = MapProject.class)
-	public Response removeMapProject(
-			@ApiParam(value = "Id of map project to remove", required = true) @PathParam("id") Long mapProjectId) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /project/id/"
-						+ mapProjectId.toString());
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.removeMapProject(mapProjectId);
-			mappingService.close();
-			return null;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
-	/**
-	 * Removes a map user
-	 * 
-	 * @param mapUserId
-	 *            the id of the map user to be deleted
-	 * @return Response the response
-	 */
-	@DELETE
-	@Path("/user/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Remove a user", notes = "Removes a map user", response = MapUser.class)
-	public Response removeMapUser(
-			@ApiParam(value = "Id of map user to remove", required = true) @PathParam("id") Long mapUserId) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /user/id/" + mapUserId.toString());
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.removeMapUser(mapUserId);
-			mappingService.close();
-			return null;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
-	/**
-	 * Removes a map record
-	 * 
-	 * @param mapRecordId
-	 *            the id of the map record to be deleted
-	 * @return Response the response
-	 */
-	@DELETE
-	@Path("/record/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Remove a record", notes = "Removes a map record", response = MapRecord.class)
-	public Response removeMapRecord(
-			@ApiParam(value = "Id of map record to remove", required = true) @PathParam("id") Long mapRecordId) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /record/id/" + mapRecordId.toString());
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.removeMapRecord(mapRecordId);
-			mappingService.close();
-			return null;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
-	/**
-	 * Removes a map record
-	 * 
-	 * @param mapRecord
-	 *            the map record to delete
-	 * @return Response the response
-	 */
-	@DELETE
-	@Path("/record/delete")
+	@POST
+	@Path("/relation/compute")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Remove a record", notes = "Removes a map record", response = MapRecordJpa.class)
-	public Response removeMapRecord(
-			@ApiParam(value = "Map Record object to delete", required = true) MapRecordJpa mapRecord) {
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Compute map relation", notes = "Computes a map relation given the current state of a map entry", response = MapRelationJpa.class)
+	public MapRelation computeMapRelation(
+			@ApiParam(value = "", required = true) MapEntryJpa mapEntry) {
 
-		// log call
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /record/delete with map record id = "
-						+ mapRecord.toString());
+				"RESTful call (Mapping): /relation/compute");
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.removeMapRecord(mapRecord.getId());
+			MapRecord mapRecord = mapEntry.getMapRecord();
+
+			ProjectSpecificAlgorithmHandler algorithmHandler = mappingService.getProjectSpecificAlgorithmHandler(mappingService.getMapProject(mapRecord
+					.getMapProjectId()));
+
+			MapRelation mapRelation = algorithmHandler.computeMapRelation(mapRecord, mapEntry);
 			mappingService.close();
-			return null;
+			return mapRelation;
+			
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
-
+	
 	/**
-	 * Removes a set of map user preferences
-	 * @param mapUserPreferencesId
-	 *            the id of the map user preferences object to be deleted
+	 * Computes a map advice (if any) for a map entry's current state
+	 * 
+	 * @param mapEntry
+	 *            the map entry
 	 * @return Response the response
 	 */
-	@DELETE
-	@Path("/userPreferences/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Remove user preferences", notes = "Removes a set of map user preferences", response = MapUserPreferencesJpa.class)
-	public Response removeMapUserPreferences(
-			@ApiParam(value = "Id of map user preferences object to remove", required = true) @PathParam("id") Long mapUserPreferencesId) {
+	@POST
+	@Path("/advice/compute")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Compute map advice", notes = "Computes a map advice given the current state of a map entry", response = MapAdviceJpa.class)
+	public MapAdviceList computeMapAdvice(
+			@ApiParam(value = "", required = true) MapEntryJpa mapEntry) {
 
-		// log call
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /userPreferences/id/"
-						+ mapUserPreferencesId.toString());
+				"RESTful call (Mapping): /advice/compute");
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.removeMapUserPreferences(mapUserPreferencesId);
+			MapRecord mapRecord = mapEntry.getMapRecord();
+
+			ProjectSpecificAlgorithmHandler algorithmHandler = mappingService.getProjectSpecificAlgorithmHandler(mappingService.getMapProject(mapRecord
+					.getMapProjectId()));
+
+			MapAdviceList mapAdviceList = algorithmHandler.computeMapAdvice(mapRecord, mapEntry);
 			mappingService.close();
-			return null;
+			return mapAdviceList;
+			
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 	}
 
+	/////////////////////////////////////////////////
+	// Role Management Services
+	/////////////////////////////////////////////////
+	/**
+	 * Gets a map user's role for a given map project
+	 * 
+	 * @param userName
+	 * @param projectId
+	 * @return result the role
+	 */
+	@GET
+	@Path("/userRole/{userName}/projectId/{id:[0-9][0-9]*}")
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Gets the role.", notes = "Gets the role for the given userName and projectId", response = SearchResultList.class)
+	public SearchResultList getMapUserRole(
+			@ApiParam(value = "The map user's user name", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call:  /userRole/" + userName + "/projectId/" + mapProjectId);
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			SearchResultList result = mappingService
+					.getMapUserRole(userName, mapProjectId);
+			mappingService.close();
+			return result;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
 	// /////////////////////////
 	// Descendant services
 	// /////////////////////////
@@ -1031,158 +1155,10 @@ public class MappingServiceRest {
 		}
 	}
 
-	/**
-	 * Returns the map principle for id.
-	 * 
-	 * @param mapPrincipleId
-	 *            the map principle id
-	 * @return the map principle for id
-	 */
-	@GET
-	@Path("/principle/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Get principle", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrinciple.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapPrinciple getMapPrincipleForId(
-			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /principle/id/"
-						+ mapPrincipleId.toString());
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapPrinciple mapPrinciple = mappingService
-					.getMapPrinciple(mapPrincipleId);
-			mappingService.close();
-			return mapPrinciple;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
-	/**
-	 * Returns all map principles in either JSON or XML format
-	 * 
-	 * @return the map principles
-	 */
-	@GET
-	@Path("/principle/principles/")
-	@ApiOperation(value = "Get all principles", notes = "Returns all MapPrinciples in either JSON or XML format", response = MapPrincipleListJpa.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapPrincipleListJpa getMapPrinciples() {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /principle/principles/");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapPrincipleListJpa mapPrincipleList = (MapPrincipleListJpa) mappingService
-					.getMapPrinciples();
-			mapPrincipleList.sortBy(new Comparator<MapPrinciple>() {
-				@Override
-				public int compare(MapPrinciple o1, MapPrinciple o2) {
-					return o1.getId().compareTo(o2.getId());
-				}
-			});
-			mappingService.close();
-			return mapPrincipleList;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
-	/**
-	 * Updates a map principle
-	 * 
-	 * @param mapPrinciple
-	 * @return the response
-	 */
-	@POST
-	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Path("/principle/update")
-	@ApiOperation(value = "Update principle", notes = "Updates a MapPrinciple. Must exist in mapping database. Must be in Json or Xml format", response = MapPrincipleJpa.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Response updateMapPrincipleForId(
-			@ApiParam(value = "Map Principle to update", required = true) MapPrincipleJpa mapPrinciple) {
-
-		// log call
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /principle/update");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			mappingService.updateMapPrinciple(mapPrinciple);
-			mappingService.close();
-
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-		return null;
-	}
-
-	/**
-	 * Returns all map advices in either JSON or XML format
-	 * 
-	 * @return the map advices
-	 */
-	@GET
-	@Path("/advice/advices")
-	@ApiOperation(value = "Get all advices", notes = "Returns all MapAdvices in either JSON or XML format", response = MapAdviceListJpa.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapAdviceListJpa getMapAdvices() {
-
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /advice/advices");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapAdviceListJpa mapAdviceList = (MapAdviceListJpa) mappingService
-					.getMapAdvices();
-			mapAdviceList.sortBy(new Comparator<MapAdvice>() {
-				@Override
-				public int compare(MapAdvice o1, MapAdvice o2) {
-					return o1.getName().compareTo(o2.getName());
-				}
-			});
-			mappingService.close();
-			return mapAdviceList;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
-	/**
-	 * Returns all map relations in either JSON or XML format
-	 * 
-	 * @return the map relations
-	 */
-	@GET
-	@Path("/relation/relations")
-	@ApiOperation(value = "Get all relations", notes = "Returns all MapRelations in either JSON or XML format", response = MapRelationListJpa.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRelationListJpa getMapRelations() {
-
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /relation/relations");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapRelationListJpa mapRelations = (MapRelationListJpa) mappingService
-					.getMapRelations();
-			mapRelations.sortBy(new Comparator<MapRelation>() {
-				@Override
-				public int compare(MapRelation o1, MapRelation o2) {
-					return o1.getName().compareTo(o2.getName());
-				}
-			});
-			mappingService.close();
-			return mapRelations;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
+	////////////////////////////////////////////
+	// Project Scope Services
+	////////////////////////////////////////////
+	
 	/**
 	 * Find the concepts included in project scope
 	 * 
@@ -1309,71 +1285,14 @@ public class MappingServiceRest {
 
 	}
 
-	/**
-	 * Returns the recently edited map records.
-	 * 
-	 * @param mapProjectId
-	 *            the map project id
-	 * @param userName
-	 *            the user name
-	 * @param pfsParameter
-	 *            the pfs parameter
-	 * @return the recently edited map records
-	 */
-	@POST
-	@Path("/recentRecords/{id}/{userName}")
-	@ApiOperation(value = "Get user's edited map records", notes = "Returns paged recently edited map records for given userName and paging informatoin", response = MapRecordListJpa.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecordListJpa getRecentlyEditedMapRecords(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId,
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
+	
 
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /recentRecords/"
-						+ mapProjectId.toString() + "/" + userName);
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapRecordListJpa recordList = (MapRecordListJpa) mappingService
-					.getRecentlyEditedMapRecords(new Long(mapProjectId),
-							userName, pfsParameter);
-			mappingService.close();
-			return recordList;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
-	/**
-	 * Computes a map relation (if any) for a map entry's current state
-	 * 
-	 * @param mapEntry
-	 *            the map entry
-	 * @return Response the response
-	 */
-	@POST
-	@Path("/relation/compute")
-	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Compute map relation", notes = "Computes a map relation given the current state of a map entry", response = MapRelationJpa.class)
-	public MapRelation computeMapRelation(
-			@ApiParam(value = "", required = true) MapEntryJpa mapEntry) {
-
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /relation/compute");
-
-		try {
-			MappingService mappingService = new MappingServiceJpa();
-			MapRelation mapRelation = mappingService
-					.computeMapRelation(mapEntry);
-			mappingService.close();
-			return mapRelation;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
-
+	
+	
+	
+	///////////////////////////////////////////////////////
+	// Tree Position Routines for Terminology Browser
+	///////////////////////////////////////////////////////
 	/**
 	 * Finds tree positions for concept.
 	 * 
@@ -1426,11 +1345,11 @@ public class MappingServiceRest {
 			return treePositionList;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
-		}
+		} 
 	}
 
 	/**
-	 * Gets root-level tree positions for terminology.
+	 * Gets the root-level tree positions for a given terminology and version
 	 * 
 	 * @param terminology
 	 *            the terminology
@@ -1530,8 +1449,51 @@ public class MappingServiceRest {
 		}
 	}
 
+	////////////////////////////////////////////////////
+	// Workflow-related routines
+	///////////////////////////////////////////////////
+	
+	
 	/**
-	 * Returns map records in conflict for a given conflict lead record.
+	 * Returns records recently edited for a project and user.
+	 * Used by editedList widget.
+	 * 
+	 * @param mapProjectId
+	 *            the map project id
+	 * @param userName
+	 *            the user name
+	 * @param pfsParameter
+	 *            the pfs parameter
+	 * @return the recently edited map records
+	 */
+	@POST
+	@Path("/recentRecords/{id}/{userName}")
+	@ApiOperation(value = "Get user's edited map records", notes = "Returns paged recently edited map records for given userName and paging informatoin", response = MapRecordListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordListJpa getRecentlyEditedMapRecords(
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId,
+			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /recentRecords/"
+						+ mapProjectId.toString() + "/" + userName);
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecordListJpa recordList = (MapRecordListJpa) mappingService
+					.getRecentlyEditedMapRecords(new Long(mapProjectId),
+							userName, pfsParameter);
+			mappingService.close();
+			return recordList;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Returns the origin map records resulting in a conflict assigned to a lead
+	 * Used by compareRecords widget
 	 * 
 	 * @param mapRecordId
 	 * @return map records in conflict for a given conflict lead record
@@ -1539,8 +1501,8 @@ public class MappingServiceRest {
 	 */
 	@GET
 	@Path("/record/conflictRecords/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Get specialist records in conflict", notes = "Return's a list of records in conflict for a lead's conflict resolution record", response = MapRecordListJpa.class)
-	public MapRecordList getRecordsInConflict(
+	@ApiOperation(value = "Get specialist records for assigned conflict", notes = "Return's a list of records in conflict for a lead's conflict resolution record", response = MapRecordListJpa.class)
+	public MapRecordList getOriginRecordsForConflict(
 			@ApiParam(value = "id of the map lead's conflict-in-progress record", required = true) @PathParam("id") Long mapRecordId)
 			throws Exception {
 
@@ -1551,47 +1513,10 @@ public class MappingServiceRest {
 		MapRecordList records = new MapRecordListJpa();
 
 		MappingService mappingService = new MappingServiceJpa();
-		records = mappingService.getRecordsInConflict(mapRecordId);
+		records = mappingService.getOriginRecordsForConflict(mapRecordId);
 		mappingService.close();
 
 		return records;
 	}
 
-	/**
-	 * Compare map records.
-	 * 
-	 * @param mapRecordId1
-	 *            the map record id1
-	 * @param mapRecordId2
-	 *            the map record id2
-	 * @return the validation result
-	 */
-	@GET
-	@Path("/record/compare/{recordId1}/{recordId2}/")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public ValidationResult compareMapRecords(
-			@ApiParam(value = "id of first map record", required = true) @PathParam("recordId1") Long mapRecordId1,
-			@ApiParam(value = "id of second map record", required = true) @PathParam("recordId2") Long mapRecordId2)
-			 {
-	  try {
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /record/compare/"
-						+ mapRecordId1.toString() + "/"
-						+ mapRecordId2.toString());
-		MappingService mappingService = new MappingServiceJpa();
-		MapRecord mapRecord1, mapRecord2;
-		try {
-			mapRecord1 = mappingService.getMapRecord(mapRecordId1);
-			mapRecord2 = mappingService.getMapRecord(mapRecordId2);
-
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-
-		return mappingService.compareMapRecords(mapRecord1, mapRecord2);
-	  } catch (Exception e) {
-	    throw new WebApplicationException(e);
-	  }
-	}
 }

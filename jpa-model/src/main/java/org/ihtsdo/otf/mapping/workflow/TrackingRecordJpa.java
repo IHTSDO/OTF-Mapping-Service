@@ -19,13 +19,13 @@ import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 
 /**
- * Default implementatino of {@link WorkflowTrackingRecordJpa}.
+ * Default implementatino of {@link TrackingRecordJpa}.
  */
 @Entity
-@Table(name = "workflow_tracking_records", uniqueConstraints = @UniqueConstraint(columnNames = {
+@Table(name = "tracking_records", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "terminology", "terminologyVersion", "mapProject_id"
 }))
-public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
+public class TrackingRecordJpa implements TrackingRecord {
 
   /** The id. */
   @Id
@@ -143,7 +143,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#setDefaultPreferredName
+   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#setDefaultPreferredName
    * (java.lang.String)
    */
   @Override
@@ -155,7 +155,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#getDefaultPreferredName
+   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#getDefaultPreferredName
    * ()
    */
   @Override
@@ -167,7 +167,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#setSortKey(java.
+   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#setSortKey(java.
    * lang.String)
    */
   @Override
@@ -178,7 +178,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#getSortKey()
+   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getSortKey()
    */
   @Override
   public String getSortKey() {
@@ -199,7 +199,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
   /*
    * (non-Javadoc)
    * 
-   * @see org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#getMapRecordIds()
+   * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getMapRecordIds()
    */
   @Override
   public Set<Long> getMapRecordIds() {
@@ -210,7 +210,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#setMapRecordIds(java
+   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#setMapRecordIds(java
    * .util.Set)
    */
   @Override
@@ -222,14 +222,14 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#addMapRecord(org
+   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#addMapRecord(org
    * .ihtsdo.otf.mapping.model.MapRecord)
    */
   @Override
   public void addMapRecordId(Long mapRecordId) {
     if (this.mapRecordIds == null)
       this.mapRecordIds = new HashSet<>();
-    System.out.println("WorkflowTrackingRecord:  Adding map record id: " + mapRecordId.toString());
+    System.out.println("TrackingRecord:  Adding map record id: " + mapRecordId.toString());
     this.mapRecordIds.add(mapRecordId);
   }
 
@@ -237,7 +237,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
    * (non-Javadoc)
    * 
    * @see
-   * org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord#removeMapRecord(
+   * org.ihtsdo.otf.mapping.workflow.TrackingRecord#removeMapRecord(
    * org.ihtsdo.otf.mapping.model.MapRecord)
    */
   @Override
@@ -247,7 +247,7 @@ public class WorkflowTrackingRecordJpa implements WorkflowTrackingRecord {
 
   @Override
 public String toString() {
-	return "WorkflowTrackingRecordJpa [id=" + id + ", mapProject=" + mapProject.getId()
+	return "TrackingRecordJpa [id=" + id + ", mapProject=" + mapProject.getId()
 			+ ", terminology=" + terminology + ", terminologyId="
 			+ terminologyId + ", terminologyVersion=" + terminologyVersion
 			+ ", defaultPreferredName=" + defaultPreferredName + ", sortKey="
@@ -289,7 +289,7 @@ public boolean equals(Object obj) {
 		return false;
 	if (getClass() != obj.getClass())
 		return false;
-	WorkflowTrackingRecordJpa other = (WorkflowTrackingRecordJpa) obj;
+	TrackingRecordJpa other = (TrackingRecordJpa) obj;
 	if (defaultPreferredName == null) {
 		if (other.defaultPreferredName != null)
 			return false;
