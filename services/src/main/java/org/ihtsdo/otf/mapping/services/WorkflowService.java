@@ -5,7 +5,7 @@ import java.util.Set;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
-import org.ihtsdo.otf.mapping.helpers.TrackingRecordListJpa;
+import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -39,7 +39,7 @@ public interface WorkflowService {
 	 * @return the workflow tracking records
 	 * @throws Exception 
 	 */
-	public TrackingRecordListJpa getTrackingRecords() throws Exception;
+	public TrackingRecordList getTrackingRecords() throws Exception;
 
 	/**
 	 * Gets the workflow tracking records for map project.
@@ -49,7 +49,7 @@ public interface WorkflowService {
 	 * @return the workflow tracking records for map project
 	 * @throws Exception 
 	 */
-	public TrackingRecordListJpa getTrackingRecordsForMapProject(
+	public TrackingRecordList getTrackingRecordsForMapProject(
 			MapProject mapProject) throws Exception;
 
 	/**

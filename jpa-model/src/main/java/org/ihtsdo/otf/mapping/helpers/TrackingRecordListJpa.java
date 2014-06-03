@@ -5,16 +5,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
-import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
 /**
  * Container for map projects.
  */
-public class TrackingRecordListJpa {
+public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord> implements TrackingRecordList {
 
   /** The map projects. */
   private List<TrackingRecord> trackingRecords =
@@ -32,6 +28,7 @@ public class TrackingRecordListJpa {
    * 
    * @param trackingRecord the map project
    */
+  @Override
   public void addTrackingRecord(
     TrackingRecord trackingRecord) {
     trackingRecords.add(trackingRecord);
@@ -42,6 +39,7 @@ public class TrackingRecordListJpa {
    * 
    * @param trackingRecord the map project
    */
+  @Override
   public void removeTrackingRecord(
     TrackingRecord trackingRecord) {
     trackingRecords.remove(trackingRecord);
@@ -52,6 +50,7 @@ public class TrackingRecordListJpa {
    * 
    * @param trackingRecords the new map projects
    */
+  @Override
   public void setTrackingRecords(
     List<TrackingRecord> trackingRecords) {
     this.trackingRecords = new ArrayList<>();
@@ -80,16 +79,41 @@ public class TrackingRecordListJpa {
    * 
    * @return the map projects
    */
+  @Override
   public List<TrackingRecord> getTrackingRecords() {
     return trackingRecords;
   }
 
-  /**
-   * Return the count as an xml element
-   * @return the number of objects in the list
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ResultList#getCount()
    */
+  @Override
   public int getCount() {
     return trackingRecords.size();
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ResultList#sortBy(java.util.Comparator)
+   */
+  @Override
+  public void sortBy(Comparator<TrackingRecord> comparator) {
+    Collections.sort(trackingRecords, comparator);    
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ResultList#contains(java.lang.Object)
+   */
+  @Override
+  public boolean contains(TrackingRecord element) {
+    return trackingRecords.contains(element);
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.helpers.ResultList#getIterable()
+   */
+  @Override
+  public Iterable<TrackingRecord> getIterable() {
+    return trackingRecords;
   }
 
 }
