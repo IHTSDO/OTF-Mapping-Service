@@ -21,6 +21,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
@@ -158,7 +159,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public TrackingRecordListJpa getTrackingRecords() throws Exception {
+	public TrackingRecordList getTrackingRecords() throws Exception {
 
 		TrackingRecordListJpa trackingRecordList = new TrackingRecordListJpa();
 		
@@ -177,7 +178,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public TrackingRecordListJpa getTrackingRecordsForMapProject(
+	public TrackingRecordList getTrackingRecordsForMapProject(
 			MapProject mapProject) throws Exception {
 		
 		TrackingRecordListJpa trackingRecordList = new TrackingRecordListJpa();
