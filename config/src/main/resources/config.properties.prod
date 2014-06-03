@@ -81,5 +81,8 @@ export.output.dir=/home/ihtsdo/data/ihtsdo-project-data
 #
 base.url=
 
-
+#
+# URL for security service
+#
+ihtsdo.security.url=http://usermanagement.ihtsdotools.org:8080/security-web/query/
 
