@@ -22,7 +22,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
  * Default implementatino of {@link TrackingRecordJpa}.
  */
 @Entity
-@Table(name = "workflow_tracking_records", uniqueConstraints = @UniqueConstraint(columnNames = {
+@Table(name = "tracking_records", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "terminology", "terminologyVersion", "mapProject_id"
 }))
 public class TrackingRecordJpa implements TrackingRecord {
