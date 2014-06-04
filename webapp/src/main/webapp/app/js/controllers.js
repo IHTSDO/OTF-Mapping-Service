@@ -8,7 +8,6 @@ var root_url = "/mapping-rest/";
 var root_mapping = root_url + "mapping/";
 var root_content = root_url + "content/";
 var root_metadata = root_url + "metadata/";
-var root_validation = root_url + "validation/";
 var root_workflow = root_url + "workflow/";
 var root_security = root_url + "security/";
 

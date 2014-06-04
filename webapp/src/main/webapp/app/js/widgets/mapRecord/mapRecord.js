@@ -348,7 +348,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		console.debug("Validating the map record");
 		// validate the record
 		$http({
-			url: root_validation + "record/validate",
+			url: root_mapping + "record/validate",
 			dataType: "json",
 			data: $scope.record,
 			method: "POST",
