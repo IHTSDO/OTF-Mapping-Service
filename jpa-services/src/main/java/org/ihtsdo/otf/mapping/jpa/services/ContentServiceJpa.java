@@ -81,7 +81,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * org.ihtsdo.otf.mapping.services.ContentService#getConcept(java.lang.Long)
 	 */
 	@Override
-	public Concept getConcept(Long terminologyId) {
+	public Concept getConcept(Long terminologyId) throws Exception {
 		Concept c = manager.find(ConceptJpa.class, terminologyId);
 		return c;
 	}
@@ -91,7 +91,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	@Override
 	public Concept getConcept(String terminologyId, String terminology,
-			String terminologyVersion) {
+			String terminologyVersion) throws Exception {
 		javax.persistence.Query query =
 				manager
 				.createQuery("select c from ConceptJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
@@ -237,7 +237,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	@Override
 	public SearchResultList findAllConcepts(String terminology,
-			String terminologyVersion) {
+			String terminologyVersion) throws Exception {
 		javax.persistence.Query query =
 				manager
 				.createQuery("select c.id, c.terminologyId, c.defaultPreferredName from ConceptJpa c where terminologyVersion = :terminologyVersion and terminology = :terminology");
@@ -260,7 +260,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	@Override
 	public SearchResultList findDescendants(String terminologyId,
-			String terminology, String terminologyVersion, String typeId) {
+			String terminology, String terminologyVersion, String typeId) throws Exception {
 
 		return findDescendants(terminologyId, terminology, terminologyVersion, typeId, null);
 	}
@@ -274,7 +274,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	@Override
 	public SearchResultList findDescendants(String terminologyId,
-			String terminology, String terminologyVersion, String typeId, PfsParameter pfsParameter) {
+			String terminology, String terminologyVersion, String typeId, PfsParameter pfsParameter) throws Exception {
 
 		// convert concept set to search results
 		SearchResultList results = new SearchResultListJpa();
@@ -301,7 +301,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	@Override
 	public Set<Concept> getDescendants(String terminologyId, String terminology,
-			String terminologyVersion, String typeId) {
+			String terminologyVersion, String typeId) throws Exception {
 
 		return getDescendants(terminologyId, terminology, terminologyVersion, typeId, null);
 	}
@@ -315,7 +315,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	@Override
 	public Set<Concept> getDescendants(String terminologyId, String terminology,
-			String terminologyVersion, String typeId, PfsParameter pfsParameter) {
+			String terminologyVersion, String typeId, PfsParameter pfsParameter) throws Exception {
 
 		Queue<Concept> conceptQueue = new LinkedList<>();
 		Set<Concept> conceptSet = new HashSet<>();
@@ -388,7 +388,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	@Override
 	public SearchResultList findChildren(String terminologyId,
-			String terminology, String terminologyVersion, Long typeId) {
+			String terminology, String terminologyVersion, Long typeId) throws Exception {
 
 		SearchResultList children = new SearchResultListJpa();
 
@@ -433,7 +433,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	@Override
 	public SearchResultList findTreePositionsForConcept(String terminologyId,
-			String terminology, String terminologyVersion) {
+			String terminology, String terminologyVersion) throws Exception {
 		javax.persistence.Query query =
 				manager
 				.createQuery("select tp.id, tp.ancestorPath from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId");
@@ -464,7 +464,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	@Override
 	public SearchResultList findDescendantsFromTreePostions(String terminologyId,
-			String terminology, String terminologyVersion) {
+			String terminology, String terminologyVersion) throws Exception {
 
 		Map<String, String> terminologyIdToDefaultPns = new HashMap<>();
 		Map<String, Long> terminologyIdToHibernateIds = new HashMap<>();
@@ -517,7 +517,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * lang.String, java.lang.String)
 	 */
 	@Override
-	public void clearTreePositions(String terminology, String terminologyVersion) {
+	public void clearTreePositions(String terminology, String terminologyVersion) throws Exception  {
 
 		javax.persistence.Query query =
 				manager
@@ -547,177 +547,179 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	int computeTreePositionCommitCt;
 
 	@Override
-	public void computeTreePositions(String terminology,
-			String terminologyVersion, String typeId, String rootId) throws Exception {
-		Logger.getLogger(this.getClass()).info(
-				"Starting computeTreePositions - " + rootId + ", " + terminology);
-	
+    public void computeTreePositions(String terminology,
+                  String terminologyVersion, String typeId, String rootId) throws Exception {
+           Logger.getLogger(this.getClass()).info(
+                        "Starting computeTreePositions - " + rootId + ", " + terminology);
+    
 
-		// initialize global variables
-		computeTreePositionGlobalCount = 0;
-		computeTreePositionTransaction = manager.getTransaction();
-		computeTreePositionMaxMemoryUsage = 0L;
-		computeTreePositionLastTime = System.currentTimeMillis();
-		computeTreePositionCommitCt = 5000;
+           // initialize global variables
+           computeTreePositionGlobalCount = 0;
+           computeTreePositionTransaction = manager.getTransaction();
+           computeTreePositionMaxMemoryUsage = 0L;
+           computeTreePositionLastTime = System.currentTimeMillis();
+           computeTreePositionCommitCt = 5000;
 
-		
-		//System.setOut(new PrintStream(new FileOutputStream("C:/Users/Patrick/Documents/WCI/Working Notes/TreePositionRuns/computeTreePositions_" + System.currentTimeMillis() + ".txt")));
-		//System.out.println("ComputeTreePositions run for " +(new Date()).toString());
+           
+           //System.setOut(new PrintStream(new FileOutputStream("C:/Users/Patrick/Documents/WCI/Working Notes/TreePositionRuns/computeTreePositions_" + System.currentTimeMillis() + ".txt")));
+           //System.out.println("ComputeTreePositions run for " +(new Date()).toString());
 
 
-		// get the root concept
-		Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
+           // get the root concept
+           Concept rootConcept = getConcept(rootId, terminology, terminologyVersion);
 
-		// begin the transaction
-		computeTreePositionTransaction.begin();
+           // begin the transaction
+           computeTreePositionTransaction.begin();
 
-		// begin the recursive computation
-		computeTreePositionsHelper(rootConcept,
-				typeId, 
-				""); // initially empty ancestor path
+           // begin the recursive computation
+           computeTreePositionsHelper(rootConcept,
+                        typeId, 
+                        ""); // initially empty ancestor path
 
-		// commit any remaining tree positions
-		computeTreePositionTransaction.commit();
+           // commit any remaining tree positions
+           computeTreePositionTransaction.commit();
 
-		Runtime runtime = Runtime.getRuntime();
-		Logger.getLogger(this.getClass()).info(
-				"Final Tree Positions: " + computeTreePositionGlobalCount + ", MEMORY USAGE: " + runtime.totalMemory());
+           Runtime runtime = Runtime.getRuntime();
+           Logger.getLogger(this.getClass()).info(
+                        "Final Tree Positions: " + computeTreePositionGlobalCount + ", MEMORY USAGE: " + runtime.totalMemory());
 
-	}
+    }
 
-	/**
-	 * Recursive function to create tree positions and compute children/descendant count at each tree position.
-	 * 
-	 * NOTE:  	This function is designed to keep as little Concept information in storage as possible.
-	 * 			See inline notes.
-	 * 
-	 * @param terminologyId
-	 * @param terminology
-	 * @param terminologyVersion
-	 * @param typeId
-	 * @param ancestorPath
-	 * @return tree positions at this level
-	 */
-	private Set<Long> computeTreePositionsHelper(Concept concept, String typeId, String ancestorPath) {
+    /**
+    * Recursive function to create tree positions and compute children/descendant count at each tree position.
+    * 
+     * NOTE:      This function is designed to keep as little Concept information in storage as possible.
+    *                   See inline notes.
+    * 
+     * @param terminologyId
+    * @param terminology
+    * @param terminologyVersion
+    * @param typeId
+    * @param ancestorPath
+    * @return tree positions at this level
+     * @throws Exception 
+    */
+    private Set<Long> computeTreePositionsHelper(Concept concept, String typeId, String ancestorPath) throws Exception {
 
-		Set<Long> descConceptIds = new HashSet<>();
+           Set<Long> descConceptIds = new HashSet<>();
 
-		// if concept is active
-		if (concept.isActive()) {
+           // if concept is active
+           if (concept.isActive()) {
 
-			// instantiate the tree position
-			TreePosition tp = new TreePositionJpa();
+                  // instantiate the tree position
+                  TreePosition tp = new TreePositionJpa();
 
-			// logging information
-			int ancestorCount = ancestorPath.length() - ancestorPath.replaceAll("~", "").length();
-			@SuppressWarnings("unused")
-      String loggerPrefix = "";
-			for (int i = 0; i < ancestorCount; i++) loggerPrefix += "  ";
+                  // logging information
+                  int ancestorCount = ancestorPath.length() - ancestorPath.replaceAll("~", "").length();
+                  @SuppressWarnings("unused")
+   String loggerPrefix = "";
+                  for (int i = 0; i < ancestorCount; i++) loggerPrefix += "  ";
 
-			tp.setAncestorPath(ancestorPath);
-			tp.setTerminology(concept.getTerminology());
-			tp.setTerminologyVersion(concept.getTerminologyVersion());
-			tp.setTerminologyId(concept.getTerminologyId());
-			tp.setDefaultPreferredName(concept.getDefaultPreferredName());
+                  tp.setAncestorPath(ancestorPath);
+                  tp.setTerminology(concept.getTerminology());
+                  tp.setTerminologyVersion(concept.getTerminologyVersion());
+                  tp.setTerminologyId(concept.getTerminologyId());
+                  tp.setDefaultPreferredName(concept.getDefaultPreferredName());
 
-			// persist the tree position
-			manager.persist(tp);
+                  // persist the tree position
+                  manager.persist(tp);
 
-			//System.out.println(loggerPrefix + 
-			//		"Creating tree position " + tp.toString());
+                  //System.out.println(loggerPrefix + 
+                  //            "Creating tree position " + tp.toString());
 
-			// construct the ancestor path terminating at this concept
-			String conceptPath = (ancestorPath.equals("") ?
-					concept.getTerminologyId() :
-						ancestorPath + "~" + concept.getTerminologyId());
+                  // construct the ancestor path terminating at this concept
+                  String conceptPath = (ancestorPath.equals("") ?
+                               concept.getTerminologyId() :
+                                      ancestorPath + "~" + concept.getTerminologyId());
 
-			// construct the list of terminology ids representing valid children
-			Set<Long> childrenTerminologyIds = new HashSet<>();
-			
-			// cycle over all relationships
-			for (Relationship rel : concept.getInverseRelationships()) {
+                  // construct the list of terminology ids representing valid children
+                  Set<Long> childrenConceptIds = new HashSet<>();
+                  
+                  // cycle over all relationships
+                  for (Relationship rel : concept.getInverseRelationships()) {
 
-				// if relationship is active, typeId equals the provided typeId, and
-				// the source concept is active
-				if (rel.isActive() && rel.getTypeId().toString().equals(typeId)
-						&& rel.getSourceConcept().isActive()) {
+                        // if relationship is active, typeId equals the provided typeId, and
+                        // the source concept is active
+                        if (rel.isActive() && rel.getTypeId().toString().equals(typeId)
+                                      && rel.getSourceConcept().isActive()) {
 
-					// get the child concept
-					Concept childConcept = rel.getSourceConcept();
+                               // get the child concept
+                               Concept childConcept = rel.getSourceConcept();
 
-					// add this terminology id to the set of children
-					childrenTerminologyIds.add(childConcept.getId());
-					
-					// add this terminology id to the set of descendants
-					descConceptIds.add(childConcept.getId());
-				}
-			}
-		
-			// iterate over the child terminology ids
-			// this iteration is entirely local and depends on no managed objects
-			for(Long childTerminologyId : childrenTerminologyIds) {
+                               // add this terminology id to the set of children
+                               childrenConceptIds.add(childConcept.getId());
+                               
+                               // add this terminology id to the set of descendants
+                               descConceptIds.add(childConcept.getId());
+                        }
+                  }
+           
+                  // iterate over the child terminology ids
+                  // this iteration is entirely local and depends on no managed objects
+                  for(Long childConceptId : childrenConceptIds) {
 
-				// call helper function on child concept
-				// add the results to the local descendant set
-				descConceptIds.addAll(
-						computeTreePositionsHelper(getConcept(childTerminologyId),
-								typeId, 
-								conceptPath));
+                        // call helper function on child concept
+                        // add the results to the local descendant set
+                        descConceptIds.addAll(
+                                      computeTreePositionsHelper(getConcept(childConceptId),
+                                                    typeId, 
+                                                    conceptPath));
 
-			} 
-			
-			/*System.out.println(loggerPrefix + 
-					" Calculation complete (" + computeTreePositionGlobalCount + "): " + tp.toString());
-			System.out.println(loggerPrefix + 
-					" " + childrenTerminologyIds.size() + " children, " + descendantConcepts.size() + " descendants");
+                  } 
+                  
+                  /*System.out.println(loggerPrefix + 
+                               " Calculation complete (" + computeTreePositionGlobalCount + "): " + tp.toString());
+                  System.out.println(loggerPrefix + 
+                               " " + childrenTerminologyIds.size() + " children, " + descendantConcepts.size() + " descendants");
 */
-			// set the children count
-			tp.setChildrenCount(childrenTerminologyIds.size());
+                  // set the children count
+                  tp.setChildrenCount(childrenConceptIds.size());
 
-			// set the descendant count
-			tp.setDescendantCount(descConceptIds.size());
+                  // set the descendant count
+                  tp.setDescendantCount(descConceptIds.size());
 
-			// routinely commit and force clear the manager
-			// any existing recursive threads are entirely dependent on local variables
-			if (++computeTreePositionGlobalCount % computeTreePositionCommitCt == 0) { 
+                  // routinely commit and force clear the manager
+                  // any existing recursive threads are entirely dependent on local variables
+                  if (++computeTreePositionGlobalCount % computeTreePositionCommitCt == 0) { 
 
-				// commit the transaction
-				computeTreePositionTransaction.commit();
-				
-				// clear the manager
-				manager.clear();
-				
-				// begin a new transaction
-				computeTreePositionTransaction.begin();
+                        // commit the transaction
+                        computeTreePositionTransaction.commit();
+                        
+                        // clear the manager
+                        manager.clear();
+                        
+                        // begin a new transaction
+                        computeTreePositionTransaction.begin();
 
-				// report progress and memory usage
-				Runtime runtime = Runtime.getRuntime();
-				float elapsedTime =  System.currentTimeMillis() - computeTreePositionLastTime;
-				elapsedTime = elapsedTime / 1000;
-				computeTreePositionLastTime = System.currentTimeMillis();
-			
-				if (runtime.totalMemory() > computeTreePositionMaxMemoryUsage) computeTreePositionMaxMemoryUsage = runtime.totalMemory();
-				
-				Logger.getLogger(ContentServiceJpa.class).info(
-						"\t" + System.currentTimeMillis() / 1000 + 
-						"\t" + computeTreePositionGlobalCount +
-						"\t" + Math.floor(runtime.totalMemory() / 1024 / 1024) + 
-						"\t" + Double.toString(computeTreePositionCommitCt / elapsedTime));
-						
-				/*System.out.println(
-						"*** Tree Positions: " + computeTreePositionGlobalCount 
-						+ ", Current memory usage: " + Math.floor(runtime.totalMemory() / 1024 / 1024) 
-						+ "MB, Commit interval: " 
-						+ "s, Average speed: " + Double.toString(computeTreePositionCommitCt / elapsedTime) + " tree positisions / s");*/
+                        // report progress and memory usage
+                        Runtime runtime = Runtime.getRuntime();
+                        float elapsedTime =  System.currentTimeMillis() - computeTreePositionLastTime;
+                        elapsedTime = elapsedTime / 1000;
+                        computeTreePositionLastTime = System.currentTimeMillis();
+                  
+                        if (runtime.totalMemory() > computeTreePositionMaxMemoryUsage) computeTreePositionMaxMemoryUsage = runtime.totalMemory();
+                        
+                        Logger.getLogger(ContentServiceJpa.class).info(
+                                      "\t" + System.currentTimeMillis() / 1000 + 
+                                      "\t" + computeTreePositionGlobalCount +
+                                      "\t" + Math.floor(runtime.totalMemory() / 1024 / 1024) + 
+                                      "\t" + Double.toString(computeTreePositionCommitCt / elapsedTime));
+                                      
+                        /*System.out.println(
+                                      "*** Tree Positions: " + computeTreePositionGlobalCount 
+                                      + ", Current memory usage: " + Math.floor(runtime.totalMemory() / 1024 / 1024) 
+                                      + "MB, Commit interval: " 
+                                      + "s, Average speed: " + Double.toString(computeTreePositionCommitCt / elapsedTime) + " tree positisions / s");*/
 
-			}
-		}
+                  }
+           }
 
-		// return the descendant concept set
-		// note that the local child and descendant set will be garbage collected
-		return descConceptIds;
+           // return the descendant concept set
+           // note that the local child and descendant set will be garbage collected
+           return descConceptIds;
 
-	}
+    }
+
 
 
 
@@ -728,7 +730,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * org.ihtsdo.otf.mapping.services.ContentService#getTransactionPerOperation()
 	 */
 	@Override
-	public boolean getTransactionPerOperation() {
+	public boolean getTransactionPerOperation() throws Exception {
 		return transactionPerOperation;
 	}
 
@@ -740,7 +742,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * (boolean)
 	 */
 	@Override
-	public void setTransactionPerOperation(boolean transactionPerOperation) {
+	public void setTransactionPerOperation(boolean transactionPerOperation) throws Exception {
 		this.transactionPerOperation = transactionPerOperation;
 	}
 
@@ -753,7 +755,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	@SuppressWarnings("unchecked")
 	@Override
 	public TreePositionList getRootTreePositionsForTerminology(
-			String terminology, String terminologyVersion) {
+			String terminology, String terminologyVersion) throws Exception {
 		List<TreePosition> treePositions =
 				manager
 				.createQuery(
@@ -777,7 +779,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	@SuppressWarnings("unchecked")
 	@Override
 	public TreePositionList getTreePositionsForConcept(String terminologyId,
-			String terminology, String terminologyVersion) {
+			String terminology, String terminologyVersion) throws Exception {
 
 		List<TreePosition> treePositions =
 				manager
@@ -801,7 +803,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public TreePositionList getTreePositionChildren(TreePosition treePosition) {
+	public TreePositionList getTreePositionChildren(TreePosition treePosition) throws Exception {
 		List<TreePosition> treePositions =
 				manager
 				.createQuery(
@@ -829,7 +831,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	@Override
 	public TreePositionList getLocalTrees(String terminologyId,
-			String terminology, String terminologyVersion) {
+			String terminology, String terminologyVersion) throws Exception {
 		// get tree positions for concept (may be multiple)
 		TreePositionList localTrees =
 				getTreePositionsForConcept(terminologyId, terminology,
@@ -1014,7 +1016,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * @return the full lucene query text
 	 */
 	private static String constructTreePositionQuery(String terminology,
-			String terminologyVersion, String query) {
+			String terminologyVersion, String query)  throws Exception{
 
 		String full_query;
 

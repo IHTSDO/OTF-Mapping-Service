@@ -25,6 +25,7 @@
       </activation>
       <build>
         <plugins>
+
           <!-- Execute the mojo -->
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>

@@ -6,11 +6,11 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.model.MapProject;
 
 /**
- * The Interface WorkflowTrackingRecord.
+ * The Interface TrackingRecord.
  * 
  * @author ${author}
  */
-public interface WorkflowTrackingRecord {
+public interface TrackingRecord {
 
   /**
    * Returns the id.
