@@ -232,32 +232,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public SearchResultList findAllConcepts(String terminology,
-			String terminologyVersion) throws Exception {
-		javax.persistence.Query query =
-				manager
-				.createQuery("select c.id, c.terminologyId, c.defaultPreferredName from ConceptJpa c where terminologyVersion = :terminologyVersion and terminology = :terminology");
-		query.setParameter("terminology", terminology);
-		query.setParameter("terminologyVersion", terminologyVersion);
-		SearchResultList searchResultList = new SearchResultListJpa();
-		for (Object result : query.getResultList()) {
-			Object[] values = (Object[]) result;
-			SearchResult searchResult = new SearchResultJpa();
-			searchResult.setId(Long.parseLong(values[0].toString()));
-			searchResult.setTerminologyId(values[1].toString());
-			searchResult.setTerminology(terminology);
-			searchResult.setTerminologyVersion(terminologyVersion);
-			searchResult.setValue(values[2].toString());
-			searchResultList.addSearchResult(searchResult);
-		}
-		searchResultList.setTotalCount(searchResultList.getCount());
-		return searchResultList;
-	}
-
 	@Override
 	public SearchResultList findDescendants(String terminologyId,
 			String terminology, String terminologyVersion, String typeId) throws Exception {

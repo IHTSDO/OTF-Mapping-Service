@@ -67,21 +67,6 @@ public interface ContentService extends RootService {
 			throws Exception;
 
 	/**
-	 * Returns {@link SearchResultList} for all concepts of the specified
-	 * terminology.
-	 * 
-	 * @param terminology
-	 *            the terminology
-	 * @param terminologyVersion
-	 *            the terminology version
-	 * @return the search results for the search string
-	 * @throws Exception
-	 *             if anything goes wrong
-	 */
-	public SearchResultList findAllConcepts(String terminology,
-			String terminologyVersion) throws Exception;
-
-	/**
 	 * Finds descendants of a concept. Does not require PFS parameters object.
 	 * 
 	 * @param terminologyId

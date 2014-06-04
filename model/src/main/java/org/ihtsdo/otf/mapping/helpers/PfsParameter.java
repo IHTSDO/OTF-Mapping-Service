@@ -42,7 +42,9 @@ public interface PfsParameter {
   public void setFilterString(String filterString);
 
   /**
-   * Returns the sort field name
+   * Returns the sort field name. Valid values for the sort field would include
+   * a bean-style property name for the underlying object.  For example, for {@link Concept}
+   * retrieval, you could pass id or definitionStatusId, or defaultPrefereredName.
    * @return the sort field name
    */
   public String getSortField();
