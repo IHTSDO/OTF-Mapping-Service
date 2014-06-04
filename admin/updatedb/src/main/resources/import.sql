@@ -7,5 +7,5 @@ CREATE INDEX x_map_records_AUD_1 on map_records_AUD (lastModifiedBy_id);
 
 -- For performance of searching tree positions by ancestorPath is needed
 -- NOTE: this works with MySQL but may not work for other environments.
-CREATE INDEX x_tree_positions_1 on tree_positions (ancestor_path(255));
+CREATE INDEX x_tree_positions_1 on tree_positions (ancestorPath(255));
 
