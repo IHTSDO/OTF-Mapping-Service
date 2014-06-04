@@ -2386,6 +2386,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 								"    " + ct + " records created");
 						commit();
 						beginTransaction();
+						// For memory management, avoid keeping cache of tree positions
+                        contentService.close();
+                        contentService = new ContentServiceJpa();						
 					}
 				}
 
