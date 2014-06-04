@@ -1146,8 +1146,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		String full_query;
 
 		// if no filter supplied, return query based on map project id only
-		if (pfsParameter.getFilterString() == null
-				|| pfsParameter.getFilterString().equals("")) {
+		if (pfsParameter.getQueryRestriction() == null
+				|| pfsParameter.getQueryRestriction().equals("")) {
 			full_query = "mapProjectId:" + mapProjectId;
 			return full_query;
 		}
@@ -1178,7 +1178,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// first cycle over the string to add artificial breaks before and after
 		// control characters
 		final String queryStr = (pfsParameter == null ? "" : pfsParameter
-				.getFilterString());
+				.getQueryRestriction());
 
 		String queryStr_mod = queryStr;
 		queryStr_mod = queryStr_mod.replace("(", " ( ");
@@ -1391,8 +1391,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			// for each scope concept, get descendants
 			for (String terminologyId : project.getScopeConcepts()) {
 				SearchResultList descendants = contentService
-						.findDescendantsFromTreePostions(terminologyId,
-								terminology, terminologyVersion);
+						.findDescendantConcepts(terminologyId,
+								terminology, terminologyVersion, null);
 
 				Logger.getLogger(this.getClass()).info(
 						"    Concept " + terminologyId + " has "
@@ -1566,8 +1566,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			// for each excluded scope concept, get descendants
 			for (String terminologyId : project.getScopeExcludedConcepts()) {
 				SearchResultList descendants = contentService
-						.findDescendantsFromTreePostions(terminologyId,
-								terminology, terminologyVersion);
+						.findDescendantConcepts(terminologyId,
+								terminology, terminologyVersion, null);
 
 				// cycle over descendants
 				for (SearchResult sr : descendants.getSearchResults()) {
@@ -1609,7 +1609,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			return false;
 
 		ContentService contentService = new ContentServiceJpa();
-		for (SearchResult tp : contentService.findTreePositionsForConcept(
+		for (SearchResult tp : contentService.findTreePositions(
 				conceptId, project.getSourceTerminology(),
 				project.getSourceTerminologyVersion()).getSearchResults()) {
 			String ancestorPath = tp.getValue();
@@ -1650,7 +1650,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			return false;
 
 		ContentService contentService = new ContentServiceJpa();
-		for (SearchResult tp : contentService.findTreePositionsForConcept(
+		for (SearchResult tp : contentService.findTreePositions(
 				conceptId, project.getSourceTerminology(),
 				project.getSourceTerminologyVersion()).getSearchResults()) {
 			String ancestorPath = tp.getValue();
@@ -1686,7 +1686,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 
 		ContentService contentService = new ContentServiceJpa();
-		for (SearchResult tp : contentService.findTreePositionsForConcept(
+		for (SearchResult tp : contentService.findTreePositions(
 				conceptId, project.getSourceTerminology(),
 				project.getSourceTerminologyVersion()).getSearchResults()) {
 			String ancestorPath = tp.getValue();
@@ -1739,15 +1739,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					"Map project source terminology has too few hierarchical relationship types - "
 							+ terminology);
 		}
-		// ASSUMPTION: only a single "isa" type
-		String hierarchicalRelationshipType = hierarchicalRelationshipTypeMap
-				.entrySet().iterator().next().getKey();
 
 		// get descendants -- no pfsParameter, want all results
 		ContentService contentService = new ContentServiceJpa();
-		SearchResultList descendants = contentService.findDescendants(
+		SearchResultList descendants = contentService.findDescendantConcepts(
 				terminologyId, terminology, terminologyVersion,
-				hierarchicalRelationshipType, null);
+				null);
 
 		// if number of descendants <= low-level concept threshold, treat as
 		// high-level concept and report no unmapped
@@ -2354,7 +2351,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					pfsParameter.setMaxResults(100);
 
 					TreePositionList treePositionList = 
-					    contentService.getTreePositionsForConcept(concept.getTerminologyId(),
+					    contentService.getTreePositions(concept.getTerminologyId(),
                                     concept.getTerminology(),
                                     concept.getTerminologyVersion());
 					long descCt = 0;

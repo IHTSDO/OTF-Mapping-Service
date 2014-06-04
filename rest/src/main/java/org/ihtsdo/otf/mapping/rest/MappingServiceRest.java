@@ -924,7 +924,7 @@ public class MappingServiceRest {
 						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
 						+ "     Sort field    = " + pfsParameter.getSortField()
 						+ "     Filter String = "
-						+ pfsParameter.getFilterString());
+						+ pfsParameter.getQueryRestriction());
 
 		// execute the service call
 
@@ -1328,7 +1328,7 @@ public class MappingServiceRest {
 		try {
 			// get the local tree positions from content service
 			ContentService contentService = new ContentServiceJpa();
-			List<TreePosition> treePositions = contentService.getLocalTrees(
+			List<TreePosition> treePositions = contentService.getTreePositions(
 					terminologyId, terminology, terminologyVersion)
 					.getTreePositions();
 			contentService.close();
@@ -1379,7 +1379,7 @@ public class MappingServiceRest {
 			// get the root tree positions from content service
 			ContentService contentService = new ContentServiceJpa();
 			List<TreePosition> treePositions = contentService
-					.getRootTreePositionsForTerminology(terminology,
+					.getRootTreePositions(terminology,
 							terminologyVersion).getTreePositions();
 			contentService.close();
 
@@ -1429,7 +1429,7 @@ public class MappingServiceRest {
 			// get the tree positions from concept service
 			ContentService contentService = new ContentServiceJpa();
 			List<TreePosition> treePositions = contentService
-					.getTreePositionsForConceptQuery(terminology,
+					.getTreePositionGraphByQuery(terminology,
 							terminologyVersion, query).getTreePositions();
 			contentService.close();
 
