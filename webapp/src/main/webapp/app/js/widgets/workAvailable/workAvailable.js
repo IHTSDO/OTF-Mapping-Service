@@ -244,7 +244,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				console.debug("Claiming batch of size: " + batchSize);
 				
 				var terminologyIds = [];
-				for (var i = 0; i < batchSize; i++) {
+				for (var i = 0; i < trackingRecords.length; i++) {
 					
 					terminologyIds.push(trackingRecords[i].terminologyId);
 					console.debug('  -> Concept ' + trackingRecords[i].terminologyId);
