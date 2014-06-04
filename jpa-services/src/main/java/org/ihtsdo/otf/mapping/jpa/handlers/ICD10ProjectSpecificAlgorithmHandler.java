@@ -176,14 +176,11 @@ DefaultProjectSpecificAlgorithmHandler {
 					"Map project source terminology has too few hierarchical relationship types - "
 							+ mapProject.getDestinationTerminology());
 		}
-		// ASSUMPTION: only a single "isa" type
-		String hierarchicalRelationshipType = hierarchicalRelationshipTypeMap
-				.entrySet().iterator().next().getKey();
 
 		// find number of descendants
 		ContentServiceJpa contentService = new ContentServiceJpa();
-		SearchResultList results = contentService.findDescendants(mapRecord.getConceptId(), mapProject.getDestinationTerminology(),
-				mapProject.getDestinationTerminologyVersion(), hierarchicalRelationshipType);
+		SearchResultList results = contentService.findDescendantConcepts(mapRecord.getConceptId(), mapProject.getDestinationTerminology(),
+				mapProject.getDestinationTerminologyVersion(), null);
 		contentService.close();
 		metadataService.close();
 		if (results.getTotalCount() > 10) {

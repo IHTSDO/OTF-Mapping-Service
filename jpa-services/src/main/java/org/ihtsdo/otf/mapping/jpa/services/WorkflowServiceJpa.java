@@ -669,7 +669,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// the first retrieved
 				ContentService contentService = new ContentServiceJpa();
 				SearchResultList treePositionsList = contentService
-						.findTreePositionsForConcept(concept.getTerminologyId(),
+						.findTreePositions(concept.getTerminologyId(),
 								concept.getTerminology(),
 								concept.getTerminologyVersion());
 				
@@ -1042,7 +1042,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			// get the tree positions for this concept and set the sort key to
 			// the first retrieved
 			SearchResultList treePositionsList = contentService
-					.findTreePositionsForConcept(concept.getTerminologyId(),
+					.findTreePositions(concept.getTerminologyId(),
 							concept.getTerminology(),
 							concept.getTerminologyVersion());
 			// handle inactive concepts - which don't have tree positions

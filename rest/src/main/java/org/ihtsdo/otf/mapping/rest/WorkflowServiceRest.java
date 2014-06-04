@@ -113,7 +113,7 @@ public class WorkflowServiceRest {
 						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
 						+ "     Sort field    = " + pfsParameter.getSortField()
 						+ "     Filter String = "
-						+ pfsParameter.getFilterString());
+						+ pfsParameter.getQueryRestriction());
 
 		try {
 
@@ -165,7 +165,7 @@ public class WorkflowServiceRest {
 						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
 						+ "     Sort field    = " + pfsParameter.getSortField()
 						+ "     Filter String = "
-						+ pfsParameter.getFilterString());
+						+ pfsParameter.getQueryRestriction());
 		try {
 
 			// retrieve the project and user
@@ -216,7 +216,7 @@ public class WorkflowServiceRest {
 						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
 						+ "     Sort field    = " + pfsParameter.getSortField()
 						+ "     Filter String = "
-						+ pfsParameter.getFilterString());
+						+ pfsParameter.getQueryRestriction());
 
 		try {
 
@@ -267,7 +267,7 @@ public class WorkflowServiceRest {
 						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
 						+ "     Sort field    = " + pfsParameter.getSortField()
 						+ "     Filter String = "
-						+ pfsParameter.getFilterString());
+						+ pfsParameter.getQueryRestriction());
 
 		try {
 

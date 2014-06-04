@@ -12,6 +12,8 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.RelationshipListJpa;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -188,7 +190,7 @@ public class ContentServiceRest {
     try {
       ContentService contentService = new ContentServiceJpa();
       SearchResultList sr =
-          contentService.findConcepts(searchString, new PfsParameterJpa());
+          contentService.findConceptsByQuery(searchString, new PfsParameterJpa());
       contentService.close();
       return sr;
     } catch (Exception e) {
@@ -220,23 +222,12 @@ public class ContentServiceRest {
             + terminologyVersion + "/id/" + terminologyId + "/descendants");
     try {
       ContentService contentService = new ContentServiceJpa();
-      MetadataService metadataService = new MetadataServiceJpa();
-
-      String isaId = "";
-      Map<String, String> relTypesMap =
-          metadataService.getHierarchicalRelationshipTypes(terminology,
-              terminologyVersion);
-      for (Map.Entry<String, String> entry : relTypesMap.entrySet()) {
-        if (entry.getValue().toLowerCase().startsWith("is"))
-          isaId = entry.getKey();
-      }
 
       // want all descendants, do not use PFS parameter
       SearchResultList results =
-          contentService.findDescendants(terminologyId, terminology,
-              terminologyVersion, isaId);
+          contentService.findDescendantConcepts(terminologyId, terminology,
+              terminologyVersion, null);
 
-      metadataService.close();
       contentService.close();
       return results;
     } catch (Exception e) {
@@ -278,10 +269,38 @@ public class ContentServiceRest {
           isaId = entry.getKey();
       }
 
-      SearchResultList results =
-          contentService.findChildren(id.toString(), terminology,
-              terminologyVersion, new Long(isaId));
 
+      SearchResultList results = new SearchResultListJpa();
+
+      // get the concept and add it as first element of concept list
+      Concept concept =
+          contentService.getConcept(id.toString(), terminology, terminologyVersion);
+
+      // if no concept, return empty list
+      if (concept == null) {
+        return results;
+      }
+
+      // cycle over relationships
+      for (Relationship rel : concept.getInverseRelationships()) {
+
+        if (rel.isActive() && rel.getTypeId().equals(new Long(isaId))
+            && rel.getSourceConcept().isActive()) {
+
+          Concept c = rel.getSourceConcept();
+
+          SearchResult sr = new SearchResultJpa();
+          sr.setId(c.getId());
+          sr.setTerminologyId(c.getTerminologyId());
+          sr.setTerminology(c.getTerminology());
+          sr.setTerminologyVersion(c.getTerminologyVersion());
+          sr.setValue(c.getDefaultPreferredName());
+
+          // add search result to list
+          results.addSearchResult(sr);
+        }
+      }
+      
       metadataService.close();
       contentService.close();
       return results;
@@ -329,11 +348,12 @@ public class ContentServiceRest {
   public SearchResultList findDescendantsFromTreePostions() {
 
     try {
+      
       ContentService contentService = new ContentServiceJpa();
       Logger.getLogger(this.getClass()).info("start");
       SearchResultList results =
-          contentService.findDescendantsFromTreePostions("110091001",
-              "SNOMEDCT", "20140131");
+          contentService.findDescendantConcepts("110091001",
+              "SNOMEDCT", "20140131", null);
       contentService.close();
 
       Logger.getLogger(this.getClass()).info("end");
