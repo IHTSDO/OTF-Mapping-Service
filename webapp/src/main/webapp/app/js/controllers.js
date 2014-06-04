@@ -8,7 +8,6 @@ var root_url = "/mapping-rest/";
 var root_mapping = root_url + "mapping/";
 var root_content = root_url + "content/";
 var root_metadata = root_url + "metadata/";
-var root_validation = root_url + "validation/";
 var root_workflow = root_url + "workflow/";
 var root_security = root_url + "security/";
 
@@ -151,6 +150,10 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 			
 			console.debug($scope.userName);
 			
+			// turn on the glass pane during login process/authentication
+			// turned off at each error stage or before redirecting to dashboards
+			$rootScope.glassPane++;
+			
 			$http({
 				url: query_url,
 				dataType: "json",
@@ -184,11 +187,21 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 						$scope.preferences = data;
 						$scope.preferences.lastLogin = new Date().getTime();
 						localStorageService.add('preferences', $scope.preferences);
+						
+						// check for a last-visited project
+						$scope.focusProject = null;
 						for (var i = 0; i < $scope.mapProjects.length; i++)  {
 							if ($scope.mapProjects[i].id === $scope.preferences.lastMapProjectId) {
 								$scope.focusProject = $scope.mapProjects[i];
 							}
 						}
+						
+						// if project not found, set to first retrieved project
+						if ($scope.focusProject == null) {
+							$scope.focusProject = $scope.mapProjects[0];
+						}
+						
+						
 						console.debug('Last project: ');
 						console.debug($scope.focusProject);
 						localStorageService.add('focusProject', $scope.focusProject);
@@ -196,6 +209,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 						$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
 
 					}).error(function(error) {
+						$rootScope.glassPane--;
 						$scope.error = $scope.error + "Could not retrieve user preferences. "; 
 
 					}).then(function(data) {
@@ -224,6 +238,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 								$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  			
 							}
 						}).error(function(error) {
+							$rootScope.glassPane--;
 							$scope.error = $scope.error + "Could not retrieve user role. "; 
 						}).then(function(data) {
 							$http({
@@ -257,16 +272,20 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 								$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
 								$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role});
 					
+								$rootScope.glassPane--;
+								
 								// redirect page
 								$location.path(path);
 						
 							}).error(function(error) {
+								$rootScope.glassPane--;
 								$scope.error = error + "Could not retrieve user role. "; 
 							});		
 						});
 
 					});
 				}).error(function(error) {
+					$rootScope.glassPane--;
 					$scope.error = error.replace(/"/g, '');
 				});
 		}
