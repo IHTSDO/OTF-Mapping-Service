@@ -32,7 +32,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
-import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -672,6 +672,36 @@ public class WorkflowServiceRest {
 
 	}
 	
+
+	@POST
+	@Path("/cancel")
+	@ApiOperation(value = "Cancel editing a map record", notes="Cancels editing a record.  Depending on workflow path and status, this may require actions to be performed", response=Response.class)
+	public void cancelWork(@ApiParam(value="The map record to cancel work for") MapRecordJpa mapRecord) throws Exception {
+		
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /cancel for map record with id = " + mapRecord.getId());
+		
+		
+		// open the services
+		ContentService contentService = new ContentServiceJpa();
+		MappingService mappingService = new MappingServiceJpa();
+		WorkflowService workflowService = new WorkflowServiceJpa();
+		
+		// get the map project and concept
+		MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
+		Concept concept = contentService.getConcept(mapRecord.getConceptId(), mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+		
+		// process the workflow action
+		workflowService.processWorkflowAction(
+				mapProject, 
+				concept, 
+				mapRecord.getOwner(), 
+				mapRecord, 
+				WorkflowAction.CANCEL);
+		
+	}
+
+	
 	/**
 	 * Indicates whether or the record is editable by the user.
 	 *
@@ -736,9 +766,9 @@ public class WorkflowServiceRest {
 		contentService.close();
 		
 		WorkflowService workflowService = new WorkflowServiceJpa();
-		WorkflowTrackingRecord trackingRecord = workflowService.getWorkflowTrackingRecord(mapProject, concept);
+		TrackingRecord trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
 		
-		for (MapRecord mr : workflowService.getMapRecordsForWorkflowTrackingRecord(trackingRecord)) {
+		for (MapRecord mr : workflowService.getMapRecordsForTrackingRecord(trackingRecord)) {
 			if (mr.getOwner().equals(mapUser)) {
 				workflowService.close();
 				return mr;
@@ -777,5 +807,7 @@ public class WorkflowServiceRest {
 		workflowService.generateRandomConflictData(mapProject, nConflicts);
 		workflowService.close();
 	}
+	
 
+	
 }

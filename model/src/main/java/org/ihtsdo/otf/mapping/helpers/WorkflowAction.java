@@ -21,5 +21,8 @@ public enum WorkflowAction {
   SAVE_FOR_LATER,
 
   /** The finish editing. */
-  FINISH_EDITING;
+  FINISH_EDITING,
+  
+  /** Cancel work */
+  CANCEL;
 }

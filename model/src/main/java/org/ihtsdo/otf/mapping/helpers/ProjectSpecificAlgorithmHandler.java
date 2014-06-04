@@ -1,16 +1,14 @@
 package org.ihtsdo.otf.mapping.helpers;
 
-import java.util.List;
 import java.util.Set;
 
-import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecord;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -79,7 +77,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the list
    * @throws Exception the exception
    */
-  public List<MapAdvice> computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception;
+  public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception;
 
   /**
    * Compute map relations.
@@ -133,7 +131,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public Set<MapRecord> assignFromInitialRecord(
-    WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapRecord mapRecord, MapUser mapUser)
+    TrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapRecord mapRecord, MapUser mapUser)
     throws Exception;
 
   /**
@@ -147,7 +145,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public Set<MapRecord> assignFromScratch(
-    WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, Concept concept, MapUser mapUser)
+    TrackingRecord trackingRecord, Set<MapRecord> mapRecords, Concept concept, MapUser mapUser)
     throws Exception;
 
   /**
@@ -160,7 +158,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the workflow tracking record
    * @throws Exception the exception
    */
-  public Set<MapRecord> unassign(WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, 
+  public Set<MapRecord> unassign(TrackingRecord trackingRecord, Set<MapRecord> mapRecords, 
     MapUser mapUser) throws Exception;
 
   /**
@@ -174,7 +172,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public Set<MapRecord> finishEditing(
-    WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
+    TrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
 
   /**
    * Performs workflow actions necessary when a map user wishes to save a record
@@ -187,7 +185,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public Set<MapRecord> saveForLater(
-    WorkflowTrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
+    TrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
 
   
   /**
@@ -199,4 +197,16 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
  * @throws Exception 
    */
   public boolean isRecordEditableByUser(MapRecord mapRecord, MapUser mapUser) throws Exception;
+
+  /**
+   * Performs any workflow action necessary when a user cancels editing a record.
+   * 
+   * @param trackingRecord
+   * @param mapRecords
+   * @param mapUser
+   * @return
+   * @throws Exception
+   */
+  public Set<MapRecord> cancelWork(TrackingRecord trackingRecord,
+		Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
 }

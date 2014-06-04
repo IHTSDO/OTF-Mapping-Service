@@ -13,7 +13,8 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
- * Represents a metadata handler for a ClaML loaded source.
+ * Implementation of {@link MetadataService} for ClaML based terminologies.
+ * 
  */
 public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements MetadataService {
 

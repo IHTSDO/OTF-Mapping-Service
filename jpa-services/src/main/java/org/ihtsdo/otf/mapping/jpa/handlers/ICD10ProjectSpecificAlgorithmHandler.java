@@ -3,9 +3,10 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
+import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -137,8 +138,8 @@ DefaultProjectSpecificAlgorithmHandler {
 	}
 
 	@Override
-	public List<MapAdvice> computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
-		Set<MapAdvice> advices = mapEntry.getMapAdvices();
+	public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
+		List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
 		/*For any mapRelation value other than 447637006, 
 		 * Find the allowed project advice that matches (on string, case-insensitive) 
 		 * and return that value. Throw an exception if no corresponding advice is found.
@@ -184,6 +185,7 @@ DefaultProjectSpecificAlgorithmHandler {
 		SearchResultList results = contentService.findDescendants(mapRecord.getConceptId(), mapProject.getDestinationTerminology(),
 				mapProject.getDestinationTerminologyVersion(), hierarchicalRelationshipType);
 		contentService.close();
+		metadataService.close();
 		if (results.getTotalCount() > 10) {
 			for (MapAdvice advice : mapProject.getMapAdvices()) {
 				if (advice.getName().toLowerCase().equals("DESCENDANTS NOT EXHAUSTIVELY MAPPED".toLowerCase())) {
@@ -192,7 +194,9 @@ DefaultProjectSpecificAlgorithmHandler {
 			}    	
 		}
 
-		return new ArrayList<>(advices);
+		MapAdviceList mapAdviceList = new MapAdviceListJpa();
+		mapAdviceList.setMapAdvices(advices);
+		return mapAdviceList;
 	}
 
 
@@ -271,6 +275,8 @@ DefaultProjectSpecificAlgorithmHandler {
 
 			computeTargetTerminologyNotesHelper(tp, contentService, asteriskRefSetId, daggerRefSetId);
 		}
+		metadataService.close();
+		contentService.close();
 	}
 
 	/**
