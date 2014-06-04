@@ -27,6 +27,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.groups = 	null;
 	$scope.entries =    null;
 	$scope.user = 		localStorageService.get('currentUser');
+	$scope.role = 		localStorageService.get('currentRole');
 	
 	// validation result storage variable
 	$scope.savedValidationWarnings = [];
@@ -250,7 +251,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 	/**
 	 * MAP RECORD FUNCTIONS
-	 */
+	 *//*
 	$scope.finishAndNextMapRecord = function() {
 		$scope.finishMapRecord(false);
 
@@ -287,9 +288,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				if ($scope.assignedRecords[0].id != $scope.record.id) {
 			      console.debug("finish/next go to " + path);
 			      // redirect page
+			      console.debug("Going to next record");
 			      $location.path(path);
 				} else {
-					window.history.back();
+					console.debug("Returning to dashboard");
+					$location.path($scope.currentRole + "/dash");
 				}
 			}
 
@@ -298,9 +301,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.error = "Error";
 		});
 		
-	};
+	};*/
 	
 	$scope.finishMapRecord = function(returnBack) {
+		
+		console.debug("finishMapRecord called with " + returnBack);
 
 		///////////////////////////
 		// Group and MapPriority //
@@ -409,8 +414,55 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						$scope.record = data;
 						$scope.recordSuccess = "Record saved.";
 						$scope.recordError = "";
-						if (returnBack) {
-						  window.history.back();
+						
+						
+						
+						
+						if (!returnBack) {
+							console.debug("************* ReturnBack is false");
+
+							// construct a paging/filtering/sorting object
+							var pfsParameterObj = 
+							{"startIndex": 0,
+									"maxResults": 1, 
+									"sortField": 'sortKey',
+									"filterString": null};  
+
+							$rootScope.glassPane++;
+
+							// get the assigned work list
+							$http({
+								url: root_workflow + "assignedWork/projectId/" + $scope.project.id + "/user/" + $scope.user.userName,
+								dataType: "json",
+								data: pfsParameterObj,
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json"
+								}
+							}).success(function(data) {
+								$rootScope.glassPane--;
+
+								var assignedWork = data.searchResult;
+								
+								// if there is no more assigned work, return to dashboard
+								if (assignedWork.length == 0) {
+									console.debug("No more assigned work, return to dashboard");
+									$location.path($scope.role + "/dash");
+								
+								// otherwise redirect to the next record to be edited
+								} else {
+									console.debug("More work, redirecting");
+									$location.path("record/recordId/" + assignedWork[0].id);
+								}
+
+							}).error(function(error) {
+								$rootScope.glassPane--;
+								$scope.error = "Error";
+							});
+
+						} else {
+							console.debug("Simple finish called, return to dashboard");
+							$location.path($scope.role + "/dash");
 						}
 					}).error(function(data) {
 						console.debug('SERVER ERROR');
