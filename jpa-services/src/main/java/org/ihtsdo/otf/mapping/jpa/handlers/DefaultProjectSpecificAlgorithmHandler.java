@@ -1298,7 +1298,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			}
 
 			// cycle over the records
-			for (MapRecord mr : newRecords) {
+			for (MapRecord mr : mapRecords) {
 
 				// if the original PUBLISHED/READY_FOR_PUBLICATION record (i.e.
 				// now
