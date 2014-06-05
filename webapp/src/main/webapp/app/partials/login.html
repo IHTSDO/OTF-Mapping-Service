@@ -9,28 +9,22 @@
 
 <div ng-show="mapUsers.length > 0">
 	<form>
-	<table >
-
-	  <tr>
-        <td height="70px" colspan="2"
+	  <div>
+        <div height="70px" 
           style="vertical-align: bottom; padding-bottom: 15px"><strong>Please
-            enter User and Password</strong></td>
-      </tr>
-      <tr>
-        <td style="padding:5px; width:5%;">User:</td> 
-        <td style="padding: 5px; width: 20%;"><input ng-model="userName"/></td>
-      </tr>	
-	  <tr>
-        <td style="padding:5px; width:5%;">Password:</td> 
-        <td style="padding: 5px; width: 20%;"><input type="password" ng-model="password"/></td>
-      </tr>
-	<tr>
-		<td style="padding:5px;" ></td>
-		<td style="padding:5px;" >
+            enter User and Password</strong></div>
+      </div>
+      <div>
+        <div style="padding: 5px; width: 20%;"><input id="userField" ng-model="userName" type="text" placeholder="Username" /></div>
+      </div>
+	  <div>
+        <div style="padding: 5px; width: 20%;"><input id "passwordField" type="password" placeholder="Password" ng-model="password"/></div>
+      </div>
+	<div>
+		<div style="padding:5px;" >
 		<button type="submit" ng-click="go('/viewer/dash')">Login</button>
-		</td>
-	</tr>
-	</table>
+		</div>
+	</div>
 	</form>
 </div>
 <div ng-include src="'./partials/footer.html'"></div>
