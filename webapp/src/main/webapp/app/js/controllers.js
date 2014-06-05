@@ -830,7 +830,7 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		return {"startIndex": (page-1)*$scope.recordsPerPage,
 			"maxResults": $scope.recordsPerPage, 
 			"sortField": null, 
-			"filterString": $scope.query == null ? null : $scope.query};  // assigning simply to $scope.query when null produces undefined
+			"queryRestriction": $scope.query == null ? null : $scope.query};  // assigning simply to $scope.query when null produces undefined
 
 	}
 

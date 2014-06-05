@@ -93,7 +93,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					{"startIndex": (page-1)*$scope.itemsPerPage,
 			 	 	 "maxResults": $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
-			 	 	 "filterString": null};  
+			 	 	 "queryRestriction": null};  
 
 	  	$rootScope.glassPane++;
 
@@ -134,7 +134,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					{"startIndex": (page-1)*$scope.itemsPerPage,
 			 	 	 "maxResults": $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
-			 	 	 "filterString": null};  
+			 	 	 "queryRestriction": null};  
 
 	  	$rootScope.glassPane++;
 
@@ -209,7 +209,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					{"startIndex": ($scope.availableWorkPage-1)*$scope.itemsPerPage,
 			 	 	 "maxResults": batchSize, 
 			 	 	 "sortField": 'sortKey',
-			 	 	 "filterString": null};  
+			 	 	 "queryRestriction": null};  
 
 	  	$rootScope.glassPane++;
 		$http({

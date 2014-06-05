@@ -17,7 +17,7 @@ public class PfsParameterJpa implements PfsParameter {
   private int startIndex = -1;
 
   /** The filter string */
-  private String filters = null;
+  private String queryRestriction = null;
 
   /** The comparator for sorting */
   private String sortField = null;
@@ -69,16 +69,16 @@ public class PfsParameterJpa implements PfsParameter {
    */
   @Override
   public String getQueryRestriction() {
-    return filters;
+    return queryRestriction;
   }
 
   /**
    * Sets the filter string
-   * @param filters the filter string
+   * @param queryRestriction the filter string
    */
   @Override
-  public void setQueryRestriction(String filters) {
-    this.filters = filters;
+  public void setQueryRestriction(String queryRestriction) {
+    this.queryRestriction = queryRestriction;
   }
 
   /**

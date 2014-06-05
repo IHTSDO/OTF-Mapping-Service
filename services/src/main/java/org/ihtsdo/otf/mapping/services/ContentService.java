@@ -69,18 +69,6 @@ public interface ContentService extends RootService {
     PfsParameter pfsParameter) throws Exception;
 
   /**
-   * Returns the tree positions for concept.
-   * 
-   * @param terminologyId the terminology id
-   * @param terminology the terminology
-   * @param terminologyVersion the terminology version
-   * @return the tree positions for concept
-   * @throws Exception the exception
-   */
-  public SearchResultList findTreePositions(String terminologyId,
-    String terminology, String terminologyVersion) throws Exception;
-
-  /**
    * Clear tree positions.
    * 
    * @param terminology the terminology
@@ -120,7 +108,7 @@ public interface ContentService extends RootService {
     throws Exception;
 
   /**
-   * Gets the local trees.
+   * Gets the tree positions with all descendants fully rendered
    * 
    * @param terminologyId the terminology id
    * @param terminology the terminology
@@ -128,7 +116,7 @@ public interface ContentService extends RootService {
    * @return the local trees
    * @throws Exception 
    */
-  public TreePositionList getTreePositions(String terminologyId,
+  public TreePositionList getTreePositionsWithDescendants(String terminologyId,
     String terminology, String terminologyVersion) throws Exception;
 
   /**
@@ -154,5 +142,17 @@ public interface ContentService extends RootService {
    */
   public TreePositionList getTreePositionGraphByQuery(String terminology,
     String terminologyVersion, String query) throws Exception;
+
+  /**
+   * Gets the tree positions
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the tree positions with children
+   * @throws Exception the exception
+   */
+  public TreePositionList getTreePositions(String terminologyId,
+		String terminology, String terminologyVersion) throws Exception;
 
 }
