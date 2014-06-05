@@ -306,7 +306,7 @@ public class WorkflowServiceRest {
 	@Path("/assign/record/projectId/{id}/concept/{terminologyId}/user/{userName}")
 	@ApiOperation(value = "Assign user to concept.", notes = "Assigns the given user to the given concept.", response = Response.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Response assignWorkFromRecord(
+	public Response assignWorkFromMapRecord(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId,
 			@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId,
 			@ApiParam(value = "String userName of user", required = true) @PathParam("userName") String userName,
@@ -676,7 +676,7 @@ public class WorkflowServiceRest {
 	@POST
 	@Path("/cancel")
 	@ApiOperation(value = "Cancel editing a map record", notes="Cancels editing a record.  Depending on workflow path and status, this may require actions to be performed", response=Response.class)
-	public void cancelWork(@ApiParam(value="The map record to cancel work for") MapRecordJpa mapRecord) throws Exception {
+	public void cancelWorkForMapRecord(@ApiParam(value="The map record to cancel work for") MapRecordJpa mapRecord) throws Exception {
 		
 		Logger.getLogger(WorkflowServiceRest.class).info(
 				"RESTful call (Workflow): /cancel for map record with id = " + mapRecord.getId());
@@ -714,7 +714,7 @@ public class WorkflowServiceRest {
 	@Path("/record/isEditable/{userName}")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@ApiOperation(value = "Set record to editing in progress", notes = "Updates the map record and sets workflow to editing in progress.")
-	public boolean isEditable(
+	public boolean isMapRecordEditable(
 			@ApiParam(value = "Name of map user", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "MapRecord to save", required = true) MapRecordJpa mapRecord) throws Exception {
 		

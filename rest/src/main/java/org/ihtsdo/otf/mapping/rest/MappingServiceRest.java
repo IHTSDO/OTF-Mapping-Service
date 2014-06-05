@@ -130,7 +130,7 @@ public class MappingServiceRest {
 	@Path("/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapProject getMapProjectForId(
+	public MapProject getMapProject(
 			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -263,7 +263,7 @@ public class MappingServiceRest {
 	@Path("/project/query/{String}")
 	@ApiOperation(value = "Find projects by query", notes = "Returns map projects for a query in either JSON or XML format", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultList findMapProjects(
+	public SearchResultList findMapProjectsForQuery(
 			@ApiParam(value = "lucene search string", required = true) @PathParam("String") String query) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -376,7 +376,7 @@ public class MappingServiceRest {
 	@Path("/user/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find user by id", notes = "Returns a MapUser given a user id in either JSON or XML format", response = MapUser.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapUser getMapUserForId(
+	public MapUser getMapUser(
 			@ApiParam(value = "Id of map lead to fetch", required = true) @PathParam("id") Long mapUserId) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -529,7 +529,7 @@ public class MappingServiceRest {
 	@Path("/principle/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Get principle", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrinciple.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapPrinciple getMapPrincipleForId(
+	public MapPrinciple getMapPrinciple(
 			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId) {
 
 		// log call
@@ -589,7 +589,7 @@ public class MappingServiceRest {
 	@Path("/principle/update")
 	@ApiOperation(value = "Update principle", notes = "Updates a MapPrinciple. Must exist in mapping database. Must be in Json or Xml format", response = MapPrincipleJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public void updateMapPrincipleForId(
+	public void updateMapPrinciple(
 			@ApiParam(value = "Map Principle to update", required = true) MapPrincipleJpa mapPrinciple) {
 
 		// log call
@@ -725,9 +725,8 @@ public class MappingServiceRest {
 	
 	/**
 	 * Removes a set of map user preferences
-	 * @param mapUserPreferencesId
+	 * @param mapUserPreferences
 	 *            the id of the map user preferences object to be deleted
-	 * @return Response the response
 	 */
 	@DELETE
 	@Path("/userPreferences/remove")
@@ -764,7 +763,7 @@ public class MappingServiceRest {
 	@Path("/record/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find record by id", notes = "Returns a MapRecord given a record id in either JSON or XML format", response = MapRecord.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecord getMapRecordForId(
+	public MapRecord getMapRecord(
 			@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -814,7 +813,6 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapRecord
 	 *            the map record to be added
-	 * @return Response the response
 	 */
 	@POST
 	@Path("/record/update")
@@ -867,7 +865,9 @@ public class MappingServiceRest {
 	}
 
 	/**
-	 * Returns the records for a given concept id
+	 * Returns the records for a given concept id.
+	 * We don't need to know terminology or version here
+	 * because we can get it from the corresponding map project.
 	 * 
 	 * @param conceptId
 	 *            the concept id
@@ -877,7 +877,7 @@ public class MappingServiceRest {
 	@Path("/record/conceptId/{String}")
 	@ApiOperation(value = "Find records by concept id", notes = "Returns MapRecords given a concept id in either JSON or XML format", response = MapRecord.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecordListJpa getMapRecordsForConceptId(
+	public MapRecordListJpa getMapRecordsForTerminologyId(
 			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("String") String conceptId) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -911,7 +911,7 @@ public class MappingServiceRest {
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@CookieParam(value = "userInfo")
-	public MapRecordListJpa getMapRecordsForMapProjectId(
+	public MapRecordListJpa getMapRecordsForMapProject(
 			@ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter) {
 
@@ -951,7 +951,7 @@ public class MappingServiceRest {
 	@Path("record/delete/projectId/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Delete all project records", notes = "Deletes all map records for a project id", response = Integer.class)
 	@Produces({ MediaType.TEXT_PLAIN })
-	public String removeMapRecordsForProjectId(
+	public String removeMapRecordsForMapProject(
 			@ApiParam(value = "Project id for which map records are to be deleted", required = true) @PathParam("id") Long mapProjectId) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -961,7 +961,7 @@ public class MappingServiceRest {
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			Long nRecords = mappingService
-					.removeMapRecordsForProject(mapProjectId);
+					.removeMapRecordsForMapProject(mapProjectId);
 			mappingService.close();
 
 			// Jersey can't handle Long as return type, convert to string
@@ -1080,14 +1080,14 @@ public class MappingServiceRest {
 	 * Gets a map user's role for a given map project
 	 * 
 	 * @param userName
-	 * @param projectId
+	 * @param mapProjectId
 	 * @return result the role
 	 */
 	@GET
 	@Path("/userRole/{userName}/projectId/{id:[0-9][0-9]*}")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@ApiOperation(value = "Gets the role.", notes = "Gets the role for the given userName and projectId", response = SearchResultList.class)
-	public SearchResultList getMapUserRole(
+	public SearchResultList getMapUserRoleForMapProject(
 			@ApiParam(value = "The map user's user name", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId) {
 
@@ -1097,7 +1097,7 @@ public class MappingServiceRest {
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			SearchResultList result = mappingService
-					.getMapUserRole(userName, mapProjectId);
+					.getMapUserRoleForMapProject(userName, mapProjectId);
 			mappingService.close();
 			return result;
 		} catch (Exception e) {
@@ -1312,7 +1312,7 @@ public class MappingServiceRest {
 	@Path("/tree/projectId/{projectId}/concept/{terminology}/{terminologyVersion}/id/{terminologyId}")
 	@ApiOperation(value = "Get concept's local tree", notes = "Returns a tree structure representing the position of a concept in a terminology and its children", response = TreePositionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public TreePositionListJpa getLocalTreePositionsForConcept(
+	public TreePositionListJpa getTreePositionsWithDescendants(
 			@ApiParam(value = "terminology id of concept", required = true) @PathParam("terminologyId") String terminologyId,
 			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
@@ -1415,7 +1415,7 @@ public class MappingServiceRest {
 	@Path("/tree/projectId/{projectId}/terminology/{terminology}/{terminologyVersion}/query/{query}")
 	@ApiOperation(value = "Get tree positions for query", notes = "Returns tree structures representing results a given terminology, terminology version, and query ", response = TreePositionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public TreePositionListJpa getRootTreePositionsForConceptQuery(
+	public TreePositionListJpa getTreePositionGraphsForQuery(
 			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
 			@ApiParam(value = "paging/filtering/sorting object", required = true) @PathParam("query") String query,
@@ -1429,7 +1429,7 @@ public class MappingServiceRest {
 			// get the tree positions from concept service
 			ContentService contentService = new ContentServiceJpa();
 			List<TreePosition> treePositions = contentService
-					.getTreePositionGraphByQuery(terminology,
+					.getTreePositionGraphForQuery(terminology,
 							terminologyVersion, query).getTreePositions();
 			contentService.close();
 
@@ -1493,8 +1493,8 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Returns the origin map records resulting in a conflict assigned to a lead
-	 * Used by compareRecords widget
+	 * Returns the map records that when compared
+	 * lead to the specified conflict record.
 	 * 
 	 * @param mapRecordId
 	 * @return map records in conflict for a given conflict lead record
@@ -1503,7 +1503,7 @@ public class MappingServiceRest {
 	@GET
 	@Path("/record/conflictRecords/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Get specialist records for assigned conflict", notes = "Return's a list of records in conflict for a lead's conflict resolution record", response = MapRecordListJpa.class)
-	public MapRecordList getOriginRecordsForConflict(
+	public MapRecordList getOriginMapRecordsForConflict(
 			@ApiParam(value = "id of the map lead's conflict-in-progress record", required = true) @PathParam("id") Long mapRecordId)
 			throws Exception {
 

@@ -57,17 +57,6 @@ public interface MappingService {
 	public MapProject getMapProject(Long id) throws Exception;
 
 	/**
-	 * Gets the map project.
-	 * 
-	 * @param name
-	 *            the name
-	 * @return the map project
-	 * @throws Exception
-	 *             the exception
-	 */
-	public MapProject getMapProjectByName(String name) throws Exception;
-
-	/**
 	 * Gets the map project by ref set id.
 	 * 
 	 * @param refSetId
@@ -76,7 +65,7 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public MapProject getMapProjectByRefSetId(String refSetId) throws Exception;
+	public MapProject getMapProjectForRefSetId(String refSetId) throws Exception;
 
 	/**
 	 * Return map user for auto-generated id.
@@ -454,7 +443,7 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public Long removeMapRecordsForProject(Long mapProjectId) throws Exception;
+	public Long removeMapRecordsForMapProject(Long mapProjectId) throws Exception;
 
 	/**
 	 * Helper function not requiring a PFS object.
@@ -775,18 +764,6 @@ public interface MappingService {
 					throws Exception;
 
 	/**
-	 * Compare finished map records.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @return the map
-	 * @throws Exception
-	 *             the exception
-	 */
-	public Map<Long, Long> compareFinishedMapRecords(MapProject mapProject)
-			throws Exception;
-
-	/**
 	 * Given a map record, returns the origin map records giving rise to a
 	 * conflict.
 	 * 
@@ -796,7 +773,7 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public MapRecordList getOriginRecordsForConflict(Long mapRecordId)
+	public MapRecordList getOriginMapRecordsForConflict(Long mapRecordId)
 			throws Exception;
 
 	/**
@@ -832,6 +809,6 @@ public interface MappingService {
 	 *            the map project id
 	 * @return the map user role
 	 */
-	public SearchResultList getMapUserRole(String userName, Long mapProjectId) throws Exception;
+	public SearchResultList getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception;
 
 }

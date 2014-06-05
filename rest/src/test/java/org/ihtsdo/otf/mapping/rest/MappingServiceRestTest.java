@@ -50,7 +50,7 @@ public class MappingServiceRestTest {
 		
 		// retrieve individual projects
 		for (MapProject m : projects.getMapProjects()) {
-			service.getMapProjectForId(m.getId());
+			service.getMapProject(m.getId());
 		}
 		
 		// retrieve projects by specialist
