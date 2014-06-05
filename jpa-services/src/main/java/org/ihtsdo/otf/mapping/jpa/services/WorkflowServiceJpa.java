@@ -23,6 +23,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordListJpa;
+import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
@@ -668,17 +669,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// get the tree positions for this concept and set the sort key to
 				// the first retrieved
 				ContentService contentService = new ContentServiceJpa();
-				SearchResultList treePositionsList = contentService
-						.findTreePositions(concept.getTerminologyId(),
+				TreePositionList treePositionsList = contentService
+						.getTreePositionsWithDescendants(concept.getTerminologyId(),
 								concept.getTerminology(),
 								concept.getTerminologyVersion());
 				
 				// handle inactive concepts - which don't have tree positions
-				if (treePositionsList.getSearchResults().size() == 0) {
+				if (treePositionsList.getCount() == 0) {
 					trackingRecord.setSortKey("");
 				} else {
-					trackingRecord.setSortKey(treePositionsList.getSearchResults()
-							.get(0).getValue());
+					trackingRecord.setSortKey(treePositionsList.getTreePositions()
+							.get(0).getAncestorPath());
 				}
 				
 				// only FIX_ERROR_PATH valid, QA_PATH in Phase 2
@@ -1041,16 +1042,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			// get the tree positions for this concept and set the sort key to
 			// the first retrieved
-			SearchResultList treePositionsList = contentService
-					.findTreePositions(concept.getTerminologyId(),
+			TreePositionList treePositionsList = contentService
+					.getTreePositionsWithDescendants(concept.getTerminologyId(),
 							concept.getTerminology(),
 							concept.getTerminologyVersion());
 			// handle inactive concepts - which don't have tree positions
-			if (treePositionsList.getSearchResults().size() == 0) {
+			if (treePositionsList.getCount() == 0) {
 				trackingRecord.setSortKey("");
 			} else {
-				trackingRecord.setSortKey(treePositionsList.getSearchResults()
-						.get(0).getValue());
+				trackingRecord.setSortKey(treePositionsList.getTreePositions()
+						.get(0).getAncestorPath());
 			}
 
 			// retrieve map records for this project and concept

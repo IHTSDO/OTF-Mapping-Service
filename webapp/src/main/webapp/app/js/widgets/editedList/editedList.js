@@ -54,7 +54,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 					{"startIndex": (page-1)*$scope.recordsPerPage,
 			 	 	 "maxResults": $scope.recordsPerPage, 
 			 	 	 "sortField": 'sortKey',
-			 	 	 "filterString": null};  
+			 	 	 "queryRestriction": null};  
 
 	  	$rootScope.glassPane++;
 

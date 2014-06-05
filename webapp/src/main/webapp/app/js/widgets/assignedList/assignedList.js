@@ -63,7 +63,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					{"startIndex": (page-1)*$scope.itemsPerPage,
 			 	 	 "maxResults": $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
-			 	 	 "filterString": null};  
+			 	 	 "queryRestriction": null};  
 
 	  	$rootScope.glassPane++;
 
@@ -105,7 +105,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					{"startIndex": (page-1)*$scope.itemsPerPage,
 			 	 	 "maxResults": $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
-			 	 	 "filterString": null};  
+			 	 	 "queryRestriction": null};  
 
 	  	$rootScope.glassPane++;
 

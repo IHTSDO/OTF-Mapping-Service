@@ -1609,10 +1609,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			return false;
 
 		ContentService contentService = new ContentServiceJpa();
-		for (SearchResult tp : contentService.findTreePositions(
+		for (TreePosition tp : contentService.getTreePositionsWithDescendants(
 				conceptId, project.getSourceTerminology(),
-				project.getSourceTerminologyVersion()).getSearchResults()) {
-			String ancestorPath = tp.getValue();
+				project.getSourceTerminologyVersion()).getIterable()) {
+			String ancestorPath = tp.getAncestorPath();
 			if (project.isScopeExcludedDescendantsFlag()
 					&& ancestorPath.contains(conceptId)) {
 				continue;
@@ -1650,10 +1650,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			return false;
 
 		ContentService contentService = new ContentServiceJpa();
-		for (SearchResult tp : contentService.findTreePositions(
+		for (TreePosition tp : contentService.getTreePositionsWithDescendants(
 				conceptId, project.getSourceTerminology(),
-				project.getSourceTerminologyVersion()).getSearchResults()) {
-			String ancestorPath = tp.getValue();
+				project.getSourceTerminologyVersion()).getIterable()) {
+			String ancestorPath = tp.getAncestorPath();
 			if (project.isScopeDescendantsFlag()
 					&& ancestorPath.contains(conceptId)) {
 				continue;
@@ -1686,10 +1686,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 
 		ContentService contentService = new ContentServiceJpa();
-		for (SearchResult tp : contentService.findTreePositions(
+		for (TreePosition tp : contentService.getTreePositionsWithDescendants(
 				conceptId, project.getSourceTerminology(),
-				project.getSourceTerminologyVersion()).getSearchResults()) {
-			String ancestorPath = tp.getValue();
+				project.getSourceTerminologyVersion()).getIterable()) {
+			String ancestorPath = tp.getAncestorPath();
 			if (project.isScopeDescendantsFlag()
 					&& ancestorPath.contains(conceptId)) {
 				return false;
@@ -2351,7 +2351,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					pfsParameter.setMaxResults(100);
 
 					TreePositionList treePositionList = 
-					    contentService.getTreePositions(concept.getTerminologyId(),
+					    contentService.getTreePositionsWithDescendants(concept.getTerminologyId(),
                                     concept.getTerminology(),
                                     concept.getTerminologyVersion());
 					long descCt = 0;
