@@ -122,7 +122,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * String )
 	 */
 	@Override
-	public SearchResultList findConceptsByQuery(String searchString,
+	public SearchResultList findConceptsForQuery(String searchString,
 			PfsParameter pfsParameter) throws Exception {
 
 		SearchResultList results = new SearchResultListJpa();
@@ -753,7 +753,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public TreePositionList getTreePositionGraphByQuery(String terminology,
+	public TreePositionList getTreePositionGraphForQuery(String terminology,
 			String terminologyVersion, String query) throws Exception {
 
 		// construct the query

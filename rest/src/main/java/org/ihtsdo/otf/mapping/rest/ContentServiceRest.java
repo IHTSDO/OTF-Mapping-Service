@@ -58,7 +58,7 @@ public class ContentServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public Concept getConceptForId(
+  public Concept getConcept(
     @ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
@@ -107,7 +107,7 @@ public class ContentServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public RelationshipListJpa getInverseRelationshipsForConcept(
+  public RelationshipListJpa getConceptInverseRelationships(
     @ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
@@ -148,7 +148,7 @@ public class ContentServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public Concept getConceptForId(
+  public Concept getConcept(
     @ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology) {
 
@@ -182,7 +182,7 @@ public class ContentServiceRest {
   @GET
   @Path("/concept/query/{string}")
   @ApiOperation(value = "Find concepts by search query", notes = "Returns concepts that are related to search query.", response = String.class)
-  public SearchResultList findConcepts(
+  public SearchResultList findConceptsForQuery(
     @ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
 
     Logger.getLogger(ContentServiceRest.class).info(
@@ -190,7 +190,7 @@ public class ContentServiceRest {
     try {
       ContentService contentService = new ContentServiceJpa();
       SearchResultList sr =
-          contentService.findConceptsByQuery(searchString, new PfsParameterJpa());
+          contentService.findConceptsForQuery(searchString, new PfsParameterJpa());
       contentService.close();
       return sr;
     } catch (Exception e) {
@@ -212,7 +212,7 @@ public class ContentServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public SearchResultList findConceptDescendants(
+  public SearchResultList findDescendantConcepts(
     @ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
@@ -248,7 +248,7 @@ public class ContentServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public SearchResultList findConceptChildren(
+  public SearchResultList findChildConcepts(
     @ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("id") Long id,
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
@@ -335,9 +335,7 @@ public class ContentServiceRest {
   }
 
   /**
-   * Finds descendants from tree positions.
-   * 
-   * @return the search result list
+   * TODO: probably can remove this and make any calls to this call the other one.
    */
   @GET
   @Path("/concept/treePositions/descendantfind")

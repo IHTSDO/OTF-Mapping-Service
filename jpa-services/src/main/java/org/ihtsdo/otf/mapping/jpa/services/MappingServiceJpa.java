@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -56,7 +55,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
-import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
@@ -173,46 +171,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.ihtsdo.otf.mapping.services.MappingService#getMapProjectByName(java
-	 * .lang.String)
-	 */
-	@Override
-	public MapProject getMapProjectByName(String name) {
-
-		MapProject m = null;
-
-		javax.persistence.Query query = manager.createQuery(
-				"select m from MapProjectJpa m where name = :name")
-				.setParameter("name", name);
-
-		try {
-			m = (MapProject) query.getSingleResult();
-			m.getScopeConcepts().size();
-			m.getScopeExcludedConcepts().size();
-			m.getMapAdvices().size();
-			m.getMapRelations().size();
-			m.getMapLeads().size();
-			m.getMapSpecialists().size();
-			m.getMapPrinciples().size();
-			m.getPresetAgeRanges().size();
-		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).warn(
-					"Map project query for name = " + name
-							+ " returned no results!");
-			return null;
-		}
-		return m;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.MappingService#getMapProjectByRefSetId
+	 * org.ihtsdo.otf.mapping.services.MappingService#getMapProjectForRefSetId
 	 * (java.lang.String)
 	 */
 	@Override
-	public MapProject getMapProjectByRefSetId(String refSetId) {
+	public MapProject getMapProjectForRefSetId(String refSetId) {
 
 		MapProject m = null;
 
@@ -2146,12 +2109,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.ihtsdo.otf.mapping.services.MappingService#removeMapRecordsForProjectId
+	 * org.ihtsdo.otf.mapping.services.MappingService#removeMapRecordsForMapProjectId
 	 * (java.lang.Long)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public Long removeMapRecordsForProject(Long mapProjectId) {
+	public Long removeMapRecordsForMapProject(Long mapProjectId) {
 
 		tx = manager.getTransaction();
 
@@ -2766,7 +2729,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapUserRole(java.lang.String, java.lang.Long)
 	 */
 	@Override
-	public SearchResultList getMapUserRole(String userName, Long mapProjectId) {
+	public SearchResultList getMapUserRoleForMapProject(String userName, Long mapProjectId) {
 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Finding user's role " + userName + " " + mapProjectId);
@@ -2883,62 +2846,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return treePositionList;
 	}
 
-	@Override
-	public Map<Long, Long> compareFinishedMapRecords(MapProject mapProject)
-			throws Exception {
-		Map<MapRecord, MapRecord> finishedPairsForComparison = new HashMap<>();
-		Map<Long, Long> conflicts = new HashMap<>();
-
-		MappingService mappingService = new MappingServiceJpa();
-		List<MapRecord> allMapRecords = mappingService
-				.getMapRecordsForMapProject(mapProject.getId()).getMapRecords();
-		List<MapRecord> finishedMapRecords = new ArrayList<>();
-		for (MapRecord mapRecord : allMapRecords) {
-			if (mapRecord.getWorkflowStatus().equals(
-					WorkflowStatus.EDITING_DONE))
-				finishedMapRecords.add(mapRecord);
-		}
-		MapRecord[] mapRecords = finishedMapRecords.toArray(new MapRecord[0]);
-		for (int i = 0; i < mapRecords.length; i++) {
-			for (int j = 0; j < mapRecords.length; j++) {
-				if (mapRecords[i].getConceptId().equals(
-						mapRecords[j].getConceptId())
-						&& mapRecords[i].getLastModified() < mapRecords[j]
-								.getLastModified()
-						&& mapRecords[i].getId() != mapRecords[j].getId()) {
-					finishedPairsForComparison
-							.put(mapRecords[i], mapRecords[j]);
-				}
-			}
-		}
-		for (Entry<MapRecord, MapRecord> entry : finishedPairsForComparison
-				.entrySet()) {
-			// instantiate the algorithm handler for this project
-			ProjectSpecificAlgorithmHandler handler = (ProjectSpecificAlgorithmHandler) Class
-					.forName(
-							mapProject
-									.getProjectSpecificAlgorithmHandlerClass())
-					.newInstance();
-			handler.setMapProject(mapProject);
-
-			// compare map records
-			ValidationResult result = handler.compareMapRecords(entry.getKey(),
-					entry.getValue());
-			if (!result.isValid()) {
-				conflicts.put(entry.getKey().getId(), entry.getValue().getId());
-				entry.getKey().setWorkflowStatus(
-						WorkflowStatus.CONFLICT_DETECTED);
-				mappingService.updateMapRecord(entry.getKey());
-				entry.getValue().setWorkflowStatus(
-						WorkflowStatus.CONFLICT_DETECTED);
-				mappingService.updateMapRecord(entry.getValue());
-			}
-		}
-		return conflicts;
-	}
 
 	@Override
-	public MapRecordList getOriginRecordsForConflict(Long mapRecordId)
+	public MapRecordList getOriginMapRecordsForConflict(Long mapRecordId)
 			throws Exception {
 
 		Logger.getLogger(MappingServiceJpa.class).info(
@@ -2966,6 +2876,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return conflictRecords;
 	}
 
+	/**
+	 * Validate that a single user cannot have more than one role
+	 * on a particular map project.
+	 *
+	 * @param mapProject the map project
+	 * @throws Exception the exception
+	 */
 	private void validateUserAndRole(MapProject mapProject) throws Exception {
 		Map<MapUser, String> userToRoleMap = new HashMap<>();
 		for (MapUser user : mapProject.getMapLeads()) {

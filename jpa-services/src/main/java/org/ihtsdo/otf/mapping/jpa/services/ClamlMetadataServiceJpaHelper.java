@@ -41,7 +41,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     String version) throws Exception {
     ContentService contentService = new ContentServiceJpa();
     SearchResultList results =
-        contentService.findConceptsByQuery("Isa", new PfsParameterJpa());
+        contentService.findConceptsForQuery("Isa", new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
       if (result.getTerminology().equals(terminology)
           && result.getTerminologyVersion().equals(version)
@@ -82,7 +82,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     ContentService contentService = new ContentServiceJpa();
     String rootId = null;
     SearchResultList results =
-        contentService.findConceptsByQuery("Module", new PfsParameterJpa());
+        contentService.findConceptsForQuery("Module", new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
       if (result.getTerminology().equals(terminology)
           && result.getTerminologyVersion().equals(version)
@@ -163,7 +163,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     ContentService contentService = new ContentServiceJpa();
     String rootId = null;
     SearchResultList results =
-        contentService.findConceptsByQuery("Simple refsets",
+        contentService.findConceptsForQuery("Simple refsets",
             new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
       if (result.getTerminology().equals(terminology)
@@ -205,7 +205,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     ContentService contentService = new ContentServiceJpa();
     String rootId = null;
     SearchResultList results =
-        contentService.findConceptsByQuery("Definition status",
+        contentService.findConceptsForQuery("Definition status",
             new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
       if (result.getTerminology().equals(terminology)
@@ -234,7 +234,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     ContentService contentService = new ContentServiceJpa();
     String rootId = null;
     SearchResultList results =
-        contentService.findConceptsByQuery("Description type",
+        contentService.findConceptsForQuery("Description type",
             new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
       if (result.getTerminology().equals(terminology)
@@ -263,7 +263,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     ContentService contentService = new ContentServiceJpa();
     String rootId = null;
     SearchResultList results =
-        contentService.findConceptsByQuery("Case significance",
+        contentService.findConceptsForQuery("Case significance",
             new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
       if (result.getTerminology().equals(terminology)
@@ -293,7 +293,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     ContentService contentService = new ContentServiceJpa();
     String rootId = null;
     SearchResultList results =
-        contentService.findConceptsByQuery("Relationship type",
+        contentService.findConceptsForQuery("Relationship type",
             new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
       if (result.getTerminology().equals(terminology)
@@ -343,7 +343,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     ContentService contentService = new ContentServiceJpa();
     String rootId = null;
     SearchResultList results =
-        contentService.findConceptsByQuery("Characteristic type",
+        contentService.findConceptsForQuery("Characteristic type",
             new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
       if (result.getTerminology().equals(terminology)
@@ -372,7 +372,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     ContentService contentService = new ContentServiceJpa();
     String rootId = null;
     SearchResultList results =
-        contentService.findConceptsByQuery("Modifier", new PfsParameterJpa());
+        contentService.findConceptsForQuery("Modifier", new PfsParameterJpa());
     for (SearchResult result : results.getSearchResults()) {
       if (result.getTerminology().equals(terminology)
           && result.getTerminologyVersion().equals(version)

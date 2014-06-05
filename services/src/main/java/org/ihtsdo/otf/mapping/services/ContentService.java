@@ -49,7 +49,7 @@ public interface ContentService extends RootService {
    * @return the search results for the search string
    * @throws Exception if anything goes wrong
    */
-  public SearchResultList findConceptsByQuery(String query,
+  public SearchResultList findConceptsForQuery(String query,
     PfsParameter pfsParameter) throws Exception;
 
   /**
@@ -140,7 +140,7 @@ public interface ContentService extends RootService {
    * @return the tree positions for concept query
    * @throws Exception the exception
    */
-  public TreePositionList getTreePositionGraphByQuery(String terminology,
+  public TreePositionList getTreePositionGraphForQuery(String terminology,
     String terminologyVersion, String query) throws Exception;
 
   /**

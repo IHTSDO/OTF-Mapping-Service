@@ -431,7 +431,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
         // retrieve the project id associated with this refSetId
         Long projectId =
-            mappingService.getMapProjectByRefSetId(fields[0]).getId();
+            mappingService.getMapProjectForRefSetId(fields[0]).getId();
 
         // if project already added, add list of concepts
         if (projectToConceptsInScope.containsKey(projectId))
@@ -476,7 +476,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
         // retrieve the project id associated with this refSetId
         Long projectId =
-            mappingService.getMapProjectByRefSetId(fields[0]).getId();
+            mappingService.getMapProjectForRefSetId(fields[0]).getId();
 
         // if project in set, add this new set of concept ids
         if (projectToConceptsExcludedFromScope.containsKey(projectId))
