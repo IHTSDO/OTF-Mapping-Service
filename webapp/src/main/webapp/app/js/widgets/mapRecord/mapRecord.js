@@ -251,57 +251,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 	/**
 	 * MAP RECORD FUNCTIONS
-	 *//*
-	$scope.finishAndNextMapRecord = function() {
-		$scope.finishMapRecord(false);
-
-		console.debug('Retrieving Assigned Work for Finish/Next');
-
-		// construct a paging/filtering/sorting object
-		var pfsParameterObj = 
-					{"startIndex": 0,
-			 	 	 "maxResults": 1, 
-			 	 	 "sortField": 'sortKey',
-			 	 	 "filterString": null};  
-
-	  	$rootScope.glassPane++;
-
-		$http({
-			url: root_workflow + "assignedWork/projectId/" + $scope.project.id + "/user/" + $scope.user.userName,
-			dataType: "json",
-			data: pfsParameterObj,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			}
-		}).success(function(data) {
-		  	$rootScope.glassPane--;
-
-			$scope.assignedRecords = data.searchResult;
-			console.debug('finish/next in success' + $scope.assignedRecords);
-			
-			var path = "record/recordId/" + $scope.assignedRecords[0].id;
-
-			// if there were no errors finishing the record, go to the next record
-			console.debug($scope.validationResult);
-			if ($scope.validationResult.errors.length == 0) {
-				if ($scope.assignedRecords[0].id != $scope.record.id) {
-			      console.debug("finish/next go to " + path);
-			      // redirect page
-			      console.debug("Going to next record");
-			      $location.path(path);
-				} else {
-					console.debug("Returning to dashboard");
-					$location.path($scope.currentRole + "/dash");
-				}
-			}
-
-		}).error(function(error) {
-		  	$rootScope.glassPane--;
-			$scope.error = "Error";
-		});
-		
-	};*/
+	 */
 	
 	$scope.finishMapRecord = function(returnBack) {
 		
@@ -426,7 +376,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 							{"startIndex": 0,
 									"maxResults": 1, 
 									"sortField": 'sortKey',
-									"filterString": null};  
+									"queryRestriction": null};  
 
 							$rootScope.glassPane++;
 

@@ -967,7 +967,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		mapRecord.setCountDescendantConcepts(new Long(
 		// get the tree positions for this concept
 				contentService
-						.getTreePositions(
+						.getTreePositionsWithDescendants(
 								trackingRecord.getTerminologyId(),
 								trackingRecord.getTerminology(),
 								trackingRecord.getTerminologyVersion())
