@@ -1328,7 +1328,7 @@ public class MappingServiceRest {
 		try {
 			// get the local tree positions from content service
 			ContentService contentService = new ContentServiceJpa();
-			List<TreePosition> treePositions = contentService.getTreePositions(
+			List<TreePosition> treePositions = contentService.getTreePositionsWithDescendants(
 					terminologyId, terminology, terminologyVersion)
 					.getTreePositions();
 			contentService.close();
