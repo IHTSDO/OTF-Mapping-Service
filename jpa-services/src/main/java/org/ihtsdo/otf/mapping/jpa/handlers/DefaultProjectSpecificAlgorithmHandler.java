@@ -1436,7 +1436,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 								+ " concept "
 								+ trackingRecord.getTerminologyId()
 								+ ", but could not retrieve the previously published or ready-for-publication record.");
-
+			
 			// perform action only if the user's record is NEW
 			// if editing has occured (EDITING_IN_PROGRESS or above), null-op
 			if (newRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)) {
@@ -1447,6 +1447,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// set the workflow status of the REVIEW record back to its
 				// original state
 				reviewRecord = getPreviousVersionOfMapRecord(reviewRecord);
+				
+				// add the revised REVIEW record to new records
+				newRecords.add(reviewRecord);
 			}
 
 			break;

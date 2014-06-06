@@ -251,7 +251,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 								}	
 							}).success(function(data) {
 								console.debug(data);
-								$scope.role = data.searchResult[0].value ;
+								$scope.role = data.substring(1, data.length - 1);;
 						
 
 

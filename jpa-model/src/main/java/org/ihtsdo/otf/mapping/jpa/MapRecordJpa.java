@@ -76,11 +76,11 @@ public class MapRecordJpa implements MapRecord {
 	@Column(nullable = false)
 	private Long timestamp = (new Date()).getTime();
 
-	/** The user last modifying this record */
+	/** The user last modifying this record. */
 	@ManyToOne(targetEntity = MapUserJpa.class)
 	private MapUser lastModifiedBy;
 
-	/** The time at which the last user modified this record */
+	/** The time at which the last user modified this record. */
 	@Column(nullable = false)
 	private Long lastModified = (new Date()).getTime();
 
@@ -644,6 +644,9 @@ public class MapRecordJpa implements MapRecord {
 		flagForConsensusReview = flag;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#isEquivalent(org.ihtsdo.otf.mapping.model.MapRecord)
+	 */
 	@Override
 	public boolean isEquivalent(MapRecord mapRecord) {
 
@@ -727,7 +730,45 @@ public class MapRecordJpa implements MapRecord {
 		return true;
 
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.model.MapRecord#setWorkflowStatus(org.ihtsdo.otf
+	 * .mapping.helpers.WorkflowStatus)
+	 */
+	@Override
+	public void setWorkflowStatus(WorkflowStatus workflowStatus) {
+		this.workflowStatus = workflowStatus;
+	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getWorkflowStatus()
+	 */
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	public WorkflowStatus getWorkflowStatus() {
+		return workflowStatus;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addOrigins(java.util.Set)
+	 */
+	@Override
+	public void addOrigins(Set<Long> origins) {
+		originIds.addAll(origins);
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -761,6 +802,9 @@ public class MapRecordJpa implements MapRecord {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -841,6 +885,9 @@ public class MapRecordJpa implements MapRecord {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "MapRecordJpa [id=" + id + ", owner=" + owner + ", timestamp="
@@ -857,37 +904,8 @@ public class MapRecordJpa implements MapRecord {
 				+ "]";
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapRecord#setWorkflowStatus(org.ihtsdo.otf
-	 * .mapping.helpers.WorkflowStatus)
-	 */
-	@Override
-	public void setWorkflowStatus(WorkflowStatus workflowStatus) {
-		this.workflowStatus = workflowStatus;
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getWorkflowStatus()
-	 */
-	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-	public WorkflowStatus getWorkflowStatus() {
-		return workflowStatus;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addOrigins(java.util.Set)
-	 */
-	@Override
-	public void addOrigins(Set<Long> origins) {
-		originIds.addAll(origins);
-	}
+	
+	
 
 }
