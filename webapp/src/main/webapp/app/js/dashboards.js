@@ -382,7 +382,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		}).then(function() {
 			setTimeout(function() {
 				location.reload();
-			}, 200);
+			}, 100);
 		});
 		
 	};
