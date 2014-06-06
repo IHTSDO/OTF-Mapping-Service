@@ -506,7 +506,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 	};
 });
 
-mapProjectAppDashboards.controller('ProjectDetailsDashboarCtrl', function ($rootScope, $scope, $http, $location, localStorageService) {
+mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function ($rootScope, $scope, $http, $location, localStorageService) {
 
 	// On initialization, reset all values to null -- used to ensure watch functions work correctly
 	$scope.mapProjects 	= null;

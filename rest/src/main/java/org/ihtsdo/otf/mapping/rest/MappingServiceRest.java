@@ -1514,7 +1514,7 @@ public class MappingServiceRest {
 		MapRecordList records = new MapRecordListJpa();
 
 		MappingService mappingService = new MappingServiceJpa();
-		records = mappingService.getOriginRecordsForConflict(mapRecordId);
+		records = mappingService.getOriginMapRecordsForConflict(mapRecordId);
 		mappingService.close();
 
 		return records;

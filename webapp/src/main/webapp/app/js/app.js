@@ -116,7 +116,7 @@ mapProjectApp.config(['$routeProvider',
 
 	$routeProvider.when('/project/details', {
 		templateUrl: 'partials/otf-dashboard.html', 
-		controller: 'ProjectDetailsDashboarCtrl'
+		controller: 'ProjectDetailsDashboardCtrl'
 	});
 
 	$routeProvider.when('/record/conceptId/:conceptId', {
