@@ -23,6 +23,7 @@ import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -1087,7 +1088,7 @@ public class MappingServiceRest {
 	@Path("/userRole/{userName}/projectId/{id:[0-9][0-9]*}")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@ApiOperation(value = "Gets the role.", notes = "Gets the role for the given userName and projectId", response = SearchResultList.class)
-	public SearchResultList getMapUserRoleForMapProject(
+	public String getMapUserRoleForMapProject(
 			@ApiParam(value = "The map user's user name", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId) {
 
@@ -1096,10 +1097,10 @@ public class MappingServiceRest {
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			SearchResultList result = mappingService
+			MapUserRole mapUserRole = mappingService
 					.getMapUserRoleForMapProject(userName, mapProjectId);
 			mappingService.close();
-			return result;
+			return mapUserRole.toString();
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}

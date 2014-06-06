@@ -66,7 +66,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 
 	// on any change of focusProject, retrieve new available work
 	$scope.$watch('focusProject', function() {
-		console.debug('my scope project changed!');
+		console.debug('workAvailableWidget:  scope project changed!');
 
 		if ($scope.focusProject != null) {
 			

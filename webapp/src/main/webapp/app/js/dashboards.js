@@ -365,6 +365,26 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		localStorageService.add('preferences', $scope.preferences);
 		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
 
+		// get the role for this user and project
+		console.debug("Retrieving role for " + $scope.focusProject.name + ", " + $scope.currentUser.userName);
+		$http({
+			url : root_mapping + "userRole/"
+					+ $scope.currentUser.userName + "/projectId/"
+					+ $scope.focusProject.id,
+			method : "GET",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			console.debug("Role set to: " + data);
+			$scope.currentRole = data.substring(1, data.length - 1);
+			localStorageService.add('currentRole', $scope.currentRole);
+		}).then(function() {
+			setTimeout(function() {
+				location.reload();
+			}, 200);
+		});
+		
 	};
 
 	$scope.goToHelp = function() {
