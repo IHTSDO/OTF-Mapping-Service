@@ -13,7 +13,10 @@
 <hr>
 <!--  Map Records Found for this project -->
 <div ng-show="recordsInProject.length > 0">
-  <h4>{{focusProject.name}} Map Records</h4>
+  <h4>{{focusProject.name}}</h4>
+  <button class="btn btn-sm btn-primary" ng-click="goProjectDetails()">Project Details</button>
+  <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
+    Records</button>
   <table class="table">
     <thead>
       <tr>
@@ -173,7 +176,13 @@
               </span>
             </div>
         </span></td>
-        <td><a href="index.html#/project/details">{{getProjectName(record)}}</a></td>
+        <td>
+        
+        	{{getProjectName(record)}}
+        <!-- 	<a ng-click="changeFocusProjectByRecord(record)"><i class="glyphicon glyphicon-share-alt"></i></a>
+        	 -->
+        	</td>
+       
         <td>{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</td>
         <td><span ng-show="getRuleBasedForRecord(record) == true">{{entry.rule}}</span>
           <span ng-show="getRuleBasedForRecord(record) == false">(Not
