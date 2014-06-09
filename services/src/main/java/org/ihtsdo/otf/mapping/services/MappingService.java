@@ -242,7 +242,7 @@ public interface MappingService {
 	 * 
 	 * @param mapPrinciple
 	 *            the map principle
-	 * @return 
+	 * @return the map principle
 	 * @throws Exception
 	 *             the exception
 	 */
@@ -253,6 +253,7 @@ public interface MappingService {
 	 * 
 	 * @param mapAdvice
 	 *            the map advice
+	 * @return the map advice
 	 * @throws Exception
 	 *             the exception
 	 */
@@ -553,79 +554,82 @@ public interface MappingService {
 	 * @param userName
 	 *            the user name
 	 * @return the map user
+	 * @throws Exception the exception
 	 */
 	public MapUser getMapUser(String userName) throws Exception;
 
 	/**
 	 * Returns the map age ranges.
-	 * 
+	 *
 	 * @return the map age ranges
+	 * @throws Exception the exception
 	 */
 	public MapAgeRangeList getMapAgeRanges() throws Exception;
 
 	/**
 	 * Adds the map age range.
-	 * 
-	 * @param ageRange
-	 *            the age range
+	 *
+	 * @param ageRange            the age range
 	 * @return the map age range
+	 * @throws Exception the exception
 	 */
 	public MapAgeRange addMapAgeRange(MapAgeRange ageRange) throws Exception;
 
 	/**
 	 * Removes the map age range.
-	 * 
-	 * @param ageRangeId
-	 *            the age range id
+	 *
+	 * @param ageRangeId            the age range id
+	 * @throws Exception the exception
 	 */
 	public void removeMapAgeRange(Long ageRangeId) throws Exception;
 
 	/**
 	 * Update map age range.
-	 * 
-	 * @param ageRange
-	 *            the age range
+	 *
+	 * @param ageRange            the age range
+	 * @throws Exception the exception
 	 */
 	public void updateMapAgeRange(MapAgeRange ageRange) throws Exception;
 
 	/**
 	 * Gets the record revisions.
-	 * 
-	 * @param mapRecordId
-	 *            the map record id
+	 *
+	 * @param mapRecordId            the map record id
 	 * @return the record revisions
+	 * @throws Exception the exception
 	 */
 	public MapRecordList getMapRecordRevisions(Long mapRecordId) throws Exception;
 
 	/**
 	 * Returns the map relations.
-	 * 
+	 *
 	 * @return the map relations
+	 * @throws Exception the exception
 	 */
 	public MapRelationList getMapRelations() throws Exception;
 
 	/**
 	 * Adds the map relation.
-	 * 
-	 * @param mapRelation
-	 *            the map relation
-	 * @return 
+	 *
+	 * @param mapRelation            the map relation
+	 * @return the map relation
+	 * @throws Exception the exception
 	 */
 	public MapRelation addMapRelation(MapRelation mapRelation) throws Exception;
 
 	/**
 	 * Update map relation.
-	 * 
-	 * @param mapRelation
-	 *            the map relation
+	 *
+	 * @param mapRelation            the map relation
+	 * @throws Exception the exception
 	 */
 	public void updateMapRelation(MapRelation mapRelation) throws Exception;
 
 	/**
 	 * Removes the map relation.
-	 * 
-	 * @param mapRelationId
-	 *            the map relation id
+	 *
+	 * @param mapRelationId            the map relation id
+	 * @throws Exception the exception
 	 */
 	public void removeMapRelation(Long mapRelationId) throws Exception;
 
@@ -700,34 +704,35 @@ public interface MappingService {
 
 	/**
 	 * Gets the map user preferences.
-	 * 
+	 *
 	 * @return the map user preferences
+	 * @throws Exception the exception
 	 */
 	public MapUserPreferencesList getMapUserPreferences() throws Exception;
 
 	/**
 	 * Adds the map user preferences.
-	 * 
-	 * @param mapUserPreferences
-	 *            the map user preferences
+	 *
+	 * @param mapUserPreferences            the map user preferences
 	 * @return the map user preferences
+	 * @throws Exception the exception
 	 */
 	public MapUserPreferences addMapUserPreferences(
 			MapUserPreferences mapUserPreferences) throws Exception;
 
 	/**
 	 * Update map user preferences.
-	 * 
-	 * @param mapUserPreferences
-	 *            the map user preferences
+	 *
+	 * @param mapUserPreferences            the map user preferences
+	 * @throws Exception the exception
 	 */
 	public void updateMapUserPreferences(MapUserPreferences mapUserPreferences) throws Exception;
 
 	/**
 	 * Removes the map user preferences.
-	 * 
-	 * @param mapUserPreferencesId
-	 *            the map user preferences id
+	 *
+	 * @param mapUserPreferencesId            the map user preferences id
+	 * @throws Exception the exception
 	 */
 	public void removeMapUserPreferences(Long mapUserPreferencesId) throws Exception;
 
@@ -778,10 +783,10 @@ public interface MappingService {
 
 	/**
 	 * Gets the map user preferences.
-	 * 
-	 * @param userName
-	 *            the user name
+	 *
+	 * @param userName            the user name
 	 * @return the map user preferences
+	 * @throws Exception the exception
 	 */
 	public MapUserPreferences getMapUserPreferences(String userName) throws Exception;
 
@@ -802,12 +807,11 @@ public interface MappingService {
 
 	/**
 	 * Returns the map user role.
-	 * 
-	 * @param userName
-	 *            the user name
-	 * @param mapProjectId
-	 *            the map project id
+	 *
+	 * @param userName            the user name
+	 * @param mapProjectId            the map project id
 	 * @return the map user role
+	 * @throws Exception the exception
 	 */
 	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception;
 
