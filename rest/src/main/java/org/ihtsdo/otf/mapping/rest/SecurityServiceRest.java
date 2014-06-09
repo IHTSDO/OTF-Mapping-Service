@@ -52,7 +52,7 @@ public class SecurityServiceRest {
     	// TODO: return real token when that is available
     	// TODO: when real users are available, don't hardcode "bob"
       String resultString = securityService.authenticate("bob", password);
-      return "TOKEN"; //resultString;
+      return username; //resultString;
     } catch (AuthenticationException e) {
     	throw new WebApplicationException(Response.status(401).entity(e.getMessage()).build());
     } catch (Exception e) {
