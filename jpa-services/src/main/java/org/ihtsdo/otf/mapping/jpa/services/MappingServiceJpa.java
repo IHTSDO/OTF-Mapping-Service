@@ -1066,28 +1066,23 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 
 		// get the results
-		List<MapRecord> m = ftquery.getResultList();
+		int totalCount = ftquery.getResultSize();
+
+        if (pfsParameter != null) {
+		  ftquery.setFirstResult(pfsParameter.getStartIndex());
+		  ftquery.setMaxResults(pfsParameter.getMaxResults());
+        }
+		List<MapRecord> mapRecords = ftquery.getResultList();
 
 		Logger.getLogger(this.getClass()).debug(
-				Integer.toString(m.size()) + " records retrieved");
+				Integer.toString(mapRecords.size()) + " records retrieved");
 
 		// set the total count
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
-		mapRecordList.setTotalCount(m.size());
-
-		int fromIndex = 0;
-		int toIndex = m.size();
-
-		if (pfsParameter != null) {
-			if (pfsParameter.getStartIndex() != -1)
-				fromIndex = pfsParameter.getStartIndex();
-			if (pfsParameter.getMaxResults() != -1)
-				toIndex = Math.min(m.size(),
-						fromIndex + pfsParameter.getMaxResults());
-		}
+		mapRecordList.setTotalCount(totalCount);
 
 		// extract the required sublist of map records
-		mapRecordList.setMapRecords(m.subList(fromIndex, toIndex));
+		mapRecordList.setMapRecords(mapRecords);
 
 		return mapRecordList;
 
