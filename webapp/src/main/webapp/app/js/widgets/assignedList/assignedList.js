@@ -12,7 +12,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		edit: {}
 	});
 }).controller('assignedListCtrl', function($scope, $rootScope, $http, $location, localStorageService){
-	
+
 	// initialize as empty to indicate still initializing database connection
 	$scope.assignedRecords = [];
 	$scope.user = localStorageService.get('currentUser');
