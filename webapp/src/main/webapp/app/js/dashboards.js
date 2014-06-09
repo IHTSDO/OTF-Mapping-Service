@@ -165,8 +165,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		}
 	});
 
-	$scope.page = 'editDashboard';
-
 	// must instantiate a default dashboard on call
 	setModel();
 

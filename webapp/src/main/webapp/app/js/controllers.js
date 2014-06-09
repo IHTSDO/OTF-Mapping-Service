@@ -131,6 +131,14 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	$scope.role = $scope.roles[0];  
 	
 	// login button directs to next page based on role selected
+	$scope.goGuest = function () {
+		$scope.userName = "dsh";
+		$scope.role = "Viewer";
+		$scope.password = "***REMOVED***";
+		$scope.go();
+	}
+	
+	// login button directs to next page based on role selected
 	$scope.go = function () {
 
 		console.debug($scope.role);
@@ -250,18 +258,21 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 								}	
 							}).success(function(data) {
 								console.debug(data);
-								$scope.role = data.searchResult[0].value ;
+								$scope.role = data.replace(/"/g, '');
+								
 						
-
-
-								if ($scope.role == "Specialist") {
+								if ($scope.role.toLowerCase() == "specialist") {
 									path = "/specialist/dash";
-								} else if ($scope.role == "Lead") {
+									$scope.role = "Specialist";
+								} else if ($scope.role.toLowerCase() == "lead") {
 									path = "/lead/dash";
-								} else if ($scope.role == "Administrator") {
+									$scope.role = "Lead";
+								} else if ($scope.role.toLowerCase() == "administrator") {
 									path = "/admin/dash";
+									$scope.role = "Administrator";
 								} else  {
 									path = "/viewer/dash";
+									$scope.role = "Viewer";
 								}
 
 								// add the user information to local storage

@@ -20,5 +20,12 @@ public interface SecurityService {
 	 */
 	public String authenticate(String username, String password) throws Exception;
 
-
+  /**
+   * Returns the username for token.
+   *
+   * @param authToken the auth token
+   * @return the username for token
+   * @throws Exception the exception
+   */
+  public String getUsernameForToken(String authToken) throws Exception;
 }

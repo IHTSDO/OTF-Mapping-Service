@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
-import java.util.Map;
 
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
@@ -13,8 +12,10 @@ import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserPreferencesList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
@@ -809,6 +810,6 @@ public interface MappingService {
 	 *            the map project id
 	 * @return the map user role
 	 */
-	public SearchResultList getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception;
+	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception;
 
 }
