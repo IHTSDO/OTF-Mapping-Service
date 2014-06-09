@@ -46,6 +46,7 @@ import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserPreferencesList;
 import org.ihtsdo.otf.mapping.helpers.MapUserPreferencesListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
@@ -2735,8 +2736,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Finding user's role " + userName + " " + mapProjectId);
 		
+		// default role is Viewer
+		MapUserRole mapUserRole = MapUserRole.Viewer;
+
+		// get the user and map project for parameters
 		MapUser mapUser = getMapUser(userName);
 		MapProject mapProject = getMapProject(mapProjectId);
+		
+		// check which collection this user belongs to for this project
 	  if(mapProject.getMapAdministrators().contains(mapUser)) {
 	  	return MapUserRole.ADMINISTRATOR;
 	  } else if (mapProject.getMapLeads().contains(mapUser)) {

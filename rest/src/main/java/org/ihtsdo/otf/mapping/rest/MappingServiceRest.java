@@ -23,6 +23,7 @@ import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -1315,10 +1316,10 @@ public class MappingServiceRest {
 		
 		try {
 			MappingService mappingService = new MappingServiceJpa();
-			MapUserRole result = mappingService
+			MapUserRole mapUserRole = mappingService
 					.getMapUserRoleForMapProject(userName, mapProjectId);
 			mappingService.close();
-			return result;
+			return mapUserRole.toString();
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
