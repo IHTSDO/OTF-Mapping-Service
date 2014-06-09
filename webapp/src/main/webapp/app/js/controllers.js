@@ -96,7 +96,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setFocusProject', {key: 'focusProject', focusProject: null});
-	$rootScope.$broadcast('localStorageModule.notificatoin.setPreferences', {key: 'preferences', preferences: null});
+	$rootScope.$broadcast('localStorageModule.notification.setPreferences', {key: 'preferences', preferences: null});
 
 	// explicitly retrieve the available users and projects to guarantee availability on first visit
 	$http({
@@ -213,7 +213,8 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 						console.debug('Last project: ');
 						console.debug($scope.focusProject);
 						localStorageService.add('focusProject', $scope.focusProject);
-						$rootScope.$broadcast('localStorageModule.notification.setPreferences', {key: 'preferences', preferences: $scope.preferences});
+						localStorageService.add('userPreferences', $scope.preferences);
+						$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', preferences: $scope.preferences});
 						$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
 
 					}).error(function(error) {
@@ -353,9 +354,11 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	var projects = localStorageService.get("mapProjects");
 
 
-	// retrieve current user and role
+	// retrieve current user, role, and preferences
 	$scope.currentUser = localStorageService.get("currentUser");
 	$scope.currentRole = localStorageService.get("currentRole");
+	$scope.userPreferences = localStorageService.get("userPreferences");
+
 
 	// retrieve focus project on first call
 	$scope.focusProject = localStorageService.get("focusProject");
@@ -366,6 +369,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		$scope.focusProject = parameters.focusProject;
 		$scope.filterRecords();
 	});	
+
 
 	// once focus project retrieved, retrieve the concept and records
 	$scope.$watch('focusProject', function() {
@@ -435,6 +439,16 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			$scope.error = $scope.error + "Could not retrieve Concept. ";    
 		});
 	});
+
+	$scope.goProjectDetails = function() {
+		console.debug("Redirecting to project details view");
+		$location.path("/project/details");
+	};
+	
+	$scope.goMapRecords = function () {
+		console.debug("Redirecting to project records view");
+		$location.path("/project/records");
+	};
 
 	// function to return trusted html code (for tooltip content)
 	$scope.to_trusted = function(html_code) {
@@ -645,6 +659,23 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	};
 
 	
+	// change the focus project to the project associated with a specified record
+	$scope.changeFocusProjectByRecord = function(record) {
+		
+		console.debug("changeFocusProjectByRecord:  record project id = " + record.mapProjectId);
+		
+		console.debug($scope.mapProjects);
+		for (var i = 0; i < $scope.mapProjects.length; i++) {
+			console.debug("  comparing to project id = " + $scope.mapProjects[i].id);
+			if ($scope.mapProjects[i].id = record.mapProjectId) {
+				
+				$scope.changeFocusProject($scope.mapProjects[i]);
+				break;
+			}
+		}
+	};
+	
+	
 	// function to change project from the header
 	$scope.changeFocusProject = function(mapProject) {
 		$scope.focusProject = mapProject;
@@ -655,9 +686,9 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
 
 		// update the user preferences
-		$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+		$scope.userPreferences.lastMapProjectId = $scope.focusProject.id;
 		localStorageService.add('preferences', $scope.preferences);
-		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.userPreferences});
 
 	};
 	
@@ -1058,11 +1089,8 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 			});
 
 			$scope.goMapRecords = function () {
-				console.debug($scope.role);
-
-				var path = "/project/records";
-					// redirect page
-					$location.path(path);
+				console.debug("Redirecting to records view");
+				$location.path("/project/records");
 			};
 
 
