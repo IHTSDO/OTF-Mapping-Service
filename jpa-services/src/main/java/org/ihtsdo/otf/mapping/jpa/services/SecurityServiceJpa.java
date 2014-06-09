@@ -140,4 +140,15 @@ public class SecurityServiceJpa implements SecurityService {
 	
 		return resultString;
 	}
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.SecurityService#getUsernameForToken(java.lang.String)
+	 */
+	@Override
+	public String getUsernameForToken(String authToken) throws Exception {
+		// TODO This will be modified when real tokens are returned for IHTSDO security
+		return authToken;
+	}
+	
 }

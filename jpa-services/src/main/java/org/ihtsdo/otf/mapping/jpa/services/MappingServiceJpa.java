@@ -55,6 +55,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
@@ -2729,27 +2730,22 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapUserRole(java.lang.String, java.lang.Long)
 	 */
 	@Override
-	public SearchResultList getMapUserRoleForMapProject(String userName, Long mapProjectId) {
+	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) {
 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Finding user's role " + userName + " " + mapProjectId);
-		SearchResultList searchResultList = new SearchResultListJpa();
-  	SearchResult searchResult = new SearchResultJpa();
 		
 		MapUser mapUser = getMapUser(userName);
 		MapProject mapProject = getMapProject(mapProjectId);
 	  if(mapProject.getMapAdministrators().contains(mapUser)) {
-	  	searchResult.setValue("Administrator");
-	  	searchResultList.addSearchResult(searchResult);
+	  	return MapUserRole.ADMINISTRATOR;
 	  } else if (mapProject.getMapLeads().contains(mapUser)) {
-	  	searchResult.setValue("Lead");
-	  	searchResultList.addSearchResult(searchResult);
+	  	return MapUserRole.LEAD;
 	  } else if (mapProject.getMapSpecialists().contains(mapUser)) {
-	  	searchResult.setValue("Specialist");
-	  	searchResultList.addSearchResult(searchResult);	  	
+	  	return MapUserRole.SPECIALIST;	
 	  }
 	  
-	  return searchResultList;
+	  return MapUserRole.VIEWER;
 	}
 	
 	@Override
