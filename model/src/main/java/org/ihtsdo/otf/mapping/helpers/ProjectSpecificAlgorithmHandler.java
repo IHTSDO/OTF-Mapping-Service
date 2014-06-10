@@ -204,7 +204,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @param trackingRecord
    * @param mapRecords
    * @param mapUser
-   * @return
+   * @return map records that were cancelled
    * @throws Exception
    */
   public Set<MapRecord> cancelWork(TrackingRecord trackingRecord,
