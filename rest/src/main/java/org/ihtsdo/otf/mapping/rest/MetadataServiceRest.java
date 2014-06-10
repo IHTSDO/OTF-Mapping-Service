@@ -10,7 +10,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.dto.KeyValuePair;
@@ -59,13 +58,10 @@ public class MetadataServiceRest {
     
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /all/" + terminology + "/" + version);
 	  
-		// authorize call
-		boolean authorized = securityService.authorizeToken(authToken);
-		if (!authorized)
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the getMetadata() service.").build()); 		
-  	
 	  try {
+  		// authorize call
+  		securityService.authorizeToken(authToken);
+  		
       // call jpa service and get complex map return type
       MetadataService metadataService = new MetadataServiceJpa();
       Map<String, Map<String, String>> mapOfMaps =
@@ -111,14 +107,11 @@ public class MetadataServiceRest {
 		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 	  
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /all/" + terminology); 
-	  
-		// authorize call
-		boolean authorized = securityService.authorizeToken(authToken);
-		if (!authorized)
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the getAllMetadata() service.").build()); 		
-  	
+	    	
     try {
+  		// authorize call
+  		securityService.authorizeToken(authToken);
+  		
       MetadataService metadataService = new MetadataServiceJpa();
       String version = metadataService.getLatestVersion(terminology);
       KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
@@ -147,13 +140,12 @@ public class MetadataServiceRest {
 	  
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /terminologies/latest/");
 	  
-		// authorize call
-		boolean authorized = securityService.authorizeToken(authToken);
-		if (!authorized)
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the getAllTerminologiesLatestVersions() service.").build()); 		
-  	
+
+		
     try {
+  		// authorize call
+  		securityService.authorizeToken(authToken);
+  		
       MetadataService metadataService = new MetadataServiceJpa();
       Map<String, String> terminologyVersionMap =
           metadataService.getTerminologyLatestVersions();
@@ -186,13 +178,11 @@ public class MetadataServiceRest {
 	  
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /terminologies");
 	  
-		// authorize call
-		boolean authorized = securityService.authorizeToken(authToken);
-		if (!authorized)
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the getAllTerminologiesVersions() service.").build()); 		
   	
     try {
+  		// authorize call
+  		securityService.authorizeToken(authToken);
+  		
       KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
       MetadataService metadataService = new MetadataServiceJpa();
       List<String> terminologies = metadataService.getTerminologies();
