@@ -159,6 +159,8 @@ public class SecurityServiceJpa implements SecurityService {
 	@Override
 	public String getUsernameForToken(String authToken) throws Exception {
 		// TODO This will be modified when real tokens are returned for IHTSDO security
+		if (authToken == null)
+			throw new Exception("null authToken");
 		return authToken;
 	}
 	
@@ -170,11 +172,10 @@ public class SecurityServiceJpa implements SecurityService {
 		try {
 			
 			// TODO Fix this
-			String parsedToken = authToken.replace("Basic ", "").replace("\"", "");
+			String parsedToken = authToken.replace("\"", "");
 			System.out.println("parsedToken:  " + parsedToken);
 			
-			SecurityService securityService = new SecurityServiceJpa();
-			String username = securityService.getUsernameForToken(parsedToken);
+			String username = getUsernameForToken(parsedToken);
 			MappingService mappingService = new MappingServiceJpa();
 			MapUserRole result = mappingService
 					.getMapUserRoleForMapProject(username, mapProjectId);
@@ -189,11 +190,9 @@ public class SecurityServiceJpa implements SecurityService {
 	 * @see org.ihtsdo.otf.mapping.services.SecurityService#authorizeToken(java.lang.String)
 	 */
 	@Override
-	public boolean authorizeToken(String authToken) {
+	public void authorizeToken(String authToken) {
 		try {
-			SecurityService securityService = new SecurityServiceJpa();
-			String username = securityService.getUsernameForToken(authToken);
-			return true;
+			getUsernameForToken(authToken);
 		} catch (Exception e) {
 			throw new WebApplicationException(Response.status(401).entity(e.getMessage()).build());
 		}
