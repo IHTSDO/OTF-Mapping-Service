@@ -1850,6 +1850,145 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 		return null;
 	}
+	
+	
+	@Override
+	public void generateMapperTestingState(MapProject mapProject) throws Exception {
+		
+		
+		String[] conceptsKLI = {
+				"28221000119103",
+				"700189007",
+				"295131000119103",
+				"72791000119108",
+				"295041000119108",
+				"295051000119105",
+				"700147004",
+				"700109009",
+				"700112007",
+				"700150001",
+				"700081008",
+				"700075000",
+				"700097003",
+				"700080009",
+				"700082001",
+				"402714001",
+				"700094005",
+				"166631000119101",
+				"700076004",
+				"403469006",
+				"3961000119101",
+				"700095006",
+				"700153004",
+				"700195008",
+				"700107006",
+				"700111000",
+				"700077008",
+				"700079006",
+				"700167008",
+				"700178000",
+				"700181005",
+				"700176001",
+				"700170007",
+				"700164001",
+				"700173009",
+				"440419004",
+				"700078003",
+				"700168003",
+				"700179008",
+				"700182003",
+				"700177005",
+				"700171006",
+				"700165000",
+				"700174003",
+				"700149001",
+				"700127007",
+				"700132008"};
+		
+		String conceptsNIN[] = {
+				"28221000119103",
+				"700189007",
+				"295131000119103",
+				"72791000119108",
+				"295041000119108",
+				"295051000119105",
+				"700147004",
+				"700109009",
+				"700112007",
+				"700150001",
+				"700081008",
+				"700075000",
+				"700097003",
+				"700080009",
+				"700082001",
+				"402714001",
+				"700094005",
+				"166631000119101",
+				"700076004",
+				"403469006",
+				"3961000119101",
+				"700095006",
+				"700153004",
+				"700195008",
+				"700107006",
+				"700111000",
+				"700077008",
+				"700079006",
+				"700167008",
+				"700178000",
+				"700181005",
+				"700176001",
+				"700170007",
+				"700164001",
+				"700173009",
+				"440419004",
+				"700078003",
+				"700168003",
+				"700179008",
+				"700182003",
+				"700177005",
+				"700171006",
+				"700165000",
+				"700174003",
+				"700149001",
+				"700127007",
+				"700132008"};
+		
+		// set the terminology and version -- shorthand
+		String terminology = mapProject.getSourceTerminology();
+		String terminologyVersion = mapProject.getSourceTerminologyVersion();
+		
+		// initialize the concept sets (used to prevent duplication)
+		Set<Concept> conceptSet_KLI = new HashSet<>();
+		Set<Concept> conceptSet_NIN = new HashSet<>();
+		
+		// retrieve the concepts
+		ContentService contentService = new ContentServiceJpa();
+		for (String terminologyId : conceptsKLI) {
+			Concept concept = contentService.getConcept(terminologyId, terminology, terminologyVersion);
+			conceptSet_KLI.add(concept);
+		}
+		for (String terminologyId : conceptsNIN) {
+			Concept concept = contentService.getConcept(terminologyId, terminology, terminologyVersion);
+			conceptSet_NIN.add(concept);
+		}
+		contentService.close();
+		
+		// get the map user objects
+		MappingService mappingService = new MappingServiceJpa();
+		MapUser mapUser_KLI = mappingService.getMapUser("kli");
+		MapUser mapUser_NIN = mappingService.getMapUser("nin");
+		
+	/*	// assign the concepts to Krista (kli)
+		for (Concept concept : conceptSet_KLI) {
+			this.processWorkflowAction(mapProject, concept, mapUser_KLI, null, WorkflowAction.ASSIGN_FROM_SCRATCH);
+		}
+		
+		// assign the concepts to Nicole (nin)
+		for (Concept concept : conceptSet_NIN) {
+			this.processWorkflowAction(mapProject, concept, mapUser_NIN, null, WorkflowAction.ASSIGN_FROM_SCRATCH);
+		}*/
+	}
 
 	/*
 	 * (non-Javadoc)
