@@ -223,6 +223,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	public SearchResultList findDescendantConcepts(String terminologyId,
 			String terminology, String terminologyVersion,
 			PfsParameter pfsParameter) throws Exception {
+		
+		Logger.getLogger(ContentServiceJpa.class).info("findDescendantConcepts called: " + terminologyId + ", " + terminology + ", " + terminologyVersion);
 
 		SearchResultList searchResultList = new SearchResultListJpa();
 		
@@ -233,77 +235,88 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		query.setParameter("terminologyId", terminologyId);
 		
 		// get the first tree position
-		String ancestorPath = (String) query.getResultList().get(0);
+		List<String> ancestorPaths = (List<String>) query.getResultList();
 		
-		// construct query for descendants
-		query = manager.createQuery("select c "
-							+ "From TreePositionJpa tp, ConceptJpa c "
-							+ "where tp.terminologyId = c.terminologyId " 
-							+ "and tp.terminology = c.terminology "
-							+ "and tp.terminologyVersion = c.terminologyVersion "
-							+ "and tp.ancestorPath like '" + ancestorPath + "%'");
-		
-		List<Concept> concepts = query.getResultList();
-		
-		// set the total count of descendant concepts
-		searchResultList.setTotalCount(concepts.size());
-		
-		// apply paging, and sorting if appropriate
-		if (pfsParameter != null) {
+		// skip construction if no ancestor path was found
+		if (ancestorPaths.size() != 0) {
 
-			if (pfsParameter.getSortField() != null && !pfsParameter.getSortField().isEmpty()) {
-				// check that specified sort field exists on Concept and is
-				// a string
-				final Field sortField = Concept.class
-						.getDeclaredField(pfsParameter.getSortField());
-				if (!sortField.getType().equals(String.class)) {
-				
-					throw new Exception("findDescendantConcepts error:  Referenced sort field is not of type String");
-				}
-				
-				// allow the field to access the Concept values
-				sortField.setAccessible(true);
-	
-				// sort the list
-				Collections.sort(
-						concepts,
-						new Comparator<Concept>() {
-							@Override
-							public int compare(Concept c1, Concept c2) {
-								
-								// if an exception is returned, simply pass equality
-								try {
-									return ((String) sortField.get(c1)).compareTo((String) sortField.get(c2));
-								} catch (Exception e) {
-									return 0;
+			String ancestorPath = (String) ancestorPaths.get(0);
+			
+			// insert string to actually add this concept to the ancestor path
+			ancestorPath += "~" + terminologyId;
+
+			// construct query for descendants
+			query = manager.createQuery("select distinct c "
+					+ "from TreePositionJpa tp, ConceptJpa c "
+					+ "where tp.terminologyId = c.terminologyId " 
+					+ "and tp.terminology = c.terminology "
+					+ "and tp.terminologyVersion = c.terminologyVersion "
+					+ "and tp.ancestorPath like '" + ancestorPath + "%'");
+			
+			searchResultList.setTotalCount(query.get);
+
+			List<Concept> concepts = query.getResultList();
+
+			// set the total count of descendant concepts
+			searchResultList.setTotalCount(concepts.size());
+
+			/*// apply paging, and sorting if appropriate
+			if (pfsParameter != null) {
+
+				if (pfsParameter.getSortField() != null && !pfsParameter.getSortField().isEmpty()) {
+					// check that specified sort field exists on Concept and is
+					// a string
+					final Field sortField = Concept.class
+							.getDeclaredField(pfsParameter.getSortField());
+					if (!sortField.getType().equals(String.class)) {
+
+						throw new Exception("findDescendantConcepts error:  Referenced sort field is not of type String");
+					}
+
+					// allow the field to access the Concept values
+					sortField.setAccessible(true);
+
+					// sort the list
+					Collections.sort(
+							concepts,
+							new Comparator<Concept>() {
+								@Override
+								public int compare(Concept c1, Concept c2) {
+
+									// if an exception is returned, simply pass equality
+									try {
+										return ((String) sortField.get(c1)).compareTo((String) sortField.get(c2));
+									} catch (Exception e) {
+										return 0;
+									}
 								}
-							}
-						});
-			}
-			
-			
-			// get the start and end indexes based on paging parameters
-			int startIndex = pfsParameter.getStartIndex ()== -1 ? 0 : pfsParameter.getStartIndex();
-			int toIndex = pfsParameter.getMaxResults() == -1 ? 
-					concepts.size() :
-						Math.min(concepts.size(), startIndex + pfsParameter.getMaxResults()); 
-					
-			// if this page is valid (i.e. start index < end index)
-			if (toIndex > startIndex) {
-				
-				// construct the search results
-				for (Concept c : concepts.subList(startIndex, toIndex)) {
-					SearchResult searchResult = new SearchResultJpa();
-					searchResult.setId(c.getId());
-					searchResult.setTerminologyId(c.getTerminologyId());
-					searchResult.setTerminology(c.getTerminology());
-					searchResult.setTerminologyVersion(c.getTerminologyVersion());
-					searchResult.setValue(c.getDefaultPreferredName());
-					searchResultList.addSearchResult(searchResult);
+							});
 				}
+
+
+				// get the start and end indexes based on paging parameters
+				int startIndex = pfsParameter.getStartIndex ()== -1 ? 0 : pfsParameter.getStartIndex();
+				int toIndex = pfsParameter.getMaxResults() == -1 ? 
+						concepts.size() :
+							Math.min(concepts.size(), startIndex + pfsParameter.getMaxResults()); 
+
+						// if this page is valid (i.e. start index < end index)
+						if (toIndex > startIndex) {
+
+							// construct the search results
+							for (Concept c : concepts.subList(startIndex, toIndex)) {
+								SearchResult searchResult = new SearchResultJpa();
+								searchResult.setId(c.getId());
+								searchResult.setTerminologyId(c.getTerminologyId());
+								searchResult.setTerminology(c.getTerminology());
+								searchResult.setTerminologyVersion(c.getTerminologyVersion());
+								searchResult.setValue(c.getDefaultPreferredName());
+								searchResultList.addSearchResult(searchResult);
+							}
+						}
+
 			}
-			
-		}
+		}*/
 
 		// return the search result list
 		return searchResultList;
