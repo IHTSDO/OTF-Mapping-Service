@@ -482,7 +482,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			m = (MapUser) query.getSingleResult();
 		} catch (NoResultException e) {
 			Logger.getLogger(this.getClass()).warn(
-					"Map specialist query for userName = " + userName
+					"Map user query for userName = " + userName
 							+ " returned no results!");
 			return null;
 		}
@@ -1355,7 +1355,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				Logger.getLogger(this.getClass()).info(
 						"    Concept " + terminologyId + " has "
-								+ descendants.getTotalCount() + " descendants");
+								+ descendants.getTotalCount() + " descendants (" + descendants.getCount() + " from getCount)");
 				// cycle over descendants
 				for (SearchResult sr : descendants.getSearchResults()) {
 					conceptsInScope.addSearchResult(sr);
@@ -1364,6 +1364,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 
 		contentService.close();
+		
 		// get those excluded from scope
 		SearchResultList excludedResultList = findConceptsExcludedFromScope(mapProjectId);
 

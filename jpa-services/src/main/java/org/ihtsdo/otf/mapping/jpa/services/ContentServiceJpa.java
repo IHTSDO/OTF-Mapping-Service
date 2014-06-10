@@ -25,6 +25,7 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -236,6 +237,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		
 		// get the first tree position
 		List<String> ancestorPaths = (List<String>) query.getResultList();
+	
 		
 		// skip construction if no ancestor path was found
 		if (ancestorPaths.size() != 0) {
@@ -252,71 +254,64 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 					+ "and tp.terminology = c.terminology "
 					+ "and tp.terminologyVersion = c.terminologyVersion "
 					+ "and tp.ancestorPath like '" + ancestorPath + "%'");
-			
-			searchResultList.setTotalCount(query.get);
 
 			List<Concept> concepts = query.getResultList();
+
 
 			// set the total count of descendant concepts
 			searchResultList.setTotalCount(concepts.size());
 
-			/*// apply paging, and sorting if appropriate
-			if (pfsParameter != null) {
+			// apply paging, and sorting if appropriate
+			if (pfsParameter != null && (pfsParameter.getSortField() != null && !pfsParameter.getSortField().isEmpty())) {
+				// check that specified sort field exists on Concept and is
+				// a string
+				final Field sortField = Concept.class
+						.getDeclaredField(pfsParameter.getSortField());
+				if (!sortField.getType().equals(String.class)) {
 
-				if (pfsParameter.getSortField() != null && !pfsParameter.getSortField().isEmpty()) {
-					// check that specified sort field exists on Concept and is
-					// a string
-					final Field sortField = Concept.class
-							.getDeclaredField(pfsParameter.getSortField());
-					if (!sortField.getType().equals(String.class)) {
-
-						throw new Exception("findDescendantConcepts error:  Referenced sort field is not of type String");
-					}
-
-					// allow the field to access the Concept values
-					sortField.setAccessible(true);
-
-					// sort the list
-					Collections.sort(
-							concepts,
-							new Comparator<Concept>() {
-								@Override
-								public int compare(Concept c1, Concept c2) {
-
-									// if an exception is returned, simply pass equality
-									try {
-										return ((String) sortField.get(c1)).compareTo((String) sortField.get(c2));
-									} catch (Exception e) {
-										return 0;
-									}
-								}
-							});
+					throw new Exception("findDescendantConcepts error:  Referenced sort field is not of type String");
 				}
 
+				// allow the field to access the Concept values
+				sortField.setAccessible(true);
 
-				// get the start and end indexes based on paging parameters
-				int startIndex = pfsParameter.getStartIndex ()== -1 ? 0 : pfsParameter.getStartIndex();
-				int toIndex = pfsParameter.getMaxResults() == -1 ? 
-						concepts.size() :
-							Math.min(concepts.size(), startIndex + pfsParameter.getMaxResults()); 
+				// sort the list - UNTESTED
+				Collections.sort(
+					concepts,
+					new Comparator<Concept>() {
+						@Override
+						public int compare(Concept c1, Concept c2) {
 
-						// if this page is valid (i.e. start index < end index)
-						if (toIndex > startIndex) {
-
-							// construct the search results
-							for (Concept c : concepts.subList(startIndex, toIndex)) {
-								SearchResult searchResult = new SearchResultJpa();
-								searchResult.setId(c.getId());
-								searchResult.setTerminologyId(c.getTerminologyId());
-								searchResult.setTerminology(c.getTerminology());
-								searchResult.setTerminologyVersion(c.getTerminologyVersion());
-								searchResult.setValue(c.getDefaultPreferredName());
-								searchResultList.addSearchResult(searchResult);
+							// if an exception is returned, simply pass equality
+							try {
+								return ((String) sortField.get(c1)).compareTo((String) sortField.get(c2));
+							} catch (Exception e) {
+								return 0;
 							}
 						}
-
+					});
 			}
-		}*/
+		
+
+
+			// get the start and end indexes based on paging parameters
+			if (pfsParameter == null) pfsParameter = new PfsParameterJpa();
+			int startIndex = pfsParameter.getStartIndex ()== -1 ? 0 : pfsParameter.getStartIndex();
+			int toIndex = pfsParameter.getMaxResults() == -1 ? 
+				concepts.size() :
+					Math.min(concepts.size(), startIndex + pfsParameter.getMaxResults()); 
+
+			// construct the search results
+			for (Concept c : concepts.subList(startIndex, toIndex)) {
+				SearchResult searchResult = new SearchResultJpa();
+				searchResult.setId(c.getId());
+				searchResult.setTerminologyId(c.getTerminologyId());
+				searchResult.setTerminology(c.getTerminology());
+				searchResult.setTerminologyVersion(c.getTerminologyVersion());
+				searchResult.setValue(c.getDefaultPreferredName());
+				searchResultList.addSearchResult(searchResult);
+			}
+		}
 
 		// return the search result list
 		return searchResultList;
