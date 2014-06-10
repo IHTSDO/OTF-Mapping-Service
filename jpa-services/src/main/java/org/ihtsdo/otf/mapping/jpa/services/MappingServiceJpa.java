@@ -1067,28 +1067,23 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 
 		// get the results
-		List<MapRecord> m = ftquery.getResultList();
+		int totalCount = ftquery.getResultSize();
+
+        if (pfsParameter != null) {
+		  ftquery.setFirstResult(pfsParameter.getStartIndex());
+		  ftquery.setMaxResults(pfsParameter.getMaxResults());
+        }
+		List<MapRecord> mapRecords = ftquery.getResultList();
 
 		Logger.getLogger(this.getClass()).debug(
-				Integer.toString(m.size()) + " records retrieved");
+				Integer.toString(mapRecords.size()) + " records retrieved");
 
 		// set the total count
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
-		mapRecordList.setTotalCount(m.size());
-
-		int fromIndex = 0;
-		int toIndex = m.size();
-
-		if (pfsParameter != null) {
-			if (pfsParameter.getStartIndex() != -1)
-				fromIndex = pfsParameter.getStartIndex();
-			if (pfsParameter.getMaxResults() != -1)
-				toIndex = Math.min(m.size(),
-						fromIndex + pfsParameter.getMaxResults());
-		}
+		mapRecordList.setTotalCount(totalCount);
 
 		// extract the required sublist of map records
-		mapRecordList.setMapRecords(m.subList(fromIndex, toIndex));
+		mapRecordList.setMapRecords(mapRecords);
 
 		return mapRecordList;
 
@@ -2734,24 +2729,23 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Finding user's role " + userName + " " + mapProjectId);
-
-		// default role is Viewer
-		MapUserRole mapUserRole = MapUserRole.Viewer;
-
+		
+		
 		// get the user and map project for parameters
 		MapUser mapUser = getMapUser(userName);
 		MapProject mapProject = getMapProject(mapProjectId);
 		
 		// check which collection this user belongs to for this project
-		if (mapProject.getMapAdministrators().contains(mapUser)) {
-			mapUserRole = MapUserRole.Administrator;
-		} else if (mapProject.getMapLeads().contains(mapUser)) {
-			mapUserRole = MapUserRole.Lead;
-		} else if (mapProject.getMapSpecialists().contains(mapUser)) {
-			mapUserRole = MapUserRole.Specialist;
-		}
-
-		return mapUserRole;
+	  if(mapProject.getMapAdministrators().contains(mapUser)) {
+	  	return MapUserRole.ADMINISTRATOR;
+	  } else if (mapProject.getMapLeads().contains(mapUser)) {
+	  	return MapUserRole.LEAD;
+	  } else if (mapProject.getMapSpecialists().contains(mapUser)) {
+	  	return MapUserRole.SPECIALIST;	
+	  }
+	  
+		// default role is Viewer	  
+	  return MapUserRole.VIEWER;
 	}
 	
 	@Override
