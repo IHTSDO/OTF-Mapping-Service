@@ -16,7 +16,7 @@
   <packaging>war</packaging>
 
   <properties>
-    <packageName>${project.parent.artifactId}-web</packageName>
+    <packageName>${project.parent.artifactId}-webapp</packageName>
   </properties>
 
   <!-- Declare Project Dependency Versions -->
