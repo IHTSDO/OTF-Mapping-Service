@@ -140,6 +140,14 @@ public class SecurityServiceJpa implements SecurityService {
 			mappingService.addMapUser(newMapUser);
 		}
 		mappingService.close();
+		
+		System.out.println("User: " + resultString);
+		
+		// TODO Remove this once we have real users
+		// Replace user name if the user is Bob
+		if (resultString.equals("bob")) {
+			resultString = username;
+		}
 	
 		return resultString;
 	}
@@ -160,8 +168,13 @@ public class SecurityServiceJpa implements SecurityService {
 	@Override
 	public MapUserRole authorizeToken(String authToken, Long mapProjectId) {
 		try {
+			
+			// TODO Fix this
+			String parsedToken = authToken.replace("Basic ", "").replace("\"", "");
+			System.out.println("parsedToken:  " + parsedToken);
+			
 			SecurityService securityService = new SecurityServiceJpa();
-			String username = securityService.getUsernameForToken(authToken);
+			String username = securityService.getUsernameForToken(parsedToken);
 			MappingService mappingService = new MappingServiceJpa();
 			MapUserRole result = mappingService
 					.getMapUserRoleForMapProject(username, mapProjectId);

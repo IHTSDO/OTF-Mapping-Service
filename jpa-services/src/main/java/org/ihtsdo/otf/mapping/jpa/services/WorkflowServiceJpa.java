@@ -1291,7 +1291,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		int startConceptIndex = 0;
 		List<Concept> targetCodes = new ArrayList<>();
-		while (targetCodes.size() < 1000) {
+		while (targetCodes.size() < 10000) {
 
 			for (Concept concept : (List<Concept>) manager
 					.createQuery(
@@ -1322,8 +1322,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// perform assignment loop until :
 		// - the number of desired conflicts is reached OR
 		// - the records available to specialists is exhausted
-		while (leadTrackingRecords.size() < numDesiredConflicts
-				&& specialistTrackingRecords.size() > 0) {
+		while (leadTrackingRecords.size() < numDesiredConflicts) {
 
 			// if CONFLICT_DETECTED records are available
 			if (leadTrackingRecords.size() > 0) {
