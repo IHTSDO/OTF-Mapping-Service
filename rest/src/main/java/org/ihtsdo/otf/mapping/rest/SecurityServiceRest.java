@@ -53,6 +53,7 @@ public class SecurityServiceRest {
     	// TODO: when real users are available, don't hardcode "bob"
       //String resultString = securityService.authenticate("bob", password);
       //return username; //resultString;
+      //return "bob";
       return username;
     //} catch (AuthenticationException e) {
    // 	throw new WebApplicationException(Response.status(401).entity(e.getMessage()).build());

@@ -1322,7 +1322,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// perform assignment loop until :
 		// - the number of desired conflicts is reached OR
 		// - the records available to specialists is exhausted
-		while (leadTrackingRecords.size() < numDesiredConflicts) {
+		while (leadTrackingRecords.size() < numDesiredConflicts
+				&& specialistTrackingRecords.size() > 0) {
 
 			// if CONFLICT_DETECTED records are available
 			if (leadTrackingRecords.size() > 0) {
