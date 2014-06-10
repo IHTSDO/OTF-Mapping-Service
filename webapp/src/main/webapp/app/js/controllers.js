@@ -20,7 +20,8 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 		dataType: "json",
 		method: "GET",
 		headers: {
-			"Content-Type": "application/json"
+			"Content-Type": "application/json",
+			"Authorization": "Basic adm=="
 		}	
 
 		}).success(
@@ -56,7 +57,8 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 		dataType: "json",
 		method: "GET",
 		headers: {
-			"Content-Type": "application/json"
+			"Content-Type": "application/json",
+			"Authorization": "Basic adm=="
 		}	
 	}).success(function(data) {
 		localStorageService.add('mapUsers', data.mapUser);
@@ -104,7 +106,8 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		dataType: "json",
 		method: "GET",
 		headers: {
-			"Content-Type": "application/json"
+			"Content-Type": "application/json",
+			"Authorization": "Basic adm=="
 		}	
 	}).success(function(response) {
 		$scope.mapProjects = response.mapProject;
@@ -116,7 +119,8 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		dataType: "json",
 		method: "GET",
 		headers: {
-			"Content-Type": "application/json"
+			"Content-Type": "application/json",
+			"Authorization": "Basic adm=="
 		}	
 	}).success(function(response) {
 		$scope.mapUsers = response.mapUser;
@@ -132,7 +136,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	
 	// login button directs to next page based on role selected
 	$scope.goGuest = function () {
-		$scope.userName = "dsh";
+		$scope.userName = "guest";
 		$scope.role = "Viewer";
 		$scope.password = "***REMOVED***";
 		$scope.go();
@@ -169,6 +173,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 				method: "POST",
 				headers: {
 					"Content-Type": "text/plain"
+				// save userToken from authentication
 				}}).success(function(data) {
 					console.debug(data);
 				
@@ -180,6 +185,11 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							$scope.mapUser = $scope.mapUsers[i];
 						}
 					}
+					
+					$scope.userToken = localStorageService.get('userToken');
+					
+					// set default header to contain userToken
+					$http.defaults.headers.common.Authorization = "Basic " + $scope.userToken;
 					
 					// retrieve the user preferences
 					$http({
