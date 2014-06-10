@@ -8,11 +8,14 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.naming.AuthenticationException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -151,4 +154,35 @@ public class SecurityServiceJpa implements SecurityService {
 		return authToken;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.SecurityService#authorizeToken(java.lang.String, java.lang.Long)
+	 */
+	@Override
+	public MapUserRole authorizeToken(String authToken, Long mapProjectId) {
+		try {
+			SecurityService securityService = new SecurityServiceJpa();
+			String username = securityService.getUsernameForToken(authToken);
+			MappingService mappingService = new MappingServiceJpa();
+			MapUserRole result = mappingService
+					.getMapUserRoleForMapProject(username, mapProjectId);
+			mappingService.close();
+			return result;
+		} catch (Exception e) {
+			throw new WebApplicationException(Response.status(401).entity(e.getMessage()).build());
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.SecurityService#authorizeToken(java.lang.String)
+	 */
+	@Override
+	public boolean authorizeToken(String authToken) {
+		try {
+			SecurityService securityService = new SecurityServiceJpa();
+			String username = securityService.getUsernameForToken(authToken);
+			return true;
+		} catch (Exception e) {
+			throw new WebApplicationException(Response.status(401).entity(e.getMessage()).build());
+		}
+	}
 }

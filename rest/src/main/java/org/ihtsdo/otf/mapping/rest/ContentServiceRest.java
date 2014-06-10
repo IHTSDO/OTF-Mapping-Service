@@ -3,11 +3,13 @@ package org.ihtsdo.otf.mapping.rest;
 import java.util.Map;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
@@ -18,11 +20,13 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.SecurityService;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -39,6 +43,10 @@ import com.wordnik.swagger.annotations.ApiParam;
 @SuppressWarnings("static-method")
 public class ContentServiceRest {
 
+
+  /**  The security service. */
+  private SecurityService securityService = new SecurityServiceJpa();
+  
   /**
    * Instantiates an empty {@link ContentServiceRest}.
    */
@@ -61,12 +69,19 @@ public class ContentServiceRest {
   public Concept getConcept(
     @ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
+    @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion,
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId);
 
+		// authorize call
+		boolean authorized = securityService.authorizeToken(authToken);
+		if (!authorized)
+			throw new WebApplicationException(Response.status(401).entity(
+					"User does not have permissions to call the getConcept() service.").build());
+		
     try {
       ContentService contentService = new ContentServiceJpa();
       Concept c =
@@ -110,13 +125,20 @@ public class ContentServiceRest {
   public RelationshipListJpa getConceptInverseRelationships(
     @ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
+    @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion,
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId
             + "/inverseRelationships");
 
+		// authorize call
+		boolean authorized = securityService.authorizeToken(authToken);
+		if (!authorized)
+			throw new WebApplicationException(Response.status(401).entity(
+					"User does not have permissions to call the getConceptInverseRelationships() service.").build());
+		
     try {
       ContentService contentService = new ContentServiceJpa();
       Concept c =
@@ -150,12 +172,19 @@ public class ContentServiceRest {
   })
   public Concept getConcept(
     @ApiParam(value = "ID of concept to fetch", required = true) @PathParam("terminologyId") String terminologyId,
-    @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology) {
+    @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/id/"
             + terminologyId);
 
+		// authorize call
+		boolean authorized = securityService.authorizeToken(authToken);
+		if (!authorized)
+			throw new WebApplicationException(Response.status(401).entity(
+					"User does not have permissions to call the getConcept() service.").build());
+		
     try {
       ContentService contentService = new ContentServiceJpa();
       MetadataService metadataService = new MetadataServiceJpa();
@@ -183,10 +212,18 @@ public class ContentServiceRest {
   @Path("/concept/query/{string}")
   @ApiOperation(value = "Find concepts by search query", notes = "Returns concepts that are related to search query.", response = String.class)
   public SearchResultList findConceptsForQuery(
-    @ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString) {
+    @ApiParam(value = "lucene search string", required = true) @PathParam("string") String searchString,
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/query/" + searchString);
+    
+		// authorize call
+		boolean authorized = securityService.authorizeToken(authToken);
+		if (!authorized)
+			throw new WebApplicationException(Response.status(401).entity(
+					"User does not have permissions to call the findConceptsForQuery() service.").build());
+		
     try {
       ContentService contentService = new ContentServiceJpa();
       SearchResultList sr =
@@ -215,11 +252,19 @@ public class ContentServiceRest {
   public SearchResultList findDescendantConcepts(
     @ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
+    @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion,
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId + "/descendants");
+    
+		// authorize call
+		boolean authorized = securityService.authorizeToken(authToken);
+		if (!authorized)
+			throw new WebApplicationException(Response.status(401).entity(
+					"User does not have permissions to call the findDescendantConcepts() service.").build());
+		
     try {
       ContentService contentService = new ContentServiceJpa();
 
@@ -251,11 +296,19 @@ public class ContentServiceRest {
   public SearchResultList findChildConcepts(
     @ApiParam(value = "ID of concept to fetch descendants for", required = true) @PathParam("id") Long id,
     @ApiParam(value = "Concept terminology", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion) {
+    @ApiParam(value = "Concept terminology version", required = true) @PathParam("version") String terminologyVersion,
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + id.toString() + "/descendants");
+    
+		// authorize call
+		boolean authorized = securityService.authorizeToken(authToken);
+		if (!authorized)
+			throw new WebApplicationException(Response.status(401).entity(
+					"User does not have permissions to call the findChildConcepts() service.").build());
+		
     try {
       ContentService contentService = new ContentServiceJpa();
       MetadataService metadataService = new MetadataServiceJpa();
@@ -320,8 +373,15 @@ public class ContentServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public SearchResultList clearTreePositions() {
+  public SearchResultList clearTreePositions(
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
+		// authorize call
+		boolean authorized = securityService.authorizeToken(authToken);
+		if (!authorized)
+			throw new WebApplicationException(Response.status(401).entity(
+					"User does not have permissions to call the clearTreePositions() service.").build());
+		
     try {
       ContentService contentService = new ContentServiceJpa();
 
@@ -343,10 +403,16 @@ public class ContentServiceRest {
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public SearchResultList findDescendantsFromTreePostions() {
+  public SearchResultList findDescendantsFromTreePostions(
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     try {
-      
+  		// authorize call
+  		boolean authorized = securityService.authorizeToken(authToken);
+  		if (!authorized)
+  			throw new WebApplicationException(Response.status(401).entity(
+  					"User does not have permissions to call the findDescendantsFromTreePositions() service.").build()); 		
+    	
       ContentService contentService = new ContentServiceJpa();
       Logger.getLogger(this.getClass()).info("start");
       SearchResultList results =
@@ -360,5 +426,7 @@ public class ContentServiceRest {
       throw new WebApplicationException(e);
     }
   }
+
+
 
 }

@@ -56,7 +56,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
-import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
@@ -2736,9 +2735,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Finding user's role " + userName + " " + mapProjectId);
 		
-		// default role is Viewer
-		MapUserRole mapUserRole = MapUserRole.Viewer;
-
+		
 		// get the user and map project for parameters
 		MapUser mapUser = getMapUser(userName);
 		MapProject mapProject = getMapProject(mapProjectId);
@@ -2752,6 +2749,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	  	return MapUserRole.SPECIALIST;	
 	  }
 	  
+		// default role is Viewer	  
 	  return MapUserRole.VIEWER;
 	}
 	

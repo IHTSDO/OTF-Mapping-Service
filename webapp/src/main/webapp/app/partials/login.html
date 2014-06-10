@@ -9,19 +9,6 @@
 
 <div ng-show="mapUsers.length > 0">
 	<form>
-      <div>
-        <div height="70px" 
-          style="vertical-align: bottom; padding-bottom: 15px"><strong>View Maps as a Guest</strong></div>
-      </div>
-      <div>
-        <div style="padding:5px;" >
-          <button type="submit" ng-click="goGuest('/project/records')">View Maps</button>
-        </div>
-      </div>
-      <div>
-        <div height="70px" 
-          style="vertical-align: bottom; padding-top: 15px; padding-bottom: 15px"><strong>OR</strong></div>
-      </div>
 	  <div>
         <div height="70px" 
           style="vertical-align: bottom; padding-bottom: 15px"><strong>Enter User and Password</strong>
@@ -37,7 +24,20 @@
 		<div style="padding:5px;" >
 		<button type="submit" ng-click="go('/viewer/dash')">Login</button>
 		</div>
-	  </div>
+	  </div> 
+      <div>
+        <div height="70px" 
+          style="vertical-align: bottom; padding-top: 15px; padding-bottom: 15px"><strong>OR</strong></div>
+      </div>
+      <div>
+        <div height="70px" 
+          style="vertical-align: bottom; padding-bottom: 15px"><strong>View Maps as a Guest</strong></div>
+      </div>
+      <div>
+        <div style="padding:5px;" >
+          <button type="submit" ng-click="goGuest('/project/records')">View Maps</button>
+        </div>
+      </div>
 	</form>
 </div>
 <div ng-include src="'./partials/footer.html'"></div>
