@@ -21,7 +21,7 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json",
-			"Authorization": "Basic adm=="
+			"Authorization": "adm"
 		}	
 
 		}).success(
@@ -41,7 +41,8 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 		dataType: "json",
 		method: "GET",
 		headers: {
-			"Content-Type": "application/json"
+			"Content-Type": "application/json",
+			"Authorization": "adm"
 		}
 	}).success(function(response) {
 		var keyValuePairs = response.keyValuePair;
@@ -58,7 +59,7 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json",
-			"Authorization": "Basic adm=="
+			"Authorization": "adm"
 		}	
 	}).success(function(data) {
 		localStorageService.add('mapUsers', data.mapUser);
@@ -74,7 +75,8 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 			dataType: "json",
 			method: "GET",
 			headers: {
-				"Content-Type": "application/json"
+				"Content-Type": "application/json",
+				"Authorization": "adm"
 			}
 		}).success(function(response) {
 			console.debug("Adding metadata for " + terminology);
@@ -99,32 +101,9 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setFocusProject', {key: 'focusProject', focusProject: null});
 	$rootScope.$broadcast('localStorageModule.notification.setPreferences', {key: 'preferences', preferences: null});
-
-	// explicitly retrieve the available users and projects to guarantee availability on first visit
-	$http({
-		url: root_mapping + "project/projects",
-		dataType: "json",
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json",
-			"Authorization": "Basic adm=="
-		}	
-	}).success(function(response) {
-		$scope.mapProjects = response.mapProject;
-			});
-
-	// retrieve users
-	$http({
-		url: root_mapping + "user/users",
-		dataType: "json",
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json",
-			"Authorization": "Basic adm=="
-		}	
-	}).success(function(response) {
-		$scope.mapUsers = response.mapUser;
-	});
+	
+	$scope.mapProjects = localStorageService.get('mapProjects');
+	$scope.mapUsers = localStorageService.get('mapUsers');
 
 	// initial values for pick-list
 	$scope.roles = [
@@ -189,7 +168,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 					$scope.userToken = localStorageService.get('userToken');
 					
 					// set default header to contain userToken
-					$http.defaults.headers.common.Authorization = "Basic " + $scope.userToken;
+					$http.defaults.headers.common.Authorization = $scope.userToken;
 					
 					// retrieve the user preferences
 					$http({
