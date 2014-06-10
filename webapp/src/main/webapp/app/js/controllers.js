@@ -20,7 +20,8 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 		dataType: "json",
 		method: "GET",
 		headers: {
-			"Content-Type": "application/json"
+			"Content-Type": "application/json",
+			"Authorization": "Basic adm=="
 		}	
 
 		}).success(
@@ -56,7 +57,8 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 		dataType: "json",
 		method: "GET",
 		headers: {
-			"Content-Type": "application/json"
+			"Content-Type": "application/json",
+			"Authorization": "Basic adm=="
 		}	
 	}).success(function(data) {
 		localStorageService.add('mapUsers', data.mapUser);
@@ -104,7 +106,8 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		dataType: "json",
 		method: "GET",
 		headers: {
-			"Content-Type": "application/json"
+			"Content-Type": "application/json",
+			"Authorization": "Basic adm=="
 		}	
 	}).success(function(response) {
 		$scope.mapProjects = response.mapProject;
@@ -116,7 +119,8 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		dataType: "json",
 		method: "GET",
 		headers: {
-			"Content-Type": "application/json"
+			"Content-Type": "application/json",
+			"Authorization": "Basic adm=="
 		}	
 	}).success(function(response) {
 		$scope.mapUsers = response.mapUser;
@@ -129,6 +133,14 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	                'Lead',
 	                'Administrator'];
 	$scope.role = $scope.roles[0];  
+	
+	// login button directs to next page based on role selected
+	$scope.goGuest = function () {
+		$scope.userName = "guest";
+		$scope.role = "Viewer";
+		$scope.password = "Sn0m3dDefPass";
+		$scope.go();
+	}
 	
 	// login button directs to next page based on role selected
 	$scope.go = function () {
@@ -161,6 +173,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 				method: "POST",
 				headers: {
 					"Content-Type": "text/plain"
+				// save userToken from authentication
 				}}).success(function(data) {
 					console.debug(data);
 				
@@ -172,6 +185,11 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							$scope.mapUser = $scope.mapUsers[i];
 						}
 					}
+					
+					$scope.userToken = localStorageService.get('userToken');
+					
+					// set default header to contain userToken
+					$http.defaults.headers.common.Authorization = "Basic " + $scope.userToken;
 					
 					// retrieve the user preferences
 					$http({
@@ -251,18 +269,21 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 								}	
 							}).success(function(data) {
 								console.debug(data);
-								$scope.role = data.substring(1, data.length - 1);;
+								$scope.role = data.replace(/"/g, '');
+								
 						
-
-
-								if ($scope.role == "Specialist") {
+								if ($scope.role.toLowerCase() == "specialist") {
 									path = "/specialist/dash";
-								} else if ($scope.role == "Lead") {
+									$scope.role = "Specialist";
+								} else if ($scope.role.toLowerCase() == "lead") {
 									path = "/lead/dash";
-								} else if ($scope.role == "Administrator") {
+									$scope.role = "Lead";
+								} else if ($scope.role.toLowerCase() == "administrator") {
 									path = "/admin/dash";
+									$scope.role = "Administrator";
 								} else  {
 									path = "/viewer/dash";
+									$scope.role = "Viewer";
 								}
 
 								// add the user information to local storage
@@ -347,7 +368,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	$scope.currentUser = localStorageService.get("currentUser");
 	$scope.currentRole = localStorageService.get("currentRole");
 	$scope.userPreferences = localStorageService.get("userPreferences");
-	
+
 
 	// retrieve focus project on first call
 	$scope.focusProject = localStorageService.get("focusProject");
@@ -358,7 +379,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		$scope.focusProject = parameters.focusProject;
 		$scope.filterRecords();
 	});	
-	
+
 
 	// once focus project retrieved, retrieve the concept and records
 	$scope.$watch('focusProject', function() {
@@ -428,7 +449,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			$scope.error = $scope.error + "Could not retrieve Concept. ";    
 		});
 	});
-	
+
 	$scope.goProjectDetails = function() {
 		console.debug("Redirecting to project details view");
 		$location.path("/project/details");
@@ -647,7 +668,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		}
 	};
 
-
+	
 	// change the focus project to the project associated with a specified record
 	$scope.changeFocusProjectByRecord = function(record) {
 		
