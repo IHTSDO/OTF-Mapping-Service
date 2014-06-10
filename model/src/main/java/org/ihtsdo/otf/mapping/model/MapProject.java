@@ -222,8 +222,7 @@ public interface MapProject {
 
 	/**
 	 * Sets the map administrators.
-	 * 
-	 * @param mapLeads the map administrators
+	 * @param mapAdministrators the map administrators
 	 */
 	public void setMapAdministrators(Set<MapUser> mapAdministrators);
 
