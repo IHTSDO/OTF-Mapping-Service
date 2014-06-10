@@ -927,6 +927,27 @@ public class WorkflowServiceRest {
 		workflowService.close();
 	}
 	
+	@POST
+	@Path("/project/id/{id:[0-9][0-9]*}/testing")
+	@ApiOperation(value = "Generate the workflow testing scenario for project", notes = "Performs service-layer-specified assignment for a map project")
+	public void generateMappingTestingState(
+			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+		
+		if (!securityService.authorizeToken(authToken)) {
+			throw new WebApplicationException(Response.status(401).entity(
+					"User does not have permission to generate the mapping team testing state.").build());
+		}
+		
+		MappingService mappingService = new MappingServiceJpa();
+		MapProject mapProject = mappingService.getMapProject(mapProjectId);
+		
+		WorkflowService workflowService = new WorkflowServiceJpa();
+		workflowService.generateMapperTestingState(mapProject);
+		workflowService.close();
+	}
+
+	
 
 	
 }
