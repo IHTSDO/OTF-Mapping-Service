@@ -9,7 +9,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
@@ -75,14 +74,11 @@ public class ContentServiceRest {
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId);
-
-		// authorize call
-		boolean authorized = securityService.authorizeToken(authToken);
-		if (!authorized)
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the getConcept() service.").build());
-		
+	
     try {
+  		// authorize call
+  		securityService.authorizeToken(authToken);
+  		
       ContentService contentService = new ContentServiceJpa();
       Concept c =
           contentService.getConcept(terminologyId, terminology,
@@ -133,13 +129,10 @@ public class ContentServiceRest {
             + terminologyVersion + "/id/" + terminologyId
             + "/inverseRelationships");
 
-		// authorize call
-		boolean authorized = securityService.authorizeToken(authToken);
-		if (!authorized)
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the getConceptInverseRelationships() service.").build());
-		
     try {
+  		// authorize call
+  		securityService.authorizeToken(authToken);
+  		
       ContentService contentService = new ContentServiceJpa();
       Concept c =
           contentService.getConcept(terminologyId, terminology,
@@ -179,13 +172,10 @@ public class ContentServiceRest {
         "RESTful call (Content): /concept/" + terminology + "/id/"
             + terminologyId);
 
-		// authorize call
-		boolean authorized = securityService.authorizeToken(authToken);
-		if (!authorized)
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the getConcept() service.").build());
-		
     try {
+  		// authorize call
+  		securityService.authorizeToken(authToken);
+  		
       ContentService contentService = new ContentServiceJpa();
       MetadataService metadataService = new MetadataServiceJpa();
       String version = metadataService.getLatestVersion(terminology);
@@ -218,13 +208,10 @@ public class ContentServiceRest {
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/query/" + searchString);
     
-		// authorize call
-		boolean authorized = securityService.authorizeToken(authToken);
-		if (!authorized)
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the findConceptsForQuery() service.").build());
-		
     try {
+  		// authorize call
+  		securityService.authorizeToken(authToken);
+  		
       ContentService contentService = new ContentServiceJpa();
       SearchResultList sr =
           contentService.findConceptsForQuery(searchString, new PfsParameterJpa());
@@ -258,14 +245,11 @@ public class ContentServiceRest {
     Logger.getLogger(ContentServiceRest.class).info(
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + terminologyId + "/descendants");
-    
-		// authorize call
-		boolean authorized = securityService.authorizeToken(authToken);
-		if (!authorized)
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the findDescendantConcepts() service.").build());
-		
+
     try {
+  		// authorize call
+  		securityService.authorizeToken(authToken);
+  		
       ContentService contentService = new ContentServiceJpa();
 
       // want all descendants, do not use PFS parameter
@@ -303,13 +287,10 @@ public class ContentServiceRest {
         "RESTful call (Content): /concept/" + terminology + "/"
             + terminologyVersion + "/id/" + id.toString() + "/descendants");
     
-		// authorize call
-		boolean authorized = securityService.authorizeToken(authToken);
-		if (!authorized)
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the findChildConcepts() service.").build());
-		
     try {
+  		// authorize call
+  		securityService.authorizeToken(authToken);
+  		
       ContentService contentService = new ContentServiceJpa();
       MetadataService metadataService = new MetadataServiceJpa();
 
@@ -376,13 +357,10 @@ public class ContentServiceRest {
   public SearchResultList clearTreePositions(
 		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
-		// authorize call
-		boolean authorized = securityService.authorizeToken(authToken);
-		if (!authorized)
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the clearTreePositions() service.").build());
-		
     try {
+  		// authorize call
+  		securityService.authorizeToken(authToken);
+  		
       ContentService contentService = new ContentServiceJpa();
 
       contentService.clearTreePositions("SNOMEDCT", "20140131");
@@ -408,11 +386,8 @@ public class ContentServiceRest {
 
     try {
   		// authorize call
-  		boolean authorized = securityService.authorizeToken(authToken);
-  		if (!authorized)
-  			throw new WebApplicationException(Response.status(401).entity(
-  					"User does not have permissions to call the findDescendantsFromTreePositions() service.").build()); 		
-    	
+  		securityService.authorizeToken(authToken);
+  		
       ContentService contentService = new ContentServiceJpa();
       Logger.getLogger(this.getClass()).info("start");
       SearchResultList results =
