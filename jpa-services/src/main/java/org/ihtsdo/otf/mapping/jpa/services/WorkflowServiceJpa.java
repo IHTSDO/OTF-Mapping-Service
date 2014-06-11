@@ -1846,7 +1846,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Logger.getLogger(WorkflowServiceJpa.class).info("Generating clean Mapping User Testing State for project " + mapProject.getName());
 		
 		String[] conceptsKLI = {
-				/*"28221000119103",
+				"28221000119103",
 				"700189007",
 				"295131000119103",
 				"72791000119108",
@@ -1892,16 +1892,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				"700174003",
 				"700149001",
 				"700127007",
-				"700132008"*/
-				"233734006",
-				"269209005",
-				"239924002"
+				"700132008"
+
 				};
 		
 		Logger.getLogger(WorkflowServiceJpa.class).info("  KLI: " + conceptsKLI.length + " concepts");
 		
 		String conceptsNIN[] = {
-				/*"28221000119103",
+				"28221000119103",
 				"700189007",
 				"295131000119103",
 				"72791000119108",
@@ -1947,10 +1945,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				"700174003",
 				"700149001",
 				"700127007",
-				"700132008"*/
-				"233734006",
-				"269209005",
-				"239924002"
+				"700132008"
 				};
 		
 		Logger.getLogger(WorkflowServiceJpa.class).info("  KLI: " + conceptsKLI.length + " concepts");
