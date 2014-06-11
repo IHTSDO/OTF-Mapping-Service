@@ -959,9 +959,11 @@ public class WorkflowServiceRest {
 	@ApiOperation(value = "Generate the workflow testing scenario for project", notes = "Performs service-layer-specified assignment for a map project")
 	public void generateMappingTestingState(
 			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
 		
-		if (!securityService.authorizeToken(authToken)) {
+		try {
+			securityService.authorizeToken(authToken); 
+		} catch(Exception e) {
 			throw new WebApplicationException(Response.status(401).entity(
 					"User does not have permission to generate the mapping team testing state.").build());
 		}

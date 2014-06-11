@@ -49,6 +49,16 @@ public interface WorkflowService {
 	 */
 	public TrackingRecordList getTrackingRecordsForMapProject(
 			MapProject mapProject) throws Exception;
+	
+	/**
+	 * Gets the tracking record for map project and concept.
+	 *
+	 * @param mapProject the map project
+	 * @param concept the concept
+	 * @return the tracking record for map project and concept
+	 */
+	public TrackingRecord getTrackingRecordForMapProjectAndConcept(
+			MapProject mapProject, Concept concept);
 
 	/**
 	 * Adds the workflow tracking record.
@@ -360,5 +370,7 @@ public interface WorkflowService {
 	 * @throws Exception the exception
 	 */
 	public void generateMapperTestingState(MapProject mapProject) throws Exception;
+
+
 
 }
