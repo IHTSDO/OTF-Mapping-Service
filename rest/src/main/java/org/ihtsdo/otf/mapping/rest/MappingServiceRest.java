@@ -336,20 +336,20 @@ public class MappingServiceRest {
 	/**
 	 * Returns all map projects for a map user
 	 * 
-	 * @param mapLeadId
-	 *            the map lead
+	 * @param mapUserName
+	 *            the map user name
 	 * @return the map projects
 	 */
 	@GET
-	@Path("/user/id/{id:[0-9][0-9]*}/projects")
+	@Path("/user/id/{username}/projects")
 	@ApiOperation(value = "Find all projects for user", notes = "Returns a MapUser's MapProjects in either JSON or XML format", response = MapProjectListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectListJpa getMapProjectsForUser(
-			@ApiParam(value = "Id of map user to fetch projects for", required = true) @PathParam("id") Long mapLeadId,
+			@ApiParam(value = "Id of map user to fetch projects for", required = true) @PathParam("username") String mapUserName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): user/id/" + mapLeadId.toString()
+				"RESTful call (Mapping): user/id/" + mapUserName
 						+ "/projects");
 			
 		try {
@@ -357,7 +357,7 @@ public class MappingServiceRest {
   		securityService.authorizeToken(authToken);
   		
 			MappingService mappingService = new MappingServiceJpa();
-			MapUser mapLead = mappingService.getMapUser(mapLeadId);
+			MapUser mapLead = mappingService.getMapUser(mapUserName);
 			MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService
 					.getMapProjectsForMapUser(mapLead);
 
@@ -430,22 +430,22 @@ public class MappingServiceRest {
 	 * @return the mapUser
 	 */
 	@GET
-	@Path("/user/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Find user by id", notes = "Returns a MapUser given a user id in either JSON or XML format", response = MapUser.class)
+	@Path("/user/id/{username}")
+	@ApiOperation(value = "Find user by username", notes = "Returns a MapUser given a user name in either JSON or XML format", response = MapUser.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapUser getMapUser(
-			@ApiParam(value = "Id of map lead to fetch", required = true) @PathParam("id") Long mapUserId,
+			@ApiParam(value = "Username of MapUser to fetch", required = true) @PathParam("username") String mapUserName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): user/id/" + mapUserId.toString());
+				"RESTful call (Mapping): user/id/" + mapUserName);
 	
 		try {
   		// authorize call
   		securityService.authorizeToken(authToken);
   		
 			MappingService mappingService = new MappingServiceJpa();
-			MapUser mapUser = mappingService.getMapUser(mapUserId);
+			MapUser mapUser = mappingService.getMapUser(mapUserName);
 			mappingService.close();
 			return mapUser;
 		} catch (Exception e) {
