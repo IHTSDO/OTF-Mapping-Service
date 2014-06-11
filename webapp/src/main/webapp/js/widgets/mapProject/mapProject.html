@@ -14,6 +14,10 @@
       Workflow</button>
   </span>
   
+    <span ng-show="currentRole === 'Administrator'">
+    <button class="btn btn-sm btn-primary" ng-click="generateTestingState()">Generate Testing State</button>
+  </span>
+  
   <div ng-show="currentRole === 'Administrator'">
   <hr>
   <form>
