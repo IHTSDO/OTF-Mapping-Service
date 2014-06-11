@@ -904,6 +904,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		// the list of map records to return
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
+		
+		for (MapRecord mr : mapRecords) {
+			System.out.println(mr.toString());
+		}
 
 		// create new record
 		MapRecord mapRecord = new MapRecordJpa();
@@ -912,6 +916,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		mapRecord.setConceptName(concept.getDefaultPreferredName());
 		mapRecord.setOwner(mapUser);
 		mapRecord.setLastModifiedBy(mapUser);
+		mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
 
 		// determine the workflow status of this record based on tracking record
 		switch (trackingRecord.getWorkflowPath()) {
@@ -1485,6 +1490,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	public WorkflowStatus getWorkflowStatus(Set<MapRecord> mapRecords) {
 		WorkflowStatus workflowStatus = WorkflowStatus.NEW;
 		for (MapRecord mr : mapRecords) {
+			System.out.println(mr.getWorkflowStatus());
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
 				workflowStatus = mr.getWorkflowStatus();
 		}
