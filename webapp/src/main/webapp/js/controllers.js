@@ -14,75 +14,8 @@ var root_security = root_url + "security/";
 mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 	$rootScope.glassPane = 0;
 	
-	// retrieve projects
-	$http({
-		url: root_mapping + "project/projects",
-		dataType: "json",
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json",
-			"Authorization": "adm"
-		}	
 
-		}).success(
-			function(data) {
-				localStorageService.add('mapProjects', data.mapProject);
-				$rootScope.$broadcast(
-						'localStorageModule.notification.setMapProjects', {
-							key : 'mapProjects',
-							mapProjects : data.mapProject
-						});
 
-			});
-
-	// retrieve metadata
-	$http({
-		url: root_metadata + "terminologies/latest",
-		dataType: "json",
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json",
-			"Authorization": "adm"
-		}
-	}).success(function(response) {
-		var keyValuePairs = response.keyValuePair;
-		for (var i = 0; i < keyValuePairs.length; i++) {
-			console.debug("Retrieving metadata for " + keyValuePairs[i].key + ", " + keyValuePairs[i].value);		
-			addMetadataToLocalStorageService(keyValuePairs[i].key, keyValuePairs[i].value);
-				}
-			});
-
-	// retrieve users
-	$http({
-		url: root_mapping + "user/users",
-		dataType: "json",
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json",
-			"Authorization": "adm"
-		}	
-	}).success(function(data) {
-		localStorageService.add('mapUsers', data.mapUser);
-		$rootScope.$broadcast('localStorageModule.notification.setMapUsers',{key: 'mapUsers', mapUsers: data.mapUsers});  
-
-	});
-
-	// function to add metadata to local storage service
-	// written to ensure correct handling of asynchronous responses
-	function addMetadataToLocalStorageService(terminology, version) {
-		$http({
-			url: root_metadata + "all/" + terminology + "/" + version,
-			dataType: "json",
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json",
-				"Authorization": "adm"
-			}
-		}).success(function(response) {
-			console.debug("Adding metadata for " + terminology);
-			localStorageService.add('metadata_' + terminology, response.keyValuePairList);
-});
-	}
 
 });
 
@@ -156,19 +89,31 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 				}}).success(function(data) {
 					console.debug(data);
 				
-					localStorageService.add('userToken', data);
-					
-					// find the mapUser object
-					for (var i = 0; i < $scope.mapUsers.length; i++)  {
-						if ($scope.mapUsers[i].userName === $scope.userName) {
-							$scope.mapUser = $scope.mapUsers[i];
-						}
-					}
-					
+					localStorageService.add('userToken', data);				
 					$scope.userToken = localStorageService.get('userToken');
 					
 					// set default header to contain userToken
 					$http.defaults.headers.common.Authorization = $scope.userToken;
+					
+					// retrieve projects
+					$http({
+						url: root_mapping + "project/projects",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}	
+
+						}).success(
+							function(data) {
+								localStorageService.add('mapProjects', data.mapProject);
+								$rootScope.$broadcast(
+										'localStorageModule.notification.setMapProjects', {
+											key : 'mapProjects',
+											mapProjects : data.mapProject
+										});
+
+					});
 					
 					// retrieve the user preferences
 					$http({
@@ -212,7 +157,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 
 					}).then(function(data) {
 						$http({
-							url: root_mapping + "user/id/" + $scope.mapUser.id + "/projects",
+							url: root_mapping + "user/id/" + $scope.userName + "/projects",
 							dataType: "json",
 							method: "GET",
 							headers: {
@@ -266,11 +211,9 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 								}
 
 								// add the user information to local storage
-								localStorageService.add('currentUser', $scope.mapUser);
 								localStorageService.add('currentRole', $scope.role);
 
 								// broadcast the user information to rest of app
-								$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
 								$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role});
 					
 								$rootScope.glassPane--;
@@ -288,8 +231,75 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 				}).error(function(error) {
 					$rootScope.glassPane--;
 					$scope.error = error.replace(/"/g, '');
+				}).then(function(data) {
+					$rootScope.glassPane++;
+					$http({
+						url: root_metadata + "terminologies/latest",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(response) {
+						$rootScope.glassPane--;
+						var keyValuePairs = response.keyValuePair;
+						for (var i = 0; i < keyValuePairs.length; i++) {
+							console.debug("Retrieving metadata for " + keyValuePairs[i].key + ", " + keyValuePairs[i].value);		
+							addMetadataToLocalStorageService(keyValuePairs[i].key, keyValuePairs[i].value);
+						}
+					}).error(function(error) {
+						$rootScope.glassPane--;
+					});
 				});
+
 		}
+		
+		// retrieve users
+		$rootScope.glassPane++;
+		$http({
+			url: root_mapping + "user/users",
+			dataType: "json",
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			$rootScope.glassPane--;
+			localStorageService.add('mapUsers', data.mapUser);
+			$rootScope.$broadcast('localStorageModule.notification.setMapUsers',{key: 'mapUsers', mapUsers: data.mapUsers});  
+			// find the mapUser object
+			for (var i = 0; i < $scope.mapUsers.length; i++)  {
+				if ($scope.mapUsers[i].userName === $scope.userName) {
+					$scope.mapUser = $scope.mapUsers[i];
+				}
+			}
+			
+			// add the user information to local storage
+			localStorageService.add('currentUser', $scope.mapUser);
+
+			// broadcast the user information to rest of app
+			$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
+		}).error(function(error) {
+			$rootScope.glassPane--;
+		});
+		
+
+		// function to add metadata to local storage service
+		// written to ensure correct handling of asynchronous responses
+		function addMetadataToLocalStorageService(terminology, version) {
+			$http({
+				url: root_metadata + "all/" + terminology + "/" + version,
+				dataType: "json",
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(response) {
+				console.debug("Adding metadata for " + terminology);
+				localStorageService.add('metadata_' + terminology, response.keyValuePairList);
+			});
+		}
+
 	};
 	
 	// function to change project from the header

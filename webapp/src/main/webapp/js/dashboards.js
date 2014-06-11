@@ -376,6 +376,15 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		}).success(function(data) {
 			console.debug("Role set to: " + data);
 			$scope.currentRole = data.substring(1, data.length - 1);
+			if ($scope.currentRole.toLowerCase() == "specialist") {
+				$scope.currentRole = "Specialist";
+			} else if ($scope.currentRole.toLowerCase() == "lead") {
+				$scope.currentRole = "Lead";
+			} else if ($scope.currentRole.toLowerCase() == "administrator") {
+				$scope.currentRole = "Administrator";
+			} else  {
+				$scope.currentRole = "Viewer";
+			}
 			localStorageService.add('currentRole', $scope.currentRole);
 		}).then(function() {
 			setTimeout(function() {
