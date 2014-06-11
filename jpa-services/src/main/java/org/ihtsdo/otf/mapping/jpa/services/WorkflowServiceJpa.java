@@ -3,8 +3,10 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -54,6 +56,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	/** The manager. */
 	private EntityManager manager;
 
+	
 	/** The transaction per operation. */
 	private boolean transactionPerOperation = true;
 
@@ -168,6 +171,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				"select tr from TrackingRecordJpa tr").getResultList());
 		
 		return trackingRecordList;
+	}
+	
+	@Override
+	public TrackingRecord getTrackingRecordForMapProjectAndConcept(MapProject mapProject, Concept concept) {
+		return (TrackingRecord) manager.createQuery(
+				"select tr from TrackingRecordJpa tr where mapProject_id = :mapProjectId and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
+				.setParameter("mapProjectId", mapProject.getId())
+				.setParameter("terminology", concept.getTerminology())
+				.setParameter("terminologyVersion", concept.getTerminologyVersion())
+				.setParameter("terminologyId", concept.getTerminologyId())
+				.getSingleResult();
 	}
 
 	/*
@@ -808,7 +822,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Set<MapRecord> syncedRecords = synchronizeMapRecords(trackingRecord, mapRecords);
 		trackingRecord.setMapRecordIds(null);
 		for (MapRecord mr : syncedRecords) {
-//			System.out.println("Post-sync:  Adding map record " + mr.getId().toString());
 			trackingRecord.addMapRecordId(mr.getId());
 		}
 		
@@ -816,20 +829,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		if (getWorkflowStatusForTrackingRecord(trackingRecord).equals(
 				WorkflowStatus.READY_FOR_PUBLICATION)
 				&& trackingRecord.getMapRecordIds().size() == 1) {
-			//			Logger.getLogger(WorkflowServiceJpa.class).info(
-			//					"SYNC: Deleting workflow tracking record");
+
 			removeTrackingRecord(trackingRecord.getId());
 		
 		// else add the tracking record if new
 		} else if (trackingRecord.getId() == null) {
-			
-			//			System.out.println("Adding tracking record " + trackingRecord.toString());
 			addTrackingRecord(trackingRecord);
 			
 		// otherwise update the tracking record
 		} else	{
-			//			System.out.println("Updating tracking record");
-			//			System.out.println(trackingRecord.toString());
+
 			updateTrackingRecord(trackingRecord);
 		}
 
@@ -881,33 +890,25 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Set<MapRecord> syncedRecords = new HashSet<>();
 
 		// detach the map records
-		// System.out.println("NEW RECORDS -- " + mapRecords.size());
 		for (MapRecord mr : mapRecords) {
 			manager.detach(mr);
 			newRecords.add(mr);
-			// System.out.println("  Detached record: " + mr.toString());
 		}
 
 		// Instantiate the mapping service
 		MappingService mappingService = new MappingServiceJpa();
 
 		// retrieve the old (existing) records
-		// System.out.println("OLD RECORDS -- " +
-		// trackingRecord.getMapRecordIds());
 		if (trackingRecord.getMapRecordIds() != null) {
 			for (Long id : trackingRecord.getMapRecordIds()) {
 				oldRecords.add(mappingService.getMapRecord(id));
 			}
 		}
-		// for (MapRecord mr : oldRecords) System.out.println("  " +
-		// mr.toString());
 
 		// cycle over new records to check for additions or updates
 		for (MapRecord mr : newRecords) {
 			if (getMapRecordInSet(oldRecords, mr.getId()) == null) {
-				// System.out.println("Adding record: Adding detached entries to new record");
-				// System.out.println("  " + mr.toString());
-
+	
 				// deep copy the detached record into a new
 				// persistence-environment record
 				// this routine also duplicates child collections to avoid
@@ -918,9 +919,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						"Adding record: " + newRecord.toString());
 
 				// add the record to the database
-				// System.out.println("  Record id before add: " + mr.getId());
 				mappingService.addMapRecord(mr);
-				// System.out.println("  Record id after add:  " + mr.getId());
 
 				// add the record to the return list
 				syncedRecords.add(newRecord);
@@ -930,8 +929,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			else {
 				// if the old map record is changed, update it
 				if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
-//					Logger.getLogger(WorkflowServiceJpa.class).info(
-//							"Updating: " + mr.toString());
 					mappingService.updateMapRecord(mr);
 				}
 
@@ -939,21 +936,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			}
 		}
 
-		// System.out.println("New records after synchronization");
-		// for (MapRecord mr : syncedRecords) {
-		// System.out.println("  " + mr.toString());
-		// }
-		//
 		// cycle over old records to check for deletions
 		for (MapRecord mr : oldRecords) {
 
-			// System.out.println("Checking delete for record " +
-			// mr.toString());
-
 			// if old record is not in the new record set, delete it
 			if (getMapRecordInSet(syncedRecords, mr.getId()) == null) {
-				// System.out.println("Removing record " +
-				// mr.getId().toString());
 				mappingService.removeMapRecord(mr.getId());
 			}
 		}
@@ -1849,6 +1836,226 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				return mapRecord;
 		}
 		return null;
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void generateMapperTestingState(MapProject mapProject) throws Exception {
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info("Generating clean Mapping User Testing State for project " + mapProject.getName());
+		
+		String[] conceptsKLI = {
+				/*"28221000119103",
+				"700189007",
+				"295131000119103",
+				"72791000119108",
+				"295041000119108",
+				"295051000119105",
+				"700147004",
+				"700109009",
+				"700112007",
+				"700150001",
+				"700081008",
+				"700075000",
+				"700097003",
+				"700080009",
+				"700082001",
+				"402714001",
+				"700094005",
+				"166631000119101",
+				"700076004",
+				"403469006",
+				"3961000119101",
+				"700095006",
+				"700153004",
+				"700195008",
+				"700107006",
+				"700111000",
+				"700077008",
+				"700079006",
+				"700167008",
+				"700178000",
+				"700181005",
+				"700176001",
+				"700170007",
+				"700164001",
+				"700173009",
+				"440419004",
+				"700078003",
+				"700168003",
+				"700179008",
+				"700182003",
+				"700177005",
+				"700171006",
+				"700165000",
+				"700174003",
+				"700149001",
+				"700127007",
+				"700132008"*/
+				"233734006",
+				"269209005",
+				"239924002"
+				};
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info("  KLI: " + conceptsKLI.length + " concepts");
+		
+		String conceptsNIN[] = {
+				/*"28221000119103",
+				"700189007",
+				"295131000119103",
+				"72791000119108",
+				"295041000119108",
+				"295051000119105",
+				"700147004",
+				"700109009",
+				"700112007",
+				"700150001",
+				"700081008",
+				"700075000",
+				"700097003",
+				"700080009",
+				"700082001",
+				"402714001",
+				"700094005",
+				"166631000119101",
+				"700076004",
+				"403469006",
+				"3961000119101",
+				"700095006",
+				"700153004",
+				"700195008",
+				"700107006",
+				"700111000",
+				"700077008",
+				"700079006",
+				"700167008",
+				"700178000",
+				"700181005",
+				"700176001",
+				"700170007",
+				"700164001",
+				"700173009",
+				"440419004",
+				"700078003",
+				"700168003",
+				"700179008",
+				"700182003",
+				"700177005",
+				"700171006",
+				"700165000",
+				"700174003",
+				"700149001",
+				"700127007",
+				"700132008"*/
+				"233734006",
+				"269209005",
+				"239924002"
+				};
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info("  KLI: " + conceptsKLI.length + " concepts");
+		
+		// combine the string arrays into a unique-value hash set
+		Set<MapRecord> existingRecords = new HashSet<>();
+		Set<String> uniqueIds = new HashSet<>();
+		for (String terminologyId : conceptsNIN) {
+			uniqueIds.add(terminologyId);
+		}
+		for (String terminologyId : conceptsKLI) {
+			uniqueIds.add(terminologyId);
+		}
+		
+		// open the services
+		MappingService mappingService = new MappingServiceJpa();
+		ContentService contentService = new ContentServiceJpa(); 
+		
+		// get the map user objects
+		MapUser mapUser_KLI = mappingService.getMapUser("kli");
+		MapUser mapUser_NIN = mappingService.getMapUser("nin");
+		
+		// set the terminology and version -- shorthand
+		String terminology = mapProject.getSourceTerminology();
+		String terminologyVersion = mapProject.getSourceTerminologyVersion();
+		
+		// retrieve the concepts matching the unique ids and assemble them in a map of terminologyId -> concept
+		Map<String, Concept> uniqueConcepts = new HashMap<>();
+		for (String terminologyId : uniqueIds) {
+			Concept concept = contentService.getConcept(terminologyId, terminology, terminologyVersion);
+			if (concept != null) {
+				uniqueConcepts.put(terminologyId, concept);
+			} else {
+				Logger.getLogger(WorkflowServiceJpa.class).warn("  Concept " + terminologyId + " not found in database.");
+			}
+		}
+
+		contentService.close();
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info("  Total: " + conceptsKLI.length + " unique concepts");
+
+		// find any existing records for the concepts
+		for (String terminologyId : uniqueIds) {
+			javax.persistence.Query query = manager.createQuery("select mr from MapRecordJpa mr where conceptId = :conceptId and mapProjectId = :mapProjectId")
+			.setParameter("conceptId", terminologyId)
+			.setParameter("mapProjectId", mapProject.getId());
+			
+			
+			List<MapRecord> mapRecords = (List<MapRecord>) query.getResultList();
+			for (MapRecord mapRecord : mapRecords) {
+				existingRecords.add(mapRecord);
+			}
+			
+		}
+		Logger.getLogger(WorkflowServiceJpa.class).info("Removing existing map records and updating/creating tracking records for specified concepts, found " + existingRecords.size());
+		
+		// remove the existing records and update the tracking records
+		for (MapRecord mapRecord : existingRecords) {
+			Logger.getLogger(WorkflowServiceJpa.class).warn("Removing record " + mapRecord.getId() + ", owned by " + mapRecord.getOwner().getUserName());
+			mappingService.removeMapRecord(mapRecord.getId());
+			
+			TrackingRecord trackingRecord = getTrackingRecordForMapProjectAndConcept(mapProject, uniqueConcepts.get(mapRecord.getConceptId()));
+			
+			// if tracking record is null, create a new one
+			if (trackingRecord == null) {
+				trackingRecord = new TrackingRecordJpa();
+				trackingRecord.setDefaultPreferredName(mapRecord.getConceptName());
+				trackingRecord.setMapProject(mapProject);
+				trackingRecord.setTerminologyId(mapRecord.getConceptId());
+				trackingRecord.setTerminology(mapProject.getSourceTerminology());
+				trackingRecord.setTerminologyVersion(mapProject.getSourceTerminologyVersion());
+				
+				trackingRecord.setSortKey(
+					contentService.getTreePositions(
+							trackingRecord.getTerminologyId(),
+							trackingRecord.getTerminology(), 
+							trackingRecord.getTerminologyVersion())
+							.getTreePositions().get(0).getAncestorPath());
+		
+				addTrackingRecord(trackingRecord);
+			} else {
+				trackingRecord.removeMapRecordId(mapRecord.getId());
+				updateTrackingRecord(trackingRecord);
+			}
+		}
+			
+		Logger.getLogger(WorkflowServiceJpa.class).info("Assigning concepts....");
+		
+		// assign the concepts to Krista (kli)
+		for (String terminologyId : conceptsKLI) {
+			Concept concept = uniqueConcepts.get(terminologyId);
+			if (concept != null)
+				this.processWorkflowAction(mapProject, concept, mapUser_KLI, null, WorkflowAction.ASSIGN_FROM_SCRATCH);
+		}
+		
+		// assign the concepts to Nicole (nin)
+		for (String terminologyId : conceptsNIN) {
+			Concept concept = uniqueConcepts.get(terminologyId);
+			if (concept != null)
+				this.processWorkflowAction(mapProject, concept, mapUser_NIN, null, WorkflowAction.ASSIGN_FROM_SCRATCH);
+		}
+		
+		// close the services
+		contentService.close();
+		mappingService.close();
 	}
 
 	/*

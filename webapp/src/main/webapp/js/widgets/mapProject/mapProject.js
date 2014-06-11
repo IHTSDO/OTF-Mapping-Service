@@ -82,7 +82,8 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 
 				var confirmGenerate =  confirm("Are you sure you want to generate test data?");
 				if (confirmGenerate == true) {
-					// retrieve project information
+					
+					// call the generate API
 					$http({
 						url: root_workflow + "project/id/" + $scope.project.id + "/nConflicts/" + $scope.nConflicts,
 						dataType: "json",
@@ -102,5 +103,29 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 				}
 			}
 		};
+		
+		$scope.generateTestingState = function() {
+			
+			console.debug("Generating mapping testing state");
+			$rootScope.glassPane++;
+			
+			var confirmGenerate = confirm("Are you sure you want to generate the clean mapping user testing state?");
+			if (confirmGenerate == true) {
+				// call the generate API
+				$http({
+					url: root_workflow + "project/id/" + $scope.project.id + "/testing",
+					dataType: "json",
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					}	
+				}).success(function(data) {
+					$rootScope.glassPane--;
+				}).error(function(error) {
+					$scope.error = "Error generating test data.";
+					$rootScope.glassPane--;
+				});
+			}
+		}
 		
   });
