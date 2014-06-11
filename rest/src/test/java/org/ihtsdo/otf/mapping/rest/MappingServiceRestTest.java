@@ -55,7 +55,7 @@ public class MappingServiceRestTest {
 		
 		// retrieve projects by specialist
 		for (MapUser m : users.getMapUsers()) {
-			service.getMapProjectsForUser(m.getId(), "adm");
+			service.getMapProjectsForUser(m.getId().toString(), "adm");
 		}
 		
 	}
