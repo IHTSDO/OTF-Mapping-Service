@@ -69,6 +69,12 @@ public class SecurityServiceJpa implements SecurityService {
     // if ihtsdo security is off, use username as token
     if (!ihtsdoSecurityActivated || username.equals("guest")) {
   		tokenUsernameMap.put(username, username);
+  		MappingService mappingService = new MappingServiceJpa();
+  		MapUser mapUser =  mappingService.getMapUser(username);
+  		mappingService.close();
+  		if (mapUser == null) {
+		    throw new AuthenticationException("Incorrect user name or password.");
+  		}
   		return username;
     }
     
