@@ -402,13 +402,13 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				var referencedConcept = {};
 				referencedConcept.terminologyId = relationshipsForDescription[i].destinationConceptId;
 
-				// if a asterisk-to-dagger, add a *
+				// if a asterisk-to-dagger, add a †
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Asterisk') == 0) {
-					referencedConcept.relType = "*";
-				}
-				// if a dagger-to-asterik, add a †
-				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Dagger') == 0) {
 					referencedConcept.relType = "†";
+				}
+				// if a dagger-to-asterik, add a *
+				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Dagger') == 0) {
+					referencedConcept.relType = "*";
 				}
 				description.referencedConcepts.push(referencedConcept);
 
