@@ -20,7 +20,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	});
 })
 
-.controller('terminologyBrowserWidgetCtrl', function($scope, $rootScope, $q, $timeout, $http, $routeParams, localStorageService, metadataService, terminology){
+.controller('terminologyBrowserWidgetCtrl', function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService, metadataService, terminology){
 
 	$scope.terminology = terminology.name;
 	$scope.terminologyVersion = terminology.version;
@@ -93,13 +93,18 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion,
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
-		}).then (function(response) {
+		}).success (function(response) {
 			console.debug("HTTP RESPONSE");
 			console.debug(response);
-			$scope.terminologyTree = response.data.treePosition;
+			$scope.terminologyTree = response.treePosition;
 			for (var i = 0; i < $scope.terminologyTree; i++) {
 				$scope.terminologyTree[i].isOpen = false;
 				$scope.terminologyTree[i].isConceptOpen = false;
+			}
+		}).error (function(response) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
 			}
 		});
 	};
@@ -114,13 +119,13 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion + "/query/" + $scope.query,
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
-		}).then (function(response) {
+		}).success (function(response) {
 			console.debug("Query successful with response:");
 			console.debug(response);
 
 			// limit result count to 10 root tree positions
-			for (var x =0; x < response.data.treePosition.length && x < 10; x++) {
-				$scope.terminologyTree[x] = response.data.treePosition[x];
+			for (var x =0; x < response.treePosition.length && x < 10; x++) {
+				$scope.terminologyTree[x] = response.treePosition[x];
 			}
 
 			$scope.expandAll($scope.terminologyTree);
@@ -157,11 +162,18 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			} else {
 				// do nothing, no need to modify results
 			}
+			
+			console.debug($scope.searchStackPosition + " - " + $scope.searchStackResults);
 						
 			// set the variables for back/forward
 			$scope.searchBackAllowed = $scope.searchStackPosition > 0 ? true : false;
 			$scope.searchForwardAllowed = $scope.searchStackPosition < $scope.searchStackResults ? true : false;
 			
+		}).error (function(response) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		});
 	};
 	
@@ -169,8 +181,12 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		
 		// alter the position, set the query, and call the search function
 		$scope.searchStackPosition += positionChange;
+		if ($scope.searchStackPosition < 0) $scope.searchStackPosition = 0;
 		$scope.query = $scope.searchStack[$scope.searchStackPosition];
-		$scope.getRootTreeWithQuery(false);
+		
+		// if query is not populated or undefined, get the root trees, otherwise get query results
+		if ($scope.query == undefined || $scope.query === "") $scope.getRootTree();
+		else $scope.getRootTreeWithQuery(false);
 		
 		
 	};
@@ -194,10 +210,15 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/concept/" + $scope.terminology + "/" + $scope.terminologyVersion + "/id/" + terminologyId,
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
-			}).then (function(response) {
+			}).success (function(response) {
 				console.debug("HTTP RESPONSE");
 				deferred.resolve(response);
-			});
+			}).error (function(response) {
+				if (response.indexOf("HTTP Status 401") != -1) {
+					$rootScope.globalError = "Authorization failed.  Please log in again.";
+					$location.path("/");
+				}
+			});;
 		});
 
 		return deferred.promise;
@@ -229,7 +250,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				$scope.getLocalTree(node.terminologyId).then(function(response) {
 
 					// shorthand for the conceptTrees (may be multiple paths)
-					var data = response.data.treePosition;
+					var data = response.treePosition;
 
 					// find the tree path along this node
 					for (var i = 0; i < data.length; i++) {
@@ -385,9 +406,11 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 
 				// otherwise display an error message
-			}).error(function(response) {
-				$scope.concept = [];
-				$scope.concept.name = "Error retrieving concept";
+			}).error (function(response) {
+				if (response.indexOf("HTTP Status 401") != -1) {
+					$rootScope.globalError = "Authorization failed.  Please log in again.";
+					$location.path("/");
+				}
 			});
 		};
 	};

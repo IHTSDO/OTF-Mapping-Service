@@ -11,7 +11,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		templateUrl: 'js/widgets/mapEntry/mapEntry.html',
 		edit: {}
 	});
-}).controller('mapEntryWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $modal, localStorageService){
+}).controller('mapEntryWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $modal, $location, localStorageService){
 
 	// watch for entry change
 	$scope.$on('mapRecordWidget.notification.changeSelectedEntry', function(event, parameters) { 	
@@ -81,57 +81,6 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			$scope.entry = null;
 		}
 	};
-
-	/////////////////////////////////////////
-	// Target Concept Search/Set Functions //
-	/////////////////////////////////////////
-	$scope.retrieveTargetConcepts = function(query) {
-
-		// execute query for concepts
-		$http({
-			url: root_content + "concept/query/" + query,
-			dataType: "json",
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json"
-			}	
-		}).success(function(data) {
-
-			console.debug(data);
-
-			// eliminate concepts that don't match target terminology 
-			$scope.targetConcepts = [];
-
-			for (var i = 0; i < data.count; i++) {
-				if (data.searchResult[i].terminology === $scope.project.destinationTerminology &&
-						data.searchResult[i].terminologyVersion === $scope.project.destinationTerminologyVersion) {
-
-					$scope.targetConcepts.push(data.searchResult[i]);
-				};
-			};
-
-			$scope.statusRetrieveTargetConcepts = $scope.targetConcepts.length == 0 ? 'No concepts found': '';
-
-		}).error(function(data) {
-			$scope.errorRetrieveTargetConcepts = "Failed to retrieve entries";
-		});
-	};
-
-	$scope.resetTargetConcepts = function() {
-		console.debug("resetTargetConcepts() called");
-		$scope.queryTarget = "";
-		$scope.targetConcepts = [];
-	};
-
-	$scope.selectTargetConcept = function(entry, target) {
-		console.debug("selectTargetConcept() called");
-		console.debug(target);
-		entry.targetId = target.terminologyId;
-		entry.targetName = target.value;
-		$scope.resetTargetConcepts();
-		computeRelation(entry);
-		
-	};
 	
 	// watch for concept selection from terminology browser
 	$scope.$on('terminologyBrowser.selectConcept', function(event, parameters) { 	
@@ -171,8 +120,13 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 
 			entry.mapRelation = data;
 			
-		}).error(function(data) {
+		}).error(function(response) {
 			$scope.errorCreateRecord = "Failed to retrieve entries";
+			
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		});
 		
 		// get the allowable advices and relations

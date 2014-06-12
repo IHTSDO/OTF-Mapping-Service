@@ -11,7 +11,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 		templateUrl: 'js/widgets/editedList/editedList.html',
 		edit: {}
 	});
-}).controller('editedListCtrl', function($scope, $rootScope, $http, localStorageService){
+}).controller('editedListCtrl', function($scope, $rootScope, $http, $location, localStorageService){
 	
 	// initialize as empty to indicate still initializing database connection
 	$scope.editedRecords = [];
@@ -77,9 +77,14 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 			console.debug("Edited records:");
 			console.debug($scope.editedRecords);
 						 
-		}).error(function(error) {
+		}).error(function(response) {
 		  	$rootScope.glassPane--;
 			$scope.error = "Error";
+
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		});
 	};
 	

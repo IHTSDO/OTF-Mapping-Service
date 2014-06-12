@@ -15,7 +15,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	});
 })
 
-.controller('workAvailableWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $modal, localStorageService){
+.controller('workAvailableWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $modal, $location, localStorageService){
 
 	// local variables
 	$scope.batchSizes = [100, 50, 25, 10, 5];
@@ -116,8 +116,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			
 			// set title
 			$scope.availableConflictsTitle = "Available Conflicts (" + data.totalCount + ")";
-		}).error(function(error) {
-		  	$rootScope.glassPane--;
+		}).error (function(response) {
+			$rootScope.glassPane--;
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}	
 		});
 	};
 	
@@ -160,8 +164,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			console.debug($scope.numAvailableWorkPages);
 			console.debug(data.totalCount);
 
-		}).error(function(error) {
-		  	$rootScope.glassPane--;
+		}).error (function(response) {
+			$rootScope.glassPane--;
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}	
 		});
 	};
 
@@ -192,8 +200,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 			}
 			
-		}).error(function(error) {
-		  	$rootScope.glassPane--;
+		}).error (function(response) {
+			$rootScope.glassPane--;
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}	
 		});
 		
 	   
@@ -274,9 +286,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			} else {
 				console.debug("Unexpected error in assigning batch");
 			}
-		}).error(function(data) {
-		  	$rootScope.glassPane--;
-			console.debug("Could not retrieve available work when assigning batch.");
+		}).error (function(response) {
+			$rootScope.glassPane--;
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}	
 		});
 				
 			
