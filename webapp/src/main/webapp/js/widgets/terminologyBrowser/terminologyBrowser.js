@@ -20,7 +20,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	});
 })
 
-.controller('terminologyBrowserWidgetCtrl', function($scope, $rootScope, $q, $timeout, $http, $routeParams, localStorageService, metadataService, terminology){
+.controller('terminologyBrowserWidgetCtrl', function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService, metadataService, terminology){
 
 	$scope.terminology = terminology.name;
 	$scope.terminologyVersion = terminology.version;
@@ -33,6 +33,14 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	$scope.currentOpenConcepts = {};
 	$scope.descTypes = {};
 	$scope.relTypes = {};
+	
+	// initialize search variables
+	$scope.query = "";							// the query input
+	$scope.searchBackAllowed = false;			// whether the back button is displayed
+	$scope.searchForwardAllowed = false;		// whether the forward button is displayed
+	$scope.searchStack = [];					// an array of search terms from query input
+	$scope.searchStackPosition = 0;				// the current position in the stack
+	$scope.searchStackResults = 0;				// the number of results currently in the array (may be less than array length)
 
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
@@ -85,19 +93,24 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion,
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
-		}).then (function(response) {
+		}).success (function(response) {
 			console.debug("HTTP RESPONSE");
 			console.debug(response);
-			$scope.terminologyTree = response.data.treePosition;
+			$scope.terminologyTree = response.treePosition;
 			for (var i = 0; i < $scope.terminologyTree; i++) {
 				$scope.terminologyTree[i].isOpen = false;
 				$scope.terminologyTree[i].isConceptOpen = false;
+			}
+		}).error (function(response) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
 			}
 		});
 	};
 
 	// function to get the root nodes with query
-	$scope.getRootTreeWithQuery = function() {
+	$scope.getRootTreeWithQuery = function(isNewSearch) {
 
 		console.debug("QUERYING: " + $scope.query);
 		$scope.searchStatus = "Searching...";
@@ -106,18 +119,76 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion + "/query/" + $scope.query,
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
-		}).then (function(response) {
-			console.debug("HTTP RESPONSE");
+		}).success (function(response) {
+			console.debug("Query successful with response:");
 			console.debug(response);
 
-			// limit result count to 10
-			for (var x =0; x < response.data.treePosition.length && x < 10; x++) {
-				$scope.terminologyTree[x] = response.data.treePosition[x];
+			// limit result count to 10 root tree positions
+			for (var x =0; x < response.treePosition.length && x < 10; x++) {
+				$scope.terminologyTree[x] = response.treePosition[x];
 			}
 
 			$scope.expandAll($scope.terminologyTree);
 			$scope.searchStatus = "";
+			
+			if (isNewSearch == true) {
+			
+				// update the position counter
+				$scope.searchStackPosition++;
+				
+				// check that array still has space, if not reallocate			
+				if ($scope.searchStack.length <= $scope.searchStackPosition) {
+					
+					var newSearchStack = new Array($scope.searchStack.length * 2);
+					for (var i = 0; i < $scope.searchStack.length; i++) {
+						newSearchStack[i] = $scope.searchStack[i];
+					}
+					
+					$scope.searchStack = newSearchStack;
+				}
+				
+				// add the query to the stack
+				$scope.searchStack[$scope.searchStackPosition] = $scope.query;
+				
+				// remove any elements past the search stack position
+				for (var i = $scope.searchStackPosition + 1; i < $scope.searchStack.length; i++) {
+					$scope.searchStack[i] = "";
+				};
+				
+				// set the total number of results to this position
+				$scope.searchStackResults = $scope.searchStackPosition;
+				
+			// otherwise, this request came from a back/forward button press
+			} else {
+				// do nothing, no need to modify results
+			}
+			
+			console.debug($scope.searchStackPosition + " - " + $scope.searchStackResults);
+						
+			// set the variables for back/forward
+			$scope.searchBackAllowed = $scope.searchStackPosition > 0 ? true : false;
+			$scope.searchForwardAllowed = $scope.searchStackPosition < $scope.searchStackResults ? true : false;
+			
+		}).error (function(response) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		});
+	};
+	
+	$scope.changeSearch = function(positionChange) {
+		
+		// alter the position, set the query, and call the search function
+		$scope.searchStackPosition += positionChange;
+		if ($scope.searchStackPosition < 0) $scope.searchStackPosition = 0;
+		$scope.query = $scope.searchStack[$scope.searchStackPosition];
+		
+		// if query is not populated or undefined, get the root trees, otherwise get query results
+		if ($scope.query == undefined || $scope.query === "") $scope.getRootTree();
+		else $scope.getRootTreeWithQuery(false);
+		
+		
 	};
 
 	$scope.gotoReferencedConcept = function(referencedConcept) {
@@ -139,10 +210,15 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/concept/" + $scope.terminology + "/" + $scope.terminologyVersion + "/id/" + terminologyId,
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
-			}).then (function(response) {
+			}).success (function(response) {
 				console.debug("HTTP RESPONSE");
 				deferred.resolve(response);
-			});
+			}).error (function(response) {
+				if (response.indexOf("HTTP Status 401") != -1) {
+					$rootScope.globalError = "Authorization failed.  Please log in again.";
+					$location.path("/");
+				}
+			});;
 		});
 
 		return deferred.promise;
@@ -174,7 +250,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				$scope.getLocalTree(node.terminologyId).then(function(response) {
 
 					// shorthand for the conceptTrees (may be multiple paths)
-					var data = response.data.treePosition;
+					var data = response.treePosition;
 
 					// find the tree path along this node
 					for (var i = 0; i < data.length; i++) {
@@ -330,9 +406,11 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 
 				// otherwise display an error message
-			}).error(function(response) {
-				$scope.concept = [];
-				$scope.concept.name = "Error retrieving concept";
+			}).error (function(response) {
+				if (response.indexOf("HTTP Status 401") != -1) {
+					$rootScope.globalError = "Authorization failed.  Please log in again.";
+					$location.path("/");
+				}
 			});
 		};
 	};
@@ -402,13 +480,13 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				var referencedConcept = {};
 				referencedConcept.terminologyId = relationshipsForDescription[i].destinationConceptId;
 
-				// if a asterisk-to-dagger, add a *
+				// if a asterisk-to-dagger, add a †
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Asterisk') == 0) {
-					referencedConcept.relType = "*";
-				}
-				// if a dagger-to-asterik, add a †
-				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Dagger') == 0) {
 					referencedConcept.relType = "†";
+				}
+				// if a dagger-to-asterik, add a *
+				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Dagger') == 0) {
+					referencedConcept.relType = "*";
 				}
 				description.referencedConcepts.push(referencedConcept);
 

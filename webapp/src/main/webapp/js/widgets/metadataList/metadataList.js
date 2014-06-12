@@ -47,7 +47,7 @@ angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
 		}
 	};
 })
-.controller('metadataCtrl', function($scope, $http, localStorageService, data) {
+.controller('metadataCtrl', function($scope, $http, $location, localStorageService, data) {
 
 	// display data
 	$scope.keyValuePairLists = null;
@@ -67,7 +67,12 @@ angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
 			if (data.keyValuePair[index].key != undefined) $scope.terminologies.push(data.keyValuePair[index].key);
 		}
 		console.debug($scope.terminologies);
-	});
+	}).error (function(response) {
+		if (response.indexOf("HTTP Status 401") != -1) {
+			$rootScope.globalError = "Authorization failed.  Please log in again.";
+			$location.path("/");
+		}	
+	});;
 	
 	// watch for change to terminology
 	$scope.$watch('terminology', function() {

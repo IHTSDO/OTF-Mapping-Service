@@ -15,6 +15,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
@@ -971,6 +972,134 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 		return null;
 	}
+	
+	@Override
+	public void computeWorkflow(MapProject mapProject) throws Exception {
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info(
+				"Start computing workflow for " + mapProject.getName());
+		
+		// set the transaction parameter and tracking variables
+		setTransactionPerOperation(false);
+		int commitCt = 1000;
+		int trackingRecordCt = 0;
+
+
+		// Clear the workflow for this project
+		Logger.getLogger(WorkflowServiceJpa.class).info("  Clear old workflow");
+		clearWorkflowForMapProject(mapProject);
+		
+		// open the services
+		ContentService contentService = new ContentServiceJpa();
+		MappingService mappingService = new MappingServiceJpa();
+		
+		// get the concepts in scope
+		SearchResultList conceptsInScope = mappingService.findConceptsInScope(mapProject.getId());
+		
+		// construct a hashset of concepts in scope
+		Set<String> conceptIds = new HashSet<>();
+		for (SearchResult sr : conceptsInScope.getIterable()) {
+			conceptIds.add(sr.getTerminologyId());
+		}
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info("  Concept ids put into hash set: " + conceptIds.size());
+		
+		// get the current records
+		MapRecordList mapRecords = mappingService.getMapRecordsForMapProject(mapProject.getId());
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info("Processing existing records (" + mapRecords.getCount() + " found)");
+		
+		// instantiate a mapped set of non-published records
+		Map<String, List<Long>> unpublishedRecords = new HashMap<>();
+		
+		// cycle over the map records, and remove concept ids if a map record is publication-ready
+		for (MapRecord mapRecord : mapRecords.getIterable()) {
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)
+					|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
+				
+				conceptIds.remove(mapRecord.getConceptId());
+			} else {
+				
+				List<Long> originIds;
+				
+				// if this key does not yet have a constructed list, make one, otherwise get the existing list
+				if (unpublishedRecords.containsKey(mapRecord.getConceptId())) {
+					originIds = unpublishedRecords.get(mapRecord.getConceptId());
+				} else {
+					originIds = new ArrayList<>();
+				}
+				
+				originIds.add(mapRecord.getId());
+				unpublishedRecords.put(mapRecord.getConceptId(), originIds);
+			}
+		}
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info("  Concepts with no publication-ready map record: " + conceptIds.size());
+		Logger.getLogger(WorkflowServiceJpa.class).info("  Concepts with unpublished map record content:  " + unpublishedRecords.size());
+
+		beginTransaction();
+		
+		
+		// construct the tracking records for unmapped concepts
+		for (String terminologyId : conceptIds) {
+			
+			// retrieve the concept for this result
+			Concept concept = contentService.getConcept(terminologyId,
+					mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+
+			// create a workflow tracking record for this concept
+			TrackingRecord trackingRecord = new TrackingRecordJpa();
+
+			// populate the fields from project and concept
+			trackingRecord.setMapProject(mapProject);
+			trackingRecord.setTerminology(concept.getTerminology());
+			trackingRecord.setTerminologyId(concept.getTerminologyId());
+			trackingRecord.setTerminologyVersion(concept
+					.getTerminologyVersion());
+			trackingRecord.setDefaultPreferredName(concept
+					.getDefaultPreferredName());
+			trackingRecord.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH);
+
+			// get the tree positions for this concept and set the sort key to
+			// the first retrieved
+			TreePositionList treePositionsList = contentService
+					.getTreePositions(concept.getTerminologyId(),
+							concept.getTerminology(),
+							concept.getTerminologyVersion());
+			
+			// handle inactive concepts - which don't have tree positions
+			if (treePositionsList.getCount() == 0) {
+				trackingRecord.setSortKey("");
+			} else {
+				trackingRecord.setSortKey(treePositionsList.getTreePositions()
+						.get(0).getAncestorPath());
+			}
+			
+			// add any existing map records to this tracking record
+			if (unpublishedRecords.containsKey(trackingRecord.getTerminologyId())) {
+				for (Long id : unpublishedRecords.get(trackingRecord.getTerminologyId())) {
+					Logger.getLogger(WorkflowServiceJpa.class).info("    Adding existing map record " + id + " to tracking record for " + trackingRecord.getTerminologyId());
+					trackingRecord.addMapRecordId(id);
+				}
+			}
+			
+			addTrackingRecord(trackingRecord);
+			
+			if (++trackingRecordCt % commitCt == 0) {
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"  " + trackingRecordCt + " tracking records created");
+				commit();
+				beginTransaction();
+				
+				// close and re-instantiate the content service to prevent memory buildup from Concept and TreePosition objects
+				contentService.close();
+				contentService = new ContentServiceJpa();
+			}
+		}
+		
+		// commit any remaining transactions
+		commit();
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -979,8 +1108,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 * org.ihtsdo.otf.mapping.services.WorkflowService#computeWorkflow(org.ihtsdo
 	 * .otf.mapping.model.MapProject)
 	 */
-	@Override
-	public void computeWorkflow(MapProject mapProject) throws Exception {
+
+	public void computeWorkflow2(MapProject mapProject) throws Exception {
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"Start computing workflow for " + mapProject.getName());
 
@@ -1097,9 +1226,34 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	@Override
 	public void clearWorkflowForMapProject(MapProject mapProject)
 			throws Exception {
+		
+		int commitCt = 0;
+		int commitInterval = 1000;
+		
+		// begin transaction not in transaction-per-operation mode
+		if (!getTransactionPerOperation()) {
+			beginTransaction();
+		}
 
 		for (TrackingRecord tr : getTrackingRecordsForMapProject(mapProject).getTrackingRecords()) {
+			
 			removeTrackingRecord(tr.getId());
+			
+			if (++commitCt % commitInterval == 0) {
+				
+				// if not a transaction for every operation, commit at intervals
+				if (!getTransactionPerOperation()) {
+					commit();
+					beginTransaction();
+				}
+				
+				Logger.getLogger(WorkflowServiceJpa.class).info("  Removed " + commitCt + " tracking records");
+			}
+		}
+		
+		// commit any last deletions if not in transaction-per-operation mode
+		if (!getTransactionPerOperation()) {
+			commit();
 		}
 
 	}
@@ -1846,7 +2000,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Logger.getLogger(WorkflowServiceJpa.class).info("Generating clean Mapping User Testing State for project " + mapProject.getName());
 		
 		String[] conceptsKLI = {
-				/*"28221000119103",
+				"28221000119103",
 				"700189007",
 				"295131000119103",
 				"72791000119108",
@@ -1892,16 +2046,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				"700174003",
 				"700149001",
 				"700127007",
-				"700132008"*/
-				"233734006",
-				"269209005",
-				"239924002"
+				"700132008"
+
 				};
 		
 		Logger.getLogger(WorkflowServiceJpa.class).info("  KLI: " + conceptsKLI.length + " concepts");
 		
 		String conceptsNIN[] = {
-				/*"28221000119103",
+				"28221000119103",
 				"700189007",
 				"295131000119103",
 				"72791000119108",
@@ -1947,10 +2099,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				"700174003",
 				"700149001",
 				"700127007",
-				"700132008"*/
-				"233734006",
-				"269209005",
-				"239924002"
+				"700132008"
 				};
 		
 		Logger.getLogger(WorkflowServiceJpa.class).info("  KLI: " + conceptsKLI.length + " concepts");

@@ -90,9 +90,14 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			// set title
 			$scope.assignedConflictsTitle = "Assigned Conflicts (" + data.totalCount + ")";
 			
-		}).error(function(error) {
+		}).error(function(response) {
 		  	$rootScope.glassPane--;
 			$scope.error = "Error";
+
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		});
 	};
 	
@@ -135,9 +140,14 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			console.debug($scope.assignedWorkTitle);
 			
 			
-		}).error(function(error) {
+		}).error(function(response) {
 		  	$rootScope.glassPane--;
 			$scope.error = "Error";
+
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		});
 	};
 	
@@ -160,6 +170,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 	// function to relinquish work (i.e. unassign the user)
 	$scope.unassignWork = function(record) {
+		
+		$rootScope.glassPane++;
+		
 		$http({
 			url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/concept/" + record.terminologyId + "/user/" + $scope.user.userName,
 			dataType: "json",
@@ -179,6 +192,14 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				}
 			}
 			
+			$rootScope.glassPane--;
+			
+		}).error (function(response) {
+			$rootScope.glassPane--;
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			};
 		});
 	};
 
@@ -206,9 +227,14 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				$rootScope.glassPane--;
 			}).error(function(data) {
 				$rootScope.glassPane--;
+
+				if (response.indexOf("HTTP Status 401") != -1) {
+					$rootScope.globalError = "Authorization failed.  Please log in again.";
+					$location.path("/");
+				}
 			});
 		}
-	}
+	};
 	
 	$scope.unassignAllConflicts = function() {
 		
