@@ -1,5 +1,7 @@
 package org.ihtsdo.otf.mapping.model;
 
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+
 /**
  * The interface for MapUser
  * 
@@ -66,5 +68,19 @@ public interface MapUser {
    * @param email the email
    */
   public void setEmail(String email);
+  
+  /**
+   * Returns the application role.
+   *
+   * @return the application role
+   */
+  public MapUserRole getApplicationRole();
+  
+  /**
+   * Sets the application role.
+   *
+   * @param role the application role
+   */
+  public void setApplicationRole(MapUserRole role);
 
 }

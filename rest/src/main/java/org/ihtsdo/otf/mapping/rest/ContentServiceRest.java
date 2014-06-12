@@ -9,8 +9,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.RelationshipListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
@@ -76,8 +78,12 @@ public class ContentServiceRest {
             + terminologyVersion + "/id/" + terminologyId);
 	
     try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the concept.").build());
+			
   		
       ContentService contentService = new ContentServiceJpa();
       Concept c =
@@ -97,6 +103,8 @@ public class ContentServiceRest {
 
       contentService.close();
       return c;
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -130,8 +138,12 @@ public class ContentServiceRest {
             + "/inverseRelationships");
 
     try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the concept inverse relationships.").build());
+			
   		
       ContentService contentService = new ContentServiceJpa();
       Concept c =
@@ -143,6 +155,8 @@ public class ContentServiceRest {
 
       contentService.close();
       return relationshipList;
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -173,8 +187,12 @@ public class ContentServiceRest {
             + terminologyId);
 
     try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the latest version concept.").build());
+			
   		
       ContentService contentService = new ContentServiceJpa();
       MetadataService metadataService = new MetadataServiceJpa();
@@ -186,6 +204,8 @@ public class ContentServiceRest {
       metadataService.close();
       contentService.close();
       return c;
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -209,14 +229,20 @@ public class ContentServiceRest {
         "RESTful call (Content): /concept/query/" + searchString);
     
     try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find the concepts by query.").build());
+			
   		
       ContentService contentService = new ContentServiceJpa();
       SearchResultList sr =
           contentService.findConceptsForQuery(searchString, new PfsParameterJpa());
       contentService.close();
       return sr;
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -247,8 +273,12 @@ public class ContentServiceRest {
             + terminologyVersion + "/id/" + terminologyId + "/descendants");
 
     try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find the descendant concepts.").build());
+			
   		
       ContentService contentService = new ContentServiceJpa();
 
@@ -259,6 +289,8 @@ public class ContentServiceRest {
 
       contentService.close();
       return results;
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -288,8 +320,12 @@ public class ContentServiceRest {
             + terminologyVersion + "/id/" + id.toString() + "/descendants");
     
     try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find the child concepts.").build());
+			
   		
       ContentService contentService = new ContentServiceJpa();
       MetadataService metadataService = new MetadataServiceJpa();
@@ -338,6 +374,8 @@ public class ContentServiceRest {
       metadataService.close();
       contentService.close();
       return results;
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -350,7 +388,7 @@ public class ContentServiceRest {
    */
   @GET
   @Path("/concept/treePositions/clear")
-  @ApiOperation(value = "Clear tree positions", notes = "Clear's the pre-computed terminology hierarchies.", response = Concept.class)
+  @ApiOperation(value = "Clear tree positions", notes = "Clears the pre-computed terminology hierarchies.", response = Concept.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -358,8 +396,12 @@ public class ContentServiceRest {
 		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to clear the tree positions.").build());
+			
   		
       ContentService contentService = new ContentServiceJpa();
 
@@ -367,6 +409,8 @@ public class ContentServiceRest {
 
       contentService.close();
       return new SearchResultListJpa();
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -385,8 +429,12 @@ public class ContentServiceRest {
 		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
     try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find the descendants from tree positions.").build());
+			
   		
       ContentService contentService = new ContentServiceJpa();
       Logger.getLogger(this.getClass()).info("start");
@@ -397,6 +445,8 @@ public class ContentServiceRest {
 
       Logger.getLogger(this.getClass()).info("end");
       return results;
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
