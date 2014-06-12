@@ -61,9 +61,14 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			}).success(function(data) {
 			  	$rootScope.$broadcast('mapProjectWidget.notification.workflowComputed');
 			  	$rootScope.glassPane--;
-			}).error(function(error) {
-		    	  $scope.error = "Error";
-				  	$rootScope.glassPane--;
+			}).error(function(response) {
+				$scope.error = "Error";
+				$rootScope.glassPane--;
+
+				if (response.indexOf("HTTP Status 401") != -1) {
+					$rootScope.globalError = "Authorization failed.  Please log in again.";
+					$location.path("/");
+				}
 		    });
 				
 			} else {
@@ -93,13 +98,19 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 						}	
 					}).success(function(data) {
 						$rootScope.glassPane--;
-					}).error(function(error) {
+					}).error(function(response) {
 						$scope.error = "Error generating test data.";
 						$rootScope.glassPane--;
+						
+						if (response.indexOf("HTTP Status 401") != -1) {
+							$rootScope.globalError = "Authorization failed.  Please log in again.";
+							$location.path("/");
+						}
 					});
 
 				} else {
 					$rootScope.glassPane--;		
+					
 				}
 			}
 		};
@@ -121,11 +132,16 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 					}	
 				}).success(function(data) {
 					$rootScope.glassPane--;
-				}).error(function(error) {
+				}).error(function(response) {
 					$scope.error = "Error generating test data.";
 					$rootScope.glassPane--;
+
+					if (response.indexOf("HTTP Status 401") != -1) {
+						$rootScope.globalError = "Authorization failed.  Please log in again.";
+						$location.path("/");
+					}
 				});
 			}
-		}
+		};
 		
   });

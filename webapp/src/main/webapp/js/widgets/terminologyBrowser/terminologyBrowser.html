@@ -1,11 +1,14 @@
 <form>
 	<input ng-model="query">
-	<button ng-click="getRootTreeWithQuery()">Search</button>
+	<button ng-click="getRootTreeWithQuery(true)">Search</button>
 	<button ng-click="getRootTree()">Reset</button>
+	<button ng-show="searchBackAllowed == true" ng-click="changeSearch(-1)"><i class="glyphicon glyphicon-arrow-left"></i></button>
+	<button ng-show="searchForwardAllowed == true" ng-click="changeSearch(1)"><i class="glyphicon glyphicon-arrow-right"></i></button>
 </form>
 
 <p></p>
 {{searchStatus}}
+<div ng-show="terminologyTree.length == 0 && searchStatus.length = 0">No results.</div>
 <!--  Root - level 0 -->
 <ul style="list-style-type: none; padding-left: 0px;">
 

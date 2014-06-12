@@ -1060,11 +1060,22 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, MapRecordJpa.class);
 
-		// if a sort field has been specified, add sort parameter
-		if (pfsParameter != null && pfsParameter.getSortField() != null) {
+		// Sort Options -- in order of priority
+		// (1) if a sort field is specified by pfs parameter, use it
+		// (2) if a query has been specified, use nothing (lucene relevance default)
+		// (3) if a query has not been specified, sort by conceptId
+		
+		String sortField = "conceptId";
+		if (pfsParameter != null && pfsParameter.getSortField() != null && !pfsParameter.getSortField().isEmpty()) {
 			ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
 					SortField.STRING)));
+		} else if (pfsParameter != null && pfsParameter.getQueryRestriction() != null && !pfsParameter.getQueryRestriction().isEmpty()) {
+			// do nothing
+		} else {
+			ftquery.setSort(new Sort(new SortField(sortField,
+					SortField.STRING)));
 		}
+
 
 		// get the results
 		int totalCount = ftquery.getResultSize();

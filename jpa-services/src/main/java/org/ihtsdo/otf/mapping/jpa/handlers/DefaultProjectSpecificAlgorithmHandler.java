@@ -260,23 +260,44 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		for (int i = 0; i < entries.size() - 1; i++) {
 
 			// cycle over all entries after this one
+			// NOTE:  separated boolean checks for easier handling of possible null relations
 			for (int j = i + 1; j < entries.size(); j++) {
+				
+				// check if both targets are null OR if targets equal
+				boolean targetIdsNull = entries.get(i).getTargetId().isEmpty() && entries.get(j).getTargetId().isEmpty();
+				boolean targetIdsEqual = false;
+				if (!targetIdsNull) {
+					targetIdsEqual = entries.get(i).getTargetId().equals(entries.get(j).getTargetId());
+				}
+				
+				// default:  relations are not equal
+				boolean mapRelationsNull = entries.get(i).getMapRelation() == null && entries.get(j).getMapRelation() == null;
+				boolean mapRelationsEqual = false;
+				if (!mapRelationsNull) {
+					if (entries.get(i).getMapRelation().equals(entries.get(j).getMapRelation())) mapRelationsEqual = true;
+				}		
 
-				// compare the two entries
-				if (entries.get(i).getTargetId()
-						.equals(entries.get(j).getTargetId())
-						&& entries.get(i).getMapRelation()
-								.equals(entries.get(j).getMapRelation())
-						&& entries.get(i).getRule()
-								.equals(entries.get(j).getRule())) {
+				// if target ids are the same, add error
+				if (!targetIdsNull && targetIdsEqual) {
 
-					validationResult.addError("Duplicate entries found: "
+					validationResult.addError("Duplicate entries (same target code) found: "
 							+ "Group "
 							+ Integer.toString(entries.get(i).getMapGroup())
 							+ ", priority " + Integer.toString(i) + " and "
 							+ "Group "
 							+ Integer.toString(entries.get(j).getMapGroup())
 							+ ", priority " + Integer.toString(j));
+				}
+				
+				// if target ids are null and map relations are equal, add error
+				if (targetIdsNull && mapRelationsEqual) {
+					validationResult.addError("Duplicate entries (null target code, same map relation) found: "
+							+ "Group "
+							+ Integer.toString(entries.get(i).getMapGroup())
+							+ ", priority " + entries.get(i).getMapPriority() + " and "
+							+ "Group "
+							+ Integer.toString(entries.get(j).getMapGroup())
+							+ ", priority " + entries.get(j).getMapPriority());
 				}
 			}
 		}
