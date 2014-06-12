@@ -149,8 +149,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		}).success(function(data) {
 			$scope.record = data;
 	
-		}).error(function(error) {
-			$scope.error = $scope.error + "Could not retrieve map record. ";
+		}).error (function(response) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 	
 		}).then(function() {
 	
@@ -166,8 +169,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}).success(function(data) {
 				$scope.concept = data;
 				$scope.conceptBrowserUrl = $scope.getBrowserUrl();
-			}).error(function(error) {
-				$scope.error = $scope.error + "Could not retrieve record concept. ";
+			}).error (function(response) {
+				if (response.indexOf("HTTP Status 401") != -1) {
+					$rootScope.globalError = "Authorization failed.  Please log in again.";
+					$location.path("/");
+				}	
 			});
 	
 	
@@ -314,10 +320,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			console.debug("validation results:");
 			console.debug(data);
 			$scope.validationResult = data;
-		}).error(function(data) {
+		}).error(function(response) {
 			$scope.validationResult = null;
 			$scope.recordError = "Unexpected error reported by server.  Contact an admin.";
 			console.debug("Failed to validate map record");
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		}).then(function(data) {
 
 			// if no error messages were returned, stop and display
@@ -493,9 +503,15 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.recordSuccess = "Record saved.";
 			$scope.recordError = "";
 			window.history.back(); 
-		}).error(function(data) {
+		}).error(function(response) {
 			$scope.recordSuccess = "";
 			$scope.recordError = "Error saving record.";
+			
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
+			
 		});
 	};
 

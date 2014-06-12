@@ -8,11 +8,7 @@
 
 <p></p>
 {{searchStatus}}
-<hr>
-SearchPosition: {{searchStackPosition}}, SearchResults: {{searchStackResults}}<br>
-Back: {{searchBackAllowed}}, Forward: {{searchForwardAllowed}}<br>
-SearchStack: {{searchStack}}
-
+<div ng-show="terminologyTree.length == 0 && searchStatus.length = 0">No results.</div>
 <!--  Root - level 0 -->
 <ul style="list-style-type: none; padding-left: 0px;">
 
