@@ -49,14 +49,10 @@ public class SecurityServiceRest {
         "RESTful call (Authentication): /authentication for map user = " + username);
 
     try {
-    	// TODO: return real token when that is available
     	// TODO: when real users are available, don't hardcode "bob"
-      //String resultString = securityService.authenticate("bob", password);
-      //return username; //resultString;
-      //return "bob";
-      return username;
-    //} catch (AuthenticationException e) {
-   // 	throw new WebApplicationException(Response.status(401).entity(e.getMessage()).build());
+      return securityService.authenticate(username, password);
+    } catch (AuthenticationException e) {
+     	throw new WebApplicationException(Response.status(401).entity(e.getMessage()).build());
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
