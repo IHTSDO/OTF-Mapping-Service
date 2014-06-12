@@ -31,5 +31,5 @@ hibernate.jdbc.default_batch_fetch_size=500
 #
 # URL for security service
 #
-ihtsdo.security.activated=false;
+ihtsdo.security.activated=false
 ihtsdo.security.url=http://usermanagement.ihtsdotools.org:8080/security-web/query/
