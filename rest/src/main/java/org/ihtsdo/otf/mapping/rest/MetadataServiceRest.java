@@ -10,11 +10,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.dto.KeyValuePair;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairList;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairLists;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -59,8 +61,12 @@ public class MetadataServiceRest {
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /all/" + terminology + "/" + version);
 	  
 	  try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the metadata.").build());
+			
   		
       // call jpa service and get complex map return type
       MetadataService metadataService = new MetadataServiceJpa();
@@ -85,6 +91,8 @@ public class MetadataServiceRest {
       }
       metadataService.close();
       return keyValuePairLists;
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -109,8 +117,12 @@ public class MetadataServiceRest {
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /all/" + terminology); 
 	    	
     try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve all metadata.").build());
+			
   		
       MetadataService metadataService = new MetadataServiceJpa();
       String version = metadataService.getLatestVersion(terminology);
@@ -119,6 +131,8 @@ public class MetadataServiceRest {
 
       metadataService.close();
       return keyValuePairLists;
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -143,8 +157,12 @@ public class MetadataServiceRest {
 
 		
     try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the latest versions of all terminologies.").build());
+			
   		
       MetadataService metadataService = new MetadataServiceJpa();
       Map<String, String> terminologyVersionMap =
@@ -157,6 +175,8 @@ public class MetadataServiceRest {
       }
       metadataService.close();
       return keyValuePairList;
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }
@@ -180,8 +200,12 @@ public class MetadataServiceRest {
 	  
   	
     try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the versions of all terminologies.").build());
+			
   		
       KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
       MetadataService metadataService = new MetadataServiceJpa();
@@ -198,6 +222,8 @@ public class MetadataServiceRest {
       }
       metadataService.close();
       return keyValuePairLists;
+		} catch (WebApplicationException e) {
+			throw e;
     } catch (Exception e) {
       throw new WebApplicationException(e);
     }

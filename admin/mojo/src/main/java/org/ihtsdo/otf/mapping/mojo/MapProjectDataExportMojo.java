@@ -165,7 +165,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
       });
       for (MapUser ms : mapUsers.getMapUsers()) {
         usersWriter.write(ms.getName() + "\t" + ms.getUserName() + "\t"
-            + ms.getEmail() + "\n");
+            + ms.getEmail() + "\t" + ms.getApplicationRole() + "\n");
       }
 
       // export to mapadvices.txt
