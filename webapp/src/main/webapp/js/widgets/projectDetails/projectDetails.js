@@ -195,10 +195,12 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 									concept: data
 							};  
 							$scope.scopeMap[obj.key] = obj.concept.defaultPreferredName;
-						}).error(function(error) {
+						}).error (function(response) {
 							$rootScope.glassPane--;
-							console.debug("Could not retrieve concept");
-							$scope.error = $scope.error + "Could not retrieve Concept. ";    
+							if (response.indexOf("HTTP Status 401") != -1) {
+								$rootScope.globalError = "Authorization failed.  Please log in again.";
+								$location.path("/");
+							}	
 						});
 
 					}
@@ -237,10 +239,12 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 									concept: data
 							};  
 							$scope.scopeExcludedMap[obj.key] = obj.concept.defaultPreferredName;
-						}).error(function(error) {
+						}).error (function(response) {
 							$rootScope.glassPane--;
-							console.debug("Could not retrieve concept");
-							$scope.error = $scope.error + "Could not retrieve Concept. ";    
+							if (response.indexOf("HTTP Status 401") != -1) {
+								$rootScope.globalError = "Authorization failed.  Please log in again.";
+								$location.path("/");
+							}	
 						});
 					}
 					

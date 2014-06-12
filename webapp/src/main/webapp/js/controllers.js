@@ -22,6 +22,8 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
     $scope.page =  'login';
     $scope.mapUsers = [];
     $scope.userName = '';
+    
+    $scope.globalError = $rootScope.globalError;
 		
 	
 	// set the user, role, focus project, and preferences to null (i.e. clear) by broadcasting to rest of app
@@ -51,6 +53,9 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	
 	// login button directs to next page based on role selected
 	$scope.go = function () {
+		
+		// reset the global error on log in attempt
+		$scope.globalError = "";
 
 		console.debug($scope.role);
 
@@ -389,8 +394,13 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			}	
 		}).success(function(data) {
 			projects = data.mapProject;
-		}).error(function(error) {
+		}).error(function(response) {
 			$scope.error = $scope.error + "Could not retrieve projects. "; 
+			
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 
 		}).then(function() {
 
@@ -435,9 +445,14 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			}).error(function(error) {
 				$scope.error = $scope.error + "Could not retrieve Concept children. ";    
 			});
-		}).error(function(error) {
+		}).error(function(response) {
 			console.debug("Could not retrieve concept");
 			$scope.error = $scope.error + "Could not retrieve Concept. ";    
+			
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		});
 	});
 
@@ -468,8 +483,13 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		}).success(function(data) {
 			$scope.records = data.mapRecord;
 			$scope.filterRecords();
-		}).error(function(error) {
+		}).error(function(response) {
 			$scope.error = $scope.error + "Could not retrieve records. ";    
+			
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		}).then(function() {
 
 			// check relation style flags
@@ -562,8 +582,13 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				
 				// open the record edit view
 				$location.path("/record/recordId/" + data.id);
-			}).error(function(data) {
+			}).error(function(response) {
 				$rootScope.glassPane--;
+				
+				if (response.indexOf("HTTP Status 401") != -1) {
+					$rootScope.globalError = "Authorization failed.  Please log in again.";
+					$location.path("/");
+				}
 			});
 
 			
@@ -823,11 +848,16 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 			$scope.nRecords = data.totalCount;
 			$scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
 
-		}).error(function(error) {
+		}).error(function(response) {
 
 			$rootScope.glassPane--;
 			$scope.errorRecord = "Error retrieving map records";
 			console.debug("changeRecordPage error");
+			
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		}).then(function(data) {
 
 			// check if icon legends are necessary
@@ -1023,8 +1053,13 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 			});
 
 			
-		}).error(function(error) {
+		}).error(function(response) {
 		  	$rootScope.glassPane--;
+		  	
+		  	if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		});
 	};
 }]);
