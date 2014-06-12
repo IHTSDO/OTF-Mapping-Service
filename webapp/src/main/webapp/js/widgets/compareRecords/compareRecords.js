@@ -94,8 +94,13 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			headers: { "Content-Type": "application/json"}	
 		}).success(function(data) {
 			$scope.leadRecord = data;
-		}).error(function(error) {
+		}).error(function(response) {
 			$scope.error = $scope.error + "Could not retrieve map record. "; 
+
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 
 			// obtain the record concept - id from leadRecord	    	  
 		}).then(function(data) {
