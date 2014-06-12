@@ -33,6 +33,14 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	$scope.currentOpenConcepts = {};
 	$scope.descTypes = {};
 	$scope.relTypes = {};
+	
+	// initialize search variables
+	$scope.query = "";							// the query input
+	$scope.searchBackAllowed = false;			// whether the back button is displayed
+	$scope.searchForwardAllowed = false;		// whether the forward button is displayed
+	$scope.searchStack = [];					// an array of search terms from query input
+	$scope.searchStackPosition = 0;				// the current position in the stack
+	$scope.searchStackResults = 0;				// the number of results currently in the array (may be less than array length)
 
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
@@ -97,7 +105,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	};
 
 	// function to get the root nodes with query
-	$scope.getRootTreeWithQuery = function() {
+	$scope.getRootTreeWithQuery = function(isNewSearch) {
 
 		console.debug("QUERYING: " + $scope.query);
 		$scope.searchStatus = "Searching...";
@@ -107,17 +115,64 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
 		}).then (function(response) {
-			console.debug("HTTP RESPONSE");
+			console.debug("Query successful with response:");
 			console.debug(response);
 
-			// limit result count to 10
+			// limit result count to 10 root tree positions
 			for (var x =0; x < response.data.treePosition.length && x < 10; x++) {
 				$scope.terminologyTree[x] = response.data.treePosition[x];
 			}
 
 			$scope.expandAll($scope.terminologyTree);
 			$scope.searchStatus = "";
+			
+			if (isNewSearch == true) {
+			
+				// update the position counter
+				$scope.searchStackPosition++;
+				
+				// check that array still has space, if not reallocate			
+				if ($scope.searchStack.length <= $scope.searchStackPosition) {
+					
+					var newSearchStack = new Array($scope.searchStack.length * 2);
+					for (var i = 0; i < $scope.searchStack.length; i++) {
+						newSearchStack[i] = $scope.searchStack[i];
+					}
+					
+					$scope.searchStack = newSearchStack;
+				}
+				
+				// add the query to the stack
+				$scope.searchStack[$scope.searchStackPosition] = $scope.query;
+				
+				// remove any elements past the search stack position
+				for (var i = $scope.searchStackPosition + 1; i < $scope.searchStack.length; i++) {
+					$scope.searchStack[i] = "";
+				};
+				
+				// set the total number of results to this position
+				$scope.searchStackResults = $scope.searchStackPosition;
+				
+			// otherwise, this request came from a back/forward button press
+			} else {
+				// do nothing, no need to modify results
+			}
+						
+			// set the variables for back/forward
+			$scope.searchBackAllowed = $scope.searchStackPosition > 0 ? true : false;
+			$scope.searchForwardAllowed = $scope.searchStackPosition < $scope.searchStackResults ? true : false;
+			
 		});
+	};
+	
+	$scope.changeSearch = function(positionChange) {
+		
+		// alter the position, set the query, and call the search function
+		$scope.searchStackPosition += positionChange;
+		$scope.query = $scope.searchStack[$scope.searchStackPosition];
+		$scope.getRootTreeWithQuery(false);
+		
+		
 	};
 
 	$scope.gotoReferencedConcept = function(referencedConcept) {
