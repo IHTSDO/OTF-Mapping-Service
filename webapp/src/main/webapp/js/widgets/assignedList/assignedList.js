@@ -43,10 +43,14 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	});
 
 	// on any change of focusProject, retrieve new available work
-	$scope.$watch(['focusProject', 'user'], function() {
+	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch(['focusProject', 'user', 'userToken'], function() {
 		console.debug('assignedListCtrl:  Detected project or user set/change');
 
-		if ($scope.focusProject != null && $scope.user != null) {
+		if ($scope.focusProject != null && $scope.user != null && $scope.userToken != null) {
+
+			$http.defaults.headers.common.Authorization = $scope.userToken;	
+			
 			$scope.retrieveAssignedWork($scope.assignedWorkPage);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 				$scope.retrieveAssignedConflicts($scope.assignedConflictsPage);
@@ -68,7 +72,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id" + $scope.user.userName + "/assignedConflicts",
+			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + $scope.user.userName + "/assignedConflicts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",

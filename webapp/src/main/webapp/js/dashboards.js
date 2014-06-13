@@ -147,23 +147,51 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 	$scope.page = 'mainDashboard';
 
 	console.debug('in dashboardCtrl');
+	
+	// once focus project retrieved, retrieve the concept and records
+
+
+	
 
 	// watch for preferences change
+	$scope.parameters = null;
 	$scope.$on('localStorageModule.notification.setUserPreferences', function(event, parameters) { 	
+	
 		console.debug("dashboardCtrl:  Detected change in preferences");
-		if (parameters.userPreferences != null && parameters.userPreferences != undefined) {
-			$http({
-				url: root_mapping + "userPreferences/update",
-				dataType: "json",
-				data: parameters.userPreferences,
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json"
-				}	
-			}).success(function(data) {
-			});
+		console.debug(parameters);
+		$scope.parameters = parameters;
+	
+	});
+	
+	$scope.userToken = localStorageService.get('userToken');
+	
+	$scope.$watch(['parameters', 'userToken'], function() {
+		console.debug('workAvailableWidget:  scope project changed!');
+
+		if ($scope.parameters != null && $scope.userToken != null) {
+			
+			$http.defaults.headers.common.Authorization = $scope.userToken;
+			$scope.go();
 		}
 	});
+		
+	$scope.go = function() {
+		$http({
+			url: root_mapping + "userPreferences/update",
+			dataType: "json",
+			data: $scope.parameters.userPreferences,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+		}).error(function(data) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
+		});
+	};
 
 	// must instantiate a default dashboard on call
 	setModel();
@@ -366,9 +394,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		// get the role for this user and project
 		console.debug("Retrieving role for " + $scope.focusProject.name + ", " + $scope.currentUser.userName);
 		$http({
-			url : root_mapping + "userRole/"
-					+ $scope.currentUser.userName + "/projectId/"
-					+ $scope.focusProject.id,
+			url: root_mapping + "userRole/user/id/" + $scope.currentUser.userName + "/project/id/" + $scope.focusProject.id,
 			method : "GET",
 			headers: {
 				"Content-Type": "application/json"
