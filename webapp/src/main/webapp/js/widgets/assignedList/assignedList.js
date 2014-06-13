@@ -68,7 +68,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_workflow + "assignedConflicts/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
+			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id" + $scope.user.userName + "/assignedConflicts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -115,7 +115,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_workflow + "assignedWork/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
+			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + $scope.user.userName + "/assignedConcepts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -174,7 +174,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		$rootScope.glassPane++;
 		
 		$http({
-			url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/concept/" + record.terminologyId + "/user/" + $scope.user.userName,
+			url: root_workflow + "unassign/project/id/" + $scope.focusProject.id + "/concept/id/" + record.terminologyId + "/user/id/" + $scope.user.userName,
 			dataType: "json",
 			method: "POST",
 			headers: {
@@ -212,7 +212,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$rootScope.glassPane++;
 			
 			$http({
-				url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
+				url: root_workflow + "unassign/project/id/" + $scope.focusProject.id + "/user/id/" + $scope.user.userName,
 				dataType: "json",
 				method: "POST",
 				headers: {

@@ -49,7 +49,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			$scope.project = parameters.focusProject;
 	});
 	
-	// on any change of focusProject, retrieve new available work
+	// watch for change in focus project
 	$scope.$watch('project', function() {
 		
 		console.debug('compareRecords:  Detected change in project');
@@ -105,10 +105,10 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			// obtain the record concept - id from leadRecord	    	  
 		}).then(function(data) {
 			$http({
-				url: root_content + "concept/" 
+				url: root_content + "concept/id/" 
 				+ $scope.project.sourceTerminology + "/"
 				+ $scope.project.sourceTerminologyVersion + "/"
-				+ "id/" + $scope.leadRecord.conceptId,
+				+ $scope.leadRecord.conceptId,
 				dataType: "json",
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
@@ -124,7 +124,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 
 		// get the conflict records
 		$http({
-			url: root_mapping + "record/conflictRecords/" + $routeParams.recordId,
+			url: root_mapping + "record/id/" + $routeParams.recordId + "/conflictOrigins",
 			dataType: "json",
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
@@ -149,7 +149,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 
 			// obtain the validationResults from compareRecords
 			$http({
-				url: root_mapping + "record/compare/" + $scope.record1.id + "/" + $scope.record2.id,
+				url: root_mapping + "validation/record/id/" + $scope.record1.id + "/record/id/" + $scope.record2.id + "/compare",
 				dataType: "json",
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	

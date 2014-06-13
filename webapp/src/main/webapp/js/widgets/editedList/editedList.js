@@ -59,7 +59,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_mapping + "recentRecords/" + $scope.focusProject.id + "/" + $scope.user.userName,
+			url: root_mapping + "record/project/id/" + $scope.focusProject.id + "/user/id/" + $scope.user.userName + "/edited",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",

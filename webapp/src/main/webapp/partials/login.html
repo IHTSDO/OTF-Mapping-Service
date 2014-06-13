@@ -2,51 +2,61 @@
 
 <div ng-include src="'./partials/header.html'"></div>
 
-<div ng-show="mapUsers.length == 0">
 
-	<h3>Initializing application.  Please wait.</h3>
-</div>
+<h3>Initializing application. Please wait.</h3>
 
-<div ng-show="mapUsers.length > 0">
-	<form>
-	  <div>
-        <div height="70px" 
-          style="vertical-align: bottom; padding-bottom: 15px"><strong>Enter User and Password</strong>
-<p>You may use: your IHTSDO username / ***REMOVED***</div>
-      </div>
-      <div>
-        <div style="padding: 5px; width: 20%;"><input id="userField" ng-model="userName" type="text" placeholder="Username" /></div>
-      </div>
-	  <div>
-        <div style="padding: 5px; width: 20%;"><input id "passwordField" type="password" placeholder="Password" ng-model="password"/></div>
-      </div>
-	  <div>
-		<div style="padding:5px;" >
-		<button type="submit" ng-click="go('/viewer/dash')">Login</button>
+<form>
+	<div>
+		<div height="70px"
+			style="vertical-align: bottom; padding-bottom: 15px">
+			<strong>Enter User and Password</strong>
+			<p>You may use: your IHTSDO username / ***REMOVED***
 		</div>
-	  </div> 
-      <div>
-        <div height="70px" 
-          style="vertical-align: bottom; padding-top: 15px; padding-bottom: 15px"><strong>OR</strong></div>
-      </div>
-      <div>
-        <div height="70px" 
-          style="vertical-align: bottom; padding-bottom: 15px"><strong>View Maps as a Guest</strong></div>
-      </div>
-      <div>
-        <div style="padding:5px;" >
-          <button type="submit" ng-click="goGuest('/project/records')">View Maps</button>
-        </div>
-      </div>
-	</form>
-</div>
+	</div>
+	<div>
+		<div style="padding: 5px; width: 20%;">
+			<input id="userField" ng-model="userName" type="text"
+				placeholder="Username" />
+		</div>
+	</div>
+	<div>
+		<div style="padding: 5px; width: 20%;">
+			<input id "passwordField" type="password" placeholder="Password"
+				ng-model="password" />
+		</div>
+	</div>
+	<div>
+		<div style="padding: 5px;">
+			<button type="submit" ng-click="go('/viewer/dash')">Login</button>
+		</div>
+	</div>
+	<div>
+		<div height="70px"
+			style="vertical-align: bottom; padding-top: 15px; padding-bottom: 15px">
+			<strong>OR</strong>
+		</div>
+	</div>
+	<div>
+		<div height="70px"
+			style="vertical-align: bottom; padding-bottom: 15px">
+			<strong>View Maps as a Guest</strong>
+		</div>
+	</div>
+	<div>
+		<div style="padding: 5px;">
+			<button type="submit" ng-click="goGuest('/project/records')">View
+				Maps</button>
+		</div>
+	</div>
+</form>
+
 <div ng-include src="'./partials/footer.html'"></div>
-<div ng-show = "error.length > 0" >
+<div ng-show="error.length > 0">
 
 	<h3 class="alert alert-danger">{{error}}</h3>
 </div>
 
-<div ng-show = "globalError.length > 0">
+<div ng-show="globalError.length > 0">
 	<h3 class="alert alert-danger">{{globalError}}</h3>
 </div>
 
