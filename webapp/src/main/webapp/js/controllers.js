@@ -122,7 +122,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 					
 					// retrieve the user preferences
 					$http({
-						url: root_mapping + "userPreferences/" + $scope.userName,
+						url: root_mapping + "userPreferences/user/id/" + $scope.userName,
 						dataType: "json",
 						method: "GET",
 						headers: {
@@ -162,7 +162,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 
 					}).then(function(data) {
 						$http({
-							url: root_mapping + "user/id/" + $scope.userName + "/projects",
+							url: root_mapping + "project/user/id/" + $scope.userName,
 							dataType: "json",
 							method: "GET",
 							headers: {
@@ -190,7 +190,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							$scope.error = $scope.error + "Could not retrieve user role. "; 
 						}).then(function(data) {
 							$http({
-								url: root_mapping + "userRole/" + $scope.userName + "/projectId/" + $scope.focusProject.id,
+								url: root_mapping + "userRole/user/id" + $scope.userName + "/project/id/" + $scope.focusProject.id,
 								dataType: "json",
 								method: "GET",
 								headers: {
@@ -239,7 +239,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 				}).then(function(data) {
 					$rootScope.glassPane++;
 					$http({
-						url: root_metadata + "terminologies/latest",
+						url: root_metadata + "terminology/latest",
 						dataType: "json",
 						method: "GET",
 						headers: {
@@ -293,7 +293,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		// written to ensure correct handling of asynchronous responses
 		function addMetadataToLocalStorageService(terminology, version) {
 			$http({
-				url: root_metadata + "all/" + terminology + "/" + version,
+				url: root_metadata + "metadata/terminology/id/" + terminology + "/" + version,
 				dataType: "json",
 				method: "GET",
 				headers: {
@@ -409,10 +409,9 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 		// find concept based on source terminology
 		$http({
-			url: root_content + "concept/" 
+			url: root_content + "concept/id/" 
 			+ $scope.focusProject.sourceTerminology + "/" 
-			+ $scope.focusProject.sourceTerminologyVersion 
-			+ "/id/" 
+			+ $scope.focusProject.sourceTerminologyVersion + "/"
 			+ $routeParams.conceptId,
 			dataType: "json",
 			method: "GET",
@@ -425,10 +424,9 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 			// find children based on source terminology
 			$http({
-				url: root_content + "concept/" 
+				url: root_content + "concept/id/" +
 				+ $scope.focusProject.sourceTerminology + "/" 
-				+ $scope.focusProject.sourceTerminologyVersion 
-				+ "/id/" 
+				+ $scope.focusProject.sourceTerminologyVersion + "/"
 				+ $routeParams.conceptId
 				+ "/children",
 				dataType: "json",
@@ -472,7 +470,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	$scope.getRecordsForConcept = function() {
 		// retrieve all records with this concept id
 		$http({
-			url: root_mapping + "record/conceptId/" + $routeParams.conceptId,
+			url: root_mapping + "record/concept/id/" + $routeParams.conceptId,
 			dataType: "json",
 			method: "GET",
 			headers: {
@@ -534,7 +532,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	function setEditable(record) {
 		
 		$http({
-			url: root_workflow + "record/isEditable/" + $scope.currentUser.userName,
+			url: root_workflow + "checkRecordEditable/user/id/" + $scope.currentUser.userName,
 			method: "POST",
 			dataType: 'json',
 			data: record,
@@ -553,9 +551,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 		console.debug("Edit record clicked, assigning record if necessary");
 		$http({
-			url: root_workflow + "assign/record/projectId/" + $scope.focusProject.id +
-			 "/concept/" + record.conceptId +
-			 "/user/" + $scope.currentUser.userName,
+			url: root_workflow + "assignFromRecord/user/id/" + $scope.currentUser.userName,
 			 method: "POST",
 			 dataType: 'json',
 			 data: record,
@@ -565,9 +561,9 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		}).success(function(data) {
 			console.debug('Assignment successful');
 			$http({
-				url: root_workflow + "assignedRecord/projectId/" + $scope.focusProject.id +
-				 "/concept/" + record.conceptId +
-				 "/user/" + $scope.currentUser.userName,
+				url: root_workflow + "record/project/id/" + $scope.focusProject.id +
+				 "/concept/id/" + record.conceptId +
+				 "/user/id/" + $scope.currentUser.userName,
 				 method: "GET",
 				 dataType: 'json',
 				 data: record,
@@ -628,11 +624,11 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 
 		$http({
-			url: root_mapping + "concept/" 
+			url: root_mapping + "concept/id" 
 			+ $scope.concept.terminology + "/"
 			+ $scope.concept.terminologyVersion + "/"
-			+ "id/" + $scope.concept.terminologyId + "/"
-			+ "threshold/10",
+			+ $scope.concept.terminologyId + "/"
+			+ "unmappedDescendants/threshold/10",
 			dataType: "json",
 			method: "GET",
 			headers: {
@@ -822,7 +818,7 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		
 		// construct html parameters parameter
 		var pfsParameterObj = constructPfsParameterObj(page);
-		var query_url = root_mapping + "record/projectId/" + $scope.project.objectId;
+		var query_url = root_mapping + "record/project/id/" + $scope.project.objectId;
 
 
 		$rootScope.glassPane++;
@@ -918,11 +914,11 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		if ($scope.records[index].countDescendantConcepts < 11) {
 
 			$http({
-				url: root_mapping + "concept/" 
+				url: root_mapping + "concept/id/" 
 				+ $scope.project.sourceTerminology + "/"
 				+ $scope.project.sourceTerminologyVersion + "/"
-				+ "id/" + $scope.records[index].conceptId + "/"
-				+ "threshold/10",
+				+ $scope.records[index].conceptId + "/"
+				+ "unmappedDescendants/threshold/10",
 				dataType: "json",
 				method: "GET",
 				headers: {
@@ -1021,9 +1017,7 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 
 		console.debug("Edit record clicked, assigning record if necessary");
 		$http({
-			url: root_workflow + "assign/record/projectId/" + $scope.focusProject.id +
-			 "/concept/" + record.conceptId +
-			 "/user/" + $scope.currentUser.userName,
+			url: root_workflow + "assignFromRecord/user/id/" + $scope.currentUser.userName,
 			 method: "POST",
 			 dataType: 'json',
 			 data: record,
@@ -1033,9 +1027,9 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		}).success(function(data) {
 			console.debug('Assignment successful');
 			$http({
-				url: root_workflow + "assignedRecord/projectId/" + $scope.focusProject.id +
-				 "/concept/" + record.conceptId +
-				 "/user/" + $scope.currentUser.userName,
+				url: root_workflow + "record/project/id/" + $scope.focusProject.id +
+				 "/concept/id/" + record.conceptId +
+				 "/user/id/" + $scope.currentUser.userName,
 				 method: "GET",
 				 dataType: 'json',
 				 data: record,
@@ -1192,10 +1186,9 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				for (var i = 0; i < $scope.pagedScopeConcept.length; i++) {
 					$rootScope.glassPane++;
 					$http({
-						url: root_content + "concept/" 
-						+ $scope.focusProject.sourceTerminology +  "/" 
-						+ $scope.focusProject.sourceTerminologyVersion 
-						+ "/id/" 
+						url: root_content + "concept/id/" 
+						+ $scope.focusProject.sourceTerminology + "/" 
+						+ $scope.focusProject.sourceTerminologyVersion + "/"
 						+ $scope.focusProject.scopeConcepts[i],
 						dataType: "json",
 						method: "GET",
@@ -1234,10 +1227,9 @@ mapProjectAppControllers.controller('MapProjectDetailCtrl',
 				for (var i = 0; i < $scope.pagedScopeExcludedConcept.length; i++) {
 					$rootScope.glassPane++;
 					$http({
-						url: root_content + "concept/" 
+						url: root_content + "concept/id/" 
 						+ $scope.focusProject.sourceTerminology +  "/" 
-						+ $scope.focusProject.sourceTerminologyVersion 
-						+ "/id/" 
+						+ $scope.focusProject.sourceTerminologyVersion + "/"
 						+ $scope.focusProject.scopeExcludedConcepts[i],
 						dataType: "json",
 						method: "GET",

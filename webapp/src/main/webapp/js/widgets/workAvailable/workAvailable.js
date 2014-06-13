@@ -98,7 +98,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_workflow + "availableConflicts/projectId/" + $scope.focusProject.id + "/user/" + $scope.currentUser.userName,
+			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + $scope.currentUser.userName + "/availableConflicts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -143,7 +143,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_workflow + "availableWork/projectId/" + $scope.focusProject.id + "/user/" + $scope.currentUser.userName,
+			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + $scope.currentUser.userName + "/availableConcepts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -183,9 +183,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	  	$rootScope.glassPane++;
 	  	
 		$http({
-			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
-								 "/concept/" + trackingRecord.terminologyId +
-								 "/user/" + $scope.currentUser.userName,
+			url: root_workflow + "assign/project/id/" + $scope.focusProject.id +
+								 "/concept/id/" + trackingRecord.terminologyId +
+								 "/user/id/" + $scope.currentUser.userName,
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
@@ -225,7 +225,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 
 	  	$rootScope.glassPane++;
 		$http({
-			url: root_workflow + "availableWork/projectId/" + $scope.focusProject.id + "/user/" + mapUser.userName,
+			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + mapUser.userName + "/availableConcepts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -262,13 +262,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					console.debug('  -> Concept ' + trackingRecords[i].terminologyId);
 				}
 				
-				console.debug("Calling batch assignment API: " + root_workflow + "assign/batch/projectId/" + $scope.focusProject.id 
-									   + "/user/" + mapUser.userName);
+				console.debug("Calling batch assignment API");
 
 			  	$rootScope.glassPane++;
 				$http({
-					url: root_workflow + "assign/batch/projectId/" + $scope.focusProject.id 
-									   + "/user/" + mapUser.userName,	
+					url: root_workflow + "assignBatch/project/id/" + $scope.focusProject.id 
+									   + "/user/id/" + mapUser.userName,	
 					dataType: "json",
 					data: terminologyIds,
 					method: "POST",

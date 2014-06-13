@@ -27,7 +27,7 @@ angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
 		get: function(terminology){
 			var deferred = $q.defer();
 			$http({
-				url: root_metadata + "all/" + terminology,
+				url: root_metadata + "metdata/terminology/id/" + terminology,
 				dataType: "json",
 				method: "GET",
 				headers: {
@@ -56,7 +56,7 @@ angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
 	
 	// get available terminologies
 	$http({
-		url: root_metadata + "terminologies/latest",
+		url: root_metadata + "terminology/latest",
 		dataType: "json",
 		method: "GET",
 		headers: {

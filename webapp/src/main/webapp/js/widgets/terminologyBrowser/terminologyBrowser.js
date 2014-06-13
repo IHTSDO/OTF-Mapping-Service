@@ -90,7 +90,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	$scope.getRootTree = function() {
 
 		$http({
-			url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion,
+			url: root_mapping + "treePosition/project/id/" + $scope.focusProject.id + "/terminology/id/" + $scope.terminology + "/" + $scope.terminologyVersion,
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
 		}).success (function(response) {
@@ -116,7 +116,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		$scope.searchStatus = "Searching...";
 		$scope.terminologyTree = [];
 		$http({
-			url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion + "/query/" + $scope.query,
+			url: root_mapping + "treePosition/project/id/" + $scope.focusProject.id + "/terminology/id/" + $scope.terminology + "/" + $scope.terminologyVersion + "/query/" + $scope.query,
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
 		}).success (function(response) {
@@ -207,7 +207,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 		$timeout(function() {
 			$http({
-				url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/concept/" + $scope.terminology + "/" + $scope.terminologyVersion + "/id/" + terminologyId,
+				url: root_mapping + "treePosition/project/id/" + $scope.focusProject.id + "/concept/id/" + $scope.terminology + "/" + $scope.terminologyVersion "/" + terminologyId,
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success (function(response) {
@@ -286,7 +286,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 			// retrieve the concept
 			$http({
-				url: root_content + "concept/" + node.terminology + "/" + node.terminologyVersion + "/id/" + node.terminologyId,
+				url: root_content + "concept/id/" + node.terminology + "/" + node.terminologyVersion + "/" + node.terminologyId,
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 
