@@ -207,7 +207,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 		$timeout(function() {
 			$http({
-				url: root_mapping + "treePosition/project/id/" + $scope.focusProject.id + "/concept/id/" + $scope.terminology + "/" + $scope.terminologyVersion "/" + terminologyId,
+				url: root_mapping + "treePosition/project/id/" + $scope.focusProject.id + "/concept/id/" + $scope.terminology + "/" + $scope.terminologyVersion + "/" + terminologyId,
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success (function(response) {
