@@ -32,22 +32,25 @@ public interface SecurityService {
    */
   public String getUsernameForToken(String authToken) throws Exception;
   
+
 	/**
-	 * Authorize token.
+	 * Returns the map project role for token.
 	 *
 	 * @param authToken the auth token
 	 * @param mapProjectId the map project id
-	 * @return the map user role
+	 * @return the map project role for token
 	 * @throws Exception the exception
 	 */
-	public MapUserRole authorizeToken(String authToken, Long mapProjectId) throws Exception;
+	public MapUserRole getMapProjectRoleForToken(String authToken, Long mapProjectId) throws Exception;
+
 
 	/**
-	 * Authorize token in cases where the mapProjectId isn't available or isn't relevant.
-	 * These are cases that are visible to all users and role is not relevant.
+	 * Returns the application role for token.
 	 *
 	 * @param authToken the auth token
+	 * @return TODO
+	 * @return the application role for token
 	 * @throws Exception the exception
 	 */
-	public void authorizeToken(String authToken) throws Exception;
+	public MapUserRole getApplicationRoleForToken(String authToken) throws Exception;
 }

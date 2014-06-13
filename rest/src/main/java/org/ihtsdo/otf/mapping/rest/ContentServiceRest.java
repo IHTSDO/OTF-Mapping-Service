@@ -9,8 +9,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.RelationshipListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
@@ -76,8 +78,12 @@ public class ContentServiceRest {
 
 		try {
 			// authorize call
-			securityService.authorizeToken(authToken);
-
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the concept.").build());
+			
+  		
 			ContentService contentService = new ContentServiceJpa();
 			Concept c = contentService.getConcept(terminologyId, terminology,
 					terminologyVersion);
@@ -95,6 +101,8 @@ public class ContentServiceRest {
 
 			contentService.close();
 			return c;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -127,8 +135,12 @@ public class ContentServiceRest {
 
 		try {
 			// authorize call
-			securityService.authorizeToken(authToken);
-
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the latest version concept.").build());
+			
+  		
 			ContentService contentService = new ContentServiceJpa();
 			MetadataService metadataService = new MetadataServiceJpa();
 			String version = metadataService.getLatestVersion(terminology);
@@ -139,6 +151,8 @@ public class ContentServiceRest {
 			metadataService.close();
 			contentService.close();
 			return c;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -164,13 +178,19 @@ public class ContentServiceRest {
 
 		try {
 			// authorize call
-			securityService.authorizeToken(authToken);
-
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find the concepts by query.").build());
+			
+  		
 			ContentService contentService = new ContentServiceJpa();
 			SearchResultList sr = contentService.findConceptsForQuery(
 					searchString, new PfsParameterJpa());
 			contentService.close();
 			return sr;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -205,8 +225,12 @@ public class ContentServiceRest {
 
 		try {
 			// authorize call
-			securityService.authorizeToken(authToken);
-
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find the descendant concepts.").build());
+			
+  		
 			ContentService contentService = new ContentServiceJpa();
 
 			// want all descendants, do not use PFS parameter
@@ -215,6 +239,8 @@ public class ContentServiceRest {
 
 			contentService.close();
 			return results;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -248,8 +274,12 @@ public class ContentServiceRest {
 
 		try {
 			// authorize call
-			securityService.authorizeToken(authToken);
-
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find the child concepts.").build());
+			
+  		
 			ContentService contentService = new ContentServiceJpa();
 			MetadataService metadataService = new MetadataServiceJpa();
 
@@ -296,6 +326,8 @@ public class ContentServiceRest {
 			metadataService.close();
 			contentService.close();
 			return results;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}

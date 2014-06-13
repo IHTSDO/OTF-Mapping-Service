@@ -13,6 +13,7 @@ import java.util.StringTokenizer;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
@@ -142,6 +143,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         mapUser.setName(st.nextToken());
         mapUser.setUserName(st.nextToken());
         mapUser.setEmail(st.nextToken());
+        String role = st.nextToken();       
+        mapUser.setApplicationRole(MapUserRole.valueOf(role));
         mappingService.addMapUser(mapUser);
         getLog().info("  " + mapUser.getUserName());
       }
