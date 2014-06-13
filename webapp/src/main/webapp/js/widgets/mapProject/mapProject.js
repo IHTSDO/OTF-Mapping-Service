@@ -24,8 +24,14 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
           
           console.debug($scope.project);
 	  });	
-
   	  
+  	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch('userToken', function() {
+		
+		$http.defaults.headers.common.Authorization = $scope.userToken;
+		
+	});
+	
 		$scope.goProjectDetails = function () {
 			console.debug($scope.role);
 

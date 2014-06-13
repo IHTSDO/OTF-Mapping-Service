@@ -47,7 +47,7 @@ public class MapUserJpa implements MapUser {
   private String email;
   
   /** The application role. */
-	@Enumerated(EnumType.STRING)
+  @Enumerated(EnumType.STRING)
   private MapUserRole applicationRole;
 
   /**
@@ -238,10 +238,10 @@ public class MapUserJpa implements MapUser {
   public String toString() {
 
     return this.getId() + "," + this.getUserName() + "," + this.getEmail()
-        + "," + this.getName() + "," + this.getApplicationRole().getValue();
+        + "," + this.getName(); 
+    
+    // TODO: Find out why this is throwing null-pointer exceptions + "," + this.getApplicationRole().getValue();
   }
-
-
 
 	/**
 	 * Hash code.

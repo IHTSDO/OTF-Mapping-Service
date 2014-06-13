@@ -65,10 +65,13 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	});
 
 	// on any change of focusProject, retrieve new available work
-	$scope.$watch('focusProject', function() {
+	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch(['focusProject', 'userToken'], function() {
 		console.debug('workAvailableWidget:  scope project changed!');
 
-		if ($scope.focusProject != null) {
+		if ($scope.focusProject != null && $scope.userToken != null) {
+			
+			$http.defaults.headers.common.Authorization = $scope.userToken;
 			
 			// construct the list of users
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);

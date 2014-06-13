@@ -48,16 +48,22 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		console.debug("TerminologyBrowserWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
 	});
+	
+	$scope.userToken = localStorageService.get('userToken');
+	
 
 	// on any change of focusProject, retrieve new available work
-	$scope.$watch(['focusProject', 'metadata'], function() {
+	$scope.$watch(['focusProject', 'metadata', 'userToken'], function() {
 
 		// once needed state variables are loaded, initialize and make first call
-		if ($scope.focusProject != null && $scope.metadata != null) {
+		if ($scope.focusProject != null && $scope.metadata != null && $scope.userToken != null) {
 
 			console.debug("STATE VARIABLES");
 			console.debug($scope.focusProject);
 			console.debug($scope.metadata);
+			
+			$http.defaults.headers.common.Authorization = $scope.userToken;
+			
 
 			// find the description and relation type metadata and convert to normal JSON object structure
 			for (var i = 0; i < $scope.metadata.length; i++) {

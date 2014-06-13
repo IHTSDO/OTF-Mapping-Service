@@ -36,11 +36,15 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 	});
 
 	// on any change of focusProject, retrieve new available work
-	$scope.$watch('focusProject', function() {
+	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch(['focusProject', 'userToken'], function() {
 		console.debug('editedListCtrl:  Detected project set/change');
 
-		if ($scope.focusProject != null) {
+		if ($scope.focusProject != null && $scope.userToken != null) {
+			
+			$http.defaults.headers.common.Authorization = $scope.userToken;
 			$scope.retrieveEditedWork($scope.editedRecordsPage);
+			
 		}
 	});
 	
