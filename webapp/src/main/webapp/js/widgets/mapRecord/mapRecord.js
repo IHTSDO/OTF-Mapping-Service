@@ -159,10 +159,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 			// obtain the record concept
 			$http({
-				url: root_content + "concept/" 
+				url: root_content + "concept/id/" 
 				+ $scope.project.sourceTerminology + "/"
 				+ $scope.project.sourceTerminologyVersion + "/"
-				+ "id/" + $scope.record.conceptId,
+				+ $scope.record.conceptId,
 				dataType: "json",
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
@@ -309,7 +309,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		console.debug("Validating the map record");
 		// validate the record
 		$http({
-			url: root_mapping + "record/validate",
+			url: root_mapping + "validation/record/validate",
 			dataType: "json",
 			data: $scope.record,
 			method: "POST",

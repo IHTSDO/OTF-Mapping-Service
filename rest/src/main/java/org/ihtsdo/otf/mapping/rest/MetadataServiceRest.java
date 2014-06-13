@@ -39,14 +39,14 @@ public class MetadataServiceRest {
 	private SecurityService securityService = new SecurityServiceJpa();
 	
   /**
-   * Returns the all metadata.
+   * Returns all metadata for a terminology and version
    * 
    * @param terminology the terminology
    * @param version the version
    * @return the all metadata
    */
   @GET
-  @Path("/all/{terminology}/{version}")
+  @Path("/metadata/terminology/id/{terminology}/{version}")
   @ApiOperation(value = "Get metadata for terminology and version", notes = "Gets the key-value pairs representing metadata for a particular terminology and version", response = KeyValuePairLists.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -56,7 +56,7 @@ public class MetadataServiceRest {
     @ApiParam(value = "terminology version string", required = true) @PathParam("version") String version,
 		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
     
-	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /all/" + terminology + "/" + version);
+	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /metadata/" + terminology + "/" + version);
 	  
 	  try {
   		// authorize call
@@ -97,7 +97,7 @@ public class MetadataServiceRest {
    * @return the all metadata
    */
   @GET
-  @Path("/all/{terminology}")
+  @Path("/metadata/terminology/id/{terminology}")
   @ApiOperation(value = "Get all metadata with the latest version", notes = "Returns all metadata with the latest version in either JSON or XML format", response = KeyValuePairLists.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -125,12 +125,12 @@ public class MetadataServiceRest {
   }
 
   /**
-   * Returns the all terminologies latest versions.
+   * Returns all terminologies with only their latest version
    * 
    * @return the all terminologies latest versions
    */
   @GET
-  @Path("/terminologies/latest")
+  @Path("/terminology/terminologies/latest")
   @ApiOperation(value = "Get all terminologies and their latest versions", notes = "Returns list of terminologies and their latest versions in either JSON or XML format", response = KeyValuePairList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
@@ -163,12 +163,12 @@ public class MetadataServiceRest {
   }
 
   /**
-   * Returns the all terminologies versions.
+   * Returns all terminologies and all versions
    * 
-   * @return the all terminologies versions
+   * @return all terminologies and versions
    */
   @GET
-  @Path("/terminologies")
+  @Path("/terminology/terminologies")
   @ApiOperation(value = "Get all terminologies and all their versions", notes = "Returns list of terminologies and their versions in either JSON or XML format", response = KeyValuePairList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML

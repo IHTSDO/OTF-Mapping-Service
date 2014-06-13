@@ -1494,17 +1494,21 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		List<MapRecord> revisions = mappingService.getMapRecordRevisions(
 				mapRecord.getId()).getMapRecords();
 
-		// check assumption: last revision exists
-		if (revisions.size() == 0)
+		// check assumption: last revision exists, at least two records must be present
+		if (revisions.size() < 2)
 			throw new Exception(
 					"Attempted to get the previous version of map record with id "
 							+ mapRecord.getId() + ", "
 							+ mapRecord.getOwner().getName()
 							+ ", and concept id " + mapRecord.getConceptId()
 							+ ", but no previous revisions exist.");
+		
+		for (MapRecord revision : revisions) {
+			System.out.println(revision.toString());
+		}
 
-		// get the most recent revision
-		return revisions.get(0);
+		// get the most recent revision (0 is the current record, 1 is the previous)
+		return revisions.get(1);
 
 	}
 

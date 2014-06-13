@@ -52,7 +52,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			if (confirmWorkflow == true) {
 			// retrieve project information
 			$http({
-				url: root_workflow + "project/id/" + $scope.project.id,
+				url: root_workflow + "project/id/" + $scope.project.id + "/compute",
 				dataType: "json",
 				method: "POST",
 				headers: {
@@ -90,7 +90,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 					
 					// call the generate API
 					$http({
-						url: root_workflow + "project/id/" + $scope.project.id + "/nConflicts/" + $scope.nConflicts,
+						url: root_workflow + "project/id/" + $scope.project.id + "/generateConflicts/maxConflicts/" + $scope.nConflicts,
 						dataType: "json",
 						method: "POST",
 						headers: {
@@ -124,7 +124,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			if (confirmGenerate == true) {
 				// call the generate API
 				$http({
-					url: root_workflow + "project/id/" + $scope.project.id + "/testing",
+					url: root_workflow + "project/id/" + $scope.project.id + "/generateTestingState",
 					dataType: "json",
 					method: "POST",
 					headers: {
