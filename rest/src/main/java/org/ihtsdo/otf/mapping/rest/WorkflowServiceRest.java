@@ -81,10 +81,10 @@ public class WorkflowServiceRest {
 
 		try {	
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProjectId);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the computeWorkflow() service.").build());
+						"User does not have permissions to compute workflow.").build());
 			
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
@@ -140,10 +140,10 @@ public class WorkflowServiceRest {
 			
 			
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProjectId);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the findAvailableWork() service.").build());
+						"User does not have permissions to find available work.").build());
 			
 			System.out.println("Retrieving objects at " + System.currentTimeMillis()/1000);
 			
@@ -211,10 +211,10 @@ public class WorkflowServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProjectId);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the findAssignedWork() service.").build());
+						"User does not have permissions to find assigned work.").build());
 			
 			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
@@ -273,10 +273,10 @@ public class WorkflowServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProjectId);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the findAvailableConflicts() service.").build());
+						"User does not have permissions to find available conflicts.").build());
 			
 			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
@@ -334,10 +334,10 @@ public class WorkflowServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProjectId);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the findAssignedConflicts() service.").build());
+						"User does not have permissions to find assigned conflicts.").build());
 			
 			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
@@ -388,10 +388,10 @@ public class WorkflowServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapRecord.getMapProjectId());
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapProjectId));
 			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the assignWorkFromMapRecord() service.").build());
+						"User does not have permissions to assign work from a map record.").build());
 			
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			MappingService mappingService = new MappingServiceJpa();
@@ -447,10 +447,10 @@ public class WorkflowServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, new Long(mapProjectId));
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapProjectId));
 			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the assignWork() service.").build());
+						"User does not have permissions to assign work.").build());
 			
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			MappingService mappingService = new MappingServiceJpa();
@@ -575,10 +575,10 @@ public class WorkflowServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, new Long(mapProjectId));
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapProjectId));
 			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the unassignWork() service.").build());
+						"User does not have permissions to unassign work.").build());
 			
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			MappingService mappingService = new MappingServiceJpa();
@@ -630,10 +630,10 @@ public class WorkflowServiceRest {
 		
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProjectId);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the unassignAllWork() service.").build());
+						"User does not have permissions to unassign all work.").build());
 			
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			MappingService mappingService = new MappingServiceJpa();
@@ -683,6 +683,51 @@ public class WorkflowServiceRest {
 
 	
 
+
+        WorkflowService workflowService = null;
+        MappingService mappingService = null;
+        ContentService contentService = null;
+
+		try {
+			
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapProjectId));
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to assign batches.").build());
+			
+	        workflowService = new WorkflowServiceJpa();
+	        mappingService = new MappingServiceJpa();
+	        contentService = new ContentServiceJpa();
+
+		  MapProject mapProject = mappingService.getMapProject(new Long(
+					mapProjectId));
+			MapUser mapUser = mappingService.getMapUser(userName);
+
+			for (String terminologyId : terminologyIds) {
+				Logger.getLogger(WorkflowServiceRest.class).info(
+						"   Assigning " + terminologyId);
+				Concept concept = contentService.getConcept(terminologyId,
+						mapProject.getSourceTerminology(),
+						mapProject.getSourceTerminologyVersion());
+
+				workflowService.processWorkflowAction(mapProject, concept,
+						mapUser, null, WorkflowAction.ASSIGN_FROM_SCRATCH);
+
+			}
+
+			mappingService.close();
+			workflowService.close();
+			contentService.close();
+
+			return null;
+		} catch (WebApplicationException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+
 	/**
 	 * Attempt to validate and finish work on a record.
 	 * 
@@ -704,7 +749,10 @@ public class WorkflowServiceRest {
 		
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to set a record to finished.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 
@@ -728,6 +776,8 @@ public class WorkflowServiceRest {
 					mapRecord, WorkflowAction.FINISH_EDITING);
 			workflowService.close();
 
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -755,7 +805,10 @@ public class WorkflowServiceRest {
 		
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to set a record to editing in progress.").build());
   		
 			// get the map project and map user
 			MappingService mappingService = new MappingServiceJpa();
@@ -778,6 +831,8 @@ public class WorkflowServiceRest {
 					mapRecord, WorkflowAction.SAVE_FOR_LATER);
 			workflowService.close();
 
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -801,13 +856,13 @@ public class WorkflowServiceRest {
 		Logger.getLogger(WorkflowServiceRest.class).info(
 				"RESTful call (Workflow): /cancel for map record with id = " + mapRecord.getId());
 		
+
 		// authorize call
-		try {
-			securityService.authorizeToken(authToken);
-		} catch(Exception e) {
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the cancelWorkForMapRecord() service.").build());
-		}
+						"User does not have permissions to cancel editing a map record.").build());
+		
 		
 		// open the services
 		ContentService contentService = new ContentServiceJpa();
@@ -851,12 +906,11 @@ public class WorkflowServiceRest {
 				+ " for map record with id = " + mapRecord.getId().toString());
 		
 		// authorize call
-		try {
-			securityService.authorizeToken(authToken);
-		} catch(Exception e) {
+		MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+		if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the isMapRecordEditable() service.").build());
-		}
+					"User does not have permissions to query if map record is editable.").build());
+		
 		
 		// get the map user and map project
 		MappingService mappingService = new MappingServiceJpa();
@@ -894,12 +948,11 @@ public class WorkflowServiceRest {
 				"RESTful call (Workflow): /assignedRecord/projectId/" + mapProjectId + "/concept/" + terminologyId + "/user/" + userName);
 		
 		// authorize call
-		try {
-			securityService.authorizeToken(authToken);
-		} catch(Exception e) {
+		MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+		if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the getAssignedMapRecordForConceptAndMapUser() service.").build());
-		}
+					"User does not have permissions to retrieve an assigned map record given concept and user.").build());
+		
 		
 		MappingService mappingService = new MappingServiceJpa();
 		MapUser mapUser = mappingService.getMapUser(userName);
@@ -946,12 +999,11 @@ public class WorkflowServiceRest {
 				"RESTful call (Workflow): /project/id/" + mapProjectId + "/generateConflicts/maxConflicts/" + nConflicts);
 		
 		// authorize call
-		try {
-			securityService.authorizeToken(authToken);
-		} catch(Exception e) {
+		MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+		if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to call the generateRandomConflicts() service.").build());
-		}
+					"User does not have permissions to unassign work.").build());
+		
 		
 		MappingService mappingService = new MappingServiceJpa();
 		MapProject mapProject = mappingService.getMapProject(mapProjectId);
@@ -976,12 +1028,12 @@ public class WorkflowServiceRest {
 			@ApiParam(value = "Id of map project to generate the testing state for", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
 		
-		try {
-			securityService.authorizeToken(authToken); 
-		} catch(Exception e) {
+		// authorize call
+		MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+		if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
 			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permission to generate the mapping team testing state.").build());
-		}
+					"User does not have permissions to generate a mapping testing state.").build());
+		
 		
 		MappingService mappingService = new MappingServiceJpa();
 		MapProject mapProject = mappingService.getMapProject(mapProjectId);

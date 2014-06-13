@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlID;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
 /**
- * Class for map users, parent of MapLead, MapSpecialist
+ * Class for map users
  * 
  */
 public abstract class MapUserImpl implements MapUser {
