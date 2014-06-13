@@ -388,7 +388,7 @@ public class WorkflowServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapProjectId));
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapRecord.getMapProjectId()));
 			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(Response.status(401).entity(
 						"User does not have permissions to assign work from a map record.").build());
@@ -510,10 +510,11 @@ public class WorkflowServiceRest {
 		try {
 			
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, new Long(mapProjectId));
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapProjectId));
 			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the assignBatch() service.").build());
+						"User does not have permissions to assign batches.").build());
 			
 	        workflowService = new WorkflowServiceJpa();
 	        mappingService = new MappingServiceJpa();
@@ -681,52 +682,6 @@ public class WorkflowServiceRest {
 		}
 	}
 
-	
-
-
-        WorkflowService workflowService = null;
-        MappingService mappingService = null;
-        ContentService contentService = null;
-
-		try {
-			
-			// authorize call
-			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapProjectId));
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to assign batches.").build());
-			
-	        workflowService = new WorkflowServiceJpa();
-	        mappingService = new MappingServiceJpa();
-	        contentService = new ContentServiceJpa();
-
-		  MapProject mapProject = mappingService.getMapProject(new Long(
-					mapProjectId));
-			MapUser mapUser = mappingService.getMapUser(userName);
-
-			for (String terminologyId : terminologyIds) {
-				Logger.getLogger(WorkflowServiceRest.class).info(
-						"   Assigning " + terminologyId);
-				Concept concept = contentService.getConcept(terminologyId,
-						mapProject.getSourceTerminology(),
-						mapProject.getSourceTerminologyVersion());
-
-				workflowService.processWorkflowAction(mapProject, concept,
-						mapUser, null, WorkflowAction.ASSIGN_FROM_SCRATCH);
-
-			}
-
-			mappingService.close();
-			workflowService.close();
-			contentService.close();
-
-			return null;
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
 
 	/**
 	 * Attempt to validate and finish work on a record.
