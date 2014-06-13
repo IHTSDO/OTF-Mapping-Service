@@ -96,7 +96,10 @@ public class MappingServiceRest {
 		
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve map projects.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 
@@ -124,6 +127,8 @@ public class MappingServiceRest {
 			});
 			mappingService.close();
 			return mapProjects;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -152,10 +157,10 @@ public class MappingServiceRest {
 		
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProjectId);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the getMapProject() service.").build());
+						"User does not have permissions to retrieve the map project.").build());
 			
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
@@ -199,7 +204,10 @@ public class MappingServiceRest {
 		
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to add a map project.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mp = mappingService.addMapProject(mapProject);
@@ -217,6 +225,8 @@ public class MappingServiceRest {
 			mp.getPresetAgeRanges().size();
 
 			return mp;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -245,10 +255,10 @@ public class MappingServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProject.getId());
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProject.getId());
 			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the updateMapProject() service.").build());
+						"User does not have permissions to udpate a map project.").build());
 			
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapProject(mapProject);
@@ -284,10 +294,10 @@ public class MappingServiceRest {
 		
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProject.getId());
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProject.getId());
 			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the removeMapProject() service.").build());
+						"User does not have permissions to remove a map project.").build());
 			
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.removeMapProject(mapProject.getId());
@@ -320,7 +330,10 @@ public class MappingServiceRest {
 		
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find map projects.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			SearchResultList searchResultList = mappingService.findMapProjects(
@@ -328,6 +341,8 @@ public class MappingServiceRest {
 			mappingService.close();
 			return searchResultList;
 
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -345,7 +360,7 @@ public class MappingServiceRest {
 	@ApiOperation(value = "Get all projects for user", notes = "Returns a MapUser's MapProjects in either JSON or XML format", response = MapProjectListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectListJpa getMapProjectsForUser(
-			@ApiParam(value = "Id of map user to fetch projects for", required = true) @PathParam("username") String mapUserName,
+			@ApiParam(value = "Username of map user to fetch projects for", required = true) @PathParam("username") String mapUserName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -353,7 +368,10 @@ public class MappingServiceRest {
 			
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to get the map projects for given user.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapUser mapLead = mappingService.getMapUser(mapUserName);
@@ -379,6 +397,8 @@ public class MappingServiceRest {
 			});
 			mappingService.close();
 			return mapProjects;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -405,6 +425,12 @@ public class MappingServiceRest {
 				"RESTful call (Mapping): /user/users");
 
 		try {
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the map users.").build());
+			
 			MappingService mappingService = new MappingServiceJpa();
 			MapUserListJpa mapLeads = (MapUserListJpa) mappingService
 					.getMapUsers();
@@ -416,6 +442,8 @@ public class MappingServiceRest {
 			});
 			mappingService.close();
 			return mapLeads;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -441,12 +469,17 @@ public class MappingServiceRest {
 	
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve a map user.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapUser mapUser = mappingService.getMapUser(mapUserName);
 			mappingService.close();
 			return mapUser;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -474,12 +507,17 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to add a user.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.addMapUser(mapUser);
 			mappingService.close();
 			return null;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -507,11 +545,16 @@ public class MappingServiceRest {
 	
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to update a user.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapUser(mapUser);
 			mappingService.close();
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -537,11 +580,16 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to remove a user.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.removeMapUser(mapUser.getId());
 			mappingService.close();
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -572,7 +620,10 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to return the map relations.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapRelationListJpa mapRelations = (MapRelationListJpa) mappingService
@@ -585,6 +636,8 @@ public class MappingServiceRest {
 			});
 			mappingService.close();
 			return mapRelations;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -616,13 +669,18 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to return the map principle.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapPrinciple mapPrinciple = mappingService
 					.getMapPrinciple(mapPrincipleId);
 			mappingService.close();
 			return mapPrinciple;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -650,13 +708,18 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to add a map principle.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapPrinciple result = mappingService
 					.addMapPrinciple(mapPrinciple);
 			mappingService.close();
 			return result;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -684,12 +747,17 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to update a map principle.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapPrinciple(mapPrinciple);
 			mappingService.close();
 
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -715,11 +783,16 @@ public class MappingServiceRest {
 
 		try {
 			// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to remove a map principle.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.removeMapPrinciple(principle.getId());
 			mappingService.close();
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -748,13 +821,18 @@ public class MappingServiceRest {
 		
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to return the map user preferences.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapUserPreferences result = mappingService
 					.getMapUserPreferences(userName);
 			mappingService.close();
 			return result;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -782,13 +860,18 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to add map user preferences.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapUserPreferences result = mappingService
 					.addMapUserPreferences(mapUserPreferences);
 			mappingService.close();
 			return result;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -816,12 +899,17 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to update map user preferences.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapUserPreferences(mapUserPreferences);
 			mappingService.close();
 
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -847,11 +935,16 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to remove map user preferences.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.removeMapUserPreferences(mapUserPreferences.getId());
 			mappingService.close();
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -881,13 +974,20 @@ public class MappingServiceRest {
 
 
 		try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
 			mappingService.close();
+			
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the map record.").build());
+			
 			return mapRecord;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -915,12 +1015,17 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to add a map record.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecord result = mappingService.addMapRecord(mapRecord);
 			mappingService.close();
 			return result;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -947,11 +1052,16 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to update the map record.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -979,12 +1089,17 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to delete the map record.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.removeMapRecord(mapRecord.getId());
 			mappingService.close();
 			return null;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -1013,13 +1128,18 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find records by the given concept id.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
 					.getMapRecordsForConcept(conceptId);
 			mappingService.close();
 			return mapRecordList;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -1062,10 +1182,10 @@ public class MappingServiceRest {
 		// execute the service call
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProjectId);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the getMapRecordsForMapProject() service.").build());
+						"User does not have permissions to retrieve the map records for a map project.").build());
 			
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
@@ -1102,13 +1222,18 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the map record revisions.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecordListJpa revisions = (MapRecordListJpa) mappingService
 					.getMapRecordRevisions(mapRecordId);
 			mappingService.close();
 			return revisions;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -1142,7 +1267,10 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to compute the map relation.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecord mapRecord = mapEntry.getMapRecord();
@@ -1154,6 +1282,8 @@ public class MappingServiceRest {
 			mappingService.close();
 			return mapRelation;
 			
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -1181,7 +1311,10 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to compute the map advice.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecord mapRecord = mapEntry.getMapRecord();
@@ -1193,6 +1326,8 @@ public class MappingServiceRest {
 			mappingService.close();
 			return mapAdviceList;
 			
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -1226,6 +1361,8 @@ public class MappingServiceRest {
 					.getMapUserRoleForMapProject(userName, mapProjectId);
 			mappingService.close();
 			return mapUserRole;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -1270,7 +1407,10 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve unmapped descendants for a concept.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 
@@ -1281,6 +1421,8 @@ public class MappingServiceRest {
 			mappingService.close();
 			return results;
 
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -1325,10 +1467,10 @@ public class MappingServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProjectId);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the getTreePositionsWithDescendants() service.").build());
+						"User does not have permissions to get the tree positions with descendants.").build());
 			
 			// get the local tree positions from content service
 			ContentService contentService = new ContentServiceJpa();
@@ -1384,10 +1526,10 @@ public class MappingServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, mapProjectId);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the getRootTreePositionsForTerminology() service.").build());
+						"User does not have permissions to get the root tree positions for a terminology.").build());
 			
 			// get the root tree positions from content service
 			ContentService contentService = new ContentServiceJpa();
@@ -1445,10 +1587,10 @@ public class MappingServiceRest {
 
 		try {
 			// authorize call	
-			MapUserRole role = securityService.authorizeToken(authToken, mapProjectId);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the getTreePositionGraphsForQuery() service.").build());
+						"User does not have permissions to get the tree position graphs for a query.").build());
 			
 			// get the tree positions from concept service
 			ContentService contentService = new ContentServiceJpa();
@@ -1509,10 +1651,10 @@ public class MappingServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.authorizeToken(authToken, new Long(mapProjectId));
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapProjectId));
 			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to call the getMapProject() service.").build());
+						"User does not have permissions to get the recently edited map records.").build());
 			
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecordListJpa recordList = (MapRecordListJpa) mappingService
@@ -1546,7 +1688,10 @@ public class MappingServiceRest {
 		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Mapping): /record/id/" + mapRecordId + "/conflictOrigins");
 		// authorize call
-		securityService.authorizeToken(authToken);
+		MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+		if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+			throw new WebApplicationException(Response.status(401).entity(
+					"User does not have permissions to retrieve the origin map records for a conflict.").build());
 		
 		MapRecordList records = new MapRecordListJpa();
 
@@ -1588,7 +1733,10 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-  		securityService.authorizeToken(authToken);
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to validate a map record.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject;
@@ -1601,6 +1749,8 @@ public class MappingServiceRest {
 					.validateRecord(mapRecord);
 			mappingService.close();
 			return validationResult;
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
@@ -1629,14 +1779,18 @@ public class MappingServiceRest {
 
 		
 		try {
-  		// authorize call
-  		securityService.authorizeToken(authToken);
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecord mapRecord1, mapRecord2;
 			
 			mapRecord1 = mappingService.getMapRecord(mapRecordId1);
 			mapRecord2 = mappingService.getMapRecord(mapRecordId2);
+
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord1.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to compare map records.").build());
 
 			MapProject mapProject = mappingService.getMapProject(mapRecord1
 					.getMapProjectId());
@@ -1648,6 +1802,8 @@ public class MappingServiceRest {
 			mappingService.close();
 			return validationResult;
 
+		} catch (WebApplicationException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}

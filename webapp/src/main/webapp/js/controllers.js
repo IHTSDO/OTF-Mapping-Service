@@ -13,12 +13,7 @@ var root_security = root_url + "security/";
 
 mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
 	$rootScope.glassPane = 0;
-	
-
-
-
 });
-
 
 
 //Navigation
@@ -120,6 +115,35 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 
 					});
 					
+					// retrieve users
+					$rootScope.glassPane++;
+					$http({
+						url: root_mapping + "user/users",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}	
+					}).success(function(data) {
+						$rootScope.glassPane--;
+						localStorageService.add('mapUsers', data.mapUser);
+						$rootScope.$broadcast('localStorageModule.notification.setMapUsers',{key: 'mapUsers', mapUsers: data.mapUsers});  
+						// find the mapUser object
+						for (var i = 0; i < $scope.mapUsers.length; i++)  {
+							if ($scope.mapUsers[i].userName === $scope.userName) {
+								$scope.mapUser = $scope.mapUsers[i];
+							}
+						}
+						
+						// add the user information to local storage
+						localStorageService.add('currentUser', $scope.mapUser);
+
+						// broadcast the user information to rest of app
+						$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
+					}).error(function(error) {
+						$rootScope.glassPane--;
+					});
+					
 					// retrieve the user preferences
 					$http({
 						url: root_mapping + "userPreferences/user/id/" + $scope.userName,
@@ -129,6 +153,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							"Content-Type": "application/json"
 						}	
 					}).success(function(data) {
+						$rootScope.glassPane--;
 						console.debug($scope.mapProjects);
 						console.debug(data);
 						$scope.preferences = data;
@@ -189,6 +214,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							$rootScope.glassPane--;
 							$scope.error = $scope.error + "Could not retrieve user role. "; 
 						}).then(function(data) {
+							$rootScope.glassPane++;
 							$http({
 								url: root_mapping + "userRole/user/id" + $scope.userName + "/project/id/" + $scope.focusProject.id,
 								dataType: "json",
@@ -226,6 +252,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 								// redirect page
 								$location.path(path);
 						
+
 							}).error(function(error) {
 								$rootScope.glassPane--;
 								$scope.error = error + "Could not retrieve user role. "; 
@@ -254,40 +281,15 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 						}
 					}).error(function(error) {
 						$rootScope.glassPane--;
+					}).then(function(data) {
+
+							
 					});
 				});
 
 		}
 		
-		// retrieve users
-		$rootScope.glassPane++;
-		$http({
-			url: root_mapping + "user/users",
-			dataType: "json",
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json"
-			}	
-		}).success(function(data) {
-			$rootScope.glassPane--;
-			localStorageService.add('mapUsers', data.mapUser);
-			$rootScope.$broadcast('localStorageModule.notification.setMapUsers',{key: 'mapUsers', mapUsers: data.mapUsers});  
-			// find the mapUser object
-			for (var i = 0; i < $scope.mapUsers.length; i++)  {
-				if ($scope.mapUsers[i].userName === $scope.userName) {
-					$scope.mapUser = $scope.mapUsers[i];
-				}
-			}
-			
-			// add the user information to local storage
-			localStorageService.add('currentUser', $scope.mapUser);
 
-			// broadcast the user information to rest of app
-			$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
-		}).error(function(error) {
-			$rootScope.glassPane--;
-		});
-		
 
 		// function to add metadata to local storage service
 		// written to ensure correct handling of asynchronous responses
