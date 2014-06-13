@@ -151,13 +151,13 @@ public class SecurityServiceJpa implements SecurityService {
 		// if MapUser was found, update to match ihtsdo settings
 		if (userFound != null) {
 			userFound.setEmail(ihtsdoEmail);
-			userFound.setName(ihtsdoGivenName + " " + ihtsdoMiddleName + " " + ihtsdoSurname);
+			userFound.setName(ihtsdoGivenName + " " + ihtsdoSurname);
 			userFound.setUserName(ihtsdoUserName);
 			mappingService.updateMapUser(userFound);
 		// if MapUser not found, create one for our use
 		} else {
 			MapUser newMapUser = new MapUserJpa();
-			newMapUser.setName(ihtsdoGivenName + " " + ihtsdoMiddleName + " " + ihtsdoSurname);
+			newMapUser.setName(ihtsdoGivenName + " " + ihtsdoSurname);
 			newMapUser.setUserName(ihtsdoUserName);
 			newMapUser.setEmail(ihtsdoEmail);
 			mappingService.addMapUser(newMapUser);
