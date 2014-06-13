@@ -62,8 +62,19 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					$scope.focusProject = parameters.focusProject;  
 				});
 				
-				$scope.$watch('focusProject', function() {
+				$scope.userToken = localStorageService.get('userToken');
+				
+				$scope.$watch(['focusProject', 'userToken'], function() {
 
+					if ($scope.focusProject != null && $scope.userToken != null) {}
+					
+						$http.defaults.headers.common.Authorization = $scope.userToken;
+						$scope.go();
+				});
+				
+				$scope.go = function() {
+					
+				
 					console.debug('Formatting project details');
 
 
@@ -103,7 +114,7 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					$scope.getPagedScopeExcludedConcepts(1);
 					$scope.orderProp = 'id';
 
-				});
+				};
 
 				$scope.goMapRecords = function () {
 					console.debug($scope.role);

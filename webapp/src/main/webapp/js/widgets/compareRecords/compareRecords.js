@@ -50,9 +50,11 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	});
 	
 	// watch for change in focus project
-	$scope.$watch('project', function() {
+	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch(['project', 'userToken'], function() {
 		
 		console.debug('compareRecords:  Detected change in project');
+		$http.defaults.headers.common.Authorization = $scope.userToken;
 		
 		// if first visit, retrieve the conflict records
 		if ($scope.leadRecord == null) {

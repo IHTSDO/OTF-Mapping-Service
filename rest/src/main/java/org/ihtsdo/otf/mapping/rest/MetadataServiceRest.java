@@ -102,11 +102,11 @@ public class MetadataServiceRest {
    * Returns all metadata for the latest version.
    * 
    * @param terminology the terminology
-   * @return the all metadata
+   * @return the metadata
    */
   @GET
-  @Path("/metadata/terminology/id/{terminology}")
-  @ApiOperation(value = "Get all metadata with the latest version", notes = "Returns all metadata with the latest version in either JSON or XML format", response = KeyValuePairLists.class)
+  @Path("/metadata/terminology/id/{terminology}/latest")
+  @ApiOperation(value = "Get the latest version of terminology metadata", notes = "Returns all metadata for a specified terminology with the latest version in either JSON or XML format", response = KeyValuePairLists.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })

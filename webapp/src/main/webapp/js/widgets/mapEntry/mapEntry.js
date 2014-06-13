@@ -30,6 +30,13 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	// local variables
 	$scope.isTargetOpen = true;
 	$scope.isParametersOpen = true;
+	
+	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch('userToken', function() {
+		
+		$http.defaults.headers.common.Authorization = $scope.userToken;
+		
+	});
 
 
 

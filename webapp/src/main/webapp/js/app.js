@@ -5,7 +5,6 @@
 var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectAppControllers',
                                                      'adf',  
-                                                     'mapProjectApp.widgets.mapProjectList', 
                                                      'mapProjectApp.widgets.metadataList',
                                                      'mapProjectApp.widgets.mapProject',
                                                      'mapProjectApp.widgets.mapRecord',

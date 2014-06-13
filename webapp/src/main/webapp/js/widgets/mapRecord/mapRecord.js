@@ -79,9 +79,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 	});
 	
+	$scope.userToken = localStorageService.get('userToken');
 	// on successful retrieval of project, get the record/concept
-	$scope.$watch('project', function() {
-		retrieveRecord();
+	$scope.$watch(['project', 'userToken'], function() {
+		if ($scope.project != null && $scope.userToken != null) {
+	
+			$http.defaults.headers.common.Authorization = $scope.userToken;
+			retrieveRecord();
+		}
 	});
 	
 	// watch the record for saving local revision history
