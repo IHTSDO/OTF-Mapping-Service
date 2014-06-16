@@ -550,66 +550,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return results;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.WorkflowService#getAvailableConsensusWork
-	 * (org.ihtsdo.otf.mapping.model.MapProject)
-	 */
-	@Override
-	public SearchResultList findAvailableConsensusWork(MapProject mapProject,
-			PfsParameter pfsParameter) throws Exception {
-
-		List<TrackingRecord> availableConsensus = new ArrayList<>();
-		SearchResultList results = new SearchResultListJpa();
-
-		// find all the consensus workflow records
-		for (TrackingRecord tr : getTrackingRecordsForMapProject(mapProject).getTrackingRecords()) {
-
-			if (getWorkflowStatusForTrackingRecord(tr).equals(
-					WorkflowStatus.CONSENSUS_NEEDED)) {
-				availableConsensus.add(tr);
-			}
-		}
-
-		// sort the tracking records
-		Collections.sort(availableConsensus,
-				new Comparator<TrackingRecord>() {
-					@Override
-					public int compare(TrackingRecord tr1,
-							TrackingRecord tr2) {
-						return tr1.getSortKey().compareTo(tr2.getSortKey());
-					}
-				});
-
-		// set the default start index and the max results
-		int startIndex = 0;
-		int toIndex = availableConsensus.size();
-
-		// if a pfsParameter has been supplied, get the start index and max
-		// results
-		if (pfsParameter != null) {
-			startIndex = pfsParameter.getStartIndex() == -1 ? 0 : pfsParameter
-					.getStartIndex();
-			toIndex = Math.min(availableConsensus.size(), startIndex
-					+ pfsParameter.getMaxResults());
-		}
-
-		// construct search result list
-		results.setTotalCount(availableConsensus.size());
-		for (TrackingRecord tr : availableConsensus.subList(startIndex,
-				toIndex)) {
-			SearchResult result = new SearchResultJpa();
-			result.setTerminologyId(tr.getTerminologyId());
-			result.setValue(tr.getDefaultPreferredName());
-			result.setId(tr.getId());
-			results.addSearchResult(result);
-		}
-
-		return results;
-	}
-
 	/**
 	 * Perform workflow actions based on a specified action.
 	 * ASSIGN_FROM_INITIAL_RECORD is the only routine that requires a map record

@@ -183,7 +183,7 @@ public interface MappingService {
 	 * @return the list of MapProjects
 	 * @throws Exception
 	 */
-	public SearchResultList findMapProjects(String query,
+	public SearchResultList findMapProjectsForQuery(String query,
 			PfsParameter pfsParameter) throws Exception;
 
 	/**
@@ -197,7 +197,7 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public SearchResultList findMapRecords(String query,
+	public SearchResultList findMapRecordsForQuery(String query,
 			PfsParameter pfsParameter) throws Exception;
 
 	// //////////////////////////
@@ -814,6 +814,5 @@ public interface MappingService {
 	 * @throws Exception the exception
 	 */
 	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception;
-
 
 }
