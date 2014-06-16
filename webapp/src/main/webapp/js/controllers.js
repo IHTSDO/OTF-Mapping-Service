@@ -130,6 +130,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 									}	
 								}).success(function(data) {
 									$rootScope.glassPane--;
+									$scope.mapUsers = data.mapUser;
 									localStorageService.add('mapUsers', data.mapUser);
 									$rootScope.$broadcast('localStorageModule.notification.setMapUsers',{key: 'mapUsers', mapUsers: data.mapUsers});  
 									// find the mapUser object
