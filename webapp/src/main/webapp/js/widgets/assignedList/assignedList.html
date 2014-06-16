@@ -59,11 +59,6 @@
   on-select-page="retrieveAssignedConflicts(page)"></pagination>
 <table class="table">
 
- <a ng-show="assignedConflicts.length > 0"
-        title="Return All"
-        ng-click="unassignAllConflicts(result)"><i
-        class="glyphicon glyphicon-share-alt icon-rotate icon-flipped pull-right"></i></a>
-
   <thead>
     <tr>
       <th style="width: 3%; padding: 5px;"></th>
@@ -104,6 +99,54 @@
 
 
 </tab>
+<tab heading="Assigned To Others"
+  ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+<table  style="margin-top: 20px; margin-bottom: 20px;">
+<tr>
+      <td style="padding: 5px;">View work assigned to:</td>
+      <td style="padding: 5px;"><select ng-model="mapUserViewed"
+        ng-options="mapUser as mapUser.name for mapUser in mapUsers"
+        ng-change="retrieveAssignedWorkForUser(1, mapUserViewed )">
+      </select></td>
+    </tr>
+</tab>
+</table>
+
+<pagination ng-show="mapUserViewed != null"
+  total-items="nAssignedRecordsForUser" page="assignedWorkPageForUser" class="pagination-sm" max-size="5"
+  boundary-links="true" rotate="true" num-pages="numAssignedRecordPagesForUser"
+  on-select-page="retrieveAssignedWorkForUser(page, mapUserViewed)"></pagination>
+   
+
+
+<table class="table">
+
+  <thead>
+    <tr>
+      <th style="width: 14%; padding: 5px;">Id</th>
+      <th style="width: 70%; padding: 5px;">Name</th>
+      <th style="width: 16%; padding: 5px;">Status</th>
+
+    </tr>
+
+  </thead>
+
+  <tbody>
+
+    <tr ng-repeat="result in assignedRecordsForUser">
+
+    
+      <td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
+      <td style="width: 70%; padding: 5px;">{{result.value}}</td>
+      <td style="width: 16%; padding: 5px;">{{result.terminologyVersion}}</td>
+     </tr>
+      
+  </tbody>
+
+
+</table>
+
+{{assignedRecordsForUsr}}
 
  <a
         title="Return All Work"
