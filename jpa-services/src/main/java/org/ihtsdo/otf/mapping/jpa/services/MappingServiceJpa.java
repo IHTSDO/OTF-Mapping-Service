@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -252,7 +251,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public SearchResultList findMapProjects(String query,
+	public SearchResultList findMapProjectsForQuery(String query,
 			PfsParameter pfsParameter) throws Exception {
 
 		SearchResultList s = new SearchResultListJpa();
@@ -716,7 +715,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public SearchResultList findMapRecords(String query,
+	public SearchResultList findMapRecordsForQuery(String query,
 			PfsParameter pfsParameter) throws Exception {
 
 		SearchResultList s = new SearchResultListJpa();
@@ -1317,7 +1316,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * ihtsdo.otf.mapping.model.MapProject)
 	 */
 	@Override
-	public SearchResultList findConceptsInScope(Long mapProjectId)
+	public SearchResultList findConceptsInScope(Long mapProjectId, PfsParameter pfsParameter)
 			throws Exception {
 		Logger.getLogger(this.getClass()).info(
 				"Find concepts in scope for " + mapProjectId);
@@ -1362,7 +1361,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			for (String terminologyId : project.getScopeConcepts()) {
 				SearchResultList descendants = contentService
 						.findDescendantConcepts(terminologyId,
-								terminology, terminologyVersion, null);
+								terminology, terminologyVersion, pfsParameter);
 
 				Logger.getLogger(this.getClass()).info(
 						"    Concept " + terminologyId + " has "
@@ -1377,7 +1376,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		contentService.close();
 		
 		// get those excluded from scope
-		SearchResultList excludedResultList = findConceptsExcludedFromScope(mapProjectId);
+		SearchResultList excludedResultList = findConceptsExcludedFromScope(mapProjectId, pfsParameter);
 
 		// remove those excluded from scope
 		SearchResultList finalConceptsInScope = new SearchResultListJpa();
@@ -1411,12 +1410,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * (org.ihtsdo.otf.mapping.model.MapProject)
 	 */
 	@Override
-	public SearchResultList findUnmappedConceptsInScope(Long mapProjectId)
+	public SearchResultList findUnmappedConceptsInScope(Long mapProjectId, PfsParameter pfsParameter)
 			throws Exception {
 		Logger.getLogger(this.getClass()).info(
 				"Find unmapped concepts in scope for " + mapProjectId);
 		// Get in scope concepts
-		SearchResultList conceptsInScope = findConceptsInScope(mapProjectId);
+		SearchResultList conceptsInScope = findConceptsInScope(mapProjectId, pfsParameter);
 		Logger.getLogger(this.getClass()).info(
 				"  Project has " + conceptsInScope.getTotalCount()
 						+ " concepts in scope");
@@ -1442,17 +1441,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		SearchResultList unmappedConceptsInScope = new SearchResultListJpa();
 		for (SearchResult sr : conceptsInScope.getSearchResults()) {
 
-			// Check that the concept has an effectiveTime >= 20140131
-			Calendar c = Calendar.getInstance();
-			c.set(2013, 0, 1);
-			Concept concept = contentService.getConcept(sr.getId());
-			if (concept.getEffectiveTime().after(c.getTime())) {
-
-				if (!mappedConcepts.contains(sr.getTerminologyId())) {
-					unmappedConceptsInScope.addSearchResult(sr);
-				}
-
+			if (!mappedConcepts.contains(sr.getTerminologyId())) {
+				unmappedConceptsInScope.addSearchResult(sr);
 			}
+
 		}
 		unmappedConceptsInScope.setTotalCount(unmappedConceptsInScope
 				.getCount());
@@ -1472,7 +1464,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * findMappedConceptsOutOfScopeBounds(java.lang.Long)
 	 */
 	@Override
-	public SearchResultList findMappedConceptsOutOfScopeBounds(Long mapProjectId)
+	public SearchResultList findMappedConceptsOutOfScopeBounds(Long mapProjectId, PfsParameter pfsParameter)
 			throws Exception {
 		SearchResultList mappedConceptsOutOfBounds = new SearchResultListJpa();
 		MapProject project = getMapProject(mapProjectId);
@@ -1507,7 +1499,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * (org.ihtsdo.otf.mapping.model.MapProject)
 	 */
 	@Override
-	public SearchResultList findConceptsExcludedFromScope(Long mapProjectId)
+	public SearchResultList findConceptsExcludedFromScope(Long mapProjectId, PfsParameter pfsParameter)
 			throws Exception {
 		SearchResultList conceptsExcludedFromScope = new SearchResultListJpa();
 
@@ -1691,7 +1683,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	@Override
 	public SearchResultList findUnmappedDescendantsForConcept(
 			String terminologyId, String terminology,
-			String terminologyVersion, int thresholdLlc) throws Exception {
+			String terminologyVersion, int thresholdLlc, PfsParameter pfsParameter) throws Exception {
 
 		SearchResultList unmappedDescendants = new SearchResultListJpa();
 

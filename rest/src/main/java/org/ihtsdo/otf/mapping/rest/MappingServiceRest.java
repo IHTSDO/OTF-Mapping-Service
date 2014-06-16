@@ -336,7 +336,7 @@ public class MappingServiceRest {
 						"User does not have permissions to find map projects.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
-			SearchResultList searchResultList = mappingService.findMapProjects(
+			SearchResultList searchResultList = mappingService.findMapProjectsForQuery(
 					query, new PfsParameterJpa());
 			mappingService.close();
 			return searchResultList;
@@ -1416,7 +1416,7 @@ public class MappingServiceRest {
 
 			SearchResultList results = mappingService
 					.findUnmappedDescendantsForConcept(terminologyId,
-							terminology, terminologyVersion, threshold);
+							terminology, terminologyVersion, threshold, null);
 
 			mappingService.close();
 			return results;
