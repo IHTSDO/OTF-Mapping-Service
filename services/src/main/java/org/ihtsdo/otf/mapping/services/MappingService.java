@@ -402,7 +402,7 @@ public interface MappingService {
 	 */
 	public SearchResultList findUnmappedDescendantsForConcept(
 			String terminologyId, String terminology,
-			String terminologyVersion, int threshold) throws Exception;
+			String terminologyVersion, int threshold, PfsParameter pfsParameter) throws Exception;
 
 	
 
@@ -467,7 +467,7 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public SearchResultList findConceptsInScope(Long mapProjectId)
+	public SearchResultList findConceptsInScope(Long mapProjectId, PfsParameter pfsParameter)
 			throws Exception;
 
 	/**
@@ -479,7 +479,7 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public SearchResultList findUnmappedConceptsInScope(Long mapProjectId)
+	public SearchResultList findUnmappedConceptsInScope(Long mapProjectId, PfsParameter pfsParameter)
 			throws Exception;
 
 	/**
@@ -491,7 +491,7 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public SearchResultList findMappedConceptsOutOfScopeBounds(Long mapProjectId)
+	public SearchResultList findMappedConceptsOutOfScopeBounds(Long mapProjectId, PfsParameter pfsParameter)
 			throws Exception;
 
 	/**
@@ -503,7 +503,7 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public SearchResultList findConceptsExcludedFromScope(Long mapProjectId)
+	public SearchResultList findConceptsExcludedFromScope(Long mapProjectId, PfsParameter pfsParameter)
 			throws Exception;
 
 	/**
@@ -814,5 +814,6 @@ public interface MappingService {
 	 * @throws Exception the exception
 	 */
 	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception;
+
 
 }

@@ -1011,7 +1011,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		MappingService mappingService = new MappingServiceJpa();
 		
 		// get the concepts in scope
-		SearchResultList conceptsInScope = mappingService.findConceptsInScope(mapProject.getId());
+		SearchResultList conceptsInScope = mappingService.findConceptsInScope(mapProject.getId(), null);
 		
 		// construct a hashset of concepts in scope
 		Set<String> conceptIds = new HashSet<>();
@@ -1142,7 +1142,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"  Find unmapped concepts in scope");
 		SearchResultList unmappedConceptsInScope = mappingService
-				.findUnmappedConceptsInScope(mapProject.getId());
+				.findUnmappedConceptsInScope(mapProject.getId(), null);
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"    Found = " + unmappedConceptsInScope.getTotalCount());
 
