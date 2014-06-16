@@ -861,11 +861,11 @@ public class WorkflowServiceRest {
 				+ " for map record with id = " + mapRecord.getId().toString());
 		
 		// authorize call
+		// NOTE:  This routine does not invoke the security service
+		// NOTE:  This routine will be removed once transient flag isEditableForUser is attached to mapRecord
 		MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
 		if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to query if map record is editable.").build());
-		
+			return false;
 		
 		// get the map user and map project
 		MappingService mappingService = new MappingServiceJpa();
