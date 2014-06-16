@@ -11,9 +11,21 @@ var root_metadata = root_url + "metadata/";
 var root_workflow = root_url + "workflow/";
 var root_security = root_url + "security/";
 
-mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
+mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $location) {
 	$rootScope.glassPane = 0;
+	
+    $rootScope.handleHttpError = function (data, status, headers, config) {
+		  if (status == "401") {
+				$rootScope.globalError = $rootScope.globalError + "Authorization failed.  Please log in again.";
+				$location.path("/");
+		  }		
+    }
+    
+    $rootScope.resetGlobalError = function () {
+    	$rootScope.globalError = '';
+    }
 });
+
 
 
 //Navigation
@@ -23,6 +35,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
     $scope.mapUsers = [];
     $scope.userName = '';
     
+    //$rootScope.globalError = 'rootScopeGlobalError';
     $scope.globalError = $rootScope.globalError;
 		
 	
@@ -104,7 +117,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							"Content-Type": "application/json"
 						}	
 
-						}).success(
+					}).success(
 							function(data) {
 								localStorageService.add('mapProjects', data.mapProject);
 								$rootScope.$broadcast(
@@ -112,8 +125,11 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 											key : 'mapProjects',
 											mapProjects : data.mapProject
 										});
+					}).error(function(data, status, headers, config) {
+					    $rootScope.globalError = "Could not retrieve map projects.  "; 
 
-					});
+					    $rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
 					
 					// retrieve users
 					$rootScope.glassPane++;
@@ -140,9 +156,12 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 
 						// broadcast the user information to rest of app
 						$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
-					}).error(function(error) {
+					}).error(function(data, status, headers, config) {
 						$rootScope.glassPane--;
-					});
+					    $rootScope.globalError = "Could not retrieve map users.  "; 
+
+					    $rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
 					
 					// retrieve the user preferences
 					$http({
@@ -181,9 +200,11 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 						$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', preferences: $scope.preferences});
 						$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
 
-					}).error(function(error) {
+					}).error(function(data, status, headers, config) {
 						$rootScope.glassPane--;
-						$scope.error = $scope.error + "Could not retrieve user preferences. "; 
+					    $rootScope.globalError = "Could not retrieve user preferences.  "; 
+
+					    $rootScope.handleHttpError(data, status, headers, config);
 
 					}).then(function(data) {
 						$http({
@@ -210,9 +231,11 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 								localStorageService.add('focusProject', $scope.focusProject);
 								$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  			
 							}
-						}).error(function(error) {
+						}).error(function(data, status, headers, config) {
 							$rootScope.glassPane--;
-							$scope.error = $scope.error + "Could not retrieve user role. "; 
+						    $rootScope.globalError = "Could not retrieve user projects.  "; 
+
+						    $rootScope.handleHttpError(data, status, headers, config);
 						}).then(function(data) {
 							$rootScope.glassPane++;
 							$http({
@@ -253,16 +276,19 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 								$location.path(path);
 						
 
-							}).error(function(error) {
+							}).error(function(data, status, headers, config) {
 								$rootScope.glassPane--;
-								$scope.error = error + "Could not retrieve user role. "; 
+							    $rootScope.globalError = "Could not retrieve user role.  "; 
+
+							    $rootScope.handleHttpError(data, status, headers, config);
 							});		
 						});
-
-					});
-				}).error(function(error) {
-					$rootScope.glassPane--;
-					$scope.error = error.replace(/"/g, '');
+					  });
+					}).error(function(data, status, headers, config) {
+					  $rootScope.glassPane--;
+					  $scope.error = error.replace(/"/g, '');
+					
+				      $rootScope.handleHttpError(data, status, headers, config);
 				}).then(function(data) {
 					$rootScope.glassPane++;
 					$http({
@@ -279,14 +305,15 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							console.debug("Retrieving metadata for " + keyValuePairs[i].key + ", " + keyValuePairs[i].value);		
 							addMetadataToLocalStorageService(keyValuePairs[i].key, keyValuePairs[i].value);
 						}
-					}).error(function(error) {
-						$rootScope.glassPane--;
-					}).then(function(data) {
+					}).error(function(data, status, headers, config) {
+						$rootScope.glassPane--;	
+					    $rootScope.globalError = "Could not retrieve latest terminologies.  "; 
 
-							
+					    $rootScope.handleHttpError(data, status, headers, config);
 					});
 				});
-
+			});
+		  });
 		}
 		
 
