@@ -85,5 +85,5 @@ base.url=
 # URL for security service
 #
 ihtsdo.security.activated=false
-ihtsdo.security.url=http://usermanagement.ihtsdotools.org:8080/security-web/query/
+ihtsdo.security.url=https://usermanagement.ihtsdotools.org/security-web/query/
 

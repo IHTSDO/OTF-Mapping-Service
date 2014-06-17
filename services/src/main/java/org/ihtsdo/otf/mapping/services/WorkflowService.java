@@ -159,20 +159,6 @@ public interface WorkflowService {
 			MapUser mapUser, PfsParameter pfsParameter) throws Exception;
 
 	/**
-	 * Find available consensus work.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param pfsParameter
-	 *            the pfs parameter
-	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
-	 */
-	public SearchResultList findAvailableConsensusWork(MapProject mapProject,
-			PfsParameter pfsParameter) throws Exception;
-
-	/**
 	 * Called by REST services, performs a specific action given a project,
 	 * concept, and user.
 	 * 
