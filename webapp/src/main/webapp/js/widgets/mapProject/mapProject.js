@@ -24,8 +24,14 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
           
           console.debug($scope.project);
 	  });	
-
   	  
+  	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch('userToken', function() {
+		
+		$http.defaults.headers.common.Authorization = $scope.userToken;
+		
+	});
+	
 		$scope.goProjectDetails = function () {
 			console.debug($scope.role);
 
@@ -52,7 +58,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			if (confirmWorkflow == true) {
 			// retrieve project information
 			$http({
-				url: root_workflow + "project/id/" + $scope.project.id,
+				url: root_workflow + "project/id/" + $scope.project.id + "/compute",
 				dataType: "json",
 				method: "POST",
 				headers: {
@@ -61,14 +67,11 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			}).success(function(data) {
 			  	$rootScope.$broadcast('mapProjectWidget.notification.workflowComputed');
 			  	$rootScope.glassPane--;
-			}).error(function(response) {
-				$scope.error = "Error";
-				$rootScope.glassPane--;
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
+			    $rootScope.globalError = "Error computing workflow."
 
-				if (response.indexOf("HTTP Status 401") != -1) {
-					$rootScope.globalError = "Authorization failed.  Please log in again.";
-					$location.path("/");
-				}
+			    $rootScope.handleHttpError(data, status, headers, config);
 		    });
 				
 			} else {
@@ -90,7 +93,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 					
 					// call the generate API
 					$http({
-						url: root_workflow + "project/id/" + $scope.project.id + "/nConflicts/" + $scope.nConflicts,
+						url: root_workflow + "project/id/" + $scope.project.id + "/generateConflicts/maxConflicts/" + $scope.nConflicts,
 						dataType: "json",
 						method: "POST",
 						headers: {
@@ -98,14 +101,11 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 						}	
 					}).success(function(data) {
 						$rootScope.glassPane--;
-					}).error(function(response) {
-						$scope.error = "Error generating test data.";
-						$rootScope.glassPane--;
-						
-						if (response.indexOf("HTTP Status 401") != -1) {
-							$rootScope.globalError = "Authorization failed.  Please log in again.";
-							$location.path("/");
-						}
+					}).error(function(data, status, headers, config) {
+					    $rootScope.glassPane--;
+					    $rootScope.globalError = "Error generating test data."
+
+					    $rootScope.handleHttpError(data, status, headers, config);
 					});
 
 				} else {
@@ -124,7 +124,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			if (confirmGenerate == true) {
 				// call the generate API
 				$http({
-					url: root_workflow + "project/id/" + $scope.project.id + "/testing",
+					url: root_workflow + "project/id/" + $scope.project.id + "/generateTestingState",
 					dataType: "json",
 					method: "POST",
 					headers: {
@@ -132,14 +132,11 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 					}	
 				}).success(function(data) {
 					$rootScope.glassPane--;
-				}).error(function(response) {
-					$scope.error = "Error generating test data.";
-					$rootScope.glassPane--;
+				}).error(function(data, status, headers, config) {
+				    $rootScope.glassPane--;
+				    $rootScope.globalError = "Error generating the clean mapping testing state."
 
-					if (response.indexOf("HTTP Status 401") != -1) {
-						$rootScope.globalError = "Authorization failed.  Please log in again.";
-						$location.path("/");
-					}
+				    $rootScope.handleHttpError(data, status, headers, config);
 				});
 			}
 		};

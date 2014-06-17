@@ -43,10 +43,14 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	});
 
 	// on any change of focusProject, retrieve new available work
-	$scope.$watch(['focusProject', 'user'], function() {
+	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch(['focusProject', 'user', 'userToken'], function() {
 		console.debug('assignedListCtrl:  Detected project or user set/change');
 
-		if ($scope.focusProject != null && $scope.user != null) {
+		if ($scope.focusProject != null && $scope.user != null && $scope.userToken != null) {
+
+			$http.defaults.headers.common.Authorization = $scope.userToken;	
+			
 			$scope.retrieveAssignedWork($scope.assignedWorkPage);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 				$scope.retrieveAssignedConflicts($scope.assignedConflictsPage);
@@ -68,7 +72,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_workflow + "assignedConflicts/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
+			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + $scope.user.userName + "/assignedConflicts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -90,14 +94,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			// set title
 			$scope.assignedConflictsTitle = "Assigned Conflicts (" + data.totalCount + ")";
 			
-		}).error(function(response) {
-		  	$rootScope.glassPane--;
-			$scope.error = "Error";
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
 
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 	
@@ -115,7 +115,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_workflow + "assignedWork/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
+			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + $scope.user.userName + "/assignedConcepts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -140,14 +140,11 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			console.debug($scope.assignedWorkTitle);
 			
 			
-		}).error(function(response) {
-		  	$rootScope.glassPane--;
-			$scope.error = "Error";
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+		    $rootScope.globalError = "Error retrieving assigned work."
 
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 	
@@ -174,7 +171,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		$rootScope.glassPane++;
 		
 		$http({
-			url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/concept/" + record.terminologyId + "/user/" + $scope.user.userName,
+			url: root_workflow + "unassign/project/id/" + $scope.focusProject.id + "/concept/id/" + record.terminologyId + "/user/id/" + $scope.user.userName,
 			dataType: "json",
 			method: "POST",
 			headers: {
@@ -194,12 +191,11 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 			$rootScope.glassPane--;
 			
-		}).error (function(response) {
-			$rootScope.glassPane--;
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			};
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+		    $rootScope.globalError = "Error unassigning work."
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 
@@ -212,7 +208,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$rootScope.glassPane++;
 			
 			$http({
-				url: root_workflow + "unassign/projectId/" + $scope.focusProject.id + "/user/" + $scope.user.userName,
+				url: root_workflow + "unassign/project/id/" + $scope.focusProject.id + "/user/id/" + $scope.user.userName,
 				dataType: "json",
 				method: "POST",
 				headers: {
@@ -225,13 +221,11 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				}
 				$rootScope.$broadcast('assignedListWidget.notification.unassignWork');
 				$rootScope.glassPane--;
-			}).error(function(data) {
-				$rootScope.glassPane--;
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
+			    $rootScope.globalError = "Error unassigning all work."
 
-				if (response.indexOf("HTTP Status 401") != -1) {
-					$rootScope.globalError = "Authorization failed.  Please log in again.";
-					$location.path("/");
-				}
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		}
 	};

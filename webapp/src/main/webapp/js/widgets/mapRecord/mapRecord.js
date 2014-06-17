@@ -79,9 +79,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 	});
 	
+	$scope.userToken = localStorageService.get('userToken');
 	// on successful retrieval of project, get the record/concept
-	$scope.$watch('project', function() {
-		retrieveRecord();
+	$scope.$watch(['project', 'userToken'], function() {
+		if ($scope.project != null && $scope.userToken != null) {
+	
+			$http.defaults.headers.common.Authorization = $scope.userToken;
+			retrieveRecord();
+		}
 	});
 	
 	// watch the record for saving local revision history
@@ -149,31 +154,28 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		}).success(function(data) {
 			$scope.record = data;
 	
-		}).error (function(response) {
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
-	
+		}).error(function(data, status, headers, config) {
+		    $rootScope.globalError = "Error retrieving map record."
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 		}).then(function() {
 	
 			// obtain the record concept
 			$http({
-				url: root_content + "concept/" 
+				url: root_content + "concept/id/" 
 				+ $scope.project.sourceTerminology + "/"
 				+ $scope.project.sourceTerminologyVersion + "/"
-				+ "id/" + $scope.record.conceptId,
+				+ $scope.record.conceptId,
 				dataType: "json",
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
 				$scope.concept = data;
 				$scope.conceptBrowserUrl = $scope.getBrowserUrl();
-			}).error (function(response) {
-				if (response.indexOf("HTTP Status 401") != -1) {
-					$rootScope.globalError = "Authorization failed.  Please log in again.";
-					$location.path("/");
-				}	
+			}).error(function(data, status, headers, config) {
+			    $rootScope.globalError = "Error obtaining record concept."
+
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 	
 	
@@ -309,7 +311,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		console.debug("Validating the map record");
 		// validate the record
 		$http({
-			url: root_mapping + "record/validate",
+			url: root_mapping + "validation/record/validate",
 			dataType: "json",
 			data: $scope.record,
 			method: "POST",
@@ -320,14 +322,12 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			console.debug("validation results:");
 			console.debug(data);
 			$scope.validationResult = data;
-		}).error(function(response) {
+		}).error(function(data, status, headers, config) {
 			$scope.validationResult = null;
 			$scope.recordError = "Unexpected error reported by server.  Contact an admin.";
 			console.debug("Failed to validate map record");
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+			$rootScope.globalError = $scope.recordError;
+			$rootScope.handleHttpError(data, status, headers, config);
 		}).then(function(data) {
 
 			// if no error messages were returned, stop and display
@@ -415,19 +415,23 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 									$location.path("record/recordId/" + assignedWork[0].id);
 								}
 
-							}).error(function(error) {
-								$rootScope.glassPane--;
-								$scope.error = "Error";
+							}).error(function(data, status, headers, config) {
+							    $rootScope.glassPane--;
+							    $rootScope.globalError = "Error retrieving map records."
+
+							    $rootScope.handleHttpError(data, status, headers, config);
 							});
 
 						} else {
 							console.debug("Simple finish called, return to dashboard");
 							$location.path($scope.role + "/dash");
 						}
-					}).error(function(data) {
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Unexpected server error.  Try saving your work for later, and contact an admin.";
+						$rootScope.globalError = $scope.recordError;
+					    $rootScope.handleHttpError(data, status, headers, config);
 						console.debug('SERVER ERROR');
 						$scope.recordSuccess = "";
-						$scope.recordError = "Unexpected server error.  Try saving your work for later, and contact an admin.";
 					});
 				
 				// if the warning checks were not passed, save the warnings
@@ -503,15 +507,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.recordSuccess = "Record saved.";
 			$scope.recordError = "";
 			window.history.back(); 
-		}).error(function(response) {
-			$scope.recordSuccess = "";
+		}).error(function(data, status, headers, config) {
 			$scope.recordError = "Error saving record.";
-			
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
-			
+			$rootScope.globalError = $scope.recordError;
+			$rootScope.handleHttpError(data, status, headers, config);
+			$scope.recordSuccess = "";			
 		});
 	};
 
@@ -530,6 +530,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}
 		}).success(function(data) {
 			window.history.back();
+		}).error(function(data, status, headers, config) {
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 
 	};

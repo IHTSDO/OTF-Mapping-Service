@@ -36,11 +36,15 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 	});
 
 	// on any change of focusProject, retrieve new available work
-	$scope.$watch('focusProject', function() {
+	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch(['focusProject', 'userToken'], function() {
 		console.debug('editedListCtrl:  Detected project set/change');
 
-		if ($scope.focusProject != null) {
+		if ($scope.focusProject != null && $scope.userToken != null) {
+			
+			$http.defaults.headers.common.Authorization = $scope.userToken;
 			$scope.retrieveEditedWork($scope.editedRecordsPage);
+			
 		}
 	});
 	
@@ -59,7 +63,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_mapping + "recentRecords/" + $scope.focusProject.id + "/" + $scope.user.userName,
+			url: root_mapping + "record/project/id/" + $scope.focusProject.id + "/user/id/" + $scope.user.userName + "/edited",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -77,14 +81,9 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 			console.debug("Edited records:");
 			console.debug($scope.editedRecords);
 						 
-		}).error(function(response) {
-		  	$rootScope.glassPane--;
-			$scope.error = "Error";
-
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 	
