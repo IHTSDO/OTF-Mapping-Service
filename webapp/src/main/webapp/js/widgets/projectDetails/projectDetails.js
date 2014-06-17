@@ -25,7 +25,7 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 		get: function(terminology){
 			var deferred = $q.defer();
 			$http({
-				url: root_metadata + "all/" + terminology,
+				url: root_metadata + "metadata/terminology/id/" + terminology,
 				dataType: "json",
 				method: "GET",
 				headers: {
@@ -38,7 +38,9 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 				} else {
 					deferred.reject();
 				}
-			}).error(function() {
+			}).error(function(data, status, headers, config) {
+
+			    $rootScope.handleHttpError(data, status, headers, config);
 				deferred.reject();
 			});
 			return deferred.promise;
@@ -62,8 +64,19 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					$scope.focusProject = parameters.focusProject;  
 				});
 				
-				$scope.$watch('focusProject', function() {
+				$scope.userToken = localStorageService.get('userToken');
+				
+				$scope.$watch(['focusProject', 'userToken'], function() {
 
+					if ($scope.focusProject != null && $scope.userToken != null) {}
+					
+						$http.defaults.headers.common.Authorization = $scope.userToken;
+						$scope.go();
+				});
+				
+				$scope.go = function() {
+					
+				
 					console.debug('Formatting project details');
 
 
@@ -103,7 +116,7 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					$scope.getPagedScopeExcludedConcepts(1);
 					$scope.orderProp = 'id';
 
-				});
+				};
 
 				$scope.goMapRecords = function () {
 					console.debug($scope.role);
@@ -178,10 +191,9 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					for (var i = 0; i < $scope.pagedScopeConcept.length; i++) {
 						$rootScope.glassPane++;
 						$http({
-							url: root_content + "concept/" 
+							url: root_content + "concept/id/" 
 							+ $scope.focusProject.sourceTerminology +  "/" 
-							+ $scope.focusProject.sourceTerminologyVersion 
-							+ "/id/" 
+							+ $scope.focusProject.sourceTerminologyVersion + "/"
 							+ $scope.focusProject.scopeConcepts[i],
 							dataType: "json",
 							method: "GET",
@@ -195,12 +207,10 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 									concept: data
 							};  
 							$scope.scopeMap[obj.key] = obj.concept.defaultPreferredName;
-						}).error (function(response) {
-							$rootScope.glassPane--;
-							if (response.indexOf("HTTP Status 401") != -1) {
-								$rootScope.globalError = "Authorization failed.  Please log in again.";
-								$location.path("/");
-							}	
+						}).error(function(data, status, headers, config) {
+						    $rootScope.glassPane--;
+
+						    $rootScope.handleHttpError(data, status, headers, config);
 						});
 
 					}
@@ -222,10 +232,9 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					for (var i = 0; i < $scope.pagedScopeExcludedConcept.length; i++) {
 						$rootScope.glassPane++;
 						$http({
-							url: root_content + "concept/" 
-							+ $scope.focusProject.sourceTerminology +  "/" 
-							+ $scope.focusProject.sourceTerminologyVersion 
-							+ "/id/" 
+							url: root_content + "concept/id/" 
+							+ $scope.focusProject.sourceTerminology + "/" 
+							+ $scope.focusProject.sourceTerminologyVersion + "/"
 							+ $scope.focusProject.scopeExcludedConcepts[i],
 							dataType: "json",
 							method: "GET",
@@ -239,12 +248,10 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 									concept: data
 							};  
 							$scope.scopeExcludedMap[obj.key] = obj.concept.defaultPreferredName;
-						}).error (function(response) {
-							$rootScope.glassPane--;
-							if (response.indexOf("HTTP Status 401") != -1) {
-								$rootScope.globalError = "Authorization failed.  Please log in again.";
-								$location.path("/");
-							}	
+						}).error(function(data, status, headers, config) {
+						    $rootScope.glassPane--;
+
+						    $rootScope.handleHttpError(data, status, headers, config);
 						});
 					}
 					

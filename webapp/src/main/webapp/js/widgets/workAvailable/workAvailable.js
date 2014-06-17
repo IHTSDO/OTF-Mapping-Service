@@ -65,10 +65,13 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	});
 
 	// on any change of focusProject, retrieve new available work
-	$scope.$watch('focusProject', function() {
+	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch(['focusProject', 'userToken'], function() {
 		console.debug('workAvailableWidget:  scope project changed!');
 
-		if ($scope.focusProject != null) {
+		if ($scope.focusProject != null && $scope.userToken != null) {
+			
+			$http.defaults.headers.common.Authorization = $scope.userToken;
 			
 			// construct the list of users
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
@@ -98,7 +101,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_workflow + "availableConflicts/projectId/" + $scope.focusProject.id + "/user/" + $scope.currentUser.userName,
+			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + $scope.currentUser.userName + "/availableConflicts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -116,12 +119,10 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			
 			// set title
 			$scope.availableConflictsTitle = "Available Conflicts (" + data.totalCount + ")";
-		}).error (function(response) {
-			$rootScope.glassPane--;
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}	
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 	
@@ -143,7 +144,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_workflow + "availableWork/projectId/" + $scope.focusProject.id + "/user/" + $scope.currentUser.userName,
+			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + $scope.currentUser.userName + "/availableConcepts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -164,12 +165,11 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			console.debug($scope.numAvailableWorkPages);
 			console.debug(data.totalCount);
 
-		}).error (function(response) {
-			$rootScope.glassPane--;
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}	
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+		    $rootScope.globalError = "Error retrieving map records."
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 
@@ -183,9 +183,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	  	$rootScope.glassPane++;
 	  	
 		$http({
-			url: root_workflow + "assign/projectId/" + $scope.focusProject.id +
-								 "/concept/" + trackingRecord.terminologyId +
-								 "/user/" + $scope.currentUser.userName,
+			url: root_workflow + "assign/project/id/" + $scope.focusProject.id +
+								 "/concept/id/" + trackingRecord.terminologyId +
+								 "/user/id/" + $scope.currentUser.userName,
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
@@ -200,12 +200,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 			}
 			
-		}).error (function(response) {
-			$rootScope.glassPane--;
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}	
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 		
 	   
@@ -225,7 +222,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 
 	  	$rootScope.glassPane++;
 		$http({
-			url: root_workflow + "availableWork/projectId/" + $scope.focusProject.id + "/user/" + mapUser.userName,
+			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + mapUser.userName + "/availableConcepts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -262,13 +259,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					console.debug('  -> Concept ' + trackingRecords[i].terminologyId);
 				}
 				
-				console.debug("Calling batch assignment API: " + root_workflow + "assign/batch/projectId/" + $scope.focusProject.id 
-									   + "/user/" + mapUser.userName);
+				console.debug("Calling batch assignment API");
 
 			  	$rootScope.glassPane++;
 				$http({
-					url: root_workflow + "assign/batch/projectId/" + $scope.focusProject.id 
-									   + "/user/" + mapUser.userName,	
+					url: root_workflow + "assignBatch/project/id/" + $scope.focusProject.id 
+									   + "/user/id/" + mapUser.userName,	
 					dataType: "json",
 					data: terminologyIds,
 					method: "POST",
@@ -279,19 +275,19 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				  	$rootScope.glassPane--;
 					$rootScope.$broadcast('workAvailableWidget.notification.assignWork');
 					$scope.retrieveAvailableWork(1);				
-				}).error(function(data) {
-				  	$rootScope.glassPane--;
+				}).error(function(data, status, headers, config) {
+				    $rootScope.glassPane--;
+
+				    $rootScope.handleHttpError(data, status, headers, config);
 					console.debug("Could not retrieve available work when assigning batch.");
 				});
 			} else {
 				console.debug("Unexpected error in assigning batch");
 			}
-		}).error (function(response) {
-			$rootScope.glassPane--;
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}	
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+
+		    $rootScope.handleHttpError(data, status, headers, config);	
 		});
 				
 			

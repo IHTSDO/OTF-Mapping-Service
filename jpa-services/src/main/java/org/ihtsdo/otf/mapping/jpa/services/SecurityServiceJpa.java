@@ -110,8 +110,9 @@ public class SecurityServiceJpa implements SecurityService {
 		String ihtsdoUserName = "";
 		String ihtsdoEmail = "";
 		String ihtsdoGivenName = "";
-		String ihtsdoMiddleName = "";
 		String ihtsdoSurname = "";
+		//TODO: need to somehow retrieve application role for user
+		MapUserRole ihtsdoApplicationRole = MapUserRole.VIEWER;
 		
 	  //converting json to Map
 		byte[] mapData = resultString.getBytes(); 
@@ -130,8 +131,6 @@ public class SecurityServiceJpa implements SecurityService {
 				  	ihtsdoEmail = innerEntrySet.getValue();
 				  } else if (innerEntrySet.getKey().equals("givenName")) {
 				  	ihtsdoGivenName = innerEntrySet.getValue();
-				  } else if (innerEntrySet.getKey().equals("middleName")) {
-				  	ihtsdoMiddleName = innerEntrySet.getValue();
 				  } else if (innerEntrySet.getKey().equals("surname")) {
 				  	ihtsdoSurname = innerEntrySet.getValue();
 				  }
@@ -153,6 +152,7 @@ public class SecurityServiceJpa implements SecurityService {
 			userFound.setEmail(ihtsdoEmail);
 			userFound.setName(ihtsdoGivenName + " " + ihtsdoSurname);
 			userFound.setUserName(ihtsdoUserName);
+			userFound.setApplicationRole(ihtsdoApplicationRole);
 			mappingService.updateMapUser(userFound);
 		// if MapUser not found, create one for our use
 		} else {
@@ -160,6 +160,7 @@ public class SecurityServiceJpa implements SecurityService {
 			newMapUser.setName(ihtsdoGivenName + " " + ihtsdoSurname);
 			newMapUser.setUserName(ihtsdoUserName);
 			newMapUser.setEmail(ihtsdoEmail);
+			newMapUser.setApplicationRole(ihtsdoApplicationRole);
 			mappingService.addMapUser(newMapUser);
 		}
 		mappingService.close();

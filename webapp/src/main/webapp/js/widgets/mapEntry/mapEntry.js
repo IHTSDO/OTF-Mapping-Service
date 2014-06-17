@@ -30,6 +30,13 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	// local variables
 	$scope.isTargetOpen = true;
 	$scope.isParametersOpen = true;
+	
+	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch('userToken', function() {
+		
+		$http.defaults.headers.common.Authorization = $scope.userToken;
+		
+	});
 
 
 
@@ -119,14 +126,13 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			console.debug(data);
 
 			entry.mapRelation = data;
-			
-		}).error(function(response) {
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+
+		    $rootScope.handleHttpError(data, status, headers, config);			
+
 			$scope.errorCreateRecord = "Failed to retrieve entries";
 			
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
 		});
 		
 		// get the allowable advices and relations
