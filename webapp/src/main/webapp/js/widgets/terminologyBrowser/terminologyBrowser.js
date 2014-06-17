@@ -48,16 +48,22 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		console.debug("TerminologyBrowserWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
 	});
+	
+	$scope.userToken = localStorageService.get('userToken');
+	
 
 	// on any change of focusProject, retrieve new available work
-	$scope.$watch(['focusProject', 'metadata'], function() {
+	$scope.$watch(['focusProject', 'metadata', 'userToken'], function() {
 
 		// once needed state variables are loaded, initialize and make first call
-		if ($scope.focusProject != null && $scope.metadata != null) {
+		if ($scope.focusProject != null && $scope.metadata != null && $scope.userToken != null) {
 
 			console.debug("STATE VARIABLES");
 			console.debug($scope.focusProject);
 			console.debug($scope.metadata);
+			
+			$http.defaults.headers.common.Authorization = $scope.userToken;
+			
 
 			// find the description and relation type metadata and convert to normal JSON object structure
 			for (var i = 0; i < $scope.metadata.length; i++) {
@@ -90,7 +96,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	$scope.getRootTree = function() {
 
 		$http({
-			url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion,
+			url: root_mapping + "treePosition/project/id/" + $scope.focusProject.id + "/terminology/id/" + $scope.terminology + "/" + $scope.terminologyVersion,
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
 		}).success (function(response) {
@@ -101,11 +107,8 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				$scope.terminologyTree[i].isOpen = false;
 				$scope.terminologyTree[i].isConceptOpen = false;
 			}
-		}).error (function(response) {
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		}).error(function(data, status, headers, config) {
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 
@@ -116,7 +119,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		$scope.searchStatus = "Searching...";
 		$scope.terminologyTree = [];
 		$http({
-			url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/terminology/" + $scope.terminology + "/" + $scope.terminologyVersion + "/query/" + $scope.query,
+			url: root_mapping + "treePosition/project/id/" + $scope.focusProject.id + "/terminology/id/" + $scope.terminology + "/" + $scope.terminologyVersion + "/query/" + $scope.query,
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
 		}).success (function(response) {
@@ -169,11 +172,8 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			$scope.searchBackAllowed = $scope.searchStackPosition > 0 ? true : false;
 			$scope.searchForwardAllowed = $scope.searchStackPosition < $scope.searchStackResults ? true : false;
 			
-		}).error (function(response) {
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		}).error(function(data, status, headers, config) {
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 	
@@ -207,17 +207,14 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 		$timeout(function() {
 			$http({
-				url: root_mapping + "tree/projectId/" + $scope.focusProject.id + "/concept/" + $scope.terminology + "/" + $scope.terminologyVersion + "/id/" + terminologyId,
+				url: root_mapping + "treePosition/project/id/" + $scope.focusProject.id + "/concept/id/" + $scope.terminology + "/" + $scope.terminologyVersion + "/" + terminologyId,
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success (function(response) {
 				console.debug("HTTP RESPONSE");
 				deferred.resolve(response);
-			}).error (function(response) {
-				if (response.indexOf("HTTP Status 401") != -1) {
-					$rootScope.globalError = "Authorization failed.  Please log in again.";
-					$location.path("/");
-				}
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});;
 		});
 
@@ -286,7 +283,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 			// retrieve the concept
 			$http({
-				url: root_content + "concept/" + node.terminology + "/" + node.terminologyVersion + "/id/" + node.terminologyId,
+				url: root_content + "concept/id/" + node.terminology + "/" + node.terminologyVersion + "/" + node.terminologyId,
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 
@@ -406,11 +403,8 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 
 				// otherwise display an error message
-			}).error (function(response) {
-				if (response.indexOf("HTTP Status 401") != -1) {
-					$rootScope.globalError = "Authorization failed.  Please log in again.";
-					$location.path("/");
-				}
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		};
 	};

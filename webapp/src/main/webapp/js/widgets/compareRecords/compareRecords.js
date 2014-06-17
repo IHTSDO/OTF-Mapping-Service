@@ -49,10 +49,12 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			$scope.project = parameters.focusProject;
 	});
 	
-	// on any change of focusProject, retrieve new available work
-	$scope.$watch('project', function() {
+	// watch for change in focus project
+	$scope.userToken = localStorageService.get('userToken');
+	$scope.$watch(['project', 'userToken'], function() {
 		
 		console.debug('compareRecords:  Detected change in project');
+		$http.defaults.headers.common.Authorization = $scope.userToken;
 		
 		// if first visit, retrieve the conflict records
 		if ($scope.leadRecord == null) {
@@ -94,37 +96,34 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			headers: { "Content-Type": "application/json"}	
 		}).success(function(data) {
 			$scope.leadRecord = data;
-		}).error(function(response) {
-			$scope.error = $scope.error + "Could not retrieve map record. "; 
+		}).error(function(data, status, headers, config) {
+		    $rootScope.globalError = "Error getting map records in conflict."
 
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
-
+		    $rootScope.handleHttpError(data, status, headers, config);
 			// obtain the record concept - id from leadRecord	    	  
 		}).then(function(data) {
 			$http({
-				url: root_content + "concept/" 
+				url: root_content + "concept/id/" 
 				+ $scope.project.sourceTerminology + "/"
 				+ $scope.project.sourceTerminologyVersion + "/"
-				+ "id/" + $scope.leadRecord.conceptId,
+				+ $scope.leadRecord.conceptId,
 				dataType: "json",
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
 				$scope.concept = data;
 				setTitle($scope.concept.terminologyId, $scope.concept.defaultPreferredName);
-			}).error(function(error) {
-				$scope.error = $scope.error + "Could not retrieve record concept. ";
+			}).error(function(data, status, headers, config) {
+			    $rootScope.globalError = "Error retrieving map record concept."
 
+			    $rootScope.handleHttpError(data, status, headers, config);
 
 			});
 		});
 
 		// get the conflict records
 		$http({
-			url: root_mapping + "record/conflictRecords/" + $routeParams.recordId,
+			url: root_mapping + "record/id/" + $routeParams.recordId + "/conflictOrigins",
 			dataType: "json",
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
@@ -136,8 +135,10 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				$scope.record2 = data.mapRecord[1];
 			}
 
-		}).error(function(error) {
-			$scope.error = $scope.error + "Could not retrieve conflict records. ";
+		}).error(function(data, status, headers, config) {
+		    $rootScope.globalError = "Error retrieving conflict records."
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 		}).then(function(data) {
 			
 			// get the groups
@@ -149,14 +150,16 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 
 			// obtain the validationResults from compareRecords
 			$http({
-				url: root_mapping + "record/compare/" + $scope.record1.id + "/" + $scope.record2.id,
+				url: root_mapping + "validation/record/id/" + $scope.record1.id + "/record/id/" + $scope.record2.id + "/compare",
 				dataType: "json",
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
 				$scope.validationResult = data;
-			}).error(function(error) {
-				$scope.error = $scope.error + "Could not retrieve comparison report. ";   		  	      
+			}).error(function(data, status, headers, config) {
+			    $rootScope.globalError = "Error retrieving comparison report."
+
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		});
 

@@ -197,12 +197,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	public TrackingRecordList getTrackingRecordsForMapProject(
 			MapProject mapProject) throws Exception {
 		
+		System.out.println("Getting tracking records at " + (System.currentTimeMillis()/1000 - Math.floor(System.currentTimeMillis()/100000) * 100));
+		
+		
 		TrackingRecordListJpa trackingRecordList = new TrackingRecordListJpa();
 		trackingRecordList.setTrackingRecords(manager
 				.createQuery(
 						"select tr from TrackingRecordJpa tr where mapProject_id = :mapProjectId")
 				.setParameter("mapProjectId", mapProject.getId())
 				.getResultList());
+		
+		System.out.println("Finished getting tracking records at " + (System.currentTimeMillis()/1000 - Math.floor(System.currentTimeMillis()/100000) * 100));
 		
 		return trackingRecordList;
 	}
@@ -254,9 +259,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		List<TrackingRecord> availableWork = new ArrayList<>();
 		SearchResultList results = new SearchResultListJpa();
 
+		System.out.println("Retrieving records at " + (System.currentTimeMillis()/1000 - Math.floor(System.currentTimeMillis()/100000) * 100));
+		
 		for (TrackingRecord trackingRecord : getTrackingRecordsForMapProject(mapProject).getTrackingRecords()) {
 
-			// if this tracking record does not have this user assigned to it
+			// if this tracking record:
+			// does not have this user assigned to it
 			// AND the total users assigned is less than 2
 			// AND the workflow status is less than or equal to EDITING_DONE
 			// This will eventually be a project specific check (i.e. for legacy
@@ -272,6 +280,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				availableWork.add(trackingRecord);
 			}
 		}
+		
+		System.out.println("Sorting records at " + (System.currentTimeMillis()/1000 - Math.floor(System.currentTimeMillis()/100000) * 100));
+		
 
 		// sort the tracking records
 		Collections.sort(availableWork,
@@ -282,6 +293,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						return tr1.getSortKey().compareTo(tr2.getSortKey());
 					}
 				});
+		
+		System.out.println("Paging records at " + (System.currentTimeMillis()/1000 - Math.floor(System.currentTimeMillis()/100000) * 100));
+		
 
 		// set the default start index and the max results
 		int startIndex = 0;
@@ -296,6 +310,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					: Math.min(availableWork.size(),
 							startIndex + pfsParameter.getMaxResults());
 		}
+		
+		System.out.println("Returning records at " + (System.currentTimeMillis()/1000 - Math.floor(System.currentTimeMillis()/100000) * 100));
+		
 
 		// construct search result list
 		results.setTotalCount(availableWork.size());
