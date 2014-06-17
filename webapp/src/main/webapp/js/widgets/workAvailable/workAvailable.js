@@ -119,12 +119,10 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			
 			// set title
 			$scope.availableConflictsTitle = "Available Conflicts (" + data.totalCount + ")";
-		}).error (function(response) {
-			$rootScope.glassPane--;
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}	
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 	
@@ -167,12 +165,11 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			console.debug($scope.numAvailableWorkPages);
 			console.debug(data.totalCount);
 
-		}).error (function(response) {
-			$rootScope.glassPane--;
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}	
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+		    $rootScope.globalError = "Error retrieving map records."
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 
@@ -203,12 +200,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 			}
 			
-		}).error (function(response) {
-			$rootScope.glassPane--;
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}	
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 		
 	   
@@ -281,19 +275,19 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				  	$rootScope.glassPane--;
 					$rootScope.$broadcast('workAvailableWidget.notification.assignWork');
 					$scope.retrieveAvailableWork(1);				
-				}).error(function(data) {
-				  	$rootScope.glassPane--;
+				}).error(function(data, status, headers, config) {
+				    $rootScope.glassPane--;
+
+				    $rootScope.handleHttpError(data, status, headers, config);
 					console.debug("Could not retrieve available work when assigning batch.");
 				});
 			} else {
 				console.debug("Unexpected error in assigning batch");
 			}
-		}).error (function(response) {
-			$rootScope.glassPane--;
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}	
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+
+		    $rootScope.handleHttpError(data, status, headers, config);	
 		});
 				
 			

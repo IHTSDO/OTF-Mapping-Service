@@ -11,27 +11,40 @@ var root_metadata = root_url + "metadata/";
 var root_workflow = root_url + "workflow/";
 var root_security = root_url + "security/";
 
-mapProjectAppControllers.run(function($rootScope, $http, localStorageService) {
+mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $location) {
 	$rootScope.glassPane = 0;
+	
+    $rootScope.handleHttpError = function (data, status, headers, config) {
+    	$rootScope.globalError = $rootScope.globalError + "Authorization failed.  Please log in again.";
+		if (status == "401") {
+				$location.path("/");
+		}	
+    }
+    
+    $rootScope.resetGlobalError = function () {
+    	$rootScope.globalError = '';
+    }
 });
+
 
 
 //Navigation
 mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService', '$rootScope', '$location', '$http',
                                                   function ($scope, localStorageService, $rootScope, $location, $http) {
-	$scope.page =  'login';
-	$scope.mapUsers = [];
-	$scope.userName = '';
-
-	$scope.globalError = $rootScope.globalError;
-
-
+    $scope.page =  'login';
+    $scope.mapUsers = [];
+    $scope.userName = '';
+    
+    //$rootScope.globalError = 'rootScopeGlobalError';
+    $scope.globalError = $rootScope.globalError;
+		
+	
 	// set the user, role, focus project, and preferences to null (i.e. clear) by broadcasting to rest of app
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setFocusProject', {key: 'focusProject', focusProject: null});
 	$rootScope.$broadcast('localStorageModule.notification.setPreferences', {key: 'preferences', preferences: null});
-
+	
 	$scope.mapProjects = localStorageService.get('mapProjects');
 	$scope.mapUsers = localStorageService.get('mapUsers');
 
@@ -42,7 +55,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 	                'Lead',
 	                'Administrator'];
 	$scope.role = $scope.roles[0];  
-
+	
 	// login button directs to next page based on role selected
 	$scope.goGuest = function () {
 		$scope.userName = "guest";
@@ -50,10 +63,10 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		$scope.password = "***REMOVED***";
 		$scope.go();
 	}
-
+	
 	// login button directs to next page based on role selected
 	$scope.go = function () {
-
+		
 		// reset the global error on log in attempt
 		$scope.globalError = "";
 
@@ -67,17 +80,17 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		} else if ($scope.password == null) {
 			alert("You must enter a password");
 		} else {
-
-
+		
+			
 			// authenticate the user
 			var query_url = root_security + "authenticate/" + $scope.userName;
-
+			
 			console.debug($scope.userName);
-
+			
 			// turn on the glass pane during login process/authentication
 			// turned off at each error stage or before redirecting to dashboards
 			$rootScope.glassPane++;
-
+			
 			$http({
 				url: query_url,
 				dataType: "json",
@@ -85,16 +98,16 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 				method: "POST",
 				headers: {
 					"Content-Type": "text/plain"
-						// save userToken from authentication
+				// save userToken from authentication
 				}}).success(function(data) {
 					console.debug(data);
-
+				
 					localStorageService.add('userToken', data);				
 					$scope.userToken = localStorageService.get('userToken');
-
+					
 					// set default header to contain userToken
 					$http.defaults.headers.common.Authorization = $scope.userToken;
-
+					
 					// retrieve projects
 					$http({
 						url: root_mapping + "project/projects",
@@ -112,164 +125,170 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 											key : 'mapProjects',
 											mapProjects : data.mapProject
 										});
-								
-								$scope.mapProjects = data.mapProject;
+					}).error(function(data, status, headers, config) {
+					    $rootScope.globalError = "Could not retrieve map projects.  "; 
 
-							}).then(function() {
+					    $rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
 
-
-
-								// retrieve users
-								$rootScope.glassPane++;
-								$http({
-									url: root_mapping + "user/users",
-									dataType: "json",
-									method: "GET",
-									headers: {
-										"Content-Type": "application/json"
-									}	
-								}).success(function(data) {
-									$rootScope.glassPane--;
+					// retrieve users
+					$rootScope.glassPane++;
+					$http({
+						url: root_mapping + "user/users",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}	
+					}).success(function(data) {
+						$rootScope.glassPane--;
 									$scope.mapUsers = data.mapUser;
-									localStorageService.add('mapUsers', data.mapUser);
-									$rootScope.$broadcast('localStorageModule.notification.setMapUsers',{key: 'mapUsers', mapUsers: data.mapUsers});  
-									// find the mapUser object
-									for (var i = 0; i < $scope.mapUsers.length; i++)  {
-										if ($scope.mapUsers[i].userName === $scope.userName) {
-											$scope.mapUser = $scope.mapUsers[i];
-										}
-									}
+						localStorageService.add('mapUsers', data.mapUser);
+						$rootScope.$broadcast('localStorageModule.notification.setMapUsers',{key: 'mapUsers', mapUsers: data.mapUsers});  
+						// find the mapUser object
+						for (var i = 0; i < $scope.mapUsers.length; i++)  {
+							if ($scope.mapUsers[i].userName === $scope.userName) {
+								$scope.mapUser = $scope.mapUsers[i];
+							}
+						}
+						
+						// add the user information to local storage
+						localStorageService.add('currentUser', $scope.mapUser);
 
-									// add the user information to local storage
-									localStorageService.add('currentUser', $scope.mapUser);
+						// broadcast the user information to rest of app
+						$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
+					}).error(function(data, status, headers, config) {
+						$rootScope.glassPane--;
+					    $rootScope.globalError = "Could not retrieve map users.  "; 
 
-									// broadcast the user information to rest of app
-									$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
-								}).error(function(error) {
-									$rootScope.glassPane--;
-								}).then(function() {
-
-
-									// retrieve the user preferences
-									$http({
+					    $rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+					
+					// retrieve the user preferences
+					$http({
 										url: root_mapping + "userPreferences/user/id/" + $scope.userName,
-										dataType: "json",
-										method: "GET",
-										headers: {
-											"Content-Type": "application/json"
-										}	
-									}).success(function(data) {
-										$rootScope.glassPane--;
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}	
+					}).success(function(data) {
+						$rootScope.glassPane--;
 
-										$scope.preferences = data;
-										$scope.preferences.lastLogin = new Date().getTime();
-										localStorageService.add('preferences', $scope.preferences);
+						$scope.preferences = data;
+						$scope.preferences.lastLogin = new Date().getTime();
+						localStorageService.add('preferences', $scope.preferences);
+						
+						// check for a last-visited project
+						$scope.focusProject = null;
+						for (var i = 0; i < $scope.mapProjects.length; i++)  {
+							if ($scope.mapProjects[i].id === $scope.preferences.lastMapProjectId) {
+								$scope.focusProject = $scope.mapProjects[i];
+							}
+						}
+						
+						// if project not found, set to first retrieved project
+						if ($scope.focusProject == null) {
+							$scope.focusProject = $scope.mapProjects[0];
+						}
+						
+						
+						console.debug('Last project: ');
+						console.debug($scope.focusProject);
+						localStorageService.add('focusProject', $scope.focusProject);
+						localStorageService.add('userPreferences', $scope.preferences);
+						$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', preferences: $scope.preferences});
+						$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
 
-										// check for a last-visited project
-										$scope.focusProject = null;
-										for (var i = 0; i < $scope.mapProjects.length; i++)  {
-											if ($scope.mapProjects[i].id === $scope.preferences.lastMapProjectId) {
-												$scope.focusProject = $scope.mapProjects[i];
-											}
-										}
+					}).error(function(data, status, headers, config) {
+						$rootScope.glassPane--;
+					    $rootScope.globalError = "Could not retrieve user preferences.  "; 
 
-										// if project not found, set to first retrieved project
-										if ($scope.focusProject == null) {
-											$scope.focusProject = $scope.mapProjects[0];
-										}
+					    $rootScope.handleHttpError(data, status, headers, config);
 
-
-										console.debug('Last project: ');
-										console.debug($scope.focusProject);
-										localStorageService.add('focusProject', $scope.focusProject);
-										localStorageService.add('userPreferences', $scope.preferences);
-										$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', preferences: $scope.preferences});
-										$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
-
-									}).error(function(error) {
-										$rootScope.glassPane--;
-										$scope.error = $scope.error + "Could not retrieve user preferences. "; 
-
-									}).then(function(data) {
-										$http({
+					}).then(function(data) {
+						$http({
 											url: root_mapping + "project/user/id/" + $scope.userName,
-											dataType: "json",
-											method: "GET",
-											headers: {
-												"Content-Type": "application/json"
-											}	
-										}).success(function(data) {
-											console.debug(data);
-											// check if user has role in focusProject
-											var found = 0;
-											for (var i = 0; i < data.mapProject.length; i++) {
-												if (data.mapProject[i].id === $scope.focusProject.id) {
-													found = 1;
-												} 
-											}
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}	
+						}).success(function(data) {
+							console.debug(data);
+							// check if user has role in focusProject
+							var found = 0;
+							for (var i = 0; i < data.mapProject.length; i++) {
+								if (data.mapProject[i].id === $scope.focusProject.id) {
+									found = 1;
+								} 
+							}
 
-											// otherwise change focusProject
-											if (found == 0 && data.mapProject.length > 0) {
-												$scope.focusProject = data.mapProject[0];
-												console.debug($scope.focusProject);
-												localStorageService.add('focusProject', $scope.focusProject);
-												$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  			
-											}
-										}).error(function(error) {
-											$rootScope.glassPane--;
-											$scope.error = $scope.error + "Could not retrieve user role. "; 
-										}).then(function(data) {
-											$rootScope.glassPane++;
-											$http({
+							// otherwise change focusProject
+							if (found == 0 && data.mapProject.length > 0) {
+								$scope.focusProject = data.mapProject[0];
+								console.debug($scope.focusProject);
+								localStorageService.add('focusProject', $scope.focusProject);
+								$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  			
+							}
+						}).error(function(data, status, headers, config) {
+							$rootScope.glassPane--;
+						    $rootScope.globalError = "Could not retrieve user projects.  "; 
+
+						    $rootScope.handleHttpError(data, status, headers, config);
+						}).then(function(data) {
+							$rootScope.glassPane++;
+							$http({
 												url: root_mapping + "userRole/user/id/" + $scope.userName + "/project/id/" + $scope.focusProject.id,
-												dataType: "json",
-												method: "GET",
-												headers: {
-													"Content-Type": "application/json"
-												}	
-											}).success(function(data) {
-												console.debug(data);
-												$scope.role = data.replace(/"/g, '');
+								dataType: "json",
+								method: "GET",
+								headers: {
+									"Content-Type": "application/json"
+								}	
+							}).success(function(data) {
+								console.debug(data);
+								$scope.role = data.replace(/"/g, '');
+								
+						
+								if ($scope.role.toLowerCase() == "specialist") {
+									path = "/specialist/dash";
+									$scope.role = "Specialist";
+								} else if ($scope.role.toLowerCase() == "lead") {
+									path = "/lead/dash";
+									$scope.role = "Lead";
+								} else if ($scope.role.toLowerCase() == "administrator") {
+									path = "/admin/dash";
+									$scope.role = "Administrator";
+								} else  {
+									path = "/viewer/dash";
+									$scope.role = "Viewer";
+								}
 
+								// add the user information to local storage
+								localStorageService.add('currentRole', $scope.role);
 
-												if ($scope.role.toLowerCase() == "specialist") {
-													path = "/specialist/dash";
-													$scope.role = "Specialist";
-												} else if ($scope.role.toLowerCase() == "lead") {
-													path = "/lead/dash";
-													$scope.role = "Lead";
-												} else if ($scope.role.toLowerCase() == "administrator") {
-													path = "/admin/dash";
-													$scope.role = "Administrator";
-												} else  {
-													path = "/viewer/dash";
-													$scope.role = "Viewer";
-												}
+								// broadcast the user information to rest of app
+								$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role});
+					
+								$rootScope.glassPane--;
+								
+								// redirect page
+								$location.path(path);
+						
 
-												// add the user information to local storage
-												localStorageService.add('currentRole', $scope.role);
+							}).error(function(data, status, headers, config) {
+								$rootScope.glassPane--;
+							    $rootScope.globalError = "Could not retrieve user role.  "; 
 
-												// broadcast the user information to rest of app
-												$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: $scope.role});
-
-												$rootScope.glassPane--;
-
-												// redirect page
-												$location.path(path);
-
-
-											}).error(function(error) {
-												$rootScope.glassPane--;
-												$scope.error = error + "Could not retrieve user role. "; 
-											});		
-										});
-									});
-								});
-
-							});
-				}).error(function(error) {
-					$rootScope.glassPane--;
-					$scope.error = error.replace(/"/g, '');
+							    $rootScope.handleHttpError(data, status, headers, config);
+							});		
+						});
+					  });
+					}).error(function(data, status, headers, config) {
+					  $rootScope.glassPane--;
+					  $scope.error = error.replace(/"/g, '');
+					
+				      $rootScope.handleHttpError(data, status, headers, config);
 				}).then(function(data) {
 					$rootScope.glassPane++;
 					$http({
@@ -286,16 +305,17 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							console.debug("Retrieving metadata for " + keyValuePairs[i].key + ", " + keyValuePairs[i].value);		
 							addMetadataToLocalStorageService(keyValuePairs[i].key, keyValuePairs[i].value);
 						}
-					}).error(function(error) {
-						$rootScope.glassPane--;
-					}).then(function(data) {
+					}).error(function(data, status, headers, config) {
+						$rootScope.glassPane--;	
+					    $rootScope.globalError = "Could not retrieve latest terminologies.  "; 
 
-
+					    $rootScope.handleHttpError(data, status, headers, config);
 					});
 				});
-
+			});
+		  });
 		}
-
+		
 
 
 		// function to add metadata to local storage service
@@ -315,7 +335,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		}
 
 	};
-
+	
 	// function to change project from the header
 	$scope.changeFocusProject = function(mapProject) {
 		$scope.focusProject = mapProject;
@@ -331,7 +351,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
 
 	};
-
+	
 	$scope.goToHelp = function() {
 		var path;
 		if ($scope.page != 'mainDashboard') {
@@ -382,7 +402,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	// once focus project retrieved, retrieve the concept and records
 	$scope.userToken = localStorageService.get('userToken');
 	$scope.$watch(['focusProject', 'userToken'], function() {
-
+		
 		// need both focus project and user token set before executing main functions
 		if ($scope.focusProject != null &&	$scope.userToken != null ) {
 			$http.defaults.headers.common.Authorization = $scope.userToken;
@@ -395,7 +415,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		$scope.recordsInProjectNotFound = false;
 
 		console.debug("RecordConceptCtrl:  Focus Project change");
-
+		
 		// retrieve projects information to ensure display handled properly
 		$http({
 			url: root_mapping + "project/projects",
@@ -406,13 +426,11 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			}	
 		}).success(function(data) {
 			projects = data.mapProject;
-		}).error(function(response) {
-			$scope.error = $scope.error + "Could not retrieve projects. "; 
 
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		}).error(function(data, status, headers, config) {
+		    $rootScope.globalError = "Could not retrieve projects. ";
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 
 		}).then(function() {
 
@@ -452,17 +470,15 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				console.debug(data);
 				$scope.concept.children = data.searchResult;
 
-			}).error(function(error) {
-				$scope.error = $scope.error + "Could not retrieve Concept children. ";    
-			});
-		}).error(function(response) {
-			console.debug("Could not retrieve concept");
-			$scope.error = $scope.error + "Could not retrieve Concept. ";    
+			}).error(function(data, status, headers, config) {
+			    $rootScope.globalError = "Could not retrieve concept children. ";
 
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+			    $rootScope.handleHttpError(data, status, headers, config);
+			});
+		}).error(function(data, status, headers, config) {
+		    $rootScope.globalError = "Could not retrieve concept. ";
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 
@@ -470,7 +486,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		console.debug("Redirecting to project details view");
 		$location.path("/project/details");
 	};
-
+	
 	$scope.goMapRecords = function () {
 		console.debug("Redirecting to project records view");
 		$location.path("/project/records");
@@ -493,13 +509,10 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		}).success(function(data) {
 			$scope.records = data.mapRecord;
 			$scope.filterRecords();
-		}).error(function(response) {
-			$scope.error = $scope.error + "Could not retrieve records. ";    
+		}).error(function(data, status, headers, config) {
+		    $rootScope.globalError = "Could not retrieve records. ";
 
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		    $rootScope.handleHttpError(data, status, headers, config);
 		}).then(function() {
 
 			// check relation style flags
@@ -512,7 +525,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			}
 		});
 	};
-
+	
 	$scope.displayToViewer = function(record) {
 		if ($scope.currentRole === 'Viewer' &&
 				record.workflowStatus === 'READY_FOR_PUBLICATION') {
@@ -531,20 +544,20 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				$scope.recordsNotInProject.push($scope.records[i]);
 			}
 		}
-
+		
 		// for records in project, check if this user can edit these records
 		console.debug($scope.recordsInProject);
 		for (var i = 0; i < $scope.recordsInProject.length; i++) {
 
 			setEditable($scope.recordsInProject[i]);
 		}
-
+ 
 		// if no records for this project found, set flag
 		if ($scope.recordsInProject.length == 0) $scope.recordsInProjectNotFound = true;
 	};
-
+	
 	function setEditable(record) {
-
+		
 		$http({
 			url: root_workflow + "checkRecordEditable/user/id/" + $scope.currentUser.userName,
 			method: "POST",
@@ -555,9 +568,13 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			}	
 		}).success(function(response) {
 			record.isEditable = response;
+		}).error(function(data, status, headers, config) {
+		    $rootScope.globalError = "Could not determine if record is editable. ";
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
-
+	
 	$scope.editRecord = function(record) {
 
 		// assign the record along the FIX_ERROR_PATH
@@ -566,45 +583,44 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		console.debug("Edit record clicked, assigning record if necessary");
 		$http({
 			url: root_workflow + "assignFromRecord/user/id/" + $scope.currentUser.userName,
-			method: "POST",
-			dataType: 'json',
-			data: record,
-			headers: {
-				"Content-Type": "application/json"
-			}		
+			 method: "POST",
+			 dataType: 'json',
+			 data: record,
+			 headers: {
+				 "Content-Type": "application/json"
+			 }		
 		}).success(function(data) {
 			console.debug('Assignment successful');
 			$http({
 				url: root_workflow + "record/project/id/" + $scope.focusProject.id +
 				"/concept/id/" + record.conceptId +
 				"/user/id/" + $scope.currentUser.userName,
-				method: "GET",
-				dataType: 'json',
-				data: record,
-				headers: {
-					"Content-Type": "application/json"
-				}
+				 method: "GET",
+				 dataType: 'json',
+				 data: record,
+				 headers: {
+					 "Content-Type": "application/json"
+				 }
 			}).success(function(data) {
 				console.debug(data);
 				$rootScope.glassPane--;
-
+				
 				// open the record edit view
 				$location.path("/record/recordId/" + data.id);
-			}).error(function(response) {
-				$rootScope.glassPane--;
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
 
-				if (response.indexOf("HTTP Status 401") != -1) {
-					$rootScope.globalError = "Authorization failed.  Please log in again.";
-					$location.path("/");
-				}
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 
+			
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
 
-		}).error(function(error) {
-			$rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
-
+	
 
 	$scope.getProject = function(record) {
 		for (var i = 0; i < projects.length; i++) {
@@ -638,7 +654,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 
 
 		$http({
-			url: root_mapping + "concept/id" 
+			url: root_mapping + "concept/id/" 
 			+ $scope.concept.terminology + "/"
 			+ $scope.concept.terminologyVersion + "/"
 			+ $scope.concept.terminologyId + "/"
@@ -651,6 +667,9 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		}).success(function(data) {
 			if (data.count > 0) $scope.unmappedDescendantsPresent = true;
 			$scope.concept.unmappedDescendants = data.searchResult;
+		}).error(function(data, status, headers, config) {
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 
@@ -692,24 +711,24 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		}
 	};
 
-
+	
 	// change the focus project to the project associated with a specified record
 	$scope.changeFocusProjectByRecord = function(record) {
-
+		
 		console.debug("changeFocusProjectByRecord:  record project id = " + record.mapProjectId);
-
+		
 		console.debug($scope.mapProjects);
 		for (var i = 0; i < $scope.mapProjects.length; i++) {
 			console.debug("  comparing to project id = " + $scope.mapProjects[i].id);
 			if ($scope.mapProjects[i].id = record.mapProjectId) {
-
+				
 				$scope.changeFocusProject($scope.mapProjects[i]);
 				break;
 			}
 		}
 	};
-
-
+	
+	
 	// function to change project from the header
 	$scope.changeFocusProject = function(mapProject) {
 		$scope.focusProject = mapProject;
@@ -725,7 +744,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.userPreferences});
 
 	};
-
+	
 	$scope.goToHelp = function() {
 		var path;
 		if ($scope.page != 'mainDashboard') {
@@ -766,7 +785,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', '$routeParams', '$sce', '$rootScope', '$location', 'localStorageService',
                                                              function ($scope, $http, $routeParams, $sce, $rootScope, $location, localStorageService) {
 
-	$scope.page =  'records';
+    $scope.page =  'records';
 
 	// the project id, extracted from route params
 	$scope.projectId = $routeParams.projectId;
@@ -806,8 +825,8 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		// need both focus project and user token set before executing main functions
 		if ($scope.focusProject != null && $scope.userToken != null) {
 			$http.defaults.headers.common.Authorization = $scope.userToken;
-			$scope.projectId = $scope.focusProject.id;
-			$scope.getRecordsForProject();
+		$scope.projectId = $scope.focusProject.id;
+		$scope.getRecordsForProject();
 		}
 	});
 
@@ -835,14 +854,14 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	$scope.retrieveRecords = function(page) {
 
 		console.debug('Retrieving records');
-
+		
 		// construct html parameters parameter
 		var pfsParameterObj = constructPfsParameterObj(page);
 		var query_url = root_mapping + "record/project/id/" + $scope.project.objectId;
 
 
 		$rootScope.glassPane++;
-
+		
 		// retrieve map records
 		$http({
 			url: query_url,
@@ -862,16 +881,11 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 			$scope.nRecords = data.totalCount;
 			$scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
 
-		}).error(function(response) {
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+		    $rootScope.globalError = "Error retrieving map records."
 
-			$rootScope.glassPane--;
-			$scope.errorRecord = "Error retrieving map records";
-			console.debug("changeRecordPage error");
-
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		    $rootScope.handleHttpError(data, status, headers, config);
 		}).then(function(data) {
 
 			// check if icon legends are necessary
@@ -947,6 +961,8 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 			}).success(function(data) {
 				if (data.count > 0) $scope.unmappedDescendantsPresent = true;
 				$scope.records[index].unmappedDescendants = data.searchResult;
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		} 
 
@@ -1003,7 +1019,7 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
 
 	};
-
+	
 	$scope.goToHelp = function() {
 		var path;
 		if ($scope.page != 'mainDashboard') {
@@ -1038,40 +1054,41 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		console.debug("Edit record clicked, assigning record if necessary");
 		$http({
 			url: root_workflow + "assignFromRecord/user/id/" + $scope.currentUser.userName,
-			method: "POST",
-			dataType: 'json',
-			data: record,
-			headers: {
-				"Content-Type": "application/json"
-			}		
+			 method: "POST",
+			 dataType: 'json',
+			 data: record,
+			 headers: {
+				 "Content-Type": "application/json"
+			 }		
 		}).success(function(data) {
 			console.debug('Assignment successful');
 			$http({
 				url: root_workflow + "record/project/id/" + $scope.focusProject.id +
 				"/concept/id/" + record.conceptId +
 				"/user/id/" + $scope.currentUser.userName,
-				method: "GET",
-				dataType: 'json',
-				data: record,
-				headers: {
-					"Content-Type": "application/json"
-				}
+				 method: "GET",
+				 dataType: 'json',
+				 data: record,
+				 headers: {
+					 "Content-Type": "application/json"
+				 }
 			}).success(function(data) {
-
+				
 				$rootScope.glassPane--;
-
+				
 				// open the record edit view
 				$location.path("/record/recordId/" + data.id);
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
+
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 
+			
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
 
-		}).error(function(response) {
-			$rootScope.glassPane--;
-
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 }]);
