@@ -39,6 +39,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		$scope.retrieveAssignedWork($scope.assignedWorkPage);
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 			$scope.retrieveAssignedConflicts($scope.assignedConflictsPage);
+			$scope.retrieveAssignedWorkForUser(1, $scope.mapUserViewed);
 		}
 	});
 
@@ -50,6 +51,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		if ($scope.focusProject != null && $scope.user != null && $scope.userToken != null) {
 
 			$http.defaults.headers.common.Authorization = $scope.userToken;	
+			
+			$scope.mapUsers = $scope.focusProject.mapSpecialist;
 			
 			$scope.retrieveAssignedWork($scope.assignedWorkPage);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
@@ -146,6 +149,82 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
+	};
+	
+	$scope.mapUserViewed == null; // intial value
+	
+	$scope.retrieveAssignedWorkForUser = function(page, mapUser) {
+	
+		if (mapUser == null || mapUser == undefined && $scope.mapUserViewed != null) {
+			console.debug("No map user specified for viewing other user's work.");
+			
+			console.debug("Selected user: ");
+			console.debug($scope.mapUserViewed);
+			$scope.assignedRecordsForUser = {};
+		} else {
+			
+			$scope.mapUserViewed = mapUser;
+			
+			
+			console.debug('Retrieving Assigned Concepts for user ' + mapUser.userName + ': page ' + page);
+
+		
+			// construct a paging/filtering/sorting object
+			var pfsParameterObj = 
+						{"startIndex": (page-1)*$scope.itemsPerPage,
+				 	 	 "maxResults": $scope.itemsPerPage, 
+				 	 	 "sortField": 'sortKey',
+				 	 	 "queryRestriction": null};  
+	
+		  	$rootScope.glassPane++;
+	
+			$http({
+				url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + mapUser.userName + "/assignedConcepts",
+				dataType: "json",
+				data: pfsParameterObj,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+			  	$rootScope.glassPane--;
+	
+				$scope.assignedWorkForUserPage = page;
+				$scope.assignedRecordsForUser = data.searchResult;
+				console.debug($scope.assignedRecordsForUser);
+			
+				// set pagination
+				$scope.numAssignedRecordPagesForUser = Math.ceil(data.totalCount / $scope.itemsPerPage);
+				$scope.nAssignedRecordsForUser = data.totalCount;
+				$scope.numRecordPagesForUser = Math.ceil($scope.nAssignedRecordsForUser / $scope.itemsPerPage);
+	
+				// set human readable status
+				for (var i = 0; i < $scope.assignedRecordsForUser.length; i++) {
+					switch ($scope.assignedRecordsForUser[i].terminologyVersion) {
+					case 'NEW':
+						console.debug("new record");
+						$scope.assignedRecordsForUser[i].terminologyVersion = 'New';
+						break;
+					case 'EDITING_IN_PROGRESS':
+						$scope.assignedRecordsForUser[i].terminologyVersion = 'Editing';
+						break;
+					case 'EDITING_DONE':
+						$scope.assignedRecordsForUser[i].terminologyVersion = 'Done';
+						break;
+					}	
+				}
+				
+							
+			}).error(function(response) {
+			  	$rootScope.glassPane--;
+				$scope.error = "Error";
+	
+				if (response.indexOf("HTTP Status 401") != -1) {
+					$rootScope.globalError = "Authorization failed.  Please log in again.";
+					$location.path("/");
+				}
+			});
+		}
 	};
 	
 	// set the pagination variables
