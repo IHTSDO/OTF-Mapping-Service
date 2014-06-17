@@ -27,7 +27,7 @@ angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
 		get: function(terminology){
 			var deferred = $q.defer();
 			$http({
-				url: root_metadata + "metdata/terminology/id/" + terminology,
+				url: root_metadata + "metadata/terminology/id/" + terminology,
 				dataType: "json",
 				method: "GET",
 				headers: {
@@ -40,7 +40,8 @@ angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
 				} else {
 					deferred.reject();
 				}
-			}).error(function() {
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);
 				deferred.reject();
 			});
 			return deferred.promise;
@@ -81,11 +82,8 @@ angular.module('mapProjectApp.widgets.metadataList', ['adf.provider'])
 				if (data.keyValuePair[index].key != undefined) $scope.terminologies.push(data.keyValuePair[index].key);
 			}
 			console.debug($scope.terminologies);
-		}).error (function(response) {
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}	
+		}).error(function(data, status, headers, config) {
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 
