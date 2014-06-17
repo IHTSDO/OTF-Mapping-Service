@@ -48,6 +48,7 @@ public class MapUserJpa implements MapUser {
   
   /** The application role. */
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private MapUserRole applicationRole;
 
   /**

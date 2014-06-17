@@ -4,6 +4,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 
 /**
  * Represents a parameter container for paging, filtering and sorting.
+ * NOTE: filtering is not currently imported or supported.
  */
 public interface PfsParameter {
 
