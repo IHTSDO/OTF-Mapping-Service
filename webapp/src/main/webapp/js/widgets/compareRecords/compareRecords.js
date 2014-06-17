@@ -96,14 +96,10 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			headers: { "Content-Type": "application/json"}	
 		}).success(function(data) {
 			$scope.leadRecord = data;
-		}).error(function(response) {
-			$scope.error = $scope.error + "Could not retrieve map record. "; 
+		}).error(function(data, status, headers, config) {
+		    $rootScope.globalError = "Error getting map records in conflict."
 
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
-
+		    $rootScope.handleHttpError(data, status, headers, config);
 			// obtain the record concept - id from leadRecord	    	  
 		}).then(function(data) {
 			$http({
@@ -117,9 +113,10 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			}).success(function(data) {
 				$scope.concept = data;
 				setTitle($scope.concept.terminologyId, $scope.concept.defaultPreferredName);
-			}).error(function(error) {
-				$scope.error = $scope.error + "Could not retrieve record concept. ";
+			}).error(function(data, status, headers, config) {
+			    $rootScope.globalError = "Error retrieving map record concept."
 
+			    $rootScope.handleHttpError(data, status, headers, config);
 
 			});
 		});
@@ -138,8 +135,10 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				$scope.record2 = data.mapRecord[1];
 			}
 
-		}).error(function(error) {
-			$scope.error = $scope.error + "Could not retrieve conflict records. ";
+		}).error(function(data, status, headers, config) {
+		    $rootScope.globalError = "Error retrieving conflict records."
+
+		    $rootScope.handleHttpError(data, status, headers, config);
 		}).then(function(data) {
 			
 			// get the groups
@@ -157,8 +156,10 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
 				$scope.validationResult = data;
-			}).error(function(error) {
-				$scope.error = $scope.error + "Could not retrieve comparison report. ";   		  	      
+			}).error(function(data, status, headers, config) {
+			    $rootScope.globalError = "Error retrieving comparison report."
+
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		});
 

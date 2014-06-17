@@ -67,14 +67,11 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			}).success(function(data) {
 			  	$rootScope.$broadcast('mapProjectWidget.notification.workflowComputed');
 			  	$rootScope.glassPane--;
-			}).error(function(response) {
-				$scope.error = "Error";
-				$rootScope.glassPane--;
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
+			    $rootScope.globalError = "Error computing workflow."
 
-				if (response.indexOf("HTTP Status 401") != -1) {
-					$rootScope.globalError = "Authorization failed.  Please log in again.";
-					$location.path("/");
-				}
+			    $rootScope.handleHttpError(data, status, headers, config);
 		    });
 				
 			} else {
@@ -104,14 +101,11 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 						}	
 					}).success(function(data) {
 						$rootScope.glassPane--;
-					}).error(function(response) {
-						$scope.error = "Error generating test data.";
-						$rootScope.glassPane--;
-						
-						if (response.indexOf("HTTP Status 401") != -1) {
-							$rootScope.globalError = "Authorization failed.  Please log in again.";
-							$location.path("/");
-						}
+					}).error(function(data, status, headers, config) {
+					    $rootScope.glassPane--;
+					    $rootScope.globalError = "Error generating test data."
+
+					    $rootScope.handleHttpError(data, status, headers, config);
 					});
 
 				} else {
@@ -138,14 +132,11 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 					}	
 				}).success(function(data) {
 					$rootScope.glassPane--;
-				}).error(function(response) {
-					$scope.error = "Error generating test data.";
-					$rootScope.glassPane--;
+				}).error(function(data, status, headers, config) {
+				    $rootScope.glassPane--;
+				    $rootScope.globalError = "Error generating the clean mapping testing state."
 
-					if (response.indexOf("HTTP Status 401") != -1) {
-						$rootScope.globalError = "Authorization failed.  Please log in again.";
-						$location.path("/");
-					}
+				    $rootScope.handleHttpError(data, status, headers, config);
 				});
 			}
 		};

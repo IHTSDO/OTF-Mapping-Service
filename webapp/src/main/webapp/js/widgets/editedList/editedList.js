@@ -81,14 +81,9 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 			console.debug("Edited records:");
 			console.debug($scope.editedRecords);
 						 
-		}).error(function(response) {
-		  	$rootScope.glassPane--;
-			$scope.error = "Error";
-
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 	

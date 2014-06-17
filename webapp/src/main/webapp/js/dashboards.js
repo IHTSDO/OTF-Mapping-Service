@@ -185,11 +185,8 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 				"Content-Type": "application/json"
 			}	
 		}).success(function(data) {
-		}).error(function(data) {
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		}).error(function(data, status, headers, config) {
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 
@@ -592,6 +589,8 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function ($roo
 					"Content-Type": "application/json"
 				}	
 			}).success(function(data) {
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		}
 	});
