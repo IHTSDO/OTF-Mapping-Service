@@ -93,19 +93,19 @@
 
   <div class="container">
   
-    <button disabled ng-show = "globalError.length > 0">
-      <h4 class="alert alert-danger">{{globalError}}
+    <button disabled class="border-error alert-error" ng-show = "globalError.length > 0">
+      <h4 class="alert alert-danger alert-error" >{{globalError}}
       <div style="display: inline; float: right; width: 3%;">
                 <i class="glyphicon glyphicon-remove"
                  ng-click="resetGlobalError()"></i>
-      </div></h4>
+      </div>
+      </h4>
     </button>
-  
-    <div ng-view></div>
+    <div ng-view style="margin-top:10px;"></div>
   </div> 
-  <!-- <div ng-show="glassPane > 0" class="top-layer">
+  <div ng-show="glassPane > 0" class="top-layer">
   
-  </div>  -->
+  </div>
  
 </body>
 </html>

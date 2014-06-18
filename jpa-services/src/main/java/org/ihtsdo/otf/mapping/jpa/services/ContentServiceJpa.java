@@ -24,6 +24,7 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
@@ -105,111 +106,103 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			Concept c = (Concept) query.getSingleResult();
 			return c;
 		} catch (NoResultException e) {
-			// log result and return null
-			Logger.getLogger(this.getClass()).debug(
-					"ContentService.getConcept(): Concept query for terminologyId = "
+			throw new LocalException(
+					"Concept query for terminologyId = "
 							+ terminologyId + ", terminology = " + terminology
 							+ ", terminologyVersion = " + terminologyVersion
-							+ " returned no results!");
-			return null;
+							+ " returned no results!", e);
 		}
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.ContentService#findConcepts(java.lang.
+	 * @see org.ihtsdo.otf.mapping.services.ContentService#findConcepts(java.lang.
 	 * String )
 	 */
 	@Override
 	public SearchResultList findConceptsForQuery(String searchString,
-			PfsParameter pfsParameter) throws Exception {
+		PfsParameter pfsParameter) throws Exception {
 
 		SearchResultList results = new SearchResultListJpa();
 
-		FullTextEntityManager fullTextEntityManager = Search
-				.getFullTextEntityManager(manager);
-		try {
-			SearchFactory searchFactory = fullTextEntityManager
-					.getSearchFactory();
-			Query luceneQuery;
+		FullTextEntityManager fullTextEntityManager =
+				Search.getFullTextEntityManager(manager);
+		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+		Query luceneQuery;
 
-			// if the field is not indicated in the URL
-			if (searchString.indexOf(':') == -1) {
-				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
-						Version.LUCENE_36, fieldNames.toArray(new String[0]),
-						searchFactory.getAnalyzer(ConceptJpa.class));
-				queryParser.setAllowLeadingWildcard(false);
-				luceneQuery = queryParser.parse(searchString);
-				// index field is indicated in the URL with a ':' separating
-				// field and value
-			} else {
-				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
-						"summary", searchFactory.getAnalyzer(ConceptJpa.class));
-				luceneQuery = queryParser.parse(searchString);
-			}
-
-			FullTextQuery fullTextQuery = fullTextEntityManager
-					.createFullTextQuery(luceneQuery, ConceptJpa.class);
-
-			// set paging/filtering/sorting if indicated
-			if (pfsParameter != null) {
-
-				// if start index and max results are set, set paging
-				if (pfsParameter.getStartIndex() != -1
-						&& pfsParameter.getMaxResults() != -1) {
-					fullTextQuery.setFirstResult(pfsParameter.getStartIndex());
-					fullTextQuery.setMaxResults(pfsParameter.getMaxResults());
-				}
-
-				// if sort field is specified, set sort key
-				if (pfsParameter.getSortField() != null
-						&& !pfsParameter.getSortField().isEmpty()) {
-
-					// check that specified sort field exists on Concept and is
-					// a string
-					if (Concept.class
-							.getDeclaredField(pfsParameter.getSortField())
-							.getType().equals(String.class)) {
-						fullTextQuery
-								.setSort(new Sort(new SortField(pfsParameter
-										.getSortField(), SortField.STRING)));
-
-					} else {
-						throw new Exception(
-								"Concept query specified a field that does not exist or is not a string");
-					}
-
-				}
-
-			}
-
-			// execute the query
-			@SuppressWarnings("unchecked")
-			List<Concept> concepts = fullTextQuery.getResultList();
-
-			// construct the search results
-			for (Concept c : concepts) {
-				SearchResult sr = new SearchResultJpa();
-				sr.setId(c.getId());
-				sr.setTerminologyId(c.getTerminologyId());
-				sr.setTerminology(c.getTerminology());
-				sr.setTerminologyVersion(c.getTerminologyVersion());
-				sr.setValue(c.getDefaultPreferredName());
-				results.addSearchResult(sr);
-			}
-
-			fullTextEntityManager.close();
-
-			// closing fullTextEntityManager closes manager as well, recreate
-			manager = factory.createEntityManager();
-
-			return results;
-		} catch (Exception e) {
-
-			throw e;
+		// if the field is not indicated in the URL
+		if (searchString.indexOf(':') == -1) {
+			MultiFieldQueryParser queryParser =
+					new MultiFieldQueryParser(Version.LUCENE_36,
+							fieldNames.toArray(new String[0]),
+							searchFactory.getAnalyzer(ConceptJpa.class));
+			queryParser.setAllowLeadingWildcard(false);
+			luceneQuery = queryParser.parse(searchString);
+			// index field is indicated in the URL with a ':' separating
+			// field and value
+		} else {
+			QueryParser queryParser =
+					new QueryParser(Version.LUCENE_36, "summary",
+							searchFactory.getAnalyzer(ConceptJpa.class));
+			luceneQuery = queryParser.parse(searchString);
 		}
+
+		FullTextQuery fullTextQuery =
+				fullTextEntityManager
+						.createFullTextQuery(luceneQuery, ConceptJpa.class);
+
+		// set paging/filtering/sorting if indicated
+		if (pfsParameter != null) {
+
+			// if start index and max results are set, set paging
+			if (pfsParameter.getStartIndex() != -1
+					&& pfsParameter.getMaxResults() != -1) {
+				fullTextQuery.setFirstResult(pfsParameter.getStartIndex());
+				fullTextQuery.setMaxResults(pfsParameter.getMaxResults());
+			}
+
+			// if sort field is specified, set sort key
+			if (pfsParameter.getSortField() != null
+					&& !pfsParameter.getSortField().isEmpty()) {
+
+				// check that specified sort field exists on Concept and is
+				// a string
+				if (Concept.class.getDeclaredField(pfsParameter.getSortField())
+						.getType().equals(String.class)) {
+					fullTextQuery.setSort(new Sort(new SortField(pfsParameter
+							.getSortField(), SortField.STRING)));
+
+				} else {
+					throw new Exception(
+							"Concept query specified a field that does not exist or is not a string");
+				}
+
+			}
+
+		}
+
+		// execute the query
+		@SuppressWarnings("unchecked")
+		List<Concept> concepts = fullTextQuery.getResultList();
+
+		// construct the search results
+		for (Concept c : concepts) {
+			SearchResult sr = new SearchResultJpa();
+			sr.setId(c.getId());
+			sr.setTerminologyId(c.getTerminologyId());
+			sr.setTerminology(c.getTerminology());
+			sr.setTerminologyVersion(c.getTerminologyVersion());
+			sr.setValue(c.getDefaultPreferredName());
+			results.addSearchResult(sr);
+		}
+
+		fullTextEntityManager.close();
+
+		// closing fullTextEntityManager closes manager as well, recreate
+		manager = factory.createEntityManager();
+
+		return results;
 	}
 
 	/*

@@ -155,8 +155,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.record = data;
 	
 		}).error(function(data, status, headers, config) {
-		    $rootScope.globalError = "Error retrieving map record."
-
 		    $rootScope.handleHttpError(data, status, headers, config);
 		}).then(function() {
 	
@@ -173,8 +171,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				$scope.concept = data;
 				$scope.conceptBrowserUrl = $scope.getBrowserUrl();
 			}).error(function(data, status, headers, config) {
-			    $rootScope.globalError = "Error obtaining record concept."
-
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 	
@@ -326,7 +322,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.validationResult = null;
 			$scope.recordError = "Unexpected error reported by server.  Contact an admin.";
 			console.debug("Failed to validate map record");
-			$rootScope.globalError = $scope.recordError;
 			$rootScope.handleHttpError(data, status, headers, config);
 		}).then(function(data) {
 
@@ -417,8 +412,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 							}).error(function(data, status, headers, config) {
 							    $rootScope.glassPane--;
-							    $rootScope.globalError = "Error retrieving map records."
-
 							    $rootScope.handleHttpError(data, status, headers, config);
 							});
 
@@ -428,7 +421,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						}
 					}).error(function(data, status, headers, config) {
 						$scope.recordError = "Unexpected server error.  Try saving your work for later, and contact an admin.";
-						$rootScope.globalError = $scope.recordError;
 					    $rootScope.handleHttpError(data, status, headers, config);
 						console.debug('SERVER ERROR');
 						$scope.recordSuccess = "";
@@ -509,7 +501,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			window.history.back(); 
 		}).error(function(data, status, headers, config) {
 			$scope.recordError = "Error saving record.";
-			$rootScope.globalError = $scope.recordError;
 			$rootScope.handleHttpError(data, status, headers, config);
 			$scope.recordSuccess = "";			
 		});

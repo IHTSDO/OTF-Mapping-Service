@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.dto.KeyValuePair;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairList;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairLists;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
@@ -91,11 +92,14 @@ public class MetadataServiceRest {
       }
       metadataService.close();
       return keyValuePairLists;
-		} catch (WebApplicationException e) {
-			throw e;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to retrieve the metadata. Please contact the administrator.").build());
+		}
   }
 
   /**
@@ -131,11 +135,14 @@ public class MetadataServiceRest {
 
       metadataService.close();
       return keyValuePairLists;
-		} catch (WebApplicationException e) {
-			throw e;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to retrieve all metadata. Please contact the administrator.").build());
+		}
   }
 
   /**
@@ -175,11 +182,14 @@ public class MetadataServiceRest {
       }
       metadataService.close();
       return keyValuePairList;
-		} catch (WebApplicationException e) {
-			throw e;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to retrieve the latest versions of all terminologies. Please contact the administrator.").build());
+		}
   }
 
   /**
@@ -222,11 +232,14 @@ public class MetadataServiceRest {
       }
       metadataService.close();
       return keyValuePairLists;
-		} catch (WebApplicationException e) {
-			throw e;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to retrieve the versions of all terminologies. Please contact the administrator.").build());
+		}
   }
   
 
