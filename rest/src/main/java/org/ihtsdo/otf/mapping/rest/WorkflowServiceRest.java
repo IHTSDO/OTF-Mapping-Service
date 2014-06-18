@@ -1133,7 +1133,7 @@ public class WorkflowServiceRest {
 	 * @throws Exception the exception
 	 */
 	@POST
-	@Path("/project/id/{id:[0-9][0-9]*}/generateTestingState")
+	@Path("/project/id/{id:[0-9][0-9]*}/generateTestingStateKLININ")
 	@ApiOperation(value = "Generate a workflow testing scenario for project", notes = "Performs concept assignment to test functionality, using concepts mapped in Cartographer prior to June 2014.")
 	public void generateMappingTestingState(
 			@ApiParam(value = "Id of map project to generate the testing state for", required = true) @PathParam("id") Long mapProjectId,
@@ -1151,7 +1151,46 @@ public class WorkflowServiceRest {
 		  MapProject mapProject = mappingService.getMapProject(mapProjectId);
 		
 		  WorkflowService workflowService = new WorkflowServiceJpa();
-		  workflowService.generateMapperTestingState(mapProject);
+		  workflowService.generateMapperTestingStateKLININ(mapProject);
+	  	workflowService.close();
+	  } catch (LocalException e) { 
+	  	e.printStackTrace();
+	  	throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+	  } catch (Exception e) { 
+	  	e.printStackTrace();
+	  	throw new WebApplicationException(Response.status(500).entity(
+				"Unexpected error trying to generate a mapping testing state. Please contact the administrator.").build());
+	  }
+
+	}
+	
+	/**
+	 * Generate mapping testing state, using concepts for users BHE and KRE
+	 *
+	 * @param mapProjectId the map project id
+	 * @param authToken the auth token
+	 * @throws Exception the exception
+	 */
+	@POST
+	@Path("/project/id/{id:[0-9][0-9]*}/generateTestingStateBHEKRE")
+	@ApiOperation(value = "Generate a workflow testing scenario for project", notes = "Performs concept assignment to test functionality, using concepts previously mapped in Cartographer for users BHE and KRE")
+	public void generateMappingTestingStateBHEKRE(
+			@ApiParam(value = "Id of map project to generate the testing state for", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
+		
+		try {
+		  // authorize call
+		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+		  if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+			  throw new WebApplicationException(Response.status(401).entity(
+					"User does not have permissions to generate a mapping testing state.").build());
+		
+		
+	  	MappingService mappingService = new MappingServiceJpa();
+		  MapProject mapProject = mappingService.getMapProject(mapProjectId);
+		
+		  WorkflowService workflowService = new WorkflowServiceJpa();
+		  workflowService.generateMapperTestingStateBHEKRE(mapProject);
 	  	workflowService.close();
 	  } catch (LocalException e) { 
 	  	e.printStackTrace();

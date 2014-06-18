@@ -23,6 +23,7 @@ import org.hibernate.CacheMode;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
@@ -70,7 +71,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 	/** The transaction entity. */
 	private EntityTransaction tx;
-	
+
 	/**
 	 * Instantiates an empty {@link WorkflowServiceJpa}.
 	 * 
@@ -179,15 +180,21 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	@Override
 	public TrackingRecord getTrackingRecordForMapProjectAndConcept(
 			MapProject mapProject, Concept concept) {
-		return (TrackingRecord) manager
-				.createQuery(
-						"select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
-				.setParameter("mapProjectId", mapProject.getId())
-				.setParameter("terminology", concept.getTerminology())
-				.setParameter("terminologyVersion",
-						concept.getTerminologyVersion())
-				.setParameter("terminologyId", concept.getTerminologyId())
-				.getSingleResult();
+
+		try {
+			return (TrackingRecord) manager
+					.createQuery(
+							"select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
+					.setParameter("mapProjectId", mapProject.getId())
+					.setParameter("terminology", concept.getTerminology())
+					.setParameter("terminologyVersion",
+							concept.getTerminologyVersion())
+					.setParameter("terminologyId", concept.getTerminologyId())
+					.getSingleResult();
+		} catch (Exception e) {
+			return null;
+		}
+
 	}
 
 	/*
@@ -241,22 +248,22 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			return (TrackingRecord) query.getSingleResult();
 
 		} catch (NoResultException e) {
-			throw new LocalException("WorkflowService.getTrackingRecord(): Concept query for terminologyId = "
-							+ concept.getTerminologyId()
-							+ ", mapProjectId = "
+
+			throw new LocalException(
+					"WorkflowService.getTrackingRecord(): Concept query for terminologyId = "
+							+ concept.getTerminologyId() + ", mapProjectId = "
 							+ mapProject.getId().toString()
 							+ " returned no results.", e);
 		}
 	}
-	
+
 	private static String constructTrackingRecordForMapProjectIdQuery(
 			Long mapProjectId, String query) {
 
 		String full_query;
 
 		// if no filter supplied, return query based on map project id only
-		if (query == null
-				|| query.equals("") || query.equals("null")) {
+		if (query == null || query.equals("") || query.equals("null")) {
 			full_query = "mapProjectId:" + mapProjectId;
 			return full_query;
 		}
@@ -448,48 +455,51 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	@SuppressWarnings("unchecked")
 	@Override
 	public SearchResultList findAvailableWork(MapProject mapProject,
-			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception {
-		
-		System.out.println("Testing new findAvailableWork with query: '" + query + "'");
-		
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception {
+
+		System.out.println("Testing new findAvailableWork with query: '"
+				+ query + "'");
+
 		SearchResultList availableWork = new SearchResultListJpa();
-		
+
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
 
 		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 		Query luceneQuery;
-		
+
 		// construct basic query
 		String full_query = constructTrackingRecordForMapProjectIdQuery(
 				mapProject.getId(), query);
-		
+
 		// add the query terms specific to findAvailableWork
 		// - user must not be assigned
 		// - no more than two specialists assigned to concept
 		// - workflow status NEW, EDITING_IN_PROGRESS, EDITING_DONE
-		
+
 		full_query += " AND NOT assignedUserNames:" + mapUser.getUserName();
 		full_query += " AND (assignedUserCount:0 OR assignedUserCount:1)";
 		full_query += " AND (workflowStatus:NEW OR workflowStatus:EDITING_IN_PROGRESS OR workflowStatus:EDITING_DONE)";
 
 		System.out.println("FindAvailableWork query: " + full_query);
-		
+
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
 		luceneQuery = queryParser.parse(full_query);
 
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
-		
+
 		availableWork.setTotalCount(ftquery.getResultSize());
-		
-		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+
+		if (pfsParameter.getStartIndex() != -1
+				&& pfsParameter.getMaxResults() != -1) {
 			ftquery.setFirstResult(pfsParameter.getStartIndex());
 			ftquery.setMaxResults(pfsParameter.getMaxResults());
 
 		}
-		
+
 		// if sort field is specified, set sort key
 		if (pfsParameter.getSortField() != null
 				&& !pfsParameter.getSortField().isEmpty()) {
@@ -497,18 +507,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			// check that specified sort field exists on Concept and is
 			// a string
 			if (TrackingRecordJpa.class
-					.getDeclaredField(pfsParameter.getSortField())
-					.getType().equals(String.class)) {
-				ftquery
-						.setSort(new Sort(new SortField(pfsParameter
-								.getSortField(), SortField.STRING)));
+					.getDeclaredField(pfsParameter.getSortField()).getType()
+					.equals(String.class)) {
+				ftquery.setSort(new Sort(new SortField(pfsParameter
+						.getSortField(), SortField.STRING)));
 			} else {
 				throw new Exception(
 						"Concept query specified a field that does not exist or is not a string");
 			}
 		}
 		List<TrackingRecord> results = ftquery.getResultList();
-		
+
 		for (TrackingRecord tr : results) {
 			System.out.println(tr.toString());
 			SearchResult result = new SearchResultJpa();
@@ -519,7 +528,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 		return availableWork;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -531,43 +540,46 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	@SuppressWarnings("unchecked")
 	@Override
 	public SearchResultList findAvailableConflicts(MapProject mapProject,
-			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception {
-		
-System.out.println("Testing new findAvailableWork with query: '" + query + "'");
-		
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception {
+
+		System.out.println("Testing new findAvailableWork with query: '"
+				+ query + "'");
+
 		SearchResultList availableConflicts = new SearchResultListJpa();
-		
+
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
 
 		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 		Query luceneQuery;
-		
+
 		// construct basic query
 		String full_query = constructTrackingRecordForMapProjectIdQuery(
 				mapProject.getId(), query);
-		
+
 		// add the query terms specific to findAvailableConflicts
-		// - workflow status CONFLICT_DETECTED	
+		// - workflow status CONFLICT_DETECTED
 		full_query += " AND workflowStatus:CONFLICT_DETECTED";
 
 		System.out.println("FindAvailableWork query: " + full_query);
-		
+
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
 		luceneQuery = queryParser.parse(full_query);
 
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
-		
+
 		availableConflicts.setTotalCount(ftquery.getResultSize());
-		
-		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+
+		if (pfsParameter.getStartIndex() != -1
+				&& pfsParameter.getMaxResults() != -1) {
 			ftquery.setFirstResult(pfsParameter.getStartIndex());
 			ftquery.setMaxResults(pfsParameter.getMaxResults());
 
 		}
-		
+
 		// if sort field is specified, set sort key
 		if (pfsParameter.getSortField() != null
 				&& !pfsParameter.getSortField().isEmpty()) {
@@ -575,18 +587,17 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 			// check that specified sort field exists on Concept and is
 			// a string
 			if (TrackingRecordJpa.class
-					.getDeclaredField(pfsParameter.getSortField())
-					.getType().equals(String.class)) {
-				ftquery
-						.setSort(new Sort(new SortField(pfsParameter
-								.getSortField(), SortField.STRING)));
+					.getDeclaredField(pfsParameter.getSortField()).getType()
+					.equals(String.class)) {
+				ftquery.setSort(new Sort(new SortField(pfsParameter
+						.getSortField(), SortField.STRING)));
 			} else {
 				throw new Exception(
 						"Concept query specified a field that does not exist or is not a string");
 			}
 		}
 		List<TrackingRecord> results = ftquery.getResultList();
-		
+
 		for (TrackingRecord tr : results) {
 			System.out.println(tr.toString());
 			SearchResult result = new SearchResultJpa();
@@ -597,52 +608,56 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 		}
 		return availableConflicts;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public SearchResultList findAssignedWork(MapProject mapProject,
-			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception {
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception {
 
-		System.out.println("Testing new findAssignedWork with query: '" + query + "'");
-		
+		System.out.println("Testing new findAssignedWork with query: '" + query
+				+ "'");
+
 		SearchResultList assignedWork = new SearchResultListJpa();
-		
-		if (pfsParameter == null) pfsParameter = new PfsParameterJpa();
-		
+
+		if (pfsParameter == null)
+			pfsParameter = new PfsParameterJpa();
+
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
 
 		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 		Query luceneQuery;
-		
+
 		// construct basic query
 		String full_query = constructTrackingRecordForMapProjectIdQuery(
 				mapProject.getId(), query);
-		
+
 		// add the query terms specific to findAssignedWork
 		// - user must be assigned
 		// - workflow status NEW, EDITING_IN_PROGRESS
-		
+
 		full_query += " AND assignedUserNames:" + mapUser.getUserName();
 		full_query += " AND (workflowStatus:NEW OR workflowStatus:EDITING_IN_PROGRESS)";
 
 		System.out.println("FindAssignedWork query: " + full_query);
-		
+
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
 		luceneQuery = queryParser.parse(full_query);
-		
+
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
-		
+
 		assignedWork.setTotalCount(ftquery.getResultSize());
-			
-		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+
+		if (pfsParameter.getStartIndex() != -1
+				&& pfsParameter.getMaxResults() != -1) {
 			ftquery.setFirstResult(pfsParameter.getStartIndex());
 			ftquery.setMaxResults(pfsParameter.getMaxResults());
 
 		}
-		
+
 		// if sort field is specified, set sort key
 		if (pfsParameter.getSortField() != null
 				&& !pfsParameter.getSortField().isEmpty()) {
@@ -650,44 +665,47 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 			// check that specified sort field exists on Concept and is
 			// a string
 			if (TrackingRecordJpa.class
-					.getDeclaredField(pfsParameter.getSortField())
-					.getType().equals(String.class)) {
-				ftquery
-						.setSort(new Sort(new SortField(pfsParameter
-								.getSortField(), SortField.STRING)));
+					.getDeclaredField(pfsParameter.getSortField()).getType()
+					.equals(String.class)) {
+				ftquery.setSort(new Sort(new SortField(pfsParameter
+						.getSortField(), SortField.STRING)));
 			} else {
 				throw new Exception(
 						"Concept query specified a field that does not exist or is not a string");
 			}
 		}
-		
+
 		List<TrackingRecord> results = ftquery.getResultList();
 		MappingService mappingService = new MappingServiceJpa();
 		for (TrackingRecord tr : results) {
 			System.out.println(tr.toString());
 			SearchResult result = new SearchResultJpa();
-			
+
 			// get the map record assigned to this user
 			MapRecord mapRecord = null;
 			for (Long mapRecordId : tr.getMapRecordIds()) {
-							
+
 				MapRecord mr = mappingService.getMapRecord(mapRecordId);
-				if (mr.getOwner().equals(mapUser)) mapRecord = mr;
+				if (mr.getOwner().equals(mapUser))
+					mapRecord = mr;
 			}
-			
+
 			if (mapRecord == null) {
-				throw new Exception("Failed to retrieve assigned work:  no map record found for user " + mapUser.getUserName() + " and concept " + tr.getTerminologyId());
+				throw new Exception(
+						"Failed to retrieve assigned work:  no map record found for user "
+								+ mapUser.getUserName() + " and concept "
+								+ tr.getTerminologyId());
 			}
-			result.setTerminologyId(tr.getTerminologyId());
-			result.setValue(tr.getDefaultPreferredName());
+			result.setTerminologyId(mapRecord.getConceptId());
+			result.setValue(mapRecord.getConceptName());
 			result.setTerminology(mapRecord.getLastModified().toString());
-			result.setId(tr.getId());
+			result.setId(mapRecord.getId());
 			assignedWork.addSearchResult(result);
 		}
 		mappingService.close();
 		return assignedWork;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -699,48 +717,52 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 	@SuppressWarnings("unchecked")
 	@Override
 	public SearchResultList findAssignedConflicts(MapProject mapProject,
-			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception {
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception {
 
-		System.out.println("Testing new findAssignedConflicts with query: '" + query + "'");
-		
+		System.out.println("Testing new findAssignedConflicts with query: '"
+				+ query + "'");
+
 		SearchResultList assignedWork = new SearchResultListJpa();
-		
-		if (pfsParameter == null) pfsParameter = new PfsParameterJpa();
-		
+
+		if (pfsParameter == null)
+			pfsParameter = new PfsParameterJpa();
+
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
 
 		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 		Query luceneQuery;
-		
+
 		// construct basic query
 		String full_query = constructTrackingRecordForMapProjectIdQuery(
 				mapProject.getId(), query);
-		
+
 		// add the query terms specific to findAssignedWork
 		// - user must be assigned
 		// - workflow status CONFLICT_NEW or CONFLICT_IN_PROGRESS
-		
+
 		full_query += " AND assignedUserNames:" + mapUser.getUserName();
 		full_query += " AND (workflowStatus:CONFLICT_NEW OR workflowStatus:CONFLICT_IN_PROGRESS)";
 
 		System.out.println("FindAssignedWork query: " + full_query);
-		
+
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
 		luceneQuery = queryParser.parse(full_query);
-		
+
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
-		
+
 		assignedWork.setTotalCount(ftquery.getResultSize());
-			
-		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+
+		if (pfsParameter.getStartIndex() != -1
+				&& pfsParameter.getMaxResults() != -1) {
 			ftquery.setFirstResult(pfsParameter.getStartIndex());
 			ftquery.setMaxResults(pfsParameter.getMaxResults());
 
 		}
-		
+
 		// if sort field is specified, set sort key
 		if (pfsParameter.getSortField() != null
 				&& !pfsParameter.getSortField().isEmpty()) {
@@ -748,33 +770,36 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 			// check that specified sort field exists on Concept and is
 			// a string
 			if (TrackingRecordJpa.class
-					.getDeclaredField(pfsParameter.getSortField())
-					.getType().equals(String.class)) {
-				ftquery
-						.setSort(new Sort(new SortField(pfsParameter
-								.getSortField(), SortField.STRING)));
+					.getDeclaredField(pfsParameter.getSortField()).getType()
+					.equals(String.class)) {
+				ftquery.setSort(new Sort(new SortField(pfsParameter
+						.getSortField(), SortField.STRING)));
 			} else {
 				throw new Exception(
 						"Concept query specified a field that does not exist or is not a string");
 			}
 		}
-		
+
 		List<TrackingRecord> results = ftquery.getResultList();
 		MappingService mappingService = new MappingServiceJpa();
 		for (TrackingRecord tr : results) {
 			System.out.println(tr.toString());
 			SearchResult result = new SearchResultJpa();
-			
+
 			// get the map record assigned to this user
 			MapRecord mapRecord = null;
 			for (Long mapRecordId : tr.getMapRecordIds()) {
-							
+
 				MapRecord mr = mappingService.getMapRecord(mapRecordId);
-				if (mr.getOwner().equals(mapUser)) mapRecord = mr;
+				if (mr.getOwner().equals(mapUser))
+					mapRecord = mr;
 			}
-			
+
 			if (mapRecord == null) {
-				throw new Exception("Failed to retrieve assigned conflicts:  no map record found for user " + mapUser.getUserName() + " and concept " + tr.getTerminologyId());
+				throw new Exception(
+						"Failed to retrieve assigned conflicts:  no map record found for user "
+								+ mapUser.getUserName() + " and concept "
+								+ tr.getTerminologyId());
 			}
 			result.setTerminologyId(mapRecord.getConceptId());
 			result.setValue(mapRecord.getConceptName());
@@ -1019,14 +1044,16 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 		Set<MapRecord> syncedRecords = synchronizeMapRecords(trackingRecord,
 				mapRecords);
 
-		// clear and reset the pointer fields (i.e. ids and names of mapping objects)
+		// clear and reset the pointer fields (i.e. ids and names of mapping
+		// objects)
 		trackingRecord.setMapRecordIds(null);
 		trackingRecord.setAssignedUserNames(null);
 		trackingRecord.setWorkflowStatus(WorkflowStatus.NEW);
 		for (MapRecord mr : syncedRecords) {
 			trackingRecord.addMapRecordId(mr.getId());
 			trackingRecord.addAssignedUserName(mr.getOwner().getUserName());
-			if (trackingRecord.getWorkflowStatus().compareTo(mr.getWorkflowStatus()) < 0)
+			if (trackingRecord.getWorkflowStatus().compareTo(
+					mr.getWorkflowStatus()) < 0)
 				trackingRecord.setWorkflowStatus(mr.getWorkflowStatus());
 		}
 
@@ -1086,7 +1113,6 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 	public Set<MapRecord> synchronizeMapRecords(TrackingRecord trackingRecord,
 			Set<MapRecord> mapRecords) throws Exception {
 
-
 		Set<MapRecord> newRecords = new HashSet<>();
 		Set<MapRecord> oldRecords = new HashSet<>();
 		Set<MapRecord> syncedRecords = new HashSet<>();
@@ -1117,10 +1143,10 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 				// this routine also duplicates child collections to avoid
 				// detached object errors
 				MapRecord newRecord = new MapRecordJpa(mr, true);
-/*
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						"Adding record: " + newRecord.toString());
-*/
+				/*
+				 * Logger.getLogger(WorkflowServiceJpa.class).info(
+				 * "Adding record: " + newRecord.toString());
+				 */
 				// add the record to the database
 				mappingService.addMapRecord(mr);
 
@@ -1307,9 +1333,11 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 					trackingRecord.addMapRecordId(mr.getId());
 					trackingRecord.addAssignedUserName(mr.getOwner()
 							.getUserName());
-					
-					if (trackingRecord.getWorkflowStatus().compareTo(mr.getWorkflowStatus()) < 0)
-						trackingRecord.setWorkflowStatus(mr.getWorkflowStatus());
+
+					if (trackingRecord.getWorkflowStatus().compareTo(
+							mr.getWorkflowStatus()) < 0)
+						trackingRecord
+								.setWorkflowStatus(mr.getWorkflowStatus());
 				}
 			}
 
@@ -1325,28 +1353,29 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 				// memory buildup from Concept and TreePosition objects
 				contentService.close();
 				contentService = new ContentServiceJpa();
-				
+
 				// TODO: REMOVE - FOR DEV PURPOSES ONLY
-				//if (trackingRecordCt >= 3000) break;
+				// if (trackingRecordCt >= 3000) break;
 			}
 		}
 
 		// commit any remaining transactions
 		commit();
-		
+
 		// instantiate the full text eneity manager and set version
-		FullTextEntityManager fullTextEntityManager =
-				Search.getFullTextEntityManager(manager);
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
 		fullTextEntityManager.setProperty("Version", Version.LUCENE_36);
 
 		// create the indexes
-		Logger.getLogger(WorkflowServiceJpa.class).info("  Creating indexes for TrackingRecordJpa");
+		Logger.getLogger(WorkflowServiceJpa.class).info(
+				"  Creating indexes for TrackingRecordJpa");
 		fullTextEntityManager.purgeAll(TrackingRecordJpa.class);
 		fullTextEntityManager.flushToIndexes();
 		fullTextEntityManager.createIndexer(TrackingRecordJpa.class)
-		.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-		.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
-		.startAndWait();
+				.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+				.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
+				.startAndWait();
 	}
 
 	/*
@@ -2263,56 +2292,76 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void generateMapperTestingState(MapProject mapProject)
+	public void generateMapperTestingStateKLININ(MapProject mapProject)
 			throws Exception {
 
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"Generating clean Mapping User Testing State for project "
 						+ mapProject.getName());
 
-		String[] conceptsKLI = { "28221000119103", "700189007",
-				"295131000119103", "72791000119108", "295041000119108",
-				"295051000119105", "700147004", "700109009", "700112007",
-				"700150001", "700081008", "700075000", "700097003",
-				"700080009", "700082001", "402714001", "700094005",
-				"166631000119101", "700076004", "403469006", "3961000119101",
-				"700095006", "700153004", "700195008", "700107006",
-				"700111000", "700077008", "700079006", "700167008",
-				"700178000", "700181005", "700176001", "700170007",
-				"700164001", "700173009", "440419004", "700078003",
-				"700168003", "700179008", "700182003", "700177005",
-				"700171006", "700165000", "700174003", "700149001",
-				"700127007", "700132008"
+		String[] concepts = { "28221000119103", "700189007", "295131000119103",
+				"72791000119108", "295041000119108", "295051000119105",
+				"700147004", "700109009", "700112007", "700150001",
+				"700081008", "700075000", "700097003", "700080009",
+				"700082001", "402714001", "700094005", "166631000119101",
+				"700076004", "403469006", "3961000119101", "700095006",
+				"700153004", "700195008", "700107006", "700111000",
+				"700077008", "700079006", "700167008", "700178000",
+				"700181005", "700176001", "700170007", "700164001",
+				"700173009", "440419004", "700078003", "700168003",
+				"700179008", "700182003", "700177005", "700171006",
+				"700165000", "700174003", "700149001", "700127007", "700132008"
 
 		};
 
-		Logger.getLogger(WorkflowServiceJpa.class).info(
-				"  KLI: " + conceptsKLI.length + " concepts");
+		String[] userNames = { "kli", "nin" };
 
-		String conceptsNIN[] = { "28221000119103", "700189007",
-				"295131000119103", "72791000119108", "295041000119108",
-				"295051000119105", "700147004", "700109009", "700112007",
-				"700150001", "700081008", "700075000", "700097003",
-				"700080009", "700082001", "402714001", "700094005",
-				"166631000119101", "700076004", "403469006", "3961000119101",
-				"700095006", "700153004", "700195008", "700107006",
-				"700111000", "700077008", "700079006", "700167008",
-				"700178000", "700181005", "700176001", "700170007",
-				"700164001", "700173009", "440419004", "700078003",
-				"700168003", "700179008", "700182003", "700177005",
-				"700171006", "700165000", "700174003", "700149001",
-				"700127007", "700132008" };
+		generateMappingTestingState(mapProject, userNames, concepts);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void generateMapperTestingStateBHEKRE(MapProject mapProject)
+			throws Exception {
 
 		Logger.getLogger(WorkflowServiceJpa.class).info(
-				"  KLI: " + conceptsKLI.length + " concepts");
+				"Generating clean Mapping User Testing State for project "
+						+ mapProject.getName());
+
+		String[] concepts = { "399050001", "283795009", "283796005",
+				"110079005", "110248002", "110243006", "373588006",
+				"109683005", "38372004", "427782005", "282756002", "283362001",
+				"196439008", "2136001", "285670000", "284205006", "8954007",
+				"110077007", "5529003", "3097002", "109762009", "441373001",
+				"420881009", "419076005", "418176003", "419474003",
+				"277209002", "294432001", "156073000", "294090001",
+				"416402001", "233624006", "294386005", "156072005",
+				"402267000", "230599000", "295050005", "34270000", "431043000",
+				"129616004", "405538007", "294594004", "433202001",
+				"399076001", "135071000119105", "699529005", "699705001",
+				"699859009", "126741004", "427916006", "699942000",
+				"699699005", "48601000119107", "699649006", "699588004",
+				"699760008", "202857003", "699686007", "108431000119104",
+				"399932006", "700049004", "698632006", "93713003", "700053002",
+				"700055009", "403967000" };
+
+		String[] userNames = { "bhe", "kre" };
+
+		generateMappingTestingState(mapProject, userNames, concepts);
+
+	}
+
+	private void generateMappingTestingState(MapProject mapProject,
+			String[] userNames, String[] concepts) throws Exception {
+
+		Logger.getLogger(WorkflowServiceJpa.class).info(
+				"  Total: " + concepts.length + " concepts requested");
 
 		// combine the string arrays into a unique-value hash set
 		Set<MapRecord> existingRecords = new HashSet<>();
 		Set<String> uniqueIds = new HashSet<>();
-		for (String terminologyId : conceptsNIN) {
-			uniqueIds.add(terminologyId);
-		}
-		for (String terminologyId : conceptsKLI) {
+		for (String terminologyId : concepts) {
 			uniqueIds.add(terminologyId);
 		}
 
@@ -2320,13 +2369,15 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 		MappingService mappingService = new MappingServiceJpa();
 		ContentService contentService = new ContentServiceJpa();
 
-		// get the map user objects
-		MapUser mapUser_KLI = mappingService.getMapUser("kli");
-		MapUser mapUser_NIN = mappingService.getMapUser("nin");
-
 		// set the terminology and version -- shorthand
 		String terminology = mapProject.getSourceTerminology();
 		String terminologyVersion = mapProject.getSourceTerminologyVersion();
+
+		// get the map users
+		Set<MapUser> mapUsers = new HashSet<>();
+		for (String userName : userNames) {
+			mapUsers.add(mappingService.getMapUser(userName));
+		}
 
 		// retrieve the concepts matching the unique ids and assemble them in a
 		// map of terminologyId -> concept
@@ -2343,10 +2394,8 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 			}
 		}
 
-		contentService.close();
-
 		Logger.getLogger(WorkflowServiceJpa.class).info(
-				"  Total: " + conceptsKLI.length + " unique concepts");
+				"  Total: " + concepts.length + " unique concepts retrieved");
 
 		// find any existing records for the concepts
 		for (String terminologyId : uniqueIds) {
@@ -2367,59 +2416,64 @@ System.out.println("Testing new findAvailableWork with query: '" + query + "'");
 				.info("Removing existing map records and updating/creating tracking records for specified concepts, found "
 						+ existingRecords.size());
 
-		// remove the existing records and update the tracking records
+		// remove the existing records
 		for (MapRecord mapRecord : existingRecords) {
 			Logger.getLogger(WorkflowServiceJpa.class).warn(
 					"Removing record " + mapRecord.getId() + ", owned by "
 							+ mapRecord.getOwner().getUserName());
 			mappingService.removeMapRecord(mapRecord.getId());
 
-			TrackingRecord trackingRecord = getTrackingRecordForMapProjectAndConcept(
-					mapProject, uniqueConcepts.get(mapRecord.getConceptId()));
+		}
+		
+		Logger.getLogger(WorkflowServiceJpa.class)
+			.info("Deleting and re-creating tracking records to ensure clean state");
 
-			// if tracking record is null, create a new one
-			if (trackingRecord == null) {
-				trackingRecord = new TrackingRecordJpa();
-				trackingRecord.setDefaultPreferredName(mapRecord
-						.getConceptName());
-				trackingRecord.setMapProjectId(mapProject.getId());
-				trackingRecord.setTerminologyId(mapRecord.getConceptId());
-				trackingRecord
-						.setTerminology(mapProject.getSourceTerminology());
-				trackingRecord.setTerminologyVersion(mapProject
-						.getSourceTerminologyVersion());
-				trackingRecord.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH);
+		// remove the existing tracking records and create a new one
+		for (Concept concept : uniqueConcepts.values()) {
 
-				trackingRecord.setSortKey(contentService
-						.getTreePositions(trackingRecord.getTerminologyId(),
-								trackingRecord.getTerminology(),
-								trackingRecord.getTerminologyVersion())
-						.getTreePositions().get(0).getAncestorPath());
-
-				addTrackingRecord(trackingRecord);
-			} else {
-				trackingRecord.removeMapRecordId(mapRecord.getId());
-				updateTrackingRecord(trackingRecord);
+			TrackingRecord trackingRecord = null;
+			try {
+				trackingRecord = getTrackingRecordForMapProjectAndConcept(
+						mapProject,
+						uniqueConcepts.get(concept.getTerminologyId()));
+			} catch (Exception e) {
+				// do nothing
 			}
+			if (trackingRecord != null)
+				removeTrackingRecord(trackingRecord.getId());
+
+			// create the new tracking record
+			trackingRecord = new TrackingRecordJpa();
+			trackingRecord.setDefaultPreferredName(concept
+					.getDefaultPreferredName());
+			trackingRecord.setMapProjectId(mapProject.getId());
+			trackingRecord.setTerminologyId(concept.getTerminologyId());
+			trackingRecord.setTerminology(mapProject.getSourceTerminology());
+			trackingRecord.setTerminologyVersion(mapProject
+					.getSourceTerminologyVersion());
+			trackingRecord.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH);
+
+			trackingRecord.setSortKey(contentService
+					.getTreePositions(trackingRecord.getTerminologyId(),
+							trackingRecord.getTerminology(),
+							trackingRecord.getTerminologyVersion())
+					.getTreePositions().get(0).getAncestorPath());
+
+			addTrackingRecord(trackingRecord);
+
 		}
 
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"Assigning concepts....");
 
-		// assign the concepts to Krista (kli)
-		for (String terminologyId : conceptsKLI) {
-			Concept concept = uniqueConcepts.get(terminologyId);
-			if (concept != null)
-				this.processWorkflowAction(mapProject, concept, mapUser_KLI,
-						null, WorkflowAction.ASSIGN_FROM_SCRATCH);
-		}
-
-		// assign the concepts to Nicole (nin)
-		for (String terminologyId : conceptsNIN) {
-			Concept concept = uniqueConcepts.get(terminologyId);
-			if (concept != null)
-				this.processWorkflowAction(mapProject, concept, mapUser_NIN,
-						null, WorkflowAction.ASSIGN_FROM_SCRATCH);
+		// cycle over map users
+		for (MapUser mapUser : mapUsers) {
+			// assign concept to user
+			for (Concept concept : uniqueConcepts.values()) {
+				if (concept != null)
+					this.processWorkflowAction(mapProject, concept, mapUser,
+							null, WorkflowAction.ASSIGN_FROM_SCRATCH);
+			}
 		}
 
 		// close the services

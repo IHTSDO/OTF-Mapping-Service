@@ -8,10 +8,6 @@
     Details</button>
   <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
     Records</button>
-    <div ng-show="currentRole === 'Administrator'">
-    <hr>
-    Compute Workflow, Generate Conflicts, and Generate Testing State have been temporarily removed to ensure existing assignments are not overwritten.
-	</div>
 
   <span ng-show="currentRole === 'Administrator'">
     <button class="btn btn-sm btn-primary" ng-click="computeWorkflow()">Compute
@@ -19,7 +15,12 @@
   </span>
   
     <span ng-show="currentRole === 'Administrator'">
-    <button class="btn btn-sm btn-primary" ng-click="generateTestingState()">Generate Testing State</button>
+    <button class="btn btn-sm btn-primary" ng-click="generateTestingStateForKLININ()">Reset Records for KLI/NIN</button>
+  </span>
+  
+   <span ng-show="currentRole === 'Administrator'">
+    <button class="btn btn-sm btn-primary" ng-click="generateTestingStateForBHEKRE()">Reset Records for BHE/KRE</button>
+      Workflow</button>
   </span>
   
   <div ng-show="currentRole === 'Administrator'">
@@ -32,5 +33,7 @@
   Maximum number of conflicts: <input style="width:50px;" value="5" ng-model="nConflicts"> 
   </form>
   </div>
+  
+  
 </div>
 

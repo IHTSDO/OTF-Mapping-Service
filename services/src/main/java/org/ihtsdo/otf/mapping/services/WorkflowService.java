@@ -355,7 +355,14 @@ public interface WorkflowService {
 	 *
 	 * @throws Exception the exception
 	 */
-	public void generateMapperTestingState(MapProject mapProject) throws Exception;
+	public void generateMapperTestingStateKLININ(MapProject mapProject) throws Exception;
+	
+	/**
+	 * Generate mapper testing state.
+	 *
+	 * @throws Exception the exception
+	 */
+	public void generateMapperTestingStateBHEKRE(MapProject mapProject) throws Exception;
 
 
 

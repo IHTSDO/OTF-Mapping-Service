@@ -272,9 +272,14 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			var trackingRecords = data.searchResult;
 			var conceptListValid = true;
 			
+			
+			console.debug(trackingRecords);
+			console.debug($scope.availableWork);
 			// if user is viewing concepts , check that first result matches first displayed result
 			if ($scope.isConceptListOpen == true && $scope.currentUser.userName != mapUser.userName) {
-				for (var i = 0; i < $scope.itemsPerPage; i++) {
+				for (var i = 0; i < $scope.itemsPerPage && i < batchSize; i++) {
+					console.debug(trackingRecords[i]);
+					console.debug($scope.availableWork[i]);
 					if (trackingRecords[i].id != $scope.availableWork[i].id) {
 						retrieveAvailableWork($scope.availableWorkPage, query);
 						alert("One or more of the concepts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
