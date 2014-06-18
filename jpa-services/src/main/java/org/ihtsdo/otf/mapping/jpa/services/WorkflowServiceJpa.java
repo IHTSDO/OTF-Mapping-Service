@@ -56,7 +56,6 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
-// TODO: Auto-generated Javadoc
 /**
  * Default workflow service implementation.
  */
@@ -242,12 +241,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			return (TrackingRecord) query.getSingleResult();
 
 		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).debug(
-					"WorkflowService.getTrackingRecord(): Concept query for terminologyId = "
-							+ concept.getTerminologyId() + ", mapProjectId = "
+			throw new LocalException("WorkflowService.getTrackingRecord(): Concept query for terminologyId = "
+							+ concept.getTerminologyId()
+							+ ", mapProjectId = "
 							+ mapProject.getId().toString()
-							+ " returned no results.");
-			return null;
+							+ " returned no results.", e);
 		}
 	}
 	
