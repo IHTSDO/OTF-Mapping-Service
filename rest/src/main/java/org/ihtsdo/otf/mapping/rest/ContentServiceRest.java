@@ -12,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
@@ -100,10 +101,13 @@ public class ContentServiceRest {
 
 			contentService.close();
 			return c;
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to retrieve a concept. Please contact the administrator.").build());
 		}
 
 	}
@@ -150,10 +154,13 @@ public class ContentServiceRest {
 			metadataService.close();
 			contentService.close();
 			return c;
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to retrieve the latest version concept. Please contact the administrator.").build());
 		}
 
 	}
@@ -188,10 +195,13 @@ public class ContentServiceRest {
 					searchString, new PfsParameterJpa());
 			contentService.close();
 			return sr;
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to find the concepts by query. Please contact the administrator.").build());
 		}
 	}
 
@@ -238,10 +248,13 @@ public class ContentServiceRest {
 
 			contentService.close();
 			return results;
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) {
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to find descendant concepts. Please contact the administrator.").build());
 		}
 	}
 
@@ -325,10 +338,13 @@ public class ContentServiceRest {
 			metadataService.close();
 			contentService.close();
 			return results;
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to find the child concepts. Please contact the administrator.").build());
 		}
 	}
 

@@ -180,6 +180,20 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		$http.defaults.headers.common.Authorization = $scope.userToken;
 	});
 
+	$scope.go = function() {
+		$http({
+			url: root_mapping + "userPreferences/update",
+			dataType: "json",
+			data: $scope.parameters.userPreferences,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+		}).error(function(data, status, headers, config) {
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
+	};
 
 	// must instantiate a default dashboard on call
 	setModel();
@@ -612,6 +626,8 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function ($roo
 					"Content-Type": "application/json"
 				}	
 			}).success(function(data) {
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		}
 	});

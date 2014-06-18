@@ -107,11 +107,8 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				$scope.terminologyTree[i].isOpen = false;
 				$scope.terminologyTree[i].isConceptOpen = false;
 			}
-		}).error (function(response) {
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		}).error(function(data, status, headers, config) {
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 
@@ -175,11 +172,8 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			$scope.searchBackAllowed = $scope.searchStackPosition > 0 ? true : false;
 			$scope.searchForwardAllowed = $scope.searchStackPosition < $scope.searchStackResults ? true : false;
 			
-		}).error (function(response) {
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		}).error(function(data, status, headers, config) {
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 	
@@ -219,11 +213,8 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			}).success (function(response) {
 				console.debug("HTTP RESPONSE");
 				deferred.resolve(response);
-			}).error (function(response) {
-				if (response.indexOf("HTTP Status 401") != -1) {
-					$rootScope.globalError = "Authorization failed.  Please log in again.";
-					$location.path("/");
-				}
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});;
 		});
 
@@ -412,11 +403,8 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 
 				// otherwise display an error message
-			}).error (function(response) {
-				if (response.indexOf("HTTP Status 401") != -1) {
-					$rootScope.globalError = "Authorization failed.  Please log in again.";
-					$location.path("/");
-				}
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		};
 	};

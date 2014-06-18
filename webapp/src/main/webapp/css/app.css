@@ -30,6 +30,16 @@ p {
 	padding: 7px;
 }
 
+.alert-error {
+	margin-bottom: 0px;
+	margin-top: 0px;
+	border-radius: 5px;
+}
+
+.border-error {	
+  padding: 0px 0px 0px 0px;
+}
+
 .icon-flipped {
 transform: scaleX(-1);
 -moz-transform: scaleX(-1);
@@ -102,4 +112,36 @@ body {
     font-family: inherit;
     font-size: 100%;
     margin:20px 0;
+}
+
+/* used for the login page horizontal organization */
+#wrapper {
+		width:900px;
+		height:170px;
+		margin:0px auto;
+		padding:10px;
+	}
+
+#content {
+	margin-top: 10px;
+	padding-bottom: 10px;
+}
+
+#content div {
+	padding: 10px;
+	float: left;
+}
+
+#content-left {
+	width: 380px;
+}
+
+#content-main {
+	margin-left: 10px;
+	width: 100px;
+}
+
+#content-right {
+	margin-left: 10px;
+	width: 334px;
 }

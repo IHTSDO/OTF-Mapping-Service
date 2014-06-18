@@ -9,13 +9,11 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
 
-import javax.naming.AuthenticationException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
@@ -70,11 +68,14 @@ public class SecurityServiceJpa implements SecurityService {
     if (!ihtsdoSecurityActivated || username.equals("guest")) {
   		tokenUsernameMap.put(username, username);
   		MappingService mappingService = new MappingServiceJpa();
-  		MapUser mapUser =  mappingService.getMapUser(username);
-  		mappingService.close();
-  		if (mapUser == null) {
-		    throw new AuthenticationException("Incorrect user name or password.");
+  		try {
+  		  mappingService.getMapUser(username);
+  		} catch (Exception e) {
+		    throw new LocalException("Incorrect user name or password.", e);
+  		} finally {
+  		  mappingService.close();
   		}
+
   		return username;
     }
     
@@ -100,7 +101,7 @@ public class SecurityServiceJpa implements SecurityService {
 			  Logger.getLogger(this.getClass()).info("ERROR! " + response.getStatus()); 
 		    resultString = response.getEntity(String.class);   
 			  Logger.getLogger(this.getClass()).info(resultString);
-			  throw new AuthenticationException("Incorrect user name or password.");
+			  throw new LocalException("Incorrect user name or password.");
 		}
 		
 
@@ -110,8 +111,9 @@ public class SecurityServiceJpa implements SecurityService {
 		String ihtsdoUserName = "";
 		String ihtsdoEmail = "";
 		String ihtsdoGivenName = "";
-		String ihtsdoMiddleName = "";
 		String ihtsdoSurname = "";
+		//TODO: need to somehow retrieve application role for user
+		MapUserRole ihtsdoApplicationRole = MapUserRole.VIEWER;
 		
 	  //converting json to Map
 		byte[] mapData = resultString.getBytes(); 
@@ -130,8 +132,6 @@ public class SecurityServiceJpa implements SecurityService {
 				  	ihtsdoEmail = innerEntrySet.getValue();
 				  } else if (innerEntrySet.getKey().equals("givenName")) {
 				  	ihtsdoGivenName = innerEntrySet.getValue();
-				  } else if (innerEntrySet.getKey().equals("middleName")) {
-				  	ihtsdoMiddleName = innerEntrySet.getValue();
 				  } else if (innerEntrySet.getKey().equals("surname")) {
 				  	ihtsdoSurname = innerEntrySet.getValue();
 				  }
@@ -153,6 +153,7 @@ public class SecurityServiceJpa implements SecurityService {
 			userFound.setEmail(ihtsdoEmail);
 			userFound.setName(ihtsdoGivenName + " " + ihtsdoSurname);
 			userFound.setUserName(ihtsdoUserName);
+			userFound.setApplicationRole(ihtsdoApplicationRole);
 			mappingService.updateMapUser(userFound);
 		// if MapUser not found, create one for our use
 		} else {
@@ -160,6 +161,7 @@ public class SecurityServiceJpa implements SecurityService {
 			newMapUser.setName(ihtsdoGivenName + " " + ihtsdoSurname);
 			newMapUser.setUserName(ihtsdoUserName);
 			newMapUser.setEmail(ihtsdoEmail);
+			newMapUser.setApplicationRole(ihtsdoApplicationRole);
 			mappingService.addMapUser(newMapUser);
 		}
 		mappingService.close();
@@ -180,9 +182,11 @@ public class SecurityServiceJpa implements SecurityService {
 	 */
 	@Override
 	public String getUsernameForToken(String authToken) throws Exception {
-		if (tokenUsernameMap.containsKey(authToken))
-			return tokenUsernameMap.get(authToken);
-		else
+		if (tokenUsernameMap.containsKey(authToken)) {
+			String username = tokenUsernameMap.get(authToken);
+		  Logger.getLogger(this.getClass()).info("User = " + username + " Token = " + authToken);
+			return username;
+		} else
 			throw new Exception("AuthToken does not have a valid username.");
 	}
 	
@@ -190,12 +194,8 @@ public class SecurityServiceJpa implements SecurityService {
 	 * @see org.ihtsdo.otf.mapping.services.SecurityService#authorizeToken(java.lang.String, java.lang.Long)
 	 */
 	@Override
-	public MapUserRole getMapProjectRoleForToken(String authToken, Long mapProjectId) {
-		try {
-			
-			// TODO Fix this
+	public MapUserRole getMapProjectRoleForToken(String authToken, Long mapProjectId) throws Exception {			
 			String parsedToken = authToken.replace("\"", "");
-			System.out.println("parsedToken:  " + parsedToken);
 			
 			String username = getUsernameForToken(parsedToken);
 			MappingService mappingService = new MappingServiceJpa();
@@ -203,19 +203,14 @@ public class SecurityServiceJpa implements SecurityService {
 					.getMapUserRoleForMapProject(username, mapProjectId);
 			mappingService.close();
 			return result;
-		} catch (Exception e) {
-			throw new WebApplicationException(Response.status(401).entity(e.getMessage()).build());
-		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.services.SecurityService#authorizeToken(java.lang.String)
 	 */
 	@Override
-	public MapUserRole getApplicationRoleForToken(String authToken) {
-		try {
+	public MapUserRole getApplicationRoleForToken(String authToken) throws Exception {
 			String parsedToken = authToken.replace("\"", "");
-			System.out.println("parsedToken:  " + parsedToken);
 			
 			String username = getUsernameForToken(parsedToken);
 			MappingService mappingService = new MappingServiceJpa();
@@ -224,8 +219,5 @@ public class SecurityServiceJpa implements SecurityService {
 			mappingService.close();
 			
 			return user.getApplicationRole();
-		} catch (Exception e) {
-			throw new WebApplicationException(Response.status(401).entity(e.getMessage()).build());
-		}
 	}
 }
