@@ -15,6 +15,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
@@ -47,7 +48,6 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
-// TODO: Auto-generated Javadoc
 /**
  * Default workflow service implementation.
  */
@@ -234,13 +234,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			return (TrackingRecord) query.getSingleResult();
 
 		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass())
-					.debug("WorkflowService.getTrackingRecord(): Concept query for terminologyId = "
+			throw new LocalException("WorkflowService.getTrackingRecord(): Concept query for terminologyId = "
 							+ concept.getTerminologyId()
 							+ ", mapProjectId = "
 							+ mapProject.getId().toString()
-							+ " returned no results.");
-			return null;
+							+ " returned no results.", e);
 		}
 	}
 

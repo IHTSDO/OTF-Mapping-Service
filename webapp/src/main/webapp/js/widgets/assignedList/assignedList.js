@@ -145,8 +145,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 		}).error(function(data, status, headers, config) {
 		    $rootScope.glassPane--;
-		    $rootScope.globalError = "Error retrieving assigned work."
-
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
@@ -215,14 +213,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				}
 				
 							
-			}).error(function(response) {
-			  	$rootScope.glassPane--;
-				$scope.error = "Error";
-	
-				if (response.indexOf("HTTP Status 401") != -1) {
-					$rootScope.globalError = "Authorization failed.  Please log in again.";
-					$location.path("/");
-				}
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		}
 	};
@@ -272,8 +265,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 		}).error(function(data, status, headers, config) {
 		    $rootScope.glassPane--;
-		    $rootScope.globalError = "Error unassigning work."
-
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
@@ -302,8 +293,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				$rootScope.glassPane--;
 			}).error(function(data, status, headers, config) {
 			    $rootScope.glassPane--;
-			    $rootScope.globalError = "Error unassigning all work."
-
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		}

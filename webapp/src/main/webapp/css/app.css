@@ -25,6 +25,16 @@ p {
 	padding: 7px;
 }
 
+.alert-error {
+	margin-bottom: 0px;
+	margin-top: 0px;
+	border-radius: 5px;
+}
+
+.border-error {	
+  padding: 0px 0px 0px 0px;
+}
+
 .icon-flipped {
 transform: scaleX(-1);
 -moz-transform: scaleX(-1);

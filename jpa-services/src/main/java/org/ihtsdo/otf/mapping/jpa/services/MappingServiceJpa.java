@@ -29,6 +29,7 @@ import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
@@ -138,7 +139,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @return the MapProject
 	 */
 	@Override
-	public MapProject getMapProject(Long id) {
+	public MapProject getMapProject(Long id) throws Exception {
 
 		MapProject m = null;
 
@@ -159,10 +160,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			return m;
 
 		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).warn(
+			throw new LocalException(
 					"Map project query for id = " + id
-							+ " returned no results!");
-			return null;
+							+ " returned no results!", e);
 		}
 
 	}
@@ -175,7 +175,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * (java.lang.String)
 	 */
 	@Override
-	public MapProject getMapProjectForRefSetId(String refSetId) {
+	public MapProject getMapProjectForRefSetId(String refSetId) throws Exception {
 
 		MapProject m = null;
 
@@ -194,10 +194,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			m.getMapPrinciples().size();
 			m.getPresetAgeRanges().size();
 		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).warn(
+			throw new LocalException(
 					"Map project query for refSetId = " + refSetId
-							+ " returned no results!");
-			return null;
+							+ " returned no results!", e);
 		}
 
 		return m;
@@ -311,13 +310,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @return the map project
 	 */
 	@Override
-	public MapProject addMapProject(MapProject mapProject) {
+	public MapProject addMapProject(MapProject mapProject) throws Exception {
 
 		// check that each user has only one role
     try {
 			validateUserAndRole(mapProject);
 		} catch (Exception e) {
-			throw new IllegalStateException(e.getMessage());
+			throw new LocalException(e.getMessage(), e);
 		}
 		
 		if (getTransactionPerOperation()) {
@@ -345,13 +344,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 *            the changed map project
 	 */
 	@Override
-	public void updateMapProject(MapProject mapProject) {
+	public void updateMapProject(MapProject mapProject) throws Exception {
 		
 		// check that each user has only one role
     try {
 			validateUserAndRole(mapProject);
 		} catch (Exception e) {
-			throw new IllegalStateException(e.getMessage());
+			throw new LocalException(e.getMessage(), e);
 		}
     
 		if (getTransactionPerOperation()) {
@@ -442,7 +441,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @return the MapSpecialist
 	 */
 	@Override
-	public MapUser getMapUser(Long id) {
+	public MapUser getMapUser(Long id) throws Exception {
 
 		MapUser m = null;
 
@@ -452,10 +451,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		try {
 			m = (MapUser) query.getSingleResult();
 		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).warn(
+			throw new LocalException(
 					"Map specialist query for id = " + id
-							+ " returned no results!");
-			return null;
+							+ " returned no results!", e);
 		}
 
 		return m;
@@ -470,7 +468,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * )
 	 */
 	@Override
-	public MapUser getMapUser(String userName) {
+	public MapUser getMapUser(String userName) throws Exception {
 
 		MapUser m = null;
 
@@ -480,10 +478,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		try {
 			m = (MapUser) query.getSingleResult();
 		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).warn(
+			throw new LocalException(
 					"Map user query for userName = " + userName
-							+ " returned no results!");
-			return null;
+							+ " returned no results!", e);
 		}
 
 		return m;
@@ -662,7 +659,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @return the map record
 	 */
 	@Override
-	public MapRecord getMapRecord(Long id) {
+	public MapRecord getMapRecord(Long id) throws Exception {
 
 		javax.persistence.Query query = manager
 				.createQuery("select r from MapRecordJpa r where id = :id");
@@ -685,14 +682,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			return r;
 
 		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).debug(
-					"MapRecord query for id = " + id + " returned no results!");
-			return null;
+			throw new LocalException(
+					"MapRecord query for id = " + id + " returned no results!", e);
 		} catch (NonUniqueResultException e) {
-			Logger.getLogger(this.getClass()).debug(
+			throw new LocalException(
 					"MapRecord query for id = " + id
-							+ " returned multiple results!");
-			return null;
+							+ " returned multiple results!", e);
 		}
 	}
 
@@ -1976,7 +1971,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * .Long)
 	 */
 	@Override
-	public MapPrinciple getMapPrinciple(Long id) {
+	public MapPrinciple getMapPrinciple(Long id) throws Exception {
 
 		MapPrinciple m = null;
 
@@ -1986,10 +1981,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		try {
 			m = (MapPrinciple) query.getSingleResult();
 		} catch (NoResultException e) {
-			Logger.getLogger(this.getClass()).warn(
+			throw new LocalException(
 					"Map principle query for id = " + id
-							+ " returned no results!");
-			return null;
+							+ " returned no results!", e);
 		}
 
 		return m;
@@ -2593,7 +2587,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	// /////////////////////////////////////
 
 	@Override
-	public MapUserPreferences getMapUserPreferences(String userName) {
+	public MapUserPreferences getMapUserPreferences(String userName) throws Exception {
 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Finding user " + userName);
@@ -2729,7 +2723,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapUserRole(java.lang.String, java.lang.Long)
 	 */
 	@Override
-	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) {
+	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception {
 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Finding user's role " + userName + " " + mapProjectId);

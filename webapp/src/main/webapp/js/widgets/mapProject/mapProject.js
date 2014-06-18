@@ -69,8 +69,6 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			  	$rootScope.glassPane--;
 			}).error(function(data, status, headers, config) {
 			    $rootScope.glassPane--;
-			    $rootScope.globalError = "Error computing workflow."
-
 			    $rootScope.handleHttpError(data, status, headers, config);
 		    });
 				
@@ -103,8 +101,6 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 						$rootScope.glassPane--;
 					}).error(function(data, status, headers, config) {
 					    $rootScope.glassPane--;
-					    $rootScope.globalError = "Error generating test data."
-
 					    $rootScope.handleHttpError(data, status, headers, config);
 					});
 
@@ -134,8 +130,6 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 					$rootScope.glassPane--;
 				}).error(function(data, status, headers, config) {
 				    $rootScope.glassPane--;
-				    $rootScope.globalError = "Error generating the clean mapping testing state."
-
 				    $rootScope.handleHttpError(data, status, headers, config);
 				});
 			}
