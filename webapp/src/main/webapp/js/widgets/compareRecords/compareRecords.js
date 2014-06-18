@@ -97,8 +97,6 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		}).success(function(data) {
 			$scope.leadRecord = data;
 		}).error(function(data, status, headers, config) {
-		    $rootScope.globalError = "Error getting map records in conflict."
-
 		    $rootScope.handleHttpError(data, status, headers, config);
 			// obtain the record concept - id from leadRecord	    	  
 		}).then(function(data) {
@@ -114,10 +112,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				$scope.concept = data;
 				setTitle($scope.concept.terminologyId, $scope.concept.defaultPreferredName);
 			}).error(function(data, status, headers, config) {
-			    $rootScope.globalError = "Error retrieving map record concept."
-
 			    $rootScope.handleHttpError(data, status, headers, config);
-
 			});
 		});
 
@@ -136,8 +131,6 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			}
 
 		}).error(function(data, status, headers, config) {
-		    $rootScope.globalError = "Error retrieving conflict records."
-
 		    $rootScope.handleHttpError(data, status, headers, config);
 		}).then(function(data) {
 			
@@ -157,8 +150,6 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			}).success(function(data) {
 				$scope.validationResult = data;
 			}).error(function(data, status, headers, config) {
-			    $rootScope.globalError = "Error retrieving comparison report."
-
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		});

@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -11,6 +10,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.services.SecurityService;
@@ -49,12 +49,14 @@ public class SecurityServiceRest {
         "RESTful call (Authentication): /authentication for map user = " + username);
 
     try {
-    	// TODO: when real users are available, don't hardcode "bob"
       return securityService.authenticate(username, password);
-    } catch (AuthenticationException e) {
+    } catch (LocalException e) { 
+    	e.printStackTrace();
      	throw new WebApplicationException(Response.status(401).entity(e.getMessage()).build());
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
+    } catch (Exception e) { 
+    	e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to authenticate a map user. Please contact the administrator.").build());
     }
 
   }

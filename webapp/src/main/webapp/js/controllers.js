@@ -13,12 +13,17 @@ var root_security = root_url + "security/";
 
 mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $location) {
 	$rootScope.glassPane = 0;
+	$rootScope.globalError = '';
 	
     $rootScope.handleHttpError = function (data, status, headers, config) {
-    	$rootScope.globalError = $rootScope.globalError + "Authorization failed.  Please log in again.";
 		if (status == "401") {
-				$location.path("/");
-		}	
+	    	$rootScope.globalError = $rootScope.globalError + " Authorization failed.  Please log in again.";
+			$location.path("/");
+		} else {
+			$rootScope.globalError = $rootScope.globalError + " " + data.replace(/"/g, '');
+		}
+		window.scrollTo(0,0);
+		
     }
     
     $rootScope.resetGlobalError = function () {
@@ -126,8 +131,6 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 											mapProjects : data.mapProject
 										});
 					}).error(function(data, status, headers, config) {
-					    $rootScope.globalError = "Could not retrieve map projects.  "; 
-
 					    $rootScope.handleHttpError(data, status, headers, config);
 					}).then(function(data) {
 
@@ -159,13 +162,11 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 						$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: $scope.mapUser});
 					}).error(function(data, status, headers, config) {
 						$rootScope.glassPane--;
-					    $rootScope.globalError = "Could not retrieve map users.  "; 
-
 					    $rootScope.handleHttpError(data, status, headers, config);
 					}).then(function(data) {
 					
 					// retrieve the user preferences
-					$http({
+						$http({
 										url: root_mapping + "userPreferences/user/id/" + $scope.userName,
 						dataType: "json",
 						method: "GET",
@@ -202,12 +203,10 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 
 					}).error(function(data, status, headers, config) {
 						$rootScope.glassPane--;
-					    $rootScope.globalError = "Could not retrieve user preferences.  "; 
-
 					    $rootScope.handleHttpError(data, status, headers, config);
 
 					}).then(function(data) {
-						$http({
+							$http({
 											url: root_mapping + "project/user/id/" + $scope.userName,
 							dataType: "json",
 							method: "GET",
@@ -233,8 +232,6 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							}
 						}).error(function(data, status, headers, config) {
 							$rootScope.glassPane--;
-						    $rootScope.globalError = "Could not retrieve user projects.  "; 
-
 						    $rootScope.handleHttpError(data, status, headers, config);
 						}).then(function(data) {
 							$rootScope.glassPane++;
@@ -278,15 +275,15 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 
 							}).error(function(data, status, headers, config) {
 								$rootScope.glassPane--;
-							    $rootScope.globalError = "Could not retrieve user role.  "; 
-
 							    $rootScope.handleHttpError(data, status, headers, config);
 							});		
-						});
-					  });
-					}).error(function(data, status, headers, config) {
+						  });
+						});	
+					 });
+				  }); 
+				}).error(function(data, status, headers, config) {
 					  $rootScope.glassPane--;
-					  $scope.error = error.replace(/"/g, '');
+					  $rootScope.globalError = data.replace(/"/g, '');
 					
 				      $rootScope.handleHttpError(data, status, headers, config);
 				}).then(function(data) {
@@ -307,13 +304,10 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 						}
 					}).error(function(data, status, headers, config) {
 						$rootScope.glassPane--;	
-					    $rootScope.globalError = "Could not retrieve latest terminologies.  "; 
-
 					    $rootScope.handleHttpError(data, status, headers, config);
 					});
+
 				});
-			});
-		  });
 		}
 		
 
@@ -428,8 +422,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			projects = data.mapProject;
 
 		}).error(function(data, status, headers, config) {
-		    $rootScope.globalError = "Could not retrieve projects. ";
-
 		    $rootScope.handleHttpError(data, status, headers, config);
 
 		}).then(function() {
@@ -471,13 +463,9 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 				$scope.concept.children = data.searchResult;
 
 			}).error(function(data, status, headers, config) {
-			    $rootScope.globalError = "Could not retrieve concept children. ";
-
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		}).error(function(data, status, headers, config) {
-		    $rootScope.globalError = "Could not retrieve concept. ";
-
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
@@ -510,8 +498,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 			$scope.records = data.mapRecord;
 			$scope.filterRecords();
 		}).error(function(data, status, headers, config) {
-		    $rootScope.globalError = "Could not retrieve records. ";
-
 		    $rootScope.handleHttpError(data, status, headers, config);
 		}).then(function() {
 
@@ -569,8 +555,6 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		}).success(function(response) {
 			record.isEditable = response;
 		}).error(function(data, status, headers, config) {
-		    $rootScope.globalError = "Could not determine if record is editable. ";
-
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
@@ -883,8 +867,6 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 
 		}).error(function(data, status, headers, config) {
 		    $rootScope.glassPane--;
-		    $rootScope.globalError = "Error retrieving map records."
-
 		    $rootScope.handleHttpError(data, status, headers, config);
 		}).then(function(data) {
 
@@ -1083,7 +1065,6 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
-
 			
 		}).error(function(data, status, headers, config) {
 		    $rootScope.glassPane--;

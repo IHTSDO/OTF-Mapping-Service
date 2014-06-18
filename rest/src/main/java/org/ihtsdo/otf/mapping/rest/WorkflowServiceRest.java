@@ -17,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
@@ -93,10 +94,12 @@ public class WorkflowServiceRest {
 			workflowService.computeWorkflow(mapProject);
 			workflowService.close();
 			return;
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity("Unexpected error trying to compute workflow. Please contact the administrator.").build());
 		}
 	}
 
@@ -167,10 +170,13 @@ public class WorkflowServiceRest {
 			
 
 			return results;
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to find available work. Please contact the administrator.").build());
 		}
 	}
 
@@ -230,10 +236,13 @@ public class WorkflowServiceRest {
 
 			return results;
 
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to find assigned concepts. Please contact the administrator.").build());
 		}
 	}
 
@@ -291,10 +300,13 @@ public class WorkflowServiceRest {
 			workflowService.close();
 
 			return results;
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to find available conflicts. Please contact the administrator.").build());
 		}
 	}
 
@@ -352,10 +364,13 @@ public class WorkflowServiceRest {
 			workflowService.close();
 
 			return results;
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to find assigned conflicts. Please contact the administrator.").build());
 		}
 	}
 
@@ -411,10 +426,13 @@ public class WorkflowServiceRest {
 			workflowService.close();
 			contentService.close();
 
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to assign concept from map record. Please contact the administrator.").build());
 		}
 	}
 
@@ -470,10 +488,13 @@ public class WorkflowServiceRest {
 			workflowService.close();
 			contentService.close();
 
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to assign a concept. Please contact the administrator.").build());
 		}
 	}
 	
@@ -540,10 +561,13 @@ public class WorkflowServiceRest {
 			workflowService.close();
 			contentService.close();
 
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to assign a batch. Please contact the administrator.").build());
 		}
 	}
 
@@ -601,10 +625,13 @@ public class WorkflowServiceRest {
 
 			return null;
 
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to unassign work. Please contact the administrator.").build());
 		}
 	}
 	 
@@ -675,10 +702,13 @@ public class WorkflowServiceRest {
 			mappingService.close();
 			workflowService.close();
 			contentService.close();
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to unassign all work. Please contact the administrator.").build());
 		}
 	}
 
@@ -731,10 +761,13 @@ public class WorkflowServiceRest {
 					mapRecord, WorkflowAction.FINISH_EDITING);
 			workflowService.close();
 
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to finish work. Please contact the administrator.").build());
 		}
 
 	}
@@ -786,10 +819,13 @@ public class WorkflowServiceRest {
 					mapRecord, WorkflowAction.SAVE_FOR_LATER);
 			workflowService.close();
 
-		} catch (WebApplicationException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to save work. Please contact the administrator.").build());
 		}
 
 	}
@@ -811,31 +847,40 @@ public class WorkflowServiceRest {
 		Logger.getLogger(WorkflowServiceRest.class).info(
 				"RESTful call (Workflow): /cancel for map record with id = " + mapRecord.getId());
 		
-
-		// authorize call
-			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-			throw new WebApplicationException(Response.status(401).entity(
+		try {
+			
+		  // authorize call
+		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+		  if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+		  	throw new WebApplicationException(Response.status(401).entity(
 						"User does not have permissions to cancel editing a map record.").build());
 		
 		
-		// open the services
-		ContentService contentService = new ContentServiceJpa();
-		MappingService mappingService = new MappingServiceJpa();
-		WorkflowService workflowService = new WorkflowServiceJpa();
+	  	// open the services
+	  	ContentService contentService = new ContentServiceJpa();
+	  	MappingService mappingService = new MappingServiceJpa();
+		  WorkflowService workflowService = new WorkflowServiceJpa();
 		
-		// get the map project and concept
-		MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
-		Concept concept = contentService.getConcept(mapRecord.getConceptId(), mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+	  	// get the map project and concept
+	  	MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
+	  	Concept concept = contentService.getConcept(mapRecord.getConceptId(), mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
 		
-		// process the workflow action
-		workflowService.processWorkflowAction(
+		  // process the workflow action
+		  workflowService.processWorkflowAction(
 				mapProject, 
 				concept, 
 				mapRecord.getOwner(), 
 				mapRecord, 
 				WorkflowAction.CANCEL);
-		
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to cancel editing a map record. Please contact the administrator.").build());
+		}
+
 	}
 
 	
@@ -860,23 +905,32 @@ public class WorkflowServiceRest {
 				"RESTful call (Workflow): /record/isEditable/" + userName
 				+ " for map record with id = " + mapRecord.getId().toString());
 		
-		// authorize call
-		// NOTE:  This routine does not invoke the security service
-		// NOTE:  This routine will be removed once transient flag isEditableForUser is attached to mapRecord
-		MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
-		if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-			return false;
+		try {
+		  // authorize call
+		  // NOTE:  This routine does not invoke the security service
+		  // NOTE:  This routine will be removed once transient flag isEditableForUser is attached to mapRecord
+		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+		  if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+		  	return false;
 		
-		// get the map user and map project
-		MappingService mappingService = new MappingServiceJpa();
-		MapUser mapUser = mappingService.getMapUser(userName);
-		MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
+	  	// get the map user and map project
+	  	MappingService mappingService = new MappingServiceJpa();
+	  	MapUser mapUser = mappingService.getMapUser(userName);
+		  MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
 		
-		ProjectSpecificAlgorithmHandler algorithmHandler =
+		  ProjectSpecificAlgorithmHandler algorithmHandler =
 		        mappingService.getProjectSpecificAlgorithmHandler(mapProject);
-		mappingService.close();
+		  mappingService.close();
 		
-		return algorithmHandler.isRecordEditableByUser(mapRecord, mapUser);
+		  return algorithmHandler.isRecordEditableByUser(mapRecord, mapUser);
+		} catch (LocalException e) { 
+			e.printStackTrace();
+		  	throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+		  	throw new WebApplicationException(Response.status(500).entity(
+		 			"Unexpected error trying to determine if a map record is editable. Please contact the administrator.").build());
+		}
 
 	}
 	
@@ -902,36 +956,45 @@ public class WorkflowServiceRest {
 		Logger.getLogger(WorkflowServiceRest.class).info(
 				"RESTful call (Workflow): /assignedRecord/projectId/" + mapProjectId + "/concept/" + terminologyId + "/user/" + userName);
 		
-		// authorize call
-		MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-		if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-			throw new WebApplicationException(Response.status(401).entity(
+		try {
+		  // authorize call
+		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+		  if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+		  	throw new WebApplicationException(Response.status(401).entity(
 					"User does not have permissions to retrieve an assigned map record given concept and user.").build());
 		
 		
-		MappingService mappingService = new MappingServiceJpa();
-		MapUser mapUser = mappingService.getMapUser(userName);
-		MapProject mapProject = mappingService.getMapProject(mapProjectId);
-		mappingService.close();
+		  MappingService mappingService = new MappingServiceJpa();
+	  	MapUser mapUser = mappingService.getMapUser(userName);
+	  	MapProject mapProject = mappingService.getMapProject(mapProjectId);
+		  mappingService.close();
 		
-		ContentService contentService = new ContentServiceJpa();
-		Concept concept = contentService.getConcept(terminologyId, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
-		contentService.close();
+		  ContentService contentService = new ContentServiceJpa();
+		  Concept concept = contentService.getConcept(terminologyId, mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+		  contentService.close();
 		
-		WorkflowService workflowService = new WorkflowServiceJpa();
-		TrackingRecord trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
+		  WorkflowService workflowService = new WorkflowServiceJpa();
+		  TrackingRecord trackingRecord = workflowService.getTrackingRecord(mapProject, concept);
 		
-		for (MapRecord mr : workflowService.getMapRecordsForTrackingRecord(trackingRecord)) {
-			if (mr.getOwner().equals(mapUser)) {
-				workflowService.close();
-				return mr;
-			}
-		}
+		  for (MapRecord mr : workflowService.getMapRecordsForTrackingRecord(trackingRecord)) {
+		  	if (mr.getOwner().equals(mapUser)) {
+		  		workflowService.close();
+		  		return mr;
+		  	}
+		  }
 		
-		workflowService.close();
+		  workflowService.close();
 		
-		return null;
-	
+		  return null;
+	  } catch (LocalException e) { 
+	  	e.printStackTrace();
+		  	throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+	  } catch (Exception e) { 
+	  	e.printStackTrace();
+		  	throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to retrieve an assigned map record given concept and user. Please contact the administrator.").build());
+	  }
+
 	}
 	
 	/**
@@ -953,20 +1016,30 @@ public class WorkflowServiceRest {
 		Logger.getLogger(WorkflowServiceRest.class).info(
 				"RESTful call (Workflow): /project/id/" + mapProjectId + "/generateConflicts/maxConflicts/" + nConflicts);
 		
-		// authorize call
-		MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-		if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-			throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to unassign work.").build());
+		try {
+		  // authorize call
+		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+		  if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+			  throw new WebApplicationException(Response.status(401).entity(
+					"User does not have permissions to generate random conflicts.").build());
 		
 		
-		MappingService mappingService = new MappingServiceJpa();
-		MapProject mapProject = mappingService.getMapProject(mapProjectId);
-		mappingService.close();
+		  MappingService mappingService = new MappingServiceJpa();
+		  MapProject mapProject = mappingService.getMapProject(mapProjectId);
+		  mappingService.close();
 		
-		WorkflowService workflowService = new WorkflowServiceJpa();
-		workflowService.generateRandomConflictData(mapProject, nConflicts);
-		workflowService.close();
+		  WorkflowService workflowService = new WorkflowServiceJpa();
+		  workflowService.generateRandomConflictData(mapProject, nConflicts);
+		  workflowService.close();
+		  } catch (LocalException e) { 
+		  	e.printStackTrace();
+		  	throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		  } catch (Exception e) { 
+		  	e.printStackTrace();
+		  	throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to generate random conflicts. Please contact the administrator.").build());
+		}
+
 	}
 	
 	/**
@@ -983,19 +1056,29 @@ public class WorkflowServiceRest {
 			@ApiParam(value = "Id of map project to generate the testing state for", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
 		
-		// authorize call
-		MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
-		if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
-			throw new WebApplicationException(Response.status(401).entity(
+		try {
+		  // authorize call
+		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+		  if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+			  throw new WebApplicationException(Response.status(401).entity(
 					"User does not have permissions to generate a mapping testing state.").build());
 		
 		
-		MappingService mappingService = new MappingServiceJpa();
-		MapProject mapProject = mappingService.getMapProject(mapProjectId);
+	  	MappingService mappingService = new MappingServiceJpa();
+		  MapProject mapProject = mappingService.getMapProject(mapProjectId);
 		
-		WorkflowService workflowService = new WorkflowServiceJpa();
-		workflowService.generateMapperTestingState(mapProject);
-		workflowService.close();
+		  WorkflowService workflowService = new WorkflowServiceJpa();
+		  workflowService.generateMapperTestingState(mapProject);
+	  	workflowService.close();
+	  } catch (LocalException e) { 
+	  	e.printStackTrace();
+	  	throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+	  } catch (Exception e) { 
+	  	e.printStackTrace();
+	  	throw new WebApplicationException(Response.status(500).entity(
+				"Unexpected error trying to generate a mapping testing state. Please contact the administrator.").build());
+	  }
+
 	}
 
 	

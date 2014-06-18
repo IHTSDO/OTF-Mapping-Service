@@ -167,8 +167,6 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 
 		}).error(function(data, status, headers, config) {
 		  	$rootScope.glassPane--;
-		    $rootScope.globalError = "Error retrieving map records."
-
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
