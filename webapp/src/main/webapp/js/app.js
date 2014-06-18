@@ -15,6 +15,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.terminologyBrowser',
                                                      'mapProjectApp.widgets.compareRecords',
                                                      'mapProjectApp.widgets.projectDetails',
+                                                     'mapProjectApp.widgets.projectRecords',
                                                      'LocalStorageModule',
                                                      'ngCookies'
                                                      //'textAngular'
@@ -109,8 +110,8 @@ mapProjectApp.config(['$routeProvider',
 	//////////////////////////////
 
 	$routeProvider.when('/project/records', {
-		templateUrl: 'partials/project-records.html',
-		controller: 'MapProjectRecordCtrl'
+		templateUrl: 'partials/otf-dashboard.html',
+		controller: 'ProjectRecordsDashboardCtrl'
 	});
 
 	$routeProvider.when('/project/details', {
