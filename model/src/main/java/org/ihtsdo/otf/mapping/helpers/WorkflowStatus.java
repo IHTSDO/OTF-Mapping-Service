@@ -2,8 +2,6 @@ package org.ihtsdo.otf.mapping.helpers;
 
 /**
  * The Enum WorkflowStatus.
- * 
- * @author ${author}
  */
 
 public enum WorkflowStatus {

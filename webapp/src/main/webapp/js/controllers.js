@@ -370,7 +370,7 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 	$scope.mapProjects = localStorageService.get("mapProjects");
 	$scope.currentUser = localStorageService.get("currentUser");
 	$scope.currentRole = localStorageService.get("currentRole");
-	$scope.userPreferences = localStorageService.get("userPreferences");
+	$scope.preferences = localStorageService.get("preferences");
 
 	// watch for changes to focus project
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
@@ -720,10 +720,26 @@ mapProjectAppControllers.controller('RecordConceptListCtrl', ['$scope', '$http',
 		$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
 
 		// update the user preferences
-		$scope.userPreferences.lastMapProjectId = $scope.focusProject.id;
+		$scope.preferences.lastMapProjectId = $scope.focusProject.id;
 		localStorageService.add('preferences', $scope.preferences);
-		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.userPreferences});
+		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
 
+		$http({
+			url: root_mapping + "userPreferences/update",
+			dataType: "json",
+			data: $scope.preferences,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+		}).error(function(data) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
+		});
+		
 	};
 
 	$scope.goToHelp = function() {
@@ -798,6 +814,7 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	$scope.mapProjects = localStorageService.get("mapProjects");
 	$scope.currentUser = localStorageService.get('currentUser');
 	$scope.currentRole = localStorageService.get('currentRole');
+	$scope.preferences = localStorageService.get('preferences');
 
 	// once focus project retrieved, retrieve the concept and records
 	$scope.userToken = localStorageService.get('userToken');
@@ -1002,6 +1019,23 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 		localStorageService.add('preferences', $scope.preferences);
 		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
 
+		$http({
+			url: root_mapping + "userPreferences/update",
+			dataType: "json",
+			data: $scope.preferences,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+		}).error(function(data) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
+		});
+		
+		
 	};
 
 	$scope.goToHelp = function() {
