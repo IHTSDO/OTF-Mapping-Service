@@ -807,6 +807,9 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("ProjectRecordCtrl:  Detected change in focus project");      
 		$scope.focusProject = parameters.focusProject;
+		console.debug(parameters.focusProject);
+		
+		if ($scope.userToken != null) $scope.getRecordsForProject();
 	});	
 
 	// retrieve the current global variables
@@ -820,12 +823,14 @@ mapProjectAppControllers.controller('MapProjectRecordCtrl', ['$scope', '$http', 
 	$scope.userToken = localStorageService.get('userToken');
 	$scope.$watch(['focusProject', 'userToken'], function() {
 
+		console.debug('******* DEBUG -- changed focusProject or userToken');
 		// need both focus project and user token set before executing main functions
 		if ($scope.focusProject != null && $scope.userToken != null) {
 			$http.defaults.headers.common.Authorization = $scope.userToken;
 			$scope.projectId = $scope.focusProject.id;
+			console.debug('******* DEBUG -- Retrieving records');
 			$scope.getRecordsForProject();
-		}
+		} else console.debug('******* DEBUG -- did not retrieve records');
 	});
 
 	$scope.getRecordsForProject = function() {
