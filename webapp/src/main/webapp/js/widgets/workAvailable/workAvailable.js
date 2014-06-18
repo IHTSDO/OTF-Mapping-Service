@@ -35,6 +35,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.currentUser = localStorageService.get('currentUser');
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.isConceptListOpen = false;
+	$scope.queryAvailable = null;
 	
 	// intiialize the user list
 	$scope.mapUsers = {};
@@ -101,7 +102,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + $scope.currentUser.userName + "/availableConflicts",
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/user/id/" 
+			+ $scope.currentUser.userName 
+			+ "/query/null"
+			+ "/availableConflicts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -120,7 +126,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			// set title
 			$scope.availableConflictsTitle = "Available Conflicts (" + data.totalCount + ")";
 		}).error(function(data, status, headers, config) {
-		    $rootScope.glassPane--;
+			$rootScope.glassPane--;
 
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
@@ -128,23 +134,35 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	
 
 	// get a page of available work
-	$scope.retrieveAvailableWork = function(page) {
+	$scope.retrieveAvailableWork = function(page, query) {
 		console.debug('workAvailableCtrl: Retrieving available work');
 
 		// clear the existing work
 		$scope.availableWork = null;
+		
+		// set query to null if undefined
+		if (query == undefined) query = null;
+		
+		// if null query, reset the search field
+		if (query == null) $scope.queryAvailable = null;
 			
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": (page-1)*$scope.itemsPerPage,
 			 	 	 "maxResults": $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
-			 	 	 "queryRestriction": null};  
+			 	 	 "queryRestriction": null}; 
+		
 
 	  	$rootScope.glassPane++;
 
 		$http({
-			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + $scope.currentUser.userName + "/availableConcepts",
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/user/id/" 
+			+ $scope.currentUser.userName 
+			+ "/query/" + (query == null ? 'null' : query)
+			+ "/availableConcepts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -153,6 +171,15 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			}	
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
+		  	
+		  	// open/close the concept list based on whether a query is used
+		  	if (query === 'null') {
+		  		console.debug('closing concept list');
+		  		$scope.isConceptListOpen = false;
+		  	} else  {
+		  		console.debug('opening concept list');
+		  		$scope.isConceptListOpen = true;
+		  	}
 
 			$scope.availableWork = data.searchResult;
 			
@@ -166,17 +193,20 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			console.debug(data.totalCount);
 
 		}).error(function(data, status, headers, config) {
-		  	$rootScope.glassPane--;
+			$rootScope.glassPane--;
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 
 	
 	// assign a single concept to the current user
-	$scope.assignWork = function(trackingRecord, mapUser) {
+	// query passed in to ensure correct retrieval of work
+	$scope.assignWork = function(trackingRecord, mapUser, query) {
 		
 		
+		// doublecheck map user and query, assign default values if necessary
 		if (mapUser == null) mapUser = $scope.currentUser;
+		if (query == undefined) query = null;
 
 	  	$rootScope.glassPane++;
 	  	
@@ -190,16 +220,15 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			}	
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
-			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') $scope.availableConflicts.removeElement(trackingRecord);
 			$rootScope.$broadcast('workAvailableWidget.notification.assignWork');
 			
-			$scope.retrieveAvailableWork($scope.trackingRecordPage);
+			$scope.retrieveAvailableWork($scope.trackingRecordPage, query);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
-				$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
+				$scope.retrieveAvailableConflicts($scope.availableConflictsPage, query);
 			}
 			
 		}).error(function(data, status, headers, config) {
-		    $rootScope.glassPane--;
+			$rootScope.glassPane--;
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 		
@@ -207,7 +236,10 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	};
 	
 	// assign a batch of records to the current user
-	$scope.assignBatch = function(mapUser, batchSize) {
+	$scope.assignBatch = function(mapUser, batchSize, query) {
+		
+		// set query to null string if not provided
+		if (query == undefined) query == null;
 		
 		if (mapUser == null) mapUser = $scope.currentUser;
 		
@@ -220,7 +252,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 
 	  	$rootScope.glassPane++;
 		$http({
-			url: root_workflow + "project/id/" + $scope.focusProject.id + "/user/id/" + mapUser.userName + "/availableConcepts",
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/user/id/" 
+			+ mapUser.userName 
+			+ "/query/" + (query == null ? 'null' : query)
+			+ "/availableConcepts",
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -235,11 +272,16 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			var trackingRecords = data.searchResult;
 			var conceptListValid = true;
 			
+			
+			console.debug(trackingRecords);
+			console.debug($scope.availableWork);
 			// if user is viewing concepts , check that first result matches first displayed result
 			if ($scope.isConceptListOpen == true && $scope.currentUser.userName != mapUser.userName) {
-				for (var i = 0; i < $scope.itemsPerPage; i++) {
+				for (var i = 0; i < $scope.itemsPerPage && i < batchSize; i++) {
+					console.debug(trackingRecords[i]);
+					console.debug($scope.availableWork[i]);
 					if (trackingRecords[i].id != $scope.availableWork[i].id) {
-						retrieveAvailableWork($scope.availableWorkPage);
+						retrieveAvailableWork($scope.availableWorkPage, query);
 						alert("One or more of the concepts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
 						$scope.isConceptListOpen = false;
 						conceptListValid = false;
@@ -272,9 +314,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				}).success(function(data) {
 				  	$rootScope.glassPane--;
 					$rootScope.$broadcast('workAvailableWidget.notification.assignWork');
-					$scope.retrieveAvailableWork(1);				
+					$scope.retrieveAvailableWork(1, query);				
 				}).error(function(data, status, headers, config) {
-				    $rootScope.glassPane--;
+				  	$rootScope.glassPane--;
 
 				    $rootScope.handleHttpError(data, status, headers, config);
 					console.debug("Could not retrieve available work when assigning batch.");
@@ -283,7 +325,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				console.debug("Unexpected error in assigning batch");
 			}
 		}).error(function(data, status, headers, config) {
-		  	$rootScope.glassPane--;
+			$rootScope.glassPane--;
 
 		    $rootScope.handleHttpError(data, status, headers, config);	
 		});
