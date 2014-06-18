@@ -234,7 +234,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			return (TrackingRecord) query.getSingleResult();
 
 		} catch (NoResultException e) {
-			throw new LocalException("WorkflowService.getTrackingRecord(): Concept query for terminologyId = "
+			throw new LocalException("Concept query for terminologyId = "
 							+ concept.getTerminologyId()
 							+ ", mapProjectId = "
 							+ mapProject.getId().toString()
