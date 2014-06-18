@@ -15,34 +15,29 @@
         &nbsp;
         <button class="btn btn-sm btn-primary"
           ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
-          ng-click="assignBatch(assignedMapUser, batchSize, queryAvailable)">Assign
+          ng-click="assignBatch(assignedMapUser, batchSize, null)">Assign
           Batch</button>
         <button class="btn btn-sm btn-primary"
           ng-show="currentRole === 'Specialist'"
           ng-click="assignBatch(currentUser, batchSize)">Claim Batch</button></td>
     </tr>
     
-   <tr>
-      	<td style="padding: 5px";>Filter concepts:</td>
-      	<td style="padding: 5px;">
-			<form>
-				<input ng-model="queryAvailable">
-				<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, queryAvailable); isConceptListOpen = true">Search</button>
-				<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, 'null'); queryAvailable = null; isConceptListOpen = false">Reset</button>
-				<img src="img/warning.png" tooltip-placement="top" tooltip="After testing is complete, searching available concepts will only be available to Map Leads."></img>
-			</form>
-	  	</td>
-	</tr>
-    
   </tbody>
 </table>
 
-<accordion> <accordion-group is-open="isConceptListOpen == true">
+<accordion> <accordion-group is-open="isConceptListOpen">
 <accordion-heading> Concepts Available for Assignment
 <i class="pull-right glyphicon"
-  ng-class="{'glyphicon-chevron-down': isConceptListOpen, 'glyphicon-chevron-right': !isConceptListOpen}"></i>
+  ng-class="{'glyphicon-chevron-down': isConceptListOpen == true, 'glyphicon-chevron-right': isConceptListOpen != true}"></i>
 
 </accordion-heading> 
+
+<form>
+	<input ng-model="queryAvailable">
+	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, queryAvailable); isConceptListOpen = true">Search</button>
+	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, 'null'); queryAvailable = null; isConceptListOpen = false">Reset</button>
+	<img src="img/warning.png" tooltip-placement="top" tooltip="After testing is complete, searching available concepts will only be available to Map Leads."></img>
+</form>
 
 <pagination total-items="nAvailableWork" page="availableWorkPage" max-size="5"
   class="pagination-sm" boundary-links="true" rotate="true"

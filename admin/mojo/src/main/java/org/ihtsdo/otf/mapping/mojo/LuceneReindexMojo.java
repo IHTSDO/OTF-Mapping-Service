@@ -88,7 +88,7 @@ public class LuceneReindexMojo extends AbstractMojo {
 					Search.getFullTextEntityManager(manager);
 
 			fullTextEntityManager.setProperty("Version", Version.LUCENE_36);
-/*
+
 			// Concepts
 			getLog().info("  Creating indexes for ConceptJpa");
 			fullTextEntityManager.purgeAll(ConceptJpa.class);
@@ -125,7 +125,7 @@ public class LuceneReindexMojo extends AbstractMojo {
 			.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
 			.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
 			.startAndWait();
-*/
+
 			// Tracking Records
 			Logger.getLogger(WorkflowServiceJpa.class).info("  Creating indexes for TrackingRecordJpa");
 			fullTextEntityManager.purgeAll(TrackingRecordJpa.class);
