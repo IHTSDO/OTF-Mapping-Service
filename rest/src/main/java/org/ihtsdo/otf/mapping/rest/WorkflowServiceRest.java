@@ -112,13 +112,14 @@ public class WorkflowServiceRest {
 	 * @return the search result list
 	 */
 	@POST
-	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/availableConcepts")
+	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/availableConcepts")
 	@ApiOperation(value = "Find available concepts", notes = "Returns a paged list of work available to a specialist or lead for the specified map project.", response = SearchResultList.class)
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAvailableConcepts(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
 			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
@@ -160,7 +161,7 @@ public class WorkflowServiceRest {
 			// retrieve the workflow tracking records
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			SearchResultList results = workflowService.findAvailableWork(
-					mapProject, mapUser, pfsParameter);
+					mapProject, mapUser, query, pfsParameter);
 			workflowService.close();
 			
 			System.out.println("Done at " + System.currentTimeMillis()/1000);
@@ -186,13 +187,14 @@ public class WorkflowServiceRest {
 	 * @return the search result list
 	 */
 	@POST
-	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/assignedConcepts")
+	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/assignedConcepts")
 	@ApiOperation(value = "Find assigned concepts", notes = "Returns a paged list of concepts assigned to a specialist or lead for the specified map project", response = SearchResultList.class)
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAssignedConcepts(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
 			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
@@ -225,7 +227,7 @@ public class WorkflowServiceRest {
 			// retrieve the workflow tracking records
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			SearchResultList results = workflowService.findAssignedWork(
-					mapProject, mapUser, pfsParameter);
+					mapProject, mapUser, query, pfsParameter);
 			workflowService.close();
 
 			return results;
@@ -249,12 +251,13 @@ public class WorkflowServiceRest {
 	 * @return the search result list
 	 */
 	@POST
-	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/availableConflicts")
+	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/availableConflicts")
 	@ApiOperation(value = "Find available conflicts", notes = "Returns a paged list of detected conflicts eligible for a lead's resolution for a specified map project.", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAvailableConflicts(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
 			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
@@ -287,7 +290,7 @@ public class WorkflowServiceRest {
 			// retrieve the workflow tracking records
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			SearchResultList results = workflowService.findAvailableConflicts(
-					mapProject, mapUser, pfsParameter);
+					mapProject, mapUser, query, pfsParameter);
 			workflowService.close();
 
 			return results;
@@ -310,12 +313,13 @@ public class WorkflowServiceRest {
 	 * @return the search result list
 	 */
 	@POST
-	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/assignedConflicts")
+	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/assignedConflicts")
 	@ApiOperation(value = "Find assigned conflicts", notes = "Returns a paged list of conflicts assigned to a map lead for resolution for a specified map project.", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAssignedConflicts(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
 			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
@@ -348,7 +352,7 @@ public class WorkflowServiceRest {
 			// retrieve the map records
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			SearchResultList results = workflowService.findAssignedConflicts(
-					mapProject, mapUser, pfsParameter);
+					mapProject, mapUser, query, pfsParameter);
 			workflowService.close();
 
 			return results;
@@ -616,7 +620,7 @@ public class WorkflowServiceRest {
  	 * @return the map record
  	 */
 	@POST
-	@Path("/unassign/project/id/{id}/user/id/{userName}")
+	@Path("/unassign/project/id/{id}/user/id/{userName}/all")
 	@ApiOperation(value = "Unassign user from all currently assigned work.", notes = "Unassigns the user from all currently assigned work.  Destroys any editing completed.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void unassignAllWork(
@@ -627,7 +631,7 @@ public class WorkflowServiceRest {
 		Logger.getLogger(WorkflowServiceRest.class).info(
 				"RESTful call (Workflow): /unassign/project/id/"
 						+ mapProjectId.toString()
-						+ "/user/id/" + userName);
+						+ "/user/id/" + userName + "/all");
 		
 		try {
 			// authorize call
@@ -645,8 +649,8 @@ public class WorkflowServiceRest {
 			MapUser mapUser = mappingService.getMapUser(userName);
 			
 			// find the assigned work and assigned conflicts
-			SearchResultList assignedConcepts = workflowService.findAssignedWork(mapProject, mapUser, null);
-			SearchResultList assignedConflicts = workflowService.findAssignedConflicts(mapProject, mapUser, null);
+			SearchResultList assignedConcepts = workflowService.findAssignedWork(mapProject, mapUser, null, null);
+			SearchResultList assignedConflicts = workflowService.findAssignedConflicts(mapProject, mapUser, null, null);
 			
 			// unassign both types of work
 			for (SearchResult searchResult : assignedConcepts.getSearchResults()) {
@@ -672,6 +676,85 @@ public class WorkflowServiceRest {
 			}
 			
 
+			mappingService.close();
+			workflowService.close();
+			contentService.close();
+		} catch (WebApplicationException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+ 	 * Unassign user from all currently assigned work.
+ 	 *
+ 	 * @param mapProjectId the map project id
+ 	 * @param userName the user name
+ 	 * @return the map record
+ 	 */
+	@POST
+	@Path("/unassign/project/id/{id}/user/id/{userName}/unedited")
+	@ApiOperation(value = "Unassign user from all currently assigned work.", notes = "Unassigns the user from all currently assigned work.  Destroys any editing completed.")
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public void unassignAllUneditedWork(
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+		
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /unassign/project/id/"
+						+ mapProjectId.toString()
+						+ "/user/id/" + userName + "/unedited");
+		
+		try {
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to unassign all unedited work.").build());
+			
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			MappingService mappingService = new MappingServiceJpa();
+			ContentService contentService = new ContentServiceJpa();
+
+			// get the project and user
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			MapUser mapUser = mappingService.getMapUser(userName);
+			
+			// find the assigned work and assigned conflicts
+			SearchResultList assignedConcepts = workflowService.findAssignedWork(mapProject, mapUser, null, null);
+			SearchResultList assignedConflicts = workflowService.findAssignedConflicts(mapProject, mapUser, null, null);
+				
+			// unassign both types of work
+			for (SearchResult searchResult : assignedConcepts.getSearchResults()) {
+
+				System.out.println(searchResult.toString());
+				Concept concept = contentService.getConcept(
+						searchResult.getTerminologyId(),
+						mapProject.getSourceTerminology(),
+						mapProject.getSourceTerminologyVersion());
+				System.out.println("Concept: " + concept.getTerminologyId());
+				
+				if (searchResult.getTerminologyVersion().equals("NEW")) {
+					workflowService.processWorkflowAction(mapProject, concept, mapUser, null, WorkflowAction.UNASSIGN);
+				} else {
+					System.out.println("   Concept has been edited, skipping (WorkflowStatus = " + searchResult.getTerminologyVersion());
+				}
+			}
+			for (SearchResult searchResult : assignedConflicts.getSearchResults()) {
+				Concept concept = contentService.getConcept(
+						searchResult.getTerminologyId(),
+						mapProject.getSourceTerminology(),
+						mapProject.getSourceTerminologyVersion());
+
+				if (searchResult.getTerminologyVersion().equals("CONFLICT_NEW")) {
+					workflowService.processWorkflowAction(mapProject, concept, mapUser, null, WorkflowAction.UNASSIGN);
+				} else {
+					System.out.println("   Conflict has been edited, skipping (WorkflowStatus = " + searchResult.getTerminologyVersion());
+				}
+			}
+			
 			mappingService.close();
 			workflowService.close();
 			contentService.close();

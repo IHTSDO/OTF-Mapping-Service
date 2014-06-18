@@ -108,7 +108,7 @@ public interface WorkflowService {
 	 *             the exception
 	 */
 	public SearchResultList findAvailableWork(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) throws Exception;
+			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find available conflicts.
@@ -124,7 +124,7 @@ public interface WorkflowService {
 	 *             the exception
 	 */
 	public SearchResultList findAvailableConflicts(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) throws Exception;
+			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find assigned concepts.
@@ -140,7 +140,7 @@ public interface WorkflowService {
 	 *             the exception
 	 */
 	public SearchResultList findAssignedWork(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) throws Exception;
+			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find assigned conflicts.
@@ -156,7 +156,7 @@ public interface WorkflowService {
 	 *             the exception
 	 */
 	public SearchResultList findAssignedConflicts(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) throws Exception;
+			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Called by REST services, performs a specific action given a project,

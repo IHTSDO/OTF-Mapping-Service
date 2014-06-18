@@ -895,7 +895,7 @@ public class MappingServiceRest {
 
 		// log call
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /userPreferences/update");
+				"RESTful call (Mapping): /userPreferences/update with \n" + mapUserPreferences.toString());
 
 		try {
   		// authorize call
@@ -903,6 +903,7 @@ public class MappingServiceRest {
 			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(Response.status(401).entity(
 						"User does not have permissions to update map user preferences.").build());
+			
   		
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapUserPreferences(mapUserPreferences);
