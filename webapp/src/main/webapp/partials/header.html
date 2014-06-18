@@ -23,14 +23,16 @@
           <!-- Focus Project tool -->
           <div class="navbar-text dropdown" ng-show="currentUser.name != null">
 
-            Project: {{focusProject.name}} &nbsp <a class="dropdown-toggle"
+            <div class="dropdown-toggle">Project: {{focusProject.name}} &nbsp <a 
               title="Change Focus Project"><i
               class="glyphicon glyphicon-edit"></i></a>
-            <ul class="dropdown-menu" style="position: absolute">
-              <li ng-repeat="mapProject in mapProjects"><span
-                ng-click="changeFocusProject(mapProject)">{{mapProject.name}}</span>
-              </li>
-            </ul>
+              </div>
+            <div class="dropdown-menu" style="position: absolute">
+              <div ng-repeat="mapProject in mapProjects"><span
+                ng-click="changeFocusProject(mapProject)"><a>{{mapProject.name}}</a></span>
+                <hr>
+              </div>
+            </div>
 
         </li>
         <li>
