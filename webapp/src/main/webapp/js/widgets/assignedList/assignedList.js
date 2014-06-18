@@ -106,14 +106,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			// set title
 			$scope.assignedConflictsTitle = "Assigned Conflicts (" + data.totalCount + ")";
 			
-		}).error(function(response) {
+		}).error(function(data, status, headers, config) {
 		  	$rootScope.glassPane--;
-			$scope.error = "Error";
 
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 	
@@ -167,14 +163,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			console.debug($scope.assignedWorkTitle);
 			
 			
-		}).error(function(response) {
+		}).error(function(data, status, headers, config) {
 		  	$rootScope.glassPane--;
-			$scope.error = "Error";
-
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 	
@@ -231,14 +222,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.numRecordPagesForUser = Math.ceil($scope.nAssignedRecordsForUser / $scope.itemsPerPage);
 
 
-		}).error(function(response) {
+			}).error(function(data, status, headers, config) {
 			$rootScope.glassPane--;
-			$scope.error = "Error";
-
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+			    $rootScope.handleHttpError(data, status, headers, config);
 		});
 
 	};
@@ -291,12 +277,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 			$rootScope.glassPane--;
 			
-		}).error (function(response) {
+		}).error(function(data, status, headers, config) {
 			$rootScope.glassPane--;
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			};
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
 
@@ -329,13 +312,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			}
 
 			$rootScope.glassPane--;
-		}).error(function(data) {
+			}).error(function(data, status, headers, config) {
 			$rootScope.glassPane--;
-
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
+			    $rootScope.handleHttpError(data, status, headers, config);
 		});
 		
 	};

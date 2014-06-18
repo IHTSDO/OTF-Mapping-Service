@@ -16,7 +16,6 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class MapUserJpa.
  * 
@@ -48,6 +47,7 @@ public class MapUserJpa implements MapUser {
   
   /** The application role. */
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private MapUserRole applicationRole;
 
   /**
@@ -238,9 +238,7 @@ public class MapUserJpa implements MapUser {
   public String toString() {
 
     return this.getId() + "," + this.getUserName() + "," + this.getEmail()
-        + "," + this.getName(); 
-    
-    // TODO: Find out why this is throwing null-pointer exceptions + "," + this.getApplicationRole().getValue();
+        + "," + this.getName() + "," + this.getApplicationRole().getValue(); 
   }
 
 	/**
