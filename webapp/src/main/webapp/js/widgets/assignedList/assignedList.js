@@ -222,9 +222,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.numRecordPagesForUser = Math.ceil($scope.nAssignedRecordsForUser / $scope.itemsPerPage);
 
 
-			}).error(function(data, status, headers, config) {
+		}).error(function(data, status, headers, config) {
 			$rootScope.glassPane--;
-			    $rootScope.handleHttpError(data, status, headers, config);
+		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 
 	};

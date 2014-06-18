@@ -111,7 +111,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			}
 		};
 		
-		$scope.generateTestingState = function() {
+		$scope.generateTestingStateForKLININ = function() {
 			
 			console.debug("Generating mapping testing state");
 			$rootScope.glassPane++;
@@ -120,7 +120,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			if (confirmGenerate == true) {
 				// call the generate API
 				$http({
-					url: root_workflow + "project/id/" + $scope.project.id + "/generateTestingState",
+					url: root_workflow + "project/id/" + $scope.project.id + "/generateTestingStateKLININ",
 					dataType: "json",
 					method: "POST",
 					headers: {
@@ -134,5 +134,29 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 				});
 			}
 		};
+		
+		$scope.generateTestingStateForBHEKRE = function() {
+			
+			console.debug("Generating mapping testing state");
+			$rootScope.glassPane++;
+			
+			var confirmGenerate = confirm("Are you sure you want to generate the clean mapping user testing state?");
+			if (confirmGenerate == true) {
+				// call the generate API
+				$http({
+					url: root_workflow + "project/id/" + $scope.project.id + "/generateTestingStateBHEKRE",
+					dataType: "json",
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					}	
+				}).success(function(data) {
+					$rootScope.glassPane--;
+				}).error(function(data, status, headers, config) {
+				    $rootScope.glassPane--;
+				    $rootScope.handleHttpError(data, status, headers, config);
+				});
+			}
+		};	
 		
   });
