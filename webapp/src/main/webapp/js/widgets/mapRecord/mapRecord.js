@@ -387,7 +387,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 							// get the assigned work list
 							$http({
-								url: root_workflow + "assignedWork/projectId/" + $scope.project.id + "/user/" + $scope.user.userName,
+								url: root_workflow + "project/id/" + $scope.project.id 
+								+ "/user/id/" + $scope.user.userName
+								+ "/query/null/assignedConcepts",
+								
 								dataType: "json",
 								data: pfsParameterObj,
 								method: "POST",
@@ -520,7 +523,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
-			window.history.back();
+			console.debug("Redirecting");
+			
+			$location.path($scope.role + "/dash");
 		}).error(function(data, status, headers, config) {
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});

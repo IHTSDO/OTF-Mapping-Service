@@ -4,9 +4,8 @@ import java.lang.Exception;
 
 /**
  * The Class LocalException.
- *
- * @author ${author}
  */
+@SuppressWarnings("serial")
 public class LocalException extends Exception {
   
   /**

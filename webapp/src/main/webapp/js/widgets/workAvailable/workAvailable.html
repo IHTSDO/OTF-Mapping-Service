@@ -15,21 +15,31 @@
         &nbsp;
         <button class="btn btn-sm btn-primary"
           ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
-          ng-click="assignBatch(assignedMapUser, batchSize)">Assign
+          ng-click="assignBatch(assignedMapUser, batchSize, null)">Assign
           Batch</button>
         <button class="btn btn-sm btn-primary"
           ng-show="currentRole === 'Specialist'"
           ng-click="assignBatch(currentUser, batchSize)">Claim Batch</button></td>
     </tr>
+    
   </tbody>
 </table>
 
 <accordion> <accordion-group is-open="isConceptListOpen">
 <accordion-heading> Concepts Available for Assignment
 <i class="pull-right glyphicon"
-  ng-class="{'glyphicon-chevron-down': isConceptListOpen, 'glyphicon-chevron-right': !isConceptListOpen}"></i>
+  ng-class="{'glyphicon-chevron-down': isConceptListOpen == true, 'glyphicon-chevron-right': isConceptListOpen != true}"></i>
 
-</accordion-heading> <pagination total-items="nAvailableWork" page="availableWorkPage" max-size="5"
+</accordion-heading> 
+
+<form>
+	<input ng-model="queryAvailable">
+	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, queryAvailable); isConceptListOpen = true">Search</button>
+	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, 'null'); queryAvailable = null; isConceptListOpen = false">Reset</button>
+	<img src="img/warning.png" tooltip-placement="top" tooltip="After testing is complete, searching available concepts will only be available to Map Leads."></img>
+</form>
+
+<pagination total-items="nAvailableWork" page="availableWorkPage" max-size="5"
   class="pagination-sm" boundary-links="true" rotate="true"
   num-pages="numAvailableWorkPages" on-select-page="retrieveAvailableWork(page)"></pagination>
 
@@ -57,7 +67,7 @@
               <a
               title="Assign"              
               ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
-              ng-click="assignWork(concept, assignedMapUser)"><i
+              ng-click="assignWork(concept, assignedMapUser, queryAvailable)"><i
               class="glyphicon glyphicon-import"></i></a>
       </td>
       <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>

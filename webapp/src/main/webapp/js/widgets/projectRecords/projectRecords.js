@@ -60,6 +60,7 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("ProjectRecordCtrl:  Detected change in focus project");      
 		$scope.focusProject = parameters.focusProject;
+		if ($scope.userToken != null) $scope.getRecordsForProject();
 	});	
 
 	// retrieve the current global variables
