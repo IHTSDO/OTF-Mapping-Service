@@ -13,6 +13,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
+	$rootScope.globalError = '';
 
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
@@ -152,6 +153,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
+	$rootScope.globalError = '';
 
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
@@ -461,6 +463,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
+	$rootScope.globalError = '';
 
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
@@ -601,6 +604,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function ($roo
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
+	$rootScope.globalError = '';
 
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
@@ -725,6 +729,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function ($roo
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
+	$rootScope.globalError = '';
 
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
@@ -832,6 +837,7 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function ($root
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
+	$rootScope.globalError = '';
 
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
