@@ -24,6 +24,11 @@ public enum MapUserRole {
   	this.value = value;
   }
   
+  /**
+   * Returns the value.
+   *
+   * @return the value
+   */
   public String getValue() {
   	return value;
   }
