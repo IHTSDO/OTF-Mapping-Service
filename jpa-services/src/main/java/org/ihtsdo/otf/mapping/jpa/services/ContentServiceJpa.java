@@ -106,11 +106,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			Concept c = (Concept) query.getSingleResult();
 			return c;
 		} catch (NoResultException e) {
-			throw new LocalException(
+			return null;
+			/*throw new LocalException(
 					"Concept query for terminologyId = "
 							+ terminologyId + ", terminology = " + terminology
 							+ ", terminologyVersion = " + terminologyVersion
-							+ " returned no results!", e);
+							+ " returned no results!", e);*/
 		}
 	}
 
