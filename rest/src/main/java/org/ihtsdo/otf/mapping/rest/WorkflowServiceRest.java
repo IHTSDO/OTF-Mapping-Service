@@ -49,7 +49,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Path("/workflow")
 @Api(value = "/workflow", description = "Operations supporting workflow.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-@SuppressWarnings("static-method")
 public class WorkflowServiceRest {
 
 	/**  The security service. */
@@ -67,6 +66,7 @@ public class WorkflowServiceRest {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param authToken 
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/compute")
@@ -110,8 +110,10 @@ public class WorkflowServiceRest {
 	 *            the map project id
 	 * @param userName
 	 *            the username
+	 * @param query 
 	 * @param pfsParameter
 	 *            the paging parameter
+	 * @param authToken 
 	 * @return the search result list
 	 */
 	@POST
@@ -188,8 +190,10 @@ public class WorkflowServiceRest {
 	 *            the map project id
 	 * @param userName
 	 *            the user name
+	 * @param query 
 	 * @param pfsParameter
 	 *            the paging parameter
+	 * @param authToken 
 	 * @return the search result list
 	 */
 	@POST
@@ -255,8 +259,10 @@ public class WorkflowServiceRest {
 	 *            the map project id
 	 * @param userName
 	 *            the user name
+	 * @param query 
 	 * @param pfsParameter
 	 *            the paging parameter
+	 * @param authToken 
 	 * @return the search result list
 	 */
 	@POST
@@ -320,8 +326,10 @@ public class WorkflowServiceRest {
 	 *            the map project id
 	 * @param userName
 	 *            the user name
+	 * @param query 
 	 * @param pfsParameter
 	 *            the paging parameter
+	 * @param authToken 
 	 * @return the search result list
 	 */
 	@POST
@@ -381,15 +389,11 @@ public class WorkflowServiceRest {
 	/**
 	 * Assign user to to work based on an existing map record.
 	 * 
-	 * @param mapProjectId
-	 *            the map project id
-	 * @param terminologyId
-	 *            the terminology id
 	 * @param userName
 	 *            the user name
 	 * @param mapRecord
 	 *            the map record (can be null)
-	 * @return the map record
+	 * @param authToken 
 	 */
 	@POST
 	@Path("/assignFromRecord/user/id/{userName}")
@@ -449,7 +453,7 @@ public class WorkflowServiceRest {
 	 *            the terminology id
 	 * @param userName
 	 *            the user name
-	 * @return the response
+	 * @param authToken 
 	 */
 	@POST
 	@Path("/assign/project/id/{id}/concept/id/{terminologyId}/user/id/{userName}")
@@ -511,7 +515,7 @@ public class WorkflowServiceRest {
 	 *            the user name
 	 * @param terminologyIds
 	 *            the terminology ids
-	 * @return the Response
+	 * @param authToken 
 	 */
 	@POST
 	@Path("/assignBatch/project/id/{projectId}/user/id/{userName}")
@@ -584,6 +588,7 @@ public class WorkflowServiceRest {
 	 *            the terminology id
 	 * @param userName
 	 *            the user name
+	 * @param authToken 
 	 * @return the map record
 	 */
 	@POST
@@ -644,7 +649,7 @@ public class WorkflowServiceRest {
  	 *
  	 * @param mapProjectId the map project id
  	 * @param userName the user name
- 	 * @return the map record
+ 	 * @param authToken 
  	 */
 	@POST
 	@Path("/unassign/project/id/{id}/user/id/{userName}/all")
@@ -721,7 +726,7 @@ public class WorkflowServiceRest {
  	 *
  	 * @param mapProjectId the map project id
  	 * @param userName the user name
- 	 * @return the map record
+	 * @param authToken 
  	 */
 	@POST
 	@Path("/unassign/project/id/{id}/user/id/{userName}/unedited")
@@ -801,7 +806,7 @@ public class WorkflowServiceRest {
 	 * 
 	 * @param mapRecord
 	 *            the completed map record
-	 * @return the response
+	 * @param authToken 
 	 */
 	@POST
 	@Path("/finish")
@@ -860,7 +865,7 @@ public class WorkflowServiceRest {
 	 * 
 	 * @param mapRecord
 	 *            the map record
-	 * @return the Response
+	 * @param authToken 
 	 */
 	@POST
 	@Path("/save")
@@ -972,6 +977,7 @@ public class WorkflowServiceRest {
 	 *
 	 * @param userName the user name
 	 * @param mapRecord the map record
+	 * @param authToken 
 	 * @return <code>true</code> if so, <code>false</code> otherwise
 	 * @throws Exception the exception
 	 */
@@ -1023,6 +1029,7 @@ public class WorkflowServiceRest {
 	 * @param mapProjectId the map project id
 	 * @param terminologyId the terminology id
 	 * @param userName the user name
+	 * @param authToken 
 	 * @return the assigned map record for concept and map user
 	 * @throws Exception the exception
 	 */
@@ -1085,6 +1092,7 @@ public class WorkflowServiceRest {
 	 *
 	 * @param mapProjectId the map project id
 	 * @param nConflicts the n conflicts
+	 * @param authToken 
 	 * @throws Exception the exception
 	 */
 	@POST
