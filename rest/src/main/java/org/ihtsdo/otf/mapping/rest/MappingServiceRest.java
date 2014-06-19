@@ -82,6 +82,7 @@ public class MappingServiceRest {
 
 	/**
 	 * Returns all map projects in either JSON or XML format
+	 * @param authToken 
 	 * 
 	 * @return the map projects
 	 */
@@ -143,6 +144,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapProjectId
 	 *            the mapProjectId
+	 * @param authToken 
 	 * @return the mapProject
 	 */
 	@GET
@@ -194,6 +196,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapProject
 	 *            the map project to be added
+	 * @param authToken 
 	 * @return returns the added map project object
 	 */
 	@PUT
@@ -248,7 +251,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapProject
 	 *            the map project to be added
-	 * @return Response the response
+	 * @param authToken 
 	 */
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -286,10 +289,8 @@ public class MappingServiceRest {
 	
 	/**
 	 * Removes a map project.
-	 * 
-	 * @param mapProjectId
-	 *            the map project object to delete
-	 * @return Response the response
+	 * @param mapProject 
+	 * @param authToken 
 	 */
 	@DELETE
 	@Path("/project/delete")
@@ -330,6 +331,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param query
 	 *            the string query
+	 * @param authToken 
 	 * @return the map projects
 	 */
 	@GET
@@ -372,6 +374,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapUserName
 	 *            the map user name
+	 * @param authToken 
 	 * @return the map projects
 	 */
 	@GET
@@ -433,6 +436,7 @@ public class MappingServiceRest {
 
 	/**
 	 * Returns all map leads in either JSON or XML format
+	 * @param authToken 
 	 * 
 	 * @return the map leads
 	 */
@@ -476,9 +480,9 @@ public class MappingServiceRest {
 	
 	/**
 	 * Returns the user for a given id (auto-generated) in JSON format
+	 * @param mapUserName 
+	 * @param authToken 
 	 * 
-	 * @param mapUserId
-	 *            the mapUserId
 	 * @return the mapUser
 	 */
 	@GET
@@ -519,6 +523,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapUser
 	 *            the map user
+	 * @param authToken 
 	 * @return Response the response
 	 */
 	@PUT
@@ -560,7 +565,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapUser
 	 *            the map user to be added
-	 * @return Response the response
+	 * @param authToken 
 	 */
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -596,10 +601,8 @@ public class MappingServiceRest {
 
 	/**
 	 * Removes a map user
-	 * 
-	 * @param mapUserId
-	 *            the map user object to delete
-	 * @return Response the response
+	 * @param mapUser 
+	 * @param authToken 
 	 */
 	@DELETE
 	@Path("/user/delete")
@@ -642,6 +645,7 @@ public class MappingServiceRest {
 
 	/**
 	 * Returns all map relations in either JSON or XML format
+	 * @param authToken 
 	 * 
 	 * @return the map relations
 	 */
@@ -692,6 +696,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapPrincipleId
 	 *            the map principle id
+	 * @param authToken 
 	 * @return the map principle for id
 	 */
 	@GET
@@ -734,6 +739,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapPrinciple
 	 *            the map user preferences object to be added
+	 * @param authToken 
 	 * @return result the newly created map user preferences object
 	 */
 	@PUT
@@ -776,7 +782,7 @@ public class MappingServiceRest {
 	 * Updates a map principle
 	 * 
 	 * @param mapPrinciple
-	 * @return the response
+	 * @param authToken 
 	 */
 	@POST
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
@@ -814,9 +820,8 @@ public class MappingServiceRest {
 	
 	/**
 	 * Removes a set of map user preferences
-	 * @param principleId
-	 *            the id of the map user preferences object to be deleted
-	 * @return Response the response
+	 * @param principle 
+	 * @param authToken 
 	 */
 	@DELETE
 	@Path("/principle/remove")
@@ -858,6 +863,7 @@ public class MappingServiceRest {
 	 * Gets a map user preferences object for a specified user
 	 * 
 	 * @param userName
+	 * @param authToken 
 	 * @return result the newly created map user preferences object
 	 */
 	@GET
@@ -898,6 +904,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapUserPreferences
 	 *            the map user preferences object to be added
+	 * @param authToken 
 	 * @return result the newly created map user preferences object
 	 */
 	@PUT
@@ -941,7 +948,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapUserPreferences
 	 *            the map user preferences
-	 * @return null
+	 * @param authToken 
 	 */
 	@POST
 	@Path("/userPreferences/update")
@@ -982,6 +989,7 @@ public class MappingServiceRest {
 	 * Removes a set of map user preferences
 	 * @param mapUserPreferences
 	 *            the id of the map user preferences object to be deleted
+	 * @param authToken 
 	 */
 	@DELETE
 	@Path("/userPreferences/remove")
@@ -1024,6 +1032,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapRecordId
 	 *            the mapRecordId
+	 * @param authToken 
 	 * @return the mapRecord
 	 */
 	@GET
@@ -1066,6 +1075,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapRecord
 	 *            the map record to be added
+	 * @param authToken 
 	 * @return Response the response
 	 */
 	@PUT
@@ -1107,6 +1117,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapRecord
 	 *            the map record to be added
+	 * @param authToken 
 	 */
 	@POST
 	@Path("/record/update")
@@ -1146,6 +1157,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapRecord
 	 *            the map record to delete
+	 * @param authToken 
 	 * @return Response the response
 	 */
 	@DELETE
@@ -1189,6 +1201,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param conceptId
 	 *            the concept id
+	 * @param authToken 
 	 * @return the mapRecords
 	 */
 	@GET
@@ -1234,6 +1247,7 @@ public class MappingServiceRest {
 	 * @param pfsParameter
 	 *            the JSON object containing the paging/filtering/sorting
 	 *            parameters
+	 * @param authToken 
 	 * @return the list of map records
 	 */
 	@POST
@@ -1288,6 +1302,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapRecordId
 	 *            the map record id
+	 * @param authToken 
 	 * @return the map record revisions
 	 */
 	@GET
@@ -1335,6 +1350,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapEntry
 	 *            the map entry
+	 * @param authToken 
 	 * @return Response the response
 	 */
 	@POST
@@ -1383,6 +1399,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param mapEntry
 	 *            the map entry
+	 * @param authToken 
 	 * @return Response the response
 	 */
 	@POST
@@ -1433,6 +1450,7 @@ public class MappingServiceRest {
 	 * 
 	 * @param userName
 	 * @param mapProjectId
+	 * @param authToken 
 	 * @return result the role
 	 */
 	@GET
@@ -1481,6 +1499,7 @@ public class MappingServiceRest {
 	 *            the maximum number of descendants before a concept is no
 	 *            longer considered a low-level concept, and will return an
 	 *            empty list
+	 * @param authToken 
 	 * @return the ConceptList of unmapped descendants
 	 */
 	@GET
@@ -1542,6 +1561,7 @@ public class MappingServiceRest {
 	 * @param mapProjectId
 	 *            the contextual project of this tree, used for determining
 	 *            valid codes
+	 * @param authToken 
 	 * @return the search result list
 	 */
 	@GET
@@ -1607,6 +1627,7 @@ public class MappingServiceRest {
 	 *            the terminology version
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param authToken 
 	 * @return the search result list
 	 */
 	@GET
@@ -1670,6 +1691,7 @@ public class MappingServiceRest {
 	 *            the query
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param authToken 
 	 * @return the root-level trees corresponding to the query
 	 */
 	@GET
@@ -1740,6 +1762,7 @@ public class MappingServiceRest {
 	 *            the user name
 	 * @param pfsParameter
 	 *            the pfs parameter
+	 * @param authToken 
 	 * @return the recently edited map records
 	 */
 	@POST
@@ -1784,6 +1807,7 @@ public class MappingServiceRest {
 	 * lead to the specified conflict record.
 	 * 
 	 * @param mapRecordId
+	 * @param authToken 
 	 * @return map records in conflict for a given conflict lead record
 	 * @throws Exception
 	 */
@@ -1830,6 +1854,7 @@ public class MappingServiceRest {
 	 * Validates a map record.
 	 * 
 	 * @param mapRecord the map record to be validated
+	 * @param authToken 
 	 * @return Response the response
 	 */
 	@POST
@@ -1887,6 +1912,7 @@ public class MappingServiceRest {
 	 *            the map record id1
 	 * @param mapRecordId2
 	 *            the map record id2
+	 * @param authToken 
 	 * @return the validation result
 	 */
 	@GET
