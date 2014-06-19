@@ -16,6 +16,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.compareRecords',
                                                      'mapProjectApp.widgets.projectDetails',
                                                      'mapProjectApp.widgets.projectRecords',
+                                                     'mapProjectApp.widgets.recordConcept',
                                                      'LocalStorageModule',
                                                      'ngCookies'
                                                      //'textAngular'
@@ -120,8 +121,8 @@ mapProjectApp.config(['$routeProvider',
 	});
 
 	$routeProvider.when('/record/conceptId/:conceptId', {
-		templateUrl: 'partials/record-concept.html',
-		controller: 'RecordConceptListCtrl'
+		templateUrl: 'partials/otf-dashboard.html',
+		controller: 'RecordConceptDashboardCtrl'
 	});
 
 	$routeProvider.when('/record/recordId/:recordId', {
