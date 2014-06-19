@@ -20,7 +20,7 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $l
 	    	$rootScope.globalError = $rootScope.globalError + " Authorization failed.  Please log in again.";
 			$location.path("/");
 		} else {
-			$rootScope.globalError = $rootScope.globalError + " " + data.replace(/"/g, '');
+			$rootScope.globalError = data.replace(/"/g, '');
 		}
 		window.scrollTo(0,0);
 		
