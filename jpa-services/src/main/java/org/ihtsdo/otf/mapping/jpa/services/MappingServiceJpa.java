@@ -2281,9 +2281,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				// if no concept for this ref set member, skip
 				if (concept == null) {
-					throw new NoResultException(
+					continue;
+					/*throw new NoResultException(
 							"    Concept is unexpectedly missing for "
-									+ refSetMember.getTerminologyId());
+									+ refSetMember.getTerminologyId());*/
 				}
 
 				// if different concept than previous ref set member, create new
