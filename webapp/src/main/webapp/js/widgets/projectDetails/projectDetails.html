@@ -170,7 +170,7 @@
         total-items="pagedAdviceCount" items-per-page="pageSize"
         page="pageAdvice" on-select-page="getPagedAdvices(page)"></pagination>
       <form>
-        <input type="text" ng-model="adviceFilter"
+        <input id="adviceSearch" type="text" ng-model="adviceFilter"
           ng-change="getPagedAdvices(1)"> <input type="submit"
           value="Reset Filter" ng-click="resetAdviceFilter()">
       </form>
@@ -360,7 +360,7 @@
         total-items="pagedScopeConceptCount" items-per-page="pageSize"
         max-size="maxSize" page="pageScopeConcept"
         on-select-page="getPagedScopeConcepts(page)"></pagination> <!-- <form>
-      <input type="text" ng-model="scopeConceptFilter" ng-change="getPagedScopeConcepts(1)">
+      <input id="scopeConceptSearch" type="text" ng-model="scopeConceptFilter" ng-change="getPagedScopeConcepts(1)">
       <input type="submit" value="Reset Filter" ng-click="resetScopeConceptFilter()">
     </form>  -->
 
@@ -399,7 +399,7 @@
         total-items="pagedScopeExcludedConceptCount" items-per-page="pageSize"
         max-size="maxSize" page="pageScopeExcludedConcept"
         on-select-page="getPagedScopeExcludedConcepts(page)"></pagination> <!--<form>
-      <input type="text" ng-model="scopeExcludedConceptFilter" ng-change="getPagedScopeExcludedConcepts(1)">
+      <input id="scopeExcludedConceptSearch" type="text" ng-model="scopeExcludedConceptFilter" ng-change="getPagedScopeExcludedConcepts(1)">
       <input type="submit" value="Reset Filter" ng-click="resetScopeExcludedConceptFilter()">
     </form>  -->
 
