@@ -32,6 +32,13 @@ public class SecurityServiceRest {
   /** The security service. */
   private SecurityService securityService = new SecurityServiceJpa();
 
+  /**
+   * Authenticate.
+   *
+   * @param username the username
+   * @param password the password
+   * @return the string
+   */
   @POST
   @Path("/authenticate/{username}")
   @Consumes({

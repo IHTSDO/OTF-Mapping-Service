@@ -35,7 +35,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-@SuppressWarnings("static-method")
 public class MetadataServiceRest {
 
 	/**  The security service. */
@@ -46,6 +45,7 @@ public class MetadataServiceRest {
    * 
    * @param terminology the terminology
    * @param version the version
+   * @param authToken 
    * @return the all metadata
    */
   @GET
@@ -106,6 +106,7 @@ public class MetadataServiceRest {
    * Returns all metadata for the latest version.
    * 
    * @param terminology the terminology
+   * @param authToken 
    * @return the metadata
    */
   @GET
@@ -147,6 +148,7 @@ public class MetadataServiceRest {
 
   /**
    * Returns all terminologies with only their latest version
+   * @param authToken 
    * 
    * @return the all terminologies latest versions
    */
@@ -194,6 +196,7 @@ public class MetadataServiceRest {
 
   /**
    * Returns all terminologies and all versions
+   * @param authToken 
    * 
    * @return all terminologies and versions
    */
