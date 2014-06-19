@@ -39,7 +39,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Path("/content")
 @Api(value = "/content", description = "Operations to retrieve RF2 content.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-@SuppressWarnings("static-method")
 public class ContentServiceRest {
 
 	/** The security service. */
@@ -60,6 +59,7 @@ public class ContentServiceRest {
 	 *            the concept terminology
 	 * @param terminologyVersion
 	 *            the terminology version
+	 * @param authToken 
 	 * @return the concept
 	 */
 	@GET
@@ -121,6 +121,7 @@ public class ContentServiceRest {
 	 *            the id
 	 * @param terminology
 	 *            the concept terminology
+	 * @param authToken 
 	 * @return the concept
 	 */
 	@GET
@@ -170,6 +171,7 @@ public class ContentServiceRest {
 	 * 
 	 * @param searchString
 	 *            the lucene search string
+	 * @param authToken 
 	 * @return the concept for id
 	 */
 	@GET
@@ -215,6 +217,7 @@ public class ContentServiceRest {
 	 *            the terminology
 	 * @param terminologyVersion
 	 *            the terminology version
+	 * @param authToken 
 	 * @return the search result list
 	 */
 	@GET
@@ -267,6 +270,7 @@ public class ContentServiceRest {
 	 *            the terminology
 	 * @param terminologyVersion
 	 *            the terminology version
+	 * @param authToken 
 	 * @return the search result list
 	 */
 	@GET
