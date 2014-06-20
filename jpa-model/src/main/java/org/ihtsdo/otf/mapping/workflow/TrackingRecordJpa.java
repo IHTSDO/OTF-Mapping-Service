@@ -24,6 +24,7 @@ import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 
+// TODO: Auto-generated Javadoc
 /**
  * Default implementatino of {@link TrackingRecordJpa}.
  */
@@ -39,7 +40,7 @@ public class TrackingRecordJpa implements TrackingRecord {
 	@GeneratedValue
 	private Long id;
 
-	/** The map project */
+	/** The map project. */
 	@Column(nullable = false)
 	private Long mapProjectId;
 
@@ -67,18 +68,24 @@ public class TrackingRecordJpa implements TrackingRecord {
 	@Enumerated(EnumType.STRING)
 	private WorkflowPath workflowPath;
 	
-	/** The workflow status */
-	@Enumerated(EnumType.STRING)
-	private WorkflowStatus workflowStatus;
+	/** The workflow status.
+	 * Pairs are constructed in the format workflowStatus~userName
+	 * e.g. NEW~dmo, EDITING_DONE~kli
+	 */
+	@Column(nullable = true)
+	private String userAndWorkflowStatusPairs;
 	
+	/** The map record ids. */
 	@ElementCollection
 	@CollectionTable(name = "tracking_records_map_records", joinColumns = @JoinColumn(name = "id"))
 	@Column(nullable = true)
 	private Set<Long> mapRecordIds = new HashSet<>();
 
+	/** The assigned user names. */
 	@Column(nullable = true)
 	private String assignedUserNames = null;
 	
+	/** The assigned user count. */
 	@Column(nullable = false)
 	private int assignedUserCount = 0;
 
@@ -98,12 +105,18 @@ public class TrackingRecordJpa implements TrackingRecord {
 		this.id = id;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getMapProjectId()
+	 */
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public Long getMapProjectId() {
 		return this.mapProjectId;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#setMapProjectId(java.lang.Long)
+	 */
 	@Override
 	public void setMapProjectId(Long mapProjectId) {
 		this.mapProjectId = mapProjectId;
@@ -205,26 +218,66 @@ public class TrackingRecordJpa implements TrackingRecord {
 		return sortKey;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getWorkflowPath()
+	 */
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public WorkflowPath getWorkflowPath() {
 		return workflowPath;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#setWorkflowPath(org.ihtsdo.otf.mapping.helpers.WorkflowPath)
+	 */
 	@Override
 	public void setWorkflowPath(WorkflowPath workflowPath) {
 		this.workflowPath = workflowPath;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getUserAndWorkflowStatusPairs()
+	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-	public WorkflowStatus getWorkflowStatus() {
-		return workflowStatus;
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	public String getUserAndWorkflowStatusPairs() {
+		return userAndWorkflowStatusPairs;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#setUserAndWorkflowStatusPairs(java.lang.String)
+	 */
 	@Override
-	public void setWorkflowStatus(WorkflowStatus workflowStatus) {
-		this.workflowStatus = workflowStatus;
+	public void setUserAndWorkflowStatusPairs(String userAndWorkflowStatusPairs) {
+		this.userAndWorkflowStatusPairs = userAndWorkflowStatusPairs;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#addUserAndWorkflowStatusPair(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void addUserAndWorkflowStatusPair(String userName, String workflowStatus) {
+		String pair = workflowStatus + "_" + userName;
+		if (this.userAndWorkflowStatusPairs == null) this.userAndWorkflowStatusPairs = pair;
+		if (this.userAndWorkflowStatusPairs.indexOf(pair) == -1) {
+			this.userAndWorkflowStatusPairs += " " + pair;
+		}
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#removeUserAndWorkflowStatusPair(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void removeUserAndWorkflowStatusPair(String userName, String workflowStatus) {
+		String pair = workflowStatus + "_" + userName;
+		
+		if (this.userAndWorkflowStatusPairs.indexOf(pair) != -1) {
+			this.userAndWorkflowStatusPairs
+			.replaceAll(pair, "")
+			.replace("  ", " ")
+			.trim();
+		}
 	}
 
 	/*
@@ -258,6 +311,9 @@ public class TrackingRecordJpa implements TrackingRecord {
 		return assignedUserNames;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getAssignedUserCount()
+	 */
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	public int getAssignedUserCount() {
@@ -354,15 +410,20 @@ public class TrackingRecordJpa implements TrackingRecord {
 				+ terminologyId + ", terminologyVersion=" + terminologyVersion
 				+ ", defaultPreferredName=" + defaultPreferredName
 				+ ", sortKey=" + sortKey + ", workflowPath=" + workflowPath
-				+ ", workflowStatus=" + workflowStatus + ", mapRecordIds="
-				+ mapRecordIds + ", assignedUserNames=" + assignedUserNames
-				+ ", assignedUserCount=" + assignedUserCount + "]";
+				+ ", userAndWorkflowStatusPairs=" + userAndWorkflowStatusPairs
+				+ ", mapRecordIds=" + mapRecordIds + ", assignedUserNames="
+				+ assignedUserNames + ", assignedUserCount="
+				+ assignedUserCount + "]";
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + assignedUserCount;
 		result = prime
 				* result
 				+ ((assignedUserNames == null) ? 0 : assignedUserNames
@@ -384,11 +445,18 @@ public class TrackingRecordJpa implements TrackingRecord {
 				* result
 				+ ((terminologyVersion == null) ? 0 : terminologyVersion
 						.hashCode());
+		result = prime
+				* result
+				+ ((userAndWorkflowStatusPairs == null) ? 0
+						: userAndWorkflowStatusPairs.hashCode());
 		result = prime * result
 				+ ((workflowPath == null) ? 0 : workflowPath.hashCode());
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -398,6 +466,8 @@ public class TrackingRecordJpa implements TrackingRecord {
 		if (getClass() != obj.getClass())
 			return false;
 		TrackingRecordJpa other = (TrackingRecordJpa) obj;
+		if (assignedUserCount != other.assignedUserCount)
+			return false;
 		if (assignedUserNames == null) {
 			if (other.assignedUserNames != null)
 				return false;
@@ -437,6 +507,12 @@ public class TrackingRecordJpa implements TrackingRecord {
 			if (other.terminologyVersion != null)
 				return false;
 		} else if (!terminologyVersion.equals(other.terminologyVersion))
+			return false;
+		if (userAndWorkflowStatusPairs == null) {
+			if (other.userAndWorkflowStatusPairs != null)
+				return false;
+		} else if (!userAndWorkflowStatusPairs
+				.equals(other.userAndWorkflowStatusPairs))
 			return false;
 		if (workflowPath != other.workflowPath)
 			return false;
