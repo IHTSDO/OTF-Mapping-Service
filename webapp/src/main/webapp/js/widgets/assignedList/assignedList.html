@@ -9,7 +9,7 @@
       	<td style="padding: 5px";>Filter concepts:</td>
       	<td style="padding: 5px;">
 			<form>
-				<input ng-model="queryAssigned">
+				<input id="assignedSearch" ng-model="queryAssigned">
 				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedWork(1, queryAssigned)">Search</button>
 				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedWork(1, 'null'); queryAssigned = null">Reset</button>
 			</form>
@@ -81,7 +81,7 @@
       	<td style="padding: 5px";>Filter concepts:</td>
       	<td style="padding: 5px;">
 			<form>	
-				<input ng-model="queryConflict">
+				<input id="conflictSearch" ng-model="queryConflict">
 				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedConflicts(1, queryConflict)">Search</button>
 				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedConflicts(1, 'null'); queryConflict = null">Reset</button>
 			</form>
@@ -153,7 +153,7 @@
       	<td style="padding: 5px";>Filter concepts:</td>
       	<td style="padding: 5px;">
 			<form>	
-				<input ng-model="queryAssignedForUser">
+				<input id="assignedForUserSearch" ng-model="queryAssignedForUser">
 				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedWorkForUser(1, mapUserViewed, queryAssignedForUser)">Search</button>
 				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedWorkForUser(1, mapUserViewed, 'null'); queryAssignedForUser = null">Reset</button>
 			</form>
