@@ -105,12 +105,10 @@ public class RootServiceJpa implements RootService {
           fullTextEntityManager.getSearchFactory().getStatistics()
               .getIndexedClassNames();
       for (String indexClass : indexedClassNames) {
-    	  System.out.println("* Getting field names for: " + indexClass);
         IndexReader indexReader = indexReaderAccessor.open(indexClass);
         try {
           for (FieldInfo info : ReaderUtil.getMergedFieldInfos(indexReader)) {
             fieldNames.add(info.name);
-            System.out.println("** Field: " + info.name);
           }
         } finally {
           indexReaderAccessor.close(indexReader);
