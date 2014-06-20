@@ -1,7 +1,6 @@
 <!--  partial for displaying records associated with a concept id -->
 <div ng-include src="'./partials/header.html'"></div>
 
-<h3>{{concept.terminology}} Concept {{concept.terminologyId}}:  {{concept.defaultPreferredName}}</h3>  
 <!--  No map records for this project -->
 <div ng-show="recordsInProjectNotFound == true">
   <h4>
@@ -10,13 +9,14 @@
   </h4>
 </div>
 
-<hr>
 <!--  Map Records Found for this project -->
 <div ng-show="recordsInProject.length > 0">
-  <h4>{{focusProject.name}}</h4>
-  <button class="btn btn-sm btn-primary" ng-click="goProjectDetails()">Project Details</button>
-  <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
+  
+  <h4><a href="#/project/details">{{focusProject.name}}</a>&nbsp;&nbsp;
+    <!-- <button class="btn btn-sm btn-primary" ng-click="goProjectDetails()">Project Details</button>-->
+    <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
     Records</button>
+  </h4>
   <table class="table">
     <thead>
       <tr>
@@ -50,7 +50,7 @@
     </thead>
 
     <tbody ng-repeat="record in recordsInProject"
-      style="border: 4px solid #ccc;">
+      style="border: 2px solid #ccc;">
 
       <tr ng-show="record.mapEntry.length == 0">
         <td></td>
@@ -147,7 +147,7 @@
     </thead>
 
     <tbody ng-repeat="record in recordsNotInProject"
-      style="border: 4px solid #ccc;">
+      style="border: 2px solid #ccc;">
 
       <tr ng-show="record.mapEntry.length == 0">
         <td></td>
@@ -202,7 +202,7 @@
 <hr>
 <div ng-show="concept.relationship.length > 0 || concept.children.length > 0">
 
-  <h3>Concept Navigation</h3>
+  <h4>Concept Navigation</h4>
   <p></p>
 
   <table width="100%">

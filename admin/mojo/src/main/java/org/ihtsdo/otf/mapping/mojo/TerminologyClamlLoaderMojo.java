@@ -573,7 +573,15 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         // NOTE: non-preferred descriptions still need to be added
         // to modified classes
         if (qName.equalsIgnoreCase("label") && modifierCode != null) {
+          // Append a space if we've already seen earlier fragments
+          if (labelChars.length() != 0 && chars.toString().trim().length() > 0) {
+            labelChars.append(" ");
+          }
+          // Pick up any characters in the label tag
+          labelChars.append(chars.toString().trim());
           addModifierClass();
+          // reset label characters
+          labelChars = new StringBuilder();
         }
 
         // Encountered </Label> while in a Class, add concept/description
@@ -886,7 +894,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     public void addModifierClass() throws Exception {
 
       // create concept if it doesn't exist
-      if (!conceptMap.containsKey(code) || code == null) {
+      String code = modifier + modifierCode;
+      if (!conceptMap.containsKey(code)) {
         concept.setTerminologyId(modifier + modifierCode);
         concept.setEffectiveTime(dt.parse(effectiveTime));
         concept.setActive(true);
@@ -896,7 +905,10 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             "defaultDefinitionStatus").getTerminologyId()));
         concept.setTerminology(terminology);
         concept.setTerminologyVersion(terminologyVersion);
-        concept.setDefaultPreferredName(chars.toString());
+        concept.setDefaultPreferredName(labelChars.toString());
+        getLog().info(
+            "  Add modifier concept " + concept.getTerminologyId() + " "
+                + concept.getDefaultPreferredName());
         // NOTE: we don't persist these modifier classes, the
         // classes they generate get added during modifierHelper
         conceptMap.put(code, concept);
