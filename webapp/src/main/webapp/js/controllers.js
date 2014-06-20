@@ -131,11 +131,11 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 											mapProjects : data.mapProject
 										});
 					}).error(function(data, status, headers, config) {
+						$rootScope.glassPane--;
 					    $rootScope.handleHttpError(data, status, headers, config);
 					}).then(function(data) {
 
 					// retrieve users
-					$rootScope.glassPane++;
 					$http({
 						url: root_mapping + "user/users",
 						dataType: "json",
@@ -144,7 +144,6 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							"Content-Type": "application/json"
 						}	
 					}).success(function(data) {
-						$rootScope.glassPane--;
 									$scope.mapUsers = data.mapUser;
 						localStorageService.add('mapUsers', data.mapUser);
 						$rootScope.$broadcast('localStorageModule.notification.setMapUsers',{key: 'mapUsers', mapUsers: data.mapUsers});  
@@ -174,7 +173,6 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							"Content-Type": "application/json"
 						}	
 					}).success(function(data) {
-						$rootScope.glassPane--;
 
 						$scope.preferences = data;
 						$scope.preferences.lastLogin = new Date().getTime();
@@ -234,7 +232,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							$rootScope.glassPane--;
 						    $rootScope.handleHttpError(data, status, headers, config);
 						}).then(function(data) {
-							$rootScope.glassPane++;
+;
 							$http({
 												url: root_mapping + "userRole/user/id/" + $scope.userName + "/project/id/" + $scope.focusProject.id,
 								dataType: "json",
@@ -287,7 +285,6 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 					
 				      $rootScope.handleHttpError(data, status, headers, config);
 				}).then(function(data) {
-					$rootScope.glassPane++;
 					$http({
 						url: root_metadata + "terminology/terminologies/latest",
 						dataType: "json",
@@ -296,7 +293,6 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 							"Content-Type": "application/json"
 						}
 					}).success(function(response) {
-						$rootScope.glassPane--;
 						var keyValuePairs = response.keyValuePair;
 						for (var i = 0; i < keyValuePairs.length; i++) {
 							console.debug("Retrieving metadata for " + keyValuePairs[i].key + ", " + keyValuePairs[i].value);		
