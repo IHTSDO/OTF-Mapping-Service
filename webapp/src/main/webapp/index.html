@@ -95,14 +95,14 @@
 
   <div class="container">
   
-    <button disabled class="border-error alert-error" ng-show = "globalError.length > 0">
+    <div class="border-error alert-error" ng-show = "globalError.length > 0">
       <h4 class="alert alert-danger alert-error" >{{globalError}}
       <div style="display: inline; float: right; width: 3%;">
                 <i class="glyphicon glyphicon-remove"
                  ng-click="resetGlobalError()"></i>
       </div>
       </h4>
-    </button>
+    </div>
     <div ng-view style="margin-top:10px;"></div>
   </div> 
   <div ng-show="glassPane > 0" class="top-layer">
