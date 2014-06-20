@@ -33,7 +33,7 @@
 </accordion-heading> 
 
 <form>
-	<input ng-model="queryAvailable">
+	<input id="availableSearch" ng-model="queryAvailable">
 	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, queryAvailable); isConceptListOpen = true">Search</button>
 	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, 'null'); queryAvailable = null; isConceptListOpen = false">Reset</button>
 	<img src="img/warning.png" tooltip-placement="top" tooltip="After testing is complete, searching available concepts will only be available to Map Leads."></img>

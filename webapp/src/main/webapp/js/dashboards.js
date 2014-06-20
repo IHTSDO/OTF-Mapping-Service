@@ -13,6 +13,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
+	$rootScope.globalError = '';
 
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
@@ -152,6 +153,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
+	$rootScope.globalError = '';
 
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
@@ -461,6 +463,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
+	$rootScope.globalError = '';
 
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
@@ -601,6 +604,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function ($roo
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
+	$rootScope.globalError = '';
 
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
@@ -725,6 +729,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function ($roo
 	$scope.currentRole 	= null;
 	$scope.preferences 	= null;
 	$scope.focusProject = null;
+	$rootScope.globalError = '';
 
 	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
 	$scope.mapProjects  = localStorageService.get('mapProjects');
@@ -780,6 +785,114 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function ($roo
 								type: "projectRecords",
 								config: {},
 								title: "Project Records"
+							}]
+						}]
+					}]
+			};
+
+	}
+
+	$scope.$on('adfDashboardChanged', function (event, name, model) {
+		console.debug('adfDashboardChanged in DashBoardCtrl');
+		console.debug(event);
+		console.debug(name);
+		console.debug(model);
+		$scope.model = model;
+	});
+
+//	function to change project from the header
+	$scope.changeFocusProject = function(mapProject) {
+		$scope.focusProject = mapProject;
+		console.debug("changing project to " + $scope.focusProject.name);
+
+		// update and broadcast the new focus project
+		localStorageService.add('focusProject', $scope.focusProject);
+		$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+		// update the user preferences
+		$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+		localStorageService.add('preferences', $scope.preferences);
+		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+
+	};
+
+	$scope.goToHelp = function() {
+		var path;
+		if ($scope.page != 'mainDashboard') {
+			path = "help/" + $scope.page + "Help.html";
+		} else {
+			path = "help/" + $scope.currentRole + "DashboardHelp.html";
+		}
+		console.debug("go to help page " + path);
+		// redirect page
+		$location.path(path);
+	};
+});
+
+mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function ($rootScope, $scope, $http, $location, localStorageService) {
+
+	// On initialization, reset all values to null -- used to ensure watch functions work correctly
+	$scope.mapProjects 	= null;
+	$scope.currentUser 	= null;
+	$scope.currentRole 	= null;
+	$scope.preferences 	= null;
+	$scope.focusProject = null;
+	$rootScope.globalError = '';
+
+	// Used for Reload/Refresh purposes -- after setting to null, get the locally stored values
+	$scope.mapProjects  = localStorageService.get('mapProjects');
+	$scope.currentUser  = localStorageService.get('currentUser');
+	$scope.currentRole  = localStorageService.get('currentRole');
+	$scope.preferences  = localStorageService.get('preferences');
+	$scope.focusProject = localStorageService.get('focusProject');
+
+	$scope.page = 'recordConceptDashboard';
+
+	console.debug('in recordConceptDashboardCtrl');
+
+	// watch for preferences change
+	$scope.$on('localStorageModule.notification.setUserPreferences', function(event, parameters) { 	
+		console.debug("dashboardCtrl:  Detected change in preferences");
+		if (parameters.userPreferences != null && parameters.userPreferences != undefined) {
+			$http({
+				url: root_mapping + "userPreferences/update",
+				dataType: "json",
+				data: parameters.userPreferences,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}	
+			}).success(function(data) {
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);
+			});
+		}
+	});
+
+
+	// must instantiate a default dashboard on call
+	setModel();
+
+	// on successful user retrieval, construct the dashboard
+	$scope.$watch('currentRole', function() {
+		setModel();
+	});
+
+	function setModel() {
+
+		console.debug("Setting the dashboard based on role: " + $scope.currentRole);
+
+		$scope.name = 'Dashboard';
+		$scope.model = {
+
+					structure: "12/6-6/12",
+					rows: [{
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "recordConcept",
+								config: {},
+								title: "Record Concept"
 							}]
 						}]
 					}]
