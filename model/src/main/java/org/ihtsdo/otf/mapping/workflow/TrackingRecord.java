@@ -5,6 +5,7 @@ import java.util.Set;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Interface TrackingRecord.
  * 
@@ -149,16 +150,16 @@ public interface TrackingRecord {
 	/**
 	 * Sets the workflow status.
 	 *
-	 * @param workflowStatus the new workflow status
+	 * @param userAndWorkflowStatusPairs the new user and workflow status pairs
 	 */
-	public void setWorkflowStatus(WorkflowStatus workflowStatus);
+	public void setUserAndWorkflowStatusPairs(String userAndWorkflowStatusPairs);
 	
 	/**
 	 * Gets the workflow status.
 	 *
 	 * @return the workflow status
 	 */
-	public WorkflowStatus getWorkflowStatus();
+	public String getUserAndWorkflowStatusPairs();
 
 	/**
 	 * Sets the workflow path.
@@ -201,6 +202,22 @@ public interface TrackingRecord {
 	 * @param name the name
 	 */
 	public void removeAssignedUserName(String name);
+
+	/**
+	 * Removes the user and workflow status pair.
+	 *
+	 * @param userName the user name
+	 * @param workflowStatus the workflow status
+	 */
+	public void removeUserAndWorkflowStatusPair(String userName, String workflowStatus);
+
+	/**
+	 * Adds the user and workflow status pair.
+	 *
+	 * @param userName the user name
+	 * @param workflowStatus the workflow status
+	 */
+	public void addUserAndWorkflowStatusPair(String userName, String workflowStatus);
 
 
 
