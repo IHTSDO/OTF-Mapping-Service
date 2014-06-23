@@ -36,6 +36,11 @@ p {
 	border-radius: 5px;
 }
 
+.alert-warning {
+  margin-bottom: 0px;
+  padding: 5px;
+}
+
 .border-error {	
   padding: 0px 0px 0px 0px;
 }
