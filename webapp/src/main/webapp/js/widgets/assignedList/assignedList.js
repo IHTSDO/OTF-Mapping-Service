@@ -15,19 +15,35 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 	// initialize as empty to indicate still initializing database connection
 	$scope.assignedRecords = [];
-	$scope.user = localStorageService.get('currentUser');
+	$scope.currentUser = localStorageService.get('currentUser');
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
-
+	
+	// tab variables
+	$scope.tabs = [ {id: 0, title: 'Assigned Concepts', active:true}, 
+	                {id: 1, title: 'Assigned Conflicts', active:false}, 
+	                {id: 2, title: 'Assigned Work By User', active:false}];
+	$scope.ownTab = true; // variable to track whether viewing own work or other users work
+	
+	// function to change tab
+	$scope.setTab = function(tabNumber) {
+		console.debug("Switching to tab " + tabNumber);
+		angular.forEach($scope.tabs, function(tab) {
+			tab.active = (tab.id == tabNumber? true : false);
+		});
+		console.debug($scope.tabs);
+		
+		// set flag for whether viewing user's own work
+		if (tabNumber == 2) $scope.ownTab = false;
+		else $scope.ownTab = true;
+	
+	};
+	
+	
 	// pagination variables
 	$scope.itemsPerPage = 10;
 	$scope.assignedWorkPage = 1;
 	$scope.assignedConflictsPage = 1;
-	
-	// initial tab titles
-	$scope.assignedWorkTitle = "Assigned Concepts";
-	$scope.assignedConflictsTitle = "Assigned Conflicts";
-	$scope.ownTab = true; // variable to track whether viewing own work or other users work
 	
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
@@ -37,27 +53,52 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 	$scope.$on('workAvailableWidget.notification.assignWork', function(event, parameters) {
 		console.debug('assignedlist: assignWork notification from workAvailableWidget');
-		$scope.retrieveAssignedWork($scope.assignedWorkPage);
-		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-			$scope.retrieveAssignedConflicts($scope.assignedConflictsPage);
-			$scope.retrieveAssignedWorkForUser(1, $scope.mapUserViewed);
+		console.debug(parameters);
+		
+		// perform action based on notification parameters
+		// Expect:
+		// - assignUser: String, IHTSDO username (e.g. dmo, kli)
+		// - assignType: String, either 'concept' or 'conflict'
+		if ($scope.currentRole === 'Lead') {
+			
+			// if user name matches current user's user name, reload work
+			if (parameters.assignUser === $scope.currentUser.userName) {		
+				
+				if (parameters.assignType === 'concept') {
+					$scope.retrieveAssignedWork($scope.assignedWorkPage, null);
+					$scope.setTab(0);
+				
+				} else if (parameters.assignType === 'conflict') {
+					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, null);
+					$scope.setTab(1);
+				}
+			} else {
+				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser, null);
+				$scope.setTab(2);
+			}
+			
+		}
+		else {
+			// reload current assigned concepts, saving page information
+			$scope.retrieveAssignedWork($scope.assignedWorkPage);
+			$scope.setTab(0);
 		}
 	});
 
 	// on any change of focusProject, retrieve new available work
-	$scope.userToken = localStorageService.get('userToken');
+	$scope.currentUserToken = localStorageService.get('userToken');
 	$scope.$watch(['focusProject', 'user', 'userToken'], function() {
 		console.debug('assignedListCtrl:  Detected project or user set/change');
 
-		if ($scope.focusProject != null && $scope.user != null && $scope.userToken != null) {
+		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null) {
 
-			$http.defaults.headers.common.Authorization = $scope.userToken;	
+			$http.defaults.headers.common.Authorization = $scope.currentUserToken;	
 			
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
 			
-			$scope.retrieveAssignedWork($scope.assignedWorkPage);
+			$scope.retrieveAssignedWork($scope.assignedWorkPage, null);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-				$scope.retrieveAssignedConflicts($scope.assignedConflictsPage);
+				$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, null);
 			}
 		}
 	});
@@ -82,7 +123,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			url: root_workflow + "project/id/" 
 			+ $scope.focusProject.id 
 			+ "/user/id/" 
-			+ $scope.user.userName 
+			+ $scope.currentUser.userName 
 			+ "/query/" + (query == null ? null : query)
 			+ "/assignedConflicts",
 			dataType: "json",
@@ -104,7 +145,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.numAssignedConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
 			
 			// set title
-			$scope.assignedConflictsTitle = "Assigned Conflicts (" + data.totalCount + ")";
+			$scope.tabs[1].title = "Assigned Conflicts (" + data.totalCount + ")";
 			
 		}).error(function(data, status, headers, config) {
 		  	$rootScope.glassPane--;
@@ -136,7 +177,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			url: root_workflow + "project/id/" 
 			+ $scope.focusProject.id 
 			+ "/user/id/" 
-			+ $scope.user.userName 
+			+ $scope.currentUser.userName 
 			+ "/query/" + (query == null ? null : query)
 			+ "/assignedConcepts",
 			dataType: "json",
@@ -157,7 +198,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.nAssignedRecords = data.totalCount;
 			
 			// set title
-			$scope.assignedWorkTitle = "Assigned Concepts (" + $scope.nAssignedRecords + ")";
+			$scope.tabs[0].title = "Assigned Concepts (" + $scope.nAssignedRecords + ")";
 			console.debug($scope.nAssignedRecords);
 			console.debug(data.totalCount);
 			console.debug($scope.assignedWorkTitle);
@@ -171,7 +212,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	
 	$scope.mapUserViewed == null; // initial value
 	
-	$scope.retrieveAssignedWorkForUser = function(page, mapUser, query) {
+	$scope.retrieveAssignedWorkForUser = function(page, mapUserName, query) {
 		
 		console.debug("retrieveAssignedWorkForUser:");
 		console.debug($scope.mapUserViewed);
@@ -182,9 +223,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		// reset the search box if query is null
 		if (query == null) $scope.queryAssignedForUser = null;
 
-		if (mapUser == null) mapUser = $scope.user;
+		if (mapUserName == null) mapUserName = $scope.currentUser.userName;
 
-		console.debug('Retrieving Assigned Concepts for user ' + mapUser.userName + ': page ' + page);
+		console.debug('Retrieving Assigned Concepts for user ' + mapUserName + ': page ' + page);
 
 
 		// construct a paging/filtering/sorting object
@@ -200,7 +241,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			url: root_workflow + "project/id/" 
 			+ $scope.focusProject.id 
 			+ "/user/id/" 
-			+ mapUser.userName 
+			+ mapUserName
 			+ "/query/" + (query == null ? null : query)
 			+ "/assignedConcepts",
 			dataType: "json",
@@ -220,6 +261,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.numAssignedRecordPagesForUser = Math.ceil(data.totalCount / $scope.itemsPerPage);
 			$scope.nAssignedRecordsForUser = data.totalCount;
 			$scope.numRecordPagesForUser = Math.ceil($scope.nAssignedRecordsForUser / $scope.itemsPerPage);
+			
+			$scope.tabs[2].title = "Assigned Work By User (" + data.totalCount + ")";
 
 
 		}).error(function(data, status, headers, config) {
@@ -265,7 +308,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				$rootScope.$broadcast('assignedListWidget.notification.unassignWork',
 						{key: 'mapRecord', mapRecord: record});
 	
-				if ($scope.focusProject != null && $scope.user != null) {
+				if ($scope.focusProject != null && $scope.currentUser != null) {
 					$scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.queryAssigned);
 					if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 						$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, $scope.queryConflict);
@@ -337,7 +380,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				
 				// switch on whether Lead is viewing their own work or another user's
 				mapUserToUnassign: function() {
-					if ($scope.ownTab == true) return $scope.user;
+					if ($scope.ownTab == true) return $scope.currentUser;
 					else return mapUser;
 				}
 			}
