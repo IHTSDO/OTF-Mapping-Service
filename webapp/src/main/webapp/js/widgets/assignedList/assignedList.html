@@ -1,8 +1,8 @@
 
 <tabset> 
 
-<tab heading="{{assignedWorkTitle}}"
-	select="setOwnTab(true)"> 
+<tab heading="{{tabs[0].title}}" active="tabs[0].active"
+	select="setTab(0)"> 
 	
 	<table style="margin-top: 20px; margin-bottom: 20px;">
 	<tr>
@@ -64,7 +64,7 @@
 			<td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
 			<td style="width: 80%; padding: 5px;">{{result.value}}</td>
 			<td style="width: 3%; padding: 5px;"><a title="Return"
-				ng-click="unassignWork(result, user)"><i
+				ng-click="unassignWork(result, currentUser)"><i
 					class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
 	</tbody>
 
@@ -74,7 +74,7 @@
 
 </tab> 
 
-<tab heading="{{assignedConflictsTitle}}" select="setOwnTab(true)"
+<tab heading="{{tabs[1].title}}" active="tabs[1].active" select="setTab(1)"
 	ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 	<table style="margin-top: 20px; margin-bottom: 20px;">
 	<tr>
@@ -125,7 +125,7 @@
 			<td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
 			<td style="width: 80%; padding: 5px;">{{result.value}}</td>
 			<td style="width: 3%; padding: 5px;"><a title="Return"
-				ng-click="unassignWork(result, user)"><i
+				ng-click="unassignWork(result, currentUser)"><i
 					class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
 		</tr>
 	</tbody>
@@ -137,7 +137,7 @@
 
 </tab> 
 
-<tab heading="Assigned To Others" select="setOwnTab(false)"
+<tab heading="{{tabs[2].title}}" active="tabs[2].active" select="setTab(2)"
 	ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 
 
@@ -146,7 +146,7 @@
 		<td style="padding: 5px;">View work assigned to:</td>
 		<td style="padding: 5px;"><select ng-model="mapUserViewed"
 			ng-options="mapUser as mapUser.name for mapUser in mapUsers"
-			ng-change="retrieveAssignedWorkForUser(1, mapUserViewed, queryAssignedForUser)">
+			ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser)">
 		</select></td>
 	</tr>
 	<tr>
@@ -154,8 +154,8 @@
       	<td style="padding: 5px;">
 			<form>	
 				<input id="assignedForUserSearch" ng-model="queryAssignedForUser">
-				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedWorkForUser(1, mapUserViewed, queryAssignedForUser)">Search</button>
-				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedWorkForUser(1, mapUserViewed, 'null'); queryAssignedForUser = null">Reset</button>
+				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser)">Search</button>
+				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedWorkForUser(1, mapUserViewed.userName, 'null'); queryAssignedForUser = null">Reset</button>
 			</form>
 		</td>
 	</tr>
@@ -165,7 +165,7 @@
 	total-items="nAssignedRecordsForUser" page="assignedWorkPageForUser"
 	class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
 	num-pages="numAssignedRecordPagesForUser"
-	on-select-page="retrieveAssignedWorkForUser(page, mapUserViewed, queryAssignedForUser)"></pagination>
+	on-select-page="retrieveAssignedWorkForUser(page, mapUserViewed.userName, queryAssignedForUser)"></pagination>
 
 
 
