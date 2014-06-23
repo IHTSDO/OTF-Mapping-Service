@@ -24,7 +24,6 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
@@ -50,6 +49,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	/** The transaction per operation. */
 	private boolean transactionPerOperation = true;
+	
+	/** The transaction entity. */
+	private EntityTransaction tx;
 
 	/**
 	 * Instantiates an empty {@link ContentServiceJpa}.
@@ -115,6 +117,65 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		}
 	}
 
+
+	@Override
+	public Concept addConcept(Concept concept) throws Exception {
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(concept);
+			tx.commit();
+		} else {
+			manager.persist(concept);
+		}
+
+		return concept;
+	}
+	
+	@Override
+	public void updateConcept(Concept concept) throws Exception {
+
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.merge(concept);
+			tx.commit();
+		} else {
+			manager.merge(concept);
+		}
+
+	}
+	
+	@Override
+	public void removeConcept(Concept concept) throws Exception {
+
+		tx = manager.getTransaction();
+
+		// retrieve this map specialist
+		Concept mu = manager.find(ConceptJpa.class, concept.getId());
+
+
+		if (getTransactionPerOperation()) {
+
+			// remove specialist
+			tx.begin();
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+			tx.commit();
+
+		} else {
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+		}
+
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -1047,5 +1108,5 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return full_query;
 
 	}
-
+	
 }
