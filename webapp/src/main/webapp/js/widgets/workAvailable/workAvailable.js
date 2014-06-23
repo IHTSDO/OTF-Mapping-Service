@@ -201,9 +201,13 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	
 	// assign a single concept to the current user
 	// query passed in to ensure correct retrieval of work
-	$scope.assignWork = function(trackingRecord, mapUser, query) {
+	$scope.assignWork = function(trackingRecord, mapUser, query, workType) {
 		
-		
+		console.debug('assignWork called');
+		console.debug(trackingRecord);
+		console.debug(mapUser);
+		console.debug(query);
+		console.debug(workType);
 		// doublecheck map user and query, assign default values if necessary
 		if (mapUser == null) mapUser = $scope.currentUser;
 		if (query == undefined) query = null;
@@ -220,12 +224,16 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			}	
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
-			$rootScope.$broadcast('workAvailableWidget.notification.assignWork');
+			$rootScope.$broadcast('workAvailableWidget.notification.assignWork', { assignUser: mapUser.userName, assignType: workType});
 			
-			$scope.retrieveAvailableWork($scope.trackingRecordPage, query);
-			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
+			if (workType == 'concept') {
+				$scope.retrieveAvailableWork($scope.trackingRecordPage, query);
+			} else if (workType === 'conflict') {
 				$scope.retrieveAvailableConflicts($scope.availableConflictsPage, query);
 			}
+			
+			
+			
 			
 		}).error(function(data, status, headers, config) {
 			$rootScope.glassPane--;
@@ -313,7 +321,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					}	
 				}).success(function(data) {
 				  	$rootScope.glassPane--;
-					$rootScope.$broadcast('workAvailableWidget.notification.assignWork');
+				  	
+				  	// note that assigning batch is by definition a concept assignment. This may change.
+					$rootScope.$broadcast('workAvailableWidget.notification.assignWork', {assignUser: mapUser.userName, assignType: 'concept'});
 					$scope.retrieveAvailableWork(1, query);				
 				}).error(function(data, status, headers, config) {
 				  	$rootScope.glassPane--;
