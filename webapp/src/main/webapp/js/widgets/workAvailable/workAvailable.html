@@ -19,7 +19,7 @@
           Batch</button>
         <button class="btn btn-sm btn-primary"
           ng-show="currentRole === 'Specialist'"
-          ng-click="assignBatch(currentUser, batchSize)">Claim Batch</button></td>
+          ng-click="assignBatch(currentUser, batchSize, null)">Claim Batch</button></td>
     </tr>
     
   </tbody>
@@ -31,7 +31,7 @@
   ng-class="{'glyphicon-chevron-down': isConceptListOpen == true, 'glyphicon-chevron-right': isConceptListOpen != true}"></i>
 
 </accordion-heading> 
-
+{{assignedMapUser}}
 <form>
 	<input id="availableSearch" ng-model="queryAvailable">
 	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, queryAvailable); isConceptListOpen = true">Search</button>
@@ -62,12 +62,12 @@
       <td style="width: 3%; padding: 5px;"><a
               title="Claim"              
               ng-show="currentRole == 'Specialist'"
-              ng-click="assignWork(concept, currentUser)"><i
+              ng-click="assignWork(concept, currentUser, queryAvailable, 'concept')"><i
               class="glyphicon glyphicon-import"></i></a>
               <a
               title="Assign"              
               ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
-              ng-click="assignWork(concept, assignedMapUser, queryAvailable)"><i
+              ng-click="assignWork(concept, assignedMapUser, queryAvailable, 'concept')"><i
               class="glyphicon glyphicon-import"></i></a>
       </td>
       <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
@@ -102,7 +102,7 @@
 
       <td style="width: 3%; padding: 5px;"><a
               title="Claim"
-              ng-click="assignWork(concept, assignedMapUser)"><i
+              ng-click="assignWork(concept, currentUser, queryConflict, 'conflict')"><i
               class="glyphicon glyphicon-import"></i></a></td>
       <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
       <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
