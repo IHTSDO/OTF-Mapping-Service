@@ -106,7 +106,7 @@
           style="vertical-align: top; padding: 5px;">
         <div ng-show="entry.mapAdvice.length > 0">
           <div ng-repeat="advice in entry.mapAdvice">
-            <button disabled>
+            <div class="alert alert-warning">
              <div style="display: inline;"> 
                {{advice.detail}} 
              </div>
@@ -114,7 +114,7 @@
                 <i class="glyphicon glyphicon-remove"
                  ng-click="removeEntryAdvice(entry, advice)"></i>
               </div>
-            </button>
+            </div>
           </div>
           <hr>
         </div> <span style="color: red">{{errorAddAdvice}}</span>
