@@ -190,7 +190,11 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		}
  
 		// if no records for this project found, set flag
-		if ($scope.recordsInProject.length == 0) $scope.recordsInProjectNotFound = true;
+		if ($scope.recordsInProject.length == 0) {
+			$scope.recordsInProjectNotFound = true;
+		} else {
+			$scope.recordsInProjectNotFound = false;			
+		}
 	};
 	
 	function setEditable(record) {
