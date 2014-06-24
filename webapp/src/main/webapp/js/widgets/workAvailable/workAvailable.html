@@ -5,7 +5,8 @@
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
       <td style="padding: 5px;">Assign work to:</td>
       <td style="padding: 5px;"><select ng-model="assignedMapUser"
-        ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name">
+        ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
+        ng-change="retrieveAvailableWork(1, queryAvailable, assignedMapUser)">
       </select></td>
     </tr>
     <tr>
@@ -35,14 +36,15 @@
 
 <form>
 	Filter Concepts: <input id="availableSearch" ng-model="queryAvailable">
-	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, queryAvailable); isConceptListOpen = true">Search</button>
-	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, 'null'); queryAvailable = null; isConceptListOpen = false">Reset</button>
+	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, queryAvailable, assignedMapUser); isConceptListOpen = true">Search</button>
+	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, 'null', assignedMapUser); queryAvailable = null; isConceptListOpen = false">Reset</button>
 	<img src="img/warning.png" tooltip-placement="top" tooltip="After testing is complete, searching available concepts will only be available to Map Leads."></img>
 </form>
 
 <pagination total-items="nAvailableWork" page="availableWorkPage" max-size="5"
   class="pagination-sm" boundary-links="true" rotate="true"
   num-pages="numAvailableWorkPages" on-select-page="retrieveAvailableWork(page)"></pagination>
+
 
 <table class="table">
 
