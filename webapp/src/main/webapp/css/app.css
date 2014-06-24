@@ -5,6 +5,10 @@ a {
 	cursor:pointer;
 }
 
+.glyphicon {
+	cursor:pointer;
+}
+
 html,body {
 	margin: 0; /* Remove body margin/padding */
 	padding: 0;

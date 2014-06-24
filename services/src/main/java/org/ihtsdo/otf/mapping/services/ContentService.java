@@ -39,7 +39,33 @@ public interface ContentService extends RootService {
    */
   public Concept getConcept(String terminologyId, String terminology,
     String terminologyVersion) throws Exception;
+  
+  /**
+   * Adds the concept.
+   *
+   * @param concept the concept
+   * @return the concept
+   * @throws Exception the exception
+   */
+  public Concept addConcept(Concept concept) throws Exception;
 
+
+	/**
+	 * Update concept.
+	 *
+	 * @param concept the concept
+	 * @throws Exception the exception
+	 */
+	public void updateConcept(Concept concept) throws Exception;
+		
+	/**
+	 * Removes the concept.
+	 *
+	 * @param concept the concept
+	 * @throws Exception the exception
+	 */
+	public void removeConcept(Concept concept) throws Exception;
+	
   /**
    * Returns the concept search results matching the query. Results can be
    * paged, filtered, and sorted.
@@ -155,4 +181,5 @@ public interface ContentService extends RootService {
   public TreePositionList getTreePositions(String terminologyId,
 		String terminology, String terminologyVersion) throws Exception;
 
+  
 }
