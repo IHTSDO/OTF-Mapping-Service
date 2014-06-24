@@ -589,6 +589,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 			// construct note object
 			var mapNote = new Object();
+			mapNote.id = null;
 			mapNote.localId = currentLocalId++;
 			mapNote.note = note;
 			mapNote.timestamp = (new Date()).getTime();
@@ -607,14 +608,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.removeRecordNote = function(record, note) {
 		console.debug("Removing note");
 		console.debug(note);
-		record['mapNote'] = removeJsonElement(record['mapNote'], note);
+		record['mapNote'].removeElement(note);
 		$scope.record = record;
 	};
 	
 	$scope.editRecordNote = function(record, note) {
 		console.debug("Editing note", note);
 		$scope.noteInput = note.note;
-	}
+	};
 	
 
 
