@@ -591,7 +591,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			var mapNote = new Object();
 			mapNote.localId = currentLocalId++;
 			mapNote.note = note;
-			mapNote.timestamp = (new Date()).getMilliseconds();
+			mapNote.timestamp = (new Date()).getTime();
 			mapNote.user = localStorageService.get('currentUser');
 			
 			// add note to record
@@ -610,8 +610,12 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		record['mapNote'] = removeJsonElement(record['mapNote'], note);
 		$scope.record = record;
 	};
-
-
+	
+	$scope.editRecordNote = function(record, note) {
+		console.debug("Editing note", note);
+		$scope.noteInput = note.note;
+	}
+	
 
 
 	/**
@@ -974,6 +978,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 	// function to return trusted html code (for tooltip content)
 	$scope.to_trusted = function(html_code) {
+		console.debug("to_trusted", $sce.trustAsHtml(html_code));
 		return $sce.trustAsHtml(html_code);
 	};
 

@@ -18,7 +18,8 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.projectRecords',
                                                      'mapProjectApp.widgets.recordConcept',
                                                      'LocalStorageModule',
-                                                     'ngCookies'
+                                                     'ngCookies',
+                                                     'ui.tinymce'
                                                      
                                                      ])
                                                      .value('prefix', '')
