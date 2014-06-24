@@ -480,9 +480,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// user must not be this user
 		full_query += " AND workflowPath:NON_LEGACY_PATH";
 		full_query += " AND (assignedUserCount:0 OR "
-				+ "(assignedUserCount:1 AND NOT assignedUserNames:" + mapUser.getUserName() + 
-				" AND (userAndWorkflowStatusPair:NEW_* OR userAndWorkflowStatusPAIR:EDITING_IN_PROGRESS_* OR userAndWorkflowStatusPair:EDITING_DONE_*)))";
-
+				+ "(assignedUserCount:1 AND NOT assignedUserNames:" + mapUser.getUserName() + "))";
+			
 
 		System.out.println("FindAvailableWork query: " + full_query);
 
