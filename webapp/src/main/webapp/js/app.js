@@ -19,7 +19,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.recordConcept',
                                                      'LocalStorageModule',
                                                      'ngCookies'
-                                                     //'textAngular'
+                                                     
                                                      ])
                                                      .value('prefix', '')
                                                      .config(function(dashboardProvider){

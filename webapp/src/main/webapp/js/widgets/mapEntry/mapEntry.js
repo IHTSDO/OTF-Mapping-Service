@@ -26,10 +26,25 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		sortByKey($scope.allowableAdvices, 'detail');
 		$scope.allowableMapRelations = getAllowableElements(parameters.entry, parameters.project.mapRelation);
 		});	
+	
+	// watch for entry deletion from map record page
+	$scope.$on('mapRecordWidget.notification.deleteSelectedEntry', function(event, parameters) { 	
+		console.debug("MapEntryWidget: Detected delete notification from MapRecordWidget");
+		console.debug(parameters);
+		
+		// if the currently viewed entry is the one being viewed, clear the displayed entry
+		if (($scope.entry.localId === parameters.entry.localId && $scope.entry.localId != null && $scope.entry.localId != "") 
+				|| ($scope.entry.id === parameters.entry.id && $scope.entry.id != null && $scope.entry.id != "")) {
+			$scope.entry = null;
+		}
+		
+	});
+	
 
 	// local variables
 	$scope.isTargetOpen = true;
 	$scope.isParametersOpen = true;
+	$scope.localErrorRule = "";
 	
 	$scope.userToken = localStorageService.get('userToken');
 	$scope.$watch('userToken', function() {
@@ -148,6 +163,9 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 
 	// scope level function to open the modal constructor
 	$scope.openRuleConstructor = function() {
+		
+		// clear any error regarding rule construction
+		$scope.localErrorRule = "";
 
 		var modalInstance = $modal.open({
 			templateUrl: 'partials/rule-modal.html',
@@ -163,6 +181,13 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		});
 
 		modalInstance.result.then(function(rule) {
+			
+			// set to true if rule returned with no value and display an error
+			if (rule == null || rule == undefined || rule === '') {
+				rule = 'TRUE';
+				$scope.localErrorRule = "Invalid rule constructed, setting rule to TRUE";
+			}
+			
 			$scope.entry.rule = rule;
 			$scope.entry.ruleSummary = $scope.getRuleSummary($scope.entry);
 		});

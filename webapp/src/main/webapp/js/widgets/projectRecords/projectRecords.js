@@ -52,6 +52,7 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 
 	// pagination variables
 	$scope.recordsPerPage = 10;
+	$scope.recordPage = 1;
 
 	// for collapse directive
 	$scope.isCollapsed = true;
