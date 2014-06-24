@@ -31,7 +31,7 @@
 		<tr>
 			<th style="width: 3%; padding: 5px;"></th>
 			<th style="width: 14%; padding: 5px;">Id</th>
-			<th style="width: 80%; padding: 5px;">Name</th>
+			<th style="width: 80%; padding: 5px;">Preferred Name</th>
 			<th style="width: 3%; padding: 5px;"><a title="Return All Work"
 				ng-click="openUnassignModal(user)"><i
 					class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
@@ -42,8 +42,7 @@
 	</thead>
 
 	<tbody>
-
-		<tr ng-repeat="result in assignedRecords">
+        <tr ng-repeat="result in assignedRecords">
 
 			<td style="width: 3%; padding: 5px;">
 				<!-- Display a pushpin if this record has previously been edited -->
@@ -66,11 +65,14 @@
 			<td style="width: 3%; padding: 5px;"><a title="Return"
 				ng-click="unassignWork(result, currentUser)"><i
 					class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
-	</tbody>
+	</tr>
+  </tbody>
 
 
 </table>
 
+<div ng-show="assignedRecords.length == 0 && searchPerformed">No concepts matched the search.</div>
+  
 
 </tab> 
 
@@ -101,7 +103,7 @@
 		<tr>
 			<th style="width: 3%; padding: 5px;"></th>
 			<th style="width: 14%; padding: 5px;">Id</th>
-			<th style="width: 80%; padding: 5px;">Name</th>
+			<th style="width: 80%; padding: 5px;">Preferred Name</th>
 			<th style="width: 3%; padding: 5px;"><a title="Return All Work"
 				ng-click="openUnassignModal(user)"><i
 					class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
@@ -133,6 +135,7 @@
 
 
 </table>
+<div ng-show="assignedConflicts.length == 0 && searchPerformed">No concepts matched the search.</div>
 
 
 </tab> 
@@ -174,7 +177,7 @@
 	<thead>
 		<tr>
 			<th style="width: 12%; padding: 5px;">Id</th>
-			<th style="width: 60%; padding: 5px;">Name</th>
+			<th style="width: 60%; padding: 5px;">Preferred Name</th>
 			<th style="width: 25%; padding: 5px;">Last Modified</th>
 			<th style="width: 3%; padding: 5px;"><a title="Return All Work"
 				ng-click="openUnassignModal(mapUserViewed)"><i
@@ -204,6 +207,8 @@
 
 
 </table>
+<div ng-show="assignedRecordsForUser.length == 0 && searchPerformed">No concepts matched the search.</div>
+
 </tab>
 
 </tabset>

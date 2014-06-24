@@ -24,10 +24,15 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	                {id: 1, title: 'Assigned Conflicts', active:false}, 
 	                {id: 2, title: 'Assigned Work By User', active:false}];
 	$scope.ownTab = true; // variable to track whether viewing own work or other users work
+
+	$scope.searchPerformed = false;  // variable to track whether search was performed
 	
 	// function to change tab
 	$scope.setTab = function(tabNumber) {
 		console.debug("Switching to tab " + tabNumber);
+
+		$scope.searchPerformed = false;
+		
 		angular.forEach($scope.tabs, function(tab) {
 			tab.active = (tab.id == tabNumber? true : false);
 		});
@@ -108,7 +113,12 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		console.debug('Retrieving Assigned Conflicts: page ' + page);
 		
 		// ensure query is set to null if not specified
-		if (query == undefined) query = null;
+		if (query == undefined) {
+			query = null;
+			$scope.searchPerformed = false;
+		} else {
+			$scope.searchPerformed = true;
+		}
 		
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
@@ -162,7 +172,13 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		if (query == undefined) query = null;
 		
 		// reset the search input box if null
-		if (query == null) $scope.queryAssigned = null;
+		if (query == null) {
+			$scope.queryAssigned = null;
+			$scope.searchPerformed = false;
+		} else {
+			$scope.searchPerformed = true;
+		
+		}
 		
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
@@ -221,7 +237,12 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		if (query == undefined) query = null
 		
 		// reset the search box if query is null
-		if (query == null) $scope.queryAssignedForUser = null;
+		if (query == null) {
+			$scope.queryAssignedForUser = null;
+			$scope.searchPerformed = false;
+		} else {
+			$scope.searchPerformed = true;
+		}
 
 		if (mapUserName == null) mapUserName = $scope.currentUser.userName;
 

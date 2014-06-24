@@ -1,5 +1,12 @@
 <!--  CONCEPT PANEL -->
 
+<!-- Prevent reload on this editing page -->
+<script type="text/javascript">
+    window.onbeforeunload = function() {
+        return "If you leave this page data may be lost!";
+    }
+</script>
+
 
 <accordion> <accordion-group is-open="isConceptOpen">
 <accordion-heading> Source Concept <i
@@ -47,7 +54,7 @@
 				<accordion-heading> <span
 					style="text-align: left;">Map Group <span
 					ng-show="entries[group].length == 0"> &nbsp <i
-						class="glyphicon glyphicon-remove-circle"
+        class="glyphicon glyphicon-remove"
 						ng-click="removeMapGroup(group)"></i>
 				</span>
 				</span> <span class="pull-right"><i class="glyphicon glyphicon-move"></i></span>
