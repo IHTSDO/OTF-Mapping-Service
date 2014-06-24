@@ -64,6 +64,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 		}
 	});
+	
+	// on retrieval 
+	$scope.$watch(['currentUser'], function () {
+		console.debug('user changed');
+		$scope.assignedMapUser = $scope.currentUser;
+	});
 
 	// on any change of focusProject, retrieve new available work
 	$scope.userToken = localStorageService.get('userToken');
@@ -74,6 +80,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		if ($scope.focusProject != null && $scope.userToken != null) {
 			
 			$http.defaults.headers.common.Authorization = $scope.userToken;
+
 			
 			// construct the list of users
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
