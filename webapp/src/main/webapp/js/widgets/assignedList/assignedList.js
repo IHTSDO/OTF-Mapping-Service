@@ -23,6 +23,12 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.tabs = [ {id: 0, title: 'Assigned Concepts', active:true}, 
 	                {id: 1, title: 'Assigned Conflicts', active:false}, 
 	                {id: 2, title: 'Assigned Work By User', active:false}];
+	
+	
+	// table sort fields
+	$scope.tableFields = [ {id: 0, title: 'id', sortDir: 'asc', sortOn: false},]
+	
+	
 	$scope.ownTab = true; // variable to track whether viewing own work or other users work
 
 	$scope.searchPerformed = false;  		// initialize variable to track whether search was performed
