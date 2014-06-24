@@ -12,9 +12,14 @@ var root_workflow = root_url + "workflow/";
 var root_security = root_url + "security/";
 
 mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $location) {
+	
+	// global variable to display a glass pane (if non-zero) preventing user interaction
 	$rootScope.glassPane = 0;
+	
+	// global variable, contains user-viewable error text displayed one very page if not empty
 	$rootScope.globalError = '';
 	
+	// global function to handle any type of error.  Currently only specifically implemented for authorizatoin failures.
     $rootScope.handleHttpError = function (data, status, headers, config) {
 		if (status == "401") {
 	    	$rootScope.globalError = $rootScope.globalError + " Authorization failed.  Please log in again.";
@@ -26,14 +31,41 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $l
 		
     }
     
+    // global function to reset the global error
     $rootScope.resetGlobalError = function () {
     	$rootScope.globalError = '';
-    }
+    };
+    
+    // variable to indicate whether the current page is "dirty"
+    // i.e. leaving this page might cause data to be lost
+    // at writing, only two pages with this status are:
+    // - mapRecord.html
+    // - compareRecords.html
+    $rootScope.currentPageDirty = false;
+    
+    // root watcher to check for page changes, reload events, window closes, etc
+    // if on a "dirty" page, prompt for confirmation from user
+    $rootScope.$on('$locationChangeStart', function (event) {
+    	
+    	console.log('$locationChangeStart changed!', $rootScope.currentPageDirty);
+    	
+    	if ($rootScope.currentPageDirty == true) {
+    		if(!confirm("Are you sure you want to leave this page? Any data you have entered will be lost.")) {
+    			console.debug("PREVENTING DEFAULT");
+   		      event.preventDefault();
+   		   	} else {
+   		   		// always set this to false
+   		   		// it is the responsibility of a "dirty" page controller to set this to true
+   		   		console.debug("Setting dirty to false");
+   		   		$rootScope.currentPageDirty = false;
+   		   	}
+    	}
+    });
 });
 
 
 
-//Navigation
+// Navigation
 mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService', '$rootScope', '$location', '$http',
                                                   function ($scope, localStorageService, $rootScope, $location, $http) {
     $scope.page =  'login';
@@ -130,6 +162,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 											key : 'mapProjects',
 											mapProjects : data.mapProject
 										});
+								$scope.mapProjects = data.mapProject;
 					}).error(function(data, status, headers, config) {
 						$rootScope.glassPane--;
 					    $rootScope.handleHttpError(data, status, headers, config);

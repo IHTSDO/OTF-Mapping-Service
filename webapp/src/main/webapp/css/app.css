@@ -1,6 +1,11 @@
 /* CSS file for OTF Mapping WebApp */
 
+/* ensures that all links properly display a pointer cursor */
 a {
+	cursor:pointer;
+}
+
+.glyphicon {
 	cursor:pointer;
 }
 
@@ -30,17 +35,26 @@ p {
 	padding: 7px;
 }
 
+/** alert button formatting from bootstrap.css -- want to make them thinner */
 .alert-error {
 	margin-bottom: 0px;
 	margin-top: 0px;
 	border-radius: 5px;
 }
 
+.alert-success {
+	margin-bottom: 0px;
+	margin-top: 0px;
+	padding: 5px;
+}
+
 .alert-warning {
+  margin-top: 0px;
   margin-bottom: 0px;
   padding: 5px;
 }
 
+/** from bootstrap.css, want the global error to take up less space */
 .border-error {	
   padding: 0px 0px 0px 0px;
 }
