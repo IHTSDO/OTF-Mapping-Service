@@ -67,6 +67,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 
 	// on any change of focusProject, retrieve new available work
 	$scope.userToken = localStorageService.get('userToken');
+	
 	$scope.$watch(['focusProject', 'userToken'], function() {
 		console.debug('workAvailableWidget:  scope project changed!');
 
@@ -123,6 +124,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			$scope.nAvailableConflicts = data.totalCount;
 			$scope.numAvailableConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
 			
+			$scope.availableConflicts = data.totalCount;
+			
 			// set title
 			$scope.availableConflictsTitle = "Available Conflicts (" + data.totalCount + ")";
 		}).error(function(data, status, headers, config) {
@@ -130,7 +133,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
-	};
+	} ;
 	
 
 	// get a page of available work
@@ -190,6 +193,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			// set title
 			$scope.availableWorkTitle = "Available Concepts (" + data.totalCount + ")";
 			console.debug($scope.numAvailableWorkPages);
+			$scope.availableCount = data.totalCount;
 			console.debug(data.totalCount);
 
 		}).error(function(data, status, headers, config) {
@@ -249,7 +253,18 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		// set query to null string if not provided
 		if (query == undefined) query == null;
 		
-		if (mapUser == null) mapUser = $scope.currentUser;
+		if (mapUser == null || mapUser == undefined) {
+			$scope.error = "Work recipient must be selected from list.";
+			return;	
+		};
+		
+		if (batchSize > $scope.availableCount) {
+			$scope.error = "Batch size is greater than available number of concepts.";
+			return;
+		} else {
+			$scope.error = null;
+		}
+			
 		
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 

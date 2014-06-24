@@ -5,11 +5,11 @@
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
       <td style="padding: 5px;">Assign work to:</td>
       <td style="padding: 5px;"><select ng-model="assignedMapUser"
-        ng-options="mapUser as mapUser.name for mapUser in mapUsers">
+        ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name">
       </select></td>
     </tr>
     <tr>
-      <td style="padding: 5px";>Batch size:</td>
+      <td style="padding: 5px;">Batch size:</td>
       <td style="padding: 5px;"><select ng-model="batchSize"
         ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
         &nbsp;
@@ -24,6 +24,7 @@
     
   </tbody>
 </table>
+<div style="color: red;" ng-show="error != null">{{error}}</div>
 
 <accordion> <accordion-group is-open="isConceptListOpen">
 <accordion-heading> Concepts Available for Assignment
@@ -31,7 +32,6 @@
   ng-class="{'glyphicon-chevron-down': isConceptListOpen == true, 'glyphicon-chevron-right': isConceptListOpen != true}"></i>
 
 </accordion-heading> 
-{{assignedMapUser}}
 <form>
 	<input id="availableSearch" ng-model="queryAvailable">
 	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, queryAvailable); isConceptListOpen = true">Search</button>
