@@ -13,6 +13,7 @@
   <input ng-model="query"> <input type="submit" value="Search"
     ng-click="retrieveRecords(1)"> <input type="submit" value="Reset"
     ng-click="resetSearch()">
+    &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
 </form>
 
 
@@ -93,7 +94,7 @@
     </tr>
 
   </tbody>
-  {{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
+  
   <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
     class="pagination-sm" boundary-links="true" rotate="true"
     num-pages="numRecordPages" on-select-page="retrieveRecords(page)"></pagination>
