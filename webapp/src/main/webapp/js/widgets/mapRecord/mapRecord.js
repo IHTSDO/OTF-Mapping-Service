@@ -20,6 +20,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	// Map Record Controller Functions //
 	/////////////////////////////////////
 
+	// this controller handles a potentially "dirty" page
+	$rootScope.currentPageDirty = true;
+	
 	// initialize scope variables
 	$scope.record = 	null;
 	$scope.project = 	localStorageService.get('focusProject');
@@ -247,7 +250,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 		// otherwise, select the first entry
 		} else {
-			$scope.selectEntry($scope.record.mapEntry[0]);
+			$scope.selectMapEntry($scope.record.mapEntry[0]);
 		}
 		
 		$scope.recordInitializationComplete = true;
@@ -370,8 +373,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						$scope.recordSuccess = "Record saved.";
 						$scope.recordError = "";
 						
-						
-						
+						// user has successfully finished record, page is no longer "dirty"
+						$rootScope.currentPageDirty = false;
 						
 						if (!returnBack) {
 							console.debug("************* ReturnBack is false");
@@ -498,6 +501,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
+			
+			// user has successfully saved record, page is no longer "dirty"
+			$rootScope.currentPageDirty = false;
+			
 			$scope.record = data;
 			$scope.recordSuccess = "Record saved.";
 			$scope.recordError = "";
@@ -523,6 +530,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
+			
+			// user has requested a cancel event, page is no longer "dirty"
+			$rootScope.currentPageDirty = false;
+			
+			
 			console.debug("Redirecting");
 			
 			$location.path($scope.role + "/dash");
@@ -581,19 +593,13 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			mapNote.note = note;
 			mapNote.timestamp = (new Date()).getMilliseconds();
 			mapNote.user = localStorageService.get('currentUser');
-
-			console.debug(mapNote);
-
+			
 			// add note to record
 			record['mapNote'].addElement(mapNote);
+			
+			// set the text area to null
+			$scope.noteInput = "";
 
-
-
-
-			// set scope record to record
-			//$scope.record = record;
-
-			console.debug($scope.record);
 
 		}
 	};
@@ -702,9 +708,19 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 	};
 	// Sets the scope variable for the active entry
-	$scope.selectEntry = function(entry) {
+	$scope.selectMapEntry = function(entry, group) {
 		console.debug("Select entry");
 		console.debug(entry);
+	
+		for (var i = 0; i < $scope.entries.length; i++) {
+			for (var j = 0; j < $scope.entries[i].length; j++) {
+				console.debug($scope.entries[i][j]);
+				$scope.entries[i][j].isSelected = false;
+			}
+		}
+		
+		entry.isSelected = true;
+		
 		$rootScope.$broadcast('mapRecordWidget.notification.changeSelectedEntry',{key: 'changeSelectedEntry', entry: angular.copy(entry), record: $scope.record, project: $scope.project});  
 
 	};
@@ -726,7 +742,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				"mapGroup": group,
 				"mapAdvice":[],
 				"mapPrinciples":[],
-				"localId": currentLocalId + 1
+				"localId": currentLocalId + 1,
+				"isSelected" : false
 		};
 
 		currentLocalId += 1;
@@ -739,7 +756,15 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.entries.push(newEntry);
 		}
 
-		$scope.selectEntry(newEntry);
+		$scope.selectMapEntry(newEntry);
+
+	};
+	
+	$scope.deleteMapEntry = function(entry, group) {
+		console.debug("deleteMapEntry: ", entry);
+		$scope.entries[group].removeElement(entry);
+		
+		$rootScope.$broadcast('mapRecordWidget.notification.deleteSelectedEntry',{key: 'deleteSelectedEntry', entry: angular.copy(entry), record: $scope.record, project: $scope.project});  
 
 	};
 
@@ -912,16 +937,23 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	//   which may not be strictly identical via string or key comparison
 	Array.prototype.removeElement = function(elem) {
 
+		console.debug('before removeElement', elem, $scope.entries);
+		
 		// switch on type of id
 		var idType = elem.hasOwnProperty('localId') ? 'localId' : 'id';
+		
+		console.debug('idType = ', idType);
 
 		var array = new Array();
 		$.map(this, function(v,i){
+			console.debug(v[idType], elem[idType]);
 			if (v[idType] != elem[idType]) array.push(v);
 		});
 
 		this.length = 0; //clear original array
 		this.push.apply(this, array); //push all elements except the one we want to delete
+		
+		console.debug('after removeElement', elem, $scope.entries);
 	};
 	
 	function removeJsonElement(array, elem) {
@@ -935,8 +967,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}
 		}
 		
-		console.debug("After remove, before return:")
-		console.debug(newArray)
+		console.debug("After remove, before return:");
+		console.debug(newArray);
 		return newArray;
 	}	
 	
@@ -947,7 +979,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 
 	$scope.getBrowserUrl = function() {
-		return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+		return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
 	};
+
 
 });
