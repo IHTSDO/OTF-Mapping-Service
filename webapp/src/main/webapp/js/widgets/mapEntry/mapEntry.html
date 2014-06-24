@@ -14,7 +14,7 @@
   <table style="width: 100%;">
 
     <tr>
-      <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
+      <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Id</strong></td>
       <td style="vertical-align: top; padding: 5px;"><span
         ng-show="entry.targetId != null && entry.targetId != ''">{{project.destinationTerminology}},
           {{entry.targetId}} &nbsp;
@@ -23,18 +23,16 @@
         ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">No
           Target Selected</span></td>
     </tr>
-    <tr>
-      <td ng-show="entry.targetId != null && entry.targetId != ''"
-       style="vertical-align: top; padding: 5px;"><strong>Preferred Term</strong></td>       
-      <td ng-show="entry.targetId != null && entry.targetId != ''" 
-       style="vertical-align: top; padding: 5px;">{{entry.targetName}}</td>
-      <td ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
-        <strong>Reason</strong></td> 
-      <td ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
-        {{entry.mapRelation.name}}</td> 
+    <tr ng-show="entry.targetId != null && entry.targetId != ''">
+      <td style="vertical-align: top; padding: 5px; width: 50px; white-space:nowrap;"><strong>Preferred Term</strong></td>       
+      <td style="vertical-align: top; padding: 5px;">{{entry.targetName}}</td>
+    </tr>
+    <tr ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined) && entry.mapRelation != null">
+      <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Reason</strong></td> 
+      <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.name}}</td> 
     </tr>
     <tr ng-show="allowableMapRelations.length > 1 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
-      <td style="vertical-align: top; padding: 5px;"><strong>Select</strong></td>
+      <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Select</strong></td>
       <td style="vertical-align: top; padding: 5px;"><select
         style="width: 80%" ng-model="mapRelationInput"
         ng-change="selectMapRelation(mapRelationInput)"
@@ -54,17 +52,17 @@
   <table style="padding: 5px">
 
     <tr ng-show="project.ruleBased == true">
-      <td style="vertical-align: top; padding: 5px;"><strong>Rule</strong></td>
-      <td style="vertical-align: top; padding: 5px;"><div style="display:inline;">{{entry.rule}}&nbsp;</div>
-        <div style="display:inline;" ng-show="entry.rule.length > 0"> <input type="submit"
+      <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Rule</strong></td>
+      <td style="vertical-align: top; padding: 5px;"><span>{{entry.rule}}&nbsp;</span>
+        <span ng-show="entry.rule.length > 0"> <input type="submit"
         value="Set Rule" ng-click="openRuleConstructor(entry)">
-        </div>
+        </span>
       </td>
     </tr>
 
     <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
     <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'"> -->
-      <td style="vertical-align: top; padding: 5px;"><strong>Relation
+      <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation
           Id</strong></td>
       <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.terminologyId}}
         <span ng-show="entry.mapRelation != null"><button
@@ -74,7 +72,7 @@
 
     <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
     <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'"> -->
-      <td style="vertical-align: top; padding: 5px;"><strong>Relation
+      <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation
           Name</strong></td>
       <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.name}}</td>
 
@@ -82,7 +80,7 @@
 
     <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
     <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length > 0">
-     -->  <td style="vertical-align: top; padding: 5px;">Select</td>
+     -->  <td style="vertical-align: top; padding: 5px; width: 50px;">Select</td>
       <td style="vertical-align: top; padding: 5px;"><select
         style="width: 60%" ng-model="mapRelationInput"
         ng-change="selectMapRelation(mapRelationInput)"
