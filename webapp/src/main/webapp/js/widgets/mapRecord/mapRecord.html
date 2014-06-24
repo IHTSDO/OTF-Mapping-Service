@@ -7,31 +7,6 @@
     }
 </script>
 
-<script>
-tinymce.init({
-    selector: "textarea#elm1",
-    theme: "modern",
-    width: 500,
-    height: 300,
-    plugins: [
-         "advlist autolink link image lists charmap print preview hr anchor pagebreak spellchecker",
-         "searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking",
-         "save table contextmenu directionality emoticons template paste textcolor"
-   ],
-   toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | l      ink image | print preview media fullpage | forecolor backcolor emoticons", 
-   style_formats: [
-        {title: 'Bold text', inline: 'b'},
-        {title: 'Red text', inline: 'span', styles: {color: '#ff0000'}},
-        {title: 'Red header', block: 'h1', styles: {color: '#ff0000'}},
-        {title: 'Example 1', inline: 'span', classes: 'example1'},
-        {title: 'Example 2', inline: 'span', classes: 'example2'},
-        {title: 'Table styles'},
-        {title: 'Table row 1', selector: 'tr', classes: 'tablerow1'}
-    ]
- }); 
-</script>	
-
-
 <accordion> <accordion-group is-open="isConceptOpen">
 <accordion-heading> Source Concept <i
 	class="pull-right glyphicon"
@@ -126,7 +101,7 @@ tinymce.init({
 		
 			<!-- Temporary key for use in testing -->
 			<div class="pull-right">
-			Legend: <span style="padding: 3px; background-color:#dff0d8;"><a>Currently Editing</a></span>
+			Entry Legend: <span style="padding: 3px; background-color:#dff0d8;"><a>Currently Editing</a></span>
 			<span style="padding: 3px; background-color:#fcf8e3;""><a>Other Entries</a></span>
 			</div>
 		</div>
@@ -162,27 +137,32 @@ tinymce.init({
 <div ng-show="record.mapNote.length > 0">
 	<div ng-repeat="note in record.mapNote">
 		<div class="alert alert-warning" disabled>
-			[{{note.user.userName}}] {{note.note}}
-			<div style="display: inline; float: right; width: 3%;">
-				<i class="glyphicon glyphicon-remove"
+		<i class="glyphicon glyphicon-remove pull-right"
 					ng-click="removeRecordNote(record, note)"></i>
-			</div>
+			[By <a href="mailto:{{user.email}}">{{note.user.userName}}</a> on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}] 
+			<div style="padding-left:20px;" ng-bind-html="to_trusted(note.note)"></div>
+				
 		</div>
 	</div>
 	<hr>
 </div>
 
 <span style="color: red">{{errorAddRecordNote}}</span>
-<form>
 
-	<textarea id="elm1" name="area"></textarea>
+	<!--  tinymce text area -->
+	<form method="post">
+    	<textarea id="tinymce" ui-tinymce ng-model="noteInput"></textarea>
+    	<input class="pull-right" type="submit" value="Add Note"
+		ng-click="addRecordNote(record, noteInput); noteInput = ''">
+  	</form>
+	
+	
+	
 	<!-- Original text area box
 	<textarea style="width: 100%;" ng-model="noteInput" name="noteInputTextArea"></textarea>
 	 -->
 	 
-	 <input class="pull-right" type="submit" value="Add Note"
-		ng-click="addRecordNote(record, noteInput); noteInput = ''">
-</form>
+	 
 </accordion-group> </accordion>
 
 <!--  PRINCIPLES PANEL -->
