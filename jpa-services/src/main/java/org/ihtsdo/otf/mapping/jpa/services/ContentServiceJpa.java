@@ -766,7 +766,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			boolean ancestorFound = false;
 
 			// cycle over the tree positions for this ancestor
-			for (TreePosition tp : getTreePositionsWithDescendants(ancestors[i],
+			for (TreePosition tp : getTreePositions(ancestors[i],
 					treePosition.getTerminology(),
 					treePosition.getTerminologyVersion()).getTreePositions()) {
 
@@ -872,12 +872,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 								+ " with "
 								+ existingTreePosition.getChildren().size());
 
-				existingTreePosition
+				/*existingTreePosition
 						.addChildren(fullTreePosition.getChildren());
 
 				Logger.getLogger(ContentServiceJpa.class).info(
 						"  Added " + fullTreePosition.getChildren().size()
-								+ " children:");
+								+ " children:");*/
 				for (TreePosition tp : fullTreePosition.getChildren()) {
 					Logger.getLogger(ContentServiceJpa.class).info(
 							tp.getTerminologyId());

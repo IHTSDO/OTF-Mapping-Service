@@ -25,7 +25,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	                {id: 2, title: 'Assigned Work By User', active:false}];
 	$scope.ownTab = true; // variable to track whether viewing own work or other users work
 
-	$scope.searchPerformed = false;  // variable to track whether search was performed
+	$scope.searchPerformed = false;  		// initialize variable to track whether search was performed
+	$scope.assignedWorkType = 'ALL'; 		// initialize variable to track which type of work has been requested
+	$scope.assignedConflictType = 'ALL'; 	// initialize variable to track which type of conflict has been requested
+	$scope.assignedWorkForUserType = 'ALL';	// initialize variable to track which type of work (for another user) has been requested
 	
 	// function to change tab
 	$scope.setTab = function(tabNumber) {
@@ -108,7 +111,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		}
 	});
 	
-	$scope.retrieveAssignedConflicts = function(page, query) {
+	$scope.retrieveAssignedConflicts = function(page, query, assignedConflictType) {
 		
 		console.debug('Retrieving Assigned Conflicts: page ' + page);
 		
@@ -125,7 +128,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					{"startIndex": (page-1)*$scope.itemsPerPage,
 			 	 	 "maxResults": $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
-			 	 	 "queryRestriction": null};  
+			 	 	 "queryRestriction": assignedConflictType};  
 
 	  	$rootScope.glassPane++;
 
@@ -164,7 +167,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		});
 	};
 	
-	$scope.retrieveAssignedWork = function(page, query) {
+	$scope.retrieveAssignedWork = function(page, query, assignedWorkType) {
 		
 		console.debug('Retrieving Assigned Concepts: page ' + page);
 
@@ -185,7 +188,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					{"startIndex": (page-1)*$scope.itemsPerPage,
 			 	 	 "maxResults": $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
-			 	 	 "queryRestriction": null};  
+			 	 	 "queryRestriction": assignedWorkType};
 
 	  	$rootScope.glassPane++;
 
@@ -228,7 +231,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	
 	$scope.mapUserViewed == null; // initial value
 	
-	$scope.retrieveAssignedWorkForUser = function(page, mapUserName, query) {
+	$scope.retrieveAssignedWorkForUser = function(page, mapUserName, query, assignedWorkType) {
 		
 		console.debug("retrieveAssignedWorkForUser:");
 		console.debug($scope.mapUserViewed);
@@ -254,7 +257,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		{"startIndex": (page-1)*$scope.itemsPerPage,
 				"maxResults": $scope.itemsPerPage, 
 				"sortField": 'sortKey',
-				"queryRestriction": null};  
+				"queryRestriction": assignedWorkType};  
 
 		$rootScope.glassPane++;
 
@@ -326,8 +329,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 			if ($scope.ownTab == true) {
 				
-				$rootScope.$broadcast('assignedListWidget.notification.unassignWork',
-						{key: 'mapRecord', mapRecord: record});
+				$rootScope.$broadcast('assignedListWidget.notification.unassignWork');
 	
 				if ($scope.focusProject != null && $scope.currentUser != null) {
 					$scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.queryAssigned);

@@ -7,6 +7,30 @@
     }
 </script>
 
+<script>
+tinymce.init({
+    selector: "textarea#elm1",
+    theme: "modern",
+    width: 500,
+    height: 300,
+    plugins: [
+         "advlist autolink link image lists charmap print preview hr anchor pagebreak spellchecker",
+         "searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking",
+         "save table contextmenu directionality emoticons template paste textcolor"
+   ],
+   toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | l      ink image | print preview media fullpage | forecolor backcolor emoticons", 
+   style_formats: [
+        {title: 'Bold text', inline: 'b'},
+        {title: 'Red text', inline: 'span', styles: {color: '#ff0000'}},
+        {title: 'Red header', block: 'h1', styles: {color: '#ff0000'}},
+        {title: 'Example 1', inline: 'span', classes: 'example1'},
+        {title: 'Example 2', inline: 'span', classes: 'example2'},
+        {title: 'Table styles'},
+        {title: 'Table row 1', selector: 'tr', classes: 'tablerow1'}
+    ]
+ }); 
+</script>	
+
 
 <accordion> <accordion-group is-open="isConceptOpen">
 <accordion-heading> Source Concept <i
@@ -80,9 +104,7 @@
 					<!--  end sortable entries -->
 					<br> 
 					
-					<!-- Temporary key for use in testing -->
-					Legend: <span style="padding: 3px; background-color:#dff0d8;"><a>Currently Editing</a></span>
-					<span style="padding: 3px; background-color:#fcf8e3;""><a>Other Entries</a></span>
+				
 					
 					<input class="pull-right" type="submit"
 						value="Add Map Entry" ng-click="entry = addMapEntry(group)">
@@ -101,6 +123,12 @@
 			<!--  end group accordion -->
 		
 			<input type="submit" value="Add Map Group" ng-click="addMapGroup()">
+		
+			<!-- Temporary key for use in testing -->
+			<div class="pull-right">
+			Legend: <span style="padding: 3px; background-color:#dff0d8;"><a>Currently Editing</a></span>
+			<span style="padding: 3px; background-color:#fcf8e3;""><a>Other Entries</a></span>
+			</div>
 		</div>
 
 <!--  for no group structure in project -->
@@ -146,8 +174,13 @@
 
 <span style="color: red">{{errorAddRecordNote}}</span>
 <form>
+
+	<textarea id="elm1" name="area"></textarea>
+	<!-- Original text area box
 	<textarea style="width: 100%;" ng-model="noteInput" name="noteInputTextArea"></textarea>
-	<input class="pull-right" type="submit" value="Add Note"
+	 -->
+	 
+	 <input class="pull-right" type="submit" value="Add Note"
 		ng-click="addRecordNote(record, noteInput); noteInput = ''">
 </form>
 </accordion-group> </accordion>

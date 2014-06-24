@@ -1375,11 +1375,18 @@ public class MappingServiceRest {
 						"User does not have permissions to compute the map relation.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
-			MapRecord mapRecord = mapEntry.getMapRecord();
-
+			
+			// after deserialization, the entry has a dummy map record with id
+			// get the actual record
+			MapRecord mapRecord = mappingService.getMapRecord(mapEntry.getMapRecord().getId());
+			
+			
+			System.out.println(mapRecord.toString());
 			if (mapRecord.getMapProjectId() == null) {
 			  return null;
 			}
+			System.out.println("Retrieving project handler");
+			
 			ProjectSpecificAlgorithmHandler algorithmHandler = mappingService.getProjectSpecificAlgorithmHandler(mappingService.getMapProject(mapRecord
 					.getMapProjectId()));
 
