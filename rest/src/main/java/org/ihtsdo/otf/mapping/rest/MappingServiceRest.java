@@ -1377,6 +1377,9 @@ public class MappingServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecord mapRecord = mapEntry.getMapRecord();
 
+			if (mapRecord.getMapProjectId() == null) {
+			  return null;
+			}
 			ProjectSpecificAlgorithmHandler algorithmHandler = mappingService.getProjectSpecificAlgorithmHandler(mappingService.getMapProject(mapRecord
 					.getMapProjectId()));
 
