@@ -144,9 +144,12 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	
 
 	// get a page of available work
-	$scope.retrieveAvailableWork = function(page, query) {
+	$scope.retrieveAvailableWork = function(page, query, user) {
 		console.debug('workAvailableCtrl: Retrieving available work');
 
+		// if user not supplied, assume current user
+		if (user == null || user == undefined) user = $scope.currentUser;
+		
 		// clear the existing work
 		$scope.availableWork = null;
 		
@@ -170,7 +173,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			url: root_workflow + "project/id/" 
 			+ $scope.focusProject.id 
 			+ "/user/id/" 
-			+ $scope.currentUser.userName 
+			+ user.userName
 			+ "/query/" + (query == null ? 'null' : query)
 			+ "/availableConcepts",
 			dataType: "json",
@@ -218,7 +221,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		console.debug(trackingRecord);
 		console.debug(mapUser);
 		console.debug(query);
-		console.debug(workType);
+		console.debug(workType)
+		;
 		// doublecheck map user and query, assign default values if necessary
 		if (mapUser == null) mapUser = $scope.currentUser;
 		if (query == undefined) query = null;
@@ -228,7 +232,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		$http({
 			url: root_workflow + "assign/project/id/" + $scope.focusProject.id +
 								 "/concept/id/" + trackingRecord.terminologyId +
-								 "/user/id/" + $scope.currentUser.userName,
+								 "/user/id/" + mapUser.userName,
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
