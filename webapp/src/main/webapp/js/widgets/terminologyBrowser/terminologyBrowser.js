@@ -52,7 +52,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	$scope.userToken = localStorageService.get('userToken');
 	
 
-	// on any change of focusProject, retrieve new available work
+	// on any change of focusProject, metadata, or user token, perform widget initialization
 	$scope.$watch(['focusProject', 'metadata', 'userToken'], function() {
 
 		// once needed state variables are loaded, initialize and make first call
@@ -228,6 +228,13 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			if (treePositions[i].children.length > 0) {
 				treePositions[i].isOpen = true;
 				$scope.expandAll(treePositions[i].children);
+			}
+			
+			// if this tree position's code exactly matches the query, expand the information panel
+			console.debug("Checking terminology match", treePositions[i].terminologyId, $scope.query);
+			if (treePositions[i].terminologyId === $scope.query) {
+				console.debug("   MATCH FOUND");
+				$scope.getConceptDetails(treePositions[i]);
 			}
 		}
 	};

@@ -31,9 +31,9 @@
   ng-class="{'glyphicon-chevron-down': isConceptListOpen == true, 'glyphicon-chevron-right': isConceptListOpen != true}"></i>
 
 </accordion-heading> 
-{{assignedMapUser}}
+
 <form>
-	<input id="availableSearch" ng-model="queryAvailable">
+	Filter Concepts: <input id="availableSearch" ng-model="queryAvailable">
 	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, queryAvailable); isConceptListOpen = true">Search</button>
 	<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableWork(1, 'null'); queryAvailable = null; isConceptListOpen = false">Reset</button>
 	<img src="img/warning.png" tooltip-placement="top" tooltip="After testing is complete, searching available concepts will only be available to Map Leads."></img>
