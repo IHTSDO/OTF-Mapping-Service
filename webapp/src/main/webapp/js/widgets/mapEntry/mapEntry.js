@@ -20,6 +20,8 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		$scope.entry = parameters.entry;
 		$scope.record = parameters.record;
 		$scope.project = parameters.project;
+		
+		console.debug("MapEntryWidget: mapRecord = ", $scope.record);
 
 		// get the allowable advices
 		$scope.allowableAdvices = getAllowableElements(parameters.entry, parameters.project.mapAdvice);
@@ -116,6 +118,9 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		$scope.allowableAdvices = getAllowableElements($scope.entry, $scope.project.mapAdvice);
 		sortByKey($scope.allowableAdvices, 'detail');
 		$scope.allowableMapRelations = getAllowableElements($scope.entry, $scope.project.mapRelation);
+		
+		// attempt to autocompute the map relation
+		computeRelation($scope.entry);
 	});	
 	
 	
@@ -124,10 +129,17 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		console.debug("clearTargetConcept() called");
 		entry.targetId = null;
 		entry.targetName = null;
+		console.debug(entry.mapRelation);
+		
+		
 		computeRelation(entry);
 	};
 	
 	function computeRelation(entry) {
+		
+		// ensure mapRelation is deserializable
+		if (entry.mapRelation === '' || entry.mapRelation === undefined) entry.mapRelation = null;
+		
 		$http({
 			url: root_mapping + "relation/compute",
 			dataType: "json",

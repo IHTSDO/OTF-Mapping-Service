@@ -622,8 +622,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		SearchResultList assignedWork = new SearchResultListJpa();
 
+		// create a blank pfs parameter object if one not passed in
 		if (pfsParameter == null)
 			pfsParameter = new PfsParameterJpa();
+		
+		// create a blank query restriction if none provided
+		if (pfsParameter.getQueryRestriction() == null)
+			pfsParameter.setQueryRestriction("");
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
@@ -638,9 +643,35 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// add the query terms specific to findAssignedWork
 		// - user and workflowStatus must exist in a pair of form:
 		//	 workflowStatus~userName, e.g. NEW~dmo or EDITING_IN_PROGRESS~kli
-		full_query += " AND userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
-				+ " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + mapUser.getUserName();
-				
+		// - modify search term based on pfs parameter query restriction field
+		//   * default: NEW, EDITING_IN_PROGRESS, EDITING_DONE
+		//   * NEW:  NEW
+		//   * EDITED:  EDITING_IN_PROGRESS, EDITING_DONE
+		
+		// add terms based on query restriction
+		switch (pfsParameter.getQueryRestriction()) {
+		case "NEW":
+			full_query += " AND userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName();
+			break;
+		case "EDITING_IN_PROGRESS":
+			full_query += " AND userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + mapUser.getUserName();
+			break;
+		case "EDITING_DONE":
+			full_query +=" AND userAndWorkflowStatusPairs:EDITING_DONE_" + mapUser.getUserName();
+			break;
+		default:
+			full_query += " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
+			+ " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + mapUser.getUserName()
+			+ " OR userAndWorkflowStatusPairs:EDITING_DONE_" + mapUser.getUserName() + ")";
+			break;
+		}
+
+		
+		/*
+		
+		full_query += " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
+				+ " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + mapUser.getUserName() + ")";
+				*/
 
 		System.out.println("FindAssignedWork query: " + full_query);
 
@@ -700,6 +731,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			result.setTerminologyId(mapRecord.getConceptId());
 			result.setValue(mapRecord.getConceptName());
 			result.setTerminology(mapRecord.getLastModified().toString());
+			result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
 			result.setId(mapRecord.getId());
 			assignedWork.addSearchResult(result);
 		}
@@ -728,6 +760,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		if (pfsParameter == null)
 			pfsParameter = new PfsParameterJpa();
+		
+		// create a blank query restriction if none provided
+				if (pfsParameter.getQueryRestriction() == null)
+					pfsParameter.setQueryRestriction("");
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
@@ -740,13 +776,21 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				mapProject.getId(), query);
 
 		// add the query terms specific to findAssignedConflicts
-		// - 3 users (2 specialists and 1 lead) must be assigned
 		// - workflow status CONFLICT_NEW or CONFLICT_IN_PROGRESS with this user name in pair
 
-		full_query += " AND assignedUserCount:3"
-				+ " AND (userAndWorkflowStatusPairs:CONFLICT_NEW_" + mapUser.getUserName()
-				+ " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_" + mapUser.getUserName() + ")";
-
+		// add terms based on query restriction
+		switch (pfsParameter.getQueryRestriction()) {
+		case "CONFLICT_NEW":
+			full_query += " AND userAndWorkflowStatusPairs:CONFLICT_NEW_" + mapUser.getUserName();
+			break;
+		case "CONFLICT_IN_PROGRESS":
+			full_query += " AND userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_" + mapUser.getUserName();
+			break;
+		default:
+			full_query += " AND (userAndWorkflowStatusPairs:CONFLICT_NEW_" + mapUser.getUserName()
+			+ " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_" + mapUser.getUserName() + ")";
+			break;
+		}
 		System.out.println("FindAssignedConflict query: " + full_query);
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
@@ -806,6 +850,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			result.setTerminologyId(mapRecord.getConceptId());
 			result.setValue(mapRecord.getConceptName());
 			result.setTerminology(mapRecord.getLastModified().toString());
+			result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
 			result.setId(mapRecord.getId());
 			assignedConflicts.addSearchResult(result);
 		}
