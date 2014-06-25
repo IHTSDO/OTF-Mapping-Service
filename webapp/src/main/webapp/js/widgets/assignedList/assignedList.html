@@ -153,12 +153,12 @@
 			<!-- Display a pushpin if this record has previously been edited -->
 				<a title='Continue working on this conflict'
 				ng-show="result.terminologyVersion === 'CONFLICT_IN_PROGRESS'"> <i
-					ng-click="goEditRecord(result.id)"
+					ng-click="goEditConflict(result.id)"
 					class="glyphicon glyphicon-pushpin"></i>
 			</a> <!-- Display a pencil if this record has not yet been edited --> <a
 				title='Start work on this conflict'
 				ng-show="result.terminologyVersion === 'CONFLICT_NEW'"> <i
-					ng-click="goEditRecord(result.id)"
+					ng-click="goEditConflict(result.id)"
 					class="glyphicon glyphicon-pencil"></i>
 			</a>
 			</td>
