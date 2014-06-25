@@ -83,8 +83,9 @@
       </td>
       <td>{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</td>
       <td ng-show="project.ruleBased == true">{{entry.rule}}</td>
-      <td><div>{{entry.targetName}}</div>
-          <div>{{entry.targetId}}</div></td>
+      <td ng-show="entry.targetId != ''"><div>{{entry.targetName}}</div><div>{{entry.targetId}}</div></td>
+      <td ng-show="entry.targetId == null || entry.targetId == ''">{{entry.mapRelation.abbreviation}}</td>
+      
       <td><a
               title="Edit"
               ng-show="isEditable(record)" 
