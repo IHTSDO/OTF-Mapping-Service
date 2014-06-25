@@ -1301,7 +1301,7 @@ public class MappingServiceRest {
 	 * Returns the map record revisions.
 	 * 
 	 * NOTE: currently not called, but we are going to want to call this to do history-related stuff
-	 *       thus it is anticipating future dev and should be kept.
+	 *       thus it is anticipating the future dev and should be kept.
 	 * 
 	 * @param mapRecordId
 	 *            the map record id
