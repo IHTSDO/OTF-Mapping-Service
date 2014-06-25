@@ -264,7 +264,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 							widgets: [{
 								type: "assignedList",
 								config: {},
-								title: "Assigned to Me"
+								title: "Assigned Work"
 							}]
 						}]
 					}
@@ -316,7 +316,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 							widgets: [{
 								type: "assignedList",
 								config: {},
-								title: "Assigned to Me"
+								title: "Assigned Work"
 							}]
 						}]
 					}
