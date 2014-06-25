@@ -148,6 +148,10 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
+				for (var i = 0; i < data.errors.length; i++) {				
+				  data.errors[i] = data.errors[i].replace("Specialist 1", $scope.record1.owner.name);
+				  data.errors[i] = data.errors[i].replace("Specialist 2", $scope.record2.owner.name);
+				}
 				$scope.validationResult = data;
 			}).error(function(data, status, headers, config) {
 			    $rootScope.handleHttpError(data, status, headers, config);
