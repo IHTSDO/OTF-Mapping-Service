@@ -69,24 +69,37 @@
 
       <tr
         ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
-        <td><span ng-show="entry.mapAdvice.length > 0">
-            <div class="dropdown">
-              <a class="dropdown-toggle"> <img src="img/dialog-question.png"
-                alt="question icon">
-              </a> <span class="dropdown-menu">
-                <p>
-                  <strong>Advice</strong>
-                </p>
-                <p></p>
-                <p ng-repeat="advice in entry.mapAdvice"
-                  ng-bind-html="to_trusted(advice.detail)"></p>
-              </span>
-            </div>
-        </span></td>
+        <td>
+        
+        <div>
+        <span ng-show="record.mapNote.length > 0 && currentRole != 'Viewer'"> <span
+          class="dropdown"> <a class="dropdown-toggle"> <img
+              src="img/notepad.png" alt="notepad icon">
+          </a> <span class="dropdown-menu project-records-dropdown-menu"> <strong>Notes</strong>
+              <p></p>
+              <p ng-repeat="note in record.mapNote"
+                ng-bind-html="to_trusted(note.note)"></p>
+          </span>
+        </span>
+        </span> 
+        <span ng-show="entry.mapAdvice.length > 0">
+          <span class="dropdown">
+            <a class="dropdown-toggle"> <img src="img/dialog-question.png"
+              alt="question icon">
+            </a> <span class="dropdown-menu project-records-dropdown-menu"> <strong>Advice</strong>
+              <p></p>
+              <p ng-repeat="advice in entry.mapAdvice"
+                ng-bind-html="to_trusted(advice.detail)"></p>
+            </span>
+          </span>
+        </span> 
+        </div>
+        </td>
         <td>{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</td>
         <td><span ng-show="getRuleBasedForRecord(record) == true">{{entry.rule}}</span></td>
         <td>{{entry.targetId}}</td>
-        <td>{{entry.targetName}}</td>
+        <td ng-show="entry.targetId > 0 || entry.targetId != ''">{{entry.targetName}}</td>
+        <td ng-show="entry.targetId == null || entry.targetId == ''">{{entry.mapRelation.abbreviation}}</td>
         <td ng-show="displayToViewer(record)">{{record.workflowStatus}}</td>
         <td ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">{{record.owner.name}}</td>
         <td><a
@@ -162,20 +175,30 @@
       </tr>
       <tr ng-if="displayToViewer(record)"
         ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
-        <td><span ng-show="entry.mapAdvice.length > 0">
-            <div class="dropdown">
-              <a class="dropdown-toggle"> <img src="img/dialog-question.png"
-                alt="question icon">
-              </a> <span class="dropdown-menu">
-                <p>
-                  <strong>Advice</strong>
-                </p>
-                <p></p>
-                <p ng-repeat="advice in entry.mapAdvice"
-                  ng-bind-html="to_trusted(advice.detail)"></p>
-              </span>
-            </div>
-        </span></td>
+        <td><div>
+
+        <span ng-show="record.mapNote.length > 0 && currentRole != 'Viewer'"> <span
+          class="dropdown"> <a class="dropdown-toggle"> <img
+              src="img/notepad.png" alt="notepad icon">
+          </a> <span class="dropdown-menu project-records-dropdown-menu"> <strong>Notes</strong>
+              <p></p>
+              <p ng-repeat="note in record.mapNote"
+                ng-bind-html="to_trusted(note.note)"></p>
+          </span>
+        </span>
+        </span> 
+        <span ng-show="entry.mapAdvice.length > 0">
+          <span class="dropdown">
+            <a class="dropdown-toggle"> <img src="img/dialog-question.png"
+              alt="question icon">
+            </a> <span class="dropdown-menu project-records-dropdown-menu"> <strong>Advice</strong>
+              <p></p>
+              <p ng-repeat="advice in entry.mapAdvice"
+                ng-bind-html="to_trusted(advice.detail)"></p>
+            </span>
+          </span>
+        </span> 
+      </div></td>
         <td>
         
         	{{getProjectName(record)}}
@@ -188,7 +211,8 @@
           <span ng-show="getRuleBasedForRecord(record) == false">(Not
             Rule Based)</span></td>
         <td>{{entry.targetId}}</td>
-        <td>{{entry.targetName}}</td>
+        <td ng-show="entry.targetId != null">{{entry.targetName}}</td>
+        <td ng-show="entry.targetId == null || entry.targetId == ''">{{entry.mapRelation.abbreviation}}</td>
         <td>{{record.workflowStatus}}</td>
         <td ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">{{record.owner.name}}</td>
         
