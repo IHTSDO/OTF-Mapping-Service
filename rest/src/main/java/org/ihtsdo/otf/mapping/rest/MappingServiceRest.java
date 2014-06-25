@@ -1300,6 +1300,9 @@ public class MappingServiceRest {
 	/**
 	 * Returns the map record revisions.
 	 * 
+	 * NOTE: currently not called, but we are going to want to call this to do history-related stuff
+	 *       thus it is anticipating future dev and should be kept.
+	 * 
 	 * @param mapRecordId
 	 *            the map record id
 	 * @param authToken 
@@ -1320,8 +1323,8 @@ public class MappingServiceRest {
 
 		try {
   		// authorize call
-			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecordId);
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(Response.status(401).entity(
 						"User does not have permissions to retrieve the map record revisions.").build());
   		
@@ -1364,22 +1367,25 @@ public class MappingServiceRest {
 
 		// log call
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /relation/compute");
+            "RESTful call (Mapping): /relation/compute");
 
 
 		try {
-  		// authorize call
-			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to compute the map relation.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			
-			// after deserialization, the entry has a dummy map record with id
-			// get the actual record
-			MapRecord mapRecord = mappingService.getMapRecord(mapEntry.getMapRecord().getId());
-			
+            // after deserialization, the entry has a dummy map record with id
+            // get the actual record
+            MapRecord mapRecord = mappingService.getMapRecord(mapEntry.getMapRecord().getId());
+            Logger.getLogger(MappingServiceRest.class).info(
+                "  mapEntry.mapRecord.mapProjectId = " + mapRecord.getMapProjectId());
+
+	        // authorize call
+	        MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+	        if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+	            throw new WebApplicationException(Response.status(401).entity(
+	                    "User does not have permissions to compute the map relation.").build());
+
 			
 			System.out.println(mapRecord.toString());
 			if (mapRecord.getMapProjectId() == null) {
@@ -1426,15 +1432,20 @@ public class MappingServiceRest {
 				"RESTful call (Mapping): /advice/compute");
 
 		try {
-  		// authorize call
-			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to compute the map advice.").build());
-  		
-			MappingService mappingService = new MappingServiceJpa();
-			MapRecord mapRecord = mapEntry.getMapRecord();
 
+			MappingService mappingService = new MappingServiceJpa();
+            // after deserialization, the entry has a dummy map record with id
+            // get the actual record
+            MapRecord mapRecord = mappingService.getMapRecord(mapEntry.getMapRecord().getId());
+            Logger.getLogger(MappingServiceRest.class).info(
+                "  mapEntry.mapRecord.mapProjectId = " + mapRecord.getMapProjectId());
+
+	        // authorize call
+            MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+            if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+                throw new WebApplicationException(Response.status(401).entity(
+                        "User does not have permissions to compute the map advice.").build());
+			
 			ProjectSpecificAlgorithmHandler algorithmHandler = mappingService.getProjectSpecificAlgorithmHandler(mappingService.getMapProject(mapRecord
 					.getMapProjectId()));
 
@@ -1829,18 +1840,22 @@ public class MappingServiceRest {
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
 			throws Exception {
 
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /record/id/" + mapRecordId + "/conflictOrigins");
+      Logger.getLogger(MappingServiceRest.class).info(
+          "RESTful call (Mapping): /record/id/" + mapRecordId + "/conflictOrigins");
 		try {
+          MappingService mappingService = new MappingServiceJpa();
+		  MapRecord mapRecord = mappingService.getMapRecord(mapRecordId);
+		  Logger.getLogger(MappingServiceRest.class).info(
+                "  mapRecord.mapProjectId = " + mapRecord.getMapProjectId());
+
 		  // authorize call
-		  MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
 		  if (!role.hasPrivilegesOf(MapUserRole.LEAD))
 		  	throw new WebApplicationException(Response.status(401).entity(
 					"User does not have permissions to retrieve the origin map records for a conflict.").build());
 		
 		  MapRecordList records = new MapRecordListJpa();
 
-		  MappingService mappingService = new MappingServiceJpa();
 		  records = mappingService.getOriginMapRecordsForConflict(mapRecordId);
 		  mappingService.close();
 
