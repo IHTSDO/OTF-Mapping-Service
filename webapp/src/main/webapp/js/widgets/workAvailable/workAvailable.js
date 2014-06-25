@@ -124,14 +124,14 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			}	
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
+		  	
+		  	console.debug("Retrieve conflicts", data);
 
 			$scope.availableConflicts = data.searchResult;
 			
 			// set pagination
 			$scope.nAvailableConflicts = data.totalCount;
 			$scope.numAvailableConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
-			
-			$scope.availableConflicts = data.totalCount;
 			
 			// set title
 			$scope.availableConflictsTitle = "Available Conflicts (" + data.totalCount + ")";
