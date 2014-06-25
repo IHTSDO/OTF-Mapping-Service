@@ -20,9 +20,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.focusProject = localStorageService.get('focusProject');
 	
 	// tab variables
-	$scope.tabs = [ {id: 0, title: 'Assigned Concepts', active:true}, 
-	                {id: 1, title: 'Assigned Conflicts', active:false}, 
-	                {id: 2, title: 'Assigned Work By User', active:false}];
+	$scope.tabs = [ {id: 0, title: 'Concepts', active:true}, 
+	                {id: 1, title: 'Conflicts', active:false}, 
+	                {id: 2, title: 'By User', active:false}];
 	
 	
 	// table sort fields
@@ -164,7 +164,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.numAssignedConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
 			
 			// set title
-			$scope.tabs[1].title = "Assigned Conflicts (" + data.totalCount + ")";
+			$scope.tabs[1].title = "Conflicts (" + data.totalCount + ")";
 			
 		}).error(function(data, status, headers, config) {
 		  	$rootScope.glassPane--;
@@ -223,7 +223,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.nAssignedRecords = data.totalCount;
 			
 			// set title
-			$scope.tabs[0].title = "Assigned Concepts (" + $scope.nAssignedRecords + ")";
+			$scope.tabs[0].title = "Concepts (" + $scope.nAssignedRecords + ")";
 			console.debug($scope.nAssignedRecords);
 			console.debug(data.totalCount);
 			console.debug($scope.assignedWorkTitle);
@@ -292,7 +292,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.nAssignedRecordsForUser = data.totalCount;
 			$scope.numRecordPagesForUser = Math.ceil($scope.nAssignedRecordsForUser / $scope.itemsPerPage);
 			
-			$scope.tabs[2].title = "Assigned Work By User (" + data.totalCount + ")";
+			$scope.tabs[2].title = "By User (" + data.totalCount + ")";
 
 
 		}).error(function(data, status, headers, config) {
