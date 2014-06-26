@@ -5,7 +5,7 @@
   <!-- Module Metadata -->
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
-    <artifactId>mapping-parent</artifactId>
+    <artifactId>otf-mapping-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
@@ -76,7 +76,7 @@
       <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
-  
+
   <build>
     <plugins>
       <!-- Add src/main/resources to the classpath -->
@@ -90,6 +90,6 @@
         </configuration>
       </plugin>
     </plugins>
-  </build>  
+  </build>
 
 </project>
