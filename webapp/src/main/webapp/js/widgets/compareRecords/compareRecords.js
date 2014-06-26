@@ -12,7 +12,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		edit: {}
 	});
 })
-.controller('compareRecordsCtrl', function($scope, $rootScope, $http, $routeParams, $location, localStorageService){
+.controller('compareRecordsCtrl', function($scope, $rootScope, $http, $routeParams, $location, localStorageService, $sce){
 
 	/////////////////////////////////////
 	// Map Record Controller Functions //
