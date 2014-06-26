@@ -111,9 +111,8 @@
         Notes <i class="pull-right glyphicon"
           ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
         </accordion-heading>
-
-        <div ng-repeat="note in record1.mapNote">[{{note.user.userName}}]
-          {{note.note}}</div>
+          <div ng-repeat="note in record1.mapNote"
+                ng-bind-html="to_trusted(note.note)"></div>
         </accordion-group> </accordion>
 
         <button class="btn btn-sm btn-primary" style="margin: 4px"
@@ -223,9 +222,8 @@
         Notes <i class="pull-right glyphicon"
           ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
         </accordion-heading>
-
-        <div ng-repeat="note in record2.mapNote">[{{note.user.userName}}]
-          {{note.note}}</div>
+           <div ng-repeat="note in record2.mapNote"
+                ng-bind-html="to_trusted(note.note)"></div>
         </accordion-group> </accordion>
 
         <button class="btn btn-sm btn-primary" style="margin: 4px"
