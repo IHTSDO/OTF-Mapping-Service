@@ -20,6 +20,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	// local variables
 	$scope.batchSizes = [100, 50, 25, 10, 5];
 	$scope.batchSize = $scope.batchSizes[2];
+	$scope.batchSizeConflict = $scope.batchSizes[4];
 	
 	// pagination variables
 	$scope.itemsPerPage = 10;
@@ -65,18 +66,21 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		}
 	});
 	
-	// on retrieval 
+	// on retrieval, set the user drop-down lists to the current user
 	$scope.$watch(['currentUser'], function () {
 		console.debug('user changed');
 		$scope.assignedMapUser = $scope.currentUser;
+		$scope.assignedMapLead = $scope.currentUser;
 	});
 
 	// on any change of focusProject, retrieve new available work
 	$scope.userToken = localStorageService.get('userToken');
 	
+	// on retrieval of either focus project or user token, try to retrieve work
 	$scope.$watch(['focusProject', 'userToken'], function() {
 		console.debug('workAvailableWidget:  scope project changed!');
 
+		// both variables must be non-null
 		if ($scope.focusProject != null && $scope.userToken != null) {
 			
 			$http.defaults.headers.common.Authorization = $scope.userToken;
@@ -94,11 +98,23 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		}
 	});
 
-	$scope.retrieveAvailableConflicts = function(page) {
+	$scope.retrieveAvailableConflicts = function(page, query, user) {
 		console.debug('workAvailableCtrl: Retrieving available work');
+		
+		// clear local conflict error message
+		$scope.errorConflict = null;
 
+		// if user not supplied, assume current user
+		if (user == null || user == undefined) user = $scope.currentUser;
+		
 		// clear the existing work
-		$scope.availableConflicts = [];
+		$scope.availableConflicts = null;
+		
+		// set query to null if undefined
+		if (query == undefined) query = null;
+		
+		// if null query, reset the search field
+		if (query == null) $scope.queryAvailable = null;
 			
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
@@ -113,8 +129,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			url: root_workflow + "project/id/" 
 			+ $scope.focusProject.id 
 			+ "/user/id/" 
-			+ $scope.currentUser.userName 
-			+ "/query/null"
+			+ user.userName
+			+ "/query/" + (query == null ? "null" : query)
 			+ "/availableConflicts",
 			dataType: "json",
 			data: pfsParameterObj,
@@ -146,6 +162,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	// get a page of available work
 	$scope.retrieveAvailableWork = function(page, query, user) {
 		console.debug('workAvailableCtrl: Retrieving available work');
+		
+		// clear local error
+		$scope.error = null;
 
 		// if user not supplied, assume current user
 		if (user == null || user == undefined) user = $scope.currentUser;
@@ -275,8 +294,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		} else {
 			$scope.error = null;
 		}
-			
-		
+				
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
 					{"startIndex": ($scope.availableWorkPage-1)*$scope.itemsPerPage,
@@ -305,19 +323,18 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			
 			var trackingRecords = data.searchResult;
 			var conceptListValid = true;
-			
-			
+				
 			console.debug(trackingRecords);
 			console.debug($scope.availableWork);
-			// if user is viewing concepts , check that first result matches first displayed result
-			if ($scope.isConceptListOpen == true && $scope.currentUser.userName != mapUser.userName) {
+			
+			// if user is assigning to self, check that first result matches first displayed result
+			if ($scope.currentUser.userName === mapUser.userName) {
 				for (var i = 0; i < $scope.itemsPerPage && i < batchSize; i++) {
 					console.debug(trackingRecords[i]);
 					console.debug($scope.availableWork[i]);
 					if (trackingRecords[i].id != $scope.availableWork[i].id) {
 						retrieveAvailableWork($scope.availableWorkPage, query);
 						alert("One or more of the concepts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
-						$scope.isConceptListOpen = false;
 						conceptListValid = false;
 					}
 				}
@@ -347,10 +364,126 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					}	
 				}).success(function(data) {
 				  	$rootScope.glassPane--;
-				  	
-				  	// note that assigning batch is by definition a concept assignment. This may change.
+
+				  	// notify other widgets of work assignment
 					$rootScope.$broadcast('workAvailableWidget.notification.assignWork', {assignUser: mapUser.userName, assignType: 'concept'});
-					$scope.retrieveAvailableWork(1, query);				
+					
+					// refresh the available work list
+					$scope.retrieveAvailableWork(1, query, mapUser);				
+				}).error(function(data, status, headers, config) {
+				  	$rootScope.glassPane--;
+
+				    $rootScope.handleHttpError(data, status, headers, config);
+					console.debug("Could not retrieve available work when assigning batch.");
+				});
+			} else {
+				console.debug("Unexpected error in assigning batch");
+			}
+		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
+
+		    $rootScope.handleHttpError(data, status, headers, config);	
+		});
+				
+			
+		   
+	};
+	
+	// assign a batch of records to the current user
+	$scope.assignBatchConflict = function(mapUser, batchSize, query) {
+		
+		// set query to null string if not provided
+		if (query == undefined) query == null;
+		
+		if (mapUser == null || mapUser == undefined) {
+			$scope.errorConflict = "Work recipient must be selected from list.";
+			return;	
+		};
+		
+		if (batchSize > $scope.nAvailableConflicts) {
+			$scope.errorConflict = "Batch size is greater than available number of conflicts.";
+			return;
+		} else {
+			$scope.errorConflict = null;
+		}
+				
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": ($scope.availableWorkPage-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": batchSize, 
+			 	 	 "sortField": 'sortKey',
+			 	 	 "queryRestriction": null};  
+
+	  	$rootScope.glassPane++;
+		$http({
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/user/id/" 
+			+ mapUser.userName 
+			+ "/query/" + (query == null ? 'null' : query)
+			+ "/availableConflicts",
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+
+		  	$rootScope.glassPane--;
+			console.debug("Claim batch:  Checking against viewed conflicts");
+			
+			var trackingRecords = data.searchResult;
+			var conceptListValid = true;
+			
+			
+			console.debug(trackingRecords);
+			console.debug($scope.availableConflicts);
+			
+			// if user is viewing conflicts, confirm that the returned batch matches the displayed conflicts
+			if ($scope.currentUser.userName === mapUser.userName) {
+				for (var i = 0; i < $scope.itemsPerPage && i < batchSize && i < $scope.availableConflicts; i++) {
+					console.debug(trackingRecords[i]);
+					console.debug($scope.availableWork[i]);
+					if (trackingRecords[i].id != $scope.availableWork[i].id) {
+						retrieveAvailableWork($scope.availableWorkPage, query);
+						alert("One or more of the conflicts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
+						$scope.isConceptListOpen = false;
+						conceptListValid = false;
+					}
+				}
+			} 
+			
+			if (conceptListValid == true) {
+				console.debug("Claiming conflict batch of size: " + batchSize);
+				
+				var terminologyIds = [];
+				for (var i = 0; i < trackingRecords.length; i++) {
+					
+					terminologyIds.push(trackingRecords[i].terminologyId);
+					console.debug('  -> Conflict ' + trackingRecords[i].terminologyId);
+				}
+				
+				console.debug("Calling batch assignment API");
+
+			  	$rootScope.glassPane++;
+				$http({
+					url: root_workflow + "assignBatch/project/id/" + $scope.focusProject.id 
+									   + "/user/id/" + mapUser.userName,	
+					dataType: "json",
+					data: terminologyIds,
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					}	
+				}).success(function(data) {
+				  	$rootScope.glassPane--;
+				  	
+				  	// broadcast the work assignment
+					$rootScope.$broadcast('workAvailableWidget.notification.assignWork', {assignUser: mapUser.userName, assignType: 'conflict'});
+					
+					// refresh the displayed list of conflicts
+					$scope.retrieveAvailableConflicts(1, query, mapUser);				
 				}).error(function(data, status, headers, config) {
 				  	$rootScope.glassPane--;
 
