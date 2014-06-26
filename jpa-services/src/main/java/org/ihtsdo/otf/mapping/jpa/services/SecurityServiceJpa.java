@@ -34,12 +34,11 @@ import com.sun.jersey.api.representation.Form;
  */
 public class SecurityServiceJpa implements SecurityService {
 
+  /** The token username map. */
+  private static Map<String, String> tokenUsernameMap = new HashMap<>();
 
-  /**  The token username map. */
-  private static Map<String, String> tokenUsernameMap = new HashMap<>(); 
-  
-  /**  The token login time map. */
-  private static Map<String, Date> tokenLoginMap = new HashMap<>(); 
+  /** The token login time map. */
+  private static Map<String, Date> tokenLoginMap = new HashMap<>();
 
   /**
    * Instantiates an empty {@link SecurityServiceJpa}.
@@ -48,169 +47,204 @@ public class SecurityServiceJpa implements SecurityService {
     // do nothing
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  public String authenticate(String username, String password) throws Exception {
+    if (username == null)
+      throw new LocalException(
+          "Invalid username: null");
+    if (password == null)
+      throw new LocalException(
+          "Invalid password: null");
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public String authenticate(String username, String password) throws Exception {
-		
-		// read ihtsdo security url and active status from config file
-		String configFileName = System.getProperty("run.config");
+    // read ihtsdo security url and active status from config file
+    String configFileName = System.getProperty("run.config");
     Logger.getLogger(this.getClass()).info("  run.config = " + configFileName);
-    
+
     Properties config = new Properties();
-    FileReader in = new FileReader(new File(configFileName)); 
+    FileReader in = new FileReader(new File(configFileName));
     config.load(in);
     String ihtsdoSecurityUrl = config.getProperty("ihtsdo.security.url");
-    boolean ihtsdoSecurityActivated = new Boolean(config.getProperty("ihtsdo.security.activated"));
+    boolean ihtsdoSecurityActivated =
+        new Boolean(config.getProperty("ihtsdo.security.activated"));
     in.close();
-    
+
     // if ihtsdo security is off, use username as token
-	if (!ihtsdoSecurityActivated || username.equals("guest")) {
-  		tokenUsernameMap.put(username, username);
-  		MappingService mappingService = new MappingServiceJpa();
-  		mappingService.getMapUser(username);
-  		return username;
+    if (!ihtsdoSecurityActivated || username.equals("guest")) {
+      tokenUsernameMap.put(username, username);
+      MappingService mappingService = new MappingServiceJpa();
+      mappingService.getMapUser(username);
+      return username;
     }
-    
+
     // set up request to be posted to ihtsdo security service
-		Form form = new Form();
-		form.add("username", username);
-		form.add("password", password);
-		form.add("queryName", "getUserByNameAuth");
+    Form form = new Form();
+    form.add("username", username);
+    form.add("password", password);
+    form.add("queryName", "getUserByNameAuth");
 
-		Client client = Client.create();
-		WebResource resource = client.resource(ihtsdoSecurityUrl);
+    Client client = Client.create();
+    WebResource resource = client.resource(ihtsdoSecurityUrl);
 
-		resource.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE);
+    resource.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE);
 
-		ClientResponse response = resource.post(ClientResponse.class, form);
+    ClientResponse response = resource.post(ClientResponse.class, form);
 
-		String resultString = "";
-		if (response.getClientResponseStatus().getFamily() == Family.SUCCESSFUL) {
-			  Logger.getLogger(this.getClass()).info("Success! " + response.getStatus());
-		    resultString = response.getEntity(String.class);
-		    Logger.getLogger(this.getClass()).info(resultString);
-		} else {
-			  Logger.getLogger(this.getClass()).info("ERROR! " + response.getStatus()); 
-		    resultString = response.getEntity(String.class);   
-			  Logger.getLogger(this.getClass()).info(resultString);
-			  throw new LocalException("Incorrect user name or password.");
-		}
-		
+    String resultString = "";
+    if (response.getClientResponseStatus().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(this.getClass())
+          .info("Success! " + response.getStatus());
+      resultString = response.getEntity(String.class);
+      Logger.getLogger(this.getClass()).info(resultString);
+    } else {
+      Logger.getLogger(this.getClass()).info("ERROR! " + response.getStatus());
+      resultString = response.getEntity(String.class);
+      Logger.getLogger(this.getClass()).info(resultString);
+      throw new LocalException("Incorrect user name or password.");
+    }
 
-    /*Synchronize the information sent back from ITHSDO with the MapUser object.
-        Add a new map user if there isn't one matching the username
-        If there is, load and update that map user and save the changes*/
-		String ihtsdoUserName = "";
-		String ihtsdoEmail = "";
-		String ihtsdoGivenName = "";
-		String ihtsdoSurname = "";
-		//TODO: need to somehow retrieve application role for user
-		MapUserRole ihtsdoApplicationRole = MapUserRole.VIEWER;
-		
-	  //converting json to Map
-		byte[] mapData = resultString.getBytes(); 
-		Map<String, HashMap<String, String>> jsonMap = new HashMap<String, HashMap<String, String>>();
-		 
-		// parse username from json object
-		ObjectMapper objectMapper = new ObjectMapper();
-		jsonMap = objectMapper.readValue(mapData, HashMap.class);
-		for (Entry<String, HashMap<String, String>> entrySet : jsonMap.entrySet()) {
-			if (entrySet.getKey().equals("user")) {
-				HashMap<String, String> innerMap = entrySet.getValue();
-				for (Entry<String, String> innerEntrySet : innerMap.entrySet()) {
-				  if (innerEntrySet.getKey().equals("name")) {
-				  	ihtsdoUserName = innerEntrySet.getValue();
-				  } else if (innerEntrySet.getKey().equals("email")) {
-				  	ihtsdoEmail = innerEntrySet.getValue();
-				  } else if (innerEntrySet.getKey().equals("givenName")) {
-				  	ihtsdoGivenName = innerEntrySet.getValue();
-				  } else if (innerEntrySet.getKey().equals("surname")) {
-				  	ihtsdoSurname = innerEntrySet.getValue();
-				  }
-				}
-			}
-		}
-		// check if ihtsdo user matches one of our MapUsers
-		MappingService mappingService = new MappingServiceJpa();
-		MapUserList userList = mappingService.getMapUsers();
-		MapUser userFound = null;
-		for (MapUser user : userList.getMapUsers()) {
-			if (user.getUserName().equals(ihtsdoUserName)) {
-				userFound = user;
-				break;
-			}
-		}
-		// if MapUser was found, update to match ihtsdo settings
-		if (userFound != null) {
-			userFound.setEmail(ihtsdoEmail);
-			userFound.setName(ihtsdoGivenName + " " + ihtsdoSurname);
-			userFound.setUserName(ihtsdoUserName);
-			userFound.setApplicationRole(ihtsdoApplicationRole);
-			mappingService.updateMapUser(userFound);
-		// if MapUser not found, create one for our use
-		} else {
-			MapUser newMapUser = new MapUserJpa();
-			newMapUser.setName(ihtsdoGivenName + " " + ihtsdoSurname);
-			newMapUser.setUserName(ihtsdoUserName);
-			newMapUser.setEmail(ihtsdoEmail);
-			newMapUser.setApplicationRole(ihtsdoApplicationRole);
-			mappingService.addMapUser(newMapUser);
-		}
-		mappingService.close();
-		
-		// Generate application-managed token
-		String token = UUID.randomUUID().toString();
-		tokenUsernameMap.put(token, ihtsdoUserName);
-	  tokenLoginMap.put(token, new Date());
-		
-	  Logger.getLogger(this.getClass()).info("User = " + resultString);
-		
-		return token;
-	}
+    /*
+     * Synchronize the information sent back from ITHSDO with the MapUser
+     * object. Add a new map user if there isn't one matching the username If
+     * there is, load and update that map user and save the changes
+     */
+    String ihtsdoUserName = "";
+    String ihtsdoEmail = "";
+    String ihtsdoGivenName = "";
+    String ihtsdoSurname = "";
+    // TODO: need to somehow retrieve application role for user
+    MapUserRole ihtsdoApplicationRole = MapUserRole.VIEWER;
 
+    // converting json to Map
+    byte[] mapData = resultString.getBytes();
+    Map<String, HashMap<String, String>> jsonMap =
+        new HashMap<String, HashMap<String, String>>();
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.SecurityService#getUsernameForToken(java.lang.String)
-	 */
-	@Override
-	public String getUsernameForToken(String authToken) throws Exception {
-		if (tokenUsernameMap.containsKey(authToken)) {
-			String username = tokenUsernameMap.get(authToken);
-		  Logger.getLogger(this.getClass()).info("User = " + username + " Token = " + authToken);
-			return username;
-		} else
-			throw new Exception("AuthToken does not have a valid username.");
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.SecurityService#authorizeToken(java.lang.String, java.lang.Long)
-	 */
-	@Override
-	public MapUserRole getMapProjectRoleForToken(String authToken, Long mapProjectId) throws Exception {			
-			String parsedToken = authToken.replace("\"", "");
-			
-			String username = getUsernameForToken(parsedToken);
-			MappingService mappingService = new MappingServiceJpa();
-			MapUserRole result = mappingService
-					.getMapUserRoleForMapProject(username, mapProjectId);
-			mappingService.close();
-			return result;
-	}
+    // parse username from json object
+    ObjectMapper objectMapper = new ObjectMapper();
+    jsonMap = objectMapper.readValue(mapData, HashMap.class);
+    for (Entry<String, HashMap<String, String>> entrySet : jsonMap.entrySet()) {
+      if (entrySet.getKey().equals("user")) {
+        HashMap<String, String> innerMap = entrySet.getValue();
+        for (Entry<String, String> innerEntrySet : innerMap.entrySet()) {
+          if (innerEntrySet.getKey().equals("name")) {
+            ihtsdoUserName = innerEntrySet.getValue();
+          } else if (innerEntrySet.getKey().equals("email")) {
+            ihtsdoEmail = innerEntrySet.getValue();
+          } else if (innerEntrySet.getKey().equals("givenName")) {
+            ihtsdoGivenName = innerEntrySet.getValue();
+          } else if (innerEntrySet.getKey().equals("surname")) {
+            ihtsdoSurname = innerEntrySet.getValue();
+          }
+        }
+      }
+    }
+    // check if ihtsdo user matches one of our MapUsers
+    MappingService mappingService = new MappingServiceJpa();
+    MapUserList userList = mappingService.getMapUsers();
+    MapUser userFound = null;
+    for (MapUser user : userList.getMapUsers()) {
+      if (user.getUserName().equals(ihtsdoUserName)) {
+        userFound = user;
+        break;
+      }
+    }
+    // if MapUser was found, update to match ihtsdo settings
+    if (userFound != null) {
+      userFound.setEmail(ihtsdoEmail);
+      userFound.setName(ihtsdoGivenName + " " + ihtsdoSurname);
+      userFound.setUserName(ihtsdoUserName);
+      userFound.setApplicationRole(ihtsdoApplicationRole);
+      mappingService.updateMapUser(userFound);
+      // if MapUser not found, create one for our use
+    } else {
+      MapUser newMapUser = new MapUserJpa();
+      newMapUser.setName(ihtsdoGivenName + " " + ihtsdoSurname);
+      newMapUser.setUserName(ihtsdoUserName);
+      newMapUser.setEmail(ihtsdoEmail);
+      newMapUser.setApplicationRole(ihtsdoApplicationRole);
+      mappingService.addMapUser(newMapUser);
+    }
+    mappingService.close();
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.SecurityService#authorizeToken(java.lang.String)
-	 */
-	@Override
-	public MapUserRole getApplicationRoleForToken(String authToken) throws Exception {
-			String parsedToken = authToken.replace("\"", "");
-			
-			String username = getUsernameForToken(parsedToken);
-			MappingService mappingService = new MappingServiceJpa();
-			MapUser user = mappingService
-					.getMapUser(username.toLowerCase());
-			mappingService.close();
-			
-			return user.getApplicationRole();
-	}
+    // Generate application-managed token
+    String token = UUID.randomUUID().toString();
+    tokenUsernameMap.put(token, ihtsdoUserName);
+    tokenLoginMap.put(token, new Date());
+
+    Logger.getLogger(this.getClass()).info("User = " + resultString);
+
+    return token;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.SecurityService#getUsernameForToken(java
+   * .lang.String)
+   */
+  @Override
+  public String getUsernameForToken(String authToken) throws Exception {
+    if (authToken == null)
+      throw new LocalException(
+          "Attempt to access a service without an authorization token, the user is likely not logged in.");
+    if (tokenUsernameMap.containsKey(authToken)) {
+      String username = tokenUsernameMap.get(authToken);
+      Logger.getLogger(this.getClass()).info(
+          "User = " + username + " Token = " + authToken);
+      return username;
+    } else
+      throw new Exception("AuthToken does not have a valid username.");
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.SecurityService#authorizeToken(java.lang
+   * .String, java.lang.Long)
+   */
+  @Override
+  public MapUserRole getMapProjectRoleForToken(String authToken,
+    Long mapProjectId) throws Exception {
+    if (authToken == null)
+      throw new LocalException(
+          "Attempt to access a service without an authorization token, the user is likely not logged in.");
+    if (mapProjectId == null)
+      throw new Exception("Unexpected null map project id");
+
+    String parsedToken = authToken.replace("\"", "");
+
+    String username = getUsernameForToken(parsedToken);
+    MappingService mappingService = new MappingServiceJpa();
+    MapUserRole result =
+        mappingService.getMapUserRoleForMapProject(username, mapProjectId);
+    mappingService.close();
+    return result;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.SecurityService#authorizeToken(java.lang
+   * .String)
+   */
+  @Override
+  public MapUserRole getApplicationRoleForToken(String authToken)
+    throws Exception {
+
+    if (authToken == null)
+      throw new LocalException(
+          "Attempt to access a service without an authorization token, the user is likely not logged in.");
+    String parsedToken = authToken.replace("\"", "");
+
+    String username = getUsernameForToken(parsedToken);
+    MappingService mappingService = new MappingServiceJpa();
+    MapUser user = mappingService.getMapUser(username.toLowerCase());
+    mappingService.close();
+
+    return user.getApplicationRole();
+  }
 }
