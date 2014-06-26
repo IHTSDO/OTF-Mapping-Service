@@ -4,6 +4,15 @@
 <tab heading="{{tabs[0].title}}" active="tabs[0].active"
 	select="setTab(0)"> 
 	
+	<!--  do not display controls if no records are assigned and the query term is null -->
+	<div style="padding:10px;"
+		ng-show="nAssignedRecords == 0 && (queryAssigned == null || queryAssigned === '')">
+		<p></p>
+		<div style="padding:10px;" class="alert alert-warning" disabled> No available concepts.</div>
+	</div>
+
+	<div ng-show="nAssignedRecords > 0 || (queryAssigned != null && queryAssigned != '')">
+	
 	<table style="margin-top: 10px;">
 	<tr>
       	<td style="padding: 5px";>Filter concepts:</td>
@@ -30,14 +39,14 @@
 	
 	
 	
-	<pagination
+	<pagination ng-show="numAssignedRecordPages > 1"
 	total-items="nAssignedRecords" page="assignedWorkPage"
 	class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
 	num-pages="numAssignedRecordPages"
 	on-select-page="retrieveAssignedWork(page, queryAssigned, assignedWorkType)"></pagination>
 
 
-<table class="table">
+<table class="table" style="margin-top:10px;">
 
 	<thead>
 		<tr>
@@ -91,15 +100,25 @@
 
 
 </table>
-
 <div ng-show="assignedRecords.length == 0 && searchPerformed">No concepts matched the search.</div>
+</div>
   
 
 </tab> 
 
 <tab heading="{{tabs[1].title}}" active="tabs[1].active" select="setTab(1)"
 	ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-	<table style="margin-top: 20px; margin-bottom: 20px;">
+	
+	<!--  do not display controls if no records are assigned and the query term is null -->
+	<div style="padding:10px;"
+		ng-show="nAssignedConflicts == 0 && (queryConflict == null || queryConflict === '')">
+		<p></p>
+		<div style="padding:10px;" class="alert alert-warning" disabled> No available conflicts./div>
+	</div>
+
+	<div ng-show="nAssignedConflicts > 0 || (queryConflict != null && queryConflict != '')">
+	
+	<table style="margin-top: 10px; margin-bottom: 10px;">
 	<tr>
       	<td style="padding: 5px";>Filter concepts:</td>
       	<td style="padding: 5px;">
@@ -122,7 +141,7 @@
 	</tr>
 	</table>
 	
-<pagination total-items="nAssignedConflicts"
+<pagination total-items="nAssignedConflicts" ng-show="numAssignedConflictsPages > 1"
 	page="assignedConflictsPage" class="pagination-sm"
 	boundary-links="true" rotate="true"
 	num-pages="numAssignedConflictsPages" max-size="5"
@@ -174,7 +193,10 @@
 
 
 </table>
+
 <div ng-show="assignedConflicts.length == 0 && searchPerformed">No concepts matched the search.</div>
+</div>
+
 
 
 </tab> 
@@ -183,7 +205,7 @@
 	ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 
 
-<table style="margin-top: 20px; margin-bottom: 20px;">
+<table style="margin-top: 10px; margin-bottom: 10px;">
 	<tr>
 		<td style="padding: 5px;">View work assigned to:</td>
 		<td style="padding: 5px;"><select ng-model="mapUserViewed"
@@ -214,7 +236,7 @@
 	</tr>
 </table>
 
-<pagination ng-show="mapUserViewed != null"
+<pagination ng-show="mapUserViewed != null && numAssignedRecordPagesForUser > 1"
 	total-items="nAssignedRecordsForUser" page="assignedWorkPageForUser"
 	class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
 	num-pages="numAssignedRecordPagesForUser"
@@ -222,7 +244,7 @@
 
 
 
-<table class="table">
+<table class="table" ng-show = "nAssignedRecordsForUser > 0">
 
 	<thead>
 		<tr>
