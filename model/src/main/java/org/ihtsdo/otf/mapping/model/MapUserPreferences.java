@@ -104,4 +104,19 @@ public interface MapUserPreferences {
    * @param digestForm the digest form
    */
   public void setDigestForm(boolean digestForm);
+
+  /**
+   * Adds the dashboard model.
+   *
+   * @param name the name
+   * @param model the model
+   */
+  public void addDashboardModel(String name, String model);
+  
+  /**
+   * Removes the dashboard model.
+   *
+   * @param name the name
+   */
+  public void removeDashboardModel(String name);
 }

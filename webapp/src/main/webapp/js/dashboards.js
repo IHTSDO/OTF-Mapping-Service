@@ -22,55 +22,13 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 	$scope.preferences  = localStorageService.get('preferences');
 	$scope.focusProject = localStorageService.get('focusProject');
 
-	setModel();
-
+	
 	$scope.page = 'resolveConflictsDashboard';
 
 	function setModel() {
-		$scope.name = 'ResolveConflictsDashboard';
+		$scope.page = 'ResolveConflictsDashboard';
 		if (!$scope.model) {
-			$scope.model = {
-
-					structure: "12/6-6/12",
-					rows: [{
-						columns: [{
-							class: 'col-md-12',
-							widgets: [{
-								type: "compareRecords",
-								title: "Compare Records"
-							}]
-						}]
-					}, { // new row
-
-						columns: [{
-							class: 'col-md-6',
-							widgets: [{
-								type: "mapRecord",
-								config: { recordId: $routeParams.recordId},
-								title: "Map Record"
-							}]
-						}, {
-							class: 'col-md-6',
-							widgets: [{
-								type: "mapEntry",
-								config: { entry: $scope.entry},
-								title: "Map Entry"
-							}, {
-								type: "terminologyBrowser",
-								config: {
-									terminology: $scope.focusProject.destinationTerminology,
-									terminologyVersion: $scope.focusProject.destinationTerminologyVersion
-								},
-								title: $scope.focusProject.destinationTerminology + " Terminology Browser"
-
-							}],
-						} // end second column
-						] // end columns
-
-					}] // end second row
-
-
-			};
+			$scope.model = $scope.defaultModel;
 		}
 	};
 
@@ -80,17 +38,83 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 	$scope.$on('adfDashboardChanged', function (event, name, model) {
 		console.debug("Dashboard change detected by ResolveConflictsDashboard");
 		localStorageService.set(name, model);
+		
+		console.debug("New model: ", model);
+		console.debug("Existing preferences: ", $scope.preferences)
+		
+		// update the user preferences
+		$http({
+			url: root_mapping + "userPreferences/update",
+			dataType: "json",
+			data: $scope.preferences,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+		}).error(function(data) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
+		});
+		
+		
+		
 	});
 
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
 		console.debug("MapProjectWidgetCtrl: Detected change in focus project");
-		$scope.project = parameters.focusProject;
+		
+		// initialize the default model based on project parameters
+		$scope.defaultModel = {
 
-		console.debug($scope.project);
+				structure: "12/6-6/12",
+				rows: [{
+					columns: [{
+						class: 'col-md-12',
+						widgets: [{
+							type: "compareRecords",
+							title: "Compare Records"
+						}]
+					}]
+				}, { // new row
+
+					columns: [{
+						class: 'col-md-6',
+						widgets: [{
+							type: "mapRecord",
+							config: { recordId: $routeParams.recordId},
+							title: "Map Record"
+						}]
+					}, {
+						class: 'col-md-6',
+						widgets: [{
+							type: "mapEntry",
+							config: { entry: $scope.entry},
+							title: "Map Entry"
+						}, {
+							type: "terminologyBrowser",
+							config: {
+								terminology: $scope.focusProject.destinationTerminology,
+								terminologyVersion: $scope.focusProject.destinationTerminologyVersion
+							},
+							title: $scope.focusProject.destinationTerminology + " Browser"
+
+						}],
+					} // end second column
+					] // end columns
+
+				}] // end second row
+
+		};
+
+		// set the scope focus project to trigger setting dashboard model
+		$scope.focusProject = parameters.focusProject;
 	});	
 
-	// on any change of focusProject, retrieve new available work
+	// on any change of focusProject, reset the model
 	$scope.$watch('focusProject', function() {
 		console.debug('ResolveConflictsDashboardCtrl: Detected project set/change');
 		setModel();
@@ -163,6 +187,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 	$scope.focusProject = localStorageService.get('focusProject');
 
 	$scope.page = 'mainDashboard';
+	$scope.isModelInitialized = false; // flag to determine whether the model has been successfully retrieved
 
 	console.debug('in dashboardCtrl');
 	
@@ -181,42 +206,74 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 	$scope.$watch(['userToken'], function() {
 		$http.defaults.headers.common.Authorization = $scope.userToken;
 	});
+	
+	// initialize the default model
+	setDefaultModel();
 
-	$scope.go = function() {
+	// on successful user retrieval, construct the dashboard
+	$scope.$watch(['preferences'], function() {
+		
+		console.debug("MainDashboard: Preferences loaded, models = ", $scope.preferences.dashboardModels);
+		
+		if ($scope.page in $scope.preferences.dashboardModels) {
+			console.debug("  user defined model found");
+			$scope.model = JSON.parse($scope.preferences.dashboardModels[$scope.page]);
+
+		} else {
+			console.debug("  using default model (no user-defined model)");
+			$scope.model = $scope.defaultModel;
+		}
+	});
+
+	
+	// function to reset to the default model (called from page)
+	$scope.resetModel = function() {
+		console.debug("Main dashboard:   Reset to default model");
+		
+		console.debug("user defined models: ", $scope.preferences.dashboardModels);
+		
+		// splice working oddly here, clunky workaround
+		var models = {};
+		for (var key in $scope.preferences.dashboardModels) {
+			if (key != $scope.page) models[key] = $scope.preferences.dashboardModels[key];
+		}
+		
+		$scope.preferences.dashboardModels = models;
+		
 		$http({
 			url: root_mapping + "userPreferences/update",
 			dataType: "json",
-			data: $scope.parameters.userPreferences,
+			data: $scope.preferences,
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
 			}	
 		}).success(function(data) {
-		}).error(function(data, status, headers, config) {
-		    $rootScope.handleHttpError(data, status, headers, config);
+			localStorageService.add('preferences', $scope.preferences);
+			location.reload();
+		}).error(function(data) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
 		});
+		
+		console.debug("Revised preferences: ", $scope.preferences.dashboardModels);
 	};
+	
+	// function to set the default model (called on page load)
+	function setDefaultModel() {
 
-	// must instantiate a default dashboard on call
-	setModel();
+		console.debug("Setting the default dashboard based on role: " + $scope.currentRole);
 
-	// on successful user retrieval, construct the dashboard
-	$scope.$watch('currentRole', function() {
-		setModel();
-	});
-
-	function setModel() {
-
-		console.debug("Setting the dashboard based on role: " + $scope.currentRole);
-
-		$scope.name = 'Dashboard';
+		$scope.page = 'Dashboard';
 
 		/**
 		 * Viewer has the following widgets:
 		 * - MapProject
 		 */
 		if (!$scope.currentRole || $scope.currentRole === 'Viewer') {
-			$scope.model = {
+			$scope.defaultModel = {
 
 					structure: "12/6-6/12",
 					rows: [{
@@ -239,7 +296,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 			 */
 		} else if ($scope.currentRole === 'Specialist') {
 
-			$scope.model = {
+			$scope.defaultModel = {
 
 					structure: "12/6-6/12",
 					rows: [{	
@@ -291,7 +348,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 
 			console.debug("Setting model for lead");
 
-			$scope.model = {
+			$scope.defaultModel = {
 
 					structure: "12/6-6/12",
 					rows: [{
@@ -332,7 +389,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 							}]
 			};
 
-			console.debug($scope.model);
+			console.debug($scope.defaultModel);
 
 			/** Admin has the following widgets
 			 * - MapProject
@@ -341,7 +398,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 			 */
 		} else if ($scope.currentRole === 'Administrator') {
 
-			$scope.model = {
+			$scope.defaultModel = {
 
 					structure: "12/6-6/12",
 					rows: [{
@@ -367,6 +424,8 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 
 					}]
 			};
+			
+			$scope.model = $scope.defaultModel;
 
 		} else {
 			alert("Invalid role detected by dashboard");
@@ -374,12 +433,33 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 	}
 
 	$scope.$on('adfDashboardChanged', function (event, name, model) {
-		console.debug('adfDashboardChanged in DashBoardCtrl');
-		console.debug(event);
-		console.debug(name);
-		console.debug(model);
-		$scope.model = model;
+		console.debug("Dashboard change detected by mainDashboard", model);
+		localStorageService.set(name, model);
+		
+		$scope.preferences.dashboardModels[$scope.page] = JSON.stringify($scope.model);
+		
+		console.debug("Models", $scope.preferences.dashboardModels);
+		
+		// update the user preferences
+		$http({
+			url: root_mapping + "userPreferences/update",
+			dataType: "json",
+			data: $scope.preferences,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			$scope.model = model;
+		}).error(function(data) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
+		});
+		
 	});
+
 
 //	function to change project from the header
 	$scope.changeFocusProject = function(mapProject) {
@@ -477,7 +557,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 	setModel();
 
 	function setModel() {
-		$scope.name = 'EditingDashboard';
+		$scope.page = 'EditingDashboard';
 		console.debug("Setting record dashboard model");
 		console.debug($scope.model);
 
@@ -649,7 +729,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function ($roo
 
 		console.debug("Setting the dashboard based on role: " + $scope.currentRole);
 
-		$scope.name = 'Dashboard';
+		$scope.page = 'Dashboard';
 		$scope.model = {
 
 					structure: "12/6-6/12",
@@ -774,7 +854,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function ($roo
 
 		console.debug("Setting the dashboard based on role: " + $scope.currentRole);
 
-		$scope.name = 'Dashboard';
+		$scope.page = 'Dashboard';
 		$scope.model = {
 
 					structure: "12/6-6/12",
@@ -882,7 +962,6 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function ($root
 
 		console.debug("Setting the dashboard based on role: " + $scope.currentRole);
 
-		$scope.name = 'Dashboard';
 		$scope.model = {
 
 					structure: "12/6-6/12",

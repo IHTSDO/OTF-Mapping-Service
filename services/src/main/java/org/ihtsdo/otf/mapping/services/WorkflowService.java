@@ -96,64 +96,52 @@ public interface WorkflowService {
 
 	/**
 	 * Search Functions.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param mapUser
-	 *            the map user
-	 * @param pfsParameter
-	 *            the pfs parameter
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findAvailableWork(MapProject mapProject,
 			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find available conflicts.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param mapUser
-	 *            the map user
-	 * @param pfsParameter
-	 *            the pfs parameter
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findAvailableConflicts(MapProject mapProject,
 			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find assigned concepts.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param mapUser
-	 *            the map user
-	 * @param pfsParameter
-	 *            the pfs parameter
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findAssignedWork(MapProject mapProject,
 			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find assigned conflicts.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param mapUser
-	 *            the map user
-	 * @param pfsParameter
-	 *            the pfs parameter
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findAssignedConflicts(MapProject mapProject,
 			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
@@ -353,6 +341,7 @@ public interface WorkflowService {
 	/**
 	 * Generate mapper testing state.
 	 *
+	 * @param mapProject the map project
 	 * @throws Exception the exception
 	 */
 	public void generateMapperTestingStateKLININ(MapProject mapProject) throws Exception;
@@ -360,9 +349,24 @@ public interface WorkflowService {
 	/**
 	 * Generate mapper testing state.
 	 *
+	 * @param mapProject the map project
 	 * @throws Exception the exception
 	 */
 	public void generateMapperTestingStateBHEKRE(MapProject mapProject) throws Exception;
+
+	/**
+	 * Find available review work.
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findAvailableReviewWork(MapProject mapProject,
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception;
 
 
 

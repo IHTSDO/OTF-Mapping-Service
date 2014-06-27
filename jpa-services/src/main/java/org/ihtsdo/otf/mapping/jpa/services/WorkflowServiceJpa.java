@@ -609,6 +609,85 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 		return availableConflicts;
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.WorkflowService#getAvailableReviewWork
+	 * (org.ihtsdo.otf.mapping.model.MapProject,
+	 * org.ihtsdo.otf.mapping.model.MapUser)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public SearchResultList findAvailableReviewWork(MapProject mapProject,
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception {
+
+		System.out.println("Testing new findAvailableReviewWork with query: '"
+				+ query + "'");
+
+		SearchResultList availableReviewWork = new SearchResultListJpa();
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
+		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+		Query luceneQuery;
+
+		// construct basic query
+		String full_query = constructTrackingRecordForMapProjectIdQuery(
+				mapProject.getId(), query);
+
+		// add the query terms specific to findAvailableReviewWork
+		// - user and workflowStatus pair of CONFLICT_DETECTED~userName exists
+		// - user and workflowStatus pairs of CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
+		full_query += " AND userAndWorkflowStatusPairs:LEAD_REVIEW_*";
+		System.out.println("FindAvailableReviewWork query: " + full_query);
+
+		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+				searchFactory.getAnalyzer(TrackingRecordJpa.class));
+		luceneQuery = queryParser.parse(full_query);
+
+		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
+				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
+
+		availableReviewWork.setTotalCount(ftquery.getResultSize());
+
+		if (pfsParameter.getStartIndex() != -1
+				&& pfsParameter.getMaxResults() != -1) {
+			ftquery.setFirstResult(pfsParameter.getStartIndex());
+			ftquery.setMaxResults(pfsParameter.getMaxResults());
+
+		}
+
+		// if sort field is specified, set sort key
+		if (pfsParameter.getSortField() != null
+				&& !pfsParameter.getSortField().isEmpty()) {
+
+			// check that specified sort field exists on Concept and is
+			// a string
+			if (TrackingRecordJpa.class
+					.getDeclaredField(pfsParameter.getSortField()).getType()
+					.equals(String.class)) {
+				ftquery.setSort(new Sort(new SortField(pfsParameter
+						.getSortField(), SortField.STRING)));
+			} else {
+				throw new Exception(
+						"Concept query specified a field that does not exist or is not a string");
+			}
+		}
+		List<TrackingRecord> results = ftquery.getResultList();
+
+		for (TrackingRecord tr : results) {
+			SearchResult result = new SearchResultJpa();
+			result.setTerminologyId(tr.getTerminologyId());
+			result.setValue(tr.getDefaultPreferredName());
+			result.setId(tr.getId());
+			availableReviewWork.addSearchResult(result);
+		}
+		return availableReviewWork;
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override

@@ -5,38 +5,44 @@ package org.ihtsdo.otf.mapping.helpers;
  */
 
 public enum WorkflowStatus {
-  /** The new. */
-  NEW,
+  /** New, unedited specialist record */
+  NEW, // (can transition to EDITING_IN_PROGRESS, EDITING_DONE)
 
-  /** The editing in progress. */
-  EDITING_IN_PROGRESS,
+  /** Editing in progress by a specialist */
+  EDITING_IN_PROGRESS, // (can transition to EDITING_DONE)
 
-  /** The editing done. */
+  /** Editing completed by a specialist */
   EDITING_DONE, // (can transition to CONFILCT_DETECTED, CONSENSUS_NEEDED, or
-                // READY_FOR_PUBLICATION)
+                // REVIEW_NEEDED)
 
-  /** The conflict detected. */
-  CONFLICT_DETECTED, // (can transition to READY_FOR_PUBLICATION)
+  /** Conflict has been detected. */
+  CONFLICT_DETECTED, // (can transition to CONFLICT_NEW)
   
-  /** The unedited conflict state */
+  /** Conflict has been claimed by a lead, but has not been edited */
   CONFLICT_NEW, // (can transition to CONFLICT_IN_PROGRESS, READY_FOR_PUBLICATION)
 
-  /** The conflict in progress. */
+  /** Conflict resolution by a lead is in progress */
   CONFLICT_IN_PROGRESS, // (can transition to READY_FOR_PUBLICATION)
-
+  
+  /** Pre-publication state for review by lead */
+  REVIEW_NEEDED, // (can transition to REVIEW_IN_PROGRESS, READY_FOR_PUBLICATION)
+  
+  /** Review claimed */
+  REVIEW_IN_PROGRESS, // (can transition to READY_FOR_PUBLICATION)
+  
   /** The consensus needed. */
-  CONSENSUS_NEEDED, // (can transition to CONSENSUS_RESOVLED)
+  CONSENSUS_NEEDED, // (can transition to CONSENSUS_IN_PROGRESS)
 
   /** The consensus resolved. */
-  CONSENSUS_RESOLVED, // (can transition to READY_FOR_PUBLICATION)
+  CONSENSUS_IN_PROGRESS, // (can transition to READY_FOR_PUBLICATION)
 
   /** The ready for publication. */
-  READY_FOR_PUBLICATION, // (can transition to PUBLISHED)
+  READY_FOR_PUBLICATION, // (can transition to PUBLISHED, PUBLISHED_REVIEW (TODO Decide this))
 
   /** The published. */
-  PUBLISHED,
+  PUBLISHED, // (can transition to PUBLISHED_REVIEW (TODO Decide this))
 
-  /** User or QA specified review */
-  REVIEW;
+  /** User or QA specified review */ // TODO Decide new name for this
+  REVIEW; // (can transition to REVIEW_NEEDED or to previous state of READY_FOR_PUBLICATION/PUBLISHED)
 
 }
