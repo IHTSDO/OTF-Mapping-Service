@@ -102,7 +102,8 @@ angular.module('adf')
         structure: '@',
         name: '@',
         collapsible: '@',
-        adfModel: '='
+        adfModel: '=',
+        resetModel: '&' // OTF Added to allow calling parent method for setting default model
       },
       controller: function($scope){
         // sortable options for drag and drop
@@ -157,6 +158,7 @@ angular.module('adf')
             $rootScope.$broadcast('adfDashboardChanged', name, model);
           }
         };
+
         
         // edit dashboard settings
         $scope.editDashboardDialog = function(){
