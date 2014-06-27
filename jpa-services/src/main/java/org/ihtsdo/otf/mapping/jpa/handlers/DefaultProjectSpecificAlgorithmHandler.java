@@ -31,8 +31,11 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+// TODO: Auto-generated Javadoc
 /**
- * Reference implementation of {@link ProjectSpecificAlgorithmHandler}
+ * Reference implementation of {@link ProjectSpecificAlgorithmHandler}.
+ *
+ * @author ${author}
  */
 public class DefaultProjectSpecificAlgorithmHandler implements
 		ProjectSpecificAlgorithmHandler {
@@ -260,23 +263,44 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		for (int i = 0; i < entries.size() - 1; i++) {
 
 			// cycle over all entries after this one
+			// NOTE:  separated boolean checks for easier handling of possible null relations
 			for (int j = i + 1; j < entries.size(); j++) {
+				
+				// check if both targets are null OR if targets equal
+				boolean targetIdsNull = entries.get(i).getTargetId().isEmpty() && entries.get(j).getTargetId().isEmpty();
+				boolean targetIdsEqual = false;
+				if (!targetIdsNull) {
+					targetIdsEqual = entries.get(i).getTargetId().equals(entries.get(j).getTargetId());
+				}
+				
+				// default:  relations are not equal
+				boolean mapRelationsNull = entries.get(i).getMapRelation() == null && entries.get(j).getMapRelation() == null;
+				boolean mapRelationsEqual = false;
+				if (!mapRelationsNull) {
+					if (entries.get(i).getMapRelation().equals(entries.get(j).getMapRelation())) mapRelationsEqual = true;
+				}		
 
-				// compare the two entries
-				if (entries.get(i).getTargetId()
-						.equals(entries.get(j).getTargetId())
-						&& entries.get(i).getMapRelation()
-								.equals(entries.get(j).getMapRelation())
-						&& entries.get(i).getRule()
-								.equals(entries.get(j).getRule())) {
+				// if target ids are the same, add error
+				if (!targetIdsNull && targetIdsEqual) {
 
-					validationResult.addError("Duplicate entries found: "
+					validationResult.addError("Duplicate entries (same target code) found: "
 							+ "Group "
 							+ Integer.toString(entries.get(i).getMapGroup())
 							+ ", priority " + Integer.toString(i) + " and "
 							+ "Group "
 							+ Integer.toString(entries.get(j).getMapGroup())
 							+ ", priority " + Integer.toString(j));
+				}
+				
+				// if target ids are null and map relations are equal, add error
+				if (targetIdsNull && mapRelationsEqual) {
+					validationResult.addError("Duplicate entries (null target code, same map relation) found: "
+							+ "Group "
+							+ Integer.toString(entries.get(i).getMapGroup())
+							+ ", priority " + entries.get(i).getMapPriority() + " and "
+							+ "Group "
+							+ Integer.toString(entries.get(j).getMapGroup())
+							+ ", priority " + entries.get(j).getMapPriority());
 				}
 			}
 		}
@@ -650,17 +674,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			// check for details of missing entries
 			boolean matchFound = false;
 			for (int d = 0; d < entries1.size(); d++) {
-				for (int f = 0; f < entries2.size(); f++) {
-					if (entries1.get(d).getRule()
-							.equals(entries2.get(f).getRule())
-							&& entries1.get(d).getTargetId()
-									.equals(entries2.get(f).getTargetId())
-							&& !entries1
-									.get(d)
-									.getMapRelation()
-									.getId()
-									.equals(entries2.get(f).getMapRelation()
-											.getId()))
+				for (int f = 0; f < entries2.size(); f++) {					
+					if (isRulesEqual(entries1.get(d), entries2.get(f))
+							&& isTargetIdsEqual(entries1.get(d), entries2.get(f))
+							&& !isMapRelationsEqual(entries1.get(d), entries2.get(f)))
 						matchFound = true;
 				}
 				if (matchFound) {
@@ -673,10 +690,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			}
 			for (int d = 0; d < entries1.size(); d++) {
 				for (int f = 0; f < entries2.size(); f++) {
-					if (entries1.get(d).getRule()
-							.equals(entries2.get(f).getRule())
-							&& entries1.get(d).getTargetId()
-									.equals(entries2.get(f).getTargetId())
+					if (isRulesEqual(entries1.get(d), entries2.get(f))
+							&& isTargetIdsEqual(entries1.get(d), entries2.get(f))
 							&& !entries1.get(d).getMapAdvices()
 									.equals(entries2.get(f).getMapAdvices()))
 						matchFound = true;
@@ -691,10 +706,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			}
 			for (int d = 0; d < entries1.size(); d++) {
 				for (int f = 0; f < entries2.size(); f++) {
-					if (entries1.get(d).getRule()
-							.equals(entries2.get(f).getRule())
-							&& !entries1.get(d).getTargetId()
-									.equals(entries2.get(f).getTargetId()))
+					if (isRulesEqual(entries1.get(d), entries2.get(f))
+							&& !isTargetIdsEqual(entries1.get(d), entries2.get(f)))
 						matchFound = true;
 				}
 				if (matchFound) {
@@ -707,8 +720,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			}
 			for (int d = 0; d < entries1.size(); d++) {
 				for (int f = 0; f < entries2.size(); f++) {
-					if (entries1.get(d).getRule()
-							.equals(entries2.get(f).getRule()))
+					if (isRulesEqual(entries1.get(d), entries2.get(f)))
 						matchFound = true;
 				}
 				if (!matchFound) {
@@ -723,6 +735,60 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		}
 
 		return validationResult;
+	}
+	
+	/**
+	 * Indicates whether or not rules are equal.
+	 *
+	 * @param entry1 the entry1
+	 * @param entry2 the entry2
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isRulesEqual(MapEntry entry1, MapEntry entry2) {
+		// check null comparisons first
+		if (entry1.getRule() == null && entry2.getRule() != null)
+			return false;
+		if (entry1.getRule() != null && entry2.getRule() == null)
+			return false;
+		if (entry1.getRule() == null && entry2.getRule() == null)
+			return true;
+		return entry1.getRule().equals(entry2.getRule());
+	}
+	
+	/**
+	 * Indicates whether or not target ids are equal.
+	 *
+	 * @param entry1 the entry1
+	 * @param entry2 the entry2
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isTargetIdsEqual(MapEntry entry1, MapEntry entry2) {
+		// check null comparisons first
+		if (entry1.getTargetId() == null && entry2.getTargetId() != null)
+			return false;
+		if (entry1.getTargetId() != null && entry2.getTargetId() == null)
+			return false;
+		if (entry1.getTargetId() == null && entry2.getTargetId() == null)
+			return true;
+		return entry1.getTargetId().equals(entry2.getTargetId());
+	}
+	
+	/**
+	 * Indicates whether or not map relations are equal.
+	 *
+	 * @param entry1 the entry1
+	 * @param entry2 the entry2
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isMapRelationsEqual(MapEntry entry1, MapEntry entry2) {
+		// check null comparisons first
+		if (entry1.getMapRelation() == null && entry2.getMapRelation() != null)
+			return false;
+		if (entry1.getMapRelation() != null && entry2.getMapRelation() == null)
+			return false;
+		if (entry1.getMapRelation() == null && entry2.getMapRelation() == null)
+			return true;
+		return entry1.getMapRelation().getId().equals(entry2.getMapRelation().getId());
 	}
 
 	/**
@@ -794,16 +860,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 * 
 	 * Expects the tracking record to be a detached Jpa entity. Does not modify
 	 * objects via services.
-	 * 
-	 * @param trackingRecord
-	 *            the tracking record
-	 * @param mapRecord
-	 *            the map record
-	 * @param mapUser
-	 *            the map user
+	 *
+	 * @param trackingRecord            the tracking record
+	 * @param mapRecords the map records
+	 * @param mapRecord            the map record
+	 * @param mapUser            the map user
 	 * @return the workflow tracking record
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception             the exception
 	 */
 	@Override
 	public Set<MapRecord> assignFromInitialRecord(
@@ -886,16 +949,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 * Default Behavior: - Create a record with workflow status based on current
 	 * workflow status - Add the record to the tracking record - Return the
 	 * tracking record.
-	 * 
-	 * @param trackingRecord
-	 *            the tracking record
-	 * @param concept
-	 *            the concept
-	 * @param mapUser
-	 *            the map user
+	 *
+	 * @param trackingRecord            the tracking record
+	 * @param mapRecords the map records
+	 * @param concept            the concept
+	 * @param mapUser            the map user
 	 * @return the workflow tracking record
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception             the exception
 	 */
 	@Override
 	public Set<MapRecord> assignFromScratch(
@@ -904,6 +964,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		// the list of map records to return
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
+		
+		for (MapRecord mr : mapRecords) {
+			System.out.println(mr.toString());
+		}
 
 		// create new record
 		MapRecord mapRecord = new MapRecordJpa();
@@ -912,6 +976,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		mapRecord.setConceptName(concept.getDefaultPreferredName());
 		mapRecord.setOwner(mapUser);
 		mapRecord.setLastModifiedBy(mapUser);
+		mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
 
 		// determine the workflow status of this record based on tracking record
 		switch (trackingRecord.getWorkflowPath()) {
@@ -967,7 +1032,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		mapRecord.setCountDescendantConcepts(new Long(
 		// get the tree positions for this concept
 				contentService
-						.getTreePositionsForConcept(
+						.getTreePositionsWithDescendants(
 								trackingRecord.getTerminologyId(),
 								trackingRecord.getTerminology(),
 								trackingRecord.getTerminologyVersion())
@@ -990,14 +1055,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 * 
 	 * Conditions: - Valid workflow paths: All - Valid workflow status: All
 	 * except READY_FOR_PUBLICATION, PUBLISHED.
-	 * 
-	 * @param trackingRecord
-	 *            the tracking record
-	 * @param mapUser
-	 *            the map user
+	 *
+	 * @param trackingRecord            the tracking record
+	 * @param mapRecords the map records
+	 * @param mapUser            the map user
 	 * @return the workflow tracking record
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception             the exception
 	 */
 	@Override
 	public Set<MapRecord> unassign(TrackingRecord trackingRecord,
@@ -1144,14 +1207,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	/**
 	 * Updates workflow information when a specialist or lead clicks "Finished"
 	 * Expects the tracking record to be detached from persistence environment.
-	 * 
-	 * @param trackingRecord
-	 *            the tracking record
-	 * @param mapUser
-	 *            the map user
+	 *
+	 * @param trackingRecord            the tracking record
+	 * @param mapRecords the map records
+	 * @param mapUser            the map user
 	 * @return the workflow tracking record
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception             the exception
 	 */
 	@Override
 	public Set<MapRecord> finishEditing(TrackingRecord trackingRecord,
@@ -1298,7 +1359,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			}
 
 			// cycle over the records
-			for (MapRecord mr : newRecords) {
+			for (MapRecord mr : mapRecords) {
 
 				// if the original PUBLISHED/READY_FOR_PUBLICATION record (i.e.
 				// now
@@ -1389,11 +1450,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 * 
 	 * Only use-case is for the FIX_ERROR_PATH where a new map record has been
 	 * assigned due to editing a published record.
-	 * 
-	 * @param mapRecords
-	 * @param mapUser
-	 * @return
-	 * @throws Exception
+	 *
+	 * @param trackingRecord the tracking record
+	 * @param mapRecords the map records
+	 * @param mapUser the map user
+	 * @return the sets the
+	 * @throws Exception the exception
 	 */
 	@Override
 	public Set<MapRecord> cancelWork(
@@ -1436,7 +1498,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 								+ " concept "
 								+ trackingRecord.getTerminologyId()
 								+ ", but could not retrieve the previously published or ready-for-publication record.");
-
+			
 			// perform action only if the user's record is NEW
 			// if editing has occured (EDITING_IN_PROGRESS or above), null-op
 			if (newRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)) {
@@ -1447,6 +1509,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// set the workflow status of the REVIEW record back to its
 				// original state
 				reviewRecord = getPreviousVersionOfMapRecord(reviewRecord);
+				
+				// add the revised REVIEW record to new records
+				newRecords.add(reviewRecord);
 			}
 
 			break;
@@ -1458,6 +1523,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		return newRecords;
 	}
 
+	/**
+	 * Returns the previous version of map record.
+	 *
+	 * @param mapRecord the map record
+	 * @return the previous version of map record
+	 * @throws Exception the exception
+	 */
 	public MapRecord getPreviousVersionOfMapRecord(MapRecord mapRecord)
 			throws Exception {
 
@@ -1465,29 +1537,46 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		List<MapRecord> revisions = mappingService.getMapRecordRevisions(
 				mapRecord.getId()).getMapRecords();
 
-		// check assumption: last revision exists
-		if (revisions.size() == 0)
+		// check assumption: last revision exists, at least two records must be present
+		if (revisions.size() < 2)
 			throw new Exception(
 					"Attempted to get the previous version of map record with id "
 							+ mapRecord.getId() + ", "
 							+ mapRecord.getOwner().getName()
 							+ ", and concept id " + mapRecord.getConceptId()
 							+ ", but no previous revisions exist.");
+		
+		for (MapRecord revision : revisions) {
+			System.out.println(revision.toString());
+		}
 
-		// get the most recent revision
-		return revisions.get(0);
+		// get the most recent revision (0 is the current record, 1 is the previous)
+		return revisions.get(1);
 
 	}
 
+	/**
+	 * Returns the workflow status.
+	 *
+	 * @param mapRecords the map records
+	 * @return the workflow status
+	 */
 	public WorkflowStatus getWorkflowStatus(Set<MapRecord> mapRecords) {
 		WorkflowStatus workflowStatus = WorkflowStatus.NEW;
 		for (MapRecord mr : mapRecords) {
+			System.out.println(mr.getWorkflowStatus());
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
 				workflowStatus = mr.getWorkflowStatus();
 		}
 		return workflowStatus;
 	}
 
+	/**
+	 * Returns the lowest workflow status.
+	 *
+	 * @param mapRecords the map records
+	 * @return the lowest workflow status
+	 */
 	public WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
 		WorkflowStatus workflowStatus = WorkflowStatus.REVIEW;
 		for (MapRecord mr : mapRecords) {
@@ -1497,6 +1586,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		return workflowStatus;
 	}
 
+	/**
+	 * Returns the map users.
+	 *
+	 * @param mapRecords the map records
+	 * @return the map users
+	 */
 	public Set<MapUser> getMapUsers(Set<MapRecord> mapRecords) {
 		Set<MapUser> mapUsers = new HashSet<>();
 		for (MapRecord mr : mapRecords) {

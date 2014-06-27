@@ -25,6 +25,7 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -81,9 +82,16 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
           throw new MojoFailureException(
               "Attempt to delete a map project that has map records, delete the map records first");
         }
+        getLog().info("  Remove map project - " + p.getName());
         service.removeMapProject(p.getId());
       }
 
+      // Remove map preferences
+      for (MapUserPreferences p : service.getMapUserPreferences().getIterable()) {
+    	  getLog().info("  Remove map user preferences - " + p.getMapUser().getName());
+    	  service.removeMapUserPreferences(p.getId());
+      }
+      
       // Remove map users
       for (MapUser l : service.getMapUsers().getIterable()) {
         getLog().info("  Remove map user - " + l.getName());

@@ -14,6 +14,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a service for answering questions and performing actions related
  * to workflow management.
@@ -22,35 +23,42 @@ public interface WorkflowService {
 
 	/**
 	 * Gets the workflow tracking record.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param concept
-	 *            the concept
+	 *
+	 * @param mapProject the map project
+	 * @param concept the concept
 	 * @return the workflow tracking record
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public TrackingRecord getTrackingRecord(
 			MapProject mapProject, Concept concept) throws Exception;
 
 	/**
 	 * Gets the workflow tracking records.
-	 * 
+	 *
 	 * @return the workflow tracking records
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public TrackingRecordList getTrackingRecords() throws Exception;
 
 	/**
 	 * Gets the workflow tracking records for map project.
-	 * 
-	 * @param mapProject
-	 *            the map project
+	 *
+	 * @param mapProject the map project
 	 * @return the workflow tracking records for map project
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public TrackingRecordList getTrackingRecordsForMapProject(
 			MapProject mapProject) throws Exception;
+	
+	/**
+	 * Gets the tracking record for map project and concept.
+	 *
+	 * @param mapProject the map project
+	 * @param concept the concept
+	 * @return the tracking record for map project and concept
+	 */
+	public TrackingRecord getTrackingRecordForMapProjectAndConcept(
+			MapProject mapProject, Concept concept);
 
 	/**
 	 * Adds the workflow tracking record.
@@ -100,7 +108,7 @@ public interface WorkflowService {
 	 *             the exception
 	 */
 	public SearchResultList findAvailableWork(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) throws Exception;
+			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find available conflicts.
@@ -116,7 +124,7 @@ public interface WorkflowService {
 	 *             the exception
 	 */
 	public SearchResultList findAvailableConflicts(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) throws Exception;
+			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find assigned concepts.
@@ -132,7 +140,7 @@ public interface WorkflowService {
 	 *             the exception
 	 */
 	public SearchResultList findAssignedWork(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) throws Exception;
+			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find assigned conflicts.
@@ -148,21 +156,7 @@ public interface WorkflowService {
 	 *             the exception
 	 */
 	public SearchResultList findAssignedConflicts(MapProject mapProject,
-			MapUser mapUser, PfsParameter pfsParameter) throws Exception;
-
-	/**
-	 * Find available consensus work.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param pfsParameter
-	 *            the pfs parameter
-	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
-	 */
-	public SearchResultList findAvailableConsensusWork(MapProject mapProject,
-			PfsParameter pfsParameter) throws Exception;
+			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Called by REST services, performs a specific action given a project,
@@ -355,5 +349,21 @@ public interface WorkflowService {
 	 */
 	public void generateRandomConflictData(MapProject mapProject,
 			int numDesiredConflicts) throws Exception;
+
+	/**
+	 * Generate mapper testing state.
+	 *
+	 * @throws Exception the exception
+	 */
+	public void generateMapperTestingStateKLININ(MapProject mapProject) throws Exception;
+	
+	/**
+	 * Generate mapper testing state.
+	 *
+	 * @throws Exception the exception
+	 */
+	public void generateMapperTestingStateBHEKRE(MapProject mapProject) throws Exception;
+
+
 
 }

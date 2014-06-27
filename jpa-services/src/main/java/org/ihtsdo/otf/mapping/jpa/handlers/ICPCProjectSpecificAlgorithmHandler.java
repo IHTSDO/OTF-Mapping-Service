@@ -50,9 +50,7 @@ public class ICPCProjectSpecificAlgorithmHandler extends
 
         // if concept exists, verify that it is a leaf node (no children)
       } else {
-        if (contentService.findDescendantsFromTreePostions(
-            concept.getTerminologyId(), concept.getTerminology(),
-            concept.getTerminologyVersion()).getCount() != 0) {
+        if (!isTargetCodeValid(mapEntry.getTargetId())) {
 
           validationResult.addError("Target "
               + mapEntry.getTargetId()

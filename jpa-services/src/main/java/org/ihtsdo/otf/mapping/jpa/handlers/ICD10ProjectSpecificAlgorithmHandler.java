@@ -102,6 +102,8 @@ DefaultProjectSpecificAlgorithmHandler {
 	@Override
 	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) {
 
+		
+		System.out.println("Computing map relation");
 		// if entry has no target
 		if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
 			return null;
@@ -111,9 +113,13 @@ DefaultProjectSpecificAlgorithmHandler {
 		if (mapEntry.getRule() == null || mapEntry.getRule().isEmpty()) {
 			return null;
 		}
+		
+		System.out.println("Entry has target");
 
 		// if entry has a target and TRUE rule
 		if (mapEntry.getRule().equals("TRUE")) {
+			
+			System.out.println("Entry has TRUE rule");
 
 			// retrieve the relations by terminology id
 			for (MapRelation relation : mapProject.getMapRelations()) {
@@ -124,6 +130,8 @@ DefaultProjectSpecificAlgorithmHandler {
 
 			// if entry has a target and not TRUE rule
 		} else {
+			
+			System.out.println("Entry has rule not TRUE");
 			// retrieve the relations by terminology id
 			for (MapRelation relation : mapProject.getMapRelations()) {
 				if (relation.getTerminologyId().equals("447639009")) {
@@ -176,14 +184,11 @@ DefaultProjectSpecificAlgorithmHandler {
 					"Map project source terminology has too few hierarchical relationship types - "
 							+ mapProject.getDestinationTerminology());
 		}
-		// ASSUMPTION: only a single "isa" type
-		String hierarchicalRelationshipType = hierarchicalRelationshipTypeMap
-				.entrySet().iterator().next().getKey();
 
 		// find number of descendants
 		ContentServiceJpa contentService = new ContentServiceJpa();
-		SearchResultList results = contentService.findDescendants(mapRecord.getConceptId(), mapProject.getDestinationTerminology(),
-				mapProject.getDestinationTerminologyVersion(), hierarchicalRelationshipType);
+		SearchResultList results = contentService.findDescendantConcepts(mapRecord.getConceptId(), mapProject.getDestinationTerminology(),
+				mapProject.getDestinationTerminologyVersion(), null);
 		contentService.close();
 		metadataService.close();
 		if (results.getTotalCount() > 10) {
