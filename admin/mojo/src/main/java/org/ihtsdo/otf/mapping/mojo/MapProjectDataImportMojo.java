@@ -13,6 +13,7 @@ import java.util.StringTokenizer;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
@@ -142,6 +143,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         mapUser.setName(st.nextToken());
         mapUser.setUserName(st.nextToken());
         mapUser.setEmail(st.nextToken());
+        String role = st.nextToken();       
+        mapUser.setApplicationRole(MapUserRole.valueOf(role));
         mappingService.addMapUser(mapUser);
         getLog().info("  " + mapUser.getUserName());
       }
@@ -425,24 +428,32 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
       getLog().info("Adding scope includes...");
 
+      ContentService contentService = new ContentServiceJpa();
       while ((line = scopeIncludesReader.readLine()) != null) {
 
         String[] fields = line.split("\\t");
 
         // retrieve the project id associated with this refSetId
         Long projectId =
-            mappingService.getMapProjectByRefSetId(fields[0]).getId();
+            mappingService.getMapProjectForRefSetId(fields[0]).getId();
+        MapProject project = mappingService.getMapProject(projectId);
 
-        // if project already added, add list of concepts
-        if (projectToConceptsInScope.containsKey(projectId))
-          projectToConceptsInScope.get(projectId).add(fields[1]);
+        Concept c = contentService.getConcept(fields[1], project.getSourceTerminology(), 
+        		project.getSourceTerminologyVersion());
+        if (c == null) {
+          getLog().warn("Scope Includes concept + " + fields[1] + " is not in the data.");
+        } else {
+					// if project already added, add list of concepts
+					if (projectToConceptsInScope.containsKey(projectId))
+						projectToConceptsInScope.get(projectId).add(fields[1]);
 
-        // otherwise add project with list of concepts
-        else {
-          Set<String> conceptsInScope = new HashSet<>();
-          conceptsInScope.add(fields[1]);
-          projectToConceptsInScope.put(projectId, conceptsInScope);
-        }
+					// otherwise add project with list of concepts
+					else {
+						Set<String> conceptsInScope = new HashSet<>();
+						conceptsInScope.add(fields[1]);
+						projectToConceptsInScope.put(projectId, conceptsInScope);
+					}
+				}
       }
 
       // set the map project scope concepts and update the project
@@ -476,20 +487,28 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
         // retrieve the project id associated with this refSetId
         Long projectId =
-            mappingService.getMapProjectByRefSetId(fields[0]).getId();
+            mappingService.getMapProjectForRefSetId(fields[0]).getId();
+        MapProject project = mappingService.getMapProject(projectId);
 
-        // if project in set, add this new set of concept ids
-        if (projectToConceptsExcludedFromScope.containsKey(projectId))
-          projectToConceptsExcludedFromScope.get(projectId).add(fields[1]);
-
-        // otherwise, insert project into hash set with the excluded concept
-        // list
+        Concept c = contentService.getConcept(fields[1], project.getSourceTerminology(), 
+        		project.getSourceTerminologyVersion());
+        
+        if (c == null)
+          getLog().warn("Scope Excludes concept + " + fields[1] + " is not in the data.");
         else {
-          Set<String> conceptsExcludedFromScope = new HashSet<>();
-          conceptsExcludedFromScope.add(fields[1]);
-          projectToConceptsExcludedFromScope.put(projectId,
-              conceptsExcludedFromScope);
-        }
+					// if project in set, add this new set of concept ids
+					if (projectToConceptsExcludedFromScope.containsKey(projectId))
+						projectToConceptsExcludedFromScope.get(projectId).add(fields[1]);
+
+					// otherwise, insert project into hash set with the excluded concept
+					// list
+					else {
+						Set<String> conceptsExcludedFromScope = new HashSet<>();
+						conceptsExcludedFromScope.add(fields[1]);
+						projectToConceptsExcludedFromScope.put(projectId,
+								conceptsExcludedFromScope);
+					}
+				}
       }
 
       // cycle over detected project excludes and update map projects
@@ -512,6 +531,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
                   .size()) + " projects.");
 
       getLog().info("done ...");
+      contentService.close();
       mappingService.close();
       agerangesReader.close();
       usersReader.close();

@@ -10,14 +10,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class PfsParameterJpa implements PfsParameter {
 
-  /** The maximum number of results */
+/** The maximum number of results */
   private int maxResults = -1;
 
   /** The start index for queries */
   private int startIndex = -1;
 
   /** The filter string */
-  private String filters = null;
+  private String queryRestriction = null;
 
   /** The comparator for sorting */
   private String sortField = null;
@@ -68,17 +68,17 @@ public class PfsParameterJpa implements PfsParameter {
    * @return the filter string
    */
   @Override
-  public String getFilterString() {
-    return filters;
+  public String getQueryRestriction() {
+    return queryRestriction;
   }
 
   /**
    * Sets the filter string
-   * @param filters the filter string
+   * @param queryRestriction the filter string
    */
   @Override
-  public void setFilterString(String filters) {
-    this.filters = filters;
+  public void setQueryRestriction(String queryRestriction) {
+    this.queryRestriction = queryRestriction;
   }
 
   /**
@@ -111,5 +111,13 @@ public class PfsParameterJpa implements PfsParameter {
     return getStartIndex() != -1 && getMaxResults() != -1
         && i >= getStartIndex() && i < (getStartIndex() + getMaxResults());
   }
+  
+
+  @Override
+	public String toString() {
+		return "PfsParameterJpa [maxResults=" + maxResults + ", startIndex="
+				+ startIndex + ", queryRestriction=" + queryRestriction
+				+ ", sortField=" + sortField + "]";
+	}
 
 }

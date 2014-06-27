@@ -28,4 +28,9 @@ hibernate.search.default.directory_provider=filesystem
 hibernate.jdbc.batch_size=500
 hibernate.jdbc.default_batch_fetch_size=500
 
+#
+# URL for security service
+#
+ihtsdo.security.activated=false
+ihtsdo.security.url=https://usermanagement.ihtsdotools.org/security-web/query/
 

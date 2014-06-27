@@ -52,7 +52,7 @@
               <signPackage>false</signPackage>
               <dataSet>
                 <data>
-                  <src>${basedir}/src/main/webapp/app</src>
+                  <src>${basedir}/src/main/webapp</src>
                   <type>directory</type>
                   <mapper>
                     <type>directory</type>
