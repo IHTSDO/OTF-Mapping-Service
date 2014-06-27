@@ -1,13 +1,16 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
+import org.ihtsdo.otf.mapping.helpers.GraphHelper;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
  * The Class ICD10ProjectSpecificAlgorithmHandler.
@@ -15,6 +18,9 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 public class ICD9CMProjectSpecificAlgorithmHandler extends
     DefaultProjectSpecificAlgorithmHandler {
 
+  /**  The isa type id. */
+  private String isaTypeId = null;
+  
   /**
    * For ICD9, a target code is valid if: - Concept exists - Concept is a leaf
    * node (i.e. no children)
@@ -49,9 +55,7 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
 
         // if concept exists, verify that it is a leaf node (no children)
       } else {
-        if (contentService.findDescendantsFromTreePostions(
-            concept.getTerminologyId(), concept.getTerminology(),
-            concept.getTerminologyVersion()).getCount() != 0) {
+        if (!isTargetCodeValid(mapEntry.getTargetId())) {
 
           validationResult.addError("Target "
               + mapEntry.getTargetId()
@@ -122,15 +126,16 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
             mapProject.getDestinationTerminology(),
             mapProject.getDestinationTerminologyVersion());
 
+    // lazy initialize the isa type id
+    lazyInitIsaTypeId();
+    
     // verify that concept exists
     if (concept == null) {
       contentService.close();
       return false;
 
       // if concept exists, verify that it is a leaf node (no children)
-    } else if (contentService.findDescendantsFromTreePostions(
-        concept.getTerminologyId(), concept.getTerminology(),
-        concept.getTerminologyVersion()).getCount() != 0) {
+    } else if (GraphHelper.getChildConcepts(concept, isaTypeId).size() == 0) {
       contentService.close();
       return false;
 
@@ -140,4 +145,22 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
     contentService.close();
     return true;
   }
+
+  /**
+   * Lazy initializes the isa type id.
+   * 
+   * @throws Exception the exception
+   */
+  private void lazyInitIsaTypeId() throws Exception {
+    if (isaTypeId == null) {
+      MetadataService metadataService = new MetadataServiceJpa();
+      isaTypeId =
+          metadataService
+              .getHierarchicalRelationshipTypes("ICD9CM",
+                  metadataService.getLatestVersion("ICD9CM")).keySet()
+              .iterator().next();
+      metadataService.close();
+    }
+  }
+
 }
