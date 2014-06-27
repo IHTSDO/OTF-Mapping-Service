@@ -1,11 +1,7 @@
 
-<tabset> 
-
-<tab heading="{{tabs[0].title}}" active="tabs[0].active"
-	select="setTab(0)"> 
-	
-	<!--  do not display controls if no records are assigned and the query term is null -->
-	<div style="padding:10px;"
+<tabset> <tab heading="{{tabs[0].title}}"
+	active="tabs[0].active" select="setTab(0)"> <!--  do not display controls if no records are assigned and the query term is null -->
+<div style="padding: 10px;"
 		ng-show="nAssignedRecords == 0 && (queryAssigned == null || queryAssigned === '')">
 		<p></p>
 		<div style="padding:10px;" class="alert alert-warning" disabled> No available concepts.</div>
@@ -113,7 +109,7 @@
 	<div style="padding:10px;"
 		ng-show="nAssignedConflicts == 0 && (queryConflict == null || queryConflict === '')">
 		<p></p>
-		<div style="padding:10px;" class="alert alert-warning" disabled> No available conflicts./div>
+		<div style="padding:10px;" class="alert alert-warning" disabled> No available conflicts.</div>
 	</div>
 
 	<div ng-show="nAssignedConflicts > 0 || (queryConflict != null && queryConflict != '')">
@@ -197,6 +193,7 @@
 <div ng-show="assignedConflicts.length == 0 && searchPerformed">No concepts matched the search.</div>
 </div>
 
+</div>
 
 
 </tab> 
@@ -280,6 +277,7 @@
 
 
 </table>
+
 <div ng-show="assignedRecordsForUser.length == 0 && searchPerformed">No concepts matched the search.</div>
 
 </tab>
