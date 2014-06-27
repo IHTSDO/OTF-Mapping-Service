@@ -12,6 +12,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -54,8 +55,10 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
 
 	/** The map of name->model dashboards. */
 	@ElementCollection(fetch = FetchType.EAGER)
+	@MapKeyColumn(name = "dashboardModels_KEY")
+	@Column(name = "dashboardModels", length = 4000)
 	@CollectionTable(name = "map_user_preferences_dashboard_models", joinColumns = @JoinColumn(name = "id"))
-	@Column(nullable = true)
+
 	private Map<String, String> dashboardModels = new HashMap<>();
 
 	/** Whether this user wants email notifications. */
@@ -173,7 +176,16 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
 	public void setDashboardModels(Map<String, String> dashboardModels) {
 		this.dashboardModels = dashboardModels;
 	}
+	
+	@Override
+	public void addDashboardModel(String name, String model) {
+		this.dashboardModels.put(name,  model);
+	}
 
+	@Override
+	public void removeDashboardModel(String name) {
+		this.dashboardModels.remove(name);
+	}
 	/**
 	 * Checks if is email notifications.
 	 * 
