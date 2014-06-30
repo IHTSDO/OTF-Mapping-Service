@@ -4,7 +4,7 @@
 <div style="padding: 10px;"
 		ng-show="nAssignedRecords == 0 && (queryAssigned == null || queryAssigned === '')">
 		<p></p>
-		<div style="padding:10px;" class="alert alert-warning" disabled> No available concepts.</div>
+		<div style="padding:10px;" class="alert alert-warning" disabled> No assigned concepts.</div>
 	</div>
 
 	<div ng-show="nAssignedRecords > 0 || (queryAssigned != null && queryAssigned != '')">
@@ -109,7 +109,7 @@
 	<div style="padding:10px;"
 		ng-show="nAssignedConflicts == 0 && (queryConflict == null || queryConflict === '')">
 		<p></p>
-		<div style="padding:10px;" class="alert alert-warning" disabled> No available conflicts.</div>
+		<div style="padding:10px;" class="alert alert-warning" disabled> No assigned conflicts.</div>
 	</div>
 
 	<div ng-show="nAssignedConflicts > 0 || (queryConflict != null && queryConflict != '')">
@@ -200,6 +200,104 @@
 
 <tab heading="{{tabs[2].title}}" active="tabs[2].active" select="setTab(2)"
 	ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+	
+	<!--  do not display controls if no records are assigned and the query term is null -->
+	<div style="padding:10px;"
+		ng-show="nAssignedReviewWork == 0 && (queryReviewWork == null || queryReviewWork === '')">
+		<p></p>
+		<div style="padding:10px;" class="alert alert-warning" disabled> No assigned review work.</div>
+	</div>
+
+	<div ng-show="nAssignedReviewWork > 0 || (queryReviewWork != null && queryReviewWork != '')">
+	
+	<table style="margin-top: 10px; margin-bottom: 10px;">
+	<tr>
+      	<td style="padding: 5px";>Filter concepts:</td>
+      	<td style="padding: 5px;">
+			<form>	
+				<input id="conflictSearch" ng-model="queryReviewWork">
+				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedReviewWork(1, queryReviewWork, assignedReviewWorkType)">Search</button>
+				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedReviewWork(1, 'null'); queryReviewWork = null">Reset</button>
+			</form>
+		</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>
+			<form>
+				<input type="radio" ng-model="assignedReviewWorkType" value="ALL" ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">All</input>
+				<input type="radio" ng-model="assignedReviewWorkType" value="REVIEW_NEW" ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">New</input>
+				<input type="radio" ng-model="assignedReviewWorkType" value="REVIEW_IN_PROGRESS" ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Editing</input>
+			</form>
+		</td>
+	</tr>
+	</table>
+	
+	<div style = "color:red">At this time, review work can only be claimed and returned.<br> Completing work will be implemented later.</div>
+	
+<pagination total-items="nAssignedReviewWork" ng-show="numAssignedReviewWorkPages > 1"
+	page="assignedReviewWorkPage" class="pagination-sm"
+	boundary-links="true" rotate="true"
+	num-pages="numAssignedReviewWorkPages" max-size="5"
+	on-select-page="retrieveAssignedReviewWork(page, user, queryReviewWork)"></pagination>
+
+<table class="table">
+
+	<thead>
+		<tr>
+			<th style="width: 3%; padding: 5px;"></th>
+			<th style="width: 14%; padding: 5px;">Id</th>
+			<th style="width: 80%; padding: 5px;">Preferred Name</th>
+			<th style="width: 3%; padding: 5px;"><a title="Return All Work"
+				ng-click="openUnassignModal(currentUser)"><i
+					class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
+					</a></th>
+
+		</tr>
+
+	</thead>
+
+	<tbody>
+
+		<tr ng-repeat="result in assignedReviewWork">
+
+			<td style="width: 3%; padding: 5px;"><a title="Edit">
+			
+			<!-- Display a pushpin if this record has previously been edited -->
+				<a title='Continue reviewing work.'
+				ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS'"> <i
+					ng-click="goEditReviewWork(result.id)"
+					class="glyphicon glyphicon-pushpin"></i>
+			</a> <!-- Display a pencil if this record has not yet been edited --> <a
+				title='Start reviewing this work'
+				ng-show="result.terminologyVersion === 'REVIEW_NEW'"> <i
+					ng-click="goEditReviewWork(result.id)"
+					class="glyphicon glyphicon-pencil"></i>
+			</a>
+			</td>
+
+			<td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
+			<td style="width: 80%; padding: 5px;">{{result.value}}</td>
+			<td style="width: 3%; padding: 5px;"><a title="Return"
+				ng-click="unassignWork(result, currentUser)"><i
+					class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
+		</tr>
+	</tbody>
+
+
+
+</table>
+
+<div ng-show="assignedConflicts.length == 0 && searchPerformed">No concepts matched the search.</div>
+</div>
+
+</div>
+
+
+</tab>
+
+<tab heading="{{tabs[3].title}}" active="tabs[3].active" select="setTab(3)"
+	ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 
 
 <table style="margin-top: 10px; margin-bottom: 10px;">
@@ -238,6 +336,13 @@
 	class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
 	num-pages="numAssignedRecordPagesForUser"
 	on-select-page="retrieveAssignedWorkForUser(page, mapUserViewed.userName, queryAssignedForUser, assignedWorkForUserType)"></pagination>
+
+<!--  do not display controls if no records are assigned and the query term is null and a map user is selected-->
+	<div style="padding:10px;"
+		ng-show="nAssignedRecordsForUser == 0 && (queryAssignedForUser == null || queryAssignedForUser === '') && mapUserViewed != null">
+		<p></p>
+		<div style="padding:10px;" class="alert alert-warning" disabled> No work assigned to this user.</div>
+	</div>
 
 
 

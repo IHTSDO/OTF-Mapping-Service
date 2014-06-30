@@ -171,6 +171,8 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 
 mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope, $http, $location, localStorageService) {
 
+	$scope.model = null;
+	
 	// On initialization, reset all values to null -- used to ensure watch functions work correctly
 	$scope.mapProjects 	= null;
 	$scope.currentUser 	= null;
@@ -451,6 +453,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 			}	
 		}).success(function(data) {
 			$scope.model = model;
+			localStorageService.add("preferences", $scope.preferences);
 		}).error(function(data) {
 			if (response.indexOf("HTTP Status 401") != -1) {
 				$rootScope.globalError = "Authorization failed.  Please log in again.";

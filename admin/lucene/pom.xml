@@ -39,6 +39,9 @@
                 <goals>
                   <goal>reindex</goal>
                 </goals>
+                <configuration>
+                  <indexedObjects>${indexedObjects}</indexedObjects>
+                </configuration>
               </execution>
             </executions>
           </plugin>
