@@ -179,24 +179,24 @@
 </div>
 </tab>
 
-<tab heading="{{availableReviewTitle}}"
+<tab heading="{{availableReviewWorkTitle}}"
   ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"> 
 
 <!--  do not show controls if no available conflicts and the query is empty -->
 <div style="padding:10px;"
-	ng-show="nAvailableReviews == 0 && (queryAvailableReview == null || queryAvailableReview === '')">
+	ng-show="nAvailableReviewWork == 0 && (queryAvailableReview == null || queryAvailableReview === '')">
 	<p></p>
-	<div class="alert alert-warning" disabled> No available conflicts.</div>
+	<div class="alert alert-warning" disabled> No available review work.</div>
 </div>
 
-<div ng-show="nAvailableReviews != 0 || (queryAvailableReview != null && queryAvailableReview != '')">
+<div ng-show="nAvailableReviewWork != 0 || (queryAvailableReview != null && queryAvailableReview != '')">
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tbody>
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
       <td style="padding: 5px;">Assign conflicts to:</td>
       <td style="padding: 5px;"><select ng-model="assignedMapLead"
         ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead track by mapUser.name"
-        ng-change="retrieveAvailableReviews(1, queryAvailable, assignedMapLead)">
+        ng-change="retrieveAvailableReviewWork(1, queryAvailable, assignedMapLead)">
       </select></td>
     </tr>
     <tr>
@@ -213,8 +213,8 @@
     <td style="padding: 5px;">
 	    <form>
 			<input id="availableReviewSearch" ng-model="queryAvailableReview">
-			<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableReviews(1, queryAvailableReviews, assignedMapLead)">Search</button>
-			<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableReviews(1, 'null', assignedMapLead); queryAvailableReviews = null">Reset</button>
+			<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableReviewWork(1, queryAvailableReviewWork, assignedMapLead)">Search</button>
+			<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableReviewWork(1, 'null', assignedMapLead); queryAvailableReviewWork = null">Reset</button>
 		</form>
     </td>
     </tr>
@@ -224,13 +224,13 @@
 
 
 
-<pagination ng-show="numAvailableReviewsPages > 1"
-	total-items="nAvailableReviews" page="availableReviewsPage"
+<pagination ng-show="numAvailableReviewWorkPages > 1"
+	total-items="nAvailableReviewWork" page="availableReviewsPage"
 	max-size="5" class="pagination-sm" boundary-links="true" rotate="true"
-	num-pages="numAvailableReviewsPages"
-	on-select-page="retrieveAvailableReviews(page, queryReviews)"></pagination>
+	num-pages="numAvailableReviewWorkPages"
+	on-select-page="retrieveAvailableReviewWork(page, queryReviews)"></pagination>
 
-<table class="table" ng-show = "nAvailableReviews > 0">
+<table class="table" ng-show = "nAvailableReviewWork > 0">
 
   <thead>
     <tr>
@@ -244,11 +244,11 @@
 
   <tbody>
 
-    <tr ng-repeat="concept in availableReviews">
+    <tr ng-repeat="concept in availableReviewWork">
 
       <td style="width: 3%; padding: 5px;"><a
               title="Assign"
-              ng-click="assignWork(concept, assignedMapLead, queryReview, 'conflict')"><i
+              ng-click="assignWork(concept, assignedMapLead, queryReview, 'review')"><i
               class="glyphicon glyphicon-import"></i></a></td>
       <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
       <td style="width: 80%; padding: 5px;">{{concept.value}}</td>

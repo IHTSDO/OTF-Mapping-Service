@@ -911,7 +911,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	
 				// set the workflow status of the old record to review and add it to
 				// new records
-				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW);
+				mapRecord.setWorkflowStatus(WorkflowStatus.REVISION);
 				newRecords.add(mapRecord);
 			
 			// Case 2:  A lead claims an error-fixed record for review
@@ -1149,7 +1149,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 						.info("Unassign: NON_LEGACY_PATH -- "
-								+ mapRecord.getWorkflowStatus());
+								+ mapRecord.getWorkflowStatus() + " -- No special action required");
 
 				break;
 
@@ -1187,9 +1187,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			case CONSENSUS_IN_PROGRESS:
 				break;
 
-			// If REVIEW is detected, something has gone horribly wrong for the
+			// If REVISION is detected, something has gone horribly wrong for the
 			// NON_LEGACY_PATH
-			case REVIEW:
+			case REVISION:
 
 				throw new Exception(
 						"Unassign:  A user has been improperly assigned to a review record");
@@ -1214,13 +1214,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					.info("Unassign:  FIX_ERROR_PATH");
 			
 			// Case 1: A user decides not to attempt to fix an error
-			if (getWorkflowStatus(mapRecords).compareTo(WorkflowStatus.REVIEW) == 0) {
+			if (getWorkflowStatus(mapRecords).compareTo(WorkflowStatus.REVISION) == 0) {
 	
 				// cycle over records
 				for (MapRecord mr : mapRecords) {
 	
-					// set the REVIEW record to its previous state
-					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW)) {
+					// set the REVISION record to its previous state
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
 						mr = getPreviousVersionOfMapRecord(mr);
 					} else if (mr.getOwner().equals(mapUser)) {
 						newRecords.remove(mr);
@@ -1228,7 +1228,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						throw new Exception(
 								"Unassign called on FIX_ERROR_PATH tracking record for "
 										+ mapUser.getName() + ", but record (id="
-										+ mr.getId() + " is neither REVIEW status nor owned by user.");
+										+ mr.getId() + " is neither REVISION status nor owned by user.");
 					}
 				}
 				
@@ -1407,7 +1407,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					.info("FIX_ERROR_PATH");
 			
 			// case 1:  A user has finished correcting an error on a previously published record
-			if (this.getWorkflowStatus(mapRecords).compareTo(WorkflowStatus.REVIEW) == 0) {
+			if (this.getWorkflowStatus(mapRecords).compareTo(WorkflowStatus.REVISION) == 0) {
 				
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
@@ -1425,8 +1425,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				for (MapRecord mr : mapRecords) {
 	
 					// if the original PUBLISHED/READY_FOR_PUBLICATION record (i.e.
-					// now has REVIEW), remove
-					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW)) {
+					// now has REVISION), remove
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
 						newRecords.remove(mr);
 					} else {
 						mr.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
@@ -1556,7 +1556,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			for (MapRecord mr : mapRecords) {
 				if (mr.getOwner().equals(mapUser)) {
 					newRecord = mr;
-				} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW)) {
+				} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
 					reviewRecord = mr;
 				}
 			}
@@ -1659,7 +1659,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 * @return the lowest workflow status
 	 */
 	public WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
-		WorkflowStatus workflowStatus = WorkflowStatus.REVIEW;
+		WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
 		for (MapRecord mr : mapRecords) {
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
 				workflowStatus = mr.getWorkflowStatus();
@@ -1727,9 +1727,22 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				return true;
 			else
 				return false;
+			
+		case REVIEW_NEEDED:
+			return false;
+			
+		// review editing can only be done by the lead who owns this record
+		case REVIEW_NEW:
+		case REVIEW_IN_PROGRESS:
+			if (mapRecord.getOwner().equals(mapUser)
+					&& mapProject.getMapLeads().contains(mapUser))
+				return true;
+			else
+				return false;
 
 			// consensus record handling - Phase 2
 		case CONSENSUS_NEEDED:
+		case CONSENSUS_NEW:
 		case CONSENSUS_IN_PROGRESS:
 			return false;
 
@@ -1749,7 +1762,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			return true;
 
 			// review records are not editable
-		case REVIEW:
+		case REVISION:
 			return false;
 
 			// if a non-specified case, throw error

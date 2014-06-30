@@ -22,7 +22,6 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
-import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 
 // TODO: Auto-generated Javadoc
 /**

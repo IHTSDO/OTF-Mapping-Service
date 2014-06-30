@@ -21,17 +21,18 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	
 	// tab variables
 	$scope.tabs = [ {id: 0, title: 'Concepts', active:true}, 
-	                {id: 1, title: 'Conflicts', active:false}, 
-	                {id: 2, title: 'By User', active:false}];
+	                {id: 1, title: 'Conflicts', active:false},
+	                {id: 2, title: 'Review', active:false},
+	                {id: 3, title: 'By User', active:false}];
 	
 	
 	// table sort fields
-	$scope.tableFields = [ {id: 0, title: 'id', sortDir: 'asc', sortOn: false},]
+	$scope.tableFields = [ {id: 0, title: 'id', sortDir: 'asc', sortOn: false}];
 	
-	
+	$scope.mapUserViewed == null;
 	$scope.ownTab = true; // variable to track whether viewing own work or other users work
-
 	$scope.searchPerformed = false;  		// initialize variable to track whether search was performed
+	
 	$scope.assignedWorkType = 'ALL'; 		// initialize variable to track which type of work has been requested
 	$scope.assignedConflictType = 'ALL'; 	// initialize variable to track which type of conflict has been requested
 	$scope.assignedWorkForUserType = 'ALL';	// initialize variable to track which type of work (for another user) has been requested
@@ -45,10 +46,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		angular.forEach($scope.tabs, function(tab) {
 			tab.active = (tab.id == tabNumber? true : false);
 		});
-		console.debug($scope.tabs);
 		
-		// set flag for whether viewing user's own work
-		if (tabNumber == 2) $scope.ownTab = false;
+		// set flag for ByUser tab, i.e. whether viewing user's own work
+		if (tabNumber == 3) $scope.ownTab = false;
 		else $scope.ownTab = true;
 	
 	};
@@ -85,10 +85,13 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				} else if (parameters.assignType === 'conflict') {
 					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, null);
 					$scope.setTab(1);
+				} else if (parameters.assignType === 'review') {
+					$scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage, null);
+					$scope.setTab(2);
 				}
 			} else {
 				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser, null);
-				$scope.setTab(2);
+				$scope.setTab(3);
 			}
 			
 		}
@@ -112,7 +115,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 			$scope.retrieveAssignedWork($scope.assignedWorkPage, null);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-				$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, null);
+				$scope.retrieveAssignedConflicts(1, null);
+				$scope.retrieveAssignedReviewWork(1, null);
+				$scope.retrieveAssignedWorkForUser(1, $scope.mapUserViewed, null);
 			}
 		}
 	});
@@ -122,8 +127,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		console.debug('Retrieving Assigned Conflicts: page ' + page);
 		
 		// ensure query is set to null if not specified
-		if (query == undefined) {
-			query = null;
+		if (query == undefined) query == null;
+		
+		// set global search performed varaiable based on query
+		if (query == null) {
 			$scope.searchPerformed = false;
 		} else {
 			$scope.searchPerformed = true;
@@ -182,7 +189,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		
 		// reset the search input box if null
 		if (query == null) {
-			$scope.queryAssigned = null;
 			$scope.searchPerformed = false;
 		} else {
 			$scope.searchPerformed = true;
@@ -235,7 +241,66 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		});
 	};
 	
-	$scope.mapUserViewed == null; // initial value
+	$scope.retrieveAssignedReviewWork = function(page, query, assignedWorkType) {
+		
+		console.debug('Retrieving Assigned Review Work: page ' + page);
+
+		// ensure query is set to null if undefined
+		if (query == undefined) query = null;
+		
+		// reset the search input box if null
+		if (query == null) {
+			$scope.searchPerformed = false;
+		} else {
+			$scope.searchPerformed = true;
+		
+		}
+		
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": $scope.itemsPerPage, 
+			 	 	 "sortField": 'sortKey',
+			 	 	 "queryRestriction": assignedWorkType};
+
+	  	$rootScope.glassPane++;
+
+		$http({
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/user/id/" 
+			+ $scope.currentUser.userName 
+			+ "/query/" + (query == null ? null : query)
+			+ "/assignedReviewWork",
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
+			$scope.assignedReviewWorkPage = page;
+			$scope.assignedReviewWork = data.searchResult;
+			console.debug($scope.assignedReviewWork);
+		
+			// set pagination
+			$scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+			$scope.nAssignedReviewWork = data.totalCount;
+			
+			// set title
+			$scope.tabs[2].title = "Review (" + $scope.nAssignedReviewWork + ")";
+			console.debug($scope.nAssignedReviewWork);
+			console.debug(data.totalCount);
+			console.debug($scope.assignedReviewWorkTitle);
+			
+			
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
+	};
 	
 	$scope.retrieveAssignedWorkForUser = function(page, mapUserName, query, assignedWorkType) {
 		
@@ -243,7 +308,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		console.debug($scope.mapUserViewed);
 		
 		// ensure query is set to null if undefined
-		if (query == undefined) query = null
+		if (query == undefined) query = null;
 		
 		// reset the search box if query is null
 		if (query == null) {
@@ -253,7 +318,20 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.searchPerformed = true;
 		}
 
-		if (mapUserName == null) mapUserName = $scope.currentUser.userName;
+		// if no user specified, set to empty record set, with appropriate pagination variables
+		if (mapUserName == null) {
+			$scope.assignedWorkForUserPage = 1;
+			$scope.assignedRecordsForUser = {};
+
+			// set pagination
+			$scope.numAssignedRecordPagesForUser = 0;
+			$scope.nAssignedRecordsForUser = 0;
+			
+			// set title
+			$scope.tabs[3].title = "By User";
+			
+			return;
+		}
 
 		console.debug('Retrieving Assigned Concepts for user ' + mapUserName + ': page ' + page);
 
@@ -292,7 +370,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.nAssignedRecordsForUser = data.totalCount;
 			$scope.numRecordPagesForUser = Math.ceil($scope.nAssignedRecordsForUser / $scope.itemsPerPage);
 			
-			$scope.tabs[2].title = "By User (" + data.totalCount + ")";
+			$scope.tabs[3].title = "By User (" + data.totalCount + ")";
 
 
 		}).error(function(data, status, headers, config) {
@@ -336,15 +414,15 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			if ($scope.ownTab == true) {
 				
 				$rootScope.$broadcast('assignedListWidget.notification.unassignWork');
-	
-				if ($scope.focusProject != null && $scope.currentUser != null) {
-					$scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.queryAssigned);
-					if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-						$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, $scope.queryConflict);
-					}
+
+				$scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.queryAssigned);
+				if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, $scope.queryConflict);
+					$scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage, $scope.queryReviewWork);
 				}
+			
 			} else {
-				$scope.retrieveAssignedWorkForUser(1, mapUser, $scope.queryAssignedForUser);
+				$scope.retrieveAssignedWorkForUser(1, mapUser.userName, $scope.queryAssignedForUser);
 			}
 			
 			$rootScope.glassPane--;

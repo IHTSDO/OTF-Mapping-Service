@@ -30,6 +30,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	// initial titles
 	$scope.availableWorkTitle = "Concepts";
 	$scope.availableConflictsTitle = "Conflicts";
+	$scope.availableReviewWorkTitle = "Review";
 	
 	// retrieve focus project, current user, and current role
 	$scope.focusProject = localStorageService.get('focusProject');
@@ -64,6 +65,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		$scope.retrieveAvailableWork($scope.availableWorkPage);
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
 			$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
+			$scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
 		}
 	});
 	
@@ -95,12 +97,13 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			$scope.retrieveAvailableWork($scope.availableWorkPage);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
 				$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
+				$scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
 			}
 		}
 	});
 
 	$scope.retrieveAvailableConflicts = function(page, query, user) {
-		console.debug('workAvailableCtrl: Retrieving available work');
+		console.debug('workAvailableCtrl: Retrieving available conflicts');
 		
 		// clear local conflict error message
 		$scope.errorConflict = null;
@@ -233,7 +236,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	};
 	
 	$scope.retrieveAvailableReviewWork = function(page, query, user) {
-		console.debug('workAvailableCtrl: Retrieving available work');
+		console.debug('************* workAvailableCtrl: Retrieving available work');
 		
 		// clear local review error message
 		$scope.errorReview = null;
@@ -325,11 +328,9 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				$scope.retrieveAvailableWork($scope.trackingRecordPage, query);
 			} else if (workType === 'conflict') {
 				$scope.retrieveAvailableConflicts($scope.availableConflictsPage, query);
+			} else if (workType === 'review') {
+				$scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage, query);
 			}
-			
-			
-			
-			
 		}).error(function(data, status, headers, config) {
 			$rootScope.glassPane--;
 		    $rootScope.handleHttpError(data, status, headers, config);

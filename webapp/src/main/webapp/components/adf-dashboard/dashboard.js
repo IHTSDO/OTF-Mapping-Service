@@ -117,30 +117,38 @@ angular.module('adf')
           opacity: 0.4
         };
         
-        var name = $scope.name;
-        var model = $scope.adfModel;
-        if ( ! model || ! model.rows ){
-          var structureName = $scope.structure;
-          var structure = dashboard.structures[structureName];
-          if (structure){
-            if (model){
-              model.rows = angular.copy(structure).rows;
-            } else {
-              model = angular.copy(structure);
-            }
-            model.structure = structureName;
-          } else {
-            $log.error( 'could not find structure ' + structureName);
-          }
-        } 
+        $scope.$watch('adfModel', function() {
+        	console.debug("===> adfModel changed", $scope.adfModel);
+        	$scope.setModel();
+        });
         
-        if (model) {
-          if (!model.title){
-            model.title = 'Dashboard';
-          }
-          $scope.model = model;
-        } else {
-          $log.error('could not find or create model');
+        $scope.setModel = function() {
+        
+	        var name = $scope.name;
+	        var model = $scope.adfModel;
+	        if ( ! model || ! model.rows ){
+	          var structureName = $scope.structure;
+	          var structure = dashboard.structures[structureName];
+	          if (structure){
+	            if (model){
+	              model.rows = angular.copy(structure).rows;
+	            } else {
+	              model = angular.copy(structure);
+	            }
+	            model.structure = structureName;
+	          } else {
+	            $log.error( 'could not find structure ' + structureName);
+	          }
+	        } 
+	        
+	        if (model) {
+	          if (!model.title){
+	            model.title = 'Dashboard';
+	          }
+	          $scope.model = model;
+	        } else {
+	          $log.error('could not find or create model');
+	        }
         }
 
         // edit mode
