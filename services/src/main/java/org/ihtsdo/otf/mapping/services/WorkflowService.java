@@ -147,6 +147,34 @@ public interface WorkflowService {
 			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
+	 * Find available review work.
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findAvailableReviewWork(MapProject mapProject,
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception;
+	
+	/**
+	 * Find assigned review work.
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findAssignedReviewWork(MapProject mapProject,
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception;
+	
+	/**
 	 * Called by REST services, performs a specific action given a project,
 	 * concept, and user.
 	 * 
@@ -354,19 +382,7 @@ public interface WorkflowService {
 	 */
 	public void generateMapperTestingStateBHEKRE(MapProject mapProject) throws Exception;
 
-	/**
-	 * Find available review work.
-	 *
-	 * @param mapProject the map project
-	 * @param mapUser the map user
-	 * @param query the query
-	 * @param pfsParameter the pfs parameter
-	 * @return the search result list
-	 * @throws Exception the exception
-	 */
-	public SearchResultList findAvailableReviewWork(MapProject mapProject,
-			MapUser mapUser, String query, PfsParameter pfsParameter)
-			throws Exception;
+	
 
 
 

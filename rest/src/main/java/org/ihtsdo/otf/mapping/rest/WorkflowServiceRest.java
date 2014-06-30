@@ -385,6 +385,140 @@ public class WorkflowServiceRest {
 					"Unexpected error trying to find assigned conflicts. Please contact the administrator.").build());
 		}
 	}
+	
+	/**
+	 * Finds available review work for the specified map project and user.
+	 * 
+	 * @param mapProjectId
+	 *            the map project id
+	 * @param userName
+	 *            the user name
+	 * @param query 
+	 * @param pfsParameter
+	 *            the paging parameter
+	 * @param authToken 
+	 * @return the search result list
+	 */
+	@POST
+	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/availableReviewWork")
+	@ApiOperation(value = "Find available review work", notes = "Returns a paged list of detected review work eligible for a lead's resolution for a specified map project.", response = SearchResultList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findAvailableReviewWork(
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /project/id/"
+						+ mapProjectId.toString() + "/user/id" + userName
+						+ "/availableReviewWork"
+						+ " with PfsParameter: " + "\n"
+						+ "     Index/Results = "
+						+ Integer.toString(pfsParameter.getStartIndex()) + "/"
+						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
+						+ "     Sort field    = " + pfsParameter.getSortField()
+						+ "     Filter String = "
+						+ pfsParameter.getQueryRestriction());
+
+
+		try {
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find available review work.").build());
+			
+			// retrieve the project and user
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			MapUser mapUser = mappingService.getMapUser(userName);
+			mappingService.close();
+
+			// retrieve the workflow tracking records
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			SearchResultList results = workflowService.findAvailableReviewWork(
+					mapProject, mapUser, query, pfsParameter);
+			workflowService.close();
+
+			return results;
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to find available review work. Please contact the administrator.").build());
+		}
+	}
+
+	/**
+	 * Finds assigned review work for the specified map project and user.
+	 * 
+	 * @param mapProjectId
+	 *            the map project id
+	 * @param userName
+	 *            the user name
+	 * @param query 
+	 * @param pfsParameter
+	 *            the paging parameter
+	 * @param authToken 
+	 * @return the search result list
+	 */
+	@POST
+	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/assignedReviewWork")
+	@ApiOperation(value = "Find assigned review work", notes = "Returns a paged list of review work assigned to a map lead for resolution for a specified map project.", response = SearchResultList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findAssignedReviewWork(
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /project/id/"
+						+ mapProjectId.toString() + "/user/id/" + userName
+						+ "/assignedReviewWork"
+						+ " with PfsParameter: " + "\n"
+						+ "     Index/Results = "
+						+ Integer.toString(pfsParameter.getStartIndex()) + "/"
+						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
+						+ "     Sort field    = " + pfsParameter.getSortField()
+						+ "     Filter String = "
+						+ pfsParameter.getQueryRestriction());
+
+
+		try {
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find assigned review work.").build());
+			
+			// retrieve the project and user
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			MapUser mapUser = mappingService.getMapUser(userName);
+			mappingService.close();
+
+			// retrieve the map records
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			SearchResultList results = workflowService.findAssignedReviewWork(
+					mapProject, mapUser, query, pfsParameter);
+			workflowService.close();
+
+			return results;
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to find assigned review work. Please contact the administrator.").build());
+		}
+	}
 
 	/**
 	 * Assign user to to work based on an existing map record.
