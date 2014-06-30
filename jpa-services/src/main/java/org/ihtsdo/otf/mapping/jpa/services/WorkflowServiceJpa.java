@@ -642,7 +642,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// add the query terms specific to findAvailableReviewWork
 		// - user and workflowStatus pair of CONFLICT_DETECTED~userName exists
 		// - user and workflowStatus pairs of CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
-		full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*";
+		full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*"
+				   + " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_" + mapUser.getUserName() + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_" + mapUser.getUserName() + ")";
 		
 		System.out.println("FindAvailableReviewWork query: " + full_query);
 
@@ -978,7 +979,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			full_query += " AND userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_" + mapUser.getUserName();
 			break;
 		default:
-			full_query += " AND (userAndWorkflowStatusPairs:REVIEW_" + mapUser.getUserName()
+			full_query += " AND (userAndWorkflowStatusPairs:REVIEW_NEW_" + mapUser.getUserName()
 			+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_" + mapUser.getUserName() + ")";
 			break;
 		}
@@ -1791,7 +1792,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// ignore published and review status
 				case PUBLISHED:
 				case READY_FOR_PUBLICATION:
-				case REVIEW:
+				case REVISION:
 					break;
 				default:
 					Logger.getLogger(WorkflowServiceJpa.class).info(
@@ -1896,9 +1897,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			} else {
 
 				// get a random tracking record available to a specialist
-				// (range: [0:n] where n = min (10, number of tracking records available))
+				// (range: [0:n] where n = min (5, number of tracking records available))
+				// goal here is to not produce a conflict necessarily for every conflict,
+				// but don't want the number to be so large that conflicts are never
+				// generated randomly
 				TrackingRecord trackingRecord = specialistTrackingRecords
-						.get(rand.nextInt(Math.min(10, specialistTrackingRecords.size())));
+						.get(rand.nextInt(Math.min(5, specialistTrackingRecords.size())));
 
 				Logger.getLogger(WorkflowServiceJpa.class).info(
 						"   Procesing available Concept for "
@@ -1911,7 +1915,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						trackingRecord.getTerminology(),
 						trackingRecord.getTerminologyVersion());
 				
+				// set the initial flag for whether this concept has been "finished"
+				// - a conflict has arisen
+				// - two specialists have been assigned, but one record has been
+				//   saved for later or there were no conflicts
 				boolean conceptProcessed = false;
+				
 				do {
 
 					// get the available specialist for this tracking record
@@ -1920,6 +1929,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	
 					// if no user available, move to the next tracking record
 					if (mapSpecialist == null) {
+						Logger.getLogger(WorkflowServiceJpa.class).info(
+								"     No user available for assignment, removing concept");
 						specialistTrackingRecords.remove(trackingRecord);
 						continue;
 					}
@@ -1984,10 +1995,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						
 						conceptProcessed = true;
 
-						// otherwise, check that this record is not 'stuck' in
-						// editing
-						// - workflow status is less than CONFLICT_DETECTED
-						// - AND two users are assigned
+
+					// otherwise, check that this record is not 'stuck' in
+					// editing
+					// - workflow status is less than CONFLICT_DETECTED
+					// - AND two users are assigned
 					} else if (getWorkflowStatusForTrackingRecord(trackingRecord)
 							.compareTo(WorkflowStatus.CONFLICT_DETECTED) < 1
 							&& trackingRecord.getMapRecordIds().size() == 2) {
@@ -2375,7 +2387,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	@Override
 	public WorkflowStatus getLowestWorkflowStatusFromMapRecords(
 			Set<MapRecord> mapRecords) {
-		WorkflowStatus workflowStatus = WorkflowStatus.REVIEW;
+		WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
 		for (MapRecord mr : mapRecords) {
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
 				workflowStatus = mr.getWorkflowStatus();
@@ -2403,7 +2415,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void generateMapperTestingStateKLININ(MapProject mapProject)
 			throws Exception {
