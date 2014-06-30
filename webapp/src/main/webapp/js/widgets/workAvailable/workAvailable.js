@@ -54,6 +54,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		$scope.retrieveAvailableWork($scope.availableWorkPage);
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
 			$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
+			$scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
 		}
 	});
 	
@@ -230,6 +231,66 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	};
+	
+	$scope.retrieveAvailableReviewWork = function(page, query, user) {
+		console.debug('workAvailableCtrl: Retrieving available work');
+		
+		// clear local review error message
+		$scope.errorReview = null;
+
+		// if user not supplied, assume current user
+		if (user == null || user == undefined) user = $scope.currentUser;
+		
+		// clear the existing work
+		$scope.availableReviewWork = null;
+		
+		// set query to null if undefined
+		if (query == undefined) query = null;
+		
+		// if null query, reset the search field
+		if (query == null) $scope.queryAvailable = null;
+			
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": $scope.itemsPerPage, 
+			 	 	 "sortField": 'sortKey',
+			 	 	 "queryRestriction": null};  
+
+	  	$rootScope.glassPane++;
+
+		$http({
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/user/id/" 
+			+ user.userName
+			+ "/query/" + (query == null ? "null" : query)
+			+ "/availableReviewWork",
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+		  	$rootScope.glassPane--;
+		  	
+		  	console.debug("Retrieve reviews", data);
+
+			$scope.availableReviewWork = data.searchResult;
+			
+			// set pagination
+			$scope.nAvailableReviewWork = data.totalCount;
+			$scope.numAvailableReviewWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+			
+			// set title
+			$scope.availableReviewWorkTitle = "Review (" + data.totalCount + ")";
+		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
+
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
+	} ;
 
 	
 	// assign a single concept to the current user
