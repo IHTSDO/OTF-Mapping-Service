@@ -25,24 +25,30 @@ public enum WorkflowStatus {
   CONFLICT_IN_PROGRESS, // (can transition to READY_FOR_PUBLICATION)
   
   /** Pre-publication state for review by lead */
-  REVIEW_NEEDED, // (can transition to REVIEW_IN_PROGRESS, READY_FOR_PUBLICATION)
+  REVIEW_NEEDED, // (can transition to REVIEW_NEW, REVIEW_IN_PROGRESS)
+ 
+  /** Review has been claimed by a lead, but has not been edited */
+  REVIEW_NEW, // (can transition to REVIEW_IN_PROGRESS, READY_FOR_PUBLICATION)
   
   /** Review claimed */
   REVIEW_IN_PROGRESS, // (can transition to READY_FOR_PUBLICATION)
   
   /** The consensus needed. */
   CONSENSUS_NEEDED, // (can transition to CONSENSUS_IN_PROGRESS)
+  
+  /** The consensus begun, with no editing */
+  CONSENSUS_NEW, // (can transition to CONSENSUS_IN_PROGRESS, READY_FOR_PUBLICATION)
 
   /** The consensus resolved. */
   CONSENSUS_IN_PROGRESS, // (can transition to READY_FOR_PUBLICATION)
 
   /** The ready for publication. */
-  READY_FOR_PUBLICATION, // (can transition to PUBLISHED, PUBLISHED_REVIEW (TODO Decide this))
+  READY_FOR_PUBLICATION, // (can transition to PUBLISHED, REVISION)
 
   /** The published. */
-  PUBLISHED, // (can transition to PUBLISHED_REVIEW (TODO Decide this))
-
-  /** User or QA specified review */ // TODO Decide new name for this
-  REVIEW; // (can transition to REVIEW_NEEDED or to previous state of READY_FOR_PUBLICATION/PUBLISHED)
+  PUBLISHED, // (can transition to REVISION)
+  
+  /** User or QA specified review */ 
+  REVISION; // (can transition to REVIEW_NEEDED or to previous state of READY_FOR_PUBLICATION/PUBLISHED)
 
 }
