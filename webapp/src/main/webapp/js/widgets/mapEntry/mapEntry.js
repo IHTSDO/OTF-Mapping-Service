@@ -116,14 +116,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		sortByKey($scope.allowableAdvices, 'detail');
 		$scope.allowableMapRelations = getAllowableElements($scope.entry, $scope.project.mapRelation);
 		
-		// attempt to autocompute the map relation, then update the entry
-		computeRelation($scope.entry).then(function() {
-			console.debug('Relation computed');
-			computeAdvice($scope.entry).then(function() {
-				console.debug('Advice computed');
-				updateEntry();
-			});
-		});
+		updateEntry();
 	};
 	
 	function computeRelation(entry) {
@@ -457,10 +450,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			}
 		}
 		
-		// compute advice (if any), then update entry
-		computeAdvice($scope.entry).then(function() {
-			updateEntry();	
-		});
+		updateEntry();
 	};
 
 	// removes advice from a map entry
@@ -479,11 +469,9 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		for (var i = 0; i < entry['mapAdvice'].length; i++) {
 			console.debug(entry['mapAdvice'][i]);
 		}
-		
-		// compute advice (if any), then update entry
-		computeAdvice($scope.entry).then(function() {
-			updateEntry();	
-		});
+
+		updateEntry();	
+
 		
 	};
 
