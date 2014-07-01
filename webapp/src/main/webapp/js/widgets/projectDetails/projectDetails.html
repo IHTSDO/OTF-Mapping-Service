@@ -100,7 +100,7 @@
           <tr>
             <td>{{lead.name}}</td>
             <td>{{lead.userName}}</td>
-            <td ng-show="isEmailViewable(lead.email)">{{lead.email}}</td>
+            <td ng-show="isEmailViewable(lead.email) == true">{{lead.email}}</td>
             <td ng-show="isEmailViewable(lead.email) == false">Private email</td>
           </tr>
         </tbody>
@@ -126,7 +126,7 @@
           <tr>
             <td>{{specialist.name}}</td>
             <td>{{specialist.userName}}</td>
-            <td ng-show="isEmailViewable(specialist.email)">{{specialist.email}}</td>
+            <td ng-show="isEmailViewable(specialist.email) == true">{{specialist.email}}</td>
             <td ng-show="isEmailViewable(specialist.email) == false">Private email</td>
           </tr>
         </tbody>
@@ -152,7 +152,7 @@
           <tr>
             <td>{{admin.name}}</td>
             <td>{{admin.userName}}</td>
-            <td ng-show="isEmailViewable(admin.email)">{{admin.email}}</td>
+            <td ng-show="isEmailViewable(admin.email) == true">{{admin.email}}</td>
             <td ng-show="isEmailViewable(admin.email) == false">Private email</td>
           </tr>
         </tbody>
@@ -168,10 +168,10 @@
   
     <pagination direction-links="false" boundary-links="true"
         total-items="pagedAdviceCount" items-per-page="pageSize"
-        page="pageAdvice" on-select-page="getPagedAdvices(page)"></pagination>
+        page="pageAdvice" on-select-page="getPagedAdvices(page, adviceFilter)"></pagination>
       <form>
         <input id="adviceSearch" type="text" ng-model="adviceFilter"
-          ng-change="getPagedAdvices(1)"> <input type="submit"
+          ng-change="getPagedAdvices(1, adviceFilter)"> <input type="submit"
           value="Reset Filter" ng-click="resetAdviceFilter()">
       </form>
 
@@ -211,10 +211,10 @@
 <pagination ng-show="focusProject.mapRelation.length > pageSize"
         direction-links="false" boundary-links="true"
         total-items="pagedRelationCount" items-per-page="pageSize"
-        page="pageRelation" on-select-page="getPagedRelations(page)"></pagination>
+        page="pageRelation" on-select-page="getPagedRelations(page, relationFilter)"></pagination>
       <form>
         <input type="text" ng-model="relationFilter"
-          ng-change="getPagedRelations(1)"> <input type="submit"
+          ng-change="getPagedRelations(1, relationFilter)"> <input type="submit"
           value="Reset Filter" ng-click="resetRelationFilter()">
       </form>
 
@@ -260,10 +260,10 @@
   <pagination ng-show="focusProject.mapPrinciple.length > pageSize"
         direction-links="false" boundary-links="true"
         total-items="pagedPrincipleCount" items-per-page="pageSize"
-        page="pagePrinciple" on-select-page="getPagedPrinciples(page)"></pagination>
+        page="pagePrinciple" on-select-page="getPagedPrinciples(page, principleFilter)"></pagination>
       <form>
         <input type="text" ng-model="principleFilter"
-          ng-change="getPagedPrinciples(1)"> <input type="submit"
+          ng-change="getPagedPrinciples(1, principleFilter)"> <input type="submit"
           value="Reset Filter" ng-click="resetPrincipleFilter()">
       </form>
 

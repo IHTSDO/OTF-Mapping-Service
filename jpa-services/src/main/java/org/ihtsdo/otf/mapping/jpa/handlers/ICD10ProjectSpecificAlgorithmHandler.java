@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -147,6 +148,9 @@ DefaultProjectSpecificAlgorithmHandler {
 
 	@Override
 	public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
+		
+		System.out.println("Computing map advice for entry: " + mapEntry.toString());
+		
 		List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
 		/*For any mapRelation value other than 447637006, 
 		 * Find the allowed project advice that matches (on string, case-insensitive) 
@@ -154,14 +158,19 @@ DefaultProjectSpecificAlgorithmHandler {
 		 */
 		if (mapEntry.getMapRelation() != null && !mapEntry.getMapRelation().getTerminologyId().equals("447637006")) {
 			boolean adviceFound = false;
+			
+			System.out.println("Checking advices for mapProject, " + mapProject.getMapAdvices().size() + " advices found");
+			
 			for (MapAdvice advice : mapProject.getMapAdvices()) {
-				if (advice.getName().toLowerCase().equals(mapEntry.getMapRelation().getName())) {
+				if (advice.getName().toUpperCase().equals(mapEntry.getMapRelation().getName().toUpperCase())) {
 					advices.add(advice);
 					adviceFound = true;
+					
+					System.out.println("Found advice: " + advice.toString());
 				}
 			}
 			if (!adviceFound)
-				throw new Exception ("Advice was not found in mapProject " + mapProject.getName() + 
+				throw new LocalException ("Advice was not found in mapProject " + mapProject.getName() + 
 						" that matches mapRelation " + mapEntry.getMapRelation().getName() + ":" +
 						mapEntry.getMapRelation().getTerminologyId());
 		}
@@ -195,8 +204,14 @@ DefaultProjectSpecificAlgorithmHandler {
 			for (MapAdvice advice : mapProject.getMapAdvices()) {
 				if (advice.getName().toLowerCase().equals("DESCENDANTS NOT EXHAUSTIVELY MAPPED".toLowerCase())) {
 					advices.add(advice);
+					System.out.println("Found advice: " +advice.toString());
 				}
 			}    	
+		}
+		
+		System.out.println("computed advices: ");
+		for (MapAdvice advice : advices) {
+			System.out.println("  " + advice.getName());
 		}
 
 		MapAdviceList mapAdviceList = new MapAdviceListJpa();
