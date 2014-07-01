@@ -144,8 +144,9 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 				// - counts number of filtered elmeents
 				// - returns artificial page via slice
 
-				$scope.getPagedAdvices = function (page) {
-
+				$scope.getPagedAdvices = function (page, filter) {
+					console.debug('getPagedAdvices', filter);
+					$scope.adviceFilter = filter;
 					$scope.pagedAdvice = $scope.sortByKey($scope.focusProject.mapAdvice, 'id')
 					.filter(containsAdviceFilter);
 					$scope.pagedAdviceCount = $scope.pagedAdvice.length;
@@ -154,8 +155,8 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 							page*$scope.pageSize);
 				};
 
-				$scope.getPagedRelations = function (page) {
-
+				$scope.getPagedRelations = function (page, filter) {
+					$scope.relationFilter = filter;
 					$scope.pagedRelation = $scope.sortByKey($scope.focusProject.mapRelation, 'id')
 					.filter(containsRelationFilter);
 					$scope.pagedRelationCount = $scope.pagedRelation.length;
@@ -164,8 +165,8 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 							page*$scope.pageSize);
 				};
 
-				$scope.getPagedPrinciples = function (page) {
-
+				$scope.getPagedPrinciples = function (page, filter) {
+					$scope.principleFilter = filter;
 					$scope.pagedPrinciple = $scope.sortByKey($scope.focusProject.mapPrinciple, 'id')
 					.filter(containsPrincipleFilter);
 					$scope.pagedPrincipleCount = $scope.pagedPrinciple.length;
@@ -218,7 +219,7 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					console.debug($scope.pagedScopeConcept);
 				};
 
-				$scope.getPagedScopeExcludedConcepts = function (page) {
+				$scope.getPagedScopeExcludedConcepts = function (page, filter) {
 					console.debug("Called paged scope excluded concept for page " + page);
 					$scope.pagedScopeExcludedConcept = $scope.sortByKey($scope.focusProject.scopeExcludedConcepts, 'id')
 					.filter(containsScopeExcludedConceptFilter);
@@ -290,6 +291,8 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 				// don't want to search id or objectId
 
 				function containsAdviceFilter(element) {
+					
+					console.debug("Checking advice: ", $scope.adviceFilter);
 
 					// check if advice filter is empty
 					if ($scope.adviceFilter === "" || $scope.adviceFilter == null) return true;
@@ -300,9 +303,11 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 
 					// otherwise return false
 					return false;
-				}
+				};
 
 				function containsRelationFilter(element) {
+					
+					console.debug("Checking relation: ", $scope.relationFilter);
 
 					// check if relation filter is empty
 					if ($scope.relationFilter === "" || $scope.relationFilter == null) return true;
@@ -313,7 +318,7 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 
 					// otherwise return false
 					return false;
-				}
+				};
 
 				function containsPrincipleFilter(element) {
 
@@ -328,7 +333,7 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 
 					// otherwise return false
 					return false;
-				}
+				};
 
 				function containsScopeConceptFilter(element) {
 
@@ -394,11 +399,11 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 				};
 				
 				$scope.isEmailViewable = function(email) {
-					console.debug('isEmailViewable');
 					if (email.indexOf("ihtsdo.org") > -1) {
 						return true;
-					} else
+					} else {
 						return false;
+					}
 				};
 			}]);
 

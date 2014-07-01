@@ -27,7 +27,7 @@
       <td style="vertical-align: top; padding: 5px; width: 50px; white-space:nowrap;"><strong>Preferred Term</strong></td>       
       <td style="vertical-align: top; padding: 5px;">{{entry.targetName}}</td>
     </tr>
-    <tr ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined) && entry.mapRelation != null">
+    <tr ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
       <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Reason</strong></td> 
       <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.name}}</td> 
     </tr>
@@ -127,10 +127,3 @@
     </tr>
   </table>
   </accordion-group> </accordion>
-
-  <button class="btn btn-sm btn-primary" ng-click="saveEntry()">Save
-    Map Entry</button>
-  <button class="btn btn-sm btn-warning" ng-click="cancelEntry()">Cancel
-    Changes</button>
-  <button class="btn btn-sm btn-danger" ng-click="deleteEntry()">Delete
-    Map Entry</button>
