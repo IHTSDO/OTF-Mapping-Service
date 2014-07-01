@@ -913,33 +913,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// new records
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVISION);
 				newRecords.add(mapRecord);
-			
-			// Case 2:  A lead claims an error-fixed record for review
-			} else if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
-				
-				// check that only one record exists for this tracking record
-				if (!(trackingRecord.getMapRecordIds().size() == 1)) {
-					System.out.println(trackingRecord.toString());
-					throw new Exception(
-							"DefaultProjectSpecificHandlerException - assignFromInitialRecord: More than one record exists for FIX_ERROR_PATH assignment.");
-				}
-				
-				// deep copy the new record
-				MapRecord newRecord = new MapRecordJpa(mapRecord, true);
-				
-				// set origin id
-				newRecord.addOrigin(mapRecord.getId());
-				newRecord.addOrigins(mapRecord.getOriginIds());
-				
-				// set other relevant fields
-				newRecord.setOwner(mapUser);
-				newRecord.setLastModifiedBy(mapUser);
-				newRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
-
-				// add the new record and preserve the old one
-				newRecords.add(mapRecord);
-
 			}
+			
 			break;	
 
 		case CONSENSUS_PATH:
@@ -1000,7 +975,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		mapRecord.setLastModifiedBy(mapUser);
 		mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
 
-		// determine the workflow status of this record based on tracking record
+		// set additional record parameters based on workflow path and status
 		switch (trackingRecord.getWorkflowPath()) {
 		case NON_LEGACY_PATH:
 
@@ -1035,29 +1010,54 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 						.info("NON_LEGACY_PATH: CONFLICT_NEW");
 
-			} else if (getWorkflowStatus(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)) {
+			}
+			break;
+			
+		case FIX_ERROR_PATH:
+			
+			// Case 1:  A lead claims an error-fixed record for review
+			if (getWorkflowStatus(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)) {
 				
-				// check assumptions:
-				// - only one record should exist
-				if (mapRecords.size() != 1) {
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+				.info("FIX_ERROR_PATH: Lead claiming an error-fixed record");
+							
+				// check that only one record exists for this tracking record
+				if (!(trackingRecord.getMapRecordIds().size() == 1)) {
+					System.out.println(trackingRecord.toString());
 					throw new Exception(
-							"DefaultProjectSpecificHandlerException - assignFromScratch:  Review request had more than one record");
+							"assignFromScratch: More than one record exists for FIX_ERROR_PATH assignment.");
 				}
 				
 				// deep copy the new record
 				mapRecord = new MapRecordJpa(mapRecord, true);
 				
-				// update necessary user/workflow fields
+				// set origin id
+				for (MapRecord mr : mapRecords) {
+					mapRecord.addOrigin(mr.getId());
+					mapRecord.addOrigins(mr.getOriginIds());
+				}
+				
+				// set other relevant fields
 				mapRecord.setOwner(mapUser);
 				mapRecord.setLastModifiedBy(mapUser);
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
+				
+				Logger.getLogger("FIX_ERROR_PATH final record: " + mapRecord.toString());
 
-				// otherwise, this call has been made erroneously
 			} else {
-				throw new Exception(
-						"assignFromScratch called with invalid Workflow Status");
+				throw new Exception("assignFromScratch called on FIX_ERROR_PATH but tracking record is not of status REVIEW_NEEDED");
 			}
+			
 			break;
+			
+		case CONSENSUS_PATH:
+			break;
+		case LEGACY_PATH:
+			break;
+		case QA_PATH:
+			break;
+
+			
 
 		default:
 			throw new Exception(
@@ -1437,14 +1437,22 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				
 				// assumption check
 				// 1) should only be one record
-				if (mapRecords.size() != 0) {
+				if (mapRecords.size() != 2) {
 					throw new Exception(
-							"finishEditing on FIX_ERROR_PATH:  Attempted to finish a lead review requires exactly one record.");	
+							"finishEditing on FIX_ERROR_PATH:  Attempted to finish a lead review requires exactly two record.");	
 				}
 				
 				// set the record to ready for publication
 				for (MapRecord mr : mapRecords) {
-					mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+					
+					// remove the REVIEW_NEEDED record
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+						newRecords.remove(mr);
+						
+					// set the finished record to READY_FOR_PUBLICATION
+					} else {
+						mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+					}
 				}
 				
 				
