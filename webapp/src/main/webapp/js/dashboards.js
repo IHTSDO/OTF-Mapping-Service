@@ -225,6 +225,41 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 			console.debug("  using default model (no user-defined model)");
 			$scope.model = $scope.defaultModel;
 		}
+		
+		// calculate the number of widgets available (used to display edit icon)
+		var widgetCt = 0;
+		
+		// if model has rows defined
+		if ($scope.model != null && $scope.model.hasOwnProperty('rows')) {
+			
+			console.debug('model has rows');
+			
+			// cycle over rows
+			for (var i = 0; i < $scope.model.rows.length; i++) {
+				
+				// if row has columns defined
+				if ($scope.model.rows[i].hasOwnProperty('columns')) {
+					
+					console.debug('row has columns');
+				
+					// cycle over columns
+					for (var j = 0; j < $scope.model.rows[i].columns.length; j++) {
+						
+						// if column has widgets defined
+						if ($scope.model.rows[i].columns[j].hasOwnProperty('widgets')) {
+							
+							console.debug("column has widgets");
+							
+							// add the number of widgets to count
+							widgetCt += $scope.model.rows[i].columns[j].widgets.length;
+						}
+					}
+				}
+			}
+		}
+		$scope.model.widgetCount = widgetCt;
+		console.debug("Widgets found: ", $scope.model.widgetCount);
+		
 	});
 
 	
@@ -252,7 +287,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 			}	
 		}).success(function(data) {
 			localStorageService.add('preferences', $scope.preferences);
-			location.reload();
+			//location.reload();
 		}).error(function(data) {
 			if (response.indexOf("HTTP Status 401") != -1) {
 				$rootScope.globalError = "Authorization failed.  Please log in again.";
@@ -426,8 +461,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 
 					}]
 			};
-			
-			$scope.model = $scope.defaultModel;
 
 		} else {
 			alert("Invalid role detected by dashboard");

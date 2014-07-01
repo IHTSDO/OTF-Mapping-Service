@@ -11,7 +11,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		templateUrl: 'js/widgets/mapEntry/mapEntry.html',
 		edit: {}
 	});
-}).controller('mapEntryWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $modal, $location, localStorageService){
+}).controller('mapEntryWidgetCtrl', function($scope, $rootScope, $q, $http, $routeParams, $modal, $location, localStorageService){
 
 	// watch for entry change
 	$scope.$on('mapRecordWidget.notification.changeSelectedEntry', function(event, parameters) { 	
@@ -57,13 +57,12 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 
 
 
-	////////////////////////////////////////
+	/////////////////////////////////////////
 	// Save, Cancel, and Delete Functions //
 	////////////////////////////////////////
-	$scope.saveEntry = function() {
-
-		console.debug("MapEntryWidget: saveEntry()");
-
+	
+	// broadcasts an update from the map entry to the map record widget
+	function updateEntry() {
 		$rootScope.$broadcast(
 				'mapEntryWidget.notification.modifySelectedEntry',
 				{
@@ -72,39 +71,9 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 					record: $scope.record, 
 					project: $scope.project
 				}
-		);  
-
-		$scope.entry = null;
-
-	};
-
-	$scope.cancelEntry = function() {
-
-		console.debug("MapEntryWidget: cancelEntry()");
-		$scope.entry = null;
-	};
-
-	// delete an entry (after user confirmation)
-	$scope.deleteEntry = function() {
-
-		console.debug("MapEntryWidget: deleteEntry()");
-
-		var confirmDelete = confirm("Are you sure you want to delete this entry?");
-		if (confirmDelete == true) {
-
-			$rootScope.$broadcast(
-					'mapEntryWidget.notification.modifySelectedEntry',
-					{
-						action: 'delete', 
-						entry: angular.copy($scope.entry), 
-						record: $scope.record, 
-						project: $scope.project
-					}
-			);
-
-			$scope.entry = null;
-		}
-	};
+		);
+	}
+	
 	
 	// watch for concept selection from terminology browser
 	$scope.$on('terminologyBrowser.selectConcept', function(event, parameters) { 	
@@ -119,8 +88,18 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		sortByKey($scope.allowableAdvices, 'detail');
 		$scope.allowableMapRelations = getAllowableElements($scope.entry, $scope.project.mapRelation);
 		
-		// attempt to autocompute the map relation
-		computeRelation($scope.entry);
+		// clear the relation and advices
+		$scope.entry.mapRelation = null;
+		$scope.entry.mapAdvice = [];
+		
+		// attempt to autocompute the map relation, then update the entry
+		computeRelation($scope.entry).then(function() {
+			console.debug('Relation computed');
+			computeAdvice($scope.entry).then(function() {
+				console.debug('Advice computed');
+				updateEntry();
+			});
+		});
 	});	
 	
 	
@@ -129,17 +108,32 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		console.debug("clearTargetConcept() called");
 		entry.targetId = null;
 		entry.targetName = null;
-		console.debug(entry.mapRelation);
+		entry.mapRelation = null;
+		entry.mapAdvice = [];
 		
+		// get the allowable advices and relations
+		$scope.allowableAdvices = getAllowableElements($scope.entry, $scope.project.mapAdvice);
+		sortByKey($scope.allowableAdvices, 'detail');
+		$scope.allowableMapRelations = getAllowableElements($scope.entry, $scope.project.mapRelation);
 		
-		computeRelation(entry);
+		// attempt to autocompute the map relation, then update the entry
+		computeRelation($scope.entry).then(function() {
+			console.debug('Relation computed');
+			computeAdvice($scope.entry).then(function() {
+				console.debug('Advice computed');
+				updateEntry();
+			});
+		});
 	};
 	
 	function computeRelation(entry) {
 		
+		var deferred = $q.defer();
+		
 		// ensure mapRelation is deserializable
 		if (entry.mapRelation === '' || entry.mapRelation === undefined) entry.mapRelation = null;
 		
+		$rootScope.glassPane++;
 		$http({
 			url: root_mapping + "relation/compute",
 			dataType: "json",
@@ -150,23 +144,83 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			}	
 		}).success(function(data) {
 
-			console.debug(data);
-
-			entry.mapRelation = data;
+			$rootScope.glassPane--;
+			if (data) {
+				
+				entry.mapRelation = data;
+				
+				console.debug("MapRelation computed: ", entry.mapRelation);
+				
+				// get the allowable advices and relations
+				$scope.allowableAdvices = getAllowableElements(entry, $scope.project.mapAdvice);
+				sortByKey($scope.allowableAdvices, 'detail');
+				$scope.allowableMapRelations = getAllowableElements(entry, $scope.project.mapRelation);
+			
+				// return the promise
+				deferred.resolve(entry);
+			} else {
+				deferred.reject();
+			}
 		}).error(function(data, status, headers, config) {
 		    $rootScope.glassPane--;
 
 		    $rootScope.handleHttpError(data, status, headers, config);			
-
-			$scope.errorCreateRecord = "Failed to retrieve entries";
+		  
+		    // reject the promise
+		    deferred.reject();
 			
 		});
 		
-		// get the allowable advices and relations
-		$scope.allowableAdvices = getAllowableElements(entry, $scope.project.mapAdvice);
-		sortByKey($scope.allowableAdvices, 'detail');
-		$scope.allowableMapRelations = getAllowableElements(entry, $scope.project.mapRelation);
+		return deferred.promise;
+	}
+	
+	function computeAdvice(entry) {
 		
+		var deferred = $q.defer();
+		
+		// ensure mapAdvice is deserializable
+		if (entry.mapAdvice === '' || entry.mapAdvice === undefined) entry.mapAdvice = [];
+		
+		$rootScope.glassPane++;
+		
+		$http({
+			url: root_mapping + "advice/compute",
+			dataType: "json",
+			data: entry,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			$rootScope.glassPane--;
+			
+			if (data) {
+				
+				entry.mapAdvice = data.mapAdvice;
+				
+				console.debug("Map advices computed: ", entry.mapAdvice);
+				
+				// get the allowable advices and relations
+				$scope.allowableAdvices = getAllowableElements(entry, $scope.project.mapAdvice);
+				sortByKey($scope.allowableAdvices, 'detail');
+				$scope.allowableMapRelations = getAllowableElements(entry, $scope.project.mapRelation);
+			
+				// return the promise
+				deferred.resolve(entry);
+			} else {
+				deferred.reject();
+			}
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+
+		    $rootScope.handleHttpError(data, status, headers, config);			
+		  
+		    // reject the promise
+		    deferred.reject();
+			
+		});	
+		
+		return deferred.promise;
 	}
 
 	//////////////////////////////////////
@@ -202,6 +256,17 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			
 			$scope.entry.rule = rule;
 			$scope.entry.ruleSummary = $scope.getRuleSummary($scope.entry);
+			
+			// clear relation and advice
+			$scope.entry.mapRelation = null;
+			$scope.entry.mapAdvice = [];
+			
+			// compute relation and advice (if any), then update entry
+			computeRelation($scope.entry).then(function() {
+				computeAdvice($scope.entry).then(function() {
+					updateEntry();
+				});
+			});
 		});
 	};
 
@@ -391,7 +456,11 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				$scope.adviceInput = "?";
 			}
 		}
-		$scope.entry.mapRelation = null;
+		
+		// compute advice (if any), then update entry
+		computeAdvice($scope.entry).then(function() {
+			updateEntry();	
+		});
 	};
 
 	// removes advice from a map entry
@@ -411,7 +480,11 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			console.debug(entry['mapAdvice'][i]);
 		}
 		
-		$scope.entry = entry;  
+		// compute advice (if any), then update entry
+		computeAdvice($scope.entry).then(function() {
+			updateEntry();	
+		});
+		
 	};
 
 	/////////////////////////
@@ -420,10 +493,24 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	
 	$scope.selectMapRelation = function(mapRelation) {		
 		$scope.entry.mapRelation = mapRelation;
+		
+		// clear advice on relation change
+		$scope.entry.mapAdvice = [];
+		
+		// compute advice (if any), then update entry
+		computeAdvice($scope.entry).then(function() {
+			updateEntry();	
+		});
+		
 	};
 	
 	$scope.clearMapRelation = function(mapRelation) {
 		$scope.entry.mapRelation = null;
+		
+		// compute advice (if any), then update entry
+		computeAdvice($scope.entry).then(function() {
+			updateEntry();	
+		});
 	};
 
 

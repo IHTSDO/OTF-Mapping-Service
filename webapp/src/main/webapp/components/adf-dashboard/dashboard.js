@@ -117,6 +117,7 @@ angular.module('adf')
           opacity: 0.4
         };
         
+        // OTF Added: Prevents dashboard from attempting to instantiate a null model (which throws errors)
         $scope.$watch('adfModel', function() {
         	console.debug("===> adfModel changed", $scope.adfModel);
         	$scope.setModel();
@@ -163,10 +164,13 @@ angular.module('adf')
             $scope.editClass = "";
           }
           if (!$scope.editMode){
+        	// OTF: Modified from name, model -> $scope.name, $scope.model
             $rootScope.$broadcast('adfDashboardChanged', $scope.name, $scope.model);
           }
         };
 
+        // OTF: Note that if these features are reintroduced, name and model are no longer scope variables
+        // Will need modification at that time.
         
         // edit dashboard settings
         $scope.editDashboardDialog = function(){
