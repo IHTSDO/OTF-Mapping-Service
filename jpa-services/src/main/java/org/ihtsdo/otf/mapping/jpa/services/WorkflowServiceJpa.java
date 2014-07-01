@@ -244,15 +244,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				.setParameter("mapProjectId", mapProject.getId())
 				.setParameter("terminologyId", concept.getTerminologyId());
 
-		try {
-			return (TrackingRecord) query.getSingleResult();
-
-		} catch (NoResultException e) {
-			throw new LocalException("Concept query for terminologyId = "
-					+ concept.getTerminologyId() + ", mapProjectId = "
-					+ mapProject.getId().toString() + " returned no results.",
-					e);
-		}
+		return (TrackingRecord) query.getSingleResult();
 	}
 
 	private static String constructTrackingRecordForMapProjectIdQuery(
@@ -1093,8 +1085,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		// locate any existing workflow tracking records for this project and
 		// concept
-		TrackingRecord trackingRecord = getTrackingRecord(mapProject, concept);
-
+		// NOTE:  Exception handling deliberate, since tracking record may or may not exist
+		//		  depending on workflow path
+		TrackingRecord trackingRecord;
+		try {
+			trackingRecord = getTrackingRecord(mapProject, concept);
+		} catch (NoResultException e) {
+			trackingRecord = null;
+		}
 		Set<MapRecord> mapRecords = getMapRecordsForTrackingRecord(trackingRecord);
 
 		// if the record passed in updates an existing record, replace it in the
@@ -1162,7 +1160,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				mapRecords = algorithmHandler.assignFromInitialRecord(
 						trackingRecord, mapRecords, mapRecord, mapUser);
 			} else {
-				// do nothing
+				
+				throw new LocalException("Assignment from published record failed -- concept already in workflow");
+			
 			}
 
 			break;
@@ -1383,11 +1383,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// this routine also duplicates child collections to avoid
 				// detached object errors
 				MapRecord newRecord = new MapRecordJpa(mr, true);
-				/*
-				 * Logger.getLogger(WorkflowServiceJpa.class).info(
-				 * "Adding record: " + newRecord.toString());
-				 */
+				
+				 Logger.getLogger(WorkflowServiceJpa.class).info(
+				 "Adding record: " + newRecord.toString());
+				 
 				// add the record to the database
+				
 				mappingService.addMapRecord(mr);
 
 				// add the record to the return list

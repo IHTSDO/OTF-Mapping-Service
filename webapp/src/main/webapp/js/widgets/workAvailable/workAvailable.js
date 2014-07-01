@@ -296,8 +296,14 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	} ;
 
 	
-	// assign a single concept to the current user
-	// query passed in to ensure correct retrieval of work
+	/** assign a single concept to the current user
+	 * Arguments:
+	 * - trackingRecord:  the full search result object representing the tracking record
+	 * - mapUser:  the full user object representing the user to assign to
+	 * - query:  the query for this type of work, passed in to ensure correct refresh of available work
+	 * - workType: the type of work ('concept', 'conflict', 'review'), used for broadcasting assignment 
+	* query passed in to ensure correct retrieval of work
+	*/
 	$scope.assignWork = function(trackingRecord, mapUser, query, workType) {
 		
 		console.debug('assignWork called');
