@@ -24,10 +24,6 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 	$scope.recordsNotInProject = [];
 	$scope.recordsInProjectNotFound = false; // set to true after record retrieval returns no records for focus project
 
-
-	// local variables
-	var projects = localStorageService.get("mapProjects");
-
 	// retrieve cached values
 	$scope.focusProject = localStorageService.get("focusProject");
 	$scope.mapProjects = localStorageService.get("mapProjects");
@@ -44,10 +40,10 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 
 	// once focus project retrieved, retrieve the concept and records
 	$scope.userToken = localStorageService.get('userToken');
-	$scope.$watch(['focusProject', 'userToken'], function() {
+	$scope.$watch(['focusProject', 'userToken', 'mapProjects'], function() {
 		
 		// need both focus project and user token set before executing main functions
-		if ($scope.focusProject != null &&	$scope.userToken != null ) {
+		if ($scope.focusProject != null &&	$scope.userToken != null && $scope.mapProjects != null) {
 			$http.defaults.headers.common.Authorization = $scope.userToken;
 			$scope.go();
 		}
@@ -58,27 +54,6 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		$scope.recordsInProjectNotFound = false;
 
 		console.debug("RecordConceptCtrl:  Focus Project change");
-		
-		// retrieve projects information to ensure display handled properly
-		$http({
-			url: root_mapping + "project/projects",
-			dataType: "json",
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json"
-			}	
-		}).success(function(data) {
-			projects = data.mapProject;
-
-		}).error(function(data, status, headers, config) {
-		    $rootScope.handleHttpError(data, status, headers, config);
-
-		}).then(function() {
-
-			// get all records for this concept
-			$scope.getRecordsForConcept();
-		});
-
 		
 		// find concept based on source terminology
 		$http({
@@ -262,18 +237,18 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 	
 
 	$scope.getProject = function(record) {
-		for (var i = 0; i < projects.length; i++) {
-			if (projects[i].id == record.mapProjectId) {
-				return projects[i];
+		for (var i = 0; i < $scope.mapProjects.length; i++) {
+			if ($scope.mapProjects[i].id == record.mapProjectId) {
+				return $scope.mapProjects[i];
 			}
 		}
 		return null;
 	};
 
 	$scope.getProjectFromName = function(name) {
-		for (var i = 0; i < projects.length; i++) {
-			if (projects[i].name === name) {
-				return projects[i];
+		for (var i = 0; i < $scope.mapProjects.length; i++) {
+			if ($scope.mapProjects[i].name === name) {
+				return $scope.mapProjects[i];
 			}
 		}
 		return null;
@@ -281,9 +256,9 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 
 	$scope.getProjectName = function(record) {
 
-		for (var i = 0; i < projects.length; i++) {
-			if (projects[i].id == record.mapProjectId) {
-				return projects[i].name;
+		for (var i = 0; i < $scope.mapProjects.length; i++) {
+			if ($scope.mapProjects[i].id == record.mapProjectId) {
+				return $scope.mapProjects[i].name;
 			}
 		}
 		return null;
