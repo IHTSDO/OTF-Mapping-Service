@@ -1317,15 +1317,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 						Logger.getLogger(
 								DefaultProjectSpecificAlgorithmHandler.class)
-								.info("NON_LEGACY_PATH - No conflicts detected, send directly to lead review prior to publication");
+								.info("NON_LEGACY_PATH - No conflicts detected.");
 
 						// deep copy the record and mark the new record
-						// REVIEW_NEEDED
+						// READY_FOR_PUBLICATION
 						MapRecord newRecord = new MapRecordJpa(mapRecord, true);
 						newRecord.setOwner(mapUser);
 						newRecord.setLastModifiedBy(mapUser);
-						newRecord
-								.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
+						mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 
 						// construct and set the new origin ids
 						Set<Long> originIds = new HashSet<>();
