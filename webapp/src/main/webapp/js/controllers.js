@@ -162,6 +162,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 											key : 'mapProjects',
 											mapProjects : data.mapProject
 										});
+								console.debug(data.mapProject);
 								$scope.mapProjects = data.mapProject;
 					}).error(function(data, status, headers, config) {
 						$rootScope.glassPane--;
