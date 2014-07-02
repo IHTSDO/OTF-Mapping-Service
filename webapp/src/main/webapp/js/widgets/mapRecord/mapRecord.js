@@ -779,6 +779,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		var entry = parameters.entry;
 		var record = parameters.record;
+		
 
 		// verify that this entry is attached to this record
 		if (record.id != $scope.record.id) {
@@ -787,7 +788,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 			if (parameters.action === "save") {
 
-				console.debug("Action: SAVE");
+				console.debug("Action: SAVE", entry);
 
 				// find the entry, based on group structure
 				if ($scope.project.groupStructure == false) {
@@ -798,6 +799,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						// when entry found, overwrite it
 						if ($scope.entriesEqualById($scope.entries[i], entry) == true) {
 							$scope.entries[i] = entry;
+							console.debug(" -- Found entry");
 						}
 					}
 				} else {
@@ -808,6 +810,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 							// when entry found, overwrite it
 							if ($scope.entriesEqualById($scope.entries[i][j], entry) == true) {
 								$scope.entries[i][j] = entry;
+								console.debug(" -- found entry, group " + i + ", priority " + j);
 							}	
 						}
 					}
