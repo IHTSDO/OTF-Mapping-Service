@@ -23,6 +23,9 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 	$scope.recordsInProject = [];
 	$scope.recordsNotInProject = [];
 	$scope.recordsInProjectNotFound = false; // set to true after record retrieval returns no records for focus project
+	
+	$scope.focusProject = null;
+	$scope.mapProjects = null;
 
 	// retrieve cached values
 	$scope.focusProject = localStorageService.get("focusProject");
@@ -45,6 +48,7 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		// need both focus project and user token set before executing main functions
 		if ($scope.focusProject != null &&	$scope.userToken != null && $scope.mapProjects != null) {
 			$http.defaults.headers.common.Authorization = $scope.userToken;
+			console.debug($scope.mapProjects);
 			$scope.go();
 		}
 	});
@@ -70,6 +74,7 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 			$scope.concept = data;
 			setTitle($scope.focusProject.sourceTerminology, $routeParams.conceptId, 
 					$scope.concept.defaultPreferredName);
+			$scope.getRecordsForConcept();
 			$scope.findUnmappedDescendants();
 
 			// find children based on source terminology
