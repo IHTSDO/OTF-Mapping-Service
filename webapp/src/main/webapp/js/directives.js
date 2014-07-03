@@ -5,7 +5,19 @@ var mapProjectAppDirectives = angular.module('mapProjectAppDirectives', []);
 /////////////////////////////////////////////////////
 //Directives:
 /////////////////////////////////////////////////////
-
+mapProjectAppDirectives.directive('otfMapRecord', function() {
+	  return {
+	      /*restrict: 'A',
+	      replace: true,*/
+		  replace: false,
+		  restrict: 'AE',
+	      templateUrl: 'partials/otf-map-record.html',
+	      scope: {
+	          record: '=' ,
+	          editable: '=' 
+	      }
+	  };
+	});
 
 mapProjectAppDirectives.directive('draggable', function() {
   return function(scope, element) {

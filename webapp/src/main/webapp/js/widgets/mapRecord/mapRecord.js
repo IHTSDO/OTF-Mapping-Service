@@ -14,7 +14,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	});
 })
 
-.controller('mapRecordWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $location, $sce, localStorageService){
+.controller('mapRecordWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $location, $sce, $modal, $window, localStorageService){
 
 	/////////////////////////////////////
 	// Map Record Controller Functions //
@@ -34,12 +34,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 	// validation result storage variable
 	$scope.savedValidationWarnings = [];
-	
-	// record change stack
-	$scope.recordStack = [];					// the stack of modified records
-	$scope.recordStackPosition = -1; 			// will be incremented to 0 upon initialization
-	$scope.recordStackInUse = false;			// flag for whether record change is due to user action
-	$scope.recordInitializationComplete = false;// flag for whether initialization complete
 
 	// initialize accordion variables
 	$scope.isConceptOpen = true;
@@ -91,56 +85,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			retrieveRecord();
 		}
 	});
-	
-	// watch the record for saving local revision history
-	$scope.$watch('record', function() {
-		
-		// if initializing, do nothing
-		if ($scope.recordInitializationComplete == true) {
-		
-			// if the record has changed but the in use flag is false, add the new revision and update the position
-			if ($scope.recordStackInUse == false) {
-				
-				// if not the last entry, discard any future revisions (i.e. record has changed from this saved state)
-				if ($scope.recordStackPosition != $scope.recordStack.length && $scope.recordStack != 0) {
-					$scope.recordStack = $scope.recordStack.slice(0, $scope.recordStackPosition + 1);
-				}
-				
-				// push the record onto the stack
-				$scope.recordStack.push($scope.record);
-				$scope.recordStackPosition++;
-				
-				console.debug('recordStack:  New version: ' + $scope.recordStackPosition);
-			// otherwise, do nothing, and set the in use flag to false
-			} else {
-				console.debug('recordStack:  New version, but stack in use');
-				
-				$scope.recordStackInUse = true;
-			}
-		} else {
-			console.debug('recordStack:  Change detected, due to initialization');
-		}
-	});
-	
-	// UNDO function: if not at the beginning of the stack, change the record to previous version
-	$scope.undoMapRecordChange = function() {
-		if ($scope.recordStackPosition > 0) {
-			$scope.recordStackInUse = true;
-			$scope.record = $scope.recordStack[$scope.recordStackPosition - 1];
-			$scope.entries = $scope.record.localEntries;
-			$scope.recordStackPosition--;
-		}
-	};
-	
-	// REDO function: if at the beginning of the stack, change record to next version
-	$scope.redoMapRecordChange = function() {
-		if ($scope.recordStackPosition < $scope.recordStack.length) {
-			$scope.recordStackInUse = true;
-			$scope.record = $scope.recordStack[$scope.recordStackPosition + 1];
-			$scope.entries = $scope.record.localEntries;
-			$scope.recordStackPosition++;
-		}
-	};
+
 
 	// initialize local variables
 	var currentLocalId = 1;   // used for addition of new entries without hibernate id
@@ -185,10 +130,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			// initialize the entries
 			initializeEntries();
 			
-			// assign the local entries to the map record, triggers recordStack
-			console.debug("recordStack: Assigning local entries");
-			$scope.record.localEntries = $scope.entries;
-	
+
 		});
 	};
 
@@ -204,9 +146,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		console.debug("Initializing map entries -- " + $scope.record.mapEntry.length + " found");
 		console.debug($scope.record.mapEntry);
-		
-		$scope.recordInitializationComplete = false;
-		
+
 		// find the maximum hibernate id value
 		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
 			currentLocalId = Math.max($scope.record.mapEntry[i].id, currentLocalId);
@@ -252,8 +192,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		} else {
 			$scope.selectMapEntry($scope.record.mapEntry[0]);
 		}
-		
-		$scope.recordInitializationComplete = true;
+
 	}
 
 	/**
@@ -299,7 +238,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				}
 			}
 
-			console.debug("modified:");
+			console.debug("finish modified:");
 			console.debug(entries);
 
 			$scope.record.mapEntry = entries;
@@ -444,10 +383,15 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}
 
 		});
+		
+		$scope.closeConceptBrowser();
 	};
 
-	$scope.saveMapRecord = function() {
+	$scope.saveMapRecord = function(returnBack) {
 
+		console.debug("saveMapRecord called with " + returnBack);
+
+		
 		///////////////////////////
 		// Group and MapPriority //
 		///////////////////////////
@@ -482,7 +426,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				};
 			};
 
-			console.debug("modified:");
+			console.debug("save modified:");
 			console.debug(entries);
 
 			$scope.record.mapEntry = entries;
@@ -492,6 +436,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		// assign the current user to the lastModifiedBy field
 		$scope.record.lastModifiedBy = $scope.user;
 
+		// if only displaying record again, don't make rest call
+		if ($rootScope.currentPageDirty == false && !returnBack)
+			return;
+		
 		$http({
 			url: root_workflow + "save",
 			dataType: "json",
@@ -505,10 +453,12 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			// user has successfully saved record, page is no longer "dirty"
 			$rootScope.currentPageDirty = false;
 			
-			$scope.record = data;
+			//$scope.record = data;
 			$scope.recordSuccess = "Record saved.";
 			$scope.recordError = "";
-			window.history.back(); 
+			if (returnBack) {
+			  window.history.back(); 
+			}
 		}).error(function(data, status, headers, config) {
 			$scope.recordError = "Error saving record.";
 			$rootScope.handleHttpError(data, status, headers, config);
@@ -785,6 +735,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			console.debug("Non-matching record (id= " + $scope.record.id + ") will ignore entry modification request.");
 		} else {
 
+			$rootScope.currentPageDirty = true;
+			
 			if (parameters.action === "save") {
 
 				console.debug("Action: SAVE");
@@ -902,6 +854,46 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 
 	///////////////////////
+	// Modal Functions //
+	///////////////////////
+	
+	// HACKISH:  Variable passed in is the currently viewed map user in the lead's View Other Work tab
+	$scope.displayMapRecord = function(mapUser) {
+		
+		$scope.saveMapRecord(false);
+		
+		console.debug("displayMapRecord with ");
+		console.debug(mapUser);
+		
+		
+		console.debug($scope.record);
+
+		var modalInstance = $modal.open({
+			templateUrl: 'js/widgets/mapRecord/displayMapRecord.html',
+			controller: DisplayMapRecordCtrl,
+		    size: 'lg',
+			resolve: {				
+				record: function() {
+					return $scope.record;
+				}
+			}
+		});
+
+	};
+	
+	var DisplayMapRecordCtrl = function($scope, $modalInstance, record) { 
+		
+		console.debug("Entered display map record modal control");
+		$scope.mapRecord = record;
+	
+
+		$scope.cancel = function() {
+			$modalInstance.dismiss('cancel');
+		};
+	}
+	
+	
+	///////////////////////
 	// Utility Functions //
 	///////////////////////
 
@@ -988,5 +980,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
 	};
 
-
+    $scope.openConceptBrowser = function() {
+    	$scope.window = $window.open($scope.getBrowserUrl());
+    };
+    
+    $scope.closeConceptBrowser = function() {
+    	$scope.window.close();
+    };
 });
