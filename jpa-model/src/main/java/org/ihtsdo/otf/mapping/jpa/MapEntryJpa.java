@@ -58,7 +58,6 @@ public class MapEntryJpa implements MapEntry {
 
   /** The map notes. */
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER, targetEntity = MapNoteJpa.class)
-  @IndexedEmbedded(targetElement = MapNoteJpa.class)
   private Set<MapNote> mapNotes = new HashSet<>();
 
   /** The map advices. */
@@ -83,6 +82,7 @@ public class MapEntryJpa implements MapEntry {
   private int mapPriority;
 
   @OneToOne(targetEntity = MapRelationJpa.class, fetch = FetchType.EAGER)
+  @IndexedEmbedded(targetElement = MapRelationJpa.class)
   private MapRelation mapRelation;
 
   /** The mapBlock. */

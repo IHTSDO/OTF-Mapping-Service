@@ -107,7 +107,6 @@ public class MapRecordJpa implements MapRecord {
 
 	/** The map notes. */
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapNoteJpa.class)
-	@IndexedEmbedded(targetElement = MapNoteJpa.class)
 	private Set<MapNote> mapNotes = new HashSet<>();
 
 	/** The map principles. */
