@@ -1,0 +1,93 @@
+
+
+<tbody>
+
+    <tr ng-repeat="entry in record.mapEntry" >
+
+      <td style="width: 100%;">
+        <div style="float: left; width: 36%;">
+          <div>{{record.conceptName}}</div>
+          <div ng-show="!editable">{{record.conceptId}}</div>
+          <div ng-show="editable">
+            <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
+            <span ng-show="record.unmappedDescendants.length > 0"> <span
+          class="dropdown"> <a class="dropdown-toggle"> <img
+              src="img/warning.png" alt="question icon">
+          </a>
+            <ul class="dropdown-menu project-records-dropdown-menu">
+              <b>Unmapped Descendants</b>
+              <li ng-repeat="concept in record.unmappedDescendants"><a
+                href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
+                  {{concept.value}}</a></li>
+            </ul>
+           </span>
+          </span>          
+          </div>
+        </div>
+        <div style="float: left; width: 15%;">{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</div>
+        <div style="float: left; width: 12%; margin-right:3px;"
+          >{{entry.rule}}</div>
+        <div style="float: left; width: 33%;" >
+          <div ng-show="entry.targetId != null && entry.targetId != ''">
+            <div>{{entry.targetName}}</div>
+            <div>{{entry.targetId}}</div>
+          </div>
+          <div ng-show="entry.targetId == null || entry.targetId == ''">
+            {{entry.mapRelation.abbreviation}}
+          </div>
+           <div ng-show="entry.targetName == null && entry.mapRelation.abbreviation == null">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>Select a Reason</i>
+          </div> 
+        </div>
+
+        <div style="float: right; width: 3%;">
+          <a ng-show="editable"  title="Edit"  
+            ng-click="editRecord(record)"><i
+            class="glyphicon glyphicon glyphicon-pencil"></i></a>
+        </div> 
+
+        
+        <!-- ADVICE -->
+        <div
+          style="float: left; width: 100%; font-size: 12px;"
+          ng-repeat="advice in entry.mapAdvice"><img
+              src="img/dialog-question.png" alt="advice icon" tooltip-placement="top" tooltip="Map Advice">&nbsp;{{advice.detail}}
+        </div>
+
+      </td>
+
+    </tr>
+    
+
+    
+    <!-- NOTES -->
+    <tr style="width: 100%;" ng-repeat="note in record.mapNote">
+      <td>
+        <div style="float: left; width: 3%;"><img
+              src="img/notepad.png" alt="notepad icon" tooltip-placement="top" tooltip="Notes"></div>
+        <!-- <div ng-show="!$first" style="float: left; width: 3%;">&nbsp;</div> -->
+        <div style="float: left; width: 97%;">
+          <span ng-bind-html="to_trusted(truncate(note.note, 200))"></span>
+          <span ng-show="truncated(note.note, 200)"
+                class="dropdown">
+                <a style="display:inline;" class="dropdown-toggle">...</a> <span style="width: 100%"
+                  class="dropdown-menu term-browser-dropdown-menu">
+                  <p>{{note.note}}</p>
+                </span>
+              </span>
+        </div>
+      </td>
+    </tr>
+    
+    <!-- PRINCIPLES -->
+    <tr style="width: 100%;" ng-repeat="principle in record.mapPrinciple">
+      <td>
+        <div ng-show="$first" style="float: left; width: 7%;">Principle:&nbsp;</div>
+        <div ng-show="!$first" style="float: left; width: 7%;">&nbsp;</div>
+        <div style="float: left; width: 93%;">
+          <p ng-bind-html="to_trusted(principle.detail)"></p>
+        </div>
+      </td>
+    </tr>
+
+</tbody>

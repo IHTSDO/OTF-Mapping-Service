@@ -111,6 +111,8 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		entry.mapRelation = null;
 		entry.mapAdvice = [];
 		
+		updateEntry();
+		
 		// get the allowable advices and relations
 		$scope.allowableAdvices = getAllowableElements($scope.entry, $scope.project.mapAdvice);
 		sortByKey($scope.allowableAdvices, 'detail');
@@ -121,7 +123,6 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			console.debug('Relation computed');
 			computeAdvice($scope.entry).then(function() {
 				console.debug('Advice computed');
-				updateEntry();
 			});
 		});
 	};
