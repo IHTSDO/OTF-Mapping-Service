@@ -56,12 +56,12 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		console.debug('compareRecords:  Detected change in project');
 		$http.defaults.headers.common.Authorization = $scope.userToken;
 		
-		// if first visit, retrieve the conflict records
+		// if first visit, retrieve the records to be compared
 		if ($scope.leadRecord == null) {
 			console.debug("First visit, getting conflict records");
 			$scope.getRecordsInConflict();
 		
-		// otherwise, return to dashboard (mismatch between record and project
+		// otherwise, return to dashboard (mismatch between record and project)
 		} else {
 			console.debug("Redirecting");
 		
@@ -125,9 +125,30 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		}).success(function(data) {
 			if(data.totalCount < 2) console.debug("ERROR:  Could not retrieve at least two records in conflict");
 			else {
-				// set the origin records (i.e. the records in conflict)
-				$scope.record1 = data.mapRecord[0];
-				$scope.record2 = data.mapRecord[1];
+				
+				// if a conflict, just set the two records
+				if (data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED') {
+					// set the origin records (i.e. the records in conflict)
+					$scope.record1 = data.mapRecord[0];
+					$scope.record1.displayName = $scope.record1.owner.name;
+					$scope.record2 = data.mapRecord[1];
+					$scope.record2.displayName = $scope.record2.owner.name;
+					
+				// otherwise a review record
+				} else {
+					
+					// assign the first record as the specialist's revised record
+					// assign the second record as the previously published record
+					for (var i = 0; i < 2; i++) {
+						if (data.mapRecord[i].workflowStatus === 'REVIEW_NEEDED') {
+							$scope.record1 = data.mapRecord[i];
+							$scope.record1.displayName = $scope.record1.owner.name;
+						} else if (data.mapRecord[i].workflowStatus === 'REVISION') {
+							$scope.record2 = data.mapRecord[i];
+							$scope.record2.displayName = 'Previously Published';
+						}
+					}
+				}
 			}
 
 		}).error(function(data, status, headers, config) {
@@ -342,21 +363,33 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 
 	$scope.populateMapRecord = function(record) {
 		
+		var localId = 1;
+		
 		console.debug('populating map record');
 		console.debug(record);
 		
-		var newLeadRecord = angular.copy(record);
+		// copy the relevant information into the map lead's record
+		$scope.leadRecord.mapEntry = angular.copy(record.mapEntry);
+		$scope.leadRecord.mapNotes = angular.copy(record.mapNotes);
+		$scope.leadRecord.mapPrinciples = angular.copy(record.mapPrinciples);
 		
-		for (var i = 0; i < newLeadRecord.mapNote.length; i++) {
-			console.debug("nulling map note id");
-			newLeadRecord.mapNote[i].id = null;
+		// null the ids of the notes (for later creation as new jpa objects)
+		for (var i = 0; i < $scope.leadRecord.mapNote.length; i++) {
+			$scope.leadRecord.mapNote[i].localId = localId++;
+			$scope.leadRecord.mapNote[i].id = null;
 		}
 		
-		
-		
-		newLeadRecord.id = $scope.leadRecord.id;
-		newLeadRecord.workflowStatus = 'CONFLICT_IN_PROGRESS';
-		$rootScope.$broadcast('compareRecordsWidget.notification.selectRecord',{record: newLeadRecord});  
+		// null the ids of all the entries (for later creation as new jpa objects)
+		for (var i = 0; i < $scope.leadRecord.mapEntry.length; i++) {
+			console.debug("Setting entry localId to " + localId);
+			$scope.leadRecord.mapEntry[i].localId = localId++;
+			$scope.leadRecord.mapEntry[i].id = null;
+			console.debug($scope.leadRecord.mapEntry[i]);
+		}
+				
+		console.debug("Broadcasting record: ", $scope.leadRecord);
+		// broadcast to the map record widget
+		$rootScope.$broadcast('compareRecordsWidget.notification.selectRecord',{record: $scope.leadRecord});  
 		
 	};
 

@@ -632,10 +632,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				mapProject.getId(), query);
 
 		// add the query terms specific to findAvailableReviewWork
-		// - user and workflowStatus pair of CONFLICT_DETECTED~userName exists
+		// - a user (any) and workflowStatus pair of REVIEW_NEEDED~userName exists
+		// - the REVIEW_NEEDED pair is not for this user (i.e. user can't review their own work)
 		// - user and workflowStatus pairs of CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
 		full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*"
-				   + " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_" + mapUser.getUserName() + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_" + mapUser.getUserName() + ")";
+					+ " AND NOT userAndWorkflowStatusPairs:REVIEW_NEEDED_" + mapUser.getUserName()
+				   	+ " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_" + mapUser.getUserName() 
+				   	+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_" + mapUser.getUserName() + ")";
 		
 		System.out.println("FindAvailableReviewWork query: " + full_query);
 
@@ -966,6 +969,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		switch (pfsParameter.getQueryRestriction()) {
 		case "NEW":
 			full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEW_" + mapUser.getUserName();
+					
 			break;
 		case "EDITING_IN_PROGRESS":
 			full_query += " AND userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_" + mapUser.getUserName();
@@ -1277,11 +1281,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			throw new Exception("Unknown action requested.");
 		}
 
+
 		Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
 
 		// synchronize the map records via helper function
 		Set<MapRecord> syncedRecords = synchronizeMapRecords(trackingRecord,
 				mapRecords);
+
 
 		// clear the pointer fields (i.e. ids and names of mapping
 		// objects)
@@ -1399,8 +1405,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			else {
 				// if the old map record is changed, update it
 				if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
+					/*Logger.getLogger(WorkflowServiceJpa.class).info(
+							 "Updating record: " + mr.getId().toString() + " with " + mr.getMapEntries().get(0) + " advices");*/
 					mappingService.updateMapRecord(mr);
+				} else {
+					/*Logger.getLogger(WorkflowServiceJpa.class).info(
+							 "Record " + mr.getId().toString() + " has not changed, not updating");*/
 				}
+				
+				
 
 				syncedRecords.add(mr);
 			}
@@ -1614,6 +1627,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
 				.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
 				.startAndWait();
+		
+		Logger.getLogger(WorkflowServiceJpa.class).info("Done.");
 	}
 
 
@@ -1897,13 +1912,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// modify the record
 			} else {
 
-				// get a random tracking record available to a specialist
-				// (range: [0:n] where n = min (5, number of tracking records available))
-				// goal here is to not produce a conflict necessarily for every conflict,
-				// but don't want the number to be so large that conflicts are never
-				// generated randomly
+				// get the next available tracking record and process it
 				TrackingRecord trackingRecord = specialistTrackingRecords
-						.get(rand.nextInt(Math.min(5, specialistTrackingRecords.size())));
+						.get(0);
 
 				Logger.getLogger(WorkflowServiceJpa.class).info(
 						"   Procesing available Concept for "
@@ -2177,6 +2188,23 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"      Record will have " + numGroups + " groups");
+		
+		// determine whether to add a note (currently 50% chance)
+		if (rand.nextInt(2) == 0) {
+
+			// determine a random number of notes
+			int nNote = rand.nextInt(2) + 1;
+			for (int iNote = 0; iNote < nNote; iNote++) {
+
+				MapNote mapNote = new MapNoteJpa();
+				mapNote.setUser(mapRecord.getOwner());
+				mapNote.setNote("I'm note #" + (iNote + 1) + " by "
+						+ mapRecord.getOwner().getName());
+				mapRecord.addMapNote(mapNote);
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"         Added note: " + mapNote.getNote());
+			}
+		}
 
 		// //////////////////////////////
 		// ENTRIES
@@ -2221,23 +2249,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						Logger.getLogger(WorkflowServiceJpa.class).info(
 								"         Setting rule: " + mapEntry.getRule());
 
-					}
-				}
-
-				// determine whether to add a note (currently 50% chance)
-				if (rand.nextInt(2) == 0) {
-
-					// determine a random number of notes
-					int nNote = rand.nextInt(2) + 1;
-					for (int iNote = 0; iNote < nNote; iNote++) {
-
-						MapNote mapNote = new MapNoteJpa();
-						mapNote.setUser(mapRecord.getOwner());
-						mapNote.setNote("I'm note #" + (iNote + 1) + " by "
-								+ mapRecord.getOwner().getName());
-						mapEntry.addMapNote(mapNote);
-						Logger.getLogger(WorkflowServiceJpa.class).info(
-								"         Added note: " + mapNote.getNote());
 					}
 				}
 

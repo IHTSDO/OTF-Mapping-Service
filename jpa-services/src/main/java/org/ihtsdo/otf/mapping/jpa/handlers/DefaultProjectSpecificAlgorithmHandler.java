@@ -1016,20 +1016,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		case FIX_ERROR_PATH:
 			
 			// Case 1:  A lead claims an error-fixed record for review
-			if (getWorkflowStatus(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)) {
+			if (getLowestWorkflowStatus(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)) {
 				
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 				.info("FIX_ERROR_PATH: Lead claiming an error-fixed record");
 							
-				// check that only one record exists for this tracking record
-				if (!(trackingRecord.getMapRecordIds().size() == 1)) {
+				// check that only two records exists for this tracking record
+				if (!(trackingRecord.getMapRecordIds().size() == 2)) {
 					System.out.println(trackingRecord.toString());
 					throw new Exception(
 							"assignFromScratch: More than one record exists for FIX_ERROR_PATH assignment.");
 				}
-				
-				// deep copy the new record
-				mapRecord = new MapRecordJpa(mapRecord, true);
 				
 				// set origin id
 				for (MapRecord mr : mapRecords) {
@@ -1037,15 +1034,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					mapRecord.addOrigins(mr.getOriginIds());
 				}
 				
-				// set other relevant fields
-				mapRecord.setOwner(mapUser);
-				mapRecord.setLastModifiedBy(mapUser);
+				// set workflow status
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
 				
 				Logger.getLogger("FIX_ERROR_PATH final record: " + mapRecord.toString());
 
 			} else {
-				throw new Exception("assignFromScratch called on FIX_ERROR_PATH but tracking record is not of status REVIEW_NEEDED");
+				throw new Exception("assignFromScratch called on FIX_ERROR_PATH but tracking record does not contain a record marked REVIEW_NEEDED");
 			}
 			
 			break;
@@ -1401,52 +1396,91 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			break;
 
 		case FIX_ERROR_PATH:
+			
+			for (MapRecord mr : mapRecords) System.out.println(mr.getWorkflowStatus().toString());
 
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 					.info("FIX_ERROR_PATH");
 			
 			// case 1:  A user has finished correcting an error on a previously published record
-			if (this.getWorkflowStatus(mapRecords).compareTo(WorkflowStatus.REVISION) == 0) {
+			// requires a workflow state to exist below that of REVEW_NEW (in this case, NEW, EDITING_IN_PROGRESS
+			if (mapRecords.size() == 2) {
 				
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 						.info("  User has finished correcting an error");
 	
 				// assumption check: should only be 2 records
-				// 1) The original record (now marked REVIEW)
-				// 2) The modified record
-				if (mapRecords.size() != 2) {
-					throw new Exception(
-							"finishEditing on FIX_ERROR_PATH:  Attempt to fix an error requires exactly two map records.");
+				// 1) The original record (now marked REVISION)
+				// 2) The modified record (NEW or EDITING_IN_PROGRESS
+				boolean foundOriginalRecord = false;
+				boolean foundModifiedRecord = false;
+				
+				for (MapRecord mr : mapRecords) {
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) 
+						foundOriginalRecord = true;
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.NEW) || mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_IN_PROGRESS))
+						foundModifiedRecord = true;
 				}
+				
+				
+				if (!foundOriginalRecord) 
+					throw new Exception(
+							"FIX_ERROR_PATH: Specialist finished work, but could not find previously published record");
+				
+				
+				if (!foundModifiedRecord)
+					throw new Exception(
+							"FIX_ERROR_PATH: Specialist finished work, but could not find their record");
 	
 				// cycle over the records
 				for (MapRecord mr : mapRecords) {
 	
-					// if the original PUBLISHED/READY_FOR_PUBLICATION record (i.e.
-					// now has REVISION), remove
-					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-						newRecords.remove(mr);
-					} else {
+					// two records, one marked REVISION, one marked with NEW, EDITING_IN_PROGRESS
+					if (! mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
 						mr.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
 					}
 				}
 	
 				// Case 2:  A lead has finished reviewing a corrected error and is ready to send it to publication status
-			} else if (getWorkflowStatus(mapRecords).compareTo(WorkflowStatus.REVIEW_NEW) == 0 || getWorkflowStatus(mapRecords).compareTo(WorkflowStatus.REVIEW_IN_PROGRESS) == 0 ) {
+			} else if (mapRecords.size() == 3) {
 				
-				// assumption check
-				// 1) should only be one record
-				if (mapRecords.size() != 2) {
-					throw new Exception(
-							"finishEditing on FIX_ERROR_PATH:  Attempted to finish a lead review requires exactly two record.");	
+				// assumption check: should be exactly three records
+				// 1) original published record, marked REVISION
+				// 2) specialist's record, marked REVIEW_NEEDED
+				// 3) lead's record, marked REVIEW_NEW or REVIEW_IN_PROGRESS
+				boolean foundOriginalRecord = false;
+				boolean foundModifiedRecord = false;
+				boolean foundLeadRecord = false;
+				
+				for (MapRecord mr : mapRecords) {
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) 
+						foundOriginalRecord = true;
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
+						foundModifiedRecord = true;		
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW) || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS))
+						foundLeadRecord = true;	
 				}
+				
+				
+				if (!foundOriginalRecord) 
+					throw new Exception(
+							"FIX_ERROR_PATH: Lead finished reviewing work, but could not find previously published record");
+				
+				
+				if (!foundModifiedRecord)
+					throw new Exception(
+							"FIX_ERROR_PATH: Lead finished reviewing work, but could not find the specialist's record record");
+				
+				if (!foundLeadRecord)
+					throw new Exception(
+							"FIX_ERROR_PATH: Lead finished reviewing work, but could not find their record.");
 				
 				// set the record to ready for publication
 				for (MapRecord mr : mapRecords) {
 					
-					// remove the REVIEW_NEEDED record
-					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+					// remove the REVIEW_NEEDED and REVISION records
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED) || mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
 						newRecords.remove(mr);
 						
 					// set the finished record to READY_FOR_PUBLICATION
@@ -1456,6 +1490,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				}
 				
 				
+			} else {
+				throw new Exception("Unexpected error along FIX_ERROR_PATH, invalid number of records passed in");
 			}
 			
 			
