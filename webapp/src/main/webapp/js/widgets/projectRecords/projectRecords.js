@@ -341,4 +341,17 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 		});
 	};
 
+	$scope.truncate = function(string, length) {
+		if (length == null) length = 100;
+		if (string.length > length) return string.slice(0, length-3);
+		else return string;
+	};
+
+	$scope.truncated = function(string, length) {
+		if (length == null) length = 100;
+		if (string.length > length) 
+			return true;
+		else 
+			return false;
+	};
 });

@@ -9,6 +9,19 @@ a {
 	cursor:pointer;
 }
 
+
+
+
+.odd {
+  background-color: #FFFDF5;
+}
+.even {
+  background-color: #F3F7F2;
+}
+
+
+
+
 html,body {
 	margin: 0; /* Remove body margin/padding */
 	padding: 0;

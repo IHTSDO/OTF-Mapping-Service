@@ -20,8 +20,8 @@
 	<tr>
 		<td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
 		<td style="vertical-align: top; padding: 5px;">{{concept.terminology}},{{concept.terminologyId}}
-			&nbsp<a href="{{conceptBrowserUrl}}" target="_blank"><i
-				class="glyphicon glyphicon-info-sign"></i></a>
+			&nbsp<a href=""><i
+				class="glyphicon glyphicon-info-sign" ng-click="openConceptBrowser()"></i></a>
 		</td>
 	</tr>
 	<tr>
@@ -229,10 +229,11 @@ lead review<br>
 <button class="btn btn-sm btn-primary"
 	ng-show="page != 'resolveConflictsDashboard'"
 	ng-click="finishMapRecord(false)">Finish/Next</button>
+<button class="btn btn-sm btn-primary" ng-click="displayMapRecord(user)">Display</button>
 <button class="btn btn-sm btn-warning" ng-click="cancelMapRecord()">Cancel</button>
 
 <button class="btn btn-sm btn-primary" style="float: right;"
-	ng-click="saveMapRecord()">Save For Later</button>
+	ng-click="saveMapRecord(true)">Save For Later</button>
 
 <p></p>
 <p></p>
