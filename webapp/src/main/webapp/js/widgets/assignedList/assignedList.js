@@ -558,4 +558,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			// redirect page
 			$location.path(path);
 	};
+	
+	$scope.goEditReviewWork = function (id) {
+		var path = "/record/review/" + id;
+			// redirect page
+			$location.path(path);
+	};
 });

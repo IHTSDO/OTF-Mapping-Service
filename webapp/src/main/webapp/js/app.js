@@ -135,6 +135,11 @@ mapProjectApp.config(['$routeProvider',
 		templateUrl: 'partials/otf-dashboard.html',
 		controller: 'ResolveConflictsDashboardCtrl'
 	});
+	
+	$routeProvider.when('/record/review/:recordId', {
+		templateUrl: 'partials/otf-dashboard.html',
+		controller: 'ResolveConflictsDashboardCtrl'
+	});
 
 
 

@@ -29,7 +29,7 @@
 
         <!--  ENTRIES PANEL -->
         <accordion> <accordion-group is-open="isEntriesOpen">
-        <accordion-heading> Entries: {{record1.owner.name}}<i
+        <accordion-heading> Entries: {{record1.displayName}}<i
           class="pull-right glyphicon"
           ng-class="{'glyphicon-chevron-down': isEntriesOpen, 'glyphicon-chevron-right': !isEntriesOpen}"></i>
         </accordion-heading>
@@ -125,7 +125,7 @@
 
         <!--  ENTRIES PANEL -->
         <accordion> <accordion-group is-open="isEntriesOpen">
-        <accordion-heading> Entries: {{record2.owner.name}}<i
+        <accordion-heading> Entries: {{record2.displayName}}<i
           class="pull-right glyphicon"
           ng-class="{'glyphicon-chevron-down': isEntriesOpen, 'glyphicon-chevron-right': !isEntriesOpen}"></i>
         </accordion-heading>
