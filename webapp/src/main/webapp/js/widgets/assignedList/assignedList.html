@@ -1,14 +1,7 @@
 
 <tabset> <tab heading="{{tabs[0].title}}"
 	active="tabs[0].active" select="setTab(0)"> <!--  do not display controls if no records are assigned and the query term is null -->
-<div style="padding: 10px;"
-		ng-show="nAssignedRecords == 0 && (queryAssigned == null || queryAssigned === '')">
-		<p></p>
-		<div style="padding:10px;" class="alert alert-warning" disabled> No assigned concepts.</div>
-	</div>
 
-	<div ng-show="nAssignedRecords > 0 || (queryAssigned != null && queryAssigned != '')">
-	
 	<table style="margin-top: 10px;">
 	<tr>
       	<td style="padding: 5px";>Filter concepts:</td>
@@ -32,9 +25,11 @@
 		</td>
 	</tr>
 	</table>
+
 	
-	
-	
+		
+
+<div ng-show="nAssignedRecords > 0">
 	<pagination ng-show="numAssignedRecordPages > 1"
 	total-items="nAssignedRecords" page="assignedWorkPage"
 	class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
@@ -96,23 +91,21 @@
 
 
 </table>
-<div ng-show="assignedRecords.length == 0 && searchPerformed">No concepts matched the search.</div>
+
 </div>
   
+  <div style="padding: 10px;"
+		ng-show="nAssignedRecords == 0">
+		<p></p>
+		<div style="padding:10px;" class="alert alert-warning" disabled> No concepts found.</div>
+	</div>
 
 </tab> 
 
 <tab heading="{{tabs[1].title}}" active="tabs[1].active" select="setTab(1)"
 	ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 	
-	<!--  do not display controls if no records are assigned and the query term is null -->
-	<div style="padding:10px;"
-		ng-show="nAssignedConflicts == 0 && (queryConflict == null || queryConflict === '')">
-		<p></p>
-		<div style="padding:10px;" class="alert alert-warning" disabled> No assigned conflicts.</div>
-	</div>
-
-	<div ng-show="nAssignedConflicts > 0 || (queryConflict != null && queryConflict != '')">
+	
 	
 	<table style="margin-top: 10px; margin-bottom: 10px;">
 	<tr>
@@ -136,6 +129,15 @@
 		</td>
 	</tr>
 	</table>
+	
+	<!--  do not display table if no records are assigned and the query term is null -->
+	<div style="padding:10px;"
+		ng-show="nAssignedConflicts == 0">
+		<p></p>
+		<div class="alert alert-warning" disabled> No conflicts found.</div>
+	</div>
+
+	<div ng-show="nAssignedConflicts > 0">
 	
 <pagination total-items="nAssignedConflicts" ng-show="numAssignedConflictsPages > 1"
 	page="assignedConflictsPage" class="pagination-sm"
@@ -201,14 +203,7 @@
 <tab heading="{{tabs[2].title}}" active="tabs[2].active" select="setTab(2)"
 	ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
 	
-	<!--  do not display controls if no records are assigned and the query term is null -->
-	<div style="padding:10px;"
-		ng-show="nAssignedReviewWork == 0 && (queryReviewWork == null || queryReviewWork === '')">
-		<p></p>
-		<div style="padding:10px;" class="alert alert-warning" disabled> No assigned review work.</div>
-	</div>
-
-	<div ng-show="nAssignedReviewWork > 0 || (queryReviewWork != null && queryReviewWork != '')">
+	
 	
 	<table style="margin-top: 10px; margin-bottom: 10px;">
 	<tr>
@@ -232,6 +227,15 @@
 		</td>
 	</tr>
 	</table>
+	
+	<!--  do not display controls if no records are assigned and the query term is null -->
+	<div style="padding:10px;"
+		ng-show="nAssignedReviewWork == 0">
+		<p></p>
+		<div class="alert alert-warning" disabled> No review work found.</div>
+	</div>
+
+	<div ng-show="nAssignedReviewWork > 0">
 	
 	<div style = "color:red">At this time, review work can only be claimed and returned.<br> Completing work will be implemented later.</div>
 	
@@ -339,9 +343,9 @@
 
 <!--  do not display controls if no records are assigned and the query term is null and a map user is selected-->
 	<div style="padding:10px;"
-		ng-show="nAssignedRecordsForUser == 0 && (queryAssignedForUser == null || queryAssignedForUser === '') && mapUserViewed != null">
+		ng-show="nAssignedRecordsForUser == 0">
 		<p></p>
-		<div style="padding:10px;" class="alert alert-warning" disabled> No work assigned to this user.</div>
+		<div class="alert alert-warning" disabled> No work found.</div>
 	</div>
 
 
@@ -382,9 +386,6 @@
 
 
 </table>
-
-<div ng-show="assignedRecordsForUser.length == 0 && searchPerformed">No concepts matched the search.</div>
-
 </tab>
 
 </tabset>

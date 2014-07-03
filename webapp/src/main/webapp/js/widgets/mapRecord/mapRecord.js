@@ -783,7 +783,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		// verify that this entry is attached to this record
 		if (record.id != $scope.record.id) {
-			console.debug("Non-matching record (id= " + $scope.record.id + ") will ignore entry modification request.");
+			console.debug("Non-matching rec	ord (id= " + $scope.record.id + ") will ignore entry modification request.");
 		} else {
 
 			if (parameters.action === "save") {
@@ -813,46 +813,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 								console.debug(" -- found entry, group " + i + ", priority " + j);
 							}	
 						}
-					}
-				}
-
-			} else if (parameters.action === "delete") {
-
-				console.debug("Action: DELETE");
-
-				// handle action based on group structure
-				if ($scope.project.groupStructure == false) {
-
-					// construct new entries list
-					var entries = new Array();
-
-					// push all entries not matching this entry onto new entries list
-					for (var i = 0; i < $scope.entries.length; i++) {
-						if ($scope.entriesEqualById(entry, $scope.entries[i]) == false) {
-							entries.push($scope.entries[i]);
-						}
-					}
-
-					// overwrite scope entries list
-					$scope.entries = entries;
-
-				} else {
-
-					// cycle over all group bins
-					for (var i = 0; i < $scope.entries.length; i++) {
-
-						// construct new entries list
-						var entries = new Array();
-
-						// push all entries not matching this entry into new entries list for this group bin
-						for (var j = 0; j < $scope.entries[i].length; j++) {
-							if ($scope.entriesEqualById(entry, $scope.entries[i][j]) == false) {
-								entries.push($scope.entries[i][j]);
-							}
-						}
-
-						// overwrite the group bin
-						$scope.entries[i] = entries;
 					}
 				}
 			} else {
