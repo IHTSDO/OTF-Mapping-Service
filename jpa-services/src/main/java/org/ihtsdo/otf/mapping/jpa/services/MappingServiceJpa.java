@@ -2858,11 +2858,42 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			throw new Exception(
 					"getRecordsInConflict: Could not find map record with id = "
 							+ mapRecordId.toString() + "!");
-		for (Long originId : mapRecord.getOriginIds()) {
-			MapRecord mr = getMapRecord(originId);
-			if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
-				conflictRecords.addMapRecord(getMapRecord(originId));
+		
+		// if a conflict between two specialists, retrieve the CONFLICT_DETECTED records
+		if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW) || mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)) {
+			
+			for (Long originId : mapRecord.getOriginIds()) {
+				MapRecord mr = getMapRecord(originId);
+				if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+					conflictRecords.addMapRecord(getMapRecord(originId));
+				}
 			}
+			
+			if (conflictRecords.getCount() != 2) 
+				throw new LocalException("Could not retrieve records in conflict.");
+			
+		} else if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW) || mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
+			
+			boolean foundReviewRecord = false;  // the specialist's completed work
+			boolean foundRevisionRecord = false; // the original published work
+			
+			for (Long originId : mapRecord.getOriginIds()) {
+				MapRecord mr = getMapRecord(originId);	
+
+				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+					conflictRecords.addMapRecord(getMapRecord(originId));
+					foundReviewRecord = true;
+				} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+					conflictRecords.addMapRecord(getMapRecord(originId));
+					foundRevisionRecord = true;
+				}
+			}
+			
+			if (!foundReviewRecord) 
+				throw new LocalException("Could not retrieve user's modified record to review.");
+			
+			if (!foundRevisionRecord)
+				throw new LocalException("Could not retrieve the original published record required for comparing review work");
 		}
 
 		// set the total count for completeness (no paging here)
