@@ -1277,11 +1277,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			throw new Exception("Unknown action requested.");
 		}
 
+
 		Logger.getLogger(WorkflowServiceJpa.class).info("Synchronizing...");
 
 		// synchronize the map records via helper function
 		Set<MapRecord> syncedRecords = synchronizeMapRecords(trackingRecord,
 				mapRecords);
+
 
 		// clear the pointer fields (i.e. ids and names of mapping
 		// objects)
@@ -1399,8 +1401,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			else {
 				// if the old map record is changed, update it
 				if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							 "Updating record: " + mr.getId().toString() + " with " + mr.getMapEntries().get(0) + " advices");
 					mappingService.updateMapRecord(mr);
+				} else {
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							 "Record " + mr.getId().toString() + " has not changed, not updating");
 				}
+				
+				
 
 				syncedRecords.add(mr);
 			}

@@ -21,6 +21,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.batchSizes = [100, 50, 25, 10, 5];
 	$scope.batchSize = $scope.batchSizes[2];
 	$scope.batchSizeConflict = $scope.batchSizes[4];
+	$scope.batchSizeReview = $scope.batchSizes[4];
 	
 	// pagination variables
 	$scope.itemsPerPage = 10;

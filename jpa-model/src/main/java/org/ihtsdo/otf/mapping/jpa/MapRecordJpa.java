@@ -720,7 +720,7 @@ public class MapRecordJpa implements MapRecord {
 			if (!mapRecord.getMapNotes().contains(note)) return false;
 		}
 
-		// check entries
+		// check principles
 		if (mapRecord.getMapPrinciples().size() != mapPrinciples.size()) return false;
 		for (MapPrinciple principle : mapPrinciples) {
 			if (!mapRecord.getMapPrinciples().contains(principle)) return false;

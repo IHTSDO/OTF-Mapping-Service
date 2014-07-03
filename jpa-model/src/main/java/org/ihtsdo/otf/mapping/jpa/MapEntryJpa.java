@@ -484,49 +484,81 @@ public class MapEntryJpa implements MapEntry {
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result =
-        prime * result + ((mapRelation == null) ? 0 : mapRelation.hashCode());
-    result = prime * result + ((rule == null) ? 0 : rule.hashCode());
-    result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());
-    result =
-        prime * result + ((targetName == null) ? 0 : targetName.hashCode());
-    return result;
-  }
+public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime * result
+			+ ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
+	result = prime * result + mapBlock;
+	result = prime * result + mapGroup;
+	result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
+	result = prime * result + mapPriority;
+	
+	// note:  use map record id instead of map record to prevent hashCode() circular reference chain
+	result = prime * result + ((mapRecord.getId() == null) ? 0 : mapRecord.getId().hashCode());
+	result = prime * result
+			+ ((mapRelation == null) ? 0 : mapRelation.hashCode());
+	result = prime * result + ((rule == null) ? 0 : rule.hashCode());
+	result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());
+	result = prime * result
+			+ ((targetName == null) ? 0 : targetName.hashCode());
+	return result;
+}
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    MapEntryJpa other = (MapEntryJpa) obj;
-    if (mapRelation == null) {
-      if (other.mapRelation != null)
-        return false;
-    } else if (!mapRelation.equals(other.mapRelation))
-      return false;
-    if (rule == null) {
-      if (other.rule != null)
-        return false;
-    } else if (!rule.equals(other.rule))
-      return false;
-    if (targetId == null) {
-      if (other.targetId != null)
-        return false;
-    } else if (!targetId.equals(other.targetId))
-      return false;
-    if (targetName == null) {
-      if (other.targetName != null)
-        return false;
-    } else if (!targetName.equals(other.targetName))
-      return false;
-    return true;
-  }
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (obj == null)
+		return false;
+	if (getClass() != obj.getClass())
+		return false;
+	MapEntryJpa other = (MapEntryJpa) obj;
+	if (mapAdvices == null) {
+		if (other.mapAdvices != null)
+			return false;
+	} else if (!mapAdvices.equals(other.mapAdvices))
+		return false;
+	if (mapBlock != other.mapBlock)
+		return false;
+	if (mapGroup != other.mapGroup)
+		return false;
+	if (mapNotes == null) {
+		if (other.mapNotes != null)
+			return false;
+	} else if (!mapNotes.equals(other.mapNotes))
+		return false;
+	if (mapPriority != other.mapPriority)
+		return false;
+	
+	// note:  only compare map record id, otherwise equals() circular reference chain
+	if (mapRecord.getId() == null) {
+		if (other.mapRecord.getId() != null)
+			return false;
+	} else if (!mapRecord.getId().equals(other.mapRecord.getId()))
+		return false;
+	if (mapRelation == null) {
+		if (other.mapRelation != null)
+			return false;
+	} else if (!mapRelation.equals(other.mapRelation))
+		return false;
+	if (rule == null) {
+		if (other.rule != null)
+			return false;
+	} else if (!rule.equals(other.rule))
+		return false;
+	if (targetId == null) {
+		if (other.targetId != null)
+			return false;
+	} else if (!targetId.equals(other.targetId))
+		return false;
+	if (targetName == null) {
+		if (other.targetName != null)
+			return false;
+	} else if (!targetName.equals(other.targetName))
+		return false;
+	return true;
+}
 
   @Override
   public String toString() {
