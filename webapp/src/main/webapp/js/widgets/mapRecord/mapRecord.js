@@ -66,6 +66,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
         console.debug(parameters.record);
         $scope.record = parameters.record;
         
+        console.debug("Passed record: ", parameters.record);
+        
         //get the groups
         if ($scope.project.groupStructure == true)
                getGroups();
@@ -157,10 +159,17 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.record.mapEntry[i].ruleSummary = 
 				$scope.getRuleSummary($scope.record.mapEntry[i]);
 			
-			// assign the entry localId to the hibernate Id
-			$scope.record.mapEntry[i].localId = 	$scope.record.mapEntry[i].id;
+			// if the hibernate id is defined, set the local id to that value
+			if ($scope.record.mapEntry[i].id != null) {
+				console.debug("Setting local id to existing hibernate id", $scope.record.mapEntry[i].id);
+				$scope.record.mapEntry[i].localId = 	$scope.record.mapEntry[i].id;
+			} else {
+				console.debug("Setting local id to " + currentLocalId);
+				$scope.record.mapEntry[i].localId = currentLocalId++;
+			}
 		}
 
+		console.debug($scope.record);
 		// if no group structure, simply copy and sort
 		if ($scope.project.groupStructure == false) {
 			$scope.entries = sortByKey($scope.record.mapEntry, 'mapPriority');
@@ -326,39 +335,116 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 									"queryRestriction": null};  
 
 							$rootScope.glassPane++;
+							
+							// if specialist level work, query for assigned concepts
+							if ($scope.record.workflowStatus === 'NEW' 
+								|| $scope.record.workflowStatus === 'EDITING_IN_PROGRESS' 
+								|| $scope.record.workflowStatus === 'EDITING_DONE') {
 
-							// get the assigned work list
-							$http({
-								url: root_workflow + "project/id/" + $scope.project.id 
-								+ "/user/id/" + $scope.user.userName
-								+ "/query/null/assignedConcepts",
+								// get the assigned work list
+								$http({
+									url: root_workflow + "project/id/" + $scope.project.id 
+									+ "/user/id/" + $scope.user.userName
+									+ "/query/null/assignedConcepts",
+									
+									dataType: "json",
+									data: pfsParameterObj,
+									method: "POST",
+									headers: {
+										"Content-Type": "application/json"
+									}
+								}).success(function(data) {
+									$rootScope.glassPane--;
+	
+									var assignedWork = data.searchResult;
+									
+									// if there is no more assigned work, return to dashboard
+									if (assignedWork.length == 0) {
+										console.debug("No more assigned work, return to dashboard");
+										$location.path($scope.role + "/dash");
+									
+									// otherwise redirect to the next record to be edited
+									} else {
+										console.debug("More work, redirecting");
+										$location.path("record/recordId/" + assignedWork[0].id);
+									}
+	
+								}).error(function(data, status, headers, config) {
+								    $rootScope.glassPane--;
+								    $rootScope.handleHttpError(data, status, headers, config);
+								});
 								
-								dataType: "json",
-								data: pfsParameterObj,
-								method: "POST",
-								headers: {
-									"Content-Type": "application/json"
-								}
-							}).success(function(data) {
-								$rootScope.glassPane--;
-
-								var assignedWork = data.searchResult;
+							// otherwise, if a conflict record, query available conflicts
+							} else if ($scope.record.workflowStatus === 'CONFLICT_NEW' || $scope.record.workflowStatus === 'CONFLICT_IN_PROGRESS') {
 								
-								// if there is no more assigned work, return to dashboard
-								if (assignedWork.length == 0) {
-									console.debug("No more assigned work, return to dashboard");
-									$location.path($scope.role + "/dash");
+								// get the assigned conflicts
+								$http({
+									url: root_workflow + "project/id/" + $scope.project.id 
+									+ "/user/id/" + $scope.user.userName
+									+ "/query/null/assignedConflicts",
+									
+									dataType: "json",
+									data: pfsParameterObj,
+									method: "POST",
+									headers: {
+										"Content-Type": "application/json"
+									}
+								}).success(function(data) {
+									$rootScope.glassPane--;
+	
+									var assignedWork = data.searchResult;
+									
+									// if there is no more assigned work, return to dashboard
+									if (assignedWork.length == 0) {
+										console.debug("No more assigned conflicts, return to dashboard");
+										$location.path($scope.role + "/dash");
+									
+									// otherwise redirect to the next record to be edited
+									} else {
+										console.debug("More work, redirecting");
+										$location.path("record/conflicts/" + assignedWork[0].id);
+									}
+	
+								}).error(function(data, status, headers, config) {
+								    $rootScope.glassPane--;
+								    $rootScope.handleHttpError(data, status, headers, config);
+								});
 								
-								// otherwise redirect to the next record to be edited
-								} else {
-									console.debug("More work, redirecting");
-									$location.path("record/recordId/" + assignedWork[0].id);
-								}
-
-							}).error(function(data, status, headers, config) {
-							    $rootScope.glassPane--;
-							    $rootScope.handleHttpError(data, status, headers, config);
-							});
+							// otherwise, if a review record, query available review work
+							} else if ($scope.record.workflowStatus === 'REVIEW_NEW' || $scope.record.workflowStatus === 'REVIEW_IN_PROGRESS') {
+								// get the assigned conflicts
+								$http({
+									url: root_workflow + "project/id/" + $scope.project.id 
+									+ "/user/id/" + $scope.user.userName
+									+ "/query/null/assignedReviewWork",
+									
+									dataType: "json",
+									data: pfsParameterObj,
+									method: "POST",
+									headers: {
+										"Content-Type": "application/json"
+									}
+								}).success(function(data) {
+									$rootScope.glassPane--;
+	
+									var assignedWork = data.searchResult;
+									
+									// if there is no more assigned work, return to dashboard
+									if (assignedWork.length == 0) {
+										console.debug("No more assigned review work, return to dashboard");
+										$location.path($scope.role + "/dash");
+									
+									// otherwise redirect to the next record to be edited
+									} else {
+										console.debug("More work, redirecting");
+										$location.path("record/review/" + assignedWork[0].id);
+									}
+	
+								}).error(function(data, status, headers, config) {
+								    $rootScope.glassPane--;
+								    $rootScope.handleHttpError(data, status, headers, config);
+								});
+							}
 
 						} else {
 							console.debug("Simple finish called, return to dashboard");
@@ -729,17 +815,18 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		var entry = parameters.entry;
 		var record = parameters.record;
+		
 
 		// verify that this entry is attached to this record
 		if (record.id != $scope.record.id) {
-			console.debug("Non-matching record (id= " + $scope.record.id + ") will ignore entry modification request.");
+			console.debug("Non-matching rec	ord (id= " + $scope.record.id + ") will ignore entry modification request.");
 		} else {
 
 			$rootScope.currentPageDirty = true;
 			
 			if (parameters.action === "save") {
 
-				console.debug("Action: SAVE");
+				console.debug("Action: SAVE", entry);
 
 				// find the entry, based on group structure
 				if ($scope.project.groupStructure == false) {
@@ -750,6 +837,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						// when entry found, overwrite it
 						if ($scope.entriesEqualById($scope.entries[i], entry) == true) {
 							$scope.entries[i] = entry;
+							console.debug(" -- Found entry");
 						}
 					}
 				} else {
@@ -760,48 +848,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 							// when entry found, overwrite it
 							if ($scope.entriesEqualById($scope.entries[i][j], entry) == true) {
 								$scope.entries[i][j] = entry;
+								console.debug(" -- found entry, group " + i + ", priority " + j);
 							}	
 						}
-					}
-				}
-
-			} else if (parameters.action === "delete") {
-
-				console.debug("Action: DELETE");
-
-				// handle action based on group structure
-				if ($scope.project.groupStructure == false) {
-
-					// construct new entries list
-					var entries = new Array();
-
-					// push all entries not matching this entry onto new entries list
-					for (var i = 0; i < $scope.entries.length; i++) {
-						if ($scope.entriesEqualById(entry, $scope.entries[i]) == false) {
-							entries.push($scope.entries[i]);
-						}
-					}
-
-					// overwrite scope entries list
-					$scope.entries = entries;
-
-				} else {
-
-					// cycle over all group bins
-					for (var i = 0; i < $scope.entries.length; i++) {
-
-						// construct new entries list
-						var entries = new Array();
-
-						// push all entries not matching this entry into new entries list for this group bin
-						for (var j = 0; j < $scope.entries[i].length; j++) {
-							if ($scope.entriesEqualById(entry, $scope.entries[i][j]) == false) {
-								entries.push($scope.entries[i][j]);
-							}
-						}
-
-						// overwrite the group bin
-						$scope.entries[i] = entries;
 					}
 				}
 			} else {

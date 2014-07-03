@@ -1836,7 +1836,7 @@ public class MappingServiceRest {
 	@Path("/record/id/{id:[0-9][0-9]*}/conflictOrigins")
 	@ApiOperation(value = "Get specialist records for assigned conflict", notes = "Return's a list of records in conflict for a lead's conflict resolution record", response = MapRecordListJpa.class)
 	public MapRecordList getOriginMapRecordsForConflict(
-			@ApiParam(value = "id of the map lead's conflict-in-progress record", required = true) @PathParam("id") Long mapRecordId,
+			@ApiParam(value = "id of the map lead's conflict-in-progress or review record", required = true) @PathParam("id") Long mapRecordId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
 			throws Exception {
 

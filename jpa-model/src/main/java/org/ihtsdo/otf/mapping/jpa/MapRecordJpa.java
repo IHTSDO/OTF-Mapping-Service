@@ -107,7 +107,6 @@ public class MapRecordJpa implements MapRecord {
 
 	/** The map notes. */
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapNoteJpa.class)
-	@IndexedEmbedded(targetElement = MapNoteJpa.class)
 	private Set<MapNote> mapNotes = new HashSet<>();
 
 	/** The map principles. */
@@ -720,7 +719,7 @@ public class MapRecordJpa implements MapRecord {
 			if (!mapRecord.getMapNotes().contains(note)) return false;
 		}
 
-		// check entries
+		// check principles
 		if (mapRecord.getMapPrinciples().size() != mapPrinciples.size()) return false;
 		for (MapPrinciple principle : mapPrinciples) {
 			if (!mapRecord.getMapPrinciples().contains(principle)) return false;

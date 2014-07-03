@@ -1,13 +1,8 @@
 <tabset> <tab heading="{{availableWorkTitle}}">
 
-<!--  do not display any controls if no available concepts and the query is null -->
-<div style="padding:10px;"
-	ng-show="nAvailableWork == 0 && (queryAvailable == null || queryAvailable === '')">
-	<p></p>
-	<div class="alert alert-warning" disabled> No available concepts.</div>
-</div>
 
-<div ng-show = "nAvailableWork != 0 || (queryAvailable != null && queryAvailable != '')">
+
+
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tbody>
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
@@ -54,7 +49,14 @@
 
 </accordion-heading>  -->
 
+<!--  do not display any controls if no available concepts and the query is null -->
+<div style="padding:10px;"
+	ng-show="nAvailableWork == 0">
+	<p></p>
+	<div class="alert alert-warning" disabled> No concepts found.</div>
+</div>
 
+<div ng-show = "nAvailableWork != 0">
 
 <pagination 
 	ng-show = "numAvailableWorkPages > 1"
@@ -102,21 +104,14 @@
 <tab heading="{{availableConflictsTitle}}"
   ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"> 
 
-<!--  do not show controls if no available conflicts and the query is empty -->
-<div style="padding:10px;"
-	ng-show="nAvailableConflicts == 0 && (queryAvailableConflict == null || queryAvailableConflict === '')">
-	<p></p>
-	<div class="alert alert-warning" disabled> No available conflicts.</div>
-</div>
 
-<div ng-show="nAvailableConflicts != 0 || (queryAvailableConflict != null && queryAvailableConflict != '')">
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tbody>
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
       <td style="padding: 5px;">Assign conflicts to:</td>
       <td style="padding: 5px;"><select ng-model="assignedMapLead"
         ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead track by mapUser.name"
-        ng-change="retrieveAvailableConflicts(1, queryAvailable, assignedMapLead)">
+        ng-change="retrieveAvailableConflicts(1, queryAvailableConflict, assignedMapLead)">
       </select></td>
     </tr>
     <tr>
@@ -133,7 +128,7 @@
     <td style="padding: 5px;">
 	    <form>
 			<input id="availableConflictSearch" ng-model="queryAvailableConflict">
-			<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableConflicts(1, queryAvailableConflicts, assignedMapLead)">Search</button>
+			<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableConflicts(1, queryAvailableConflict, assignedMapLead)">Search</button>
 			<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableConflicts(1, 'null', assignedMapLead); queryAvailableConflicts = null">Reset</button>
 		</form>
     </td>
@@ -142,7 +137,14 @@
 </table>
 <div style="color: red;" ng-show="errorConflict != null">{{errorConflict}}</div>
 
+<!--  do not show controls if no available conflicts  -->
+<div style="padding:10px;"
+	ng-show="nAvailableConflicts == 0">
+	<p></p>
+	<div class="alert alert-warning" disabled> No conflicts found.</div>
+</div>
 
+<div ng-show="nAvailableConflicts != 0">
 
 <pagination ng-show="numAvailableConflictsPages > 1"
 	total-items="nAvailableConflicts" page="availableConflictsPage"
@@ -182,21 +184,14 @@
 <tab heading="{{availableReviewWorkTitle}}"
   ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"> 
 
-<!--  do not show controls if no available conflicts and the query is empty -->
-<div style="padding:10px;"
-	ng-show="nAvailableReviewWork == 0 && (queryAvailableReview == null || queryAvailableReview === '')">
-	<p></p>
-	<div class="alert alert-warning" disabled> No available review work.</div>
-</div>
 
-<div ng-show="nAvailableReviewWork != 0 || (queryAvailableReview != null && queryAvailableReview != '')">
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tbody>
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
       <td style="padding: 5px;">Assign conflicts to:</td>
       <td style="padding: 5px;"><select ng-model="assignedMapLead"
         ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead track by mapUser.name"
-        ng-change="retrieveAvailableReviewWork(1, queryAvailable, assignedMapLead)">
+        ng-change="retrieveAvailableReviewWork(1, queryAvailableReview, assignedMapLead)">
       </select></td>
     </tr>
     <tr>
@@ -213,15 +208,22 @@
     <td style="padding: 5px;">
 	    <form>
 			<input id="availableReviewSearch" ng-model="queryAvailableReview">
-			<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableReviewWork(1, queryAvailableReviewWork, assignedMapLead)">Search</button>
-			<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableReviewWork(1, 'null', assignedMapLead); queryAvailableReviewWork = null">Reset</button>
+			<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableReviewWork(1, queryAvailableReview, assignedMapLead)">Search</button>
+			<button class="btn btn-sm btn-primary" ng-click="retrieveAvailableReviewWork(1, 'null', assignedMapLead); queryAvailableReview = null">Reset</button>
 		</form>
     </td>
     </tr>
   </tbody>
 </table>
 <div style="color: red;" ng-show="errorReview != null">{{errorReview}}</div>
+<!--  do not show controls if no available conflicts and the query is empty -->
+<div style="padding:10px;"
+	ng-show="nAvailableReviewWork == 0">
+	<p></p>
+	<div class="alert alert-warning" disabled> No review work found.</div>
+</div>
 
+<div ng-show="nAvailableReviewWork != 0">
 
 
 <pagination ng-show="numAvailableReviewWorkPages > 1"
