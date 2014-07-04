@@ -40,11 +40,11 @@
       </th>
   </thead> 
 
-  <tbody ng-repeat="record in records" style="border: 3px solid #ccc;" ng-class-odd="'odd'" ng-class-even="'even'">
+  <tbody ng-repeat="record in records"  ng-class-odd="'odd'" ng-class-even="'even'">
 
     <tr ng-repeat="entry in record.mapEntry" >
 
-      <td>
+      <td  style="border-top:0px;">
         <div style="float: left; width: 39%;">
           <div>{{record.conceptName}}</div>
           <div>
@@ -64,7 +64,7 @@
           </div>
         </div>
         <div style="float: left; width: 4%;">{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</div>
-        <div style="float: left; width: 14%; margin-right:3px;"
+        <div style="float: left; width: 14%; "
           ng-show="project.ruleBased == true">{{entry.rule}}</div>
         <div style="float: left; width: 39%;" ng-show="entry.targetId != ''">
           <div>{{entry.targetName}}</div>
@@ -95,10 +95,9 @@
     
     <!-- NOTES -->
     <tr style="width: 100%;" ng-repeat="note in record.mapNote">
-      <td>
+      <td style="border-top:0px;">
         <div style="float: left; width: 3%;"><img
               src="img/notepad.png" alt="notepad icon" tooltip-placement="top" tooltip="Notes"></div>
-        <!-- <div ng-show="!$first" style="float: left; width: 3%;">&nbsp;</div> -->
         <div style="float: left; width: 97%;">
           <span ng-bind-html="to_trusted(truncate(note.note, 200))"></span>
           <span ng-show="truncated(note.note, 200)"
