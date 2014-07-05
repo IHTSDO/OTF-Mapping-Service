@@ -46,7 +46,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   private Long typeId;
 
   /** The term. */
-  @Column(nullable = false, length = 256)
+  @Column(nullable = false, length = 4000)
   private String term;
 
   /** The case significance id. */
