@@ -96,7 +96,6 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
       String line = null;
       int ct = 0;
       while ((line = mapNoteReader.readLine()) != null) {
-        ct++;
 
         // parse fields and create object
         // id effectiveTime active moduleId refSetId referencedComponentId
