@@ -25,7 +25,6 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
-import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -53,6 +52,16 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	/** The transaction entity. */
 	private EntityTransaction tx;
 
+	
+    /**  The compute tree position total count. */
+    int computeTreePositionTotalCount;
+    
+    /**  The compute tree position max memory usage. */
+    Long computeTreePositionMaxMemoryUsage;
+    
+    /**  The compute tree position last time. */
+    Long computeTreePositionLastTime;
+    
 	/**
 	 * Instantiates an empty {@link ContentServiceJpa}.
 	 * 
@@ -291,13 +300,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		query.setParameter("terminologyId", terminologyId);
 		
 		// get the first tree position
-		List<String> ancestorPaths = (List<String>) query.getResultList();
+		List<String> ancestorPaths = query.getResultList();
 	
 		
 		// skip construction if no ancestor path was found
 		if (ancestorPaths.size() != 0) {
 
-			String ancestorPath = (String) ancestorPaths.get(0);
+			String ancestorPath = ancestorPaths.get(0);
 			
 			// insert string to actually add this concept to the ancestor path
 			ancestorPath += "~" + terminologyId;
@@ -350,12 +359,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 
 			// get the start and end indexes based on paging parameters
-			if (pfsParameter == null) pfsParameter = new PfsParameterJpa();
-			int startIndex = pfsParameter.getStartIndex ()== -1 ? 0 : pfsParameter.getStartIndex();
-			int toIndex = pfsParameter.getMaxResults() == -1 ? 
-				concepts.size() :
+			int startIndex = 0;
+			int toIndex = concepts.size();
+			if (pfsParameter != null) { 
+			  startIndex = pfsParameter.getStartIndex();
+			  toIndex = 
 					Math.min(concepts.size(), startIndex + pfsParameter.getMaxResults()); 
-
+			}
+			
 			// construct the search results
 			for (Concept c : concepts.subList(startIndex, toIndex)) {
 				SearchResult searchResult = new SearchResultJpa();
@@ -404,17 +415,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
-	// instantiate map of terminology to child count
-	int computeTreePositionGlobalCount;
-
-	EntityTransaction computeTreePositionTransaction;
-
-	Long computeTreePositionMaxMemoryUsage;
-
-	Long computeTreePositionLastTime;
-
-	int computeTreePositionCommitCt;
-
 	@Override
 	public void computeTreePositions(String terminology,
 			String terminologyVersion, String typeId, String rootId)
@@ -424,11 +424,11 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 						+ terminology);
 
 		// initialize global variables
-		computeTreePositionGlobalCount = 0;
-		computeTreePositionTransaction = manager.getTransaction();
+        EntityTransaction computeTreePositionTransaction = manager.getTransaction();
+        int computeTreePositionCommitCt = 5000;
+		computeTreePositionTotalCount = 0;
 		computeTreePositionMaxMemoryUsage = 0L;
 		computeTreePositionLastTime = System.currentTimeMillis();
-		computeTreePositionCommitCt = 5000;
 
 		// System.setOut(new PrintStream(new
 		// FileOutputStream("C:/Users/Patrick/Documents/WCI/Working Notes/TreePositionRuns/computeTreePositions_"
@@ -444,15 +444,16 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		computeTreePositionTransaction.begin();
 
 		// begin the recursive computation
-		computeTreePositionsHelper(rootConcept, typeId, ""); // initially empty
-																// ancestor path
+		computeTreePositionsHelper(rootConcept, typeId, "",
+		    computeTreePositionCommitCt, computeTreePositionTransaction);
+															
 
 		// commit any remaining tree positions
 		computeTreePositionTransaction.commit();
 
 		Runtime runtime = Runtime.getRuntime();
 		Logger.getLogger(this.getClass()).info(
-				"Final Tree Positions: " + computeTreePositionGlobalCount
+				"Final Tree Positions: " + computeTreePositionTotalCount
 						+ ", MEMORY USAGE: " + runtime.totalMemory());
 
 	}
@@ -473,7 +474,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * @throws Exception
 	 */
 	private Set<Long> computeTreePositionsHelper(Concept concept,
-			String typeId, String ancestorPath) throws Exception {
+			String typeId, String ancestorPath,
+			int computeTreePositionCommitCt, 
+			EntityTransaction computeTreePositionTransaction) throws Exception {
 
 		Set<Long> descConceptIds = new HashSet<>();
 
@@ -545,7 +548,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				// call helper function on child concept
 				// add the results to the local descendant set
 				descConceptIds.addAll(computeTreePositionsHelper(
-						getConcept(childConceptId), typeId, conceptPath));
+						getConcept(childConceptId), typeId, conceptPath,
+						computeTreePositionCommitCt, computeTreePositionTransaction));
 
 			}
 
@@ -562,10 +566,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			// set the descendant count
 			tp.setDescendantCount(descConceptIds.size());
 
+			// In case manager was cleared here, get it back onto changed list
+			manager.merge(tp);
+			
 			// routinely commit and force clear the manager
 			// any existing recursive threads are entirely dependent on local
 			// variables
-			if (++computeTreePositionGlobalCount % computeTreePositionCommitCt == 0) {
+			if (++computeTreePositionTotalCount % computeTreePositionCommitCt == 0) {
 
 				// commit the transaction
 				computeTreePositionTransaction.commit();
@@ -588,7 +595,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 								+ System.currentTimeMillis()
 								/ 1000
 								+ "\t"
-								+ computeTreePositionGlobalCount
+								+ computeTreePositionTotalCount
 								+ "\t"
 								+ Math.floor(runtime.totalMemory() / 1024 / 1024)
 								+ "\t"
