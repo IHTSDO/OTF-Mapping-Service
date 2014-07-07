@@ -894,27 +894,45 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		MapUser user = getMapUser(userName);
 
 		AuditReader reader = AuditReaderFactory.get(manager);
+		
+		// if no pfsParameter supplied, construct a default one
+		if (pfsParameter == null) pfsParameter = new PfsParameterJpa();
+		
+		// split the query restrictions
+		if (pfsParameter.getQueryRestriction() != null) {
+			
+		}
 
 		// construct the query
 		AuditQuery query = reader
-				.createQuery()
+			.createQuery()
 
-				// all revisions, returned as objects, finding deleted entries
-				.forRevisionsOfEntity(MapRecordJpa.class, true, true)
+			// all revisions, returned as objects, finding deleted entries
+			.forRevisionsOfEntity(MapRecordJpa.class, true, true)
+			
+			// add mapProjectId and owner as constraints
+			.add(AuditEntity.property("mapProjectId").eq(projectId))
+			.add(AuditEntity.relatedId("lastModifiedBy").eq(user.getId()))
 
-				// add mapProjectId and owner as constraints
-				.add(AuditEntity.property("mapProjectId").eq(projectId))
-				.add(AuditEntity.relatedId("lastModifiedBy").eq(user.getId()))
+			// exclude records with workflow status NEW
+			.add(AuditEntity.property("workflowStatus").ne(
+					WorkflowStatus.NEW));
 
-				// exclude records with workflow status NEW
-				.add(AuditEntity.property("workflowStatus").ne(
-						WorkflowStatus.NEW))
-
-				// sort by last modified (descending)
-				.addOrder(AuditEntity.property("lastModified").desc())
-
+		// if sort field specified
+		if (pfsParameter.getSortField() != null) {
+			query.addOrder(AuditEntity.property(pfsParameter.getSortField()).asc());
+		// otherwise, sort by last modified (descending)
+		} else {
+			query.addOrder(AuditEntity.property("lastModified").desc());
+		}
+		// if paging request supplied, set first result and max results
+		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+			query
 				.setFirstResult(pfsParameter.getStartIndex())
 				.setMaxResults(pfsParameter.getMaxResults());
+			
+		
+		}
 
 		// execute the query
 		List<MapRecord> editedRecords = query.getResultList();
@@ -2915,6 +2933,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       mapRecord.getOwner().getEmail();
       mapRecord.getLastModifiedBy().getEmail();
       mapRecord.getMapNotes().size();
+      mapRecord.getMapPrinciples().size();
+      mapRecord.getOriginIds().size();
       for (MapEntry mapEntry : mapRecord.getMapEntries()) {
       	if (mapEntry.getMapRelation() != null)
           mapEntry.getMapRelation().getName();

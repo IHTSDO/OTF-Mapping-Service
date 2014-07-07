@@ -46,6 +46,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
   /** The descriptions. */
   @OneToMany(mappedBy = "concept", cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = DescriptionJpa.class)
+  @IndexedEmbedded(targetElement = DescriptionJpa.class)
   private Set<Description> descriptions = new HashSet<>();
 
   /** The relationships. */

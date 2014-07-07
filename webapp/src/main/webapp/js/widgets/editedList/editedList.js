@@ -43,7 +43,6 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 		if ($scope.focusProject != null && $scope.userToken != null) {
 			
 			$http.defaults.headers.common.Authorization = $scope.userToken;
-			$scope.retrieveEditedWork($scope.editedRecordsPage);
 			
 		}
 	});
@@ -57,7 +56,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 		var pfsParameterObj = 
 					{"startIndex": (page-1)*$scope.recordsPerPage,
 			 	 	 "maxResults": $scope.recordsPerPage, 
-			 	 	 "sortField": 'sortKey',
+			 	 	 "sortField":  null,
 			 	 	 "queryRestriction": null};  
 
 	  	$rootScope.glassPane++;

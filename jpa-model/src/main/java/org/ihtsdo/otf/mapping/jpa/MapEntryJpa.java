@@ -54,7 +54,7 @@ public class MapEntryJpa implements MapEntry {
   private MapRecord mapRecord;
 
   /** The map advices. */
-  @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.EAGER)
+  @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.LAZY)
   @IndexedEmbedded(targetElement = MapAdviceJpa.class)
   private Set<MapAdvice> mapAdvices = new HashSet<>();
 
