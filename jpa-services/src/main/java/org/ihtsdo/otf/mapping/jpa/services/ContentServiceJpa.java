@@ -500,8 +500,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			// persist the tree position
 			manager.persist(tp);
 
-			// System.out.println(loggerPrefix +
-			// "Creating tree position " + tp.toString());
+			System.out.println(loggerPrefix +
+					"Creating tree position " + tp.toString());
 
 			// construct the ancestor path terminating at this concept
 			String conceptPath = (ancestorPath.equals("") ? concept
@@ -519,6 +519,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				// the source concept is active
 				if (rel.isActive() && rel.getTypeId().toString().equals(typeId)
 						&& rel.getSourceConcept().isActive()) {
+					
+					Logger.getLogger(ContentServiceJpa.class).info(loggerPrefix 
+							+ " - found relationship pointing to " + rel.getSourceConcept().getTerminologyId());
 
 					// get the child concept
 					Concept childConcept = rel.getSourceConcept();
@@ -530,6 +533,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 					descConceptIds.add(childConcept.getId());
 				}
 			}
+			
+			Logger.getLogger(ContentServiceJpa.class).info(loggerPrefix 
+					+ " - children found:  " + childrenConceptIds.size());
 
 			// iterate over the child terminology ids
 			// this iteration is entirely local and depends on no managed
@@ -543,13 +549,13 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 			}
 
-			/*
-			 * System.out.println(loggerPrefix + " Calculation complete (" +
-			 * computeTreePositionGlobalCount + "): " + tp.toString());
-			 * System.out.println(loggerPrefix + " " +
-			 * childrenTerminologyIds.size() + " children, " +
-			 * descendantConcepts.size() + " descendants");
-			 */
+			
+			 System.out.println(loggerPrefix + " Calculation complete (" +
+			 computeTreePositionGlobalCount + "): " + tp.toString());
+			 System.out.println(loggerPrefix + " " +
+					 childrenConceptIds.size() + " children, " +
+					 descConceptIds.size() + " descendants");
+			 
 			// set the children count
 			tp.setChildrenCount(childrenConceptIds.size());
 
@@ -563,9 +569,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 				// commit the transaction
 				computeTreePositionTransaction.commit();
-
-				// clear the manager
-				manager.clear();
 
 				// begin a new transaction
 				computeTreePositionTransaction.begin();

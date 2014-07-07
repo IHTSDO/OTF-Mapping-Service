@@ -152,7 +152,8 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				// return the promise
 				deferred.resolve(entry);
 			} else {
-				deferred.reject();
+				console.debug("No map relation computed for this entry");
+				deferred.resolve(entry);
 			}
 		}).error(function(data, status, headers, config) {
 		    $rootScope.glassPane--;
@@ -201,7 +202,8 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				// return the promise
 				deferred.resolve(entry);
 			} else {
-				deferred.reject();
+				console.debug("No map advice computed");
+				deferred.resolve(entry);
 			}
 		}).error(function(data, status, headers, config) {
 		    $rootScope.glassPane--;
