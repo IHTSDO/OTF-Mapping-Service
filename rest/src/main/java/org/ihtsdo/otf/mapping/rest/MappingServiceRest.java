@@ -711,12 +711,12 @@ public class MappingServiceRest {
 	}
 	
 	/**
-	 * Adds a map user preferences object
+	 * Adds a map user principle object
 	 * 
 	 * @param mapPrinciple
-	 *            the map user preferences object to be added
+	 *            the map user principle object to be added
 	 * @param authToken 
-	 * @return result the newly created map user preferences object
+	 * @return result the newly created map user principle object
 	 */
 	@PUT
 	@Path("/principle/add")
