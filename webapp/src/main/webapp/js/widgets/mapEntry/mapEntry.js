@@ -458,22 +458,30 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	// removes advice from a map entry
 	$scope.removeEntryAdvice = function(entry, advice) {	
 		
-		console.debug('Removing advice:');
-		console.debug(advice);
-		console.debug('Advices found:');
-		for (var i = 0; i < entry['mapAdvice'].length; i++) {
-			console.debug(entry['mapAdvice'][i]);
+		var confirmRemove = true;
+		if (advice.isComputed == true) {
+			confirmRemove = confirm("The advice you are removing was automatically computed for this entry.  Are you sure you want to do this?");
 		}
 		
-		entry.mapAdvice = removeJsonElement(entry.mapAdvice, advice);
-		
-		console.debug('Advices after removal:');
-		for (var i = 0; i < entry['mapAdvice'].length; i++) {
-			console.debug(entry['mapAdvice'][i]);
-		}
-		
+		if (confirmRemove) {
+			
+			console.debug('Removing advice:');
+			console.debug(advice);
+			console.debug('Advices found:');
+			for (var i = 0; i < entry['mapAdvice'].length; i++) {
+				console.debug(entry['mapAdvice'][i]);
+			}
+			
+			entry.mapAdvice = removeJsonElement(entry.mapAdvice, advice);
+			
+			console.debug('Advices after removal:');
+			for (var i = 0; i < entry['mapAdvice'].length; i++) {
+				console.debug(entry['mapAdvice'][i]);
+			}
+			
 			updateEntry();	
-		
+		}
+			
 		
 	};
 

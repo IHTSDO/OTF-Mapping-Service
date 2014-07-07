@@ -151,7 +151,7 @@
 
 	<!--  tinymce text area -->
 	<form method="post">
-    	<textarea id="tinymce" ui-tinymce ng-model="noteInput"></textarea>
+    	<textarea id="tinymce" ui-tinymce="tinymceOptions" ng-model="noteInput"></textarea>
     	<input class="pull-right" type="submit" value="Add Note"
 		ng-click="addRecordNote(record, noteInput); noteInput = ''">
   	</form>

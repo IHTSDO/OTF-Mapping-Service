@@ -616,6 +616,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 		console.debug('Removed principle');
 	};
+	
+	$scope.tinymceOptions = {
+			
+			menubar : false,
+			statusbar : false,
+			plugins : "autolink link image charmap searchreplace",
+			toolbar : "undo redo | styleselect | bold italic underline strikethrough | charmap link image",
+	    };
 
 	$scope.addRecordNote = function(record, note) {
 		// check if note non-empty
