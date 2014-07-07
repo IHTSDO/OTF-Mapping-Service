@@ -1042,6 +1042,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
     };
     
     $scope.closeConceptBrowser = function() {
+    	if ($scope.window != null)
     	$scope.window.close();
     };
 });
