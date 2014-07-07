@@ -56,10 +56,6 @@ public class MapEntryJpa implements MapEntry {
   @ContainedIn
   private MapRecord mapRecord;
 
-  /** The map notes. */
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER, targetEntity = MapNoteJpa.class)
-  private Set<MapNote> mapNotes = new HashSet<>();
-
   /** The map advices. */
   @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.EAGER)
   @IndexedEmbedded(targetElement = MapAdviceJpa.class)
@@ -106,7 +102,6 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @param id
    * @param mapRecord
-   * @param mapNotes
    * @param mapAdvices
    * @param targetId
    * @param targetName
@@ -116,14 +111,13 @@ public class MapEntryJpa implements MapEntry {
    * @param mapBlock
    * @param mapGroup
    */
-  public MapEntryJpa(Long id, MapRecord mapRecord, Set<MapNote> mapNotes,
+  public MapEntryJpa(Long id, MapRecord mapRecord, 
 		Set<MapAdvice> mapAdvices, String targetId, String targetName,
 		String rule, int mapPriority, MapRelation mapRelation, int mapBlock,
 		int mapGroup) {
 	super();
 	this.id = id;
 	this.mapRecord = mapRecord;
-	this.mapNotes = mapNotes;
 	this.mapAdvices = mapAdvices;
 	this.targetId = targetId;
 	this.targetName = targetName;
@@ -169,12 +163,6 @@ public class MapEntryJpa implements MapEntry {
 		  this.mapRelation = new MapRelationJpa(mapEntry.getMapRelation());
 	  }
 	  
-	  // copy notes
-	  for (MapNote mapNote : mapRecord.getMapNotes()) {
-		  addMapNote(new MapNoteJpa(mapNote, keepIds));
-	  }
-	  
-	  System.out.println("  " + toString());
   }
 
   /**
@@ -206,51 +194,6 @@ public class MapEntryJpa implements MapEntry {
   @Override
   public String getObjectId() {
     return (this.id == null ? null : id.toString());
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapNotes()
-   */
-  @Override
-  @XmlElement(type = MapNoteJpa.class, name = "mapNote")
-  public Set<MapNote> getMapNotes() {
-    return mapNotes;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapNotes(java.util.Set)
-   */
-  @Override
-  public void setMapNotes(Set<MapNote> notes) {
-    this.mapNotes = notes;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapEntry#addMapNote(org.ihtsdo.otf.mapping
-   * .model.MapNote)
-   */
-  @Override
-  public void addMapNote(MapNote note) {
-    mapNotes.add(note);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapEntry#removeMapNote(org.ihtsdo.otf.mapping
-   * .model.MapNote)
-   */
-  @Override
-  public void removeMapNote(MapNote note) {
-    mapNotes.remove(note);
   }
 
   /*
@@ -491,7 +434,6 @@ public int hashCode() {
 			+ ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
 	result = prime * result + mapBlock;
 	result = prime * result + mapGroup;
-	result = prime * result + ((mapNotes == null) ? 0 : mapNotes.hashCode());
 	result = prime * result + mapPriority;
 	
 	// note:  use map record id instead of map record to prevent hashCode() circular reference chain
@@ -522,11 +464,6 @@ public boolean equals(Object obj) {
 	if (mapBlock != other.mapBlock)
 		return false;
 	if (mapGroup != other.mapGroup)
-		return false;
-	if (mapNotes == null) {
-		if (other.mapNotes != null)
-			return false;
-	} else if (!mapNotes.equals(other.mapNotes))
 		return false;
 	if (mapPriority != other.mapPriority)
 		return false;
@@ -562,8 +499,8 @@ public boolean equals(Object obj) {
 
   @Override
   public String toString() {
-    return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord.getId().toString() + ", mapNotes="
-        + mapNotes + ", mapAdvices=" + mapAdvices + ", targetId=" + targetId
+    return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord.getId().toString() + 
+        ", mapAdvices=" + mapAdvices + ", targetId=" + targetId
         + ", targetName=" + targetName + ", rule=" + rule + ", mapPriority="
         + mapPriority + ", mapRelation=" + mapRelation + ", mapBlock="
         + mapBlock + ", mapGroup=" + mapGroup + "]";

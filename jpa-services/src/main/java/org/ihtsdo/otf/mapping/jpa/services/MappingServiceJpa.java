@@ -661,25 +661,18 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	@Override
 	public MapRecord getMapRecord(Long id) throws Exception {
 
-		javax.persistence.Query query = manager
-				.createQuery("select r from MapRecordJpa r where id = :id");
-
 		/*
 		 * Try to retrieve the single expected result If zero or more than one
 		 * result are returned, log error and set result to null
 		 */
 
 		try {
-
-			query.setParameter("id", id);
-
-			MapRecord r = (MapRecord) query.getSingleResult();
-
-			Logger.getLogger(this.getClass()).debug(
-					"Returning record_id... "
-							+ ((r != null) ? r.getId().toString() : "null"));
-
-			return r;
+		  MapRecord r = manager.find(MapRecordJpa.class, id);
+		  Logger.getLogger(this.getClass()).debug(
+		      "Returning record_id... "
+		          + ((r != null) ? r.getId().toString() : "null"));
+		  
+			  return r;
 
 		} catch (NoResultException e) {
 			throw new LocalException(
@@ -951,7 +944,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			mapRecord.getOwner().getEmail();
 			mapRecord.getLastModifiedBy().getEmail();
 			for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-				mapEntry.getMapNotes().size();
+				mapEntry.getMapRelation().getName();
 				mapEntry.getMapAdvices().size();
 			}
 		}
@@ -1078,20 +1071,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		  ftquery.setFirstResult(pfsParameter.getStartIndex());
 		  ftquery.setMaxResults(pfsParameter.getMaxResults());
         }
-        List<MapRecord> mapRecords = new ArrayList<>();
-        List<MapRecord> mapRecordsPre = ftquery.getResultList();
-        // This is a hack - something about hibernate-search is causing
-        // this to read duplicate entries - possibly related to the
-        // use of @IndexEmbedded within a data structure that is already
-        // @IndexEmbedded (e.g. notes/advice)
-        // TODO: Try rebuilding a fresh dev database without layered
-        // @IndexEmbedded and see if this condition can be avoided
-        for (MapRecord mapRecord: mapRecordsPre) {
-          mapRecords.add(getMapRecord(mapRecord.getId()));
-        }
-        
-		Logger.getLogger(this.getClass()).debug(
-				Integer.toString(mapRecords.size()) + " records retrieved");
+        List<MapRecord> mapRecords = ftquery.getResultList();
+
+        Logger.getLogger(this.getClass()).debug(
+            Integer.toString(mapRecords.size()) + " records retrieved");
 
 		// set the total count
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
@@ -2144,18 +2127,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			// delete entries
 			for (MapEntry entry : record.getMapEntries()) {
 
-				// delete entry notes
-				for (MapNote entryNote : entry.getMapNotes()) {
-					if (manager.contains(entryNote)) {
-						manager.remove(entryNote);
-					} else {
-						manager.remove(manager.merge(entryNote));
-					}
-				}
-				entry.setMapNotes(null);
-
-				// remove advices
-				entry.setMapAdvices(null);
+                // remove advices
+                entry.setMapAdvices(null);
 
 				// merge entry to remove principle/advice associations
 				manager.merge(entry);
