@@ -489,7 +489,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			// logging information
 			int ancestorCount = ancestorPath.length()
 					- ancestorPath.replaceAll("~", "").length();
-			@SuppressWarnings("unused")
 			String loggerPrefix = "";
 			for (int i = 0; i < ancestorCount; i++)
 				loggerPrefix += "  ";
@@ -553,13 +552,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 			}
 
-			
-			 System.out.println(loggerPrefix + " Calculation complete (" +
-			 computeTreePositionGlobalCount + "): " + tp.toString());
-			 System.out.println(loggerPrefix + " " +
-					 childrenConceptIds.size() + " children, " +
-					 descConceptIds.size() + " descendants");
-			 
 			// set the children count
 			tp.setChildrenCount(childrenConceptIds.size());
 
@@ -576,6 +568,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 				// commit the transaction
 				computeTreePositionTransaction.commit();
+				
+				// Clear manager for memory management
+				manager.clear();
 
 				// begin a new transaction
 				computeTreePositionTransaction.begin();
