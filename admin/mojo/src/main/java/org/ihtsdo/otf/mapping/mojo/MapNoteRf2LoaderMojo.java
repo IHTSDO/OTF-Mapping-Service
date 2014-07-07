@@ -133,7 +133,8 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
             for (MapProject mapProject : mapProjects) {
 
               // find matching refset id
-              if (mapProject.getRefSetId().equals(fields[4])) {
+              if (mapProject.getRefSetId().equals(fields[4])
+                  && mapRecord.getMapProjectId().equals(mapProject.getId())) {
                 getLog().debug(
                     mapNote.getNote().length() + " "
                         + "    Adding note to record "
