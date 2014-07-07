@@ -108,19 +108,6 @@ public class MappingServiceRest {
 			MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService
 					.getMapProjects();
 
-			// force instantiation of lazy collections
-			for (MapProject mp : mapProjects.getMapProjects()) {
-				mp.getScopeConcepts().size();
-				mp.getScopeExcludedConcepts().size();
-				mp.getMapAdvices().size();
-				mp.getMapRelations().size();
-				mp.getMapAdministrators().size();
-				mp.getMapLeads().size();
-				mp.getMapSpecialists().size();
-				mp.getMapPrinciples().size();
-				mp.getPresetAgeRanges().size();
-			}
-
 			mapProjects.sortBy(new Comparator<MapProject>() {
 				@Override
 				public int compare(MapProject o1, MapProject o2) {
@@ -222,17 +209,6 @@ public class MappingServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mp = mappingService.addMapProject(mapProject);
 			mappingService.close();
-
-			// force lazy instantiation of collections
-			mp.getScopeConcepts().size();
-			mp.getScopeExcludedConcepts().size();
-			mp.getMapAdvices().size();
-			mp.getMapRelations().size();
-			mp.getMapAdministrators().size();
-			mp.getMapLeads().size();
-			mp.getMapSpecialists().size();
-			mp.getMapPrinciples().size();
-			mp.getPresetAgeRanges().size();
 
 			return mp;
 		} catch (LocalException e) { 

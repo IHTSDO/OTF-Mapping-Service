@@ -220,15 +220,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		mapProjects = query.getResultList();
 
 		// force instantiation of lazy collections
-		for (MapProject project : mapProjects) {
-			project.getScopeConcepts().size();
-			project.getScopeExcludedConcepts().size();
-			project.getMapAdvices().size();
-			project.getMapRelations().size();
-			project.getMapLeads().size();
-			project.getMapSpecialists().size();
-			project.getMapPrinciples().size();
-			project.getPresetAgeRanges().size();
+		for (MapProject mapProject : mapProjects) {
+          handleMapProjectLazyInitialization(mapProject);
 		}
 
 		MapProjectListJpa mapProjectList = new MapProjectListJpa();
@@ -516,15 +509,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 
 		// force instantiation of lazy collections
-		for (MapProject mp : mpListReturn) {
-			mp.getScopeConcepts().size();
-			mp.getScopeExcludedConcepts().size();
-			mp.getMapAdvices().size();
-			mp.getMapRelations().size();
-			mp.getMapLeads().size();
-			mp.getMapSpecialists().size();
-			mp.getMapPrinciples().size();
-			mp.getPresetAgeRanges().size();
+		for (MapProject mapProject : mpListReturn) {
+          handleMapProjectLazyInitialization(mapProject);
 		}
 
 		MapProjectListJpa mapProjectList = new MapProjectListJpa();
@@ -667,12 +653,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		 */
 
 		try {
-		  MapRecord r = manager.find(MapRecordJpa.class, id);
+		  MapRecord mapRecord = manager.find(MapRecordJpa.class, id);
+          handleMapRecordLazyInitialization(mapRecord);
 		  Logger.getLogger(this.getClass()).debug(
 		      "Returning record_id... "
-		          + ((r != null) ? r.getId().toString() : "null"));
+		          + ((mapRecord != null) ? mapRecord.getId().toString() : "null"));
 		  
-			  return r;
+			  return mapRecord;
 
 		} catch (NoResultException e) {
 			throw new LocalException(
@@ -683,12 +670,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 							+ " returned multiple results!", e);
 		}
 	}
-
-	/*
-	 * public List<MapRecord> getMapRecords(mapProjectId, sortingInfo, pageSize,
-	 * page#) { ///project/id/12345/records?sort=sortkey&pageSize=100&page=1
-	 * return null; }
-	 */
 
 	/**
 	 * Retrieve map records for a lucene query.
@@ -728,15 +709,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			luceneQuery = queryParser.parse(query);
 		}
 
-		List<MapRecord> m = fullTextEntityManager.createFullTextQuery(
+		List<MapRecord> mapRecords = fullTextEntityManager.createFullTextQuery(
 				luceneQuery, MapRecordJpa.class).getResultList();
 
 		Logger.getLogger(this.getClass()).debug(
-				Integer.toString(m.size()) + " map records retrieved");
+				Integer.toString(mapRecords.size()) + " map records retrieved");
 
-		for (MapRecord mp : m) {
-			s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getConceptId()
-					.toString(), mp.getConceptName()));
+		for (MapRecord mapRecord : mapRecords) {
+			s.addSearchResult(new SearchResultJpa(mapRecord.getId(), mapRecord.getConceptId()
+					.toString(), mapRecord.getConceptName()));
 		}
 
 		// Sort by ID
@@ -891,6 +872,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// construct the map
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
 		mapRecordList.setMapRecords(revisions);
+		for (MapRecord mapRecord : revisions) {
+          handleMapRecordLazyInitialization(mapRecord);
+		}
 		mapRecordList.setTotalCount(revisions.size());
 		return mapRecordList;
 	}
@@ -939,15 +923,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
 		// mapRecordList.setTotalCount(editedRecords.size());
 
-		// handle all lazy initializations
-		for (MapRecord mapRecord : editedRecords) {
-			mapRecord.getOwner().getEmail();
-			mapRecord.getLastModifiedBy().getEmail();
-			for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-				mapEntry.getMapRelation().getName();
-				mapEntry.getMapAdvices().size();
-			}
-		}
+        // handle all lazy initializations
+        for (MapRecord mapRecord : editedRecords) {
+          handleMapRecordLazyInitialization(mapRecord);
+        }
 
 		// create the mapRecordList
 		mapRecordList.setMapRecords(editedRecords);
@@ -981,6 +960,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// Try query
 		query.setParameter("conceptId", terminologyId);
 		mapRecords = query.getResultList();
+		for (MapRecord mapRecord : mapRecords) {
+		  handleMapRecordLazyInitialization(mapRecord);
+		}
 
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
 		mapRecordList.setMapRecords(mapRecords);
@@ -1008,6 +990,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				.setParameter("mapProjectId", mapProjectId);
 		MapRecordList mapRecordList = new MapRecordListJpa();
 		mapRecordList.setMapRecords(query.getResultList());
+		// TODO: handleMapRecordLazyInitialization(mapRecord);
 		return mapRecordList;
 	}
 
@@ -1075,6 +1058,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
         Logger.getLogger(this.getClass()).debug(
             Integer.toString(mapRecords.size()) + " records retrieved");
+
+        for (MapRecord mapRecord : mapRecords) {
+          handleMapRecordLazyInitialization(mapRecord);
+        }
 
 		// set the total count
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
@@ -2916,5 +2903,40 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	    	userToRoleMap.put(user, "administrator");
 		}
 		
+	}
+	
+	/**
+	 * Handle map record lazy initialization.
+	 *
+	 * @param mapRecord the map record
+	 */
+	private void handleMapRecordLazyInitialization(MapRecord mapRecord) {
+      // handle all lazy initializations
+      mapRecord.getOwner().getEmail();
+      mapRecord.getLastModifiedBy().getEmail();
+      mapRecord.getMapNotes().size();
+      for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+          mapEntry.getMapRelation().getName();
+          mapEntry.getMapAdvices().size();
+      }
+	  
+	}
+
+	/**
+	 * Handle map project lazy initialization.
+	 *
+	 * @param mapProject the map project
+	 */
+	private void handleMapProjectLazyInitialization(MapProject mapProject) {
+      // handle all lazy initializations
+      mapProject.getScopeConcepts().size();
+      mapProject.getScopeExcludedConcepts().size();
+      mapProject.getMapAdvices().size();
+      mapProject.getMapRelations().size();
+      mapProject.getMapLeads().size();
+      mapProject.getMapSpecialists().size();
+      mapProject.getMapPrinciples().size();
+      mapProject.getPresetAgeRanges().size();
+	  
 	}
 }
