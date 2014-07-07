@@ -317,7 +317,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 							"Content-Type": "application/json"
 						}
 					}).success(function(data) {
-						$scope.record = data;
+						//$scope.record = data;
 						$scope.recordSuccess = "Record saved.";
 						$scope.recordError = "";
 						
@@ -616,7 +616,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 		console.debug('Removed principle');
 	};
-
+	
 	$scope.addRecordNote = function(record, note) {
 		// check if note non-empty
 		if (note === '' || note == null) {
@@ -1034,6 +1034,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
     };
     
     $scope.closeConceptBrowser = function() {
-    	$scope.window.close();
+    	if ($scope.window != null)
+    	  $scope.window.close();
     };
 });
