@@ -2916,8 +2916,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
       mapRecord.getLastModifiedBy().getEmail();
       mapRecord.getMapNotes().size();
       for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+      	if (mapEntry.getMapRelation() != null)
           mapEntry.getMapRelation().getName();
-          mapEntry.getMapAdvices().size();
+        mapEntry.getMapAdvices().size();
       }
 	  
 	}
