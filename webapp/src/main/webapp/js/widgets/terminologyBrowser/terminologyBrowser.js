@@ -221,21 +221,44 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		return deferred.promise;
 	};
 
+	// function to recursively expand tree positions
+	// also returns true/false if:
+	// - the id of the node or one of its children exactly matches the search
 	$scope.expandAll = function(treePositions) {
+		
 		for (var i = 0; i < treePositions.length; i++) {
+			
+			console.debug("Expanding for ", treePositions[i]);
 
 			// if children have been loaded, expand
 			if (treePositions[i].children.length > 0) {
 				treePositions[i].isOpen = true;
-				$scope.expandAll(treePositions[i].children);
 			}
 			
-			// if this tree position's code exactly matches the query, expand the information panel
-			console.debug("Checking terminology match", treePositions[i].terminologyId, $scope.query);
-			if (treePositions[i].terminologyId === $scope.query) {
-				console.debug("   MATCH FOUND");
+			
+			// if the node exactly matches a query, stop expanding here
+			if (treePositions[i].terminologyId.toUpperCase() === $scope.query.toUpperCase()) {
+				console.debug("Exact match for query");
 				$scope.getConceptDetails(treePositions[i]);
+				return true;
 			}
+			
+			// if a child node reports that this is in direct path of a requested concept id, get details
+			else if ($scope.expandAll(treePositions[i].children) == true) {
+				console.debug("This node reports exact match among descendants");
+				
+				// if this is a root node, simply return false to avoid expanding this node
+				if (treePositions[i].ancestorPath == null || treePositions[i].ancestorPath === '' )
+					return false;
+				
+				$scope.getConceptDetails(treePositions[i]);
+				
+				return true;
+			}
+			
+			// return false (not an exact match)
+			else return false;
+			
 		}
 	};
 
