@@ -1078,8 +1078,18 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		  ftquery.setFirstResult(pfsParameter.getStartIndex());
 		  ftquery.setMaxResults(pfsParameter.getMaxResults());
         }
-		List<MapRecord> mapRecords = ftquery.getResultList();
-
+        List<MapRecord> mapRecords = new ArrayList<>();
+        List<MapRecord> mapRecordsPre = ftquery.getResultList();
+        // This is a hack - something about hibernate-search is causing
+        // this to read duplicate entries - possibly related to the
+        // use of @IndexEmbedded within a data structure that is already
+        // @IndexEmbedded (e.g. notes/advice)
+        // TODO: Try rebuilding a fresh dev database without layered
+        // @IndexEmbedded and see if this condition can be avoided
+        for (MapRecord mapRecord: mapRecordsPre) {
+          mapRecords.add(getMapRecord(mapRecord.getId()));
+        }
+        
 		Logger.getLogger(this.getClass()).debug(
 				Integer.toString(mapRecords.size()) + " records retrieved");
 
