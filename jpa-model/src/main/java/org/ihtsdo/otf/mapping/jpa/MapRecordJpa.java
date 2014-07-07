@@ -106,7 +106,7 @@ public class MapRecordJpa implements MapRecord {
 	private List<MapEntry> mapEntries = new ArrayList<>();
 
 	/** The map notes. */
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = MapNoteJpa.class)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = MapNoteJpa.class)
 	private Set<MapNote> mapNotes = new HashSet<>();
 
 	/** The map principles. */
