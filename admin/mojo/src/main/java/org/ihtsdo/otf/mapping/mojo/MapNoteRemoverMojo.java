@@ -110,16 +110,6 @@ public class MapNoteRemoverMojo extends AbstractMojo {
       for (MapProject project : mapProjects) {
         for (MapRecord record : mappingService.getMapRecordsForMapProject(
             project.getId()).getMapRecords()) {
-          for (MapEntry entry : record.getMapEntries()) {
-            if (entry.getMapNotes().size() > 0) {
-              getLog().debug(
-                  "    Remove map record note from entry - " + entry.getId());
-              entry.getMapNotes().clear();
-              if (++ct % 500 == 0) {
-                getLog().info("      " + ct + " notes processed");
-              }
-            }
-          }
           if (record.getMapNotes().size() > 0) {
             getLog().debug(
                 "    Remove map record notes from record - " + record.getId());

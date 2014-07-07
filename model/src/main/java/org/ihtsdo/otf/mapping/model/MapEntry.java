@@ -29,34 +29,6 @@ public interface MapEntry {
   public String getObjectId();
 
   /**
-   * Returns the notes.
-   * 
-   * @return the notes
-   */
-  public Set<MapNote> getMapNotes();
-
-  /**
-   * Sets the notes.
-   * 
-   * @param notes the notes
-   */
-  public void setMapNotes(Set<MapNote> notes);
-
-  /**
-   * Adds the note.
-   * 
-   * @param note the note
-   */
-  public void addMapNote(MapNote note);
-
-  /**
-   * Removes the note.
-   * 
-   * @param note the note
-   */
-  public void removeMapNote(MapNote note);
-
-  /**
    * Returns the target.
    * 
    * @return the target
