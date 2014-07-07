@@ -135,7 +135,7 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
       return false;
 
       // if concept exists, verify that it is a leaf node (no children)
-    } else if (GraphHelper.getChildConcepts(concept, isaTypeId).size() == 0) {
+    } else if (GraphHelper.getChildConcepts(concept, isaTypeId).size() != 0) {
       contentService.close();
       return false;
 
