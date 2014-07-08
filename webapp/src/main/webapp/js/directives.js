@@ -6,7 +6,8 @@ var mapProjectAppDirectives = angular.module('mapProjectAppDirectives', []);
 //Directives:
 /////////////////////////////////////////////////////
 mapProjectAppDirectives.directive('otfMapRecord', function() {
-	  return {
+	  
+	return {
 	      /*restrict: 'A',
 	      replace: true,*/
 		  replace: false,
@@ -14,7 +15,8 @@ mapProjectAppDirectives.directive('otfMapRecord', function() {
 	      templateUrl: 'partials/otf-map-record.html',
 	      scope: {
 	          record: '=' ,
-	          editable: '=' 
+	          editable: '=',
+	          project: '='
 	      }
 	  };
 	});

@@ -914,12 +914,12 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	///////////////////////
 	
 	// HACKISH:  Variable passed in is the currently viewed map user in the lead's View Other Work tab
-	$scope.displayMapRecord = function(mapUser) {
+	$scope.displayMapRecord = function() {
 		
 		$scope.saveMapRecord(false);
 		
 		console.debug("displayMapRecord with ");
-		console.debug(mapUser);
+		console.debug($scope.project);
 		
 		
 		console.debug($scope.record);
@@ -931,16 +931,20 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			resolve: {				
 				record: function() {
 					return $scope.record;
-				}
+				},
+	            project: function() {
+	                return $scope.project;
+	            }
 			}
 		});
 
 	};
 	
-	var DisplayMapRecordCtrl = function($scope, $modalInstance, record) { 
+	var DisplayMapRecordCtrl = function($scope, $modalInstance, record, project) { 
 		
 		console.debug("Entered display map record modal control");
 		$scope.mapRecord = record;
+		$scope.project = project;
 	
 
 		$scope.cancel = function() {
