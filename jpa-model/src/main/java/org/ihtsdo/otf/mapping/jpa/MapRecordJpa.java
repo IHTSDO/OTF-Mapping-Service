@@ -110,12 +110,12 @@ public class MapRecordJpa implements MapRecord {
 	private Set<MapNote> mapNotes = new HashSet<>();
 
 	/** The map principles. */
-	@ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.EAGER)
+	@ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.LAZY)
 	@IndexedEmbedded(targetElement = MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
 	/** The originIds. */
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "map_records_origin_ids", joinColumns = @JoinColumn(name = "id"))
 	@Column(nullable = true)
 	private Set<Long> originIds = new HashSet<>();
