@@ -10,7 +10,6 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface ProjectSpecificAlgorithmHandler.
  */
