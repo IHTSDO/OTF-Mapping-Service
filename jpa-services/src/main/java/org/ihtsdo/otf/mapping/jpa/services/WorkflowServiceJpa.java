@@ -741,13 +741,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			break;
 		}
 
-		
-		/*
-		
-		full_query += " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
-				+ " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_" + mapUser.getUserName() + ")";
-				*/
-
 		System.out.println("FindAssignedWork query: " + full_query);
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
@@ -781,6 +774,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				throw new Exception(
 						"Concept query specified a field that does not exist or is not a string");
 			}
+		// otherwise, sort by ancestor path
+		} else {
+			ftquery.setSort(new Sort(new SortField("sortKey", SortField.STRING)));
 		}
 
 		List<TrackingRecord> results = ftquery.getResultList();
@@ -1409,12 +1405,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				Logger.getLogger(WorkflowServiceJpa.class).info("Old record: " + getMapRecordInSet(oldRecords, mr.getId()).toString());
 				
 				if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
-					Logger.getLogger(WorkflowServiceJpa.class).info(
-							 "Updating record: " + mr.getId().toString() + " with " + mr.getMapEntries().get(0) + " advices");
+					/*Logger.getLogger(WorkflowServiceJpa.class).info(
+							 "Updating record: " + mr.getId().toString() + " with " + mr.getMapEntries().get(0) + " advices");*/
 					mappingService.updateMapRecord(mr);
 				} else {
-					Logger.getLogger(WorkflowServiceJpa.class).info(
-							 "Record " + mr.getId().toString() + " has not changed, not updating");
+					/*Logger.getLogger(WorkflowServiceJpa.class).info(
+							 "Record " + mr.getId().toString() + " has not changed, not updating");*/
 				}
 				
 				
@@ -1769,7 +1765,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// conflict available to lead
 				case CONFLICT_DETECTED:
 					Logger.getLogger(WorkflowServiceJpa.class).info(
-							"   Available conflict: "
+							"   Adding existing conflict: "
 									+ trackingRecord.getTerminologyId());
 					leadTrackingRecords.add(trackingRecord);
 					break;
@@ -1777,11 +1773,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// assigned conflict is added to final set
 				case CONFLICT_IN_PROGRESS:
 				case CONFLICT_NEW:
-					Logger.getLogger(WorkflowServiceJpa.class).info(
-							"   Assigned conflict: "
-									+ trackingRecord.getTerminologyId());
-
-					conflictTrackingRecords.add(trackingRecord);
 					break;
 
 				// Consensus Path ignored
@@ -1800,7 +1791,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					if (trackingRecord.getMapRecordIds().size() == 1) {
 						specialistTrackingRecords.add(trackingRecord);
 						Logger.getLogger(WorkflowServiceJpa.class).info(
-								"   Available Concept: "
+								"   Adding concept mapped by only one specialist: "
 										+ trackingRecord.getTerminologyId());
 					}
 
@@ -1819,9 +1810,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			}
 		}
 
-		Logger.getLogger(WorkflowServiceJpa.class)
-				.info("     Concepts available:  "
-						+ specialistTrackingRecords.size());
+		Logger.getLogger(WorkflowServiceJpa.class).info(
+				"     Concepts available:  " + specialistTrackingRecords.size());
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"     Conflicts available: " + leadTrackingRecords.size());
 		Logger.getLogger(WorkflowServiceJpa.class).info(
@@ -1863,9 +1853,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		// perform assignment loop until :
 		// - the number of desired conflicts is reached OR
-		// - the records available to specialists is exhausted
-		while (leadTrackingRecords.size() < numDesiredConflicts
-				&& specialistTrackingRecords.size() > 0) {
+		// - the records available to specialists or leads is exhausted
+		while (conflictTrackingRecords.size() < numDesiredConflicts
+				&& (specialistTrackingRecords.size() > 0 || leadTrackingRecords.size() > 0)) {
 
 			// if CONFLICT_DETECTED records are available
 			if (leadTrackingRecords.size() > 0) {
@@ -1911,7 +1901,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 				// otherwise, randomly assign a specialist to a record and
 				// modify the record
-			} else {
+			} else if (specialistTrackingRecords.size() > 0){
 
 				// get the next available tracking record and process it
 				TrackingRecord trackingRecord = specialistTrackingRecords
@@ -1944,94 +1934,105 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					if (mapSpecialist == null) {
 						Logger.getLogger(WorkflowServiceJpa.class).info(
 								"     No user available for assignment, removing concept");
-						specialistTrackingRecords.remove(trackingRecord);
-						continue;
-					}
-	
-					// assign the specialist to this concept
-					processWorkflowAction(mapProject, concept, mapSpecialist, null,
-							WorkflowAction.ASSIGN_FROM_SCRATCH);
-	
-					// get the record corresponding to this user
-					MapRecord mapRecord = getMapRecordForTrackingRecordAndMapUser(
-							trackingRecord, mapSpecialist);
-	
-					// make some random changes to the record
-					randomizeMapRecord(mapProject, mapRecord, targetCodes);
-	
-					// determine whether to save for later or finish
-					ValidationResult validationResult = algorithmHandler
-							.validateRecord(mapRecord);
-					if (validationResult.getErrors().size() > 0 // if any errors
-																// reported
-							|| rand.nextInt(5) == 0) { // randomly save some for
-														// later anyway
-	
-						if (validationResult.getErrors().size() > 0) {
-							Logger.getLogger(WorkflowServiceJpa.class).info(
-									"    Randomized record has errors: "
-											+ mapSpecialist.getName());
-							for (String error : validationResult.getErrors()) {
-								Logger.getLogger(WorkflowServiceJpa.class).info(
-										"      " + error);
-							}
-						}
-	
-						Logger.getLogger(WorkflowServiceJpa.class).info(
-								"    Record saved for later by "
-										+ mapSpecialist.getName());
-	
-						processWorkflowAction(mapProject, concept, mapSpecialist,
-								mapRecord, WorkflowAction.SAVE_FOR_LATER);
-						nRecordsSavedForLater++;
-	
+						conceptProcessed = true;
 					} else {
-						Logger.getLogger(WorkflowServiceJpa.class).info(
-								"    Finish editing by " + mapSpecialist.getName());
-						processWorkflowAction(mapProject, concept, mapSpecialist,
-								mapRecord, WorkflowAction.FINISH_EDITING);
 	
+						// assign the specialist to this concept
+						processWorkflowAction(mapProject, concept, mapSpecialist, null,
+								WorkflowAction.ASSIGN_FROM_SCRATCH);
+		
+						// get the record corresponding to this user
+						MapRecord mapRecord = getMapRecordForTrackingRecordAndMapUser(
+								trackingRecord, mapSpecialist);
+		
+						// make some random changes to the record
+						randomizeMapRecord(mapProject, mapRecord, targetCodes);
+		
+						// determine whether to save for later or finish
+						ValidationResult validationResult = algorithmHandler
+								.validateRecord(mapRecord);
+						if (validationResult.getErrors().size() > 0 // if any errors
+																	// reported
+								|| rand.nextInt(5) == 0) { // randomly save some for
+															// later anyway
+		
+							if (validationResult.getErrors().size() > 0) {
+								Logger.getLogger(WorkflowServiceJpa.class).info(
+										"    Randomized record has errors: "
+												+ mapSpecialist.getName());
+								for (String error : validationResult.getErrors()) {
+									Logger.getLogger(WorkflowServiceJpa.class).info(
+											"      " + error);
+								}
+							}
+		
+							Logger.getLogger(WorkflowServiceJpa.class).info(
+									"    Record saved for later by "
+											+ mapSpecialist.getName());
+		
+							processWorkflowAction(mapProject, concept, mapSpecialist,
+									mapRecord, WorkflowAction.SAVE_FOR_LATER);
+							nRecordsSavedForLater++;
+		
+						} else {
+							Logger.getLogger(WorkflowServiceJpa.class).info(
+									"    Finish editing by " + mapSpecialist.getName());
+							processWorkflowAction(mapProject, concept, mapSpecialist,
+									mapRecord, WorkflowAction.FINISH_EDITING);
+		
+						}		
+						
+						// check if a conflict has arisen
+						if (getWorkflowStatusForTrackingRecord(trackingRecord).equals(
+								WorkflowStatus.CONFLICT_DETECTED)) {
+	
+							// add the tracking record to the available for lead list
+							leadTrackingRecords.add(trackingRecord);
+
+							Logger.getLogger(WorkflowServiceJpa.class).info(
+									"    New conflict detected!");
+							
+							conceptProcessed = true;
+	
+	
+						// otherwise, check that this record is not 'stuck' in
+						// editing
+						// - workflow status is less than CONFLICT_DETECTED
+						// - AND two users are assigned
+						} else if (getWorkflowStatusForTrackingRecord(trackingRecord)
+								.compareTo(WorkflowStatus.CONFLICT_DETECTED) < 1
+								&& trackingRecord.getMapRecordIds().size() == 2) {
+	
+							Logger.getLogger(WorkflowServiceJpa.class)
+									.info("    Tracking record has two users and at least one saved for later record, removing.");
+
+							conceptProcessed = true;
+						
+						// finally, check for miraculous pass of validation and published state
+						// TODO This doesn't work, tracking record is removed in this case
+						} else if (getWorkflowStatusForTrackingRecord(trackingRecord)
+								.compareTo(WorkflowStatus.READY_FOR_PUBLICATION) == 0) {
+							
+							Logger.getLogger(WorkflowServiceJpa.class)
+							.info("    Tracking record has moved to READY_FOR_PUBLICATION, removing.");
+
+							conceptProcessed = true;
+							
+						}
 					}
 					
-					// check if a conflict has arisen
-					if (getWorkflowStatusForTrackingRecord(trackingRecord).equals(
-							WorkflowStatus.CONFLICT_DETECTED)) {
-
-						// add the tracking record to the available for lead list
-						leadTrackingRecords.add(trackingRecord);
-
-						// remove the tracking record from th
-						specialistTrackingRecords.remove(trackingRecord);
-
-						Logger.getLogger(WorkflowServiceJpa.class).info(
-								"    New conflict detected!");
+					// if processed, remove from available list
+					if (conceptProcessed == true) specialistTrackingRecords.remove(trackingRecord);
 						
-						conceptProcessed = true;
-
-
-					// otherwise, check that this record is not 'stuck' in
-					// editing
-					// - workflow status is less than CONFLICT_DETECTED
-					// - AND two users are assigned
-					} else if (getWorkflowStatusForTrackingRecord(trackingRecord)
-							.compareTo(WorkflowStatus.CONFLICT_DETECTED) < 1
-							&& trackingRecord.getMapRecordIds().size() == 2) {
-
-						Logger.getLogger(WorkflowServiceJpa.class)
-								.info("    Tracking record has two users and is not in conflict, removing.");
-
-						// remove the record from the available list
-						specialistTrackingRecords.remove(trackingRecord);
-						
-						conceptProcessed = true;
-					}
-					
 				} while(conceptProcessed == false);
 
 				
 
 				// increment the counter
 				nRecordsAssignedToSpecialist++;
+			} else {
+				// should never trigger here, but just in case, break if no lead or specialist records available
+				break;
 			}
 		}
 		Logger.getLogger(WorkflowServiceJpa.class).info("Generation complete.");
