@@ -1304,8 +1304,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 
 		// if the tracking record is ready for removal, delete it
-		if (getWorkflowStatusForTrackingRecord(trackingRecord).equals(
-				WorkflowStatus.READY_FOR_PUBLICATION)
+		if ((getWorkflowStatusForTrackingRecord(trackingRecord).equals(
+				WorkflowStatus.READY_FOR_PUBLICATION) || getWorkflowStatusForTrackingRecord(trackingRecord).equals(
+						WorkflowStatus.PUBLISHED))
 				&& trackingRecord.getMapRecordIds().size() == 1) {
 
 			removeTrackingRecord(trackingRecord.getId());
@@ -1404,13 +1405,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			// otherwise, check for update
 			else {
 				// if the old map record is changed, update it
+				Logger.getLogger(WorkflowServiceJpa.class).info("New record: " + mr.toString());
+				Logger.getLogger(WorkflowServiceJpa.class).info("Old record: " + getMapRecordInSet(oldRecords, mr.getId()).toString());
+				
 				if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
-					/*Logger.getLogger(WorkflowServiceJpa.class).info(
-							 "Updating record: " + mr.getId().toString() + " with " + mr.getMapEntries().get(0) + " advices");*/
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							 "Updating record: " + mr.getId().toString() + " with " + mr.getMapEntries().get(0) + " advices");
 					mappingService.updateMapRecord(mr);
 				} else {
-					/*Logger.getLogger(WorkflowServiceJpa.class).info(
-							 "Record " + mr.getId().toString() + " has not changed, not updating");*/
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							 "Record " + mr.getId().toString() + " has not changed, not updating");
 				}
 				
 				
@@ -1604,9 +1608,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// memory buildup from Concept and TreePosition objects
 				contentService.close();
 				contentService = new ContentServiceJpa();
-
-				// TODO: REMOVE - FOR DEV PURPOSES ONLY
-				// if (trackingRecordCt >= 3000) break;
 			}
 		}
 
@@ -2025,7 +2026,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						conceptProcessed = true;
 					}
 					
-				} while(conceptProcessed = false);
+				} while(conceptProcessed == false);
 
 				
 
@@ -2456,7 +2457,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void generateMapperTestingStateBHEKRE(MapProject mapProject)
 			throws Exception {
@@ -2488,6 +2488,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 	}
 
+	@SuppressWarnings("unchecked")
 	private void generateMappingTestingState(MapProject mapProject,
 			String[] userNames, String[] concepts) throws Exception {
 

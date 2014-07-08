@@ -1,4 +1,7 @@
-<button class="btn btn-sm btn-primary" ng-click="retrieveEditedWork(editedRecordsPage)">Retrieve Edited Work</button>
+<button style:"padding-top:10px;" class="btn btn-sm btn-primary" ng-click="retrieveEditedWork(editedRecordsPage)">Search Work</button>
+
+<img src="img/warning.png" tooltip-placement="top" tooltip="Note:  This feature will be expanded with a variety of search and display functions."></img>
+		.
 
 <ul class="pager"
   ng-hide="editedRecordsPage == 1 && editedRecords.length < recordsPerPage">
@@ -7,7 +10,7 @@
   <li class="next" ng-show="editedRecords.length == recordsPerPage"
     ng-click="retrieveEditedWork(editedRecordsPage+1)"><a>Older &rarr;</a></li>
 </ul>
-<table class="table">
+<table class="table" ng-show="editedRecords.length > 0">
 
   <thead>
     <tr>
