@@ -7,10 +7,8 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link TreePosition}.
- * 
  */
 public class TreePositionImpl implements TreePosition {
 

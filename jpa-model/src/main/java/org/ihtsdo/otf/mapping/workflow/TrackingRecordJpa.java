@@ -23,7 +23,6 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 
-// TODO: Auto-generated Javadoc
 /**
  * Default implementatino of {@link TrackingRecordJpa}.
  */
