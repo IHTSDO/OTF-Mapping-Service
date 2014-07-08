@@ -33,8 +33,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.ownTab = true; // variable to track whether viewing own work or other users work
 	$scope.searchPerformed = false;  		// initialize variable to track whether search was performed
 	
-	$scope.assignedWorkType = 'ALL'; 		// initialize variable to track which type of work has been requested
-	$scope.assignedConflictType = 'ALL'; 	// initialize variable to track which type of conflict has been requested
+	$scope.assignedWorkType = 'NEW'; 		// initialize variable to track which type of work has been requested
+	$scope.assignedConflictType = 'CONFLICT_NEW'; 	// initialize variable to track which type of conflict has been requested
+	$scope.assignedReviewWorkType = 'REVIEW_NEW'
 	$scope.assignedWorkForUserType = 'ALL';	// initialize variable to track which type of work (for another user) has been requested
 	
 	// function to change tab
