@@ -152,7 +152,7 @@
 	<!--  tinymce text area -->
 	<form method="post">
     	<textarea id="tinymce" ui-tinymce ng-model="noteInput"></textarea>
-    	<input class="pull-right" type="submit" value="Add Note"
+    	<input class="pull-right" type="submit"  value="Add Note"
 		ng-click="addRecordNote(record, noteInput); noteInput = ''">
   	</form>
 	
@@ -229,7 +229,7 @@ lead review<br>
 <button class="btn btn-sm btn-primary"
 	ng-show="page != 'resolveConflictsDashboard'"
 	ng-click="finishMapRecord(false)">Finish/Next</button>
-<button class="btn btn-sm btn-primary" ng-click="displayMapRecord(user)">Display</button>
+<button class="btn btn-sm btn-primary" ng-click="displayMapRecord()">Display</button>
 <button class="btn btn-sm btn-warning" ng-click="cancelMapRecord()">Cancel</button>
 
 <button class="btn btn-sm btn-primary" style="float: right;"
