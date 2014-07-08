@@ -496,10 +496,11 @@ public boolean equals(Object obj) {
 
   @Override
   public String toString() {
+	  if (this == null) return "";
     return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord.getId().toString() + 
-        ", mapAdvices=" + mapAdvices + ", targetId=" + targetId
+        ", mapAdvices=" + (mapAdvices == null ? "null" : mapAdvices) + ", targetId=" + targetId
         + ", targetName=" + targetName + ", rule=" + rule + ", mapPriority="
-        + mapPriority + ", mapRelation=" + mapRelation + ", mapBlock="
+        + mapPriority + ", mapRelation=" + (mapRelation == null ? "null" : mapRelation) + ", mapBlock="
         + mapBlock + ", mapGroup=" + mapGroup + "]";
   }
 
