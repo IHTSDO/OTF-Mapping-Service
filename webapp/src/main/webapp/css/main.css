@@ -71,3 +71,9 @@ pre.edit {
 	border-top-left-radius: 3px;
 	border-top-right-radius: 3px;
 }
+
+.doc-img {
+	border: 1px solid; border-radius: 10px; padding: 15px;
+	display: block;
+}
+}
