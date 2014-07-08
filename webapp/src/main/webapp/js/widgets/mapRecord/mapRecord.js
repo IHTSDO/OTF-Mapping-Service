@@ -557,6 +557,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	// discard changes
 	$scope.cancelMapRecord = function() {
 
+		$rootScope.glassPane++;
 		$http({
 			url: root_workflow + "cancel",
 			dataType: "json",
@@ -569,12 +570,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 			// user has requested a cancel event, page is no longer "dirty"
 			$rootScope.currentPageDirty = false;
-			
-			
-			console.debug("Redirecting");
-			
+			$rootScope.glassPane--;
 			$location.path($scope.role + "/dash");
 		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 
