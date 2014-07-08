@@ -343,7 +343,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 						//}
 
 						if ($scope.descTypes[conceptDetails.description[i].typeId].indexOf('Preferred') != -1) {
-							descTypePreferred = $scope.descTypes[conceptDetails.description[i].typeId];
+							descTypePreferred = conceptDetails.description[i].typeId;
 						}
 					}
 				};
@@ -376,22 +376,38 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				// cycle over discovered descTypes
 				for (var key in descTypes) {
 					
+						var formattedDescriptions = getFormattedDescriptions(conceptDetails, key, relTypes);
 					
-					
+						console.debug("Checking for preferred term: ", key, descTypePreferred);
+						// if this desc group is preferred
+						if (key == descTypePreferred) {
+							console.debug('Checking preferred terms');
+							
+							var preferredDescription = [];
+							
+							for (var i = 0; i < formattedDescriptions.length; i++) {
+								console.debug('--> ', formattedDescriptions[i]);
+								if ('referencedConcepts' in formattedDescriptions[i]) {
+									console.debug("  --> has referenced concepts");
+									preferredDescription.push(formattedDescriptions[i]);
+								} else console.debug("  --> has no referenced concepts");
+							}
+							formattedDescriptions = preferredDescription;
+						}
+						
 						// get the formatted descriptions for this type
-						var descGroup = {};
-						descGroup['name'] = descTypes[key];
-						descGroup['descriptions'] = getFormattedDescriptions(conceptDetails, key, relTypes);
-						conceptDetailsDescriptionGroups.push(descGroup);
+						if (formattedDescriptions.length > 0) {
+							var descGroup = {};
+							descGroup['name'] = descTypes[key];
+							descGroup['descriptions'] = formattedDescriptions;
+	
+							conceptDetailsDescriptionGroups.push(descGroup);
+						}
 					
 				}
 
-				console.debug("Extracted description groups for concept:");
-				console.debug(conceptDetailsDescriptionGroups.length);
-				console.debug(conceptDetailsDescriptionGroups);
-				
-				console.debug("Extracted preferred type for concept:");
-				console.debug()
+				console.debug("Extracted description groups for concept: ", conceptDetailsDescriptionGroups.length, conceptDetailsDescriptionGroups);
+
 
 				conceptDetails.descriptionGroups = conceptDetailsDescriptionGroups;
 				//conceptDetails.preferredDescription = conceptDetailsPreferredDescription;
@@ -400,30 +416,20 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				// RELATIONSHIPS //
 				///////////////////
 
-
-
 				// cycle over discovered relTypes
 				for (var key in relTypes) {
 					
-					if (key )
-					
 					// get the relationships for this type
 					var relationships = getConceptElementsByTypeId(conceptDetails.relationship, key);
-
 					if (relationships.length > 0) {
-
 						var relGroup = {};
 						relGroup['name'] = relTypes[key];
-
-
 						relGroup['relationships'] = getConceptElementsByTypeId(conceptDetails.relationship, key);
-
 						conceptDetailsRelationshipGroups.push(relGroup);
 					}
 				}
 
-				console.debug('Extracted relationship groups for concept');
-				console.debug(conceptDetailsRelationshipGroups);
+				console.debug('Extracted relationship groups for concept', conceptDetailsRelationshipGroups);
 
 				conceptDetails.relationshipGroups = conceptDetailsRelationshipGroups;
 
@@ -506,10 +512,12 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 				// if a asterisk-to-dagger, add a †
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Asterisk') == 0) {
+					console.debug("†");
 					referencedConcept.relType = "†";
 				}
 				// if a dagger-to-asterik, add a *
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Dagger') == 0) {
+					console.debug("*");
 					referencedConcept.relType = "*";
 				}
 				description.referencedConcepts.push(referencedConcept);
