@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
@@ -912,6 +913,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// new records
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVISION);
 				newRecords.add(mapRecord);
+				System.out.println("fix_error_path record to add: " + mapRecord.toString());
 			}
 			
 			break;	
@@ -1210,13 +1212,21 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			// Case 1: A user decides not to attempt to fix an error
 			if (getWorkflowStatus(mapRecords).compareTo(WorkflowStatus.REVISION) == 0) {
 	
+				System.out.println("Case 1");
+				
 				// cycle over records
 				for (MapRecord mr : mapRecords) {
+					
+					System.out.println("Checking record: " + mr.toString());
 	
 					// set the REVISION record to its previous state
 					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-						mr = getPreviousVersionOfMapRecord(mr);
+						System.out.println("  (non-jpa version)         : " + getPreviouslyPublishedVersionOfMapRecord(mr).toString());
+						newRecords.remove(mr);
+						newRecords.add(getPreviouslyPublishedVersionOfMapRecord(mr));
+						
 					} else if (mr.getOwner().equals(mapUser)) {
+						System.out.println("  Removed record");
 						newRecords.remove(mr);
 					} else {
 						throw new Exception(
@@ -1244,7 +1254,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			break;
 		}
 
-		// return the modified record set
+		// return the modified record set\
+		System.out.println("DPSAH: New Records");
+		for (MapRecord mr : newRecords) System.out.println(mr.toString());
+		
 		return newRecords;
 
 	}
@@ -1585,8 +1598,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			TrackingRecord trackingRecord,
 			Set<MapRecord> mapRecords, MapUser mapUser) throws Exception {
 
+		// copy the map records into a new array
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
-
+		
 		switch (trackingRecord.getWorkflowPath()) {
 
 		case FIX_ERROR_PATH:
@@ -1626,15 +1640,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			// if editing has occured (EDITING_IN_PROGRESS or above), null-op
 			if (newRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)) {
 
-				// remove the user's map record
-				newRecords.remove(newRecord);
-
-				// set the workflow status of the REVIEW record back to its
-				// original state
-				reviewRecord = getPreviousVersionOfMapRecord(reviewRecord);
-				
-				// add the revised REVIEW record to new records
-				newRecords.add(reviewRecord);
+				newRecords = unassign(trackingRecord, mapRecords, mapUser);
 			}
 
 			break;
@@ -1643,39 +1649,53 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			break;
 		}
 
+		// return the modified records
 		return newRecords;
 	}
 
 	/**
-	 * Returns the previous version of map record.
+	 * Returns the previously published/ready-for-publicatoin version of map record.
 	 *
 	 * @param mapRecord the map record
-	 * @return the previous version of map record
+	 * @return the previously publication-ready version of map record
 	 * @throws Exception the exception
 	 */
-	public MapRecord getPreviousVersionOfMapRecord(MapRecord mapRecord)
+	public MapRecord getPreviouslyPublishedVersionOfMapRecord(MapRecord mapRecord)
 			throws Exception {
 
 		MappingService mappingService = new MappingServiceJpa();
+		
+		// get the record revisions
 		List<MapRecord> revisions = mappingService.getMapRecordRevisions(
 				mapRecord.getId()).getMapRecords();
+		
+		// ensure revisions are sorted by descending timestamp
+		Collections.sort(revisions, new Comparator<MapRecord>() {
+			@Override
+			public int compare(MapRecord mr1, MapRecord mr2) {
+				return mr1.getTimestamp().compareTo(mr2.getTimestamp());
+			}
+		});
 
 		// check assumption: last revision exists, at least two records must be present
 		if (revisions.size() < 2)
-			throw new Exception(
-					"Attempted to get the previous version of map record with id "
+			throw new LocalException(
+					"Attempted to get the previously published version of map record with id "
 							+ mapRecord.getId() + ", "
 							+ mapRecord.getOwner().getName()
 							+ ", and concept id " + mapRecord.getConceptId()
 							+ ", but no previous revisions exist.");
 		
+		// cycle over records until the previously published/ready-for-publication state record is found
 		for (MapRecord revision : revisions) {
-			System.out.println(revision.toString());
+			System.out.println("Previous record = " + revision.toString());
+			if (revision.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED) 
+					|| revision.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION))
+				return revision;
 		}
-
-		// get the most recent revision (0 is the current record, 1 is the previous)
-		return revisions.get(1);
-
+		
+		throw new LocalException("Could not retrieve previously published state of map record for concept " + mapRecord.getConceptId() + ", " + mapRecord.getConceptName());
+	
 	}
 
 	/**
