@@ -221,21 +221,44 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		return deferred.promise;
 	};
 
+	// function to recursively expand tree positions
+	// also returns true/false if:
+	// - the id of the node or one of its children exactly matches the search
 	$scope.expandAll = function(treePositions) {
+		
 		for (var i = 0; i < treePositions.length; i++) {
+			
+			console.debug("Expanding for ", treePositions[i]);
 
 			// if children have been loaded, expand
 			if (treePositions[i].children.length > 0) {
 				treePositions[i].isOpen = true;
-				$scope.expandAll(treePositions[i].children);
 			}
 			
-			// if this tree position's code exactly matches the query, expand the information panel
-			console.debug("Checking terminology match", treePositions[i].terminologyId, $scope.query);
-			if (treePositions[i].terminologyId === $scope.query) {
-				console.debug("   MATCH FOUND");
+			
+			// if the node exactly matches a query, stop expanding here
+			if (treePositions[i].terminologyId.toUpperCase() === $scope.query.toUpperCase()) {
+				console.debug("Exact match for query");
 				$scope.getConceptDetails(treePositions[i]);
+				return true;
 			}
+			
+			// if a child node reports that this is in direct path of a requested concept id, get details
+			else if ($scope.expandAll(treePositions[i].children) == true) {
+				console.debug("This node reports exact match among descendants");
+				
+				// if this is a root node, simply return false to avoid expanding this node
+				if (treePositions[i].ancestorPath == null || treePositions[i].ancestorPath === '' )
+					return false;
+				
+				$scope.getConceptDetails(treePositions[i]);
+				
+				return true;
+			}
+			
+			// return false (not an exact match)
+			else return false;
+			
 		}
 	};
 
@@ -320,7 +343,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 						//}
 
 						if ($scope.descTypes[conceptDetails.description[i].typeId].indexOf('Preferred') != -1) {
-							descTypePreferred = $scope.descTypes[conceptDetails.description[i].typeId];
+							descTypePreferred = conceptDetails.description[i].typeId;
 						}
 					}
 				};
@@ -353,22 +376,38 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				// cycle over discovered descTypes
 				for (var key in descTypes) {
 					
+						var formattedDescriptions = getFormattedDescriptions(conceptDetails, key, relTypes);
 					
-					
+						console.debug("Checking for preferred term: ", key, descTypePreferred);
+						// if this desc group is preferred
+						if (key == descTypePreferred) {
+							console.debug('Checking preferred terms');
+							
+							var preferredDescription = [];
+							
+							for (var i = 0; i < formattedDescriptions.length; i++) {
+								console.debug('--> ', formattedDescriptions[i]);
+								if ('referencedConcepts' in formattedDescriptions[i]) {
+									console.debug("  --> has referenced concepts");
+									preferredDescription.push(formattedDescriptions[i]);
+								} else console.debug("  --> has no referenced concepts");
+							}
+							formattedDescriptions = preferredDescription;
+						}
+						
 						// get the formatted descriptions for this type
-						var descGroup = {};
-						descGroup['name'] = descTypes[key];
-						descGroup['descriptions'] = getFormattedDescriptions(conceptDetails, key, relTypes);
-						conceptDetailsDescriptionGroups.push(descGroup);
+						if (formattedDescriptions.length > 0) {
+							var descGroup = {};
+							descGroup['name'] = descTypes[key];
+							descGroup['descriptions'] = formattedDescriptions;
+	
+							conceptDetailsDescriptionGroups.push(descGroup);
+						}
 					
 				}
 
-				console.debug("Extracted description groups for concept:");
-				console.debug(conceptDetailsDescriptionGroups.length);
-				console.debug(conceptDetailsDescriptionGroups);
-				
-				console.debug("Extracted preferred type for concept:");
-				console.debug()
+				console.debug("Extracted description groups for concept: ", conceptDetailsDescriptionGroups.length, conceptDetailsDescriptionGroups);
+
 
 				conceptDetails.descriptionGroups = conceptDetailsDescriptionGroups;
 				//conceptDetails.preferredDescription = conceptDetailsPreferredDescription;
@@ -377,30 +416,20 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				// RELATIONSHIPS //
 				///////////////////
 
-
-
 				// cycle over discovered relTypes
 				for (var key in relTypes) {
 					
-					if (key )
-					
 					// get the relationships for this type
 					var relationships = getConceptElementsByTypeId(conceptDetails.relationship, key);
-
 					if (relationships.length > 0) {
-
 						var relGroup = {};
 						relGroup['name'] = relTypes[key];
-
-
 						relGroup['relationships'] = getConceptElementsByTypeId(conceptDetails.relationship, key);
-
 						conceptDetailsRelationshipGroups.push(relGroup);
 					}
 				}
 
-				console.debug('Extracted relationship groups for concept');
-				console.debug(conceptDetailsRelationshipGroups);
+				console.debug('Extracted relationship groups for concept', conceptDetailsRelationshipGroups);
 
 				conceptDetails.relationshipGroups = conceptDetailsRelationshipGroups;
 
@@ -483,10 +512,12 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 				// if a asterisk-to-dagger, add a †
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Asterisk') == 0) {
+					console.debug("†");
 					referencedConcept.relType = "†";
 				}
 				// if a dagger-to-asterik, add a *
 				if (relTypes[relationshipsForDescription[i].typeId].indexOf('Dagger') == 0) {
+					console.debug("*");
 					referencedConcept.relType = "*";
 				}
 				description.referencedConcepts.push(referencedConcept);

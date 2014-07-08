@@ -317,7 +317,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 							"Content-Type": "application/json"
 						}
 					}).success(function(data) {
-						//$scope.record = data;
+						$scope.record = data;
 						$scope.recordSuccess = "Record saved.";
 						$scope.recordError = "";
 						
@@ -617,6 +617,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		console.debug('Removed principle');
 	};
 	
+	$scope.tinymceOptions = {
+			
+			menubar : false,
+			statusbar : false,
+			plugins : "autolink link image charmap searchreplace",
+			toolbar : "undo redo | styleselect | bold italic underline strikethrough | charmap link image",
+	    };
+
 	$scope.addRecordNote = function(record, note) {
 		// check if note non-empty
 		if (note === '' || note == null) {
@@ -1039,6 +1047,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
     
     $scope.closeConceptBrowser = function() {
     	if ($scope.window != null)
-    	  $scope.window.close();
+    	$scope.window.close();
     };
 });
