@@ -67,7 +67,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	});	
 
 	$scope.$on('workAvailableWidget.notification.assignWork', function(event, parameters) {
-		console.debug('assignedlist: assignWork notification from workAvailableWidget');
+		console.debug('assignedlist: assignWork notification');
 		console.debug(parameters);
 		
 		// perform action based on notification parameters
@@ -77,7 +77,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		if ($scope.currentRole === 'Lead') {
 			
 			// if user name matches current user's user name, reload work
-			if (parameters.assignUser === $scope.currentUser.userName) {		
+			if (parameters.assignUser.userName === $scope.currentUser.userName) {		
 				
 				if (parameters.assignType === 'concept') {
 					$scope.retrieveAssignedWork($scope.assignedWorkPage, null);
@@ -91,8 +91,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					$scope.setTab(2);
 				}
 			} else {
-				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser, null);
+				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser.userName, null);
 				$scope.setTab(3);
+				$scope.mapUserViewed = parameters.assignUser;
 			}
 			
 		}
@@ -139,12 +140,14 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
-					{"startIndex": (page-1)*$scope.itemsPerPage,
-			 	 	 "maxResults": $scope.itemsPerPage, 
+					{"startIndex": page == -1 ? -1 : (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": page == -1 ? -1 : $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "queryRestriction": assignedConflictType};  
 
 	  	$rootScope.glassPane++;
+	  	
+	  
 
 		$http({
 			url: root_workflow + "project/id/" 
@@ -198,8 +201,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
-					{"startIndex": (page-1)*$scope.itemsPerPage,
-			 	 	 "maxResults": $scope.itemsPerPage, 
+					{"startIndex": page == -1 ? -1 : (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": page == -1 ? -1 : $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "queryRestriction": assignedWorkType};
 
@@ -259,8 +262,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
-					{"startIndex": (page-1)*$scope.itemsPerPage,
-			 	 	 "maxResults": $scope.itemsPerPage, 
+					{"startIndex": page == -1 ? -1 : (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": page == -1 ? -1 : $scope.itemsPerPage, 
 			 	 	 "sortField": 'sortKey',
 			 	 	 "queryRestriction": assignedWorkType};
 
@@ -339,8 +342,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
-		{"startIndex": (page-1)*$scope.itemsPerPage,
-				"maxResults": $scope.itemsPerPage, 
+		{"startIndex": page == -1 ? -1 : (page-1)*$scope.itemsPerPage,
+				"maxResults": page == -1 ? -1 : $scope.itemsPerPage, 
 				"sortField": 'sortKey',
 				"queryRestriction": assignedWorkType};  
 
@@ -435,7 +438,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	};
 
 	// Unassigns all work (both concepts and conflicts) for the current user
-	$scope.unassignAllWork = function(unassignEdited, mapUser) {
+	$scope.unassignAllWork = function(unassignType, unassignEdited, mapUser) {
 
 		$rootScope.glassPane++;
 		
@@ -476,10 +479,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	
 	
 	// HACKISH:  Variable passed in is the currently viewed map user in the lead's View Other Work tab
-	$scope.openUnassignModal = function(mapUser) {
+	$scope.openUnassignModal = function(mapUser, workType) {
 		
-		console.debug("openUnassignModal with ");
-		console.debug(mapUser);
+		console.debug("openUnassignModal with ", mapUser, workType);
 
 		var modalInstance = $modal.open({
 			templateUrl: 'js/widgets/assignedList/assignedListUnassign.html',
@@ -490,39 +492,241 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				mapUserToUnassign: function() {
 					if ($scope.ownTab == true) return $scope.currentUser;
 					else return mapUser;
-				}
+				},
+				isMapLead: function() { return $scope.currentRole === 'Lead'; },
+				unassignWorkType: function() { return workType; }
 			}
 		});
 
-		modalInstance.result.then(function(unassignType) {
-			console.debug('Modal Result: ' + unassignType)
-			console.debug(mapUser);
+		// TODO Move API retrieval into neutral functions that don't affect scope
+		//  i.e. retrieveAvailableConflicts should simply return a SearchResultList
+		//  that then can be used by either this function or a display-affecting function
+		modalInstance.result.then(function(result) {
+			console.debug("Unassigning batch work for user " + mapUser.userName + ", with parameters: ", result);
+
+			// assemble the list of things to unassign via filtered retrieval APIs
+			if (result.unassignConcepts == true) {
+				
+				var terminologyIdsConcepts = [];
+				
+				$rootScope.glassPane++;
+				console.debug("Retrieving concepts to unassign...");
+				var pfsParameterObj = {
+						"startIndex": -1,
+						"maxResults": -1,
+						"sortField": 'sortKey',
+						"queryRestriction": result.unassignEditedWork == true ? 'ALL' : 'NEW'};
+				
+				// retrieve the list of assigned conflicts
+				$http({
+					url: root_workflow + "project/id/" 
+					+ $scope.focusProject.id 
+					+ "/user/id/" 
+					+ mapUser.userName 
+					+ "/query/null"
+					+ "/assignedConcepts",
+					dataType: "json",
+					data: pfsParameterObj,
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					}
+				}).success(function(data) {
+					$rootScope.glassPane--;
+					for (var i = 0; i < data.searchResult.length; i++) {
+						terminologyIdsConcepts.push(data.searchResult[i].terminologyId);
+					}
+					
+					// call the batch unassign API
+					console.debug("Unassigning concepts (" + terminologyIdsConcepts.length + ")", terminologyIdsConcepts);
+					unassignBatch(mapUser, terminologyIdsConcepts, 'concept');
+					$scope.rootScope--;
+				}).error(function(data, status, headers, config) {
+				  	$rootScope.glassPane--;
+				    $rootScope.handleHttpError(data, status, headers, config);
+				});
+			}
 			
-			if (unassignType === 'all') $scope.unassignAllWork(true, mapUser);
-			else if (unassignType === 'unedited') $scope.unassignAllWork(false, mapUser);
-			else("Alert: Unexpected error attempting to unassign work");
+			if (result.unassignConflicts == true) {
+				
+				var terminologyIdsConflicts = [];
+				
+				$rootScope.glassPane++;
+				console.debug("Retrieving conflicts to unassign...");
+				// construct a paging/filtering/sorting object
+				var pfsParameterObj = {
+						"startIndex": -1,
+						"maxResults": -1,
+						"sortField": 'sortKey',
+						"queryRestriction": result.unassignEditedWork == true ? 'ALL' : 'CONFLICT_NEW'};
+				
+				// retrieve the list of assigned conflicts
+				$http({
+					url: root_workflow + "project/id/" 
+					+ $scope.focusProject.id 
+					+ "/user/id/" 
+					+ mapUser.userName 
+					+ "/query/null"
+					+ "/assignedConflicts",
+					dataType: "json",
+					data: pfsParameterObj,
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					}
+				}).success(function(data) {
+					$rootScope.glassPane--;
+					for (var i = 0; i < data.searchResult.length; i++) {
+						terminologyIdsConflicts.push(data.searchResult[i].terminologyId);
+					}
+					// call the batch unassign API
+					console.debug("Unassigning conflicts (" + terminologyIdsConflicts.length + ")", terminologyIdsConflicts);
+					unassignBatch(mapUser, terminologyIdsConflicts, 'conflict');
+					
+					$scope.rootScope--;
+				}).error(function(data, status, headers, config) {
+				  	$rootScope.glassPane--;
+				    $rootScope.handleHttpError(data, status, headers, config);
+				});
+			}
+			
+			if (result.unassignReviewWork == true) {
+				
+				var terminologyIdsReview = [];
+				
+				$rootScope.glassPane++;
+				console.debug("Retrieving review work to unassign...");
+				var pfsParameterObj = {
+						"startIndex": -1,
+						"maxResults": -1,
+						"sortField": 'sortKey',
+						"queryRestriction": result.unassignEditedWork == true ? 'ALL' : 'REVIEW_NEW'};
+				
+				$http({
+					url: root_workflow + "project/id/" 
+					+ $scope.focusProject.id 
+					+ "/user/id/" 
+					+ mapUser.userName 
+					+ "/query/null"
+					+ "/assignedReviewWork",
+					dataType: "json",
+					data: pfsParameterObj,
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					}
+				}).success(function(data) {
+					$rootScope.glassPane--;
+					for (var i = 0; i < data.searchResult.length; i++) {
+						terminologyIdsReview.push(data.searchResult[i].terminologyId);
+					}
+					// call the batch unassign API
+					console.debug("Unassigning review work (" + terminologyIdsReview.length + ")", terminologyIdsReview);
+					unassignBatch(mapUser, terminologyIdsReview, 'review');
+					
+					$scope.rootScope--;
+					
+					
+				}).error(function(data, status, headers, config) {
+				  	$rootScope.glassPane--;
+				    $rootScope.handleHttpError(data, status, headers, config);
+				});
+			
+			}
+			
+			
+			
+			
+			
+			
+		/*	if (unassignEditType === 'all') $scope.unassignAllWork(mapUser, workType, true);
+			else if (unassignEditType === 'unedited') $scope.unassignAllWork(mapUser, workType, false);
+			else("Alert: Unexpected error attempting to unassign work");*/
 		});
 	};
 	
-	var UnassignModalCtrl = function($scope, $modalInstance, mapUserToUnassign) { 
+	var unassignBatch = function(mapUser, terminologyIds, workType) {
 		
-		console.debug("Entered modal control");
-		console.debug(mapUserToUnassign);
-		$scope.mapUserToUnassign = mapUserToUnassign;
+		console.debug("unassignBatch", mapUser, workType);
+		
+		$rootScope.glassPane++;
+		$http({
+			url: root_workflow + "unassign/project/id/" 
+			+ $scope.focusProject.id 
+			+ "/user/id/" 
+			+ mapUser.userName 
+			+ "/batch",
+			dataType: "json",
+			data: terminologyIds,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+			$rootScope.glassPane--;
+			
+			// set timeout to avoid database issues where unassign and retrieve overlap
+			setTimeout(function() {
+
+				// trigger reload of this type of work via broadcast notification
+				$rootScope.$broadcast('workAvailableWidget.notification.assignWork', {assignUser: mapUser, assignType: workType});		
+			
+				// if this user unassigned their own work, broadcast unassign
+				if (mapUser.userName === $scope.currentUser.userName)
+					$rootScope.$broadcast('assignedListWidget.notification.unassignWork');
+			}, 250);	
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
 	
-		$scope.ok = function(unassignType) {
-			console.debug("Ok clicked, unassignType = " + unassignType);
-			if (unassignType == null || unassignType == undefined) alert("You must select an option.")
+	}
+	
+	var UnassignModalCtrl = function($scope, $modalInstance, mapUserToUnassign, isMapLead, unassignWorkType) { 
+		
+		console.debug("Entered modal control", mapUserToUnassign, unassignWorkType);
+		$scope.mapUserToUnassign = mapUserToUnassign;
+		$scope.isMapLead = isMapLead;
+		$scope.unassignWorkType = unassignWorkType;
+		$scope.unassignEditedWork = 'Unedited'; // note, boolean flags were causing errors, possibly related to radio inputs?
+		$scope.unassignConcepts = false;
+		$scope.unassignConflicts = false;
+		$scope.unassignReviewWork = false;
+		
+		if ($scope.unassignWorkType == 'concepts' || isMapLead == false) 
+			$scope.unassignConcepts = true;
+		else if ($scope.unassignWorkType == 'conflicts') 
+			$scope.unassignConflicts = true;
+		else if ($scope.unassignWorkType == 'review') 
+			$scope.unassignReviewWork = true;
+		
+		$scope.selectAll = function(isSelected) {
+			$scope.unassignConcepts = isSelected;
+			$scope.unassignConflicts = isSelected;
+			$scope.unassignReviewWork = isSelected;
+		};
+	
+		$scope.ok = function(unassignEditedWork, unassignConcepts, unassignConflicts, unassignReviewWork) {
+			
+			if (unassignEditedWork == null) alert("You must select whether to delete edited work.");
+			if (unassignConcepts == false && unassignConflicts == false && unassignReviewWork == false) {
+				alert("You must select a type of work to return");
+			}
 			else {
-				console.debug($scope.mapUserToUnassign);
-				$modalInstance.close(unassignType, $scope.mapUserToUnassign);
+				var result = {
+						'unassignEditedWork':	unassignEditedWork === 'Unedited' ? false : true,
+						'unassignConcepts':		unassignConcepts,
+						'unassignConflicts':	unassignConflicts,
+						'unassignReviewWork':	unassignReviewWork
+				};				
+				$modalInstance.close(result);
 			}
 		};
 
-		$scope.cancel = function(unassignType) {
+		$scope.cancel = function() {
 			$modalInstance.dismiss('cancel');
 		};
-	}
+	};
 	
 	// remove an element from an array by key
 	Array.prototype.removeElement = function(elem) {
