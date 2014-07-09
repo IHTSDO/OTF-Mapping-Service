@@ -694,16 +694,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		System.out.println("Testing new findAssignedWork with query: '" + query
 				+ "'");
-
+		PfsParameter localPfsParameter = pfsParameter;
+		
 		SearchResultList assignedWork = new SearchResultListJpa();
 
 		// create a blank pfs parameter object if one not passed in
-		if (pfsParameter == null)
-			pfsParameter = new PfsParameterJpa();
+		if (localPfsParameter == null)
+			localPfsParameter = new PfsParameterJpa();
 		
 		// create a blank query restriction if none provided
-		if (pfsParameter.getQueryRestriction() == null)
-			pfsParameter.setQueryRestriction("");
+		if (localPfsParameter.getQueryRestriction() == null)
+			localPfsParameter.setQueryRestriction("");
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
@@ -724,7 +725,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		//   * EDITED:  EDITING_IN_PROGRESS, EDITING_DONE
 		
 		// add terms based on query restriction
-		switch (pfsParameter.getQueryRestriction()) {
+		switch (localPfsParameter.getQueryRestriction()) {
 		case "NEW":
 			full_query += " AND userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName();
 			break;
@@ -752,23 +753,23 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		assignedWork.setTotalCount(ftquery.getResultSize());
 
-		if (pfsParameter.getStartIndex() != -1
-				&& pfsParameter.getMaxResults() != -1) {
-			ftquery.setFirstResult(pfsParameter.getStartIndex());
-			ftquery.setMaxResults(pfsParameter.getMaxResults());
+		if (localPfsParameter.getStartIndex() != -1
+				&& localPfsParameter.getMaxResults() != -1) {
+			ftquery.setFirstResult(localPfsParameter.getStartIndex());
+			ftquery.setMaxResults(localPfsParameter.getMaxResults());
 
 		}
 
 		// if sort field is specified, set sort key
-		if (pfsParameter.getSortField() != null
-				&& !pfsParameter.getSortField().isEmpty()) {
+		if (localPfsParameter.getSortField() != null
+				&& !localPfsParameter.getSortField().isEmpty()) {
 
 			// check that specified sort field exists on Concept and is
 			// a string
 			if (TrackingRecordJpa.class
-					.getDeclaredField(pfsParameter.getSortField()).getType()
+					.getDeclaredField(localPfsParameter.getSortField()).getType()
 					.equals(String.class)) {
-				ftquery.setSort(new Sort(new SortField(pfsParameter
+				ftquery.setSort(new Sort(new SortField(localPfsParameter
 						.getSortField(), SortField.STRING)));
 			} else {
 				throw new Exception(
@@ -828,13 +829,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				+ query + "'");
 
 		SearchResultList assignedConflicts = new SearchResultListJpa();
+        PfsParameter localPfsParameter = pfsParameter;
 
-		if (pfsParameter == null)
-			pfsParameter = new PfsParameterJpa();
+		if (localPfsParameter == null)
+			localPfsParameter = new PfsParameterJpa();
 		
 		// create a blank query restriction if none provided
-				if (pfsParameter.getQueryRestriction() == null)
-					pfsParameter.setQueryRestriction("");
+				if (localPfsParameter.getQueryRestriction() == null)
+					localPfsParameter.setQueryRestriction("");
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
@@ -850,7 +852,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// - workflow status CONFLICT_NEW or CONFLICT_IN_PROGRESS with this user name in pair
 
 		// add terms based on query restriction
-		switch (pfsParameter.getQueryRestriction()) {
+		switch (localPfsParameter.getQueryRestriction()) {
 		case "CONFLICT_NEW":
 			full_query += " AND userAndWorkflowStatusPairs:CONFLICT_NEW_" + mapUser.getUserName();
 			break;
@@ -873,23 +875,23 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		assignedConflicts.setTotalCount(ftquery.getResultSize());
 
-		if (pfsParameter.getStartIndex() != -1
-				&& pfsParameter.getMaxResults() != -1) {
-			ftquery.setFirstResult(pfsParameter.getStartIndex());
-			ftquery.setMaxResults(pfsParameter.getMaxResults());
+		if (localPfsParameter.getStartIndex() != -1
+				&& localPfsParameter.getMaxResults() != -1) {
+			ftquery.setFirstResult(localPfsParameter.getStartIndex());
+			ftquery.setMaxResults(localPfsParameter.getMaxResults());
 
 		}
 
 		// if sort field is specified, set sort key
-		if (pfsParameter.getSortField() != null
-				&& !pfsParameter.getSortField().isEmpty()) {
+		if (localPfsParameter.getSortField() != null
+				&& !localPfsParameter.getSortField().isEmpty()) {
 
 			// check that specified sort field exists on Concept and is
 			// a string
 			if (TrackingRecordJpa.class
-					.getDeclaredField(pfsParameter.getSortField()).getType()
+					.getDeclaredField(localPfsParameter.getSortField()).getType()
 					.equals(String.class)) {
-				ftquery.setSort(new Sort(new SortField(pfsParameter
+				ftquery.setSort(new Sort(new SortField(localPfsParameter
 						.getSortField(), SortField.STRING)));
 			} else {
 				throw new Exception(
@@ -939,14 +941,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				+ "'");
 
 		SearchResultList assignedReviewWork = new SearchResultListJpa();
+        PfsParameter localPfsParameter = pfsParameter;
 
 		// create a blank pfs parameter object if one not passed in
-		if (pfsParameter == null)
-			pfsParameter = new PfsParameterJpa();
+		if (localPfsParameter == null)
+			localPfsParameter = new PfsParameterJpa();
 		
 		// create a blank query restriction if none provided
-		if (pfsParameter.getQueryRestriction() == null)
-			pfsParameter.setQueryRestriction("");
+		if (localPfsParameter.getQueryRestriction() == null)
+			localPfsParameter.setQueryRestriction("");
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
@@ -962,7 +965,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// - user and workflow status must exist in the form REVIEW_NEW_userName or REVIEW_IN_PROGRESS_userName
 		
 		// add terms based on query restriction
-		switch (pfsParameter.getQueryRestriction()) {
+		switch (localPfsParameter.getQueryRestriction()) {
 		case "REVIEW_NEW":
 			full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEW_" + mapUser.getUserName();
 					
@@ -987,23 +990,23 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		assignedReviewWork.setTotalCount(ftquery.getResultSize());
 
-		if (pfsParameter.getStartIndex() != -1
-				&& pfsParameter.getMaxResults() != -1) {
-			ftquery.setFirstResult(pfsParameter.getStartIndex());
-			ftquery.setMaxResults(pfsParameter.getMaxResults());
+		if (localPfsParameter.getStartIndex() != -1
+				&& localPfsParameter.getMaxResults() != -1) {
+			ftquery.setFirstResult(localPfsParameter.getStartIndex());
+			ftquery.setMaxResults(localPfsParameter.getMaxResults());
 
 		}
 
 		// if sort field is specified, set sort key
-		if (pfsParameter.getSortField() != null
-				&& !pfsParameter.getSortField().isEmpty()) {
+		if (localPfsParameter.getSortField() != null
+				&& !localPfsParameter.getSortField().isEmpty()) {
 
 			// check that specified sort field exists on Concept and is
 			// a string
 			if (TrackingRecordJpa.class
-					.getDeclaredField(pfsParameter.getSortField()).getType()
+					.getDeclaredField(localPfsParameter.getSortField()).getType()
 					.equals(String.class)) {
-				ftquery.setSort(new Sort(new SortField(pfsParameter
+				ftquery.setSort(new Sort(new SortField(localPfsParameter
 						.getSortField(), SortField.STRING)));
 			} else {
 				throw new Exception(
@@ -1876,7 +1879,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 				// get the random lead
 				MapUser mapLead = getAssignableLead(leadTrackingRecords.get(0),
-						new ArrayList<MapUser>(mapProject.getMapLeads()));
+						new ArrayList<>(mapProject.getMapLeads()));
 
 				// if no user available, move to the next tracking record
 				if (mapLead == null) {
@@ -1928,7 +1931,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 					// get the available specialist for this tracking record
 					MapUser mapSpecialist = getAssignableSpecialist(trackingRecord,
-							new ArrayList<MapUser>(mapProject.getMapSpecialists()));
+							new ArrayList<>(mapProject.getMapSpecialists()));
 	
 					// if no user available, move to the next tracking record
 					if (mapSpecialist == null) {
@@ -2547,7 +2550,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					.setParameter("conceptId", terminologyId)
 					.setParameter("mapProjectId", mapProject.getId());
 
-			List<MapRecord> mapRecords = (List<MapRecord>) query
+			List<MapRecord> mapRecords = query
 					.getResultList();
 			for (MapRecord mapRecord : mapRecords) {
 				existingRecords.add(mapRecord);

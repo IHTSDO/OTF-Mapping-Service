@@ -695,7 +695,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             matchFound = true;
         }
         if (!matchFound) {
-          validationResult.addError("Record entries do not match: "
+          validationResult.addError("Record entry does not match: "
               + convertToString(entries1.get(d)) + ".");
         }
         matchFound = false;
@@ -713,6 +713,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param entry2 the entry2
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
+  @SuppressWarnings("static-method")
   public boolean isRulesEqual(MapEntry entry1, MapEntry entry2) {
     // check null comparisons first
     if (entry1.getRule() == null && entry2.getRule() != null)
@@ -731,6 +732,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param entry2 the entry2
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
+  @SuppressWarnings("static-method")
   public boolean isTargetIdsEqual(MapEntry entry1, MapEntry entry2) {
     // check null comparisons first
     if (entry1.getTargetId() == null && entry2.getTargetId() != null)
@@ -749,6 +751,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param entry2 the entry2
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
+  @SuppressWarnings("static-method")
   public boolean isMapRelationsEqual(MapEntry entry1, MapEntry entry2) {
     // check null comparisons first
     if (entry1.getMapRelation() == null && entry2.getMapRelation() != null)
@@ -1362,7 +1365,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
             WorkflowStatus.REVIEW_NEW)
             || getWorkflowStatus(mapRecords).equals(
                 WorkflowStatus.REVIEW_IN_PROGRESS)) {
-
+          // do nothing
         } else {
           throw new Exception(
               "finishEditing failed! Invalid workflow status combination on record(s)");
@@ -1626,6 +1629,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @return the previously publication-ready version of map record
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   public MapRecord getPreviouslyPublishedVersionOfMapRecord(MapRecord mapRecord)
     throws Exception {
 
@@ -1674,6 +1678,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param mapRecords the map records
    * @return the workflow status
    */
+  @SuppressWarnings("static-method")
   public WorkflowStatus getWorkflowStatus(Set<MapRecord> mapRecords) {
     WorkflowStatus workflowStatus = WorkflowStatus.NEW;
     for (MapRecord mr : mapRecords) {
@@ -1690,6 +1695,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param mapRecords the map records
    * @return the lowest workflow status
    */
+  @SuppressWarnings("static-method")
   public WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
     WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
     for (MapRecord mr : mapRecords) {
@@ -1705,6 +1711,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
    * @param mapRecords the map records
    * @return the map users
    */
+  @SuppressWarnings("static-method")
   public Set<MapUser> getMapUsers(Set<MapRecord> mapRecords) {
     Set<MapUser> mapUsers = new HashSet<>();
     for (MapRecord mr : mapRecords) {

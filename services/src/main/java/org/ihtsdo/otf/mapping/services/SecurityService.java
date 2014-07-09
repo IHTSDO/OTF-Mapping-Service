@@ -45,8 +45,7 @@ public interface SecurityService {
    * Returns the application role for token.
    * 
    * @param authToken the auth token
-   * @return the map user role
-   * @return the application role for token
+   * @return the application role
    * @throws Exception the exception
    */
   public MapUserRole getApplicationRoleForToken(String authToken)
