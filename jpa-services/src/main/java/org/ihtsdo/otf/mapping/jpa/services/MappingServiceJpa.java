@@ -2765,6 +2765,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	public TreePositionList setTreePositionValidCodes(
 			List<TreePosition> treePositions, Long mapProjectId)
 			throws Exception {
+		
+		Logger.getLogger(MappingServiceJpa.class).info("Setting tree position valid codes");
 
 		// get the map project and its algorithm handler
 		MapProject mapProject = getMapProject(mapProjectId);

@@ -1209,39 +1209,31 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 					.info("Unassign:  FIX_ERROR_PATH");
 			
+			// get the REVISION record
+			MapRecord revisionRecord = null;
+			for (MapRecord mr : mapRecords) {
+				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+					revisionRecord = mr;
+			}
+			
+			if (revisionRecord == null)
+				throw new LocalException("Attempted to unassign a published revision record, but no such previously published record exists!");
+			
 			// Case 1: A user decides not to attempt to fix an error
-			if (getWorkflowStatus(mapRecords).compareTo(WorkflowStatus.REVISION) == 0) {
-	
-				System.out.println("Case 1");
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
+					|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_IN_PROGRESS)) {
 				
-				// cycle over records
-				for (MapRecord mr : mapRecords) {
-					
-					System.out.println("Checking record: " + mr.toString());
-	
-					// set the REVISION record to its previous state
-					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-						System.out.println("  (non-jpa version)         : " + getPreviouslyPublishedVersionOfMapRecord(mr).toString());
-						newRecords.remove(mr);
-						newRecords.add(getPreviouslyPublishedVersionOfMapRecord(mr));
-						
-					} else if (mr.getOwner().equals(mapUser)) {
-						System.out.println("  Removed record");
-						newRecords.remove(mr);
-					} else {
-						throw new Exception(
-								"Unassign called on FIX_ERROR_PATH tracking record for "
-										+ mapUser.getName() + ", but record (id="
-										+ mr.getId() + " is neither REVISION status nor owned by user.");
-					}
-				}
+				newRecords.remove(mapRecord);
+				newRecords.remove(revisionRecord);
+				newRecords.add(getPreviouslyPublishedVersionOfMapRecord(revisionRecord));
 				
 			// Case 2:  A lead unassigns themselves from reviewing a fixed error
-			// delete the record, no special action needed
-			} else if ((getWorkflowStatus(mapRecords).compareTo(WorkflowStatus.REVIEW_NEW) == 0
-					|| getWorkflowStatus(mapRecords).compareTo(WorkflowStatus.REVIEW_IN_PROGRESS) == 0)) {
-						
+			// delete the lead's record, no other action required
+			} else if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
+					|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
 				newRecords.remove(mapRecord);
+			} else {
+				throw new LocalException("Unexpected error attempt to unassign a Revision record.  Contact an administrator.");
 			}
 
 			break;
@@ -1561,6 +1553,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		case FIX_ERROR_PATH:
 			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW))
 				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW))
+				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
+			
 			break;
 		case LEGACY_PATH:
 			break;
