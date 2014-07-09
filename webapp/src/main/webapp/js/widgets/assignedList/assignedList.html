@@ -45,7 +45,7 @@
 			<th style="width: 14%; padding: 5px;">Id</th>
 			<th style="width: 80%; padding: 5px;">Preferred Name</th>
 			<th style="width: 3%; padding: 5px;"><a title="Return All Work"
-				ng-click="openUnassignModal(currentUser)"><i
+				ng-click="openUnassignModal(currentUser, 'concepts')"><i
 					class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
 			</th>
 
@@ -153,7 +153,7 @@
 			<th style="width: 14%; padding: 5px;">Id</th>
 			<th style="width: 80%; padding: 5px;">Preferred Name</th>
 			<th style="width: 3%; padding: 5px;"><a title="Return All Work"
-				ng-click="openUnassignModal(currentUser)"><i
+				ng-click="openUnassignModal(currentUser, 'conflicts')"><i
 					class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
 					</a></th>
 
@@ -251,7 +251,7 @@
 			<th style="width: 14%; padding: 5px;">Id</th>
 			<th style="width: 80%; padding: 5px;">Preferred Name</th>
 			<th style="width: 3%; padding: 5px;"><a title="Return All Work"
-				ng-click="openUnassignModal(currentUser)"><i
+				ng-click="openUnassignModal(currentUser, 'review')"><i
 					class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
 					</a></th>
 
@@ -306,7 +306,7 @@
 	<tr>
 		<td style="padding: 5px;">View work assigned to:</td>
 		<td style="padding: 5px;"><select ng-model="mapUserViewed"
-			ng-options="mapUser as mapUser.name for mapUser in mapUsers"
+			ng-options="mapUser as mapUser.name for mapUser in mapUsers track by mapUser.name"
 			ng-change="retrieveAssignedWorkForUser(1, mapUserViewed.userName, queryAssignedForUser)">
 		</select></td>
 	</tr>
@@ -356,7 +356,7 @@
 			<th style="width: 60%; padding: 5px;">Preferred Name</th>
 			<th style="width: 25%; padding: 5px;">Last Modified</th>
 			<th style="width: 3%; padding: 5px;"><a title="Return All Work"
-				ng-click="openUnassignModal(mapUserViewed)"><i
+				ng-click="openUnassignModal(mapUserViewed, 'concepts')"><i
 					class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
 					</a></th>
 

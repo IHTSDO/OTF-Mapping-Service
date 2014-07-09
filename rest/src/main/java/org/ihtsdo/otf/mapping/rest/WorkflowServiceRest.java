@@ -738,7 +738,7 @@ public class WorkflowServiceRest {
 		Logger.getLogger(WorkflowServiceRest.class).info(
 				"RESTful call (Workflow): /unassign/project/id/"
 						+ mapProjectId.toString() + "/concept/id/" + terminologyId
-						+ "/user/id" + userName);
+						+ "/user/id/" + userName);
 		
 
 		try {
@@ -775,6 +775,69 @@ public class WorkflowServiceRest {
 			e.printStackTrace();
 			throw new WebApplicationException(Response.status(500).entity(
 					"Unexpected error trying to unassign work. Please contact the administrator.").build());
+		}
+	}
+	
+	/**
+	 * Unassign user from a specified batch of currently assigned work.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userName the user name
+	 * @param terminologyIds the terminology ids
+	 * @param authToken the auth token
+	 */
+	@POST
+	@Path("/unassign/project/id/{id}/user/id/{userName}/batch")
+	@ApiOperation(value = "Unassign user from specified batch of work.", notes = "Unassigns the user from a specified batch currently assigned work.")
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public void unassignWorkBatch(
+			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "List of terminology ids to be assigned", required = true) List<String> terminologyIds,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+		
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /unassign/project/id/"
+						+ mapProjectId.toString()
+						+ "/user/id/" + userName + "/all");
+		
+		try {
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to unassign all work.").build());
+			
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			MappingService mappingService = new MappingServiceJpa();
+			ContentService contentService = new ContentServiceJpa();
+
+			// get the project and user
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			MapUser mapUser = mappingService.getMapUser(userName);
+			
+			for (String terminologyId : terminologyIds) {
+				
+				Concept concept = contentService.getConcept(
+						terminologyId,
+						mapProject.getSourceTerminology(),
+						mapProject.getSourceTerminologyVersion());
+				
+				Logger.getLogger(WorkflowServiceRest.class).info("  Unassigning " + mapUser.getUserName() + " from concept " + terminologyId);
+				workflowService.processWorkflowAction(mapProject, concept, mapUser, null, WorkflowAction.UNASSIGN);
+			}
+		
+
+			mappingService.close();
+			workflowService.close();
+			contentService.close();
+		} catch (LocalException e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+		} catch (Exception e) { 
+			e.printStackTrace();
+			throw new WebApplicationException(Response.status(500).entity(
+					"Unexpected error trying to unassign all work. Please contact the administrator.").build());
 		}
 	}
 	 
@@ -856,7 +919,7 @@ public class WorkflowServiceRest {
 	}
 	
 	/**
- 	 * Unassign user from all currently assigned work.
+ 	 * Unassign user from all currently assigned, unedited work.
  	 *
  	 * @param mapProjectId the map project id
  	 * @param userName the user name

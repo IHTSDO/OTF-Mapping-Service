@@ -963,11 +963,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		
 		// add terms based on query restriction
 		switch (pfsParameter.getQueryRestriction()) {
-		case "NEW":
+		case "REVIEW_NEW":
 			full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEW_" + mapUser.getUserName();
 					
 			break;
-		case "EDITING_IN_PROGRESS":
+		case "REVIEW_IN_PROGRESS":
 			full_query += " AND userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_" + mapUser.getUserName();
 			break;
 		default:
@@ -1876,7 +1876,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 				// get the random lead
 				MapUser mapLead = getAssignableLead(leadTrackingRecords.get(0),
-						mapLeads);
+						new ArrayList<MapUser>(mapProject.getMapLeads()));
 
 				// if no user available, move to the next tracking record
 				if (mapLead == null) {
@@ -1928,13 +1928,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 					// get the available specialist for this tracking record
 					MapUser mapSpecialist = getAssignableSpecialist(trackingRecord,
-							mapSpecialists);
+							new ArrayList<MapUser>(mapProject.getMapSpecialists()));
 	
 					// if no user available, move to the next tracking record
 					if (mapSpecialist == null) {
 						Logger.getLogger(WorkflowServiceJpa.class).info(
 								"     No user available for assignment, removing concept");
 						conceptProcessed = true;
+						// increment the counter
+						nRecordsAssignedToSpecialist--; // will be incremented again at end of loop
 					} else {
 	
 						// assign the specialist to this concept
@@ -2026,7 +2028,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						
 				} while(conceptProcessed == false);
 
-				
 
 				// increment the counter
 				nRecordsAssignedToSpecialist++;
@@ -2069,13 +2070,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// discard any users already assigned to this record
 		for (MapUser mapUser : getMapUsersForTrackingRecord(trackingRecord)
 				.getMapUsers()) {
+			Logger.getLogger(WorkflowServiceJpa.class).info("  User already assigned: " + mapUser.getUserName());
 			mapUsers.remove(mapUser);
 		}
 
 		// if no assignable users, return null
-		if (mapUsers.size() == 0)
+		if (mapUsers.size() == 0) {
+			Logger.getLogger(WorkflowServiceJpa.class).info("  No users in set");
 			return null;
-
+		}
+		
 		// return a random user from the truncated list
 		Random rand = new Random();
 		return mapUsers.get(rand.nextInt(mapUsers.size()));
