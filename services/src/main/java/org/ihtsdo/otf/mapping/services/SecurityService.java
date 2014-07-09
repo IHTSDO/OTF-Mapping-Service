@@ -45,7 +45,7 @@ public interface SecurityService {
    * Returns the application role for token.
    * 
    * @param authToken the auth token
-   * @return TODO
+   * @return the map user role
    * @return the application role for token
    * @throws Exception the exception
    */
