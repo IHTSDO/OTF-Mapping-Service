@@ -317,7 +317,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 							"Content-Type": "application/json"
 						}
 					}).success(function(data) {
-						$scope.record = data;
 						$scope.recordSuccess = "Record saved.";
 						$scope.recordError = "";
 						
@@ -327,19 +326,19 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						if (!returnBack) {
 							console.debug("************* ReturnBack is false");
 
-							// construct a paging/filtering/sorting object
-							var pfsParameterObj = 
-							{"startIndex": 0,
-									"maxResults": 1, 
-									"sortField": 'sortKey',
-									"queryRestriction": null};  
-
 							$rootScope.glassPane++;
 							
 							// if specialist level work, query for assigned concepts
 							if ($scope.record.workflowStatus === 'NEW' 
 								|| $scope.record.workflowStatus === 'EDITING_IN_PROGRESS' 
 								|| $scope.record.workflowStatus === 'EDITING_DONE') {
+								
+								// construct a paging/filtering/sorting object
+								var pfsParameterObj = 
+								{"startIndex": 0,
+										"maxResults": 1, 
+										"sortField": 'sortKey',
+										"queryRestriction": 'NEW'};  
 
 								// get the assigned work list
 								$http({
@@ -377,6 +376,13 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 							// otherwise, if a conflict record, query available conflicts
 							} else if ($scope.record.workflowStatus === 'CONFLICT_NEW' || $scope.record.workflowStatus === 'CONFLICT_IN_PROGRESS') {
 								
+								// construct a paging/filtering/sorting object
+								var pfsParameterObj = 
+								{"startIndex": 0,
+										"maxResults": 1, 
+										"sortField": 'sortKey',
+										"queryRestriction": 'CONFLICT_NEW'};  
+								
 								// get the assigned conflicts
 								$http({
 									url: root_workflow + "project/id/" + $scope.project.id 
@@ -412,7 +418,15 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 								
 							// otherwise, if a review record, query available review work
 							} else if ($scope.record.workflowStatus === 'REVIEW_NEW' || $scope.record.workflowStatus === 'REVIEW_IN_PROGRESS') {
-								// get the assigned conflicts
+								
+								// construct a paging/filtering/sorting object
+								var pfsParameterObj = 
+								{"startIndex": 0,
+										"maxResults": 1, 
+										"sortField": 'sortKey',
+										"queryRestriction": 'REVIEW_NEW'}
+								;  
+								// get the assigned review work
 								$http({
 									url: root_workflow + "project/id/" + $scope.project.id 
 									+ "/user/id/" + $scope.user.userName
@@ -444,6 +458,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 								    $rootScope.glassPane--;
 								    $rootScope.handleHttpError(data, status, headers, config);
 								});
+							} else {
+								$rootScope.glassPane--;
+								console.debug("MapRecord finish/next can't determine type of work, returning to dashboard");
+								$location.path($scope.role + "/dash");
 							}
 
 						} else {
@@ -557,6 +575,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	// discard changes
 	$scope.cancelMapRecord = function() {
 
+		$rootScope.glassPane++;
 		$http({
 			url: root_workflow + "cancel",
 			dataType: "json",
@@ -569,12 +588,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 			// user has requested a cancel event, page is no longer "dirty"
 			$rootScope.currentPageDirty = false;
-			
-			
-			console.debug("Redirecting");
-			
+			$rootScope.glassPane--;
 			$location.path($scope.role + "/dash");
 		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 

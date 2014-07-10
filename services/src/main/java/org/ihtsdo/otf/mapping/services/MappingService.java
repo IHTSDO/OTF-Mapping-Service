@@ -27,7 +27,6 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-// TODO: Auto-generated Javadoc
 /**
  * Services for interacting with mapping objects.
  */
@@ -396,6 +395,7 @@ public interface MappingService {
 	 *            the terminology version
 	 * @param threshold
 	 *            the threshold
+	 * @param pfsParameter 
 	 * @return the unmapped descendants for concept
 	 * @throws Exception
 	 *             the exception
@@ -463,6 +463,7 @@ public interface MappingService {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param pfsParameter 
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
@@ -475,6 +476,7 @@ public interface MappingService {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param pfsParameter 
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
@@ -487,6 +489,7 @@ public interface MappingService {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param pfsParameter 
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
@@ -499,6 +502,7 @@ public interface MappingService {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param pfsParameter 
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
