@@ -65,7 +65,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Api(value = "/mapping", description = "Operations supporting Map objects.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @SuppressWarnings("static-method")
-public class MappingServiceRest {
+public class MappingServiceRest extends RootServiceRest {
 
 	private SecurityService securityService = new SecurityServiceJpa();
 	
@@ -116,13 +116,10 @@ public class MappingServiceRest {
 			});
 			mappingService.close();
 			return mapProjects;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve map projects. Please contact the administrator.").build());
+
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve map projects");
+			return null;
 		}
 	}
 	
@@ -168,13 +165,10 @@ public class MappingServiceRest {
 			mapProject.getPresetAgeRanges().size();
 			mappingService.close();
 			return mapProject;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve the map project. Please contact the administrator.").build());
+
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve the map project");
+			return null;
 		}
 	}
 	
@@ -211,15 +205,11 @@ public class MappingServiceRest {
 			mappingService.close();
 
 			return mp;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to add a map project. Please contact the administrator.").build());
-		}
 
+		} catch (Exception e) {
+			handleException(e, "trying to add a map project");
+			return null;
+		}
 	}
 	
 	/**
@@ -252,15 +242,10 @@ public class MappingServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapProject(mapProject);
 			mappingService.close();
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to update a map project. Please contact the administrator.").build());
-		}
 
+		} catch (Exception e) {
+			handleException(e, "trying to update a map project");
+		}
 	}
 	
 	/**
@@ -292,13 +277,9 @@ public class MappingServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.removeMapProject(mapProject.getId());
 			mappingService.close();
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to remove a map project. Please contact the administrator.").build());
+
+		} catch (Exception e) {
+			handleException(e, "trying to remove a map project");
 		}
 	}
 
@@ -335,13 +316,9 @@ public class MappingServiceRest {
 			mappingService.close();
 			return searchResultList;
 
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to find map projects. Please contact the administrator.").build());
+		} catch (Exception e) {
+			handleException(e, "trying to find map projects");
+			return null;
 		}
 	}
 
@@ -395,13 +372,10 @@ public class MappingServiceRest {
 			});
 			mappingService.close();
 			return mapProjects;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to get the map projects for a given user. Please contact the administrator.").build());
+
+		} catch (Exception e) {
+			handleException(e, "trying to get the map projects for a given user");
+			return null;
 		}
 	}
 
@@ -444,13 +418,10 @@ public class MappingServiceRest {
 			});
 			mappingService.close();
 			return mapLeads;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve the map users. Please contact the administrator.").build());
+
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve a concept");
+			return null;
 		}
 	}
 	
@@ -483,13 +454,10 @@ public class MappingServiceRest {
 			MapUser mapUser = mappingService.getMapUser(mapUserName);
 			mappingService.close();
 			return mapUser;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve a map user. Please contact the administrator.").build());
+
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve a map user");
+			return null;
 		}
 	}
 	
@@ -525,15 +493,11 @@ public class MappingServiceRest {
 			mappingService.addMapUser(mapUser);
 			mappingService.close();
 			return null;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to add a user. Please contact the administrator.").build());
-		}
 
+		} catch (Exception e) {
+			handleException(e, "trying to add a user");
+			return null;
+		}
 	}
 	
 	/**
@@ -565,13 +529,8 @@ public class MappingServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapUser(mapUser);
 			mappingService.close();
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to update a user. Please contact the administrator.").build());
+			handleException(e, "trying to update a user");
 		}
 	}
 
@@ -601,13 +560,8 @@ public class MappingServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.removeMapUser(mapUser.getId());
 			mappingService.close();
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to remove a user. Please contact the administrator.").build());
+			handleException(e, "trying to remove a user");
 		}
 	}
 	
@@ -653,13 +607,9 @@ public class MappingServiceRest {
 			});
 			mappingService.close();
 			return mapRelations;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to return the map relations. Please contact the administrator.").build());
+			handleException(e, "trying to return the map relations");
+			return null;
 		}
 	}
 	
@@ -700,13 +650,9 @@ public class MappingServiceRest {
 					.getMapPrinciple(mapPrincipleId);
 			mappingService.close();
 			return mapPrinciple;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve the map principle. Please contact the administrator.").build());
+			handleException(e, "trying to retrieve the map principle");
+			return null;
 		}
 	}
 	
@@ -743,13 +689,9 @@ public class MappingServiceRest {
 					.addMapPrinciple(mapPrinciple);
 			mappingService.close();
 			return result;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to add a map principle. Please contact the administrator.").build());
+			handleException(e, "trying to add a map principle");
+			return null;
 		}
 
 	}
@@ -784,13 +726,8 @@ public class MappingServiceRest {
 			mappingService.updateMapPrinciple(mapPrinciple);
 			mappingService.close();
 
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to update a map principle. Please contact the administrator.").build());
+			handleException(e, "trying to update a map principle");
 		}
 	}
 	
@@ -821,13 +758,8 @@ public class MappingServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.removeMapPrinciple(principle.getId());
 			mappingService.close();
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to remove a map principle. Please contact the administrator.").build());
+			handleException(e, "trying to remove a map principle");
 		}
 	}
 	
@@ -865,13 +797,9 @@ public class MappingServiceRest {
 					.getMapUserPreferences(userName);
 			mappingService.close();
 			return result;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve the map user preferences. Please contact the administrator.").build());
+			handleException(e, "trying to retrieve the map user preferences");
+			return null;
 		}
 	}
 	
@@ -908,13 +836,9 @@ public class MappingServiceRest {
 					.addMapUserPreferences(mapUserPreferences);
 			mappingService.close();
 			return result;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to add map user preferences. Please contact the administrator.").build());
+			handleException(e, "trying to add map user preferences");
+			return null;
 		}
 
 	}
@@ -950,13 +874,8 @@ public class MappingServiceRest {
 			mappingService.updateMapUserPreferences(mapUserPreferences);
 			mappingService.close();
 
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to update map user preferences. Please contact the administrator.").build());
+			handleException(e, "trying to update map user preferences");
 		}
 
 	}
@@ -989,13 +908,8 @@ public class MappingServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.removeMapUserPreferences(mapUserPreferences.getId());
 			mappingService.close();
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to remove map user preferences. Please contact the administrator.").build());
+			handleException(e, "trying to remove map user preferences");
 		}
 	}
 	
@@ -1036,13 +950,9 @@ public class MappingServiceRest {
 						"User does not have permissions to retrieve the map record.").build());
 			
 			return mapRecord;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve the map record. Please contact the administrator.").build());
+			handleException(e, "trying to retrieve the map record");
+			return null;
 		}
 	}
 
@@ -1078,13 +988,9 @@ public class MappingServiceRest {
 			MapRecord result = mappingService.addMapRecord(mapRecord);
 			mappingService.close();
 			return result;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to add a map record. Please contact the administrator.").build());
+			handleException(e, "trying to add a map record");
+			return null;
 		}
 	}
 	
@@ -1118,13 +1024,8 @@ public class MappingServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.updateMapRecord(mapRecord);
 			mappingService.close();
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to update the map record. Please contact the administrator.").build());
+			handleException(e, "trying to update the map record");
 		}
 	}
 	
@@ -1160,13 +1061,9 @@ public class MappingServiceRest {
 			mappingService.removeMapRecord(mapRecord.getId());
 			mappingService.close();
 			return null;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to delete the map record. Please contact the administrator.").build());
+			handleException(e, "trying to delete the map record");
+			return null;
 		}
 	}
 
@@ -1204,13 +1101,9 @@ public class MappingServiceRest {
 					.getMapRecordsForConcept(conceptId);
 			mappingService.close();
 			return mapRecordList;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to find records by the given concept id. Please contact the administrator.").build());
+			handleException(e, "trying to find records by the given concept id");
+			return null;
 		}
 	}
 
@@ -1262,13 +1155,9 @@ public class MappingServiceRest {
 					.getPublishedAndReadyForPublicationMapRecordsForMapProject(mapProjectId, pfsParameter);
 			mappingService.close();
 			return mapRecordList;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve the map records for a map project. Please contact the administrator.").build());
+			handleException(e, "trying to retrieve the map records for a map project");
+			return null;
 		}
 
 	}
@@ -1309,13 +1198,9 @@ public class MappingServiceRest {
 					.getMapRecordRevisions(mapRecordId);
 			mappingService.close();
 			return revisions;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve the map record revisions. Please contact the administrator.").build());
+			handleException(e, "trying to retrieve the map record revisions");
+			return null;
 		}
 
 	}
@@ -1376,13 +1261,9 @@ public class MappingServiceRest {
 			mappingService.close();
 			return mapRelation;
 			
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to compute the map relation. Please contact the administrator.").build());
+			handleException(e, "trying to compute the map relations");
+			return null;
 		}
 	}
 	
@@ -1429,13 +1310,9 @@ public class MappingServiceRest {
 			mappingService.close();
 			return mapAdviceList;
 			
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to compute the map advice. Please contact the administrator.").build());
+			handleException(e, "trying to compute the map advice");
+			return null;
 		}
 	}
 
@@ -1468,13 +1345,9 @@ public class MappingServiceRest {
 					.getMapUserRoleForMapProject(userName, mapProjectId);
 			mappingService.close();
 			return mapUserRole;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to get the map user role for a map project. Please contact the administrator.").build());
+			handleException(e, "trying to get the map user role for a map project");
+			return null;
 		}
 	}
 	
@@ -1532,13 +1405,9 @@ public class MappingServiceRest {
 			mappingService.close();
 			return results;
 
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve unmapped descendants for a concept. Please contact the administrator.").build());
+			handleException(e, "trying to retrieve unmapped descendants for a concept");
+			return null;
 		}
 	}
 	
@@ -1605,13 +1474,9 @@ public class MappingServiceRest {
 			TreePositionListJpa treePositionList = new TreePositionListJpa();
 			treePositionList.setTreePositions(treePositions);
 			return treePositionList;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to get the tree positions with descendants. Please contact the administrator.").build());
+			handleException(e, "trying to get the tree positions with descendants");
+			return null;
 		}
 	}
 
@@ -1667,13 +1532,9 @@ public class MappingServiceRest {
 			TreePositionListJpa treePositionList = new TreePositionListJpa();
 			treePositionList.setTreePositions(treePositions);
 			return treePositionList;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to get the root tree positions for a terminology. Please contact the administrator.").build());
+			handleException(e, "trying to get the root tree positions for a terminology");
+			return null;
 		}
 	}
 
@@ -1734,13 +1595,9 @@ public class MappingServiceRest {
 			treePositionList.setTreePositions(treePositions);
 			return treePositionList;
 
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to get the tree position graphs for a query. Please contact the administrator.").build());
+			handleException(e, "trying to get the tree position graphs for a query");
+			return null;
 		}
 	}
 
@@ -1789,13 +1646,9 @@ public class MappingServiceRest {
 							userName, pfsParameter);
 			mappingService.close();
 			return recordList;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to get the recently edited map records. Please contact the administrator.").build());
+			handleException(e, "trying to get the recently edited map records");
+			return null;
 		}
 	}
 	
@@ -1836,14 +1689,10 @@ public class MappingServiceRest {
 		  mappingService.close();
 
 		  return records;
-	  } catch (LocalException e) { 
-	  	e.printStackTrace();
-	  	throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-	  } catch (Exception e) { 
-	  	e.printStackTrace();
-	  	throw new WebApplicationException(Response.status(500).entity(
-				"Unexpected error trying to save work. Please contact the administrator.").build());
-	  }
+		} catch (Exception e) { 
+			handleException(e, "trying to save work");
+			return null;
+		}
 
 	}
 	
@@ -1895,13 +1744,9 @@ public class MappingServiceRest {
 					.validateRecord(mapRecord);
 			mappingService.close();
 			return validationResult;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to validate a map record. Please contact the administrator.").build());
+			handleException(e, "trying to validate a map record");
+			return null;
 		}
 	}
 
@@ -1952,13 +1797,9 @@ public class MappingServiceRest {
 			mappingService.close();
 			return validationResult;
 
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to compare map records. Please contact the administrator.").build());
+			handleException(e, "trying to compare map records");
+			return null;
 		}
 	}
 
