@@ -127,6 +127,10 @@
       <groupId>com.wordnik</groupId>
       <artifactId>swagger-jersey-jaxrs_2.10</artifactId>
     </dependency>
+      <dependency>
+        <groupId>com.sun.mail</groupId>
+        <artifactId>javax.mail</artifactId>
+      </dependency>
   </dependencies>
 
   <!-- Always build, use dev configuration by default -->
