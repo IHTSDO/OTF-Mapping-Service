@@ -31,10 +31,23 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
+import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Description;
+import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
+import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
+import org.ihtsdo.otf.mapping.rf2.jpa.AttributeValueRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
@@ -93,8 +106,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * org.ihtsdo.otf.mapping.services.ContentService#getConcept(java.lang.Long)
 	 */
 	@Override
-	public Concept getConcept(Long terminologyId) throws Exception {
-		Concept c = manager.find(ConceptJpa.class, terminologyId);
+	public Concept getConcept(Long id) throws Exception {
+		Concept c = manager.find(ConceptJpa.class, id);
 		return c;
 	}
 
@@ -185,6 +198,701 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getDescription(java.lang.Long)
+	 */
+	@Override
+	public Description getDescription(Long id) throws Exception {
+		Description c = manager.find(DescriptionJpa.class, id);
+		return c;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Description getDescription(String terminologyId, String terminology,
+			String terminologyVersion) throws Exception {
+		javax.persistence.Query query = manager
+				.createQuery("select c from DescriptionJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		/*
+		 * Try to retrieve the single expected result If zero or more than one
+		 * result are returned, log error and set result to null
+		 */
+		try {
+			query.setParameter("terminologyId", terminologyId);
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+			Description c = (Description) query.getSingleResult();
+			return c;
+		} catch (NoResultException e) {
+			return null;
+			/*throw new LocalException(
+					"Description query for terminologyId = "
+							+ terminologyId + ", terminology = " + terminology
+							+ ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!", e);*/
+		}
+	}
+
+
+	@Override
+	public Description addDescription(Description description) throws Exception {
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(description);
+			tx.commit();
+		} else {
+			manager.persist(description);
+		}
+
+		return description;
+	}
+	
+	@Override
+	public void updateDescription(Description description) throws Exception {
+
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.merge(description);
+			tx.commit();
+		} else {
+			manager.merge(description);
+		}
+
+	}
+	
+	@Override
+	public void removeDescription(Description description) throws Exception {
+
+		tx = manager.getTransaction();
+
+		// retrieve this map specialist
+		Description mu = manager.find(DescriptionJpa.class, description.getId());
+
+
+		if (getTransactionPerOperation()) {
+
+			// remove specialist
+			tx.begin();
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+			tx.commit();
+
+		} else {
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+		}
+
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getRelationship(java.lang.Long)
+	 */
+	@Override
+	public Relationship getRelationship(Long id) throws Exception {
+		Relationship c = manager.find(RelationshipJpa.class, id);
+		return c;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Relationship getRelationship(String terminologyId, String terminology,
+			String terminologyVersion) throws Exception {
+		javax.persistence.Query query = manager
+				.createQuery("select c from RelationshipJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		/*
+		 * Try to retrieve the single expected result If zero or more than one
+		 * result are returned, log error and set result to null
+		 */
+		try {
+			query.setParameter("terminologyId", terminologyId);
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+			Relationship c = (Relationship) query.getSingleResult();
+			return c;
+		} catch (NoResultException e) {
+			return null;
+			/*throw new LocalException(
+					"Relationship query for terminologyId = "
+							+ terminologyId + ", terminology = " + terminology
+							+ ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!", e);*/
+		}
+	}
+
+
+	@Override
+	public Relationship addRelationship(Relationship relationship) throws Exception {
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(relationship);
+			tx.commit();
+		} else {
+			manager.persist(relationship);
+		}
+
+		return relationship;
+	}
+	
+	@Override
+	public void updateRelationship(Relationship relationship) throws Exception {
+
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.merge(relationship);
+			tx.commit();
+		} else {
+			manager.merge(relationship);
+		}
+
+	}
+	
+	@Override
+	public void removeRelationship(Relationship relationship) throws Exception {
+
+		tx = manager.getTransaction();
+
+		// retrieve this map specialist
+		Relationship mu = manager.find(RelationshipJpa.class, relationship.getId());
+
+
+		if (getTransactionPerOperation()) {
+
+			// remove specialist
+			tx.begin();
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+			tx.commit();
+
+		} else {
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+		}
+
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getAttributeValueRefSetMember(java.lang.Long)
+	 */
+	@Override
+	public AttributeValueRefSetMember getAttributeValueRefSetMember(Long id) throws Exception {
+		AttributeValueRefSetMember c = manager.find(AttributeValueRefSetMemberJpa.class, id);
+		return c;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public AttributeValueRefSetMember getAttributeValueRefSetMember(String terminologyId, String terminology,
+			String terminologyVersion) throws Exception {
+		javax.persistence.Query query = manager
+				.createQuery("select c from AttributeValueRefSetMemberJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		/*
+		 * Try to retrieve the single expected result If zero or more than one
+		 * result are returned, log error and set result to null
+		 */
+		try {
+			query.setParameter("terminologyId", terminologyId);
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+			AttributeValueRefSetMember c = (AttributeValueRefSetMember) query.getSingleResult();
+			return c;
+		} catch (NoResultException e) {
+			return null;
+			/*throw new LocalException(
+					"AttributeValueRefSetMember query for terminologyId = "
+							+ terminologyId + ", terminology = " + terminology
+							+ ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!", e);*/
+		}
+	}
+
+
+	@Override
+	public AttributeValueRefSetMember addAttributeValueRefSetMember(AttributeValueRefSetMember attributeValueRefSetMember) throws Exception {
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(attributeValueRefSetMember);
+			tx.commit();
+		} else {
+			manager.persist(attributeValueRefSetMember);
+		}
+
+		return attributeValueRefSetMember;
+	}
+	
+	@Override
+	public void updateAttributeValueRefSetMember(AttributeValueRefSetMember attributeValueRefSetMember) throws Exception {
+
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.merge(attributeValueRefSetMember);
+			tx.commit();
+		} else {
+			manager.merge(attributeValueRefSetMember);
+		}
+
+	}
+	
+	@Override
+	public void removeAttributeValueRefSetMember(AttributeValueRefSetMember attributeValueRefSetMember) throws Exception {
+
+		tx = manager.getTransaction();
+
+		// retrieve this map specialist
+		AttributeValueRefSetMember mu = manager.find(AttributeValueRefSetMemberJpa.class, attributeValueRefSetMember.getId());
+
+
+		if (getTransactionPerOperation()) {
+
+			// remove specialist
+			tx.begin();
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+			tx.commit();
+
+		} else {
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+		}
+
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getComplexMapRefSetMember(java.lang.Long)
+	 */
+	@Override
+	public ComplexMapRefSetMember getComplexMapRefSetMember(Long id) throws Exception {
+		ComplexMapRefSetMember c = manager.find(ComplexMapRefSetMemberJpa.class, id);
+		return c;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ComplexMapRefSetMember getComplexMapRefSetMember(String terminologyId, String terminology,
+			String terminologyVersion) throws Exception {
+		javax.persistence.Query query = manager
+				.createQuery("select c from ComplexMapRefSetMemberJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		/*
+		 * Try to retrieve the single expected result If zero or more than one
+		 * result are returned, log error and set result to null
+		 */
+		try {
+			query.setParameter("terminologyId", terminologyId);
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+			ComplexMapRefSetMember c = (ComplexMapRefSetMember) query.getSingleResult();
+			return c;
+		} catch (NoResultException e) {
+			return null;
+			/*throw new LocalException(
+					"ComplexMapRefSetMember query for terminologyId = "
+							+ terminologyId + ", terminology = " + terminology
+							+ ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!", e);*/
+		}
+	}
+
+
+	@Override
+	public ComplexMapRefSetMember addComplexMapRefSetMember(ComplexMapRefSetMember complexMapRefSetMember) throws Exception {
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(complexMapRefSetMember);
+			tx.commit();
+		} else {
+			manager.persist(complexMapRefSetMember);
+		}
+
+		return complexMapRefSetMember;
+	}
+	
+	@Override
+	public void updateComplexMapRefSetMember(ComplexMapRefSetMember complexMapRefSetMember) throws Exception {
+
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.merge(complexMapRefSetMember);
+			tx.commit();
+		} else {
+			manager.merge(complexMapRefSetMember);
+		}
+
+	}
+	
+	@Override
+	public void removeComplexMapRefSetMember(ComplexMapRefSetMember complexMapRefSetMember) throws Exception {
+
+		tx = manager.getTransaction();
+
+		// retrieve this map specialist
+		ComplexMapRefSetMember mu = manager.find(ComplexMapRefSetMemberJpa.class, complexMapRefSetMember.getId());
+
+
+		if (getTransactionPerOperation()) {
+
+			// remove specialist
+			tx.begin();
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+			tx.commit();
+
+		} else {
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+		}
+
+	}
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getLanguageRefSetMember(java.lang.Long)
+	 */
+	@Override
+	public LanguageRefSetMember getLanguageRefSetMember(Long id) throws Exception {
+		LanguageRefSetMember c = manager.find(LanguageRefSetMemberJpa.class, id);
+		return c;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public LanguageRefSetMember getLanguageRefSetMember(String terminologyId, String terminology,
+			String terminologyVersion) throws Exception {
+		javax.persistence.Query query = manager
+				.createQuery("select c from LanguageRefSetMemberJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		/*
+		 * Try to retrieve the single expected result If zero or more than one
+		 * result are returned, log error and set result to null
+		 */
+		try {
+			query.setParameter("terminologyId", terminologyId);
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+			LanguageRefSetMember c = (LanguageRefSetMember) query.getSingleResult();
+			return c;
+		} catch (NoResultException e) {
+			return null;
+			/*throw new LocalException(
+					"LanguageRefSetMember query for terminologyId = "
+							+ terminologyId + ", terminology = " + terminology
+							+ ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!", e);*/
+		}
+	}
+
+
+	@Override
+	public LanguageRefSetMember addLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) throws Exception {
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(languageRefSetMember);
+			tx.commit();
+		} else {
+			manager.persist(languageRefSetMember);
+		}
+
+		return languageRefSetMember;
+	}
+	
+	@Override
+	public void updateLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) throws Exception {
+
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.merge(languageRefSetMember);
+			tx.commit();
+		} else {
+			manager.merge(languageRefSetMember);
+		}
+
+	}
+	
+	@Override
+	public void removeLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) throws Exception {
+
+		tx = manager.getTransaction();
+
+		// retrieve this map specialist
+		LanguageRefSetMember mu = manager.find(LanguageRefSetMemberJpa.class, languageRefSetMember.getId());
+
+
+		if (getTransactionPerOperation()) {
+
+			// remove specialist
+			tx.begin();
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+			tx.commit();
+
+		} else {
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+		}
+
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getSimpleMapRefSetMember(java.lang.Long)
+	 */
+	@Override
+	public SimpleMapRefSetMember getSimpleMapRefSetMember(Long id) throws Exception {
+		SimpleMapRefSetMember c = manager.find(SimpleMapRefSetMemberJpa.class, id);
+		return c;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public SimpleMapRefSetMember getSimpleMapRefSetMember(String terminologyId, String terminology,
+			String terminologyVersion) throws Exception {
+		javax.persistence.Query query = manager
+				.createQuery("select c from SimpleMapRefSetMemberJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		/*
+		 * Try to retrieve the single expected result If zero or more than one
+		 * result are returned, log error and set result to null
+		 */
+		try {
+			query.setParameter("terminologyId", terminologyId);
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+			SimpleMapRefSetMember c = (SimpleMapRefSetMember) query.getSingleResult();
+			return c;
+		} catch (NoResultException e) {
+			return null;
+			/*throw new LocalException(
+					"SimpleMapRefSetMember query for terminologyId = "
+							+ terminologyId + ", terminology = " + terminology
+							+ ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!", e);*/
+		}
+	}
+
+
+	@Override
+	public SimpleMapRefSetMember addSimpleMapRefSetMember(SimpleMapRefSetMember simpleMapRefSetMember) throws Exception {
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(simpleMapRefSetMember);
+			tx.commit();
+		} else {
+			manager.persist(simpleMapRefSetMember);
+		}
+
+		return simpleMapRefSetMember;
+	}
+	
+	@Override
+	public void updateSimpleMapRefSetMember(SimpleMapRefSetMember simpleMapRefSetMember) throws Exception {
+
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.merge(simpleMapRefSetMember);
+			tx.commit();
+		} else {
+			manager.merge(simpleMapRefSetMember);
+		}
+
+	}
+	
+	@Override
+	public void removeSimpleMapRefSetMember(SimpleMapRefSetMember simpleMapRefSetMember) throws Exception {
+
+		tx = manager.getTransaction();
+
+		// retrieve this map specialist
+		SimpleMapRefSetMember mu = manager.find(SimpleMapRefSetMemberJpa.class, simpleMapRefSetMember.getId());
+
+
+		if (getTransactionPerOperation()) {
+
+			// remove specialist
+			tx.begin();
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+			tx.commit();
+
+		} else {
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+		}
+
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ContentService#getSimpleRefSetMember(java.lang.Long)
+	 */
+	@Override
+	public SimpleRefSetMember getSimpleRefSetMember(Long id) throws Exception {
+		SimpleRefSetMember c = manager.find(SimpleRefSetMemberJpa.class, id);
+		return c;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public SimpleRefSetMember getSimpleRefSetMember(String terminologyId, String terminology,
+			String terminologyVersion) throws Exception {
+		javax.persistence.Query query = manager
+				.createQuery("select c from SimpleRefSetMemberJpa c where terminologyId = :terminologyId and terminologyVersion = :terminologyVersion and terminology = :terminology");
+		/*
+		 * Try to retrieve the single expected result If zero or more than one
+		 * result are returned, log error and set result to null
+		 */
+		try {
+			query.setParameter("terminologyId", terminologyId);
+			query.setParameter("terminology", terminology);
+			query.setParameter("terminologyVersion", terminologyVersion);
+			SimpleRefSetMember c = (SimpleRefSetMember) query.getSingleResult();
+			return c;
+		} catch (NoResultException e) {
+			return null;
+			/*throw new LocalException(
+					"SimpleRefSetMember query for terminologyId = "
+							+ terminologyId + ", terminology = " + terminology
+							+ ", terminologyVersion = " + terminologyVersion
+							+ " returned no results!", e);*/
+		}
+	}
+
+
+	@Override
+	public SimpleRefSetMember addSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember) throws Exception {
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(simpleRefSetMember);
+			tx.commit();
+		} else {
+			manager.persist(simpleRefSetMember);
+		}
+
+		return simpleRefSetMember;
+	}
+	
+	@Override
+	public void updateSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember) throws Exception {
+
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.merge(simpleRefSetMember);
+			tx.commit();
+		} else {
+			manager.merge(simpleRefSetMember);
+		}
+
+	}
+	
+	@Override
+	public void removeSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember) throws Exception {
+
+		tx = manager.getTransaction();
+
+		// retrieve this map specialist
+		SimpleRefSetMember mu = manager.find(SimpleRefSetMemberJpa.class, simpleRefSetMember.getId());
+
+
+		if (getTransactionPerOperation()) {
+
+			// remove specialist
+			tx.begin();
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+			tx.commit();
+
+		} else {
+			if (manager.contains(mu)) {
+				manager.remove(mu);
+			} else {
+				manager.remove(manager.merge(mu));
+			}
+		}
+
+	}
+	
+
 	/*
 	 * (non-Javadoc)
 	 * 
