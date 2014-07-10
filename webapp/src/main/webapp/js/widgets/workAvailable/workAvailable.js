@@ -329,7 +329,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			}	
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
-			$rootScope.$broadcast('workAvailableWidget.notification.assignWork', { assignUser: mapUser.userName, assignType: workType});
+			$rootScope.$broadcast('workAvailableWidget.notification.assignWork', { assignUser: mapUser, assignType: workType});
 			
 			if (workType == 'concept') {
 				$scope.retrieveAvailableWork($scope.trackingRecordPage, query);
@@ -435,7 +435,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 				  	$rootScope.glassPane--;
 
 				  	// notify other widgets of work assignment
-					$rootScope.$broadcast('workAvailableWidget.notification.assignWork', {assignUser: mapUser.userName, assignType: 'concept'});
+					$rootScope.$broadcast('workAvailableWidget.notification.assignWork', {assignUser: mapUser, assignType: 'concept'});
 					
 					// refresh the available work list
 					$scope.retrieveAvailableWork(1, query, mapUser);				
