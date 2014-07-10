@@ -255,7 +255,8 @@ public class MapEntryJpa implements MapEntry {
   @XmlElement(type = MapAdviceJpa.class, name = "mapAdvice")
   @Override
   public Set<MapAdvice> getMapAdvices() {
-    return mapAdvices;
+	  if (mapAdvices == null) mapAdvices = new HashSet<>();// ensures proper serialization
+	  return mapAdvices;
   }
 
   /*
