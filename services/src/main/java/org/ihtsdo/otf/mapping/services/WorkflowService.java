@@ -14,7 +14,6 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
 /**
  * Represents a service for answering questions and performing actions related
  * to workflow management.

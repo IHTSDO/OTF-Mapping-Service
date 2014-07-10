@@ -61,8 +61,7 @@
       </td>
     </tr>
 
-    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
-    <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'"> -->
+    <tr ng-show="project.ruleBased == false">
       <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation
           Id</strong></td>
       <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.terminologyId}}
@@ -71,15 +70,14 @@
       </td>
     </tr>
 
-    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
-    <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'"> -->
+    <tr ng-show="project.ruleBased == false"">
       <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation
           Name</strong></td>
       <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.name}}</td>
 
     </tr>
 
-    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
+    <tr ng-show="project.ruleBased == true && allowableMapRelations.length > 0">
     <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length > 0">
      -->  <td style="vertical-align: top; padding: 5px; width: 50px;">Select</td>
       <td style="vertical-align: top; padding: 5px;"><select
