@@ -894,13 +894,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		MapUser user = getMapUser(userName);
 
 		AuditReader reader = AuditReaderFactory.get(manager);
-		
+        PfsParameter localPfsParameter = pfsParameter;
+
 		// if no pfsParameter supplied, construct a default one
-		if (pfsParameter == null) pfsParameter = new PfsParameterJpa();
+		if (localPfsParameter == null) localPfsParameter = new PfsParameterJpa();
 		
 		// split the query restrictions
-		if (pfsParameter.getQueryRestriction() != null) {
-			
+		if (localPfsParameter.getQueryRestriction() != null) {
+			// do nothing
 		}
 
 		// construct the query
@@ -919,17 +920,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					WorkflowStatus.NEW));
 
 		// if sort field specified
-		if (pfsParameter.getSortField() != null) {
-			query.addOrder(AuditEntity.property(pfsParameter.getSortField()).asc());
+		if (localPfsParameter.getSortField() != null) {
+			query.addOrder(AuditEntity.property(localPfsParameter.getSortField()).asc());
 		// otherwise, sort by last modified (descending)
 		} else {
 			query.addOrder(AuditEntity.property("lastModified").desc());
 		}
 		// if paging request supplied, set first result and max results
-		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+		if (localPfsParameter.getStartIndex() != -1 && localPfsParameter.getMaxResults() != -1) {
 			query
-				.setFirstResult(pfsParameter.getStartIndex())
-				.setMaxResults(pfsParameter.getMaxResults());
+				.setFirstResult(localPfsParameter.getStartIndex())
+				.setMaxResults(localPfsParameter.getMaxResults());
 			
 		
 		}
@@ -1008,7 +1009,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				.setParameter("mapProjectId", mapProjectId);
 		MapRecordList mapRecordList = new MapRecordListJpa();
 		mapRecordList.setMapRecords(query.getResultList());
-		// TODO: handleMapRecordLazyInitialization(mapRecord);
 		return mapRecordList;
 	}
 
@@ -2765,6 +2765,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	public TreePositionList setTreePositionValidCodes(
 			List<TreePosition> treePositions, Long mapProjectId)
 			throws Exception {
+		
+		Logger.getLogger(MappingServiceJpa.class).info("Setting tree position valid codes");
 
 		// get the map project and its algorithm handler
 		MapProject mapProject = getMapProject(mapProjectId);

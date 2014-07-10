@@ -219,9 +219,6 @@ DefaultProjectSpecificAlgorithmHandler {
 		return mapAdviceList;
 	}
 
-
-	// TODO Implement this in the validation routines for checking target codes
-	// i.e. that routine should call this
 	@Override
 	public boolean isTargetCodeValid(String terminologyId) throws Exception {
 
