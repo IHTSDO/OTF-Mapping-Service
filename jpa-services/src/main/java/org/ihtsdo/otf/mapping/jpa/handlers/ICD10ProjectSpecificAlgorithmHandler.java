@@ -170,7 +170,7 @@ DefaultProjectSpecificAlgorithmHandler {
 				}
 			}
 			if (!adviceFound)
-				throw new LocalException ("Advice was not found in mapProject " + mapProject.getName() + 
+				throw new Exception ("Advice was not found in mapProject " + mapProject.getName() + 
 						" that matches mapRelation " + mapEntry.getMapRelation().getName() + ":" +
 						mapEntry.getMapRelation().getTerminologyId());
 		}
