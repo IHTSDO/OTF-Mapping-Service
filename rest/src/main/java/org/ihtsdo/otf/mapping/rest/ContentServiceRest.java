@@ -12,7 +12,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
@@ -33,13 +32,15 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
+
+
 /**
  * REST implementation for content service
  */
 @Path("/content")
 @Api(value = "/content", description = "Operations to retrieve RF2 content.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-public class ContentServiceRest {
+public class ContentServiceRest extends RootServiceRest {
 
 	/** The security service. */
 	private SecurityService securityService = new SecurityServiceJpa();
@@ -101,13 +102,9 @@ public class ContentServiceRest {
 
 			contentService.close();
 			return c;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
 		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve a concept. Please contact the administrator.").build());
+			handleException(e, "trying to retrieve a concept");
+			return null;
 		}
 
 	}
@@ -155,15 +152,11 @@ public class ContentServiceRest {
 			metadataService.close();
 			contentService.close();
 			return c;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to retrieve the latest version concept. Please contact the administrator.").build());
-		}
 
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve the latest version concept");
+			return null;
+		}
 	}
 
 	/**
@@ -193,17 +186,15 @@ public class ContentServiceRest {
 			
   		
 			ContentService contentService = new ContentServiceJpa();
-			SearchResultList sr = contentService.findConceptsForQuery(
-					searchString, new PfsParameterJpa());
+			SearchResultList sr =
+					contentService.findConceptsForQuery(searchString,
+							new PfsParameterJpa());
 			contentService.close();
 			return sr;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to find the concepts by query. Please contact the administrator.").build());
+
+		} catch (Exception e) {
+			handleException(e, "trying to find the concepts by query");
+			return null;
 		}
 	}
 
@@ -251,13 +242,10 @@ public class ContentServiceRest {
 
 			contentService.close();
 			return results;
-		} catch (LocalException e) {
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to find descendant concepts. Please contact the administrator.").build());
+
+		} catch (Exception e) {
+			handleException(e, "trying to find descendant concepts");
+			return null;
 		}
 	}
 
@@ -342,13 +330,10 @@ public class ContentServiceRest {
 			metadataService.close();
 			contentService.close();
 			return results;
-		} catch (LocalException e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		} catch (Exception e) { 
-			e.printStackTrace();
-			throw new WebApplicationException(Response.status(500).entity(
-					"Unexpected error trying to find the child concepts. Please contact the administrator.").build());
+
+		} catch (Exception e) {
+			handleException(e, "trying to find the child concepts");
+			return null;
 		}
 	}
 
