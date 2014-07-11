@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
@@ -55,16 +54,6 @@ import org.ihtsdo.otf.mapping.services.ContentService;
  * The Content Services for the Jpa model.
  */
 public class ContentServiceJpa extends RootServiceJpa implements ContentService {
-
-	/** The manager. */
-	private EntityManager manager;
-
-	/** The transaction per operation. */
-	private boolean transactionPerOperation = true;
-	
-	/** The transaction entity. */
-	private EntityTransaction tx;
-
 	
     /**  The compute tree position total count. */
     int computeTreePositionTotalCount;
@@ -82,9 +71,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	public ContentServiceJpa() throws Exception {
 		super();
-
-		// create on each instantiation
-		manager = factory.createEntityManager();
 	}
 
 	/*
@@ -92,12 +78,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * 
 	 * @see org.ihtsdo.otf.mapping.services.ContentService#close()
 	 */
-	@Override
-	public void close() throws Exception {
-		if (manager.isOpen()) {
-			manager.close();
-		}
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -1315,30 +1295,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.ContentService#getTransactionPerOperation
-	 * ()
-	 */
-	@Override
-	public boolean getTransactionPerOperation() throws Exception {
-		return transactionPerOperation;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.ContentService#setTransactionPerOperation
-	 * (boolean)
-	 */
-	@Override
-	public void setTransactionPerOperation(boolean transactionPerOperation)
-			throws Exception {
-		this.transactionPerOperation = transactionPerOperation;
-	}
+	
 
 	/*
 	 * (non-Javadoc)
@@ -1812,5 +1769,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return full_query;
 
 	}
+	
 	
 }
