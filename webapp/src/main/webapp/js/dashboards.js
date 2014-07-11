@@ -380,7 +380,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 
 		console.debug("Setting the default dashboard based on role: " + $scope.currentRole);
 
-		$scope.page = 'Dashboard';
+		$scope.page = 'mainDashboard';
 
 		/**
 		 * Viewer has the following widgets:
@@ -758,7 +758,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 	};
 
 	function setDefaultModel() {
-		$scope.page = 'EditingDashboard';
+		$scope.page = 'editDashboard';
 		console.debug("Setting record dashboard model");
 		console.debug($scope.model);
 
@@ -942,7 +942,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function ($roo
 
 		console.debug("Setting the dashboard based on role: " + $scope.currentRole);
 
-		$scope.page = 'Dashboard';
+		$scope.page = 'projectDetailsDashboard';
 		$scope.model = {
 
 					structure: "12/6-6/12",
@@ -1067,7 +1067,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function ($roo
 
 		console.debug("Setting the dashboard based on role: " + $scope.currentRole);
 
-		$scope.page = 'Dashboard';
+		$scope.page = 'projectRecordsDashboard';
 		$scope.model = {
 
 					structure: "12/6-6/12",
