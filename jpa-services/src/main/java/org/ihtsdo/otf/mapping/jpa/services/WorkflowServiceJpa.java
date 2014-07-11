@@ -1164,7 +1164,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						trackingRecord, mapRecords, mapRecord, mapUser);
 			} else {
 				
-				throw new LocalException("Assignment from published record failed -- concept already in workflow");
+				throw new Exception("Assignment from published record failed -- concept already in workflow");
 			
 			}
 
