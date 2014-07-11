@@ -53,6 +53,10 @@ public abstract class AbstractComponent implements Component {
   @Column(nullable = false)
   private String terminologyVersion;
 
+  /** Generalized field for any additional value that needs to be attached to a component */
+  @Column(nullable = true, length=4000)
+  private String label;
+
   /**
    * {@inheritDoc}
    */
@@ -213,5 +217,25 @@ public abstract class AbstractComponent implements Component {
         + this.getTerminologyId() + "," + this.getTerminologyVersion() + ","
         + this.getEffectiveTime() + "," + this.isActive() + ","
         + this.getModuleId(); // end of basic component fields
+  }
+
+  /**
+   * Returns the label.
+   *
+   * @return the label
+   */
+  @Override
+  public String getLabel() {
+    return label;
+  }
+
+  /**
+   * Sets the label.
+   *
+   * @param label the label to set
+   */
+  @Override
+  public void setLabel(String label) {
+    this.label = label;
   }
 }
