@@ -154,10 +154,12 @@
 	<!--  tinymce text area -->
 	<form method="post">
     	<textarea id="tinymce" ui-tinymce="tinymceOptions" ng-model="noteInput"></textarea>
-    	<input class="pull-right" type="submit"  value="Add Note"
+   
+    	<input class="pull-right" type="submit"  accesskey="a" value="Add Note"
 		ng-click="addRecordNote(record, noteInput); noteInput = ''">
+		<span class="pull-right"> Shortcut to add note: <code>Tab</code>, <code>Enter</code>&nbsp&nbsp</span>
   	</form>
-	
+
 	
 	
 	<!-- Original text area box

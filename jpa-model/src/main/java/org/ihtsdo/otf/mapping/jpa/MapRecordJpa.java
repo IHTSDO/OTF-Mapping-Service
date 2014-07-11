@@ -397,6 +397,7 @@ public class MapRecordJpa implements MapRecord {
 	@Override
 	@XmlElement(type = MapNoteJpa.class, name = "mapNote")
 	public Set<MapNote> getMapNotes() {
+		if (mapNotes == null) mapNotes = new HashSet<>(); // ensures proper deserialization
 		return mapNotes;
 	}
 
@@ -442,6 +443,7 @@ public class MapRecordJpa implements MapRecord {
 	@Override
 	@XmlElement(type = MapEntryJpa.class, name = "mapEntry")
 	public List<MapEntry> getMapEntries() {
+		if (mapEntries == null) mapEntries = new ArrayList<>(); // ensures proper deserialization
 		return mapEntries;
 	}
 

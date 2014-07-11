@@ -9,10 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
@@ -29,7 +26,6 @@ import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
@@ -88,23 +84,12 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  */
 public class MappingServiceJpa extends RootServiceJpa implements MappingService {
 
-	/** The manager. */
-	private EntityManager manager;
-
-	/** The transaction per operation. */
-	private boolean transactionPerOperation = true;
-
-	/** The transaction entity. */
-	private EntityTransaction tx;
-
 	/**
 	 * Instantiates an empty {@link MappingServiceJpa}.
 	 * @throws Exception 
 	 */
 	public MappingServiceJpa() throws Exception {
 		super();
-		// created on each instantiation
-		manager = factory.createEntityManager();
 	}
 
 	/**
@@ -147,24 +132,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				.createQuery("select m from MapProjectJpa m where id = :id");
 		query.setParameter("id", id);
 
-		try {
-			m = (MapProject) query.getSingleResult();
-			m.getScopeConcepts().size();
-			m.getScopeExcludedConcepts().size();
-			m.getMapAdvices().size();
-			m.getMapRelations().size();
-			m.getMapLeads().size();
-			m.getMapSpecialists().size();
-			m.getMapPrinciples().size();
-			m.getPresetAgeRanges().size();
-			return m;
-
-		} catch (NoResultException e) {
-			throw new LocalException(
-					"Map project query for id = " + id
-							+ " returned no results!", e);
-		}
-
+		m = (MapProject) query.getSingleResult();
+		m.getScopeConcepts().size();
+		m.getScopeExcludedConcepts().size();
+		m.getMapAdvices().size();
+		m.getMapRelations().size();
+		m.getMapLeads().size();
+		m.getMapSpecialists().size();
+		m.getMapPrinciples().size();
+		m.getPresetAgeRanges().size();
+		return m;
 	}
 
 	/*
@@ -183,22 +160,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				"select m from MapProjectJpa m where refSetId = :refSetId")
 				.setParameter("refSetId", refSetId);
 
-		try {
-			m = (MapProject) query.getSingleResult();
-			m.getScopeConcepts().size();
-			m.getScopeExcludedConcepts().size();
-			m.getMapAdvices().size();
-			m.getMapRelations().size();
-			m.getMapLeads().size();
-			m.getMapSpecialists().size();
-			m.getMapPrinciples().size();
-			m.getPresetAgeRanges().size();
-		} catch (NoResultException e) {
-			throw new LocalException(
-					"Map project query for refSetId = " + refSetId
-							+ " returned no results!", e);
-		}
-
+		m = (MapProject) query.getSingleResult();
+		m.getScopeConcepts().size();
+		m.getScopeExcludedConcepts().size();
+		m.getMapAdvices().size();
+		m.getMapRelations().size();
+		m.getMapLeads().size();
+		m.getMapSpecialists().size();
+		m.getMapPrinciples().size();
+		m.getPresetAgeRanges().size();
 		return m;
 	}
 
@@ -306,11 +276,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	public MapProject addMapProject(MapProject mapProject) throws Exception {
 
 		// check that each user has only one role
-    try {
-			validateUserAndRole(mapProject);
-		} catch (Exception e) {
-			throw new LocalException(e.getMessage(), e);
-		}
+	    validateUserAndRole(mapProject);
 		
 		if (getTransactionPerOperation()) {
 			tx = manager.getTransaction();
@@ -340,11 +306,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	public void updateMapProject(MapProject mapProject) throws Exception {
 		
 		// check that each user has only one role
-    try {
-			validateUserAndRole(mapProject);
-		} catch (Exception e) {
-			throw new LocalException(e.getMessage(), e);
-		}
+		validateUserAndRole(mapProject);
     
 		if (getTransactionPerOperation()) {
 			tx = manager.getTransaction();
@@ -436,21 +398,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	@Override
 	public MapUser getMapUser(Long id) throws Exception {
 
-		MapUser m = null;
-
 		javax.persistence.Query query = manager
 				.createQuery("select m from MapUserJpa m where id = :id");
 		query.setParameter("id", id);
-		try {
-			m = (MapUser) query.getSingleResult();
-		} catch (NoResultException e) {
-			throw new LocalException(
-					"Map specialist query for id = " + id
-							+ " returned no results!", e);
-		}
-
-		return m;
-
+		return (MapUser) query.getSingleResult();
 	}
 
 	/*
@@ -463,20 +414,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	@Override
 	public MapUser getMapUser(String userName) throws Exception {
 
-		MapUser m = null;
-
 		javax.persistence.Query query = manager
 				.createQuery("select m from MapUserJpa m where userName = :userName");
 		query.setParameter("userName", userName);
-		try {
-			m = (MapUser) query.getSingleResult();
-		} catch (NoResultException e) {
-			throw new LocalException(
-					"Map user query for userName = " + userName
-							+ " returned no results!", e);
-		}
-
-		return m;
+		return (MapUser) query.getSingleResult();
 	}
 
 	/**
@@ -652,23 +593,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		 * result are returned, log error and set result to null
 		 */
 
-		try {
 		  MapRecord mapRecord = manager.find(MapRecordJpa.class, id);
           handleMapRecordLazyInitialization(mapRecord);
 		  Logger.getLogger(this.getClass()).debug(
 		      "Returning record_id... "
 		          + ((mapRecord != null) ? mapRecord.getId().toString() : "null"));
 		  
-			  return mapRecord;
-
-		} catch (NoResultException e) {
-			throw new LocalException(
-					"MapRecord query for id = " + id + " returned no results!", e);
-		} catch (NonUniqueResultException e) {
-			throw new LocalException(
-					"MapRecord query for id = " + id
-							+ " returned multiple results!", e);
-		}
+		  return mapRecord;
 	}
 
 	/**
@@ -1971,21 +1902,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	@Override
 	public MapPrinciple getMapPrinciple(Long id) throws Exception {
 
-		MapPrinciple m = null;
-
 		javax.persistence.Query query = manager
 				.createQuery("select m from MapPrincipleJpa m where id = :id");
 		query.setParameter("id", id);
-		try {
-			m = (MapPrinciple) query.getSingleResult();
-		} catch (NoResultException e) {
-			throw new LocalException(
-					"Map principle query for id = " + id
-							+ " returned no results!", e);
-		}
-
-		return m;
-
+        return (MapPrinciple) query.getSingleResult();
 	}
 
 	/*
@@ -2860,7 +2780,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			}
 			
 			if (conflictRecords.getCount() != 2) 
-				throw new LocalException("Could not retrieve records in conflict.");
+				throw new Exception("Could not retrieve records in conflict.");
 			
 		} else if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW) || mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
 			
@@ -2880,10 +2800,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			}
 			
 			if (!foundReviewRecord) 
-				throw new LocalException("Could not retrieve user's modified record to review.");
+				throw new Exception("Could not retrieve user's modified record to review.");
 			
 			if (!foundRevisionRecord)
-				throw new LocalException("Could not retrieve the original published record required for comparing review work");
+				throw new Exception("Could not retrieve the original published record required for comparing review work");
 		}
 
 		// set the total count for completeness (no paging here)

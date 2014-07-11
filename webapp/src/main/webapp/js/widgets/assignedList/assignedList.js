@@ -18,9 +18,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.currentUser = localStorageService.get('currentUser');
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
+	$scope.assignedTab = localStorageService.get('assignedTab');
 	
-	// tab variables
-	$scope.tabs = [ {id: 0, title: 'Concepts', active:true}, 
+	// tab variables, defaults to first active tab?
+	$scope.tabs = [ {id: 0, title: 'Concepts', active:false}, 
 	                {id: 1, title: 'Conflicts', active:false},
 	                {id: 2, title: 'Review', active:false},
 	                {id: 3, title: 'By User', active:false}];
@@ -41,8 +42,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	// function to change tab
 	$scope.setTab = function(tabNumber) {
 		console.debug("Switching to tab " + tabNumber);
-
-		$scope.searchPerformed = false;
 		
 		angular.forEach($scope.tabs, function(tab) {
 			tab.active = (tab.id == tabNumber? true : false);
@@ -51,6 +50,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		// set flag for ByUser tab, i.e. whether viewing user's own work
 		if (tabNumber == 3) $scope.ownTab = false;
 		else $scope.ownTab = true;
+		
+		// add the tab to the loocal storage service for the next visit
+		localStorageService.add('assignedTab', tabNumber);
 	
 	};
 	
@@ -65,10 +67,23 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
 	});	
+	
+	// watch for first retrieval of last tab for this session
+	$scope.$watch('assignedTab', function () {
+		console.debug('assignedTab retrieved', $scope.assignedTab);
+		
+		// unidentified source is resetting the tab to 0 after initial load
+		// introduced a brief timeout to ensure correct tab is picked
+		setTimeout(function() {
+			$scope.setTab($scope.assignedTab);
+		}, 200);
+		
+	});
 
 	$scope.$on('workAvailableWidget.notification.assignWork', function(event, parameters) {
 		console.debug('assignedlist: assignWork notification');
 		console.debug(parameters);
+		console.debug($scope.currentRole);
 		
 		// perform action based on notification parameters
 		// Expect:

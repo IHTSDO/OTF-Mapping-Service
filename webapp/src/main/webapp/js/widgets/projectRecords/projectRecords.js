@@ -149,10 +149,6 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 					$scope.mapNotesPresent = true;
 				}
 				for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
-
-					if ($scope.records[i].mapEntry[j].mapNote.length > 0) {
-						$scope.mapNotesPresent = true;
-					};
 					if ($scope.records[i].mapEntry[j].mapAdvice.length > 0) {
 						$scope.mapAdvicesPresent = true;
 					}

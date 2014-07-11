@@ -94,7 +94,8 @@
 
     
     <!-- NOTES -->
-    <tr style="width: 100%;" ng-repeat="note in record.mapNote">
+    <tr ng-show="record.mapNote.length > 0 && currentRole != 'Viewer'" 
+    	style="width: 100%;" ng-repeat="note in record.mapNote">
       <td style="border-top:0px;">
         <div style="float: left; width: 3%;"><img
               src="img/notepad.png" alt="notepad icon" tooltip-placement="top" tooltip="Notes"></div>
