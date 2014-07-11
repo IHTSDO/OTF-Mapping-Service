@@ -152,11 +152,14 @@ DefaultProjectSpecificAlgorithmHandler {
 		System.out.println("Computing map advice for entry: " + mapEntry.toString());
 		
 		List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
+		
+		// TODO Check this today
+		
 		/*For any mapRelation value other than 447637006, 
 		 * Find the allowed project advice that matches (on string, case-insensitive) 
 		 * and return that value. Throw an exception if no corresponding advice is found.
 		 */
-		if (mapEntry.getMapRelation() != null && !mapEntry.getMapRelation().getTerminologyId().equals("447637006")) {
+		/*if (mapEntry.getMapRelation() != null && !mapEntry.getMapRelation().getTerminologyId().equals("447637006")) {
 			boolean adviceFound = false;
 			
 			System.out.println("Checking advices for mapProject, " + mapProject.getMapAdvices().size() + " advices found");
@@ -173,7 +176,7 @@ DefaultProjectSpecificAlgorithmHandler {
 				throw new LocalException ("Advice was not found in mapProject " + mapProject.getName() + 
 						" that matches mapRelation " + mapEntry.getMapRelation().getName() + ":" +
 						mapEntry.getMapRelation().getTerminologyId());
-		}
+		}*/
 
 		//ALSO, if the descendant count for the concept of the map record > 10,
 		//also add 'DESCENDANTS NOT EXHAUSTIVELY MAPPED' advice.    
