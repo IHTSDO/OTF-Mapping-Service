@@ -9,10 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
@@ -29,7 +26,6 @@ import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
@@ -88,23 +84,12 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  */
 public class MappingServiceJpa extends RootServiceJpa implements MappingService {
 
-	/** The manager. */
-	private EntityManager manager;
-
-	/** The transaction per operation. */
-	private boolean transactionPerOperation = true;
-
-	/** The transaction entity. */
-	private EntityTransaction tx;
-
 	/**
 	 * Instantiates an empty {@link MappingServiceJpa}.
 	 * @throws Exception 
 	 */
 	public MappingServiceJpa() throws Exception {
 		super();
-		// created on each instantiation
-		manager = factory.createEntityManager();
 	}
 
 	/**
@@ -413,8 +398,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	@Override
 	public MapUser getMapUser(Long id) throws Exception {
 
-		MapUser m = null;
-
 		javax.persistence.Query query = manager
 				.createQuery("select m from MapUserJpa m where id = :id");
 		query.setParameter("id", id);
@@ -430,8 +413,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 */
 	@Override
 	public MapUser getMapUser(String userName) throws Exception {
-
-		MapUser m = null;
 
 		javax.persistence.Query query = manager
 				.createQuery("select m from MapUserJpa m where userName = :userName");
@@ -1920,8 +1901,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 */
 	@Override
 	public MapPrinciple getMapPrinciple(Long id) throws Exception {
-
-		MapPrinciple m = null;
 
 		javax.persistence.Query query = manager
 				.createQuery("select m from MapPrincipleJpa m where id = :id");
