@@ -646,12 +646,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           labelChars = new StringBuilder();
         }
 
-        // Encountered </Label> while in a Class, add concept/description
-        if (qName.equalsIgnoreCase("label") && tagStack.contains("modifier")) {
-          // reset label characters
-          labelChars = new StringBuilder();
-        }
-        
         // Encountered </Reference>, create info for later relationship creation
         if (qName.equalsIgnoreCase("reference")) {
           // relationships for this concept will be added at endDocument(),
@@ -1364,8 +1358,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       Concept modConcept, int relId) throws Exception {
       getLog().info(
           "        Creating concept " + childCode + " from "
-              + parentConcept.getTerminologyId() + " - " + parentConcept.getDefaultPreferredName() + " "
-              + modConcept.getDefaultPreferredName());
+              + parentConcept.getTerminologyId());
       Concept childConcept = new ConceptJpa();
       childConcept =
           helper.createNewActiveConcept(childCode, terminology,

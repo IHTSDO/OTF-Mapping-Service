@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
@@ -1185,7 +1184,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         }
 
         if (revisionRecord == null)
-          throw new LocalException(
+          throw new Exception(
               "Attempted to unassign a published revision record, but no such previously published record exists!");
 
         // Case 1: A user decides not to attempt to fix an error
@@ -1206,7 +1205,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
                 WorkflowStatus.REVIEW_IN_PROGRESS)) {
           newRecords.remove(mapRecord);
         } else {
-          throw new LocalException(
+          throw new Exception(
               "Unexpected error attempt to unassign a Revision record.  Contact an administrator.");
         }
 
@@ -1650,7 +1649,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
     // check assumption: last revision exists, at least two records must be
     // present
     if (revisions.size() < 2)
-      throw new LocalException(
+      throw new Exception(
           "Attempted to get the previously published version of map record with id "
               + mapRecord.getId() + ", " + mapRecord.getOwner().getName()
               + ", and concept id " + mapRecord.getConceptId()
@@ -1666,7 +1665,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
         return revision;
     }
 
-    throw new LocalException(
+    throw new Exception(
         "Could not retrieve previously published state of map record for concept "
             + mapRecord.getConceptId() + ", " + mapRecord.getConceptName());
 
