@@ -1210,9 +1210,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			// persist the tree position
 			manager.persist(tp);
 
-			System.out.println(loggerPrefix +
-					"Creating tree position " + tp.toString());
-
 			// construct the ancestor path terminating at this concept
 			String conceptPath = (ancestorPath.equals("") ? concept
 					.getTerminologyId() : ancestorPath + "~"
@@ -1229,9 +1226,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				// the source concept is active
 				if (rel.isActive() && rel.getTypeId().toString().equals(typeId)
 						&& rel.getSourceConcept().isActive()) {
-					
-					Logger.getLogger(ContentServiceJpa.class).info(loggerPrefix 
-							+ " - found relationship pointing to " + rel.getSourceConcept().getTerminologyId());
 
 					// get the child concept
 					Concept childConcept = rel.getSourceConcept();
@@ -1244,9 +1238,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				}
 			}
 			
-			Logger.getLogger(ContentServiceJpa.class).info(loggerPrefix 
-					+ " - children found:  " + childrenConceptIds.size());
-
 			// iterate over the child terminology ids
 			// this iteration is entirely local and depends on no managed
 			// objects
