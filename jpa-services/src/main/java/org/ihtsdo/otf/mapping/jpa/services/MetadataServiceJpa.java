@@ -14,9 +14,6 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 public class MetadataServiceJpa extends RootServiceJpa implements
 MetadataService {
 
-	/** The manager. */
-	private EntityManager manager;
-
 	/** The helper map. */
 	private Map<String, MetadataService> helperMap = null;
 
@@ -32,21 +29,6 @@ MetadataService {
 		helperMap.put("ICD10", new ClamlMetadataServiceJpaHelper());
 		helperMap.put("ICD9CM", new ClamlMetadataServiceJpaHelper());
 		helperMap.put("ICPC", new ClamlMetadataServiceJpaHelper());
-
-		// create on each instantiation
-		manager = factory.createEntityManager();
-	}
-
-	/**
-	 * Close the factory when done with this service.
-	 * 
-	 * @throws Exception the exception
-	 */
-	@Override
-	public void close() throws Exception {
-		if (manager.isOpen()) {
-			manager.close();
-		}
 	}
 
 	/*
