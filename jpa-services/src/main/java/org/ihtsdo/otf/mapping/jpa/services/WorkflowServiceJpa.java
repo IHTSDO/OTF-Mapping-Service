@@ -23,7 +23,6 @@ import org.hibernate.CacheMode;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
-import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
@@ -63,15 +62,6 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 public class WorkflowServiceJpa extends RootServiceJpa implements
 		WorkflowService {
 
-	/** The manager. */
-	private EntityManager manager;
-
-	/** The transaction per operation. */
-	private boolean transactionPerOperation = true;
-
-	/** The transaction entity. */
-	private EntityTransaction tx;
-
 	/**
 	 * Instantiates an empty {@link WorkflowServiceJpa}.
 	 * 
@@ -80,9 +70,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 	public WorkflowServiceJpa() throws Exception {
 		super();
-
-		// created on each instantiation
-		manager = factory.createEntityManager();
 
 	}
 
@@ -2626,78 +2613,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		mappingService.close();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#close()
-	 */
-	@Override
-	public void close() throws Exception {
-		if (manager.isOpen()) {
-			manager.close();
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.WorkflowService#getTransactionPerOperation
-	 * ()
-	 */
-	@Override
-	public boolean getTransactionPerOperation() throws Exception {
-		return transactionPerOperation;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.services.WorkflowService#setTransactionPerOperation
-	 * (boolean)
-	 */
-	@Override
-	public void setTransactionPerOperation(boolean transactionPerOperation)
-			throws Exception {
-		this.transactionPerOperation = transactionPerOperation;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#beginTransaction()
-	 */
-	@Override
-	public void beginTransaction() throws Exception {
-
-		if (getTransactionPerOperation())
-			throw new IllegalStateException(
-					"Error attempting to begin a transaction when using transactions per operation mode.");
-		else if (tx != null && tx.isActive())
-			throw new IllegalStateException(
-					"Error attempting to begin a transaction when there "
-							+ "is already an active transaction");
-		tx = manager.getTransaction();
-		tx.begin();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#commit()
-	 */
-	@Override
-	public void commit() throws Exception {
-
-		if (getTransactionPerOperation())
-			throw new IllegalStateException(
-					"Error attempting to commit a transaction when using transactions per operation mode.");
-		else if (tx != null && !tx.isActive())
-			throw new IllegalStateException(
-					"Error attempting to commit a transaction when there "
-							+ "is no active transaction");
-		tx.commit();
-	}
+	
 
 }
