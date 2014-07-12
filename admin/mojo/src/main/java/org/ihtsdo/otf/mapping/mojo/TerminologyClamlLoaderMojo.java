@@ -797,12 +797,14 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           String parentCode = null;
           String id = null;
           String type = null;
+          String label = null;
 
           // handle reference case
           if (tokens.length == 4) {
             parentCode = tokens[0];
             type = tokens[2];
             id = tokens[1];
+            label = tokens[3];
             if (relDisambiguation.containsKey(id)) {
               int ct = relDisambiguation.get(id);
               ct++;
@@ -864,6 +866,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               relationship.setTypeId(new Long(conceptMap.get(type)
                   .getTerminologyId()));
               relationship.setRelationshipGroup(new Integer(0));
+              relationship.setLabel(label);
               Set<Relationship> rels = new HashSet<>();
               if (childConcept.getRelationships() != null)
                 rels = childConcept.getRelationships();
