@@ -62,14 +62,14 @@
 
     
     <!-- NOTES -->
-    <tr style="width: 100%;" ng-repeat="note in record.mapNote">
+    <!-- <tr style="width: 100%;" ng-repeat="note in record.mapNote">
       <td>
         <div style="float: left; width: 3%;"><img
               src="img/notepad.png" alt="notepad icon" tooltip-placement="top" tooltip="Notes"></div>
-        <!-- <div ng-show="!$first" style="float: left; width: 3%;">&nbsp;</div> -->
+        <div ng-show="!$first" style="float: left; width: 3%;">&nbsp;</div>
         <div style="float: left; width: 97%;">
           <span ng-bind-html="to_trusted(truncate(note.note, 200))"></span>
-          <span ng-show="truncated(note.note, 200)"
+           <span ng-show="truncated(note.note, 200)"
                 class="dropdown">
                 <a style="display:inline;" class="dropdown-toggle">...</a> <span style="width: 100%"
                   class="dropdown-menu term-browser-dropdown-menu">
@@ -79,16 +79,30 @@
         </div>
       </td>
     </tr>
-    
+     -->
     <!-- PRINCIPLES -->
     <tr style="width: 100%;" ng-repeat="principle in record.mapPrinciple">
       <td>
-        <div ng-show="$first" style="float: left; width: 7%;">Principle:&nbsp;</div>
-        <div ng-show="!$first" style="float: left; width: 7%;">&nbsp;</div>
-        <div style="float: left; width: 93%;">
-          <p ng-bind-html="to_trusted(principle.detail)"></p>
+        <!-- <div ng-show="$first" style="float: left; width: 7%;">Principle:&nbsp;</div> -->
+        <div style="float: left; width: 100%; font-size: 12px;">
+          <img
+              src="img/viewDetail.png" alt="principle icon" tooltip-placement="top" tooltip="Map Principle">&nbsp;{{principle.name}}
         </div>
       </td>
     </tr>
-
+    
+    <!--  FLAGS -->
+    <tr style="float: left; width: 100%; font-size: 12px;">
+      <td>
+       <div ng-show="record.flagForMapLeadReview == true">
+            Flagged For Map Lead Review
+       </div>
+       <div ng-show="record.flagForEditorialReview == true">
+            Flagged For Editorial Review
+       </div>
+       <div ng-show="record.flagForConsensusReview == true">
+            Flagged For Consensus Review
+       </div>
+      </td>
+    </tr>
 </tbody>
