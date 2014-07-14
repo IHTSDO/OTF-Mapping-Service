@@ -18,7 +18,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
@@ -64,7 +63,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Path("/mapping")
 @Api(value = "/mapping", description = "Operations supporting Map objects.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-@SuppressWarnings("static-method")
 public class MappingServiceRest extends RootServiceRest {
 
 	private SecurityService securityService = new SecurityServiceJpa();
