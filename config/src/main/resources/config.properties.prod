@@ -34,6 +34,7 @@ hibernate.jdbc.default_batch_fetch_size=500
 # SNOMEDCT data location
 #
 loader.SNOMEDCT.input.data=/home/ihtsdo/data/snomedct-20140131-snapshot
+loader.SNOMEDCT.delta.data=/home/ihtsdo/data/snomedct-dailybuild-snapshot
 # SNOMED CT RF2 SCTID for "Synonym"
 loader.defaultPreferredNames.typeId=900000000000013009
 # SNOMED CT RF2 SCTID for the US English language refset
