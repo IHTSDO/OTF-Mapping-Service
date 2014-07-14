@@ -797,12 +797,14 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           String parentCode = null;
           String id = null;
           String type = null;
+          String label = null;
 
           // handle reference case
           if (tokens.length == 4) {
             parentCode = tokens[0];
             type = tokens[2];
             id = tokens[1];
+            label = tokens[3];
             if (relDisambiguation.containsKey(id)) {
               int ct = relDisambiguation.get(id);
               ct++;
@@ -864,6 +866,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               relationship.setTypeId(new Long(conceptMap.get(type)
                   .getTerminologyId()));
               relationship.setRelationshipGroup(new Integer(0));
+              relationship.setLabel(label);
               Set<Relationship> rels = new HashSet<>();
               if (childConcept.getRelationships() != null)
                 rels = childConcept.getRelationships();
@@ -1306,16 +1309,24 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       overrideCodes.add("Y89");
       overrideCodes.add("Y90");
       overrideCodes.add("Y91");
+      overrideCodes.add("Y92");
+      overrideCodes.add("Y93");
+      overrideCodes.add("Y94");
+      overrideCodes.add("Y95");
+      overrideCodes.add("Y96");
+      overrideCodes.add("Y97");
+      overrideCodes.add("Y98");
 
       // Override excludes for the code list above for S20W00_4
       if (overrideCodes.contains(cmpCode) && modifier.equals("S20W00_4")
           && !parentCodeHasChildrenMap.containsKey(cmpCode))
         return true;
 
+      /** Based on NIN feedback - don't have 5th digits in these cases
       // Override excludes for the code list above for S20V01T_5
       if (overrideCodes.contains(cmpCode) && modifier.equals("S20V01T_5"))
         return true;
-
+      **/
       return false;
     }
 

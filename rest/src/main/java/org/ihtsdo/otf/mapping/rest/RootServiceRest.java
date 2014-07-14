@@ -17,14 +17,16 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 
-
-
+/**
+ * Top level class for all REST services.
+ */
 public class RootServiceRest {
 	
 	//
 	// Fields
 	//
 
+	/**  The config. */
 	public Properties config = null;
 
 	/** The address that messages will appear as though they come from. */
@@ -51,7 +53,6 @@ public class RootServiceRest {
 	/**
 	 * Returns the config properties.
 	 *
-	 * @return the config properties
 	 * @throws Exception the exception
 	 */
 	public void getConfigProperties() throws Exception {
@@ -152,12 +153,15 @@ public class RootServiceRest {
 
 
 	/**
-	 * The Class SMTPAuthenticator.
-	 *
-	 * @author ${author}
+	 * SMTPAuthenticator.
 	 */
 	public class SMTPAuthenticator extends javax.mail.Authenticator {
-	  public PasswordAuthentication getPasswordAuthentication() {
+	  
+  	/* (non-Javadoc)
+  	 * @see javax.mail.Authenticator#getPasswordAuthentication()
+  	 */
+  	@Override
+    public PasswordAuthentication getPasswordAuthentication() {
 	    return new PasswordAuthentication(m_from, host_password);
 	  }
 	}

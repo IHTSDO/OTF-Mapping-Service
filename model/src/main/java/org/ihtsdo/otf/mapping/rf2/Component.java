@@ -106,6 +106,20 @@ public interface Component {
   public void setTerminologyId(String terminologyId);
 
   /**
+   * Returns the label.
+   *
+   * @return the label
+   */
+  public String getLabel();
+
+  /**
+   * Sets the label.
+   *
+   * @param label the label to set
+   */
+  public void setLabel(String label);
+  
+  /**
    * Returns a string of comma-separated fields of this object.
    * 
    * @return a string of comma-separated fields
