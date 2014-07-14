@@ -126,7 +126,14 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		sortByKey($scope.allowableAdvices, 'detail');
 		$scope.allowableMapRelations = getAllowableElements($scope.entry, $scope.project.mapRelation);
 		
-		updateEntry();	
+		// attempt to autocompute the map relation, then update the entry
+		computeRelation($scope.entry).then(function() {
+			console.debug('Relation computed');
+			computeAdvice($scope.entry).then(function() {
+				console.debug('Advice computed');
+				updateEntry();
+			});
+		});	
 	};
 	
 	function computeRelation(entry) {
