@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +24,15 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.helpers.ConceptList;
+import org.ihtsdo.otf.mapping.helpers.ConceptListJpa;
+import org.ihtsdo.otf.mapping.helpers.DescriptionList;
+import org.ihtsdo.otf.mapping.helpers.DescriptionListJpa;
+import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList;
+import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.RelationshipList;
+import org.ihtsdo.otf.mapping.helpers.RelationshipListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -149,12 +158,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	}
 	
 	@Override
-	public void removeConcept(Concept concept) throws Exception {
+	public void removeConcept(Long id) throws Exception {
 
 		tx = manager.getTransaction();
 
-		// retrieve this map specialist
-		Concept mu = manager.find(ConceptJpa.class, concept.getId());
+		// retrieve this concept
+		Concept mu = manager.find(ConceptJpa.class, id);
 
 
 		if (getTransactionPerOperation()) {
@@ -248,17 +257,17 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	}
 	
 	@Override
-	public void removeDescription(Description description) throws Exception {
+	public void removeDescription(Long id) throws Exception {
 
 		tx = manager.getTransaction();
 
-		// retrieve this map specialist
-		Description mu = manager.find(DescriptionJpa.class, description.getId());
+		// retrieve this description
+		Description mu = manager.find(DescriptionJpa.class, id);
 
 
 		if (getTransactionPerOperation()) {
 
-			// remove specialist
+			// remove description
 			tx.begin();
 			if (manager.contains(mu)) {
 				manager.remove(mu);
@@ -347,17 +356,17 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	}
 	
 	@Override
-	public void removeRelationship(Relationship relationship) throws Exception {
+	public void removeRelationship(Long id) throws Exception {
 
 		tx = manager.getTransaction();
 
-		// retrieve this map specialist
-		Relationship mu = manager.find(RelationshipJpa.class, relationship.getId());
+		// retrieve this relationship
+		Relationship mu = manager.find(RelationshipJpa.class, id);
 
 
 		if (getTransactionPerOperation()) {
 
-			// remove specialist
+			// remove relationship
 			tx.begin();
 			if (manager.contains(mu)) {
 				manager.remove(mu);
@@ -446,12 +455,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	}
 	
 	@Override
-	public void removeAttributeValueRefSetMember(AttributeValueRefSetMember attributeValueRefSetMember) throws Exception {
+	public void removeAttributeValueRefSetMember(Long id) throws Exception {
 
 		tx = manager.getTransaction();
 
 		// retrieve this map specialist
-		AttributeValueRefSetMember mu = manager.find(AttributeValueRefSetMemberJpa.class, attributeValueRefSetMember.getId());
+		AttributeValueRefSetMember mu = manager.find(AttributeValueRefSetMemberJpa.class, id);
 
 
 		if (getTransactionPerOperation()) {
@@ -545,17 +554,17 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	}
 	
 	@Override
-	public void removeComplexMapRefSetMember(ComplexMapRefSetMember complexMapRefSetMember) throws Exception {
+	public void removeComplexMapRefSetMember(Long id) throws Exception {
 
 		tx = manager.getTransaction();
 
-		// retrieve this map specialist
-		ComplexMapRefSetMember mu = manager.find(ComplexMapRefSetMemberJpa.class, complexMapRefSetMember.getId());
+		// retrieve this complex map ref set member
+		ComplexMapRefSetMember mu = manager.find(ComplexMapRefSetMemberJpa.class, id);
 
 
 		if (getTransactionPerOperation()) {
 
-			// remove specialist
+			// remove complex map ref set member
 			tx.begin();
 			if (manager.contains(mu)) {
 				manager.remove(mu);
@@ -645,17 +654,17 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	}
 	
 	@Override
-	public void removeLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) throws Exception {
+	public void removeLanguageRefSetMember(Long id) throws Exception {
 
 		tx = manager.getTransaction();
 
-		// retrieve this map specialist
-		LanguageRefSetMember mu = manager.find(LanguageRefSetMemberJpa.class, languageRefSetMember.getId());
+		// retrieve this language ref set member
+		LanguageRefSetMember mu = manager.find(LanguageRefSetMemberJpa.class, id);
 
 
 		if (getTransactionPerOperation()) {
 
-			// remove specialist
+			// remove language ref set member
 			tx.begin();
 			if (manager.contains(mu)) {
 				manager.remove(mu);
@@ -744,17 +753,17 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	}
 	
 	@Override
-	public void removeSimpleMapRefSetMember(SimpleMapRefSetMember simpleMapRefSetMember) throws Exception {
+	public void removeSimpleMapRefSetMember(Long id) throws Exception {
 
 		tx = manager.getTransaction();
 
-		// retrieve this map specialist
-		SimpleMapRefSetMember mu = manager.find(SimpleMapRefSetMemberJpa.class, simpleMapRefSetMember.getId());
+		// retrieve this simple map ref set member
+		SimpleMapRefSetMember mu = manager.find(SimpleMapRefSetMemberJpa.class, id);
 
 
 		if (getTransactionPerOperation()) {
 
-			// remove specialist
+			// remove simple map ref set member
 			tx.begin();
 			if (manager.contains(mu)) {
 				manager.remove(mu);
@@ -843,17 +852,17 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	}
 	
 	@Override
-	public void removeSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember) throws Exception {
+	public void removeSimpleRefSetMember(Long id) throws Exception {
 
 		tx = manager.getTransaction();
 
-		// retrieve this map specialist
-		SimpleRefSetMember mu = manager.find(SimpleRefSetMemberJpa.class, simpleRefSetMember.getId());
+		// retrieve this simple ref set member
+		SimpleRefSetMember mu = manager.find(SimpleRefSetMemberJpa.class, id);
 
 
 		if (getTransactionPerOperation()) {
 
-			// remove specialist
+			// remove simple ref set member
 			tx.begin();
 			if (manager.contains(mu)) {
 				manager.remove(mu);
@@ -1769,6 +1778,77 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return full_query;
 
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public ConceptList getConceptsModifiedSinceDate(String terminology, Date date) {
+		ConceptList results = new ConceptListJpa();
+
+		javax.persistence.Query query = 
+				manager.createQuery(
+						"select c from ConceptJpa c"
+						+ " where effectiveTime > :releaseDate"
+						+ " and terminology = :terminology")
+				.setParameter("releaseDate", date)
+				.setParameter("terminology", terminology);
+		
+		results.setConcepts(query.getResultList());
+		return results;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public DescriptionList getDescriptionsModifiedSinceDate(String terminology, Date date) {
+		DescriptionList results = new DescriptionListJpa();
+
+		javax.persistence.Query query = 
+				manager.createQuery(
+						"select d from DescriptionJpa d"
+						+ " where effectiveTime > :releaseDate"
+						+ " and terminology = :terminology")
+				.setParameter("releaseDate", date)
+				.setParameter("terminology", terminology);
+		
+		results.setDescriptions(query.getResultList());
+		return results;			
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public RelationshipList getRelationshipsModifiedSinceDate(String terminology, Date date) {
+		RelationshipList results = new RelationshipListJpa();
+
+		javax.persistence.Query query = 
+				manager.createQuery(
+						"select r from RelationshipJpa r"
+						+ " where effectiveTime > :releaseDate"
+						+ " and terminology = :terminology")
+				.setParameter("releaseDate", date)
+				.setParameter("terminology", terminology);
+		
+		results.setRelationships(query.getResultList());
+
+		return results;			
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public LanguageRefSetMemberList getLanguageRefSetMembersModifiedSinceDate(String terminology, Date date) {
+		LanguageRefSetMemberList results = new LanguageRefSetMemberListJpa();
+
+		javax.persistence.Query query = 
+				manager.createQuery(
+						"select l from LanguageRefSetMemberJpa l"
+						+ " where effectiveTime > :releaseDate"
+						+ " and terminology = :terminology")
+				.setParameter("releaseDate", date)
+				.setParameter("terminology", terminology);
+		
+		results.setLanguageRefSetMembers(query.getResultList());
+		
+		return results;			
+	}
+	
 	
 	
 }
