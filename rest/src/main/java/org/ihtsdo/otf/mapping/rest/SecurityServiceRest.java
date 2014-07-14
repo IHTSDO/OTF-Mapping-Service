@@ -32,8 +32,7 @@ public class SecurityServiceRest extends RootServiceRest {
    * @param password the password
 	 * @return the string
 	 */
-  @SuppressWarnings("static-method")
-	@POST
+  @POST
 	@Path("/authenticate/{username}")
   @Consumes({
     MediaType.TEXT_PLAIN

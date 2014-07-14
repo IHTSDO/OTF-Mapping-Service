@@ -63,7 +63,7 @@ public class MapEntryJpa implements MapEntry {
   private String targetId;
 
   /** The target name. */
-  @Column(nullable = true)
+  @Column(nullable = true, length = 4000)
   private String targetName;
 
   /** The rule. */
