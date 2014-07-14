@@ -195,49 +195,63 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 	};
 	
 	$scope.editRecord = function(record) {
+		
+		console.debug("EditRecord()");
+		console.debug(record);
+		
+		// check if this record is assigned to the user and not in a publication ready state
+		if (record.owner.userName === $scope.currentUser.userName
+				&& record.workflowStatus != 'PUBLISHED' && record.workflowStatus != 'READY_FOR_PUBLICATION') {
+			
+			// go to the edit page
+			$location.path("/record/recordId/" + record.id);
+		
+		// otherwise, assign this record along the FIX_ERROR_PAT
+		} else {
 
-		// assign the record along the FIX_ERROR_PATH
-		$rootScope.glassPane++;
-
-		console.debug("Edit record clicked, assigning record if necessary");
-		$http({
-			url: root_workflow + "assignFromRecord/user/id/" + $scope.currentUser.userName,
-			 method: "POST",
-			 dataType: 'json',
-			 data: record,
-			 headers: {
-				 "Content-Type": "application/json"
-			 }		
-		}).success(function(data) {
-			console.debug('Assignment successful');
+			// assign the record along the FIX_ERROR_PATH
+			$rootScope.glassPane++;
+	
+			console.debug("Edit record clicked, assigning record if necessary");
 			$http({
-				url: root_workflow + "record/project/id/" + $scope.focusProject.id +
-				"/concept/id/" + record.conceptId +
-				"/user/id/" + $scope.currentUser.userName,
-				 method: "GET",
+				url: root_workflow + "assignFromRecord/user/id/" + $scope.currentUser.userName,
+				 method: "POST",
 				 dataType: 'json',
 				 data: record,
 				 headers: {
 					 "Content-Type": "application/json"
-				 }
+				 }		
 			}).success(function(data) {
-				console.debug(data);
-				$rootScope.glassPane--;
+				console.debug('Assignment successful');
+				$http({
+					url: root_workflow + "record/project/id/" + $scope.focusProject.id +
+					"/concept/id/" + record.conceptId +
+					"/user/id/" + $scope.currentUser.userName,
+					 method: "GET",
+					 dataType: 'json',
+					 data: record,
+					 headers: {
+						 "Content-Type": "application/json"
+					 }
+				}).success(function(data) {
+					console.debug(data);
+					$rootScope.glassPane--;
+					
+					// open the record edit view
+					$location.path("/record/recordId/" + data.id);
+				}).error(function(data, status, headers, config) {
+				    $rootScope.glassPane--;
+	
+				    $rootScope.handleHttpError(data, status, headers, config);
+				});
+	
 				
-				// open the record edit view
-				$location.path("/record/recordId/" + data.id);
 			}).error(function(data, status, headers, config) {
 			    $rootScope.glassPane--;
-
+	
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
-
-			
-		}).error(function(data, status, headers, config) {
-		    $rootScope.glassPane--;
-
-		    $rootScope.handleHttpError(data, status, headers, config);
-		});
+		}
 	};
 	
 
