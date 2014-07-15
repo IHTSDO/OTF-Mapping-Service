@@ -9,8 +9,8 @@ REM
 REM Set environment variables at system level
 REM
 REM set MVN_HOME=C:/apache-maven-3.0.5
-REM set OTF_MAPPING_HOME="C:/Users/Brian Carlsen/workspace/mapping-parent"
-REM set OTF_MAPPING_CONFIG="C:/data/config.properties"
+set OTF_MAPPING_HOME="C:/OTF-Mapping-Service"
+set OTF_MAPPING_CONFIG="C:/data/config.properties.dev"
 REM
 
 echo ------------------------------------------------
