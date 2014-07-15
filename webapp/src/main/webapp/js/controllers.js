@@ -75,15 +75,14 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
     //$rootScope.globalError = 'rootScopeGlobalError';
     $scope.globalError = $rootScope.globalError;
 		
+    // clear the local storage service
+    localStorageService.clearAll();
 	
 	// set the user, role, focus project, and preferences to null (i.e. clear) by broadcasting to rest of app
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setFocusProject', {key: 'focusProject', focusProject: null});
 	$rootScope.$broadcast('localStorageModule.notification.setPreferences', {key: 'preferences', preferences: null});
-	
-	$scope.mapProjects = localStorageService.get('mapProjects');
-	$scope.mapUsers = localStorageService.get('mapUsers');
 
 	// initial values for pick-list
 	$scope.roles = [

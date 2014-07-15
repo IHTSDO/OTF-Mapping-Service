@@ -1,6 +1,12 @@
 package org.ihtsdo.otf.mapping.services;
 
+import java.util.Date;
+
+import org.ihtsdo.otf.mapping.helpers.ConceptList;
+import org.ihtsdo.otf.mapping.helpers.DescriptionList;
+import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.RelationshipList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
@@ -12,6 +18,7 @@ import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 
+// TODO: Auto-generated Javadoc
 /**
  * The interface for the content service.
  * 
@@ -78,23 +85,23 @@ public interface ContentService extends RootService {
 	/**
 	 * Removes the concept.
 	 * 
-	 * @param concept
-	 *            the concept
+	 * @param id
+	 *            the id
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void removeConcept(Concept concept) throws Exception;
+	public void removeConcept(Long id) throws Exception;
 
 	/**
 	 * Returns the description.
 	 * 
-	 * @param descriptionId
-	 *            the description id
+	 * @param id
+	 *            the id
 	 * @return the description
 	 * @throws Exception
 	 *             if anything goes wrong
 	 */
-	public Description getDescription(Long descriptionId) throws Exception;
+	public Description getDescription(Long id) throws Exception;
 
 	/**
 	 * Returns the description matching the specified parameters.
@@ -135,13 +142,11 @@ public interface ContentService extends RootService {
 
 	/**
 	 * Removes the description.
-	 * 
-	 * @param description
-	 *            the description
-	 * @throws Exception
-	 *             the exception
+	 *
+	 * @param id the id
+	 * @throws Exception the exception
 	 */
-	public void removeDescription(Description description) throws Exception;
+	public void removeDescription(Long id) throws Exception;
 
 	/**
 	 * Returns the relationship.
@@ -195,12 +200,12 @@ public interface ContentService extends RootService {
 	/**
 	 * Removes the relationship.
 	 * 
-	 * @param relationship
-	 *            the relationship
+	 * @param id
+	 *            the id
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void removeRelationship(Relationship relationship) throws Exception;
+	public void removeRelationship(Long id) throws Exception;
 
 	/**
 	 * Returns the languageRefSetMember.
@@ -256,13 +261,12 @@ public interface ContentService extends RootService {
 	/**
 	 * Removes the languageRefSetMember.
 	 * 
-	 * @param languageRefSetMember
-	 *            the languageRefSetMember
+	 * @param id
+	 *            the id
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void removeLanguageRefSetMember(
-			LanguageRefSetMember languageRefSetMember) throws Exception;
+	public void removeLanguageRefSetMember(Long id) throws Exception;
 
 	/**
 	 * Returns the attributeValueRefSetMember.
@@ -320,15 +324,11 @@ public interface ContentService extends RootService {
 
 	/**
 	 * Removes the attributeValueRefSetMember.
-	 * 
-	 * @param attributeValueRefSetMember
-	 *            the attributeValueRefSetMember
-	 * @throws Exception
-	 *             the exception
+	 *
+	 * @param id the id
+	 * @throws Exception the exception
 	 */
-	public void removeAttributeValueRefSetMember(
-			AttributeValueRefSetMember attributeValueRefSetMember)
-			throws Exception;
+	public void removeAttributeValueRefSetMember(Long id) throws Exception;
 
 	/**
 	 * Returns the complexMapRefSetMember.
@@ -384,14 +384,11 @@ public interface ContentService extends RootService {
 
 	/**
 	 * Removes the complexMapRefSetMember.
-	 * 
-	 * @param complexMapRefSetMember
-	 *            the complexMapRefSetMember
-	 * @throws Exception
-	 *             the exception
+	 *
+	 * @param id the id
+	 * @throws Exception the exception
 	 */
-	public void removeComplexMapRefSetMember(
-			ComplexMapRefSetMember complexMapRefSetMember) throws Exception;
+	public void removeComplexMapRefSetMember(Long id) throws Exception;
 
 	/**
 	 * Returns the simpleMapRefSetMember.
@@ -447,13 +444,12 @@ public interface ContentService extends RootService {
 	/**
 	 * Removes the simpleMapRefSetMember.
 	 * 
-	 * @param simpleMapRefSetMember
-	 *            the simpleMapRefSetMember
+	 * @param id
+	 *            the id
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void removeSimpleMapRefSetMember(
-			SimpleMapRefSetMember simpleMapRefSetMember) throws Exception;
+	public void removeSimpleMapRefSetMember(Long id) throws Exception;
 
 	/**
 	 * Returns the simpleRefSetMember.
@@ -509,13 +505,12 @@ public interface ContentService extends RootService {
 	/**
 	 * Removes the simpleRefSetMember.
 	 * 
-	 * @param simpleRefSetMember
-	 *            the simpleRefSetMember
+	 * @param id
+	 *            the id
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void removeSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember)
-			throws Exception;
+	public void removeSimpleRefSetMember(Long id) throws Exception;
 
 	/**
 	 * Returns the concept search results matching the query. Results can be
@@ -534,7 +529,7 @@ public interface ContentService extends RootService {
 
 	/**
 	 * Finds the descendants of a concept, subject to max results limitation in
-	 * PFS parameters object
+	 * PFS parameters object.
 	 * 
 	 * @param terminologyId
 	 *            the terminology id
@@ -604,7 +599,7 @@ public interface ContentService extends RootService {
 			throws Exception;
 
 	/**
-	 * Gets the tree positions with all descendants fully rendered
+	 * Gets the tree positions with all descendants fully rendered.
 	 * 
 	 * @param terminologyId
 	 *            the terminology id
@@ -614,6 +609,7 @@ public interface ContentService extends RootService {
 	 *            the terminology version
 	 * @return the local trees
 	 * @throws Exception
+	 *             the exception
 	 */
 	public TreePositionList getTreePositionsWithDescendants(
 			String terminologyId, String terminology, String terminologyVersion)
@@ -628,6 +624,7 @@ public interface ContentService extends RootService {
 	 *            the terminology version
 	 * @return the root tree positions for terminology
 	 * @throws Exception
+	 *             the exception
 	 */
 	public TreePositionList getRootTreePositions(String terminology,
 			String terminologyVersion) throws Exception;
@@ -650,7 +647,7 @@ public interface ContentService extends RootService {
 			String terminologyVersion, String query) throws Exception;
 
 	/**
-	 * Gets the tree positions
+	 * Gets the tree positions.
 	 * 
 	 * @param terminologyId
 	 *            the terminology id
@@ -664,5 +661,53 @@ public interface ContentService extends RootService {
 	 */
 	public TreePositionList getTreePositions(String terminologyId,
 			String terminology, String terminologyVersion) throws Exception;
+
+	/**
+	 * Find concepts modified since date.
+	 * 
+	 * @param terminology
+	 *            the terminology
+	 * @param date
+	 *            the date
+	 * @return the search result list
+	 */
+	public ConceptList getConceptsModifiedSinceDate(String terminology,
+			Date date);
+
+	/**
+	 * Find descriptions modified since date.
+	 * 
+	 * @param terminology
+	 *            the terminology
+	 * @param date
+	 *            the date
+	 * @return the search result list
+	 */
+	public DescriptionList getDescriptionsModifiedSinceDate(String terminology,
+			Date date);
+
+	/**
+	 * Find relationships modified since date.
+	 * 
+	 * @param terminology
+	 *            the terminology
+	 * @param date
+	 *            the date
+	 * @return the search result list
+	 */
+	public RelationshipList getRelationshipsModifiedSinceDate(
+			String terminology, Date date);
+
+	/**
+	 * Find language ref set members modified since date.
+	 * 
+	 * @param terminology
+	 *            the terminology
+	 * @param date
+	 *            the date
+	 * @return the search result list
+	 */
+	public LanguageRefSetMemberList getLanguageRefSetMembersModifiedSinceDate(
+			String terminology, Date date);
 
 }
