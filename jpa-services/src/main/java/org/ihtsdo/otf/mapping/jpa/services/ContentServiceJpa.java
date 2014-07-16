@@ -1520,8 +1520,14 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 					queriedTreePosition.getTerminologyId());
 		}
 
-		// for each query result, construct the full tree (i.e. up to root)
+		// for each query result, construct the full tree (i.e. up to root, and including children if exact match)
 		for (TreePosition queriedTreePosition : queriedTreePositions) {
+			
+			// if the query is an exact match for the terminology id of this tree position, attach children
+			if (queriedTreePosition.getTerminologyId().toUpperCase().equals(query.toUpperCase())) {
+				queriedTreePosition.setChildren(getChildTreePositions(queriedTreePosition).getTreePositions());
+				
+			}
 
 			TreePosition fullTreePosition = constructRootTreePosition(queriedTreePosition);
 
@@ -1619,13 +1625,17 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		// first cycle over the string to add artificial breaks before and after
 		// control characters
 		final String queryStr = query;
-
+		
+		// pad the beginning to ensure capture of dash character
+		// terminology ids may contain terms like D55-D59, which should be preserved whole
+		// but we still want to capture lucene negation term, e.g. -D55
 		String queryStr_mod = queryStr;
+		
 		queryStr_mod = queryStr_mod.replace("(", " ( ");
 		queryStr_mod = queryStr_mod.replace(")", " ) ");
 		queryStr_mod = queryStr_mod.replace("\"", " \" ");
 		queryStr_mod = queryStr_mod.replace("+", " + ");
-		queryStr_mod = queryStr_mod.replace("-", " - ");
+		queryStr_mod = queryStr_mod.replace(" -", " - "); // note extra space on this term, see above
 
 		// remove any leading or trailing whitespace (otherwise first/last null
 		// term
