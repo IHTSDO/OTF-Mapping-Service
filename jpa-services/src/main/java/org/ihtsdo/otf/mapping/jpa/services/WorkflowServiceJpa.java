@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,8 +10,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
@@ -1142,10 +1141,18 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					trackingRecord.setSortKey(treePositionsList
 							.getTreePositions().get(0).getAncestorPath());
 				}
+				
+				// if the effective time of the concept is after the last modified by
+				// this record is being flagged for review based on drip feed updates
+				if (concept.getEffectiveTime().compareTo(new Date(mapRecord.getLastModified())) > 0) {
+					trackingRecord.setWorkflowPath(WorkflowPath.DRIP_FEED_REVIEW);
+				
+				// otherwise, a user has requested to fix an error on an existing record
+				} else {
 
-				// only FIX_ERROR_PATH valid, QA_PATH in Phase 2
-				trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
-
+					trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
+				}
+				
 				// perform the assign action via the algorithm handler
 				mapRecords = algorithmHandler.assignFromInitialRecord(
 						trackingRecord, mapRecords, mapRecord, mapUser);
@@ -1421,7 +1428,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// close the service
 		mappingService.close();
 
-		return newRecords;
+		return syncedRecords;
 
 	}
 

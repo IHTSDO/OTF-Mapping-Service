@@ -236,10 +236,27 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			}
 			
 			
-			// if the node exactly matches a query, stop expanding here
+			// if the node exactly matches a query
 			if (treePositions[i].terminologyId.toUpperCase() === $scope.query.toUpperCase()) {
 				console.debug("Exact match for query");
+				
+				// load the concept detalis
 				$scope.getConceptDetails(treePositions[i]);
+				
+				console.debug("Expanding children")
+				console.debug(treePositions[i].children);
+				
+				// expand children, but do not expand their info panels
+				for (var i = 0; i < treePositions[i].children.length; i++) {
+					
+					treePositions[i].children[i].isOpen = true;
+				}
+				
+				console.debug("After expanding children")
+				console.debug(treePositions[i].children);
+				
+
+				// stop recursive expansion here;
 				return true;
 			}
 			
