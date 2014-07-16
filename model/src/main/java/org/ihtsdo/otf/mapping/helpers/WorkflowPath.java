@@ -13,6 +13,9 @@ public enum WorkflowPath {
 
   /** The fix error path. */
   FIX_ERROR_PATH,
+  
+  /** The drip feed review path */
+  DRIP_FEED_REVIEW,
 
   /** The qa path. */
   QA_PATH,
