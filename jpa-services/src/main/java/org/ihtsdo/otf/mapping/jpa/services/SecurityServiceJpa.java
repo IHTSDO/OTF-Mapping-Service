@@ -192,7 +192,7 @@ public class SecurityServiceJpa implements SecurityService {
           "User = " + username + " Token = " + authToken);
       return username;
     } else
-      throw new Exception("AuthToken does not have a valid username.");
+      throw new LocalException("AuthToken does not have a valid username.");
   }
 
   /*
