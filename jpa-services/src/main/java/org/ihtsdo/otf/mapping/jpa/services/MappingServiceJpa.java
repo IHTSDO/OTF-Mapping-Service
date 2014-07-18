@@ -594,7 +594,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		 */
 
 		  MapRecord mapRecord = manager.find(MapRecordJpa.class, id);
-          handleMapRecordLazyInitialization(mapRecord);
+		  
+		  if (mapRecord != null)
+			  handleMapRecordLazyInitialization(mapRecord);
+		  
 		  Logger.getLogger(this.getClass()).debug(
 		      "Returning record_id... "
 		          + ((mapRecord != null) ? mapRecord.getId().toString() : "null"));
@@ -961,6 +964,86 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						: pfsParameter);
 
 		full_query += " AND (workflowStatus:'PUBLISHED' OR workflowStatus:'READY_FOR_PUBLICATION')";
+
+		Logger.getLogger(MappingServiceJpa.class).info(full_query);
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
+		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+		Query luceneQuery;
+
+		// construct luceneQuery based on URL format
+
+		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+				searchFactory.getAnalyzer(MapRecordJpa.class));
+		luceneQuery = queryParser.parse(full_query);
+
+		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
+				.createFullTextQuery(luceneQuery, MapRecordJpa.class);
+
+		// Sort Options -- in order of priority
+		// (1) if a sort field is specified by pfs parameter, use it
+		// (2) if a query has been specified, use nothing (lucene relevance default)
+		// (3) if a query has not been specified, sort by conceptId
+		
+		String sortField = "conceptId";
+		if (pfsParameter != null && pfsParameter.getSortField() != null && !pfsParameter.getSortField().isEmpty()) {
+			ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
+					SortField.STRING)));
+		} else if (pfsParameter != null && pfsParameter.getQueryRestriction() != null && !pfsParameter.getQueryRestriction().isEmpty()) {
+			// do nothing
+		} else {
+			ftquery.setSort(new Sort(new SortField(sortField,
+					SortField.STRING)));
+		}
+
+
+		// get the results
+		int totalCount = ftquery.getResultSize();
+
+        if (pfsParameter != null) {
+		  ftquery.setFirstResult(pfsParameter.getStartIndex());
+		  ftquery.setMaxResults(pfsParameter.getMaxResults());
+        }
+        List<MapRecord> mapRecords = ftquery.getResultList();
+
+        Logger.getLogger(this.getClass()).debug(
+            Integer.toString(mapRecords.size()) + " records retrieved");
+
+        for (MapRecord mapRecord : mapRecords) {
+          handleMapRecordLazyInitialization(mapRecord);
+        }
+
+		// set the total count
+		MapRecordListJpa mapRecordList = new MapRecordListJpa();
+		mapRecordList.setTotalCount(totalCount);
+
+		// extract the required sublist of map records
+		mapRecordList.setMapRecords(mapRecords);
+
+		return mapRecordList;
+
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MappingService#getMapRecordsForMapProject
+	 * (java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameter)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public MapRecordList getPublishedMapRecordsForMapProject(
+			Long mapProjectId, PfsParameter pfsParameter) throws Exception {
+
+		// construct basic query
+		String full_query = constructMapRecordForMapProjectIdQuery(
+				mapProjectId, pfsParameter == null ? new PfsParameterJpa()
+						: pfsParameter);
+
+		full_query += " AND workflowStatus:'PUBLISHED'";
 
 		Logger.getLogger(MappingServiceJpa.class).info(full_query);
 
@@ -2772,15 +2855,25 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// if a conflict between two specialists, retrieve the CONFLICT_DETECTED records
 		if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW) || mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)) {
 			
-			for (Long originId : mapRecord.getOriginIds()) {
-				MapRecord mr = getMapRecord(originId);
-				if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
-					conflictRecords.addMapRecord(getMapRecord(originId));
+			// TODO As with review record below, this try/catch block is a 
+			// temporary fix for situations where origiinId list is greater than 2
+			// and where records listed are no longer in the database (e.g. in audit history)
+			try {
+				for (Long originId : mapRecord.getOriginIds()) {
+					MapRecord mr = getMapRecord(originId);
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+						conflictRecords.addMapRecord(getMapRecord(originId));
+					}
 				}
+				
+				if (conflictRecords.getCount() == 2) {
+					conflictRecords.setTotalCount(conflictRecords.getCount());
+					return conflictRecords;
+				}
+			} catch (Exception e) {
+				// do nothing
 			}
 			
-			if (conflictRecords.getCount() != 2) 
-				throw new Exception("Could not retrieve records in conflict.");
 			
 		} else if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW) || mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
 			
@@ -2788,27 +2881,36 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			boolean foundRevisionRecord = false; // the original published work
 			
 			for (Long originId : mapRecord.getOriginIds()) {
+				System.out.println("Getting origin id:  " + originId);
 				MapRecord mr = getMapRecord(originId);	
+				
+				// TODO This try/cactch block is here to prevent a problem where a REVIEW record
+				//  has been completed, then sent down FIX_ERROR_PATH again, then reviewed again,
+				//  causing origin ids to contain record references that no longer exist
+				try {
 
-				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
-					conflictRecords.addMapRecord(getMapRecord(originId));
-					foundReviewRecord = true;
-				} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
-					conflictRecords.addMapRecord(getMapRecord(originId));
-					foundRevisionRecord = true;
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+						conflictRecords.addMapRecord(getMapRecord(originId));
+						foundReviewRecord = true;
+					} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+						conflictRecords.addMapRecord(getMapRecord(originId));
+						foundRevisionRecord = true;
+					}
+				
+				} catch(Exception e) {
+					// do nothing
 				}
+				
+				// once records are found, stop processing origin ids
+				if (foundReviewRecord == true && foundRevisionRecord == true) {
+					conflictRecords.setTotalCount(conflictRecords.getCount());
+					return conflictRecords;
+				}
+					
 			}
 			
-			if (!foundReviewRecord) 
-				throw new Exception("Could not retrieve user's modified record to review.");
-			
-			if (!foundRevisionRecord)
-				throw new Exception("Could not retrieve the original published record required for comparing review work");
 		}
-
-		// set the total count for completeness (no paging here)
-		conflictRecords.setTotalCount(conflictRecords.getCount());
-
+		
 		return conflictRecords;
 	}
 

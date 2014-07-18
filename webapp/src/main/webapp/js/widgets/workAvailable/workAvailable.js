@@ -89,6 +89,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	});
 	
 	$scope.setTab = function(tabNumber) {
+		if (tabNumber == null) tabNumber = 0;
 		console.debug('Setting tab', tabNumber);
 		angular.forEach($scope.tabs, function(tab) {
 			tab.active = (tab.id == tabNumber? true : false);

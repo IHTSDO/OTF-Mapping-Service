@@ -109,8 +109,15 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 		
 		// construct html parameters parameter
 		var pfsParameterObj = constructPfsParameterObj(page);
-		var query_url = root_mapping + "record/project/id/" + $scope.project.objectId;
-
+		
+		var query_url;
+		if ($scope.currentRole === 'Viewer') {
+			query_url = root_mapping + "record/project/id/" + $scope.project.objectId + "/published"
+		} else if ($scope.currentRole === 'Specialist' || $scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+			query_url = root_mapping + "record/project/id/" + $scope.project.objectId;
+		} else {
+			console.debug("ERROR: Invalid role detected in retrieveRecords()");
+		}
 
 		$rootScope.glassPane++;
 		
@@ -304,8 +311,8 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 			// go to the edit page
 			$location.path("/record/recordId/" + id);
 		
-		// otherwise, assign this record along the FIX_ERROR_PAT
-		} else if (false) {
+		// otherwise, assign this record along the FIX_ERROR_PATH
+		} else  {
 
 			$rootScope.glassPane++;
 	
