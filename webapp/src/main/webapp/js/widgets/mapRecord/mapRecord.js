@@ -827,10 +827,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 	
 	$scope.deleteMapEntry = function(entry, group) {
-		console.debug("deleteMapEntry: ", entry);
+		console.debug("deleteMapEntry: ", entry, group);
 		$scope.entries[group].removeElement(entry);
 		
-		$rootScope.$broadcast('mapRecordWidget.notification.deleteSelectedEntry',{key: 'deleteSelectedEntry', entry: angular.copy(entry), record: $scope.record, project: $scope.project});  
+		//$rootScope.$broadcast('mapRecordWidget.notification.deleteSelectedEntry',{key: 'deleteSelectedEntry', entry: angular.copy(entry), record: $scope.record, project: $scope.project});  
 
 	};
 
@@ -933,8 +933,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 	// HACKISH:  Variable passed in is the currently viewed map user in the lead's View Other Work tab
 	$scope.displayMapRecord = function() {
-		
-		$scope.saveMapRecord(false);
 		
 		console.debug("displayMapRecord with ");
 		console.debug($scope.project);

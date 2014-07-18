@@ -41,6 +41,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	
 	// function to change tab
 	$scope.setTab = function(tabNumber) {
+		if (tabNumber == null) tabNumber = 0;
 		console.debug("Switching to tab " + tabNumber);
 		
 		angular.forEach($scope.tabs, function(tab) {

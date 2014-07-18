@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.DescriptionList;
@@ -17,6 +18,7 @@ import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -142,9 +144,11 @@ public interface ContentService extends RootService {
 
 	/**
 	 * Removes the description.
-	 *
-	 * @param id the id
-	 * @throws Exception the exception
+	 * 
+	 * @param id
+	 *            the id
+	 * @throws Exception
+	 *             the exception
 	 */
 	public void removeDescription(Long id) throws Exception;
 
@@ -324,9 +328,11 @@ public interface ContentService extends RootService {
 
 	/**
 	 * Removes the attributeValueRefSetMember.
-	 *
-	 * @param id the id
-	 * @throws Exception the exception
+	 * 
+	 * @param id
+	 *            the id
+	 * @throws Exception
+	 *             the exception
 	 */
 	public void removeAttributeValueRefSetMember(Long id) throws Exception;
 
@@ -384,9 +390,11 @@ public interface ContentService extends RootService {
 
 	/**
 	 * Removes the complexMapRefSetMember.
-	 *
-	 * @param id the id
-	 * @throws Exception the exception
+	 * 
+	 * @param id
+	 *            the id
+	 * @throws Exception
+	 *             the exception
 	 */
 	public void removeComplexMapRefSetMember(Long id) throws Exception;
 
@@ -710,4 +718,13 @@ public interface ContentService extends RootService {
 	public LanguageRefSetMemberList getLanguageRefSetMembersModifiedSinceDate(
 			String terminology, Date date);
 
+
+	/**
+	 * Compute tree position concept information.
+	 *
+	 * @param tpList the tp list
+	 * @return the tree position list
+	 * @throws Exception 
+	 */
+	public void computeTreePositionInformation(TreePositionList tpList) throws Exception;
 }

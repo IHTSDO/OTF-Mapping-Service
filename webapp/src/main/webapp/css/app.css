@@ -9,6 +9,16 @@ a {
 	cursor:pointer;
 }
 
+.term-browser-icon {
+	min-width: 15px;	
+}
+
+.term-browser-icon-disabled {
+	min-width: 15px;
+	color: #D3D3D3;
+	cursor: default;
+}
+
 
 
 
