@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -28,8 +29,10 @@ import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
@@ -48,7 +51,6 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
@@ -1089,14 +1091,65 @@ public class MappingServiceRest extends RootServiceRest {
 
 		try {
   		// authorize call
-			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+			MapUserRole applicationRole = securityService.getApplicationRoleForToken(authToken);
+			
+			
+			if (!applicationRole.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(Response.status(401).entity(
 						"User does not have permissions to find records by the given concept id.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
 					.getMapRecordsForConcept(conceptId);
+			
+			// return records that this user does not have permission to see
+			MapUser mapUser = mappingService.getMapUser(securityService.getUsernameForToken(authToken));
+			List<MapRecord> mapRecords = new ArrayList<>();
+			
+			// cycle over records and determine if this user can see them
+			for (MapRecord mr : mapRecordList.getMapRecords()) {
+				
+				// get the user's role for this record's project
+				MapUserRole projectRole = securityService.getMapProjectRoleForToken(authToken, mr.getMapProjectId());
+				
+				System.out.println(projectRole + " " + mr.toString());
+				
+				switch(mr.getWorkflowStatus()) {
+				
+				// any role can see published
+				case PUBLISHED:
+					mapRecords.add(mr);
+					break;
+				
+				// only roles above specialist can see ready_for_publication
+				case READY_FOR_PUBLICATION:
+					if (projectRole.hasPrivilegesOf(MapUserRole.SPECIALIST))
+						mapRecords.add(mr);
+					break;
+				// otherwise
+				// - if lead, add record
+				// - if specialist, only add record if owned
+				default:
+					if (projectRole.hasPrivilegesOf(MapUserRole.LEAD))
+						mapRecords.add(mr);
+					else if (mr.getOwner().equals(mapUser))
+						mapRecords.add(mr);
+					break;
+				
+				}
+			}
+			
+			// if not a mapping user (specialist or above), remove all notes from records prior to returning
+			// TODO:  Make this flag on MapUserRole for Application (add a GUEST enum?)
+			if (mapUser.getUserName().equals("guest")) {
+				for (MapRecord mr : mapRecords) {
+					mr.setMapNotes(null);
+				}
+			}
+
+			// set the list of records to the filtered object and return
+			mapRecordList.setMapRecords(mapRecords);
+			
 			mappingService.close();
 			return mapRecordList;
 		} catch (Exception e) { 
@@ -1123,7 +1176,62 @@ public class MappingServiceRest extends RootServiceRest {
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@CookieParam(value = "userInfo")
-	public MapRecordListJpa getMapRecordsForMapProject(
+	public MapRecordListJpa getPublishedAndReadyForPublicationMapRecordsForMapProject(
+			@ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /record/project/id/"
+						+ mapProjectId.toString() + " with PfsParameter: "
+						+ "\n" + "     Index/Results = "
+						+ Integer.toString(pfsParameter.getStartIndex()) + "/"
+						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
+						+ "     Sort field    = " + pfsParameter.getSortField()
+						+ "     Filter String = "
+						+ pfsParameter.getQueryRestriction());
+
+
+		// execute the service call
+		try {
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the non-published map records for a map project.").build());
+			
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
+					.getPublishedAndReadyForPublicationMapRecordsForMapProject(mapProjectId, pfsParameter);
+			mappingService.close();
+			return mapRecordList;
+		} catch (Exception e) { 
+			handleException(e, "trying to retrieve the map records for a map project");
+			return null;
+		}
+
+	}
+	
+	/**
+	 * Returns delimited page of Published or Ready For Publication MapRecords
+	 * given a paging/filtering/sorting parameters object
+	 * 
+	 * @param mapProjectId
+	 *            the map project id
+	 * @param pfsParameter
+	 *            the JSON object containing the paging/filtering/sorting
+	 *            parameters
+	 * @param authToken 
+	 * @return the list of map records
+	 */
+	@POST
+	@Path("/record/project/id/{id:[0-9][0-9]*}/published")
+	@ApiOperation(value = "Get paged records by project id", notes = "Returns delimited page of published or ready-for-publicatoin MapRecords given a paging/filtering/sorting parameters object", response = MapRecordListJpa.class)
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@CookieParam(value = "userInfo")
+	public MapRecordListJpa getPublishedMapRecordsForMapProject(
 			@ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -1150,7 +1258,7 @@ public class MappingServiceRest extends RootServiceRest {
 			
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
-					.getPublishedAndReadyForPublicationMapRecordsForMapProject(mapProjectId, pfsParameter);
+					.getPublishedMapRecordsForMapProject(mapProjectId, pfsParameter);
 			mappingService.close();
 			return mapRecordList;
 		} catch (Exception e) { 
@@ -1432,7 +1540,7 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/treePosition/project/id/{projectId}/concept/id/{terminology}/{terminologyVersion}/{terminologyId}")
 	@ApiOperation(value = "Get concept's local tree", notes = "Returns a tree structure representing the position of a concept in a terminology and its children", response = TreePositionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public TreePositionListJpa getTreePositionsWithDescendants(
+	public TreePositionList getTreePositionsWithDescendants(
 			@ApiParam(value = "terminology id of concept", required = true) @PathParam("terminologyId") String terminologyId,
 			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
@@ -1456,22 +1564,19 @@ public class MappingServiceRest extends RootServiceRest {
 			
 			// get the local tree positions from content service
 			ContentService contentService = new ContentServiceJpa();
-			List<TreePosition> treePositions = contentService.getTreePositionsWithDescendants(
-					terminologyId, terminology, terminologyVersion)
-					.getTreePositions();
+			TreePositionList treePositions = contentService.getTreePositionsWithDescendants(
+					terminologyId, terminology, terminologyVersion);
+			contentService.computeTreePositionInformation(treePositions);
 			contentService.close();
 
 			// set the valid codes using mapping service
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.setTreePositionValidCodes(treePositions,
+			mappingService.setTreePositionValidCodes(treePositions.getTreePositions(),
 					mapProjectId);
-			mappingService.setTreePositionTerminologyNotes(treePositions, mapProjectId);
+			mappingService.setTreePositionTerminologyNotes(treePositions.getTreePositions(), mapProjectId);
 			mappingService.close();
 
-			// construct and return the tree position list object
-			TreePositionListJpa treePositionList = new TreePositionListJpa();
-			treePositionList.setTreePositions(treePositions);
-			return treePositionList;
+			return treePositions;
 		} catch (Exception e) { 
 			handleException(e, "trying to get the tree positions with descendants");
 			return null;
@@ -1494,7 +1599,7 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/treePosition/project/id/{projectId}/terminology/id/{terminology}/{terminologyVersion}")
 	@ApiOperation(value = "Get top-level trees", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public TreePositionListJpa getRootTreePositionsForTerminology(
+	public TreePositionList getRootTreePositionsForTerminology(
 			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
 			@ApiParam(value = "id of map project this tree will be displayed for", required = true) @PathParam("projectId") Long mapProjectId,
@@ -1515,21 +1620,20 @@ public class MappingServiceRest extends RootServiceRest {
 			
 			// get the root tree positions from content service
 			ContentService contentService = new ContentServiceJpa();
-			List<TreePosition> treePositions = contentService
+			TreePositionList treePositions = contentService
 					.getRootTreePositions(terminology,
-							terminologyVersion).getTreePositions();
+							terminologyVersion);
+			contentService.computeTreePositionInformation(treePositions);
 			contentService.close();
 
 			// set the valid codes using mapping service
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.setTreePositionValidCodes(treePositions,
+			mappingService.setTreePositionValidCodes(treePositions.getTreePositions(),
 					mapProjectId);
 			mappingService.close();
 
-			// construct and return the tree position list object
-			TreePositionListJpa treePositionList = new TreePositionListJpa();
-			treePositionList.setTreePositions(treePositions);
-			return treePositionList;
+	
+			return treePositions;
 		} catch (Exception e) { 
 			handleException(e, "trying to get the root tree positions for a terminology");
 			return null;
@@ -1554,7 +1658,7 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/treePosition/project/id/{projectId}/terminology/id/{terminology}/{terminologyVersion}/query/{query}")
 	@ApiOperation(value = "Get tree positions for query", notes = "Returns tree structures representing results a given terminology, terminology version, and query ", response = TreePositionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public TreePositionListJpa getTreePositionGraphsForQuery(
+	public TreePositionList getTreePositionGraphsForQuery(
 			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
 			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
 			@ApiParam(value = "paging/filtering/sorting object", required = true) @PathParam("query") String query,
@@ -1576,22 +1680,21 @@ public class MappingServiceRest extends RootServiceRest {
 			
 			// get the tree positions from concept service
 			ContentService contentService = new ContentServiceJpa();
-			List<TreePosition> treePositions = contentService
+			TreePositionList treePositions = contentService
 					.getTreePositionGraphForQuery(terminology,
-							terminologyVersion, query).getTreePositions();
+							terminologyVersion, query);
+			contentService.computeTreePositionInformation(treePositions);
 			contentService.close();
 
 			// set the valid codes using mapping service
 			MappingService mappingService = new MappingServiceJpa();
-			mappingService.setTreePositionValidCodes(treePositions,
+			mappingService.setTreePositionValidCodes(treePositions.getTreePositions(),
 					mapProjectId);
-			mappingService.setTreePositionTerminologyNotes(treePositions, mapProjectId);
+			mappingService.setTreePositionTerminologyNotes(treePositions.getTreePositions(), mapProjectId);
 			mappingService.close();
 
-			// construct and return the tree position list object
-			TreePositionListJpa treePositionList = new TreePositionListJpa();
-			treePositionList.setTreePositions(treePositions);
-			return treePositionList;
+			
+			return treePositions;
 
 		} catch (Exception e) { 
 			handleException(e, "trying to get the tree position graphs for a query");

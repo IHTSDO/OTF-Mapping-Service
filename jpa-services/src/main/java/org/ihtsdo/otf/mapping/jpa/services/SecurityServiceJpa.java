@@ -186,10 +186,11 @@ public class SecurityServiceJpa implements SecurityService {
     if (authToken == null)
       throw new LocalException(
           "Attempt to access a service without an authorization token, the user is likely not logged in.");
-    if (tokenUsernameMap.containsKey(authToken)) {
-      String username = tokenUsernameMap.get(authToken);
+    String parsedToken = authToken.replace("\"", "");
+    if (tokenUsernameMap.containsKey(parsedToken)) {
+      String username = tokenUsernameMap.get(parsedToken);
       Logger.getLogger(this.getClass()).info(
-          "User = " + username + " Token = " + authToken);
+          "User = " + username + " Token = " + parsedToken);
       return username;
     } else
       throw new Exception("AuthToken does not have a valid username.");

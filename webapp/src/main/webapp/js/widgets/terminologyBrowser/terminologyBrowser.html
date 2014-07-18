@@ -17,9 +17,13 @@
 			class="glyphicon" ng-click="toggleChildren(node0)"
 			ng-class="{'glyphicon-chevron-down': node0.isOpen, 'glyphicon-chevron-right': !node0.isOpen}"></i></a>
 		<a ng-show="node0.childrenCount == 0"><i
-			class="glyphicon glyphicon-leaf"></i></a> &nbsp <a><i
-			class="glyphicon glyphicon-info-sign"
-			ng-click="getConceptDetails(node0)"></i></a> &nbsp <strong> <a
+			class="glyphicon glyphicon-leaf"></i></a>
+			
+			<i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node0.descGroups.length == 0"></i>
+			<a><i
+			class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node0.descGroups.length > 0"
+			ng-click="getConceptDetails(node0)"></i></a>
+			<strong> <a
 			ng-show="node0.valid == true" ng-click="selectConcept(node0)">{{node0.terminologyId}}</a>
 			<span ng-show="node0.valid == false">{{node0.terminologyId}}</span></strong>{{node0.terminologyNote}}, {{truncate(node0.defaultPreferredName)}}
 		<div style="display: inline;"
@@ -36,30 +40,28 @@
 			<div class="well well-sm">
 
 				<div
-					ng-repeat="descriptionGroup in node0.conceptDetails.descriptionGroups">
-					<em>{{descriptionGroup.name}}</em>
-					<ul>
-						<li ng-repeat="description in descriptionGroup.descriptions">
-							{{truncate(description.term)}}
-							<div style="display: inline;" ng-show=truncated(description.term)
+					ng-repeat="descGroup in node0.descGroups">
+					<em>{{descGroup.name}}</em>
+				<ul>
+						<li ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+							{{truncate(treePositionDescription.name)}}
+							<div style="display: inline;" ng-show=truncated(treePositionDescription.name)
 								class="dropdown">
 								<a class="dropdown-toggle">...</a> <span style="width: 100%"
 									class="dropdown-menu term-browser-dropdown-menu">
-									<p>{{description.term}}</p>
+									<p>{{treePositionDescription.name}}</p>
 								</span>
-							</div> <span ng-show="description.referencedConcepts.length > 0">
+							</div> <span ng-show="treePositionDescription.referencedConcepts.length > 0">
 								( <span
-								ng-repeat="referencedConcept in description.referencedConcepts">
-									<a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}}
-										{{referencedConcept.relType}}</a>
+								ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
+									<a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+										</a>
 							</span> )
 						</span>
 						</li>
 					</ul>
 
 				</div>
-				<div ng-show="node0.conceptDetails.descriptionGroups.length == 0">No
-					additional information.</div>
 			</div>
 		</div> <!--  Children - level 1 -->
 		<ul style="list-style-type: none; padding-left: 15px;"
@@ -71,9 +73,9 @@
 					class="glyphicon" ng-click="toggleChildren(node1)"
 					ng-class="{'glyphicon-chevron-down': node1.isOpen, 'glyphicon-chevron-right': !node1.isOpen}"></i></a>
 				<a ng-show="node1.childrenCount == 0"><i
-					class="glyphicon glyphicon-leaf"></i></a> &nbsp <a><i
-					class="glyphicon glyphicon-info-sign"
-					ng-click="getConceptDetails(node1)"></i></a> &nbsp <strong></strong> <a
+					class="glyphicon glyphicon-leaf"></i></a><a><i
+					class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node1.descGroups.length > 0"
+					ng-click="getConceptDetails(node1)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node1.descGroups.length == 0"></i>&nbsp<strong></strong> <a
 				ng-show="node1.valid == true" ng-click="selectConcept(node1)">{{node1.terminologyId}}</a>
 				<span ng-show="node1.valid == false">{{node1.terminologyId}}</span></strong>{{node1.terminologyNote}}, {{truncate(node1.defaultPreferredName)}}
 				<div style="display: inline;"
@@ -88,30 +90,29 @@
 					<div class="well well-sm">
 
 						<div
-							ng-repeat="descriptionGroup in node1.conceptDetails.descriptionGroups">
-							<em>{{descriptionGroup.name}}</em>
+							ng-repeat="descGroup in node1.descGroups">
+							<em>{{descGroup.name}}</em>
 							<ul>
-								<li ng-repeat="description in descriptionGroup.descriptions">
-									{{truncate(description.term)}}
+								<li ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+									{{truncate(treePositionDescription.name)}}
 									<div style="display: inline;"
-										ng-show=truncated(description.term) class="dropdown">
+										ng-show=truncated(treePositionDescription.name) class="dropdown">
 										<a class="dropdown-toggle">...</a> <span style="width: 100%"
 											class="dropdown-menu term-browser-dropdown-menu">
-											<p>{{description.term}}</p>
+											<p>{{treePositionDescription.name}}</p>
 										</span>
-									</div> <span ng-show="description.referencedConcepts.length > 0">
+									</div> <span ng-show="treePositionDescription.referencedConcepts.length > 0">
 										( <span
-										ng-repeat="referencedConcept in description.referencedConcepts">
-											<a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}}
-												{{referencedConcept.relType}}</a>
+										ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
+											<a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+												</a>
 									</span> )
 								</span>
 								</li>
 							</ul>
 
 						</div>
-						<div ng-show="node1.conceptDetails.descriptionGroups.length == 0">No
-							additional information.</div>
+
 					</div>
 				</div> <!--  Children - level 2 -->
 				<ul style="list-style-type: none; padding-left: 15px;"
@@ -122,9 +123,9 @@
 							class="glyphicon" ng-click="toggleChildren(node2)"
 							ng-class="{'glyphicon-chevron-down': node2.isOpen, 'glyphicon-chevron-right': !node2.isOpen}"></i></a>
 						<a ng-show="node2.childrenCount == 0"><i
-							class="glyphicon glyphicon-leaf"></i></a> &nbsp <a><i
-							class="glyphicon glyphicon-info-sign"
-							ng-click="getConceptDetails(node2)"></i></a> &nbsp <a
+							class="glyphicon glyphicon-leaf"></i></a>&nbsp<a><i
+							class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node2.descGroups.length > 0"
+							ng-click="getConceptDetails(node2)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node2.descGroups.length == 0"></i>&nbsp<a
 						ng-show="node2.valid == true" ng-click="selectConcept(node2)">{{node2.terminologyId}}</a>
 						<span ng-show="node2.valid == false">{{node2.terminologyId}}</span>{{node2.terminologyNote}}, {{truncate(node2.defaultPreferredName)}}
 						<div style="display: inline;"
@@ -140,31 +141,29 @@
 							<div class="well well-sm">
 
 								<div
-									ng-repeat="descriptionGroup in node2.conceptDetails.descriptionGroups">
-									<em>{{descriptionGroup.name}}</em>
+									ng-repeat="descGroup in node2.descGroups">
+									<em>{{descGroup.name}}</em>
 									<ul>
-										<li ng-repeat="description in descriptionGroup.descriptions">
-											{{truncate(description.term)}}
+										<li ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+											{{truncate(treePositionDescription.name)}}
 											<div style="display: inline;"
-												ng-show=truncated(description.term) class="dropdown">
+												ng-show=truncated(treePositionDescription.name) class="dropdown">
 												<a class="dropdown-toggle">...</a> <span style="width: 100%"
 													class="dropdown-menu term-browser-dropdown-menu">
-													<p>{{description.term}}</p>
+													<p>{{treePositionDescription.name}}</p>
 												</span>
-											</div> <span ng-show="description.referencedConcepts.length > 0">
+											</div> <span ng-show="treePositionDescription.referencedConcepts.length > 0">
 												( <span
-												ng-repeat="referencedConcept in description.referencedConcepts">
-													<a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}}
-														{{referencedConcept.relType}}</a>
+												ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
+													<a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+														</a>
 											</span> )
 										</span>
 										</li>
 									</ul>
 
 								</div>
-								<div
-									ng-show="node2.conceptDetails.descriptionGroups.length == 0">No
-									additional information.</div>
+
 							</div>
 						</div> <!--  Children - level 3 -->
 						<ul style="list-style-type: none; padding-left: 15px;"
@@ -175,9 +174,9 @@
 									class="glyphicon" ng-click="toggleChildren(node3)"
 									ng-class="{'glyphicon-chevron-down': node3.isOpen, 'glyphicon-chevron-right': !node3.isOpen}"></i></a>
 								<a ng-show="node3.childrenCount == 0"><i
-									class="glyphicon glyphicon-leaf"></i></a> &nbsp <a><i
-									class="glyphicon glyphicon-info-sign"
-									ng-click="getConceptDetails(node3)"></i></a> &nbsp
+									class="glyphicon glyphicon-leaf"></i></a>&nbsp<a><i
+									class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node3.descGroups.length > 0"
+									ng-click="getConceptDetails(node3)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node3.descGroups.length == 0"></i>&nbsp
 								<a ng-show="node3.valid == true"
 								ng-click="selectConcept(node3)">{{node3.terminologyId}}</a> <span
 								ng-show="node3.valid == false">{{node3.terminologyId}}</span>{{node3.terminologyNote}}, {{truncate(node3.defaultPreferredName)}}
@@ -194,31 +193,29 @@
 									<div class="well well-sm">
 
 										<div
-											ng-repeat="descriptionGroup in node3.conceptDetails.descriptionGroups">
-											<em>{{descriptionGroup.name}}</em>
+											ng-repeat="descGroup in node3.descGroups">
+											<em>{{descGroup.name}}</em>
 											<ul>
-												<li ng-repeat="description in descriptionGroup.descriptions">
-													{{truncate(description.term)}}
+												<li ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+													{{truncate(treePositionDescription.name)}}
 													<div style="display: inline;"
-														ng-show=truncated(description.term) class="dropdown">
+														ng-show=truncated(treePositionDescription.name) class="dropdown">
 														<a class="dropdown-toggle">...</a> <span
 															style="width: 100%" class="dropdown-menu term-browser-dropdown-menu">
-															<p>{{description.term}}</p>
+															<p>{{treePositionDescription.name}}</p>
 														</span>
-													</div> <span ng-show="description.referencedConcepts.length > 0">
+													</div> <span ng-show="treePositionDescription.referencedConcepts.length > 0">
 														( <span
-														ng-repeat="referencedConcept in description.referencedConcepts">
-															<a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}}
-																{{referencedConcept.relType}}</a>
+														ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
+															<a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+																</a>
 													</span> )
 												</span>
 												</li>
 											</ul>
 
 										</div>
-										<div
-											ng-show="node3.conceptDetails.descriptionGroups.length == 0">No
-											additional information.</div>
+
 									</div>
 								</div> <!--  Children - level 4 -->
 								<ul style="list-style-type: none; padding-left: 15px;"
@@ -229,9 +226,9 @@
 											class="glyphicon" ng-click="toggleChildren(node4)"
 											ng-class="{'glyphicon-chevron-down': node4.isOpen, 'glyphicon-chevron-right': !node4.isOpen}"></i></a>
 										<a ng-show="node4.childrenCount == 0"><i
-											class="glyphicon glyphicon-leaf"></i></a> &nbsp <a><i
-											class="glyphicon glyphicon-info-sign"
-											ng-click="getConceptDetails(node4)"></i></a> &nbsp
+											class="glyphicon glyphicon-leaf"></i></a>&nbsp<a><i
+											class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node4.descGroups.length > 0"
+											ng-click="getConceptDetails(node4)"></i></a> <i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node4.descGroups.length == 0"></i>&nbsp
 										 <a
 										ng-show="node4.valid == true" ng-click="selectConcept(node4)">{{node4.terminologyId}}</a>
 										<span ng-show="node4.valid == false">{{node4.terminologyId}}</span>{{node4.terminologyNote}}, {{truncate(node4.defaultPreferredName)}}
@@ -249,33 +246,31 @@
 											<div class="well well-sm">
 
 												<div
-													ng-repeat="descriptionGroup in node4.conceptDetails.descriptionGroups">
-													<em>{{descriptionGroup.name}}</em>
+													ng-repeat="descGroup in node4.descGroups">
+													<em>{{descGroup.name}}</em>
 													<ul>
 														<li
-															ng-repeat="description in descriptionGroup.descriptions">
-															{{truncate(description.term)}}
+															ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+															{{truncate(treePositionDescription.name)}}
 															<div style="display: inline;"
-																ng-show=truncated(description.term) class="dropdown">
+																ng-show=truncated(treePositionDescription.name) class="dropdown">
 																<a class="dropdown-toggle">...</a> <span
 																	style="width: 100%" class="dropdown-menu term-browser-dropdown-menu">
-																	<p>{{description.term}}</p>
+																	<p>{{treePositionDescription.name}}</p>
 																</span>
 															</div> <span
-															ng-show="description.referencedConcepts.length > 0">
+															ng-show="treePositionDescription.referencedConcepts.length > 0">
 																( <span
-																ng-repeat="referencedConcept in description.referencedConcepts">
-																	<a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}}
-																		{{referencedConcept.relType}}</a>
+																ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
+																	<a ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+																		</a>
 															</span> )
 														</span>
 														</li>
 													</ul>
 
 												</div>
-												<div
-													ng-show="node4.conceptDetails.descriptionGroups.length == 0">No
-													additional information.</div>
+												
 											</div>
 										</div> <!--  Children - level 5 -->
 										<ul style="list-style-type: none; padding-left: 15px;"
@@ -287,9 +282,9 @@
 													ng-click="toggleChildren(node5)"
 													ng-class="{'glyphicon-chevron-down': node5.isOpen, 'glyphicon-chevron-right': !node5.isOpen}"></i></a>
 												<a ng-show="node5.childrenCount == 0"><i
-													class="glyphicon glyphicon-leaf"></i></a> &nbsp <a><i
-													class="glyphicon glyphicon-info-sign"
-													ng-click="getConceptDetails(node5)"></i></a> &nbsp
+													class="glyphicon glyphicon-leaf"></i></a>&nbsp<a><i
+													class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node5.descGroups.length > 0"
+													ng-click="getConceptDetails(node5)"></i></a> <i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node5.descGroups.length == 0"></i>&nbsp
 											<a
 												ng-show="node5.valid == true"
 												ng-click="selectConcept(node5)">{{node5.terminologyId}}</a>
@@ -308,34 +303,32 @@
 													<div class="well well-sm">
 
 														<div
-															ng-repeat="descriptionGroup in node5.conceptDetails.descriptionGroups">
-															<em>{{descriptionGroup.name}}</em>
+															ng-repeat="descGroup in node5.descGroups">
+															<em>{{descGroup.name}}</em>
 															<ul>
 																<li
-																	ng-repeat="description in descriptionGroup.descriptions">
-																	{{truncate(description.term)}}
+																	ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+																	{{truncate(treePositionDescription.name)}}
 																	<div style="display: inline;"
-																		ng-show=truncated(description.term) class="dropdown">
+																		ng-show=truncated(treePositionDescription.name) class="dropdown">
 																		<a class="dropdown-toggle">...</a> <span
 																			style="width: 100%" class="dropdown-menu term-browser-dropdown-menu">
-																			<p>{{description.term}}</p>
+																			<p>{{treePositionDescription.name}}</p>
 																		</span>
 																	</div> <span
-																	ng-show="description.referencedConcepts.length > 0">
+																	ng-show="treePositionDescription.referencedConcepts.length > 0">
 																		( <span
-																		ng-repeat="referencedConcept in description.referencedConcepts">
+																		ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
 																			<a
-																			ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}}
-																				{{referencedConcept.relType}}</a>
+																			ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+																				</a>
 																	</span> )
 																</span>
 																</li>
 															</ul>
 
 														</div>
-														<div
-															ng-show="node5.conceptDetails.descriptionGroups.length == 0">No
-															additional information.</div>
+		
 													</div>
 												</div> <!--  Children - level 6 -->
 												<ul style="list-style-type: none; padding-left: 15px;"
@@ -347,9 +340,9 @@
 															ng-click="toggleChildren(node6)"
 															ng-class="{'glyphicon-chevron-down': node6.isOpen, 'glyphicon-chevron-right': !node6.isOpen}"></i></a>
 														<a ng-show="node6.childrenCount == 0"><i
-															class="glyphicon glyphicon-leaf"></i></a> &nbsp <a><i
-															class="glyphicon glyphicon-info-sign"
-															ng-click="getConceptDetails(node6)"></i></a> &nbsp
+															class="glyphicon glyphicon-leaf"></i></a>&nbsp<a><i
+															class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node6.descGroups.length > 0"
+															ng-click="getConceptDetails(node6)"></i></a> <i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node6.descGroups.length == 0"></i>&nbsp
 													<a
 														ng-show="node6.valid == true"
 														ng-click="selectConcept(node6)">{{node6.terminologyId}}</a>
@@ -368,34 +361,32 @@
 															<div class="well well-sm">
 
 																<div
-																	ng-repeat="descriptionGroup in node6.conceptDetails.descriptionGroups">
-																	<em>{{descriptionGroup.name}}</em>
+																	ng-repeat="descGroup in node6.descGroups">
+																	<em>{{descGroup.name}}</em>
 																	<ul>
 																		<li
-																			ng-repeat="description in descriptionGroup.descriptions">
-																			{{truncate(description.term)}}
+																			ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+																			{{truncate(treePositionDescription.name)}}
 																			<div style="display: inline;"
-																				ng-show=truncated(description.term) class="dropdown">
+																				ng-show=truncated(treePositionDescription.name) class="dropdown">
 																				<a class="dropdown-toggle">...</a> <span
 																					style="width: 100%" class="dropdown-menu term-browser-dropdown-menu">
-																					<p>{{description.term}}</p>
+																					<p>{{treePositionDescription.name}}</p>
 																				</span>
 																			</div> <span
-																			ng-show="description.referencedConcepts.length > 0">
+																			ng-show="treePositionDescription.referencedConcepts.length > 0">
 																				( <span
-																				ng-repeat="referencedConcept in description.referencedConcepts">
+																				ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
 																					<a
-																					ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}}
-																						{{referencedConcept.relType}}</a>
+																					ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+																						</a>
 																			</span> )
 																		</span>
 																		</li>
 																	</ul>
 
 																</div>
-																<div
-																	ng-show="node6.conceptDetails.descriptionGroups.length == 0">No
-																	additional information.</div>
+																
 															</div>
 														</div> <!--  Children - level 7 -->
 														<ul style="list-style-type: none; padding-left: 15px;"
@@ -407,9 +398,9 @@
 																	class="glyphicon" ng-click="toggleChildren(node7)"
 																	ng-class="{'glyphicon-chevron-down': node7.isOpen, 'glyphicon-chevron-right': !node7.isOpen}"></i></a>
 																<a ng-show="node7.childrenCount == 0"><i
-																	class="glyphicon glyphicon-leaf"></i></a> &nbsp <a><i
-																	class="glyphicon glyphicon-info-sign"
-																	ng-click="getConceptDetails(node7)"></i></a> &nbsp <a
+																	class="glyphicon glyphicon-leaf"></i></a>&nbsp<a><i
+																	class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node7.descGroups.length > 0"
+																	ng-click="getConceptDetails(node7)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node7.descGroups.length == 0"></i>&nbsp<a
 																ng-show="node7.valid == true"
 																ng-click="selectConcept(node7)">{{node7.terminologyId}}</a>
 																<span ng-show="node7.valid == false">{{node7.terminologyId}}</span>{{node7.terminologyNote}}, {{truncate(node7.defaultPreferredName)}}
@@ -420,42 +411,40 @@
 																		style="width: 100%" class="dropdown-menu term-browser-dropdown-menu">
 																		<p>{{node7.defaultPreferredName}}</p>
 																	</span>
-																</div> {{node7.conceptDetails.preferredDescription}}
+																</div> {{node7.preferredDescription}}
 
 																<div collapse="!(node7.isConceptOpen)">
 
 																	<div class="well well-sm">
 
 																		<div
-																			ng-repeat="descriptionGroup in node7.conceptDetails.descriptionGroups">
-																			<em>{{descriptionGroup.name}}</em>
+																			ng-repeat="descGroup in node7.descGroups">
+																			<em>{{descGroup.name}}</em>
 																			<ul>
 																				<li
-																					ng-repeat="description in descriptionGroup.descriptions">
-																					{{truncate(description.term)}}
+																					ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+																					{{truncate(treePositionDescription.name)}}
 																					<div style="display: inline;"
-																						ng-show=truncated(description.term)
+																						ng-show=truncated(treePositionDescription.name)
 																						class="dropdown">
 																						<a class="dropdown-toggle">...</a> <span
 																							style="width: 100%" class="dropdown-menu term-browser-dropdown-menu">
-																							<p>{{description.term}}</p>
+																							<p>{{treePositionDescription.name}}</p>
 																						</span>
 																					</div> <span
-																					ng-show="description.referencedConcepts.length > 0">
+																					ng-show="treePositionDescription.referencedConcepts.length > 0">
 																						( <span
-																						ng-repeat="referencedConcept in description.referencedConcepts">
+																						ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
 																							<a
-																							ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}}
-																								{{referencedConcept.relType}}</a>
+																							ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+																								</a>
 																					</span> )
 																				</span>
 																				</li>
 																			</ul>
 
 																		</div>
-																		<div
-																			ng-show="node7.conceptDetails.descriptionGroups.length == 0">No
-																			additional information.</div>
+																		
 																	</div>
 																</div> <!--  Children - level 8 -->
 																<ul style="list-style-type: none; padding-left: 15px;"
@@ -467,9 +456,9 @@
 																			class="glyphicon" ng-click="toggleChildren(node8)"
 																			ng-class="{'glyphicon-chevron-down': node8.isOpen, 'glyphicon-chevron-right': !node8.isOpen}"></i></a>
 																		<a ng-show="node8.childrenCount == 0"><i
-																			class="glyphicon glyphicon-leaf"></i></a> &nbsp <a><i
-																			class="glyphicon glyphicon-info-sign"
-																			ng-click="getConceptDetails(node8)"></i></a> &nbsp <a
+																			class="glyphicon glyphicon-leaf"></i></a>&nbsp<a><i
+																			class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node8.descGroups.length > 0"
+																			ng-click="getConceptDetails(node8)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node8.descGroups.length == 0"></i>&nbsp<a
 																		ng-show="node8.valid == true"
 																		ng-click="selectConcept(node8)">{{node8.terminologyId}}</a>
 																		<span ng-show="node8.valid == false">{{node8.terminologyId}}</span>{{node8.terminologyNote}}, {{truncate(node8.defaultPreferredName)}}
@@ -482,41 +471,39 @@
 																				<p>{{node8.defaultPreferredName}}</p>
 																			</span>
 																		</div>
-																		{{node8.conceptDetails.preferredDescription}}
+																		{{node8.preferredDescription}}
 																		<div collapse="!(node8.isConceptOpen)">
 
 																			<div class="well well-sm">
 
 																				<div
-																					ng-repeat="descriptionGroup in node8.conceptDetails.descriptionGroups">
-																					<em>{{descriptionGroup.name}}</em>
+																					ng-repeat="descGroup in node8.descGroups">
+																					<em>{{descGroup.name}}</em>
 																					<ul>
 																						<li
-																							ng-repeat="description in descriptionGroup.descriptions">
-																							{{truncate(description.term)}}
+																							ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+																							{{truncate(treePositionDescription.name)}}
 																							<div style="display: inline;"
-																								ng-show=truncated(description.term)
+																								ng-show=truncated(treePositionDescription.name)
 																								class="dropdown">
 																								<a class="dropdown-toggle">...</a> <span
 																									style="width: 100%" class="dropdown-menu term-browser-dropdown-menu">
-																									<p>{{description.term}}</p>
+																									<p>{{treePositionDescription.name}}</p>
 																								</span>
 																							</div> <span
-																							ng-show="description.referencedConcepts.length > 0">
+																							ng-show="treePositionDescription.referencedConcepts.length > 0">
 																								( <span
-																								ng-repeat="referencedConcept in description.referencedConcepts">
+																								ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
 																									<a
-																									ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}}
-																										{{referencedConcept.relType}}</a>
+																									ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+																										</a>
 																							</span> )
 																						</span>
 																						</li>
 																					</ul>
 
 																				</div>
-																				<div
-																					ng-show="node8.conceptDetails.descriptionGroups.length == 0">No
-																					additional information.</div>
+																				
 																			</div>
 																		</div> <!--  Children - level 8 -->
 																		<ul style="list-style-type: none; padding-left: 15px;"
@@ -528,12 +515,12 @@
 																					class="glyphicon" ng-click="toggleChildren(node9)"
 																					ng-class="{'glyphicon-chevron-down': node9.isOpen, 'glyphicon-chevron-right': !node9.isOpen}"></i></a>
 																				<a ng-show="node9.childrenCount == 0"><i
-																					class="glyphicon glyphicon-leaf"></i></a> &nbsp <a><i
-																					class="glyphicon glyphicon-info-sign"
-																					ng-click="getConceptDetails(node9)"></i></a> &nbsp <a
+																					class="glyphicon glyphicon-leaf"></i></a>&nbsp<a><i
+																					class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node9.descGroups.length > 0"
+																					ng-click="getConceptDetails(node9)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node9.descGroups.length == 0"></i>&nbsp<a
 																				ng-show="node9.valid == true"
 																				ng-click="selectConcept(node9)">{{node9.terminologyId}}</a>
-																				<span ng-show="node9.valid == false">{{node9.terminologyId}}</span>{{node4.terminologyNote}}, {{truncate(node9.defaultPreferredName)}}
+																				<span ng-show="node9.valid == false">{{node9.terminologyId}}</span>{{node9.terminologyNote}}, {{truncate(node9.defaultPreferredName)}}
 																				<div style="display: inline;"
 																					ng-show=truncated(node9.defaultPreferredName)
 																					class="dropdown">
@@ -542,42 +529,40 @@
 																						<p>{{node9.defaultPreferredName}}</p>
 																					</span>
 																				</div>
-																				{{node9.conceptDetails.preferredDescription}}
+																				{{node9.preferredDescription}}
 
 																				<div collapse="!(node9.isConceptOpen)">
 
 																					<div class="well well-sm">
 
 																						<div
-																							ng-repeat="descriptionGroup in node9.conceptDetails.descriptionGroups">
-																							<em>{{descriptionGroup.name}}</em>
+																							ng-repeat="descGroup in node9.descGroups">
+																							<em>{{descGroup.name}}</em>
 																							<ul>
 																								<li
-																									ng-repeat="description in descriptionGroup.descriptions">
-																									{{truncate(description.term)}}
+																									ng-repeat="treePositionDescription in descGroup.treePositionDescriptions">
+																									{{truncate(treePositionDescription.name)}}
 																									<div style="display: inline;"
-																										ng-show=truncated(description.term)
+																										ng-show=truncated(treePositionDescription.name)
 																										class="dropdown">
 																										<a class="dropdown-toggle">...</a> <span
 																											style="width: 100%" class="dropdown-menu term-browser-dropdown-menu">
-																											<p>{{description.term}}</p>
+																											<p>{{treePositionDescription.name}}</p>
 																										</span>
 																									</div> <span
-																									ng-show="description.referencedConcepts.length > 0">
+																									ng-show="treePositionDescription.referencedConcepts.length > 0">
 																										( <span
-																										ng-repeat="referencedConcept in description.referencedConcepts">
+																										ng-repeat="referencedConcept in treePositionDescription.referencedConcepts">
 																											<a
-																											ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.terminologyId}}
-																												{{referencedConcept.relType}}</a>
+																											ng-click="gotoReferencedConcept(referencedConcept)">{{referencedConcept.displayName}}
+																												</a>
 																									</span> )
 																								</span>
 																								</li>
 																							</ul>
 
 																						</div>
-																						<div
-																							ng-show="node9.conceptDetails.descriptionGroups.length == 0">No
-																							additional information.</div>
+																						
 																					</div>
 																				</div>
 																			</li>

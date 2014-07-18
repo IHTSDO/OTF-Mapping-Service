@@ -203,10 +203,19 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		if (record.owner.userName === $scope.currentUser.userName
 				&& record.workflowStatus != 'PUBLISHED' && record.workflowStatus != 'READY_FOR_PUBLICATION') {
 			
-			// go to the edit page
-			$location.path("/record/recordId/" + record.id);
+			// if a conflict or review record record, go to conflict resolution page
+			if (record.workflowStatus === 'CONFLICT_NEW' || record.workflowStatus === 'CONFLICT_IN_PROGRESS') {
+				$location.path("/record/conflicts/" + record.id);
+			}
+			
+			else if (record.workflowStatus === 'REVIEW_NEW' || record.workflowStatus === 'REVIEW_IN_PROGRESS') {
+				$location.path("/record/review/" + record.id);
+			}
+			
+			// otherwise go to the edit page
+			else $location.path("/record/recordId/" + record.id);
 		
-		// otherwise, assign this record along the FIX_ERROR_PAT
+		// otherwise, assign this record along the FIX_ERROR_PATH
 		} else {
 
 			// assign the record along the FIX_ERROR_PATH
