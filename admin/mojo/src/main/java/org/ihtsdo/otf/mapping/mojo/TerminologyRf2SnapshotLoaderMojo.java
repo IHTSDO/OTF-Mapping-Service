@@ -134,7 +134,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * 
    * @see org.apache.maven.plugin.Mojo#execute()
    */
-  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoFailureException {
     getLog().info("Starting loading RF2 data ...");

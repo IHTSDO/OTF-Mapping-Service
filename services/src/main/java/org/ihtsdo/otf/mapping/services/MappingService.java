@@ -808,6 +808,18 @@ public interface MappingService {
 	 */
 	public MapRecordList getPublishedAndReadyForPublicationMapRecordsForMapProject(
 			Long mapProjectId, PfsParameter pfsParameter) throws Exception;
+	
+	/**
+	 * Gets the published map records for map project.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param pfsParameter the pfs parameter
+	 * @return the published map records for map project
+	 * @throws Exception 
+	 */
+	public MapRecordList getPublishedMapRecordsForMapProject(
+			Long mapProjectId, PfsParameter pfsParameter) throws Exception;
+
 
 	/**
 	 * Returns the map user role.
@@ -818,5 +830,6 @@ public interface MappingService {
 	 * @throws Exception the exception
 	 */
 	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception;
+
 
 }

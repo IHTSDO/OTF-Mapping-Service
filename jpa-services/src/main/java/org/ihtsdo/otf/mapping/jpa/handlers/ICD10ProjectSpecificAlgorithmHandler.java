@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -233,9 +232,20 @@ DefaultProjectSpecificAlgorithmHandler {
 			// {
 			return false;
 		}
-
-		// second, verify concept exists in database
+		
+		// open the content service
 		ContentService contentService = new ContentServiceJpa();
+		
+		// if a three-digit code, verify that no children exist (i.e. four digit codes)
+		if (terminologyId.matches(".[0-9].")) {
+			TreePositionList tpList = contentService.getTreePositions(terminologyId, mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+			if (tpList.getTreePositions().get(0).getChildrenCount() > 0) { 
+				return false;
+			}
+		}
+
+		// third, verify concept exists in database
+		
 		Concept concept =
 				contentService.getConcept(terminologyId,
 						mapProject.getDestinationTerminology(),

@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.EntityTransaction;
@@ -37,8 +39,14 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.TreePositionDescription;
+import org.ihtsdo.otf.mapping.helpers.TreePositionDescriptionGroup;
+import org.ihtsdo.otf.mapping.helpers.TreePositionDescriptionGroupJpa;
+import org.ihtsdo.otf.mapping.helpers.TreePositionDescriptionJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
+import org.ihtsdo.otf.mapping.helpers.TreePositionReferencedConcept;
+import org.ihtsdo.otf.mapping.helpers.TreePositionReferencedConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -58,6 +66,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
  * The Content Services for the Jpa model.
@@ -1130,7 +1139,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		// System.setOut(new PrintStream(new
 		// FileOutputStream("C:/Users/Patrick/Documents/WCI/Working Notes/TreePositionRuns/computeTreePositions_"
 		// + System.currentTimeMillis() + ".txt")));
-		// System.out.println("ComputeTreePositions run for " +(new
+		// // System.out.println("ComputeTreePositions run for " +(new
 		// Date()).toString());
 
 		// get the root concept
@@ -1286,7 +1295,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 										/ elapsedTime));
 
 				/*
-				 * System.out.println( "*** Tree Positions: " +
+				 * // System.out.println( "*** Tree Positions: " +
 				 * computeTreePositionGlobalCount + ", Current memory usage: " +
 				 * Math.floor(runtime.totalMemory() / 1024 / 1024) +
 				 * "MB, Commit interval: " + "s, Average speed: " +
@@ -1568,11 +1577,166 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				fullTreePositions.add(fullTreePosition);
 			}
 		}
-
+		
+	
 		TreePositionListJpa treePositionList = new TreePositionListJpa();
 		treePositionList.setTreePositions(fullTreePositions);
 		treePositionList.setTotalCount(fullTreePositions.size());
 		return treePositionList;
+	}
+	
+	@Override
+	public void computeTreePositionInformation(TreePositionList tpList) throws Exception {
+		
+		// if results are found, retrieve metadata and compute information
+		if (tpList.getCount() > 0) {
+			
+			String terminology = tpList.getTreePositions().get(0).getTerminology();
+			String terminologyVersion = tpList.getTreePositions().get(0).getTerminologyVersion();
+			
+			MetadataService metadataService = new MetadataServiceJpa();
+			Map<String, String> descTypes = metadataService.getDescriptionTypes(terminology, terminologyVersion);
+			Map<String, String> relTypes = metadataService.getRelationshipTypes(terminology, terminologyVersion);
+			
+			
+			for (TreePosition tp : tpList.getTreePositions())
+				computeTreePositionInformationHelper(tp, descTypes, relTypes);
+		}
+
+	}
+	
+	/**
+	 * Helper function to recursively calculate the displayed information for a tree position graph
+	 * - description groups (e.g. inclusions, exclusions, etc)
+	 * - concept labels (e.g. code ranges) attached to inclusions/exclusions
+	 * 
+	 * Algorithm:
+	 * (1) get Concept for tree position
+	 * (2) Cycle over all Descriptions
+	 * (3) For each description, cycle over all relationships
+	 * (4) If relationship terminology id starts with the description terminology id, this is something to render
+	 * (5) ... update this later
+	 * 
+	 * Data Structure:
+	 * TreePosition->DescriptionGroups:  each description group is a description type, e.g. Inclusion, Exclusion, etc.
+	 * DescriptionGroups->Description: each description is a concept preferred name and a set of referenced concepts
+	 * ReferencedConcept:  each referenced concept is a display name and the terminology id of an existing concept to link to
+	 * @param treePosition
+	 * @return
+	 * @throws Exception 
+	 */
+	private TreePosition computeTreePositionInformationHelper(TreePosition treePosition, Map<String, String> descTypes, Map<String, String> relTypes) throws Exception {
+		
+		 System.out.println("");
+		 System.out.println("***************************");
+		 System.out.println("Computing information for tree position, concept: " + treePosition.getTerminologyId());
+		 System.out.println("***************************");
+		// get the concept for this tree position
+		Concept concept = getConcept(treePosition.getTerminologyId(), treePosition.getTerminology(), treePosition.getTerminologyVersion());
+	
+		// map of Type -> Description Groups
+		// e.g. there "Inclusion" -> all inclusion description groups
+		Map<String, TreePositionDescriptionGroup> descGroups = new HashMap<>();		
+		
+		// cycle over all descriptions
+		for (Description desc : concept.getDescriptions()) {
+			
+			System.out.println("  Checking description: " + desc.getTerminologyId() + ", " + desc.getTypeId() + ", " + desc.getTerm());
+
+			String descType = desc.getTypeId().toString();
+			
+			// get or create the description group for this description type
+			TreePositionDescriptionGroup descGroup = null;
+			if (descGroups.get(descType) != null) descGroup = descGroups.get(descType);
+			else {
+				System.out.println("    Creating descGroup:  " + descTypes.get(descType));
+				descGroup = new TreePositionDescriptionGroupJpa();
+				descGroup.setName(descTypes.get(descType));
+				descGroup.setTypeId(descType);
+			}
+			
+			// get or create the tree position description for this description term
+			TreePositionDescription tpDesc = null;
+			for (TreePositionDescription tpd : descGroup.getTreePositionDescriptions()) {
+				if (tpd.getName().equals(desc.getTerm())) tpDesc = tpd;
+			}
+
+			// if no description found, create a new one
+			if (tpDesc == null) {
+				System.out.println("    Creating tpDesc:  " + desc.getTerm());
+				tpDesc = new TreePositionDescriptionJpa();
+				tpDesc.setName(desc.getTerm());
+			} 
+			
+			// add to group
+			descGroup.addTreePositionDescription(tpDesc);
+			
+			// put it in the set
+			descGroups.put(descGroup.getTypeId(), descGroup);
+			
+
+			// check for references
+			// find any relationship where terminology id starts with the description's terminology id
+			for (Relationship rel : concept.getRelationships()) {
+				
+				// System.out.println("  Checking relationship " + rel.getTerminologyId() + ", " + rel.getTypeId());
+				
+				if (rel.getTerminologyId().startsWith(desc.getTerminologyId())) {
+
+					
+					// System.out.println("     Matches!");
+					
+					// Non-persisted objects, so remove this description from list, modify it, and re-add it
+					descGroup.removeTreePositionDescription(tpDesc); 
+
+					// create the referenced concept object
+					TreePositionReferencedConcept referencedConcept = new TreePositionReferencedConceptJpa();
+					referencedConcept.setTerminologyId(rel.getDestinationConcept().getTerminologyId());
+						
+					String displayName = (rel.getLabel() == null ?
+							rel.getDestinationConcept().getTerminologyId() :	// if no label, just use terminology id
+							rel.getLabel());			// if label present, use label as display name
+					
+					// System.out.println("      Destination Concept: " + rel.getDestinationConcept().getTerminologyId() + " with label " + rel.getDestinationConcept().getLabel());
+					
+					// switch on relationship type to add any additional information
+					String relType = relTypes.get(rel.getTypeId().toString());
+					
+					// System.out.println("      Relationship type: " + rel.getTypeId().toString() + ", " + relTypes.get(rel.getTypeId().toString()));
+						
+					// if asterisk-to-dagger, add †
+					if (relType.indexOf("Asterisk") == 0) {
+						// System.out.println("           ASTERISK");
+						displayName += " *";
+					} else if (relType.indexOf("Dagger") == 0) {
+						// System.out.println("           DAGGER");
+						displayName += " \u2020";
+					}
+					
+					referencedConcept.setDisplayName(displayName);
+					
+					tpDesc.addReferencedConcept(referencedConcept);
+					
+					// add or re-add the tree position description (was removed earlier if existed)
+					descGroup.addTreePositionDescription(tpDesc);
+					
+					// replace the existing desc group
+					descGroups.put(descGroup.getTypeId(), descGroup);
+					
+				}
+			}
+		}
+		
+		treePosition.setDescGroups(new ArrayList<TreePositionDescriptionGroup>(descGroups.values()));
+		
+		// calculate information for all children
+		if (treePosition.getChildrenCount() > 0) {
+			for (TreePosition tp : treePosition.getChildren()) {
+				computeTreePositionInformationHelper(tp, descTypes, relTypes);
+			}
+		}
+		
+		return treePosition;
 	}
 
 	/**

@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.ihtsdo.otf.mapping.helpers.TreePositionDescriptionGroup;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 /**
@@ -384,6 +385,18 @@ public class TreePositionImpl implements TreePosition {
 	@Override
 	public boolean isValid() {
 		return this.valid;
+	}
+
+	@Override
+	public List<TreePositionDescriptionGroup> getDescGroups() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setDescGroups(List<TreePositionDescriptionGroup> descGroups) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

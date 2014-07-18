@@ -1383,13 +1383,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// this routine also duplicates child collections to avoid
 				// detached object errors
 				MapRecord newRecord = new MapRecordJpa(mr, true);
-				
+					
 				 Logger.getLogger(WorkflowServiceJpa.class).info(
 				 "Adding record: " + newRecord.toString());
 				 
 				// add the record to the database
 				
-				mappingService.addMapRecord(mr);
+				mappingService.addMapRecord(newRecord);
 
 				// add the record to the return list
 				syncedRecords.add(newRecord);

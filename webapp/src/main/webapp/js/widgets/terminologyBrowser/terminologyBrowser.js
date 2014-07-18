@@ -246,14 +246,14 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 				console.debug("Expanding children")
 				console.debug(treePositions[i].children);
 				
-				// expand children, but do not expand their info panels
-				for (var i = 0; i < treePositions[i].children.length; i++) {
+				/*// expand children, but do not expand their info panels
+				for (var j = 0; j < treePositions[i].children.length; i++) {
 					
-					treePositions[i].children[i].isOpen = true;
+					treePositions[i].children[j].isOpen = true;
 				}
 				
 				console.debug("After expanding children")
-				console.debug(treePositions[i].children);
+				console.debug(treePositions[i].children);*/
 				
 
 				// stop recursive expansion here;
@@ -317,7 +317,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	// function for toggling retrieval and display of concept details
 	$scope.getConceptDetails = function(node) {
 
-		console.debug('Retrieving concept details for ' + node.terminologyId);
 
 		// if called when currently displayed, clear current concept
 		if (node.isConceptOpen == true) {
@@ -325,141 +324,13 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 			// otherwise, retrieve and display this concept
 		} else {
+			
+			console.debug(node.descGroups);
 
-			console.debug("Retrieving concept information for " + node.terminologyId);
-
-			// retrieve the concept
-			$http({
-				url: root_content + "concept/id/" + node.terminology + "/" + node.terminologyVersion + "/" + node.terminologyId,
-				method: "GET",
-				headers: { "Content-Type": "application/json"}	
-
-			// on success, set the scope concept
-			}).success (function(response) {
-
-				// create the display elements
-				var conceptDetails = response;
-				var conceptDetailsDescriptionGroups = [];
-				var conceptDetailsRelationshipGroups = [];
-
-				console.debug(response);
-
-				// discover what description descTypes are present
-				var descTypes = {};
-				
-				// special variable for the preferred desc type
-				var descTypePreferred = null;
-
-				for (var i = 0; i < conceptDetails.description.length; i++) {
-
-					if (! ( conceptDetails.description[i].typeId in descTypes )) {
-
-						//if ($scope.descTypes[conceptDetails.description[i].typeId].indexOf('Preferred') == -1) {
-						descTypes[conceptDetails.description[i].typeId] = 
-							$scope.descTypes[conceptDetails.description[i].typeId];
-						//}
-
-						if ($scope.descTypes[conceptDetails.description[i].typeId].indexOf('Preferred') != -1) {
-							descTypePreferred = conceptDetails.description[i].typeId;
-						}
-					}
-				};
-				console.debug("Description Types found for concept:");
-				console.debug(descTypes);
-
-				// discover what rel types are present
-				var relTypes = {};
-				for (var i = 0; i < conceptDetails.relationship.length; i++) {
-
-					if (! ( conceptDetails.relationship[i].typeId in relTypes )) {
-
-						console.debug("Rel TypeId: " + conceptDetails.relationship[i].typeId);
-						console.debug();
-
-						// if this relationship is not an Isa relationship AND not a reference, add it to the relTypes
-						if ($scope.relTypes[conceptDetails.relationship[i].typeId].indexOf('Isa') == -1) {
-							relTypes[conceptDetails.relationship[i].typeId] = 
-								$scope.relTypes[conceptDetails.relationship[i].typeId];
-						}
-					}
-				};
-				console.debug("Relationship Types found for concept:");
-				console.debug(relTypes);
-
-				//////////////////
-				// DESCRIPTIONS //
-				//////////////////
-
-				// cycle over discovered descTypes
-				for (var key in descTypes) {
-					
-						var formattedDescriptions = getFormattedDescriptions(conceptDetails, key, relTypes);
-					
-						console.debug("Checking for preferred term: ", key, descTypePreferred);
-						// if this desc group is preferred
-						if (key == descTypePreferred) {
-							console.debug('Checking preferred terms');
-							
-							var preferredDescription = [];
-							
-							for (var i = 0; i < formattedDescriptions.length; i++) {
-								console.debug('--> ', formattedDescriptions[i]);
-								if ('referencedConcepts' in formattedDescriptions[i]) {
-									console.debug("  --> has referenced concepts");
-									preferredDescription.push(formattedDescriptions[i]);
-								} else console.debug("  --> has no referenced concepts");
-							}
-							formattedDescriptions = preferredDescription;
-						}
-						
-						// get the formatted descriptions for this type
-						if (formattedDescriptions.length > 0) {
-							var descGroup = {};
-							descGroup['name'] = descTypes[key];
-							descGroup['descriptions'] = formattedDescriptions;
-	
-							conceptDetailsDescriptionGroups.push(descGroup);
-						}
-					
-				}
-
-				console.debug("Extracted description groups for concept: ", conceptDetailsDescriptionGroups.length, conceptDetailsDescriptionGroups);
-
-
-				conceptDetails.descriptionGroups = conceptDetailsDescriptionGroups;
-				//conceptDetails.preferredDescription = conceptDetailsPreferredDescription;
-
-				///////////////////
-				// RELATIONSHIPS //
-				///////////////////
-
-				// cycle over discovered relTypes
-				for (var key in relTypes) {
-					
-					// get the relationships for this type
-					var relationships = getConceptElementsByTypeId(conceptDetails.relationship, key);
-					if (relationships.length > 0) {
-						var relGroup = {};
-						relGroup['name'] = relTypes[key];
-						relGroup['relationships'] = getConceptElementsByTypeId(conceptDetails.relationship, key);
-						conceptDetailsRelationshipGroups.push(relGroup);
-					}
-				}
-
-				console.debug('Extracted relationship groups for concept', conceptDetailsRelationshipGroups);
-
-				conceptDetails.relationshipGroups = conceptDetailsRelationshipGroups;
-
-				// add the concept details with formatted descriptions and relationships to the node
-				node.conceptDetails = conceptDetails;
+			if (node.descGroups.length > 0)
 				node.isConceptOpen = true;
-
-
-				// otherwise display an error message
-			}).error(function(data, status, headers, config) {
-			    $rootScope.handleHttpError(data, status, headers, config);
-			});
-		};
+			else node.isConceptOpen = false;
+		}
 	};
 
 	// given a typeId and a list of elements, returns those elements with matching typeId
