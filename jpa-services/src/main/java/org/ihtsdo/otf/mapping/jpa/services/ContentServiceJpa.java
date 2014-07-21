@@ -1501,6 +1501,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		// construct the query
 		String full_query = constructTreePositionQuery(terminology,
 				terminologyVersion, query);
+		
+		Logger.getLogger(ContentServiceJpa.class).info("Full query: " + full_query);
 
 		// execute the full text query
 		FullTextEntityManager fullTextEntityManager = Search
@@ -1526,7 +1528,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				"Found " + queriedTreePositions.size() + " results:");
 		for (TreePosition queriedTreePosition : queriedTreePositions) {
 			Logger.getLogger(ContentServiceJpa.class).info(
-					queriedTreePosition.getTerminologyId());
+					queriedTreePosition.toString());
 		}
 
 		// for each query result, construct the full tree (i.e. up to root, and including children if exact match)
@@ -1867,7 +1869,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		}
 
 		for (String s : parsedTerms) {
-			Logger.getLogger(MappingServiceJpa.class).debug("  " + s);
+			Logger.getLogger(ContentServiceJpa.class).debug("  " + s);
 		}
 
 		// cycle over terms to construct query
@@ -1913,15 +1915,19 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 				// open parenthetical term
 				full_query += "(";
-
+				
 				// add fielded query for each indexed term, separated by OR
-				Iterator<String> names_iter = fieldNames.iterator();
+				Iterator<String> names_iter = treePositionFieldNames.iterator();
 				while (names_iter.hasNext()) {
-					full_query += names_iter.next() + ":" + parsedTerms.get(i);
+					
+					String fieldName = names_iter.next();
+					Logger.getLogger(ContentServiceJpa.class).info("  field name: " + fieldName);
+					
+					full_query += fieldName + ":" + parsedTerms.get(i);
 					if (names_iter.hasNext())
 						full_query += " OR ";
 				}
-
+				
 				// close parenthetical term
 				full_query += ")";
 			}
@@ -1946,7 +1952,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		full_query = "(" + full_query + ")" + " AND terminology:" + terminology
 				+ " AND terminologyVersion:" + terminologyVersion;
 
-		Logger.getLogger(MappingServiceJpa.class).debug(
+		Logger.getLogger(ContentServiceJpa.class).debug(
 				"Full query: " + full_query);
 
 		return full_query;
