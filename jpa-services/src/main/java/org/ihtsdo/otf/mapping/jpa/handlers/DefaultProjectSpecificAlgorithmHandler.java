@@ -261,8 +261,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
         // check if both targets are null OR if targets equal
         boolean targetIdsNull =
-            entries.get(i).getTargetId().isEmpty()
-                && entries.get(j).getTargetId().isEmpty();
+            entries.get(i).getTargetId() == null
+                && entries.get(j).getTargetId() == null;
         boolean targetIdsEqual = false;
         if (!targetIdsNull) {
           targetIdsEqual =
