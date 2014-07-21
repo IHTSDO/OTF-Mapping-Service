@@ -1315,13 +1315,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       overrideCodes.add("Y89");
       overrideCodes.add("Y90");
       overrideCodes.add("Y91");
-      overrideCodes.add("Y92");
-      overrideCodes.add("Y93");
-      overrideCodes.add("Y94");
-      overrideCodes.add("Y95");
-      overrideCodes.add("Y96");
-      overrideCodes.add("Y97");
-      overrideCodes.add("Y98");
 
       // Override excludes for the code list above for S20W00_4
       if (overrideCodes.contains(cmpCode) && modifier.equals("S20W00_4")
