@@ -25,7 +25,7 @@
 			ng-click="getConceptDetails(node0)"></i></a>
 			<strong> <a
 			ng-show="node0.valid == true" ng-click="selectConcept(node0)">{{node0.terminologyId}}</a>
-			<span ng-show="node0.valid == false">{{node0.terminologyId}}</span></strong>{{node0.terminologyNote}}, {{truncate(node0.defaultPreferredName)}}
+			<span ng-show="node0.valid == false">{{node0.terminologyId}}</span></strong>{{node0.terminologyNote}}: {{truncate(node0.defaultPreferredName)}}
 		<div style="display: inline;"
 			ng-show=truncated(node0.defaultPreferredName) class="dropdown">
 			<a class="dropdown-toggle">...</a> <span style="width: 100%"
@@ -77,7 +77,7 @@
 					class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node1.descGroups.length > 0"
 					ng-click="getConceptDetails(node1)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node1.descGroups.length == 0"></i>&nbsp<strong></strong> <a
 				ng-show="node1.valid == true" ng-click="selectConcept(node1)">{{node1.terminologyId}}</a>
-				<span ng-show="node1.valid == false">{{node1.terminologyId}}</span></strong>{{node1.terminologyNote}}, {{truncate(node1.defaultPreferredName)}}
+				<span ng-show="node1.valid == false">{{node1.terminologyId}}</span></strong>{{node1.terminologyNote}}: {{truncate(node1.defaultPreferredName)}}
 				<div style="display: inline;"
 					ng-show=truncated(node1.defaultPreferredName) class="dropdown">
 					<a class="dropdown-toggle">...</a> <span style="width: 100%"
@@ -127,7 +127,7 @@
 							class="glyphicon glyphicon-info-sign term-browser-icon" ng-show="node2.descGroups.length > 0"
 							ng-click="getConceptDetails(node2)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node2.descGroups.length == 0"></i>&nbsp<a
 						ng-show="node2.valid == true" ng-click="selectConcept(node2)">{{node2.terminologyId}}</a>
-						<span ng-show="node2.valid == false">{{node2.terminologyId}}</span>{{node2.terminologyNote}}, {{truncate(node2.defaultPreferredName)}}
+						<span ng-show="node2.valid == false">{{node2.terminologyId}}</span>{{node2.terminologyNote}}: {{truncate(node2.defaultPreferredName)}}
 						<div style="display: inline;"
 							ng-show=truncated(node2.defaultPreferredName) class="dropdown">
 							<a class="dropdown-toggle">...</a> <span style="width: 100%"
@@ -179,7 +179,7 @@
 									ng-click="getConceptDetails(node3)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node3.descGroups.length == 0"></i>&nbsp
 								<a ng-show="node3.valid == true"
 								ng-click="selectConcept(node3)">{{node3.terminologyId}}</a> <span
-								ng-show="node3.valid == false">{{node3.terminologyId}}</span>{{node3.terminologyNote}}, {{truncate(node3.defaultPreferredName)}}
+								ng-show="node3.valid == false">{{node3.terminologyId}}</span>{{node3.terminologyNote}}: {{truncate(node3.defaultPreferredName)}}
 								<div style="display: inline;"
 									ng-show=truncated(node3.defaultPreferredName) class="dropdown">
 									<a class="dropdown-toggle">...</a> <span style="width: 100%"
@@ -231,7 +231,7 @@
 											ng-click="getConceptDetails(node4)"></i></a> <i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node4.descGroups.length == 0"></i>&nbsp
 										 <a
 										ng-show="node4.valid == true" ng-click="selectConcept(node4)">{{node4.terminologyId}}</a>
-										<span ng-show="node4.valid == false">{{node4.terminologyId}}</span>{{node4.terminologyNote}}, {{truncate(node4.defaultPreferredName)}}
+										<span ng-show="node4.valid == false">{{node4.terminologyId}}</span>{{node4.terminologyNote}}: {{truncate(node4.defaultPreferredName)}}
 										<div style="display: inline;"
 											ng-show=truncated(node4.defaultPreferredName)
 											class="dropdown">
@@ -288,7 +288,7 @@
 											<a
 												ng-show="node5.valid == true"
 												ng-click="selectConcept(node5)">{{node5.terminologyId}}</a>
-												<span ng-show="node5.valid == false">{{node5.terminologyId}}</span>{{node5.terminologyNote}}, {{truncate(node5.defaultPreferredName)}}
+												<span ng-show="node5.valid == false">{{node5.terminologyId}}</span>{{node5.terminologyNote}}: {{truncate(node5.defaultPreferredName)}}
 												<div style="display: inline;"
 													ng-show=truncated(node5.defaultPreferredName)
 													class="dropdown">
@@ -346,7 +346,7 @@
 													<a
 														ng-show="node6.valid == true"
 														ng-click="selectConcept(node6)">{{node6.terminologyId}}</a>
-														<span ng-show="node6.valid == false">{{node6.terminologyId}}</span>{{node6.terminologyNote}}, {{truncate(node6.defaultPreferredName)}}
+														<span ng-show="node6.valid == false">{{node6.terminologyId}}</span>{{node6.terminologyNote}}: {{truncate(node6.defaultPreferredName)}}
 														<div style="display: inline;"
 															ng-show=truncated(node6.defaultPreferredName)
 															class="dropdown">
@@ -403,7 +403,7 @@
 																	ng-click="getConceptDetails(node7)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node7.descGroups.length == 0"></i>&nbsp<a
 																ng-show="node7.valid == true"
 																ng-click="selectConcept(node7)">{{node7.terminologyId}}</a>
-																<span ng-show="node7.valid == false">{{node7.terminologyId}}</span>{{node7.terminologyNote}}, {{truncate(node7.defaultPreferredName)}}
+																<span ng-show="node7.valid == false">{{node7.terminologyId}}</span>{{node7.terminologyNote}}: {{truncate(node7.defaultPreferredName)}}
 																<div style="display: inline;"
 																	ng-show=truncated(node7.defaultPreferredName)
 																	class="dropdown">
@@ -461,7 +461,7 @@
 																			ng-click="getConceptDetails(node8)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node8.descGroups.length == 0"></i>&nbsp<a
 																		ng-show="node8.valid == true"
 																		ng-click="selectConcept(node8)">{{node8.terminologyId}}</a>
-																		<span ng-show="node8.valid == false">{{node8.terminologyId}}</span>{{node8.terminologyNote}}, {{truncate(node8.defaultPreferredName)}}
+																		<span ng-show="node8.valid == false">{{node8.terminologyId}}</span>{{node8.terminologyNote}}: {{truncate(node8.defaultPreferredName)}}
 
 																		<div style="display: inline;"
 																			ng-show=truncated(node8.defaultPreferredName)
@@ -520,7 +520,7 @@
 																					ng-click="getConceptDetails(node9)"></i></a><i class="glyphicon glyphicon-info-sign term-browser-icon-disabled" ng-show="node9.descGroups.length == 0"></i>&nbsp<a
 																				ng-show="node9.valid == true"
 																				ng-click="selectConcept(node9)">{{node9.terminologyId}}</a>
-																				<span ng-show="node9.valid == false">{{node9.terminologyId}}</span>{{node9.terminologyNote}}, {{truncate(node9.defaultPreferredName)}}
+																				<span ng-show="node9.valid == false">{{node9.terminologyId}}</span>{{node9.terminologyNote}}: {{truncate(node9.defaultPreferredName)}}
 																				<div style="display: inline;"
 																					ng-show=truncated(node9.defaultPreferredName)
 																					class="dropdown">
