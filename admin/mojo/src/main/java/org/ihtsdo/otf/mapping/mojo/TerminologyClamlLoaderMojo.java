@@ -646,6 +646,12 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           labelChars = new StringBuilder();
         }
 
+        // Encountered </Label> while in a Class, add concept/description
+        if (qName.equalsIgnoreCase("label") && tagStack.contains("modifier")) {
+          // reset label characters
+          labelChars = new StringBuilder();
+        }
+
         // Encountered </Reference>, create info for later relationship creation
         if (qName.equalsIgnoreCase("reference")) {
           // relationships for this concept will be added at endDocument(),
