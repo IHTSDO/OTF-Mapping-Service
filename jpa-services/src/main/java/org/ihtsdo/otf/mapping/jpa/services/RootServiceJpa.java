@@ -30,6 +30,8 @@ public class RootServiceJpa implements RootService {
 
 	/** The indexed field names. */
 	protected static Set<String> fieldNames;
+	
+	protected static Set<String> treePositionFieldNames;
 
 	/** The lock. */
 	private static String lock = "lock";
@@ -121,6 +123,7 @@ public class RootServiceJpa implements RootService {
 			Set<String> indexedClassNames = fullTextEntityManager
 					.getSearchFactory().getStatistics().getIndexedClassNames();
 			for (String indexClass : indexedClassNames) {
+				System.out.println(indexClass);
 				IndexReader indexReader = indexReaderAccessor.open(indexClass);
 				try {
 					for (FieldInfo info : ReaderUtil
@@ -131,6 +134,29 @@ public class RootServiceJpa implements RootService {
 					indexReaderAccessor.close(indexReader);
 				}
 			}
+
+			fullTextEntityManager.close();
+		}
+		
+		if (treePositionFieldNames == null) {
+			treePositionFieldNames = new HashSet<>();
+			EntityManager manager = factory.createEntityManager();
+			FullTextEntityManager fullTextEntityManager = org.hibernate.search.jpa.Search
+					.getFullTextEntityManager(manager);
+			IndexReaderAccessor indexReaderAccessor = fullTextEntityManager
+					.getSearchFactory().getIndexReaderAccessor();
+			
+			IndexReader indexReader = indexReaderAccessor.open("org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa");
+			try {
+				for (FieldInfo info : ReaderUtil
+						.getMergedFieldInfos(indexReader)) {
+					treePositionFieldNames.add(info.name);
+					System.out.println(info.name);
+				}
+			} finally {
+				indexReaderAccessor.close(indexReader);
+			}
+			
 
 			fullTextEntityManager.close();
 		}
