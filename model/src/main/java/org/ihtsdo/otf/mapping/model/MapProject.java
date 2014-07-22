@@ -2,6 +2,8 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
+
 /**
  * Represents a map project.
  * 
@@ -507,6 +509,20 @@ public interface MapProject {
 	 */
 	public void setProjectSpecificAlgorithmHandlerClass(
 			String projectSpecificAlgorithmHandlerClass);
+
+	/**
+	 * Gets the workflow type.
+	 *
+	 * @return the workflow type
+	 */
+	public String getWorkflowType();
+
+	/**
+	 * Sets the workflow type.
+	 *
+	 * @param workflowType the new workflow type
+	 */
+	public void setWorkflowType(String workflowType);
 
 
 

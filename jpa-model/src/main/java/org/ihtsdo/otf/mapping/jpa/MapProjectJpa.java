@@ -7,6 +7,8 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -27,6 +29,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -76,6 +79,10 @@ public class MapProjectJpa implements MapProject {
 	/** Indicates if the map project has been published. */
 	@Column(unique = false, nullable = false)
 	private boolean published = false;
+	
+	/** Indicates what type of workflow to use for this project, defaults to conflict review */
+	@Column(unique = false, nullable = false)
+	private String workflowType = "";
 
 	/** The ref set id. */
 	private String refSetId;
@@ -624,6 +631,26 @@ public class MapProjectJpa implements MapProject {
 	public void setPublished(boolean published) {
 		this.published = published;
 	}
+
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getWorkflowType()
+	 */
+	@Override
+	public String getWorkflowType() {
+		return workflowType;
+	}
+
+
+    /* (non-Javadoc)
+     * @see org.ihtsdo.otf.mapping.model.MapProject#setWorkflowType(org.ihtsdo.otf.mapping.helpers.WorkflowType)
+     */
+    @Override
+	public void setWorkflowType(String workflowType) {
+		this.workflowType = workflowType;
+	}
+
+
 
 	/*
 	 * (non-Javadoc)

@@ -123,8 +123,16 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
 		}).success(function(data) {
-			if(data.totalCount < 2) console.debug("ERROR:  Could not retrieve at least two records in conflict");
-			else {
+			
+			if (data.totalCount == 1) {
+				$scope.record1 = data.mapRecord[0];
+				$scope.record1.displayName = data.mapRecord[0].owner.name;
+				$scope.record2 = null;
+				
+				console.debug("Review record: ", $scope.record1);
+				
+			}
+			else if (data.totalCount == 2) {
 				
 				// if a conflict, just set the two records
 				if (data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED') {
@@ -150,6 +158,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					}
 				}
 			}
+			
 
 		}).error(function(data, status, headers, config) {
 		    $rootScope.handleHttpError(data, status, headers, config);
@@ -231,39 +240,44 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		console.debug($scope.entries1);
 
 		// INITIALIZE SECOND RECORD
+		
+		if ($scope.record2 != null) {
 
-		// calculate rule summaries and assign local id equivalent to hibernate id (needed for track by in ng-repeat)
-		for (var i = 0; i < $scope.record2.mapEntry.length; i++) {
-			$scope.record2.mapEntry[i].ruleSummary = 
-				$scope.getRuleSummary($scope.record2.mapEntry[i]);
-			$scope.record2.mapEntry[i].localId = $scope.record2.mapEntry[i].id;
-		}
-
-		// if no group structure, simply copy and sort
-		if ($scope.project.groupStructure == false) {
-			$scope.entries2 = sortByKey($scope.record2.mapEntry, 'mapPriority');
-
-			// otherwise, initialize group arrays
-		} else {
-
-			// initiailize entry arrays for distribution by group
-			$scope.entries2 = new Array(10);
-
-			for (var i=0; i < $scope.entries2.length; i++) $scope.entries2[i] = new Array();
-
-			// cycle over the entries and assign to group bins
-			for (var i=0; i < $scope.record2.mapEntry.length; i++) {
-				$scope.entries2[$scope.record2.mapEntry[i].mapGroup].push($scope.record2.mapEntry[i]);
+			// calculate rule summaries and assign local id equivalent to hibernate id (needed for track by in ng-repeat)
+			for (var i = 0; i < $scope.record2.mapEntry.length; i++) {
+				$scope.record2.mapEntry[i].ruleSummary = 
+					$scope.getRuleSummary($scope.record2.mapEntry[i]);
+				$scope.record2.mapEntry[i].localId = $scope.record2.mapEntry[i].id;
 			}
-
-			// cycle over group bins and sort contents by map priority
-			for (var i=0; i< $scope.entries2.length; i++) {
-				$scope.entries2[i] = sortByKey($scope.entries2[i], 'mapPriority');
+	
+			// if no group structure, simply copy and sort
+			if ($scope.project.groupStructure == false) {
+				$scope.entries2 = sortByKey($scope.record2.mapEntry, 'mapPriority');
+	
+				// otherwise, initialize group arrays
+			} else {
+	
+				// initiailize entry arrays for distribution by group
+				$scope.entries2 = new Array(10);
+	
+				for (var i=0; i < $scope.entries2.length; i++) $scope.entries2[i] = new Array();
+	
+				// cycle over the entries and assign to group bins
+				for (var i=0; i < $scope.record2.mapEntry.length; i++) {
+					$scope.entries2[$scope.record2.mapEntry[i].mapGroup].push($scope.record2.mapEntry[i]);
+				}
+	
+				// cycle over group bins and sort contents by map priority
+				for (var i=0; i< $scope.entries2.length; i++) {
+					$scope.entries2[i] = sortByKey($scope.entries2[i], 'mapPriority');
+				}
 			}
+			
+			console.debug("entries2");
+			console.debug($scope.entries2);
 		}
 		
-		console.debug("entries2");
-		console.debug($scope.entries2);
+	
 	}
 
 	/**
@@ -286,7 +300,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			else if (entry.rule.toUpperCase().indexOf("FEMALE") != -1) ruleSummary += "[FEMALE] ";
 			else if (entry.rule.toUpperCase().indexOf("MALE") != -1) ruleSummary += "[MALE] ";
 			else if (entry.rule.toUpperCase().indexOf("AGE") != -1) {
-
+						
 				
 				var lowerBound = entry.rule.match(/(>= \d+ [a-zA-Z]*)/ );
 				var upperBound = entry.rule.match(/(< \d+ [a-zA-Z]*)/ );
@@ -331,6 +345,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		if ($scope.groups1.length == 0) $scope.groups1.push(1);
 
 		$scope.groups2 = new Array();
+		
+		if ($scope.record2 != null) {
 		for (var i = 0; i < $scope.record2.mapEntry.length; i++) {			  
 
 			if ($scope.groups2.indexOf(parseInt($scope.record2.mapEntry[i].mapGroup, 10)) == -1) {
@@ -340,6 +356,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 
 		// if no groups found, add a default group
 		if ($scope.groups2.length == 0) $scope.groups2.push(1);
+		}
 
 	};
 
@@ -406,9 +423,9 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			if (entry.mapRelation == null || entry.mapRelation === '') {
 				entrySummary += '[NO TARGET OR RELATION]';
 			
-			// otherwise, return the relation abbreviation
+			// otherwise, return the relation name
 			} else {
-				entrySummary += entry.mapRelation.abbreviation;
+				entrySummary += entry.mapRelation.name;
 				
 			}
 		// otherwise return the target code and preferred name
