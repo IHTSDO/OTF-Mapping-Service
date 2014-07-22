@@ -104,7 +104,7 @@
 
 <tab heading="{{tabs[1].title}}"
 	active="tabs[1].active" select="setTab(1)"
-  ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"> 
+  ng-show="(currentRole === 'Lead' || currentRole === 'Administrator') && mapProject.workflowType === 'CONFLICT_PROJECT'"> 
 
 
 <table style="margin-top: 10px; margin-bottom: 10px;">

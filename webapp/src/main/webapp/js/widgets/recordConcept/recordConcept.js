@@ -220,6 +220,12 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 
 			// assign the record along the FIX_ERROR_PATH
 			$rootScope.glassPane++;
+			
+			// remove advices if this is a RELATIONSHIP_STYLE project (these are used to render relation names)
+			if ($scope.focusProject.mapRelationStyle === "RELATIONSHIP_STYLE") {
+				for (var i = 0; i < record.mapEntry.length; i++) 
+					record.mapEntry[i].mapAdvice = [];
+			}
 	
 			console.debug("Edit record clicked, assigning record if necessary");
 			$http({
@@ -344,9 +350,13 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 					// get the object for easy handling
 					var jsonObj = $scope.records[i].mapEntry[j].mapAdvice;
 
-					// add the serialized advice	
-					jsonObj.push({"id":"0", "name": "\"" + $scope.records[i].mapEntry[j].mapRelationName + "\"", "detail":"\"" + $scope.records[i].mapEntry[j].mapRelationName + "\"", "objectId":"0"});
+					console.debug("Relation", $scope.records[i].mapEntry[j].mapRelation);
+					
+					var relationAsAdvice = {"id":"0", "name":  $scope.records[i].mapEntry[j].mapRelation.abbreviation , "detail": $scope.records[i].mapEntry[j].mapRelation.name, "objectId":"0"};
 
+					console.debug(relationAsAdvice);
+					// add the serialized advice	
+					jsonObj.push(relationAsAdvice);
 					$scope.records[i].mapEntry[j].mapAdvice = jsonObj;
 				}
 			}
