@@ -29,7 +29,7 @@
     </tr>
     <tr ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
       <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Reason</strong></td> 
-      <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.name}}</td> 
+      <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.name}} <span style="color:lightgray;" ng-show="entry.mapRelation == null">No reason for null target selected.</span></td> 
     </tr>
     <tr ng-show="allowableMapRelations.length > 1 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
       <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Select</strong></td>
@@ -77,9 +77,9 @@
 
     </tr>
 
-    <tr ng-show="project.ruleBased == true && allowableMapRelations.length > 0">
+    <tr ng-show="project.ruleBased == false && allowableMapRelations.length > 0">
     <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length > 0">
-     -->  <td style="vertical-align: top; padding: 5px; width: 50px;">Select</td>
+     -->  <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Select</strong></td>
       <td style="vertical-align: top; padding: 5px;"><select
         style="width: 60%" ng-model="mapRelationInput"
         ng-change="selectMapRelation(mapRelationInput)"
