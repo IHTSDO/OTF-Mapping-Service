@@ -121,7 +121,7 @@
 
       </div>
       <!-- end class a -->
-      <div class="b">
+      <div class="b" ng-show="record2 != null">
 
         <!--  ENTRIES PANEL -->
         <accordion> <accordion-group is-open="isEntriesOpen">
@@ -165,6 +165,7 @@
                   ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
                   {{entry.targetId}} {{entry.targetName}}</span> <span
                   ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
+                
                 <span ng-show="entry.mapAdvice.length > 0">              
                   <span class="dropdown">
                    <a class="dropdown-toggle"> <img src="img/dialog-question.png"

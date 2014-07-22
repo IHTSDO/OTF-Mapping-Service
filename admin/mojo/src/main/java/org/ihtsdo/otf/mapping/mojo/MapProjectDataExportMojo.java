@@ -241,6 +241,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
             + mpr.getDestinationTerminologyVersion() + "\t"
             + mpr.isBlockStructure() + "\t" + mpr.isGroupStructure() + "\t"
             + mpr.isPublished() + "\t" + mpr.getMapRelationStyle() + "\t"
+            + mpr.getWorkflowType() + "\t"
             + mpr.getMapPrincipleSourceDocument() + "\t" + mpr.isRuleBased()
             + "\t" + mpr.getMapRefsetPattern() + "\t"
             + mpr.getProjectSpecificAlgorithmHandlerClass() + "\t" + mapAdvices

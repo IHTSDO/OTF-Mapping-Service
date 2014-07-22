@@ -10,12 +10,15 @@ public enum WorkflowPath {
 
   /** The legacy path. */
   LEGACY_PATH,
+  
+  /** The Project Review path */
+  REVIEW_PROJECT_PATH,
 
   /** The fix error path. */
   FIX_ERROR_PATH,
   
   /** The drip feed review path */
-  DRIP_FEED_REVIEW,
+  DRIP_FEED_REVIEW_PATH,
 
   /** The qa path. */
   QA_PATH,
