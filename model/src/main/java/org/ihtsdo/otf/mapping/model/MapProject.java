@@ -2,8 +2,6 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
-import org.ihtsdo.otf.mapping.helpers.WorkflowType;
-
 /**
  * Represents a map project.
  * 
