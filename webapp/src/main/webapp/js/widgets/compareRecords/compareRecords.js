@@ -375,7 +375,11 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	};
 
 	function setTitle(id, term) {
-		$scope.model.title = "Compare Records: " + id + "  " + term;
+		if ($scope.record2 == null) {
+			$scope.model.title = "Review Record: " + id + " " + term;
+		} else {
+			$scope.model.title = "Compare Records: " + id + "  " + term;
+		}
 	};
 
 	$scope.populateMapRecord = function(record) {
