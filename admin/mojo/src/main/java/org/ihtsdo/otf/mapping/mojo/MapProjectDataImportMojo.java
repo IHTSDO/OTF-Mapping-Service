@@ -14,7 +14,6 @@ import java.util.StringTokenizer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
-import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;

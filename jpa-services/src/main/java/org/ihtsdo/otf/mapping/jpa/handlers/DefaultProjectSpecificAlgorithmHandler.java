@@ -1864,9 +1864,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			if (revision.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
 					|| revision.getWorkflowStatus().equals(
 							WorkflowStatus.READY_FOR_PUBLICATION))
+				mappingService.close();
 				return revision;
 		}
 
+		mappingService.close();
 		throw new Exception(
 				"Could not retrieve previously published state of map record for concept "
 						+ mapRecord.getConceptId() + ", "
