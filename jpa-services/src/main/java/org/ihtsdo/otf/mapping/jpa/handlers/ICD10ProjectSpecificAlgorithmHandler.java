@@ -48,8 +48,9 @@ DefaultProjectSpecificAlgorithmHandler {
 		ContentService contentService = new ContentServiceJpa();
 
 		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+			
 
-			// check the target codee only if this entry does not has a map relation specified
+			// check the target code only if this entry does not has a map relation specified
 			if (mapEntry.getMapRelation() == null ) {
 
 				// first, check terminology id based on above rules
@@ -240,6 +241,7 @@ DefaultProjectSpecificAlgorithmHandler {
 		if (terminologyId.matches(".[0-9].")) {
 			TreePositionList tpList = contentService.getTreePositions(terminologyId, mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 			if (tpList.getTreePositions().get(0).getChildrenCount() > 0) { 
+				contentService.close();
 				return false;
 			}
 		}

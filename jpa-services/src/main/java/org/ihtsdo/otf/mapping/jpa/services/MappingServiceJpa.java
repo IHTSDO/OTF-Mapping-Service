@@ -2851,6 +2851,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return treePositionList;
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public MapRecordList getOriginMapRecordsForConflict(Long mapRecordId)
 			throws Exception {
