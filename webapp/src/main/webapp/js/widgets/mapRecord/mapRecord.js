@@ -41,6 +41,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.isPrinciplesOpen = false;
 	$scope.isNotesOpen = false;
 	$scope.isFlagsOpen = false;
+	$scope.groupOpen = new Array(10);
+	for (var i = 0; i < $scope.groupOpen.length; i++) $scope.groupOpen[i] = true;
 
 	// accordion functions
 	$scope.openAll = function() {
@@ -49,6 +51,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		$scope.isPrinciplesOpen = true;
 		$scope.isNotesOpen = true;
 		$scope.isFlagsOpen = true;
+		for (var i = 0; i < $scope.groupOpen.length; i++) $scope.groupOpen[i] = true;
 	};
 
 	$scope.closeAll = function() {
@@ -802,8 +805,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				"targetName":"",
 				"rule":"TRUE",
 				"mapPriority": "",
-				"relationId":"",
-				"relationName":"",
+				"mapRelation": "",
 				"mapBlock":"",
 				"mapGroup": group,
 				"mapAdvice":[],
@@ -904,6 +906,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		// if no groups found, add a default group
 		if ($scope.groups.length == 0) $scope.groups.push(1);
+		
+		$scope.groupOpen = new Array(10);
+		for (var i = 0; i < $scope.groups.length; i++) $scope.groupOpen[i] = true;
 
 	};
 
@@ -919,12 +924,48 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 
 	// Removes a map group if it exists
-	$scope.removeMapGroup = function(group) {   	  
-		var newGroups = new Array();
+	$scope.removeMapGroup = function(group) { 
+		console.debug("Groups before: ", $scope.groups, $scope.entries);
+		
+		// construct a group array without the group being removed
+		var tempGroups = new Array();
 		for (var i = 0; i < $scope.groups.length; i++) {
-			if ($scope.groups[i] != group) newGroups.push($scope.groups[i]);
+			if ($scope.groups[i] != group) {
+				tempGroups.push($scope.groups[i]);
+			}
 		}
+		// renumber renaming groups and assign entries to new bins
+		var newEntries = new Array(10);
+		for (var i=0; i < newEntries.length; i++) newEntries[i] = new Array();
+		var newGroups = new Array();
+		for (var i = 0; i < tempGroups.length; i++) {
+			var oldGroup = tempGroups[i];
+			console.debug("Moving group " + oldGroup + " to group " + i+1);
+			
+			newGroups.push(i+1);
+			newEntries[i+1] = $scope.entries[oldGroup];	
+		}
+		
+		console.debug("newEntries", newEntries);
+		
+		for (var i = 1; i < newEntries.length; i++) {
+			for (var j = 0; j < newEntries[i].length; j++) {
+				newEntries[i][j].mapGroup = i;
+				newEntries[i][j].mapPriority = j+1;	
+			}
+		}
+		
+		console.debug("Groups after: ", newGroups, newEntries);
+		
 		$scope.groups = newGroups;
+		$scope.entries = newEntries;
+		
+		for (var i = 0; i < $scope.groupOpen.length; i++) $scope.groupOpen[i] = true;
+		
+		
+		
+	
+		
 	};
 
 	///////////////////////
