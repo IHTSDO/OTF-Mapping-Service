@@ -51,15 +51,14 @@
 			<div ui-sortable ng-model="groups">
 		
 				<!--  first-level accordion groups -->
-				<accordion-group ng-repeat="group in groups" is-open="true">
+				<accordion-group ng-repeat="group in groups" is-open="groupOpen[group]">
 		
 				<accordion-heading> <span
-					style="text-align: left;">Map Group <span
-					ng-show="entries[group].length == 0"> &nbsp <i
-        class="glyphicon glyphicon-remove"
-						ng-click="removeMapGroup(group)"></i>
+					style="text-align: left;">Map Group &nbsp&nbsp <i class="glyphicon glyphicon-move"></i>
 				</span>
-				</span> <span class="pull-right"><i class="glyphicon glyphicon-move"></i></span>
+				<span class="pull-right"><i
+        class="glyphicon glyphicon-remove"
+						ng-click="removeMapGroup(group)"></i></span>
 				</accordion-heading>
 		
 		
