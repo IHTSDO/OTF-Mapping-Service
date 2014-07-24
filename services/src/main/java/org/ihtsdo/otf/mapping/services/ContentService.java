@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.DescriptionList;
@@ -725,4 +726,18 @@ public interface ContentService extends RootService {
 	 * @throws Exception 
 	 */
 	public void computeTreePositionInformation(TreePositionList tpList) throws Exception;
+
+	public Long getRelationshipId(String terminologyId, String terminology,
+			String terminologyVersion) throws Exception;
+
+	public ConceptList getAllConcepts(String terminology, String terminologyVersion);
+
+	public Set<String> getAllRelationshipTerminologyIds(String terminology,
+			String terminologyVersion);
+	
+	public Set<String> getAllDescriptionTerminologyIds(String terminology,
+			String terminologyVersion);
+	
+	public Set<String> getAllLanguageRefSetMemberTerminologyIds(String terminology,
+			String terminologyVersion);
 }
