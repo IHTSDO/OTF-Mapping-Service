@@ -13,7 +13,10 @@
 	ng-class="{'glyphicon-chevron-down': isConceptOpen, 'glyphicon-chevron-right': !isConceptOpen}"></i>
 </accordion-heading>
 
-
+<div ng-show = "concept.effectiveTime > record.lastModified">
+      <p class="alert alert-warning" >The {{concept.terminology}} concept was modified after your last edit, on {{concept.effectiveTime | date:'MM-dd-yyyy'}}
+      </p>
+    </div>
 
 <table>
 
@@ -168,7 +171,7 @@
 </accordion-group> </accordion>
 
 <!--  PRINCIPLES PANEL -->
-<accordion> <accordion-group is-open="isPrinciplesOpen">
+<accordion ng-show="project.mapPrinciple.length > 0"> <accordion-group is-open="isPrinciplesOpen">
 <accordion-heading> Principles <i
 	class="pull-right glyphicon"
 	ng-class="{'glyphicon-chevron-down': isPrinciplesOpen, 'glyphicon-chevron-right': !isPrinciplesOpen}"></i>
@@ -205,7 +208,7 @@
 		ng-options="principle as principle.principleId + ':  ' + principle.name for principle in project.mapPrinciple | filter:$viewValue | limitTo:8"></select>
 </form>
 <hr>
-<div ng-show="project.mapPrincipleSourceDocument != null">
+<div ng-show="project.mapPrincipleSourceDocument != null && project.mapPrincipleSourceDocument.length > 0">
 	Principles taken from <a
 		href="doc/{{project.mapPrincipleSourceDocument}}" target="_blank">Map
 		Principles Document</a>
