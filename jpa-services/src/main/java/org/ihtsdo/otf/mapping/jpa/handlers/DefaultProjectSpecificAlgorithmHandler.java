@@ -1482,13 +1482,31 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					}
 				}
 
-				// case 3: A lead is finished reviewing a record with no
-				// conflicts
+				// case 3: A lead is finished reviewing a record
 			} else if (getWorkflowStatus(mapRecords).equals(
-					WorkflowStatus.REVIEW_NEW)
-					|| getWorkflowStatus(mapRecords).equals(
-							WorkflowStatus.REVIEW_IN_PROGRESS)) {
-				// do nothing
+					WorkflowStatus.REVISION)) {
+				
+				// check if only two records
+				if (mapRecords.size() != 2)
+					throw new Exception("Finish editing on NON_LEGACY_PATH, REVISION failed:  required exactly two records");
+				
+				MapRecord reviewRecord = null;
+				MapRecord editRecord = null;
+				for (MapRecord mr : mapRecords) {
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+						reviewRecord = mr;
+					else if (mr.getWorkflowStatus().compareTo(WorkflowStatus.EDITING_DONE) <= 0) {
+						editRecord = mr;
+					}
+				}
+				
+				// remove the revision record
+				newRecords.remove(reviewRecord);
+				
+				// set the edited record to ready for publication
+				editRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+				
+				
 			} else {
 				throw new Exception(
 						"finishEditing failed! Invalid workflow status combination on record(s)");
