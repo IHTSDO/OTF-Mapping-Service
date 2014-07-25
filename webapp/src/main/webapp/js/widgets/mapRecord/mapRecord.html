@@ -51,7 +51,7 @@
 			<div ui-sortable ng-model="groups">
 		
 				<!--  first-level accordion groups -->
-				<accordion-group ng-repeat="group in groups" is-open="groupOpen[group]">
+				<accordion-group ng-repeat="group in groups" is-open="true">
 		
 				<accordion-heading> <span
 					style="text-align: left;">Map Group &nbsp&nbsp <i class="glyphicon glyphicon-move"></i>
@@ -235,6 +235,7 @@ lead review<br>
 	ng-click="finishMapRecord(false)">Finish/Next</button>
 <button class="btn btn-sm btn-primary" ng-click="displayMapRecord()">Display</button>
 <button class="btn btn-sm btn-warning" ng-click="cancelMapRecord()">Cancel</button>
+<button class="btn btn-sm btn-danger" ng-click="clearMapRecord()">Clear</button>
 
 <button class="btn btn-sm btn-primary" style="float: right;"
 	ng-click="saveMapRecord(true)">Save For Later</button>
