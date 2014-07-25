@@ -493,6 +493,21 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 		$scope.closeConceptBrowser();
 	};
+	
+	$scope.clearMapRecord = function() {
+		$scope.groups = new Array();
+		$scope.entries = new Array(10);
+		for (var i = 0; i < $scope.entries.length; i++) $scope.entries[i] = new Array();
+		$scope.record.mapPrinciple = [];
+		$scope.record.mapNote = [];
+		$scope.record.flagForLeadReview = false;
+		$scope.record.flagForConsensus = false;
+		$scope.record.flagForEditorialReview = false;
+		
+		$scope.addMapGroup(); // automatically adds entry as well
+		
+		window.scrollTo(0,0);
+	};
 
 	$scope.saveMapRecord = function(returnBack) {
 
