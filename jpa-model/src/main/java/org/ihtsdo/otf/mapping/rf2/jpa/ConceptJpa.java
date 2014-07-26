@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -361,6 +362,33 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   public void removeAttributeValueRefSetMember(
     AttributeValueRefSetMember attributeValueRefSetMember) {
     this.attributeValueRefSetMembers.remove(attributeValueRefSetMember);
+  }
+  
+  /**
+   * Override get effective time to allow indexing
+   */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.YES)
+  @Override
+  public Date getEffectiveTime() {
+	  return super.getEffectiveTime();
+  }
+  
+  /**
+   * Override get effective time to allow indexing
+   */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.YES)
+  @Override
+  public String getTerminology() {
+	  return super.getTerminology();
+  }
+  
+  /**
+   * Override get effective time to allow indexing
+   */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.YES)
+  @Override
+  public String getTerminologyVersion() {
+	  return super.getTerminologyVersion();
   }
 
   /**

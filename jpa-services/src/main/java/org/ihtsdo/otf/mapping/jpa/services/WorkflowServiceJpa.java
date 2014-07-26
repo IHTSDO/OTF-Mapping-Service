@@ -730,9 +730,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// - user and workflowStatus must exist in a pair of form:
 		// workflowStatus~userName, e.g. NEW~dmo or EDITING_IN_PROGRESS~kli
 		// - modify search term based on pfs parameter query restriction field
-		// * default: NEW, EDITING_IN_PROGRESS, EDITING_DONE
+		// * default: NEW, EDITING_IN_PROGRESS, EDITING_DONE/CONFLICT_DETECTED
 		// * NEW: NEW
-		// * EDITED: EDITING_IN_PROGRESS, EDITING_DONE
+		// * EDITED: EDITING_IN_PROGRESS, EDITING_DONE/CONFLICT_DETECTED
 
 		// add terms based on query restriction
 		switch (localPfsParameter.getQueryRestriction()) {
@@ -745,8 +745,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					+ mapUser.getUserName();
 			break;
 		case "EDITING_DONE":
-			full_query += " AND userAndWorkflowStatusPairs:EDITING_DONE_"
-					+ mapUser.getUserName();
+			full_query += " AND (userAndWorkflowStatusPairs:EDITING_DONE_"	+ mapUser.getUserName()
+						        + " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_" + mapUser.getUserName()
+						        + " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_" + mapUser.getUserName()
+						        + ")";
+
 			break;
 		default:
 			full_query += " AND (userAndWorkflowStatusPairs:NEW_"
@@ -754,7 +757,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					+ " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
 					+ mapUser.getUserName()
 					+ " OR userAndWorkflowStatusPairs:EDITING_DONE_"
-					+ mapUser.getUserName() + ")";
+					+ mapUser.getUserName() 
+					+ " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
+					+ mapUser.getUserName() 
+					+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_" 
+					+ mapUser.getUserName()
+					+ ")";
 			break;
 		}
 
@@ -865,6 +873,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 		Query luceneQuery;
+		
 
 		// construct basic query
 		String full_query = constructTrackingRecordForMapProjectIdQuery(

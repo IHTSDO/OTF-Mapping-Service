@@ -677,9 +677,10 @@ public interface ContentService extends RootService {
 	 * @param date
 	 *            the date
 	 * @return the search result list
+	 * @throws Exception 
 	 */
 	public ConceptList getConceptsModifiedSinceDate(String terminology,
-			Date date);
+			Date date, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find descriptions modified since date.
