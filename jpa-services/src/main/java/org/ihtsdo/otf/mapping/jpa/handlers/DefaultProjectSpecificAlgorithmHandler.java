@@ -1300,15 +1300,27 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				throw new Exception(
 						"Attempted to unassign a published revision record, but no such previously published record exists!");
 
-			// Case 1: A user decides not to attempt to fix an error
-			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
-					|| mapRecord.getWorkflowStatus().equals(
-							WorkflowStatus.EDITING_IN_PROGRESS)) {
+			// Case 1: A user decides to abandon fixing an error
+			if (mapRecord.getWorkflowStatus().compareTo(WorkflowStatus.REVIEW_NEEDED) <= 0) {
 
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+				.info("Unassign:  FIX_ERROR_PATH - User unassigning review work");
+
+				MapRecord previousRevisionRecord = getPreviouslyPublishedVersionOfMapRecord(revisionRecord);
+				
+				if (previousRevisionRecord == null) {
+					throw new Exception("Could not retrieve previous version of map record, id = " + revisionRecord.getId());
+				} else {
+					Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+						.info("Unassign:  FIX_ERROR_PATH - Reverting to previous record: " + previousRevisionRecord.toString());
+
+				}
+				
 				newRecords.remove(mapRecord);
 				newRecords.remove(revisionRecord);
 				newRecords
-						.add(getPreviouslyPublishedVersionOfMapRecord(revisionRecord));
+						.add(previousRevisionRecord);
+
 
 				// Case 2: A lead unassigns themselves from reviewing a fixed
 				// error
@@ -1379,7 +1391,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 			// case 1: A specialist is finished with a record
 			if (getWorkflowStatus(mapRecords).compareTo(
-					WorkflowStatus.CONFLICT_DETECTED) < 0) {
+					WorkflowStatus.CONFLICT_DETECTED) <= 0) {
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 						.info("NON_LEGACY_PATH - New finished record, checking for other records");
@@ -1387,9 +1399,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// set this record to EDITING_DONE
 				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 
-				// check if two specialists have completed work
-				if (getLowestWorkflowStatus(mapRecords).equals(
-						WorkflowStatus.EDITING_DONE)
+				// check if two specialists have completed work (lowest workflow status is EDITING_DONE)
+				if (getLowestWorkflowStatus(mapRecords).compareTo(WorkflowStatus.EDITING_DONE) >= 0
 						&& mapRecords.size() == 2) {
 
 					Logger.getLogger(
@@ -1415,7 +1426,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						MapRecord newRecord = new MapRecordJpa(mapRecord, true);
 						newRecord.setOwner(mapUser);
 						newRecord.setLastModifiedBy(mapUser);
-						mapRecord
+						newRecord
 								.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 
 						// construct and set the new origin ids
@@ -1430,6 +1441,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						// this user
 						newRecords.clear();
 						newRecords.add(newRecord);
+						
+						Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+								"finishEditing - NON_LEGACY_PATH - Creating READY_FOR_PUBLICATION record " + newRecord.toString());
 
 					} else {
 
@@ -1438,10 +1452,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 								.info("NON_LEGACY_PATH - Conflicts detected");
 
 						// conflict detected, change workflow status of all
-						// records and
+						// records (if not a lead's existing conflict record) and
 						// update records
 						for (MapRecord mr : newRecords) {
-							mr.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
+							if (mr.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) <= 0)
+								mr.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
 						}
 					}
 					// otherwise, only one specialist has finished work, do
@@ -1495,7 +1510,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				for (MapRecord mr : mapRecords) {
 					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
 						reviewRecord = mr;
-					else if (mr.getWorkflowStatus().compareTo(WorkflowStatus.EDITING_DONE) <= 0) {
+					else if (mr.getWorkflowStatus().compareTo(WorkflowStatus.REVIEW_NEEDED) <= 0) {
 						editRecord = mr;
 					}
 				}
@@ -1519,6 +1534,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			switch(mapRecord.getWorkflowStatus()) {
 			
 			// case 1:  specialist finishes a map record
+			case REVIEW_NEEDED:
+			case EDITING_DONE:
 			case EDITING_IN_PROGRESS:
 			case NEW:
 				

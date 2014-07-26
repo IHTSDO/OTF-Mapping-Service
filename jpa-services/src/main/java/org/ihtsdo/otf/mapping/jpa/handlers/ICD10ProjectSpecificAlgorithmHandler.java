@@ -102,12 +102,15 @@ DefaultProjectSpecificAlgorithmHandler {
 	 */
 	@Override
 	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) {
-
 		
 		System.out.println("Computing map relation");
 		// if entry has no target
 		if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
-			return null;
+			
+			// if a relation is already set, and is allowable for null target, keep it
+			if (mapEntry.getMapRelation() != null && mapEntry.getMapRelation().isAllowableForNullTarget() == true)
+				return mapEntry.getMapRelation();
+			else return null;
 		}
 
 		// if rule is not set, return null

@@ -73,7 +73,9 @@
 			</a>
 			<!-- Display a saved icon if this record has been marked finished--> <a
 				title='Re-edit this finished concept'
-				ng-show="result.terminologyVersion === 'EDITING_DONE'"> <i
+				ng-show="result.terminologyVersion === 'EDITING_DONE'
+						|| result.terminologyVersion === 'CONFLICT_DETECTED'
+						|| result.terminologyVersion === 'REVIEW_NEEDED'"> <i
 					ng-click="goEditRecord(result.id)"
 					class="glyphicon glyphicon-saved"></i>
 			</a>
