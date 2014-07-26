@@ -24,9 +24,9 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		console.debug("MapEntryWidget: mapRecord = ", $scope.record);
 
 		// get the allowable advices
-		$scope.allowableAdvices = getAllowableElements(parameters.entry, parameters.project.mapAdvice);
+		$scope.allowableAdvices = getAllowableAdvices(parameters.entry, parameters.project.mapAdvice);
 		sortByKey($scope.allowableAdvices, 'detail');
-		$scope.allowableMapRelations = getAllowableElements(parameters.entry, parameters.project.mapRelation);
+		$scope.allowableMapRelations = getAllowableRelations(parameters.entry, parameters.project.mapRelation);
 		
 		// compute relation and advice
 		// attempt to autocompute the map relation, then update the entry
@@ -94,9 +94,9 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		$scope.entry.targetName = parameters.concept.defaultPreferredName;
 		
 		// get the allowable advices and relations
-		$scope.allowableAdvices = getAllowableElements($scope.entry, $scope.project.mapAdvice);
+		$scope.allowableAdvices = getAllowableAdvices($scope.entry, $scope.project.mapAdvice);
 		sortByKey($scope.allowableAdvices, 'detail');
-		$scope.allowableMapRelations = getAllowableElements($scope.entry, $scope.project.mapRelation);
+		$scope.allowableMapRelations = getAllowableRelations($scope.entry, $scope.project.mapRelation);
 		
 		// clear the relation and advices
 		$scope.entry.mapRelation = null;
@@ -122,9 +122,14 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		entry.mapAdvice = [];
 		
 		// get the allowable advices and relations
-		$scope.allowableAdvices = getAllowableElements($scope.entry, $scope.project.mapAdvice);
+		$scope.allowableAdvices = getAllowableAdvices($scope.entry, $scope.project.mapAdvice);
 		sortByKey($scope.allowableAdvices, 'detail');
-		$scope.allowableMapRelations = getAllowableElements($scope.entry, $scope.project.mapRelation);
+		$scope.allowableMapRelations = getAllowableRelations($scope.entry, $scope.project.mapRelation);
+		
+		// if project rule based, reset rule to TRUE
+		if ($scope.project.ruleBased == true) {
+			entry.rule = 'TRUE';
+		}
 		
 		// attempt to autocompute the map relation, then update the entry
 		computeRelation($scope.entry).then(function() {
@@ -162,9 +167,9 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				console.debug("MapRelation computed: ", entry.mapRelation);
 				
 				// get the allowable advices and relations
-				$scope.allowableAdvices = getAllowableElements(entry, $scope.project.mapAdvice);
+				$scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
 				sortByKey($scope.allowableAdvices, 'detail');
-				$scope.allowableMapRelations = getAllowableElements(entry, $scope.project.mapRelation);
+				$scope.allowableMapRelations = getAllowableRelations(entry, $scope.project.mapRelation);
 			
 				// return the promise
 				deferred.resolve(entry);
@@ -212,9 +217,9 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				console.debug("Map advices computed: ", entry.mapAdvice);
 				
 				// get the allowable advices and relations
-				$scope.allowableAdvices = getAllowableElements(entry, $scope.project.mapAdvice);
+				$scope.allowableAdvices = getAllowableAdvices(entry, $scope.project.mapAdvice);
 				sortByKey($scope.allowableAdvices, 'detail');
-				$scope.allowableMapRelations = getAllowableElements(entry, $scope.project.mapRelation);
+				$scope.allowableMapRelations = getAllowableRelations(entry, $scope.project.mapRelation);
 			
 				// return the promise
 				deferred.resolve(entry);
@@ -268,10 +273,6 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			
 			$scope.entry.rule = rule;
 			$scope.entry.ruleSummary = $scope.getRuleSummary($scope.entry);
-			
-			// clear relation and advice
-			$scope.entry.mapRelation = null;
-			$scope.entry.mapAdvice = [];
 			
 			// compute relation and advice (if any), then update entry
 			computeRelation($scope.entry).then(function() {
@@ -343,6 +344,8 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			  $scope.ruleCategory = 'TRUE';
 		} else 
 		    $scope.ruleCategory = 'TRUE'; 
+		
+		$scope.rule = entry.rule;
 
 		$scope.saveRule = function() {
 			$modalInstance.close($scope.rule, $scope.ruleSummary);
@@ -530,30 +533,71 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 
 
 	// Function for MapAdvice and MapRelations, returns allowable lists based on null target and element properties
-	function getAllowableElements(entry, elements) {
+	function getAllowableAdvices(entry, advices) {
 		
-		console.debug('called allowable elements');
+		console.debug('called allowable advices');
 		
 		var nullTarget = entry.targetId == null || entry.targetId === "";
-		var allowableElements = [];
+		var allowableAdvices = [];
 
 		if (nullTarget == true) console.debug('NULL TARGET');
 		
-		for (var i = 0; i < elements.length; i++) {
+		for (var i = 0; i < advices.length; i++) {
 			
-			if (elements[i].isComputed == false) {
+			if (advices[i].isComputed == false) {
 			
-				if ( (nullTarget == true && elements[i].isAllowableForNullTarget == true) ||
-						(nullTarget == false && elements[i].isAllowableForNullTarget == false) ) {
-	
-					elements[i].displayName = (elements[i].abbreviation === 'none' ? elements[i].name : elements[i].abbreviation )  ;
+				if ( (nullTarget == true && advices[i].isAllowableForNullTarget == true) ||
+						(nullTarget == false && advices[i].isAllowableForNullTarget == false) ) {
+			
+					// check that this advice is not already present on the entry
+					var advicePresent = false;
+					for (var j = 0; j < entry.mapAdvice.length; j++) {
+						if (entry.mapAdvice[j].id === advices[i].id)
+							advicePresent = true;
+					}
 					
-					allowableElements.push(elements[i]);
-			}
+					// add advice if not already present
+					if (advicePresent == false)
+						allowableAdvices.push(advices[i]);
+				}
 			}
 		}
 		
-		return allowableElements;
+		return allowableAdvices;
+	};
+	
+	// Function for MapAdvice and MapRelations, returns allowable lists based on null target and element properties
+	function getAllowableRelations(entry, relations) {
+		
+		console.debug('called allowable relations');
+		
+		var nullTarget = entry.targetId == null || entry.targetId === "";
+		var allowableRelations = [];
+
+		if (nullTarget == true) console.debug('NULL TARGET');
+		
+		for (var i = 0; i < relations.length; i++) {
+			
+			console.debug("Checking relation", relations[i]);
+			
+			if (relations[i].isComputed == false) {
+				
+				//console.debug("  Not computed");
+			
+				if ( (nullTarget == true && relations[i].isAllowableForNullTarget == true) ||
+						(nullTarget == false && relations[i].isAllowableForNullTarget == false) ) {
+	
+					//console.debug("    Valid");
+					
+					// handle a specific case where the name is more descriptive than the abbreviation
+					relations[i].displayName = (relations[i].abbreviation === 'none' ? relations[i].name : relations[i].abbreviation );
+					
+					allowableRelations.push(relations[i]);
+				}
+			}
+		}
+		
+		return allowableRelations;
 	};
 	
 

@@ -65,7 +65,7 @@
       <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation
           Id</strong></td>
       <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.terminologyId}}
-        <span ng-show="entry.mapRelation != null"><button
+        <span ng-show="entry.mapRelation != null && entry.mapRelation.isComputed == false"><button
             ng-click="clearMapRelation(entry)">Clear</button>
       </td>
     </tr>
@@ -117,7 +117,7 @@
         </div> <span style="color: red">{{errorAddAdvice}}</span>
         <form ng-show="entry.targetId != null && entry.targetId != ''">
           Add Advice: <select style="width: 60%;"
-            ng-change="addEntryAdvice(entry, adviceInput)"
+            ng-change="addEntryAdvice(entry, adviceInput);adviceInput=null;"
             ng-model="adviceInput"
             ng-options="advice as advice.detail for advice in allowableAdvices"></select>
         </form>

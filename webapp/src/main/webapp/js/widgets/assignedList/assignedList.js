@@ -36,7 +36,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	
 	$scope.assignedWorkType = 'NEW'; 		// initialize variable to track which type of work has been requested
 	$scope.assignedConflictType = 'CONFLICT_NEW'; 	// initialize variable to track which type of conflict has been requested
-	$scope.assignedReviewWorkType = 'REVIEW_NEW'
+	$scope.assignedReviewWorkType = 'REVIEW_NEW';
 	$scope.assignedWorkForUserType = 'ALL';	// initialize variable to track which type of work (for another user) has been requested
 	
 	// function to change tab
@@ -131,11 +131,11 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
 			
-			$scope.retrieveAssignedWork($scope.assignedWorkPage, null);
+			$scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.assignedWorkType);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-				$scope.retrieveAssignedConflicts(1, null);
-				$scope.retrieveAssignedReviewWork(1, null);
-				$scope.retrieveAssignedWorkForUser(1, $scope.mapUserViewed, null);
+				$scope.retrieveAssignedConflicts(1, $scope.assignedConflictType);
+				$scope.retrieveAssignedReviewWork(1, $scope.assignedReviewWorkType);
+				$scope.retrieveAssignedWorkForUser(1, $scope.mapUserViewed, $scope.assignedWorkForUserType);
 			}
 		}
 	});
