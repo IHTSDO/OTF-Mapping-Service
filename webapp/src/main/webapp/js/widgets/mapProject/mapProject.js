@@ -11,7 +11,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
         templateUrl: 'js/widgets/mapProject/mapProject.html',
         edit: {}
       });
-  }).controller('MapProjectWidgetCtrl', function($scope, $http, $rootScope, $location, localStorageService){
+  }).controller('MapProjectWidgetCtrl', function($scope, $http, $rootScope, $location, $modal, localStorageService){
 	  
 	  // get the project
 	  $scope.project = localStorageService.get('focusProject');
@@ -159,4 +159,67 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 			}
 		};	
 		
+		$scope.showDelta = function() {
+			
+			var modalInstance = $modal.open({
+				templateUrl: 'partials/delta-concepts.html',
+				controller: ShowDeltaModalCtrl,
+				resolve: {
+					terminology: function() { return $scope.project.sourceTerminology;},
+					version: function() { return $scope.project.sourceTerminologyVersion;}
+				}
+			});
+			
+			modalInstance.result.then(function() {
+				// do nothing, placeholder
+			});
+			
+		};
+		
+		var ShowDeltaModalCtrl = function($scope, $http, $modalInstance, terminology, version) {
+			
+			$scope.pageSize = 10;
+			$scope.terminology = terminology; // used for title
+			
+			
+			$scope.close = function() {
+				$modalInstance.close();
+			};
+			
+			$scope.getConcepts = function(page, filter) {
+				$rootScope.glassPane++;
+				var pfsParameterObj = 
+					
+				{"startIndex": page == -1 ? -1 : (page-1)*$scope.pageSize,
+		 	 	 "maxResults": page == -1 ? -1 : $scope.pageSize, 
+		 	 	 "sortField": null,
+		 	 	 "queryRestriction": filter }; 
+				
+				console.debug(pfsParameterObj);
+				
+				$http({
+					url: root_content + "terminology/id/" + terminology + "/" + version + "/delta",
+					dataType: "json",
+					method: "POST",
+					data: pfsParameterObj,
+					headers: {
+						"Content-Type": "application/json"
+					}	
+				}).success(function(data) {
+					$rootScope.glassPane--;
+					
+					$scope.concepts = data.searchResult;
+					$scope.nConcepts = data.totalCount;
+					$scope.numConceptPages = Math.ceil(data.totalCount/$scope.pageSize);
+					
+				}).error(function(data, status, headers, config) {
+				    $rootScope.glassPane--;
+				    $scope.concepts = [];
+				    //$rootScope.handleHttpError(data, status, headers, config);
+				});
+				
+				
+			}
+			$scope.getConcepts(1, null);
+		}
   });
