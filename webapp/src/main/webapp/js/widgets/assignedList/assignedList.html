@@ -116,7 +116,7 @@
 			<form>	
 				<input id="conflictSearch" ng-model="queryConflict">
 				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedConflicts(1, queryConflict, assignedConflictType)">Search</button>
-				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedConflicts(1, 'null'); queryConflict = null">Reset</button>
+				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedConflicts(1, 'null', assignedConflictType); queryConflict = null">Reset</button>
 			</form>
 		</td>
 	</tr>
@@ -214,7 +214,7 @@
 			<form>	
 				<input id="conflictSearch" ng-model="queryReviewWork">
 				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedReviewWork(1, queryReviewWork, assignedReviewWorkType)">Search</button>
-				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedReviewWork(1, 'null'); queryReviewWork = null">Reset</button>
+				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedReviewWork(1, 'null', assignedReviewWorkType); queryReviewWork = null">Reset</button>
 			</form>
 		</td>
 	</tr>
