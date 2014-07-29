@@ -27,6 +27,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.itemsPerPage = 10;
 	$scope.availableWorkPage = 1;
 	$scope.availableConflictsPage = 1;
+	$scope.availableReviewPage = 1;
 	
 	// initial titles
 	$scope.availableWorkTitle = "Concepts";
@@ -333,13 +334,14 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	 * - workType: the type of work ('concept', 'conflict', 'review'), used for broadcasting assignment 
 	* query passed in to ensure correct retrieval of work
 	*/
-	$scope.assignWork = function(trackingRecord, mapUser, query, workType) {
+	$scope.assignWork = function(trackingRecord, mapUser, query, workType, workPage) {
 		
 		console.debug('assignWork called');
 		console.debug(trackingRecord);
 		console.debug(mapUser);
 		console.debug(query);
-		console.debug(workType)
+		console.debug(workType);
+		console.debug(workPage);
 		;
 		// doublecheck map user and query, assign default values if necessary
 		if (mapUser == null) mapUser = $scope.currentUser;
@@ -359,12 +361,13 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		  	$rootScope.glassPane--;
 			$rootScope.$broadcast('workAvailableWidget.notification.assignWork', { assignUser: mapUser, assignType: workType});
 			
+			console.debug($scope.availableWorkPage, $scope.availableConflictsPage, $scope.availableReviewWorkPage);
 			if (workType == 'concept') {
-				$scope.retrieveAvailableWork($scope.trackingRecordPage, query);
+				$scope.retrieveAvailableWork(workPage, query, mapUser);
 			} else if (workType === 'conflict') {
-				$scope.retrieveAvailableConflicts($scope.availableConflictsPage, query);
+				$scope.retrieveAvailableConflicts(workPage, query, mapUser);
 			} else if (workType === 'review') {
-				$scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage, query);
+				$scope.retrieveAvailableReviewWork(workPage, query, mapUser);
 			}
 		}).error(function(data, status, headers, config) {
 			$rootScope.glassPane--;
@@ -431,7 +434,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 					console.debug($scope.availableWork[i]);
 					if (trackingRecords[i].id != $scope.availableWork[i].id) {
 						retrieveAvailableWork($scope.availableWorkPage, query);
-						alert("One or more of the concepts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
+						alert("One or more of the concepts you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, return to the first page and re-click 'Claim Batch'");
 						conceptListValid = false;
 					}
 				}

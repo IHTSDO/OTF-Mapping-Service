@@ -166,7 +166,7 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		console.debug($scope.recordsInProject);
 		for (var i = 0; i < $scope.recordsInProject.length; i++) {
 
-			setEditable($scope.recordsInProject[i]);
+			//setEditable($scope.recordsInProject[i]);
 		}
  
 		// if no records for this project found, set flag
@@ -192,6 +192,20 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		}).error(function(data, status, headers, config) {
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
+	};
+	
+	$scope.isEditable = function(record) {
+
+		if (($scope.currentRole === 'Specialist' ||
+				$scope.currentRole === 'Lead' ||
+				$scope.currentRole === 'Administrator') &&
+				(record.workflowStatus === 'PUBLISHED' || record.workflowStatus === 'READY_FOR_PUBLICATION')) {
+
+			return true;
+
+		} else if ($scope.currentUser.userName === record.owner.userName) {
+			return true;
+		} else return false;
 	};
 	
 	$scope.editRecord = function(record) {
