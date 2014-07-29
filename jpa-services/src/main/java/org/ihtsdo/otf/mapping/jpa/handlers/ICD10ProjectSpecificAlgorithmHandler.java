@@ -1,8 +1,10 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
@@ -240,17 +242,37 @@ DefaultProjectSpecificAlgorithmHandler {
 		// open the content service
 		ContentService contentService = new ContentServiceJpa();
 		
-		// if a three-digit code, verify that no children exist (i.e. four digit codes)
+		// if a three-digit code, verify that no children exist (i.e. four digit codes), UNLESS on the exception list
+		Set<String> excludeFourthDigitCodes = new HashSet<>();
+		
 		if (terminologyId.matches(".[0-9].")) {
-			TreePositionList tpList = contentService.getTreePositions(terminologyId, mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+			
+			if (terminologyId.matches("W..|X..|Y[0-2].|Y3[0-4]"))
+				return true;
+			
+		/*	// Fourth digit not necessary: check W00-W19
+			if (terminologyId.startsWith("W")) 
+				return true;
+			
+			// Fourth digit not necessary: check X00-X09
+			if (terminologyId.startsWith("X")) 
+				return true;
+			
+			// Fourth digit not necessary: check Y10-Y34
+			if (terminologyId.startsWith("Y")) {
+				if (terminologyId.charAt(1) == '1' || terminologyId.charAt(1) == '2') return true;
+				if (terminologyId.charAt(1) == '3' && (terminology.))
+				return true;
+			*/
+			// otherwise, if 3-digit code has children, return false
+			TreePositionList tpList = contentService.getTreePositions(terminologyId, mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());	
 			if (tpList.getTreePositions().get(0).getChildrenCount() > 0) { 
 				contentService.close();
 				return false;
 			}
 		}
 
-		// third, verify concept exists in database
-		
+		// third, verify concept exists in database	
 		Concept concept =
 				contentService.getConcept(terminologyId,
 						mapProject.getDestinationTerminology(),
