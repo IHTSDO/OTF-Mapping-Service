@@ -44,6 +44,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.groupOpen = new Array(10);
 	for (var i = 0; i < $scope.groupOpen.length; i++) $scope.groupOpen[i] = true;
 
+	// start note edit mode in off mode
+	$scope.noteEditMode = false;
+	$scope.noteEditId = null;
+	$scope.noteInput = '';
+	
 	// accordion functions
 	$scope.openAll = function() {
 		$scope.isConceptOpen = true;
@@ -693,10 +698,45 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 			menubar : false,
 			statusbar : false,
-			plugins : "autolink link image charmap searchreplace",
+			plugins : "autolink autoresize link image charmap searchreplace",
 			toolbar : "undo redo | styleselect | bold italic underline strikethrough | charmap link image",
 	    };
-
+	
+	$scope.editRecordNote = function(record, mapNote) {
+		$scope.noteInput = "HELLO HELLO";
+		$scope.noteEditMode = true;
+		$scope.noteEditId = mapNote.localId;
+	}
+	
+	$scope.cancelEditRecordNote = function() {
+		$scope.noteInput = '';
+		$scope.noteEditMode = false;
+		$scope.noteEditId = null;
+	}
+	
+	$scope.saveEditRecordNote = function(record, note) {
+		
+		if ($scope.noteEditMode == true) {
+			
+			var noteFound = false;
+			
+			// find the existing note
+			for (var i = 0; i < record.mapNote.length; i++) {
+				
+				// if this note, overwrite it
+				if ($scope.noteEditId = record.mapNote[i].localId) {
+					noteFound = true;
+					record.mapNote[i].note = note;
+				}
+			}
+			
+			if (noteFound = false) {
+				console.debug("ERROR: Could not find note to edit with id = " + $scope.noteEditId);
+			}
+		} else {
+			console.debug("Save Edit Record Note called when not in edit mode");
+		}
+	}
 	$scope.addRecordNote = function(record, note) {
 		// check if note non-empty
 		if (note === '' || note == null) {
@@ -729,13 +769,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		record['mapNote'].removeElement(note);
 		$scope.record = record;
 		// broadcastRecord();
+		
+		// if in edit mode, cancel
+		if ($scope.noteEditMode == true) {
+			$scope.cancelEditRecordNote();
+		}
 	};
 	
-	$scope.editRecordNote = function(record, note) {
-		console.debug("Editing note", note);
-		$scope.noteInput = note.note;
-		
-	};
+	
 	
 
 

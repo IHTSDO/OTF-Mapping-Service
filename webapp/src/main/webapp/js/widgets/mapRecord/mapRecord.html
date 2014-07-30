@@ -140,6 +140,8 @@
 		<div class="alert alert-warning" disabled>
 		<i class="glyphicon glyphicon-remove pull-right"
 					ng-click="removeRecordNote(record, note)"></i>
+		<i class="glyphicon glyphicon-pencil pull-right"
+					ng-click="editRecordNote(record, note); noteInput = note.note"></i>
 			[By <a href="mailto:{{user.email}}">{{note.user.userName}}</a> on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}] 
 			<div style="padding-left:20px;" ng-bind-html="to_trusted(note.note)"></div>
 				
@@ -154,8 +156,13 @@
 	<form method="post">
     	<textarea id="tinymce" ui-tinymce="tinymceOptions" ng-model="noteInput"></textarea>
    
-    	<input class="pull-right" type="submit"  accesskey="a" value="Add Note"
+   {{noteEditMode}}
+    	<input ng-show="noteEditMode == false" class="pull-right" type="submit"  accesskey="a" value="Add Note"
 		ng-click="addRecordNote(record, noteInput); noteInput = ''">
+		<!-- <input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Save Editing"
+		ng-click="saveEditRecordNote(record, noteInput); noteInput = ''">
+		<input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Cancel Editing"
+		ng-click="cancelEditRecordNote(); noteInput = ''"> -->
 		<span class="pull-right"> Shortcut to add note: <code>Tab</code>, <code>Enter</code>&nbsp&nbsp</span>
   	</form>
 
