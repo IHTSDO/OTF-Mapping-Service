@@ -495,6 +495,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// if sort field is specified, set sort key
 		if (pfsParameter.getSortField() != null
 				&& !pfsParameter.getSortField().isEmpty()) {
+			
+			System.out.println("Sorting by field: " + pfsParameter.getSortField());
 
 			// check that specified sort field exists on Concept and is
 			// a string
