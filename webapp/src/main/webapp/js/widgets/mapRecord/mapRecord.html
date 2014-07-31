@@ -7,8 +7,6 @@
     }
 </script>
 
-{{entries}}
-
 <accordion> <accordion-group is-open="isConceptOpen">
 <accordion-heading> Source Concept <i
 	class="pull-right glyphicon"
@@ -158,7 +156,6 @@
 	<form method="post">
     	<textarea id="tinymce" ui-tinymce="tinymceOptions" ng-model="noteInput"></textarea>
    
-   {{noteEditMode}}
     	<input ng-show="noteEditMode == false" class="pull-right" type="submit"  accesskey="a" value="Add Note"
 		ng-click="addRecordNote(record, noteInput); noteInput = ''">
 		<!-- <input ng-show="noteEditMode == true" class="pull-right" type="submit"  accesskey="a" value="Save Editing"
