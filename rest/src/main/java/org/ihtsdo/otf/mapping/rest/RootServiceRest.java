@@ -15,7 +15,11 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.FeedbackEmail;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
  * Top level class for all REST services.
@@ -144,6 +148,53 @@ public class RootServiceRest {
 			for (String recipient : recipientsArray) {
 			  msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
 			}
+			Transport.send(msg);
+
+		} catch (Exception mex) {
+			mex.printStackTrace();
+		}
+	}
+
+
+	public void sendEmail(FeedbackEmail feedbackEmail) {
+		
+		
+		try {
+			getConfigProperties();
+			
+			Properties props = new Properties();
+			props.put("mail.smtp.user", m_from);
+			props.put("mail.smtp.password", host_password);
+			props.put("mail.smtp.host", host);
+			props.put("mail.smtp.port", port);
+			props.put("mail.smtp.starttls.enable", "true");
+			props.put("mail.smtp.auth", "true");
+			
+			Authenticator auth = new SMTPAuthenticator();
+			Session session = Session.getInstance(props, auth);
+
+			MimeMessage msg = new MimeMessage(session);
+			//msg.setText(feedbackEmail.getEmailText());
+			msg.setSubject(feedbackEmail.getSubject());
+			msg.setFrom(new InternetAddress(m_from));
+			
+			// get the recipients
+			MappingService mappingService = new MappingServiceJpa();
+			for (String recipient : feedbackEmail.getRecipients()) {
+				MapUser mapUser = mappingService.getMapUser(recipient);
+				System.out.println(mapUser.getEmail());
+				msg.addRecipient(Message.RecipientType.TO, new InternetAddress(mapUser.getEmail()));	
+			}
+			
+			msg.addRecipient(Message.RecipientType.TO, new InternetAddress("***REMOVED***"));
+			
+			msg.setContent(feedbackEmail.getEmailText(), "text/html");
+			
+			
+			// msg.addRecipient(Message.RecipientType.TO, new InternetAddress(feedbackEmail.getSender().getEmail()));
+			
+			
+			
 			Transport.send(msg);
 
 		} catch (Exception mex) {
