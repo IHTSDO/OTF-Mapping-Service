@@ -47,6 +47,27 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 		}
 	};
 })
+// filter out users/entities who are already on the selected list
+// since this is used to return list of potential entities to add for selection
+.filter('userFilter', function() {
+    return function(mapUsers, mapLeads) {
+        var out = [];
+        if (mapUsers == undefined)
+        	return out;
+        for (var i = 0; i < mapUsers.length; i++) {
+        	var found = false;
+            for (var j = 0; j < mapLeads.length; j++) {
+              if(mapUsers[i].name === mapLeads[j].name){
+            	  found = true;
+                  break;
+              }
+            }
+            if (found == false)
+              out.push(mapUsers[i]);
+        }
+        return out;
+    };
+})
 .controller('projectDetailsCtrl', 
 			['$scope', '$http', '$sce', '$rootScope', '$location', 'localStorageService',
 			 function ($scope, $http, $sce, $rootScope, $location, localStorageService) {
@@ -57,7 +78,23 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 				$scope.currentUser = localStorageService.get('currentUser');
 				$scope.focusProject = localStorageService.get('focusProject');
 				$scope.mapProjects = localStorageService.get("mapProjects");
+				$scope.mapUsers = localStorageService.get('mapUsers');
 				
+				$scope.focusProjectBeforeChanges = {};
+			    $scope.focusProjectBeforeChanges = angular.copy($scope.focusProject);
+
+
+				
+				$scope.editModeEnabled = false;
+				
+				$scope.allowableMapTypes = [{displayName: 'Extended Map', name: 'ExtendedMap'}, 
+				                            {displayName: 'Complex Map', name: 'ComplexMap'}, 
+				                            {displayName: 'Simple Map', name: 'SimpleMap'}];
+				$scope.allowableMapRelationStyles = [{displayName: 'Map Category Style', name: 'MAP_CATEGORY_STYLE'},
+				                                {displayName: 'Relationship Style', name: 'RELATIONSHIP_STYLE'}];
+				$scope.allowableWorkflowTypes = [{displayName: 'Conflict Project', name: 'CONFLICT_PROJECT'},
+				                                 {displayName: 'Review Project', name: 'REVIEW_PROJECT'}];
+							
 				// watch for focus project change
 				$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
 					console.debug("MapProjectDetailCtrl: Detected change in focus project");
@@ -68,31 +105,84 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 				
 				$scope.$watch(['focusProject', 'userToken'], function() {
 
-					if ($scope.focusProject != null && $scope.userToken != null) {}
-					
+					if ($scope.focusProject != null && $scope.userToken != null) {}				
 						$http.defaults.headers.common.Authorization = $scope.userToken;
 						$scope.go();
 				});
 				
 				$scope.go = function() {
-					
-				
+									
 					console.debug('Formatting project details');
 
+					$http({
+						url: root_mapping + "advice/advices",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.mapAdvices = data.mapAdvice;
+						localStorageService.add('mapAdvices', data.mapAdvice);
+						$rootScope.$broadcast('localStorageModule.notification.setMapAdvices',{key: 'mapAdvices', mapAdvices: data.mapAdvices});  
+						$scope.allowableMapAdvices = localStorageService.get('mapAdvices');
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+					
+					$http({
+						url: root_mapping + "relation/relations",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.mapRelations = data.mapRelation;
+						localStorageService.add('mapRelations', data.mapRelation);
+						$rootScope.$broadcast('localStorageModule.notification.setMapRelations',{key: 'mapRelations', mapRelations: data.mapRelations});  
+						$scope.allowableMapRelations = localStorageService.get('mapRelations');
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+					
+					$http({
+						url: root_mapping + "principle/principles",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.mapPrinciples = data.mapPrinciple;
+						localStorageService.add('mapPrinciples', data.mapPrinciple);
+						$rootScope.$broadcast('localStorageModule.notification.setMapPrinciples',{key: 'mapPrinciples', mapPrinciples: data.mapPrinciples});  
+						$scope.allowableMapPrinciples = localStorageService.get('mapPrinciples');
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+					
+					$http({
+						url: root_mapping + "ageRange/ageRanges",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.mapAgeRanges = data.mapAgeRange;
+						localStorageService.add('mapAgeRanges', data.mapAgeRange);
+						$rootScope.$broadcast('localStorageModule.notification.setMapAgeRanges',{key: 'mapAgeRanges', mapAgeRanges: data.mapAgeRanges});  
+						$scope.allowableMapAgeRanges = localStorageService.get('mapAgeRanges');
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
 
-					// apply map type text styling
-					if ($scope.focusProject.mapType === "SIMPLE_MAP") $scope.mapTypeText = "Simple Mapping";
-					else if ($scope.focusProject.mapType === "COMPLEX_MAP") $scope.mapTypeText = "Complex Mapping";
-					else if($scope.focusProject.mapType === "EXTENDED_MAP") $scope.mapTypeText = "Extended Mapping";
-					else $scope.mapTypeText = "No mapping type specified";
-
-					// apply relation style text styling
-					console.debug($scope.focusProject.mapRelationStyle);
-					console.debug($scope.focusProject.mapRelationStyle === "MAP_CATEGORY_STYLE");
-					if ($scope.focusProject.mapRelationStyle === "MAP_CATEGORY_STYLE") $scope.mapRelationStyleText = "Map Category Style";
-					else if ($scope.focusProject.mapRelationStyle === "RELATIONSHIP_STYLE") $scope.mapRelationStyleText = "Relationship Style";
-					else $scope.mapRelationStyleText = "No relation style specified";
-
+					// find selected elements from the allowable lists
+					$scope.selectedMapType = $scope.getSelectedMapType();
+					$scope.selectedMapRelationStyle = $scope.getSelectedMapRelationStyle();
+					$scope.selectedWorkflowType = $scope.getSelectedWorkflowType();
+					
 					// determine if this project has a principles document
 					if ($scope.focusProject.destinationTerminology == "ICD10") {
 						$scope.focusProject.mapPrincipleDocumentPath = "doc/";
@@ -115,7 +205,6 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					$scope.getPagedScopeConcepts(1);
 					$scope.getPagedScopeExcludedConcepts(1);
 					$scope.orderProp = 'id';
-
 				};
 
 				$scope.goMapRecords = function () {
@@ -269,7 +358,7 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 
 				$scope.resetRelationFilter = function() {
 					$scope.relationFilter = "";
-					$scope.getPagedRelationss(1);
+					$scope.getPagedRelations(1);
 				};
 
 				$scope.resetPrincipleFilter = function() {
@@ -404,6 +493,547 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					} else {
 						return false;
 					}
+				};
+				
+				$scope.toggleEditMode = function() {
+					if ($scope.editModeEnabled == true) {
+						$scope.editModeEnabled = false;
+						$scope.updateMapProject();
+						
+					} else {
+						$scope.editModeEnabled = true;
+					}
+				};
+
+				$scope.getSelectedMapRelationStyle = function() {
+					console.debug("in getSelectedMapRelationStyle");
+					for (var j = 0; j < $scope.allowableMapRelationStyles.length; j++) {
+						if ($scope.focusProject.mapRelationStyle === $scope.allowableMapRelationStyles[j].name)
+							return $scope.allowableMapRelationStyles[j];
+					}
+					return null;
+				};
+
+				$scope.selectMapRelationStyle = function() {
+				  // update and broadcast the updated focus project
+				  $scope.focusProject.mapRelationStyle = $scope.selectedMapRelationStyle.name;
+				  localStorageService.set('focusProject', $scope.focusProject);
+				  $rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  			
+				  $scope.updateMapProject();
+				};
+				
+				$scope.getSelectedMapType = function() {
+					console.debug("in getSelectedMapType");
+					for (var j = 0; j < $scope.allowableMapTypes.length; j++) {
+						if ($scope.focusProject.mapRefsetPattern === $scope.allowableMapTypes[j].name)
+							return $scope.allowableMapTypes[j];
+					}
+					return null;
+				};
+
+				$scope.selectMapType = function() {
+					$scope.focusProject.mapType = $scope.selectedMapType.name;
+					// update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  						
+					$scope.updateMapProject();		 
+				};
+				
+				$scope.getSelectedWorkflowType = function() {
+					console.debug("in getSelectedWorkflowType");
+					for (var j = 0; j < $scope.allowableWorkflowTypes.length; j++) {
+						if ($scope.focusProject.workflowType === $scope.allowableWorkflowTypes[j].name)
+							return $scope.allowableWorkflowTypes[j];
+					}
+					return null;
+					
+				};
+
+				$scope.selectWorkflowType = function() {
+					$scope.focusProject.workflowType = $scope.selectedWorkflowType.name;
+					// update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  					
+					$scope.updateMapProject();
+				};
+				
+				$scope.deleteLead = function(lead) {
+					console.debug("in deleteLead");
+					for (var j = 0; j < $scope.focusProject.mapLead.length; j++) {
+						if (lead.userName === $scope.focusProject.mapLead[j].userName) {
+							$scope.focusProject.mapLead.splice(j, 1);
+						}
+					}
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+				};
+				
+				$scope.addLead = function(user) {
+					console.debug("in addLead");
+					$scope.focusProject.mapLead.push(user);
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+				};
+				
+				$scope.deleteSpecialist = function(specialist) {
+					console.debug("in deleteSpecialist");
+					for (var j = 0; j < $scope.focusProject.mapSpecialist.length; j++) {
+						if (specialist.userName === $scope.focusProject.mapSpecialist[j].userName) {
+							$scope.focusProject.mapSpecialist.splice(j, 1);
+						}
+					}
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+				};
+				
+				$scope.addSpecialist = function(user) {
+					console.debug("in addSpecialist");
+					$scope.focusProject.mapSpecialist.push(user);
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+				};
+			
+				$scope.deleteAdvice = function(advice) {
+					console.debug("in deleteAdvice");
+					for (var j = 0; j < $scope.focusProject.mapAdvice.length; j++) {
+						if (advice.name === $scope.focusProject.mapAdvice[j].name) {
+							$scope.focusProject.mapAdvice.splice(j, 1);
+						}
+					}
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject}); 
+					$scope.resetAdviceFilter();		
+					$scope.updateMapProject();
+				};
+				
+				$scope.addAdvice = function(advice) {
+					console.debug("in addAdvice");
+					$scope.focusProject.mapAdvice.push(advice);
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+					$scope.resetAdviceFilter();
+					$scope.updateMapProject();
+				};
+
+				$scope.updateAdvice = function(advice) {
+					console.debug("in updateAdvice");
+					$http({						
+						url: root_mapping + "advice/update",
+						dataType: "json",
+						data: advice,
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to updateMapAdvice");
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error updating map advice.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_mapping + "advice/advices",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {				
+							$scope.mapAdvices = data.mapAdvice;
+							for (var j = 0; j < $scope.focusProject.mapAdvice.length; j++) {
+								if (advice.id === $scope.focusProject.mapAdvice[j].id) {
+									$scope.focusProject.mapAdvice[j] = advice;
+								}
+							}
+							localStorageService.add('mapAdvices', data.mapAdvice);
+							$rootScope.$broadcast('localStorageModule.notification.setMapAdvices',{key: 'mapAdvices', mapAdvices: data.mapAdvices});  
+							$scope.allowableMapAdvices = localStorageService.get('mapAdvices');
+							
+							// update and broadcast the updated focus project
+							localStorageService.add('focusProject', $scope.focusProject);
+							$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+							$scope.updateMapProject();
+							
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});				
+				};
+				
+				$scope.submitNewMapAdvice = function(mapAdviceName, mapAdviceDetail) {
+					console.debug("in submitNewMapAdvice");
+					var obj = 			  
+					{"name":mapAdviceName,"detail":mapAdviceDetail,
+							"isAllowableForNullTarget":false,"isComputed":true};
+					mapAdviceName = "";
+					mapAdviceDetail = "";
+					$scope.newAdviceName = "";
+					$scope.newAdviceDetail = "";
+					
+					$http({						
+						url: root_mapping + "advice/add",
+						dataType: "json",
+						data: obj,
+						method: "PUT",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to addMapAdvice");
+						$scope.newAdviceName = "";
+						$scope.newAdviceDetail = "";
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error adding new map advice.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_mapping + "advice/advices",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {
+							$scope.mapAdvices = data.mapAdvice;
+							localStorageService.add('mapAdvices', data.mapAdvice);
+							$rootScope.$broadcast('localStorageModule.notification.setMapAdvices',{key: 'mapAdvices', mapAdvices: data.mapAdvices});  
+							$scope.allowableMapAdvices = localStorageService.get('mapAdvices');
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});
+				};
+
+				$scope.deleteRelation = function(relation) {
+					console.debug("in deleteRelation");
+					for (var j = 0; j < $scope.focusProject.mapRelation.length; j++) {
+						if (relation.name === $scope.focusProject.mapRelation[j].name) {
+							$scope.focusProject.mapRelation.splice(j, 1);
+						}
+					}
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject}); 
+					$scope.resetRelationFilter();		
+					$scope.updateMapProject();
+				};
+				
+				$scope.addRelation = function(relation) {
+					console.debug("in addRelation");
+					$scope.focusProject.mapRelation.push(relation);
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+					$scope.resetRelationFilter();
+					$scope.updateMapProject();
+				};
+				
+				$scope.submitNewMapRelation = function(mapRelationName, mapRelationAbbreviation, mapRelationTerminologyId) {
+					console.debug("in submitNewMapRelation");
+					var obj = 	
+					{"terminologyId":mapRelationTerminologyId,"name":mapRelationName,"abbreviation":mapRelationAbbreviation,
+						"isAllowableForNullTarget":false,"isComputed":false};
+					$http({						
+						url: root_mapping + "relation/add",
+						dataType: "json",
+						data: obj,
+						method: "PUT",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to addMapRelation");
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error adding new map relation.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_mapping + "relation/relations",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {
+							$scope.mapRelations = data.mapRelation;
+							localStorageService.add('mapRelations', data.mapRelation);
+							$rootScope.$broadcast('localStorageModule.notification.setMapRelations',{key: 'mapRelations', mapRelations: data.mapRelations});  
+							$scope.allowableMapRelations = localStorageService.get('mapRelations');
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});
+				};
+				
+				
+				$scope.deletePrinciple = function(principle) {
+					console.debug("in deletePrinciple");
+					for (var j = 0; j < $scope.focusProject.mapPrinciple.length; j++) {
+						if (principle.name === $scope.focusProject.mapPrinciple[j].name) {
+							$scope.focusProject.mapPrinciple.splice(j, 1);
+						}
+					}
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject}); 
+					$scope.resetPrincipleFilter();		
+					$scope.updateMapProject();
+				};
+				
+				$scope.addPrinciple = function(principle) {
+					console.debug("in addPrinciple");
+					$scope.focusProject.mapPrinciple.push(principle);
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+					$scope.resetPrincipleFilter();
+					$scope.updateMapProject();
+				};
+				
+				$scope.updatePrinciple = function(principle) {
+					console.debug("in  updatePrinciple");
+					$http({						
+						url: root_mapping + "principle/update",
+						dataType: "json",
+						data: principle,
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to updateMapPrinciple");
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error updating map principle.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_mapping + "principle/principles",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {
+							
+							$scope.mapPrinciples = data.mapPrinciple;
+							for (var j = 0; j < $scope.focusProject.mapPrinciple.length; j++) {
+								if (principle.id === $scope.focusProject.mapPrinciple[j].id) {
+									$scope.focusProject.mapPrinciple[j] = principle;
+								}
+							}
+							localStorageService.add('mapPrinciples', data.mapPrinciple);
+							$rootScope.$broadcast('localStorageModule.notification.setMapPrinciples',{key: 'mapPrinciples', mapPrinciples: data.mapPrinciples});  
+							$scope.allowableMapPrinciples = localStorageService.get('mapPrinciples');
+							
+							// update and broadcast the updated focus project
+							localStorageService.add('focusProject', $scope.focusProject);
+							$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+							$scope.updateMapProject();
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});				
+				};
+				
+				$scope.submitNewMapPrinciple = function(mapPrincipleName, mapPrincipleId, mapPrincipleDetail, mapPrincipleSectionRef) {
+					console.debug("in submitNewMapPrinciple");
+					var obj = 	
+					{"name":mapPrincipleName, "principleId":mapPrincipleId,"detail":mapPrincipleDetail,
+						"sectionRef":mapPrincipleSectionRef};
+					$http({						
+						url: root_mapping + "principle/add",
+						dataType: "json",
+						data: obj,
+						method: "PUT",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to addMapPrinciple");
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error adding new map principle.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_mapping + "principle/principles",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {
+							$scope.mapPrinciples = data.mapPrinciple;
+							localStorageService.add('mapPrinciples', data.mapPrinciple);
+							$rootScope.$broadcast('localStorageModule.notification.setMapPrinciples',{key: 'mapPrinciples', mapPrinciples: data.mapPrinciples});  
+							$scope.allowableMapPrinciples = localStorageService.get('mapPrinciples');
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});
+				};
+				
+				$scope.deleteAgeRange = function(ageRange) {
+					console.debug("in deleteAgeRange");
+					for (var j = 0; j < $scope.focusProject.mapAgeRange.length; j++) {
+						if (ageRange.name === $scope.focusProject.mapAgeRange[j].name) {
+							$scope.focusProject.mapAgeRange.splice(j, 1);
+						}
+					}
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject}); 
+					$scope.updateMapProject();
+				};
+				
+				$scope.addAgeRange = function(ageRange) {
+					console.debug("in addAgeRange");
+					$scope.focusProject.mapAgeRange.push(ageRange);
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+					$scope.updateMapProject();
+				};
+				
+				$scope.submitNewMapAgeRange = function(name, lowerInclusive, lowerUnits, lowerValue,
+						 upperInclusive, upperUnits, upperValue) {
+				   console.debug("in submitNewMapAgeRange");
+					  var obj =	 {
+								"lowerInclusive": true,
+								"lowerUnits": lowerUnits,
+								"lowerValue": lowerValue,
+								"name": name,
+								"upperInclusive": true,
+								"upperUnits": upperUnits,
+								"upperValue": upperValue
+							  };
+					$http({						
+						url: root_mapping + "ageRange/add",
+						dataType: "json",
+						data: obj,
+						method: "PUT",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to addMapAgeRange");
+					              //make the record pristine
+					              $scope.ageRangeForm.$setPristine();
+					              $scope.name = "";
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error adding new map age range.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_mapping + "ageRange/ageRanges",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {
+							$scope.mapAgeRanges = data.mapAgeRange;
+							localStorageService.add('mapAgeRanges', data.mapAgeRange);
+							$rootScope.$broadcast('localStorageModule.notification.setMapAgeRanges',{key: 'mapAgeRanges', mapAgeRanges: data.mapAgeRanges});  
+							$scope.allowableMapAgeRanges = localStorageService.get('mapAgeRanges');
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});
+				};
+	
+				
+				$scope.deleteScopeIncludedConcept = function(scopeConcept) {
+					// TODO: recalculate workflow
+					console.debug("in deleteScopeIncludedConcept");
+					for (var j = 0; j < $scope.focusProject.scopeConcepts.length; j++) {
+						if (scopeConcept === $scope.focusProject.scopeConcepts[j]) {
+							$scope.focusProject.scopeConcepts.splice(j, 1);
+						}
+					}
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject}); 
+					$scope.resetScopeConceptFilter();
+					$scope.updateMapProject();
+				};
+				
+				$scope.submitNewScopeIncludedConcept = function(scopeConcept) {
+					console.debug("in submitNewScopeIncludedConcept");
+					$scope.focusProject.scopeConcepts.push(scopeConcept);
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+					$scope.resetScopeConceptFilter();
+					$scope.updateMapProject();
+				};
+				
+				$scope.deleteScopeExcludedConcept = function(scopeConcept) {
+					// TODO: recalculate workflow
+					console.debug("in deleteScopeExcludedConcept");
+					for (var j = 0; j < $scope.focusProject.scopeExcludedConcepts.length; j++) {
+						if (scopeConcept === $scope.focusProject.scopeExcludedConcepts[j]) {
+							$scope.focusProject.scopeExcludedConcepts.splice(j, 1);
+						}
+					}
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject}); 
+					$scope.resetScopeExcludedConceptFilter();
+					$scope.updateMapProject();
+				};
+				
+				$scope.submitNewScopeExcludedConcept = function(scopeConcept) {
+					console.debug("in submitNewScopeExcludedConcept");
+					$scope.focusProject.scopeExcludedConcepts.push(scopeConcept);
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+					$scope.resetScopeExcludedConceptFilter();
+					$scope.updateMapProject();
+				};
+				
+				$scope.resetModel = function() {
+					console.debug("in resetModel");
+				    angular.copy($scope.focusProjectBeforeChanges, $scope.focusProject);
+					
+				    $scope.resetAdviceFilter();
+					$scope.resetRelationFilter();
+					$scope.resetPrincipleFilter();
+					$scope.resetScopeConceptFilter();		
+					$scope.resetScopeExcludedConceptFilter(); 
+				};
+				
+				$scope.updateMapProject = function() {				
+					$http({
+						url: root_mapping + "project/update",
+						dataType: "json",
+						data: $scope.focusProject,
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to updateMapProject");
+						localStorageService.set('focusProject', $scope.focusProject);
+						$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error updating map project.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					});
 				};
 			}]);
 
