@@ -20,6 +20,9 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
+import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapAgeRangeListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapPrincipleListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
@@ -33,6 +36,7 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
+import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
@@ -43,6 +47,8 @@ import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapAdvice;
+import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -234,7 +240,7 @@ public class MappingServiceRest extends RootServiceRest {
 		try {
 			// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProject.getId());
-			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+			if (!(role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR) || role.hasPrivilegesOf(MapUserRole.LEAD)))
 				throw new WebApplicationException(Response.status(401).entity(
 						"User does not have permissions to udpate a map project.").build());
 			
@@ -565,8 +571,298 @@ public class MappingServiceRest extends RootServiceRest {
 	}
 	
 	/////////////////////////////////////////////////////
-	// SCRUD functions:  Map Advice, to be added later
+	// SCRUD functions:  Map Advice
 	/////////////////////////////////////////////////////
+	/**
+	 * Returns all map advices in either JSON or XML format
+	 * @param authToken 
+	 * 
+	 * @return the map advices
+	 */
+	@GET
+	@Path("/advice/advices")
+	@ApiOperation(value = "Get all mapping advices", notes = "Returns all MapAdvices in either JSON or XML format", response = MapAdviceListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapAdviceListJpa getMapAdvices(
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /advice/advices");
+
+		try {
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the map advices.").build());
+			
+			MappingService mappingService = new MappingServiceJpa();
+			MapAdviceListJpa mapAdvices = (MapAdviceListJpa) mappingService
+					.getMapAdvices();
+			mapAdvices.sortBy(new Comparator<MapAdvice>() {
+				@Override
+				public int compare(MapAdvice o1, MapAdvice o2) {
+					return o1.getName().compareTo(o2.getName());
+				}
+			});
+			mappingService.close();
+			return mapAdvices;
+
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve an advice");
+			return null;
+		}
+	}
+
+	/**
+	 * Adds a map advice
+	 * 
+	 * @param mapAdvice
+	 *            the map advice
+	 * @param authToken 
+	 * @return Response the response
+	 */
+	@PUT
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/advice/add")
+	@ApiOperation(value = "Add an advice", notes = "Adds a MapAdvice", response = MapAdviceJpa.class)
+	public MapUser addMapAdvice(
+			@ApiParam(value = "The map advice to add. Must be in Json or Xml format", required = true) MapAdviceJpa mapAdvice,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /advice/add");
+
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to add an advice.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.addMapAdvice(mapAdvice);
+			mappingService.close();
+			return null;
+
+		} catch (Exception e) {
+			handleException(e, "trying to add an advice");
+			return null;
+		}
+	}
+	
+	/**
+	 * Updates a map advice
+	 * 
+	 * @param mapAdvice
+	 *            the map advice to be added
+	 * @param authToken 
+	 */
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/advice/update")
+	@ApiOperation(value = "Update an advice", notes = "Updates a map advice", response = MapAdviceJpa.class)
+	public void updateMapAdvice(
+			@ApiParam(value = "The map advice to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapAdviceJpa mapAdvice,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /advice/update");
+	
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to update an advice.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.updateMapAdvice(mapAdvice);
+			mappingService.close();
+		} catch (Exception e) { 
+			handleException(e, "trying to update an advice");
+		}
+	}
+
+	/**
+	 * Removes a map advice
+	 * @param mapAdvice 
+	 * @param authToken 
+	 */
+	@DELETE
+	@Path("/advice/delete")
+	@ApiOperation(value = "Remove an advice", notes = "Removes a map advice", response = MapAdviceJpa.class)
+	public void removeMapAdvice(
+			@ApiParam(value = "The map advice object to delete", required = true) MapAdviceJpa mapAdvice,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /advice/delete for user " + mapAdvice.getName());
+
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to remove a user.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.removeMapAdvice(mapAdvice.getId());
+			mappingService.close();
+		} catch (Exception e) { 
+			handleException(e, "trying to remove an advice");
+		}
+	}
+	
+	/////////////////////////////////////////////////////
+	// SCRUD functions:  Map AgeRange
+	/////////////////////////////////////////////////////
+	/**
+	 * Returns all map age ranges in either JSON or XML format
+	 * @param authToken 
+	 * 
+	 * @return the map age ranges
+	 */
+	@GET
+	@Path("/ageRange/ageRanges")
+	@ApiOperation(value = "Get all mapping age ranges", notes = "Returns all MapAgeRanges in either JSON or XML format", response = MapAgeRangeListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapAgeRangeListJpa getMapAgeRanges(
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /ageRange/ageRanges");
+
+		try {
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the map age ranges.").build());
+			
+			MappingService mappingService = new MappingServiceJpa();
+			MapAgeRangeListJpa mapAgeRanges = (MapAgeRangeListJpa) mappingService
+					.getMapAgeRanges();
+			mapAgeRanges.sortBy(new Comparator<MapAgeRange>() {
+				@Override
+				public int compare(MapAgeRange o1, MapAgeRange o2) {
+					return o1.getName().compareTo(o2.getName());
+				}
+			});
+			mappingService.close();
+			return mapAgeRanges;
+
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve an age range");
+			return null;
+		}
+	}
+
+	/**
+	 * Adds a map age range
+	 * 
+	 * @param mapAgeRange
+	 *            the map ageRange
+	 * @param authToken 
+	 * @return Response the response
+	 */
+	@PUT
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/ageRange/add")
+	@ApiOperation(value = "Add an age range", notes = "Adds a MapAgeRange", response = MapAgeRangeJpa.class)
+	public MapUser addMapAgeRange(
+			@ApiParam(value = "The map ageRange to add. Must be in Json or Xml format", required = true) MapAgeRangeJpa mapAgeRange,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /ageRange/add");
+
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to add an age range.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.addMapAgeRange(mapAgeRange);
+			mappingService.close();
+			return null;
+
+		} catch (Exception e) {
+			handleException(e, "trying to add an age range");
+			return null;
+		}
+	}
+	
+	/**
+	 * Updates a map age range
+	 * 
+	 * @param mapAgeRange
+	 *            the map ageRange to be added
+	 * @param authToken 
+	 */
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/ageRange/update")
+	@ApiOperation(value = "Update an age range", notes = "Updates a map age range", response = MapAgeRangeJpa.class)
+	public void updateMapAgeRange(
+			@ApiParam(value = "The map age range to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapAgeRangeJpa mapAgeRange,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /ageRange/update");
+	
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to update an age range.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.updateMapAgeRange(mapAgeRange);
+			mappingService.close();
+		} catch (Exception e) { 
+			handleException(e, "trying to update an age range");
+		}
+	}
+
+	/**
+	 * Removes a map age range
+	 * @param mapAgeRange 
+	 * @param authToken 
+	 */
+	@DELETE
+	@Path("/ageRange/delete")
+	@ApiOperation(value = "Remove an age range", notes = "Removes a map age range", response = MapAgeRangeJpa.class)
+	public void removeMapAgeRange(
+			@ApiParam(value = "The map age range object to delete", required = true) MapAgeRangeJpa mapAgeRange,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /ageRange/delete for user " + mapAgeRange.getName());
+
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to remove an age range.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.removeMapAgeRange(mapAgeRange.getId());
+			mappingService.close();
+		} catch (Exception e) { 
+			handleException(e, "trying to remove an age range");
+		}
+	}
 	
 	/////////////////////////////////////////////////////
 	// SCRUD functions:  Map Relation
@@ -612,9 +908,152 @@ public class MappingServiceRest extends RootServiceRest {
 		}
 	}
 	
+	/**
+	 * Adds a map relation
+	 * 
+	 * @param mapRelation
+	 *            the map relation
+	 * @param authToken 
+	 * @return Response the response
+	 */
+	@PUT
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/relation/add")
+	@ApiOperation(value = "Add an relation", notes = "Adds a MapRelation", response = MapRelationJpa.class)
+	public MapUser addMapRelation(
+			@ApiParam(value = "The map relation to add. Must be in Json or Xml format", required = true) MapRelationJpa mapRelation,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /relation/add");
+
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to add a relation.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.addMapRelation(mapRelation);
+			mappingService.close();
+			return null;
+
+		} catch (Exception e) {
+			handleException(e, "trying to add a relation");
+			return null;
+		}
+	}
+	
+	/**
+	 * Updates a map relation
+	 * 
+	 * @param mapRelation
+	 *            the map relation to be added
+	 * @param authToken 
+	 */
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/relation/update")
+	@ApiOperation(value = "Update an relation", notes = "Updates a map relation", response = MapRelationJpa.class)
+	public void updateMapRelation(
+			@ApiParam(value = "The map relation to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRelationJpa mapRelation,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /relation/update");
+	
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to update a relation.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.updateMapRelation(mapRelation);
+			mappingService.close();
+		} catch (Exception e) { 
+			handleException(e, "trying to update a relation");
+		}
+	}
+
+	/**
+	 * Removes a map relation
+	 * @param mapRelation 
+	 * @param authToken 
+	 */
+	@DELETE
+	@Path("/relation/delete")
+	@ApiOperation(value = "Remove an relation", notes = "Removes a map relation", response = MapRelationJpa.class)
+	public void removeMapRelation(
+			@ApiParam(value = "The map relation object to delete", required = true) MapRelationJpa mapRelation,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /relation/delete for user " + mapRelation.getName());
+
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to remove a relation.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.removeMapRelation(mapRelation.getId());
+			mappingService.close();
+		} catch (Exception e) { 
+			handleException(e, "trying to remove a relation");
+		}
+	}
+	
 	/////////////////////////////////////////////////////
 	// SCRUD functions:  Map Principles
 	/////////////////////////////////////////////////////
+	
+	/**
+	 * Returns all map principles in either JSON or XML format
+	 * @param authToken 
+	 * 
+	 * @return the map principles
+	 */
+	@GET
+	@Path("/principle/principles")
+	@ApiOperation(value = "Get all principles", notes = "Returns all MapPrinciples in either JSON or XML format", response = MapPrincipleListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapPrincipleListJpa getMapPrinciples(
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /principle/principles");
+
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to return the map principles.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			MapPrincipleListJpa mapPrinciples = (MapPrincipleListJpa) mappingService
+					.getMapPrinciples();
+			mapPrinciples.sortBy(new Comparator<MapPrinciple>() {
+				@Override
+				public int compare(MapPrinciple o1, MapPrinciple o2) {
+					return o1.getName().compareTo(o2.getName());
+				}
+			});
+			mappingService.close();
+			return mapPrinciples;
+		} catch (Exception e) { 
+			handleException(e, "trying to return the map principles");
+			return null;
+		}
+	}
 	
 	/**
 	 * Returns the map principle for id.
