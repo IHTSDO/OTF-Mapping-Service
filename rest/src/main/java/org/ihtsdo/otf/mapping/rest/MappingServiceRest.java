@@ -34,6 +34,7 @@ import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
+import org.ihtsdo.otf.mapping.helpers.UserErrorListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
@@ -44,6 +45,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
+import org.ihtsdo.otf.mapping.jpa.UserErrorJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
@@ -55,6 +57,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
+import org.ihtsdo.otf.mapping.model.UserError;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -1348,6 +1351,88 @@ public class MappingServiceRest extends RootServiceRest {
 			mappingService.close();
 		} catch (Exception e) { 
 			handleException(e, "trying to remove map user preferences");
+		}
+	}
+	
+	/////////////////////////////////////////////////////
+	// SCRUD functions:  User Error
+	/////////////////////////////////////////////////////
+
+	/**
+	 * Returns the user errors.
+	 *
+	 * @param authToken the auth token
+	 * @return the user errors
+	 */
+	@GET
+	@Path("/error/errors")
+	@ApiOperation(value = "Get all errors", notes = "Returns all UserErrors in either JSON or XML format", response = UserErrorListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public UserErrorListJpa getUserErrors(
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /error/errors");
+
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to return the user errors.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			UserErrorListJpa userErrors = (UserErrorListJpa) mappingService
+					.getUserErrors();
+			userErrors.sortBy(new Comparator<UserError>() {
+				@Override
+				public int compare(UserError o1, UserError o2) {
+					return o1.getMapError().compareTo(o2.getMapError());
+				}
+			});
+			mappingService.close();
+			return userErrors;
+		} catch (Exception e) { 
+			handleException(e, "trying to return the user errors");
+			return null;
+		}
+	}
+
+
+	/**
+	 * Adds the user error.
+	 *
+	 * @param userError the user error
+	 * @param authToken the auth token
+	 * @return the map user
+	 */
+	@PUT
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/error/add")
+	@ApiOperation(value = "Add a user error", notes = "Adds a UserError", response = UserErrorJpa.class)
+	public MapUser addUserError(
+			@ApiParam(value = "The user error to add. Must be in Json or Xml format", required = true) UserErrorJpa userError,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /error/add");
+
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to add a user error.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+			mappingService.addUserError(userError);
+			mappingService.close();
+			return null;
+
+		} catch (Exception e) {
+			handleException(e, "trying to add a user error");
+			return null;
 		}
 	}
 	
