@@ -140,9 +140,10 @@
 		<div class="alert alert-warning" disabled>
 		<i class="glyphicon glyphicon-remove pull-right"
 					ng-click="removeRecordNote(record, note)"></i>
-		<i class="glyphicon glyphicon-pencil pull-right"
+		<!-- <i class="glyphicon glyphicon-pencil pull-right"
 					ng-click="editRecordNote(record, note); noteInput = note.note"></i>
-			[By <a href="mailto:{{user.email}}">{{note.user.userName}}</a> on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}] 
+	 -->
+	 		[By <a href="mailto:{{user.email}}">{{note.user.userName}}</a> on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}] 
 			<div style="padding-left:20px;" ng-bind-html="to_trusted(note.note)"></div>
 				
 		</div>
@@ -154,7 +155,7 @@
 
 	<!--  tinymce text area -->
 	<form method="post">
-    	<textarea id="tinymce" ui-tinymce="tinymceOptions" ng-model="noteInput"></textarea>
+    	<textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="noteInput"></textarea>
    
     	<input ng-show="noteEditMode == false" class="pull-right" type="submit"  accesskey="a" value="Add Note"
 		ng-click="addRecordNote(record, noteInput); noteInput = ''">
@@ -209,7 +210,7 @@
 	Add Principle: <select style="width: 75%;"
 		ng-change="addRecordPrinciple(record, principleInput)"
 		ng-model="principleInput"
-		ng-options="principle as principle.principleId + ':  ' + principle.name for principle in project.mapPrinciple | filter:$viewValue | limitTo:8"></select>
+		ng-options="principle as principle.principleId + ':  ' + principle.name for principle in project.mapPrinciple | orderBy:'id'"></select>
 </form>
 <hr>
 <div ng-show="project.mapPrincipleSourceDocument != null && project.mapPrincipleSourceDocument.length > 0">
@@ -233,6 +234,31 @@
 lead review<br>
 
 </accordion-group> </accordion>
+
+
+<!--   FEEDBACK PANEL -->
+<accordion> <accordion-group is-open="isFeedbackOpen">
+<accordion-heading> Feedback <i
+	class="pull-right glyphicon"
+	ng-class="{'glyphicon-chevron-down': isFeedbackOpen, 'glyphicon-chevron-right': !isFeedbackOpen}"></i>
+	</accordion-heading>
+
+	<!--  tinymce text area -->
+	<form method="post">
+		<textarea id="tinymce-feedback" ui-tinymce="tinymceOptions" ng-model="feedbackInput"></textarea>
+	
+		<input class="pull-right" type="submit"
+			value="Send Feedback"
+			ng-click="sendFeedback(record, feedbackInput); feedbackInput = ''">
+
+		<span class="pull-right"> Shortcut to send feedback: <code>Tab</code>,
+			<code>Enter</code>&nbsp&nbsp
+		</span>
+	</form>
+
+
+</accordion-group>
+</accordion>
 
 <button class="btn btn-sm btn-primary" ng-click="finishMapRecord(true)">Finish</button>
 <button class="btn btn-sm btn-primary"

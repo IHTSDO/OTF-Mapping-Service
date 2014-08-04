@@ -17,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.FeedbackEmailJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
@@ -1308,6 +1309,34 @@ public class WorkflowServiceRest extends RootServiceRest {
 			handleException(e, "trying to generate a mapping testing state");
 		}
 
+	}
+	
+	@POST
+	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/sendFeedback")
+	@ApiOperation(value = "Sends feedback email", notes = "Sends a map record editing feedback email given a FeedbackEmail object.", response = Response.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public Response sendFeeback(
+			@ApiParam(value = "Map project id", required = true) @PathParam("id") String mapProjectId,
+			@ApiParam(value = "Feedback email object", required = true) FeedbackEmailJpa feedbackEmail,
+			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+		
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /project/id/" + mapProjectId + "/user/id/" + userName + "/sendFeedback");
+		
+
+		try {
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapProjectId));
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to send record feedback emails").build());
+			
+			this.sendEmail(feedbackEmail);
+		} catch (Exception e) { 
+			handleException(e, "trying to send a record feedback email");
+		}
+		return null;
 	}
 
 	

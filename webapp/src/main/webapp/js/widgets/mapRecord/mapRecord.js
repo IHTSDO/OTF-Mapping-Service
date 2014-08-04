@@ -776,6 +776,207 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		}
 	};
 	
+	/** 
+	 * FEEDBACK FUNCTIONS
+	 */
+	$scope.sendFeedback = function(record, feedback) {
+		console.debug("Sending feedback email", record);
+		
+		var feedbackEmailObj = {};
+		
+		// assign group and priority
+		record = $scope.getFormattedRecord(record);
+		
+
+		var recipients = new Array();
+		
+		// if specialist, send email to all map leads
+		if ($scope.role === 'Specialist') {
+			console.debug("Adding leads: ", $scope.project, $scope.project.mapead);
+			for (var i = 0; i < $scope.project.mapLead.length; i++) {
+				console.debug($scope.project.mapLead[i].userName);
+				recipients.push($scope.project.mapLead[i].userName);
+			}
+
+		// otherwise, send email to owner of this record
+		} else if ($scope.role === 'Lead') {
+			if ($scope.user.userName === record.owner.userName) {
+				$scope.feedbackError = "Map Lead can not send request for feedback on own record";
+				return;
+			}
+			recipients.push(record.owner.userName);
+		}
+		
+		// add the current user as a recipient
+		recipients.push($scope.user.userName);
+		
+		// set the recipients
+		feedbackEmailObj['recipients'] = recipients;
+		
+		// add the current user as sender
+		feedbackEmailObj['sender'] = $scope.user.userName;
+		
+		// set the subject
+		feedbackEmailObj['subject'] = "[OTF-Mapping] Feedback request: Project " + $scope.project.name + ", Concept " + record.conceptId + " - " + record.conceptName;
+	
+		console.debug("Feedback Email Object:", feedbackEmailObj);
+		
+		// set the email text
+		var emailText = "<strong>Feedback from user " + $scope.user.name + "</strong><br><br>";
+		emailText += feedback + "<br><br>";
+		
+		emailText += "<br>"
+		emailText += "<strong>Map Record</strong><br><br>";
+		
+		
+		// link to concept record page
+		// TODO ADD
+		
+		// set the project information
+		emailText += "Project:                 " + $scope.project.name + "<br>";
+		emailText += "Source Terminology:      " + $scope.project.sourceTerminology + ", " + $scope.project.sourceTerminologyVersion  + "<br>";
+		emailText += "Destination Terminology: " + $scope.project.destinationTerminology + ", " + $scope.project.destinationTerminologyVersion  + "<br>";
+		emailText += "<br>";
+		
+		// set the concept information
+		emailText += "Concept Id:              " + record.conceptId + "<br>";
+		emailText += "Concept Name:            " + record.conceptName + "<br><br>";
+		
+		// for each group
+		// NOTE:  group 0 is by definition empty
+		for (var i = 1; i < $scope.entries.length; i++) {
+			
+			
+			var groupEntries = $scope.entries[i];
+			
+			emailText += "Group "+ i + "<br>";
+			
+			// for each entry in group
+
+			for (var j = 0; j < groupEntries.length; j++) {
+				
+				var entry = groupEntries[j];
+				console.debug("adding entry: ", entry)
+			
+				emailText += " (" + j + ") " + entry.targetId + " - " + entry.targetName + "<br>";
+				if ($scope.project.ruleBased == true)
+					emailText += "      RULE:     " + entry.rule + "<br>";
+				if (entry.mapRelation != null) 
+					emailText += "      RELATION: " + entry.mapRelation.name + "<br>";
+				if (entry.mapAdvice.length != 0) {
+					emailText += "      ADVICES:  ";
+					
+					for (var k = 0; k < entry.mapAdvice.length; k++) {
+						if (k>0)
+							emailText += "                ";
+						emailText += entry.mapAdvice[k].name + "<br>";	
+					};
+				}
+			};
+		};
+		
+		emailText += "<br>";
+		
+		// add the principles
+		if (record.mapPrinciple.length > 0) {
+			
+			emailText += "Map Principles Used:" + "<br>";
+			
+			for (var i = 0; i < record.mapPrinciple.length; i++) {
+				emailText += "  " + record.mapPrinciple[i].principleId + ": " + record.mapPrinciple[i].name + "<br>";
+			}
+			
+			emailText += "<br>";
+		}
+		
+		// add the notes
+		if (record.mapNote.length > 0) {
+			
+			emailText += "Notes:" + "<br>";
+			
+			for (var i = 0; i < record.mapNote.length; i++) {
+				emailText += "   [" + record.mapNote[i].user.userName + "] " + record.mapNote[i].note + "<br>";
+			}
+			
+			emailText += "<br>"
+		}
+		
+		// check if flagged for map lead
+		if (record.flagForMapLeadReview == true) {
+			emailText += "<strong>Flagged for Map Lead Review</strong>" + "<br>";
+		}
+		
+		// add the current user as sender
+		feedbackEmailObj['emailText'] = emailText;
+		
+		console.debug(emailText);
+		//@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/sendFeedback")
+		
+		// make the api call
+		$http({
+			url: root_workflow + "project/id/" + $scope.project.id + "/user/id/" + $scope.user.userName + "/sendFeedback",
+			dataType: "json",
+			data: feedbackEmailObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+
+		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
+		
+	}
+	
+	/**
+	 * Helper function to assign group and priority to entries
+	 * Used for sending email requests, and broadcasting record in expected format
+	 */
+	$scope.getFormattedRecord = function(record) {
+	
+		var formattedRecord = record;
+		
+		// if not group structured project
+		if ($scope.project.groupStructure == false) {
+	
+			// cycle over entries and assign map priority based on position
+			for (var i = 0; i < $scope.entries.length; i++) {
+				$scope.entries[i].mapPriority = i+1;
+			}
+	
+			formattedRecord.mapEntry = $scope.entries;
+	
+			// if group structured project
+		} else {
+	
+			var entries = new Array();
+	
+			// cycle over each group bin
+			for (var i = 0; i < $scope.entries.length; i++) {
+	
+				// cycle over entries in each group bin
+				for (var j = 0; j < $scope.entries[i].length; j++) {
+	
+					console.debug("Assigning group and priority to " + i + " " + j);
+					$scope.entries[i][j].mapGroup = i;
+					$scope.entries[i][j].mapPriority = j+1;
+	
+					entries.push($scope.entries[i][j]);
+	
+				};
+			};
+	
+			console.debug("record formatted:");
+			console.debug(entries);
+	
+			formattedRecord.mapEntry = entries;
+		}
+		
+		return formattedRecord;
+	};
+	
 	
 	
 
