@@ -473,7 +473,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					+ mapProject.getWorkflowType());
 
 		}
-		
+
 		System.out.println("FindAvailableWork query: " + full_query);
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
@@ -495,6 +495,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// if sort field is specified, set sort key
 		if (pfsParameter.getSortField() != null
 				&& !pfsParameter.getSortField().isEmpty()) {
+			
+			System.out.println("Sorting by field: " + pfsParameter.getSortField());
 
 			// check that specified sort field exists on Concept and is
 			// a string
@@ -538,7 +540,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				+ query + "'");
 
 		SearchResultList availableConflicts = new SearchResultListJpa();
-		
+
 		// TODO This really should be handled in the webapp
 		if (mapProject.getWorkflowType().equals("REVIEW_PROJECT_PATH"))
 			return availableConflicts;
@@ -639,16 +641,23 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// - a user (any) and workflowStatus pair of REVIEW_NEEDED~userName
 		// exists
 		// - the REVIEW_NEEDED pair is not for this user (i.e. user can't review
-		// their own work)
+		// their own work, UNLESS there is only one lead on the project
 		// - user and workflowStatus pairs of
 		// CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
-		full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*"
-				+ " AND NOT userAndWorkflowStatusPairs:REVIEW_NEEDED_"
-				+ mapUser.getUserName()
-				+ " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_"
-				+ mapUser.getUserName()
-				+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_"
-				+ mapUser.getUserName() + ")";
+
+		// must have a REVIEW_NEEDED tag with any user
+		full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*";
+
+		// the record to review must not be owned by this user, unless
+		// this user is the only lead on the project
+		if (mapProject.getMapLeads().size() > 1 && false) { // TODO SEE MAP-617
+			full_query += " AND NOT userAndWorkflowStatusPairs:REVIEW_NEEDED_"
+					+ mapUser.getUserName();
+		}
+
+		// there must not be an already claimed review record
+		full_query += " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
+				+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*" + ")";
 
 		System.out.println("FindAvailableReviewWork query: " + full_query);
 
@@ -745,10 +754,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					+ mapUser.getUserName();
 			break;
 		case "EDITING_DONE":
-			full_query += " AND (userAndWorkflowStatusPairs:EDITING_DONE_"	+ mapUser.getUserName()
-						        + " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_" + mapUser.getUserName()
-						        + " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_" + mapUser.getUserName()
-						        + ")";
+			full_query += " AND (userAndWorkflowStatusPairs:EDITING_DONE_"
+					+ mapUser.getUserName()
+					+ " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
+					+ mapUser.getUserName()
+					+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_"
+					+ mapUser.getUserName() + ")";
 
 			break;
 		default:
@@ -757,12 +768,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					+ " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
 					+ mapUser.getUserName()
 					+ " OR userAndWorkflowStatusPairs:EDITING_DONE_"
-					+ mapUser.getUserName() 
-					+ " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
-					+ mapUser.getUserName() 
-					+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_" 
 					+ mapUser.getUserName()
-					+ ")";
+					+ " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
+					+ mapUser.getUserName()
+					+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_"
+					+ mapUser.getUserName() + ")";
 			break;
 		}
 
@@ -815,7 +825,22 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 				MapRecord mr = mappingService.getMapRecord(mapRecordId);
 				if (mr.getOwner().equals(mapUser))
-					mapRecord = mr;
+
+					// TODO See MAP-617
+					// check for case where same user has both specialist and
+					// lead level review work
+					// i.e. do not return any REVIEW_NEW or REVIEW_IN_PROGRESS
+					// record
+					if (mr.getWorkflowStatus().compareTo(
+									WorkflowStatus.REVIEW_NEEDED) > 0) {
+						mapRecord = mr;
+						mr.setWorkflowStatus(WorkflowStatus.REVIEW_NEW); // flagging here to notify the webapp
+						
+					} else {
+						// add the record if one has not already been set
+						if (mapRecord == null)
+							mapRecord = mr;
+					}
 			}
 
 			if (mapRecord == null) {
@@ -854,11 +879,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				+ query + "'");
 
 		SearchResultList assignedConflicts = new SearchResultListJpa();
-		
+
 		if (mapProject.getWorkflowType().equals("REVIEW_PROJECT_PATH"))
 			return assignedConflicts;
-		
-		
+
 		PfsParameter localPfsParameter = pfsParameter;
 
 		if (localPfsParameter == null)
@@ -873,7 +897,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 		Query luceneQuery;
-		
 
 		// construct basic query
 		String full_query = constructTrackingRecordForMapProjectIdQuery(
@@ -1065,9 +1088,18 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			MapRecord mapRecord = null;
 			for (Long mapRecordId : tr.getMapRecordIds()) {
 
+				// TODO See MAP-617
+				// check for the case where REVIEW work is both specialist and
+				// lead level for same user
+
 				MapRecord mr = mappingService.getMapRecord(mapRecordId);
-				if (mr.getOwner().equals(mapUser))
+				if (mr.getWorkflowStatus().compareTo(
+								WorkflowStatus.REVIEW_NEW) < 0) {
+					// do nothing
+				} else {
+					// add the record
 					mapRecord = mr;
+				}
 			}
 
 			if (mapRecord == null) {
