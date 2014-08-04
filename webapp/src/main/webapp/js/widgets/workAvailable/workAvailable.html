@@ -22,7 +22,7 @@
         &nbsp;
         <button class="btn btn-sm btn-primary"
           ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
-          ng-click="assignBatch(assignedMapUser, batchSize, null)">Assign
+          ng-click="assignBatch(assignedMapUser, batchSize, null);availableWorkPage=1">Assign
           Batch</button>
         <button class="btn btn-sm btn-primary"
           ng-show="currentRole === 'Specialist'"
@@ -65,7 +65,7 @@
 	ng-show = "numAvailableWorkPages > 1"
 	total-items="nAvailableWork" page="availableWorkPage" max-size="5"
   	class="pagination-sm" boundary-links="true" rotate="true"
-  	num-pages="numAvailableWorkPages" on-select-page="retrieveAvailableWork(page)"></pagination>
+  	num-pages="numAvailableWorkPages" on-select-page="retrieveAvailableWork(page, queryAvailable, assignedMapUser)"></pagination>
 
 
 <table class="table" ng-show = "nAvailableWork > 0">
@@ -87,12 +87,12 @@
       <td style="width: 3%; padding: 5px;"><a
               title="Claim"              
               ng-show="currentRole == 'Specialist'"
-              ng-click="assignWork(concept, currentUser, queryAvailable, 'concept')"><i
+              ng-click="assignWork(concept, currentUser, queryAvailable, 'concept', availableWorkPage)"><i
               class="glyphicon glyphicon-import"></i></a>
               <a
               title="Assign"              
               ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
-              ng-click="assignWork(concept, assignedMapUser, queryAvailable, 'concept')"><i
+              ng-click="assignWork(concept, assignedMapUser, queryAvailable, 'concept', availableWorkPage)"><i
               class="glyphicon glyphicon-import"></i></a>
       </td>
       <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
@@ -125,7 +125,7 @@
         ng-options="batchSize as batchSize for batchSize in batchSizes"></select>
         &nbsp;
         <button class="btn btn-sm btn-primary"
-          ng-click="assignBatchConflict(assignedMapLead, batchSizeConflict, null)">Assign
+          ng-click="assignBatchConflict(assignedMapLead, batchSizeConflict, null, availableConflictsPage)">Assign
           Batch</button>
     </tr>
     <tr>
@@ -175,7 +175,7 @@
 
       <td style="width: 3%; padding: 5px;"><a
               title="Assign"
-              ng-click="assignWork(concept, assignedMapLead, queryConflict, 'conflict')"><i
+              ng-click="assignWork(concept, assignedMapLead, queryConflict, 'conflict', availableConflictsPage)"><i
               class="glyphicon glyphicon-import"></i></a></td>
       <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
       <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
@@ -233,7 +233,7 @@
 
 
 <pagination ng-show="numAvailableReviewWorkPages > 1"
-	total-items="nAvailableReviewWork" page="availableReviewsPage"
+	total-items="nAvailableReviewWork" page="availableReviewWorkPage"
 	max-size="5" class="pagination-sm" boundary-links="true" rotate="true"
 	num-pages="numAvailableReviewWorkPages"
 	on-select-page="retrieveAvailableReviewWork(page, queryReviews)"></pagination>
@@ -256,7 +256,7 @@
 
       <td style="width: 3%; padding: 5px;"><a
               title="Assign"
-              ng-click="assignWork(concept, assignedMapLead, queryReview, 'review')"><i
+              ng-click="assignWork(concept, assignedMapLead, queryReview, 'review', availableReviewWorkPage)"><i
               class="glyphicon glyphicon-import"></i></a></td>
       <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
       <td style="width: 80%; padding: 5px;">{{concept.value}}</td>

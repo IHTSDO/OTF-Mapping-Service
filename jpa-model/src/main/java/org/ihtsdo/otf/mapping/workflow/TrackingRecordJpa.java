@@ -212,6 +212,7 @@ public class TrackingRecordJpa implements TrackingRecord {
 	 * @see org.ihtsdo.otf.mapping.workflow.TrackingRecord#getSortKey()
 	 */
 	@Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getSortKey() {
 		return sortKey;
 	}
