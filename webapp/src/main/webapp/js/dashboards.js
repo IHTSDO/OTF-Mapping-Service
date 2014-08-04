@@ -772,6 +772,10 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 								type: "mapRecord",
 								config: { recordId: $routeParams.recordId},
 								title: "Map Record"
+							}, {
+								type: "recordSummary",
+								config: {record: $scope.record},
+								title: "Record Summary"
 							}]
 						}, {
 							class: 'col-md-6',
@@ -787,7 +791,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 								},
 								title: $scope.focusProject.destinationTerminology + " Terminology Browser"
 
-							}],
+							}]
 						} // end second column
 						] // end columns
 					}] // end rows

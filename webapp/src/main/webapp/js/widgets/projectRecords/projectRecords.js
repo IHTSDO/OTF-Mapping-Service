@@ -289,7 +289,7 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 
 		if (($scope.currentRole === 'Specialist' ||
 				$scope.currentRole === 'Lead' ||
-				$scope.currentRole === 'Admin') &&
+				$scope.currentRole === 'Administrator') &&
 				(record.workflowStatus === 'PUBLISHED' || record.workflowStatus === 'READY_FOR_PUBLICATION')) {
 
 			return true;

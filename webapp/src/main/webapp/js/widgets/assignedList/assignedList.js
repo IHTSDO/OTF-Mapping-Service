@@ -96,18 +96,18 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			if (parameters.assignUser.userName === $scope.currentUser.userName) {		
 				
 				if (parameters.assignType === 'concept') {
-					$scope.retrieveAssignedWork($scope.assignedWorkPage, null);
+					$scope.retrieveAssignedWork($scope.assignedWorkPage, null, $scope.assignedWorkType);
 					$scope.setTab(0);
 				
 				} else if (parameters.assignType === 'conflict') {
-					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, null);
+					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, null, $scope.assignedConflictType);
 					$scope.setTab(1);
 				} else if (parameters.assignType === 'review') {
-					$scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage, null);
+					$scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage, null, $scope.assignedReviewWorkType);
 					$scope.setTab(2);
 				}
 			} else {
-				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser.userName, null);
+				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser.userName, $scope.assignedWorkForUserType);
 				$scope.setTab(3);
 				$scope.mapUserViewed = parameters.assignUser;
 			}
@@ -131,18 +131,18 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
 			
-			$scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.assignedWorkType);
+			$scope.retrieveAssignedWork($scope.assignedWorkPage, null, $scope.assignedWorkType);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-				$scope.retrieveAssignedConflicts(1, $scope.assignedConflictType);
-				$scope.retrieveAssignedReviewWork(1, $scope.assignedReviewWorkType);
-				$scope.retrieveAssignedWorkForUser(1, $scope.mapUserViewed, $scope.assignedWorkForUserType);
+				$scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType);
+				$scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType);
+				$scope.retrieveAssignedWorkForUser(1, null, $scope.mapUserViewed, $scope.assignedWorkForUserType);
 			}
 		}
 	});
 	
 	$scope.retrieveAssignedConflicts = function(page, query, assignedConflictType) {
 		
-		console.debug('Retrieving Assigned Conflicts: page ' + page);
+		console.debug('Retrieving Assigned Conflicts: ', page, query, assignedConflictType);
 		
 		// ensure query is set to null if not specified
 		if (query == undefined) query == null;
@@ -202,7 +202,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	
 	$scope.retrieveAssignedWork = function(page, query, assignedWorkType) {
 		
-		console.debug('Retrieving Assigned Concepts: page ' + page);
+		console.debug('Retrieving Assigned Concepts: ', page, query, assignedWorkType);
 
 		// ensure query is set to null if undefined
 		if (query == undefined) query = null;
@@ -263,7 +263,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	
 	$scope.retrieveAssignedReviewWork = function(page, query, assignedWorkType) {
 		
-		console.debug('Retrieving Assigned Review Work: page ' + page);
+		console.debug('Retrieving Assigned Review Work: ', page, query, assignedWorkType);
 
 		// ensure query is set to null if undefined
 		if (query == undefined) query = null;

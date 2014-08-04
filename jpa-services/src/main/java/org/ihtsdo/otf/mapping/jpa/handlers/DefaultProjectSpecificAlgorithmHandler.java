@@ -1063,9 +1063,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			if (getWorkflowStatus(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)) {
 				// check that one record exists and is not owned by this user
 				if (mapRecords.size() == 1) {
-					if (mapRecords.iterator().next().getOwner().equals(mapUser))
+		/*	
+		 		TODO:  Removed this, see MAP-617
+		  		if (mapRecords.iterator().next().getOwner().equals(mapUser))
 						throw new Exception("  Cannot assign review record, user attempting to review own work");
-				} else {
+		*/		
+					} else {
 					throw new Exception("  Expected exactly one map record");
 				}
 				

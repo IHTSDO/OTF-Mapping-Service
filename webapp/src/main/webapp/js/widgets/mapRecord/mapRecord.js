@@ -44,6 +44,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.groupOpen = new Array(10);
 	for (var i = 0; i < $scope.groupOpen.length; i++) $scope.groupOpen[i] = true;
 
+	// start note edit mode in off mode
+	$scope.noteEditMode = false;
+	$scope.noteEditId = null;
+	$scope.noteInput = '';
+	
 	// accordion functions
 	$scope.openAll = function() {
 		$scope.isConceptOpen = true;
@@ -90,7 +95,18 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			retrieveRecord();
 		}
 	});
+	
+	// any time the record changes, broadcast it to the record summary widget
+	$scope.$watch('record', function() {
+		
+		// broadcastRecord();
+		
+	});
 
+	function broadcastRecord() {
+		console.debug("Broadcasting record", $scope.record);
+		$rootScope.$broadcast('mapRecordWidget.notification.recordChanged',{key: 'recordChanged', record: angular.copy($scope.record)});  
+	}
 
 	// initialize local variables
 	var currentLocalId = 1;   // used for addition of new entries without hibernate id
@@ -151,6 +167,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		console.debug("Initializing map entries -- " + $scope.record.mapEntry.length + " found");
 		console.debug($scope.record.mapEntry);
+		
+		$scope.entries = new Array();
 
 		// find the maximum hibernate id value
 		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
@@ -172,18 +190,29 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}
 		}
 
-		console.debug($scope.record);
+		console.debug("Local ids set: ", $scope.record);
 		// if no group structure, simply copy and sort
 		if ($scope.project.groupStructure == false) {
-			$scope.entries = sortByKey($scope.record.mapEntry, 'mapPriority');
+			$scope.push(sortByKey($scope.record.mapEntry, 'mapPriority'));
 
 			// otherwise, initialize group arrays
 		} else {
 
-			// initialize entry arrays for distribution by group
-			$scope.entries = new Array(10);
-
-			for (var i=0; i < $scope.entries.length; i++) $scope.entries[i] = new Array();
+			console.debug("Initializing entries");
+			
+			// get the total number of groups
+			var maxGroup = 1;  // default
+			for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+				if ($scope.record.mapEntry[i].mapGroup > maxGroup) 
+					maxGroup = $scope.record.mapEntry[i].mapGroup;
+			}
+			
+			// initialize the group/entry array
+			$scope.entries = new Array(maxGroup);
+			for (var i = 0; i <= maxGroup; i++)
+				$scope.entries[i] = new Array();
+			
+			console.debug("Existing entries: ");
 
 			// cycle over the entries and assign to group bins
 			for (var i=0; i < $scope.record.mapEntry.length; i++) {
@@ -195,15 +224,22 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				$scope.entries[i] = sortByKey($scope.entries[i], 'mapPriority');
 			}
 		}
+		
+		console.debug("Checking for empty record, current entries = ", $scope.entries);
 
 		// if no entries on this record, assume new and create an entry
 		if ($scope.record.mapEntry.length == 0) {
-			$scope.addMapEntry(1);
+			console.debug("Adding map entry to blank group", $scope.entries[i]);
+			$scope.addMapEntry($scope.entries[1]);
 			
 		// otherwise, select the first entry
 		} else {
 			$scope.selectMapEntry($scope.record.mapEntry[0]);
 		}
+		
+		console.debug("Completed initializing entries, new entries", $scope.entries);
+		
+		
 
 	}
 
@@ -507,6 +543,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		$scope.addMapGroup(); // automatically adds entry as well
 		
 		window.scrollTo(0,0);
+		
+		// broadcastRecord();
 	};
 
 	$scope.saveMapRecord = function(returnBack) {
@@ -643,6 +681,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 			$scope.principleInput = "";
 		};
+		
+		// broadcastRecord();
 	};
 
 	$scope.removeRecordPrinciple = function(record, principle) {
@@ -650,16 +690,53 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		$scope.record = record;
 		
 		console.debug('Removed principle');
+		
+		// broadcastRecord();
 	};
 	
 	$scope.tinymceOptions = {
 			
 			menubar : false,
 			statusbar : false,
-			plugins : "autolink link image charmap searchreplace",
+			plugins : "autolink autoresize link image charmap searchreplace",
 			toolbar : "undo redo | styleselect | bold italic underline strikethrough | charmap link image",
 	    };
-
+	
+	$scope.editRecordNote = function(record, mapNote) {
+		$scope.noteInput = "HELLO HELLO";
+		$scope.noteEditMode = true;
+		$scope.noteEditId = mapNote.localId;
+	}
+	
+	$scope.cancelEditRecordNote = function() {
+		$scope.noteInput = '';
+		$scope.noteEditMode = false;
+		$scope.noteEditId = null;
+	}
+	
+	$scope.saveEditRecordNote = function(record, note) {
+		
+		if ($scope.noteEditMode == true) {
+			
+			var noteFound = false;
+			
+			// find the existing note
+			for (var i = 0; i < record.mapNote.length; i++) {
+				
+				// if this note, overwrite it
+				if ($scope.noteEditId = record.mapNote[i].localId) {
+					noteFound = true;
+					record.mapNote[i].note = note;
+				}
+			}
+			
+			if (noteFound = false) {
+				console.debug("ERROR: Could not find note to edit with id = " + $scope.noteEditId);
+			}
+		} else {
+			console.debug("Save Edit Record Note called when not in edit mode");
+		}
+	}
 	$scope.addRecordNote = function(record, note) {
 		// check if note non-empty
 		if (note === '' || note == null) {
@@ -682,6 +759,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 
 		}
+		
+		// broadcastRecord();
 	};
 
 	$scope.removeRecordNote = function(record, note) {
@@ -689,12 +768,15 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		console.debug(note);
 		record['mapNote'].removeElement(note);
 		$scope.record = record;
+		// broadcastRecord();
+		
+		// if in edit mode, cancel
+		if ($scope.noteEditMode == true) {
+			$scope.cancelEditRecordNote();
+		}
 	};
 	
-	$scope.editRecordNote = function(record, note) {
-		console.debug("Editing note", note);
-		$scope.noteInput = note.note;
-	};
+	
 	
 
 
@@ -792,10 +874,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 	};
 	// Sets the scope variable for the active entry
-	$scope.selectMapEntry = function(entry, group) {
+	$scope.selectMapEntry = function(entry) {
 		console.debug("Select entry");
 		console.debug(entry);
 	
+		// set all entries isSelected to false
 		for (var i = 0; i < $scope.entries.length; i++) {
 			for (var j = 0; j < $scope.entries[i].length; j++) {
 				console.debug($scope.entries[i][j]);
@@ -803,7 +886,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}
 		}
 		
+		// set this entry to selected
 		entry.isSelected = true;
+		
+		console.debug("Entry selected, new entries: ", $scope.entries);
 		
 		$rootScope.$broadcast('mapRecordWidget.notification.changeSelectedEntry',{key: 'changeSelectedEntry', entry: angular.copy(entry), record: $scope.record, project: $scope.project});  
 
@@ -811,6 +897,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 	// function for adding an empty map entry to a record
 	$scope.addMapEntry = function(group) {
+		
+		if (group == null || group == undefined) group = new Array();
 
 		// create blank entry associated with this id
 		var newEntry = {
@@ -822,7 +910,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				"mapPriority": "",
 				"mapRelation": "",
 				"mapBlock":"",
-				"mapGroup": group,
+				"mapGroup": "",
 				"mapAdvice":[],
 				"mapPrinciples":[],
 				"localId": currentLocalId + 1,
@@ -834,21 +922,39 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		newEntry.ruleSummary = $scope.getRuleSummary(newEntry) ;
 
 		if ($scope.project.groupStructure == true) {
-			$scope.entries[group].push(newEntry);
+			console.debug("Adding entry to group", group);
+			group.push(newEntry);
+			// $scope.entries[group].push(newEntry);
 		} else {
 			$scope.entries.push(newEntry);
 		}
+		
+		console.debug("Entry added, new entries: ", $scope.entries);
 
 		$scope.selectMapEntry(newEntry);
+		
+		// broadcastRecord();
 
 	};
 	
-	$scope.deleteMapEntry = function(entry, group) {
-		console.debug("deleteMapEntry: ", entry, group);
+	$scope.deleteMapEntry = function(entry) {
+		console.debug("deleteMapEntry: ", entry);
+		
+		var group;
+		
+		// find group this entry is attached too
+		for (var i = 0; i < $scope.entries.length; i++) {
+			for (var j = 0; j < $scope.entries[i].length; j++) {
+				
+				if ($scope.entries[i][j].localId === entry.localId || $scope.entries[i][j].id === entry.id)
+					group = i;
+				console.debug($scope.entries[i][j]);
+			}
+		}
+		
 		$scope.entries[group].removeElement(entry);
 		
-		//$rootScope.$broadcast('mapRecordWidget.notification.deleteSelectedEntry',{key: 'deleteSelectedEntry', entry: angular.copy(entry), record: $scope.record, project: $scope.project});  
-
+		// broadcastRecord();
 	};
 
 	// Notification watcher for save/delete entry events
@@ -878,7 +984,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 						// when entry found, overwrite it
 						if ($scope.entriesEqualById($scope.entries[i], entry) == true) {
-							$scope.entries[i] = entry;
+							$scope.entries[i] = angular.copy(entry);
 							console.debug(" -- Found entry");
 						}
 					}
@@ -901,6 +1007,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 			$scope.record.localEntries = $scope.entries;
 		}
+		
+		// broadcastRecord();
 	});
 
 
@@ -929,57 +1037,46 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 	// Adds a map group to the existing list
 	$scope.addMapGroup = function() {
-
+/*
 		// find first numeric group not already in list
 		var i = 1;
 		while ($scope.groups.indexOf(i) != -1) i++;
 
 		$scope.groups.push(i);
-		$scope.addMapEntry(i);
+		$scope.addMapEntry(i);*/
+		
+		console.debug("Adding group to: ", $scope.entries);
+		
+		var newGroup = new Array();
+		$scope.addMapEntry(newGroup);
+		
+		$scope.entries.push(newGroup);
+		
+		// broadcastRecord();
 	};
 
 	// Removes a map group if it exists
 	$scope.removeMapGroup = function(group) { 
-		console.debug("Groups before: ", $scope.groups, $scope.entries);
+		console.debug("Removing group from " + $scope.entries.length + " groups", group, $scope.entries);
 		
-		// construct a group array without the group being removed
-		var tempGroups = new Array();
-		for (var i = 0; i < $scope.groups.length; i++) {
-			if ($scope.groups[i] != group) {
-				tempGroups.push($scope.groups[i]);
-			}
-		}
-		// renumber renaming groups and assign entries to new bins
-		var newEntries = new Array(10);
-		for (var i=0; i < newEntries.length; i++) newEntries[i] = new Array();
-		var newGroups = new Array();
-		for (var i = 0; i < tempGroups.length; i++) {
-			var oldGroup = tempGroups[i];
-			console.debug("Moving group " + oldGroup + " to group " + i+1);
+		var tempEntries = angular.copy($scope.entries);
+		$scope.entries = new Array();
+		
+		// find the group by first matching entry
+		for (var i = 1; i < tempEntries.length; i++) { // first one is always empty, null group
 			
-			newGroups.push(i+1);
-			newEntries[i+1] = $scope.entries[oldGroup];	
-		}
-		
-		console.debug("newEntries", newEntries);
-		
-		for (var i = 1; i < newEntries.length; i++) {
-			for (var j = 0; j < newEntries[i].length; j++) {
-				newEntries[i][j].mapGroup = i;
-				newEntries[i][j].mapPriority = j+1;	
+			console.debug("Checking group " + i + " of " + tempEntries.length, group[0].localId, tempEntries[i][0].localId);
+			
+			if (group[0].localId != tempEntries[i][0].localId) {
+				console.debug("Keeping group");
+				$scope.entries.push(tempEntries[i]);
+			} else {
+				console.debug("Found group to remove");
 			}
 		}
+		console.debug("Entries after: ", $scope.entries);
 		
-		console.debug("Groups after: ", newGroups, newEntries);
-		
-		$scope.groups = newGroups;
-		$scope.entries = newEntries;
-		
-		for (var i = 0; i < $scope.groupOpen.length; i++) $scope.groupOpen[i] = true;
-		
-		
-		
-	
+		// broadcastRecord();
 		
 	};
 

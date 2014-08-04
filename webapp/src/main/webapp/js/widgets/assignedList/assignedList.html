@@ -79,6 +79,13 @@
 					ng-click="goEditRecord(result.id)"
 					class="glyphicon glyphicon-saved"></i>
 			</a>
+			
+			<!-- TODO: SEE MAP-617. Display a saved icon if this record has been marked finished--> <a
+				disabled title='You have claimed this concept for Lead Review'
+				ng-show="result.terminologyVersion === 'REVIEW_NEW'
+						|| result.terminologyVersion === 'REVIEW_IN_PROGRESS'"> <i
+					class="glyphicon glyphicon-ban-circle"></i>
+			</a>
 
 
 			</td>
@@ -116,7 +123,7 @@
 			<form>	
 				<input id="conflictSearch" ng-model="queryConflict">
 				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedConflicts(1, queryConflict, assignedConflictType)">Search</button>
-				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedConflicts(1, 'null'); queryConflict = null">Reset</button>
+				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedConflicts(1, 'null', assignedConflictType); queryConflict = null">Reset</button>
 			</form>
 		</td>
 	</tr>
@@ -214,7 +221,7 @@
 			<form>	
 				<input id="conflictSearch" ng-model="queryReviewWork">
 				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedReviewWork(1, queryReviewWork, assignedReviewWorkType)">Search</button>
-				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedReviewWork(1, 'null'); queryReviewWork = null">Reset</button>
+				<button class="btn btn-sm btn-primary" ng-click="retrieveAssignedReviewWork(1, 'null', assignedReviewWorkType); queryReviewWork = null">Reset</button>
 			</form>
 		</td>
 	</tr>

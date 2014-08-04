@@ -53,8 +53,11 @@
 
                 <span ng-show="entry.targetId != null && entry.targetId != ''"><span
                   ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
-                  {{entry.targetId}} {{entry.targetName}}</span> <span
+                  {{entry.targetId}} {{entry.targetName}}</span> 
+                  
+                 <!--  <span
                   ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
+                 -->
                 <span ng-show="entry.mapAdvice.length > 0">              
                   <span class="dropdown">
                    <a class="dropdown-toggle"> <img src="img/dialog-question.png"
@@ -66,9 +69,14 @@
                     {{entry.mapAdvice[1].detail}}
                     {{entry.mapAdvice[2].detail}}
                    </span>
+                   
                   </span>
                 </span> 
-              </p>
+                <br><br>
+                <span class="alert alert-warning" ng-show="entry.mapRelation != null">
+                   {{entry.mapRelation.name}}
+                   </span>
+              
             </div>
             <!--  end sortable entries --> </accordion-group>
             <!--  end Group accordion group -->
