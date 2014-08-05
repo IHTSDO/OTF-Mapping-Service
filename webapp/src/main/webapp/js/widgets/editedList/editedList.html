@@ -10,28 +10,14 @@
   <li class="next" ng-show="editedRecords.length == recordsPerPage"
     ng-click="retrieveEditedWork(editedRecordsPage+1)"><a>Older &rarr;</a></li>
 </ul>
-<table class="table" ng-show="editedRecords.length > 0">
 
-  <thead>
-    <tr>
-      <th style="width: 10%; padding: 5px;">Id</th>
-      <th style="width: 25%; padding: 5px;">Preferred Name</th>
-      <th style="width: 45%; padding: 5px;">Target Id</th>
-      <th style="width: 15%; padding: 5px;">Last Modified</th>
+<accordion close-others="false"> <accordion-group is-open="true">
+	<accordion-group ng-repeat="record in editedRecords">
+	<accordion-heading>Concept {{record.conceptId}}: {{record.conceptName}}</accordion-heading>
+	
+	<a href="#/record/conceptId/{{record.conceptId}}">View Records</a>
 
-    </tr>
-
-  </thead>
-
-  <tbody>
-
-    <tr ng-repeat="record in editedRecords">
-
-      <td style="width: 10%; padding: 5px;"><a
-        href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></td>
-      <td>{{record.conceptName}}</td>
-      <td>{{getRecordSummary(record)}}</td>
-      <td>{{record.lastModified | date:'MM-dd-yyyy HH:mm'}}</td>
-  </tbody>
-
-</table>
+	<div otf-map-record-wide record="record" project="focusProject" show-title="false"></div>
+	</accordion-group>
+</accordion>
+</div>
