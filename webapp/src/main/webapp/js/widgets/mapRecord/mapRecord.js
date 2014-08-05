@@ -99,13 +99,16 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	// any time the record changes, broadcast it to the record summary widget
 	$scope.$watch('record', function() {
 		
-		// broadcastRecord();
+		broadcastRecord();
 		
 	});
 
 	function broadcastRecord() {
-		console.debug("Broadcasting record", $scope.record);
-		$rootScope.$broadcast('mapRecordWidget.notification.recordChanged',{key: 'recordChanged', record: angular.copy($scope.record)});  
+		console.debug("Broadcasting record", $scope.getFormattedRecord($scope.record));
+		$rootScope.$broadcast('mapRecordWidget.notification.recordChanged',
+				{record: angular.copy($scope.getFormattedRecord($scope.record)), project:$scope.project
+			
+				});  
 	}
 
 	// initialize local variables
@@ -544,7 +547,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 		window.scrollTo(0,0);
 		
-		// broadcastRecord();
+		broadcastRecord();
 	};
 
 	$scope.saveMapRecord = function(returnBack) {
@@ -682,7 +685,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.principleInput = "";
 		};
 		
-		// broadcastRecord();
+		broadcastRecord();
 	};
 
 	$scope.removeRecordPrinciple = function(record, principle) {
@@ -691,7 +694,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 		console.debug('Removed principle');
 		
-		// broadcastRecord();
+		broadcastRecord();
 	};
 	
 	$scope.tinymceOptions = {
@@ -760,7 +763,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		}
 		
-		// broadcastRecord();
+		broadcastRecord();
 	};
 
 	$scope.removeRecordNote = function(record, note) {
@@ -768,7 +771,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		console.debug(note);
 		record['mapNote'].removeElement(note);
 		$scope.record = record;
-		// broadcastRecord();
+		broadcastRecord();
 		
 		// if in edit mode, cancel
 		if ($scope.noteEditMode == true) {
@@ -1134,7 +1137,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		$scope.selectMapEntry(newEntry);
 		
-		// broadcastRecord();
+		broadcastRecord();
 
 	};
 	
@@ -1155,7 +1158,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 		$scope.entries[group].removeElement(entry);
 		
-		// broadcastRecord();
+		broadcastRecord();
 	};
 
 	// Notification watcher for save/delete entry events
@@ -1209,7 +1212,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.record.localEntries = $scope.entries;
 		}
 		
-		// broadcastRecord();
+		broadcastRecord();
 	});
 
 
@@ -1253,7 +1256,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 		$scope.entries.push(newGroup);
 		
-		// broadcastRecord();
+		broadcastRecord();
 	};
 
 	// Removes a map group if it exists
@@ -1277,7 +1280,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		}
 		console.debug("Entries after: ", $scope.entries);
 		
-		// broadcastRecord();
+		broadcastRecord();
 		
 	};
 
