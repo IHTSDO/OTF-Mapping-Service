@@ -172,7 +172,7 @@ public class RootServiceRest {
 		props.put("mail.smtp.starttls.enable", "true");
 		props.put("mail.smtp.auth", "true");
 		
-		m_subject = "IHTSDO Mapping Tool Editing Error Report";
+		m_subject = "IHTSDO Mapping Tool Editing Error Report: " + userError.getMapRecord().getConceptId();
 		recipients = userError.getMapUserInError().getEmail();
 		
 		m_text = new StringBuffer();
