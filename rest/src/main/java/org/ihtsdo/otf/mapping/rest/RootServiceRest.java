@@ -182,8 +182,8 @@ public class RootServiceRest {
 		m_text.append("Error type: " + userError.getMapError()).append("\n");
 		m_text.append("Reporting lead: " + userError.getMapUserReporting().getName()).append("\n");
 		m_text.append("Comment: " + userError.getNote()).append("\n");
-		m_text.append("Reporting date: " + userError.getTimestamp()).append("\n");
-		//m_text.append("Record URL: https://mapping.snomedtools.org/index.html#/record/conflicts/" + userError.getMapRecord().getId());
+		m_text.append("Reporting date: " + userError.getTimestamp()).append("\n\n");
+		m_text.append("Record URL: https://mapping.snomedtools.org/index.html#/record/recordId/" + userError.getMapRecord().getId());
 		
 
 		try {
