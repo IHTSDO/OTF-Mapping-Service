@@ -6,7 +6,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 	dashboardProvider
 	.widget('terminologyBrowser', {
-		title: function(config) { return config.terminology + "," + config.terminologyVersion; },
+		title: function() { return 'Terminology Browser' },
 
 		description: 'Tree view for terminology',
 		templateUrl: 'js/widgets/terminologyBrowser/terminologyBrowser.html',
@@ -22,8 +22,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 .controller('terminologyBrowserWidgetCtrl', function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService, metadataService, terminology){
 
-	$scope.terminology = terminology.name;
-	$scope.terminologyVersion = terminology.version;
 	$scope.focusProject = localStorageService.get('focusProject');
 	$scope.metadata = localStorageService.get('metadata_' + terminology.name);
 
@@ -57,6 +55,11 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 		// once needed state variables are loaded, initialize and make first call
 		if ($scope.focusProject != null && $scope.metadata != null && $scope.userToken != null) {
+			
+			$scope.terminology = $scope.focusProject.destinationTerminology;
+			$scope.terminologyVersion = $scope.focusProject.destinationTerminologyVersion;
+			
+			$scope.model.title = $scope.terminology + " Terminology Browser";
 
 			console.debug("STATE VARIABLES");
 			console.debug($scope.focusProject);
