@@ -173,6 +173,8 @@ public class RootServiceRest {
 		props.put("mail.smtp.auth", "true");
 		
 		m_subject = "IHTSDO Mapping Tool Editing Error Report";
+		recipients = userError.getMapUserInError().getEmail();
+		
 		m_text = new StringBuffer();
 
 		m_text.append("USER ERROR on " + userError.getMapRecord().getConceptId() + ": "
