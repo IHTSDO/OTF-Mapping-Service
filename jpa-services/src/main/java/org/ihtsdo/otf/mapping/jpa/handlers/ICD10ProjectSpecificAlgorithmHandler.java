@@ -112,7 +112,16 @@ DefaultProjectSpecificAlgorithmHandler {
 			// if a relation is already set, and is allowable for null target, keep it
 			if (mapEntry.getMapRelation() != null && mapEntry.getMapRelation().isAllowableForNullTarget() == true)
 				return mapEntry.getMapRelation();
-			else return null;
+			else {
+				// retrieve the not classifiable relation
+				for (MapRelation relation : mapProject.getMapRelations()) {
+					if (relation.getTerminologyId().equals("447638001"))
+						return relation;
+				}
+				
+				// if cannot find, return null
+				return null;
+			}
 		}
 
 		// if rule is not set, return null
@@ -241,10 +250,7 @@ DefaultProjectSpecificAlgorithmHandler {
 		
 		// open the content service
 		ContentService contentService = new ContentServiceJpa();
-		
-		// if a three-digit code, verify that no children exist (i.e. four digit codes), UNLESS on the exception list
-		Set<String> excludeFourthDigitCodes = new HashSet<>();
-		
+			
 		if (terminologyId.matches(".[0-9].")) {
 			
 			if (terminologyId.matches("W..|X..|Y[0-2].|Y3[0-4]"))
