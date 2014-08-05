@@ -19,6 +19,7 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackEmail;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.model.UserError;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -127,6 +128,7 @@ public class RootServiceRest {
 		props.put("mail.smtp.starttls.enable", "true");
 		props.put("mail.smtp.auth", "true");
 		
+		m_subject = "IHTSDO Mapping Tool Exception Report";
 		m_text = new StringBuffer();
 		if (!(e instanceof LocalException))
 			m_text.append("Unexpected error trying to " + whatIsHappening + ". Please contact the administrator.").append("\n\n");
@@ -155,6 +157,51 @@ public class RootServiceRest {
 		}
 	}
 
+	/**
+	 * Send user error email.
+	 *
+	 * @param userError the user error
+	 */
+	public void sendUserErrorEmail(UserError userError) {
+		
+		Properties props = new Properties();
+		props.put("mail.smtp.user", m_from);
+		props.put("mail.smtp.password", host_password);
+		props.put("mail.smtp.host", host);
+		props.put("mail.smtp.port", port);
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.smtp.auth", "true");
+		
+		m_subject = "IHTSDO Mapping Tool Editing Error Report";
+		m_text = new StringBuffer();
+
+		m_text.append("USER ERROR on " + userError.getMapRecord().getConceptId() + ":"
+				 + userError.getMapRecord().getConceptName()).append("\n\n");
+		m_text.append("Error type: " + userError.getMapError()).append("\n");
+		m_text.append("Reporting lead: " + userError.getMapUserReporting().getName()).append("\n");
+		m_text.append("Comment: " + userError.getNote()).append("\n");
+		m_text.append("Reporting date: " + userError.getTimestamp()).append("\n");
+		//m_text.append("Record URL: https://mapping.snomedtools.org/index.html#/record/conflicts/" + userError.getMapRecord().getId());
+		
+
+		try {
+			Authenticator auth = new SMTPAuthenticator();
+			Session session = Session.getInstance(props, auth);
+
+			MimeMessage msg = new MimeMessage(session);
+			msg.setText(m_text.toString());
+			msg.setSubject(m_subject);
+			msg.setFrom(new InternetAddress(m_from));
+			String[] recipientsArray = recipients.split(";");
+			for (String recipient : recipientsArray) {
+			  msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+			}
+			Transport.send(msg);
+
+		} catch (Exception mex) {
+			mex.printStackTrace();
+		}
+	}
 
 	public void sendEmail(FeedbackEmail feedbackEmail) {
 		
