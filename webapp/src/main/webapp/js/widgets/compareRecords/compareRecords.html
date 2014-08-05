@@ -124,9 +124,25 @@
         </accordion-group> </accordion>
 
         <button class="btn btn-sm btn-primary" style="margin: 4px"
-          ng-click="populateMapRecord(record1)">Start here</button>
-
-
+          ng-click="populateMapRecord(record1)">Start here</button><hr>
+          
+        <form style="margin-top: 8px">
+          <table>
+            <tr>
+              <td>Select error:&nbsp;</td>
+              <td><select ng-model="selectedErrorMessage"
+                ng-options="msg as msg.displayName for msg in errorMessages track by msg.displayName">
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Comment:&nbsp;</td>
+              <td><input ng-model="errorComment" style="width:100%; margin-top:5px;"></input></td>           
+            </tr>
+          </table>
+          <div><button class="btn btn-sm btn-primary" style="margin: 4px" 
+            ng-click="submitNewUserError(record1, selectedErrorMessage, errorComment); errorComment = ''; selectedErrorMessage = errorMessages[0];">Submit error</button></div>
+        </form>
       </div>
       <!-- end class a -->
       <div class="b" ng-show="record2 != null">
@@ -236,8 +252,25 @@
         </accordion-group> </accordion>
 
         <button class="btn btn-sm btn-primary" style="margin: 4px"
-          ng-click="populateMapRecord(record2)">Start here</button>
+          ng-click="populateMapRecord(record2)">Start here</button><hr>
 
+        <form style="margin-top: 8px; margin-left: 4px;">
+          <table>
+            <tr>
+              <td>Select error:&nbsp;</td>
+              <td><select ng-model="selectedErrorMessage2"
+                ng-options="msg as msg.displayName for msg in errorMessages track by msg.displayName">
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Comment:&nbsp;</td>
+              <td><input ng-model="errorComment2" style="width:100%; margin-top:5px;"></input></td>           
+            </tr>
+          </table>
+          <div><button class="btn btn-sm btn-primary" style="margin: 4px" 
+            ng-click="submitNewUserError(record2, selectedErrorMessage2, errorComment2); errorComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit error</button></div>
+        </form>
       </div>
       <!--  end class b -->
     </div>

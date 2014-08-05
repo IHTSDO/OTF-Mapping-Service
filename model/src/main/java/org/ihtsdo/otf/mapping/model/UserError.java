@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.model;
 import java.util.Date;
 
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a mapping editing error caused by a map user.
  * 
@@ -94,7 +95,20 @@ public interface UserError {
    */
   public String getMapError();
   
+  /**
+   * Returns the map record.
+   * 
+   * @return the map record
+   */
+  public MapRecord getMapRecord();
+
+  /**
+   * Sets the map record.
+   * 
+   * @param mapRecord the map record
+   */
+  public void setMapRecord(MapRecord mapRecord);
   
   
-  
+
 }
