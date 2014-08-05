@@ -172,16 +172,18 @@ public class RootServiceRest {
 		props.put("mail.smtp.starttls.enable", "true");
 		props.put("mail.smtp.auth", "true");
 		
-		m_subject = "IHTSDO Mapping Tool Editing Error Report";
+		m_subject = "IHTSDO Mapping Tool Editing Error Report: " + userError.getMapRecord().getConceptId();
+		recipients = userError.getMapUserInError().getEmail();
+		
 		m_text = new StringBuffer();
 
-		m_text.append("USER ERROR on " + userError.getMapRecord().getConceptId() + ":"
+		m_text.append("USER ERROR on " + userError.getMapRecord().getConceptId() + ": "
 				 + userError.getMapRecord().getConceptName()).append("\n\n");
 		m_text.append("Error type: " + userError.getMapError()).append("\n");
 		m_text.append("Reporting lead: " + userError.getMapUserReporting().getName()).append("\n");
 		m_text.append("Comment: " + userError.getNote()).append("\n");
-		m_text.append("Reporting date: " + userError.getTimestamp()).append("\n");
-		//m_text.append("Record URL: https://mapping.snomedtools.org/index.html#/record/conflicts/" + userError.getMapRecord().getId());
+		m_text.append("Reporting date: " + userError.getTimestamp()).append("\n\n");
+		m_text.append("Record URL: https://mapping.snomedtools.org/index.html#/record/recordId/" + userError.getMapRecord().getId());
 		
 
 		try {
