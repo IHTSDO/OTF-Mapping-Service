@@ -126,6 +126,7 @@
     <td>
       {{selectedWorkflowType.displayName}}
     </td>
+
   </tr>
     </tbody>
   </table>
@@ -329,7 +330,8 @@
         <input id="newAdviceName" type="text" ng-model="newAdviceName">  </div> 
       <div>Advice Detail: 
         <input id="newAdviceDetail" type="text" ng-model="newAdviceDetail">   </div>     
-      <button class="btn btn-sm btn-primary" ng-click="submitNewMapAdvice(newAdviceName, newAdviceDetail)">Submit</button>
+      <button class="btn btn-sm btn-primary" 
+        ng-click="submitNewMapAdvice(newAdviceName, newAdviceDetail); newAdviceName = ''; newAdviceDetail = '';">Submit</button>
     </form>
     
   </accordion-group>  
@@ -413,7 +415,7 @@
       <div>Relation Terminology Id: 
         <input id="newRelationTerminologyId" type="text" ng-model="newRelationTerminologyId">   </div>       
       <button class="btn btn-sm btn-primary" 
-        ng-click="submitNewMapRelation(newRelationName, newRelationAbbreviation, newRelationTerminologyId)">Submit</button>
+        ng-click="submitNewMapRelation(newRelationName, newRelationAbbreviation, newRelationTerminologyId); newRelationName = ''; newRelationAbbreviation = ''; newRelationTerminologyId = '';">Submit</button>
     </div>  
   </accordion-group>  
   <accordion-group ng-show="focusProject.mapPrinciple.length > 0 || editModeEnabled == true">
@@ -503,7 +505,8 @@
       <div ng-show="editModeEnabled == true">Principle Section Ref: 
         <input id="newPrincipleSectionRef" type="text" ng-model="newPrincipleSectionRef">   </div>           
       <button ng-show="editModeEnabled == true" class="btn btn-sm btn-primary style="margin-bottom:15px;"" 
-        ng-click="submitNewMapPrinciple(newPrincipleName, newPrincipleId, newPrincipleDetail, newPrincipleSectionRef)">Submit</button>
+        ng-click="submitNewMapPrinciple(newPrincipleName, newPrincipleId, newPrincipleDetail, newPrincipleSectionRef);
+         newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button>
                      
       
       <div ng-show="focusProject.mapPrincipleSourceDocument != null">
@@ -600,7 +603,10 @@
 
       <button class="btn btn-sm btn-primary" 
         ng-click="submitNewMapAgeRange(newAgeRangeName, newAgeRangeLowerInclusive, newAgeRangeLowerUnits,
-         newAgeRangeLowerValue, newAgeRangeUpperInclusive, newAgeRangeUpperUnits, newAgeRangeUpperValue)">Submit</button>
+         newAgeRangeLowerValue, newAgeRangeUpperInclusive, newAgeRangeUpperUnits, newAgeRangeUpperValue);
+         newAgeRangeName = ''; newAgeRangeLowerInclusive = ''; newAgeRangeLowerUnits = '';
+         newAgeRangeLowerValue = ''; newAgeRangeUpperInclusive = ''; newAgeRangeUpperUnits = '';
+         newAgeRangeUpperValue = '';">Submit</button>
       </form>
       
       </accordion-group> 
@@ -658,7 +664,8 @@
         <div style="margin-bottom:5px;">Concept Id: 
         <input id="newScopeIncludedConceptId" type="text" ng-model="newScopeIncludedConceptId">  </div>
         <button class="btn btn-sm btn-primary" 
-          ng-click="submitNewScopeIncludedConcept(newScopeIncludedConceptId)">Submit</button>
+          ng-click="submitNewScopeIncludedConcept(newScopeIncludedConceptId);
+          newScopeIncludedConceptId = '';">Submit</button>
        </div>
             
   </accordion-group>
@@ -715,7 +722,8 @@
         <div style="margin-bottom:5px;">Concept Id: 
         <input id="newScopeExcludedConceptId" type="text" ng-model="newScopeExcludedConceptId">  </div>
         <button class="btn btn-sm btn-primary" 
-          ng-click="submitNewScopeExcludedConcept(newScopeExcludedConceptId)">Submit</button>
+          ng-click="submitNewScopeExcludedConcept(newScopeExcludedConceptId);
+           newScopeExcludedConceptId = '';">Submit</button>
        </div>
      </accordion-group>
    </accordion>
