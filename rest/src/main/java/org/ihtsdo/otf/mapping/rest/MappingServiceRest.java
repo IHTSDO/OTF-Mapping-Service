@@ -1428,6 +1428,12 @@ public class MappingServiceRest extends RootServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			mappingService.addUserError(userError);
 			mappingService.close();
+			
+			RootServiceRest rootService = new RootServiceRest();
+			rootService.getConfigProperties();
+			rootService.sendUserErrorEmail(userError);
+			
+			
 			return null;
 
 		} catch (Exception e) {
