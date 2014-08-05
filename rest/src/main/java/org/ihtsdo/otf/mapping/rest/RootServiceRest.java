@@ -175,7 +175,7 @@ public class RootServiceRest {
 		m_subject = "IHTSDO Mapping Tool Editing Error Report";
 		m_text = new StringBuffer();
 
-		m_text.append("USER ERROR on " + userError.getMapRecord().getConceptId() + ":"
+		m_text.append("USER ERROR on " + userError.getMapRecord().getConceptId() + ": "
 				 + userError.getMapRecord().getConceptName()).append("\n\n");
 		m_text.append("Error type: " + userError.getMapError()).append("\n");
 		m_text.append("Reporting lead: " + userError.getMapUserReporting().getName()).append("\n");
