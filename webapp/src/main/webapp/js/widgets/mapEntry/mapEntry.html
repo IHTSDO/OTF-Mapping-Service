@@ -15,13 +15,14 @@
 
     <tr>
       <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
-      <td style="vertical-align: top; padding: 5px;"><span
-        ng-show="entry.targetId != null && entry.targetId != ''">{{project.destinationTerminology}},
-          {{entry.targetId}} &nbsp;
-          <button ng-click="clearTargetConcept(entry)">Clear</button>
-      </span> <span style="color:lightgray;"
-        ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">No
-          Target Selected</span></td>
+      
+      
+		
+      <td style="vertical-align: top; padding: 5px;">
+      {{project.destinationTerminology}}, <input style="width:125px;" id="targetIdField" placeholder="No Target Selected" ng-blur="getValidTarget(entry.targetId)" ng-model="entry.targetId" />
+          <button ng-click="clearTargetConcept(entry)">Clear</button><br>
+          <span style="color:red" ng-show="getValidTargetError != null">{{getValidTargetError}}</span>
+      </span>
     </tr>
     <tr ng-show="entry.targetId != null && entry.targetId != ''">
       <td style="vertical-align: top; padding: 5px; width: 50px; white-space:nowrap;"><strong>Preferred Term</strong></td>       
