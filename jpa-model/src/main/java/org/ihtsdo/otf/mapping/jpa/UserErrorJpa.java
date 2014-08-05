@@ -12,8 +12,10 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.UserError;
 
@@ -56,6 +58,10 @@ public class UserErrorJpa implements UserError {
 	/**  The user reporting error. */
 	@ManyToOne(targetEntity = MapUserJpa.class)
 	private MapUser userReportingError;
+	
+	/** The map record. */
+  @ManyToOne(targetEntity = MapRecordJpa.class)
+	private MapRecord mapRecord;
 	
   /**
    *  Default constructor.
@@ -163,6 +169,23 @@ public class UserErrorJpa implements UserError {
 	@Override
 	public String getMapError() {
 		return error;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.UserError#getMapRecord()
+	 */
+  @XmlElement(type = MapRecordJpa.class)
+	@Override
+	public MapRecord getMapRecord() {
+		return mapRecord;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.UserError#setMapRecord(org.ihtsdo.otf.mapping.model.MapRecord)
+	 */
+	@Override
+	public void setMapRecord(MapRecord mapRecord) {
+		this.mapRecord = mapRecord;
 	}
 
 }
