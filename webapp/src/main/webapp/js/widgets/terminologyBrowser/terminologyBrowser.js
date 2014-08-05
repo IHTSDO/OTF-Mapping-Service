@@ -6,28 +6,28 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 	dashboardProvider
 	.widget('terminologyBrowser', {
-		title: function(config) { return config.terminology + "," + config.terminologyVersion; },
+		title: function() { return 'Terminology Browser' },
 
 		description: 'Tree view for terminology',
 		templateUrl: 'js/widgets/terminologyBrowser/terminologyBrowser.html',
 		controller: 'terminologyBrowserWidgetCtrl',
 		resolve: {
-			terminology: function(config) {
-				return {name: config.terminology, version: config.terminologyVersion};
-			}
 		},
 		edit: {}   
 	});
 })
 
-.controller('terminologyBrowserWidgetCtrl', function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService, metadataService, terminology){
-
-	$scope.terminology = terminology.name;
-	$scope.terminologyVersion = terminology.version;
+.controller('terminologyBrowserWidgetCtrl', function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService, metadataService){
+	
 	$scope.focusProject = localStorageService.get('focusProject');
-	$scope.metadata = localStorageService.get('metadata_' + terminology.name);
+	$scope.userToken = localStorageService.get('userToken');
+	$scope.terminology = null;
+	$scope.terminologyVersion = null;
+	$scope.metadata = null;
+	
+	//$scope.metadata = localStorageService.get('metadata_' + terminology.name);
 
-	console.debug(localStorageService.get('metadata_' + terminology.name));
+	console.debug(localStorageService.get('metadata_SNOMEDCT'));
 
 	// initialize currently displayed concept as empty object
 	$scope.currentOpenConcepts = {};
@@ -48,49 +48,60 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		console.debug("TerminologyBrowserWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
 	});
-	
-	$scope.userToken = localStorageService.get('userToken');
-	
 
-	// on any change of focusProject, metadata, or user token, perform widget initialization
-	$scope.$watch(['focusProject', 'metadata', 'userToken'], function() {
 
-		// once needed state variables are loaded, initialize and make first call
-		if ($scope.focusProject != null && $scope.metadata != null && $scope.userToken != null) {
-
-			console.debug("STATE VARIABLES");
-			console.debug($scope.focusProject);
-			console.debug($scope.metadata);
+	// on any change of project, metadata, or user token, perform widget initialization
+	$scope.$watch(['focusProject', 'userToken'], function() {
+		
+		console.debug("TB: WATCH", $scope.focusProject, $scope.userToken);
+		
+		if ($scope.focusProject != null && $scope.userToken != null) {
+			
+			$scope.terminology = $scope.focusProject.destinationTerminology;
+			$scope.terminologyVersion = $scope.focusProject.destinationTerminologyVersion;
+			$scope.model.title = $scope.terminology + " Terminology Browser";
 			
 			$http.defaults.headers.common.Authorization = $scope.userToken;
 			
-
-			// find the description and relation type metadata and convert to normal JSON object structure
-			for (var i = 0; i < $scope.metadata.length; i++) {
-				if ($scope.metadata[i].name === 'Description Types') {
-
-					for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
-						$scope.descTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
-					}
-
-				}
-				else if ($scope.metadata[i].name === 'Relationship Types') {
-					for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
-						$scope.relTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
-					}
-				}
-			}
-
-			console.debug("Desc types:");
-			console.debug($scope.descTypes);
-
-			console.debug("Rel types:");
-			console.debug($scope.relTypes);
-
 			// get the root trees
 			$scope.getRootTree();
+			
+			console.debug("TB: etrieving metadata for ", $scope.focusProject);
+			
+			$scope.metadata = localStorageService.get('metadata_' + $scope.focusProject.destinationTerminology.name);
 		}
 	});
+	
+/*	
+ * NO LONGER NEEDED AFTER MOVING INFORMATION PANELS TO SERVICE LAYER
+ * $scope.$watch('metadata', function() {
+		
+		// find the description and relation type metadata and convert to normal JSON object structure
+		for (var i = 0; i < $scope.metadata.length; i++) {
+			if ($scope.metadata[i].name === 'Description Types') {
+
+				for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
+					$scope.descTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
+				}
+
+			}
+			else if ($scope.metadata[i].name === 'Relationship Types') {
+				for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
+					$scope.relTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
+				}
+			}
+		}
+
+		console.debug("Desc types:");
+		console.debug($scope.descTypes);
+
+		console.debug("Rel types:");
+		console.debug($scope.relTypes);
+
+
+	});	*/
+
+		
 
 	// function to get the root nodes
 	$scope.getRootTree = function() {
@@ -195,7 +206,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 		$scope.query = referencedConcept.terminologyId;	
 		console.debug("Setting query string to " + $scope.query);	
-		$scope.getRootTreeWithQuery();
+		$scope.getRootTreeWithQuery(true);
 	};
 
 

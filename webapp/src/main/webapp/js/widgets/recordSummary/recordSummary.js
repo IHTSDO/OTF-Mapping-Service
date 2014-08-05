@@ -21,7 +21,6 @@ angular.module('mapProjectApp.widgets.recordSummary', ['adf.provider'])
 	$rootScope.$on('mapRecordWidget.notification.recordChanged', function(event, parameters) { 
 		console.debug("Received record" , parameters.record);
 		$scope.record = parameters.record;
-		//$scope.record.mapEntry = $scope.record.localEntries;
 	});
 		  
 
