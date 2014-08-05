@@ -43,6 +43,27 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.isNotesOpen = true;
 	$scope.isReportOpen = true;
 	
+	// TODO: needs to be moved to server-side
+	$scope.errorMessages = [{displayName: 'Map Group is not relevant'}, 
+                            {displayName: 'Map Group  has been omitted'},
+                            {displayName: 'Sequencing of Map Groups is incorrect'}, 
+                            {displayName: 'The number of map records per group is incorrect'},
+                            {displayName: 'Target code selection for a map record is in error'}, 
+                            {displayName: 'Map rule type assignment is in error'},
+                            {displayName: 'Map target type assignment is in error'}, 
+                            {displayName: 'Map advice missing or incomplete'},
+                            {displayName: 'Map advice assignment is in error'}, 
+                            {displayName: 'Mapping Personnel Handbook principle not followed'},
+                            {displayName: 'Gender rule is not relevant'}, 
+                            {displayName: 'Gender rule has been omitted'},
+                            {displayName: 'Age rule is not relevant'}, 
+                            {displayName: 'Age rule has been omitted'},
+                            {displayName: 'Other'}
+                            ];
+	
+    $scope.selectedErrorMessage = $scope.errorMessages[0];
+    $scope.selectedErrorMessage2 = $scope.errorMessages[0];
+	
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
@@ -440,6 +461,34 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		return entrySummary;
 		
 	};
+
+	$scope.submitNewUserError = function(recordInError, errorMessage, errorComment) {
+		   console.debug("in submitNewUserError");
+		   
+			var obj = {
+						"note": errorComment,
+						"mapError": errorMessage.displayName,
+						"timestamp": new Date(),
+						"mapUserReporting": $scope.user,
+						"mapUserInError": recordInError.owner,
+						"mapRecord": recordInError
+					  };
+			$http({						
+				url: root_mapping + "error/add",
+				dataType: "json",
+				data: obj,
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				console.debug("success to addUserError");
+			}).error(function(data, status, headers, config) {
+				$scope.recordError = "Error adding new user error.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			});
+		};
+
 	
 	// function to return trusted html code (for advice content)
 	$scope.to_trusted = function(html_code) {
