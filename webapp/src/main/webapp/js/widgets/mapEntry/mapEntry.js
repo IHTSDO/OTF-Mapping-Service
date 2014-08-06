@@ -84,6 +84,50 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		);
 	}
 	
+	$scope.getValidTarget = function(targetCode) {
+		$scope.getValidTargetError = "";
+		$http({
+			url: root_mapping + "project/id/" + $scope.project.id + "/concept/" + targetCode + "/isValid",
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			$rootScope.glassPane--;
+			
+			// if target found and valid
+			if (data) {
+				$scope.entry.targetId = data.terminologyId;
+				$scope.entry.targetName = data.defaultPreferredName;
+				
+				// clear the relation and advices
+				$scope.entry.mapRelation = null;
+				$scope.entry.mapAdvice = [];
+				
+				// attempt to autocompute the map relation, then update the entry
+				computeRelation($scope.entry).then(function() {
+					console.debug('Relation computed');
+					computeAdvice($scope.entry).then(function() {
+						console.debug('Advice computed');
+						updateEntry();
+					});
+				});
+				
+			} else {
+				console.debug("invalid target entered");
+				$scope.getValidTargetError = targetCode + " is not a valid target";
+				$scope.entry.targetName = null;
+				
+			}
+			
+		
+		}).error(function(data, status, headers, config) {
+			 $rootScope.glassPane--;
+
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
+	};
+	
 	
 	// watch for concept selection from terminology browser
 	$scope.$on('terminologyBrowser.selectConcept', function(event, parameters) { 	
@@ -92,11 +136,6 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		
 		$scope.entry.targetId = parameters.concept.terminologyId;
 		$scope.entry.targetName = parameters.concept.defaultPreferredName;
-		
-		// get the allowable advices and relations
-		$scope.allowableAdvices = getAllowableAdvices($scope.entry, $scope.project.mapAdvice);
-		sortByKey($scope.allowableAdvices, 'detail');
-		$scope.allowableMapRelations = getAllowableRelations($scope.entry, $scope.project.mapRelation);
 		
 		// clear the relation and advices
 		$scope.entry.mapRelation = null;
@@ -110,6 +149,11 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				updateEntry();
 			});
 		});
+		
+		// get the allowable advices and relations
+		$scope.allowableAdvices = getAllowableAdvices($scope.entry, $scope.project.mapAdvice);
+		sortByKey($scope.allowableAdvices, 'detail');
+		$scope.allowableMapRelations = getAllowableRelations($scope.entry, $scope.project.mapRelation);
 	});	
 	
 	
