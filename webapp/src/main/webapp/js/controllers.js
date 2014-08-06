@@ -24,11 +24,12 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $l
 		if (status == "401") {
 	    	$rootScope.globalError = $rootScope.globalError + " Authorization failed.  Please log in again.";
 			$location.path("/");
+		} else if (data.indexOf("AuthToken does not have a valid username.") > 0) {
+			$location.path("/");
 		} else {
 			$rootScope.globalError = data.replace(/"/g, '');
 		}
-		window.scrollTo(0,0);
-		
+		window.scrollTo(0,0);		
     }
     
     // global function to reset the global error
