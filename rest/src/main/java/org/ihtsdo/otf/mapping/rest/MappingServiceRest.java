@@ -2432,6 +2432,46 @@ public class MappingServiceRest extends RootServiceRest {
 			return null;
 		}
 	}
+	
+	@GET
+	@Path("/project/id/{mapProjectId}/concept/{terminologyId}/isValid")
+	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public Concept isTargetCodeValid(
+			@ApiParam(value = "map project id", required = true) @PathParam("mapProjectId") Long mapProjectId,
+			@ApiParam(value = "terminology id", required = true) @PathParam("terminologyId") String terminologyId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /project/id/" + mapProjectId + "/concept/" + terminologyId + "/isValid");
+
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to check valid target codes").build());
+
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			ProjectSpecificAlgorithmHandler algorithmHandler = mappingService
+					.getProjectSpecificAlgorithmHandler(mapProject);
+			boolean isValid = algorithmHandler.isTargetCodeValid(terminologyId);
+
+			mappingService.close();
+			if (isValid == true) {
+				ContentService contentService = new ContentServiceJpa();
+				Concept c = contentService.getConcept(terminologyId, mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+				return c;
+			} else {
+				return null;
+			}
+
+		} catch (Exception e) { 
+			handleException(e, "trying to compare map records");
+			return null;
+		}
+	}
 
 
 }
