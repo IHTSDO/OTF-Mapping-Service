@@ -7,11 +7,19 @@
     <![endif]-->
 <script>
 	jQuery(function($) {
-		$('#widget').height(450).split({
+		$('#widget').height(550).split({
 			orientation : 'horizontal',
-			position : '60%'
+			position : '70%'
+		});
+		$('#widgetSplitter').split({
+			orientation : 'horizontal',
+			position : '65%'
 		});
 		$('#recordsSplitter').split({
+			orientation : 'vertical',
+			position : '50%'
+		});
+		$('#feedbackSplitter').split({
 			orientation : 'vertical',
 			position : '50%'
 		});
@@ -22,279 +30,307 @@
 </head>
 <body>
 
+	<div id="widget">
+		<div id="widgetSplitter">
+			<div id="recordsSplitter">
+				<div class="a">
+					<!--  ENTRIES PANEL -->
+					<accordion> <accordion-group is-open="isEntriesOpen">
+					<accordion-heading> Entries:
+					{{record1.displayName}}<i class="pull-right glyphicon"
+						ng-class="{'glyphicon-chevron-down': isEntriesOpen, 'glyphicon-chevron-right': !isEntriesOpen}"></i>
+					</accordion-heading>
 
-  <div id="widget">
-    <div id="recordsSplitter">
-      <div class="a">
+					<div ng-show="project.groupStructure == true">
 
-        <!--  ENTRIES PANEL -->
-        <accordion> <accordion-group is-open="isEntriesOpen">
-        <accordion-heading> Entries: {{record1.displayName}}<i
-          class="pull-right glyphicon"
-          ng-class="{'glyphicon-chevron-down': isEntriesOpen, 'glyphicon-chevron-right': !isEntriesOpen}"></i>
-        </accordion-heading>
+						<accordion close-others="false">
 
-        <div ng-show="project.groupStructure == true">
+						<div ui-sortable ng-model="groups1">
 
-          <accordion close-others="false">
+							<!--  first-level accordion groups -->
+							<accordion-group ng-repeat="group in groups1" is-open="true">
 
-          <div ui-sortable ng-model="groups1">
-
-            <!--  first-level accordion groups -->
-            <accordion-group ng-repeat="group in groups1" is-open="true">
-
-            <accordion-heading> <span
-              style="text-align: left;">Map Group </span> </accordion-heading>
-
+							<accordion-heading> <span
+								style="text-align: left;">Map Group </span> </accordion-heading>
 
 
-            <div ui-sortable ng-model="entries1[group]">
-              <p ng-repeat="entry in entries1[group] track by entry.localId">
 
-                <span ng-show="entry.targetId != null && entry.targetId != ''"><span
-                  ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
-                  {{entry.targetId}} {{entry.targetName}}</span> 
-                  
-                 <!--  <span
-                  ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
-                 -->
-                <span ng-show="entry.mapAdvice.length > 0">              
-                  <span class="dropdown">
-                   <a class="dropdown-toggle"> <img src="img/dialog-question.png"
-                      alt="question icon">
-                   </a> 
-                   <span class="dropdown-menu term-browser-dropdown-menu"> <strong>Advice</strong>
-                    <!-- need to revisit why the ng-repeat="advice in entry.mapAdvice" is not working  -->
-                    {{entry.mapAdvice[0].detail}}<br>
-                    {{entry.mapAdvice[1].detail}}
-                    {{entry.mapAdvice[2].detail}}
-                   </span>
-                   
-                  </span>
-                </span> 
-                <br><br>
-                <span class="alert alert-warning" ng-show="entry.mapRelation != null">
-                   {{entry.mapRelation.name}}
-                   </span>
-              
-            </div>
-            <!--  end sortable entries --> </accordion-group>
-            <!--  end Group accordion group -->
+							<div ui-sortable ng-model="entries1[group]">
+								<p ng-repeat="entry in entries1[group] track by entry.localId">
 
-          </div>
-          <!--  end sortable groups --> </accordion>
-          <!--  end group accordion -->
-        </div>
+									<span ng-show="entry.targetId != null && entry.targetId != ''">
+										<span
+										ng-show="project.ruleBased == true">{{entry.ruleSummary}}
+										</span>
+										{{entry.targetId}} {{entry.targetName}}
+									</span> 
+									
+									<span
+										ng-show="entry.mapAdvice.length > 0"> 
+										<span
+										class="dropdown"> <a class="dropdown-toggle"> <img
+												src="img/dialog-question.png" alt="question icon">
+										</a> 
+											<span class="dropdown-menu term-browser-dropdown-menu">
+												<strong>Advice</strong> <!-- need to revisit why the ng-repeat="advice in entry.mapAdvice" is not working  -->
+												{{entry.mapAdvice[0].detail}}<br>
+												{{entry.mapAdvice[1].detail}} {{entry.mapAdvice[2].detail}}
+											</span>
 
-        <!--  for no group structure in project -->
-        <div ng-show="project.groupStructure == false"">
+										</span>
+									</span> 
+									<br> <br> <span class="alert alert-warning"
+										ng-show="entry.mapRelation != null">
+										{{entry.mapRelation.name}} </span>
+							</div>
+							<!--  end sortable entries --> </accordion-group>
+							<!--  end Group accordion group -->
 
-          <div ui-sortable ng-model="entries1">
-            <p ng-repeat="entry in entries1">
-              <span ng-show="entry.targetId != null && entry.targetId != ''">
-                <span ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span>
-                {{entry.targetId}} {{entry.targetName}}
-              </span> <span ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
-            </p>
-          </div>
-        </div>
+						</div>
+						<!--  end sortable groups --> </accordion>
+						<!--  end group accordion -->
+					</div>
 
-        </accordion-group> <!--  end entries accordion group --> </accordion>
-        <!--  end entries accordion -->
+					<!--  for no group structure in project -->
+					<div ng-show="project.groupStructure == false"">
 
-        <!--  PRINCIPLES PANEL -->
-        <accordion ng-show="record1.mapPrinciple.length != 0"> <accordion-group
-          is-open="isPrinciplesOpen"> <accordion-heading>
-        Principles <i class="pull-right glyphicon"
-          ng-class="{'glyphicon-chevron-down': isPrinciplesOpen, 'glyphicon-chevron-right': !isPrinciplesOpen}"></i>
-        </accordion-heading>
+						<div ui-sortable ng-model="entries1">
+							<p ng-repeat="entry in entries1">
+								<span ng-show="entry.targetId != null && entry.targetId != ''">
+									<span ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span>
+									{{entry.targetId}} {{entry.targetName}}
+								</span> <span ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
+							</p>
+						</div>
+					</div>
 
-        <div ng-repeat="principle in record1.mapPrinciple">
-          {{principle.principleId}}: {{principle.name}}</div>
-        </accordion-group> </accordion>
+					</accordion-group> <!--  end entries accordion group --> </accordion>
+					<!--  end entries accordion -->
 
-        <!--  NOTES PANEL -->
-        <accordion ng-show="record1.mapNote.length != 0"> <accordion-group
-          is-open="isNotesOpen"> <accordion-heading>
-        Notes <i class="pull-right glyphicon"
-          ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
-        </accordion-heading>
-          <div ng-repeat="note in record1.mapNote"
-                ng-bind-html="to_trusted(note.note)"></div>
-        </accordion-group> </accordion>
+					<!--  PRINCIPLES PANEL -->
+					<accordion ng-show="record1.mapPrinciple.length != 0">
+					<accordion-group is-open="isPrinciplesOpen"> <accordion-heading>
+					Principles <i class="pull-right glyphicon"
+						ng-class="{'glyphicon-chevron-down': isPrinciplesOpen, 'glyphicon-chevron-right': !isPrinciplesOpen}"></i>
+					</accordion-heading>
 
-        <button class="btn btn-sm btn-primary" style="margin: 4px"
-          ng-click="populateMapRecord(record1)">Start here</button><hr>
-          
-        <form style="margin-top: 8px">
-          <table>
-            <tr>
-              <td>Select error:&nbsp;</td>
-              <td><select ng-model="selectedErrorMessage"
-                ng-options="msg as msg.displayName for msg in errorMessages track by msg.displayName">
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td>Comment:&nbsp;</td>
-              <td><input ng-model="errorComment" style="width:100%; margin-top:5px;"></input></td>           
-            </tr>
-          </table>
-          <div><button class="btn btn-sm btn-primary" style="margin: 4px" 
-            ng-click="submitNewUserError(record1, selectedErrorMessage, errorComment); errorComment = ''; selectedErrorMessage = errorMessages[0];">Submit error</button></div>
-        </form>
-      </div>
-      <!-- end class a -->
-      <div class="b" ng-show="record2 != null">
+					<div ng-repeat="principle in record1.mapPrinciple">
+						{{principle.principleId}}: {{principle.name}}</div>
+					</accordion-group> </accordion>
 
-        <!--  ENTRIES PANEL -->
-        <accordion> <accordion-group is-open="isEntriesOpen">
-        <accordion-heading> Entries: {{record2.displayName}}<i
-          class="pull-right glyphicon"
-          ng-class="{'glyphicon-chevron-down': isEntriesOpen, 'glyphicon-chevron-right': !isEntriesOpen}"></i>
-        </accordion-heading>
+					<!--  NOTES PANEL -->
+					<accordion ng-show="record1.mapNote.length != 0"> <accordion-group
+						is-open="isNotesOpen"> <accordion-heading>
+					Notes <i class="pull-right glyphicon"
+						ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
+					</accordion-heading>
+					<div ng-repeat="note in record1.mapNote"
+						ng-bind-html="to_trusted(note.note)"></div>
+					</accordion-group> </accordion>
+					
+					<button class="btn btn-sm btn-primary" style="margin: 4px"
+						ng-click="populateMapRecord(record1)">Start here</button>
+					
 
-        <div ng-show="project.groupStructure == true">
 
-          <accordion close-others="false">
+				</div>
 
-          <div ui-sortable ng-model="groups2">
+				<div class="b">
+					<!--  ENTRIES PANEL -->
+					<accordion> <accordion-group is-open="isEntriesOpen">
+					<accordion-heading> Entries:
+					{{record2.displayName}}<i class="pull-right glyphicon"
+						ng-class="{'glyphicon-chevron-down': isEntriesOpen, 'glyphicon-chevron-right': !isEntriesOpen}"></i>
+					</accordion-heading>
 
-            <!--  first-level accordion groups -->
-            <accordion-group ng-repeat="group in groups2" is-open="true">
+					<div ng-show="project.groupStructure == true">
 
-            <accordion-heading> <span
-              style="text-align: left;">Map Group </span> </accordion-heading>
+						<accordion close-others="false">
 
-<!--        // added for debugging the ng-repeat entry.mapAdvice problem  
-            <div ui-sortable ng-model="entries2[group]">
-              <p ng-repeat="entry in entries2[group] track by entry.localId">
+						<div ui-sortable ng-model="groups2">
 
-                <span ng-show="entry.targetId != null && entry.targetId != ''">
-                  {{entry.targetId}} {{entry.targetName}}{{entry.mapAdvice[0].detail}}
-                </span> 
-                <span ng-show="entry.mapAdvice.length > 0">
-                Detail List
-                 <p ng-repeat="advice in entry.mapAdvice">
-                  Detail
-                  <p> 
-                </span> 
-             </p>
-           </div> -->
+							<!--  first-level accordion groups -->
+							<accordion-group ng-repeat="group in groups2" is-open="true">
 
-           <div ui-sortable ng-model="entries2[group]">
-              <p ng-repeat="entry in entries2[group] track by entry.localId">
+							<accordion-heading> <span
+								style="text-align: left;">Map Group </span> </accordion-heading>
 
-                <span ng-show="entry.targetId != null && entry.targetId != ''"><span
-                  ng-show="project.ruleBased == true">{{entry.ruleSummary}}</span>
-                  {{entry.targetId}} {{entry.targetName}}</span> <span
-                  ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
-                
-                <span ng-show="entry.mapAdvice.length > 0">              
-                  <span class="dropdown">
-                   <a class="dropdown-toggle"> <img src="img/dialog-question.png"
-                      alt="question icon">
-                   </a> 
-                   <span class="dropdown-menu term-browser-dropdown-menu"> <strong>Advice</strong>
-                    <!-- need to revisit why the ng-repeat="advice in entry.mapAdvice" is not working  -->
-                    {{entry.mapAdvice[0].detail}}
-                    {{entry.mapAdvice[1].detail}}
-                    {{entry.mapAdvice[2].detail}}
-                   </span>
-                  </span>
-                </span> 
-              </p>
-         </div> 
-            <!--  end sortable entries --> </accordion-group>
-            <!--  end Group accordion group -->
+							<div ui-sortable ng-model="entries2[group]">
+								<p ng-repeat="entry in entries2[group] track by entry.localId">
 
-          </div>
-          <!--  end sortable groups --> </accordion>
-          <!--  end group accordion -->
-        </div>
+								
 
-        <!--  for no group structure in project -->
-        <div ng-show="project.groupStructure == false"">
+									<span ng-show="entry.targetId != null && entry.targetId != ''">
+										<span
+										ng-show="project.ruleBased == true">{{entry.ruleSummary}}
+										</span>
+										{{entry.targetId}} {{entry.targetName}}
+									</span> 
+									
+									<span
+										ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}
+									</span>
 
-          <div ui-sortable ng-model="entries2">
-            <p ng-repeat="entry in entries2">
-              <span ng-show="entry.targetId != null && entry.targetId != ''">
-                <span ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span>
-                {{entry.targetId}} {{entry.targetName}}
-              </span> <span ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
-             
-            </p>
-          </div>
-        </div>
+									<span ng-show="entry.mapAdvice.length > 0"> 
+										<span
+										class="dropdown"> <a class="dropdown-toggle"> <img
+												src="img/dialog-question.png" alt="question icon"></a> 
+										
+											<span class="dropdown-menu term-browser-dropdown-menu">
+												<strong>Advice</strong> <!-- need to revisit why the ng-repeat="advice in entry.mapAdvice" is not working  -->
+												{{entry.mapAdvice[0].detail}} {{entry.mapAdvice[1].detail}}
+												{{entry.mapAdvice[2].detail}}
+											</span>
+										</span>
+									</span> <br> <br> 
+									<span class="alert alert-warning"
+										ng-show="entry.mapRelation != null">
+											{{entry.mapRelation.name}} 
+									</span>
+									
 
-        </accordion-group> <!--  end entries accordion group --> </accordion>
-        <!--  end entries accordion -->
+								</p>
+							</div>
+							<!--  end sortable entries --> </accordion-group>
+							<!--  end Group accordion group -->
 
-        <!--  PRINCIPLES PANEL -->
-        <accordion ng-show="record2.mapPrinciple.length != 0"> <accordion-group
-          is-open="isPrinciplesOpen"> <accordion-heading>
-        Principles <i class="pull-right glyphicon"
-          ng-class="{'glyphicon-chevron-down': isPrinciplesOpen, 'glyphicon-chevron-right': !isPrinciplesOpen}"></i>
-        </accordion-heading>
+						</div>
+						<!--  end sortable groups --> </accordion>
+						<!--  end group accordion -->
+					</div>
 
-        <div ng-repeat="principle in record2.mapPrinciple">
-          {{principle.principleId}}: {{principle.name}}</div>
-        </accordion-group> </accordion>
+					<!--  for no group structure in project -->
+					<div ng-show="project.groupStructure == false"">
 
-        <!--  NOTES PANEL -->
-        <accordion ng-show="record2.mapNote.length != 0"> <accordion-group
-          is-open="isNotesOpen"> <accordion-heading>
-        Notes <i class="pull-right glyphicon"
-          ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
-        </accordion-heading>
-           <div ng-repeat="note in record2.mapNote"
-                ng-bind-html="to_trusted(note.note)"></div>
-        </accordion-group> </accordion>
+						<div ui-sortable ng-model="entries2">
+							<p ng-repeat="entry in entries2">
+								<span ng-show="entry.targetId != null && entry.targetId != ''">
+									<span ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span>
+									{{entry.targetId}} {{entry.targetName}}
+								</span> <span ng-show="entry.targetId == null || entry.targetId === ''">{{getEntrySummary(entry)}}</span>
 
-        <button class="btn btn-sm btn-primary" style="margin: 4px"
-          ng-click="populateMapRecord(record2)">Start here</button><hr>
+							</p>
+						</div>
+					</div>
 
-        <form style="margin-top: 8px; margin-left: 4px;">
-          <table>
-            <tr>
-              <td>Select error:&nbsp;</td>
-              <td><select ng-model="selectedErrorMessage2"
-                ng-options="msg as msg.displayName for msg in errorMessages track by msg.displayName">
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td>Comment:&nbsp;</td>
-              <td><input ng-model="errorComment2" style="width:100%; margin-top:5px;"></input></td>           
-            </tr>
-          </table>
-          <div><button class="btn btn-sm btn-primary" style="margin: 4px" 
-            ng-click="submitNewUserError(record2, selectedErrorMessage2, errorComment2); errorComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit error</button></div>
-        </form>
-      </div>
-      <!--  end class b -->
-    </div>
-    <!--  end recordsSplitter -->
+					</accordion-group> <!--  end entries accordion group --> </accordion>
+					<!--  end entries accordion -->
 
-    <div id="report" ng-show="record2 != null">
-      <accordion> <accordion-group is-open="isReportOpen">
-      <accordion-heading> Conflict Report <i
-        class="pull-right glyphicon"
-        ng-class="{'glyphicon-chevron-down': isReportOpen, 'glyphicon-chevron-right': !isReportOpen}"></i>
-      </accordion-heading>
+					<!--  PRINCIPLES PANEL -->
+					<accordion ng-show="record2.mapPrinciple.length != 0">
+					<accordion-group is-open="isPrinciplesOpen"> <accordion-heading>
+					Principles <i class="pull-right glyphicon"
+						ng-class="{'glyphicon-chevron-down': isPrinciplesOpen, 'glyphicon-chevron-right': !isPrinciplesOpen}"></i>
+					</accordion-heading>
 
-      <div ng-show="validationResult.errors.length > 0">
-        <h4>Errors:</h4>
-        <div ng-repeat="result in validationResult.errors">{{result}}</div>
-      </div>
-      <div ng-show="validationResult.warnings.length > 0">
-        <h4>Warnings:</h4>
-        <div ng-repeat="result in validationResult.warnings">{{result}}</div>
-      </div>
-      </accordion-group> </accordion>
-    </div>
-  </div>
-  <!-- end widget -->
+					<div ng-repeat="principle in record2.mapPrinciple">
+						{{principle.principleId}}: {{principle.name}}</div>
+					</accordion-group> </accordion>
 
+					<!--  NOTES PANEL -->
+					<accordion ng-show="record2.mapNote.length != 0"> <accordion-group
+						is-open="isNotesOpen"> <accordion-heading>
+					Notes <i class="pull-right glyphicon"
+						ng-class="{'glyphicon-chevron-down': isNotesOpen, 'glyphicon-chevron-right': !isNotesOpen}"></i>
+					</accordion-heading>
+					<div ng-repeat="note in record2.mapNote"
+						ng-bind-html="to_trusted(note.note)"></div>
+					</accordion-group> </accordion>
+
+					<button class="btn btn-sm btn-primary" style="margin: 4px"
+						ng-click="populateMapRecord(record2)">Start here</button>
+
+				</div>
+				<!--  end class b -->
+
+			</div> <!--  end recordSplitter -->
+			
+			<div id="feedbackSplitter">
+				<div class="a">
+					
+					<form style="margin-top: 8px; margin-left: 4px;">
+						<table>
+							<tr>
+								<td>Select error:&nbsp;</td>
+								<td><select ng-model="selectedErrorMessage1"
+									ng-options="msg as msg.displayName for msg in errorMessages track by msg.displayName">
+								</select></td>
+							</tr>
+							<tr>
+								<td>Comment:&nbsp;</td>
+								<td><textarea ng-model="errorComment1"
+									style="width: 100%; margin-top: 5px;"></textarea></td>
+							</tr>
+						</table>
+						<div>
+							<button class="btn btn-sm btn-primary" style="margin: 4px"
+								ng-click="submitNewUserError(record1, selectedErrorMessage1, errorComment1); errorComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
+								error</button>
+						</div>
+					</form>
+				</div>
+				<div class="b">
+					<form style="margin-top: 8px; margin-left: 4px;">
+						<table>
+							<tr>
+								<td>Select error:&nbsp;</td>
+								<td><select ng-model="selectedErrorMessage2"
+									ng-options="msg as msg.displayName for msg in errorMessages track by msg.displayName">
+								</select></td>
+							</tr>
+							<tr>
+								<td>Comment:&nbsp;</td>
+								<td><textarea ng-model="errorComment2"
+									style="width: 100%; margin-top: 5px;"></textarea></td>
+							</tr>
+						</table>
+						<div>
+							<button class="btn btn-sm btn-primary" style="margin: 4px"
+								ng-click="submitNewUserError(record2, selectedErrorMessage2, errorComment2); errorComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
+								error</button>
+						</div>
+					</form>
+				
+				
+				</div> <!--  end class b -->
+			</div> <!--  end feedbackSplitter -->
+			
+			
+		</div>
+		<div id="report" ng-show="record2 != null">
+			<accordion> 
+				<accordion-group is-open="isDiscrepancyOpen">
+				<accordion-heading> Discrepancy Review<i
+					class="pull-right glyphicon"
+					ng-class="{'glyphicon-chevron-down': isDiscrepancyOpen, 'glyphicon-chevron-right': !isDiscrepancyOpen}"></i>
+				</accordion-heading>
+				
+				Enter discrepancy review notes:
+				<textarea style="width: 100%; margin-top: 5px;" ng-model="discrepancyFeedback"></textarea>
+				
+				<button class="btn btn-sm btn-primary" style="margin: 4px"
+								ng-click="startDiscrepancyReview(discrepancyFeedback)">Send Emails</button>
+				{{discrepancyErrorMessage}}<br>
+				{{discrepancySuccessMessage}}
+								
+				</accordion-group>
+				<accordion-group is-open="isReportOpen">
+				<accordion-heading> Conflict Report <i
+					class="pull-right glyphicon"
+					ng-class="{'glyphicon-chevron-down': isReportOpen, 'glyphicon-chevron-right': !isReportOpen}"></i>
+				</accordion-heading>
+	
+				<div ng-show="validationResult.errors.length > 0">
+					<h4>Errors:</h4>
+					<div ng-repeat="result in validationResult.errors">{{result}}</div>
+				</div>
+				<div ng-show="validationResult.warnings.length > 0">
+					<h4>Warnings:</h4>
+					<div ng-repeat="result in validationResult.warnings">{{result}}</div>
+				</div>
+				</accordion-group> 
+			</accordion>
+		</div>
+	</div>
 </body>
 </html>
