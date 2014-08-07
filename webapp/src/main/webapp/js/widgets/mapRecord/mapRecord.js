@@ -901,7 +901,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				emailText += "   [" + record.mapNote[i].user.userName + "] " + record.mapNote[i].note + "<br>";
 			}
 			
-			emailText += "<br>"
+			emailText += "<br>";
 		}
 		
 		// check if flagged for map lead
@@ -931,7 +931,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 		
-	}
+	};
 	
 	/**
 	 * Helper function to assign group and priority to entries

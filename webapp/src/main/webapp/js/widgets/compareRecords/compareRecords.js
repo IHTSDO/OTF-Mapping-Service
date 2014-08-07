@@ -42,6 +42,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.isPrinciplesOpen = true;
 	$scope.isNotesOpen = true;
 	$scope.isReportOpen = true;
+	$scope.isDiscrepancyOpen = false;
 	
 	// TODO: needs to be moved to server-side
 	$scope.errorMessages = [{displayName: 'Map Group is not relevant'}, 
@@ -61,7 +62,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
                             {displayName: 'Other'}
                             ];
 	
-    $scope.selectedErrorMessage = $scope.errorMessages[0];
+    $scope.selectedErrorMessage1 = $scope.errorMessages[0];
     $scope.selectedErrorMessage2 = $scope.errorMessages[0];
 	
 	// watch for project change and modify the local variable if necessary
@@ -465,6 +466,11 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.submitNewUserError = function(recordInError, errorMessage, errorComment) {
 		   console.debug("in submitNewUserError");
 		   
+		   if (errorComment == null || errorComment == undefined || errorComment === '') {
+			   window.alert("The error comment cannot be blank");
+		   	   return;
+		   }
+		   
 			var obj = {
 						"note": errorComment,
 						"mapError": errorMessage.displayName,
@@ -488,6 +494,289 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				$rootScope.handleHttpError(data, status, headers, config);
 			});
 		};
+		
+	$scope.startDiscrepancyReview = function(discrepancyNote) {
+		console.debug("Sending discrepancy emails", discrepancyNote);
+		
+		
+		
+		// construct a base user email object consisting of sender, subject, and base email text
+		var baseFeedbackEmailObj = {};
+		var feedbackEmailObj = null;
+		var recipients = null;
+		
+		// add the current user as sender
+		baseFeedbackEmailObj['sender'] = $scope.user.userName;
+		
+		// null recipients
+		baseFeedbackEmailObj['recipients'] = [];
+		
+		// set the subject
+		baseFeedbackEmailObj['subject'] = "[OTF-Mapping] Discrepancy Review: Project " + $scope.project.name + ", Concept " + $scope.record1.conceptId + " - " + $scope.record1.conceptName;
+	
+		console.debug("Feedback Email Object:", feedbackEmailObj);
+		
+		$scope.discrepancyErrorMessage = '';
+		$scope.discrepancySuccessMessage = '';
+		
+		// set the email text
+		var emailText = "<strong>Discrepancy Review Notes</strong><br><br>";
+		emailText += discrepancyNote + "<br><br>";
+
+		// link to concept record page
+		// TODO ADD
+		
+		emailText += "<hr>";
+		
+		// set the project information
+		emailText += "Project:                 " + $scope.project.name + "<br>";
+		emailText += "Source Terminology:      " + $scope.project.sourceTerminology + ", " + $scope.project.sourceTerminologyVersion  + "<br>";
+		emailText += "Destination Terminology: " + $scope.project.destinationTerminology + ", " + $scope.project.destinationTerminologyVersion  + "<br>";
+		emailText += "<br>";
+		
+		// set the concept information
+		emailText += "Concept Id:              " + $scope.record1.conceptId + "<br>";
+		emailText += "Concept Name:            " + $scope.record1.conceptName + "<br>";
+		
+		emailText += "<hr>";
+		
+		// add the current user as sender
+		baseFeedbackEmailObj['emailText'] = emailText;
+		feedbackEmailObj = angular.copy(baseFeedbackEmailObj);
+		
+		recipients = new Array();
+		recipients.push($scope.user.userName);
+		feedbackEmailObj['recipients'] = recipients;
+		
+		// add both records
+		feedbackEmailObj['emailText'] += recordToText($scope.record1);
+		feedbackEmailObj['emailText'] += "<hr>";
+		feedbackEmailObj['emailText'] += recordToText($scope.record2);
+		feedbackEmailObj['emailText'] += "<hr>";
+		
+		// add list of discrepancies
+		feedbackEmailObj['emailText'] += "<strong>Conflict Report</strong><br><br>";
+		
+		if ($scope.validationResult.errors.length > 0) {
+			feedbackEmailObj['emailText'] += "Errors<br>";
+			feedbackEmailObj['emailText'] += "<ul>";
+			for (var i = 0; i < $scope.validationResult.errors.length; i++) {
+				feedbackEmailObj['emailText'] += "<li>" + $scope.validationResult.errors[i] + "</li>";
+			}
+			feedbackEmailObj['emailText'] += "</ul>";
+		}
+		
+		if ($scope.validationResult.warnings.length > 0) {
+			feedbackEmailObj['emailText'] += "Warnings<br>";
+			feedbackEmailObj['emailText'] += "<ul>";
+			for (var i = 0; i < $scope.validationResult.warnings.length; i++) {
+				feedbackEmailObj['emailText'] += "<li>" + $scope.validationResult.warnings[i] + "</li>";
+			}
+			feedbackEmailObj['emailText'] += "</ul>";
+		}
+		
+		// make the api call
+		$rootScope.glassPane++;
+		$http({
+			url: root_workflow + "project/id/" + $scope.project.id + "/user/id/" + $scope.user.userName + "/sendFeedback",
+			dataType: "json",
+			data: feedbackEmailObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+			$rootScope.glassPane--;
+			$scope.discrepancySuccessMessage += "Email successfully sent to " + $scope.user.name + ". \n";
+		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		    $scope.discrepancyErrorMessage += "Failed to send email to " + $scope.user.name + ". \n";
+		});
+		
+		// send email to owner of first record
+		feedbackEmailObj = angular.copy(baseFeedbackEmailObj);
+		
+		// add first records
+		feedbackEmailObj['emailText'] += recordToText($scope.record1);
+		feedbackEmailObj['emailText'] += "<hr>";
+		
+		recipients = new Array();
+		recipients.push($scope.record1.owner.userName);
+		feedbackEmailObj['recipients'] = recipients;
+		
+		// make the api call
+		$rootScope.glassPane++;
+		$http({
+			url: root_workflow + "project/id/" + $scope.project.id + "/user/id/" + $scope.user.userName + "/sendFeedback",
+			dataType: "json",
+			data: feedbackEmailObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+			$rootScope.glassPane--;
+			$scope.discrepancySuccessMessage += "Email successfully sent to " + $scope.record1.owner.name + ". \n";
+		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		    $scope.discrepancyErrorMessage += "Failed to send email to " + $scope.record1.owner.name + ". \n";
+		});
+		
+		// send email to owner of second record, if it exists
+		if ($scope.record2 != null) {
+			feedbackEmailObj = angular.copy(baseFeedbackEmailObj);
+			
+			recipients = new Array();
+			recipients.push($scope.record2.owner.userName);
+			feedbackEmailObj['recipients'] = recipients;
+			
+			// add first records
+			feedbackEmailObj['emailText'] += recordToText($scope.record2);
+			feedbackEmailObj['emailText'] += "<hr>";
+			
+			// make the api call
+			$rootScope.glassPane++;
+			$http({
+				url: root_workflow + "project/id/" + $scope.project.id + "/user/id/" + $scope.user.userName + "/sendFeedback",
+				dataType: "json",
+				data: feedbackEmailObj,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+				$scope.discrepancySuccessMessage += "Email successfully sent to " + $scope.record1.owner.name + "\n";
+			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
+			    $rootScope.handleHttpError(data, status, headers, config);
+			    $scope.discrepancyErrorMessage += "Failed to send email to " + $scope.record1.owner.name + "\n";
+			});
+		}
+	};
+	
+	function recordToText(record) {
+		
+		var recordText = '';
+		var entries = getEntriesByGroup(record); // ensure the entries are sorted correctly
+		
+		recordText += "Record " + record.id + "<br>";
+		recordText += "Owner: " + record.owner.name + "<br><br>";
+		
+		// for each group
+		// NOTE:  group 0 is by definition empty
+		for (var i = 1; i < entries.length; i++) {
+			
+			var groupEntries = entries[i];
+			
+			recordText += "Group "+ i + "<br>";
+			
+			// for each entry in group
+
+			for (var j = 0; j < groupEntries.length; j++) {
+				
+				var entry = groupEntries[j];
+				console.debug("adding entry: ", entry);
+			
+				recordText += " (" + j + ") " + entry.targetId + " - " + entry.targetName + "<br>";
+				if ($scope.project.ruleBased == true)
+					recordText += "      RULE:     " + entry.rule + "<br>";
+				if (entry.mapRelation != null) 
+					recordText += "      RELATION: " + entry.mapRelation.name + "<br>";
+				if (entry.mapAdvice.length != 0) {
+					recordText += "      ADVICES:  ";
+					
+					for (var k = 0; k < entry.mapAdvice.length; k++) {
+						if (k>0)
+							recordText += "                ";
+						recordText += entry.mapAdvice[k].name + "<br>";	
+					};
+				}
+			};
+		};
+		
+		recordText += "<br>";
+		
+		// add the principles
+		if (record.mapPrinciple.length > 0) {
+			
+			recordText += "Map Principles Used:" + "<br>";
+			
+			for (var i = 0; i < record.mapPrinciple.length; i++) {
+				recordText += "  " + record.mapPrinciple[i].principleId + ": " + record.mapPrinciple[i].name + "<br>";
+			}
+			
+			recordText += "<br>";
+		}
+		
+		// add the notes
+		if (record.mapNote.length > 0) {
+			
+			recordText += "Notes:" + "<br>";
+			
+			for (var i = 0; i < record.mapNote.length; i++) {
+				recordText += "   [" + record.mapNote[i].user.userName + "] " + record.mapNote[i].note + "<br>";
+			}
+			
+			recordText += "<br>";
+		}
+		
+		// check if flagged for map lead
+		if (record.flagForMapLeadReview == true) {
+			recordText += "<strong>Flagged for Map Lead Review</strong>" + "<br>";
+		}
+		
+		console.debug(recordText);
+
+		return recordText;
+	};
+	
+	function getEntriesByGroup(record) {
+
+		console.debug("Initializing map entries -- " + record.mapEntry.length + " found");
+		console.debug(record.mapEntry);
+		
+		var entries = new Array();
+		entries.push(new Array()); // zeroth group is left empty
+
+		// if no group structure, simply copy and sort
+		if ($scope.project.groupStructure == false) {
+			entries.push(sortByKey(record.mapEntry, 'mapPriority'));
+
+			// otherwise, initialize group arrays
+		} else {
+
+			console.debug("Initializing entries");
+			
+			// get the total number of groups
+			var maxGroup = 1;  // default
+			for (var i = 0; i < record.mapEntry.length; i++) {
+				if (record.mapEntry[i].mapGroup > maxGroup) 
+					maxGroup = record.mapEntry[i].mapGroup;
+			}
+			
+			// initialize the group/entry array
+			entries = new Array(maxGroup);
+			for (var i = 0; i <= maxGroup; i++)
+				entries[i] = new Array();
+			
+			console.debug("Existing entries: ");
+
+			// cycle over the entries and assign to group bins
+			for (var i=0; i < record.mapEntry.length; i++) {
+				entries[record.mapEntry[i].mapGroup].push(record.mapEntry[i]);
+			}
+
+			// cycle over group bins and sort contents by map priority
+			for (var i=0; i< entries.length; i++) {
+				entries[i] = sortByKey(entries[i], 'mapPriority');
+			}
+		}
+		
+		return entries;
+	};
 
 	
 	// function to return trusted html code (for advice content)
