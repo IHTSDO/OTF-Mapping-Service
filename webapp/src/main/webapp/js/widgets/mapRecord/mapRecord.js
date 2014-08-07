@@ -1263,6 +1263,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 		var tempEntries = angular.copy($scope.entries);
 		$scope.entries = new Array();
+		$scope.entries.push(new Array()); // add empty group for 0, as index = group number
 		
 		// find the group by first matching entry
 		for (var i = 1; i < tempEntries.length; i++) { // first one is always empty, null group
@@ -1270,6 +1271,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			console.debug("Checking group " + i + " of " + tempEntries.length, group[0].localId, tempEntries[i][0].localId);
 			
 			if (group[0].localId != tempEntries[i][0].localId) {
+				
 				console.debug("Keeping group");
 				$scope.entries.push(tempEntries[i]);
 			} else {
