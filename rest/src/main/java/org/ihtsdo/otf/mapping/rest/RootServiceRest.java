@@ -183,6 +183,7 @@ public class RootServiceRest {
 		m_text.append("Reporting lead: " + userError.getMapUserReporting().getName()).append("\n");
 		m_text.append("Comment: " + userError.getNote()).append("\n");
 		m_text.append("Reporting date: " + userError.getTimestamp()).append("\n\n");
+		// TODO: the base url here can not be hardcoded, won't work in dev and uat
 		m_text.append("Record URL: https://mapping.snomedtools.org/index.html#/record/recordId/" + userError.getMapRecord().getId());
 		
 

@@ -529,8 +529,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}
 
 		});
-		
-		$scope.closeConceptBrowser();
 	};
 	
 	$scope.clearMapRecord = function() {
@@ -1414,11 +1412,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 
     $scope.openConceptBrowser = function() {
-    	$scope.window = $window.open($scope.getBrowserUrl());
+    	window.open($scope.getBrowserUrl(), "browserWindow");
     };
     
-    $scope.closeConceptBrowser = function() {
-    	if ($scope.window != null)
-    	$scope.window.close();
-    };
 });
