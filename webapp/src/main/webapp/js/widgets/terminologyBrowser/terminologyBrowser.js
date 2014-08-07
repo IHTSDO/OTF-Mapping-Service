@@ -101,6 +101,29 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 	});	*/
 
+	
+	/**
+	 * Helper function to ensure all the collapsible truncated information is initially not expanded
+	 */
+	function initTruncationWells(node) {
+		
+		console.debug("initializing truncation wells");
+		
+		// if the first time this has been viewed, close the truncation wells
+		for (var i = 0; i < node.descGroups.length; i++) {
+			console.debug(node.descGroups[i]);
+			for (var j = 0; j < node.descGroups[i].treePositionDescriptions.length; j++) {
+				
+				if (node.descGroups[i].treePositionDescriptions[j].isCollapsed == null || node.descGroups[i].treePositionDescriptions[j].isCollapsed == undefined) {
+					
+					console.debug("Set truncation well to false for " + node.descGroups[i].treePositionDescriptions[j].name);
+					
+					node.descGroups[i].treePositionDescriptions[j].isCollapsed = true;
+				}
+			}
+		}
+		
+	}
 		
 
 	// function to get the root nodes
@@ -240,7 +263,10 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		for (var i = 0; i < treePositions.length; i++) {
 			
 			console.debug("Expanding for ", treePositions[i]);
-
+			
+			// initialize the truncation wells
+			initTruncationWells(treePositions[i]);
+			
 			// if children have been loaded, expand
 			if (treePositions[i].children.length > 0) {
 				treePositions[i].isOpen = true;
@@ -327,8 +353,11 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 
 	// function for toggling retrieval and display of concept details
 	$scope.getConceptDetails = function(node) {
+		
 
-
+		// initialize truuncation wells
+		initTruncationWells(node);
+		
 		// if called when currently displayed, clear current concept
 		if (node.isConceptOpen == true) {
 			node.isConceptOpen = false;
@@ -469,13 +498,13 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	};
 
 	$scope.truncate = function(string, length) {
-		if (length == null) length = 200;
+		if (length == null) length = 150;
 		if (string.length > length) return string.slice(0, length-3);
 		else return string;
 	};
 
 	$scope.truncated = function(string, length) {
-		if (length == null) length = 200;
+		if (length == null) length = 150;
 		if (string.length > length) 
 			return true;
 		else 
