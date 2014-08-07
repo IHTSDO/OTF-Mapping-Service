@@ -193,6 +193,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					.addError("Project has no group structure but multiple map groups were found.");
 			return validationResult;
 		}
+		
+		/* Verify that groups begin at index 1 and are sequential (i.e. no empty groups) */
+		validationResult.merge(checkMapRecordGroupStructure(mapRecord, entryGroups));
 
 		/*
 		 * Group validation checks â€¢ Verify the last entry in a group is a
@@ -223,19 +226,30 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// entries)
 		validationResult.merge(checkMapRecordAdvices(mapRecord, entryGroups));
 
-		// Validation Check: very that map entry targets OR relationIds are
-		// valid
-		/*
-		 * validationResult.merge(checkMapRecordTargets(mapRecord,
-		 * entryGroups));
-		 */
-
 		return validationResult;
 	}
 
 	// ////////////////////
 	// HELPER FUNCTIONS //
 	// ////////////////////
+	
+	public ValidationResult checkMapRecordGroupStructure(MapRecord mapRecord, Map<Integer, List<MapEntry>> entryGroups) {
+		
+		ValidationResult validationResult = new ValidationResultJpa();
+		
+		// get the list of groups
+		Set<Integer> mapGroups = entryGroups.keySet();
+		
+		// cycle over the expected group numbers
+		for (int i = 0; i < mapGroups.size(); i++) {
+			if (!mapGroups.contains(i)) {
+				validationResult
+				.addError("Group " + i + " is empty");
+			}
+		}
+		
+		return validationResult;
+	}
 
 	// ///////////////////////////////////////////////////////
 	// Map Record Validation Checks and Helper Functions
