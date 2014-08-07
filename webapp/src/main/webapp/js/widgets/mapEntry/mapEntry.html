@@ -18,7 +18,7 @@
       
       
 		
-      <td style="vertical-align: top; padding: 5px;">
+      <td style="padding: 5px;">
       {{project.destinationTerminology}}, <input style="width:125px;" id="targetIdField" placeholder="No Target Selected" ng-blur="getValidTarget(entry.targetId)" ng-model="entry.targetId" />
           <button ng-click="clearTargetConcept(entry)">Clear</button><br>
           <span style="color:red" ng-show="getValidTargetError != null">{{getValidTargetError}}</span>
