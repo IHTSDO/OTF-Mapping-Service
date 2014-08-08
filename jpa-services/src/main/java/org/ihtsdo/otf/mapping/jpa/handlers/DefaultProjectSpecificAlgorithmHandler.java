@@ -241,10 +241,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		Set<Integer> mapGroups = entryGroups.keySet();
 		
 		// cycle over the expected group numbers
-		for (int i = 0; i < mapGroups.size(); i++) {
+		for (int i = 1; i < mapGroups.size(); i++) {
 			if (!mapGroups.contains(i)) {
 				validationResult
-				.addError("Group " + i + " is empty");
+				.addWarning("Group " + i + " is empty -- this will be fixed in QA at a later stage");
 			}
 		}
 		
