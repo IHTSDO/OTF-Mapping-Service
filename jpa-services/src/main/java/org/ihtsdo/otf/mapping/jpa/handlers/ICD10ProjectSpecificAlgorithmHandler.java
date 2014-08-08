@@ -283,14 +283,13 @@ DefaultProjectSpecificAlgorithmHandler {
 				contentService.getConcept(terminologyId,
 						mapProject.getDestinationTerminology(),
 						mapProject.getDestinationTerminologyVersion());
-
+		
+		contentService.close();
 		if (concept == null) {
-			contentService.close();
 			return false;
 		}
 
-		// otherwise, return true
-		contentService.close();
+		// otherwise, return true		
 		return true;
 	}
 
