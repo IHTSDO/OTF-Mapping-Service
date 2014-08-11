@@ -47,8 +47,12 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 		}
 	});
 	
-	$scope.retrieveEditedWork = function(page) {
+	$scope.retrieveEditedWork = function(page, queryTerms) {
 
+		console.debug("Retrieving edited work", page, queryTerms);
+		
+		if (queryTerms == undefined) queryTerms = null;
+		
 		// set the page
 		$scope.editedRecordsPage = page;
 		 
@@ -57,7 +61,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 					{"startIndex": (page-1)*$scope.recordsPerPage,
 			 	 	 "maxResults": $scope.recordsPerPage, 
 			 	 	 "sortField":  null,
-			 	 	 "queryRestriction": null};  
+			 	 	 "queryRestriction": queryTerms};  
 
 	  	$rootScope.glassPane++;
 

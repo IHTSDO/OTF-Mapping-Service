@@ -35,7 +35,7 @@ public class UserErrorImpl implements UserError {
 	private MapUser userReportingError;
 	
 	/** The map record. */
-	private MapRecord mapRecord;
+	private Long mapRecordId;
 	
 	
   /**
@@ -144,16 +144,16 @@ public class UserErrorImpl implements UserError {
 	 * @see org.ihtsdo.otf.mapping.model.UserError#getMapRecord()
 	 */
 	@Override
-	public MapRecord getMapRecord() {
-		return mapRecord;
+	public Long getMapRecordId() {
+		return mapRecordId;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.UserError#setMapRecord(org.ihtsdo.otf.mapping.model.MapRecord)
 	 */
 	@Override
-	public void setMapRecord(MapRecord mapRecord) {
-		this.mapRecord = mapRecord;
+	public void setMapRecordId(Long mapRecordId) {
+		this.mapRecordId = mapRecordId;
 	}
 
 
