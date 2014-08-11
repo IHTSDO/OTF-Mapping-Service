@@ -95,19 +95,21 @@ public interface UserError {
    */
   public String getMapError();
   
-  /**
-   * Returns the map record.
-   * 
-   * @return the map record
-   */
-  public MapRecord getMapRecord();
+  
 
   /**
-   * Sets the map record.
-   * 
-   * @param mapRecord the map record
+   * Sets the map record id.
+   *
+   * @param mapRecordId the new map record id
    */
-  public void setMapRecord(MapRecord mapRecord);
+  public void setMapRecordId(Long mapRecordId);
+
+  /**
+   * Gets the map record id.
+   *
+   * @return the map record id
+   */
+  public Long getMapRecordId();
   
   
 

@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.FeedbackEmail;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.UserError;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -161,8 +162,9 @@ public class RootServiceRest {
 	 * Send user error email.
 	 *
 	 * @param userError the user error
+	 * @throws Exception 
 	 */
-	public void sendUserErrorEmail(UserError userError) {
+	public void sendUserErrorEmail(UserError userError) throws Exception {
 		
 		Properties props = new Properties();
 		props.put("mail.smtp.user", m_from);
@@ -172,19 +174,22 @@ public class RootServiceRest {
 		props.put("mail.smtp.starttls.enable", "true");
 		props.put("mail.smtp.auth", "true");
 		
-		m_subject = "IHTSDO Mapping Tool Editing Error Report: " + userError.getMapRecord().getConceptId();
+		MappingService mappingService = new MappingServiceJpa();
+		MapRecord mapRecord = mappingService.getMapRecord(userError.getMapRecordId());
+		mappingService.close();
+		
+		m_subject = "IHTSDO Mapping Tool Editing Error Report: " + mapRecord.getConceptId();
 		recipients = userError.getMapUserInError().getEmail();
 		
 		m_text = new StringBuffer();
 
-		m_text.append("USER ERROR on " + userError.getMapRecord().getConceptId() + ": "
-				 + userError.getMapRecord().getConceptName()).append("\n\n");
+		m_text.append("USER ERROR on record " + userError.getMapRecordId()).append("\n\n");
 		m_text.append("Error type: " + userError.getMapError()).append("\n");
 		m_text.append("Reporting lead: " + userError.getMapUserReporting().getName()).append("\n");
 		m_text.append("Comment: " + userError.getNote()).append("\n");
 		m_text.append("Reporting date: " + userError.getTimestamp()).append("\n\n");
 		// TODO: the base url here can not be hardcoded, won't work in dev and uat
-		m_text.append("Record URL: https://mapping.snomedtools.org/index.html#/record/recordId/" + userError.getMapRecord().getId());
+		m_text.append("Record URL: https://mapping.snomedtools.org/index.html#/record/recordId/" + userError.getMapRecordId());
 		
 
 		try {

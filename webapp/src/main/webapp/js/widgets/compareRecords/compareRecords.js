@@ -477,7 +477,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 						"timestamp": new Date(),
 						"mapUserReporting": $scope.user,
 						"mapUserInError": recordInError.owner,
-						"mapRecord": recordInError
+						"mapRecordId": recordInError.id
 					  };
 			$http({						
 				url: root_mapping + "error/add",

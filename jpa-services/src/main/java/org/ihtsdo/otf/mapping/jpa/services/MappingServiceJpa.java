@@ -19,6 +19,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.Version;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
@@ -862,6 +863,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		if (localPfsParameter.getSortField() != null) {
 			query.addOrder(AuditEntity.property(
 					localPfsParameter.getSortField()).asc());
+		
 			// otherwise, sort by last modified (descending)
 		} else {
 			query.addOrder(AuditEntity.property("lastModified").desc());
@@ -873,6 +875,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					.setMaxResults(localPfsParameter.getMaxResults());
 
 		}
+		
+		// if query terms specified, add
+		if (pfsParameter.getQueryRestriction() != null) {
+			String[] queryTerms = pfsParameter.getQueryRestriction().split(" ");
+			query.add(
+					AuditEntity.or(
+							AuditEntity.property("conceptId").in(queryTerms), 
+							AuditEntity.property("conceptName").like(pfsParameter.getQueryRestriction(), MatchMode.ANYWHERE)));
+		
+		}
 
 		// execute the query
 		List<MapRecord> editedRecords = query.getResultList();
@@ -881,13 +893,23 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
 		// mapRecordList.setTotalCount(editedRecords.size());
 
-		// handle all lazy initializations
+		// only add one copy
+		// TODO Decide whether or not to requery to get a full page of 10
+		List<MapRecord> uniqueRecords = new ArrayList<>();
 		for (MapRecord mapRecord : editedRecords) {
+			boolean recordExists = false;
+			for (MapRecord mr : uniqueRecords) {
+				if (mr.getId().equals(mapRecord.getId()))
+					recordExists = true;
+			}
+			if (recordExists == false) uniqueRecords.add(mapRecord);
+		}
+		
+		// handle all lazy initializations
+		for (MapRecord mapRecord : uniqueRecords) {
 			handleMapRecordLazyInitialization(mapRecord);
 		}
-
-		// create the mapRecordList
-		mapRecordList.setMapRecords(editedRecords);
+		mapRecordList.setMapRecords(uniqueRecords);
 		return mapRecordList;
 	}
 
@@ -1681,6 +1703,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	}
 
 	/**
+	 * TODO:  Is this used?  Should require map project id
+	 * 
 	 * Given a concept, returns a list of descendant concepts that have no
 	 * associated map record.
 	 * 
