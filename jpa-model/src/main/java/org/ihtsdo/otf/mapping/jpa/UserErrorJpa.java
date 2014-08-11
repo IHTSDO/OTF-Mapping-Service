@@ -60,8 +60,8 @@ public class UserErrorJpa implements UserError {
 	private MapUser userReportingError;
 	
 	/** The map record. */
-  @ManyToOne(targetEntity = MapRecordJpa.class)
-	private MapRecord mapRecord;
+	@Column(nullable = false)
+	private Long mapRecordId;
 	
   /**
    *  Default constructor.
@@ -174,18 +174,17 @@ public class UserErrorJpa implements UserError {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.UserError#getMapRecord()
 	 */
-  @XmlElement(type = MapRecordJpa.class)
 	@Override
-	public MapRecord getMapRecord() {
-		return mapRecord;
+	public Long getMapRecordId() {
+		return mapRecordId;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.UserError#setMapRecord(org.ihtsdo.otf.mapping.model.MapRecord)
 	 */
 	@Override
-	public void setMapRecord(MapRecord mapRecord) {
-		this.mapRecord = mapRecord;
+	public void setMapRecordId(Long mapRecordId) {
+		this.mapRecordId = mapRecordId;
 	}
 
 }
