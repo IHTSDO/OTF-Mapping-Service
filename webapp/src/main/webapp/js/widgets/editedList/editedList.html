@@ -1,6 +1,7 @@
-<button style:"padding-top:10px;" class="btn btn-sm btn-primary" ng-click="retrieveEditedWork(editedRecordsPage)">Search Work</button>
+<input type="text" id="editQueryInput" ng-model="queryTerms"> <button style:"padding-top:10px;" class="btn btn-sm btn-primary" ng-click="retrieveEditedWork(editedRecordsPage, queryTerms)">Search Work</button>
 
-<img src="img/warning.png" tooltip-placement="top" tooltip="Note:  This feature will be expanded with a variety of search and display functions."></img>
+<img src="img/warning.png" tooltip-placement="top" 
+tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported."></img>
 		.
 
 <ul class="pager"
