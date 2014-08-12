@@ -12,11 +12,11 @@ tooltip="You may search by concept id or terms in the concept's name (e.g. close
     ng-click="retrieveEditedWork(editedRecordsPage+1)"><a>Older &rarr;</a></li>
 </ul>
 
-<accordion close-others="false"> <accordion-group is-open="true">
+<accordion close-others="false">
 	<accordion-group ng-repeat="record in editedRecords">
-	<accordion-heading>Concept {{record.conceptId}}: {{record.conceptName}}</accordion-heading>
+	<accordion-heading>{{record.lastModified | date: 'MM/dd/yyyy'}}: {{record.conceptName}} ({{record.conceptId}})</accordion-heading>
 	
-	<a href="#/record/conceptId/{{record.conceptId}}">View Records</a>
+	<a href="#/record/conceptId/{{record.conceptId}}">View Current Records</a>
 
 	<div otf-map-record-wide record="record" project="focusProject" show-title="false"></div>
 	</accordion-group>
