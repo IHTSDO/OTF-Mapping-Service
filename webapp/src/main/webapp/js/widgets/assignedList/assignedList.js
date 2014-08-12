@@ -96,20 +96,24 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			if (parameters.assignUser.userName === $scope.currentUser.userName) {		
 				
 				if (parameters.assignType === 'concept') {
-					$scope.retrieveAssignedWork($scope.assignedWorkPage, null, $scope.assignedWorkType);
+					$scope.retrieveAssignedWork($scope.assignedWorkPage, null, 'NEW');
 					$scope.setTab(0);
+					$scope.assignedWorkType = 'NEW';
 				
 				} else if (parameters.assignType === 'conflict') {
-					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, null, $scope.assignedConflictType);
+					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, null, 'CONFLICT_NEW');
 					$scope.setTab(1);
+					$scope.assignedConflictType = 'CONFLICT_NEW';
 				} else if (parameters.assignType === 'review') {
-					$scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage, null, $scope.assignedReviewWorkType);
+					$scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage, null, 'REVIEW_NEW');
 					$scope.setTab(2);
+					$scope.assignedReviewWorkType = 'REVIEW_NEW';
 				}
 			} else {
-				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser.userName, $scope.assignedWorkForUserType);
+				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser.userName, 'ALL');
 				$scope.setTab(3);
 				$scope.mapUserViewed = parameters.assignUser;
+				$scope.assignedWorkForUserType = 'ALL';
 			}
 			
 		}
@@ -556,7 +560,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					// call the batch unassign API
 					console.debug("Unassigning concepts (" + terminologyIdsConcepts.length + ")", terminologyIdsConcepts);
 					unassignBatch(mapUser, terminologyIdsConcepts, 'concept');
-					$scope.rootScope--;
+					$rootScope.glassPane--;
 				}).error(function(data, status, headers, config) {
 				  	$rootScope.glassPane--;
 				    $rootScope.handleHttpError(data, status, headers, config);
@@ -599,7 +603,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					console.debug("Unassigning conflicts (" + terminologyIdsConflicts.length + ")", terminologyIdsConflicts);
 					unassignBatch(mapUser, terminologyIdsConflicts, 'conflict');
 					
-					$scope.rootScope--;
+					$rootScope.glassPane--;
 				}).error(function(data, status, headers, config) {
 				  	$rootScope.glassPane--;
 				    $rootScope.handleHttpError(data, status, headers, config);
@@ -640,7 +644,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					console.debug("Unassigning review work (" + terminologyIdsReview.length + ")", terminologyIdsReview);
 					unassignBatch(mapUser, terminologyIdsReview, 'review');
 					
-					$scope.rootScope--;
+					$rootScope.glassPane--;
 					
 					
 				}).error(function(data, status, headers, config) {
