@@ -60,7 +60,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 		var pfsParameterObj = 
 					{"startIndex": (page-1)*$scope.recordsPerPage,
 			 	 	 "maxResults": $scope.recordsPerPage, 
-			 	 	 "sortField":  null,
+			 	 	 "sortField":  'lastModified',
 			 	 	 "queryRestriction": queryTerms};  
 
 	  	$rootScope.glassPane++;

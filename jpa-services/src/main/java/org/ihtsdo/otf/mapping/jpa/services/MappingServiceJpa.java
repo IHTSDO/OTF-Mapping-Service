@@ -862,7 +862,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// if sort field specified
 		if (localPfsParameter.getSortField() != null) {
 			query.addOrder(AuditEntity.property(
-					localPfsParameter.getSortField()).asc());
+					localPfsParameter.getSortField()).desc());
 		
 			// otherwise, sort by last modified (descending)
 		} else {
