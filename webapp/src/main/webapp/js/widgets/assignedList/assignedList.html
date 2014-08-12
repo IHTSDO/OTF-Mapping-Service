@@ -42,8 +42,18 @@
 	<thead>
 		<tr>
 			<th style="width: 3%; padding: 5px;"></th>
+			
+			
 			<th style="width: 14%; padding: 5px;">Id</th>
-			<th style="width: 80%; padding: 5px;">Preferred Name</th>
+			
+			<!--  Extra column if on editing in progress page for dashboard finish commands -->
+			<th style="width: 3%; padding: 5px;">
+				<a title="Finish All Work" ng-click="openFinishAllRecordsModal()">	
+					<i class="glyphicon glyphicon-check"></i>
+				</a>
+			</th>	
+			
+			<th style="width: 75%; padding: 5px;">Preferred Name</th>
 			<th style="width: 3%; padding: 5px;"><a title="Return All Work"
 				ng-click="openUnassignModal(currentUser, 'concepts')"><i
 					class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
@@ -65,7 +75,10 @@
 				ng-show="result.terminologyVersion === 'EDITING_IN_PROGRESS'"> <i
 					ng-click="goEditRecord(result.id)"
 					class="glyphicon glyphicon-pushpin"></i>
-			</a> <!-- Display a pencil if this record has not yet been edited --> <a
+			</a> 
+			
+			
+			<!-- Display a pencil if this record has not yet been edited --> <a
 				title='Start work on this concept'
 				ng-show="result.terminologyVersion === 'NEW'"> <i
 					ng-click="goEditRecord(result.id)"
@@ -89,9 +102,28 @@
 
 
 			</td>
-
-			<td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
-			<td style="width: 80%; padding: 5px;">{{result.value}}</td>
+			
+			
+			<td style="width: 14%; padding: 5px;">
+			
+			{{result.terminologyId}}
+			
+			
+			
+			</td>
+			
+			<td style="width: 3%; padding: 5px;">
+				<!-- Display a checkmark if this record has previously been edited -->
+				<a style:"display:inline" title='Finish this concept' ng-show="result.terminologyVersion === 'EDITING_IN_PROGRESS'"> 
+					<i ng-click="openFinishSingleRecordModal(result)" class="glyphicon glyphicon-ok"></i>
+				</a>
+			</td>
+			
+			<td style="width: 75%; padding: 5px;">{{result.value}}</td>
+			
+			
+			
+			
 			<td style="width: 3%; padding: 5px;"><a title="Return"
 				ng-click="unassignWork(result, currentUser)"><i
 					class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
