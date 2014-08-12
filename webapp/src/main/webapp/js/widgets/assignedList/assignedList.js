@@ -785,4 +785,188 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			// redirect page
 			$location.path(path);
 	};
+	
+	$scope.openFinishSingleRecordModal = function(searchResult) {
+		
+		var modalInstance = $modal.open({
+			templateUrl: 'js/widgets/assignedList/assignedListFinish.html',
+			controller: FinishAllEditedWorkModalCtrl,
+			resolve: {
+				records : function() {
+					// create a single element array to match format of All Record Open
+					var searchResults = new Array();
+					searchResults.push(searchResult);
+					return searchResults;
+				},
+				project : function() {
+					return $scope.focusProject; },
+				user:     function() { return $scope.currentUser; }
+			}
+		});
+	  	
+	  	modalInstance.result.then(function() {  	
+	  		console.debug("User closed finish modal");
+	  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Done
+	  	}, function() {  	
+	  		console.debug("Finish modal dismissed");
+	  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Cancel/Esc
+	  	});
+		
+	};
+	
+	$scope.openFinishAllRecordsModal = function() {
+		
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": -1,
+			 	 	 "maxResults": -1, 
+			 	 	 "sortField": null,
+			 	 	 "queryRestriction": 'EDITING_IN_PROGRESS'};
+
+	  	$rootScope.glassPane++;
+
+		$http({
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/user/id/" 
+			+ $scope.currentUser.userName 
+			+ "/query/null"
+			+ "/assignedConcepts",
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
+		  	var modalInstance = $modal.open({
+				templateUrl: 'js/widgets/assignedList/assignedListFinish.html',
+				controller: FinishAllEditedWorkModalCtrl,
+				size: 'lg',
+				resolve: {
+					records:  function() { return data.searchResult; },
+					project:  function() { return $scope.focusProject; },
+					user:     function() { return $scope.currentUser; }
+				}
+			});
+		  	
+		  	modalInstance.result.then(function() {  	
+		  		console.debug("User closed finish modal");
+		  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Done
+		  	}, function() {  	
+		  		console.debug("Finish modal dismissed");
+		  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Cancel/Esc
+		  	});
+			
+			
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
+		
+
+		
+	};
+	
+	var FinishAllEditedWorkModalCtrl = function($scope, $modalInstance, user, project, records) { 
+		
+		console.debug("Entered modal control", user, project, records);
+		$scope.user = user;
+		$scope.project = project;
+		$scope.records = records;
+		$scope.index = 1;
+		
+		
+		$scope.selectNextRecord = function() {
+			$scope.index = $scope.index == $scope.records.length ? 1 : $scope.index + 1;
+			$scope.loadRecord();
+		};
+		
+		// declare the function
+		$scope.loadRecord = function() {
+			
+			$scope.validationResult = null;
+			
+			console.debug("Selecting record", $scope.index);
+			
+			// get id from list
+			var recordId = $scope.records[$scope.index-1].id;
+			
+			console.debug("Retrieving record", recordId);
+			
+			
+			$http({
+				url: root_mapping + "record/id/" + recordId,
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+			  
+			  	$scope.currentRecord = data;
+			  	
+			  	if ($scope.currentRecord.workflowStatus === 'EDITING_IN_PROGRESS')
+			  		$scope.currentRecord.isFinished = false;
+			  	else $scope.currentRecord.isFinished = true;
+			  	
+			  	console.debug("Validating the map record");
+				// validate the record
+				$http({
+					url: root_mapping + "validation/record/validate",
+					dataType: "json",
+					data: $scope.currentRecord,
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					}
+				}).success(function(data) {
+					$rootScope.glassPane--;
+					console.debug("validation results:");
+					console.debug(data);
+					$scope.validationResult = data;
+				}).error(function(data, status, headers, config) {
+					$rootScope.glassPane--;
+					$scope.validationResult = null;
+					$scope.recordError = "Unexpected error reported by server.  Contact an admin.";
+					console.debug("Failed to validate map record");
+					$rootScope.handleHttpError(data, status, headers, config);
+				});
+				
+			  	
+			  	
+			}).error(function(data, status, headers, config) {
+			  	$rootScope.glassPane--;
+			    $scope.error = "Could not retrieve record";
+			});	
+		}
+		
+		$scope.finishCurrentRecord = function() {
+			$rootScope.glassPane++;
+			$http({
+				url: root_workflow + "finish",
+				dataType: "json",
+				data: $scope.currentRecord,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+				$scope.currentRecord.isFinished = true;
+			}).error(function(data, status, headers, config) {
+			  	$rootScope.glassPane--;
+			    $scope.error = "Error saving record";
+			});
+			
+		};
+
+		$scope.done = function() {
+			$modalInstance.close();
+		};
+		
+		// get the first record
+		$scope.loadRecord($scope.index);
+	};
 });

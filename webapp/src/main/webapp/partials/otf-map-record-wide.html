@@ -1,4 +1,4 @@
-<h4 ng-show="showTitle == true">{{project.sourceTerminology}} concept {{record.conceptId}}: {{record.conceptName}}</h4>
+<h4 ng-show="showTitle == true">{{record.conceptName}}<br>{{project.sourceTerminology}} concept {{record.conceptId}}</h4>
 <div ng-show="record.flagForLeadReview == true" style="color:red">Flagged For Lead Review</div>
 <strong>Map Entries</strong>
 <div style="padding:0px; border-bottom:thin solid grey;" ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
