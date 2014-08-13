@@ -968,24 +968,36 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			MapRecord mapRecord = null;
 			for (Long mapRecordId : tr.getMapRecordIds()) {
 
-				MapRecord mr = mappingService.getMapRecord(mapRecordId);
-				if (mr.getOwner().equals(mapUser))
-					mapRecord = mr;
+				try {
+					MapRecord mr = mappingService.getMapRecord(mapRecordId);
+					
+					// DMO ERROR:  This is where the null pointer exception is happening
+					// Caused by the successful delete of some specialist records, but not others
+					// due to the UserError/MapRecord constraint problem
+					if (mr.getOwner().equals(mapUser))
+						mapRecord = mr;
+				} catch (Exception e) {
+					// Search for this in catalina.out
+					Logger.getLogger(WorkflowService.class).error("ERROR_CAPTURE:  findAssignedConflicts, MapRecord  " + mapRecordId);
+					e.printStackTrace();
+				}
 			}
 
 			if (mapRecord == null) {
-				throw new Exception(
+				// TODO Return this to throw a new exception once all the DMO ERRORS have been
+				Logger.getLogger(WorkflowService.class).error(
 						"Failed to retrieve assigned conflicts:  no map record found for user "
 								+ mapUser.getUserName() + " and concept "
 								+ tr.getTerminologyId());
+			} else {
+				result.setTerminologyId(mapRecord.getConceptId());
+				result.setValue(mapRecord.getConceptName());
+				result.setTerminology(mapRecord.getLastModified().toString());
+				result.setTerminologyVersion(mapRecord.getWorkflowStatus()
+						.toString());
+				result.setId(mapRecord.getId());
+				assignedConflicts.addSearchResult(result);
 			}
-			result.setTerminologyId(mapRecord.getConceptId());
-			result.setValue(mapRecord.getConceptName());
-			result.setTerminology(mapRecord.getLastModified().toString());
-			result.setTerminologyVersion(mapRecord.getWorkflowStatus()
-					.toString());
-			result.setId(mapRecord.getId());
-			assignedConflicts.addSearchResult(result);
 		}
 		mappingService.close();
 		return assignedConflicts;
