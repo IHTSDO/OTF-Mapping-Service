@@ -194,10 +194,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	public TrackingRecordList getTrackingRecordsForMapProject(
 			MapProject mapProject) throws Exception {
 
-		System.out.println("Getting tracking records at "
-				+ (System.currentTimeMillis() / 1000 - Math.floor(System
-						.currentTimeMillis() / 100000) * 100));
-
 		TrackingRecordListJpa trackingRecordList = new TrackingRecordListJpa();
 		trackingRecordList
 				.setTrackingRecords(manager
@@ -205,10 +201,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 								"select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId")
 						.setParameter("mapProjectId", mapProject.getId())
 						.getResultList());
-
-		System.out.println("Finished getting tracking records at "
-				+ (System.currentTimeMillis() / 1000 - Math.floor(System
-						.currentTimeMillis() / 100000) * 100));
 
 		return trackingRecordList;
 	}
@@ -434,9 +426,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			MapUser mapUser, String query, PfsParameter pfsParameter)
 			throws Exception {
 
-		System.out.println("Testing new findAvailableWork with query: '"
-				+ query + "'");
-
 		SearchResultList availableWork = new SearchResultListJpa();
 
 		FullTextEntityManager fullTextEntityManager = Search
@@ -474,8 +463,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		}
 
-		System.out.println("FindAvailableWork query: " + full_query);
-
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
 		luceneQuery = queryParser.parse(full_query);
@@ -496,8 +483,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		if (pfsParameter.getSortField() != null
 				&& !pfsParameter.getSortField().isEmpty()) {
 			
-			System.out.println("Sorting by field: " + pfsParameter.getSortField());
-
 			// check that specified sort field exists on Concept and is
 			// a string
 			if (TrackingRecordJpa.class
@@ -536,9 +521,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			MapUser mapUser, String query, PfsParameter pfsParameter)
 			throws Exception {
 
-		System.out.println("Testing new findAvailableWork with query: '"
-				+ query + "'");
-
 		SearchResultList availableConflicts = new SearchResultListJpa();
 
 		// TODO This really should be handled in the webapp
@@ -561,8 +543,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
 		full_query += " AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*";
 		full_query += " AND NOT (userAndWorkflowStatusPairs:CONFLICT_NEW_* OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_*)";
-
-		System.out.println("FindAvailableConflicts query: " + full_query);
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
@@ -621,9 +601,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	public SearchResultList findAvailableReviewWork(MapProject mapProject,
 			MapUser mapUser, String query, PfsParameter pfsParameter)
 			throws Exception {
-
-		System.out.println("Testing new findAvailableReviewWork with query: '"
-				+ query + "'");
 
 		SearchResultList availableReviewWork = new SearchResultListJpa();
 
@@ -1667,13 +1644,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			trackingRecord.setDefaultPreferredName(concept
 					.getDefaultPreferredName());
 
-			// set workflow path based on project workflow type
-			if (mapProject.getWorkflowType().equals("CONFLICT_PROJECT"))
-				trackingRecord.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH);
-			else if (mapProject.getWorkflowType().equals("REVIEW_PROJECT"))
-				trackingRecord
-						.setWorkflowPath(WorkflowPath.REVIEW_PROJECT_PATH);
-
 			// get the tree positions for this concept and set the sort key to
 			// the first retrieved
 			TreePositionList treePositionsList = contentService
@@ -1690,6 +1660,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			}
 
 			// add any existing map records to this tracking record
+			Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
 			if (unpublishedRecords.containsKey(trackingRecord
 					.getTerminologyId())) {
 				for (MapRecord mr : unpublishedRecords.get(trackingRecord
@@ -1706,6 +1677,32 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 							.getUserName());
 					trackingRecord.addUserAndWorkflowStatusPair(mr.getOwner()
 							.getUserName(), mr.getWorkflowStatus().toString());
+					
+					// add to the local set for workflow calculation
+					mapRecordsForTrackingRecord.add(mr);
+				}
+			}
+			
+			// check if REVISION record is present
+			boolean revisionRecordPresent = false;
+			for (MapRecord mr : mapRecordsForTrackingRecord) {
+				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+					revisionRecordPresent = true;
+			}
+			
+			// if REVISION found, set to FIX_ERROR_PATH
+			if (revisionRecordPresent == true) {
+				trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
+				
+			// otherwise, set to the WorkflowPath corresponding to the project WorkflowType
+			} else {
+				if (mapProject.getWorkflowType().equals("CONFLICT_PROJECT"))
+					trackingRecord.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH);
+				else if (mapProject.getWorkflowType().equals("REVIEW_PROJECT"))
+					trackingRecord
+							.setWorkflowPath(WorkflowPath.REVIEW_PROJECT_PATH);
+				else {
+					throw new Exception("Could not determine workflow path for records " + trackingRecord.getMapRecordIds().toString());
 				}
 			}
 
