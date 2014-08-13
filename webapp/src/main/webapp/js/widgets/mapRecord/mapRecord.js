@@ -261,8 +261,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			};
 		}
 		
-		return;
-		
 		console.debug("finishMapRecord called with " + returnBack);
 
 		///////////////////////////
