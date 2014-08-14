@@ -123,7 +123,6 @@ public class RootServiceJpa implements RootService {
 			Set<String> indexedClassNames = fullTextEntityManager
 					.getSearchFactory().getStatistics().getIndexedClassNames();
 			for (String indexClass : indexedClassNames) {
-				System.out.println(indexClass);
 				IndexReader indexReader = indexReaderAccessor.open(indexClass);
 				try {
 					for (FieldInfo info : ReaderUtil
@@ -151,7 +150,6 @@ public class RootServiceJpa implements RootService {
 				for (FieldInfo info : ReaderUtil
 						.getMergedFieldInfos(indexReader)) {
 					treePositionFieldNames.add(info.name);
-					System.out.println(info.name);
 				}
 			} finally {
 				indexReaderAccessor.close(indexReader);
