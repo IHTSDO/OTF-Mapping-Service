@@ -381,6 +381,32 @@ public interface WorkflowService {
 	 */
 	public void generateMapperTestingStateBHEKRE(MapProject mapProject) throws Exception;
 
+	/**
+	 * Gets the tracking record for map project and concept.
+	 *
+	 * @param mapProject the map project
+	 * @param terminologyId the terminology id
+	 * @return the tracking record for map project and concept
+	 */
+	public TrackingRecord getTrackingRecordForMapProjectAndConcept(
+			MapProject mapProject, String terminologyId);
+
+	/**
+	 * Check that workflow state for all current records is valid
+	 *
+	 * @param mapProject the map project
+	 * @throws Exception 
+	 */
+	public void computeWorkflowStatusErrors(MapProject mapProject) throws Exception;
+	
+	/**
+	 * Compute untracked map records.
+	 *
+	 * @param mapProject the map project
+	 * @throws Exception the exception
+	 */
+	public void computeUntrackedMapRecords(MapProject mapProject) throws Exception;
+
 	
 
 
