@@ -193,9 +193,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					.addError("Project has no group structure but multiple map groups were found.");
 			return validationResult;
 		}
-		
-		/* Verify that groups begin at index 1 and are sequential (i.e. no empty groups) */
-		validationResult.merge(checkMapRecordGroupStructure(mapRecord, entryGroups));
+
+		/*
+		 * Verify that groups begin at index 1 and are sequential (i.e. no empty
+		 * groups)
+		 */
+		validationResult.merge(checkMapRecordGroupStructure(mapRecord,
+				entryGroups));
 
 		/*
 		 * Group validation checks â€¢ Verify the last entry in a group is a
@@ -232,22 +236,25 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	// ////////////////////
 	// HELPER FUNCTIONS //
 	// ////////////////////
-	
-	public ValidationResult checkMapRecordGroupStructure(MapRecord mapRecord, Map<Integer, List<MapEntry>> entryGroups) {
-		
+
+	public ValidationResult checkMapRecordGroupStructure(MapRecord mapRecord,
+			Map<Integer, List<MapEntry>> entryGroups) {
+
 		ValidationResult validationResult = new ValidationResultJpa();
-		
+
 		// get the list of groups
 		Set<Integer> mapGroups = entryGroups.keySet();
-		
+
 		// cycle over the expected group numbers
 		for (int i = 1; i < mapGroups.size(); i++) {
 			if (!mapGroups.contains(i)) {
 				validationResult
-				.addWarning("Group " + i + " is empty -- this will be fixed in QA at a later stage");
+						.addWarning("Group "
+								+ i
+								+ " is empty -- this will be fixed in QA at a later stage");
 			}
 		}
-		
+
 		return validationResult;
 	}
 
@@ -1069,35 +1076,40 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 			}
 			break;
-			
+
 		case REVIEW_PROJECT_PATH:
-			
-			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("Assigning concept along REVIEW_PROJECT_PATH");
-			
-			if (getWorkflowStatus(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)) {
+
+			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+					.info("Assigning concept along REVIEW_PROJECT_PATH");
+
+			if (getWorkflowStatus(mapRecords).equals(
+					WorkflowStatus.REVIEW_NEEDED)) {
 				// check that one record exists and is not owned by this user
 				if (mapRecords.size() == 1) {
-		/*	
-		 		TODO:  Removed this, see MAP-617
-		  		if (mapRecords.iterator().next().getOwner().equals(mapUser))
-						throw new Exception("  Cannot assign review record, user attempting to review own work");
-		*/		
-					} else {
+					/*
+					 * TODO: Removed this, see MAP-617 if
+					 * (mapRecords.iterator().next().getOwner().equals(mapUser))
+					 * throw new Exception(
+					 * "  Cannot assign review record, user attempting to review own work"
+					 * );
+					 */
+				} else {
 					throw new Exception("  Expected exactly one map record");
 				}
-				
+
 				// set origin id to the existing record
 				mapRecord.addOrigin(mapRecords.iterator().next().getId());
-				
+
 				// set workflow status to review needed
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
 			} else {
-			
+
 				// check that no records exist for this concept
 				if (mapRecords.size() != 0) {
-					throw new Exception("Attempted to assign along the REVIEW_PROJECT_PATH where records already exist");
+					throw new Exception(
+							"Attempted to assign along the REVIEW_PROJECT_PATH where records already exist");
 				}
-				
+
 				// set workflow status to new
 				mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
 			}
@@ -1198,17 +1210,30 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
-		// find the map record this user is assigned to
+		// find the record assigned to this user
 		MapRecord mapRecord = null;
 		for (MapRecord mr : newRecords) {
 			if (mr.getOwner().equals(mapUser)) {
-				mapRecord = mr;
+
+				// if there are multiple records on this tracking record, it
+				// MUST be a dual-role lead record
+				// default behavior: use the most-advanced record, e.g.
+				// CONFLICT_NEW instead of CONFLICT_DETECTED
+				// the specialist-level work is always inaccessible while
+				// lead-level work is assigned
+				if (mapRecord != null) {
+					if (mr.getWorkflowStatus().compareTo(
+							mapRecord.getWorkflowStatus()) > 0)
+						mapRecord = mr;
+				} else {
+					mapRecord = mr;
+				}
 			}
 		}
 
 		// switch on workflow path
 		switch (trackingRecord.getWorkflowPath()) {
-		
+
 		// non legacy path and review project path function identically
 		case NON_LEGACY_PATH:
 		case REVIEW_PROJECT_PATH:
@@ -1318,26 +1343,29 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						"Attempted to unassign a published revision record, but no such previously published record exists!");
 
 			// Case 1: A user decides to abandon fixing an error
-			if (mapRecord.getWorkflowStatus().compareTo(WorkflowStatus.REVIEW_NEEDED) <= 0) {
+			if (mapRecord.getWorkflowStatus().compareTo(
+					WorkflowStatus.REVIEW_NEEDED) <= 0) {
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-				.info("Unassign:  FIX_ERROR_PATH - User unassigning review work");
+						.info("Unassign:  FIX_ERROR_PATH - User unassigning review work");
 
 				MapRecord previousRevisionRecord = getPreviouslyPublishedVersionOfMapRecord(revisionRecord);
-				
+
 				if (previousRevisionRecord == null) {
-					throw new Exception("Could not retrieve previous version of map record, id = " + revisionRecord.getId());
+					throw new Exception(
+							"Could not retrieve previous version of map record, id = "
+									+ revisionRecord.getId());
 				} else {
-					Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-						.info("Unassign:  FIX_ERROR_PATH - Reverting to previous record: " + previousRevisionRecord.toString());
+					Logger.getLogger(
+							DefaultProjectSpecificAlgorithmHandler.class).info(
+							"Unassign:  FIX_ERROR_PATH - Reverting to previous record: "
+									+ previousRevisionRecord.toString());
 
 				}
-				
+
 				newRecords.remove(mapRecord);
 				newRecords.remove(revisionRecord);
-				newRecords
-						.add(previousRevisionRecord);
-
+				newRecords.add(previousRevisionRecord);
 
 				// Case 2: A lead unassigns themselves from reviewing a fixed
 				// error
@@ -1395,7 +1423,20 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		MapRecord mapRecord = null;
 		for (MapRecord mr : newRecords) {
 			if (mr.getOwner().equals(mapUser)) {
-				mapRecord = mr;
+
+				// if there are multiple records on this tracking record, it
+				// MUST be a dual-role lead record
+				// default behavior: use the most-advanced record, e.g.
+				// CONFLICT_NEW instead of CONFLICT_DETECTED
+				// the specialist-level work is always inaccessible while
+				// lead-level work is assigned
+				if (mapRecord != null) {
+					if (mr.getWorkflowStatus().compareTo(
+							mapRecord.getWorkflowStatus()) > 0)
+						mapRecord = mr;
+				} else {
+					mapRecord = mr;
+				}
 			}
 		}
 		if (mapRecord == null)
@@ -1416,8 +1457,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// set this record to EDITING_DONE
 				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 
-				// check if two specialists have completed work (lowest workflow status is EDITING_DONE)
-				if (getLowestWorkflowStatus(mapRecords).compareTo(WorkflowStatus.EDITING_DONE) >= 0
+				// check if two specialists have completed work (lowest workflow
+				// status is EDITING_DONE)
+				if (getLowestWorkflowStatus(mapRecords).compareTo(
+						WorkflowStatus.EDITING_DONE) >= 0
 						&& mapRecords.size() == 2) {
 
 					Logger.getLogger(
@@ -1458,9 +1501,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						// this user
 						newRecords.clear();
 						newRecords.add(newRecord);
-						
-						Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-								"finishEditing - NON_LEGACY_PATH - Creating READY_FOR_PUBLICATION record " + newRecord.toString());
+
+						Logger.getLogger(
+								DefaultProjectSpecificAlgorithmHandler.class)
+								.info("finishEditing - NON_LEGACY_PATH - Creating READY_FOR_PUBLICATION record "
+										+ newRecord.toString());
 
 					} else {
 
@@ -1469,10 +1514,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 								.info("NON_LEGACY_PATH - Conflicts detected");
 
 						// conflict detected, change workflow status of all
-						// records (if not a lead's existing conflict record) and
+						// records (if not a lead's existing conflict record)
+						// and
 						// update records
 						for (MapRecord mr : newRecords) {
-							if (mr.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) <= 0)
+							if (mr.getWorkflowStatus().compareTo(
+									WorkflowStatus.CONFLICT_DETECTED) <= 0)
 								mr.setWorkflowStatus(WorkflowStatus.CONFLICT_DETECTED);
 						}
 					}
@@ -1517,90 +1564,100 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// case 3: A lead is finished reviewing a record
 			} else if (getWorkflowStatus(mapRecords).equals(
 					WorkflowStatus.REVISION)) {
-				
+
 				// check if only two records
 				if (mapRecords.size() != 2)
-					throw new Exception("Finish editing on NON_LEGACY_PATH, REVISION failed:  required exactly two records");
-				
+					throw new Exception(
+							"Finish editing on NON_LEGACY_PATH, REVISION failed:  required exactly two records");
+
 				MapRecord reviewRecord = null;
 				MapRecord editRecord = null;
 				for (MapRecord mr : mapRecords) {
 					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
 						reviewRecord = mr;
-					else if (mr.getWorkflowStatus().compareTo(WorkflowStatus.REVIEW_NEEDED) <= 0) {
+					else if (mr.getWorkflowStatus().compareTo(
+							WorkflowStatus.REVIEW_NEEDED) <= 0) {
 						editRecord = mr;
 					}
 				}
-				
+
 				// remove the revision record
 				newRecords.remove(reviewRecord);
-				
+
 				// set the edited record to ready for publication
-				editRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-				
-				
+				editRecord
+						.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+
 			} else {
 				throw new Exception(
 						"finishEditing failed! Invalid workflow status combination on record(s)");
 			}
 
 			break;
-			
+
 		case REVIEW_PROJECT_PATH:
 
-			switch(mapRecord.getWorkflowStatus()) {
-			
-			// case 1:  specialist finishes a map record
+			switch (mapRecord.getWorkflowStatus()) {
+
+			// case 1: specialist finishes a map record
 			case REVIEW_NEEDED:
 			case EDITING_DONE:
 			case EDITING_IN_PROGRESS:
 			case NEW:
-				
-				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("FinishEditing: REVIEW_PROJECT_PATH, Specialist level work");
-				
+
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+						.info("FinishEditing: REVIEW_PROJECT_PATH, Specialist level work");
+
 				// check assumptions
 				// - should only be one record
 				if (mapRecords.size() != 1) {
-					throw new Exception("FINISH called at initial editing level on REVIEW_PROJECT_PATH where more than one record exists");
+					throw new Exception(
+							"FINISH called at initial editing level on REVIEW_PROJECT_PATH where more than one record exists");
 				}
-				
-				// mark as EDITING_DONE
+
+				// mark as REVIEW_NEEDED
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
-				
+
 				break;
-	
+
 			case REVIEW_IN_PROGRESS:
 			case REVIEW_NEW:
-				
-				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info("FinishEditing: REVIEW_PROJECT_PATH, Lead level work");
-				
-				
+
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+						.info("FinishEditing: REVIEW_PROJECT_PATH, Lead level work");
+
 				// check assumptions
-				// - should be two map records, this one and one marked REVIEW_NEEDED
-				
+				// - should be two map records, this one and one marked
+				// REVIEW_NEEDED
+
 				if (mapRecords.size() != 2)
-					throw new Exception("FINISH called at review editing level on REVIEW_PROJECT_PATH without exactly two map records");
-				
+					throw new Exception(
+							"FINISH called at review editing level on REVIEW_PROJECT_PATH without exactly two map records");
+
 				MapRecord reviewRecord = null;
 				for (MapRecord mr : mapRecords) {
-					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
+					if (mr.getWorkflowStatus().equals(
+							WorkflowStatus.REVIEW_NEEDED))
 						reviewRecord = mr;
 				}
-				
+
 				if (reviewRecord == null)
-					throw new Exception("FINISH called at review editing level on REVIEW_PROJECT_PATH, but could not locate REVIEW_NEEDED record");
-				
+					throw new Exception(
+							"FINISH called at review editing level on REVIEW_PROJECT_PATH, but could not locate REVIEW_NEEDED record");
+
 				// mark as READY_FOR_PUBLICATION
-				mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-				
+				mapRecord
+						.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+
 				// remove the specialist record
 				newRecords.remove(reviewRecord);
 				break;
-		
+
 			default:
-				throw new Exception("Called finish on map record with invalid workflow status along REVIEW_PROJECT_PATH");
+				throw new Exception(
+						"Called finish on map record with invalid workflow status along REVIEW_PROJECT_PATH");
 			}
-			
+
 			break;
 
 		case FIX_ERROR_PATH:
@@ -1752,19 +1809,31 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// find the record assigned to this user
 		MapRecord mapRecord = null;
 		for (MapRecord mr : newRecords) {
-			// find using mapping service instead of workflow service?
 			if (mr.getOwner().equals(mapUser)) {
-				mapRecord = mr;
+
+				// if there are multiple records on this tracking record, it
+				// MUST be a dual-role lead record
+				// default behavior: use the most-advanced record, e.g.
+				// CONFLICT_NEW instead of CONFLICT_DETECTED
+				// the specialist-level work is always inaccessible while
+				// lead-level work is assigned
+				if (mapRecord != null) {
+					if (mr.getWorkflowStatus().compareTo(
+							mapRecord.getWorkflowStatus()) > 0)
+						mapRecord = mr;
+				} else {
+					mapRecord = mr;
+				}
 			}
 		}
 		if (mapRecord == null)
 			throw new Exception(
-					"finishEditing:  Record for user could not be found");
+					"saveForLater:  Record for user could not be found");
 
 		switch (trackingRecord.getWorkflowPath()) {
 		case CONSENSUS_PATH:
 			break;
-			
+
 		// review project and fix error paths behave identically
 		case REVIEW_PROJECT_PATH:
 		case FIX_ERROR_PATH:
@@ -1784,7 +1853,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				mapRecord
 						.setWorkflowStatus(WorkflowStatus.CONFLICT_IN_PROGRESS);
 			break;
-		
+
 		case QA_PATH:
 			break;
 		default:
@@ -1917,7 +1986,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					|| revision.getWorkflowStatus().equals(
 							WorkflowStatus.READY_FOR_PUBLICATION))
 				mappingService.close();
-				return revision;
+			return revision;
 		}
 
 		mappingService.close();
