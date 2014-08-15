@@ -844,6 +844,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						
 						mapLeadAlternateRecordStatus = mr.getWorkflowStatus();
 						
+					// added to prevent user from getting REVISION record back on FIX_ERROR_PATH
+					// yet another problem related to leads being able to serve as dual roles
+					} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+						// do nothing
+						
 					// otherwise, this is the specialist/concept-level work
 					} else {
 						mapRecord = mr;
@@ -861,9 +866,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			} else {
 				
 				// alter the workflow status if a higher-level record exists for this user
-				if (mapLeadAlternateRecordStatus != null)
+				if (mapLeadAlternateRecordStatus != null) {
+					
+					Logger.getLogger(WorkflowServiceJpa.class).info("Setting alternate record status: " + mapLeadAlternateRecordStatus);
 					mapRecord.setWorkflowStatus(mapLeadAlternateRecordStatus);
-				
+				}
 				// create the search result
 				result.setTerminologyId(mapRecord.getConceptId());
 				result.setValue(mapRecord.getConceptName());
@@ -1131,6 +1138,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					// lead level for same user
 					if (mr.getWorkflowStatus().compareTo(WorkflowStatus.REVIEW_NEW) < 0) {
 						// do nothing, this is the specialist level work
+						
+					// exluce records where the map lead is the one instigating the FIX_ERROR_PATH revision
+					} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)){
+						// do nothing
+						
+					// otherwise, this is the record we want
 					} else {
 						// add the record
 						mapRecord = mr;
