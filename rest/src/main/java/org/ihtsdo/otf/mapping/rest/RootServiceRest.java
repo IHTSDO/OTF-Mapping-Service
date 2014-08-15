@@ -36,19 +36,19 @@ public class RootServiceRest {
 	public Properties config = null;
 
 	/** The address that messages will appear as though they come from. */
-	String m_from = ""; 
+	String m_from = null; 
 	
 	/** The password for the SMTP host. */
-	String host_password = ""; 
+	String host_password = null; 
 
 	/** The SMTP host that will be transmitting the message. */
-	String host = ""; 
+	String host = null"; 
 
 	/** The port on the SMTP host. */
-	String port = ""; 
+	String port = null; 
 
 	/** The list of addresses to send the message to. */
-	String recipients = ""; 
+	String recipients = null; 
 
 	/** Subject text for the email. */
 	String m_subject = "IHTSDO Mapping Tool Exception Report";
@@ -122,7 +122,7 @@ public class RootServiceRest {
 	private void sendEmail(Exception e, String whatIsHappening) {
 		
 		// if email settings are not specified, do nothing
-		if (m_from != null) {
+		if (m_from != null || m_from.length) {
 
 			Properties props = new Properties();
 			props.put("mail.smtp.user", m_from);
