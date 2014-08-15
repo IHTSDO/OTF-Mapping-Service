@@ -2837,8 +2837,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				
 			}
 			
+			
+			
 			// if no problems with retrieving records
 			if (errors.size() == 0) {
+				
+				// count variables
+				int nConflictDetectedRecords, nRecordsInEditing;
 			
 				switch (tr.getWorkflowPath()) {
 				case CONSENSUS_PATH:
@@ -2905,11 +2910,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					break;
 				case NON_LEGACY_PATH:
 					
-					// count variables
-					int nConflictDetectedRecords, nRecordsInEditing;
+					
+					
 	
 					// switch on number of records in this tracking record
-					switch (tr.getMapRecordIds().size()) {
+					switch (mapRecords.size()) {
 					
 					// a tracking record with zero records is by default not in error (no work has been performed)
 					case 0:
@@ -2981,7 +2986,53 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				case QA_PATH:
 					break;
 				case REVIEW_PROJECT_PATH:
-					break;
+					
+					// switch on number of records
+					switch (mapRecords.size()) {
+					case 0:
+						// do nothing, this merely indicates a concept with no work
+						break;
+					case 1:
+						MapRecord editingRecord = mapRecords.iterator().next();
+						
+						// record MUST be NEW, EDITING_IN_PROGRESS, or REVIEW_NEEDED
+						if (!editingRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
+								&& !editingRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_IN_PROGRESS)
+								&& !editingRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+							
+							errors.add("REVIEW_PROJECT_PATH, one record, but map record " + editingRecord.getId() + " is not a specialist record and has state " + editingRecord.getWorkflowStatus());
+							
+						}
+						break;
+					case 2:
+						// MUST have:
+						// - REVIEW_NEEDED
+						// - REVIEW_NEW or REVIEW_IN_PROGRESS
+						boolean specialistRecordFound = false;
+						boolean leadRecordFound = false;
+						
+						for (MapRecord mr : mapRecords) {
+							if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
+									|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
+								leadRecordFound = true;
+							} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+								specialistRecordFound = true;
+							} else {
+								errors.add("REVIEW_PROJECT_PATH, two records, but map record " + mr.getId() + " has invalid state " + mr.getWorkflowStatus());
+							}
+						}
+						
+						if (specialistRecordFound == false)
+							errors.add("REVIEW_PROJECT_PATH, two records, but could not find the specialist's record requiring review");
+						
+						if (leadRecordFound == false)
+							errors.add("REVIEW_PROJECT_PATH, two records, but could not find the lead's review resolution record");
+						
+						break;
+					default:
+						errors.add("REVIEW_PROJECT_PATH, but unexpected number of records:  " + mapRecords.size());
+						break;
+					}
 				default:
 					break;
 				}
@@ -3009,31 +3060,29 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		
 	
 	}
-	
-	
+
 	@Override
-	public void computeUntrackedMapRecords(MapProject mapProject) throws Exception {
-		
+	public void computeUntrackedMapRecords(MapProject mapProject)
+			throws Exception {
+
 		MappingService mappingService = new MappingServiceJpa();
-		
-		
-		
+
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"Retrieving map records for project " + mapProject.getId()
 						+ ", " + mapProject.getName());
 
 		MapRecordList mapRecordsInProject = mappingService
 				.getMapRecordsForMapProject(mapProject.getId());
-		
+
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"  " + mapRecordsInProject.getCount() + " retrieved");
-		
+
 		// set the reporting interval based on number of tracking records
 		int nObjects = 0;
-		int nMessageInterval = (int) Math.floor(mapRecordsInProject.getCount() / 10);
-		
-		Set<MapRecord> recordsUntracked = new HashSet<>();
+		int nMessageInterval = (int) Math
+				.floor(mapRecordsInProject.getCount() / 10);
 
+		Set<MapRecord> recordsUntracked = new HashSet<>();
 
 		for (MapRecord mr : mapRecordsInProject.getIterable()) {
 
@@ -3050,10 +3099,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				}
 
 			}
-			
+
 			if (++nObjects % nMessageInterval == 0) {
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						"  " + nObjects + " records processed, " + recordsUntracked.size() + " unpublished map records without tracking record");
+				Logger.getLogger(WorkflowServiceJpa.class)
+						.info("  "
+								+ nObjects
+								+ " records processed, "
+								+ recordsUntracked.size()
+								+ " unpublished map records without tracking record");
 			}
 		}
 

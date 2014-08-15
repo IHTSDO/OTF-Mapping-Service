@@ -14,6 +14,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a service for answering questions and performing actions related
  * to workflow management.
@@ -392,22 +393,21 @@ public interface WorkflowService {
 			MapProject mapProject, String terminologyId);
 
 	/**
-	 * Check that workflow state for all current records is valid
+	 * QA check: Check that workflow state for all current records is valid.
 	 *
 	 * @param mapProject the map project
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public void computeWorkflowStatusErrors(MapProject mapProject) throws Exception;
 	
 	/**
-	 * Compute untracked map records.
+	 * QA check: Compute untracked map records.
 	 *
 	 * @param mapProject the map project
 	 * @throws Exception the exception
 	 */
 	public void computeUntrackedMapRecords(MapProject mapProject) throws Exception;
 
-	
 
 
 

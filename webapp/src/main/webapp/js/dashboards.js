@@ -187,6 +187,10 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 							type: "mapRecord",
 							config: { recordId: $routeParams.recordId},
 							title: "Map Record"
+						},{
+							type: "recordSummary",
+							config: {record: null},
+							title: "Record Summary"
 						}]
 					}, {
 						class: 'col-md-6',
@@ -545,11 +549,10 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 						columns: [{
 							class: 'col-md-12',
 							widgets: [{
-								type: "metadataList",
+								type: "recordAdmin",
 								config: {
-									terminology: "SNOMEDCT"
 								},
-								title: "Metadata"
+								title: "Record Administration"
 							}]
 						}]
 
