@@ -851,4 +851,14 @@ public interface MappingService {
 	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception;
 
 
+
+	/**
+	 * QA Check: Check map groups for map project.
+	 *
+	 * @param mapProject the map project
+	 * @throws Exception the exception
+	 */
+	public void checkMapGroupsForMapProject(MapProject mapProject) throws Exception;
+
+	
 }

@@ -120,41 +120,45 @@ public class RootServiceRest {
 	 * @param whatIsHappening the what is happening
 	 */
 	private void sendEmail(Exception e, String whatIsHappening) {
-
-		Properties props = new Properties();
-		props.put("mail.smtp.user", m_from);
-		props.put("mail.smtp.password", host_password);
-		props.put("mail.smtp.host", host);
-		props.put("mail.smtp.port", port);
-		props.put("mail.smtp.starttls.enable", "true");
-		props.put("mail.smtp.auth", "true");
 		
-		m_subject = "IHTSDO Mapping Tool Exception Report";
-		m_text = new StringBuffer();
-		if (!(e instanceof LocalException))
-			m_text.append("Unexpected error trying to " + whatIsHappening + ". Please contact the administrator.").append("\n\n");
+		// if email settings are not specified, do nothing
+		if (m_from != null) {
 
-		m_text.append("MESSAGE: " + e.getMessage()).append("\n\n");
-		for (StackTraceElement element : e.getStackTrace()) {
-			m_text.append("  ").append(element).append("\n");
-		}
-
-		try {
-			Authenticator auth = new SMTPAuthenticator();
-			Session session = Session.getInstance(props, auth);
-
-			MimeMessage msg = new MimeMessage(session);
-			msg.setText(m_text.toString());
-			msg.setSubject(m_subject);
-			msg.setFrom(new InternetAddress(m_from));
-			String[] recipientsArray = recipients.split(";");
-			for (String recipient : recipientsArray) {
-			  msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+			Properties props = new Properties();
+			props.put("mail.smtp.user", m_from);
+			props.put("mail.smtp.password", host_password);
+			props.put("mail.smtp.host", host);
+			props.put("mail.smtp.port", port);
+			props.put("mail.smtp.starttls.enable", "true");
+			props.put("mail.smtp.auth", "true");
+			
+			m_subject = "IHTSDO Mapping Tool Exception Report";
+			m_text = new StringBuffer();
+			if (!(e instanceof LocalException))
+				m_text.append("Unexpected error trying to " + whatIsHappening + ". Please contact the administrator.").append("\n\n");
+	
+			m_text.append("MESSAGE: " + e.getMessage()).append("\n\n");
+			for (StackTraceElement element : e.getStackTrace()) {
+				m_text.append("  ").append(element).append("\n");
 			}
-			Transport.send(msg);
-
-		} catch (Exception mex) {
-			mex.printStackTrace();
+	
+			try {
+				Authenticator auth = new SMTPAuthenticator();
+				Session session = Session.getInstance(props, auth);
+	
+				MimeMessage msg = new MimeMessage(session);
+				msg.setText(m_text.toString());
+				msg.setSubject(m_subject);
+				msg.setFrom(new InternetAddress(m_from));
+				String[] recipientsArray = recipients.split(";");
+				for (String recipient : recipientsArray) {
+				  msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+				}
+				Transport.send(msg);
+	
+			} catch (Exception mex) {
+				mex.printStackTrace();
+			}
 		}
 	}
 
@@ -166,57 +170,9 @@ public class RootServiceRest {
 	 */
 	public void sendUserErrorEmail(UserError userError) throws Exception {
 		
-		Properties props = new Properties();
-		props.put("mail.smtp.user", m_from);
-		props.put("mail.smtp.password", host_password);
-		props.put("mail.smtp.host", host);
-		props.put("mail.smtp.port", port);
-		props.put("mail.smtp.starttls.enable", "true");
-		props.put("mail.smtp.auth", "true");
+		// only send email if settings are specified
+		if (m_from != null) {
 		
-		MappingService mappingService = new MappingServiceJpa();
-		MapRecord mapRecord = mappingService.getMapRecord(userError.getMapRecordId());
-		mappingService.close();
-		
-		m_subject = "IHTSDO Mapping Tool Editing Error Report: " + mapRecord.getConceptId();
-		recipients = userError.getMapUserInError().getEmail();
-		
-		m_text = new StringBuffer();
-
-		m_text.append("USER ERROR on record " + userError.getMapRecordId()).append("\n\n");
-		m_text.append("Error type: " + userError.getMapError()).append("\n");
-		m_text.append("Reporting lead: " + userError.getMapUserReporting().getName()).append("\n");
-		m_text.append("Comment: " + userError.getNote()).append("\n");
-		m_text.append("Reporting date: " + userError.getTimestamp()).append("\n\n");
-		// TODO: the base url here can not be hardcoded, won't work in dev and uat
-		m_text.append("Record URL: https://mapping.snomedtools.org/index.html#/record/recordId/" + userError.getMapRecordId());
-		
-
-		try {
-			Authenticator auth = new SMTPAuthenticator();
-			Session session = Session.getInstance(props, auth);
-
-			MimeMessage msg = new MimeMessage(session);
-			msg.setText(m_text.toString());
-			msg.setSubject(m_subject);
-			msg.setFrom(new InternetAddress(m_from));
-			String[] recipientsArray = recipients.split(";");
-			for (String recipient : recipientsArray) {
-			  msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
-			}
-			Transport.send(msg);
-
-		} catch (Exception mex) {
-			mex.printStackTrace();
-		}
-	}
-
-	public void sendEmail(FeedbackEmail feedbackEmail) {
-		
-		
-		try {
-			getConfigProperties();
-			
 			Properties props = new Properties();
 			props.put("mail.smtp.user", m_from);
 			props.put("mail.smtp.password", host_password);
@@ -225,35 +181,89 @@ public class RootServiceRest {
 			props.put("mail.smtp.starttls.enable", "true");
 			props.put("mail.smtp.auth", "true");
 			
-			Authenticator auth = new SMTPAuthenticator();
-			Session session = Session.getInstance(props, auth);
-
-			MimeMessage msg = new MimeMessage(session);
-			//msg.setText(feedbackEmail.getEmailText());
-			msg.setSubject(feedbackEmail.getSubject());
-			msg.setFrom(new InternetAddress(m_from));
-			
-			// get the recipients
 			MappingService mappingService = new MappingServiceJpa();
-			for (String recipient : feedbackEmail.getRecipients()) {
-				MapUser mapUser = mappingService.getMapUser(recipient);
-				System.out.println(mapUser.getEmail());
-				msg.addRecipient(Message.RecipientType.TO, new InternetAddress(mapUser.getEmail()));	
+			MapRecord mapRecord = mappingService.getMapRecord(userError.getMapRecordId());
+			mappingService.close();
+			
+			m_subject = "IHTSDO Mapping Tool Editing Error Report: " + mapRecord.getConceptId();
+			recipients = userError.getMapUserInError().getEmail();
+			
+			m_text = new StringBuffer();
+	
+			m_text.append("USER ERROR on record " + userError.getMapRecordId()).append("\n\n");
+			m_text.append("Error type: " + userError.getMapError()).append("\n");
+			m_text.append("Reporting lead: " + userError.getMapUserReporting().getName()).append("\n");
+			m_text.append("Comment: " + userError.getNote()).append("\n");
+			m_text.append("Reporting date: " + userError.getTimestamp()).append("\n\n");
+			// TODO: the base url here can not be hardcoded, won't work in dev and uat
+			m_text.append("Record URL: https://mapping.snomedtools.org/index.html#/record/recordId/" + userError.getMapRecordId());
+			
+	
+			try {
+				Authenticator auth = new SMTPAuthenticator();
+				Session session = Session.getInstance(props, auth);
+	
+				MimeMessage msg = new MimeMessage(session);
+				msg.setText(m_text.toString());
+				msg.setSubject(m_subject);
+				msg.setFrom(new InternetAddress(m_from));
+				String[] recipientsArray = recipients.split(";");
+				for (String recipient : recipientsArray) {
+				  msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+				}
+				Transport.send(msg);
+	
+			} catch (Exception mex) {
+				mex.printStackTrace();
 			}
-			
-			msg.addRecipient(Message.RecipientType.TO, new InternetAddress("pgranvold@westcoastinformatics.com"));
-			
-			msg.setContent(feedbackEmail.getEmailText(), "text/html");
-			
-			
-			// msg.addRecipient(Message.RecipientType.TO, new InternetAddress(feedbackEmail.getSender().getEmail()));
-			
-			
-			
-			Transport.send(msg);
+		}
+	}
 
-		} catch (Exception mex) {
-			mex.printStackTrace();
+	public void sendEmail(FeedbackEmail feedbackEmail) {
+		
+		// only send email if parameters are specified
+		if (m_from != null) {
+			try {
+				getConfigProperties();
+				
+				Properties props = new Properties();
+				props.put("mail.smtp.user", m_from);
+				props.put("mail.smtp.password", host_password);
+				props.put("mail.smtp.host", host);
+				props.put("mail.smtp.port", port);
+				props.put("mail.smtp.starttls.enable", "true");
+				props.put("mail.smtp.auth", "true");
+				
+				Authenticator auth = new SMTPAuthenticator();
+				Session session = Session.getInstance(props, auth);
+	
+				MimeMessage msg = new MimeMessage(session);
+				//msg.setText(feedbackEmail.getEmailText());
+				msg.setSubject(feedbackEmail.getSubject());
+				msg.setFrom(new InternetAddress(m_from));
+				
+				// get the recipients
+				MappingService mappingService = new MappingServiceJpa();
+				for (String recipient : feedbackEmail.getRecipients()) {
+					MapUser mapUser = mappingService.getMapUser(recipient);
+					System.out.println(mapUser.getEmail());
+					msg.addRecipient(Message.RecipientType.TO, new InternetAddress(mapUser.getEmail()));	
+				}
+				
+				msg.addRecipient(Message.RecipientType.TO, new InternetAddress("pgranvold@westcoastinformatics.com"));
+				
+				msg.setContent(feedbackEmail.getEmailText(), "text/html");
+				
+				
+				// msg.addRecipient(Message.RecipientType.TO, new InternetAddress(feedbackEmail.getSender().getEmail()));
+				
+				
+				
+				Transport.send(msg);
+	
+			} catch (Exception mex) {
+				mex.printStackTrace();
+			}
 		}
 	}
 

@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -863,7 +864,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		if (localPfsParameter.getSortField() != null) {
 			query.addOrder(AuditEntity.property(
 					localPfsParameter.getSortField()).desc());
-		
+
 			// otherwise, sort by last modified (descending)
 		} else {
 			query.addOrder(AuditEntity.property("lastModified").desc());
@@ -875,15 +876,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					.setMaxResults(localPfsParameter.getMaxResults());
 
 		}
-		
+
 		// if query terms specified, add
 		if (pfsParameter.getQueryRestriction() != null) {
 			String[] queryTerms = pfsParameter.getQueryRestriction().split(" ");
-			query.add(
-					AuditEntity.or(
-							AuditEntity.property("conceptId").in(queryTerms), 
-							AuditEntity.property("conceptName").like(pfsParameter.getQueryRestriction(), MatchMode.ANYWHERE)));
-		
+			query.add(AuditEntity.or(
+					AuditEntity.property("conceptId").in(queryTerms),
+					AuditEntity.property("conceptName").like(
+							pfsParameter.getQueryRestriction(),
+							MatchMode.ANYWHERE)));
+
 		}
 
 		// execute the query
@@ -902,9 +904,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				if (mr.getId().equals(mapRecord.getId()))
 					recordExists = true;
 			}
-			if (recordExists == false) uniqueRecords.add(mapRecord);
+			if (recordExists == false)
+				uniqueRecords.add(mapRecord);
 		}
-		
+
 		// handle all lazy initializations
 		for (MapRecord mapRecord : uniqueRecords) {
 			handleMapRecordLazyInitialization(mapRecord);
@@ -1703,7 +1706,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	}
 
 	/**
-	 * TODO:  Is this used?  Should require map project id
+	 * TODO: Is this used? Should require map project id
 	 * 
 	 * Given a concept, returns a list of descendant concepts that have no
 	 * associated map record.
@@ -2753,11 +2756,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	// /////////////////////////////////////
 	// USER ERROR FUNCTIONS
 	// /////////////////////////////////////
-	
+
 	/**
 	 * Adds the user error.
-	 *
-	 * @param userError the user error
+	 * 
+	 * @param userError
+	 *            the user error
 	 * @return the user error
 	 */
 	@Override
@@ -2773,7 +2777,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		return userError;
 	}
-	
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public UserErrorList getUserErrors() {
@@ -2789,7 +2793,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		return userErrorList;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -2965,21 +2969,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// do nothing
 			}
 
-		} else if (
-				(
-						mapProject.getWorkflowType().equals("CONFLICT_PROJECT") 
-						&& (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-						|| mapRecord.getWorkflowStatus().equals(
-						WorkflowStatus.REVIEW_IN_PROGRESS))
-				)
-						
+		} else if ((mapProject.getWorkflowType().equals("CONFLICT_PROJECT") && (mapRecord
+				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW) || mapRecord
+				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)))
+
 				||
-						
-				( 
-						mapProject.getWorkflowType().equals("REVIEW_PROJECT")
-						&& mapRecord.getOriginIds().size() > 2
-				)
-						){
+
+				(mapProject.getWorkflowType().equals("REVIEW_PROJECT") && mapRecord
+						.getOriginIds().size() > 2)) {
 
 			boolean foundReviewRecord = false; // the specialist's completed
 												// work
@@ -3123,5 +3120,119 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		mapProject.getMapPrinciples().size();
 		mapProject.getPresetAgeRanges().size();
 
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MappingService#checkMapGroupsForMapProject
+	 * (org.ihtsdo.otf.mapping.model.MapProject)
+	 */
+	@Override
+	public void checkMapGroupsForMapProject(MapProject mapProject)
+			throws Exception {
+
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"Checking map group numbering for project "
+						+ mapProject.getName());
+
+		MapRecordList mapRecordsInProject = this
+				.getMapRecordsForMapProject(mapProject.getId());
+		
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"Checking "
+						+ mapRecordsInProject.getCount() + " map records.");
+		
+		// logging variables
+		int nRecordsChecked = 0;
+		int nRecordsRemapped = 0;
+		int nMessageInterval = (int) Math.floor(mapRecordsInProject.getCount() / 10);
+		
+		// cycle over all records
+		for (MapRecord mapRecord : mapRecordsInProject.getIterable()) {
+
+			// create a map representing oldGroup -> newGroup
+			Map<Integer, Integer> mapGroupRemapping = new HashMap<>();
+
+			// find the existing groups
+			for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+				mapGroupRemapping.put(mapEntry.getMapGroup(), null);
+			}
+
+			// get the total number of groups present
+			int nMapGroups = mapGroupRemapping.keySet().size();
+
+			// if no groups at all, skip this record
+			if (nMapGroups > 0) {
+
+				// flag for whether map record needs to be modified
+				boolean mapGroupsRemapped = false;
+				
+				// get the lowest group
+				int minGroup = Collections.min(mapGroupRemapping.keySet());
+
+				// if the min group != 1, offset all existing groups
+				// e.g. if mingroup is 0, add 1 to all map group remappings
+				// if mingroup is 4, subtract 3 from all map group remappings
+				if (minGroup != 1) {
+					mapGroupsRemapped = true;
+					for (Integer mapGroup : mapGroupRemapping.keySet()) {
+						mapGroupRemapping.put(mapGroup, mapGroup
+								+ (1 - minGroup));
+					}
+				}
+
+				// get the highest group
+				int maxGroup = Collections.max(mapGroupRemapping.keySet());
+
+				// check for missing groups
+				// e.g. set should be (1, 2, 3, ... n), where n is also equal to
+				// the size of the entry set
+				if (maxGroup != nMapGroups) {
+					
+					mapGroupsRemapped = true;
+					
+					int cumMissingGroups = 0;
+					for (int i = 1; i <= nMapGroups; i++) {
+
+						// if this group present, 
+						// - remove the group from set
+						// - subtract current value by the cumulative number of missed groups found
+						// - re-add the new remapped group
+						// e.g. (1, 3, 5) goes through the following steps:
+						// 1 -> 1 - 0 = 1 -> map as (1, 1)
+						// 2 -> not present, increment offset
+						// 3 -> 3 - 1 = 2 -> map as (3, 2)
+						// 4 -> not present, increment offset
+						// 5 -> 5 - 2 = 3 -> map as (5, 3)
+						if (mapGroupRemapping.keySet().contains(i)) {
+							mapGroupRemapping.remove(i);
+							mapGroupRemapping.put(i, i - cumMissingGroups);
+						} else {
+							cumMissingGroups++;
+						}
+					}
+
+				}
+				
+				// if map groups have been changed, log and perform modifications
+				if (mapGroupsRemapped == true) {
+					
+					nRecordsRemapped++;
+					
+					Logger.getLogger(MappingServiceJpa.class).info(
+							"Remapping record " + mapRecord.getId() + ": " + mapRecord.getConceptId() + ", " + mapRecord.getConceptName());
+					Logger.getLogger(MappingServiceJpa.class).info(
+							"  Remapping: " + mapGroupRemapping.keySet().toString() + " to " + mapGroupRemapping.values().toString());
+				}
+				
+				// output logging information
+				if (++nRecordsChecked % nMessageInterval == 0) {
+					Logger.getLogger(MappingServiceJpa.class).info(
+							"  " + nRecordsChecked + " records processed (" + (nRecordsChecked / nMessageInterval * 10) + "%), " + nRecordsRemapped + " remapped");
+				}
+			}
+		}
 	}
 }

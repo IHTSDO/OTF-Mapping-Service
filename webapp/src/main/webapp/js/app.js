@@ -18,6 +18,7 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.projectRecords',
                                                      'mapProjectApp.widgets.recordConcept',
                                                      'mapProjectApp.widgets.recordSummary',
+                                                     'mapProjectApp.widgets.recordAdmin',
                                                      'LocalStorageModule',
                                                      'ngCookies',
                                                      'ui.tinymce'

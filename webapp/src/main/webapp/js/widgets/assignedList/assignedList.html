@@ -93,7 +93,7 @@
 					class="glyphicon glyphicon-saved"></i>
 			</a>
 			
-			<!-- TODO: SEE MAP-617. Display a saved icon if this record has been marked finished--> <a
+			<!-- If lead has claimed their own previous work for review, don't allow clicking --> <a
 				disabled title='You have claimed this concept for Lead Review'
 				ng-show="result.terminologyVersion === 'REVIEW_NEW'
 						|| result.terminologyVersion === 'REVIEW_IN_PROGRESS'"> <i

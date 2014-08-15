@@ -42,5 +42,31 @@
 				</plugins>
 			</build>
 		</profile>
+		
+		<!-- QA Map Groups for project -->
+		<profile>
+			<id>MapGroups</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.ihtsdo.otf.mapping</groupId>
+						<artifactId>mapping-admin-mojo</artifactId>
+						<version>${project.version}</version>
+						<executions>
+							<execution>
+								<id>qa-map-groups</id>
+								<phase>package</phase>
+								<goals>
+									<goal>qa-map-groups</goal>
+								</goals>
+								<configuration>
+									<refSetId>${refset.id}</refSetId>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 </project>
