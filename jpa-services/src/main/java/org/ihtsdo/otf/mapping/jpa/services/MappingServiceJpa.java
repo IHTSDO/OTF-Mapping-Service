@@ -56,6 +56,7 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.UserErrorList;
 import org.ihtsdo.otf.mapping.helpers.UserErrorListJpa;
+import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
@@ -83,6 +84,8 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 /**
  * JPA implementation of the {@link MappingService}.
@@ -3023,14 +3026,83 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						WorkflowStatus.REVIEW_IN_PROGRESS)) {
 
 			System.out.println("Getting origin id for REVIEW_PROJECT record");
-			if (mapRecord.getOriginIds().size() == 1) {
+			
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			
+			TrackingRecord tr = workflowService.getTrackingRecordForMapProjectAndConcept(mapProject, mapRecord.getConceptId());
+			
+			
+			if (tr.getWorkflowPath().equals(WorkflowPath.REVIEW_PROJECT_PATH)) {
 
-				MapRecord mr = getMapRecord(mapRecord.getOriginIds().iterator()
-						.next());
-				conflictRecords.addMapRecord(mr);
-				conflictRecords.setTotalCount(conflictRecords.getCount());
+				for (Long originId : mapRecord.getOriginIds()) {
+					try {
+						MapRecord mr = getMapRecord(mapRecord.getOriginIds().iterator()
+								.next());
+						
+						// check assumption
+						if (!mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+							throw new Exception(
+									"Single origin record found for review, but was not REVIEW_NEEDED");
+						}
+						
+						conflictRecords.addMapRecord(mr);
+						conflictRecords.setTotalCount(conflictRecords.getCount());
+	
+						return conflictRecords;
 
-				return conflictRecords;
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
+				
+			} else if (tr.getWorkflowPath().equals(WorkflowPath.FIX_ERROR_PATH)) {
+
+				boolean foundReviewRecord = false; // the specialist's completed
+				// work
+				boolean foundRevisionRecord = false; // the original published
+														// work
+
+				for (Long originId : mapRecord.getOriginIds()) {
+					System.out.println("Getting origin id:  " + originId);
+					MapRecord mr = getMapRecord(originId);
+
+					// TODO This try/cactch block is here to prevent a problem
+					// where
+					// a REVIEW record
+					// has been completed, then sent down FIX_ERROR_PATH again,
+					// then
+					// reviewed again,
+					// causing origin ids to contain record references that no
+					// longer exist
+					try {
+
+						if (mr.getWorkflowStatus().equals(
+								WorkflowStatus.REVIEW_NEEDED)) {
+							conflictRecords
+									.addMapRecord(getMapRecord(originId));
+							foundReviewRecord = true;
+						} else if (mr.getWorkflowStatus().equals(
+								WorkflowStatus.REVISION)) {
+							conflictRecords
+									.addMapRecord(getMapRecord(originId));
+							foundRevisionRecord = true;
+						}
+
+					} catch (Exception e) {
+						// do nothing, attempted to find a record that no longer exists
+					}
+
+					// once records are found, stop processing origin ids
+					if (foundReviewRecord == true
+							&& foundRevisionRecord == true) {
+						conflictRecords.setTotalCount(conflictRecords
+								.getCount());
+						return conflictRecords;
+					}
+
+				}
 			} else {
 				throw new Exception(
 						"Could not retrieve exactly one origin id for REVIEW_PROJECT path");
@@ -3139,16 +3211,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		MapRecordList mapRecordsInProject = this
 				.getMapRecordsForMapProject(mapProject.getId());
-		
+
 		Logger.getLogger(MappingServiceJpa.class).info(
-				"Checking "
-						+ mapRecordsInProject.getCount() + " map records.");
-		
+				"Checking " + mapRecordsInProject.getCount() + " map records.");
+
 		// logging variables
 		int nRecordsChecked = 0;
 		int nRecordsRemapped = 0;
-		int nMessageInterval = (int) Math.floor(mapRecordsInProject.getCount() / 10);
-		
+		int nMessageInterval = (int) Math
+				.floor(mapRecordsInProject.getCount() / 10);
+
 		// cycle over all records
 		for (MapRecord mapRecord : mapRecordsInProject.getIterable()) {
 
@@ -3159,6 +3231,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 				mapGroupRemapping.put(mapEntry.getMapGroup(), null);
 			}
+			
+			//System.out.println(mapRecord.getId() + ": " + mapGroupRemapping.keySet().toString());
 
 			// get the total number of groups present
 			int nMapGroups = mapGroupRemapping.keySet().size();
@@ -3168,7 +3242,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				// flag for whether map record needs to be modified
 				boolean mapGroupsRemapped = false;
-				
+
 				// get the lowest group
 				int minGroup = Collections.min(mapGroupRemapping.keySet());
 
@@ -3190,15 +3264,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// e.g. set should be (1, 2, 3, ... n), where n is also equal to
 				// the size of the entry set
 				if (maxGroup != nMapGroups) {
-					
+
 					mapGroupsRemapped = true;
-					
+
 					int cumMissingGroups = 0;
 					for (int i = 1; i <= nMapGroups; i++) {
 
-						// if this group present, 
+						// if this group present,
 						// - remove the group from set
-						// - subtract current value by the cumulative number of missed groups found
+						// - subtract current value by the cumulative number of
+						// missed groups found
 						// - re-add the new remapped group
 						// e.g. (1, 3, 5) goes through the following steps:
 						// 1 -> 1 - 0 = 1 -> map as (1, 1)
@@ -3215,24 +3290,36 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					}
 
 				}
-				
-				// if map groups have been changed, log and perform modifications
+
+				// if map groups have been changed, log and perform
+				// modifications
 				if (mapGroupsRemapped == true) {
-					
+
 					nRecordsRemapped++;
-					
+
 					Logger.getLogger(MappingServiceJpa.class).info(
-							"Remapping record " + mapRecord.getId() + ": " + mapRecord.getConceptId() + ", " + mapRecord.getConceptName());
+							"Remapping record " + mapRecord.getId() + ": "
+									+ mapRecord.getConceptId() + ", "
+									+ mapRecord.getConceptName());
 					Logger.getLogger(MappingServiceJpa.class).info(
-							"  Remapping: " + mapGroupRemapping.keySet().toString() + " to " + mapGroupRemapping.values().toString());
+							"  Remapping: "
+									+ mapGroupRemapping.keySet().toString()
+									+ " to "
+									+ mapGroupRemapping.values().toString());
 				}
-				
+
 				// output logging information
 				if (++nRecordsChecked % nMessageInterval == 0) {
 					Logger.getLogger(MappingServiceJpa.class).info(
-							"  " + nRecordsChecked + " records processed (" + (nRecordsChecked / nMessageInterval * 10) + "%), " + nRecordsRemapped + " remapped");
+							"  " + nRecordsChecked + " records processed ("
+									+ (nRecordsChecked / nMessageInterval * 10)
+									+ "%), " + nRecordsRemapped + " remapped");
 				}
 			}
 		}
+		
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"  " + nRecordsChecked + " total records processed ("
+					 + nRecordsRemapped + " remapped");
 	}
 }
