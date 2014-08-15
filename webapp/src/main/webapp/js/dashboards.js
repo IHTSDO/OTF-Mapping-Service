@@ -187,6 +187,10 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 							type: "mapRecord",
 							config: { recordId: $routeParams.recordId},
 							title: "Map Record"
+						},{
+							type: "recordSummary",
+							config: {record: null},
+							title: "Record Summary"
 						}]
 					}, {
 						class: 'col-md-6',
