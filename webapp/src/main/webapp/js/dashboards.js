@@ -545,11 +545,10 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 						columns: [{
 							class: 'col-md-12',
 							widgets: [{
-								type: "metadataList",
+								type: "recordAdmin",
 								config: {
-									terminology: "SNOMEDCT"
 								},
-								title: "Metadata"
+								title: "Record Administration"
 							}]
 						}]
 
