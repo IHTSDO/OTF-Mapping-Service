@@ -272,6 +272,8 @@ DefaultProjectSpecificAlgorithmHandler {
 			*/
 			// otherwise, if 3-digit code has children, return false
 			TreePositionList tpList = contentService.getTreePositions(terminologyId, mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());	
+			if (tpList.getCount() == 0) return false;
+			
 			if (tpList.getTreePositions().get(0).getChildrenCount() > 0) { 
 				contentService.close();
 				return false;

@@ -1726,9 +1726,8 @@ public class MappingServiceRest extends RootServiceRest {
 
 		try {
 			// authorize call
-			MapUserRole role = securityService.getMapProjectRoleForToken(
-					authToken, mapRecord.getMapProjectId());
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
 				throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to delete the map record.")
