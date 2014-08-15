@@ -321,12 +321,14 @@
 				</accordion-heading>
 	
 				<div ng-show="validationResult.errors.length > 0">
-					<h4>Errors:</h4>
-					<div ng-repeat="result in validationResult.errors">{{result}}</div>
+   	 		      <div ng-repeat="result in validationResult.errors">
+                    <div class="alert alert-danger" role="alert">{{result}}</div>
+                  </div>
 				</div>
 				<div ng-show="validationResult.warnings.length > 0">
-					<h4>Warnings:</h4>
-					<div ng-repeat="result in validationResult.warnings">{{result}}</div>
+					<div ng-repeat="result in validationResult.warnings">
+                      <div class="alert alert-warning" role="alert">{{result}}</div>
+                    </div>
 				</div>
 				</accordion-group> 
 			</accordion>
