@@ -2898,9 +2898,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					boolean reviewRecordFound = false;
 	
 					for (MapRecord mr : mapRecords) {
-						
-						Logger.getLogger(WorkflowServiceJpa.class).info("  Checking record: " + mr.toString());
-						
 						// check for original record in error
 						if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
 							revisionRecordFound = true;
