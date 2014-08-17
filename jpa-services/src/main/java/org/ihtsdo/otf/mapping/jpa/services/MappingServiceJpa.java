@@ -56,6 +56,7 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.UserErrorList;
 import org.ihtsdo.otf.mapping.helpers.UserErrorListJpa;
+import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
@@ -3211,6 +3212,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		MapRecordList mapRecordsInProject = this
 				.getMapRecordsForMapProject(mapProject.getId());
+		
+		// detach all these records to prevent null-pointer exceptions
+		for (MapRecord mr : mapRecordsInProject.getIterable())
+			manager.detach(mr);
 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Checking " + mapRecordsInProject.getCount() + " map records.");
@@ -3220,7 +3225,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		int nRecordsRemapped = 0;
 		int nMessageInterval = (int) Math
 				.floor(mapRecordsInProject.getCount() / 10);
+		
+		// instantiate the algorithm handler
+		ProjectSpecificAlgorithmHandler algorithmHandler = this.getProjectSpecificAlgorithmHandler(mapProject);
 
+		// instantiate the services
+		ContentService contentService = new ContentServiceJpa();
+		WorkflowService workflowService = new WorkflowServiceJpa();
+		
 		// cycle over all records
 		for (MapRecord mapRecord : mapRecordsInProject.getIterable()) {
 
@@ -3264,12 +3276,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// e.g. set should be (1, 2, 3, ... n), where n is also equal to
 				// the size of the entry set
 				if (maxGroup != nMapGroups) {
+					
+					//System.out.println(maxGroup + " " + nMapGroups);
 
 					mapGroupsRemapped = true;
 
 					int cumMissingGroups = 0;
-					for (int i = 1; i <= nMapGroups; i++) {
+					for (int i = 1; i <= maxGroup; i++) {
 
+						//System.out.println("Checking map group " + i);
+						
 						// if this group present,
 						// - remove the group from set
 						// - subtract current value by the cumulative number of
@@ -3282,10 +3298,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						// 4 -> not present, increment offset
 						// 5 -> 5 - 2 = 3 -> map as (5, 3)
 						if (mapGroupRemapping.keySet().contains(i)) {
+							//System.out.println("Replacing " + i + " with " + (i - cumMissingGroups));
 							mapGroupRemapping.remove(i);
 							mapGroupRemapping.put(i, i - cumMissingGroups);
 						} else {
+							
 							cumMissingGroups++;
+							//System.out.println("Incrementing missing group counter to " + cumMissingGroups);
 						}
 					}
 
@@ -3306,6 +3325,79 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 									+ mapGroupRemapping.keySet().toString()
 									+ " to "
 									+ mapGroupRemapping.values().toString());
+					
+					for (MapEntry me : mapRecord.getMapEntries()) {
+						if (mapGroupRemapping.containsKey(me.getMapGroup())) {
+							me.setMapGroup(mapGroupRemapping.get(me.getMapGroup()));
+						}
+					}
+					
+					// check if this record still exists in database (i.e. has not been removed)
+					MapRecord mapRecordInDatabase = this.getMapRecord(mapRecord.getId());
+					
+					if (mapRecordInDatabase == null) {
+						Logger.getLogger(MappingServiceJpa.class).warn("Map Record " + mapRecord.getId() + " no longer exists");
+					} else {
+						
+						// remerge the record
+						manager.merge(mapRecord);
+					
+						// get the concept
+						Concept concept = contentService.getConcept(
+								mapRecord.getConceptId(), 
+								mapProject.getSourceTerminology(), 
+								mapProject.getSourceTerminologyVersion());
+						
+						// need to capture cases where conflict resolution results in possible records to remap
+						// that disappear due to conflict resolution (e.g. a specialist remaps, resulting in no conflict
+						// but the lead's record in progress also has errors)
+						try {
+							
+							// process workflow action depending on current status
+							switch (mapRecord.getWorkflowStatus()) {
+							
+							// re-finish all records in a completed state
+							case EDITING_DONE:
+							case CONFLICT_DETECTED:
+							case REVIEW_NEEDED:
+							case CONSENSUS_NEEDED:
+								Logger.getLogger(MappingServiceJpa.class).warn("Finishing record, id = " + mapRecord.getId() + ", workflow status = " + mapRecord.getWorkflowStatus());
+								workflowService.processWorkflowAction(mapProject, concept, mapRecord.getOwner(), mapRecord, WorkflowAction.FINISH_EDITING);
+								break;
+								
+								
+							// actions requiring Save For Later
+							case CONFLICT_IN_PROGRESS:
+							case CONSENSUS_IN_PROGRESS:
+							case EDITING_IN_PROGRESS:
+							case REVIEW_IN_PROGRESS:
+								Logger.getLogger(MappingServiceJpa.class).warn("Savng record for later, id = " + mapRecord.getId() + ", workflow status = " + mapRecord.getWorkflowStatus());
+								workflowService.processWorkflowAction(mapProject, concept, mapRecord.getOwner(), mapRecord, WorkflowAction.SAVE_FOR_LATER);
+								break;
+							
+							// qa situations outside the workflow, simple database update
+							case READY_FOR_PUBLICATION:
+							case PUBLISHED:
+							case REVISION:
+								this.updateMapRecord(mapRecord);
+								Logger.getLogger(MappingServiceJpa.class).warn("Updating record outside the workflow: id = " + mapRecord.getId() + ", workflow status=" + mapRecord.getWorkflowStatus());
+								break;
+							
+							// workflow statuses that should not even have entries, do nothing and output a warning
+							case NEW:
+							case REVIEW_NEW:
+							case CONFLICT_NEW:
+							case CONSENSUS_NEW:
+							default:
+								Logger.getLogger(MappingServiceJpa.class).error("Record has rroneous workflow state: id = " + mapRecord.getId() + ", workflow status=" + mapRecord.getWorkflowStatus());
+								break;
+							
+							}
+						} catch (Exception e) {
+							Logger.getLogger(MappingServiceJpa.class).error("Error processing record for concept id = " + concept.getTerminologyId());
+							
+						}
+					}
 				}
 
 				// output logging information
