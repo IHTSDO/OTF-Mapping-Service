@@ -83,6 +83,9 @@ public class QAMapGroups extends AbstractMojo {
     try {
 
       MappingService mappingService = new MappingServiceJpa();
+      mappingService.setTransactionPerOperation(false);
+      mappingService.beginTransaction();
+      
       Set<MapProject> mapProjects = new HashSet<>();
 
       for (MapProject mapProject : mappingService.getMapProjects()
@@ -105,6 +108,8 @@ public class QAMapGroups extends AbstractMojo {
         boolean updateRecords = mode.equals("update");
         mappingService.checkMapGroupsForMapProject(mapProject, updateRecords);
       }
+      
+      mappingService.commit();
 
       getLog().info("done ...");
       mappingService.close();
