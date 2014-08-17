@@ -613,7 +613,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				"Returning record_id... "
 						+ ((mapRecord != null) ? mapRecord.getId().toString()
 								: "null"));
-
 		return mapRecord;
 	}
 
@@ -3216,9 +3215,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				.getMapRecordsForMapProject(mapProject.getId());
 		
 		// detach all these records to prevent null-pointer exceptions
-		for (MapRecord mr : mapRecordsInProject.getIterable())
+		// when cycling over records (some records may be deleted in process)
+		for (MapRecord mr : mapRecordsInProject.getIterable()) {
+			this.handleMapRecordLazyInitialization(mr);
 			manager.detach(mr);
-
+		}
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Checking " + mapRecordsInProject.getCount() + " map records.");
 
