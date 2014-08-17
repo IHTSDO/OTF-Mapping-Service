@@ -3203,13 +3203,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * (org.ihtsdo.otf.mapping.model.MapProject)
 	 */
 	@Override
-	public void checkMapGroupsForMapProject(MapProject mapProject)
+	public void checkMapGroupsForMapProject(MapProject mapProject, boolean updateRecords)
 			throws Exception {
 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Checking map group numbering for project "
 						+ mapProject.getName());
-
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"  Mode: " + (updateRecords ? "Update" : "Check"));
+		
 		MapRecordList mapRecordsInProject = this
 				.getMapRecordsForMapProject(mapProject.getId());
 		
@@ -3310,8 +3312,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				}
 
-				// if map groups have been changed, log and perform
-				// modifications
+				// if errors detected, log
 				if (mapGroupsRemapped == true) {
 
 					nRecordsRemapped++;
@@ -3325,7 +3326,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 									+ mapGroupRemapping.keySet().toString()
 									+ " to "
 									+ mapGroupRemapping.values().toString());
-					
+				}
+				
+				// if errors detected and update mode specified, update
+				if (mapGroupsRemapped == true && updateRecords == true) {
 					for (MapEntry me : mapRecord.getMapEntries()) {
 						if (mapGroupRemapping.containsKey(me.getMapGroup())) {
 							me.setMapGroup(mapGroupRemapping.get(me.getMapGroup()));
@@ -3333,6 +3337,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					}
 					
 					// check if this record still exists in database (i.e. has not been removed)
+					// only known situation where this should occur is if a lead has saved a 
+					// conflict resolution record, but a specialist's remapped record results in
+					// no conflict and publication, causing the lead's record to disappear
 					MapRecord mapRecordInDatabase = this.getMapRecord(mapRecord.getId());
 					
 					if (mapRecordInDatabase == null) {
@@ -3348,9 +3355,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 								mapProject.getSourceTerminology(), 
 								mapProject.getSourceTerminologyVersion());
 						
-						// need to capture cases where conflict resolution results in possible records to remap
-						// that disappear due to conflict resolution (e.g. a specialist remaps, resulting in no conflict
-						// but the lead's record in progress also has errors)
 						try {
 							
 							// process workflow action depending on current status
@@ -3375,7 +3379,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 								workflowService.processWorkflowAction(mapProject, concept, mapRecord.getOwner(), mapRecord, WorkflowAction.SAVE_FOR_LATER);
 								break;
 							
-							// qa situations outside the workflow, simple database update
+							// qa situations outside the workflow (i.e. published material), simple database update
 							case READY_FOR_PUBLICATION:
 							case PUBLISHED:
 							case REVISION:
@@ -3389,13 +3393,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 							case CONFLICT_NEW:
 							case CONSENSUS_NEW:
 							default:
-								Logger.getLogger(MappingServiceJpa.class).error("Record has rroneous workflow state: id = " + mapRecord.getId() + ", workflow status=" + mapRecord.getWorkflowStatus());
+								Logger.getLogger(MappingServiceJpa.class).error("Record has erroneous workflow state: id = " + mapRecord.getId() + ", workflow status=" + mapRecord.getWorkflowStatus());
 								break;
 							
 							}
 						} catch (Exception e) {
 							Logger.getLogger(MappingServiceJpa.class).error("Error processing record for concept id = " + concept.getTerminologyId());
-							
+							e.printStackTrace();		
 						}
 					}
 				}
@@ -3405,13 +3409,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					Logger.getLogger(MappingServiceJpa.class).info(
 							"  " + nRecordsChecked + " records processed ("
 									+ (nRecordsChecked / nMessageInterval * 10)
-									+ "%), " + nRecordsRemapped + " remapped");
+									+ "%), " + nRecordsRemapped + " with group errors");
 				}
 			}
 		}
 		
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"  " + nRecordsChecked + " total records processed ("
-					 + nRecordsRemapped + " remapped");
+					 + nRecordsRemapped + " with group errors");
 	}
 }

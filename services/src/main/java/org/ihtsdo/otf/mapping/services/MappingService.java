@@ -853,12 +853,14 @@ public interface MappingService {
 
 
 	/**
-	 * QA Check: Check map groups for map project.
+	 * Check map groups for map project.
 	 *
 	 * @param mapProject the map project
+	 * @param updateRecords whether to update records or simply check for map group errors
 	 * @throws Exception the exception
 	 */
-	public void checkMapGroupsForMapProject(MapProject mapProject) throws Exception;
+	public void checkMapGroupsForMapProject(MapProject mapProject,
+			boolean updateRecords) throws Exception;
 
 	
 }
