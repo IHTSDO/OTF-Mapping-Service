@@ -1424,8 +1424,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		for (MapRecord mr : newRecords) {
 			if (mr.getOwner().equals(mapUser)) {
 
-				// if there are multiple records on this tracking record, it
-				// MUST be a dual-role lead record
+				// if there are multiple records on this tracking record,
+				// owned by the same user, MUST be a dual-role lead record
 				// default behavior: use the most-advanced record, e.g.
 				// CONFLICT_NEW instead of CONFLICT_DETECTED
 				// the specialist-level work is always inaccessible while
@@ -1498,7 +1498,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						newRecord.setOriginIds(originIds);
 
 						// clear the records and add a single record owned by
-						// this user
+						// this user -- note that this will remove any existing conflict records
 						newRecords.clear();
 						newRecords.add(newRecord);
 
