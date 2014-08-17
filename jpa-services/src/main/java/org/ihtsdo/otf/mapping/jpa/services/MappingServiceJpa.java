@@ -3213,12 +3213,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		
 		MapRecordList mapRecordsInProject = this
 				.getMapRecordsForMapProject(mapProject.getId());
-		
-		// detach all these records to prevent null-pointer exceptions
-		// when cycling over records (some records may be deleted in process)
-		for (MapRecord mr : mapRecordsInProject.getIterable()) {
-			manager.detach(mr);
-		}
+
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Checking " + mapRecordsInProject.getCount() + " map records.");
 
@@ -3332,82 +3327,64 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				
 				// if errors detected and update mode specified, update
 				if (mapGroupsRemapped == true && updateRecords == true) {
-					
-					
-					// check if this record still exists in database (i.e. has not been removed)
-					// only known situation where this should occur is if a lead has saved a 
-					// conflict resolution record, but a specialist's remapped record results in
-					// no conflict and publication, causing the lead's record to disappear
-					MapRecord mapRecordInDatabase = this.getMapRecord(mapRecord.getId());
-					
-					if (mapRecordInDatabase == null) {
-						Logger.getLogger(MappingServiceJpa.class).warn("Map Record " + mapRecord.getId() + " no longer exists");
-					} else {
 						
-						// remerge the detached and record and force lazy instantiation
-						manager.merge(mapRecord);
-						this.handleMapRecordLazyInitialization(mapRecord);
-						
-						for (MapEntry me : mapRecord.getMapEntries()) {
-							if (mapGroupRemapping.containsKey(me.getMapGroup())) {
-								me.setMapGroup(mapGroupRemapping.get(me.getMapGroup()));
-							}
-						}
+					// get the concept
+					Concept concept = contentService.getConcept(
+							mapRecord.getConceptId(), 
+							mapProject.getSourceTerminology(), 
+							mapProject.getSourceTerminologyVersion());
 					
-						// get the concept
-						Concept concept = contentService.getConcept(
-								mapRecord.getConceptId(), 
-								mapProject.getSourceTerminology(), 
-								mapProject.getSourceTerminologyVersion());
-						
-						try {
-							
-							// process workflow action depending on current status
-							switch (mapRecord.getWorkflowStatus()) {
-							
-							// re-finish all records in a completed state
-							case EDITING_DONE:
-							case CONFLICT_DETECTED:
-							case REVIEW_NEEDED:
-							case CONSENSUS_NEEDED:
-								Logger.getLogger(MappingServiceJpa.class).warn("Finishing record, id = " + mapRecord.getId() + ", workflow status = " + mapRecord.getWorkflowStatus());
-								workflowService.processWorkflowAction(mapProject, concept, mapRecord.getOwner(), mapRecord, WorkflowAction.FINISH_EDITING);
-								break;
-								
-								
-							// actions requiring Save For Later
-							case CONFLICT_IN_PROGRESS:
-							case CONSENSUS_IN_PROGRESS:
-							case EDITING_IN_PROGRESS:
-							case REVIEW_IN_PROGRESS:
-								Logger.getLogger(MappingServiceJpa.class).warn("Savng record for later, id = " + mapRecord.getId() + ", workflow status = " + mapRecord.getWorkflowStatus());
-								workflowService.processWorkflowAction(mapProject, concept, mapRecord.getOwner(), mapRecord, WorkflowAction.SAVE_FOR_LATER);
-								break;
-							
-							// qa situations outside the workflow (i.e. published material), simple database update
-							case READY_FOR_PUBLICATION:
-							case PUBLISHED:
-							case REVISION:
-								this.updateMapRecord(mapRecord);
-								Logger.getLogger(MappingServiceJpa.class).warn("Updating record outside the workflow: id = " + mapRecord.getId() + ", workflow status=" + mapRecord.getWorkflowStatus());
-								break;
-							
-							// workflow statuses that should not even have entries, do nothing and output a warning
-							case NEW:
-							case REVIEW_NEW:
-							case CONFLICT_NEW:
-							case CONSENSUS_NEW:
-							default:
-								Logger.getLogger(MappingServiceJpa.class).error("Record has erroneous workflow state: id = " + mapRecord.getId() + ", workflow status=" + mapRecord.getWorkflowStatus());
-								break;
-							
-							}
-						} catch (Exception e) {
-							Logger.getLogger(MappingServiceJpa.class).error("Error processing record for concept id = " + concept.getTerminologyId());
-							e.printStackTrace();		
+					this.handleMapRecordLazyInitialization(mapRecord);
+					
+					for (MapEntry me : mapRecord.getMapEntries()) {
+						if (mapGroupRemapping.containsKey(me.getMapGroup())) {
+							me.setMapGroup(mapGroupRemapping.get(me.getMapGroup()));
 						}
 					}
+					
+					// process workflow action depending on current status
+					switch (mapRecord.getWorkflowStatus()) {
+					
+					// re-finish all records in a completed state
+					case EDITING_DONE:
+					case CONFLICT_DETECTED:
+					case REVIEW_NEEDED:
+					case CONSENSUS_NEEDED:
+						Logger.getLogger(MappingServiceJpa.class).warn("Finishing record, id = " + mapRecord.getId() + ", workflow status = " + mapRecord.getWorkflowStatus());
+						workflowService.processWorkflowAction(mapProject, concept, mapRecord.getOwner(), mapRecord, WorkflowAction.FINISH_EDITING);
+						break;
+						
+						
+					// actions requiring Save For Later
+					case CONFLICT_IN_PROGRESS:
+					case CONSENSUS_IN_PROGRESS:
+					case EDITING_IN_PROGRESS:
+					case REVIEW_IN_PROGRESS:
+						Logger.getLogger(MappingServiceJpa.class).warn("Savng record for later, id = " + mapRecord.getId() + ", workflow status = " + mapRecord.getWorkflowStatus());
+						workflowService.processWorkflowAction(mapProject, concept, mapRecord.getOwner(), mapRecord, WorkflowAction.SAVE_FOR_LATER);
+						break;
+					
+					// qa situations outside the workflow (i.e. published material), simple database update
+					case READY_FOR_PUBLICATION:
+					case PUBLISHED:
+					case REVISION:
+						this.updateMapRecord(mapRecord);
+						Logger.getLogger(MappingServiceJpa.class).warn("Updating record outside the workflow: id = " + mapRecord.getId() + ", workflow status=" + mapRecord.getWorkflowStatus());
+						break;
+					
+					// workflow statuses that should not even have entries, do nothing and output a warning
+					case NEW:
+					case REVIEW_NEW:
+					case CONFLICT_NEW:
+					case CONSENSUS_NEW:
+					default:
+						Logger.getLogger(MappingServiceJpa.class).error("Record has erroneous workflow state: id = " + mapRecord.getId() + ", workflow status=" + mapRecord.getWorkflowStatus());
+						break;
+					
+					}
+			
 				}
+
 
 				// output logging information
 				if (++nRecordsChecked % nMessageInterval == 0) {
