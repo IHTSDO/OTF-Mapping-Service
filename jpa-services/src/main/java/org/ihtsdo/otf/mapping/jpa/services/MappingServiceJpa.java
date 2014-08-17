@@ -3239,17 +3239,24 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		for (MapRecord mapRecord : mapRecordsInProject.getIterable()) {
 
 			// create a map representing oldGroup -> newGroup
-			Map<Integer, Integer> mapGroupRemapping = new HashMap<>();
+			List<Integer> mapGroupsFound = new ArrayList<>();
 
+			// map of remappings
+			Map<Integer, Integer> mapGroupRemapping = new HashMap<>();
+			
 			// find the existing groups
 			for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-				mapGroupRemapping.put(mapEntry.getMapGroup(), null);
+				
+				// if this group not already present, add to list
+				if (!mapGroupsFound.contains(mapEntry.getMapGroup()))
+					mapGroupsFound.add(mapEntry.getMapGroup());
 			}
 			
-			//System.out.println(mapRecord.getId() + ": " + mapGroupRemapping.keySet().toString());
+			// sort the groups found
+			Collections.sort(mapGroupsFound);
 
 			// get the total number of groups present
-			int nMapGroups = mapGroupRemapping.keySet().size();
+			int nMapGroups = mapGroupsFound.size();
 
 			// if no groups at all, skip this record
 			if (nMapGroups > 0) {
@@ -3257,58 +3264,46 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// flag for whether map record needs to be modified
 				boolean mapGroupsRemapped = false;
 
-				// get the lowest group
-				int minGroup = Collections.min(mapGroupRemapping.keySet());
-
-				// if the min group != 1, offset all existing groups
-				// e.g. if mingroup is 0, add 1 to all map group remappings
-				// if mingroup is 4, subtract 3 from all map group remappings
-				if (minGroup != 1) {
-					mapGroupsRemapped = true;
-					for (Integer mapGroup : mapGroupRemapping.keySet()) {
-						mapGroupRemapping.put(mapGroup, mapGroup
-								+ (1 - minGroup));
-					}
-				}
-
-				// get the highest group
-				int maxGroup = Collections.max(mapGroupRemapping.keySet());
-
-				// check for missing groups
-				// e.g. set should be (1, 2, 3, ... n), where n is also equal to
-				// the size of the entry set
-				if (maxGroup != nMapGroups) {
+				// shorthand the min/max values
+				int minGroup = Collections.min(mapGroupsFound);
+				int maxGroup = Collections.max(mapGroupsFound);
+				
+				// if the max group is not equal to the number of groups
+				// or the min group is not equal to 1
+				if (maxGroup != nMapGroups || minGroup != 1) {
 					
-					//System.out.println(maxGroup + " " + nMapGroups);
-
 					mapGroupsRemapped = true;
 
+					// counter for groups
 					int cumMissingGroups = 0;
-					for (int i = 1; i <= maxGroup; i++) {
+					
+					// cycle over all group values from 0 to max group
+					for (int i = 0; i <= maxGroup; i++) {
 
-						//System.out.println("Checking map group " + i);
 						
 						// if this group present,
 						// - remove the group from set
 						// - subtract current value by the cumulative number of
 						// missed groups found
+						// - add 1 and subtract the value of the min group
 						// - re-add the new remapped group
-						// e.g. (1, 3, 5) goes through the following steps:
-						// 1 -> 1 - 0 = 1 -> map as (1, 1)
+						// otherwise
+						// - increment the missing group counter
+						//
+						// e.g. (0, 3, 5) goes through the following steps:
+						// 0 -> 0 - 0 + 1 - 0 = 1 -> map as (0, 1)
+						// 1 -> not present, increment offset
 						// 2 -> not present, increment offset
-						// 3 -> 3 - 1 = 2 -> map as (3, 2)
+						// 3 -> 3 - 2 + 1 - 0 = 2 -> map as (3, 2)
 						// 4 -> not present, increment offset
-						// 5 -> 5 - 2 = 3 -> map as (5, 3)
-						if (mapGroupRemapping.keySet().contains(i)) {
-							//System.out.println("Replacing " + i + " with " + (i - cumMissingGroups));
-							mapGroupRemapping.remove(i);
-							mapGroupRemapping.put(i, i - cumMissingGroups);
+						// 5 -> 5 - 3 + 1 - 0 = 3 -> map as (5, 3)
+						if (mapGroupsFound.contains(i)) {				
+							mapGroupRemapping.put(i, i - cumMissingGroups + 1 - minGroup);
 						} else {
-							
 							cumMissingGroups++;
-							//System.out.println("Incrementing missing group counter to " + cumMissingGroups);
 						}
 					}
+			
 
 				}
 
@@ -3321,11 +3316,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 							"Remapping record " + mapRecord.getId() + ": "
 									+ mapRecord.getConceptId() + ", "
 									+ mapRecord.getConceptName());
+					
+					String mapLogStr = "";
+					for (Integer i : mapGroupRemapping.keySet()) {
+						mapLogStr += " " + i + "->" + mapGroupRemapping.get(i);
+					}
+					
 					Logger.getLogger(MappingServiceJpa.class).info(
-							"  Remapping: "
-									+ mapGroupRemapping.keySet().toString()
-									+ " to "
-									+ mapGroupRemapping.values().toString());
+							"  Remapping: " + mapLogStr);
 				}
 				
 				// if errors detected and update mode specified, update
