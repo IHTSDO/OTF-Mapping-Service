@@ -3291,14 +3291,18 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						// - increment the missing group counter
 						//
 						// e.g. (0, 3, 5) goes through the following steps:
-						// 0 -> 0 - 0 + 1 - 0 = 1 -> map as (0, 1)
+						// 0 -> 0 - 0 + 1 = 1 -> map as (0, 1)
 						// 1 -> not present, increment offset
 						// 2 -> not present, increment offset
-						// 3 -> 3 - 2 + 1 - 0 = 2 -> map as (3, 2)
+						// 3 -> 3 - 2 + 1 = 2 -> map as (3, 2)
 						// 4 -> not present, increment offset
-						// 5 -> 5 - 3 + 1 - 0 = 3 -> map as (5, 3)
+						// 5 -> 5 - 3 + 1 = 3 -> map as (5, 3)
+						//
+						// Note that for this algorithm, zero is considered a "missing group" if not present
+						// 0 -> not present, increment offset
+						// 1 -> 1 - 1 + 1 = 1 -> map as (1, 1)
 						if (mapGroupsFound.contains(i)) {				
-							mapGroupRemapping.put(i, i - cumMissingGroups + 1 - minGroup);
+							mapGroupRemapping.put(i, i - cumMissingGroups + 1);
 						} else {
 							cumMissingGroups++;
 						}
