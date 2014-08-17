@@ -3217,7 +3217,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// detach all these records to prevent null-pointer exceptions
 		// when cycling over records (some records may be deleted in process)
 		for (MapRecord mr : mapRecordsInProject.getIterable()) {
-			this.handleMapRecordLazyInitialization(mr);
 			manager.detach(mr);
 		}
 		Logger.getLogger(MappingServiceJpa.class).info(
@@ -3333,11 +3332,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				
 				// if errors detected and update mode specified, update
 				if (mapGroupsRemapped == true && updateRecords == true) {
-					for (MapEntry me : mapRecord.getMapEntries()) {
-						if (mapGroupRemapping.containsKey(me.getMapGroup())) {
-							me.setMapGroup(mapGroupRemapping.get(me.getMapGroup()));
-						}
-					}
+					
 					
 					// check if this record still exists in database (i.e. has not been removed)
 					// only known situation where this should occur is if a lead has saved a 
@@ -3349,8 +3344,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						Logger.getLogger(MappingServiceJpa.class).warn("Map Record " + mapRecord.getId() + " no longer exists");
 					} else {
 						
-						// remerge the record
+						// remerge the detached and record and force lazy instantiation
 						manager.merge(mapRecord);
+						this.handleMapRecordLazyInitialization(mapRecord);
+						
+						for (MapEntry me : mapRecord.getMapEntries()) {
+							if (mapGroupRemapping.containsKey(me.getMapGroup())) {
+								me.setMapGroup(mapGroupRemapping.get(me.getMapGroup()));
+							}
+						}
 					
 						// get the concept
 						Concept concept = contentService.getConcept(
