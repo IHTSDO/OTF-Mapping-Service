@@ -52,6 +52,7 @@ public class QAMapGroups extends AbstractMojo {
   /**
    * The refSet id
    * @parameter refSetId
+   * @parameter mode
    */
   private String refSetId = null;
   
@@ -76,8 +77,7 @@ public class QAMapGroups extends AbstractMojo {
     }
     
     if (mode == null) {
-    	getLog().info("No mode specified, running as diagnostic only.  If errors to be fixed, use mode=update");
-    	mode = "check";
+    	throw new MojoExecutionException("You must specify a mode (check for diagnostics only, update to fix group numbering errors).");
     }
 
     try {
