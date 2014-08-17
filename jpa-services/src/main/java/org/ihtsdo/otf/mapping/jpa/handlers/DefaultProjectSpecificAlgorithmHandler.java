@@ -1938,7 +1938,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// return the modified records
 		return newRecords;
 	}
-
+	
 	/**
 	 * Returns the previously published/ready-for-publicatoin version of map
 	 * record.
