@@ -53,7 +53,7 @@ endif
 
 echo "    Load the delta ... '/bin/date'"
 cd $OTF_MAPPING_HOME/admin/loader
-mvn -PSNOMEDCTDelta -Drun.config=$OTF_MAPPING_CONFIG
+mvn install -PSNOMEDCTDelta -Drun.config=$OTF_MAPPING_CONFIG
 if ($status != 0) then
     echo "ERROR unzipping delta data"
     cat mvn.log
@@ -62,7 +62,7 @@ endif
 
 echo "    Remove SNOMEDCT tree positions ... '/bin/date'"
 cd $OTF_MAPPING_HOME/admin/remover
-mvn -PSNOMEDCT-treepos -Drun.config=$OTF_MAPPING_CONFIG
+mvn install -PSNOMEDCT-treepos -Drun.config=$OTF_MAPPING_CONFIG
 if ($status != 0) then
     echo "ERROR removing tree positions"
     cat mvn.log
@@ -71,7 +71,7 @@ endif
 
 echo "    Generate SNOMEDCT tree positions ... 'bin/date'"
 cd $OTF_MAPPING_HOME/admin/loader
-mvn -PSNOMEDCT-treepos -Drun.config=$OTF_MAPPING_CONFIG
+mvn install -PSNOMEDCT-treepos -Drun.config=$OTF_MAPPING_CONFIG
 if ($status != 0) then
     echo "ERROR computing tree positions"
     cat mvn.log
