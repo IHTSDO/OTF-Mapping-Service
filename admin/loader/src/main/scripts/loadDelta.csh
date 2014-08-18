@@ -20,8 +20,21 @@ echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
 
+
+
+
+echo "    Delete current wb-release-process-1.18-SNAPSHOT-delta file ...`/bin/date`"
+cd /home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT
+rm -fr wb-release-process-1.18-SNAPSHOT-delta
+if ($status != 0) then
+    echo "ERROR retrieving latest delta data"
+    cat mvn.log
+    exit 1
+endif
+
+
 echo "    Obtain latest release ...`/bin/date`"
-cd $OTF_MAPPING_HOME/data
+cd /home/ihtsdo/data
 mvn org.apache.maven.plugins:maven-dependency-plugin:2.4:get \
   -DgroupId=org.ihtsdo.intl.release.process -DartifactId=wb-release-process \
   -Dclassifier=delta -Dversion=1.18-SNAPSHOT -Dpackaging=zip \
@@ -32,9 +45,9 @@ if ($status != 0) then
     exit 1
 endif
 
-echo "    Unzip delta files into data directory ... '/bin/date'"
+echo "    Unzip delta files into wb-release-process-1.18-SNAPSHOT-delta ... '/bin/date'"
 cd /home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT
-unzip wb-release-process-1.18-SNAPSHOT-delta.zip
+unzip wb-release-process-1.18-SNAPSHOT-delta.zip -d wb-release-process-1.18-SNAPSHOT-delta
 if ($status != 0) then
     echo "ERROR unzipping delta data"
     cat mvn.log
