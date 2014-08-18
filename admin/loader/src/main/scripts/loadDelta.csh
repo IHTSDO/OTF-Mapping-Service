@@ -20,9 +20,6 @@ echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
 
-
-
-
 echo "    Delete current wb-release-process-1.18-SNAPSHOT-delta file ...`/bin/date`"
 cd /home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT
 rm -fr wb-release-process-1.18-SNAPSHOT-delta
