@@ -671,13 +671,12 @@ public interface ContentService extends RootService {
 
 	/**
 	 * Find concepts modified since date.
-	 * 
-	 * @param terminology
-	 *            the terminology
-	 * @param date
-	 *            the date
+	 *
+	 * @param terminology the terminology
+	 * @param date the date
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public ConceptList getConceptsModifiedSinceDate(String terminology,
 			Date date, PfsParameter pfsParameter) throws Exception;
@@ -724,21 +723,66 @@ public interface ContentService extends RootService {
 	 *
 	 * @param tpList the tp list
 	 * @return the tree position list
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public void computeTreePositionInformation(TreePositionList tpList) throws Exception;
 
+	/**
+	 * Gets the relationship id.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the relationship id
+	 * @throws Exception the exception
+	 */
 	public Long getRelationshipId(String terminologyId, String terminology,
 			String terminologyVersion) throws Exception;
 
+	/**
+	 * Gets the all concepts.
+	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the all concepts
+	 */
 	public ConceptList getAllConcepts(String terminology, String terminologyVersion);
 
+	/**
+	 * Gets the all relationship terminology ids.
+	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the all relationship terminology ids
+	 */
 	public Set<String> getAllRelationshipTerminologyIds(String terminology,
 			String terminologyVersion);
 	
+	/**
+	 * Gets the all description terminology ids.
+	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the all description terminology ids
+	 */
 	public Set<String> getAllDescriptionTerminologyIds(String terminology,
 			String terminologyVersion);
 	
+	/**
+	 * Gets the all language ref set member terminology ids.
+	 *
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the all language ref set member terminology ids
+	 */
 	public Set<String> getAllLanguageRefSetMemberTerminologyIds(String terminology,
 			String terminologyVersion);
+
+	/**
+	 * Removes the tree position.
+	 *
+	 * @param id the id
+	 * @throws Exception the exception
+	 */
+	public void removeTreePosition(Long id) throws Exception;
 }
