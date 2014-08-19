@@ -30,13 +30,13 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		
 		// compute relation and advice
 		// attempt to autocompute the map relation, then update the entry
-		/*computeRelation($scope.entry).then(function() {
+		computeRelation($scope.entry).then(function() {
 			console.debug('Relation computed');
 			computeAdvice($scope.entry).then(function() {
 				console.debug('Advice computed');
 				updateEntry();
 			});
-		});*/
+		});
 	});	
 	
 	// watch for entry deletion from map record page

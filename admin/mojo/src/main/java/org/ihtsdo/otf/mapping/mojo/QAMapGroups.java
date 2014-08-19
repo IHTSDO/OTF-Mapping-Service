@@ -34,6 +34,7 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  *                 </goals>
  *                 <configuration>
  *                   <refSetId>${refset.id}</refSetId>
+ *                   <mode>${updateRecords}</mode>
  *                 </configuration>
  *               </execution>
  *             </executions>
@@ -51,8 +52,16 @@ public class QAMapGroups extends AbstractMojo {
   /**
    * The refSet id
    * @parameter refSetId
+   * @parameter mode
    */
   private String refSetId = null;
+  
+  /**
+   * Flag for updating vs simply checking
+   * @parameter updateRecords
+   */
+  
+  private String mode = null;
 
   /**
    * Executes the plugin.
@@ -66,10 +75,17 @@ public class QAMapGroups extends AbstractMojo {
     if (refSetId == null) {
       throw new MojoExecutionException("You must specify a refSetId.");
     }
+    
+    if (mode == null) {
+    	throw new MojoExecutionException("You must specify a mode (check for diagnostics only, update to fix group numbering errors).");
+    }
 
     try {
 
       MappingService mappingService = new MappingServiceJpa();
+      mappingService.setTransactionPerOperation(false);
+      mappingService.beginTransaction();
+      
       Set<MapProject> mapProjects = new HashSet<>();
 
       for (MapProject mapProject : mappingService.getMapProjects()
@@ -89,8 +105,11 @@ public class QAMapGroups extends AbstractMojo {
         getLog().info(
             "Checking map groups for " + mapProject.getName() + ", "
                 + mapProject.getId());
-        mappingService.checkMapGroupsForMapProject(mapProject);
+        boolean updateRecords = mode.equals("update");
+        mappingService.checkMapGroupsForMapProject(mapProject, updateRecords);
       }
+      
+      mappingService.commit();
 
       getLog().info("done ...");
       mappingService.close();
