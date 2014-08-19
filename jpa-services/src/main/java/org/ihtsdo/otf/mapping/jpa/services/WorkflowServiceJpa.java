@@ -25,6 +25,7 @@ import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
@@ -813,52 +814,72 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 
 		List<TrackingRecord> results = ftquery.getResultList();
-		MappingService mappingService = new MappingServiceJpa();
+		MappingService mappingService = new MappingServiceJpa();	
+		
 		for (TrackingRecord tr : results) {
+		
+			// instantiate the result list
 			SearchResult result = new SearchResultJpa();
-
+			
+			// get the map records associated with this tracking record
+			Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
+			
 			// get the map record assigned to this user
 			MapRecord mapRecord = null;
-			for (Long mapRecordId : tr.getMapRecordIds()) {
-
-				MapRecord mr = mappingService.getMapRecord(mapRecordId);
-				if (mr.getOwner().equals(mapUser))
-
-					// TODO See MAP-617
-					// check for case where same user has both specialist and
-					// lead level review work
-					// i.e. do not return any REVIEW_NEW or REVIEW_IN_PROGRESS
-					// record
-					if (mr.getWorkflowStatus().compareTo(
-							WorkflowStatus.REVIEW_NEEDED) > 0) {
-						mapRecord = mr;
-						mr.setWorkflowStatus(WorkflowStatus.REVIEW_NEW); // flagging
-																			// here
-																			// to
-																			// notify
-																			// the
-																			// webapp
-
+			
+			// SEE BELOW/MAP-617
+			WorkflowStatus mapLeadAlternateRecordStatus = null;
+			
+			for (MapRecord mr : mapRecords) {
+				
+				if (mr.getOwner().equals(mapUser)) {
+					
+					// if this lead has review or conflict work, set the flag
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
+							|| mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
+							|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
+							|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
+						
+						System.out.println("FOUND ALTERNATE LEAD RECORD: " + mr.getId() + " - " + mr.getWorkflowStatus());
+						
+						mapLeadAlternateRecordStatus = mr.getWorkflowStatus();
+						
+					// added to prevent user from getting REVISION record back on FIX_ERROR_PATH
+					// yet another problem related to leads being able to serve as dual roles
+					} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+						// do nothing
+						
+					// otherwise, this is the specialist/concept-level work
 					} else {
-						// add the record if one has not already been set
-						if (mapRecord == null)
-							mapRecord = mr;
+						mapRecord = mr;
 					}
+				}
 			}
-
+			
+			// if no record and no review or conflict work was found, throw error
 			if (mapRecord == null) {
 				throw new Exception(
 						"Failed to retrieve assigned work:  no map record found for user "
 								+ mapUser.getUserName() + " and concept "
 								+ tr.getTerminologyId());
+			
+			} else {
+				
+				// alter the workflow status if a higher-level record exists for this user
+				if (mapLeadAlternateRecordStatus != null) {
+					
+					Logger.getLogger(WorkflowServiceJpa.class).info("Setting alternate record status: " + mapLeadAlternateRecordStatus);
+					mapRecord.setWorkflowStatus(mapLeadAlternateRecordStatus);
+				}
+				// create the search result
+				result.setTerminologyId(mapRecord.getConceptId());
+				result.setValue(mapRecord.getConceptName());
+				result.setTerminology(mapRecord.getLastModified().toString());
+				result.setTerminologyVersion(mapRecord.getWorkflowStatus()
+						.toString());
+				result.setId(mapRecord.getId());
+				assignedWork.addSearchResult(result);
 			}
-			result.setTerminologyId(mapRecord.getConceptId());
-			result.setValue(mapRecord.getConceptName());
-			result.setTerminology(mapRecord.getLastModified().toString());
-			result.setTerminologyVersion(mapRecord.getWorkflowStatus()
-					.toString());
-			result.setId(mapRecord.getId());
-			assignedWork.addSearchResult(result);
 		}
 		mappingService.close();
 		return assignedWork;
@@ -967,25 +988,24 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			System.out.println("Assigned conflict: " + tr.toString());
 			SearchResult result = new SearchResultJpa();
 
+			Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
+			
 			// get the map record assigned to this user
 			MapRecord mapRecord = null;
-			for (Long mapRecordId : tr.getMapRecordIds()) {
+			for (MapRecord mr : mapRecords) {
 
 				try {
-					MapRecord mr = mappingService.getMapRecord(mapRecordId);
-
-					// DMO ERROR: This is where the null pointer exception is
-					// happening
-					// Caused by the successful delete of some specialist
-					// records, but not others
-					// due to the UserError/MapRecord constraint problem
 					if (mr.getOwner().equals(mapUser))
-						mapRecord = mr;
+						
+						// SEE MAP-617:
+						// Lower level record may exist with same owner, only add if actually a conflict
+						
+						if (mr.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) < 0) {
+							// do nothing, this is the specialist level work
+						} else {
+							mapRecord = mr;
+						}
 				} catch (Exception e) {
-					// Search for this in catalina.out
-					Logger.getLogger(WorkflowService.class).error(
-							"ERROR_CAPTURE:  findAssignedConflicts, MapRecord  "
-									+ mapRecordId);
 					e.printStackTrace();
 				}
 			}
@@ -993,7 +1013,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			if (mapRecord == null) {
 				// TODO Return this to throw a new exception once all the DMO
 				// ERRORS have been
-				Logger.getLogger(WorkflowService.class).error(
+				throw new Exception(
 						"Failed to retrieve assigned conflicts:  no map record found for user "
 								+ mapUser.getUserName() + " and concept "
 								+ tr.getTerminologyId());
@@ -1103,21 +1123,31 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		MappingService mappingService = new MappingServiceJpa();
 		for (TrackingRecord tr : results) {
 			SearchResult result = new SearchResultJpa();
+			
+			Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
 
 			// get the map record assigned to this user
 			MapRecord mapRecord = null;
-			for (Long mapRecordId : tr.getMapRecordIds()) {
+			for (MapRecord mr : mapRecords) {
 
-				// TODO See MAP-617
-				// check for the case where REVIEW work is both specialist and
-				// lead level for same user
-
-				MapRecord mr = mappingService.getMapRecord(mapRecordId);
-				if (mr.getWorkflowStatus().compareTo(WorkflowStatus.REVIEW_NEW) < 0) {
-					// do nothing
-				} else {
-					// add the record
-					mapRecord = mr;
+				
+				if (mr.getOwner().equals(mapUser)) {
+					
+					// TODO See MAP-617
+					// check for the case where REVIEW work is both specialist and
+					// lead level for same user
+					if (mr.getWorkflowStatus().compareTo(WorkflowStatus.REVIEW_NEW) < 0) {
+						// do nothing, this is the specialist level work
+						
+					// exluce records where the map lead is the one instigating the FIX_ERROR_PATH revision
+					} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)){
+						// do nothing
+						
+					// otherwise, this is the record we want
+					} else {
+						// add the record
+						mapRecord = mr;
+					}
 				}
 			}
 
@@ -1198,6 +1228,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		if (mapRecord != null && mapRecord.getId() != null) {
 			for (MapRecord mr : mapRecords) {
 				if (mr.getId().equals(mapRecord.getId())) {
+					
+					Logger.getLogger(WorkflowService.class).info("Replacing record " + mr.toString() + "\n  with" + mapRecord.toString());
+					
 					mapRecords.remove(mr);
 					mapRecords.add(mapRecord);
 					break;
