@@ -46,9 +46,6 @@
             <resource>
 				<directory>src/main/webapp</directory>
 				<filtering>false</filtering>
-				<includes>
-					<include>**/*.html</include>
-				</includes>
 				<excludes>
 					<exclude>partials/footer.html</exclude>
 				</excludes>
