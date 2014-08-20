@@ -130,10 +130,13 @@
 				</div>
 	
 				<div ng-show="validationResult.errors.length > 0">
-					<div ng-style="{color : isFalseConflict == true ? 'gray' : 'black'}" ng-repeat="result in validationResult.errors">Error:  {{result}}</div>
+					<div ng-repeat="result in validationResult.errors">
+                      <div class="alert alert-danger" role="alert">{{result}}</div>
+				</div>
 				</div>
 				<div ng-show="validationResult.warnings.length > 0">
-					<div ng-style="{color : isFalseConflict == true ? 'gray' : 'black'}"ng-repeat="result in validationResult.warnings">Warning:  {{result}}</div>
+                    <div ng-repeat="result in validationResult.warnings">
+                      <div class="alert alert-warning" role="alert">{{result}}</div>
 				</div>
 				<br>
 				<!--  controls to mark/unmark as false conflict.  Displayed only if positive true/false value returned -->
