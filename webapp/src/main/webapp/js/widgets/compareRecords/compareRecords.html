@@ -131,17 +131,20 @@
 	
 				<div ng-show="validationResult.errors.length > 0">
 					<div ng-repeat="result in validationResult.errors">
-                      <div class="alert alert-danger" role="alert">{{result}}</div>
-				</div>
+                      <div ng-class="{'alert alert-danger' : !isFalseConflict, 'alert alert-success' : isFalseConflict}" role="alert" style="padding:5px;margin-top:9px;margin-bottom:0px">
+                      	<span ng-show="isFalseConflict">[Error Ignored] </span>{{result}}</div>
+					</div>
 				</div>
 				<div ng-show="validationResult.warnings.length > 0">
                     <div ng-repeat="result in validationResult.warnings">
-                      <div class="alert alert-warning" role="alert">{{result}}</div>
+                      <div ng-class="{'alert alert-warning' : !isFalseConflict, 'alert alert-success' : isFalseConflict} role="alert" style="padding:5px;margin-top:9px;margin-bottom:0px">
+                   	   <span ng-show="isFalseConflict">[Warning Ignored] </span>{{result}}</div>
+					</div>
 				</div>
 				<br>
 				<!--  controls to mark/unmark as false conflict.  Displayed only if positive true/false value returned -->
 				<div ng-show="isFalseConflict == false">
-					<button class="btn btn-sm btn-primary" ng-click="toggleFalseConflict()">Mark as Not In Conflict</button>
+					<button class="btn btn-sm btn-primary"  ng-click="toggleFalseConflict()">Mark as Not In Conflict</button>
 				</div>
 				<div ng-show="isFalseConflict === true">
 					Marked as not in conflict 
