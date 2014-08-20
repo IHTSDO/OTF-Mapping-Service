@@ -3342,7 +3342,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						}
 					}
 					
-					// process workflow action depending on current status
+					this.updateMapRecord(mapRecord);
+					
+					/*// process workflow action depending on current status
 					switch (mapRecord.getWorkflowStatus()) {
 					
 					// re-finish all records in a completed state
@@ -3381,7 +3383,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						Logger.getLogger(MappingServiceJpa.class).error("Record has erroneous workflow state: id = " + mapRecord.getId() + ", workflow status=" + mapRecord.getWorkflowStatus());
 						break;
 					
-					}
+					}*/
 			
 				}
 
