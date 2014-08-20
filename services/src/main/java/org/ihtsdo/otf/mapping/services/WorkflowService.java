@@ -13,6 +13,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
+import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -408,7 +409,16 @@ public interface WorkflowService {
 	 */
 	public void computeUntrackedMapRecords(MapProject mapProject) throws Exception;
 
+	public void updateWorkflowException(WorkflowException workflowException)
+			throws Exception;
 
+	public void removeWorkflowException(Long workflowExceptiondId) throws Exception;
 
+	public WorkflowException addWorkflowException(WorkflowException workflowException)
+			throws Exception;
 
+	public WorkflowException getWorkflowException(MapProject mapProject,
+			String terminologyId);
+	
 }
+
