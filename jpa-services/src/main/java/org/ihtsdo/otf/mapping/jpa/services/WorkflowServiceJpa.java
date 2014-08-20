@@ -25,7 +25,6 @@ import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
-import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
@@ -55,6 +54,8 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
+import org.ihtsdo.otf.mapping.workflow.WorkflowException;
+import org.ihtsdo.otf.mapping.workflow.WorkflowExceptionJpa;
 
 /**
  * Default workflow service implementation.
@@ -245,6 +246,98 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				.setParameter("terminologyId", concept.getTerminologyId());
 
 		return (TrackingRecord) query.getSingleResult();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#addWorkflowException
+	 * (org.ihtsdo.otf.mapping.workflow.WorkflowException)
+	 */
+	@Override
+	public WorkflowException addWorkflowException(WorkflowException trackingRecord)
+			throws Exception {
+
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(trackingRecord);
+			tx.commit();
+		} else {
+			manager.persist(trackingRecord);
+		}
+
+		return trackingRecord;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#removeWorkflowException
+	 * (java.lang.Long)
+	 */
+	@Override
+	public void removeWorkflowException(Long trackingRecordId) throws Exception {
+
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			WorkflowException ma = manager.find(WorkflowExceptionJpa.class,
+					trackingRecordId);
+
+			if (manager.contains(ma)) {
+				manager.remove(ma);
+			} else {
+				manager.remove(manager.merge(ma));
+			}
+			tx.commit();
+		} else {
+			WorkflowException ma = manager.find(WorkflowExceptionJpa.class,
+					trackingRecordId);
+			if (manager.contains(ma)) {
+				manager.remove(ma);
+			} else {
+				manager.remove(manager.merge(ma));
+			}
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#updateWorkflowException
+	 * (org.ihtsdo.otf.mapping.workflow.WorkflowException)
+	 */
+	@Override
+	public void updateWorkflowException(WorkflowException workflowException) throws Exception {
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.merge(workflowException);
+			tx.commit();
+		} else {
+			manager.merge(workflowException);
+		}
+	}
+	
+	@Override
+	public WorkflowException getWorkflowException(MapProject mapProject, String terminologyId) {
+		
+		javax.persistence.Query query = manager.createQuery(
+				"select we from WorkflowExceptionJpa we where mapProjectId = :mapProjectId"
+				+ " and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
+				.setParameter("mapProjectId", mapProject.getId())
+				.setParameter("terminology", mapProject.getSourceTerminology())
+				.setParameter("terminologyVersion", mapProject.getSourceTerminologyVersion())
+				.setParameter("terminologyId", terminologyId);
+		
+		// try to get the expected single result
+		try {
+			return (WorkflowException) query.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
+		}
 	}
 
 	private static String constructTrackingRecordForMapProjectIdQuery(
