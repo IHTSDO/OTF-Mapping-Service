@@ -15,6 +15,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 	
 	// initialize as empty to indicate still initializing database connection
 	$scope.editedRecords = [];
+	$scope.searchPerformed = false;
 	$scope.user = localStorageService.get('currentUser');
 	$scope.focusProject = localStorageService.get('focusProject');
 
@@ -51,6 +52,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 
 		console.debug("Retrieving edited work", page, queryTerms);
 		
+	
 		if (queryTerms == undefined) queryTerms = null;
 		
 		// set the page
@@ -81,6 +83,9 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 			$scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
 			 
 			$scope.editedRecords = data.mapRecord;
+			
+			$scope.searchPerformed = true;
+			
 			console.debug("Edited records:");
 			console.debug($scope.editedRecords);
 						 
@@ -179,6 +184,11 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 		
 		return ruleSummary;
 			
+	};
+	
+	$scope.clearSearch = function() {
+		$scope.editedRecords = [];
+		$scope.searchPerformed = false;
 	};
 	
 

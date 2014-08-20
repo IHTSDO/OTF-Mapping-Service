@@ -43,6 +43,16 @@
               <filtering>true</filtering>
               <includes><include>partials/footer.html</include></includes>
             </resource>
+            <resource>
+				<directory>src/main/webapp</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>**/*.html</include>
+				</includes>
+				<excludes>
+					<exclude>partials/footer.html</exclude>
+				</excludes>
+			</resource>
           </webResources>
         </configuration>
       </plugin>
