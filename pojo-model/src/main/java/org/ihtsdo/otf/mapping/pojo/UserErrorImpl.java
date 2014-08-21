@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.pojo;
 
 import java.util.Date;
 
-import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.UserError;
 

@@ -186,17 +186,6 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   public Set<MapRecord> saveForLater(
     TrackingRecord trackingRecord, Set<MapRecord> mapRecords, MapUser mapUser) throws Exception;
 
-  
-  /**
-   * Checks if an existing record is editable by user.
-   *
-   * @param mapRecord the map record
-   * @param mapUser the map user
-   * @return true, if is record editable by user
- * @throws Exception 
-   */
-  public boolean isRecordEditableByUser(MapRecord mapRecord, MapUser mapUser) throws Exception;
-
   /**
    * Performs any workflow action necessary when a user cancels editing a record.
    * 

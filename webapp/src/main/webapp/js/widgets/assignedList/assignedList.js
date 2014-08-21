@@ -110,17 +110,18 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					$scope.assignedReviewWorkType = 'REVIEW_NEW';
 				}
 			} else {
-				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser.userName, 'ALL');
+				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser.userName, 'NEW');
 				$scope.setTab(3);
 				$scope.mapUserViewed = parameters.assignUser;
-				$scope.assignedWorkForUserType = 'ALL';
+				$scope.assignedWorkForUserType = 'NEW';
 			}
 			
 		}
 		else {
 			// reload current assigned concepts, saving page information
-			$scope.retrieveAssignedWork($scope.assignedWorkPage);
+			$scope.retrieveAssignedWork($scope.assignedWorkPage, null, 'NEW');
 			$scope.setTab(0);
+			$scope.assignedWorkType = 'NEW';
 		}
 	});
 
@@ -959,10 +960,20 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			}).success(function(data) {
 				$rootScope.glassPane--;
 				$scope.currentRecord.isFinished = true;
+				
+				// if this was the only record, close the modal
+				if ($scope.records.length == 1) {
+					$scope.done();
+				} else {
+					$scope.selectNextRecord();
+				}
+				
 			}).error(function(data, status, headers, config) {
 			  	$rootScope.glassPane--;
 			    $scope.error = "Error saving record";
 			});
+			
+			
 			
 		};
 
