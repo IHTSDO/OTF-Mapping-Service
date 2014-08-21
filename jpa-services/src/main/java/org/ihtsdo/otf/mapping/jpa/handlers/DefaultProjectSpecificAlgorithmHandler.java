@@ -1498,7 +1498,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						newRecord.setOriginIds(originIds);
 
 						// clear the records and add a single record owned by
-						// this user -- note that this will remove any existing conflict records
+						// this user -- note that this will remove any existing
+						// conflict records
 						newRecords.clear();
 						newRecords.add(newRecord);
 
@@ -1938,7 +1939,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// return the modified records
 		return newRecords;
 	}
-	
+
 	/**
 	 * Returns the previously published/ready-for-publicatoin version of map
 	 * record.
@@ -2062,84 +2063,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// DO NOTHING -- Override in project specific handlers if necessary
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-	 * isRecordEditableByUser(org.ihtsdo.otf.mapping.model.MapRecord,
-	 * org.ihtsdo.otf.mapping.model.MapUser)
-	 */
-	@Override
-	public boolean isRecordEditableByUser(MapRecord mapRecord, MapUser mapUser)
-			throws Exception {
-
-		// check that this user is on this project
-		if (!mapProject.getMapSpecialists().contains(mapUser)
-				&& !mapProject.getMapLeads().contains(mapUser)) {
-			return false;
-		}
-
-		switch (mapRecord.getWorkflowStatus()) {
-
-		// neither lead nor specialist can modify a CONFLICT_DETECTED record
-		case CONFLICT_DETECTED:
-			return false;
-
-			// the following cases can only be edited by an owner who is a lead
-			// for this project
-		case CONFLICT_IN_PROGRESS:
-		case CONFLICT_NEW:
-			if (mapRecord.getOwner().equals(mapUser)
-					&& mapProject.getMapLeads().contains(mapUser))
-				return true;
-			else
-				return false;
-
-		case REVIEW_NEEDED:
-			return false;
-
-			// review editing can only be done by the lead who owns this record
-		case REVIEW_NEW:
-		case REVIEW_IN_PROGRESS:
-			if (mapRecord.getOwner().equals(mapUser)
-					&& mapProject.getMapLeads().contains(mapUser))
-				return true;
-			else
-				return false;
-
-			// consensus record handling - Phase 2
-		case CONSENSUS_NEEDED:
-		case CONSENSUS_NEW:
-		case CONSENSUS_IN_PROGRESS:
-			return false;
-
-			// initial editing stages can be edited only by owner
-		case EDITING_DONE:
-		case EDITING_IN_PROGRESS:
-		case NEW:
-			if (mapRecord.getOwner().equals(mapUser))
-				return true;
-			else
-				return false;
-
-			// published and ready_for_publication records are available to
-			// either specialists or leads
-		case PUBLISHED:
-		case READY_FOR_PUBLICATION:
-			return true;
-
-			// review records are not editable
-		case REVISION:
-			return false;
-
-			// if a non-specified case, throw error
-		default:
-			throw new Exception("Invalid Workflow Status "
-					+ mapRecord.getWorkflowStatus().toString()
-					+ " when checking editable for map record");
-
-		}
-
-	}
+	
 
 }

@@ -98,12 +98,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 	SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); // for
 	long startTime;
 
-	/** the number of objects to create before committing. */
-	private int commitCtContent = 200;
-
-	/** The commit ct mapping. */
-	private int commitCtMapping = 200;
-
 	/** The date format. */
 	private SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
 
