@@ -20,10 +20,8 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.FeedbackEmailJpa;
-import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
@@ -1100,54 +1098,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 	}
 
-	
-	/**
-	 * Indicates whether or the record is editable by the user.
-	 *
-	 * @param userName the user name
-	 * @param mapRecord the map record
-	 * @param authToken 
-	 * @return <code>true</code> if so, <code>false</code> otherwise
-	 * @throws Exception the exception
-	 */
-	@POST
-	@Path("/checkRecordEditable/user/id/{userName}")
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Set record to editing in progress", notes = "Updates the map record and sets workflow to editing in progress.")
-	public boolean isMapRecordEditable(
-			@ApiParam(value = "Name of map user", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "MapRecord to check permissions for", required = true) MapRecordJpa mapRecord,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
-		
-		Logger.getLogger(WorkflowServiceRest.class).info(
-				"RESTful call (Workflow): /record/isEditable/" + userName
-				+ " for map record with id = " + mapRecord.getId().toString());
-		
-		try {
-		  // authorize call
-		  // NOTE:  This routine does not invoke the security service
-		  // NOTE:  This routine will be removed once transient flag isEditableForUser is attached to mapRecord
-		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
-		  if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-		  	return false;
-		
-	  	// get the map user and map project
-	  	MappingService mappingService = new MappingServiceJpa();
-	  	MapUser mapUser = mappingService.getMapUser(userName);
-		  MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
-		
-		  ProjectSpecificAlgorithmHandler algorithmHandler =
-		        mappingService.getProjectSpecificAlgorithmHandler(mapProject);
-		  mappingService.close();
-		
-		  return algorithmHandler.isRecordEditableByUser(mapRecord, mapUser);
-		} catch (Exception e) { 
-			handleException(e, "trying to determine if a map record is editable");
-			return false;
-		}
 
-	}
-	
 	/**
 	 * Gets the assigned map record from the existing workflow for concept and map user, if it exists
 	 *

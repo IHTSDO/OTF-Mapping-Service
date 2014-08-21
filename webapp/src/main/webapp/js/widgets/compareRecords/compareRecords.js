@@ -483,9 +483,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.submitNewUserError = function(recordInError, errorMessage, errorComment) {
 		   console.debug("in submitNewUserError");
 		   
-		   if (errorComment == null || errorComment == undefined || errorComment === '') {
-			   window.alert("The error comment cannot be blank");
-		   	   return;
+		   if (errorComment == null || errorComment == undefined) {
+			   errorComment = 'No additional comment from Map Lead';
 		   }
 		   
 			var obj = {

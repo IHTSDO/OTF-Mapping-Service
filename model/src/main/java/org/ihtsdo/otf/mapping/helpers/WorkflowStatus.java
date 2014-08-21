@@ -22,7 +22,10 @@ public enum WorkflowStatus {
   CONFLICT_NEW, // (can transition to CONFLICT_IN_PROGRESS, READY_FOR_PUBLICATION)
 
   /** Conflict resolution by a lead is in progress */
-  CONFLICT_IN_PROGRESS, // (can transition to READY_FOR_PUBLICATION)
+  CONFLICT_IN_PROGRESS, // (can transition to CONFLICT_RESOLVED)
+  
+  /** Conflict resolution by a lead is resolved, but not released (can transition to READY_FOR_PUBLICATION) */
+  CONFLICT_RESOLVED,
   
   /** Pre-publication state for review by lead */
   REVIEW_NEEDED, // (can transition to REVIEW_NEW, REVIEW_IN_PROGRESS)
@@ -31,7 +34,9 @@ public enum WorkflowStatus {
   REVIEW_NEW, // (can transition to REVIEW_IN_PROGRESS, READY_FOR_PUBLICATION)
   
   /** Review claimed */
-  REVIEW_IN_PROGRESS, // (can transition to READY_FOR_PUBLICATION)
+  REVIEW_IN_PROGRESS, // (can transition to REVIEW_RESOLVED)
+  
+  /** Review resolved, but not released (can transition to READY_FOR_PUBLICATION) */
   
   /** The consensus needed. */
   CONSENSUS_NEEDED, // (can transition to CONSENSUS_IN_PROGRESS)
