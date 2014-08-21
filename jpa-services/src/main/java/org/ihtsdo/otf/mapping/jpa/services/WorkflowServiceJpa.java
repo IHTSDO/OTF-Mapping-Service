@@ -742,10 +742,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		// the record to review must not be owned by this user, unless
 		// this user is the only lead on the project
-		if (mapProject.getMapLeads().size() > 1 && false) { // TODO SEE MAP-617
+		// TODO SEE MAP-617
+		/*if (mapProject.getMapLeads().size() > 1) { 
 			full_query += " AND NOT userAndWorkflowStatusPairs:REVIEW_NEEDED_"
 					+ mapUser.getUserName();
-		}
+		}*/
 
 		// there must not be an already claimed review record
 		full_query += " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
@@ -867,6 +868,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					+ mapUser.getUserName() + ")";
 			break;
 		}
+		
+		// add terms to exclude concepts that a lead has claimed
+		full_query += " AND NOT (userAndWorkflowStatusPairs:CONFLICT_NEW_*"
+				+ " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS"
+				+ " OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED"
+				+ " OR userAndWorkflowStatusPairs:REVIEW_NEW"
+				+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED"
+				+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED)";
 
 		System.out.println("FindAssignedWork query: " + full_query);
 
@@ -1377,21 +1386,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 							.getTreePositions().get(0).getAncestorPath());
 				}
 
-				// if the effective time of the concept is after the last
-				// modified by
-				// this record is being flagged for review based on drip feed
-				// updates
-				if (concept.getEffectiveTime().compareTo(
-						new Date(mapRecord.getLastModified())) > 0) {
-					trackingRecord
-							.setWorkflowPath(WorkflowPath.DRIP_FEED_REVIEW_PATH);
-
-					// otherwise, a user has requested to fix an error on an
-					// existing record
-				} else {
-
-					trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
-				}
+				trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
+				
 
 				// perform the assign action via the algorithm handler
 				mapRecords = algorithmHandler.assignFromInitialRecord(

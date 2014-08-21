@@ -194,7 +194,7 @@
 		ng-show="numAssignedConflictsPages > 1" page="assignedConflictsPage"
 		class="pagination-sm" boundary-links="true" rotate="true"
 		num-pages="numAssignedConflictsPages" max-size="5"
-		on-select-page="retrieveAssignedConflicts(page, user, queryConflict)"></pagination>
+		on-select-page="retrieveAssignedConflicts(page, queryConflict, assignedConflictType)"></pagination>
 
 	<table class="table">
 
@@ -295,7 +295,7 @@
 		ng-show="numAssignedReviewWorkPages > 1" page="assignedReviewWorkPage"
 		class="pagination-sm" boundary-links="true" rotate="true"
 		num-pages="numAssignedReviewWorkPages" max-size="5"
-		on-select-page="retrieveAssignedReviewWork(page, user, queryReviewWork)"></pagination>
+		on-select-page="retrieveAssignedReviewWork(page, queryReviewWork, assignedReviewWorkType)"></pagination>
 
 	<table class="table">
 

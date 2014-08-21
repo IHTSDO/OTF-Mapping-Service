@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
@@ -28,6 +29,7 @@ import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
@@ -56,7 +58,6 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.UserErrorList;
 import org.ihtsdo.otf.mapping.helpers.UserErrorListJpa;
-import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
@@ -1005,13 +1006,22 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		Query luceneQuery;
 
 		// construct luceneQuery based on URL format
+		
+		org.hibernate.search.jpa.FullTextQuery ftquery = null;
+		
+		try {
 
-		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
-				searchFactory.getAnalyzer(MapRecordJpa.class));
-		luceneQuery = queryParser.parse(full_query);
-
-		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
-				.createFullTextQuery(luceneQuery, MapRecordJpa.class);
+			QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+					searchFactory.getAnalyzer(MapRecordJpa.class));
+			luceneQuery = queryParser.parse(full_query);
+	
+			ftquery = fullTextEntityManager
+					.createFullTextQuery(luceneQuery, MapRecordJpa.class);
+		
+		// if a parse exception, throw a local exception
+		} catch (ParseException e) {
+			throw new LocalException("The specified search terms cannot be parsed.  Please check syntax and try again.");
+		}
 
 		// Sort Options -- in order of priority
 		// (1) if a sort field is specified by pfs parameter, use it
@@ -1031,15 +1041,21 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		} else {
 			ftquery.setSort(new Sort(new SortField(sortField, SortField.STRING)));
 		}
+		
+		
 
 		// get the results
-		int totalCount = ftquery.getResultSize();
+		int totalCount;
+		List<MapRecord> mapRecords = new ArrayList<>();
+		
+		totalCount = ftquery.getResultSize();
 
 		if (pfsParameter != null) {
 			ftquery.setFirstResult(pfsParameter.getStartIndex());
 			ftquery.setMaxResults(pfsParameter.getMaxResults());
 		}
-		List<MapRecord> mapRecords = ftquery.getResultList();
+		mapRecords = ftquery.getResultList();
+		
 
 		Logger.getLogger(this.getClass()).debug(
 				Integer.toString(mapRecords.size()) + " records retrieved");
@@ -3224,7 +3240,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				.floor(mapRecordsInProject.getCount() / 10);
 		
 		// instantiate the algorithm handler
-		ProjectSpecificAlgorithmHandler algorithmHandler = this.getProjectSpecificAlgorithmHandler(mapProject);
+		// ProjectSpecificAlgorithmHandler algorithmHandler = this.getProjectSpecificAlgorithmHandler(mapProject);
 
 		// instantiate the services
 		ContentService contentService = new ContentServiceJpa();
@@ -3312,7 +3328,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					nRecordsRemapped++;
 
 					Logger.getLogger(MappingServiceJpa.class).info(
-							"Remapping record " + mapRecord.getId() + ": "
+							"Record requires remapping:  " + mapRecord.getId() + ": "
 									+ mapRecord.getConceptId() + ", "
 									+ mapRecord.getConceptName());
 					
@@ -3322,7 +3338,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					}
 					
 					Logger.getLogger(MappingServiceJpa.class).info(
-							"  Remapping: " + mapLogStr);
+							"  Groups to remap: " + mapLogStr);
 				}
 				
 				// if errors detected and update mode specified, update
@@ -3342,6 +3358,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						}
 					}
 					
+					Logger.getLogger(MappingServiceJpa.class).info(
+							"  Updating record.");
 					this.updateMapRecord(mapRecord);
 					
 					/*// process workflow action depending on current status
