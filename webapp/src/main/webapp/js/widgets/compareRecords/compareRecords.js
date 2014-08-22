@@ -78,7 +78,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
-		$scope.project = parameters.focusProject;
+			$scope.project = parameters.focusProject;
 	});
 	
 	// watch for change in focus project
