@@ -2,12 +2,16 @@ package org.ihtsdo.otf.mapping.services;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
+import org.ihtsdo.otf.mapping.helpers.FeedbackList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.model.Feedback;
+import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -382,7 +386,73 @@ public interface WorkflowService {
 	public void generateMapperTestingStateBHEKRE(MapProject mapProject) throws Exception;
 
 	
+	/**
+	 * Adds the user error.
+	 *
+	 * @param userError the user error
+	 * @return the user error
+	 * @throws Exception the exception
+	 */
+	public Feedback addFeedback(Feedback userError) throws Exception;
+	
+	/**
+	 * Returns the user errors.
+	 *
+	 * @return the user errors
+	 * @throws Exception the exception
+	 */
+	public FeedbackList getFeedbacks() throws Exception;
+	
+	/**
+	 * Adds the feedback conversation.
+	 *
+	 * @param conversation the conversation
+	 * @return the feedback conversation
+	 * @throws Exception the exception
+	 */
+	public FeedbackConversation addFeedbackConversation(FeedbackConversation conversation) throws Exception;
 
+	/**
+	 * Update feedback conversation.
+	 *
+	 * @param conversation the feedback conversation
+	 * @throws Exception the exception
+	 */
+	public void updateFeedbackConversation(FeedbackConversation conversation) throws Exception;
+
+	/**
+	 * Returns the feedback conversation.
+	 *
+	 * @param id the id
+	 * @return the feedback conversation
+	 * @throws Exception the exception
+	 */
+	FeedbackConversation getFeedbackConversation(Long id) throws Exception;
+
+	/**
+	 * Returns the feedback conversations for project.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userName the user name
+	 * @param pfsParameter the pfs parameter
+	 * @return the feedback conversations for project
+	 * @throws Exception the exception
+	 */
+	FeedbackConversationList getFeedbackConversationsForProject(Long mapProjectId, String userName,
+		PfsParameter pfsParameter)
+		throws Exception;
+
+	/**
+	 * Returns the feedback conversations for concept.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @return the feedback conversations for concept
+	 * @throws Exception the exception
+	 */
+	FeedbackConversationList getFeedbackConversationsForConcept(
+		Long mapProjectId, String terminologyId) throws Exception;
+	
 
 
 }

@@ -16,6 +16,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.hibernate.CacheMode;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
@@ -87,6 +88,7 @@ public class LuceneReindexMojo extends AbstractMojo {
 			objectsToReindex.add("MapRecordJpa");
 			objectsToReindex.add("TreePositionJpa");
 			objectsToReindex.add("TrackingRecordJpa");
+			objectsToReindex.add("FeedbackConversationJpa");
 			
 		// otherwise, construct set of indexed objects
 		} else {
@@ -186,6 +188,18 @@ public class LuceneReindexMojo extends AbstractMojo {
 				.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
 				.startAndWait();
 				objectsToReindex.remove("TrackingRecordJpa");
+			}
+			
+			// Feedback Conversations
+			if (objectsToReindex.contains("FeedbackConversationJpa")) {
+				getLog().info("  Creating indexes for FeedbackConversationJpa");
+				fullTextEntityManager.purgeAll(FeedbackConversationJpa.class);
+				fullTextEntityManager.flushToIndexes();
+				fullTextEntityManager.createIndexer(FeedbackConversationJpa.class)
+				.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+				.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
+				.startAndWait();
+				objectsToReindex.remove("FeedbackConversationJpa");
 			}
 			
 			if (objectsToReindex.size() != 0) {
