@@ -836,4 +836,16 @@ public interface MappingService {
 	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception;
 
 
+
+	/**
+	 * Check map groups for map project.
+	 *
+	 * @param mapProject the map project
+	 * @param updateRecords whether to update records or simply check for map group errors
+	 * @throws Exception the exception
+	 */
+	public void checkMapGroupsForMapProject(MapProject mapProject,
+			boolean updateRecords) throws Exception;
+
+	
 }

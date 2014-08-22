@@ -1,7 +1,20 @@
-<button style:"padding-top:10px;" class="btn btn-sm btn-primary" ng-click="retrieveEditedWork(editedRecordsPage)">Search Work</button>
+<form>
+<input type="text" id="editQueryInput" ng-model="queryTerms"> 
+	<button type="submit" style:"padding-top:10px;" class="btn btn-sm btn-primary" ng-click="retrieveEditedWork(editedRecordsPage, queryTerms)">Search</button>
+	<button type="submit" style:"padding-top:10px;" class="btn btn-sm btn-primary" ng-click="clearSearch(); queryTerms = ''">Reset</button>
+	<img src="img/warning.png" tooltip-placement="top" 
+		tooltip="You may search by concept id or terms in the concept's name (e.g. closed fracture, 704020004, ...). Only exact phrases will match, e.g. 'phalanx thumb' will not match the phrase 'phalanx of thumb'.  AND/OR/NOT operators are not supported."></img>
 
-<img src="img/warning.png" tooltip-placement="top" tooltip="Note:  This feature will be expanded with a variety of search and display functions."></img>
-		.
+</form>
+<br>
+	
+<div ng-show ="searchPerformed == false"  class="alert alert-warning" disabled>
+		Enter search terms, or leave blank to search all edited work.
+</div>
+
+<div ng-show = "editedRecords.length == 0 && searchPerformed == true" style="width: 30%; padding: 10px;" class="alert alert-warning" disabled>
+		No concepts found.</div>
+</div>
 
 <ul class="pager"
   ng-hide="editedRecordsPage == 1 && editedRecords.length < recordsPerPage">
@@ -11,11 +24,11 @@
     ng-click="retrieveEditedWork(editedRecordsPage+1)"><a>Older &rarr;</a></li>
 </ul>
 
-<accordion close-others="false"> <accordion-group is-open="true">
+<accordion close-others="false">
 	<accordion-group ng-repeat="record in editedRecords">
-	<accordion-heading>Concept {{record.conceptId}}: {{record.conceptName}}</accordion-heading>
+	<accordion-heading>{{record.lastModified | date: 'MM/dd/yyyy'}}: {{record.conceptName}} ({{record.conceptId}})</accordion-heading>
 	
-	<a href="#/record/conceptId/{{record.conceptId}}">View Records</a>
+	<a href="#/record/conceptId/{{record.conceptId}}">View Current Records</a>
 
 	<div otf-map-record-wide record="record" project="focusProject" show-title="false"></div>
 	</accordion-group>
