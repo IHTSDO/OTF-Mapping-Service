@@ -197,6 +197,35 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	}
 
 	@Override
+	public void removeTreePosition(Long id) throws Exception {
+
+		tx = manager.getTransaction();
+
+		// retrieve this concept
+		TreePosition tp = manager.find(TreePositionJpa.class, id);
+
+		if (getTransactionPerOperation()) {
+
+			// remove specialist
+			tx.begin();
+			if (manager.contains(tp)) {
+				manager.remove(tp);
+			} else {
+				manager.remove(manager.merge(tp));
+			}
+			tx.commit();
+
+		} else {
+			if (manager.contains(tp)) {
+				manager.remove(tp);
+			} else {
+				manager.remove(manager.merge(tp));
+			}
+		}
+
+	}
+	
+	@Override
 	public void removeConcept(Long id) throws Exception {
 
 		tx = manager.getTransaction();
@@ -1185,26 +1214,55 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * org.ihtsdo.otf.mapping.services.ContentService#clearTreePositions(java.
 	 * lang.String, java.lang.String)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void clearTreePositions(String terminology, String terminologyVersion)
 			throws Exception {
+		
+		Logger.getLogger(this.getClass()).info("Removing tree positions via object-management for " + terminology + ", " + terminologyVersion);
+		
+		// if currently in transaction-per-operation mode, temporarily set to false
+		boolean currentTransactionStrategy = getTransactionPerOperation();
+		if (getTransactionPerOperation()) {
+			this.setTransactionPerOperation(false);
+		}
+		
+		int results = 0;  		// progress tracker
+		int commitSize = 5000;	// retrieval/delete batch size
 
 		javax.persistence.Query query = manager
-				.createQuery("DELETE From TreePositionJpa tp where terminology = :terminology and terminologyVersion = :terminologyVersion");
+				.createQuery("select tp from TreePositionJpa tp where terminology = :terminology and terminologyVersion = :terminologyVersion");
 		query.setParameter("terminology", terminology);
 		query.setParameter("terminologyVersion", terminologyVersion);
+		
+		query.setFirstResult(0);
+		query.setMaxResults(commitSize);
 
-		int results = 0;
-		if (getTransactionPerOperation()) {
-			EntityTransaction tx = manager.getTransaction();
-			tx.begin();
-			results = query.executeUpdate();
-			tx.commit();
-		} else {
-			results = query.executeUpdate();
-		}
+		boolean resultsFound = true;
+		
+		while (resultsFound) {
+			
+			List<TreePosition> treePositions = query.getResultList();
+			
+			if (treePositions.size() == 0) resultsFound = false;
+			
+			this.beginTransaction();
+			for (TreePosition tp : treePositions) {
+				this.removeTreePosition(tp.getId());
+			}
+			this.commit();
+			
+			results += commitSize;
+			
+			Logger.getLogger(this.getClass()).info(
+					"  " + results + " tree positions deleted" );
+		};
+		
 		Logger.getLogger(this.getClass()).info(
-				"  deleted " + results + " entries");
+				"Finished:  deleted " + results + " tree positions");
+		
+		// set the transaction strategy based on status starting this routine
+		setTransactionPerOperation(currentTransactionStrategy);
 
 	}
 

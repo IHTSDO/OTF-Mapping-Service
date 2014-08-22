@@ -241,12 +241,11 @@ lead review<br>
 
 
 <!--   FEEDBACK PANEL -->
-{{page}} page
 <div ng-show="page != 'resolveConflictsDashboard'" >
 <accordion >
  <accordion-group is-open="isFeedbackOpen">
  <accordion-heading> 
-    <span ng-click="markViewed()"> Feedback page {{page}}
+    <span ng-click="markViewed()"> Feedback 
     <span ng-show="conversation.feedback.length > 0">({{conversation.feedback.length}})</span><i
 	class="pull-right glyphicon"
 	ng-class="{'glyphicon-chevron-down': isFeedbackOpen, 'glyphicon-chevron-right': !isFeedbackOpen}"></i>
@@ -298,7 +297,6 @@ lead review<br>
 <button class="btn btn-sm btn-primary"
 	ng-show="page != 'resolveConflictsDashboard'"
 	ng-click="finishMapRecord(false)">Finish/Next</button>
-<button class="btn btn-sm btn-primary" ng-click="displayMapRecord()">Display</button>
 <button class="btn btn-sm btn-warning" ng-click="cancelMapRecord()">Cancel</button>
 <button class="btn btn-sm btn-danger" ng-click="clearMapRecord()">Clear</button>
 

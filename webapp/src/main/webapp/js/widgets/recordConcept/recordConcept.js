@@ -162,13 +162,6 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 			}
 		}
 		
-		// for records in project, check if this user can edit these records
-		console.debug($scope.recordsInProject);
-		for (var i = 0; i < $scope.recordsInProject.length; i++) {
-
-			//setEditable($scope.recordsInProject[i]);
-		}
- 
 		// if no records for this project found, set flag
 		if ($scope.recordsInProject.length == 0) {
 			$scope.recordsInProjectNotFound = true;
@@ -177,22 +170,6 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		}
 	};
 	
-	function setEditable(record) {
-		
-		$http({
-			url: root_workflow + "checkRecordEditable/user/id/" + $scope.currentUser.userName,
-			method: "POST",
-			dataType: 'json',
-			data: record,
-			headers: {
-				"Content-Type": "application/json"
-			}	
-		}).success(function(response) {
-			record.isEditable = response;
-		}).error(function(data, status, headers, config) {
-		    $rootScope.handleHttpError(data, status, headers, config);
-		});
-	};
 	
 	$scope.isEditable = function(record) {
 
