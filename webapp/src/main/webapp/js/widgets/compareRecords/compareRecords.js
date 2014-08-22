@@ -20,6 +20,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	
 	console.debug("Entering compareRecordsCtrl");
 
+   /* $scope.page =  'resolveConflictsDashboard';*/
+
 	// initialize scope variables
 	$scope.concept = 	null;
 	$scope.project = 	localStorageService.get('focusProject');
@@ -29,12 +31,15 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.record1 = 	null;
 	$scope.groups1 = 	null;
 	$scope.entries1 =    null;
+	$scope.conversation1 = null;
 
 	$scope.record2 = 	null;
 	$scope.groups2 = 	null;
 	$scope.entries2 =    null;
+	$scope.conversation2 = null;
 
 	$scope.leadRecord = null;
+	$scope.leadConversation = null;
 
 	// initialize accordion variables
 	$scope.isConceptOpen = true;
@@ -42,10 +47,12 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.isPrinciplesOpen = true;
 	$scope.isNotesOpen = true;
 	$scope.isReportOpen = true;
-	$scope.isDiscrepancyOpen = false;
+	$scope.isGroupFeedbackOpen = false;
+	
 	
 	// TODO: needs to be moved to server-side
-	$scope.errorMessages = [{displayName: 'Map Group is not relevant'}, 
+	$scope.errorMessages = [{displayName: 'None'}, 
+	                        {displayName: 'Map Group is not relevant'}, 
                             {displayName: 'Map Group  has been omitted'},
                             {displayName: 'Sequencing of Map Groups is incorrect'}, 
                             {displayName: 'The number of map records per group is incorrect'},
@@ -132,7 +139,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
 				$scope.concept = data;
-				setTitle($scope.concept.terminologyId, $scope.concept.defaultPreferredName);
+				setAccordianTitle($scope.concept.terminologyId, $scope.concept.defaultPreferredName);
 			}).error(function(data, status, headers, config) {
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
@@ -181,7 +188,40 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				}
 			}
 			
-
+			//add code to get feedback conversations
+			$http({
+				url: root_workflow + "conversation/id/" + $scope.record1.id,
+				dataType: "json",
+				method: "GET",
+				headers: { "Content-Type": "application/json"}	
+			}).success(function(data) {
+				$scope.conversation1 = data;
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);  
+			});		
+						
+			$http({
+				url: root_workflow + "conversation/id/" + $scope.record2.id,
+				dataType: "json",
+				method: "GET",
+				headers: { "Content-Type": "application/json"}	
+			}).success(function(data) {
+				$scope.conversation2 = data;
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);  
+			});	
+			
+			$http({
+				url: root_workflow + "conversation/id/" + $scope.leadRecord.id,
+				dataType: "json",
+				method: "GET",
+				headers: { "Content-Type": "application/json"}	
+			}).success(function(data) {
+				$scope.leadConversation = data;
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);  
+			});	
+			
 		}).error(function(data, status, headers, config) {
 		    $rootScope.handleHttpError(data, status, headers, config);
 		}).then(function(data) {
@@ -396,7 +436,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		});
 	};
 
-	function setTitle(id, term) {
+	function setAccordianTitle(id, term) {
 		if ($scope.record2 == null) {
 			$scope.model.title = "Review Record: " + id + " " + term;
 		} else {
@@ -463,198 +503,188 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		
 	};
 
-	$scope.submitNewUserError = function(recordInError, errorMessage, errorComment) {
-		   console.debug("in submitNewUserError");
+	$scope.submitNewFeedback = function(recordInError, errorMessage, feedbackMessage) {
+		   console.debug("in submitNewFeedback");
+
+		   var currentConversation = $scope.getCurrentConversation(recordInError);
 		   
-		   if (errorComment == null || errorComment == undefined || errorComment === '') {
-			   window.alert("The error comment cannot be blank");
-		   	   return;
-		   }
-		   
-			var obj = {
-						"note": errorComment,
+		   // if the conversation hasn't yet been started
+		   if (currentConversation == "") {
+			   
+			// create first feedback thread to go into the feedback conversation
+		    var receivingUsers =  [recordInError.owner];
+			var feedback = {
+						"message": feedbackMessage,
 						"mapError": errorMessage.displayName,
 						"timestamp": new Date(),
-						"mapUserReporting": $scope.user,
-						"mapUserInError": recordInError.owner,
-						"mapRecord": recordInError
+						"sender": $scope.user,
+						"recipients": receivingUsers,
+						"isError": "true",
+						"feedbackConversation": currentConversation,
+						"viewedBy": [$scope.user]
 					  };
+			
+			var feedbacks = new Array();
+			feedbacks.push(feedback);
+			
+			// create feedback conversation
+			var feedbackConversation = {
+					"lastModified":  new Date(),
+					"terminology": $scope.project.destinationTerminology,
+					"terminologyId": recordInError.conceptId,
+					"terminologyVersion": $scope.project.destinationTerminologyVersion,
+					"isActive": "true",
+					"isDiscrepancyReview": "false",
+					"mapRecordId": recordInError.id,
+					"feedback": feedbacks,
+					"defaultPreferredName": $scope.concept.defaultPreferredName,
+					"title": $scope.getTitle(false, errorMessage.displayName)
+				  };
+			
 			$http({						
-				url: root_mapping + "error/add",
+				url: root_workflow + "conversation/add",
 				dataType: "json",
-				data: obj,
+				data: feedbackConversation,
+				method: "PUT" ,
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				console.debug("success to addFeedbackConversation");
+			}).error(function(data, status, headers, config) {
+				$scope.recordError = "Error adding new feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			});			
+			
+		   } else { // already started a conversation
+			   
+			   // create feedback msg to be added to the conversation
+			    var receivingUsers =  [recordInError.owner];
+				var feedback = {
+							"message": feedbackMessage,
+							"mapError": errorMessage.displayName,
+							"timestamp": new Date(),
+							"sender": $scope.user,
+							"recipients": receivingUsers,
+							"isError": "true",
+							"viewedBy": [$scope.user]
+						  };
+			
+				var localFeedback = currentConversation.feedback;
+				localFeedback.push(feedback);
+				currentConversation.feedback = localFeedback;
+				currentConversation.title = $scope.getTitle(false, errorMessage.displayName);
+				
+			  $http({						
+				url: root_workflow + "conversation/update",
+				dataType: "json",
+				data: currentConversation,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			  }).success(function(data) {
+				console.debug("success to update Feedback conversation");
+			  }).error(function(data, status, headers, config) {
+				$scope.recordError = "Error updating feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			  });
+		   }
+		};
+		
+	$scope.submitGroupFeedback = function(groupFeedbackMessage) {
+		console.debug("submitGroupFeedback");
+
+		   if (groupFeedbackMessage == null || groupFeedbackMessage == undefined || groupFeedbackMessage === '') {
+			   window.alert("The group feedback message field cannot be blank");
+		   	   return;
+		   }
+		   var currentConversation = $scope.getCurrentConversation($scope.leadRecord);
+		   
+		   // if the conversation hasn't yet been started
+		   if (currentConversation == null || currentConversation == "") {
+			   
+			// create first feedback item to go into the feedback conversation
+		    var receivingUsers =  [$scope.record1.owner, $scope.record2.owner];
+			var feedback = {
+						"message": groupFeedbackMessage,
+						"mapError": "",
+						"timestamp": new Date(),
+						"sender": $scope.user,
+						"recipients": receivingUsers,
+						"isError": "true",
+						"feedbackConversation": currentConversation,
+						"viewedBy": []
+					  };
+			
+			var feedbacks = new Array();
+			feedbacks.push(feedback);
+			
+			// create feedback conversation
+			var feedbackConversation = {
+					"lastModified":  new Date(),
+					"terminology": $scope.project.destinationTerminology,
+					"terminologyId": $scope.leadRecord.conceptId,
+					"terminologyVersion": $scope.project.destinationTerminologyVersion,
+					"isActive": "true",
+					"isDiscrepancyReview": $scope.indicateDiscrepancyReview,
+					"mapRecordId": $scope.leadRecord.id,
+					"feedback": feedbacks,
+					"defaultPreferredName": $scope.concept.defaultPreferredName,
+					"title": $scope.getTitle(true)
+				  };
+			
+			$http({						
+				url: root_workflow + "conversation/add",
+				dataType: "json",
+				data: feedbackConversation,
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json"
 				}
 			}).success(function(data) {
-				console.debug("success to addUserError");
+				console.debug("success to addFeedbackConversation for group feedback");
 			}).error(function(data, status, headers, config) {
-				$scope.recordError = "Error adding new user error.";
+				$scope.recordError = "Error adding new feedback conversation for group feedback.";
 				$rootScope.handleHttpError(data, status, headers, config);
-			});
-		};
-		
-	$scope.startDiscrepancyReview = function(discrepancyNote) {
-		console.debug("Sending discrepancy emails", discrepancyNote);
-		
-		
-		
-		// construct a base user email object consisting of sender, subject, and base email text
-		var baseFeedbackEmailObj = {};
-		var feedbackEmailObj = null;
-		var recipients = null;
-		
-		// add the current user as sender
-		baseFeedbackEmailObj['sender'] = $scope.user.userName;
-		
-		// null recipients
-		baseFeedbackEmailObj['recipients'] = [];
-		
-		// set the subject
-		baseFeedbackEmailObj['subject'] = "[OTF-Mapping] Discrepancy Review: Project " + $scope.project.name + ", Concept " + $scope.record1.conceptId + " - " + $scope.record1.conceptName;
-	
-		console.debug("Feedback Email Object:", feedbackEmailObj);
-		
-		$scope.discrepancyErrorMessage = '';
-		$scope.discrepancySuccessMessage = '';
-		
-		// set the email text
-		var emailText = "<strong>Discrepancy Review Notes</strong><br><br>";
-		emailText += discrepancyNote + "<br><br>";
-
-		// link to concept record page
-		// TODO ADD
-		
-		emailText += "<hr>";
-		
-		// set the project information
-		emailText += "Project:                 " + $scope.project.name + "<br>";
-		emailText += "Source Terminology:      " + $scope.project.sourceTerminology + ", " + $scope.project.sourceTerminologyVersion  + "<br>";
-		emailText += "Destination Terminology: " + $scope.project.destinationTerminology + ", " + $scope.project.destinationTerminologyVersion  + "<br>";
-		emailText += "<br>";
-		
-		// set the concept information
-		emailText += "Concept Id:              " + $scope.record1.conceptId + "<br>";
-		emailText += "Concept Name:            " + $scope.record1.conceptName + "<br>";
-		
-		emailText += "<hr>";
-		
-		// add the current user as sender
-		baseFeedbackEmailObj['emailText'] = emailText;
-		feedbackEmailObj = angular.copy(baseFeedbackEmailObj);
-		
-		recipients = new Array();
-		recipients.push($scope.user.userName);
-		feedbackEmailObj['recipients'] = recipients;
-		
-		// add both records
-		feedbackEmailObj['emailText'] += recordToText($scope.record1);
-		feedbackEmailObj['emailText'] += "<hr>";
-		feedbackEmailObj['emailText'] += recordToText($scope.record2);
-		feedbackEmailObj['emailText'] += "<hr>";
-		
-		// add list of discrepancies
-		feedbackEmailObj['emailText'] += "<strong>Conflict Report</strong><br><br>";
-		
-		if ($scope.validationResult.errors.length > 0) {
-			feedbackEmailObj['emailText'] += "Errors<br>";
-			feedbackEmailObj['emailText'] += "<ul>";
-			for (var i = 0; i < $scope.validationResult.errors.length; i++) {
-				feedbackEmailObj['emailText'] += "<li>" + $scope.validationResult.errors[i] + "</li>";
-			}
-			feedbackEmailObj['emailText'] += "</ul>";
-		}
-		
-		if ($scope.validationResult.warnings.length > 0) {
-			feedbackEmailObj['emailText'] += "Warnings<br>";
-			feedbackEmailObj['emailText'] += "<ul>";
-			for (var i = 0; i < $scope.validationResult.warnings.length; i++) {
-				feedbackEmailObj['emailText'] += "<li>" + $scope.validationResult.warnings[i] + "</li>";
-			}
-			feedbackEmailObj['emailText'] += "</ul>";
-		}
-		
-		// make the api call
-		$rootScope.glassPane++;
-		$http({
-			url: root_workflow + "project/id/" + $scope.project.id + "/user/id/" + $scope.user.userName + "/sendFeedback",
-			dataType: "json",
-			data: feedbackEmailObj,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			}
-		}).success(function(data) {
-			$rootScope.glassPane--;
-			$scope.discrepancySuccessMessage += "Email successfully sent to " + $scope.user.name + ". \n";
-		}).error(function(data, status, headers, config) {
-			$rootScope.glassPane--;
-		    $rootScope.handleHttpError(data, status, headers, config);
-		    $scope.discrepancyErrorMessage += "Failed to send email to " + $scope.user.name + ". \n";
-		});
-		
-		// send email to owner of first record
-		feedbackEmailObj = angular.copy(baseFeedbackEmailObj);
-		
-		// add first records
-		feedbackEmailObj['emailText'] += recordToText($scope.record1);
-		feedbackEmailObj['emailText'] += "<hr>";
-		
-		recipients = new Array();
-		recipients.push($scope.record1.owner.userName);
-		feedbackEmailObj['recipients'] = recipients;
-		
-		// make the api call
-		$rootScope.glassPane++;
-		$http({
-			url: root_workflow + "project/id/" + $scope.project.id + "/user/id/" + $scope.user.userName + "/sendFeedback",
-			dataType: "json",
-			data: feedbackEmailObj,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			}
-		}).success(function(data) {
-			$rootScope.glassPane--;
-			$scope.discrepancySuccessMessage += "Email successfully sent to " + $scope.record1.owner.name + ". \n";
-		}).error(function(data, status, headers, config) {
-			$rootScope.glassPane--;
-		    $rootScope.handleHttpError(data, status, headers, config);
-		    $scope.discrepancyErrorMessage += "Failed to send email to " + $scope.record1.owner.name + ". \n";
-		});
-		
-		// send email to owner of second record, if it exists
-		if ($scope.record2 != null) {
-			feedbackEmailObj = angular.copy(baseFeedbackEmailObj);
+			});			
 			
-			recipients = new Array();
-			recipients.push($scope.record2.owner.userName);
-			feedbackEmailObj['recipients'] = recipients;
+		   } else { // already started a conversation
+			   
+			   // create feedback msg to be added to the conversation
+			    var receivingUsers =  [$scope.record1.owner, $scope.record2.owner];
+				var feedback = {
+							"message": groupFeedbackMessage,
+							"mapError": "",
+							"timestamp": new Date(),
+							"sender": $scope.user,
+							"recipients": receivingUsers,
+							"isError": "true",
+							"viewedBy": []
+						  };
 			
-			// add first records
-			feedbackEmailObj['emailText'] += recordToText($scope.record2);
-			feedbackEmailObj['emailText'] += "<hr>";
-			
-			// make the api call
-			$rootScope.glassPane++;
-			$http({
-				url: root_workflow + "project/id/" + $scope.project.id + "/user/id/" + $scope.user.userName + "/sendFeedback",
+				var localFeedback = currentConversation.feedback;
+				localFeedback.push(feedback);
+				currentConversation.feedback = localFeedback;
+				currentConversation.discrepancyReview = $scope.indicateDiscrepancyReview;
+				currentConversation.title = $scope.getTitle(true);
+				
+			  $http({						
+				url: root_workflow + "conversation/update",
 				dataType: "json",
-				data: feedbackEmailObj,
+				data: currentConversation,
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json"
 				}
-			}).success(function(data) {
-				$rootScope.glassPane--;
-				$scope.discrepancySuccessMessage += "Email successfully sent to " + $scope.record1.owner.name + "\n";
-			}).error(function(data, status, headers, config) {
-				$rootScope.glassPane--;
-			    $rootScope.handleHttpError(data, status, headers, config);
-			    $scope.discrepancyErrorMessage += "Failed to send email to " + $scope.record1.owner.name + "\n";
-			});
-		}
+			  }).success(function(data) {
+				console.debug("success to update Feedback conversation for group feedback");
+			  }).error(function(data, status, headers, config) {
+				$scope.recordError = "Error updating feedback conversation for group feedback.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			  });
+		   }
+		   
 	};
 	
 	function recordToText(record) {
@@ -783,5 +813,86 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.to_trusted = function(html_code) {
 		return $sce.trustAsHtml(html_code);
 	};
+	
+	$scope.getCurrentConversation = function(currentRecord) {
+		console.debug("in getCurrentConversation");
+		if (currentRecord.id == $scope.record1.id)
+			return $scope.conversation1;
+		else if (currentRecord.id == $scope.record2.id)
+			return $scope.conversation2;
+		else if (currentRecord.id == $scope.leadRecord.id)
+			return $scope.leadConversation;
+		return null;
+	};
 
+	$scope.isFeedbackViewed = function() {
+    	for (var i = 0; i < $scope.conversation.feedback.length; i++) {
+    		var alreadyViewedBy =  $scope.conversation.feedback[i].viewedBy;
+    		var found = false;
+    		for (var j = 0; j < alreadyViewedBy.length; j++) {
+    			if (alreadyViewedBy[j].userName == $scope.user.userName)
+    				found = true;
+    		}	
+    		if (found == false)
+    			return false;
+    	}
+    	return true;
+	};
+    
+	$scope.getTitle = function(group, errMsg) {
+		if ($scope.indicateDiscrepancyReview == true)
+			return "Discrepancy Review Feedback";
+		else if (group == true)
+			return "Group Feedback";
+		else if (errMsg != "" && errMsg != "None")
+			return "Error Feedback";
+		else if (group == false)
+			return "Feedback";
+	};
+
+	$scope.selectDiscrepancyReview  = function(review) {
+		$scope.indicateDiscrepancyReview = review;
+	};	
+		
+	$scope.tinymceOptions = {			
+			menubar : false,
+			statusbar : false,
+			plugins : "autolink autoresize link image charmap searchreplace",
+			toolbar : "undo redo | styleselect | bold italic underline strikethrough | charmap link image",
+	};
+	
+    // add current user to list of viewers who have seen the feedback conversation
+    $scope.markViewed = function() {
+    	var needToUpdate = false;
+    	for (var i = 0; i < $scope.conversation.feedback.length; i++) {
+    		var alreadyViewedBy =  $scope.conversation.feedback[i].viewedBy;
+    		var found = false;
+    		for (var j = 0; j<alreadyViewedBy.length; j++) {
+    			if (alreadyViewedBy[j].userName == $scope.user.userName)
+    				found = true;
+    		}	
+        	if (found == false) {
+      		  alreadyViewedBy.push($scope.user);
+      		  needToUpdate = true;
+        	}
+    	}
+    	
+    	if (needToUpdate == true) {
+		  $http({						
+				url: root_workflow + "conversation/update",
+				dataType: "json",
+				data: $scope.conversation,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				console.debug("success to update Feedback conversation.");
+			}).error(function(data, status, headers, config) {
+				$scope.recordError = "Error updating feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			});
+    	}
+    };
+	
 });

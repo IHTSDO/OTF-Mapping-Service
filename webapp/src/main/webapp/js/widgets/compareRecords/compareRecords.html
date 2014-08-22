@@ -244,76 +244,129 @@
 				<!--  end class b -->
 
 			</div> <!--  end recordSplitter -->
-			
-			<div id="feedbackSplitter">
-				<div class="a">
-					
-					<form style="margin-top: 8px; margin-left: 4px;">
-						<table>
-							<tr>
-								<td>Select error:&nbsp;</td>
-								<td><select ng-model="selectedErrorMessage1"
-									ng-options="msg as msg.displayName for msg in errorMessages track by msg.displayName">
-								</select></td>
-							</tr>
-							<tr>
-								<td>Comment:&nbsp;</td>
-								<td><textarea ng-model="errorComment1"
-									style="width: 100%; margin-top: 5px;"></textarea></td>
-							</tr>
-						</table>
-						<div>
-							<button class="btn btn-sm btn-primary" style="margin: 4px"
-								ng-click="submitNewUserError(record1, selectedErrorMessage1, errorComment1); errorComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
-								error</button>
-						</div>
-					</form>
-				</div>
-				<div class="b">
-					<form style="margin-top: 8px; margin-left: 4px;">
-						<table>
-							<tr>
-								<td>Select error:&nbsp;</td>
-								<td><select ng-model="selectedErrorMessage2"
-									ng-options="msg as msg.displayName for msg in errorMessages track by msg.displayName">
-								</select></td>
-							</tr>
-							<tr>
-								<td>Comment:&nbsp;</td>
-								<td><textarea ng-model="errorComment2"
-									style="width: 100%; margin-top: 5px;"></textarea></td>
-							</tr>
-						</table>
-						<div>
-							<button class="btn btn-sm btn-primary" style="margin: 4px"
-								ng-click="submitNewUserError(record2, selectedErrorMessage2, errorComment2); errorComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
-								error</button>
-						</div>
-					</form>
-				
-				
-				</div> <!--  end class b -->
-			</div> <!--  end feedbackSplitter -->
-			
-			
-		</div>
+
+      <div id="feedbackSplitter">
+        <div class="a">
+
+          <div ng-show="conversation1.feedback.length > 0">
+            <div ng-repeat="feedback in conversation1.feedback">
+              <div class="alert alert-warning" disabled>
+                [By {{feedback.sender.name}}
+                to <span ng-repeat="recipient in feedback.recipients">
+                         {{recipient.name}}</span>
+                on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+                <div ng-show="feedback.mapError != 'None'"
+                  style="padding-left: 20px;"
+                  ng-bind-html="to_trusted(feedback.mapError)"></div>
+                <div style="padding-left: 20px;"
+                  ng-bind-html="to_trusted(feedback.message)"></div>
+              </div>
+            </div>
+            <hr>
+          </div>
+
+
+          <form style="margin-top: 8px; margin-left: 4px;">
+            <table>
+              <tr>
+                  <form method="post">
+                  <textarea id="tinymce-feedback1" ui-tinymce="tinymceOptions" ng-model="feedbackComment1"></textarea>
+                  </form>
+              </tr>
+              <tr>
+                <td>Error Message:&nbsp;</td>
+                <td><select ng-model="selectedErrorMessage1" style="margin: 4px"
+                  ng-options="msg as msg.displayName for msg in errorMessages track by msg.displayName">
+                </select></td>
+              </tr>
+            </table>
+            <div>
+              <button class="btn btn-sm btn-primary" style="margin: 4px"
+                ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
+                feedback</button>
+            </div>
+          </form>
+        </div>
+        <div class="b">
+        
+          <div ng-show="conversation2.feedback.length > 0">
+            <div ng-repeat="feedback in conversation2.feedback">
+              <div class="alert alert-warning" disabled>
+                [By {{feedback.sender.name}}
+                to <span ng-repeat="recipient in feedback.recipients">
+                         {{recipient.name}}</span>
+                on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+                <div ng-show="feedback.mapError != 'None'"
+                  style="padding-left: 20px;"
+                  ng-bind-html="to_trusted(feedback.mapError)"></div>
+                <div style="padding-left: 20px;"
+                  ng-bind-html="to_trusted(feedback.message)"></div>
+              </div>
+            </div>
+            <hr>
+          </div>
+        
+     
+
+     
+        
+          <form style="margin-top: 8px; margin-left: 4px;">
+            <table>
+              <tr>
+                  <form method="post">
+                  <textarea id="tinymce-feedback2" ui-tinymce="tinymceOptions" ng-model="feedbackComment2"></textarea>
+                  </form>
+              </tr>
+              <tr>
+                <td>Error Message:&nbsp;<select ng-model="selectedErrorMessage2" style="margin: 4px"
+                  ng-options="msg as msg.displayName for msg in errorMessages track by msg.displayName">
+                </select></td>
+              </tr>
+            </table>
+            <div>
+              <button class="btn btn-sm btn-primary" style="margin: 4px"
+                ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
+                feedback</button>
+            </div>
+          </form>
+
+        </div>
+        <!--  end class b -->
+      </div>
+      <!--  end feedbackSplitter -->
+
+
+    </div>
 		<div id="report" ng-show="record2 != null">
 			<accordion> 
-				<accordion-group is-open="isDiscrepancyOpen">
-				<accordion-heading> Discrepancy Review<i
+				<accordion-group is-open="isGroupFeedbackOpen">
+				<accordion-heading> Group Feedback<i
 					class="pull-right glyphicon"
-					ng-class="{'glyphicon-chevron-down': isDiscrepancyOpen, 'glyphicon-chevron-right': !isDiscrepancyOpen}"></i>
+					ng-class="{'glyphicon-chevron-down': isGroupFeedbackOpen, 'glyphicon-chevron-right': !isGroupFeedbackOpen}"></i>
 				</accordion-heading>
-				
-				Enter discrepancy review notes:
-				<textarea style="width: 100%; margin-top: 5px;" ng-model="discrepancyFeedback"></textarea>
-				
+ 				
+                <div ng-show="leadConversation.feedback.length > 0">
+                  <div ng-repeat="feedback in leadConversation.feedback">
+                    <div class="alert alert-warning" disabled>
+                      [By {{feedback.sender.name}}
+                      to <span ng-repeat="recipient in feedback.recipients">
+                         {{recipient.name}}<span ng-if="$last == false">,</span></span>
+                      on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+                      <div style="padding-left: 20px;"
+                        ng-bind-html="to_trusted(feedback.message)"></div>
+                    </div>
+                  </div>
+                  <hr>
+                </div>        
+        
+                <form method="post">
+                  <textarea id="tinymce-feedback3" ui-tinymce="tinymceOptions" ng-model="groupFeedback"></textarea>
+                </form>
 				<button class="btn btn-sm btn-primary" style="margin: 4px"
-								ng-click="startDiscrepancyReview(discrepancyFeedback)">Send Emails</button>
-				{{discrepancyErrorMessage}}<br>
-				{{discrepancySuccessMessage}}
-								
-				</accordion-group>
+								ng-click="submitGroupFeedback(groupFeedback)">Submit feedback</button>
+		 		
+                <input type="checkbox" ng-model="indicateDiscrepancyReview" ng-change="selectDiscrepancyReview(indicateDiscrepancyReview)"> Mark for Discrepancy Review						
+        </accordion-group>
 				<accordion-group is-open="isReportOpen">
 				<accordion-heading> Conflict Report <i
 					class="pull-right glyphicon"

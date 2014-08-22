@@ -15,8 +15,9 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
-import org.ihtsdo.otf.mapping.helpers.UserErrorList;
+import org.ihtsdo.otf.mapping.helpers.FeedbackList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -25,7 +26,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
-import org.ihtsdo.otf.mapping.model.UserError;
+import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
@@ -742,23 +743,7 @@ public interface MappingService {
 	 */
 	public void removeMapUserPreferences(Long mapUserPreferencesId) throws Exception;
 
-	/**
-	 * Adds the user error.
-	 *
-	 * @param userError the user error
-	 * @return the user error
-	 * @throws Exception the exception
-	 */
-	public UserError addUserError(UserError userError) throws Exception;
-	
-	/**
-	 * Returns the user errors.
-	 *
-	 * @return the user errors
-	 * @throws Exception the exception
-	 */
-	public UserErrorList getUserErrors() throws Exception;
-	
+
 	/**
 	 * Given a list of tree positions and a map project id, sets the valid codes
 	 * for each node.
