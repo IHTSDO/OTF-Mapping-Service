@@ -19,10 +19,19 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.Version;
 import org.hibernate.CacheMode;
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.query.AuditEntity;
+import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
+import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
+import org.ihtsdo.otf.mapping.helpers.FeedbackList;
+import org.ihtsdo.otf.mapping.helpers.FeedbackListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
+import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
@@ -39,9 +48,12 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.model.Feedback;
+import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
@@ -2744,5 +2756,258 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		contentService.close();
 		mappingService.close();
 	}
+
+	// /////////////////////////////////////
+	// FEEDBACK FUNCTIONS
+	// /////////////////////////////////////
+	
+	/**
+	 * Adds the feedback.
+	 *
+	 * @param feedback the feedback
+	 * @return the feedback
+	 */
+	@Override
+	public Feedback addFeedback(Feedback feedback) {
+
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(feedback);
+			tx.commit();
+		} else {
+			manager.persist(feedback);
+		}
+
+		return feedback;
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public FeedbackList getFeedbacks() {
+		List<Feedback> feedbacks = null;
+		// construct query
+		javax.persistence.Query query = manager
+				.createQuery("select m from FeedbackJpa m");
+		// Try query
+		feedbacks = query.getResultList();
+		FeedbackListJpa feedbackList = new FeedbackListJpa();
+		feedbackList.setFeedbacks(feedbacks);
+		feedbackList.setTotalCount(feedbacks.size());
+
+		return feedbackList;
+	}
+	
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#addFeedbackConversation(org.ihtsdo.otf.mapping.model.FeedbackConversation)
+	 */
+	@Override
+	public FeedbackConversation addFeedbackConversation(FeedbackConversation conversation) {
+
+		// set the conversation of all elements of this conversation
+		conversation.assignToChildren();
+		
+		if (getTransactionPerOperation()) {
+			tx = manager.getTransaction();
+			tx.begin();
+			manager.persist(conversation);
+			tx.commit();
+		} else {
+			manager.persist(conversation);
+		}
+
+		return conversation;
+	}
+	
+	@Override
+	public void updateFeedbackConversation(FeedbackConversation conversation) {
+
+		// set the conversation of all elements of this conversation
+		conversation.assignToChildren();
+		
+		if (getTransactionPerOperation()) {
+
+			tx = manager.getTransaction();
+
+			tx.begin();
+			manager.merge(conversation);
+			tx.commit();
+			// manager.close();
+		} else {
+			manager.merge(conversation);
+		}
+	}
+	
+
+	@Override
+	public FeedbackConversation getFeedbackConversation(Long id) throws Exception {
+
+		// construct query
+		javax.persistence.Query query = manager
+				.createQuery("select m from FeedbackConversationJpa m where mapRecordId = :recordId");
+
+		// Try query
+		query.setParameter("recordId", id);
+		List<FeedbackConversation> feedbackConversations = (List<FeedbackConversation>) query.getResultList();
+
+		if (feedbackConversations != null && feedbackConversations.size() > 0)
+			handleFeedbackConversationLazyInitialization(feedbackConversations.get(0));
+
+		Logger.getLogger(this.getClass()).debug(
+				"Returning feedback conversation id... "
+						+ ((feedbackConversations != null) ? id.toString()
+								: "null"));
+
+		return feedbackConversations != null && feedbackConversations.size() > 0 ? feedbackConversations.get(0) : null;
+	}
+	
+	private void handleFeedbackConversationLazyInitialization(FeedbackConversation feedbackConversation) {
+		// handle all lazy initializations
+		for (Feedback feedback : feedbackConversation.getFeedbacks()) {
+			feedback.getSender().getName();
+			for (MapUser recipient : feedback.getRecipients())
+				recipient.getName();
+			for (MapUser viewedBy : feedback.getViewedBy())
+				viewedBy.getName();
+		}
+		
+	}
+	
+	@Override
+	public FeedbackConversationList getFeedbackConversationsForConcept(Long mapProjectId,
+		String terminologyId) throws Exception {
+		
+		MappingService mappingService = new MappingServiceJpa();
+		MapProject mapProject = mappingService.getMapProject(mapProjectId);
+		mappingService.close();
+		
+		javax.persistence.Query query = manager
+				.createQuery(
+						"select m from FeedbackConversationJpa m where terminology = :terminology and"
+						+ " terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
+				.setParameter("terminology", mapProject.getDestinationTerminology())
+				.setParameter("terminologyVersion", mapProject.getDestinationTerminologyVersion())
+				.setParameter("terminologyId", terminologyId);
+
+    
+		List<FeedbackConversation> feedbackConversations = query.getResultList();
+		for (FeedbackConversation feedbackConversation : feedbackConversations) {
+			handleFeedbackConversationLazyInitialization(feedbackConversation);
+		}
+
+		// set the total count
+		FeedbackConversationListJpa feedbackConversationList = new FeedbackConversationListJpa();
+		feedbackConversationList.setTotalCount(feedbackConversations.size());
+
+		// extract the required sublist of feedback conversations
+		feedbackConversationList.setFeedbackConversations(feedbackConversations);
+
+		return feedbackConversationList;		
+	}
+
+	@SuppressWarnings({ "unchecked" })
+	@Override
+	public FeedbackConversationList getFeedbackConversationsForProject(Long mapProjectId,
+		String userName, PfsParameter pfsParameter) 
+			throws Exception {
+
+		MappingService mappingService = new MappingServiceJpa();
+		MapProject mapProject = mappingService.getMapProject(mapProjectId);
+		mappingService.close();
+			
+		String full_query = 
+						"terminology:" + mapProject.getDestinationTerminology() + " AND "
+						+ " terminologyVersion:" + mapProject.getDestinationTerminologyVersion() + " AND "
+						+ "( feedbacks.sender.userName:" + userName + " OR "
+								+ "feedbacks.recipients.userName:" + userName + ")";
+
+	
+		Logger.getLogger(MappingServiceJpa.class).info(full_query);
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
+		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+		Query luceneQuery;
+
+		// construct luceneQuery based on URL format
+
+		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+				searchFactory.getAnalyzer(FeedbackConversationJpa.class));
+		luceneQuery = queryParser.parse(full_query);
+
+		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
+				.createFullTextQuery(luceneQuery, FeedbackConversationJpa.class);
+
+		// Sort Options -- in order of priority
+		// (1) if a sort field is specified by pfs parameter, use it
+		// (2) if a query has been specified, use nothing (lucene relevance
+		// default)
+		// (3) if a query has not been specified, sort by conceptId
+
+		String sortField = "lastModified";
+		if (pfsParameter != null && pfsParameter.getSortField() != null
+				&& !pfsParameter.getSortField().isEmpty()) {
+			ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
+					SortField.STRING)));
+		} else if (pfsParameter != null
+				&& pfsParameter.getQueryRestriction() != null
+				&& !pfsParameter.getQueryRestriction().isEmpty()) {
+			// do nothing
+		} else {
+			ftquery.setSort(new Sort(new SortField(sortField, SortField.STRING, true)));
+		}
+
+		// get the results
+		int totalCount = ftquery.getResultSize();
+
+		if (pfsParameter != null) {
+			ftquery.setFirstResult(pfsParameter.getStartIndex());
+			ftquery.setMaxResults(pfsParameter.getMaxResults());
+		}
+		List<FeedbackConversation> feedbackConversations = ftquery.getResultList();
+
+		Logger.getLogger(this.getClass()).debug(
+				Integer.toString(feedbackConversations.size()) + " feedbackConversations retrieved");
+
+		for (FeedbackConversation feedbackConversation : feedbackConversations) {
+			handleFeedbackConversationLazyInitialization(feedbackConversation);
+		}
+
+		// set the total count
+		FeedbackConversationListJpa feedbackConversationList = new FeedbackConversationListJpa();
+		feedbackConversationList.setTotalCount(totalCount);
+
+		// extract the required sublist of feedback conversations
+		feedbackConversationList.setFeedbackConversations(feedbackConversations);
+
+		return feedbackConversationList;
+
+		
+		
+		
+		/*javax.persistence.Query query = manager
+				.createQuery(
+						"select m from FeedbackConversationJpa m where terminology = :terminology and"
+						+ " terminologyVersion = :terminologyVersion")
+				.setParameter("terminology", mapProject.getDestinationTerminology())
+				.setParameter("terminologyVersion", mapProject.getDestinationTerminologyVersion());
+
+    
+		List<FeedbackConversation> feedbackConversations = query.getResultList();
+		for (FeedbackConversation feedbackConversation : feedbackConversations) {
+			handleFeedbackConversationLazyInitialization(feedbackConversation);
+		}
+
+		FeedbackConversationListJpa feedbackConversationList = new FeedbackConversationListJpa();
+
+		// extract the required sublist of feedback conversations
+		feedbackConversationList.setFeedbackConversations(feedbackConversations);
+
+		return feedbackConversationList;
+*/
+	}
+	
 
 }

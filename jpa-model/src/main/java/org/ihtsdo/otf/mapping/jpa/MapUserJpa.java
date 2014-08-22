@@ -11,6 +11,10 @@ import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
@@ -132,6 +136,7 @@ public class MapUserJpa implements MapUser {
    * @return the user name
    */
   @Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getUserName() {
     return userName;
   }
@@ -162,6 +167,7 @@ public class MapUserJpa implements MapUser {
    * @return the name
    */
   @Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getName() {
     return name;
   }
@@ -192,6 +198,7 @@ public class MapUserJpa implements MapUser {
    * @return the email
    */
   @Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getEmail() {
     return email;
   }

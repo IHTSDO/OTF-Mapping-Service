@@ -31,6 +31,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.entries =    null;
 	$scope.user = 		localStorageService.get('currentUser');
 	$scope.role = 		localStorageService.get('currentRole');
+	$scope.conversation = null;
+	$scope.recipientMapUser = $scope.project.mapLead[0];
+	$scope.mapLeads = $scope.project.mapLead;
 	
 	// validation result storage variable
 	$scope.savedValidationWarnings = [];
@@ -42,7 +45,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.isNotesOpen = false;
 	$scope.isFlagsOpen = false;
 	$scope.groupOpen = new Array(10);
-	for (var i = 0; i < $scope.groupOpen.length; i++) $scope.groupOpen[i] = true;
+	for (var i = 0; i < $scope.groupOpen.length; i++) 
+		$scope.groupOpen[i] = true;
 
 	// start note edit mode in off mode
 	$scope.noteEditMode = false;
@@ -56,7 +60,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		$scope.isPrinciplesOpen = true;
 		$scope.isNotesOpen = true;
 		$scope.isFlagsOpen = true;
-		for (var i = 0; i < $scope.groupOpen.length; i++) $scope.groupOpen[i] = true;
+		for (var i = 0; i < $scope.groupOpen.length; i++) 
+			$scope.groupOpen[i] = true;
 	};
 
 	$scope.closeAll = function() {
@@ -90,7 +95,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	// on successful retrieval of project, get the record/concept
 	$scope.$watch(['project', 'userToken'], function() {
 		if ($scope.project != null && $scope.userToken != null) {
-	
 			$http.defaults.headers.common.Authorization = $scope.userToken;
 			retrieveRecord();
 		}
@@ -154,7 +158,17 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			// initialize the entries
 			initializeEntries();
 			
-
+			//add code to get feedback conversations
+			$http({
+				url: root_workflow + "conversation/id/" + $scope.record.id,
+				dataType: "json",
+				method: "GET",
+				headers: { "Content-Type": "application/json"}	
+			}).success(function(data) {
+				$scope.conversation = data;
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);  
+			});		
 		});
 	};
 
@@ -186,7 +200,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			// if the hibernate id is defined, set the local id to that value
 			if ($scope.record.mapEntry[i].id != null) {
 				console.debug("Setting local id to existing hibernate id", $scope.record.mapEntry[i].id);
-				$scope.record.mapEntry[i].localId = 	$scope.record.mapEntry[i].id;
+				$scope.record.mapEntry[i].localId = $scope.record.mapEntry[i].id;
 			} else {
 				console.debug("Setting local id to " + currentLocalId);
 				$scope.record.mapEntry[i].localId = currentLocalId++;
@@ -297,7 +311,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 		}
 
-		console.debug("Validating the map record");
+		console.debug("Validating the map record.");
 		// validate the record
 		$http({
 			url: root_mapping + "validation/record/validate",
@@ -780,155 +794,111 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	/** 
 	 * FEEDBACK FUNCTIONS
 	 */
-	$scope.sendFeedback = function(record, feedback) {
+	$scope.sendFeedback = function(record, feedbackMessage, recipient) {
 		console.debug("Sending feedback email", record);
 		
-		var feedbackEmailObj = {};
-		
-		// assign group and priority
-		record = $scope.getFormattedRecord(record);
-		
+		   if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
+			   window.alert("The feedback field cannot be blank. ");
+		   	   return;
+		   }
+		   
+		   // if the conversation hasn't yet been started
+		   if ($scope.conversation == null || $scope.conversation == "") {
+			   
+			// create first feedback item to go into the feedback conversation
+		    var receivingUsers = [recipient];
+			var feedback = {
+						"message": feedbackMessage,
+						"mapError": "",
+						"timestamp": new Date(),
+						"sender": $scope.user,
+						"recipients": receivingUsers,
+						"isError": "false",
+						"feedbackConversation": $scope.conversation,
+						"viewedBy": [$scope.user]
+					  };		
+			
+			var feedbacks = new Array();
+			feedbacks.push(feedback);
+			
 
-		var recipients = new Array();
-		
-		// if specialist, send email to all map leads
-		if ($scope.role === 'Specialist') {
-			console.debug("Adding leads: ", $scope.project, $scope.project.mapead);
-			for (var i = 0; i < $scope.project.mapLead.length; i++) {
-				console.debug($scope.project.mapLead[i].userName);
-				recipients.push($scope.project.mapLead[i].userName);
-			}
-
-		// otherwise, send email to owner of this record
-		} else if ($scope.role === 'Lead') {
-			if ($scope.user.userName === record.owner.userName) {
-				$scope.feedbackError = "Map Lead can not send request for feedback on own record";
-				return;
-			}
-			recipients.push(record.owner.userName);
-		}
-		
-		// add the current user as a recipient
-		recipients.push($scope.user.userName);
-		
-		// set the recipients
-		feedbackEmailObj['recipients'] = recipients;
-		
-		// add the current user as sender
-		feedbackEmailObj['sender'] = $scope.user.userName;
-		
-		// set the subject
-		feedbackEmailObj['subject'] = "[OTF-Mapping] Feedback request: Project " + $scope.project.name + ", Concept " + record.conceptId + " - " + record.conceptName;
-	
-		console.debug("Feedback Email Object:", feedbackEmailObj);
-		
-		// set the email text
-		var emailText = "<strong>Feedback from user " + $scope.user.name + "</strong><br><br>";
-		emailText += feedback + "<br><br>";
-		
-		emailText += "<br>"
-		emailText += "<strong>Map Record</strong><br><br>";
-		
-		
-		// link to concept record page
-		// TODO ADD
-		
-		// set the project information
-		emailText += "Project:                 " + $scope.project.name + "<br>";
-		emailText += "Source Terminology:      " + $scope.project.sourceTerminology + ", " + $scope.project.sourceTerminologyVersion  + "<br>";
-		emailText += "Destination Terminology: " + $scope.project.destinationTerminology + ", " + $scope.project.destinationTerminologyVersion  + "<br>";
-		emailText += "<br>";
-		
-		// set the concept information
-		emailText += "Concept Id:              " + record.conceptId + "<br>";
-		emailText += "Concept Name:            " + record.conceptName + "<br><br>";
-		
-		// for each group
-		// NOTE:  group 0 is by definition empty
-		for (var i = 1; i < $scope.entries.length; i++) {
 			
+			  // create feedback conversation
+			  var feedbackConversation = {
+					"lastModified":  new Date(),
+					"terminology": $scope.project.destinationTerminology,
+					"terminologyId": record.conceptId,
+					"terminologyVersion": $scope.project.destinationTerminologyVersion,
+					"isActive": "true",
+					"isDiscrepancyReview": "true",
+					"mapRecordId": record.id,
+					"feedback": feedbacks,
+					"defaultPreferredName": $scope.concept.defaultPreferredName,
+					"title": "Feedback"
+				  };
 			
-			var groupEntries = $scope.entries[i];
-			
-			emailText += "Group "+ i + "<br>";
-			
-			// for each entry in group
-
-			for (var j = 0; j < groupEntries.length; j++) {
-				
-				var entry = groupEntries[j];
-				console.debug("adding entry: ", entry)
-			
-				emailText += " (" + j + ") " + entry.targetId + " - " + entry.targetName + "<br>";
-				if ($scope.project.ruleBased == true)
-					emailText += "      RULE:     " + entry.rule + "<br>";
-				if (entry.mapRelation != null) 
-					emailText += "      RELATION: " + entry.mapRelation.name + "<br>";
-				if (entry.mapAdvice.length != 0) {
-					emailText += "      ADVICES:  ";
-					
-					for (var k = 0; k < entry.mapAdvice.length; k++) {
-						if (k>0)
-							emailText += "                ";
-						emailText += entry.mapAdvice[k].name + "<br>";	
-					};
+			  $http({						
+				url: root_workflow + "conversation/add",
+				dataType: "json",
+				data: feedbackConversation,
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json"
 				}
-			};
-		};
-		
-		emailText += "<br>";
-		
-		// add the principles
-		if (record.mapPrinciple.length > 0) {
+			  }).success(function(data) {
+				console.debug("success to addFeedbackConversation.");
+			  }).error(function(data, status, headers, config) {
+				$scope.recordError = "Error adding new feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			  });	
 			
-			emailText += "Map Principles Used:" + "<br>";
 			
-			for (var i = 0; i < record.mapPrinciple.length; i++) {
-				emailText += "  " + record.mapPrinciple[i].principleId + ": " + record.mapPrinciple[i].name + "<br>";
-			}
+		   } else { // already started a conversation
+			   
+			   // figure out the return recipients based on previous feedback in conversation
+				var localFeedback = $scope.conversation.feedback;
+				var localSender = localFeedback[localFeedback.length -1].sender;
+				var localRecipients = localFeedback[localFeedback.length -1].recipients;
+				var returnRecipients = new Array();
+				if (localSender.userName == $scope.user.userName)
+					returnRecipients = localRecipients;
+				else {
+					returnRecipients.push(localSender);
+					for (var i = 0; i < localRecipients.length; i++) {
+						if (localRecipients[i].userName != $scope.user.userName)
+						  returnRecipients.push(localRecipients[i]);
+					}
+				}
+				
+			   // create feedback msg to be added to the conversation
+				var feedback = {
+							"message": feedbackMessage,
+							"mapError": "",
+							"timestamp": new Date(),
+							"sender": $scope.user,
+							"recipients": returnRecipients,
+							"isError": "true",
+							"viewedBy": [$scope.user]
+						  };
 			
-			emailText += "<br>";
-		}
-		
-		// add the notes
-		if (record.mapNote.length > 0) {
-			
-			emailText += "Notes:" + "<br>";
-			
-			for (var i = 0; i < record.mapNote.length; i++) {
-				emailText += "   [" + record.mapNote[i].user.userName + "] " + record.mapNote[i].note + "<br>";
-			}
-			
-			emailText += "<br>";
-		}
-		
-		// check if flagged for map lead
-		if (record.flagForMapLeadReview == true) {
-			emailText += "<strong>Flagged for Map Lead Review</strong>" + "<br>";
-		}
-		
-		// add the current user as sender
-		feedbackEmailObj['emailText'] = emailText;
-		
-		console.debug(emailText);
-		//@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/sendFeedback")
-		
-		// make the api call
-		$http({
-			url: root_workflow + "project/id/" + $scope.project.id + "/user/id/" + $scope.user.userName + "/sendFeedback",
-			dataType: "json",
-			data: feedbackEmailObj,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			}
-		}).success(function(data) {
-
-		}).error(function(data, status, headers, config) {
-			$rootScope.glassPane--;
-		    $rootScope.handleHttpError(data, status, headers, config);
-		});
-		
+				localFeedback.push(feedback);
+				$scope.conversation.feedback = localFeedback;
+				
+			  $http({						
+				url: root_workflow + "conversation/update",
+				dataType: "json",
+				data: $scope.conversation,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			  }).success(function(data) {
+				console.debug("success to update Feedback conversation.");
+			  }).error(function(data, status, headers, config) {
+				$scope.recordError = "Error updating feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			  });
+		   }
 	};
 	
 	/**
@@ -1415,4 +1385,55 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
     	window.open($scope.getBrowserUrl(), "browserWindow");
     };
     
+	$scope.isFeedbackViewed = function() {
+		if ($scope.conversation == null || $scope.conversation == "")
+			return true;
+    	for (var i = 0; i < $scope.conversation.feedback.length; i++) {
+    		var alreadyViewedBy =  $scope.conversation.feedback[i].viewedBy;
+    		var found = false;
+    		for (var j = 0; j < alreadyViewedBy.length; j++) {
+    			if (alreadyViewedBy[j].userName == $scope.user.userName)
+    				found = true;
+    		}	
+    		if (found == false)
+    			return false;
+    	}
+    	return true;
+	};
+    
+    // add current user to list of viewers who have seen the feedback conversation
+    $scope.markViewed = function() {
+    	var needToUpdate = false;
+		if ($scope.conversation == null || $scope.conversation == "")
+			return;
+    	for (var i = 0; i < $scope.conversation.feedback.length; i++) {
+    		var alreadyViewedBy =  $scope.conversation.feedback[i].viewedBy;
+    		var found = false;
+    		for (var j = 0; j<alreadyViewedBy.length; j++) {
+    			if (alreadyViewedBy[j].userName == $scope.user.userName)
+    				found = true;
+    		}	
+        	if (found == false) {
+      		  alreadyViewedBy.push($scope.user);
+      		  needToUpdate = true;
+        	}
+    	}
+    	
+    	if (needToUpdate == true) {
+		  $http({						
+				url: root_workflow + "conversation/update",
+				dataType: "json",
+				data: $scope.conversation,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				console.debug("success to update Feedback conversation.");
+			}).error(function(data, status, headers, config) {
+				$scope.recordError = "Error updating feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			});
+    	}
+    };
 });

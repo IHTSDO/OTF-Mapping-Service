@@ -52,8 +52,8 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
-import org.ihtsdo.otf.mapping.helpers.UserErrorList;
-import org.ihtsdo.otf.mapping.helpers.UserErrorListJpa;
+import org.ihtsdo.otf.mapping.helpers.FeedbackList;
+import org.ihtsdo.otf.mapping.helpers.FeedbackListJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
@@ -64,6 +64,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
+import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -74,7 +75,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
-import org.ihtsdo.otf.mapping.model.UserError;
+import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
@@ -2726,46 +2727,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 	}
 
-	// /////////////////////////////////////
-	// USER ERROR FUNCTIONS
-	// /////////////////////////////////////
-	
-	/**
-	 * Adds the user error.
-	 *
-	 * @param userError the user error
-	 * @return the user error
-	 */
-	@Override
-	public UserError addUserError(UserError userError) {
-		if (getTransactionPerOperation()) {
-			tx = manager.getTransaction();
-			tx.begin();
-			manager.persist(userError);
-			tx.commit();
-		} else {
-			manager.persist(userError);
-		}
 
-		return userError;
-	}
-	
-	@Override
-	@SuppressWarnings("unchecked")
-	public UserErrorList getUserErrors() {
-		List<UserError> userErrors = null;
-		// construct query
-		javax.persistence.Query query = manager
-				.createQuery("select m from UserErrorJpa m");
-		// Try query
-		userErrors = query.getResultList();
-		UserErrorListJpa userErrorList = new UserErrorListJpa();
-		userErrorList.setUserErrors(userErrors);
-		userErrorList.setTotalCount(userErrors.size());
-
-		return userErrorList;
-	}
-	
 	/*
 	 * (non-Javadoc)
 	 * 

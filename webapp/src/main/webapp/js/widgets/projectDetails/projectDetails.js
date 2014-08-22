@@ -1013,32 +1013,6 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					$scope.resetScopeExcludedConceptFilter(); 
 				};
 				
-				$scope.submitNewUserError = function() {
-				   console.debug("in submitNewUserError");
-
-					  var obj =	 {
-								"note": "Error note/comments4",
-								"mapError": "Error message4",
-								"timestamp": "2014-08-04",
-								"mapUserInError": {"id": 25, "objectId": 25, "userName":"nin", "name":"Nicola Ingram", "email":"nin@ihtsdo.org", "applicationRole":"SPECIALIST"},
-								"mapUserReporting": {"id": 21, "objectId": 21, "userName":"kgi", "name":"Kathy Giannangelo", "email":"kgi@ihtsdo.org", "applicationRole":"ADMINISTRATOR"}
-							  };
-					$http({						
-						url: root_mapping + "error/add",
-						dataType: "json",
-						data: obj,
-						method: "PUT",
-						headers: {
-							"Content-Type": "application/json"
-						}
-					}).success(function(data) {
-						console.debug("success to addUserError");
-					}).error(function(data, status, headers, config) {
-						$scope.recordError = "Error adding new user error.";
-						$rootScope.handleHttpError(data, status, headers, config);
-					});
-				};
-				
 				$scope.updateMapProject = function() {				
 					$http({
 						url: root_mapping + "project/update",

@@ -18,6 +18,8 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.projectRecords',
                                                      'mapProjectApp.widgets.recordConcept',
                                                      'mapProjectApp.widgets.recordSummary',
+                                                     'mapProjectApp.widgets.feedback',
+                                                     'mapProjectApp.widgets.feedbackConversation',
                                                      'LocalStorageModule',
                                                      'ngCookies',
                                                      'ui.tinymce'
@@ -125,6 +127,11 @@ mapProjectApp.config(['$routeProvider',
 	$routeProvider.when('/record/conceptId/:conceptId', {
 		templateUrl: 'partials/otf-dashboard.html',
 		controller: 'RecordConceptDashboardCtrl'
+	});
+	
+	$routeProvider.when('/conversation/recordId/:recordId', {
+		templateUrl: 'partials/otf-dashboard.html',
+		controller: 'FeedbackConversationsDashboardCtrl'
 	});
 
 	$routeProvider.when('/record/recordId/:recordId', {
