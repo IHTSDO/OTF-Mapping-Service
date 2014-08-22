@@ -148,10 +148,23 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 	});
 
 	// watch for project change
-	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
-		console.debug("MapProjectWidgetCtrl: Detected change in focus project");
-		
-	});
+	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
+		console.debug("RecordDashboardCtrl:  Detected change in focus project");
+
+		var path = "";
+
+		if ($scope.currentRole === "Specialist") {
+			path = "/specialist/dash";
+		} else if ($scope.currentRole === "Lead") {
+			path = "/lead/dash";
+		} else if ($scope.currentRole === "Administrator") {
+			path = "/admin/dash";
+		} else if ($scope.currentRole === "Viewer") {
+			path = "/viewer/dash";
+		}
+		console.debug("redirecting to " + path);
+		$location.path(path);
+	});	
 		
 	function setDefaultModel() {
 		// initialize the default model based on project parameters
@@ -174,6 +187,10 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 							type: "mapRecord",
 							config: { recordId: $routeParams.recordId},
 							title: "Map Record"
+						},{
+							type: "recordSummary",
+							config: {record: null},
+							title: "Record Summary"
 						}]
 					}, {
 						class: 'col-md-6',
@@ -228,6 +245,10 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 				$location.path("/");
 			}
 		});
+		
+		// by default, changing the focus project means this record comparison is no longer valid
+		// therefore, return to dashboard
+		
 		
 	};
 
@@ -752,11 +773,10 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 						columns: [{
 							class: 'col-md-12',
 							widgets: [{
-								type: "metadataList",
+								type: "recordAdmin",
 								config: {
-									terminology: "SNOMEDCT"
 								},
-								title: "Metadata"
+								title: "Record Administration"
 							}]
 						}]
 

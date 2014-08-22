@@ -266,6 +266,15 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 	$scope.finishMapRecord = function(returnBack) {
 		
+		console.debug('Finish, note content = ', $scope.tinymceContent);
+		
+		// check that note box does not contain unsaved material
+		if ($scope.tinymceContent != '' && $scope.tinymceContent != null) {
+			if(confirm("You have unsaved text into the Map Notes. Do you wish to continue saving? The note will be lost.") == false) {
+				return;
+			};
+		}
+		
 		console.debug("finishMapRecord called with " + returnBack);
 
 		///////////////////////////
@@ -565,6 +574,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.saveMapRecord = function(returnBack) {
 
 		console.debug("saveMapRecord called with " + returnBack);
+		console.debug("Note content: ", $scope.tinymceContent);
+		
+		// check that note box does not contain unsaved material
+		if ($scope.tinymceContent != '' && $scope.tinymceContent != null) {
+			if(confirm("You have unsaved text into the Map Notes. Do you wish to continue saving? The note will be lost.") == false) {
+				return;
+			};
+		}
 
 		
 		///////////////////////////
@@ -606,8 +623,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 			$scope.record.mapEntry = entries;
 		};
-
-
+		
 		// assign the current user to the lastModifiedBy field
 		$scope.record.lastModifiedBy = $scope.user;
 
@@ -713,8 +729,18 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 			menubar : false,
 			statusbar : false,
-			plugins : "autolink autoresize link image charmap searchreplace",
-			toolbar : "undo redo | styleselect | bold italic underline strikethrough | charmap link image",
+			plugins : "autolink autoresize link image charmap searchreplace lists paste",
+			toolbar : "undo redo | styleselect lists | bold italic underline strikethrough | charmap link image",
+			
+			setup : function(ed) {
+				
+				// added to fake two-way binding from the html element
+				// noteInput is not accessible from this javascript for some reason
+				ed.on('keyup', function(e) {
+	                  $scope.tinymceContent = ed.getContent();
+	                  $scope.$apply();
+	                });
+			}
 	    };
 	
 	$scope.editRecordNote = function(record, mapNote) {
@@ -770,7 +796,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			record['mapNote'].addElement(mapNote);
 			
 			// set the text area to null
-			$scope.noteInput = "";
+			$scope.tinymceContent = null;
 
 
 		}
@@ -1233,6 +1259,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 		var tempEntries = angular.copy($scope.entries);
 		$scope.entries = new Array();
+		$scope.entries.push(new Array()); // add empty group for 0, as index = group number
 		
 		// find the group by first matching entry
 		for (var i = 1; i < tempEntries.length; i++) { // first one is always empty, null group
@@ -1240,6 +1267,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			console.debug("Checking group " + i + " of " + tempEntries.length, group[0].localId, tempEntries[i][0].localId);
 			
 			if (group[0].localId != tempEntries[i][0].localId) {
+				
 				console.debug("Keeping group");
 				$scope.entries.push(tempEntries[i]);
 			} else {
@@ -1372,7 +1400,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 	// function to return trusted html code (for tooltip content)
 	$scope.to_trusted = function(html_code) {
-		console.debug("to_trusted", $sce.trustAsHtml(html_code));
 		return $sce.trustAsHtml(html_code);
 	};
 

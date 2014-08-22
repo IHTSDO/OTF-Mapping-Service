@@ -1,10 +1,8 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
@@ -272,6 +270,8 @@ DefaultProjectSpecificAlgorithmHandler {
 			*/
 			// otherwise, if 3-digit code has children, return false
 			TreePositionList tpList = contentService.getTreePositions(terminologyId, mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());	
+			if (tpList.getCount() == 0) return false;
+			
 			if (tpList.getTreePositions().get(0).getChildrenCount() > 0) { 
 				contentService.close();
 				return false;
@@ -283,14 +283,13 @@ DefaultProjectSpecificAlgorithmHandler {
 				contentService.getConcept(terminologyId,
 						mapProject.getDestinationTerminology(),
 						mapProject.getDestinationTerminologyVersion());
-
+		
+		contentService.close();
 		if (concept == null) {
-			contentService.close();
 			return false;
 		}
 
-		// otherwise, return true
-		contentService.close();
+		// otherwise, return true		
 		return true;
 	}
 
