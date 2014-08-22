@@ -6,9 +6,11 @@ package org.ihtsdo.otf.mapping.rest;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -17,6 +19,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
+import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.FeedbackEmailJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
@@ -24,11 +28,13 @@ import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
+import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -79,9 +85,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 				"RESTful call (Workflow): /project/id/"
 						+ mapProjectId.toString() + "/compute");
 
-
-		try {	
-			// authorize call
+		String userName = "";
+		String project = "";
+		
+		try {
+  		// authorize call
+			userName = securityService.getUsernameForToken(authToken);
 			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
 				throw new WebApplicationException(Response.status(401).entity(
@@ -89,13 +98,14 @@ public class WorkflowServiceRest extends RootServiceRest {
 			
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();		
 			mappingService.close();
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			workflowService.computeWorkflow(mapProject);
 			workflowService.close();
 			return;
 		} catch (Exception e) { 
-			handleException(e, "trying to compute workflow");
+			handleException(e, "trying to compute workflow", userName, project, "");
 		}
 	}
 
@@ -137,6 +147,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 						+ pfsParameter.getQueryRestriction());
 
 
+		String project = "";
+		String user = "";
+
 		try {
 			System.out.println("Authorizing at: " + System.currentTimeMillis()/1000);
 			
@@ -153,7 +166,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
+			user = mapUser.getUserName();
 			mappingService.close();
 			
 			System.out.println("Getting available work at " + System.currentTimeMillis()/1000);
@@ -170,7 +185,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			return results;
 		} catch (Exception e) { 
-			handleException(e, "trying to find available work");
+			handleException(e, "trying to find available work", user, project, "");
 			return null;
 		}
 	}
@@ -211,7 +226,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 						+ "     Sort field    = " + pfsParameter.getSortField()
 						+ "     Filter String = "
 						+ pfsParameter.getQueryRestriction());
-		
+
+		String project = "";
+		String user = "";		
 
 		try {
 			// authorize call
@@ -223,7 +240,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
+			user = mapUser.getUserName();
 			mappingService.close();
 
 			// retrieve the workflow tracking records
@@ -235,7 +254,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			return results;
 
 		} catch (Exception e) { 
-			handleException(e, "trying to find assigned concepts");
+			handleException(e, "trying to find assigned concepts", user, project, "");
 			return null;
 		}
 	}
@@ -276,6 +295,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 						+ "     Filter String = "
 						+ pfsParameter.getQueryRestriction());
 
+		String project = "";
+		String user = "";
 
 		try {
 			// authorize call
@@ -287,7 +308,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
+			user = mapUser.getUserName();
 			mappingService.close();
 
 			// retrieve the workflow tracking records
@@ -298,7 +321,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			return results;
 		} catch (Exception e) { 
-			handleException(e, "trying to find available conflicts");
+			handleException(e, "trying to find available conflicts", user, project, "");
 			return null;
 		}
 	}
@@ -339,6 +362,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 						+ "     Filter String = "
 						+ pfsParameter.getQueryRestriction());
 
+		String project = "";
+		String user = "";
+
 
 		try {
 			// authorize call
@@ -350,7 +376,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
+			user = mapUser.getUserName();
 			mappingService.close();
 
 			// retrieve the map records
@@ -361,7 +389,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			return results;
 		} catch (Exception e) { 
-			handleException(e, "trying to find assigned conflicts");
+			handleException(e, "trying to find assigned conflicts", user, project, "");
 			return null;
 		}
 	}
@@ -402,6 +430,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 						+ "     Filter String = "
 						+ pfsParameter.getQueryRestriction());
 
+		String project = "";
+		String user = "";
 
 		try {
 			// authorize call
@@ -413,7 +443,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
+			user = mapUser.getUserName();
 			mappingService.close();
 
 			// retrieve the workflow tracking records
@@ -424,7 +456,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			return results;
 		} catch (Exception e) { 
-			handleException(e, "trying to find available review work");
+			handleException(e, "trying to find available review work", user, project, "");
 			return null;
 		}
 	}
@@ -465,6 +497,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 						+ "     Filter String = "
 						+ pfsParameter.getQueryRestriction());
 
+		String project = "";
+		String user = "";
 
 		try {
 			// authorize call
@@ -476,7 +510,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
+			user = mapUser.getUserName();
 			mappingService.close();
 
 			// retrieve the map records
@@ -487,7 +523,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			return results;
 		} catch (Exception e) { 
-			handleException(e, "trying to find assigned review work");
+			handleException(e, "trying to find assigned review work", user, project, "");
 			return null;
 		}
 	}
@@ -514,7 +550,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 				"RESTful call (Workflow): /assignFromRecord/user/id/" + userName
 				+ " with map record id " + mapRecord.getId() + " for project " + mapRecord.getMapProjectId() + " and concept id " + mapRecord.getConceptId());
 
-
+		String project = "";
+		
 		try {
 			// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapRecord.getMapProjectId()));
@@ -528,6 +565,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			MapProject mapProject = mappingService.getMapProject(new Long(
 					mapRecord.getMapProjectId()));
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
 			Concept concept = contentService.getConcept(mapRecord.getConceptId(),
 					mapProject.getSourceTerminology(),
@@ -541,7 +579,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 			contentService.close();
 
 		} catch (Exception e) { 
-			handleException(e, "trying to assign concept from a map record");
+			handleException(e, "trying to assign concept from a map record", userName, project,
+					mapRecord.getId().toString());
 		}
 	}
 
@@ -571,6 +610,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 						+ mapProjectId.toString() + "/concept/id/" + terminologyId
 						+ "/user/id/" + userName);
 		
+		String project = "";
 
 		try {
 			// authorize call
@@ -585,6 +625,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			MapProject mapProject = mappingService.getMapProject(new Long(
 					mapProjectId));
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
 			Concept concept = contentService.getConcept(terminologyId,
 					mapProject.getSourceTerminology(),
@@ -598,7 +639,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			contentService.close();
 
 		} catch (Exception e) { 
-			handleException(e, "trying to assign work");
+			handleException(e, "trying to assign work", userName, project, terminologyId);
 		}
 	}
 	
@@ -632,6 +673,8 @@ public class WorkflowServiceRest extends RootServiceRest {
         MappingService mappingService = null;
         ContentService contentService = null;
 
+        String project = "";
+        
 		try {
 			
 			// authorize call
@@ -647,6 +690,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 		  MapProject mapProject = mappingService.getMapProject(new Long(
 					mapProjectId));
+		  project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
 
 			for (String terminologyId : terminologyIds) {
@@ -666,7 +710,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			contentService.close();
 
 		} catch (Exception e) { 
-			handleException(e, "trying to assign a batch");
+			handleException(e, "trying to assign a batch", userName, project, terminologyIds.toString());
 		}
 	}
 
@@ -697,6 +741,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 						+ mapProjectId.toString() + "/concept/id/" + terminologyId
 						+ "/user/id/" + userName);
 		
+		String project = "";
 
 		try {
 			// authorize call
@@ -711,6 +756,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			MapProject mapProject = mappingService.getMapProject(new Long(
 					mapProjectId));
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
 			Concept concept = contentService.getConcept(terminologyId,
 					mapProject.getSourceTerminology(),
@@ -726,7 +772,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			return null;
 
 		} catch (Exception e) { 
-			handleException(e, "trying to unassign work");
+			handleException(e, "trying to unassign work", userName, project, terminologyId);
 			return null;
 		}
 	}
@@ -754,6 +800,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 						+ mapProjectId.toString()
 						+ "/user/id/" + userName + "/all");
 		
+		String project = "";
+		
 		try {
 			// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
@@ -767,6 +815,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			// get the project and user
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
 			
 			for (String terminologyId : terminologyIds) {
@@ -785,7 +834,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			workflowService.close();
 			contentService.close();
 		} catch (Exception e) { 
-			handleException(e, "trying to unassign work batch");
+			handleException(e, "trying to unassign work batch", userName, project, terminologyIds.toString());
 		}
 	}
 	 
@@ -810,6 +859,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 						+ mapProjectId.toString()
 						+ "/user/id/" + userName + "/all");
 		
+		String project = "";
+		
 		try {
 			// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
@@ -823,6 +874,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			// get the project and user
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
 			
 			// find the assigned work and assigned conflicts
@@ -857,7 +909,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			workflowService.close();
 			contentService.close();
 		} catch (Exception e) { 
-			handleException(e, "trying to unassign all work");
+			handleException(e, "trying to unassign all work", userName, project, "");
 		}
 	}
 	
@@ -882,6 +934,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 						+ mapProjectId.toString()
 						+ "/user/id/" + userName + "/unedited");
 		
+
+		String project = "";
+		
 		try {
 			// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
@@ -895,6 +950,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			// get the project and user
 			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();		
 			MapUser mapUser = mappingService.getMapUser(userName);
 			
 			// find the assigned work and assigned conflicts
@@ -934,7 +990,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			workflowService.close();
 			contentService.close();
 		} catch (Exception e) { 
-			handleException(e, "trying to unassign all unedited work");
+			handleException(e, "trying to unassign all unedited work", userName, project, "");
 		}
 	}
 
@@ -958,6 +1014,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 				"RESTful call (Workflow): /finish"
 				+ " for map record with id = " + mapRecord.getId().toString());
 		
+		String user = "";
+		String project = "";
+		
 		try {
   		// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
@@ -970,7 +1029,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// get the map project and map user
 			MapProject mapProject = mappingService.getMapProject(mapRecord
 					.getMapProjectId());
+			project = mapProject.getName();		
 			MapUser mapUser = mapRecord.getOwner();
+			user = mapUser.getUserName();
 			mappingService.close();
 
 			// get the concept
@@ -988,7 +1049,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			workflowService.close();
 
 		} catch (Exception e) { 
-			handleException(e, "trying to finish work");
+			handleException(e, "trying to finish work", user, project, mapRecord.getId().toString());
 		}
 
 	}
@@ -1012,6 +1073,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 				"RESTful call (Workflow): /save"
 				+ " for map record with id = " + mapRecord.getId().toString());
 		
+		String user = "";
+		String project = "";
+		
 		try {
   		// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
@@ -1023,7 +1087,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(mapRecord
 					.getMapProjectId());
+			project = mapProject.getName();		
 			MapUser mapUser = mapRecord.getOwner();
+			user = mapUser.getUserName();
 			mappingService.close();
 
 			// get the concept
@@ -1041,7 +1107,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			workflowService.close();
 
 		} catch (Exception e) { 
-			handleException(e, "trying to save work");
+			handleException(e, "trying to save work", user, project, mapRecord.getId().toString());
 		}
 
 	}
@@ -1063,8 +1129,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 		Logger.getLogger(WorkflowServiceRest.class).info(
 				"RESTful call (Workflow): /cancel for map record with id = " + mapRecord.getId());
 		
+		String userName = "";
+		String project = "";
+		
 		try {
-			
+  		// authorize call
+			userName = securityService.getUsernameForToken(authToken);
 		  // authorize call
 		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
 		  if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
@@ -1079,6 +1149,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 		
 	  	// get the map project and concept
 	  	MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
+	  	project = mapProject.getName();		
 	  	Concept concept = contentService.getConcept(mapRecord.getConceptId(), mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
 		
 		  // process the workflow action
@@ -1089,7 +1160,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 				mapRecord, 
 				WorkflowAction.CANCEL);
 		} catch (Exception e) { 
-			handleException(e, "trying to cancel editing a map record");
+			handleException(e, "trying to cancel editing a map record", 
+					userName, project, mapRecord.getId().toString());
 		}
 
 	}
@@ -1116,6 +1188,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 		Logger.getLogger(WorkflowServiceRest.class).info(
 				"RESTful call (Workflow): /record/isEditable/" + userName
 				+ " for map record with id = " + mapRecord.getId().toString());
+
+		String user = "";
+		String project = "";
 		
 		try {
 		  // authorize call
@@ -1136,7 +1211,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 		
 		  return algorithmHandler.isRecordEditableByUser(mapRecord, mapUser);
 		} catch (Exception e) { 
-			handleException(e, "trying to determine if a map record is editable");
+			handleException(e, "trying to determine if a map record is editable", user, project,
+					mapRecord.getId().toString());
 			return false;
 		}
 
@@ -1165,6 +1241,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 		Logger.getLogger(WorkflowServiceRest.class).info(
 				"RESTful call (Workflow): /assignedRecord/projectId/" + mapProjectId + "/concept/" + terminologyId + "/user/" + userName);
 		
+		String user = "";
+		String project = "";
+		
 		try {
 		  // authorize call
 		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
@@ -1175,7 +1254,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 		
 		  MappingService mappingService = new MappingServiceJpa();
 	  	MapUser mapUser = mappingService.getMapUser(userName);
+	  	user = mapUser.getUserName();
 	  	MapProject mapProject = mappingService.getMapProject(mapProjectId);
+	  	project = mapProject.getName();		
 		  mappingService.close();
 		
 		  ContentService contentService = new ContentServiceJpa();
@@ -1196,7 +1277,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 		
 		  return null;
 		} catch (Exception e) { 
-			handleException(e, "trying to retrieve an assigned map record");
+			handleException(e, "trying to retrieve an assigned map record", user,
+					project, terminologyId);
 			return null;
 		}
 
@@ -1334,12 +1416,215 @@ public class WorkflowServiceRest extends RootServiceRest {
 			
 			this.sendEmail(feedbackEmail);
 		} catch (Exception e) { 
-			handleException(e, "trying to send a record feedback email");
+			handleException(e, "trying to send a record feedback email", userName, mapProjectId, "");
 		}
 		return null;
 	}
 
-	
+	/////////////////////////////////////////////////////
+	// SCRUD functions:  Feedback
+	/////////////////////////////////////////////////////
 
+
+
+
+		
+	/**
+	 * Adds the feedback conversation.
+	 *
+	 * @param conversation the conversation
+	 * @param authToken the auth token
+	 * @return the map user
+	 */
+	@PUT
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Path("/conversation/add")
+	@ApiOperation(value = "Add a feedback conversation", notes = "Adds a FeedbackConversation", response = FeedbackConversationJpa.class)
+	public FeedbackConversation addFeedbackConversation(
+			@ApiParam(value = "The feedback conversation to add. Must be in Json or Xml format", required = true) FeedbackConversationJpa conversation,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /conversation/add");
+
+		String userName = "";
+		
+		try {
+  		// authorize call
+			userName = securityService.getUsernameForToken(authToken);
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to add a feedback conversation.").build());
+					
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			workflowService.addFeedbackConversation(conversation);
+			workflowService.close();
+				
+			return conversation;
+
+		} catch (Exception e) {
+			handleException(e, "add a feedback conversation", userName, "", conversation.getMapRecordId().toString());
+			return null;
+		}
+	}
 	
+	
+	/**
+	 * Updates a feedback conversation
+	 * 
+	 * @param feedbackConversation
+	 *            the feedback conversation to be updated
+	 * @param authToken 
+	 */
+	@POST
+	@Path("/conversation/update")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Update a feedback conversation", notes = "Updates a feedback conversation", response = Response.class)
+	public void updateFeedbackConversation(
+			@ApiParam(value = "The feedback conversation to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) FeedbackConversationJpa feedbackConversation,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /conversation/update");
+
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to update the feedback conversation.").build());
+  		
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			workflowService.updateFeedbackConversation(feedbackConversation);
+			workflowService.close();
+		} catch (Exception e) { 
+			handleException(e, "update the feedback conversation");
+		}
+	}
+	
+	/**
+	 * Returns the feedback conversation for a given id (auto-generated) in JSON format
+	 * 
+	 * @param mapRecordId
+	 *            the mapRecordId
+	 * @param authToken 
+	 * @return the feedbackConversation
+	 */
+	@GET
+	@Path("/conversation/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Get feedback conversation by record id", notes = "Returns a FeedbackConversation given a record id in either JSON or XML format", response = FeedbackConversation.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public FeedbackConversation getFeedbackConversation(
+			@ApiParam(value = "Id of map record to get feedback about", required = true) @PathParam("id") Long mapRecordId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /conversation/id/" + mapRecordId.toString());
+
+
+		try {
+  		
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			FeedbackConversation feedbackConversation = 
+					workflowService.getFeedbackConversation(new Long(mapRecordId));
+			workflowService.close();
+			
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the feedback conversation.").build());
+			
+			return feedbackConversation;
+		} catch (Exception e) { 
+			handleException(e, "trying to retrieve the feedback conversation");
+			return null;
+		}
+	}
+	
+	@POST
+	@Path("/conversation/project/id/{id:[0-9][0-9]*}/{userName}")
+	@ApiOperation(value = "Get paged feedback conversations by project id", notes = "Returns delimited page of FeedbackConversations given a paging/filtering/sorting parameters object", response = FeedbackConversationListJpa.class)
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@CookieParam(value = "userInfo")
+	public FeedbackConversationList getFeedbackConversationsForMapProject(
+			@ApiParam(value = "Project id associated with feedback conversations", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /conversation/project/id/"
+						+ mapProjectId.toString() + " userName: " + userName + " with PfsParameter: "
+						+ "\n" + "     Index/Results = "
+						+ Integer.toString(pfsParameter.getStartIndex()) + "/"
+						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
+						+ "     Sort field    = " + pfsParameter.getSortField()
+						+ "     Filter String = "
+						+ pfsParameter.getQueryRestriction());
+
+
+		String user = "";
+		// execute the service call
+		try {
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the feedback conversations for a map project.").build());
+			
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			FeedbackConversationList feedbackConversationList = (FeedbackConversationList) workflowService
+					.getFeedbackConversationsForProject(mapProjectId, userName, pfsParameter);
+			workflowService.close();
+			return feedbackConversationList;
+		} catch (Exception e) { 
+			handleException(e, "trying to retrieve the feedback conversations for a map project", user, mapProjectId.toString(), "");
+			return null;
+		}
+
+	}
+	
+	@GET
+	@Path("/conversation/project/id/{id:[0-9][0-9]*}/concept/id/{terminologyId}")
+	@ApiOperation(value = "Get feedback conversations by concept id", notes = "Returns FeedbackConversations given a concept id in either JSON or XML format", response = MapRecord.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public FeedbackConversationListJpa getFeedbackConversationsForTerminologyId(
+		  @ApiParam(value = "Project id associated with feedback conversations", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("terminologyId") String conceptId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /record/concept/id/" + conceptId);
+
+
+		String user = "";
+		try {
+  		// authorize call
+			MapUserRole applicationRole = securityService.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			
+			
+			if (!applicationRole.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to find feedback conversations by the given concept id.").build());
+  		
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			FeedbackConversationListJpa feedbackConversationList = (FeedbackConversationListJpa) workflowService
+					.getFeedbackConversationsForConcept(mapProjectId, conceptId);
+			
+			workflowService.close();
+			return feedbackConversationList;
+		} catch (Exception e) { 
+			handleException(e, "trying to find feedback conversations by the given concept id", user, "", conceptId);
+			return null;
+		}
+	}
 }
