@@ -1,8 +1,9 @@
 
  <div otf-map-record-wide record="record" project="focusProject" show-title="false"></div>
-   <hr>       
-         <!-- display map record -->
-         <div ng-show="conversation.feedback.length > 0">
+   <hr>  
+   Record owned by: {{record.owner.name}}     
+         <!-- display items in feedback conversation -->
+         <div ng-show="conversation.feedback.length > 0" style="margin-top:3px;">
             <div ng-repeat="feedback in conversation.feedback">
                
               <!--  display related feedback -->
