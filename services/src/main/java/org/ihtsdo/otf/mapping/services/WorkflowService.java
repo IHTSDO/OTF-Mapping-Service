@@ -17,7 +17,9 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
+import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a service for answering questions and performing actions related
  * to workflow management.
@@ -385,7 +387,31 @@ public interface WorkflowService {
 	 */
 	public void generateMapperTestingStateBHEKRE(MapProject mapProject) throws Exception;
 
+	/**
+	 * Gets the tracking record for map project and concept.
+	 *
+	 * @param mapProject the map project
+	 * @param terminologyId the terminology id
+	 * @return the tracking record for map project and concept
+	 */
+	public TrackingRecord getTrackingRecordForMapProjectAndConcept(
+			MapProject mapProject, String terminologyId);
+
+	/**
+	 * QA check: Check that workflow state for all current records is valid.
+	 *
+	 * @param mapProject the map project
+	 * @throws Exception the exception
+	 */
+	public void computeWorkflowStatusErrors(MapProject mapProject) throws Exception;
 	
+	/**
+	 * QA check: Compute untracked map records.
+	 *
+	 * @param mapProject the map project
+	 * @throws Exception the exception
+	 */
+	public void computeUntrackedMapRecords(MapProject mapProject) throws Exception;
 	/**
 	 * Adds the user error.
 	 *
@@ -412,6 +438,8 @@ public interface WorkflowService {
 	 */
 	public FeedbackConversation addFeedbackConversation(FeedbackConversation conversation) throws Exception;
 
+	public void updateWorkflowException(WorkflowException workflowException)
+			throws Exception;
 	/**
 	 * Update feedback conversation.
 	 *
@@ -420,6 +448,7 @@ public interface WorkflowService {
 	 */
 	public void updateFeedbackConversation(FeedbackConversation conversation) throws Exception;
 
+	public void removeWorkflowException(Long workflowExceptiondId) throws Exception;
 	/**
 	 * Returns the feedback conversation.
 	 *
@@ -429,6 +458,12 @@ public interface WorkflowService {
 	 */
 	FeedbackConversation getFeedbackConversation(Long id) throws Exception;
 
+	public WorkflowException addWorkflowException(WorkflowException workflowException)
+			throws Exception;
+
+	public WorkflowException getWorkflowException(MapProject mapProject,
+			String terminologyId);
+	
 	/**
 	 * Returns the feedback conversations for project.
 	 *
@@ -456,3 +491,4 @@ public interface WorkflowService {
 
 
 }
+

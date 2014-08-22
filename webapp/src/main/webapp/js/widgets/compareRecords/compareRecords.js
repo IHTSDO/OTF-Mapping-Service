@@ -27,6 +27,9 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.project = 	localStorageService.get('focusProject');
 	$scope.user = 		localStorageService.get('currentUser');
 	$scope.role = 		localStorageService.get('currentRole');
+	
+	// flag for whether this record is a false conflict
+	$scope.isFalseConflict = null;  // set to true or false on first visit
 
 	$scope.record1 = 	null;
 	$scope.groups1 = 	null;
@@ -89,6 +92,20 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		if ($scope.leadRecord == null) {
 			console.debug("First visit, getting conflict records");
 			$scope.getRecordsInConflict();
+			
+			console.debug("Checking whether this is a false conflict.");
+			$http({
+				url: root_workflow + "record/id/" + $routeParams.recordId + "/isFalseConflict",
+				dataType: "json",
+				method: "GET",
+				headers: { "Content-Type": "application/json"}	
+			}).success(function(data) {
+				$scope.isFalseConflict = data === 'true' ? true : false;
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);    	  
+			});
+			
+			
 		
 		// otherwise, return to dashboard (mismatch between record and project)
 		} else {
@@ -807,6 +824,30 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		
 		return entries;
 	};
+	
+	$scope.toggleFalseConflict = function() {
+		
+		$http({						
+			url: root_workflow + "record/id/" + $routeParams.recordId + "/falseConflict/" + ($scope.isFalseConflict == true ? "false" : "true"),
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+			// on success, flip the boolean isFalseConflict
+			console.debug("success in toggling false conflict, previous = ", $scope.isFalseConflict);
+			$scope.isFalseConflict = ! $scope.isFalseConflict;
+			console.debug("New = ", $scope.isFalseConflict);
+			
+			// if record marked in conflict, broadcast the first record
+			$scope.populateMapRecord($scope.record1);
+			
+		}).error(function(data, status, headers, config) {
+			$scope.recordError = "Error setting false conflict.";
+			$rootScope.handleHttpError(data, status, headers, config);
+		});
+		
+	}
 
 	
 	// function to return trusted html code (for advice content)

@@ -3,7 +3,9 @@
  */
 package org.ihtsdo.otf.mapping.rest;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -24,11 +26,11 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.FeedbackEmailJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -44,6 +46,8 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
+import org.ihtsdo.otf.mapping.workflow.WorkflowException;
+import org.ihtsdo.otf.mapping.workflow.WorkflowExceptionJpa;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -1166,58 +1170,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 	}
 
-	
-	/**
-	 * Indicates whether or the record is editable by the user.
-	 *
-	 * @param userName the user name
-	 * @param mapRecord the map record
-	 * @param authToken 
-	 * @return <code>true</code> if so, <code>false</code> otherwise
-	 * @throws Exception the exception
-	 */
-	@POST
-	@Path("/checkRecordEditable/user/id/{userName}")
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Set record to editing in progress", notes = "Updates the map record and sets workflow to editing in progress.")
-	public boolean isMapRecordEditable(
-			@ApiParam(value = "Name of map user", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "MapRecord to check permissions for", required = true) MapRecordJpa mapRecord,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
-		
-		Logger.getLogger(WorkflowServiceRest.class).info(
-				"RESTful call (Workflow): /record/isEditable/" + userName
-				+ " for map record with id = " + mapRecord.getId().toString());
 
-		String user = "";
-		String project = "";
-		
-		try {
-		  // authorize call
-		  // NOTE:  This routine does not invoke the security service
-		  // NOTE:  This routine will be removed once transient flag isEditableForUser is attached to mapRecord
-		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
-		  if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-		  	return false;
-		
-	  	// get the map user and map project
-	  	MappingService mappingService = new MappingServiceJpa();
-	  	MapUser mapUser = mappingService.getMapUser(userName);
-		  MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
-		
-		  ProjectSpecificAlgorithmHandler algorithmHandler =
-		        mappingService.getProjectSpecificAlgorithmHandler(mapProject);
-		  mappingService.close();
-		
-		  return algorithmHandler.isRecordEditableByUser(mapRecord, mapUser);
-		} catch (Exception e) { 
-			handleException(e, "trying to determine if a map record is editable", user, project,
-					mapRecord.getId().toString());
-			return false;
-		}
-
-	}
-	
 	/**
 	 * Gets the assigned map record from the existing workflow for concept and map user, if it exists
 	 *
@@ -1420,7 +1373,50 @@ public class WorkflowServiceRest extends RootServiceRest {
 		}
 		return null;
 	}
+	
+	@GET
+	@Path("/record/id/{id:[0-9][0-9]*}/isFalseConflict")
+	@ApiOperation(value = "Checks if record is false conflict", notes = "Given a record id, returns true or false depending on whether this record has been flagged as a false conflict.", response = Boolean.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public Boolean isMapRecordFalseConflict(
+			@ApiParam(value = "Map record id", required = true) @PathParam("id") Long recordId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
+		
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /record/id/" + recordId + "/sFalseConflict");
+		
+		MappingService mappingService = new MappingServiceJpa();
+		WorkflowService workflowService = new WorkflowServiceJpa();
+		
+		MapRecord mapRecord = mappingService.getMapRecord(recordId);
+		MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
 
+		try {
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapProject.getId()));
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to check record for false conflict").build());
+			
+			// if not a conflict resolution record, return null
+			if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
+					&& !mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED))
+				return null;
+			
+			WorkflowException workflowException = workflowService.getWorkflowException(mapProject, mapRecord.getConceptId());
+			
+			if (workflowException != null) {
+				if (workflowException.getFalseConflictMapRecordIds().contains(recordId))
+					return true;
+				else return false;
+			} 
+		} catch (Exception e) { 
+			handleException(e, "trying to retrieve flag for false conflict");
+		}
+		
+		// return default false
+		return null;
+	}
 	/////////////////////////////////////////////////////
 	// SCRUD functions:  Feedback
 	/////////////////////////////////////////////////////
@@ -1470,7 +1466,82 @@ public class WorkflowServiceRest extends RootServiceRest {
 		}
 	}
 	
+	@POST
+	@Path("/record/id/{id:[0-9][0-9]*}/falseConflict/{isFalseConflict}")
+	@ApiOperation(value = "Sets whether record is false conflict", notes = "Given a record id and boolean flag, sets whether this record is a false conflict.", response = Response.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public void setMapRecordFalseConflict(
+			@ApiParam(value = "Map record id", required = true) @PathParam("id") Long recordId,
+			@ApiParam(value = "Whether is false conflict", required = true) @PathParam("isFalseConflict") boolean isFalseConflict,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
+		
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /record/id/" + recordId + "/setFalseConflict/" + isFalseConflict);
+		
+		MappingService mappingService = new MappingServiceJpa();
+		WorkflowService workflowService = new WorkflowServiceJpa();
+		
+		MapRecord mapRecord = mappingService.getMapRecord(recordId);
+		MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
 	
+
+		try {
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, new Long(mapProject.getId()));
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to check record for false conflict").build());
+			
+			// if not a conflict resolution record, throw an error
+			if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
+					&& !mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED))
+				throw new WebApplicationException(Response.status(401).entity(
+						"Cannot set false conflict flag on a non-conflict record").build());
+			
+			WorkflowException workflowException = workflowService.getWorkflowException(mapProject, mapRecord.getConceptId());
+
+			// if no workflow exception for this concept, add it
+			if (workflowException == null) {
+				workflowException = new WorkflowExceptionJpa();
+				workflowException.setMapProjectId(mapProject.getId());
+				workflowException.setTerminology(mapProject.getSourceTerminology());
+				workflowException.setTerminologyVersion(mapProject.getSourceTerminologyVersion());
+				workflowException.setTerminologyId(mapRecord.getConceptId());		
+			}
+			
+			Set<Long> recordIds = new HashSet<>();
+			
+			// if setting to true, add the record ids
+			if (isFalseConflict == true) {
+				// add this record
+				recordIds.add(recordId);
+				
+				// add the specialist records for this conflict
+				for (MapRecord mr : mappingService.getOriginMapRecordsForConflict(recordId).getIterable()) {
+					recordIds.add(mr.getId());
+				}
+				
+			}
+			
+			workflowException.setFalseConflictMapRecordIds(recordIds);
+			
+			// if empty, remove, if new, add, if not, update
+			if (workflowException.isEmpty()) {
+				
+				// if id is set, remove the record
+				if (workflowException.getId() != null)
+					workflowService.removeWorkflowException(workflowException.getId());
+			} else if (workflowException.getId() != null) {
+				workflowService.updateWorkflowException(workflowException);
+			} else {
+				workflowService.addWorkflowException(workflowException);
+			}
+			
+		} catch (Exception e) { 
+			handleException(e, "trying to set flag for false conflict");
+		}
+	}
+
 	/**
 	 * Updates a feedback conversation
 	 * 
