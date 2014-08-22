@@ -241,7 +241,7 @@ lead review<br>
 
 
 <!--   FEEDBACK PANEL -->
-<div ng-show="page != 'resolveConflictsDashboard'" >
+<div ng-show="record.workflowStatus != 'CONFLICT_NEW' && record.workflowStatus != 'CONFLICT_DETECTED'" >
 <accordion >
  <accordion-group is-open="isFeedbackOpen">
  <accordion-heading> 

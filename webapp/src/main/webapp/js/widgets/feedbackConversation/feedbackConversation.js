@@ -59,9 +59,9 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		// load record associated with feedback conversations
 		$rootScope.glassPane++;
 
-		// load record to be displayed
+		// load record to be displayed; try to find active record first
 		$http({
-			url: root_mapping + "record/id/" + $scope.conversation.mapRecordId + "/historical",
+			url: root_mapping + "record/id/" + $scope.conversation.mapRecordId,
 			dataType: "json",
 			method: "GET",
 			headers: {
@@ -74,10 +74,26 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 			console.debug($scope.record);
 			setTitle();
 		}).error(function(data, status, headers, config) {
-			$rootScope.glassPane--;
-			$rootScope.handleHttpError(data, status, headers, config);
-		});
-		
+			// if no active record, look for historical record
+			$http({
+				url: root_mapping + "record/id/" + $scope.conversation.mapRecordId + "/historical",
+				dataType: "json",
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;	
+				$scope.record = data;
+				console.debug("Historical Record:");
+				console.debug($scope.record);
+				setTitle();
+				$scope.conversation.active = false;
+			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
+				$rootScope.handleHttpError(data, status, headers, config);
+			});
+		});	
 	}).error(function(data, status, headers, config) {
 	    $rootScope.glassPane--;
 	    $rootScope.handleHttpError(data, status, headers, config);
@@ -91,7 +107,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 
 	// update the title to contain conceptId and preferred name
 	function setTitle() {
-		$scope.model.title = "Feedback Conversation: " + $scope.conversation.terminologyId + "  " 
+		$scope.model.title = "Feedback Conversation - Concept " + $scope.conversation.terminologyId + ":  " 
 		+ $scope.conversation.defaultPreferredName;
 	};
 	
@@ -191,6 +207,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
     	}
     };
     
+    // opens SNOMED CT browser
 	$scope.getBrowserUrl = function() {
 		return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.conversation.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
 	};
@@ -199,6 +216,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
     	window.open($scope.getBrowserUrl(), "browserWindow");
     };
     
+    // redirects to the record editing or conflict editing page
 	$scope.goEdit = function (record) {
 		if (record.workflowStatus == 'CONFLICT_NEW') {
 			var path = "/record/conflicts/" + record.id;
@@ -211,14 +229,17 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		}
 	};
 
+	// redirect to the concept view
 	$scope.goConceptView = function (id) {
 		var path = "/record/conceptId/" + id;
 			// redirect page
 			$location.path(path);
 	};
 	
+	// determines if the "Edit Record" button should be displayed
 	$scope.displayEdit = function () {
-		if ($scope.currentUser.userName == $scope.record.owner.userName)
+		if ($scope.currentUser.userName == $scope.record.owner.userName &&
+				$scope.conversation.active == true)
 			return true;
 		else
 			return false;
