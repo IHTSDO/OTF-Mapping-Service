@@ -37,6 +37,7 @@ public enum WorkflowStatus {
   REVIEW_IN_PROGRESS, // (can transition to REVIEW_RESOLVED)
   
   /** Review resolved, but not released (can transition to READY_FOR_PUBLICATION) */
+  REVIEW_RESOLVED,
   
   /** The consensus needed. */
   CONSENSUS_NEEDED, // (can transition to CONSENSUS_IN_PROGRESS)
