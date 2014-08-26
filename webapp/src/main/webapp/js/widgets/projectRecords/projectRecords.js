@@ -112,7 +112,7 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 		
 		var query_url;
 		if ($scope.currentRole === 'Viewer') {
-			query_url = root_mapping + "record/project/id/" + $scope.project.objectId + "/published"
+			query_url = root_mapping + "record/project/id/" + $scope.project.objectId + "/published";
 		} else if ($scope.currentRole === 'Specialist' || $scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 			query_url = root_mapping + "record/project/id/" + $scope.project.objectId;
 		} else {

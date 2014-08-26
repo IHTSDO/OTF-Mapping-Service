@@ -1057,6 +1057,66 @@ public class WorkflowServiceRest extends RootServiceRest {
 		}
 
 	}
+	
+	/**
+	 * Attempt to publish a previously resolved record
+	 * This action is only available to map leads, and only for resolved conflict or review work
+	 * 
+	 * @param mapRecord
+	 *            the completed map record
+	 * @param authToken 
+	 */
+	@POST
+	@Path("/publish")
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Attempt to publish a previously resolved record", notes = "Moves a previously resolved conflict or review record owned by a lead out of the workflow and into publication-ready status")
+	public void publishWork(
+			@ApiParam(value = "Completed map record", required = true) MapRecordJpa mapRecord,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /finish"
+				+ " for map record with id = " + mapRecord.getId().toString());
+		
+		String user = "";
+		String project = "";
+		
+		try {
+  		// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to set a record to finished.").build());
+  		
+			MappingService mappingService = new MappingServiceJpa();
+
+			// get the map project and map user
+			MapProject mapProject = mappingService.getMapProject(mapRecord
+					.getMapProjectId());
+			project = mapProject.getName();		
+			MapUser mapUser = mapRecord.getOwner();
+			user = mapUser.getUserName();
+			mappingService.close();
+
+			// get the concept
+			ContentService contentService = new ContentServiceJpa();
+			Concept concept = contentService.getConcept(
+					mapRecord.getConceptId(),
+					mapProject.getSourceTerminology(),
+					mapProject.getSourceTerminologyVersion());
+			contentService.close();
+
+			// execute the workflow call
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			workflowService.processWorkflowAction(mapProject, concept, mapUser,
+					mapRecord, WorkflowAction.PUBLISH);
+			workflowService.close();
+
+		} catch (Exception e) { 
+			handleException(e, "trying to publish work", user, project, mapRecord.getId().toString());
+		}
+
+	}
 
 	/**
 	 * Save map record without validation checks or workflow action.

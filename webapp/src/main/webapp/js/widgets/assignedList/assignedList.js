@@ -794,8 +794,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.openFinishSingleRecordModal = function(searchResult) {
 		
 		var modalInstance = $modal.open({
-			templateUrl: 'js/widgets/assignedList/assignedListFinish.html',
-			controller: FinishAllEditedWorkModalCtrl,
+			templateUrl: 'js/widgets/assignedList/assignedListFinishOrPublish.html',
+			controller: FinishOrPublishWorkModalCtrl,
 			resolve: {
 				records : function() {
 					// create a single element array to match format of All Record Open
@@ -847,8 +847,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		  	$rootScope.glassPane--;
 
 		  	var modalInstance = $modal.open({
-				templateUrl: 'js/widgets/assignedList/assignedListFinish.html',
-				controller: FinishAllEditedWorkModalCtrl,
+				templateUrl: 'js/widgets/assignedList/assignedListFinishOrPublish.html',
+				controller: FinishOrPublishWorkModalCtrl,
 				size: 'lg',
 				resolve: {
 					records:  function() { return data.searchResult; },
@@ -875,7 +875,91 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		
 	};
 	
-	var FinishAllEditedWorkModalCtrl = function($scope, $modalInstance, user, project, records) { 
+$scope.openPublishSingleRecordModal = function(searchResult) {
+		
+		var modalInstance = $modal.open({
+			templateUrl: 'js/widgets/assignedList/assignedListFinishOrPublish.html',
+			controller: FinishOrPublishWorkModalCtrl,
+			resolve: {
+				records : function() {
+					// create a single element array to match format of All Record Open
+					var searchResults = new Array();
+					searchResults.push(searchResult);
+					return searchResults;
+				},
+				project : function() {
+					return $scope.focusProject; },
+				user:     function() { return $scope.currentUser; }
+			}
+		});
+	  	
+	  	modalInstance.result.then(function() {  	
+	  		console.debug("User closed finish modal");
+	  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Done
+	  	}, function() {  	
+	  		console.debug("Finish modal dismissed");
+	  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Cancel/Esc
+	  	});
+		
+	};
+	
+	$scope.openPublishAllRecordsModal = function() {
+		
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": -1,
+			 	 	 "maxResults": -1, 
+			 	 	 "sortField": null,
+			 	 	 "queryRestriction": 'CONFLICT_RESOLVED'};
+
+	  	$rootScope.glassPane++;
+
+		$http({
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/user/id/" 
+			+ $scope.currentUser.userName 
+			+ "/query/null"
+			+ "/assignedConcepts",
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
+		  	var modalInstance = $modal.open({
+				templateUrl: 'js/widgets/assignedList/assignedListFinishOrPublish.html',
+				controller: FinishOrPublishWorkModalCtrl,
+				size: 'lg',
+				resolve: {
+					records:  function() { return data.searchResult; },
+					project:  function() { return $scope.focusProject; },
+					user:     function() { return $scope.currentUser; }
+				}
+			});
+		  	
+		  	modalInstance.result.then(function() {  	
+		  		console.debug("User closed finish modal");
+		  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Done
+		  	}, function() {  	
+		  		console.debug("Finish modal dismissed");
+		  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Cancel/Esc
+		  	});
+			
+			
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
+		
+
+		
+	};
+	
+	var FinishOrPublishWorkModalCtrl = function($scope, $modalInstance, user, project, records) { 
 		
 		console.debug("Entered modal control", user, project, records);
 		$scope.user = user;
@@ -883,6 +967,17 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		$scope.records = records;
 		$scope.index = 1;
 		
+		// set the action based on status of first record
+		// - actionText:  text displayed to user on button
+		// - action:  must match the ending string of a workflow rest call
+		//            (e.g. /finish -> 'finish', /publish -> 'publish'
+		if (records[0].workflowStatus === 'EDITING_IN_PROGRESS') {
+			$scope.actionText = 'Finish';
+			$scope.action = 'finish';
+		} else if (records[0].workflowStatus === 'CONFLICT_RESOLVED' || records[0].workflowStatus === 'REVIEW_RESOLVED') {
+			$scope.actionText = 'Publish';
+			$scope.action = 'publish';
+		}
 		
 		$scope.selectNextRecord = function() {
 			$scope.index = $scope.index == $scope.records.length ? 1 : $scope.index + 1;
@@ -912,8 +1007,13 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			  
 			  	$scope.currentRecord = data;
 			  	
-			  	if ($scope.currentRecord.workflowStatus === 'EDITING_IN_PROGRESS')
+			  	// check if this record is still in progress
+			  	if ($scope.currentRecord.workflowStatus === 'EDITING_IN_PROGRESS'
+			  		|| $scope.currentRecord.workflowStatus === 'CONFLICT_IN_PROGRESS'
+			  		|| $scope.currentRecord.workflowStatus === 'REVIEW_IN_PROGRESS')
 			  		$scope.currentRecord.isFinished = false;
+			  	
+			  	// otherwise, this record has been finished/published via this modal
 			  	else $scope.currentRecord.isFinished = true;
 			  	
 			  	console.debug("Validating the map record");
@@ -950,7 +1050,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		$scope.finishCurrentRecord = function() {
 			$rootScope.glassPane++;
 			$http({
-				url: root_workflow + "finish",
+				url: root_workflow + $scope.actionText,
 				dataType: "json",
 				data: $scope.currentRecord,
 				method: "POST",
