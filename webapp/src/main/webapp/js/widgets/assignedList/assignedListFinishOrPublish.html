@@ -1,12 +1,16 @@
+<div class="modal-header">
+{{actionText}}ing Records
+</div>
+
 <div class="modal-body">
 
 <h4>Viewing Record {{index}} of {{records.length}}</h4>
 <button class="btn btn-sm btn-primary pull-right" ng-click="done()">Done</button>
-<button class="btn btn-sm btn-primary" ng-click="finishCurrentRecord()" ng-show="validationResult != null && validationResult.errors.length == 0 && currentRecord.isFinished == false">Finish</button>
+<button class="btn btn-sm btn-primary" ng-click="finishCurrentRecord()" ng-show="validationResult != null && validationResult.errors.length == 0 && currentRecord.isFinished == false">{{actionText}}</button>
 <button ng-show="records.length > 1" class="btn btn-sm btn-warning" ng-click="selectNextRecord()">Skip</button>
 
 	
-	<div ng-show="currentRecord.isFinished == true" style="color:green">Record saved and finished.</div>
+	<div ng-show="currentRecord.isFinished == true" style="color:green">Record saved and {{actionText}}ed.</div>
 	
 	
 	<div ng-show="validationResult.errors.length > 0">

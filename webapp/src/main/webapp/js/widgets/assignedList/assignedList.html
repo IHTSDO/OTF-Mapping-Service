@@ -54,7 +54,7 @@
 				<th style="width: 14%; padding: 5px;">Id</th>
 
 				<!--  Extra column if on editing in progress page for dashboard finish commands -->
-				<th style="width: 3%; padding: 5px;"><a title="Finish All Work"
+				<th style="width: 3%; padding: 5px;"><a ng-show="assignedWorkType === 'EDITING_IN_PROGRESS' title="Finish All Work"
 					ng-click="openFinishAllRecordsModal()"> <i
 						class="glyphicon glyphicon-check"></i>
 				</a></th>
@@ -121,7 +121,7 @@
 					ng-show="result.terminologyVersion === 'EDITING_IN_PROGRESS'">
 						<i ng-click="openFinishSingleRecordModal(result)"
 						class="glyphicon glyphicon-ok"></i>
-				</a>
+					</a>
 				</td>
 
 				<td style="width: 75%; padding: 5px;">{{result.value}}</td>
@@ -177,6 +177,9 @@
 				<input type="radio" ng-model="assignedConflictType"
 					value="CONFLICT_IN_PROGRESS"
 					ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">Editing</input>
+				<input type="radio" ng-model="assignedConflictType"
+					value="CONFLICT_RESOLVED"
+					ng-change="retrieveAssignedConflicts(1, queryAssigned, assignedConflictType)">Resolved</input>
 			</form>
 		</td>
 	</tr>
@@ -201,12 +204,27 @@
 		<thead>
 			<tr>
 				<th style="width: 3%; padding: 5px;"></th>
+
+
 				<th style="width: 14%; padding: 5px;">Id</th>
-				<th style="width: 80%; padding: 5px;">Preferred Name</th>
-				<th style="width: 3%; padding: 5px;"><a title="Return All Work"
+
+				<!--  Extra column if on editing in progress page for dashboard finish commands -->
+				<th style="width: 3%; padding: 5px;">
+					<a ng-show="assignedConflictType === 'CONFLICT_IN_PROGRESS' title='Finish Editing All Conflicts'
+						ng-click="openFinishAllRecordsModal()"> <i
+							class="glyphicon glyphicon-check"></i>
+					</a>
+					<a ng-show="assignedConflictType === 'CONFLICT_RESOLVED' title='Publish All Resolved Conflicts'
+						ng-click="openPublishAllRecordsModal()"> <i
+							class="glyphicon glyphicon-check"></i>
+					</a>
+				</th>
+
+				<th style="width: 75%; padding: 5px;">Preferred Name</th>
+				<th style="width: 3%; padding: 5px;"><a title="Return All Conflicts"
 					ng-click="openUnassignModal(currentUser, 'conflicts')"><i
-						class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
-				</a></th>
+						class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i></a>
+				</th>
 
 			</tr>
 
@@ -229,6 +247,21 @@
 					</a></td>
 
 				<td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
+				<td style="width: 3%; padding: 5px;">
+				<!-- Display a checkmark if this record has previously been edited -->
+					<a style:"display:inline" title='Publish this record'
+					ng-show="result.terminologyVersion === 'CONFLICT_IN_PROGRESS'">
+						<i ng-click="openPublishSingleRecordModal(result)"
+						class="glyphicon glyphicon-ok"></i>
+				</a>
+					<!-- Display a checkmark if this record has previously been edited -->
+					<a style:"display:inline" title='Publish this record'
+					ng-show="result.terminologyVersion === 'CONFLICT_RESOLVED'">
+						<i ng-click="openPublishAllRecordsModal(result)"
+						class="glyphicon glyphicon-ok"></i>
+				</a>
+				</td>
+				
 				<td style="width: 80%; padding: 5px;">{{result.value}}</td>
 				<td style="width: 3%; padding: 5px;"><a title="Return"
 					ng-click="unassignWork(result, currentUser)"><i

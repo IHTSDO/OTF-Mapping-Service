@@ -1821,7 +1821,6 @@ public class MappingServiceRest extends RootServiceRest {
 	}
 
 	/**
-	 * TODO Appears unused, check and remove if so
 	 * 
 	 * Returns delimited page of Published or Ready For Publication MapRecords
 	 * given a paging/filtering/sorting parameters object

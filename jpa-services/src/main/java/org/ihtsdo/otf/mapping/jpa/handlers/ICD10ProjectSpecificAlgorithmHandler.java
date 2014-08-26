@@ -165,7 +165,7 @@ DefaultProjectSpecificAlgorithmHandler {
 		
 		List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
 		
-		// TODO Check this today
+		// TODO Check if this needs to be re-added
 		
 		/*For any mapRelation value other than 447637006, 
 		 * Find the allowed project advice that matches (on string, case-insensitive) 

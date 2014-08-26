@@ -15,9 +15,7 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
-import org.ihtsdo.otf.mapping.helpers.FeedbackList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
-import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -26,7 +24,6 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
-import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 

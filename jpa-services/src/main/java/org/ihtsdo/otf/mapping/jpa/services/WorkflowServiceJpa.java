@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,16 +12,13 @@ import java.util.Set;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.Version;
 import org.hibernate.CacheMode;
-import org.hibernate.envers.AuditReader;
-import org.hibernate.envers.AuditReaderFactory;
-import org.hibernate.envers.query.AuditEntity;
-import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
@@ -30,8 +26,8 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.FeedbackList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackListJpa;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
-import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
@@ -259,7 +255,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		return (TrackingRecord) query.getSingleResult();
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -267,8 +263,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	 * (org.ihtsdo.otf.mapping.workflow.WorkflowException)
 	 */
 	@Override
-	public WorkflowException addWorkflowException(WorkflowException trackingRecord)
-			throws Exception {
+	public WorkflowException addWorkflowException(
+			WorkflowException trackingRecord) throws Exception {
 
 		if (getTransactionPerOperation()) {
 			tx = manager.getTransaction();
@@ -285,7 +281,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#removeWorkflowException
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.WorkflowService#removeWorkflowException
 	 * (java.lang.Long)
 	 */
 	@Override
@@ -318,11 +315,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#updateWorkflowException
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.WorkflowService#updateWorkflowException
 	 * (org.ihtsdo.otf.mapping.workflow.WorkflowException)
 	 */
 	@Override
-	public void updateWorkflowException(WorkflowException workflowException) throws Exception {
+	public void updateWorkflowException(WorkflowException workflowException)
+			throws Exception {
 		if (getTransactionPerOperation()) {
 			tx = manager.getTransaction();
 			tx.begin();
@@ -332,18 +331,21 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			manager.merge(workflowException);
 		}
 	}
-	
+
 	@Override
-	public WorkflowException getWorkflowException(MapProject mapProject, String terminologyId) {
-		
-		javax.persistence.Query query = manager.createQuery(
-				"select we from WorkflowExceptionJpa we where mapProjectId = :mapProjectId"
-				+ " and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
+	public WorkflowException getWorkflowException(MapProject mapProject,
+			String terminologyId) {
+
+		javax.persistence.Query query = manager
+				.createQuery(
+						"select we from WorkflowExceptionJpa we where mapProjectId = :mapProjectId"
+								+ " and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
 				.setParameter("mapProjectId", mapProject.getId())
 				.setParameter("terminology", mapProject.getSourceTerminology())
-				.setParameter("terminologyVersion", mapProject.getSourceTerminologyVersion())
+				.setParameter("terminologyVersion",
+						mapProject.getSourceTerminologyVersion())
 				.setParameter("terminologyId", terminologyId);
-		
+
 		// try to get the expected single result
 		try {
 			return (WorkflowException) query.getSingleResult();
@@ -592,8 +594,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
-		luceneQuery = queryParser.parse(full_query);
-
+		try {
+			luceneQuery = queryParser.parse(full_query);
+		} catch (ParseException e) {
+			throw new LocalException(
+					"The specified search terms cannot be parsed.  Please check syntax and try again.");
+		}
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
 
@@ -673,8 +679,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
-		luceneQuery = queryParser.parse(full_query);
-
+		try {
+			luceneQuery = queryParser.parse(full_query);
+		} catch (ParseException e) {
+			throw new LocalException(
+					"The specified search terms cannot be parsed.  Please check syntax and try again.");
+		}
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
 
@@ -755,10 +765,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// the record to review must not be owned by this user, unless
 		// this user is the only lead on the project
 		// TODO SEE MAP-617
-		/*if (mapProject.getMapLeads().size() > 1) { 
-			full_query += " AND NOT userAndWorkflowStatusPairs:REVIEW_NEEDED_"
-					+ mapUser.getUserName();
-		}*/
+		/*
+		 * if (mapProject.getMapLeads().size() > 1) { full_query +=
+		 * " AND NOT userAndWorkflowStatusPairs:REVIEW_NEEDED_" +
+		 * mapUser.getUserName(); }
+		 */
 
 		// there must not be an already claimed review record
 		full_query += " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
@@ -768,8 +779,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
-		luceneQuery = queryParser.parse(full_query);
-
+		try {
+			luceneQuery = queryParser.parse(full_query);
+		} catch (ParseException e) {
+			throw new LocalException(
+					"The specified search terms cannot be parsed.  Please check syntax and try again.");
+		}
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
 
@@ -880,21 +895,25 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					+ mapUser.getUserName() + ")";
 			break;
 		}
-		
+
 		// add terms to exclude concepts that a lead has claimed
 		full_query += " AND NOT (userAndWorkflowStatusPairs:CONFLICT_NEW_*"
-				+ " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS"
-				+ " OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED"
-				+ " OR userAndWorkflowStatusPairs:REVIEW_NEW"
-				+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED"
-				+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED)";
+				+ " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_*"
+				+ " OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*"
+				+ " OR userAndWorkflowStatusPairs:REVIEW_NEW_*"
+				+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_*"
+				+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*)";
 
 		System.out.println("FindAssignedWork query: " + full_query);
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
-		luceneQuery = queryParser.parse(full_query);
-
+		try {
+			luceneQuery = queryParser.parse(full_query);
+		} catch (ParseException e) {
+			throw new LocalException(
+					"The specified search terms cannot be parsed.  Please check syntax and try again.");
+		}
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
 
@@ -928,61 +947,73 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 
 		List<TrackingRecord> results = ftquery.getResultList();
-		MappingService mappingService = new MappingServiceJpa();	
-		
+		MappingService mappingService = new MappingServiceJpa();
+
 		for (TrackingRecord tr : results) {
-		
+
 			// instantiate the result list
 			SearchResult result = new SearchResultJpa();
-			
+
 			// get the map records associated with this tracking record
 			Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
-			
+
 			// get the map record assigned to this user
 			MapRecord mapRecord = null;
-			
+
 			// SEE BELOW/MAP-617
 			WorkflowStatus mapLeadAlternateRecordStatus = null;
-			
+
 			for (MapRecord mr : mapRecords) {
-				
+
 				if (mr.getOwner().equals(mapUser)) {
-					
+
 					// if this lead has review or conflict work, set the flag
-					if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
-							|| mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
-							|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-							|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
-						
-						System.out.println("FOUND ALTERNATE LEAD RECORD: " + mr.getId() + " - " + mr.getWorkflowStatus());
-						
+					if (mr.getWorkflowStatus().equals(
+							WorkflowStatus.CONFLICT_NEW)
+							|| mr.getWorkflowStatus().equals(
+									WorkflowStatus.CONFLICT_IN_PROGRESS)
+							|| mr.getWorkflowStatus().equals(
+									WorkflowStatus.REVIEW_NEW)
+							|| mr.getWorkflowStatus().equals(
+									WorkflowStatus.REVIEW_IN_PROGRESS)) {
+
+						System.out.println("FOUND ALTERNATE LEAD RECORD: "
+								+ mr.getId() + " - " + mr.getWorkflowStatus());
+
 						mapLeadAlternateRecordStatus = mr.getWorkflowStatus();
-						
-					// added to prevent user from getting REVISION record back on FIX_ERROR_PATH
-					// yet another problem related to leads being able to serve as dual roles
-					} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
+
+						// added to prevent user from getting REVISION record
+						// back on FIX_ERROR_PATH
+						// yet another problem related to leads being able to
+						// serve as dual roles
+					} else if (mr.getWorkflowStatus().equals(
+							WorkflowStatus.REVISION)) {
 						// do nothing
-						
-					// otherwise, this is the specialist/concept-level work
+
+						// otherwise, this is the specialist/concept-level work
 					} else {
 						mapRecord = mr;
 					}
 				}
 			}
-			
-			// if no record and no review or conflict work was found, throw error
+
+			// if no record and no review or conflict work was found, throw
+			// error
 			if (mapRecord == null) {
 				throw new Exception(
 						"Failed to retrieve assigned work:  no map record found for user "
 								+ mapUser.getUserName() + " and concept "
 								+ tr.getTerminologyId());
-			
+
 			} else {
-				
-				// alter the workflow status if a higher-level record exists for this user
+
+				// alter the workflow status if a higher-level record exists for
+				// this user
 				if (mapLeadAlternateRecordStatus != null) {
-					
-					Logger.getLogger(WorkflowServiceJpa.class).info("Setting alternate record status: " + mapLeadAlternateRecordStatus);
+
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							"Setting alternate record status: "
+									+ mapLeadAlternateRecordStatus);
 					mapRecord.setWorkflowStatus(mapLeadAlternateRecordStatus);
 				}
 				// create the search result
@@ -1065,8 +1096,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
-		luceneQuery = queryParser.parse(full_query);
-
+		try {
+			luceneQuery = queryParser.parse(full_query);
+		} catch (ParseException e) {
+			throw new LocalException(
+					"The specified search terms cannot be parsed.  Please check syntax and try again.");
+		}
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
 
@@ -1103,18 +1138,20 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			SearchResult result = new SearchResultJpa();
 
 			Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
-			
+
 			// get the map record assigned to this user
 			MapRecord mapRecord = null;
 			for (MapRecord mr : mapRecords) {
 
 				try {
 					if (mr.getOwner().equals(mapUser))
-						
+
 						// SEE MAP-617:
-						// Lower level record may exist with same owner, only add if actually a conflict
-						
-						if (mr.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) < 0) {
+						// Lower level record may exist with same owner, only
+						// add if actually a conflict
+
+						if (mr.getWorkflowStatus().compareTo(
+								WorkflowStatus.CONFLICT_DETECTED) < 0) {
 							// do nothing, this is the specialist level work
 						} else {
 							mapRecord = mr;
@@ -1202,8 +1239,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
-		luceneQuery = queryParser.parse(full_query);
-
+		try {
+			luceneQuery = queryParser.parse(full_query);
+		} catch (ParseException e) {
+			throw new LocalException(
+					"The specified search terms cannot be parsed.  Please check syntax and try again.");
+		}
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
 
@@ -1237,27 +1278,30 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		MappingService mappingService = new MappingServiceJpa();
 		for (TrackingRecord tr : results) {
 			SearchResult result = new SearchResultJpa();
-			
+
 			Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
 
 			// get the map record assigned to this user
 			MapRecord mapRecord = null;
 			for (MapRecord mr : mapRecords) {
 
-				
 				if (mr.getOwner().equals(mapUser)) {
-					
+
 					// TODO See MAP-617
-					// check for the case where REVIEW work is both specialist and
+					// check for the case where REVIEW work is both specialist
+					// and
 					// lead level for same user
-					if (mr.getWorkflowStatus().compareTo(WorkflowStatus.REVIEW_NEW) < 0) {
+					if (mr.getWorkflowStatus().compareTo(
+							WorkflowStatus.REVIEW_NEW) < 0) {
 						// do nothing, this is the specialist level work
-						
-					// exluce records where the map lead is the one instigating the FIX_ERROR_PATH revision
-					} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)){
+
+						// exluce records where the map lead is the one
+						// instigating the FIX_ERROR_PATH revision
+					} else if (mr.getWorkflowStatus().equals(
+							WorkflowStatus.REVISION)) {
 						// do nothing
-						
-					// otherwise, this is the record we want
+
+						// otherwise, this is the record we want
 					} else {
 						// add the record
 						mapRecord = mr;
@@ -1342,9 +1386,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		if (mapRecord != null && mapRecord.getId() != null) {
 			for (MapRecord mr : mapRecords) {
 				if (mr.getId().equals(mapRecord.getId())) {
-					
-					Logger.getLogger(WorkflowService.class).info("Replacing record " + mr.toString() + "\n  with" + mapRecord.toString());
-					
+
+					Logger.getLogger(WorkflowService.class).info(
+							"Replacing record " + mr.toString() + "\n  with"
+									+ mapRecord.toString());
+
 					mapRecords.remove(mr);
 					mapRecords.add(mapRecord);
 					break;
@@ -1399,7 +1445,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				}
 
 				trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
-				
 
 				// perform the assign action via the algorithm handler
 				mapRecords = algorithmHandler.assignFromInitialRecord(
@@ -1466,7 +1511,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			// record
 			if (!getMapUsersForTrackingRecord(trackingRecord).contains(mapUser))
 				throw new Exception(
-						"SAVE_FOR_LATER - User not assigned to record");
+						"ProcessWorkflowAction: SAVE_FOR_LATER - SAVE_FOR_LATER - User not assigned to record");
 
 			// Logger.getLogger(WorkflowServiceJpa.class).info(
 			// "Performing action...");
@@ -1490,7 +1535,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			// record
 			if (!getMapUsersForTrackingRecord(trackingRecord).contains(mapUser))
 				throw new Exception(
-						"User not assigned to record for finishing request");
+						"ProcessWorkflowAction: FINISH_EDITING - User not assigned to record for finishing request");
 			//
 			// Logger.getLogger(WorkflowServiceJpa.class).info(
 			// "Performing action...");
@@ -1498,6 +1543,31 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			// // perform the action
 			mapRecords = algorithmHandler.finishEditing(trackingRecord,
 					mapRecords, mapUser);
+
+			break;
+
+		case PUBLISH:
+
+			// Logger.getLogger(WorkflowServiceJpa.class).info("FINISH_EDITING");
+
+			// expect existing (pre-computed) workflow tracking record to exist
+			// with this user assigned
+			if (trackingRecord == null)
+				throw new Exception(
+						"ProcessWorkflowAction: PUBLISH - Could not find tracking record to be published.");
+
+			// expect this user to be assigned to a map record in this tracking
+			// record
+			if (!getMapUsersForTrackingRecord(trackingRecord).contains(mapUser))
+				throw new Exception(
+						"ProcessWorkflowAction: PUBLISH - User not assigned to tracking record for publish request");
+			//
+			// Logger.getLogger(WorkflowServiceJpa.class).info(
+			// "Performing action...");
+			//
+			// // perform the action
+			mapRecords = algorithmHandler.publish(trackingRecord, mapRecords,
+					mapUser);
 
 			break;
 
@@ -1513,7 +1583,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			// record
 			if (!getMapUsersForTrackingRecord(trackingRecord).contains(mapUser))
 				throw new Exception(
-						"User not assigned to record for cancel request");
+						"ProcessWorkflowAction: CANCEL - User not assigned to record for cancel request");
 
 			mapRecords = algorithmHandler.cancelWork(trackingRecord,
 					mapRecords, mapUser);
@@ -2924,26 +2994,28 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	}
 
 	@Override
-	public void computeWorkflowStatusErrors(MapProject mapProject) throws Exception {
-	
+	public void computeWorkflowStatusErrors(MapProject mapProject)
+			throws Exception {
+
 		// instantiate the mapping service
 		MappingService mappingService = new MappingServiceJpa();
-		
+
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"Retrieving tracking records for project " + mapProject.getId()
 						+ ", " + mapProject.getName());
-		
+
 		// get all the tracking records for this project
 		TrackingRecordList trackingRecords = this
 				.getTrackingRecordsForMapProject(mapProject);
-		
+
 		Logger.getLogger(WorkflowServiceJpa.class).info(
 				"  " + trackingRecords.getCount() + " retrieved");
-		
+
 		// set the reporting interval based on number of tracking records
 		int nObjects = 0;
-		int nMessageInterval = (int) Math.floor(trackingRecords.getCount() / 10);
-		
+		int nMessageInterval = (int) Math
+				.floor(trackingRecords.getCount() / 10);
+
 		// instantiate the error map
 		Map<TrackingRecord, List<String>> trackingRecordsInError = new HashMap<>();
 
@@ -2952,15 +3024,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			// initialize the error list for this tracking record
 			List<String> errors = new ArrayList<>();
-			
+
 			// try to retrieve the map records for this tracking record
 			Set<MapRecord> mapRecords = new HashSet<>();
 			try {
 				mapRecords = this.getMapRecordsForTrackingRecord(tr);
-			
-			// if an error, figure out which records are causing the problem
+
+				// if an error, figure out which records are causing the problem
 			} catch (Exception e1) {
-				
+
 				for (Long id : tr.getMapRecordIds()) {
 					try {
 						MapRecord mr = mappingService.getMapRecord(id);
@@ -2968,50 +3040,52 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						errors.add("Could not retrieve map record " + id);
 					}
 				}
-				
+
 			}
-			
-			
-			
+
 			// if no problems with retrieving records
 			if (errors.size() == 0) {
-				
+
 				// count variables
 				int nConflictDetectedRecords, nRecordsInEditing;
-			
+
 				switch (tr.getWorkflowPath()) {
 				case CONSENSUS_PATH:
 					break;
 				case DRIP_FEED_REVIEW_PATH:
 					break;
 				case FIX_ERROR_PATH:
-	
+
 					// Must contain:
 					// (1) REVISION
-					// (2) NEW, EDITING_IN_PROGRESS, EDITING_DONE, or REVIEW_NEEDED
+					// (2) NEW, EDITING_IN_PROGRESS, EDITING_DONE, or
+					// REVIEW_NEEDED
 					//
 					// May contain
-					// (3) REVIEW_NEW, REVIEW_IN_PROGRESS -- This requires existence
+					// (3) REVIEW_NEW, REVIEW_IN_PROGRESS -- This requires
+					// existence
 					// of an edited record (#2)
-	
+
 					boolean revisionRecordFound = false;
 					boolean editingRecordFound = false;
 					boolean reviewRecordFound = false;
-	
+
 					for (MapRecord mr : mapRecords) {
 						// check for original record in error
-						if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+						if (mr.getWorkflowStatus().equals(
+								WorkflowStatus.REVISION))
 							revisionRecordFound = true;
-	
+
 						// check for lead review of a fixed error
 						else if (mr.getWorkflowStatus().equals(
 								WorkflowStatus.REVIEW_NEW)
 								|| mr.getWorkflowStatus().equals(
 										WorkflowStatus.REVIEW_IN_PROGRESS))
 							reviewRecordFound = true;
-	
+
 						// check for specialist record
-						else if (mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
+						else if (mr.getWorkflowStatus().equals(
+								WorkflowStatus.NEW)
 								|| mr.getWorkflowStatus().equals(
 										WorkflowStatus.EDITING_IN_PROGRESS)
 								|| mr.getWorkflowStatus().equals(
@@ -3021,121 +3095,150 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 							editingRecordFound = true;
 						else {
 							errors.add("FIX_ERROR_PATH, found unexpected status "
-									+ mr.getWorkflowStatus() + " on map record "
-									+ mr.getId());
+									+ mr.getWorkflowStatus()
+									+ " on map record " + mr.getId());
 						}
 					}
-	
+
 					// revision record must exist
 					if (revisionRecordFound == false) {
 						errors.add("FIX_ERROR_PATH, but no REVISION record");
 					}
-	
+
 					// specialist editing record must exist
 					if (editingRecordFound == false) {
 						errors.add("FIX_ERROR_PATH, but no specialist-level record found");
 					}
-	
-					// no need to output anything about lead review record, above
+
+					// no need to output anything about lead review record,
+					// above
 					// messages with capture
-	
+
 					break;
 				case LEGACY_PATH:
 					break;
 				case NON_LEGACY_PATH:
-					
-					
-					
-	
+
 					// switch on number of records in this tracking record
 					switch (mapRecords.size()) {
-					
-					// a tracking record with zero records is by default not in error (no work has been performed)
+
+					// a tracking record with zero records is by default not in
+					// error (no work has been performed)
 					case 0:
 						// do nothing
 						break;
-						
-					// if a tracking record has 1 record, must be NEW, EDITING_IN_PROGRESS, or EDITING_DONE
+
+					// if a tracking record has 1 record, must be NEW,
+					// EDITING_IN_PROGRESS, or EDITING_DONE
 					case 1:
 						for (MapRecord mr : mapRecords) {
-							if (!mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
-									&& !mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_IN_PROGRESS)
-									&& !mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)) {
-								errors.add("NON_LEGACY_PATH, one map record, but map record " + mr.getId() + " has invalid state " + mr.getWorkflowStatus());
+							if (!mr.getWorkflowStatus().equals(
+									WorkflowStatus.NEW)
+									&& !mr.getWorkflowStatus().equals(
+											WorkflowStatus.EDITING_IN_PROGRESS)
+									&& !mr.getWorkflowStatus().equals(
+											WorkflowStatus.EDITING_DONE)) {
+								errors.add("NON_LEGACY_PATH, one map record, but map record "
+										+ mr.getId()
+										+ " has invalid state "
+										+ mr.getWorkflowStatus());
 							}
 						}
 						break;
-					// if a tracking record has 2 records, must both be specialist level records at or below CONFLICT_DETECTED
+					// if a tracking record has 2 records, must both be
+					// specialist level records at or below CONFLICT_DETECTED
 					case 2:
 						nConflictDetectedRecords = 0;
 						nRecordsInEditing = 0;
-						
+
 						for (MapRecord mr : mapRecords) {
-							
-							
-							
-							if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+
+							if (mr.getWorkflowStatus().equals(
+									WorkflowStatus.CONFLICT_DETECTED)) {
 								nConflictDetectedRecords++;
-							} else if (mr.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_DETECTED) < 0) {
+							} else if (mr.getWorkflowStatus().compareTo(
+									WorkflowStatus.CONFLICT_DETECTED) < 0) {
 								nRecordsInEditing++;
 							} else {
-								errors.add("NON_LEGACY_PATH, two map records, but map record " + mr.getId() + " has invalid state " + mr.getWorkflowStatus());
+								errors.add("NON_LEGACY_PATH, two map records, but map record "
+										+ mr.getId()
+										+ " has invalid state "
+										+ mr.getWorkflowStatus());
 							}
-							
-							
+
 						}
 						break;
-					// if a tracking record has 3 records, two must be CONFLICT_DETECTED and the third must be CONFLICT_NEW or CONFLICT_IN_PROGRESS
+					// if a tracking record has 3 records, two must be
+					// CONFLICT_DETECTED and the third must be CONFLICT_NEW or
+					// CONFLICT_IN_PROGRESS
 					case 3:
 						nConflictDetectedRecords = 0;
 						boolean leadRecordFound = false;
-						
+
 						for (MapRecord mr : mapRecords) {
-							if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
+							if (mr.getWorkflowStatus().equals(
+									WorkflowStatus.CONFLICT_DETECTED)) {
 								nConflictDetectedRecords++;
-							} else if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW) || mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)) {
+							} else if (mr.getWorkflowStatus().equals(
+									WorkflowStatus.CONFLICT_NEW)
+									|| mr.getWorkflowStatus()
+											.equals(WorkflowStatus.CONFLICT_IN_PROGRESS)) {
 								leadRecordFound = true;
 							} else {
-								errors.add("NON_LEGACY_PATH, three records, expected conflict resolution status, but map record " + mr.getId() + " has invalid state " + mr.getWorkflowStatus());
+								errors.add("NON_LEGACY_PATH, three records, expected conflict resolution status, but map record "
+										+ mr.getId()
+										+ " has invalid state "
+										+ mr.getWorkflowStatus());
 							}
 						}
-						
+
 						if (leadRecordFound == false) {
 							errors.add("NON_LEGACY_PATH, three records, expected conflict resolution status, but could not find lead's resolution record");
 						}
-						
+
 						if (nConflictDetectedRecords != 2) {
-							errors.add("NON_LEGACY_PATH, three records, expected two CONFLICT_DETECTED records, but found " + nConflictDetectedRecords);
+							errors.add("NON_LEGACY_PATH, three records, expected two CONFLICT_DETECTED records, but found "
+									+ nConflictDetectedRecords);
 						}
 						break;
 					default:
-						errors.add("NON_LEGACY_PATH, unexpected number of records: " + tr.getMapRecordIds().size());
+						errors.add("NON_LEGACY_PATH, unexpected number of records: "
+								+ tr.getMapRecordIds().size());
 						for (MapRecord mr : mapRecords) {
-							errors.add("  " + mr.getId() + ", " + mr.getWorkflowStatus());
+							errors.add("  " + mr.getId() + ", "
+									+ mr.getWorkflowStatus());
 						}
 						break;
 					}
-	
+
 					break;
 				case QA_PATH:
 					break;
 				case REVIEW_PROJECT_PATH:
-					
+
 					// switch on number of records
 					switch (mapRecords.size()) {
 					case 0:
-						// do nothing, this merely indicates a concept with no work
+						// do nothing, this merely indicates a concept with no
+						// work
 						break;
 					case 1:
 						MapRecord editingRecord = mapRecords.iterator().next();
-						
-						// record MUST be NEW, EDITING_IN_PROGRESS, or REVIEW_NEEDED
-						if (!editingRecord.getWorkflowStatus().equals(WorkflowStatus.NEW)
-								&& !editingRecord.getWorkflowStatus().equals(WorkflowStatus.EDITING_IN_PROGRESS)
-								&& !editingRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
-							
-							errors.add("REVIEW_PROJECT_PATH, one record, but map record " + editingRecord.getId() + " is not a specialist record and has state " + editingRecord.getWorkflowStatus());
-							
+
+						// record MUST be NEW, EDITING_IN_PROGRESS, or
+						// REVIEW_NEEDED
+						if (!editingRecord.getWorkflowStatus().equals(
+								WorkflowStatus.NEW)
+								&& !editingRecord.getWorkflowStatus().equals(
+										WorkflowStatus.EDITING_IN_PROGRESS)
+								&& !editingRecord.getWorkflowStatus().equals(
+										WorkflowStatus.REVIEW_NEEDED)) {
+
+							errors.add("REVIEW_PROJECT_PATH, one record, but map record "
+									+ editingRecord.getId()
+									+ " is not a specialist record and has state "
+									+ editingRecord.getWorkflowStatus());
+
 						}
 						break;
 					case 2:
@@ -3144,55 +3247,64 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						// - REVIEW_NEW or REVIEW_IN_PROGRESS
 						boolean specialistRecordFound = false;
 						boolean leadRecordFound = false;
-						
+
 						for (MapRecord mr : mapRecords) {
-							if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-									|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
+							if (mr.getWorkflowStatus().equals(
+									WorkflowStatus.REVIEW_NEW)
+									|| mr.getWorkflowStatus().equals(
+											WorkflowStatus.REVIEW_IN_PROGRESS)) {
 								leadRecordFound = true;
-							} else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+							} else if (mr.getWorkflowStatus().equals(
+									WorkflowStatus.REVIEW_NEEDED)) {
 								specialistRecordFound = true;
 							} else {
-								errors.add("REVIEW_PROJECT_PATH, two records, but map record " + mr.getId() + " has invalid state " + mr.getWorkflowStatus());
+								errors.add("REVIEW_PROJECT_PATH, two records, but map record "
+										+ mr.getId()
+										+ " has invalid state "
+										+ mr.getWorkflowStatus());
 							}
 						}
-						
+
 						if (specialistRecordFound == false)
 							errors.add("REVIEW_PROJECT_PATH, two records, but could not find the specialist's record requiring review");
-						
+
 						if (leadRecordFound == false)
 							errors.add("REVIEW_PROJECT_PATH, two records, but could not find the lead's review resolution record");
-						
+
 						break;
 					default:
-						errors.add("REVIEW_PROJECT_PATH, but unexpected number of records:  " + mapRecords.size());
+						errors.add("REVIEW_PROJECT_PATH, but unexpected number of records:  "
+								+ mapRecords.size());
 						break;
 					}
 				default:
 					break;
 				}
-	
+
 				// if errors were found, put them in the map
 				if (errors.size() > 0) {
 					trackingRecordsInError.put(tr, errors);
 				}
-				
+
 				if (++nObjects % nMessageInterval == 0) {
 					Logger.getLogger(WorkflowServiceJpa.class).info(
-							"  " + nObjects + " tracking records processed, " + trackingRecordsInError.size() + " in error");
+							"  " + nObjects + " tracking records processed, "
+									+ trackingRecordsInError.size()
+									+ " in error");
 				}
-	
+
 			}
 		}
-		
+
 		// output the errors
 		for (TrackingRecord tr : trackingRecordsInError.keySet()) {
-			System.out.println("Concept " + tr.getTerminologyId() + " on path " + tr.getWorkflowPath());
+			System.out.println("Concept " + tr.getTerminologyId() + " on path "
+					+ tr.getWorkflowPath());
 			for (String s : trackingRecordsInError.get(tr)) {
 				System.out.println("  " + s);
 			}
 		}
-		
-	
+
 	}
 
 	@Override
@@ -3247,14 +3359,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		mappingService.close();
 
 	}
+
 	// /////////////////////////////////////
 	// FEEDBACK FUNCTIONS
 	// /////////////////////////////////////
-	
+
 	/**
 	 * Adds the feedback.
-	 *
-	 * @param feedback the feedback
+	 * 
+	 * @param feedback
+	 *            the feedback
 	 * @return the feedback
 	 */
 	@Override
@@ -3271,7 +3385,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		return feedback;
 	}
-	
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public FeedbackList getFeedbacks() {
@@ -3287,17 +3401,21 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		return feedbackList;
 	}
-	
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#addFeedbackConversation(org.ihtsdo.otf.mapping.model.FeedbackConversation)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MappingService#addFeedbackConversation
+	 * (org.ihtsdo.otf.mapping.model.FeedbackConversation)
 	 */
 	@Override
-	public FeedbackConversation addFeedbackConversation(FeedbackConversation conversation) {
+	public FeedbackConversation addFeedbackConversation(
+			FeedbackConversation conversation) {
 
 		// set the conversation of all elements of this conversation
 		conversation.assignToChildren();
-		
+
 		if (getTransactionPerOperation()) {
 			tx = manager.getTransaction();
 			tx.begin();
@@ -3309,13 +3427,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		return conversation;
 	}
-	
+
 	@Override
 	public void updateFeedbackConversation(FeedbackConversation conversation) {
 
 		// set the conversation of all elements of this conversation
 		conversation.assignToChildren();
-		
+
 		if (getTransactionPerOperation()) {
 
 			tx = manager.getTransaction();
@@ -3328,10 +3446,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			manager.merge(conversation);
 		}
 	}
-	
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public FeedbackConversation getFeedbackConversation(Long id) throws Exception {
+	public FeedbackConversation getFeedbackConversation(Long id)
+			throws Exception {
 
 		// construct query
 		javax.persistence.Query query = manager
@@ -3339,20 +3458,25 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		// Try query
 		query.setParameter("recordId", id);
-		List<FeedbackConversation> feedbackConversations = (List<FeedbackConversation>) query.getResultList();
+		List<FeedbackConversation> feedbackConversations = (List<FeedbackConversation>) query
+				.getResultList();
 
 		if (feedbackConversations != null && feedbackConversations.size() > 0)
-			handleFeedbackConversationLazyInitialization(feedbackConversations.get(0));
+			handleFeedbackConversationLazyInitialization(feedbackConversations
+					.get(0));
 
 		Logger.getLogger(this.getClass()).debug(
 				"Returning feedback conversation id... "
 						+ ((feedbackConversations != null) ? id.toString()
 								: "null"));
 
-		return feedbackConversations != null && feedbackConversations.size() > 0 ? feedbackConversations.get(0) : null;
+		return feedbackConversations != null
+				&& feedbackConversations.size() > 0 ? feedbackConversations
+				.get(0) : null;
 	}
-	
-	private void handleFeedbackConversationLazyInitialization(FeedbackConversation feedbackConversation) {
+
+	private void handleFeedbackConversationLazyInitialization(
+			FeedbackConversation feedbackConversation) {
 		// handle all lazy initializations
 		for (Feedback feedback : feedbackConversation.getFeedbacks()) {
 			feedback.getSender().getName();
@@ -3361,27 +3485,30 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			for (MapUser viewedBy : feedback.getViewedBy())
 				viewedBy.getName();
 		}
-		
+
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	@Override
-	public FeedbackConversationList getFeedbackConversationsForConcept(Long mapProjectId,
-		String terminologyId) throws Exception {
-		
+	public FeedbackConversationList getFeedbackConversationsForConcept(
+			Long mapProjectId, String terminologyId) throws Exception {
+
 		MappingService mappingService = new MappingServiceJpa();
 		MapProject mapProject = mappingService.getMapProject(mapProjectId);
 		mappingService.close();
-		
+
 		javax.persistence.Query query = manager
 				.createQuery(
 						"select m from FeedbackConversationJpa m where terminology = :terminology and"
-						+ " terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
-				.setParameter("terminology", mapProject.getDestinationTerminology())
-				.setParameter("terminologyVersion", mapProject.getDestinationTerminologyVersion())
+								+ " terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
+				.setParameter("terminology",
+						mapProject.getDestinationTerminology())
+				.setParameter("terminologyVersion",
+						mapProject.getDestinationTerminologyVersion())
 				.setParameter("terminologyId", terminologyId);
 
-    
-		List<FeedbackConversation> feedbackConversations = query.getResultList();
+		List<FeedbackConversation> feedbackConversations = query
+				.getResultList();
 		for (FeedbackConversation feedbackConversation : feedbackConversations) {
 			handleFeedbackConversationLazyInitialization(feedbackConversation);
 		}
@@ -3391,28 +3518,29 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		feedbackConversationList.setTotalCount(feedbackConversations.size());
 
 		// extract the required sublist of feedback conversations
-		feedbackConversationList.setFeedbackConversations(feedbackConversations);
+		feedbackConversationList
+				.setFeedbackConversations(feedbackConversations);
 
-		return feedbackConversationList;		
+		return feedbackConversationList;
 	}
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	public FeedbackConversationList getFeedbackConversationsForProject(Long mapProjectId,
-		String userName, PfsParameter pfsParameter) 
+	public FeedbackConversationList getFeedbackConversationsForProject(
+			Long mapProjectId, String userName, PfsParameter pfsParameter)
 			throws Exception {
 
 		MappingService mappingService = new MappingServiceJpa();
 		MapProject mapProject = mappingService.getMapProject(mapProjectId);
 		mappingService.close();
-			
-		String full_query = 
-						"terminology:" + mapProject.getDestinationTerminology() + " AND "
-						+ " terminologyVersion:" + mapProject.getDestinationTerminologyVersion() + " AND "
-						+ "( feedbacks.sender.userName:" + userName + " OR "
-								+ "feedbacks.recipients.userName:" + userName + ")";
 
-	
+		String full_query = "terminology:"
+				+ mapProject.getDestinationTerminology() + " AND "
+				+ " terminologyVersion:"
+				+ mapProject.getDestinationTerminologyVersion() + " AND "
+				+ "( feedbacks.sender.userName:" + userName + " OR "
+				+ "feedbacks.recipients.userName:" + userName + ")";
+
 		Logger.getLogger(MappingServiceJpa.class).info(full_query);
 
 		FullTextEntityManager fullTextEntityManager = Search
@@ -3425,8 +3553,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(FeedbackConversationJpa.class));
-		luceneQuery = queryParser.parse(full_query);
-
+		try {
+			luceneQuery = queryParser.parse(full_query);
+		} catch (ParseException e) {
+			throw new LocalException(
+					"The specified search terms cannot be parsed.  Please check syntax and try again.");
+		}
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, FeedbackConversationJpa.class);
 
@@ -3446,7 +3578,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				&& !pfsParameter.getQueryRestriction().isEmpty()) {
 			// do nothing
 		} else {
-			ftquery.setSort(new Sort(new SortField(sortField, SortField.STRING, true)));
+			ftquery.setSort(new Sort(new SortField(sortField, SortField.STRING,
+					true)));
 		}
 
 		// get the results
@@ -3456,10 +3589,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			ftquery.setFirstResult(pfsParameter.getStartIndex());
 			ftquery.setMaxResults(pfsParameter.getMaxResults());
 		}
-		List<FeedbackConversation> feedbackConversations = ftquery.getResultList();
+		List<FeedbackConversation> feedbackConversations = ftquery
+				.getResultList();
 
 		Logger.getLogger(this.getClass()).debug(
-				Integer.toString(feedbackConversations.size()) + " feedbackConversations retrieved");
+				Integer.toString(feedbackConversations.size())
+						+ " feedbackConversations retrieved");
 
 		for (FeedbackConversation feedbackConversation : feedbackConversations) {
 			handleFeedbackConversationLazyInitialization(feedbackConversation);
@@ -3470,34 +3605,34 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		feedbackConversationList.setTotalCount(totalCount);
 
 		// extract the required sublist of feedback conversations
-		feedbackConversationList.setFeedbackConversations(feedbackConversations);
+		feedbackConversationList
+				.setFeedbackConversations(feedbackConversations);
 
 		return feedbackConversationList;
 
-		
-		
-		
-		/*javax.persistence.Query query = manager
-				.createQuery(
-						"select m from FeedbackConversationJpa m where terminology = :terminology and"
-						+ " terminologyVersion = :terminologyVersion")
-				.setParameter("terminology", mapProject.getDestinationTerminology())
-				.setParameter("terminologyVersion", mapProject.getDestinationTerminologyVersion());
-
-    
-		List<FeedbackConversation> feedbackConversations = query.getResultList();
-		for (FeedbackConversation feedbackConversation : feedbackConversations) {
-			handleFeedbackConversationLazyInitialization(feedbackConversation);
-		}
-
-		FeedbackConversationListJpa feedbackConversationList = new FeedbackConversationListJpa();
-
-		// extract the required sublist of feedback conversations
-		feedbackConversationList.setFeedbackConversations(feedbackConversations);
-
-		return feedbackConversationList;
-*/
+		/*
+		 * javax.persistence.Query query = manager .createQuery(
+		 * "select m from FeedbackConversationJpa m where terminology = :terminology and"
+		 * + " terminologyVersion = :terminologyVersion")
+		 * .setParameter("terminology", mapProject.getDestinationTerminology())
+		 * .setParameter("terminologyVersion",
+		 * mapProject.getDestinationTerminologyVersion());
+		 * 
+		 * 
+		 * List<FeedbackConversation> feedbackConversations =
+		 * query.getResultList(); for (FeedbackConversation feedbackConversation
+		 * : feedbackConversations) {
+		 * handleFeedbackConversationLazyInitialization(feedbackConversation); }
+		 * 
+		 * FeedbackConversationListJpa feedbackConversationList = new
+		 * FeedbackConversationListJpa();
+		 * 
+		 * // extract the required sublist of feedback conversations
+		 * feedbackConversationList
+		 * .setFeedbackConversations(feedbackConversations);
+		 * 
+		 * return feedbackConversationList;
+		 */
 	}
-	
 
 }

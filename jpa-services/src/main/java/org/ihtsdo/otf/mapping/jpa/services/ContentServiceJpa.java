@@ -17,6 +17,7 @@ import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
@@ -33,6 +34,7 @@ import org.ihtsdo.otf.mapping.helpers.DescriptionList;
 import org.ihtsdo.otf.mapping.helpers.DescriptionListJpa;
 import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList;
 import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberListJpa;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.RelationshipList;
@@ -224,7 +226,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		}
 
 	}
-	
+
 	@Override
 	public void removeConcept(Long id) throws Exception {
 
@@ -1029,19 +1031,25 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 		Query luceneQuery;
 
-		// if the field is not indicated in the URL
-		if (searchString.indexOf(':') == -1) {
-			MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
-					Version.LUCENE_36, fieldNames.toArray(new String[0]),
-					searchFactory.getAnalyzer(ConceptJpa.class));
-			queryParser.setAllowLeadingWildcard(false);
-			luceneQuery = queryParser.parse(searchString);
-			// index field is indicated in the URL with a ':' separating
-			// field and value
-		} else {
-			QueryParser queryParser = new QueryParser(Version.LUCENE_36,
-					"summary", searchFactory.getAnalyzer(ConceptJpa.class));
-			luceneQuery = queryParser.parse(searchString);
+		try {
+
+			// if the field is not indicated in the URL
+			if (searchString.indexOf(':') == -1) {
+				MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
+						Version.LUCENE_36, fieldNames.toArray(new String[0]),
+						searchFactory.getAnalyzer(ConceptJpa.class));
+				queryParser.setAllowLeadingWildcard(false);
+				luceneQuery = queryParser.parse(searchString);
+				// index field is indicated in the URL with a ':' separating
+				// field and value
+			} else {
+				QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+						"summary", searchFactory.getAnalyzer(ConceptJpa.class));
+				luceneQuery = queryParser.parse(searchString);
+			}
+		} catch (ParseException e) {
+			throw new LocalException(
+					"The specified search terms cannot be parsed.  Please check syntax and try again.");
 		}
 
 		FullTextQuery fullTextQuery = fullTextEntityManager
@@ -1218,49 +1226,54 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	@Override
 	public void clearTreePositions(String terminology, String terminologyVersion)
 			throws Exception {
-		
-		Logger.getLogger(this.getClass()).info("Removing tree positions via object-management for " + terminology + ", " + terminologyVersion);
-		
-		// if currently in transaction-per-operation mode, temporarily set to false
+
+		Logger.getLogger(this.getClass()).info(
+				"Removing tree positions via object-management for "
+						+ terminology + ", " + terminologyVersion);
+
+		// if currently in transaction-per-operation mode, temporarily set to
+		// false
 		boolean currentTransactionStrategy = getTransactionPerOperation();
 		if (getTransactionPerOperation()) {
 			this.setTransactionPerOperation(false);
 		}
-		
-		int results = 0;  		// progress tracker
-		int commitSize = 5000;	// retrieval/delete batch size
+
+		int results = 0; // progress tracker
+		int commitSize = 5000; // retrieval/delete batch size
 
 		javax.persistence.Query query = manager
 				.createQuery("select tp from TreePositionJpa tp where terminology = :terminology and terminologyVersion = :terminologyVersion");
 		query.setParameter("terminology", terminology);
 		query.setParameter("terminologyVersion", terminologyVersion);
-		
+
 		query.setFirstResult(0);
 		query.setMaxResults(commitSize);
 
 		boolean resultsFound = true;
-		
+
 		while (resultsFound) {
-			
+
 			List<TreePosition> treePositions = query.getResultList();
-			
-			if (treePositions.size() == 0) resultsFound = false;
-			
+
+			if (treePositions.size() == 0)
+				resultsFound = false;
+
 			this.beginTransaction();
 			for (TreePosition tp : treePositions) {
 				this.removeTreePosition(tp.getId());
 			}
 			this.commit();
-			
+
 			results += commitSize;
-			
+
 			Logger.getLogger(this.getClass()).info(
-					"  " + results + " tree positions deleted" );
-		};
-		
+					"  " + results + " tree positions deleted");
+		}
+		;
+
 		Logger.getLogger(this.getClass()).info(
 				"Finished:  deleted " + results + " tree positions");
-		
+
 		// set the transaction strategy based on status starting this routine
 		setTransactionPerOperation(currentTransactionStrategy);
 
@@ -1334,7 +1347,6 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 		// if concept is active
 		if (concept.isActive()) {
-			
 
 			// instantiate the tree position
 			TreePosition tp = new TreePositionJpa();
@@ -1345,8 +1357,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			String loggerPrefix = "";
 			for (int i = 0; i < ancestorCount; i++)
 				loggerPrefix += "  ";
-			
-			// Logger.get// Logger(ContentServiceJpa.class).info(loggerPrefix + "Computing position for concept " + concept.getTerminologyId() + ", " + concept.getDefaultPreferredName());;
+
+			// Logger.get// Logger(ContentServiceJpa.class).info(loggerPrefix +
+			// "Computing position for concept " + concept.getTerminologyId() +
+			// ", " + concept.getDefaultPreferredName());;
 
 			tp.setAncestorPath(ancestorPath);
 			tp.setTerminology(concept.getTerminology());
@@ -1367,16 +1381,18 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 			// cycle over all relationships
 			for (Relationship rel : concept.getInverseRelationships()) {
-				
+
 				// if relationship is active, typeId equals the provided typeId,
 				// and
 				// the source concept is active
 				if (rel.isActive() && rel.getTypeId().toString().equals(typeId)
 						&& rel.getSourceConcept().isActive()) {
 
-					// Logger.get// Logger(ContentServiceJpa.class).info(loggerPrefix + "  Relationship " + rel.getTerminologyId() + " active, matches typeId, source concept active");
+					// Logger.get//
+					// Logger(ContentServiceJpa.class).info(loggerPrefix +
+					// "  Relationship " + rel.getTerminologyId() +
+					// " active, matches typeId, source concept active");
 
-					
 					// get the child concept
 					Concept childConcept = rel.getSourceConcept();
 
@@ -1387,8 +1403,9 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 					descConceptIds.add(childConcept.getId());
 				}
 			}
-			
-			// Logger.get// Logger(ContentServiceJpa.class).info(loggerPrefix + " " + childrenConceptIds.size() + " children");
+
+			// Logger.get// Logger(ContentServiceJpa.class).info(loggerPrefix +
+			// " " + childrenConceptIds.size() + " children");
 
 			// iterate over the child terminology ids
 			// this iteration is entirely local and depends on no managed
@@ -1437,7 +1454,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				if (runtime.totalMemory() > computeTreePositionMaxMemoryUsage)
 					computeTreePositionMaxMemoryUsage = runtime.totalMemory();
 
-				 Logger.getLogger(ContentServiceJpa.class)
+				Logger.getLogger(ContentServiceJpa.class)
 						.info("\t"
 								+ System.currentTimeMillis()
 								/ 1000
@@ -1670,9 +1687,16 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 		Query luceneQuery;
 
-		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
-				searchFactory.getAnalyzer(TreePositionJpa.class));
-		luceneQuery = queryParser.parse(full_query);
+		try {
+
+			QueryParser queryParser = new QueryParser(Version.LUCENE_36,
+					"summary", searchFactory.getAnalyzer(TreePositionJpa.class));
+			luceneQuery = queryParser.parse(full_query);
+
+		} catch (ParseException e) {
+			throw new LocalException(
+					"The specified search terms cannot be parsed.  Please check syntax and try again.");
+		}
 
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TreePositionJpa.class);
@@ -1803,7 +1827,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		// System.out.println("");
 		// System.out.println("***************************");
 		// System.out.println("Computing information for tree position, concept: "
-		//		+ treePosition.getTerminologyId());
+		// + treePosition.getTerminologyId());
 		// System.out.println("***************************");
 		// get the concept for this tree position
 		Concept concept = getConcept(treePosition.getTerminologyId(),
@@ -1818,8 +1842,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		for (Description desc : concept.getDescriptions()) {
 
 			// System.out.println("  Checking description: "
-			//		+ desc.getTerminologyId() + ", " + desc.getTypeId() + ", "
-			//		+ desc.getTerm());
+			// + desc.getTerminologyId() + ", " + desc.getTypeId() + ", "
+			// + desc.getTerm());
 
 			String descType = desc.getTypeId().toString();
 
@@ -1829,7 +1853,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				descGroup = descGroups.get(descType);
 			else {
 				// System.out.println("    Creating descGroup:  "
-				//		+ descTypes.get(descType));
+				// + descTypes.get(descType));
 				descGroup = new TreePositionDescriptionGroupJpa();
 				descGroup.setName(descTypes.get(descType));
 				descGroup.setTypeId(descType);
@@ -1846,7 +1870,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 			// if no description found, create a new one
 			if (tpDesc == null) {
-				// System.out.println("    Creating tpDesc:  " + desc.getTerm());
+				// System.out.println("    Creating tpDesc:  " +
+				// desc.getTerm());
 				tpDesc = new TreePositionDescriptionJpa();
 				tpDesc.setName(desc.getTerm());
 			}
@@ -1863,9 +1888,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			for (Relationship rel : concept.getRelationships()) {
 
 				// System.out.println("  Checking relationship "
-				//		+ rel.getTerminologyId() + ", " + rel.getTypeId());
+				// + rel.getTerminologyId() + ", " + rel.getTypeId());
 
-				if (rel.getTerminologyId().startsWith(desc.getTerminologyId() + "~")) {
+				if (rel.getTerminologyId().startsWith(
+						desc.getTerminologyId() + "~")) {
 
 					// System.out.println("     Matches!");
 
@@ -1890,17 +1916,17 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 												// display name
 
 					// System.out.println("      Destination Concept: "
-					//		+ rel.getDestinationConcept().getTerminologyId()
-					//		+ " with label "
-					//		+ rel.getDestinationConcept().getLabel());
+					// + rel.getDestinationConcept().getTerminologyId()
+					// + " with label "
+					// + rel.getDestinationConcept().getLabel());
 
 					// switch on relationship type to add any additional
 					// information
 					String relType = relTypes.get(rel.getTypeId().toString());
 
 					// System.out.println("      Relationship type: "
-					//		+ rel.getTypeId().toString() + ", "
-					//		+ relTypes.get(rel.getTypeId().toString()));
+					// + rel.getTypeId().toString() + ", "
+					// + relTypes.get(rel.getTypeId().toString()));
 
 					// if asterisk-to-dagger, add †
 					if (relType.indexOf("Asterisk") == 0) {
@@ -2168,8 +2194,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		ConceptList results = new ConceptListJpa();
 
 		javax.persistence.Query query;
-		
-		if (pfsParameter == null) 
+
+		if (pfsParameter == null)
 			pfsParameter = new PfsParameterJpa();
 
 		// if no date provided, get the latest modified concepts
@@ -2177,46 +2203,52 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				"select max(c.effectiveTime) from ConceptJpa c"
 						+ " where terminology = :terminology").setParameter(
 				"terminology", terminology);
-		
+
 		Date tempDate = (Date) query.getSingleResult();
 		System.out.println("Max date   = " + tempDate.toString());
-		
+
 		if (date == null) {
 			date = tempDate;
 
 		} else {
 			System.out.println("Date input = " + date.toString());
 		}
-		
+
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
 
 		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
-		
-		QueryBuilder qb = searchFactory.buildQueryBuilder().forEntity(ConceptJpa.class).get();
-		
+
+		QueryBuilder qb = searchFactory.buildQueryBuilder()
+				.forEntity(ConceptJpa.class).get();
+
 		Query luceneQuery;
 		if (pfsParameter.getQueryRestriction() == null) {
-			luceneQuery = 
-					qb.bool()
-						.must(qb.keyword().onField("effectiveTime").matching(date).createQuery())
-						.must(qb.keyword().onField("terminology").matching(terminology).createQuery())
-					.createQuery();
+			luceneQuery = qb
+					.bool()
+					.must(qb.keyword().onField("effectiveTime").matching(date)
+							.createQuery())
+					.must(qb.keyword().onField("terminology")
+							.matching(terminology).createQuery()).createQuery();
 		} else {
-			luceneQuery = 
-					qb.bool()
-						.must(qb.keyword().onField("effectiveTime").matching(date).createQuery())
-						.must(qb.keyword().onField("terminology").matching(terminology).createQuery())
-						.must(qb.keyword().onFields("terminologyId", "defaultPreferredName").matching(pfsParameter.getQueryRestriction()).createQuery())
-						.createQuery();
-			
+			luceneQuery = qb
+					.bool()
+					.must(qb.keyword().onField("effectiveTime").matching(date)
+							.createQuery())
+					.must(qb.keyword().onField("terminology")
+							.matching(terminology).createQuery())
+					.must(qb.keyword()
+							.onFields("terminologyId", "defaultPreferredName")
+							.matching(pfsParameter.getQueryRestriction())
+							.createQuery()).createQuery();
+
 		}
-		Logger.getLogger(ContentServiceJpa.class).info("Query text: " + luceneQuery.toString());
-		
+		Logger.getLogger(ContentServiceJpa.class).info(
+				"Query text: " + luceneQuery.toString());
+
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, ConceptJpa.class);
 
-		
 		if (pfsParameter.getStartIndex() != -1
 				&& pfsParameter.getMaxResults() != -1) {
 			ftquery.setFirstResult(pfsParameter.getStartIndex());
@@ -2284,6 +2316,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return results;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Set<String> getAllRelationshipTerminologyIds(String terminology,
 			String terminologyVersion) {
@@ -2299,6 +2332,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Set<String> getAllDescriptionTerminologyIds(String terminology,
 			String terminologyVersion) {
@@ -2314,6 +2348,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Set<String> getAllLanguageRefSetMemberTerminologyIds(
 			String terminology, String terminologyVersion) {
