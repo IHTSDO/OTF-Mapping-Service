@@ -266,17 +266,13 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 	$scope.finishMapRecord = function(returnBack) {
 		
-		console.debug('Finish, note content = ', $scope.tinymceContent);
-		
 		// check that note box does not contain unsaved material
 		if ($scope.tinymceContent != '' && $scope.tinymceContent != null) {
 			if(confirm("You have unsaved text into the Map Notes. Do you wish to continue saving? The note will be lost.") == false) {
 				return;
 			};
 		}
-		
-		console.debug("finishMapRecord called with " + returnBack);
-
+	
 		///////////////////////////
 		// Group and MapPriority //
 		///////////////////////////

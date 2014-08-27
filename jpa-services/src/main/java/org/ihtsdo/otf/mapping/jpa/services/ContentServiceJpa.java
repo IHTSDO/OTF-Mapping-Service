@@ -35,6 +35,7 @@ import org.ihtsdo.otf.mapping.helpers.DescriptionListJpa;
 import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList;
 import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberListJpa;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
+import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.RelationshipList;
@@ -51,6 +52,7 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionReferencedConcept;
 import org.ihtsdo.otf.mapping.helpers.TreePositionReferencedConceptJpa;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.AttributeValueRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -101,6 +103,21 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 * @see org.ihtsdo.otf.mapping.services.ContentService#close()
 	 */
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public ConceptList getConcepts() throws Exception {
+		List<Concept> m = null;
+
+		javax.persistence.Query query = manager
+				.createQuery("select m from ConceptJpa m");
+
+		m = query.getResultList();
+		ConceptListJpa ConceptList = new ConceptListJpa();
+		ConceptList.setConcepts(m);
+		ConceptList.setTotalCount(m.size());
+		return ConceptList;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

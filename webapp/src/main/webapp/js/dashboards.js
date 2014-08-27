@@ -21,6 +21,8 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function ($s
 	$scope.currentRole  = localStorageService.get('currentRole');
 	$scope.preferences  = localStorageService.get('preferences');
 	$scope.focusProject = localStorageService.get('focusProject');
+	
+	
 
 	
 	$scope.page = 'resolveConflictsDashboard';
@@ -290,6 +292,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
 
 	// initialize the default model
 	setDefaultModel();
+	
 
 	// on successful user retrieval, construct the dashboard
 	$scope.$watch(['preferences'], function() {
@@ -780,6 +783,17 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 							}]
 						}]
 
+					},{
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "projectAdmin",
+								config: {
+								},
+								title: "Project Administration"
+							}]
+						}]
+
 					}]
 			};
 
@@ -1074,22 +1088,10 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function ($scope, $
 	});
 
 	// watch for project change
-	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
-		console.debug("RecordDashboardCtrl:  Detected change in focus project");
+	$scope.$on('localStorageModule.notification.setFocusProject', function (event, name) {
+		console.debug("MainDashboardCtrl:  Detected change in map projects");
 
-		var path = "";
-
-		if ($scope.currentRole === "Specialist") {
-			path = "/specialist/dash";
-		} else if ($scope.currentRole === "Lead") {
-			path = "/lead/dash";
-		} else if ($scope.currentRole === "Administrator") {
-			path = "/admin/dash";
-		} else if ($scope.currentRole === "Viewer") {
-			path = "/viewer/dash";
-		}
-		console.debug("redirecting to " + path);
-		$location.path(path);
+		$scope.mapProjects = localStorageService.get('mapProjects');
 	});	
 
 	// function to change project from the header

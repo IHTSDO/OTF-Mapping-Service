@@ -661,7 +661,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 	@POST
 	@Path("/assignBatch/project/id/{projectId}/user/id/{userName}")
 	@ApiOperation(value = "Assign user to batch of concepts", notes = "Assigns the given user to a batch of concepts corresponding to the passed list of concept ids.")
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void assignBatch(
 			@ApiParam(value = "Id of map project", required = true) @PathParam("projectId") String mapProjectId,
 			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
@@ -1554,7 +1554,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 			
 			// if not a conflict resolution record, throw an error
 			if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
-					&& !mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED))
+					&& !mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
+					&& !mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_RESOLVED))
 				throw new WebApplicationException(Response.status(401).entity(
 						"Cannot set false conflict flag on a non-conflict record").build());
 			

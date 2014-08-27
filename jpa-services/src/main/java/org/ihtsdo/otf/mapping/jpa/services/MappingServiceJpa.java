@@ -2941,7 +2941,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// records
 		if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
 				|| mapRecord.getWorkflowStatus().equals(
-						WorkflowStatus.CONFLICT_IN_PROGRESS)) {
+						WorkflowStatus.CONFLICT_IN_PROGRESS)
+				|| mapRecord.getWorkflowStatus().equals(
+						WorkflowStatus.CONFLICT_RESOLVED)) {
 
 			// As with review record below, this try/catch block is a
 			// method to handle situations where originId set has more than
@@ -2967,8 +2969,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			}
 
 		} else if ((mapProject.getWorkflowType().equals("CONFLICT_PROJECT") && (mapRecord
-				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW) || mapRecord
-				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)))
+				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
+				|| mapRecord.getWorkflowStatus().equals(
+						WorkflowStatus.REVIEW_IN_PROGRESS) || mapRecord
+				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)))
 
 				||
 
@@ -3014,7 +3018,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				&& mapRecord.getWorkflowStatus().equals(
 						WorkflowStatus.REVIEW_NEW)
 				|| mapRecord.getWorkflowStatus().equals(
-						WorkflowStatus.REVIEW_IN_PROGRESS)) {
+						WorkflowStatus.REVIEW_IN_PROGRESS)
+				|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
 
 			System.out.println("Getting origin id for REVIEW_PROJECT record");
 
@@ -3028,9 +3033,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				for (Long originId : mapRecord.getOriginIds()) {
 
+					try {
 					MapRecord mr = getMapRecord(mapRecord.getOriginIds()
 							.iterator().next());
-
+					
 					// check assumption
 					if (!mr.getWorkflowStatus().equals(
 							WorkflowStatus.REVIEW_NEEDED)) {
@@ -3038,11 +3044,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 								"Single origin record found for review, but was not REVIEW_NEEDED");
 					}
 
+					// add and return this record
 					conflictRecords.addMapRecord(mr);
 					conflictRecords.setTotalCount(conflictRecords.getCount());
 
 					return conflictRecords;
 
+					} catch (Exception e) {
+						// do nothing
+					}
+					
 				}
 
 			} else if (tr.getWorkflowPath().equals(WorkflowPath.FIX_ERROR_PATH)) {
