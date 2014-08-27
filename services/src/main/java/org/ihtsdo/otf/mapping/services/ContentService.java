@@ -785,4 +785,13 @@ public interface ContentService extends RootService {
 	 * @throws Exception the exception
 	 */
 	public void removeTreePosition(Long id) throws Exception;
+
+
+	/**
+	 * Gets all concepts.
+	 *
+	 * @return the concepts
+	 * @throws Exception the exception
+	 */
+	public ConceptList getConcepts() throws Exception;
 }

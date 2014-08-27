@@ -819,14 +819,37 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		
 	};
 	
-	$scope.openFinishAllRecordsModal = function() {
+	$scope.openFinishAllRecordsModal = function(workType) {
 		
-		// construct a paging/filtering/sorting object
+		console.debug('openFinishAllRecordsModal called with worktype', workType);
+		
+		// determine which api call is to be performed
+		var apiWorkTypeText = '';
+
+		switch(workType) {
+		case 'EDITING_IN_PROGRESS':
+			apiWorkTypeText = 'assignedConcepts';
+			break;
+		case 'CONFLICT_IN_PROGRESS':
+		case 'CONFLICT_RESOLVED':
+			apiWorkTypeText = 'assignedConflicts';
+			break;
+		case 'REVIEW_IN_PROGRESS':
+		case 'REVIEW_RESOLVED':
+			apiWorkTypeText = 'assignedReviewWork';
+			break;
+		default:
+			console.error("Invalid worktype sent to openFinishAllRecordsModal", workType);
+			return;
+		}
+		
+		// construct a paging/filtering/sorting object based on work type
 		var pfsParameterObj = 
 					{"startIndex": -1,
 			 	 	 "maxResults": -1, 
 			 	 	 "sortField": null,
-			 	 	 "queryRestriction": 'EDITING_IN_PROGRESS'};
+			 	 	 "queryRestriction": workType
+			 	 	 };
 
 	  	$rootScope.glassPane++;
 
@@ -859,10 +882,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		  	
 		  	modalInstance.result.then(function() {  	
 		  		console.debug("User closed finish modal");
-		  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Done
+		  		$scope.retrieveAssignedWork(1, null, workType); // called on Done
 		  	}, function() {  	
 		  		console.debug("Finish modal dismissed");
-		  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Cancel/Esc
+		  		$scope.retrieveAssignedWork(1, null, workType); // called on Cancel/Esc
 		  	});
 			
 			
@@ -971,7 +994,7 @@ $scope.openPublishSingleRecordModal = function(searchResult) {
 		// - actionText:  text displayed to user on button
 		// - action:  must match the ending string of a workflow rest call
 		//            (e.g. /finish -> 'finish', /publish -> 'publish'
-		if (records[0].workflowStatus === 'EDITING_IN_PROGRESS') {
+		if (records[0].workflowStatus === '*_IN_PROGRESS') {
 			$scope.actionText = 'Finish';
 			$scope.action = 'finish';
 		} else if (records[0].workflowStatus === 'CONFLICT_RESOLVED' || records[0].workflowStatus === 'REVIEW_RESOLVED') {
