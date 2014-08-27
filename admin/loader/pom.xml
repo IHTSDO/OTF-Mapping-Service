@@ -196,6 +196,29 @@
         </plugins>
       </build>
     </profile>
+    
+     <!-- Load asample of map records from RF2 map file -->
+    <profile>
+      <id>MapRecordsSample</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>load-rf2-complex-map-sample</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-rf2-complex-map-sample</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
     <!-- Create map records from content tables -->
     <profile>

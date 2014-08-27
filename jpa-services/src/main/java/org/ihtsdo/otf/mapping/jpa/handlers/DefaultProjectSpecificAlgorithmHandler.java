@@ -1164,17 +1164,29 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		}
 
 		ContentService contentService = new ContentServiceJpa();
-		mapRecord.setCountDescendantConcepts(new Long(
-		// get the tree positions for this concept
-				contentService
-						.getTreePositionsWithDescendants(
-								trackingRecord.getTerminologyId(),
-								trackingRecord.getTerminology(),
-								trackingRecord.getTerminologyVersion())
+		try {
+			mapRecord.setCountDescendantConcepts(new Long(
 
-						.getTreePositions() // get the list of tree positions
-						.get(0) // get the first tree position
-						.getDescendantCount())); // get the descendant count
+			// get the tree positions for this concept
+					contentService
+							.getTreePositionsWithDescendants(
+									trackingRecord.getTerminologyId(),
+									trackingRecord.getTerminology(),
+									trackingRecord.getTerminologyVersion())
+
+							.getTreePositions() // get the list of tree
+												// positions
+							.get(0) // get the first tree position
+							.getDescendantCount())); // get the descendant count
+		} catch (IndexOutOfBoundsException e) {
+			throw new Exception(
+					"ASSIGN_FROM_SCRATCH:  Attempted to set descendant count for new record, but could not retrieve tree positions for concept "
+							+ trackingRecord.getTerminologyId()
+							+ " for terminology "
+							+ trackingRecord.getTerminology()
+							+ " version "
+							+ trackingRecord.getTerminologyVersion());
+		}
 		contentService.close();
 
 		// add this record to the tracking record
@@ -1341,13 +1353,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			for (MapRecord mr : mapRecords) {
 				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
 					revisionRecord = mr;
-				else if (mr.getWorkflowStatus().compareTo(WorkflowStatus.REVIEW_NEEDED) <= 0)
+				else if (mr.getWorkflowStatus().compareTo(
+						WorkflowStatus.REVIEW_NEEDED) <= 0)
 					editingRecord = mr;
-				else if (mr.getWorkflowStatus().compareTo(WorkflowStatus.REVIEW_NEEDED) >= 0
-						&& mr.getWorkflowStatus().compareTo(WorkflowStatus.CONFLICT_RESOLVED) <= 0)
+				else if (mr.getWorkflowStatus().compareTo(
+						WorkflowStatus.REVIEW_NEEDED) >= 0
+						&& mr.getWorkflowStatus().compareTo(
+								WorkflowStatus.CONFLICT_RESOLVED) <= 0)
 					reviewRecord = mr;
 			}
-		
 
 			if (revisionRecord == null)
 				throw new Exception(
@@ -1482,29 +1496,33 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 			// Requirements for NON_LEGACY_PATH publish action
 			// - 2 records marked EDITING_DONE
-			//   *OR*
+			// *OR*
 			// - 1 record marked CONFLICT_RESOLVED
 			// - 2 records marked CONFLICT_DETECTED
 
-			// if two map records, must be two EDITING_DONE records 
+			// if two map records, must be two EDITING_DONE records
 			// with publish called by finishEditing
 			if (mapRecords.size() == 2) {
-				
-				// check assumption:  records are both marked EDITING_DONE
+
+				// check assumption: records are both marked EDITING_DONE
 				for (MapRecord mr : mapRecords) {
-					if (!mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE))
-						throw new Exception("Publish called, expected two matching specialist records marked EDITING_DONE, but found record with status " + mr.getWorkflowStatus().toString());
+					if (!mr.getWorkflowStatus().equals(
+							WorkflowStatus.EDITING_DONE))
+						throw new Exception(
+								"Publish called, expected two matching specialist records marked EDITING_DONE, but found record with status "
+										+ mr.getWorkflowStatus().toString());
 				}
-				
-				// check assumption:  records are not in conflict
+
+				// check assumption: records are not in conflict
 				// note that this duplicates the call in finishEditing
 				Iterator<MapRecord> iter = mapRecords.iterator();
 				MapRecord mapRecord1 = iter.next();
 				MapRecord mapRecord2 = iter.next();
 				if (compareMapRecords(mapRecord1, mapRecord2).isValid() == false) {
-					throw new Exception("Publish called for two matching specialist records, but the records did not pass comparator validation checks");
+					throw new Exception(
+							"Publish called for two matching specialist records, but the records did not pass comparator validation checks");
 				}
-					
+
 				// deep copy the record and mark the new record
 				// READY_FOR_PUBLICATION
 				MapRecord newRecord = new MapRecordJpa(mapRecord, true);
@@ -1527,20 +1545,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				newRecords.clear();
 				newRecords.add(newRecord);
 
-				Logger.getLogger(
-						DefaultProjectSpecificAlgorithmHandler.class)
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 						.info("finishEditing - NON_LEGACY_PATH - Creating READY_FOR_PUBLICATION record "
 								+ newRecord.toString());
-				
+
 			} else if (mapRecords.size() == 3) {
-				
+
 				// Check assumption: owned record is CONFLICT_RESOLVED
 				if (!mapRecord.getWorkflowStatus().equals(
 						WorkflowStatus.CONFLICT_RESOLVED)) {
 					throw new Exception(
 							"Publish called on NON_LEGACY_PATH for map record not marked as CONFLICT_RESOLVED");
 				}
-	
+
 				// Check assumption: two CONFLICT_DETECTED records
 				int nConflictRecords = 0;
 				for (MapRecord mr : mapRecords) {
@@ -1548,7 +1565,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 							WorkflowStatus.CONFLICT_DETECTED))
 						nConflictRecords++;
 				}
-	
+
 				if (nConflictRecords != 2) {
 					throw new Exception(
 							"Bad workflow state for concept "
@@ -1558,12 +1575,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 				// cycle over the previously existing records
 				for (MapRecord mr : mapRecords) {
-	
+
 					// remove the CONFLICT_DETECTED records from the revised set
 					if (mr.getWorkflowStatus().equals(
 							WorkflowStatus.CONFLICT_DETECTED)) {
 						newRecords.remove(mr);
-	
+
 						// set the CONFLICT_NEW or CONFLICT_IN_PROGRESS record
 						// to
 						// READY_FOR_PUBLICATION
@@ -1572,8 +1589,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 					}
 				}
-				
-			// otherwise, bad workflow state, throw exception
+
+				// otherwise, bad workflow state, throw exception
 			} else {
 				throw new Exception("Bad workflow state for concept "
 						+ mapRecord.getConceptId()
@@ -1705,14 +1722,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 					// if map records validation is successful, publish
 					if (validationResult.isValid() == true) {
-						
-						newRecords = publish(trackingRecord, mapRecords, mapUser);
+
+						newRecords = publish(trackingRecord, mapRecords,
+								mapUser);
 
 						Logger.getLogger(
 								DefaultProjectSpecificAlgorithmHandler.class)
 								.info("NON_LEGACY_PATH - No conflicts detected.");
-
-						
 
 					} else {
 
@@ -1888,7 +1904,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// 1) original published record, marked REVISION
 				// 2) specialist's record, marked REVIEW_NEEDED
 				// 3) lead's record, marked REVIEW_NEW or REVIEW_IN_PROGRESS
-				
+
 				MapRecord originalRecord = null;
 				MapRecord modifiedRecord = null;
 				MapRecord leadRecord = null;
@@ -1919,11 +1935,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				if (leadRecord == null)
 					throw new Exception(
 							"FIX_ERROR_PATH: Lead finished reviewing work, but could not find their record.");
-		
+
 				// mark the lead record as resolved
 				leadRecord.setWorkflowStatus(WorkflowStatus.REVIEW_RESOLVED);
-
-				
 
 			} else {
 				throw new Exception(

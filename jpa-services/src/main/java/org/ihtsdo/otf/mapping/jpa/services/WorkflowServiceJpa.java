@@ -1085,10 +1085,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			full_query += " AND userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_"
 					+ mapUser.getUserName();
 			break;
+		case "CONFLICT_RESOLVED":
+			full_query += " AND userAndWorkflowStatusPairs:CONFLICT_RESOLVED_"
+					+ mapUser.getUserName();
+			break;
 		default:
 			full_query += " AND (userAndWorkflowStatusPairs:CONFLICT_NEW_"
 					+ mapUser.getUserName()
 					+ " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_"
+					+ mapUser.getUserName()
+					+ " OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_"
 					+ mapUser.getUserName() + ")";
 			break;
 		}
@@ -1227,10 +1233,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			full_query += " AND userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_"
 					+ mapUser.getUserName();
 			break;
+		case "REVIEW_RESOLVED":
+			full_query += " AND userAndWorkflowStatusPairs:REVIEW_RESOLVED_"
+					+ mapUser.getUserName();
+			break;
 		default:
 			full_query += " AND (userAndWorkflowStatusPairs:REVIEW_NEW_"
 					+ mapUser.getUserName()
 					+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_"
+					+ mapUser.getUserName()
+					+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_"
 					+ mapUser.getUserName() + ")";
 			break;
 		}
@@ -1295,13 +1307,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 							WorkflowStatus.REVIEW_NEW) < 0) {
 						// do nothing, this is the specialist level work
 
-						// exluce records where the map lead is the one
-						// instigating the FIX_ERROR_PATH revision
 					} else if (mr.getWorkflowStatus().equals(
 							WorkflowStatus.REVISION)) {
 						// do nothing
 
-						// otherwise, this is the record we want
 					} else {
 						// add the record
 						mapRecord = mr;
