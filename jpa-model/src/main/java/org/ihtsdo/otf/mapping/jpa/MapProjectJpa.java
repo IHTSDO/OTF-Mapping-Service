@@ -60,7 +60,7 @@ public class MapProjectJpa implements MapProject {
 
 	/** Whether this project is viewable by public roles. */
 	@Column(unique = false, nullable = false)
-	private boolean isPublic;
+	private boolean isPublic = false;
 	/**
 	 * Indicates whether there is block structure for map records of this project.
 	 */
