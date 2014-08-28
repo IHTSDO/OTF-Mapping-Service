@@ -58,6 +58,12 @@ p {
 	padding: 7px;
 }
 
+.panel-group .panel {
+  margin-bottom: 0;
+/*   overflow: hidden; */
+  border-radius: 4px;
+}
+
 /** alert button formatting from bootstrap.css -- want to make them thinner */
 .alert-error {
 	margin-bottom: 0px;
