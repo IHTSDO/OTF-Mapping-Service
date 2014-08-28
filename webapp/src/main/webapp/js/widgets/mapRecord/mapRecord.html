@@ -17,11 +17,6 @@
       <p class="alert alert-warning" >The {{concept.terminology}} concept was modified after your last edit, on {{concept.effectiveTime | date:'MM-dd-yyyy'}}
       </p>
     </div>
-    <div ng-show="isFeedbackViewed() == false && page != 'resolveConflictsDashboard'">
-      <p class="alert alert-warning" >New feedback to be viewed. {{concept.effectiveTime | date:'MM-dd-yyyy'}}
-      </p>
-    </div>
-
 <table>
 
 	<tr>
@@ -256,7 +251,7 @@ lead review<br>
        <div class="alert alert-warning" disabled>
           [By {{feedback.sender.name}}
           to <span ng-repeat="recipient in feedback.recipients">
-            {{recipient.name}}</span>
+            {{recipient.name}}<span ng-if="$last == false">,</span></span>
           on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
             <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
                ng-bind-html="to_trusted(feedback.mapError)">
@@ -269,20 +264,17 @@ lead review<br>
        <hr>
     </div> 
 
-
+    
 	<!--  tinymce text area -->
 	<form method="post">
-	  <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions" ng-model="feedbackInput"></textarea>
+	<div ng-dropdown-multiselect="" options="project.mapLead" selected-model="returnRecipients" extra-settings="multiSelectSettings"></div>
+    
+    <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions" ng-model="feedbackInput"></textarea>
 	
 	  <input class="pull-right" type="submit"
 			value="Send Feedback"
-			ng-click="sendFeedback(record, feedbackInput, recipientMapUser); feedbackInput = ''">
-      <div ng-show="conversation.feedback.length == null" style="padding: 5px;">
-        <select ng-model="recipientMapUser"
-        ng-options="mapUser as mapUser.name for mapUser in project.mapLead track by mapUser.name">
-        </select>
-      </div>
-
+			ng-click="sendFeedback(record, feedbackInput, returnRecipients); feedbackInput = ''">
+      
 	  <span class="pull-right"> Shortcut to send feedback: <code>Tab</code>,
 			<code>Enter</code>&nbsp&nbsp
 	  </span>

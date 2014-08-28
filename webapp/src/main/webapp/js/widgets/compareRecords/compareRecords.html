@@ -86,9 +86,12 @@
               </tr>
             </table>
             <div>
-              <button class="btn btn-sm btn-primary" style="margin: 4px"
+              <button class="btn btn-sm btn-primary" style="margin: 4px" ng-show="selectedErrorMessage1 == errorMessages[0]"
                 ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
                 feedback</button>
+              <button class="btn btn-sm btn-primary" style="margin: 4px" ng-show="selectedErrorMessage1 != errorMessages[0]"
+                ng-click="submitNewFeedback(record1, selectedErrorMessage1, feedbackComment1); feedbackComment1 = ''; selectedErrorMessage1 = errorMessages[0];">Submit
+                error</button>
             </div>
           </form>
         </div>
@@ -129,9 +132,12 @@
               </tr>
             </table>
             <div>
-              <button class="btn btn-sm btn-primary" style="margin: 4px"
+              <button class="btn btn-sm btn-primary" style="margin: 4px" ng-show="selectedErrorMessage2 == errorMessages[0]"
                 ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
                 feedback</button>
+              <button class="btn btn-sm btn-primary" style="margin: 4px" ng-show="selectedErrorMessage2 != errorMessages[0]"
+                ng-click="submitNewFeedback(record2, selectedErrorMessage2, feedbackComment2); feedbackComment2 = ''; selectedErrorMessage2 = errorMessages[0];">Submit
+                error</button>
             </div>
           </form>
 
@@ -165,13 +171,18 @@
                 </div>        
         
                 <form method="post">
+                  <div ng-dropdown-multiselect="" options="allUsers" selected-model="returnRecipients" extra-settings="multiSelectSettings" ></div>             
                   <textarea id="tinymce-feedback3" ui-tinymce="tinymceOptions" ng-model="groupFeedback"></textarea>
                 </form>
 				<button class="btn btn-sm btn-primary" style="margin: 4px"
-								ng-click="submitGroupFeedback(groupFeedback)">Submit feedback</button>
+								ng-click="submitGroupFeedback(groupFeedback, returnRecipients); groupFeedback = ''">Submit feedback</button>
 		 		
                 <input type="checkbox" ng-model="indicateDiscrepancyReview" ng-change="selectDiscrepancyReview(indicateDiscrepancyReview)"> Mark for Discrepancy Review						
+               <!--  <select multiple size="3"  ng-model="returnRecipients"
+                   ng-options="mapUser as mapUser.name for mapUser in allUsers track by mapUser.name">
+                </select> -->
         </accordion-group>
+                
 				<accordion-group is-open="isReportOpen">
 				<accordion-heading> Conflict Report <i
 					class="pull-right glyphicon"
