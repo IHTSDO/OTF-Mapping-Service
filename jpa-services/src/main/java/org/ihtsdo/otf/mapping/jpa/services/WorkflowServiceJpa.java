@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -19,10 +18,6 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.Version;
 import org.hibernate.CacheMode;
-import org.hibernate.envers.AuditReader;
-import org.hibernate.envers.AuditReaderFactory;
-import org.hibernate.envers.query.AuditEntity;
-import org.hibernate.envers.query.AuditQuery;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
@@ -31,7 +26,6 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.FeedbackList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
-import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
@@ -3405,8 +3399,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		MappingService mappingService = new MappingServiceJpa();
 		MapProject mapProject = mappingService.getMapProject(mapProjectId);
 		mappingService.close();
-			
-		String full_query = 
+		
+		
+		// construct basic query
+		String full_query = constructQuery(
+				mapProjectId, pfsParameter == null ? new PfsParameterJpa()
+						: pfsParameter);
+
+		full_query += 
 						"terminology:" + mapProject.getDestinationTerminology() + " AND "
 						+ " terminologyVersion:" + mapProject.getDestinationTerminologyVersion() + " AND "
 						+ "( feedbacks.sender.userName:" + userName + " OR "
@@ -3474,30 +3474,206 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		return feedbackConversationList;
 
-		
-		
-		
-		/*javax.persistence.Query query = manager
-				.createQuery(
-						"select m from FeedbackConversationJpa m where terminology = :terminology and"
-						+ " terminologyVersion = :terminologyVersion")
-				.setParameter("terminology", mapProject.getDestinationTerminology())
-				.setParameter("terminologyVersion", mapProject.getDestinationTerminologyVersion());
+	}
 
-    
-		List<FeedbackConversation> feedbackConversations = query.getResultList();
-		for (FeedbackConversation feedbackConversation : feedbackConversations) {
-			handleFeedbackConversationLazyInitialization(feedbackConversation);
+	private static String constructQuery(
+		Long mapProjectId, PfsParameter pfsParameter) {
+
+	String full_query = "";
+
+	// if no filter supplied, return query based on map project id only
+	if (pfsParameter.getQueryRestriction() == null
+			|| pfsParameter.getQueryRestriction().equals("")) {
+		//full_query = "mapProjectId:" + mapProjectId;
+		return full_query;
+	}
+
+	// Pre-treatment: Find any lower-case boolean operators and set to
+	// uppercase
+
+	// //////////////////
+	// Basic algorithm:
+	//
+	// 1) add whitespace breaks to operators
+	// 2) split query on whitespace
+	// 3) cycle over terms in split query to find quoted material, add each
+	// term/quoted term to parsed terms\
+	// a) special case: quoted term after a :
+	// 3) cycle over terms in parsed terms
+	// a) if an operator/parantheses, pass through unchanged (send to upper
+	// case
+	// for boolean)
+	// b) if a fielded query (i.e. field:value), pass through unchanged
+	// c) if not, construct query on all fields with this term
+
+	// list of escape terms (i.e. quotes, operators) to be fed into query
+	// untouched
+	String escapeTerms = "\\+|\\-|\"|\\(|\\)";
+	String booleanTerms = "and|AND|or|OR|not|NOT";
+
+	// first cycle over the string to add artificial breaks before and after
+	// control characters
+	final String queryStr = (pfsParameter == null ? "" : pfsParameter
+			.getQueryRestriction());
+
+	String queryStr_mod = queryStr;
+	queryStr_mod = queryStr_mod.replace("(", " ( ");
+	queryStr_mod = queryStr_mod.replace(")", " ) ");
+	queryStr_mod = queryStr_mod.replace("\"", " \" ");
+	queryStr_mod = queryStr_mod.replace("+", " + ");
+	queryStr_mod = queryStr_mod.replace("-", " - ");
+
+	// remove any leading or trailing whitespace (otherwise first/last null
+	// term
+	// bug)
+	queryStr_mod = queryStr_mod.trim();
+
+	// split the string by white space and single-character operators
+	String[] terms = queryStr_mod.split("\\s+");
+
+	// merge items between quotation marks
+	boolean exprInQuotes = false;
+	List<String> parsedTerms = new ArrayList<>();
+	// List<String> parsedTerms_temp = new ArrayList<String>();
+	String currentTerm = "";
+
+	// cycle over terms to identify quoted (i.e. non-parsed) terms
+	for (int i = 0; i < terms.length; i++) {
+
+		// if an open quote is detected
+		if (terms[i].equals("\"")) {
+
+			if (exprInQuotes == true) {
+
+				// special case check: fielded term. Impossible for first
+				// term to be
+				// fielded.
+				if (parsedTerms.size() == 0) {
+					parsedTerms.add("\"" + currentTerm + "\"");
+				} else {
+					String lastParsedTerm = parsedTerms.get(parsedTerms
+							.size() - 1);
+
+					// if last parsed term ended with a colon, append this
+					// term to the
+					// last parsed term
+					if (lastParsedTerm.endsWith(":") == true) {
+						parsedTerms.set(parsedTerms.size() - 1,
+								lastParsedTerm + "\"" + currentTerm + "\"");
+					} else {
+						parsedTerms.add("\"" + currentTerm + "\"");
+					}
+				}
+
+				// reset current term
+				currentTerm = "";
+				exprInQuotes = false;
+
+			} else {
+				exprInQuotes = true;
+			}
+
+			// if no quote detected
+		} else {
+
+			// if inside quotes, continue building term
+			if (exprInQuotes == true) {
+				currentTerm = currentTerm == "" ? terms[i] : currentTerm
+						+ " " + terms[i];
+
+				// otherwise, add to parsed list
+			} else {
+				parsedTerms.add(terms[i]);
+			}
+		}
+	}
+
+	for (String s : parsedTerms) {
+		Logger.getLogger(WorkflowServiceJpa.class).debug("  " + s);
+	}
+
+	// cycle over terms to construct query
+	full_query = "";
+
+	for (int i = 0; i < parsedTerms.size(); i++) {
+
+		// if not the first term AND the last term was not an escape term
+		// add whitespace separator
+		if (i != 0 && !parsedTerms.get(i - 1).matches(escapeTerms)) {
+
+			full_query += " ";
+		}
+		/*
+		 * full_query += (i == 0 ? // check for first term "" : // -> if
+		 * first character, add nothing
+		 * parsedTerms.get(i-1).matches(escapeTerms) ? // check if last term
+		 * was an escape character "": // -> if last term was an escape
+		 * character, add nothing " "); // -> otherwise, add a separating
+		 * space
+		 */
+
+		// if an escape character/sequence, add this term unmodified
+		if (parsedTerms.get(i).matches(escapeTerms)) {
+
+			full_query += parsedTerms.get(i);
+
+			// else if a boolean character, add this term in upper-case form
+			// (i.e.
+			// lucene format)
+		} else if (parsedTerms.get(i).matches(booleanTerms)) {
+
+			full_query += parsedTerms.get(i).toUpperCase();
+
+			// else if already a field-specific query term, add this term
+			// unmodified
+		} else if (parsedTerms.get(i).contains(":")) {
+
+			full_query += parsedTerms.get(i);
+
+			// otherwise, treat as unfielded query term
+		} else {
+
+			// open parenthetical term
+			full_query += "(";
+
+			// add fielded query for each indexed term, separated by OR
+			Iterator<String> names_iter = fieldNames.iterator();
+			while (names_iter.hasNext()) {
+				full_query += names_iter.next() + ":" + parsedTerms.get(i);
+				if (names_iter.hasNext())
+					full_query += " OR ";
+			}
+
+			// close parenthetical term
+			full_query += ")";
 		}
 
-		FeedbackConversationListJpa feedbackConversationList = new FeedbackConversationListJpa();
+		// if further terms remain in the sequence
+		if (!(i == parsedTerms.size() - 1)) {
 
-		// extract the required sublist of feedback conversations
-		feedbackConversationList.setFeedbackConversations(feedbackConversations);
+			// Add a separating OR iff:
+			// - this term is not an escape character
+			// - this term is not a boolean term
+			// - next term is not a boolean term
+			if (!parsedTerms.get(i).matches(escapeTerms)
+					&& !parsedTerms.get(i).matches(booleanTerms)
+					&& !parsedTerms.get(i + 1).matches(booleanTerms)) {
 
-		return feedbackConversationList;
-*/
+				full_query += " OR";
+			}
+		}
 	}
+
+	// add parantheses and map project constraint
+	full_query = "(" + full_query + ")" /*+ " AND mapProjectId:"
+			+ mapProjectId*/;
+
+	Logger.getLogger(WorkflowServiceJpa.class).debug(
+			"Full query: " + full_query);
+
+	return full_query + " AND ";
+
+}
 	
 
 }

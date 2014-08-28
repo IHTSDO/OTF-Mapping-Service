@@ -51,6 +51,9 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.isNotesOpen = true;
 	$scope.isReportOpen = true;
 	$scope.isGroupFeedbackOpen = false;
+	$scope.returnRecipients = new Array();
+	$scope.allUsers = new Array();
+	$scope.multiSelectSettings = {displayProp: 'name'};
 	
 	
 	// TODO: needs to be moved to server-side
@@ -79,6 +82,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	// coupled with $watch below, this avoids premature work fetching
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 			$scope.project = parameters.focusProject;
+			$scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
+			removeUser($scope.allUsers, $scope.currentUser);
 	});
 	
 	// watch for change in focus project
@@ -93,15 +98,22 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			console.debug("First visit, getting conflict records");
 			$scope.getRecordsInConflict();
 			
+
+			$scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
+			removeUser($scope.allUsers, $scope.currentUser);
+			
 			console.debug("Checking whether this is a false conflict.");
+			$rootScope.glassPane++;
 			$http({
 				url: root_workflow + "record/id/" + $routeParams.recordId + "/isFalseConflict",
 				dataType: "json",
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
+				$rootScope.glassPane--;
 				$scope.isFalseConflict = data === 'true' ? true : false;
 			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);    	  
 			});
 			
@@ -132,20 +144,24 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		console.debug("Entered getRecordsInConflict");
 
 		// initialize local variables
-		var leadRecordId=		$routeParams.recordId;
+		var leadRecordId = $routeParams.recordId;
 
 		// get the lead record
+		$rootScope.glassPane++;
 		$http({
 			url: root_mapping + "record/id/" + leadRecordId,
 			dataType: "json",
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
 		}).success(function(data) {
+			$rootScope.glassPane--;
 			$scope.leadRecord = data;
 		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
 		    $rootScope.handleHttpError(data, status, headers, config);
 			// obtain the record concept - id from leadRecord	    	  
 		}).then(function(data) {
+			$rootScope.glassPane++;
 			$http({
 				url: root_content + "concept/id/" 
 				+ $scope.project.sourceTerminology + "/"
@@ -155,21 +171,24 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
+				$rootScope.glassPane--;
 				$scope.concept = data;
 				setAccordianTitle($scope.concept.terminologyId, $scope.concept.defaultPreferredName);
 			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		});
 
 		// get the conflict records
+		$rootScope.glassPane++;
 		$http({
 			url: root_mapping + "record/id/" + $routeParams.recordId + "/conflictOrigins",
 			dataType: "json",
 			method: "GET",
 			headers: { "Content-Type": "application/json"}	
 		}).success(function(data) {
-			
+			$rootScope.glassPane--;
 			if (data.totalCount == 1) {
 				$scope.record1 = data.mapRecord[0];
 				$scope.record1.displayName = data.mapRecord[0].owner.name;
@@ -206,40 +225,58 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			}
 			
 			//add code to get feedback conversations
+			$rootScope.glassPane++;
 			$http({
 				url: root_workflow + "conversation/id/" + $scope.record1.id,
 				dataType: "json",
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
+				$rootScope.glassPane--;
 				$scope.conversation1 = data;
 			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);  
 			});		
-						
+					
+			$rootScope.glassPane++;
 			$http({
 				url: root_workflow + "conversation/id/" + $scope.record2.id,
 				dataType: "json",
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
+				$rootScope.glassPane--;
 				$scope.conversation2 = data;
 			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);  
 			});	
 			
+			$rootScope.glassPane++;
 			$http({
 				url: root_workflow + "conversation/id/" + $scope.leadRecord.id,
 				dataType: "json",
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
+				$rootScope.glassPane--;
 				$scope.leadConversation = data;
+				// if no prior conversation, initialize with two specialists
+				if ($scope.leadConversation == null || $scope.leadConversation == "") {
+					$scope.returnRecipients.push($scope.record1.owner);
+					$scope.returnRecipients.push($scope.record2.owner);
+				// otherwise initialize with recipients on prior feedback
+				}	else {
+					initializeReturnRecipients($scope.leadConversation);
+				}
 			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);  
 			});	
 			
 		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
 		    $rootScope.handleHttpError(data, status, headers, config);
 		}).then(function(data) {
 			
@@ -251,18 +288,21 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			initializeEntries();
 
 			// obtain the validationResults from compareRecords
+			$rootScope.glassPane++;
 			$http({
 				url: root_mapping + "validation/record/id/" + $scope.record1.id + "/record/id/" + $scope.record2.id + "/compare",
 				dataType: "json",
 				method: "GET",
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
+				$rootScope.glassPane--;
 				for (var i = 0; i < data.errors.length; i++) {				
 				  data.errors[i] = data.errors[i].replace("Specialist 1", $scope.record1.owner.name);
 				  data.errors[i] = data.errors[i].replace("Specialist 2", $scope.record2.owner.name);
 				}
 				$scope.validationResult = data;
 			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
 		});
@@ -558,6 +598,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"title": $scope.getTitle(false, errorMessage.displayName)
 				  };
 			
+			$rootScope.glassPane++;
 			$http({						
 				url: root_workflow + "conversation/add",
 				dataType: "json",
@@ -567,8 +608,11 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"Content-Type": "application/json"
 				}
 			}).success(function(data) {
+				$rootScope.glassPane--;
 				console.debug("success to addFeedbackConversation");
+				currentConversation = feedbackConversation;
 			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 				$scope.recordError = "Error adding new feedback conversation.";
 				$rootScope.handleHttpError(data, status, headers, config);
 			});			
@@ -592,6 +636,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				currentConversation.feedback = localFeedback;
 				currentConversation.title = $scope.getTitle(false, errorMessage.displayName);
 				
+			  $rootScope.glassPane++;
 			  $http({						
 				url: root_workflow + "conversation/update",
 				dataType: "json",
@@ -601,15 +646,17 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"Content-Type": "application/json"
 				}
 			  }).success(function(data) {
+				$rootScope.glassPane--;
 				console.debug("success to update Feedback conversation");
 			  }).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 				$scope.recordError = "Error updating feedback conversation.";
 				$rootScope.handleHttpError(data, status, headers, config);
 			  });
 		   }
 		};
 		
-	$scope.submitGroupFeedback = function(groupFeedbackMessage) {
+	$scope.submitGroupFeedback = function(groupFeedbackMessage, recipientList) {
 		console.debug("submitGroupFeedback");
 
 		   if (groupFeedbackMessage == null || groupFeedbackMessage == undefined || groupFeedbackMessage === '') {
@@ -618,18 +665,29 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		   }
 		   var currentConversation = $scope.getCurrentConversation($scope.leadRecord);
 		   
+			var localFeedback = currentConversation.feedback;
+
+			// copy recipient list
+			var localRecipients = recipientList.slice(0);
+			var newRecipients = new Array();
+			for (var i = 0; i < localRecipients.length; i++) {
+				for (var j = 0; j < $scope.allUsers.length; j++) {
+					if (localRecipients[i].id == $scope.allUsers[j].id)
+						newRecipients.push($scope.allUsers[j]);
+				}
+			}
+		   
 		   // if the conversation hasn't yet been started
 		   if (currentConversation == null || currentConversation == "") {
 			   
-			// create first feedback item to go into the feedback conversation
-		    var receivingUsers =  [$scope.record1.owner, $scope.record2.owner];
-			var feedback = {
+			 // create first feedback item to go into the feedback conversation
+		     var feedback = {
 						"message": groupFeedbackMessage,
 						"mapError": "",
 						"timestamp": new Date(),
 						"sender": $scope.user,
-						"recipients": receivingUsers,
-						"isError": "true",
+						"recipients": newRecipients,
+						"isError": "false",
 						"feedbackConversation": currentConversation,
 						"viewedBy": []
 					  };
@@ -650,7 +708,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"defaultPreferredName": $scope.concept.defaultPreferredName,
 					"title": $scope.getTitle(true)
 				  };
-			
+			$rootScope.glassPane++;
 			$http({						
 				url: root_workflow + "conversation/add",
 				dataType: "json",
@@ -660,8 +718,11 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"Content-Type": "application/json"
 				}
 			}).success(function(data) {
+				$rootScope.glassPane--;
 				console.debug("success to addFeedbackConversation for group feedback");
+			    currentConversation = feedbackConverstion;
 			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 				$scope.recordError = "Error adding new feedback conversation for group feedback.";
 				$rootScope.handleHttpError(data, status, headers, config);
 			});			
@@ -669,14 +730,13 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		   } else { // already started a conversation
 			   
 			   // create feedback msg to be added to the conversation
-			    var receivingUsers =  [$scope.record1.owner, $scope.record2.owner];
-				var feedback = {
+			  var feedback = {
 							"message": groupFeedbackMessage,
 							"mapError": "",
 							"timestamp": new Date(),
 							"sender": $scope.user,
-							"recipients": receivingUsers,
-							"isError": "true",
+							"recipients": newRecipients,
+							"isError": "false",
 							"viewedBy": []
 						  };
 			
@@ -685,7 +745,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				currentConversation.feedback = localFeedback;
 				currentConversation.discrepancyReview = $scope.indicateDiscrepancyReview;
 				currentConversation.title = $scope.getTitle(true);
-				
+			
+			  $rootScope.glassPane++;
 			  $http({						
 				url: root_workflow + "conversation/update",
 				dataType: "json",
@@ -695,8 +756,10 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"Content-Type": "application/json"
 				}
 			  }).success(function(data) {
+				$rootScope.glassPane--;
 				console.debug("success to update Feedback conversation for group feedback");
 			  }).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 				$scope.recordError = "Error updating feedback conversation for group feedback.";
 				$rootScope.handleHttpError(data, status, headers, config);
 			  });
@@ -919,6 +982,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
     	}
     	
     	if (needToUpdate == true) {
+    	  $rootScope.glassPane++;
 		  $http({						
 				url: root_workflow + "conversation/update",
 				dataType: "json",
@@ -928,12 +992,38 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"Content-Type": "application/json"
 				}
 			}).success(function(data) {
+				$rootScope.glassPane--;
 				console.debug("success to update Feedback conversation.");
 			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 				$scope.recordError = "Error updating feedback conversation.";
 				$rootScope.handleHttpError(data, status, headers, config);
 			});
     	}
     };
 	
+    // determines default recipients dependending on the conversation    
+    function initializeReturnRecipients(conversation) {
+		
+    	// if no previous feedback conversations, return just first map lead in list
+		if (conversation == null || conversation == "") {
+    	  $scope.returnRecipients.push($scope.project.mapLead[0]);
+    	  return;
+		}
+    	
+    	// figure out the return recipients based on previous feedback in conversation
+		var localFeedback = conversation.feedback;
+		var localSender = localFeedback[localFeedback.length -1].sender;
+		var localRecipients = localFeedback[localFeedback.length -1].recipients;
+		if (localSender.userName == $scope.user.userName)
+			$scope.returnRecipients = localRecipients;
+		else {
+			$scope.returnRecipients.push(localSender);
+			for (var i = 0; i < localRecipients.length; i++) {
+				if (localRecipients[i].userName != $scope.user.userName)
+				  $scope.returnRecipients.push(localRecipients[i]);
+			}
+		}
+		return;
+    };
 });

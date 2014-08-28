@@ -20,14 +20,16 @@
               </div>
             </div>
           </div>
-        <hr>
+          <hr>
+  
+  <div ng-dropdown-multiselect="" options="allUsers" selected-model="returnRecipients" extra-settings="multiSelectSettings" ></div>            
   <!--  tinymce text area -->
   <form method="post">
     <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions" ng-model="feedbackInput"></textarea>
   
     <input class="pull-right" type="submit"
       value="Send Feedback"
-      ng-click="sendFeedback(record, feedbackInput, conversation); feedbackInput = ''">    
+      ng-click="sendFeedback(record, feedbackInput, conversation, returnRecipients); feedbackInput = ''">         
   </form>
 <button class="btn btn-sm btn-primary" ng-click="goConceptView(conversation.terminologyId)">Open concept view</button>
 <button class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">Open in browser</button>
