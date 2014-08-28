@@ -23,8 +23,8 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.feedbackConversation',
                                                      'LocalStorageModule',
                                                      'ngCookies',
-                                                     'ui.tinymce'
-                                                     
+                                                     'ui.tinymce',
+                                                     'angularjs-dropdown-multiselect'
                                                      ])
                                                      .value('prefix', '')
                                                      .config(function(dashboardProvider){
