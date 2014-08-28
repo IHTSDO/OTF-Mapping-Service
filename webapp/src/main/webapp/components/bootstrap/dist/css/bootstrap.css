@@ -5,6 +5,11 @@
  */
 
 /*! normalize.css v3.0.0 | MIT License | git.io/normalize */
+
+/** Note: .panel-group .panel  was modified because exact same changes in the app.css 
+    did not modify the output as expected */
+    
+    
 html {
   font-family: sans-serif;
   -webkit-text-size-adjust: 100%;
@@ -4932,7 +4937,7 @@ a.list-group-item-danger.active:focus {
 }
 .panel-group .panel {
   margin-bottom: 0;
-  overflow: hidden;
+/*   overflow: hidden; */
   border-radius: 4px;
 }
 .panel-group .panel + .panel {

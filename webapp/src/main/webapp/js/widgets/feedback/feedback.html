@@ -1,27 +1,19 @@
-<!-- <table style="margin-top: 10px;">
-  <tr>
-        <td style="padding: 5px";>Filter feedback:</td>
-        <td style="padding: 5px;">
-      <form>
-        <input id="feedbackSearch" ng-model="queryFeedback">
-        <button class="btn btn-sm btn-primary" ng-click="retrieveFeedback(1, queryFeedback)">Search</button>
-        <button class="btn btn-sm btn-primary" >Reset</button>
-      </form>
-      </td>
-  </tr>
 
-</table> -->
+<form>
+  <input ng-model="query"> <input type="submit" value="Search"
+    ng-click="retrieveFeedback(1)"> <input type="submit" value="Reset"
+    ng-click="resetSearch()">
+    &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
+</form>
 
+  <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
+    class="pagination-sm" boundary-links="true" rotate="true"
+    num-pages="numRecordPages" on-select-page="retrieveFeedback(page)"></pagination>
   
     
 
 <div ng-show="feedbackConversations.length > 0">
-  <!-- <pagination ng-show="numAssignedRecordPages > 1"
-  total-items="nAssignedRecords" page="assignedWorkPage"
-  class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
-  num-pages="numAssignedRecordPages"
-  on-select-page="retrieveAssignedWork(page, queryAssigned, assignedWorkType)"></pagination>
- -->
+
 
 <table class="table" style="margin-top:10px;">
 
