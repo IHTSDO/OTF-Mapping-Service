@@ -1163,17 +1163,21 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		}
 
 		ContentService contentService = new ContentServiceJpa();
-		mapRecord.setCountDescendantConcepts(new Long(
-		// get the tree positions for this concept
-				contentService
-						.getTreePositionsWithDescendants(
-								trackingRecord.getTerminologyId(),
-								trackingRecord.getTerminology(),
-								trackingRecord.getTerminologyVersion())
 
-						.getTreePositions() // get the list of tree positions
-						.get(0) // get the first tree position
-						.getDescendantCount())); // get the descendant count
+		TreePositionList treePositionList = contentService
+				.getTreePositionsWithDescendants(
+						trackingRecord.getTerminologyId(),
+						trackingRecord.getTerminology(),
+						trackingRecord.getTerminologyVersion());
+
+		if (treePositionList.getCount() == 0) {
+			throw new Exception("Concept " + trackingRecord.getTerminologyId() + " is unexpectedly missing tree positions.");
+		} else {
+			mapRecord.setCountDescendantConcepts(new Long(
+			// get the tree positions for this concept
+					treePositionList.getTreePositions().get(0) // get the first tree position
+							.getDescendantCount())); // get the descendant count
+		}
 		contentService.close();
 
 		// add this record to the tracking record
