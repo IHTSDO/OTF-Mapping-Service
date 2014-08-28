@@ -28,13 +28,14 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 
 	
 	// pagination variables
-	$scope.itemsPerPage = 10;
-	$scope.assignedWorkPage = 1;
+	$scope.recordsPerPage = 10;
+	$scope.recordPage = 1;
 	
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
+		$scope.retrieveFeedback(1);
 	});	
 	
 
@@ -46,19 +47,19 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 		console.debug('feedbackCtrl:  Detected project or user set/change');
 		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null) {
 			$http.defaults.headers.common.Authorization = $scope.currentUserToken;			
-			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);			
+			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
+			$scope.retrieveFeedback(1);
 		}
 	});
 	
 
+    $scope.retrieveFeedback = function(page) {
 	// construct a paging/filtering/sorting object
 	var pfsParameterObj = 
-				{/*"startIndex": (page-1)*$scope.recordsPerPage,
-		 	 	 "maxResults": $scope.recordsPerPage, */
-				 "startIndex": 0,
-				 "maxResults": 10,
+				{"startIndex": (page-1)*$scope.recordsPerPage,
+		 	 	 "maxResults": $scope.recordsPerPage,
 		 	 	 "sortField":  null,
-		 	 	 "queryRestriction": null};  
+		 	 	 "queryRestriction": $scope.query == null ? null : $scope.query};  
 
   	$rootScope.glassPane++;
 
@@ -73,10 +74,10 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	}).success(function(data) {
 	  	$rootScope.glassPane--;
 		
-		/*$scope.recordPage = page;
+		// set pagination variables
 		$scope.nRecords = data.totalCount;
-		$scope.numRecordPages = Math.ceil($scope.nRecords / $scope.recordsPerPage);
-		 */
+		$scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
+
 		$scope.feedbackConversations = data.feedbackConversation;
 		console.debug("Feedback Conversations:");
 		console.debug($scope.feedbackConversations);
@@ -86,32 +87,7 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	    $rootScope.handleHttpError(data, status, headers, config);
 	});
 
-	
-
-	
-	// remove an element from an array by key
-	Array.prototype.removeElement = function(elem) {
-
-		// field to switch on
-		var idType = 'id';
-
-		var array = new Array();
-		$.map(this, function(v,i){
-			if (v[idType] != elem[idType]) array.push(v);
-		});
-
-		this.length = 0; //clear original array
-		this.push.apply(this, array); //push all elements except the one we want to delete
-	};
-	
-	
-	// sort and return an array by string key
-	function sortByKey(array, key) {
-		return array.sort(function(a, b) {
-			var x = a[key]; var y = b[key];
-			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-		});
-	};
+    };
 
 	
 	$scope.isFeedbackViewed = function(conversation) {
@@ -139,64 +115,9 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 		return $sce.trustAsHtml(html_code);
 	};
 	
-	$scope.retrieveFeedback = function(page, query) {
-		
-		console.debug('Retrieving Feedback: ', page, query);
-
-		// ensure query is set to null if undefined
-		if (query == undefined) query = null;
-		
-		// reset the search input box if null
-		if (query == null) {
-			$scope.searchPerformed = false;
-		} else {
-			$scope.searchPerformed = true;
-		
-		}
-		
-		// construct a paging/filtering/sorting object
-		var pfsParameterObj = 
-					{"startIndex": page == -1 ? -1 : (page-1)*$scope.itemsPerPage,
-			 	 	 "maxResults": page == -1 ? -1 : $scope.itemsPerPage, 
-			 	 	 "sortField": 'sortKey',
-			 	 	 "queryRestriction": null};
-
-	 /* 	$rootScope.glassPane++;
-
-		$http({
-			url: root_workflow + "project/id/" 
-			+ $scope.focusProject.id 
-			+ "/user/id/" 
-			+ $scope.currentUser.userName 
-			+ "/query/" + (query == null ? null : query)
-			+ "/assignedConcepts",
-			dataType: "json",
-			data: pfsParameterObj,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			}
-		}).success(function(data) {
-		  	$rootScope.glassPane--;
-
-			$scope.assignedWorkPage = page;
-			$scope.assignedRecords = data.searchResult;
-			console.debug($scope.assignedRecords);
-		
-			// set pagination
-			$scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
-			$scope.nAssignedRecords = data.totalCount;
-			
-			// set title
-			$scope.tabs[0].title = "Concepts (" + $scope.nAssignedRecords + ")";
-			console.debug($scope.nAssignedRecords);
-			console.debug(data.totalCount);
-			console.debug($scope.assignedWorkTitle);
-			
-			
-		}).error(function(data, status, headers, config) {
-		  	$rootScope.glassPane--;
-		    $rootScope.handleHttpError(data, status, headers, config);
-		});*/
+	// function to clear input box and return to initial view
+	$scope.resetSearch = function() {
+		$scope.query = null;
+		$scope.retrieveFeedback(1);
 	};
 });
