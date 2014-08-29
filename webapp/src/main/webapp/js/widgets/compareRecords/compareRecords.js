@@ -610,7 +610,10 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			}).success(function(data) {
 				$rootScope.glassPane--;
 				console.debug("success to addFeedbackConversation");
-				currentConversation = feedbackConversation;
+				if (recordInError.id == $scope.record1.id)
+					$scope.conversation1 = feedbackConversation;
+				else
+					$scope.conversation2 = feedbackConversation;
 			}).error(function(data, status, headers, config) {
 				$rootScope.glassPane--;
 				$scope.recordError = "Error adding new feedback conversation.";
@@ -720,7 +723,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			}).success(function(data) {
 				$rootScope.glassPane--;
 				console.debug("success to addFeedbackConversation for group feedback");
-			    currentConversation = feedbackConverstion;
+				$scope.leadConversation = feedbackConversation;
 			}).error(function(data, status, headers, config) {
 				$rootScope.glassPane--;
 				$scope.recordError = "Error adding new feedback conversation for group feedback.";
