@@ -36,6 +36,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 	$scope.returnRecipients = new Array();
 	$scope.multiSelectSettings = {displayProp: 'name'};
+	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Leads'};
 	
 	// validation result storage variable
 	$scope.savedValidationWarnings = [];
