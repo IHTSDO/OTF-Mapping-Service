@@ -24,8 +24,8 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
     // settings for recipients mechanism
 	$scope.allUsers = new Array();
 	$scope.returnRecipients = new Array();
-	$scope.multiSelectSettings = {displayProp: 'name', scrollableHeight: '100px',
-		    scrollable: true};
+	$scope.multiSelectSettings = {displayProp: 'name', scrollableHeight: '50px',
+		    scrollable: true, showCheckAll: false, showUncheckAll: false};
 	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Users'};
 		
 
@@ -34,7 +34,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
 		$scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
-		removeCurrentUser($scope.allUsers, $scope.currentUser);
+		organizeUsers($scope.allUsers);
 		initializeReturnRecipients($scope.conversation);
 	});	
 	
@@ -45,12 +45,12 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null) {
 			$http.defaults.headers.common.Authorization = $scope.currentUserToken;				
 			$scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
-			removeCurrentUser($scope.allUsers, $scope.currentUser);						
+			organizeUsers($scope.allUsers);
 		}
 	});
  
 	$scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
-	removeCurrentUser($scope.allUsers, $scope.currentUser);
+	organizeUsers($scope.allUsers);
 	
 	// get feedback conversation associated with given recordId
   	$rootScope.glassPane++;
@@ -68,7 +68,6 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		console.debug($scope.conversation);
 		$scope.markViewed($scope.conversation, $scope.currentUser);
 		initializeReturnRecipients($scope.conversation)
-
 
 		$scope.record = null;
 		// load record associated with feedback conversations
@@ -124,7 +123,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 
 	// update the title to contain conceptId and preferred name
 	function setTitle() {
-		$scope.model.title = "Feedback Conversation - Concept " + $scope.conversation.terminologyId + ":  " 
+		$scope.model.title = $scope.conversation.title + " - Concept " + $scope.conversation.terminologyId + ":  " 
 		+ $scope.conversation.defaultPreferredName;
 	};
 	
@@ -293,12 +292,29 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		return;
     };
     
-	// remove an element from a user array
-    function removeCurrentUser(arr, item) {
+    function organizeUsers(arr) {
+    	// remove Current user
         for(var i = arr.length; i--;) {
-            if(arr[i].userName === item.userName) {
+            if(arr[i].userName === $scope.currentUser.userName) {
                 arr.splice(i, 1);
             }
         }
+        
+        // remove demo users
+        for(var i = arr.length; i--;) {       	
+            if(arr[i].name.indexOf("demo") > -1) {
+                arr.splice(i, 1);
+            }
+        }  
+        
+    	sortByKey(arr, "name");
     }
+    
+	// sort and return an array by string key
+	function sortByKey(array, key) {
+		return array.sort(function(a, b) {
+			var x = a[key]; var y = b[key];
+			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+		});
+	};
 });

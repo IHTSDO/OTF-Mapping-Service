@@ -53,7 +53,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.isGroupFeedbackOpen = false;
 	$scope.returnRecipients = new Array();
 	$scope.allUsers = new Array();
-	$scope.multiSelectSettings = {displayProp: 'name'};
+	$scope.multiSelectSettings = {displayProp: 'name', scrollableHeight: '50px',
+		    scrollable: true, showCheckAll: false, showUncheckAll: false};
 	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Users'};
 	
 	
@@ -84,7 +85,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 			$scope.project = parameters.focusProject;
 			$scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
-			removeUser($scope.allUsers, $scope.currentUser);
+			organizeUsers($scope.allUsers);
 	});
 	
 	// watch for change in focus project
@@ -101,7 +102,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			
 
 			$scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
-			removeUser($scope.allUsers, $scope.currentUser);
+			organizeUsers($scope.allUsers);
 			
 			console.debug("Checking whether this is a false conflict.");
 			$rootScope.glassPane++;
@@ -710,7 +711,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"mapRecordId": $scope.leadRecord.id,
 					"feedback": feedbacks,
 					"defaultPreferredName": $scope.concept.defaultPreferredName,
-					"title": $scope.getTitle(true)
+					"title": $scope.getTitle(true, "")
 				  };
 			$rootScope.glassPane++;
 			$http({						
@@ -748,7 +749,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				localFeedback.push(feedback);
 				currentConversation.feedback = localFeedback;
 				currentConversation.discrepancyReview = $scope.indicateDiscrepancyReview;
-				currentConversation.title = $scope.getTitle(true);
+				currentConversation.title = $scope.getTitle(true, "");
 			
 			  $rootScope.glassPane++;
 			  $http({						
@@ -954,7 +955,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			return "Group Feedback";
 		else if (errMsg != "" && errMsg != "None")
 			return "Error Feedback";
-		else if (group == false)
+		else 
 			return "Feedback";
 	};
 
@@ -1030,4 +1031,30 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		}
 		return;
     };
+    
+    function organizeUsers(arr) {
+    	// remove Current user
+        for(var i = arr.length; i--;) {
+            if(arr[i].userName === $scope.user.userName) {
+                arr.splice(i, 1);
+            }
+        }
+        
+        // remove demo users
+        for(var i = arr.length; i--;) {       	
+            if(arr[i].name.indexOf("demo") > -1) {
+                arr.splice(i, 1);
+            }
+        }  
+        
+    	sortByKey(arr, "name");
+    }
+    
+	// sort and return an array by string key
+	function sortByKey(array, key) {
+		return array.sort(function(a, b) {
+			var x = a[key]; var y = b[key];
+			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+		});
+	};
 });
