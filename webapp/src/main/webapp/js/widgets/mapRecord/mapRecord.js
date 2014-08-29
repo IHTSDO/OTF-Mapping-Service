@@ -33,9 +33,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.role = 		localStorageService.get('currentRole');
 	$scope.conversation = null;
 	$scope.mapLeads = $scope.project.mapLead;
+	organizeUsers($scope.mapLeads);
 	
 	$scope.returnRecipients = new Array();
-	$scope.multiSelectSettings = {displayProp: 'name'};
+	$scope.multiSelectSettings = {displayProp: 'name', scrollableHeight: '50px',
+		    scrollable: true, showCheckAll: false, showUncheckAll: false};
 	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Leads'};
 	
 	// validation result storage variable
@@ -1491,4 +1493,31 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		}
 		return;
     };
+    
+    // for multi-select user picklist
+    function organizeUsers(arr) {
+    	// remove Current user
+        for(var i = arr.length; i--;) {
+            if(arr[i].userName === $scope.user.userName) {
+                arr.splice(i, 1);
+            }
+        }
+        
+        // remove demo users
+        for(var i = arr.length; i--;) {       	
+            if(arr[i].name.indexOf("demo") > -1) {
+                arr.splice(i, 1);
+            }
+        }  
+        
+    	sortByKey(arr, "name");
+    }
+    
+	// sort and return an array by string key
+	function sortByKey(array, key) {
+		return array.sort(function(a, b) {
+			var x = a[key]; var y = b[key];
+			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+		});
+	};
 });
