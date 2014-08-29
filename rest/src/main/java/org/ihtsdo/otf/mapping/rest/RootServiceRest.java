@@ -147,6 +147,11 @@ public class RootServiceRest {
 	private void sendEmail(Exception e, String whatIsHappening, String userName, 
 		  String project, String recordId) {
 
+		// Bail if no recipients
+		if (recipients == null || recipients.isEmpty()) {
+			return;
+		}
+		
 		Properties props = new Properties();
 		props.put("mail.smtp.user", m_from);
 		props.put("mail.smtp.password", host_password);
