@@ -24,7 +24,9 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
     // settings for recipients mechanism
 	$scope.allUsers = new Array();
 	$scope.returnRecipients = new Array();
-	$scope.multiSelectSettings = {displayProp: 'name'};
+	$scope.multiSelectSettings = {displayProp: 'name', scrollableHeight: '100px',
+		    scrollable: true};
+	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Users'};
 		
 
 	// watch for project change

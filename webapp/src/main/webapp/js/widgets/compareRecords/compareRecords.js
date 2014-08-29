@@ -54,6 +54,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.returnRecipients = new Array();
 	$scope.allUsers = new Array();
 	$scope.multiSelectSettings = {displayProp: 'name'};
+	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Users'};
 	
 	
 	// TODO: needs to be moved to server-side
