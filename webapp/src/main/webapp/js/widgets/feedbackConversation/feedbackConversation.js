@@ -20,25 +20,38 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
     $scope.conversation = null;
     
     $scope.recordId = $routeParams.recordId;
+    
+    // settings for recipients mechanism
+	$scope.allUsers = new Array();
+	$scope.returnRecipients = new Array();
+	$scope.multiSelectSettings = {displayProp: 'name', scrollableHeight: '50px',
+		    scrollable: true, showCheckAll: false, showUncheckAll: false};
+	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Users'};
 		
 
 	// watch for project change
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
+		$scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
+		organizeUsers($scope.allUsers);
+		initializeReturnRecipients($scope.conversation);
 	});	
 	
 	// on any change of focusProject, retrieve new available work
 	$scope.currentUserToken = localStorageService.get('userToken');
 	$scope.$watch(['focusProject', 'user', 'userToken'], function() {
 		console.debug('feedbackConversationCtrl:  Detected project or user set/change');
-
 		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null) {
 			$http.defaults.headers.common.Authorization = $scope.currentUserToken;				
-			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);			
+			$scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
+			organizeUsers($scope.allUsers);
 		}
 	});
  
+	$scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
+	organizeUsers($scope.allUsers);
+	
 	// get feedback conversation associated with given recordId
   	$rootScope.glassPane++;
 	$http({
@@ -46,7 +59,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		dataType: "json",
 		method: "GET",
 		headers: {
-			"Content-Type": "application/json"
+			 "Content-Type": "application/json"
 		}
 	}).success(function(data) {
 	  	$rootScope.glassPane--;		
@@ -54,16 +67,19 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		console.debug("Feedback Conversation:");
 		console.debug($scope.conversation);
 		$scope.markViewed($scope.conversation, $scope.currentUser);
+		initializeReturnRecipients($scope.conversation)
 
 		$scope.record = null;
 		// load record associated with feedback conversations
 		$rootScope.glassPane++;
 
+		var token = localStorageService.get('userToken');
 		// load record to be displayed; try to find active record first
 		$http({
 			url: root_mapping + "record/id/" + $scope.conversation.mapRecordId,
 			dataType: "json",
 			method: "GET",
+			authorization: token,
 			headers: {
 				"Content-Type": "application/json"
 			}
@@ -100,14 +116,14 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 	});
 
 	
-	// function to return trusted html code (for advice content)
+	// function to return trusted html code 
 	$scope.to_trusted = function(html_code) {
 		return $sce.trustAsHtml(html_code);
 	};	
 
 	// update the title to contain conceptId and preferred name
 	function setTitle() {
-		$scope.model.title = "Feedback Conversation - Concept " + $scope.conversation.terminologyId + ":  " 
+		$scope.model.title = $scope.conversation.title + " - Concept " + $scope.conversation.terminologyId + ":  " 
 		+ $scope.conversation.defaultPreferredName;
 	};
 	
@@ -120,7 +136,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 	};
 
 	// send feedback on already started conversation
-	$scope.sendFeedback = function(record, feedbackMessage, conversation) {
+	$scope.sendFeedback = function(record, feedbackMessage, conversation, recipientList) {
 		console.debug("Sending feedback email", record);
 		
 		   if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
@@ -129,16 +145,14 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		   }
 		   // figure out the return recipients based on previous feedback in conversation
 			var localFeedback = conversation.feedback;
-			var localSender = localFeedback[localFeedback.length -1].sender;
-			var localRecipients = localFeedback[localFeedback.length -1].recipients;
-			var returnRecipients = new Array();
-			if (localSender.userName == $scope.currentUser.userName)
-				returnRecipients = localRecipients;
-			else {
-				returnRecipients.push(localSender);
-				for (var i = 0; i < localRecipients.length; i++) {
-					if (localRecipients[i].userName != $scope.currentUser.userName)
-					  returnRecipients.push(localRecipients[i]);
+
+			// copy recipient list
+			var localRecipients = recipientList.slice(0);
+			var newRecipients = new Array();
+			for (var i = 0; i < localRecipients.length; i++) {
+				for (var j = 0; j < $scope.allUsers.length; j++) {
+					if (localRecipients[i].id == $scope.allUsers[j].id)
+						newRecipients.push($scope.allUsers[j]);
 				}
 			}
 				
@@ -148,7 +162,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 					"mapError": "",
 					"timestamp": new Date(),
 					"sender": $scope.currentUser,
-					"recipients": returnRecipients,
+					"recipients": newRecipients,
 					"isError": "true",
 					"viewedBy": [$scope.currentUser]
 			};
@@ -238,6 +252,14 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 	
 	// determines if the "Edit Record" button should be displayed
 	$scope.displayEdit = function () {
+		if ($scope.record == null || $scope.record == undefined)
+			return false;
+		
+		if (($scope.record.workflowStatus == 'CONFLICT_DETECTED' ||
+				$scope.record.workflowStatus == 'CONFLICT_NEW') &&
+				$scope.currentRole != 'Lead')
+			return false;
+			
 		if ($scope.currentUser.userName == $scope.record.owner.userName &&
 				$scope.conversation.active == true)
 			return true;
@@ -245,4 +267,54 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 			return false;
 	};
 	
+	// determines default recipients dependending on the conversation
+    function initializeReturnRecipients(conversation) {
+		
+    	// if no previous feedback conversations, return just first map lead in list
+		if (conversation == null || conversation == "") {
+    	  $scope.returnRecipients.push($scope.focusProject.mapLead[0]);
+    	  return;
+		}
+    	
+    	// figure out the return recipients based on previous feedback in conversation
+		var localFeedback = conversation.feedback;
+		var localSender = localFeedback[localFeedback.length -1].sender;
+		var localRecipients = localFeedback[localFeedback.length -1].recipients;
+		if (localSender.userName == $scope.currentUser.userName)
+			$scope.returnRecipients = localRecipients;
+		else {
+			$scope.returnRecipients.push(localSender);
+			for (var i = 0; i < localRecipients.length; i++) {
+				if (localRecipients[i].userName != $scope.currentUser.userName)
+				  $scope.returnRecipients.push(localRecipients[i]);
+			}
+		}
+		return;
+    };
+    
+    function organizeUsers(arr) {
+    	// remove Current user
+        for(var i = arr.length; i--;) {
+            if(arr[i].userName === $scope.currentUser.userName) {
+                arr.splice(i, 1);
+            }
+        }
+        
+        // remove demo users
+        for(var i = arr.length; i--;) {       	
+            if(arr[i].name.indexOf("demo") > -1) {
+                arr.splice(i, 1);
+            }
+        }  
+        
+    	sortByKey(arr, "name");
+    }
+    
+	// sort and return an array by string key
+	function sortByKey(array, key) {
+		return array.sort(function(a, b) {
+			var x = a[key]; var y = b[key];
+			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+		});
+	};
 });
