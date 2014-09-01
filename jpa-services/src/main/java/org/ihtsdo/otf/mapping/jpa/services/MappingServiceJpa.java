@@ -591,6 +591,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// Try query
 		mapRecords = query.getResultList();
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
+		
+		for (MapRecord mr : mapRecordList.getIterable()) {
+			this.handleMapRecordLazyInitialization(mr);
+		}
+		
 		mapRecordList.setMapRecords(mapRecords);
 		mapRecordList.setTotalCount(mapRecords.size());
 
