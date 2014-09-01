@@ -32,8 +32,13 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.user = 		localStorageService.get('currentUser');
 	$scope.role = 		localStorageService.get('currentRole');
 	$scope.conversation = null;
-	$scope.recipientMapUser = $scope.project.mapLead[0];
 	$scope.mapLeads = $scope.project.mapLead;
+	organizeUsers($scope.mapLeads);
+	
+	$scope.returnRecipients = new Array();
+	$scope.multiSelectSettings = {displayProp: 'name', scrollableHeight: '50px',
+		    scrollable: true, showCheckAll: false, showUncheckAll: false};
+	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Leads'};
 	
 	// validation result storage variable
 	$scope.savedValidationWarnings = [];
@@ -166,6 +171,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				headers: { "Content-Type": "application/json"}	
 			}).success(function(data) {
 				$scope.conversation = data;
+				initializeReturnRecipients();
 			}).error(function(data, status, headers, config) {
 			    $rootScope.handleHttpError(data, status, headers, config);  
 			});		
@@ -816,25 +822,39 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	/** 
 	 * FEEDBACK FUNCTIONS
 	 */
-	$scope.sendFeedback = function(record, feedbackMessage, recipient) {
-		console.debug("Sending feedback email", record);
+	$scope.sendFeedback = function(record, feedbackMessage, recipientList) {
+		console.debug("Adding feedback", record);
 		
 		   if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
 			   window.alert("The feedback field cannot be blank. ");
 		   	   return;
 		   }
+
 		   
+			  var localFeedback = $scope.conversation.feedback;
+				
+				// copy recipient list
+				var localRecipients = recipientList.slice(0);
+				var newRecipients = new Array();
+				for (var i = 0; i < localRecipients.length; i++) {
+					for (var j = 0; j < $scope.project.mapLead.length; j++) {
+						if (localRecipients[i].id == $scope.project.mapLead[j].id)
+							newRecipients.push($scope.project.mapLead[j]);
+					}
+				}
+				
 		   // if the conversation hasn't yet been started
 		   if ($scope.conversation == null || $scope.conversation == "") {
+			 
+
 			   
 			// create first feedback item to go into the feedback conversation
-		    var receivingUsers = [recipient];
 			var feedback = {
 						"message": feedbackMessage,
 						"mapError": "",
 						"timestamp": new Date(),
 						"sender": $scope.user,
-						"recipients": receivingUsers,
+						"recipients": newRecipients,
 						"isError": "false",
 						"feedbackConversation": $scope.conversation,
 						"viewedBy": [$scope.user]
@@ -843,7 +863,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			var feedbacks = new Array();
 			feedbacks.push(feedback);
 			
-
 			
 			  // create feedback conversation
 			  var feedbackConversation = {
@@ -852,7 +871,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					"terminologyId": record.conceptId,
 					"terminologyVersion": $scope.project.destinationTerminologyVersion,
 					"isActive": "true",
-					"isDiscrepancyReview": "true",
+					"isDiscrepancyReview": "false",
 					"mapRecordId": record.id,
 					"feedback": feedbacks,
 					"defaultPreferredName": $scope.concept.defaultPreferredName,
@@ -869,6 +888,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				}
 			  }).success(function(data) {
 				console.debug("success to addFeedbackConversation.");
+				$scope.conversation = feedbackConversation;
 			  }).error(function(data, status, headers, config) {
 				$scope.recordError = "Error adding new feedback conversation.";
 				$rootScope.handleHttpError(data, status, headers, config);
@@ -877,34 +897,20 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 		   } else { // already started a conversation
 			   
-			   // figure out the return recipients based on previous feedback in conversation
-				var localFeedback = $scope.conversation.feedback;
-				var localSender = localFeedback[localFeedback.length -1].sender;
-				var localRecipients = localFeedback[localFeedback.length -1].recipients;
-				var returnRecipients = new Array();
-				if (localSender.userName == $scope.user.userName)
-					returnRecipients = localRecipients;
-				else {
-					returnRecipients.push(localSender);
-					for (var i = 0; i < localRecipients.length; i++) {
-						if (localRecipients[i].userName != $scope.user.userName)
-						  returnRecipients.push(localRecipients[i]);
-					}
-				}
-				
-			   // create feedback msg to be added to the conversation
-				var feedback = {
+			  
+			  // create feedback msg to be added to the conversation
+			  var feedback = {
 							"message": feedbackMessage,
 							"mapError": "",
 							"timestamp": new Date(),
 							"sender": $scope.user,
-							"recipients": returnRecipients,
-							"isError": "true",
+							"recipients": newRecipients,
+							"isError": "false",
 							"viewedBy": [$scope.user]
 						  };
 			
-				localFeedback.push(feedback);
-				$scope.conversation.feedback = localFeedback;
+			  localFeedback.push(feedback);
+			  $scope.conversation.feedback = localFeedback;
 				
 			  $http({						
 				url: root_workflow + "conversation/update",
@@ -1459,4 +1465,55 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			});
     	}
     };
+    
+    function initializeReturnRecipients() {
+		
+    	// if no previous feedback conversations, return just first map lead in list
+		if ($scope.conversation == null || $scope.conversation == "") {
+    	  $scope.returnRecipients.push($scope.project.mapLead[0]);
+    	  return;
+		}
+    	
+    	// figure out the return recipients based on previous feedback in conversation
+		var localFeedback = $scope.conversation.feedback;
+		var localSender = localFeedback[localFeedback.length -1].sender;
+		var localRecipients = localFeedback[localFeedback.length -1].recipients;
+		if (localSender.userName == $scope.user.userName)
+			$scope.returnRecipients = localRecipients;
+		else {
+			$scope.returnRecipients.push(localSender);
+			for (var i = 0; i < localRecipients.length; i++) {
+				if (localRecipients[i].userName != $scope.user.userName)
+				  $scope.returnRecipients.push(localRecipients[i]);
+			}
+		}
+		return;
+    };
+    
+    // for multi-select user picklist
+    function organizeUsers(arr) {
+    	// remove Current user
+        for(var i = arr.length; i--;) {
+            if(arr[i].userName === $scope.user.userName) {
+                arr.splice(i, 1);
+            }
+        }
+        
+        // remove demo users
+        for(var i = arr.length; i--;) {       	
+            if(arr[i].name.indexOf("demo") > -1) {
+                arr.splice(i, 1);
+            }
+        }  
+        
+    	sortByKey(arr, "name");
+    }
+    
+	// sort and return an array by string key
+	function sortByKey(array, key) {
+		return array.sort(function(a, b) {
+			var x = a[key]; var y = b[key];
+			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+		});
+	};
 });
