@@ -473,7 +473,7 @@ public interface WorkflowService {
 	 * @return the feedback conversations for project
 	 * @throws Exception the exception
 	 */
-	FeedbackConversationList getFeedbackConversationsForProject(Long mapProjectId, String userName,
+	public FeedbackConversationList getFeedbackConversationsForProject(Long mapProjectId, String userName,
 		PfsParameter pfsParameter)
 		throws Exception;
 
@@ -485,9 +485,8 @@ public interface WorkflowService {
 	 * @return the feedback conversations for concept
 	 * @throws Exception the exception
 	 */
-	FeedbackConversationList getFeedbackConversationsForConcept(
+	public FeedbackConversationList getFeedbackConversationsForConcept(
 		Long mapProjectId, String terminologyId) throws Exception;
-	
 
 
 }

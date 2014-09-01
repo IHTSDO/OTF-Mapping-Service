@@ -1,40 +1,33 @@
-<!-- <table style="margin-top: 10px;">
-  <tr>
-        <td style="padding: 5px";>Filter feedback:</td>
-        <td style="padding: 5px;">
-      <form>
-        <input id="feedbackSearch" ng-model="queryFeedback">
-        <button class="btn btn-sm btn-primary" ng-click="retrieveFeedback(1, queryFeedback)">Search</button>
-        <button class="btn btn-sm btn-primary" >Reset</button>
-      </form>
-      </td>
-  </tr>
 
-</table> -->
+<form>
+  <input ng-model="query"> <input type="submit" value="Search"
+    ng-click="retrieveFeedback(1)"> <input type="submit" value="Reset"
+    ng-click="resetSearch()">
+    &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
+</form>
 
+  <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
+    class="pagination-sm" boundary-links="true" rotate="true"
+    num-pages="numRecordPages" on-select-page="retrieveFeedback(page)"></pagination>
   
     
 
 <div ng-show="feedbackConversations.length > 0">
-  <!-- <pagination ng-show="numAssignedRecordPages > 1"
-  total-items="nAssignedRecords" page="assignedWorkPage"
-  class="pagination-sm" max-size="5" boundary-links="true" rotate="true"
-  num-pages="numAssignedRecordPages"
-  on-select-page="retrieveAssignedWork(page, queryAssigned, assignedWorkType)"></pagination>
- -->
+
 
 <table class="table" style="margin-top:10px;">
 
   <thead>
     <tr>
       <th style="width: 3%; padding: 5px;"><a title="Unviewed Feedback">
-        <!-- ng-click="openUnassignModal(currentUser, 'concepts')" --><i
+        <i
           class="glyphicon glyphicon-eye-close pull-right"></i></a>
       </th>
       <th style="width: 17%; padding: 5px;">Id</th>
       <th style="width: 35%; padding: 5px;">Preferred Name</th>
-      <th style="width: 30%; padding: 5px;">Title</th>
-      <th style="width: 15%; padding: 5px;">Last Modified</th>
+      <th style="width: 20%; padding: 5px;">Title</th>
+      <th style="width: 7%; padding: 5px;">Owner</th>
+      <th style="width: 18%; padding: 5px;">Last Modified</th>
       
 
     </tr>
@@ -44,56 +37,19 @@
    <tbody>
         <tr ng-repeat="feedbackConversation in feedbackConversations">
           <td ng-show="isFeedbackViewed(feedbackConversation) == false">
-            <a title="Unviewed Feedback">
-            <!-- ng-click="openUnassignModal(currentUser, 'concepts')" --><i
-            class="glyphicon glyphicon-eye-close pull-right"></i></a>
+            <a title="Unviewed Feedback" href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">
+            <i class="glyphicon glyphicon-eye-close pull-right"></i></a>
           </td>
           <td ng-show="isFeedbackViewed(feedbackConversation) == true"></td>
           <td><a href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">{{feedbackConversation.terminologyId}}</a></td>
           <td>{{feedbackConversation.defaultPreferredName}}</td>
           <td ng-bind-html="to_trusted(feedbackConversation.title)"></td>
-          <td>{{feedbackConversation.lastModified | date:'MM-dd-yyyy HH:mm'}}</td>
+          <td>{{feedbackConversation.feedback[0].sender.userName}}</td>
+          <td>{{feedbackConversation.lastModified | date:'MM-dd-yyyy HH:mm'}}&nbsp;
+          ({{feedbackConversation.feedback[feedbackConversation.feedback.length -1].sender.userName}})</td>
         </tr>
    
-        
 
- <!--      <td style="width: 3%; padding: 5px;">
-        Display a pushpin if this record has previously been edited
-        <a title='Continue working on this concept'
-        ng-show="result.terminologyVersion === 'EDITING_IN_PROGRESS'"> <i
-          ng-click="goEditRecord(result.id)"
-          class="glyphicon glyphicon-pushpin"></i>
-      </a> Display a pencil if this record has not yet been edited <a
-        title='Start work on this concept'
-        ng-show="result.terminologyVersion === 'NEW'"> <i
-          ng-click="goEditRecord(result.id)"
-          class="glyphicon glyphicon-pencil"></i>
-      </a>
-      Display a saved icon if this record has been marked finished <a
-        title='Re-edit this finished concept'
-        ng-show="result.terminologyVersion === 'EDITING_DONE'
-            || result.terminologyVersion === 'CONFLICT_DETECTED'
-            || result.terminologyVersion === 'REVIEW_NEEDED'"> <i
-          ng-click="goEditRecord(result.id)"
-          class="glyphicon glyphicon-saved"></i>
-      </a>
-      
-      TODO: SEE MAP-617. Display a saved icon if this record has been marked finished <a
-        disabled title='You have claimed this concept for Lead Review'
-        ng-show="result.terminologyVersion === 'REVIEW_NEW'
-            || result.terminologyVersion === 'REVIEW_IN_PROGRESS'"> <i
-          class="glyphicon glyphicon-ban-circle"></i>
-      </a>
-
-
-      </td>
-
-      <td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
-      <td style="width: 80%; padding: 5px;">{{result.value}}</td>
-      <td style="width: 3%; padding: 5px;"><a title="Return"
-        ng-click="unassignWork(result, currentUser)"><i
-          class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
-  </tr> -->
   </tbody>
 
 
@@ -101,9 +57,4 @@
 
 </div>
   
- <!--  <div style="padding: 10px;"
-    ng-show="nAssignedRecords == 0">
-    <p></p>
-    <div style="padding:10px;" class="alert alert-warning" disabled> No concepts found.</div>
-  </div> -->
 
