@@ -1038,7 +1038,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		mapRecord.setConceptName(concept.getDefaultPreferredName());
 		mapRecord.setOwner(mapUser);
 		mapRecord.setLastModifiedBy(mapUser);
-		mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
 
 		// set additional record parameters based on workflow path and status
 		switch (trackingRecord.getWorkflowPath()) {
@@ -1075,7 +1074,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 						.info("NON_LEGACY_PATH: CONFLICT_NEW");
 
+			} else {
+				throw new Exception("ASSIGN_FROM_SCRATCH on NON_LEGACY_PATH failed.");
 			}
+			
 			break;
 
 		case REVIEW_PROJECT_PATH:
@@ -1103,17 +1105,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 				// set workflow status to review needed
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
-			} else {
-
-				// check that no records exist for this concept
-				if (mapRecords.size() != 0) {
-					throw new Exception(
-							"Attempted to assign along the REVIEW_PROJECT_PATH where records already exist");
-				}
+			} else if (mapRecords.size() == 0) {
 
 				// set workflow status to new
 				mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
+				
+			} else {
+				throw new Exception("ASSIGN_FROM_SCRATCH on REVIEW_PROJECT_PATH failed.");
 			}
+					
 			break;
 
 		case FIX_ERROR_PATH:
