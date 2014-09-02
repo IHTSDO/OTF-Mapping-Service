@@ -675,7 +675,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// - user and workflowStatus pairs of
 		// CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
 		full_query += " AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*";
-		full_query += " AND NOT (userAndWorkflowStatusPairs:CONFLICT_NEW_* OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_*)";
+		full_query += " AND NOT (userAndWorkflowStatusPairs:CONFLICT_NEW_* OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)";
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
@@ -773,7 +773,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		// there must not be an already claimed review record
 		full_query += " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
-				+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*" + ")";
+				+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
+				+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*" + ")";
 
 		System.out.println("FindAvailableReviewWork query: " + full_query);
 
