@@ -1180,6 +1180,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				result.setTerminology(mapRecord.getLastModified().toString());
 				result.setTerminologyVersion(mapRecord.getWorkflowStatus()
 						.toString());
+				
+				System.out.println(mapRecord.getWorkflowStatus());
+				System.out.println(mapRecord.getWorkflowStatus().toString());
+				
 				result.setId(mapRecord.getId());
 				assignedConflicts.addSearchResult(result);
 			}

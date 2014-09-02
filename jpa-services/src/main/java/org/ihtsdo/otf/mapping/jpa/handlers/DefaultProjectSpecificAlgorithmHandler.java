@@ -1224,25 +1224,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
 		// find the record assigned to this user
-		MapRecord mapRecord = null;
-		for (MapRecord mr : newRecords) {
-			if (mr.getOwner().equals(mapUser)) {
-
-				// if there are multiple records on this tracking record, it
-				// MUST be a dual-role lead record
-				// default behavior: use the most-advanced record, e.g.
-				// CONFLICT_NEW instead of CONFLICT_DETECTED
-				// the specialist-level work is always inaccessible while
-				// lead-level work is assigned
-				if (mapRecord != null) {
-					if (mr.getWorkflowStatus().compareTo(
-							mapRecord.getWorkflowStatus()) > 0)
-						mapRecord = mr;
-				} else {
-					mapRecord = mr;
-				}
-			}
-		}
+		MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
 
 		// switch on workflow path
 		switch (trackingRecord.getWorkflowPath()) {
@@ -1422,25 +1404,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
 		// find the record assigned to this user
-		MapRecord mapRecord = null;
-		for (MapRecord mr : newRecords) {
-			if (mr.getOwner().equals(mapUser)) {
-
-				// if there are multiple records on this tracking record,
-				// owned by the same user, MUST be a dual-role lead record
-				// default behavior: use the most-advanced record, e.g.
-				// CONFLICT_NEW instead of CONFLICT_DETECTED
-				// the specialist-level work is always inaccessible while
-				// lead-level work is assigned
-				if (mapRecord != null) {
-					if (mr.getWorkflowStatus().compareTo(
-							mapRecord.getWorkflowStatus()) > 0)
-						mapRecord = mr;
-				} else {
-					mapRecord = mr;
-				}
-			}
-		}
+		MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
+				
 		if (mapRecord == null)
 			throw new Exception(
 					"finishEditing:  Record for user could not be found");
@@ -1453,6 +1418,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			// do nothing
 			break;
 		case FIX_ERROR_PATH:
+			
+			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+					"FIX_ERROR_PATH - Called Publish on resolved review");
 
 			// Requirements for FIX_ERROR_PATH publish action
 			// - 1 record marked REVISION
@@ -1485,6 +1453,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				throw new Exception(
 						"Publish called on FIX_ERROR_PATH, but no REVIEW_NEEDED record found");
 
+			mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+			
+			newRecords.clear();
+			newRecords.add(mapRecord);
+
+			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+					.info("finishEditing - FIX_ERROR_PATH - Creating READY_FOR_PUBLICATION record "
+							+ mapRecord.toString());
+			
 			break;
 		case LEGACY_PATH:
 			// do nothing
@@ -1666,25 +1643,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
 		// find the record assigned to this user
-		MapRecord mapRecord = null;
-		for (MapRecord mr : newRecords) {
-			if (mr.getOwner().equals(mapUser)) {
-
-				// if there are multiple records on this tracking record,
-				// owned by the same user, MUST be a dual-role lead record
-				// default behavior: use the most-advanced record, e.g.
-				// CONFLICT_NEW instead of CONFLICT_DETECTED
-				// the specialist-level work is always inaccessible while
-				// lead-level work is assigned
-				if (mapRecord != null) {
-					if (mr.getWorkflowStatus().compareTo(
-							mapRecord.getWorkflowStatus()) > 0)
-						mapRecord = mr;
-				} else {
-					mapRecord = mr;
-				}
-			}
-		}
+		MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
+		
 		if (mapRecord == null)
 			throw new Exception(
 					"finishEditing:  Record for user could not be found");
@@ -1981,25 +1941,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
 		// find the record assigned to this user
-		MapRecord mapRecord = null;
-		for (MapRecord mr : newRecords) {
-			if (mr.getOwner().equals(mapUser)) {
-
-				// if there are multiple records on this tracking record, it
-				// MUST be a dual-role lead record
-				// default behavior: use the most-advanced record, e.g.
-				// CONFLICT_NEW instead of CONFLICT_DETECTED
-				// the specialist-level work is always inaccessible while
-				// lead-level work is assigned
-				if (mapRecord != null) {
-					if (mr.getWorkflowStatus().compareTo(
-							mapRecord.getWorkflowStatus()) > 0)
-						mapRecord = mr;
-				} else {
-					mapRecord = mr;
-				}
-			}
-		}
+		MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
+		
 		if (mapRecord == null)
 			throw new Exception(
 					"saveForLater:  Record for user could not be found");
@@ -2065,13 +2008,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		case FIX_ERROR_PATH:
 
 			MapRecord reviewRecord = null;
-			MapRecord newRecord = null;
-
+			MapRecord newRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
+			
 			// check for the appropriate map records
 			for (MapRecord mr : mapRecords) {
-				if (mr.getOwner().equals(mapUser)) {
-					newRecord = mr;
-				} else if (mr.getWorkflowStatus().equals(
+				if (mr.getWorkflowStatus().equals(
 						WorkflowStatus.REVISION)) {
 					reviewRecord = mr;
 				}
@@ -2111,6 +2052,33 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		// return the modified records
 		return newRecords;
+	}
+	
+	public MapRecord getCurrentMapRecordForUser(Set<MapRecord> mapRecords, MapUser mapUser) {
+		
+		MapRecord mapRecord = null;
+		
+		for (MapRecord mr : mapRecords) {
+			if (mr.getOwner().equals(mapUser)) {
+
+				// if there are multiple records on this tracking record, it
+				// MUST be a dual-role lead record
+				// default behavior: use the most-advanced record, e.g.
+				// CONFLICT_NEW instead of CONFLICT_DETECTED
+				// the specialist-level work is always inaccessible while
+				// lead-level work is assigned
+				// EXCEPTION:  Never return a REVISION record
+				if (mapRecord != null) {
+					if (mr.getWorkflowStatus().compareTo(
+							mapRecord.getWorkflowStatus()) > 0 &&
+							! mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+						mapRecord = mr;
+				} else {
+					mapRecord = mr;
+				}
+			}
+		}
+		return mapRecord;
 	}
 
 	/**
