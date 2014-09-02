@@ -791,75 +791,75 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$location.path(path);
 	};
 	
-	$scope.openFinishSingleRecordModal = function(searchResult) {
+	/**
+	 * Helper function to open Finish Or Publish modal
+	 * (record in form of search result from assigned list
+	 */
+	$scope.finishOrPublish = function(searchResult) {
 		
-		var modalInstance = $modal.open({
-			templateUrl: 'js/widgets/assignedList/assignedListFinishOrPublish.html',
-			controller: FinishOrPublishWorkModalCtrl,
-			resolve: {
-				records : function() {
-					// create a single element array to match format of All Record Open
-					var searchResults = new Array();
-					searchResults.push(searchResult);
-					return searchResults;
-				},
-				project : function() {
-					return $scope.focusProject; },
-				user:     function() { return $scope.currentUser; }
-			}
-		});
-	  	
-	  	modalInstance.result.then(function() {  	
-	  		console.debug("User closed finish modal");
-	  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Done
-	  	}, function() {  	
-	  		console.debug("Finish modal dismissed");
-	  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Cancel/Esc
-	  	});
+		// convert single search result into a single-element array
+		var records = [];
+		records.push(searchResult);
 		
-	};
+		$scope.openFinishOrPublishModal(records);
+	}
 	
-	$scope.openFinishAllRecordsModal = function(workType) {
+	/**
+	 * Function to open finish or publish modal.
+	 * Argument: workflowStatus:
+	 * 	The filter by which to retrieve records
+	 *  Must be a valid workflow status of type *_IN_PROGRESS or *_RESOLVED
+	 */
+	$scope.finishOrPublishBatch = function(workflowStatus) {
 		
-		console.debug('openFinishAllRecordsModal called with worktype', workType);
+		// check arguments
+		if (workflowStatus != null && workflowStatus.indexOf('_IN_PROGRESS') == -1 && workflowStatus.indexOf('_RESOLVED') == -1) {
+				console.error("Invalid workflow status passed to finishOrPublish, must be *_IN_PROGRESS or *_RESOLVED");
+		}
 		
-		// determine which api call is to be performed
-		var apiWorkTypeText = '';
+		console.debug("Called finishOrPublishBatch with workflowStatus", workflowStatus);
 
-		switch(workType) {
-		case 'EDITING_IN_PROGRESS':
-			apiWorkTypeText = 'assignedConcepts';
-			break;
-		case 'CONFLICT_IN_PROGRESS':
-		case 'CONFLICT_RESOLVED':
-			apiWorkTypeText = 'assignedConflicts';
-			break;
-		case 'REVIEW_IN_PROGRESS':
-		case 'REVIEW_RESOLVED':
-			apiWorkTypeText = 'assignedReviewWork';
-			break;
-		default:
-			console.error("Invalid worktype sent to openFinishAllRecordsModal", workType);
+		// determine type of work
+		var apiWorkflowText;
+		
+		// determine the retrieval API text
+		// i.e.. whether to call assignedConcepts,
+		// assignedReviewWork, or assignedConcepts
+		if (workflowStatus === 'CONFLICT_IN_PROGRESS'
+				|| workflowStatus === 'CONFLICT_RESOLVED')
+			apiWorkflowText = 'assignedConflicts';
+		else if (workflowStatus === 'REVIEW_IN_PROGRESS'
+				|| workflowStatus === 'REVIEW_RESOLVED')
+			apiWorkflowText = 'assignedReviewWork';
+		else if (workflowStatus === 'EDITING_IN_PROGRESS'
+				|| workflowStatus === 'EDITING_DONE')
+			apiWorkflowText = 'assignedConcepts';
+		else {
+			console.debug("Could not determine api call from workflow status");
 			return;
 		}
+		
+		console.debug('apiWorkflowText', apiWorkflowText);
 		
 		// construct a paging/filtering/sorting object based on work type
 		var pfsParameterObj = 
 					{"startIndex": -1,
 			 	 	 "maxResults": -1, 
 			 	 	 "sortField": null,
-			 	 	 "queryRestriction": workType
+			 	 	 "queryRestriction": workflowStatus
 			 	 	 };
 
 	  	$rootScope.glassPane++;
+	  	
+	  	console.debug("Making html call to retrieve eligible records");
 
 		$http({
 			url: root_workflow + "project/id/" 
 			+ $scope.focusProject.id 
 			+ "/user/id/" 
 			+ $scope.currentUser.userName 
-			+ "/query/null"
-			+ "/assignedConcepts",
+			+ "/query/null/"
+			+ apiWorkflowText, // set above based on specified workflow status
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",
@@ -869,137 +869,112 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
 
-		  	var modalInstance = $modal.open({
-				templateUrl: 'js/widgets/assignedList/assignedListFinishOrPublish.html',
-				controller: FinishOrPublishWorkModalCtrl,
-				size: 'lg',
-				resolve: {
-					records:  function() { return data.searchResult; },
-					project:  function() { return $scope.focusProject; },
-					user:     function() { return $scope.currentUser; }
-				}
-			});
-		  	
-		  	modalInstance.result.then(function() {  	
-		  		console.debug("User closed finish modal");
-		  		$scope.retrieveAssignedWork(1, null, workType); // called on Done
-		  	}, function() {  	
-		  		console.debug("Finish modal dismissed");
-		  		$scope.retrieveAssignedWork(1, null, workType); // called on Cancel/Esc
-		  	});
-			
-			
+		  	// if results found, open the modal
+		  	if (data.searchResult.length > 0) {
+		  		console.debug("Results: ", data.searchResult);
+		  		$scope.openFinishOrPublishModal(data.searchResult);
+		  	} else {
+		  			console.debug("No results returned");
+		  	}
 		}).error(function(data, status, headers, config) {
+			console.debug("ERROR RETRIEVING SEARCH RESULTS");
 		  	$rootScope.glassPane--;
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 		
-
+		
 		
 	};
+
 	
-$scope.openPublishSingleRecordModal = function(searchResult) {
+	$scope.openFinishOrPublishModal = function(records) {
+		
+		if (records == null || records.length == 0) {
+			console.error("openPerformBatchActionModal called with no records");
+			return;
+		};
+		
+		console.debug("Entered openFinishOrPUblishModal", records);
+		
+		// NOTE:  Record information is shoehorned into searchResult
+		// workflow status is contained in terminologyVersion
+		var workflowStatus = records[0].terminologyVersion;
+		console.debug("WorkflowStatus = ", workflowStatus);
 		
 		var modalInstance = $modal.open({
 			templateUrl: 'js/widgets/assignedList/assignedListFinishOrPublish.html',
 			controller: FinishOrPublishWorkModalCtrl,
+			size: 'lg',
 			resolve: {
-				records : function() {
-					// create a single element array to match format of All Record Open
-					var searchResults = new Array();
-					searchResults.push(searchResult);
-					return searchResults;
+				records:  function() { return records; },
+				project:  function() { return $scope.focusProject; },
+				user : function() {
+					return $scope.currentUser;
 				},
-				project : function() {
-					return $scope.focusProject; },
-				user:     function() { return $scope.currentUser; }
+				action : function() {
+					return (workflowStatus === 'CONFLICT_RESOLVED' || workflowStatus === 'REVIEW_RESOLVED') ? 'publish'
+							: 'finish';
+				}
 			}
 		});
 	  	
-	  	modalInstance.result.then(function() {  	
-	  		console.debug("User closed finish modal");
-	  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Done
-	  	}, function() {  	
-	  		console.debug("Finish modal dismissed");
-	  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Cancel/Esc
-	  	});
 		
-	};
-	
-	$scope.openPublishAllRecordsModal = function() {
-		
-		// construct a paging/filtering/sorting object
-		var pfsParameterObj = 
-					{"startIndex": -1,
-			 	 	 "maxResults": -1, 
-			 	 	 "sortField": null,
-			 	 	 "queryRestriction": 'CONFLICT_RESOLVED'};
-
-	  	$rootScope.glassPane++;
-
-		$http({
-			url: root_workflow + "project/id/" 
-			+ $scope.focusProject.id 
-			+ "/user/id/" 
-			+ $scope.currentUser.userName 
-			+ "/query/null"
-			+ "/assignedConcepts",
-			dataType: "json",
-			data: pfsParameterObj,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			}
-		}).success(function(data) {
-		  	$rootScope.glassPane--;
-
-		  	var modalInstance = $modal.open({
-				templateUrl: 'js/widgets/assignedList/assignedListFinishOrPublish.html',
-				controller: FinishOrPublishWorkModalCtrl,
-				size: 'lg',
-				resolve: {
-					records:  function() { return data.searchResult; },
-					project:  function() { return $scope.focusProject; },
-					user:     function() { return $scope.currentUser; }
+	  	modalInstance.result.then(
+	  			
+	  		// called on Done clicked by user
+	  		function() {  	
+		  		console.debug("User closed finish/publish modal");
+		  		if (workflowStatus === 'CONFLICT_IN_PROGRESS'
+					|| workflowStatus === 'CONFLICT_RESOLVED')
+		  			$scope.retrieveAssignedConflicts(1, null, workflowStatus); // called on Done
+				else if (workflowStatus === 'REVIEW_IN_PROGRESS'
+						|| workflowStatus === 'REVIEW_RESOLVED')
+					$scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
+				else if (workflowStatus === 'EDITING_IN_PROGRESS'
+						|| workflowStatus === 'EDITING_DONE')
+					$scope.retrieveAssignedWork(1, null, workflowStatus); // called on Done
+				else {
+					console.debug("Could not determine api call from workflow status");
+					return;
 				}
-			});
-		  	
-		  	modalInstance.result.then(function() {  	
-		  		console.debug("User closed finish modal");
-		  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Done
-		  	}, function() {  	
-		  		console.debug("Finish modal dismissed");
-		  		$scope.retrieveAssignedWork(1, null, 'EDITING_IN_PROGRESS'); // called on Cancel/Esc
-		  	});
-			
-			
-		}).error(function(data, status, headers, config) {
-		  	$rootScope.glassPane--;
-		    $rootScope.handleHttpError(data, status, headers, config);
-		});
-		
-
+	  		
+	  		// called on Cancel/Escape, same functionality
+	  		}, function() {  	
+		  		console.debug("Finish/publish modal dismissed");
+		  		if (workflowStatus === 'CONFLICT_IN_PROGRESS'
+					|| workflowStatus === 'CONFLICT_RESOLVED')
+		  			$scope.retrieveAssignedConflicts(1, null, workflowStatus); // called on Done
+				else if (workflowStatus === 'REVIEW_IN_PROGRESS'
+						|| workflowStatus === 'REVIEW_RESOLVED')
+					$scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
+				else if (workflowStatus === 'EDITING_IN_PROGRESS'
+						|| workflowStatus === 'EDITING_DONE')
+					$scope.retrieveAssignedWork(1, null, workflowStatus); // called on Done
+				else {
+					console.debug("Could not determine api call from workflow status");
+					return;
+				}
+	  		}
+  		);
 		
 	};
 	
-	var FinishOrPublishWorkModalCtrl = function($scope, $modalInstance, user, project, records) { 
+	var FinishOrPublishWorkModalCtrl = function($scope, $modalInstance, user, project, records, action) { 
 		
 		console.debug("Entered modal control", user, project, records);
 		$scope.user = user;
 		$scope.project = project;
 		$scope.records = records;
-		$scope.index = 1;
+		$scope.action = action;
+		$scope.index = 1;  // note this index is in range [1, n], where n is the number of records
 		
-		// set the action based on status of first record
-		// - actionText:  text displayed to user on button
-		// - action:  must match the ending string of a workflow rest call
-		//            (e.g. /finish -> 'finish', /publish -> 'publish'
-		if (records[0].workflowStatus === '*_IN_PROGRESS') {
+		for (var i = 0; i < $scope.records; i++) console.debug(action, $scope.records[i].id);
+		
+		// set the dispaly text based on action
+		if (action === 'finish') {
 			$scope.actionText = 'Finish';
-			$scope.action = 'finish';
-		} else if (records[0].workflowStatus === 'CONFLICT_RESOLVED' || records[0].workflowStatus === 'REVIEW_RESOLVED') {
+		} else if (action === 'publish') {
 			$scope.actionText = 'Publish';
-			$scope.action = 'publish';
 		}
 		
 		$scope.selectNextRecord = function() {
@@ -1014,12 +989,12 @@ $scope.openPublishSingleRecordModal = function(searchResult) {
 			
 			console.debug("Selecting record", $scope.index);
 			
-			// get id from list
+			// get id from list (note index is range [1,n], subtract one for array access)
 			var recordId = $scope.records[$scope.index-1].id;
 			
 			console.debug("Retrieving record", recordId);
 			
-			
+			// perform the retrieval call
 			$http({
 				url: root_mapping + "record/id/" + recordId,
 				method: "GET",
@@ -1028,16 +1003,29 @@ $scope.openPublishSingleRecordModal = function(searchResult) {
 				}
 			}).success(function(data) {
 			  
+				// set scope record
 			  	$scope.currentRecord = data;
 			  	
-			  	// check if this record is still in progress
-			  	if ($scope.currentRecord.workflowStatus === 'EDITING_IN_PROGRESS'
-			  		|| $scope.currentRecord.workflowStatus === 'CONFLICT_IN_PROGRESS'
-			  		|| $scope.currentRecord.workflowStatus === 'REVIEW_IN_PROGRESS')
-			  		$scope.currentRecord.isFinished = false;
+			  	// check if this record is still in progress, based on requested action
+			  	if ($scope.action === 'publish') {
+			  		
+			  		// if in a publication state, this record has been finished
+			  		if ($scope.currentRecord.workflowStatus === 'READY_FOR_PUBLICATION' ||
+			  				$scope.currentRecord.workflowStatus === 'PUBLISHED')
+			  			$scope.currentRecord.isFinished = true;
+			  		else $scope.currentRecord.isFinished = false;
+			  		
+			  	} else if ($scope.action === 'finish') {
 			  	
-			  	// otherwise, this record has been finished/published via this modal
-			  	else $scope.currentRecord.isFinished = true;
+			  		// if an *_IN_PROGRESS record, not finished
+				  	if ($scope.currentRecord.workflowStatus === 'EDITING_IN_PROGRESS'
+				  		|| $scope.currentRecord.workflowStatus === 'CONFLICT_IN_PROGRESS'
+				  		|| $scope.currentRecord.workflowStatus === 'REVIEW_IN_PROGRESS')
+				  		$scope.currentRecord.isFinished = false;
+				  	
+				  	// otherwise, this record has been finished/published via this modal
+				  	else $scope.currentRecord.isFinished = true;
+			  	}
 			  	
 			  	console.debug("Validating the map record");
 				// validate the record
@@ -1061,19 +1049,18 @@ $scope.openPublishSingleRecordModal = function(searchResult) {
 					console.debug("Failed to validate map record");
 					$rootScope.handleHttpError(data, status, headers, config);
 				});
-				
-			  	
 			  	
 			}).error(function(data, status, headers, config) {
 			  	$rootScope.glassPane--;
 			    $scope.error = "Could not retrieve record";
 			});	
-		}
+		};
 		
 		$scope.finishCurrentRecord = function() {
-			$rootScope.glassPane++;
+			$rootScope.glassPane++;			
+			
 			$http({
-				url: root_workflow + $scope.actionText,
+				url: root_workflow + $scope.action,  // api text is passed in as argument
 				dataType: "json",
 				data: $scope.currentRecord,
 				method: "POST",
