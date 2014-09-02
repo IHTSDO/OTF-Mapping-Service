@@ -55,7 +55,7 @@
 
 				<!--  Extra column if on editing in progress page for dashboard finish commands -->
 				<th style="width: 3%; padding: 5px;"><a ng-show="assignedWorkType === 'EDITING_IN_PROGRESS'" title="Finish All Work"
-					ng-click="openFinishAllRecordsModal(assignedWorkType)"> <i
+					ng-click="finishOrPublishBatch(assignedWorkType)"> <i
 						class="glyphicon glyphicon-check"></i>
 				</a></th>
 
@@ -119,7 +119,7 @@
 					<!-- Display a checkmark if this record has previously been edited -->
 					<a style:"display:inline" title='Finish this concept'
 					ng-show="result.terminologyVersion === 'EDITING_IN_PROGRESS' && assignedWorkType === 'EDITING_IN_PROGRESS'">
-						<i ng-click="openFinishSingleRecordModal(result, assignedWorkType)"
+						<i ng-click="finishOrPublish(result)"
 						class="glyphicon glyphicon-ok"></i>
 					</a>
 				</td>
@@ -211,11 +211,11 @@
 				<!--  Extra column if on editing in progress page for dashboard finish commands -->
 				<th style="width: 3%; padding: 5px;">
 					<a ng-show="assignedConflictType === 'CONFLICT_IN_PROGRESS'" title='Finish Editing All Conflicts'
-						ng-click="openFinishAllRecordsModal('CONFLICT_IN_PROGRESS')"> <i
+						ng-click="finishOrPublishBatch(assignedConflictType)"> <i
 							class="glyphicon glyphicon-check"></i>
 					</a>
 					<a ng-show="assignedConflictType === 'CONFLICT_RESOLVED'" title='Publish All Resolved Conflicts'
-						ng-click="openPublishAllRecordsModal('CONFLICT_RESOLVED')"> <i
+						ng-click="finishOrPublishBatch(assignedConflictType)"> <i
 							class="glyphicon glyphicon-check"></i>
 					</a>
 				</th>
@@ -250,7 +250,7 @@
 							class="glyphicon glyphicon-pencil"></i>
 					</a>
 					
-					<!-- Display a pushpin if this record has previously been edited -->
+					<!-- Display a finished icon if this record has previously been edited -->
 					<a title='Continue working on this conflict'
 						ng-show="result.terminologyVersion === 'CONFLICT_RESOLVED'">
 							<i ng-click="goEditConflict(result.id)"
@@ -262,14 +262,14 @@
 				<td style="width: 3%; padding: 5px;">
 				<!-- Display a checkmark to finish if in progress -->
 					<a style:"display:inline" title='Resolve this conflict'
-					ng-show="result.terminologyVersion === 'CONFLICT_IN_PROGRESS' && assignedConflictType == 'CONFLICT_IN_PROGRESS'">
-						<i ng-click="openPublishSingleRecordModal(result)"
+					ng-show="result.terminologyVersion === 'CONFLICT_IN_PROGRESS' && assignedConflictType === 'CONFLICT_IN_PROGRESS'">
+						<i ng-click="finishOrPublish(result)"
 						class="glyphicon glyphicon-ok"></i>
 				</a>
 					<!-- Display a checkmark to publish if this record is resolved -->
 					<a style:"display:inline" title='Publish this resolved conflict'
-					ng-show="result.terminologyVersion === 'CONFLICT_RESOLVED' && assignedConflictType == 'CONFLICT_RESOLVED'">
-						<i ng-click="openPublishAllRecordsModal(result)"
+					ng-show="result.terminologyVersion === 'CONFLICT_RESOLVED' && assignedConflictType === 'CONFLICT_RESOLVED'">
+						<i ng-click="finishOrPublish(result)"
 						class="glyphicon glyphicon-ok"></i>
 				</a>
 				</td>
@@ -325,7 +325,7 @@
 					ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Editing</input>
 				<input type="radio" ng-model="assignedReviewWorkType"
 					value="REVIEW_RESOLVED"
-					ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Editing</input>
+					ng-change="retrieveAssignedReviewWork(1, queryAssigned, assignedReviewWorkType)">Resolved</input>
 			</form>
 		</td>
 	</tr>
@@ -355,11 +355,11 @@
 				<!--  Extra column if on editing in progress page for dashboard finish commands -->
 				<th style="width: 3%; padding: 5px;">
 					<a ng-show="assignedReviewWorkType === 'REVIEW_IN_PROGRESS'" title='Finish Editing All Review Work'
-						ng-click="openFinishAllRecordsModal(assignedReviewWorkType)"> <i
+						ng-click="finishOrPublishBatch(assignedReviewWorkType)"> <i
 							class="glyphicon glyphicon-check"></i>
 					</a>
 					<a ng-show="assignedReviewWorkType === 'REVIEW_RESOLVED'" title='Publish All Resolved Review Work'
-						ng-click="openPublishAllRecordsModal(assignedReviewWorkType)"> <i
+						ng-click="finishOrPublishBatch(assignedReviewWorkType)"> <i
 							class="glyphicon glyphicon-check"></i>
 					</a>
 				</th>
@@ -377,7 +377,7 @@
 
 			<tr ng-repeat="result in assignedReviewWork">
 
-				<td style="width: 3%; padding: 5px;"><a title="Edit"> <!-- Display a pushpin if this record has previously been edited -->
+				<td style="width: 3%; padding: 5px;"> <!-- Display a pushpin if this record has previously been edited -->
 						<a title='Continue reviewing work.'
 						ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS'">
 							<i ng-click="goEditReviewWork(result.id)"
@@ -387,6 +387,12 @@
 						ng-show="result.terminologyVersion === 'REVIEW_NEW'"> <i
 							ng-click="goEditReviewWork(result.id)"
 							class="glyphicon glyphicon-pencil"></i>
+					</a>
+					<!-- Display a finished icon if this record has previously been edited -->
+					<a title='Continue working on this conflict'
+						ng-show="result.terminologyVersion === 'REVIEW_RESOLVED'">
+							<i ng-click="goEditReviewWork(result.id)"
+							class="glyphicon glyphicon-saved"></i>
 					</a></td>
 
 				<td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
@@ -395,14 +401,14 @@
 					<!-- Display a checkmark if this record has previously been edited -->
 					<a style:"display:inline" title='Finish this review work'
 					ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS' && assignedReviewWorkType === 'REVIEW_IN_PROGRESS'">
-						<i ng-click="openFinishSingleRecordModal(result)"
+						<i ng-click="finishOrPublish(result)"
 						class="glyphicon glyphicon-ok"></i>
 					</a>
 					
-					<!-- Display a checkmark if this record has previously been edited -->
+					<!-- Display a checkmark if this record has previously resolved -->
 					<a style:"display:inline" title='Publish this resolved review work'
 					ng-show="result.terminologyVersion === 'REVIEW_RESOLVED' && assignedReviewWorkType === 'REVIEW_RESOLVED'">
-						<i ng-click="openFinishSingleRecordModal(result)"
+						<i ng-click="finishOrPublish(result)"
 						class="glyphicon glyphicon-ok"></i>
 					</a>
 				</td>
