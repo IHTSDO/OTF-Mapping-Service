@@ -16,9 +16,10 @@ MapRecord Id: <input type="text" id="mapRecordId" ng-model="mapRecordId"><button
 			<td>Last Modified</td><td>{{record.lastModified | date : 'short'}}</td>
 		</tr>
 		<tr>
-			<td>Workflow Status</td><td>{{record.workflowStatus}}</td>
+			<td>Workflow Status</td><td><input ng-model="record.workflowStatus"></td>
 		</tr>
 	</table>
 	
-	<button class="btn btn-sm btn-danger" ng-click="deleteRecord()">Delete</button>
+	<button class="btn btn-sm btn-primary" ng-click="saveRecord()">Save</button>
+	<button class="btn btn-sm btn-danger pull-right" ng-click="deleteRecord()">Delete</button>
 </div>
