@@ -3881,7 +3881,7 @@ public void convertUserErrors() throws Exception {
 			Feedback feedback = new FeedbackJpa();
 			feedback.setError(true);
 			feedback.setMapError(userError.getError());
-			feedback.setMessage(userError.getNote());
+			feedback.setMessage(userError.getNote() + " (NOTE: Added by the original user error method)");
 			feedback.setSender(userError.getUserReportingError());
 			Set<MapUser> recipients = new HashSet<>();
 			recipients.add(userError.getUserInError());

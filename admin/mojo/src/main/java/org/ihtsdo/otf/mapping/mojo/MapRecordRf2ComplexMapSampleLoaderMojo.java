@@ -117,16 +117,10 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 			Logger.getLogger(this.getClass()).info(
 					"  sampingPercentage: " + samplingRate);
 
-			// Bail if input file is not set
-			if (inputFile == null) {
-				throw new MojoExecutionException(
-						"Failed to set sampling percentage from property file parameter");
-			}
-
 			// Bail if samping percentage is not set
 			if (Float.isNaN(samplingRate)) {
 				throw new MojoExecutionException(
-						"Failed to set input file from property file parameter");
+						"Failed to set sampling rate from property file parameter");
 			}
 
 			// Bail if sampling percentage not in range (0, 1]
