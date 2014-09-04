@@ -324,4 +324,12 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 	public String getTitle() {
 		return title;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#addFeedback(org.ihtsdo.otf.mapping.model.Feedback)
+	 */
+	@Override
+	public void addFeedback(Feedback feedback) {
+		this.feedbacks.add(feedback);
+	}
 }
