@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserErrorJpa implements UserError {
 
+	
+
 	@Id
 	@GeneratedValue
 	private Long id;
@@ -115,6 +117,13 @@ public class UserErrorJpa implements UserError {
 	public void setUserReportingError(MapUser userReportingError) {
 		this.userReportingError = userReportingError;
 	}	
-
+	
+	@Override
+	public String toString() {
+		return "UserErrorJpa [id=" + id + ", mapRecordId=" + mapRecordId
+				+ ", timestamp=" + timestamp + ", error=" + error + ", note="
+				+ note + ", userInError=" + userInError
+				+ ", userReportingError=" + userReportingError + "]";
+	}
 	
 }
