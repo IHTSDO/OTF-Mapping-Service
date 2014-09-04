@@ -31,7 +31,7 @@ public class UserErrorJpa implements UserError {
 	private Long id;
 
 	@Column(nullable = false)
-	private Long mapRecordId;
+	private Long mapRecord_id;
 	
 	@Column(nullable = false)
 	private Date timestamp;
