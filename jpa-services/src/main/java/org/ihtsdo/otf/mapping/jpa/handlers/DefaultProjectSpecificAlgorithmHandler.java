@@ -1075,9 +1075,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						.info("NON_LEGACY_PATH: CONFLICT_NEW");
 
 			} else {
-				throw new Exception("ASSIGN_FROM_SCRATCH on NON_LEGACY_PATH failed.");
+				throw new Exception(
+						"ASSIGN_FROM_SCRATCH on NON_LEGACY_PATH failed.");
 			}
-			
+
 			break;
 
 		case REVIEW_PROJECT_PATH:
@@ -1109,11 +1110,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 				// set workflow status to new
 				mapRecord.setWorkflowStatus(WorkflowStatus.NEW);
-				
+
 			} else {
-				throw new Exception("ASSIGN_FROM_SCRATCH on REVIEW_PROJECT_PATH failed.");
+				throw new Exception(
+						"ASSIGN_FROM_SCRATCH on REVIEW_PROJECT_PATH failed.");
 			}
-					
+
 			break;
 
 		case FIX_ERROR_PATH:
@@ -1338,10 +1340,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				else if (mr.getWorkflowStatus().compareTo(
 						WorkflowStatus.REVIEW_NEEDED) <= 0)
 					editingRecord = mr;
-				else if (mr.getWorkflowStatus().compareTo(
-						WorkflowStatus.REVIEW_NEEDED) >= 0
-						&& mr.getWorkflowStatus().compareTo(
-								WorkflowStatus.CONFLICT_RESOLVED) <= 0)
+				else if (mr.getWorkflowStatus().equals(
+						WorkflowStatus.REVIEW_NEEDED)
+						|| mr.getWorkflowStatus().equals(
+								WorkflowStatus.REVIEW_IN_PROGRESS)
+						|| mr.getWorkflowStatus().equals(
+								WorkflowStatus.REVIEW_RESOLVED))
 					reviewRecord = mr;
 			}
 
@@ -1405,7 +1409,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		// find the record assigned to this user
 		MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
-				
+
 		if (mapRecord == null)
 			throw new Exception(
 					"finishEditing:  Record for user could not be found");
@@ -1418,9 +1422,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			// do nothing
 			break;
 		case FIX_ERROR_PATH:
-			
-			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
-					"FIX_ERROR_PATH - Called Publish on resolved review");
+
+			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
+					.info("FIX_ERROR_PATH - Called Publish on resolved review");
 
 			// Requirements for FIX_ERROR_PATH publish action
 			// - 1 record marked REVISION
@@ -1454,14 +1458,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						"Publish called on FIX_ERROR_PATH, but no REVIEW_NEEDED record found");
 
 			mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-			
+
 			newRecords.clear();
 			newRecords.add(mapRecord);
 
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 					.info("finishEditing - FIX_ERROR_PATH - Creating READY_FOR_PUBLICATION record "
 							+ mapRecord.toString());
-			
+
 			break;
 		case LEGACY_PATH:
 			// do nothing
@@ -1644,7 +1648,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		// find the record assigned to this user
 		MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
-		
+
 		if (mapRecord == null)
 			throw new Exception(
 					"finishEditing:  Record for user could not be found");
@@ -1942,7 +1946,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		// find the record assigned to this user
 		MapRecord mapRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
-		
+
 		if (mapRecord == null)
 			throw new Exception(
 					"saveForLater:  Record for user could not be found");
@@ -2008,12 +2012,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		case FIX_ERROR_PATH:
 
 			MapRecord reviewRecord = null;
-			MapRecord newRecord = getCurrentMapRecordForUser(mapRecords, mapUser);
-			
+			MapRecord newRecord = getCurrentMapRecordForUser(mapRecords,
+					mapUser);
+
 			// check for the appropriate map records
 			for (MapRecord mr : mapRecords) {
-				if (mr.getWorkflowStatus().equals(
-						WorkflowStatus.REVISION)) {
+				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION)) {
 					reviewRecord = mr;
 				}
 			}
@@ -2053,11 +2057,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// return the modified records
 		return newRecords;
 	}
-	
-	public MapRecord getCurrentMapRecordForUser(Set<MapRecord> mapRecords, MapUser mapUser) {
-		
+
+	public MapRecord getCurrentMapRecordForUser(Set<MapRecord> mapRecords,
+			MapUser mapUser) {
+
 		MapRecord mapRecord = null;
-		
+
 		for (MapRecord mr : mapRecords) {
 			if (mr.getOwner().equals(mapUser)) {
 
@@ -2067,11 +2072,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// CONFLICT_NEW instead of CONFLICT_DETECTED
 				// the specialist-level work is always inaccessible while
 				// lead-level work is assigned
-				// EXCEPTION:  Never return a REVISION record
+				// EXCEPTION: Never return a REVISION record
 				if (mapRecord != null) {
 					if (mr.getWorkflowStatus().compareTo(
-							mapRecord.getWorkflowStatus()) > 0 &&
-							! mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+							mapRecord.getWorkflowStatus()) > 0
+							&& !mr.getWorkflowStatus().equals(
+									WorkflowStatus.REVISION))
 						mapRecord = mr;
 				} else {
 					mapRecord = mr;
