@@ -60,12 +60,12 @@ public class UserErrorJpa implements UserError {
 
 	@Override
 	public Long getMapRecordId() {
-		return mapRecordId;
+		return mapRecord_id;
 	}
 
 	@Override
-	public void setMapRecordId(Long mapRecordId) {
-		this.mapRecordId = mapRecordId;
+	public void setMapRecordId(Long mapRecord_id) {
+		this.mapRecord_id = mapRecord_id;
 	}
 
 	@Override
@@ -120,7 +120,7 @@ public class UserErrorJpa implements UserError {
 	
 	@Override
 	public String toString() {
-		return "UserErrorJpa [id=" + id + ", mapRecordId=" + mapRecordId
+		return "UserErrorJpa [id=" + id + ", mapRecord_id=" + mapRecord_id
 				+ ", timestamp=" + timestamp + ", error=" + error + ", note="
 				+ note + ", userInError=" + userInError
 				+ ", userReportingError=" + userReportingError + "]";
