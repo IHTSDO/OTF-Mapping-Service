@@ -226,57 +226,63 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				}
 			}
 			
-			//add code to get feedback conversations
-			$rootScope.glassPane++;
-			$http({
-				url: root_workflow + "conversation/id/" + $scope.record1.id,
-				dataType: "json",
-				method: "GET",
-				headers: { "Content-Type": "application/json"}	
-			}).success(function(data) {
-				$rootScope.glassPane--;
-				$scope.conversation1 = data;
-			}).error(function(data, status, headers, config) {
-				$rootScope.glassPane--;
-			    $rootScope.handleHttpError(data, status, headers, config);  
-			});		
-					
-			$rootScope.glassPane++;
-			$http({
-				url: root_workflow + "conversation/id/" + $scope.record2.id,
-				dataType: "json",
-				method: "GET",
-				headers: { "Content-Type": "application/json"}	
-			}).success(function(data) {
-				$rootScope.glassPane--;
-				$scope.conversation2 = data;
-			}).error(function(data, status, headers, config) {
-				$rootScope.glassPane--;
-			    $rootScope.handleHttpError(data, status, headers, config);  
-			});	
 			
-			$rootScope.glassPane++;
-			$http({
-				url: root_workflow + "conversation/id/" + $scope.leadRecord.id,
-				dataType: "json",
-				method: "GET",
-				headers: { "Content-Type": "application/json"}	
-			}).success(function(data) {
-				$rootScope.glassPane--;
-				$scope.leadConversation = data;
-				// if no prior conversation, initialize with two specialists
-				if ($scope.leadConversation == null || $scope.leadConversation == "") {
-					$scope.returnRecipients.push($scope.record1.owner);
-					$scope.returnRecipients.push($scope.record2.owner);
-				// otherwise initialize with recipients on prior feedback
-				}	else {
-					initializeReturnRecipients($scope.leadConversation);
-				}
-			}).error(function(data, status, headers, config) {
-				$rootScope.glassPane--;
-			    $rootScope.handleHttpError(data, status, headers, config);  
-			});	
+			if ($scope.record1 != null) {
+				$rootScope.glassPane++;
+				$http({
+					url: root_workflow + "conversation/id/" + $scope.record1.id,
+					dataType: "json",
+					method: "GET",
+					headers: { "Content-Type": "application/json"}	
+				}).success(function(data) {
+					$rootScope.glassPane--;
+					$scope.conversation1 = data;
+				}).error(function(data, status, headers, config) {
+					$rootScope.glassPane--;
+				    $rootScope.handleHttpError(data, status, headers, config);  
+				});		
+			}
 			
+			if ($scope.record2 != null) {
+				$rootScope.glassPane++;
+				$http({
+					url: root_workflow + "conversation/id/" + $scope.record2.id,
+					dataType: "json",
+					method: "GET",
+					headers: { "Content-Type": "application/json"}	
+				}).success(function(data) {
+					$rootScope.glassPane--;
+					$scope.conversation2 = data;
+				}).error(function(data, status, headers, config) {
+					$rootScope.glassPane--;
+				    $rootScope.handleHttpError(data, status, headers, config);  
+				});	
+			}
+			
+			if ($scope.leadRecord != null) {
+				$rootScope.glassPane++;
+				$http({
+					url: root_workflow + "conversation/id/" + $scope.leadRecord.id,
+					dataType: "json",
+					method: "GET",
+					headers: { "Content-Type": "application/json"}	
+				}).success(function(data) {
+					$rootScope.glassPane--;
+					$scope.leadConversation = data;
+					// if no prior conversation, initialize with two specialists
+					if ($scope.leadConversation == null || $scope.leadConversation == "") {
+						$scope.returnRecipients.push($scope.record1.owner);
+						$scope.returnRecipients.push($scope.record2.owner);
+					// otherwise initialize with recipients on prior feedback
+					}	else {
+						initializeReturnRecipients($scope.leadConversation);
+					}
+				}).error(function(data, status, headers, config) {
+					$rootScope.glassPane--;
+				    $rootScope.handleHttpError(data, status, headers, config);  
+				});
+			};	
+				
 		}).error(function(data, status, headers, config) {
 			$rootScope.glassPane--;
 		    $rootScope.handleHttpError(data, status, headers, config);

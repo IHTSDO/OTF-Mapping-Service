@@ -488,6 +488,8 @@ public interface WorkflowService {
 	public FeedbackConversationList getFeedbackConversationsForConcept(
 		Long mapProjectId, String terminologyId) throws Exception;
 
+	public void convertUserErrors() throws Exception;
+
 
 }
 

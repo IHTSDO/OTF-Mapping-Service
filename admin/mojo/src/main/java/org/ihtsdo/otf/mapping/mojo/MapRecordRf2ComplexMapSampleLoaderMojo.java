@@ -21,6 +21,8 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
@@ -77,16 +79,33 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 			// set the input directory
 			String inputFile = config
 					.getProperty("loader.complexmap.rf2.sample.input.data");
+			if (inputFile == null) {
+				throw new MojoFailureException(
+						"Input file directory loader.complexmap.rf2.sample.input.user must be specified");
+			}
 			if (!new File(inputFile).exists()) {
 				throw new MojoFailureException(
 						"Specified loader.complexmap.rf2.sample.input.data directory does not exist: "
 								+ inputFile);
 			}
 
+			// set the input directory
+			String loaderUserName = config
+					.getProperty("loader.complexmap.rf2.sample.input.user");
+
+			if (loaderUserName == null) {
+
+				throw new MojoFailureException(
+						"User name loader.complexmap.rf2.sample.input.user must be specified");
+			}
+
 			// try to parse the decimal percentage value, fail gracefully on
 			// errors
 			float samplingRate;
 			try {
+
+				// TODO: Add loader....owner parameter
+
 				samplingRate = Float
 						.parseFloat(config
 								.getProperty("loader.complexmap.rf2.sample.percentage"));
@@ -208,17 +227,30 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 					.getIterable()) {
 				mapProjectMap.put(project.getRefSetId(), project);
 			}
+			
+			MapUser loaderUser = mappingService.getMapUser(loaderUserName);
+			
+			if (loaderUser == null) 
+				throw new MojoFailureException("Could not retrieve user object for name " + loaderUserName);
 
 			// load complexMapRefSetMembers from extendedMap file
+			// TODO All non-sampled ones should be PUBLISHED
 			Map<String, List<ComplexMapRefSetMember>> complexMapRefSetMemberMap = loadExtendedMapRefSets(
-					outputFile, mapProjectMap, samplingRate);
+					outputFile, mapProjectMap);
 
 			// Call mapping service to create records as we go along
 			for (String refSetId : complexMapRefSetMemberMap.keySet()) {
 				mappingService.createMapRecordsForMapProject(
 						mapProjectMap.get(refSetId).getId(),
 						complexMapRefSetMemberMap.get(refSetId),
-						WorkflowStatus.REVIEW_NEEDED);
+						WorkflowStatus.REVIEW_NEEDED, samplingRate);
+
+				for (MapRecord mr : mappingService.getMapRecordsForMapProject(
+						mapProjectMap.get(refSetId).getId()).getIterable()) {
+
+					// TODO Set the user here
+					mr.setOwner(loaderUser);
+				}
 			}
 
 			getLog().info("done ...");
@@ -243,7 +275,7 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 	 *             the exception
 	 */
 	private Map<String, List<ComplexMapRefSetMember>> loadExtendedMapRefSets(
-			File complexMapFile, Map<String, MapProject> mapProjectMap, float samplingRate)
+			File complexMapFile, Map<String, MapProject> mapProjectMap)
 			throws Exception {
 
 		// Open reader and service
@@ -258,12 +290,11 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 			complexMapRefSetMemberMap.put(mapProject.getRefSetId(),
 					new ArrayList<ComplexMapRefSetMember>());
 		}
-		
+
 		Random random = new Random();
-		
+
 		int refSetMemberCt = 0;
 		int refSetMemberSkippedCt = 0;
-		
 
 		final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
 		while ((line = complexMapReader.readLine()) != null) {
@@ -273,63 +304,58 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 
 			if (!fields[0].equals("id")) { // header
 
-				// random determine if this complex map ref set member will be
-				// added
-				// based on sampling percentage
-				if (random.nextInt(100 + 1) / 100.0 < samplingRate) {
+				// ComplexMap attributes
+				complexMapRefSetMember.setTerminologyId(fields[0]);
+				complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
+				complexMapRefSetMember.setActive(fields[2].equals("1"));
+				complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
+				final String refSetId = fields[4];
+				complexMapRefSetMember.setRefSetId(refSetId);
+				complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
+				complexMapRefSetMember.setMapPriority(Integer
+						.parseInt(fields[7]));
+				complexMapRefSetMember.setMapRule(fields[8]);
+				complexMapRefSetMember.setMapAdvice(fields[9]);
+				complexMapRefSetMember.setMapTarget(fields[10]);
+				complexMapRefSetMember.setMapRelationId(Long
+						.valueOf(fields[12]));
 
-					// ComplexMap attributes
-					complexMapRefSetMember.setTerminologyId(fields[0]);
-					complexMapRefSetMember.setEffectiveTime(dt.parse(fields[1]));
-					complexMapRefSetMember.setActive(fields[2].equals("1"));
-					complexMapRefSetMember.setModuleId(Long.valueOf(fields[3]));
-					final String refSetId = fields[4];
-					complexMapRefSetMember.setRefSetId(refSetId);
-					complexMapRefSetMember.setMapGroup(Integer.parseInt(fields[6]));
-					complexMapRefSetMember.setMapPriority(Integer
-							.parseInt(fields[7]));
-					complexMapRefSetMember.setMapRule(fields[8]);
-					complexMapRefSetMember.setMapAdvice(fields[9]);
-					complexMapRefSetMember.setMapTarget(fields[10]);
-					complexMapRefSetMember.setMapRelationId(Long
-							.valueOf(fields[12]));
-	
-					// BLOCK is unused
-					complexMapRefSetMember.setMapBlock(0); // default value
-					complexMapRefSetMember.setMapBlockRule(null); // no default
-					complexMapRefSetMember.setMapBlockAdvice(null); // no default
-	
-					// Terminology attributes
-					complexMapRefSetMember.setTerminology(mapProjectMap.get(
-							refSetId).getSourceTerminology());
-					complexMapRefSetMember.setTerminologyVersion(mapProjectMap.get(
-							refSetId).getSourceTerminologyVersion());
-	
-					// set Concept
-					Concept concept = contentService.getConcept(
-							fields[5], // referencedComponentId
-							mapProjectMap.get(refSetId).getSourceTerminology(),
-							mapProjectMap.get(refSetId)
-									.getSourceTerminologyVersion());
-	
-					if (concept != null) {
-						complexMapRefSetMember.setConcept(concept);
-						// don't persist, non-published shouldn't be in the db
-						complexMapRefSetMemberMap.get(refSetId).add(
-								complexMapRefSetMember);
-					} else {
-						complexMapReader.close();
-						throw new IllegalStateException("complexMapRefSetMember "
-								+ complexMapRefSetMember.getTerminologyId()
-								+ " references non-existent concept " + fields[5]);
-					}
-					
-					refSetMemberCt++;
+				// BLOCK is unused
+				complexMapRefSetMember.setMapBlock(0); // default value
+				complexMapRefSetMember.setMapBlockRule(null); // no default
+				complexMapRefSetMember.setMapBlockAdvice(null); // no default
+
+				// Terminology attributes
+				complexMapRefSetMember.setTerminology(mapProjectMap.get(
+						refSetId).getSourceTerminology());
+				complexMapRefSetMember.setTerminologyVersion(mapProjectMap.get(
+						refSetId).getSourceTerminologyVersion());
+
+				// set Concept
+				Concept concept = contentService.getConcept(
+						fields[5], // referencedComponentId
+						mapProjectMap.get(refSetId).getSourceTerminology(),
+						mapProjectMap.get(refSetId)
+								.getSourceTerminologyVersion());
+
+				if (concept != null) {
+					complexMapRefSetMember.setConcept(concept);
+					// don't persist, non-published shouldn't be in the db
+					complexMapRefSetMemberMap.get(refSetId).add(
+							complexMapRefSetMember);
 				} else {
-					refSetMemberSkippedCt++;
+					complexMapReader.close();
+					throw new IllegalStateException("complexMapRefSetMember "
+							+ complexMapRefSetMember.getTerminologyId()
+							+ " references non-existent concept " + fields[5]);
 				}
+
+				refSetMemberCt++;
+			} else {
+				refSetMemberSkippedCt++;
 			}
 		}
+
 		complexMapReader.close();
 
 		// Remove any map projects for which we did not encounter any records
@@ -338,11 +364,6 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 				complexMapRefSetMemberMap.remove(mapProject.getRefSetId());
 			}
 		}
-		
-		getLog().info("Complex Map RefSet Members loading complete");
-		getLog().info("  " + refSetMemberCt + " added");
-		getLog().info("  " + refSetMemberSkippedCt + " skipped");
-		getLog().info("  " + "Sampling Rate: " + (refSetMemberCt / (refSetMemberCt + refSetMemberSkippedCt) * 100) + "%, specified rate was " + (samplingRate*100) + "%");
 
 		return complexMapRefSetMemberMap;
 	}
