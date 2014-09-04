@@ -58,7 +58,7 @@ public class UserErrorImportMojo extends AbstractMojo {
       
       workflowService.convertUserErrors();
       
-      //workflowService.commit();
+      workflowService.commit();
 
       getLog().info("done ...");
       workflowService.close();
