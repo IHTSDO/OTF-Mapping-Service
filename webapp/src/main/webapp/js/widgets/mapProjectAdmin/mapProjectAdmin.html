@@ -8,7 +8,7 @@
       </span></h5>
   </accordion-heading>
 
-      <table width="100%" class="table pure-table">
+      <table width="100%" class="table pure-table" style="margin-bottom:5px;">
         <thead>
           <tr>
             <th style="width: 22%;">Name / Source / Destination</th>           
@@ -113,10 +113,11 @@
 
         </tbody>
       </table>
+   <button class="btn btn-sm btn-primary" ng-click="revertUnsavedProjects()"  ng-show="projectInEditingPerformed() == true" >Revert Unsaved</button>
    
 
     <form>
-      <div><b>Create New Map Project</b></div><hr>
+      <div style="margin-top:15px;"><b>Create New Map Project</b></div><hr>
       <table class="table pure-table">
       <thead>
           <tr>
@@ -137,7 +138,7 @@
       </select></td></tr>
       <tr><td>Ref Set Id </td><td>
         <input id="newMapProjectRefSetId" type="text" ng-model="newMapProjectRefSetId">  </div>       
-      <tr><td>Published: </td><td><select ng-model="newMapProjectPublished"
+      <tr><td>Published </td><td><select ng-model="newMapProjectPublished"
         ng-options="item for item in [true, false]">
       </select></td></tr>
       <tr><td>Rule Based </td><td><select ng-model="newMapProjectRuleBased"
@@ -200,7 +201,7 @@
           value="Reset Filter" ng-click="resetAdviceFilter()">
       </form>
 
-      <table width="100%" class="table pure-table">
+      <table width="100%" class="table pure-table"  style="margin-bottom:5px;">
         <thead>
           <tr>
             <th style="width: 40%;">Advice</th>           
@@ -240,11 +241,11 @@
 
         </tbody>
       </table>
-   
+      <button class="btn btn-sm btn-primary" ng-click="revertUnsavedAdvices()"  ng-show="adviceInEditingPerformed() == true" >Revert Unsaved</button>
 
     <form>
-      <div><b>Create New Map Advice</b></div><hr>
-      <table class="table pure-table">
+      <div style="margin-top:15px;"><b>Create New Map Advice</b></div><hr>
+      <table class="table pure-table" >
       <thead>
           <tr>
             <th style="width: 25%;"></th>           
@@ -288,7 +289,7 @@
           value="Reset Filter" ng-click="resetRelationFilter()">
       </form>
 
-      <table width="100%" class="table pure-table">
+      <table width="100%" class="table pure-table"  style="margin-bottom:5px;">
         <thead>
           <tr>
             <th style="width: 12%;">Id</th>
@@ -331,10 +332,11 @@
 
         </tbody>
       </table>
+      <button class="btn btn-sm btn-primary" ng-click="revertUnsavedRelations()"  ng-show="relationInEditingPerformed() == true" >Revert Unsaved</button>
                
 
     <form>
-      <div><b>Create New Map Relation</b></div><hr>      
+      <div style="margin-top:15px;"><b>Create New Map Relation</b></div><hr>      
       <table class="table pure-table">
       <thead>
           <tr>
@@ -380,7 +382,7 @@
           value="Reset Filter" ng-click="resetPrincipleFilter()">
       </form>
 
-      <table width="100%" class="table pure-table">
+      <table width="100%" class="table pure-table"  style="margin-bottom:5px;">
         <thead>
           <tr>
             <th style="width: 10%;">Id</th>
@@ -414,10 +416,12 @@
           </tr>
         </tbody>
       </table>
+      <button class="btn btn-sm btn-primary" ng-click="revertUnsavedPrinciples()"  ng-show="principleInEditingPerformed() == true" >Revert Unsaved</button>
+      
       
       <form>
-      <div><b>Create New Map Principle</b></div><hr>           
-      <table class="table pure-table">
+      <div style="margin-top:15px;"><b>Create New Map Principle</b></div><hr>           
+      <table class="table pure-table"  style="margin-bottom:5px;">
       <thead>
           <tr>
             <th style="width: 25%;"></th>           
@@ -446,7 +450,7 @@
         Preset Age Ranges
       </span></h5>
   </accordion-heading> 
-  <table width="100%" class="table pure-table"" >
+  <table width="100%" class="table pure-table"  style="margin-bottom:5px;" >
         <thead>
           <tr>
             <th style="width: 30%;">Name</th>
@@ -494,11 +498,13 @@
           </tr>
         </tbody>
       </table>
+      <button class="btn btn-sm btn-primary" ng-click="revertUnsavedAgeRanges()"  ng-show="ageRangeInEditingPerformed() == true" >Revert Unsaved</button>
+      
       
     
     <form name="ageRangeForm" >
-      <div><b>Create New Map Age Range</b></div><hr>
-      <table class="table pure-table">
+      <div style="margin-top:15px;"><b>Create New Map Age Range</b></div><hr>
+      <table class="table pure-table" >
       <thead>
           <tr>
             <th style="width: 25%;"></th>           
