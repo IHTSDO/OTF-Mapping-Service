@@ -24,11 +24,12 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $l
 		if (status == "401") {
 	    	$rootScope.globalError = $rootScope.globalError + " Authorization failed.  Please log in again.";
 			$location.path("/");
+		} else if (data.indexOf("AuthToken does not have a valid username.") > 0) {
+			$location.path("/");
 		} else {
 			$rootScope.globalError = data.replace(/"/g, '');
 		}
-		window.scrollTo(0,0);
-		
+		window.scrollTo(0,0);		
     }
     
     // global function to reset the global error
@@ -75,15 +76,14 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
     //$rootScope.globalError = 'rootScopeGlobalError';
     $scope.globalError = $rootScope.globalError;
 		
+    // clear the local storage service
+    localStorageService.clearAll();
 	
 	// set the user, role, focus project, and preferences to null (i.e. clear) by broadcasting to rest of app
 	$rootScope.$broadcast('localStorageModule.notification.setUser',{key: 'currentUser', currentUser: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setRole',{key: 'currentRole', currentRole: null});  
 	$rootScope.$broadcast('localStorageModule.notification.setFocusProject', {key: 'focusProject', focusProject: null});
 	$rootScope.$broadcast('localStorageModule.notification.setPreferences', {key: 'preferences', preferences: null});
-	
-	$scope.mapProjects = localStorageService.get('mapProjects');
-	$scope.mapUsers = localStorageService.get('mapUsers');
 
 	// initial values for pick-list
 	$scope.roles = [
@@ -162,6 +162,7 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 											key : 'mapProjects',
 											mapProjects : data.mapProject
 										});
+								console.debug(data.mapProject);
 								$scope.mapProjects = data.mapProject;
 					}).error(function(data, status, headers, config) {
 						$rootScope.glassPane--;

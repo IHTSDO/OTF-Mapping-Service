@@ -5,11 +5,11 @@
 
   <!-- Module Metadata -->
   <!-- Parent is TBD <parent> <groupId>org.ihtsdo.otf</groupId> <artifactId>otf-parent</artifactId>
-  <version>0.0.1-SNAPSHOT</version> <relativePath/> </parent> -->
+  <version>1.0.0-SNAPSHOT</version> <relativePath/> </parent> -->
 
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>otf-mapping-service</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>IHTSDO Mapping Service Parent</name>
   <description>Parent project for mapping service</description>
@@ -44,6 +44,7 @@
     <jackson-2.version>2.3.0</jackson-2.version>
     <swagger.version>1.3.0</swagger.version>
     <junit.version>4.11</junit.version>
+    <javax.mail.version>1.5.2</javax.mail.version>
   </properties>
 
   <dependencyManagement>
@@ -196,6 +197,12 @@
         <version>${junit.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>com.sun.mail</groupId>
+        <artifactId>javax.mail</artifactId>
+        <version>${javax.mail.version}</version>
+      </dependency>
+      
     </dependencies>
   </dependencyManagement>
 

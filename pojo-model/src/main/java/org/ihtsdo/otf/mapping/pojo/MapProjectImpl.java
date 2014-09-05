@@ -1052,4 +1052,16 @@ public class MapProjectImpl implements MapProject {
 	public void removeMapAdministrator(MapUser mapAdministrator) {
 		mapAdministrators.remove(mapAdministrator);
 	}
+
+	@Override
+	public String getWorkflowType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setWorkflowType(String workflowType) {
+		// TODO Auto-generated method stub
+		
+	}
 }

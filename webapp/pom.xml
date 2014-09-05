@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>otf-mapping-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -33,6 +33,27 @@
   <!-- Standard build profile, no special configuration needed -->
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <webResources>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>true</filtering>
+              <includes><include>partials/footer.html</include></includes>
+            </resource>
+            <resource>
+				<directory>src/main/webapp</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>partials/footer.html</exclude>
+				</excludes>
+			</resource>
+          </webResources>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.vafer</groupId>
         <artifactId>jdeb</artifactId>

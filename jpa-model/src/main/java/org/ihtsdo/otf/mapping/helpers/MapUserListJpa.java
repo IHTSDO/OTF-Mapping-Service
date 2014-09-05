@@ -27,6 +27,10 @@ public class MapUserListJpa extends AbstractResultList<MapUser> implements
   public MapUserListJpa() {
     // do nothing
   }
+  
+  public MapUserListJpa(List<MapUser> mapUsers) {
+	  this.mapUsers = mapUsers;
+  }
 
   /*
    * (non-Javadoc)

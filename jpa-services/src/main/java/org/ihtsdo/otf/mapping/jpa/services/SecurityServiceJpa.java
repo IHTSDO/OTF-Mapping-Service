@@ -97,6 +97,7 @@ public class SecurityServiceJpa implements SecurityService {
       resultString = response.getEntity(String.class);
       Logger.getLogger(this.getClass()).info(resultString);
     } else {
+    	// TODO Differentiate error messages with NO RESPONE and Authentication Failed (Check text)
       Logger.getLogger(this.getClass()).info("ERROR! " + response.getStatus());
       resultString = response.getEntity(String.class);
       Logger.getLogger(this.getClass()).info(resultString);
@@ -112,13 +113,11 @@ public class SecurityServiceJpa implements SecurityService {
     String ihtsdoEmail = "";
     String ihtsdoGivenName = "";
     String ihtsdoSurname = "";
-    // TODO: need to somehow retrieve application role for user
-    MapUserRole ihtsdoApplicationRole = MapUserRole.VIEWER;
 
     // converting json to Map
     byte[] mapData = resultString.getBytes();
     Map<String, HashMap<String, String>> jsonMap =
-        new HashMap<String, HashMap<String, String>>();
+        new HashMap<>();
 
     // parse username from json object
     ObjectMapper objectMapper = new ObjectMapper();
@@ -154,7 +153,6 @@ public class SecurityServiceJpa implements SecurityService {
       userFound.setEmail(ihtsdoEmail);
       userFound.setName(ihtsdoGivenName + " " + ihtsdoSurname);
       userFound.setUserName(ihtsdoUserName);
-      userFound.setApplicationRole(ihtsdoApplicationRole);
       mappingService.updateMapUser(userFound);
       // if MapUser not found, create one for our use
     } else {
@@ -162,7 +160,7 @@ public class SecurityServiceJpa implements SecurityService {
       newMapUser.setName(ihtsdoGivenName + " " + ihtsdoSurname);
       newMapUser.setUserName(ihtsdoUserName);
       newMapUser.setEmail(ihtsdoEmail);
-      newMapUser.setApplicationRole(ihtsdoApplicationRole);
+      newMapUser.setApplicationRole(MapUserRole.VIEWER);
       mappingService.addMapUser(newMapUser);
     }
     mappingService.close();
@@ -189,13 +187,14 @@ public class SecurityServiceJpa implements SecurityService {
     if (authToken == null)
       throw new LocalException(
           "Attempt to access a service without an authorization token, the user is likely not logged in.");
-    if (tokenUsernameMap.containsKey(authToken)) {
-      String username = tokenUsernameMap.get(authToken);
+    String parsedToken = authToken.replace("\"", "");
+    if (tokenUsernameMap.containsKey(parsedToken)) {
+      String username = tokenUsernameMap.get(parsedToken);
       Logger.getLogger(this.getClass()).info(
-          "User = " + username + " Token = " + authToken);
+          "User = " + username + " Token = " + parsedToken);
       return username;
     } else
-      throw new Exception("AuthToken does not have a valid username.");
+      throw new LocalException("AuthToken does not have a valid username.");
   }
 
   /*

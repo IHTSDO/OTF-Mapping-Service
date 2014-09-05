@@ -646,6 +646,12 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           labelChars = new StringBuilder();
         }
 
+        // Encountered </Label> while in a Class, add concept/description
+        if (qName.equalsIgnoreCase("label") && tagStack.contains("modifier")) {
+          // reset label characters
+          labelChars = new StringBuilder();
+        }
+
         // Encountered </Reference>, create info for later relationship creation
         if (qName.equalsIgnoreCase("reference")) {
           // relationships for this concept will be added at endDocument(),
@@ -797,12 +803,14 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           String parentCode = null;
           String id = null;
           String type = null;
+          String label = null;
 
           // handle reference case
           if (tokens.length == 4) {
             parentCode = tokens[0];
             type = tokens[2];
             id = tokens[1];
+            label = tokens[3];
             if (relDisambiguation.containsKey(id)) {
               int ct = relDisambiguation.get(id);
               ct++;
@@ -864,6 +872,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               relationship.setTypeId(new Long(conceptMap.get(type)
                   .getTerminologyId()));
               relationship.setRelationshipGroup(new Integer(0));
+              relationship.setLabel(label);
               Set<Relationship> rels = new HashSet<>();
               if (childConcept.getRelationships() != null)
                 rels = childConcept.getRelationships();
@@ -1312,10 +1321,11 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           && !parentCodeHasChildrenMap.containsKey(cmpCode))
         return true;
 
+      /** Based on NIN feedback - don't have 5th digits in these cases
       // Override excludes for the code list above for S20V01T_5
       if (overrideCodes.contains(cmpCode) && modifier.equals("S20V01T_5"))
         return true;
-
+      **/
       return false;
     }
 
