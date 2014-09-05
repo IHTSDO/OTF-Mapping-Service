@@ -27,7 +27,6 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-// TODO: Auto-generated Javadoc
 /**
  * Services for interacting with mapping objects.
  */
@@ -396,6 +395,7 @@ public interface MappingService {
 	 *            the terminology version
 	 * @param threshold
 	 *            the threshold
+	 * @param pfsParameter 
 	 * @return the unmapped descendants for concept
 	 * @throws Exception
 	 *             the exception
@@ -463,6 +463,7 @@ public interface MappingService {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param pfsParameter 
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
@@ -475,6 +476,7 @@ public interface MappingService {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param pfsParameter 
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
@@ -487,6 +489,7 @@ public interface MappingService {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param pfsParameter 
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
@@ -499,6 +502,7 @@ public interface MappingService {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param pfsParameter 
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
@@ -736,6 +740,7 @@ public interface MappingService {
 	 */
 	public void removeMapUserPreferences(Long mapUserPreferencesId) throws Exception;
 
+
 	/**
 	 * Given a list of tree positions and a map project id, sets the valid codes
 	 * for each node.
@@ -804,6 +809,18 @@ public interface MappingService {
 	 */
 	public MapRecordList getPublishedAndReadyForPublicationMapRecordsForMapProject(
 			Long mapProjectId, PfsParameter pfsParameter) throws Exception;
+	
+	/**
+	 * Gets the published map records for map project.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param pfsParameter the pfs parameter
+	 * @return the published map records for map project
+	 * @throws Exception 
+	 */
+	public MapRecordList getPublishedMapRecordsForMapProject(
+			Long mapProjectId, PfsParameter pfsParameter) throws Exception;
+
 
 	/**
 	 * Returns the map user role.
@@ -815,4 +832,31 @@ public interface MappingService {
 	 */
 	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception;
 
+
+
+	/**
+	 * Check map groups for map project.
+	 *
+	 * @param mapProject the map project
+	 * @param updateRecords whether to update records or simply check for map group errors
+	 * @throws Exception the exception
+	 */
+	public void checkMapGroupsForMapProject(MapProject mapProject,
+			boolean updateRecords) throws Exception;
+
+	/**
+	 * Creates the map records for map project.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param complexMapRefSetMembers the complex map ref set members
+	 * @param workflowStatus the workflow status
+	 * @param samplingRate the sampling rate
+	 * @throws Exception the exception
+	 */
+	void createMapRecordsForMapProject(Long mapProjectId,
+			List<ComplexMapRefSetMember> complexMapRefSetMembers,
+			WorkflowStatus workflowStatus, float samplingRate) throws Exception;
+
+
+	
 }

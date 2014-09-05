@@ -9,6 +9,29 @@ a {
 	cursor:pointer;
 }
 
+.term-browser-icon {
+	min-width: 15px;	
+}
+
+.term-browser-icon-disabled {
+	min-width: 15px;
+	color: #D3D3D3;
+	cursor: default;
+}
+
+
+
+
+.odd {
+  background-color: #FFFDF5;
+}
+.even {
+  background-color: #F3F7F2;
+}
+
+
+
+
 html,body {
 	margin: 0; /* Remove body margin/padding */
 	padding: 0;
@@ -33,6 +56,12 @@ p {
 
 .panel-body {
 	padding: 7px;
+}
+
+.panel-group .panel {
+  margin-bottom: 0;
+/*   overflow: hidden; */
+  border-radius: 4px;
 }
 
 /** alert button formatting from bootstrap.css -- want to make them thinner */

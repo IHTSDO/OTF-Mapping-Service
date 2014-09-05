@@ -508,6 +508,20 @@ public interface MapProject {
 	public void setProjectSpecificAlgorithmHandlerClass(
 			String projectSpecificAlgorithmHandlerClass);
 
+	/**
+	 * Gets the workflow type.
+	 *
+	 * @return the workflow type
+	 */
+	public String getWorkflowType();
+
+	/**
+	 * Sets the workflow type.
+	 *
+	 * @param workflowType the new workflow type
+	 */
+	public void setWorkflowType(String workflowType);
+
 
 
 }

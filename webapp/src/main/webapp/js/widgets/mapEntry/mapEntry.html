@@ -15,21 +15,22 @@
 
     <tr>
       <td style="vertical-align: top; padding: 5px;"><strong>Id</strong></td>
-      <td style="vertical-align: top; padding: 5px;"><span
-        ng-show="entry.targetId != null && entry.targetId != ''">{{project.destinationTerminology}},
-          {{entry.targetId}} &nbsp;
-          <button ng-click="clearTargetConcept(entry)">Clear</button>
-      </span> <span style="color:lightgray;"
-        ng-show="entry.targetId == null || entry.targetId === '' || entry.targetId == undefined">No
-          Target Selected</span></td>
+      
+      
+		
+      <td style="padding: 5px;">
+      {{project.destinationTerminology}}, <input style="width:125px;" id="targetIdField" placeholder="No Target Selected" ng-blur="getValidTarget(entry.targetId)" ng-model="entry.targetId" />
+          <button ng-click="clearTargetConcept(entry)">Clear</button><br>
+          <span style="color:red" ng-show="getValidTargetError != null">{{getValidTargetError}}</span>
+      </span>
     </tr>
     <tr ng-show="entry.targetId != null && entry.targetId != ''">
       <td style="vertical-align: top; padding: 5px; width: 50px; white-space:nowrap;"><strong>Preferred Term</strong></td>       
       <td style="vertical-align: top; padding: 5px;">{{entry.targetName}}</td>
     </tr>
-    <tr ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined) && entry.mapRelation != null">
+    <tr ng-show="allowableMapRelations.length > 0 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
       <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Reason</strong></td> 
-      <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.name}}</td> 
+      <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.name}} <span style="color:lightgray;" ng-show="entry.mapRelation == null">No reason for null target selected.</span></td> 
     </tr>
     <tr ng-show="allowableMapRelations.length > 1 && (entry.targetId == null || entry.targetId === '' || entry.targetId == undefined)">
       <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Select</strong></td>
@@ -61,27 +62,17 @@
       </td>
     </tr>
 
-    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
-    <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'"> -->
-      <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation
-          Id</strong></td>
-      <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.terminologyId}}
-        <span ng-show="entry.mapRelation != null"><button
-            ng-click="clearMapRelation(entry)">Clear</button>
-      </td>
-    </tr>
 
-    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
-    <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE'"> -->
+    <tr ng-show="project.ruleBased == false"">
       <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation
           Name</strong></td>
       <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.name}}</td>
 
     </tr>
 
-    <tr ng-show="allowableMapRelations.length > 0 && entry.targetId != null && entry.targetId != ''">
+    <tr ng-show="project.ruleBased == false && allowableMapRelations.length > 0">
     <!-- <tr ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length > 0">
-     -->  <td style="vertical-align: top; padding: 5px; width: 50px;">Select</td>
+     -->  <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Select</strong></td>
       <td style="vertical-align: top; padding: 5px;"><select
         style="width: 60%" ng-model="mapRelationInput"
         ng-change="selectMapRelation(mapRelationInput)"
@@ -90,16 +81,8 @@
 
     </tr>
 
-   <!--  <tr
-      ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length == 0">
-      <td style="vertical-align: top; padding: 5px;"></td>
-      <td style="vertical-align: top; padding: 5px;">No map relations are
-        available for this target.</td>
-    </tr> -->
-
     <tr ng-show="allowableAdvices.length > 0">
-    <!-- <tr ng-show="project.mapRelationStyle != 'RELATIONSHIP_STYLE'">
-     -->  <td ng-show="entry.targetId != null && entry.targetId != ''"
+	  <td ng-show="entry.targetId != null && entry.targetId != ''"
           style="vertical-align: top; padding: 5px;"><strong>Advice</strong></td>
       <td ng-show="entry.targetId != null && entry.targetId != ''"
           style="vertical-align: top; padding: 5px;">
@@ -119,7 +102,7 @@
         </div> <span style="color: red">{{errorAddAdvice}}</span>
         <form ng-show="entry.targetId != null && entry.targetId != ''">
           Add Advice: <select style="width: 60%;"
-            ng-change="addEntryAdvice(entry, adviceInput)"
+            ng-change="addEntryAdvice(entry, adviceInput);adviceInput=null;"
             ng-model="adviceInput"
             ng-options="advice as advice.detail for advice in allowableAdvices"></select>
         </form>
@@ -127,10 +110,3 @@
     </tr>
   </table>
   </accordion-group> </accordion>
-
-  <button class="btn btn-sm btn-primary" ng-click="saveEntry()">Save
-    Map Entry</button>
-  <button class="btn btn-sm btn-warning" ng-click="cancelEntry()">Cancel
-    Changes</button>
-  <button class="btn btn-sm btn-danger" ng-click="deleteEntry()">Delete
-    Map Entry</button>

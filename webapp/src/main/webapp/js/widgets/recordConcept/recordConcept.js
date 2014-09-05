@@ -23,10 +23,9 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 	$scope.recordsInProject = [];
 	$scope.recordsNotInProject = [];
 	$scope.recordsInProjectNotFound = false; // set to true after record retrieval returns no records for focus project
-
-
-	// local variables
-	var projects = localStorageService.get("mapProjects");
+	
+	$scope.focusProject = null;
+	$scope.mapProjects = null;
 
 	// retrieve cached values
 	$scope.focusProject = localStorageService.get("focusProject");
@@ -44,11 +43,12 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 
 	// once focus project retrieved, retrieve the concept and records
 	$scope.userToken = localStorageService.get('userToken');
-	$scope.$watch(['focusProject', 'userToken'], function() {
+	$scope.$watch(['focusProject', 'userToken', 'mapProjects'], function() {
 		
 		// need both focus project and user token set before executing main functions
-		if ($scope.focusProject != null &&	$scope.userToken != null ) {
+		if ($scope.focusProject != null &&	$scope.userToken != null && $scope.mapProjects != null) {
 			$http.defaults.headers.common.Authorization = $scope.userToken;
+			console.debug($scope.mapProjects);
 			$scope.go();
 		}
 	});
@@ -58,27 +58,6 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		$scope.recordsInProjectNotFound = false;
 
 		console.debug("RecordConceptCtrl:  Focus Project change");
-		
-		// retrieve projects information to ensure display handled properly
-		$http({
-			url: root_mapping + "project/projects",
-			dataType: "json",
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json"
-			}	
-		}).success(function(data) {
-			projects = data.mapProject;
-
-		}).error(function(data, status, headers, config) {
-		    $rootScope.handleHttpError(data, status, headers, config);
-
-		}).then(function() {
-
-			// get all records for this concept
-			$scope.getRecordsForConcept();
-		});
-
 		
 		// find concept based on source terminology
 		$http({
@@ -95,6 +74,7 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 			$scope.concept = data;
 			setTitle($scope.focusProject.sourceTerminology, $routeParams.conceptId, 
 					$scope.concept.defaultPreferredName);
+			$scope.getRecordsForConcept();
 			$scope.findUnmappedDescendants();
 
 			// find children based on source terminology
@@ -182,13 +162,6 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 			}
 		}
 		
-		// for records in project, check if this user can edit these records
-		console.debug($scope.recordsInProject);
-		for (var i = 0; i < $scope.recordsInProject.length; i++) {
-
-			setEditable($scope.recordsInProject[i]);
-		}
- 
 		// if no records for this project found, set flag
 		if ($scope.recordsInProject.length == 0) {
 			$scope.recordsInProjectNotFound = true;
@@ -197,83 +170,110 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		}
 	};
 	
-	function setEditable(record) {
-		
-		$http({
-			url: root_workflow + "checkRecordEditable/user/id/" + $scope.currentUser.userName,
-			method: "POST",
-			dataType: 'json',
-			data: record,
-			headers: {
-				"Content-Type": "application/json"
-			}	
-		}).success(function(response) {
-			record.isEditable = response;
-		}).error(function(data, status, headers, config) {
-		    $rootScope.handleHttpError(data, status, headers, config);
-		});
+	
+	$scope.isEditable = function(record) {
+
+		if (($scope.currentRole === 'Specialist' ||
+				$scope.currentRole === 'Lead' ||
+				$scope.currentRole === 'Administrator') &&
+				(record.workflowStatus === 'PUBLISHED' || record.workflowStatus === 'READY_FOR_PUBLICATION')) {
+
+			return true;
+
+		} else if ($scope.currentUser.userName === record.owner.userName) {
+			return true;
+		} else return false;
 	};
 	
 	$scope.editRecord = function(record) {
+		
+		console.debug("EditRecord()");
+		console.debug(record);
+		
+		// check if this record is assigned to the user and not in a publication ready state
+		if (record.owner.userName === $scope.currentUser.userName
+				&& record.workflowStatus != 'PUBLISHED' && record.workflowStatus != 'READY_FOR_PUBLICATION') {
+			
+			// if a conflict or review record record, go to conflict resolution page
+			if (record.workflowStatus === 'CONFLICT_NEW' || record.workflowStatus === 'CONFLICT_IN_PROGRESS') {
+				$location.path("/record/conflicts/" + record.id);
+			}
+			
+			else if (record.workflowStatus === 'REVIEW_NEW' || record.workflowStatus === 'REVIEW_IN_PROGRESS') {
+				$location.path("/record/review/" + record.id);
+			}
+			
+			// otherwise go to the edit page
+			else $location.path("/record/recordId/" + record.id);
+		
+		// otherwise, assign this record along the FIX_ERROR_PATH
+		} else {
 
-		// assign the record along the FIX_ERROR_PATH
-		$rootScope.glassPane++;
-
-		console.debug("Edit record clicked, assigning record if necessary");
-		$http({
-			url: root_workflow + "assignFromRecord/user/id/" + $scope.currentUser.userName,
-			 method: "POST",
-			 dataType: 'json',
-			 data: record,
-			 headers: {
-				 "Content-Type": "application/json"
-			 }		
-		}).success(function(data) {
-			console.debug('Assignment successful');
+			// assign the record along the FIX_ERROR_PATH
+			$rootScope.glassPane++;
+			
+			// remove advices if this is a RELATIONSHIP_STYLE project (these are used to render relation names)
+			if ($scope.focusProject.mapRelationStyle === "RELATIONSHIP_STYLE") {
+				for (var i = 0; i < record.mapEntry.length; i++) 
+					record.mapEntry[i].mapAdvice = [];
+			}
+	
+			console.debug("Edit record clicked, assigning record if necessary");
 			$http({
-				url: root_workflow + "record/project/id/" + $scope.focusProject.id +
-				"/concept/id/" + record.conceptId +
-				"/user/id/" + $scope.currentUser.userName,
-				 method: "GET",
+				url: root_workflow + "assignFromRecord/user/id/" + $scope.currentUser.userName,
+				 method: "POST",
 				 dataType: 'json',
 				 data: record,
 				 headers: {
 					 "Content-Type": "application/json"
-				 }
+				 }		
 			}).success(function(data) {
-				console.debug(data);
-				$rootScope.glassPane--;
+				console.debug('Assignment successful');
+				$http({
+					url: root_workflow + "record/project/id/" + $scope.focusProject.id +
+					"/concept/id/" + record.conceptId +
+					"/user/id/" + $scope.currentUser.userName,
+					 method: "GET",
+					 dataType: 'json',
+					 data: record,
+					 headers: {
+						 "Content-Type": "application/json"
+					 }
+				}).success(function(data) {
+					console.debug(data);
+					$rootScope.glassPane--;
+					
+					// open the record edit view
+					$location.path("/record/recordId/" + data.id);
+				}).error(function(data, status, headers, config) {
+				    $rootScope.glassPane--;
+	
+				    $rootScope.handleHttpError(data, status, headers, config);
+				});
+	
 				
-				// open the record edit view
-				$location.path("/record/recordId/" + data.id);
 			}).error(function(data, status, headers, config) {
 			    $rootScope.glassPane--;
-
+	
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
-
-			
-		}).error(function(data, status, headers, config) {
-		    $rootScope.glassPane--;
-
-		    $rootScope.handleHttpError(data, status, headers, config);
-		});
+		}
 	};
 	
 
 	$scope.getProject = function(record) {
-		for (var i = 0; i < projects.length; i++) {
-			if (projects[i].id == record.mapProjectId) {
-				return projects[i];
+		for (var i = 0; i < $scope.mapProjects.length; i++) {
+			if ($scope.mapProjects[i].id == record.mapProjectId) {
+				return $scope.mapProjects[i];
 			}
 		}
 		return null;
 	};
 
 	$scope.getProjectFromName = function(name) {
-		for (var i = 0; i < projects.length; i++) {
-			if (projects[i].name === name) {
-				return projects[i];
+		for (var i = 0; i < $scope.mapProjects.length; i++) {
+			if ($scope.mapProjects[i].name === name) {
+				return $scope.mapProjects[i];
 			}
 		}
 		return null;
@@ -281,9 +281,9 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 
 	$scope.getProjectName = function(record) {
 
-		for (var i = 0; i < projects.length; i++) {
-			if (projects[i].id == record.mapProjectId) {
-				return projects[i].name;
+		for (var i = 0; i < $scope.mapProjects.length; i++) {
+			if ($scope.mapProjects[i].id == record.mapProjectId) {
+				return $scope.mapProjects[i].name;
 			}
 		}
 		return null;
@@ -341,9 +341,13 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 					// get the object for easy handling
 					var jsonObj = $scope.records[i].mapEntry[j].mapAdvice;
 
-					// add the serialized advice	
-					jsonObj.push({"id":"0", "name": "\"" + $scope.records[i].mapEntry[j].mapRelationName + "\"", "detail":"\"" + $scope.records[i].mapEntry[j].mapRelationName + "\"", "objectId":"0"});
+					console.debug("Relation", $scope.records[i].mapEntry[j].mapRelation);
+					
+					var relationAsAdvice = {"id":"0", "name":  $scope.records[i].mapEntry[j].mapRelation.abbreviation , "detail": $scope.records[i].mapEntry[j].mapRelation.name, "objectId":"0"};
 
+					console.debug(relationAsAdvice);
+					// add the serialized advice	
+					jsonObj.push(relationAsAdvice);
 					$scope.records[i].mapEntry[j].mapAdvice = jsonObj;
 				}
 			}

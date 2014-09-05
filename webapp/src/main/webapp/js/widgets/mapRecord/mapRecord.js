@@ -14,7 +14,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	});
 })
 
-.controller('mapRecordWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $location, $sce, localStorageService){
+.controller('mapRecordWidgetCtrl', function($scope, $rootScope, $http, $routeParams, $location, $sce, $modal, $window, localStorageService){
 
 	/////////////////////////////////////
 	// Map Record Controller Functions //
@@ -31,15 +31,17 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.entries =    null;
 	$scope.user = 		localStorageService.get('currentUser');
 	$scope.role = 		localStorageService.get('currentRole');
+	$scope.conversation = null;
+	$scope.mapLeads = $scope.project.mapLead;
+	organizeUsers($scope.mapLeads);
+	
+	$scope.returnRecipients = new Array();
+	$scope.multiSelectSettings = {displayProp: 'name', scrollableHeight: '50px',
+		    scrollable: true, showCheckAll: false, showUncheckAll: false};
+	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Leads'};
 	
 	// validation result storage variable
 	$scope.savedValidationWarnings = [];
-	
-	// record change stack
-	$scope.recordStack = [];					// the stack of modified records
-	$scope.recordStackPosition = -1; 			// will be incremented to 0 upon initialization
-	$scope.recordStackInUse = false;			// flag for whether record change is due to user action
-	$scope.recordInitializationComplete = false;// flag for whether initialization complete
 
 	// initialize accordion variables
 	$scope.isConceptOpen = true;
@@ -47,7 +49,15 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.isPrinciplesOpen = false;
 	$scope.isNotesOpen = false;
 	$scope.isFlagsOpen = false;
+	$scope.groupOpen = new Array(10);
+	for (var i = 0; i < $scope.groupOpen.length; i++) 
+		$scope.groupOpen[i] = true;
 
+	// start note edit mode in off mode
+	$scope.noteEditMode = false;
+	$scope.noteEditId = null;
+	$scope.noteInput = '';
+	
 	// accordion functions
 	$scope.openAll = function() {
 		$scope.isConceptOpen = true;
@@ -55,6 +65,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		$scope.isPrinciplesOpen = true;
 		$scope.isNotesOpen = true;
 		$scope.isFlagsOpen = true;
+		for (var i = 0; i < $scope.groupOpen.length; i++) 
+			$scope.groupOpen[i] = true;
 	};
 
 	$scope.closeAll = function() {
@@ -72,6 +84,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
         console.debug(parameters.record);
         $scope.record = parameters.record;
         
+        console.debug("Passed record: ", parameters.record);
+        
         //get the groups
         if ($scope.project.groupStructure == true)
                getGroups();
@@ -86,61 +100,25 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	// on successful retrieval of project, get the record/concept
 	$scope.$watch(['project', 'userToken'], function() {
 		if ($scope.project != null && $scope.userToken != null) {
-	
 			$http.defaults.headers.common.Authorization = $scope.userToken;
 			retrieveRecord();
 		}
 	});
 	
-	// watch the record for saving local revision history
+	// any time the record changes, broadcast it to the record summary widget
 	$scope.$watch('record', function() {
 		
-		// if initializing, do nothing
-		if ($scope.recordInitializationComplete == true) {
+		broadcastRecord();
 		
-			// if the record has changed but the in use flag is false, add the new revision and update the position
-			if ($scope.recordStackInUse == false) {
-				
-				// if not the last entry, discard any future revisions (i.e. record has changed from this saved state)
-				if ($scope.recordStackPosition != $scope.recordStack.length && $scope.recordStack != 0) {
-					$scope.recordStack = $scope.recordStack.slice(0, $scope.recordStackPosition + 1);
-				}
-				
-				// push the record onto the stack
-				$scope.recordStack.push($scope.record);
-				$scope.recordStackPosition++;
-				
-				console.debug('recordStack:  New version: ' + $scope.recordStackPosition);
-			// otherwise, do nothing, and set the in use flag to false
-			} else {
-				console.debug('recordStack:  New version, but stack in use');
-				
-				$scope.recordStackInUse = true;
-			}
-		} else {
-			console.debug('recordStack:  Change detected, due to initialization');
-		}
 	});
-	
-	// UNDO function: if not at the beginning of the stack, change the record to previous version
-	$scope.undoMapRecordChange = function() {
-		if ($scope.recordStackPosition > 0) {
-			$scope.recordStackInUse = true;
-			$scope.record = $scope.recordStack[$scope.recordStackPosition - 1];
-			$scope.entries = $scope.record.localEntries;
-			$scope.recordStackPosition--;
-		}
-	};
-	
-	// REDO function: if at the beginning of the stack, change record to next version
-	$scope.redoMapRecordChange = function() {
-		if ($scope.recordStackPosition < $scope.recordStack.length) {
-			$scope.recordStackInUse = true;
-			$scope.record = $scope.recordStack[$scope.recordStackPosition + 1];
-			$scope.entries = $scope.record.localEntries;
-			$scope.recordStackPosition++;
-		}
-	};
+
+	function broadcastRecord() {
+		console.debug("Broadcasting record", $scope.getFormattedRecord($scope.record));
+		$rootScope.$broadcast('mapRecordWidget.notification.recordChanged',
+				{record: angular.copy($scope.getFormattedRecord($scope.record)), project:$scope.project
+			
+				});  
+	}
 
 	// initialize local variables
 	var currentLocalId = 1;   // used for addition of new entries without hibernate id
@@ -185,10 +163,18 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			// initialize the entries
 			initializeEntries();
 			
-			// assign the local entries to the map record, triggers recordStack
-			console.debug("recordStack: Assigning local entries");
-			$scope.record.localEntries = $scope.entries;
-	
+			//add code to get feedback conversations
+			$http({
+				url: root_workflow + "conversation/id/" + $scope.record.id,
+				dataType: "json",
+				method: "GET",
+				headers: { "Content-Type": "application/json"}	
+			}).success(function(data) {
+				$scope.conversation = data;
+				initializeReturnRecipients();
+			}).error(function(data, status, headers, config) {
+			    $rootScope.handleHttpError(data, status, headers, config);  
+			});		
 		});
 	};
 
@@ -205,8 +191,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		console.debug("Initializing map entries -- " + $scope.record.mapEntry.length + " found");
 		console.debug($scope.record.mapEntry);
 		
-		$scope.recordInitializationComplete = false;
-		
+		$scope.entries = new Array();
+
 		// find the maximum hibernate id value
 		for (var i = 0; i < $scope.record.mapEntry.length; i++) {
 			currentLocalId = Math.max($scope.record.mapEntry[i].id, currentLocalId);
@@ -217,21 +203,39 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$scope.record.mapEntry[i].ruleSummary = 
 				$scope.getRuleSummary($scope.record.mapEntry[i]);
 			
-			// assign the entry localId to the hibernate Id
-			$scope.record.mapEntry[i].localId = 	$scope.record.mapEntry[i].id;
+			// if the hibernate id is defined, set the local id to that value
+			if ($scope.record.mapEntry[i].id != null) {
+				console.debug("Setting local id to existing hibernate id", $scope.record.mapEntry[i].id);
+				$scope.record.mapEntry[i].localId = $scope.record.mapEntry[i].id;
+			} else {
+				console.debug("Setting local id to " + currentLocalId);
+				$scope.record.mapEntry[i].localId = currentLocalId++;
+			}
 		}
 
+		console.debug("Local ids set: ", $scope.record);
 		// if no group structure, simply copy and sort
 		if ($scope.project.groupStructure == false) {
-			$scope.entries = sortByKey($scope.record.mapEntry, 'mapPriority');
+			$scope.push(sortByKey($scope.record.mapEntry, 'mapPriority'));
 
 			// otherwise, initialize group arrays
 		} else {
 
-			// initialize entry arrays for distribution by group
-			$scope.entries = new Array(10);
-
-			for (var i=0; i < $scope.entries.length; i++) $scope.entries[i] = new Array();
+			console.debug("Initializing entries");
+			
+			// get the total number of groups
+			var maxGroup = 1;  // default
+			for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+				if ($scope.record.mapEntry[i].mapGroup > maxGroup) 
+					maxGroup = $scope.record.mapEntry[i].mapGroup;
+			}
+			
+			// initialize the group/entry array
+			$scope.entries = new Array(maxGroup);
+			for (var i = 0; i <= maxGroup; i++)
+				$scope.entries[i] = new Array();
+			
+			console.debug("Existing entries: ");
 
 			// cycle over the entries and assign to group bins
 			for (var i=0; i < $scope.record.mapEntry.length; i++) {
@@ -243,17 +247,23 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				$scope.entries[i] = sortByKey($scope.entries[i], 'mapPriority');
 			}
 		}
+		
+		console.debug("Checking for empty record, current entries = ", $scope.entries);
 
 		// if no entries on this record, assume new and create an entry
 		if ($scope.record.mapEntry.length == 0) {
-			$scope.addMapEntry(1);
+			console.debug("Adding map entry to blank group", $scope.entries[i]);
+			$scope.addMapEntry($scope.entries[1]);
 			
 		// otherwise, select the first entry
 		} else {
 			$scope.selectMapEntry($scope.record.mapEntry[0]);
 		}
 		
-		$scope.recordInitializationComplete = true;
+		console.debug("Completed initializing entries, new entries", $scope.entries);
+		
+		
+
 	}
 
 	/**
@@ -262,8 +272,13 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 	$scope.finishMapRecord = function(returnBack) {
 		
-		console.debug("finishMapRecord called with " + returnBack);
-
+		// check that note box does not contain unsaved material
+		if ($scope.tinymceContent != '' && $scope.tinymceContent != null) {
+			if(confirm("You have unsaved text into the Map Notes. Do you wish to continue saving? The note will be lost.") == false) {
+				return;
+			};
+		}
+	
 		///////////////////////////
 		// Group and MapPriority //
 		///////////////////////////
@@ -299,7 +314,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				}
 			}
 
-			console.debug("modified:");
+			console.debug("finish modified:");
 			console.debug(entries);
 
 			$scope.record.mapEntry = entries;
@@ -307,7 +322,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 		}
 
-		console.debug("Validating the map record");
+		console.debug("Validating the map record.");
 		// validate the record
 		$http({
 			url: root_mapping + "validation/record/validate",
@@ -369,7 +384,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 							"Content-Type": "application/json"
 						}
 					}).success(function(data) {
-						$scope.record = data;
 						$scope.recordSuccess = "Record saved.";
 						$scope.recordError = "";
 						
@@ -379,47 +393,143 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						if (!returnBack) {
 							console.debug("************* ReturnBack is false");
 
-							// construct a paging/filtering/sorting object
-							var pfsParameterObj = 
-							{"startIndex": 0,
-									"maxResults": 1, 
-									"sortField": 'sortKey',
-									"queryRestriction": null};  
-
 							$rootScope.glassPane++;
-
-							// get the assigned work list
-							$http({
-								url: root_workflow + "project/id/" + $scope.project.id 
-								+ "/user/id/" + $scope.user.userName
-								+ "/query/null/assignedConcepts",
+							
+							// if specialist level work, query for assigned concepts
+							if ($scope.record.workflowStatus === 'NEW' 
+								|| $scope.record.workflowStatus === 'EDITING_IN_PROGRESS' 
+								|| $scope.record.workflowStatus === 'EDITING_DONE') {
 								
-								dataType: "json",
-								data: pfsParameterObj,
-								method: "POST",
-								headers: {
-									"Content-Type": "application/json"
-								}
-							}).success(function(data) {
+								// construct a paging/filtering/sorting object
+								var pfsParameterObj = 
+								{"startIndex": 0,
+										"maxResults": 1, 
+										"sortField": 'sortKey',
+										"queryRestriction": 'NEW'};  
+
+								// get the assigned work list
+								$http({
+									url: root_workflow + "project/id/" + $scope.project.id 
+									+ "/user/id/" + $scope.user.userName
+									+ "/query/null/assignedConcepts",
+									
+									dataType: "json",
+									data: pfsParameterObj,
+									method: "POST",
+									headers: {
+										"Content-Type": "application/json"
+									}
+								}).success(function(data) {
+									$rootScope.glassPane--;
+	
+									var assignedWork = data.searchResult;
+									
+									// if there is no more assigned work, return to dashboard
+									if (assignedWork.length == 0) {
+										console.debug("No more assigned work, return to dashboard");
+										$location.path($scope.role + "/dash");
+									
+									// otherwise redirect to the next record to be edited
+									} else {
+										console.debug("More work, redirecting");
+										$location.path("record/recordId/" + assignedWork[0].id);
+									}
+	
+								}).error(function(data, status, headers, config) {
+								    $rootScope.glassPane--;
+								    $rootScope.handleHttpError(data, status, headers, config);
+								});
+								
+							// otherwise, if a conflict record, query available conflicts
+							} else if ($scope.record.workflowStatus === 'CONFLICT_NEW' || $scope.record.workflowStatus === 'CONFLICT_IN_PROGRESS') {
+								
+								// construct a paging/filtering/sorting object
+								var pfsParameterObj = 
+								{"startIndex": 0,
+										"maxResults": 1, 
+										"sortField": 'sortKey',
+										"queryRestriction": 'CONFLICT_NEW'};  
+								
+								// get the assigned conflicts
+								$http({
+									url: root_workflow + "project/id/" + $scope.project.id 
+									+ "/user/id/" + $scope.user.userName
+									+ "/query/null/assignedConflicts",
+									
+									dataType: "json",
+									data: pfsParameterObj,
+									method: "POST",
+									headers: {
+										"Content-Type": "application/json"
+									}
+								}).success(function(data) {
+									$rootScope.glassPane--;
+	
+									var assignedWork = data.searchResult;
+									
+									// if there is no more assigned work, return to dashboard
+									if (assignedWork.length == 0) {
+										console.debug("No more assigned conflicts, return to dashboard");
+										$location.path($scope.role + "/dash");
+									
+									// otherwise redirect to the next record to be edited
+									} else {
+										console.debug("More work, redirecting");
+										$location.path("record/conflicts/" + assignedWork[0].id);
+									}
+	
+								}).error(function(data, status, headers, config) {
+								    $rootScope.glassPane--;
+								    $rootScope.handleHttpError(data, status, headers, config);
+								});
+								
+							// otherwise, if a review record, query available review work
+							} else if ($scope.record.workflowStatus === 'REVIEW_NEW' || $scope.record.workflowStatus === 'REVIEW_IN_PROGRESS') {
+								
+								// construct a paging/filtering/sorting object
+								var pfsParameterObj = 
+								{"startIndex": 0,
+										"maxResults": 1, 
+										"sortField": 'sortKey',
+										"queryRestriction": 'REVIEW_NEW'}
+								;  
+								// get the assigned review work
+								$http({
+									url: root_workflow + "project/id/" + $scope.project.id 
+									+ "/user/id/" + $scope.user.userName
+									+ "/query/null/assignedReviewWork",
+									
+									dataType: "json",
+									data: pfsParameterObj,
+									method: "POST",
+									headers: {
+										"Content-Type": "application/json"
+									}
+								}).success(function(data) {
+									$rootScope.glassPane--;
+	
+									var assignedWork = data.searchResult;
+									
+									// if there is no more assigned work, return to dashboard
+									if (assignedWork.length == 0) {
+										console.debug("No more assigned review work, return to dashboard");
+										$location.path($scope.role + "/dash");
+									
+									// otherwise redirect to the next record to be edited
+									} else {
+										console.debug("More work, redirecting");
+										$location.path("record/review/" + assignedWork[0].id);
+									}
+	
+								}).error(function(data, status, headers, config) {
+								    $rootScope.glassPane--;
+								    $rootScope.handleHttpError(data, status, headers, config);
+								});
+							} else {
 								$rootScope.glassPane--;
-
-								var assignedWork = data.searchResult;
-								
-								// if there is no more assigned work, return to dashboard
-								if (assignedWork.length == 0) {
-									console.debug("No more assigned work, return to dashboard");
-									$location.path($scope.role + "/dash");
-								
-								// otherwise redirect to the next record to be edited
-								} else {
-									console.debug("More work, redirecting");
-									$location.path("record/recordId/" + assignedWork[0].id);
-								}
-
-							}).error(function(data, status, headers, config) {
-							    $rootScope.glassPane--;
-							    $rootScope.handleHttpError(data, status, headers, config);
-							});
+								console.debug("MapRecord finish/next can't determine type of work, returning to dashboard");
+								$location.path($scope.role + "/dash");
+							}
 
 						} else {
 							console.debug("Simple finish called, return to dashboard");
@@ -445,9 +555,37 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		});
 	};
+	
+	$scope.clearMapRecord = function() {
+		$scope.groups = new Array();
+		$scope.entries = new Array(10);
+		for (var i = 0; i < $scope.entries.length; i++) $scope.entries[i] = new Array();
+		$scope.record.mapPrinciple = [];
+		$scope.record.mapNote = [];
+		$scope.record.flagForLeadReview = false;
+		$scope.record.flagForConsensus = false;
+		$scope.record.flagForEditorialReview = false;
+		
+		$scope.addMapGroup(); // automatically adds entry as well
+		
+		window.scrollTo(0,0);
+		
+		broadcastRecord();
+	};
 
-	$scope.saveMapRecord = function() {
+	$scope.saveMapRecord = function(returnBack) {
 
+		console.debug("saveMapRecord called with " + returnBack);
+		console.debug("Note content: ", $scope.tinymceContent);
+		
+		// check that note box does not contain unsaved material
+		if ($scope.tinymceContent != '' && $scope.tinymceContent != null) {
+			if(confirm("You have unsaved text into the Map Notes. Do you wish to continue saving? The note will be lost.") == false) {
+				return;
+			};
+		}
+
+		
 		///////////////////////////
 		// Group and MapPriority //
 		///////////////////////////
@@ -482,16 +620,19 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				};
 			};
 
-			console.debug("modified:");
+			console.debug("save modified:");
 			console.debug(entries);
 
 			$scope.record.mapEntry = entries;
 		};
-
-
+		
 		// assign the current user to the lastModifiedBy field
 		$scope.record.lastModifiedBy = $scope.user;
 
+		// if only displaying record again, don't make rest call
+		if ($rootScope.currentPageDirty == false && !returnBack)
+			return;
+		
 		$http({
 			url: root_workflow + "save",
 			dataType: "json",
@@ -505,10 +646,12 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			// user has successfully saved record, page is no longer "dirty"
 			$rootScope.currentPageDirty = false;
 			
-			$scope.record = data;
+			//$scope.record = data;
 			$scope.recordSuccess = "Record saved.";
 			$scope.recordError = "";
-			window.history.back(); 
+			if (returnBack) {
+			  window.history.back(); 
+			}
 		}).error(function(data, status, headers, config) {
 			$scope.recordError = "Error saving record.";
 			$rootScope.handleHttpError(data, status, headers, config);
@@ -521,6 +664,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	// discard changes
 	$scope.cancelMapRecord = function() {
 
+		$rootScope.glassPane++;
 		$http({
 			url: root_workflow + "cancel",
 			dataType: "json",
@@ -533,12 +677,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 			// user has requested a cancel event, page is no longer "dirty"
 			$rootScope.currentPageDirty = false;
-			
-			
-			console.debug("Redirecting");
-			
+			$rootScope.glassPane--;
 			$location.path($scope.role + "/dash");
 		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 
@@ -572,6 +714,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 			$scope.principleInput = "";
 		};
+		
+		broadcastRecord();
 	};
 
 	$scope.removeRecordPrinciple = function(record, principle) {
@@ -579,8 +723,63 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		$scope.record = record;
 		
 		console.debug('Removed principle');
+		
+		broadcastRecord();
 	};
-
+	
+	$scope.tinymceOptions = {
+			
+			menubar : false,
+			statusbar : false,
+			plugins : "autolink autoresize link image charmap searchreplace lists paste",
+			toolbar : "undo redo | styleselect lists | bold italic underline strikethrough | charmap link image",
+			
+			setup : function(ed) {
+				
+				// added to fake two-way binding from the html element
+				// noteInput is not accessible from this javascript for some reason
+				ed.on('keyup', function(e) {
+	                  $scope.tinymceContent = ed.getContent();
+	                  $scope.$apply();
+	                });
+			}
+	    };
+	
+	$scope.editRecordNote = function(record, mapNote) {
+		$scope.noteInput = "HELLO HELLO";
+		$scope.noteEditMode = true;
+		$scope.noteEditId = mapNote.localId;
+	}
+	
+	$scope.cancelEditRecordNote = function() {
+		$scope.noteInput = '';
+		$scope.noteEditMode = false;
+		$scope.noteEditId = null;
+	}
+	
+	$scope.saveEditRecordNote = function(record, note) {
+		
+		if ($scope.noteEditMode == true) {
+			
+			var noteFound = false;
+			
+			// find the existing note
+			for (var i = 0; i < record.mapNote.length; i++) {
+				
+				// if this note, overwrite it
+				if ($scope.noteEditId = record.mapNote[i].localId) {
+					noteFound = true;
+					record.mapNote[i].note = note;
+				}
+			}
+			
+			if (noteFound = false) {
+				console.debug("ERROR: Could not find note to edit with id = " + $scope.noteEditId);
+			}
+		} else {
+			console.debug("Save Edit Record Note called when not in edit mode");
+		}
+	}
 	$scope.addRecordNote = function(record, note) {
 		// check if note non-empty
 		if (note === '' || note == null) {
@@ -599,10 +798,12 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			record['mapNote'].addElement(mapNote);
 			
 			// set the text area to null
-			$scope.noteInput = "";
+			$scope.tinymceContent = null;
 
 
 		}
+		
+		broadcastRecord();
 	};
 
 	$scope.removeRecordNote = function(record, note) {
@@ -610,12 +811,172 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		console.debug(note);
 		record['mapNote'].removeElement(note);
 		$scope.record = record;
+		broadcastRecord();
+		
+		// if in edit mode, cancel
+		if ($scope.noteEditMode == true) {
+			$scope.cancelEditRecordNote();
+		}
 	};
 	
-	$scope.editRecordNote = function(record, note) {
-		console.debug("Editing note", note);
-		$scope.noteInput = note.note;
+	/** 
+	 * FEEDBACK FUNCTIONS
+	 */
+	$scope.sendFeedback = function(record, feedbackMessage, recipientList) {
+		console.debug("Adding feedback", record);
+		
+		   if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
+			   window.alert("The feedback field cannot be blank. ");
+		   	   return;
+		   }
+
+		   
+			  var localFeedback = $scope.conversation.feedback;
+				
+				// copy recipient list
+				var localRecipients = recipientList.slice(0);
+				var newRecipients = new Array();
+				for (var i = 0; i < localRecipients.length; i++) {
+					for (var j = 0; j < $scope.project.mapLead.length; j++) {
+						if (localRecipients[i].id == $scope.project.mapLead[j].id)
+							newRecipients.push($scope.project.mapLead[j]);
+					}
+				}
+				
+		   // if the conversation hasn't yet been started
+		   if ($scope.conversation == null || $scope.conversation == "") {
+			 
+
+			   
+			// create first feedback item to go into the feedback conversation
+			var feedback = {
+						"message": feedbackMessage,
+						"mapError": "",
+						"timestamp": new Date(),
+						"sender": $scope.user,
+						"recipients": newRecipients,
+						"isError": "false",
+						"feedbackConversation": $scope.conversation,
+						"viewedBy": [$scope.user]
+					  };		
+			
+			var feedbacks = new Array();
+			feedbacks.push(feedback);
+			
+			
+			  // create feedback conversation
+			  var feedbackConversation = {
+					"lastModified":  new Date(),
+					"terminology": $scope.project.destinationTerminology,
+					"terminologyId": record.conceptId,
+					"terminologyVersion": $scope.project.destinationTerminologyVersion,
+					"isActive": "true",
+					"isDiscrepancyReview": "false",
+					"mapRecordId": record.id,
+					"feedback": feedbacks,
+					"defaultPreferredName": $scope.concept.defaultPreferredName,
+					"title": "Feedback"
+				  };
+			
+			  $http({						
+				url: root_workflow + "conversation/add",
+				dataType: "json",
+				data: feedbackConversation,
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			  }).success(function(data) {
+				console.debug("success to addFeedbackConversation.");
+				$scope.conversation = feedbackConversation;
+			  }).error(function(data, status, headers, config) {
+				$scope.recordError = "Error adding new feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			  });	
+			
+			
+		   } else { // already started a conversation
+			   
+			  
+			  // create feedback msg to be added to the conversation
+			  var feedback = {
+							"message": feedbackMessage,
+							"mapError": "",
+							"timestamp": new Date(),
+							"sender": $scope.user,
+							"recipients": newRecipients,
+							"isError": "false",
+							"viewedBy": [$scope.user]
+						  };
+			
+			  localFeedback.push(feedback);
+			  $scope.conversation.feedback = localFeedback;
+				
+			  $http({						
+				url: root_workflow + "conversation/update",
+				dataType: "json",
+				data: $scope.conversation,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			  }).success(function(data) {
+				console.debug("success to update Feedback conversation.");
+			  }).error(function(data, status, headers, config) {
+				$scope.recordError = "Error updating feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			  });
+		   }
 	};
+	
+	/**
+	 * Helper function to assign group and priority to entries
+	 * Used for sending email requests, and broadcasting record in expected format
+	 */
+	$scope.getFormattedRecord = function(record) {
+	
+		var formattedRecord = record;
+		
+		// if not group structured project
+		if ($scope.project.groupStructure == false) {
+	
+			// cycle over entries and assign map priority based on position
+			for (var i = 0; i < $scope.entries.length; i++) {
+				$scope.entries[i].mapPriority = i+1;
+			}
+	
+			formattedRecord.mapEntry = $scope.entries;
+	
+			// if group structured project
+		} else {
+	
+			var entries = new Array();
+	
+			// cycle over each group bin
+			for (var i = 0; i < $scope.entries.length; i++) {
+	
+				// cycle over entries in each group bin
+				for (var j = 0; j < $scope.entries[i].length; j++) {
+	
+					console.debug("Assigning group and priority to " + i + " " + j);
+					$scope.entries[i][j].mapGroup = i;
+					$scope.entries[i][j].mapPriority = j+1;
+	
+					entries.push($scope.entries[i][j]);
+	
+				};
+			};
+	
+			console.debug("record formatted:");
+			console.debug(entries);
+	
+			formattedRecord.mapEntry = entries;
+		}
+		
+		return formattedRecord;
+	};
+	
+	
 	
 
 
@@ -713,10 +1074,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 	};
 	// Sets the scope variable for the active entry
-	$scope.selectMapEntry = function(entry, group) {
+	$scope.selectMapEntry = function(entry) {
 		console.debug("Select entry");
 		console.debug(entry);
 	
+		// set all entries isSelected to false
 		for (var i = 0; i < $scope.entries.length; i++) {
 			for (var j = 0; j < $scope.entries[i].length; j++) {
 				console.debug($scope.entries[i][j]);
@@ -724,7 +1086,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}
 		}
 		
+		// set this entry to selected
 		entry.isSelected = true;
+		
+		console.debug("Entry selected, new entries: ", $scope.entries);
 		
 		$rootScope.$broadcast('mapRecordWidget.notification.changeSelectedEntry',{key: 'changeSelectedEntry', entry: angular.copy(entry), record: $scope.record, project: $scope.project});  
 
@@ -732,6 +1097,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 	// function for adding an empty map entry to a record
 	$scope.addMapEntry = function(group) {
+		
+		if (group == null || group == undefined) group = new Array();
 
 		// create blank entry associated with this id
 		var newEntry = {
@@ -741,10 +1108,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				"targetName":"",
 				"rule":"TRUE",
 				"mapPriority": "",
-				"relationId":"",
-				"relationName":"",
+				"mapRelation": "",
 				"mapBlock":"",
-				"mapGroup": group,
+				"mapGroup": "",
 				"mapAdvice":[],
 				"mapPrinciples":[],
 				"localId": currentLocalId + 1,
@@ -756,21 +1122,39 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		newEntry.ruleSummary = $scope.getRuleSummary(newEntry) ;
 
 		if ($scope.project.groupStructure == true) {
-			$scope.entries[group].push(newEntry);
+			console.debug("Adding entry to group", group);
+			group.push(newEntry);
+			// $scope.entries[group].push(newEntry);
 		} else {
 			$scope.entries.push(newEntry);
 		}
+		
+		console.debug("Entry added, new entries: ", $scope.entries);
 
 		$scope.selectMapEntry(newEntry);
+		
+		broadcastRecord();
 
 	};
 	
-	$scope.deleteMapEntry = function(entry, group) {
+	$scope.deleteMapEntry = function(entry) {
 		console.debug("deleteMapEntry: ", entry);
+		
+		var group;
+		
+		// find group this entry is attached too
+		for (var i = 0; i < $scope.entries.length; i++) {
+			for (var j = 0; j < $scope.entries[i].length; j++) {
+				
+				if ($scope.entries[i][j].localId === entry.localId || $scope.entries[i][j].id === entry.id)
+					group = i;
+				console.debug($scope.entries[i][j]);
+			}
+		}
+		
 		$scope.entries[group].removeElement(entry);
 		
-		$rootScope.$broadcast('mapRecordWidget.notification.deleteSelectedEntry',{key: 'deleteSelectedEntry', entry: angular.copy(entry), record: $scope.record, project: $scope.project});  
-
+		broadcastRecord();
 	};
 
 	// Notification watcher for save/delete entry events
@@ -779,15 +1163,18 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		var entry = parameters.entry;
 		var record = parameters.record;
+		
 
 		// verify that this entry is attached to this record
 		if (record.id != $scope.record.id) {
-			console.debug("Non-matching record (id= " + $scope.record.id + ") will ignore entry modification request.");
+			console.debug("Non-matching rec	ord (id= " + $scope.record.id + ") will ignore entry modification request.");
 		} else {
 
+			$rootScope.currentPageDirty = true;
+			
 			if (parameters.action === "save") {
 
-				console.debug("Action: SAVE");
+				console.debug("Action: SAVE", entry);
 
 				// find the entry, based on group structure
 				if ($scope.project.groupStructure == false) {
@@ -797,7 +1184,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 						// when entry found, overwrite it
 						if ($scope.entriesEqualById($scope.entries[i], entry) == true) {
-							$scope.entries[i] = entry;
+							$scope.entries[i] = angular.copy(entry);
+							console.debug(" -- Found entry");
 						}
 					}
 				} else {
@@ -808,48 +1196,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 							// when entry found, overwrite it
 							if ($scope.entriesEqualById($scope.entries[i][j], entry) == true) {
 								$scope.entries[i][j] = entry;
+								console.debug(" -- found entry, group " + i + ", priority " + j);
 							}	
 						}
-					}
-				}
-
-			} else if (parameters.action === "delete") {
-
-				console.debug("Action: DELETE");
-
-				// handle action based on group structure
-				if ($scope.project.groupStructure == false) {
-
-					// construct new entries list
-					var entries = new Array();
-
-					// push all entries not matching this entry onto new entries list
-					for (var i = 0; i < $scope.entries.length; i++) {
-						if ($scope.entriesEqualById(entry, $scope.entries[i]) == false) {
-							entries.push($scope.entries[i]);
-						}
-					}
-
-					// overwrite scope entries list
-					$scope.entries = entries;
-
-				} else {
-
-					// cycle over all group bins
-					for (var i = 0; i < $scope.entries.length; i++) {
-
-						// construct new entries list
-						var entries = new Array();
-
-						// push all entries not matching this entry into new entries list for this group bin
-						for (var j = 0; j < $scope.entries[i].length; j++) {
-							if ($scope.entriesEqualById(entry, $scope.entries[i][j]) == false) {
-								entries.push($scope.entries[i][j]);
-							}
-						}
-
-						// overwrite the group bin
-						$scope.entries[i] = entries;
 					}
 				}
 			} else {
@@ -858,6 +1207,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 			$scope.record.localEntries = $scope.entries;
 		}
+		
+		broadcastRecord();
 	});
 
 
@@ -878,29 +1229,101 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		// if no groups found, add a default group
 		if ($scope.groups.length == 0) $scope.groups.push(1);
+		
+		$scope.groupOpen = new Array(10);
+		for (var i = 0; i < $scope.groups.length; i++) $scope.groupOpen[i] = true;
 
 	};
 
 	// Adds a map group to the existing list
 	$scope.addMapGroup = function() {
-
+/*
 		// find first numeric group not already in list
 		var i = 1;
 		while ($scope.groups.indexOf(i) != -1) i++;
 
 		$scope.groups.push(i);
-		$scope.addMapEntry(i);
+		$scope.addMapEntry(i);*/
+		
+		console.debug("Adding group to: ", $scope.entries);
+		
+		var newGroup = new Array();
+		$scope.addMapEntry(newGroup);
+		
+		$scope.entries.push(newGroup);
+		
+		broadcastRecord();
 	};
 
 	// Removes a map group if it exists
-	$scope.removeMapGroup = function(group) {   	  
-		var newGroups = new Array();
-		for (var i = 0; i < $scope.groups.length; i++) {
-			if ($scope.groups[i] != group) newGroups.push($scope.groups[i]);
+	$scope.removeMapGroup = function(group) { 
+		console.debug("Removing group from " + $scope.entries.length + " groups", group, $scope.entries);
+		
+		var tempEntries = angular.copy($scope.entries);
+		$scope.entries = new Array();
+		$scope.entries.push(new Array()); // add empty group for 0, as index = group number
+		
+		// find the group by first matching entry
+		for (var i = 1; i < tempEntries.length; i++) { // first one is always empty, null group
+			
+			console.debug("Checking group " + i + " of " + tempEntries.length, group[0].localId, tempEntries[i][0].localId);
+			
+			if (group[0].localId != tempEntries[i][0].localId) {
+				
+				console.debug("Keeping group");
+				$scope.entries.push(tempEntries[i]);
+			} else {
+				console.debug("Found group to remove");
+			}
 		}
-		$scope.groups = newGroups;
+		console.debug("Entries after: ", $scope.entries);
+		
+		broadcastRecord();
+		
 	};
 
+	///////////////////////
+	// Modal Functions //
+	///////////////////////
+	
+	// HACKISH:  Variable passed in is the currently viewed map user in the lead's View Other Work tab
+	$scope.displayMapRecord = function() {
+		
+		console.debug("displayMapRecord with ");
+		console.debug($scope.project);
+		
+		
+		console.debug($scope.record);
+
+		var modalInstance = $modal.open({
+			templateUrl: 'js/widgets/mapRecord/displayMapRecord.html',
+			controller: DisplayMapRecordCtrl,
+		    size: 'lg',
+			resolve: {				
+				record: function() {
+					return $scope.record;
+				},
+	            project: function() {
+	                return $scope.project;
+	            }
+			}
+		});
+
+	};
+	
+	var DisplayMapRecordCtrl = function($scope, $modalInstance, record, project) { 
+		
+		console.debug("Entered display map record modal control");
+		$scope.mapRecord = record;
+		$scope.project = project;
+	
+
+		$scope.cancel = function() {
+			$modalInstance.dismiss('cancel');
+		};
+	}
+	
+	
 	///////////////////////
 	// Utility Functions //
 	///////////////////////
@@ -979,7 +1402,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 	// function to return trusted html code (for tooltip content)
 	$scope.to_trusted = function(html_code) {
-		console.debug("to_trusted", $sce.trustAsHtml(html_code));
 		return $sce.trustAsHtml(html_code);
 	};
 
@@ -988,5 +1410,110 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
 	};
 
-
+    $scope.openConceptBrowser = function() {
+    	window.open($scope.getBrowserUrl(), "browserWindow");
+    };
+    
+	$scope.isFeedbackViewed = function() {
+		if ($scope.conversation == null || $scope.conversation == "")
+			return true;
+    	for (var i = 0; i < $scope.conversation.feedback.length; i++) {
+    		var alreadyViewedBy =  $scope.conversation.feedback[i].viewedBy;
+    		var found = false;
+    		for (var j = 0; j < alreadyViewedBy.length; j++) {
+    			if (alreadyViewedBy[j].userName == $scope.user.userName)
+    				found = true;
+    		}	
+    		if (found == false)
+    			return false;
+    	}
+    	return true;
+	};
+    
+    // add current user to list of viewers who have seen the feedback conversation
+    $scope.markViewed = function() {
+    	var needToUpdate = false;
+		if ($scope.conversation == null || $scope.conversation == "")
+			return;
+    	for (var i = 0; i < $scope.conversation.feedback.length; i++) {
+    		var alreadyViewedBy =  $scope.conversation.feedback[i].viewedBy;
+    		var found = false;
+    		for (var j = 0; j<alreadyViewedBy.length; j++) {
+    			if (alreadyViewedBy[j].userName == $scope.user.userName)
+    				found = true;
+    		}	
+        	if (found == false) {
+      		  alreadyViewedBy.push($scope.user);
+      		  needToUpdate = true;
+        	}
+    	}
+    	
+    	if (needToUpdate == true) {
+		  $http({						
+				url: root_workflow + "conversation/update",
+				dataType: "json",
+				data: $scope.conversation,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				console.debug("success to update Feedback conversation.");
+			}).error(function(data, status, headers, config) {
+				$scope.recordError = "Error updating feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			});
+    	}
+    };
+    
+    function initializeReturnRecipients() {
+		
+    	// if no previous feedback conversations, return just first map lead in list
+		if ($scope.conversation == null || $scope.conversation == "") {
+    	  $scope.returnRecipients.push($scope.project.mapLead[0]);
+    	  return;
+		}
+    	
+    	// figure out the return recipients based on previous feedback in conversation
+		var localFeedback = $scope.conversation.feedback;
+		var localSender = localFeedback[localFeedback.length -1].sender;
+		var localRecipients = localFeedback[localFeedback.length -1].recipients;
+		if (localSender.userName == $scope.user.userName)
+			$scope.returnRecipients = localRecipients;
+		else {
+			$scope.returnRecipients.push(localSender);
+			for (var i = 0; i < localRecipients.length; i++) {
+				if (localRecipients[i].userName != $scope.user.userName)
+				  $scope.returnRecipients.push(localRecipients[i]);
+			}
+		}
+		return;
+    };
+    
+    // for multi-select user picklist
+    function organizeUsers(arr) {
+    	// remove Current user
+        for(var i = arr.length; i--;) {
+            if(arr[i].userName === $scope.user.userName) {
+                arr.splice(i, 1);
+            }
+        }
+        
+        // remove demo users
+        for(var i = arr.length; i--;) {       	
+            if(arr[i].name.indexOf("demo") > -1) {
+                arr.splice(i, 1);
+            }
+        }  
+        
+    	sortByKey(arr, "name");
+    }
+    
+	// sort and return an array by string key
+	function sortByKey(array, key) {
+		return array.sort(function(a, b) {
+			var x = a[key]; var y = b[key];
+			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+		});
+	};
 });

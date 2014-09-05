@@ -2,17 +2,22 @@ package org.ihtsdo.otf.mapping.services;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
+import org.ihtsdo.otf.mapping.helpers.FeedbackList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.model.Feedback;
+import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
+import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -96,68 +101,84 @@ public interface WorkflowService {
 
 	/**
 	 * Search Functions.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param mapUser
-	 *            the map user
-	 * @param pfsParameter
-	 *            the pfs parameter
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findAvailableWork(MapProject mapProject,
 			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find available conflicts.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param mapUser
-	 *            the map user
-	 * @param pfsParameter
-	 *            the pfs parameter
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findAvailableConflicts(MapProject mapProject,
 			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find assigned concepts.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param mapUser
-	 *            the map user
-	 * @param pfsParameter
-	 *            the pfs parameter
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findAssignedWork(MapProject mapProject,
 			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find assigned conflicts.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param mapUser
-	 *            the map user
-	 * @param pfsParameter
-	 *            the pfs parameter
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
 	 * @return the search result list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	public SearchResultList findAssignedConflicts(MapProject mapProject,
 			MapUser mapUser, String query, PfsParameter pfsParameter) throws Exception;
 
+	/**
+	 * Find available review work.
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findAvailableReviewWork(MapProject mapProject,
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception;
+	
+	/**
+	 * Find assigned review work.
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findAssignedReviewWork(MapProject mapProject,
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception;
+	
 	/**
 	 * Called by REST services, performs a specific action given a project,
 	 * concept, and user.
@@ -353,6 +374,7 @@ public interface WorkflowService {
 	/**
 	 * Generate mapper testing state.
 	 *
+	 * @param mapProject the map project
 	 * @throws Exception the exception
 	 */
 	public void generateMapperTestingStateKLININ(MapProject mapProject) throws Exception;
@@ -360,10 +382,114 @@ public interface WorkflowService {
 	/**
 	 * Generate mapper testing state.
 	 *
+	 * @param mapProject the map project
 	 * @throws Exception the exception
 	 */
 	public void generateMapperTestingStateBHEKRE(MapProject mapProject) throws Exception;
 
+	/**
+	 * Gets the tracking record for map project and concept.
+	 *
+	 * @param mapProject the map project
+	 * @param terminologyId the terminology id
+	 * @return the tracking record for map project and concept
+	 */
+	public TrackingRecord getTrackingRecordForMapProjectAndConcept(
+			MapProject mapProject, String terminologyId);
+
+	/**
+	 * QA check: Check that workflow state for all current records is valid.
+	 *
+	 * @param mapProject the map project
+	 * @throws Exception the exception
+	 */
+	public void computeWorkflowStatusErrors(MapProject mapProject) throws Exception;
+	
+	/**
+	 * QA check: Compute untracked map records.
+	 *
+	 * @param mapProject the map project
+	 * @throws Exception the exception
+	 */
+	public void computeUntrackedMapRecords(MapProject mapProject) throws Exception;
+	/**
+	 * Adds the user error.
+	 *
+	 * @param userError the user error
+	 * @return the user error
+	 * @throws Exception the exception
+	 */
+	public Feedback addFeedback(Feedback userError) throws Exception;
+	
+	/**
+	 * Returns the user errors.
+	 *
+	 * @return the user errors
+	 * @throws Exception the exception
+	 */
+	public FeedbackList getFeedbacks() throws Exception;
+	
+	/**
+	 * Adds the feedback conversation.
+	 *
+	 * @param conversation the conversation
+	 * @return the feedback conversation
+	 * @throws Exception the exception
+	 */
+	public FeedbackConversation addFeedbackConversation(FeedbackConversation conversation) throws Exception;
+
+	public void updateWorkflowException(WorkflowException workflowException)
+			throws Exception;
+	/**
+	 * Update feedback conversation.
+	 *
+	 * @param conversation the feedback conversation
+	 * @throws Exception the exception
+	 */
+	public void updateFeedbackConversation(FeedbackConversation conversation) throws Exception;
+
+	public void removeWorkflowException(Long workflowExceptiondId) throws Exception;
+	/**
+	 * Returns the feedback conversation.
+	 *
+	 * @param id the id
+	 * @return the feedback conversation
+	 * @throws Exception the exception
+	 */
+	FeedbackConversation getFeedbackConversation(Long id) throws Exception;
+
+	public WorkflowException addWorkflowException(WorkflowException workflowException)
+			throws Exception;
+
+	public WorkflowException getWorkflowException(MapProject mapProject,
+			String terminologyId);
+	
+	/**
+	 * Returns the feedback conversations for project.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userName the user name
+	 * @param pfsParameter the pfs parameter
+	 * @return the feedback conversations for project
+	 * @throws Exception the exception
+	 */
+	public FeedbackConversationList getFeedbackConversationsForProject(Long mapProjectId, String userName,
+		PfsParameter pfsParameter)
+		throws Exception;
+
+	/**
+	 * Returns the feedback conversations for concept.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @return the feedback conversations for concept
+	 * @throws Exception the exception
+	 */
+	public FeedbackConversationList getFeedbackConversationsForConcept(
+		Long mapProjectId, String terminologyId) throws Exception;
+
+	public void convertUserErrors() throws Exception;
 
 
 }
+

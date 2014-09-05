@@ -102,7 +102,8 @@ angular.module('adf')
         structure: '@',
         name: '@',
         collapsible: '@',
-        adfModel: '='
+        adfModel: '=',
+        resetModel: '&' // OTF Added to allow calling parent method for setting default model
       },
       controller: function($scope){
         // sortable options for drag and drop
@@ -116,30 +117,39 @@ angular.module('adf')
           opacity: 0.4
         };
         
-        var name = $scope.name;
-        var model = $scope.adfModel;
-        if ( ! model || ! model.rows ){
-          var structureName = $scope.structure;
-          var structure = dashboard.structures[structureName];
-          if (structure){
-            if (model){
-              model.rows = angular.copy(structure).rows;
-            } else {
-              model = angular.copy(structure);
-            }
-            model.structure = structureName;
-          } else {
-            $log.error( 'could not find structure ' + structureName);
-          }
-        } 
+        // OTF Added: Prevents dashboard from attempting to instantiate a null model (which throws errors)
+        $scope.$watch('adfModel', function() {
+        	console.debug("===> adfModel changed", $scope.adfModel);
+        	$scope.setModel();
+        });
         
-        if (model) {
-          if (!model.title){
-            model.title = 'Dashboard';
-          }
-          $scope.model = model;
-        } else {
-          $log.error('could not find or create model');
+        $scope.setModel = function() {
+        
+	        var name = $scope.name;
+	        var model = $scope.adfModel;
+	        if ( ! model || ! model.rows ){
+	          var structureName = $scope.structure;
+	          var structure = dashboard.structures[structureName];
+	          if (structure){
+	            if (model){
+	              model.rows = angular.copy(structure).rows;
+	            } else {
+	              model = angular.copy(structure);
+	            }
+	            model.structure = structureName;
+	          } else {
+	            $log.error( 'could not find structure ' + structureName);
+	          }
+	        } 
+	        
+	        if (model) {
+	          if (!model.title){
+	            model.title = 'Dashboard';
+	          }
+	          $scope.model = model;
+	        } else {
+	          $log.error('could not find or create model');
+	        }
         }
 
         // edit mode
@@ -154,9 +164,13 @@ angular.module('adf')
             $scope.editClass = "";
           }
           if (!$scope.editMode){
-            $rootScope.$broadcast('adfDashboardChanged', name, model);
+        	// OTF: Modified from name, model -> $scope.name, $scope.model
+            $rootScope.$broadcast('adfDashboardChanged', $scope.name, $scope.model);
           }
         };
+
+        // OTF: Note that if these features are reintroduced, name and model are no longer scope variables
+        // Will need modification at that time.
         
         // edit dashboard settings
         $scope.editDashboardDialog = function(){
