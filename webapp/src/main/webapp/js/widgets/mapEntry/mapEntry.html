@@ -62,14 +62,6 @@
       </td>
     </tr>
 
-    <tr ng-show="project.ruleBased == false">
-      <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation
-          Id</strong></td>
-      <td style="vertical-align: top; padding: 5px;">{{entry.mapRelation.terminologyId}}
-        <span ng-show="entry.mapRelation != null && entry.mapRelation.isComputed == false"><button
-            ng-click="clearMapRelation(entry)">Clear</button>
-      </td>
-    </tr>
 
     <tr ng-show="project.ruleBased == false"">
       <td style="vertical-align: top; padding: 5px; width: 50px;"><strong>Relation
@@ -89,16 +81,8 @@
 
     </tr>
 
-   <!--  <tr
-      ng-show="project.mapRelationStyle === 'RELATIONSHIP_STYLE' && allowableMapRelations.length == 0">
-      <td style="vertical-align: top; padding: 5px;"></td>
-      <td style="vertical-align: top; padding: 5px;">No map relations are
-        available for this target.</td>
-    </tr> -->
-
     <tr ng-show="allowableAdvices.length > 0">
-    <!-- <tr ng-show="project.mapRelationStyle != 'RELATIONSHIP_STYLE'">
-     -->  <td ng-show="entry.targetId != null && entry.targetId != ''"
+	  <td ng-show="entry.targetId != null && entry.targetId != ''"
           style="vertical-align: top; padding: 5px;"><strong>Advice</strong></td>
       <td ng-show="entry.targetId != null && entry.targetId != ''"
           style="vertical-align: top; padding: 5px;">

@@ -21,6 +21,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
@@ -135,6 +136,10 @@ public class MapRecordJpa implements MapRecord {
 	/** The workflow status. */
 	@Enumerated(EnumType.STRING)
 	private WorkflowStatus workflowStatus;
+	
+	/** Whether this record has discrepancy review */
+	@Transient
+	private boolean isDiscrepancyReview = false;
 
 	/**
 	 * Default constructor.
@@ -766,6 +771,15 @@ public class MapRecordJpa implements MapRecord {
 	}
 
 
+	@Override
+	public boolean isDiscrepancyReview() {
+		return isDiscrepancyReview;
+	}
+
+	@Override
+	public void setDiscrepancyReview(boolean isDiscrepancyReview) {
+		this.isDiscrepancyReview = isDiscrepancyReview;
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
