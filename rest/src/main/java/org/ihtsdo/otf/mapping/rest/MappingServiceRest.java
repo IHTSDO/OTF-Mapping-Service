@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeListJpa;
@@ -802,7 +803,8 @@ public class MappingServiceRest extends RootServiceRest {
 			mappingService.removeMapAdvice(mapAdvice.getId());
 			mappingService.close();
 		} catch (Exception e) {
-			handleException(e, "trying to remove an advice", user, "", "");
+			LocalException le = new LocalException("Unable to delete map advice. This is likely because the advice is being used by a map project or map entry");
+			handleException(le, "", user, "", "");
 		}
 	}
 
@@ -1142,7 +1144,8 @@ public class MappingServiceRest extends RootServiceRest {
 			mappingService.removeMapRelation(mapRelation.getId());
 			mappingService.close();
 		} catch (Exception e) {
-			handleException(e, "trying to remove a relation", user, "", "");
+			LocalException le = new LocalException("Unable to delete map relation. This is likely because the relation is being used by a map project or map entry");
+			handleException(le, "", user, "", "");
 		}
 	}
 
@@ -1331,7 +1334,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 * @param authToken
 	 */
 	@DELETE
-	@Path("/principle/remove")
+	@Path("/principle/delete")
 	@ApiOperation(value = "Remove map principle", notes = "Removes a map principle")
 	public void removeMapPrinciple(
 			@ApiParam(value = "Map user preferences object to remove", required = true) MapPrincipleJpa principle,
@@ -1339,7 +1342,7 @@ public class MappingServiceRest extends RootServiceRest {
 
 		// log call
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /principle/remove for id "
+				"RESTful call (Mapping): /principle/delete for id "
 						+ principle.getId().toString());
 
 		String user = "";
@@ -1358,7 +1361,8 @@ public class MappingServiceRest extends RootServiceRest {
 			mappingService.removeMapPrinciple(principle.getId());
 			mappingService.close();
 		} catch (Exception e) {
-			handleException(e, "trying to remove a map principle", user, "", "");
+			LocalException le = new LocalException("Unable to delete map principle. This is likely because the principle is being used by a map project or map record");
+			handleException(le, "", user, "", "");
 		}
 	}
 
