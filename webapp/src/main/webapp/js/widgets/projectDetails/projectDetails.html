@@ -59,13 +59,7 @@
         <b>Published</b>
       </div></td>
     <td>
-      <form ng-show="editModeEnabled == false || (editModeEnabled == true && currentRole != 'Administrator')">
         {{focusProject.published}}
-      </form>
-      <form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
-        <select ng-model="focusProject.published" ng-change="updateMapProject()" ng-options="item for item in [true, false]">
-        </select>
-      </form>
     </td>
   </tr>
   <tr>
@@ -74,13 +68,7 @@
         <b>Group Structure</b>
       </div></td>
     <td>
-      <form ng-show="editModeEnabled == false || (editModeEnabled == true && currentRole != 'Administrator')">
         {{focusProject.groupStructure}}
-      </form>
-      <form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
-        <select ng-model="focusProject.groupStructure" ng-change="updateMapProject()" ng-options="item for item in [true, false]">
-        </select>
-      </form>
     </td>
   </tr>
   <tr>
@@ -89,15 +77,7 @@
         <b>Rule Based</b>
       </div></td>
     <td>
-      <form ng-show="editModeEnabled == false || (editModeEnabled == true && currentRole != 'Administrator')">
         {{focusProject.ruleBased}}
-      </form>
-      <form ng-show="editModeEnabled == true && currentRole == 'Administrator'">
-        <select ng-model="focusProject.ruleBased" 
-          ng-change="updateMapProject()" 
-          ng-options="item for item in [true, false]">
-        </select>
-      </form>
     </td>
   </tr>
   <tr>
@@ -295,8 +275,8 @@
             <td></td>
           </tr>
           <tr ng-show="editModeEnabled == true">
-            <td><input ng-model="advice.name" 
-                  style="width:100%;" ng-change="updateAdvice(advice)"></input></td>
+            <td>{{advice.name}}<!-- <input ng-model="advice.name" 
+                  style="width:100%;" ng-change="updateAdvice(advice)"></input> --></td>
             <td>{{advice.isAllowableForNullTarget}}</td>
             <td>{{advice.isComputed}}</td>
             <td>
@@ -381,17 +361,17 @@
             <td>{{relation.name}}</td>
             <td>{{relation.isAllowableForNullTarget}}</td>
             <td>{{relation.isComputed}}</td>
-            <td ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+            <td ng-show="editModeEnabled == true">
               <i class="glyphicon glyphicon-remove"
                 ng-click="deleteRelation(relation)"></i>
             </td>
-            <td ng-show="editModeEnabled == false || (editModeEnabled == true && currentRole != 'Administrator')"></td>
+            <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
           </tr>
 
         </tbody>
       </table>
       
-      <table ng-show="editModeEnabled == true && currentRole == 'Administrator'" width="50%" class="table pure-table">
+      <table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
         <thead>
           <tr>
             <th style="width: 97%;">Add Map Relation</th>
@@ -407,7 +387,7 @@
       </tbody>
     </table>            
 
-    <div ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+    <div ng-show="editModeEnabled == true">
       <div><b>Create New Map Relation</b></div><hr>
       <div style="margin-bottom:5px;">Relation Name: 
         <input id="newRelationName" type="text" ng-model="newRelationName">  </div> 
@@ -560,16 +540,16 @@
                 {{ageRange.upperValue}} {{ageRange.upperUnits}}
               </div>
             </td>
-            <td ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+            <td ng-show="editModeEnabled == true">
               <i class="glyphicon glyphicon-remove"
                 ng-click="deleteAgeRange(ageRange)"></i>
             </td>
-            <td ng-show="editModeEnabled == false || (editModeEnabled == true && currentRole != 'Administrator')"></td>
+            <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
           </tr>
         </tbody>
       </table>
       
-      <table ng-show="editModeEnabled == true && currentRole == 'Administrator'" width="50%" class="table pure-table">
+      <table ng-show="editModeEnabled == true" width="50%" class="table pure-table">
         <thead>
           <tr>
             <th style="width: 97%;">Add Map Age Range</th>
@@ -585,7 +565,7 @@
       </tbody>
     </table>         
     
-    <form name="ageRangeForm" ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+    <form name="ageRangeForm" ng-show="editModeEnabled == true">
       <div><b>Create New Map Age Range</b></div><hr>
       <div style="margin-bottom:5px;">Age Range Name: 
         <input id="newAgeRangeName" type="text" ng-model="newAgeRangeName">  </div> 
@@ -639,24 +619,24 @@
           <tr>
             <td>{{scopeConcept}}</td>
             <td>{{scopeMap[scopeConcept]}}</td>
-            <td ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+            <td ng-show="editModeEnabled == true">
               <i class="glyphicon glyphicon-remove"
                 ng-click="deleteScopeIncludedConcept(scopeConcept)"></i>
             </td>
-            <td ng-show="editModeEnabled == false || (editModeEnabled == true && currentRole != 'Administrator')"></td>
+            <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
           </tr>
 
         </tbody>
       </table>
       
-      <div ng-show="editModeEnabled == false || (editModeEnabled == true && currentRole != 'Administrator')">
+      <div ng-show="editModeEnabled == false || (editModeEnabled == true)">
         <div ng-show="focusProject.scopeDescendantsFlag == true">Scope
           Descendants Included</div>
         <div ng-show="focusProject.scopeDescendantsFlag == false">Scope
           Descendants Not Included</div>
       </div>
         
-      <div ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+      <div ng-show="editModeEnabled == true">
         Scope Descendants Included
         <select ng-model="focusProject.scopeDescendantsFlag" ng-change="updateMapProject()" ng-options="item for item in [true, false]">
         </select>
@@ -698,23 +678,23 @@
           <tr>
             <td>{{scopeExcludedConcept}}</td>
             <td>{{scopeExcludedMap[scopeExcludedConcept]}}</td>
-            <td ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+            <td ng-show="editModeEnabled == true">
               <i class="glyphicon glyphicon-remove"
                 ng-click="deleteScopeExcludedConcept(scopeExcludedConcept)"></i>
             </td>
-            <td ng-show="editModeEnabled == false || (editModeEnabled == true && currentRole != 'Administrator')"></td>
+            <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
           </tr>
         </tbody>
       </table>
       
-      <div ng-show="editModeEnabled == false || (editModeEnabled == true && currentRole != 'Administrator')">
+      <div ng-show="editModeEnabled == false || (editModeEnabled == true)">
         <div ng-show="focusProject.scopeExcludedDescendantsFlag == true">Scope
           Descendants Included</div>
         <div ng-show="focusProject.scopeExcludedDescendantsFlag == false">Scope
           Descendants Not Included</div>
       </div>
         
-      <div ng-show="editModeEnabled == true && currentRole == 'Administrator'">
+      <div ng-show="editModeEnabled == true">
         Scope Descendants Included
         <select ng-model="focusProject.scopeExcludedDescendantsFlag" ng-change="updateMapProject()" ng-options="item for item in [true, false]">
         </select>
