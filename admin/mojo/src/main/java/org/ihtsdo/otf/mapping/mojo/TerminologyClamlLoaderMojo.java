@@ -573,7 +573,15 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
         // NOTE: non-preferred descriptions still need to be added
         // to modified classes
         if (qName.equalsIgnoreCase("label") && modifierCode != null) {
+          // Append a space if we've already seen earlier fragments
+          if (labelChars.length() != 0 && chars.toString().trim().length() > 0) {
+            labelChars.append(" ");
+          }
+          // Pick up any characters in the label tag
+          labelChars.append(chars.toString().trim());
           addModifierClass();
+          // reset label characters
+          labelChars = new StringBuilder();
         }
 
         // Encountered </Label> while in a Class, add concept/description
@@ -634,6 +642,12 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           }
           concept.addDescription(desc);
 
+          // reset label characters
+          labelChars = new StringBuilder();
+        }
+
+        // Encountered </Label> while in a Class, add concept/description
+        if (qName.equalsIgnoreCase("label") && tagStack.contains("modifier")) {
           // reset label characters
           labelChars = new StringBuilder();
         }
@@ -789,12 +803,14 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           String parentCode = null;
           String id = null;
           String type = null;
+          String label = null;
 
           // handle reference case
           if (tokens.length == 4) {
             parentCode = tokens[0];
             type = tokens[2];
             id = tokens[1];
+            label = tokens[3];
             if (relDisambiguation.containsKey(id)) {
               int ct = relDisambiguation.get(id);
               ct++;
@@ -856,6 +872,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
               relationship.setTypeId(new Long(conceptMap.get(type)
                   .getTerminologyId()));
               relationship.setRelationshipGroup(new Integer(0));
+              relationship.setLabel(label);
               Set<Relationship> rels = new HashSet<>();
               if (childConcept.getRelationships() != null)
                 rels = childConcept.getRelationships();
@@ -886,7 +903,8 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     public void addModifierClass() throws Exception {
 
       // create concept if it doesn't exist
-      if (!conceptMap.containsKey(code) || code == null) {
+      String code = modifier + modifierCode;
+      if (!conceptMap.containsKey(code)) {
         concept.setTerminologyId(modifier + modifierCode);
         concept.setEffectiveTime(dt.parse(effectiveTime));
         concept.setActive(true);
@@ -896,7 +914,10 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
             "defaultDefinitionStatus").getTerminologyId()));
         concept.setTerminology(terminology);
         concept.setTerminologyVersion(terminologyVersion);
-        concept.setDefaultPreferredName(chars.toString());
+        concept.setDefaultPreferredName(labelChars.toString());
+        getLog().info(
+            "  Add modifier concept " + concept.getTerminologyId() + " "
+                + concept.getDefaultPreferredName());
         // NOTE: we don't persist these modifier classes, the
         // classes they generate get added during modifierHelper
         conceptMap.put(code, concept);
@@ -1300,10 +1321,11 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
           && !parentCodeHasChildrenMap.containsKey(cmpCode))
         return true;
 
+      /** Based on NIN feedback - don't have 5th digits in these cases
       // Override excludes for the code list above for S20V01T_5
       if (overrideCodes.contains(cmpCode) && modifier.equals("S20V01T_5"))
         return true;
-
+      **/
       return false;
     }
 

@@ -36,8 +36,6 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
-// TODO: Auto-generated Javadoc
 /**
  * The Class MapProjectJpa.
  * 
@@ -62,7 +60,7 @@ public class MapProjectJpa implements MapProject {
 
 	/** Whether this project is viewable by public roles. */
 	@Column(unique = false, nullable = false)
-	private boolean isPublic;
+	private boolean isPublic = false;
 	/**
 	 * Indicates whether there is block structure for map records of this project.
 	 */
@@ -78,6 +76,10 @@ public class MapProjectJpa implements MapProject {
 	/** Indicates if the map project has been published. */
 	@Column(unique = false, nullable = false)
 	private boolean published = false;
+	
+	/** Indicates what type of workflow to use for this project, defaults to conflict review */
+	@Column(unique = false, nullable = false)
+	private String workflowType = "";
 
 	/** The ref set id. */
 	private String refSetId;
@@ -626,6 +628,26 @@ public class MapProjectJpa implements MapProject {
 	public void setPublished(boolean published) {
 		this.published = published;
 	}
+
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getWorkflowType()
+	 */
+	@Override
+	public String getWorkflowType() {
+		return workflowType;
+	}
+
+
+    /* (non-Javadoc)
+     * @see org.ihtsdo.otf.mapping.model.MapProject#setWorkflowType(org.ihtsdo.otf.mapping.helpers.WorkflowType)
+     */
+    @Override
+	public void setWorkflowType(String workflowType) {
+		this.workflowType = workflowType;
+	}
+
+
 
 	/*
 	 * (non-Javadoc)

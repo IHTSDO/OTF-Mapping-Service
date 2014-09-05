@@ -6,7 +6,6 @@ import javax.xml.bind.annotation.XmlID;
 
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 
@@ -20,9 +19,6 @@ public class MapEntryImpl implements MapEntry {
 
   /** The id. */
   private Long id;
-
-  /** The map notes. */
-  private Set<MapNote> mapNotes;
 
   /** The target. */
   private String targetId;
@@ -82,49 +78,6 @@ public class MapEntryImpl implements MapEntry {
     return id.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#getNotes()
-   */
-  @Override
-  public Set<MapNote> getMapNotes() {
-    return mapNotes;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#setNotes(java.util.List)
-   */
-  @Override
-  public void setMapNotes(Set<MapNote> mapNotes) {
-    this.mapNotes = mapNotes;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapEntry#addNote(org.ihtsdo.otf.mapping.model
-   * .MapNote)
-   */
-  @Override
-  public void addMapNote(MapNote note) {
-    mapNotes.add(note);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapEntry#removeNote(org.ihtsdo.otf.mapping
-   * .model.MapNote)
-   */
-  @Override
-  public void removeMapNote(MapNote note) {
-    mapNotes.remove(note);
-  }
 
   /*
    * (non-Javadoc)
@@ -372,7 +325,7 @@ public class MapEntryImpl implements MapEntry {
 
   @Override
   public String toString() {
-    return "MapEntryImpl [id=" + id + ", mapNotes=" + mapNotes + ", targetId="
+    return "MapEntryImpl [id=" + id + ", targetId="
         + targetId + ", targetName=" + targetName + ", mapAdvices="
         + mapAdvices + ", rule=" + rule + ", mapPriority=" + mapPriority
         + ", mapRelation=" + mapRelation + ", mapRecord=" + mapRecord

@@ -12,8 +12,6 @@ import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-// TODO: Auto-generated Javadoc
 /**
  * The Class MapRelationJpa.
  */

@@ -112,8 +112,6 @@ public class TerminologyRemoverMojo extends AbstractMojo {
         // truncate all the tables that we are going to use first
         tx.begin();
 
-        // TODO: use APIs here instead of delete statements!
-        
         // truncate RefSets
         Query query =
             manager

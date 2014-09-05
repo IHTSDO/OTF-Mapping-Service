@@ -12,8 +12,6 @@ import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-// TODO: Auto-generated Javadoc
 /**
  * Represents an age range.
  * 

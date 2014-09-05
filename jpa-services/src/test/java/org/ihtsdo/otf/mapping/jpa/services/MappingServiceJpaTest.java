@@ -564,13 +564,13 @@ public class MappingServiceJpaTest {
     SearchResultList results = new SearchResultListJpa();
 
     // find project (query)
-    results = service.findMapProjects("ICD9CM", new PfsParameterJpa());
+    results = service.findMapProjectsForQuery("ICD9CM", new PfsParameterJpa());
     if (results.getSearchResults().get(0).getValue()
         .compareTo("SNOMED to ICD9CM") != 0) {
       fail("Retrieval - findMapProjects(): Could not search by name of terminology");
     }
 
-    results = service.findMapProjects("Kathy", new PfsParameterJpa());
+    results = service.findMapProjectsForQuery("Kathy", new PfsParameterJpa());
     if (results.getCount() != 1) {
       fail("Retrieval - findMapProjects(String query):  Could not search by lead name");
     }
