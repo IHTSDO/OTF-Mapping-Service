@@ -16,11 +16,17 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.compareRecords',
                                                      'mapProjectApp.widgets.projectDetails',
                                                      'mapProjectApp.widgets.projectRecords',
+                                                     'mapProjectApp.widgets.projectAdmin',
                                                      'mapProjectApp.widgets.recordConcept',
+                                                     'mapProjectApp.widgets.recordSummary',
+                                                     'mapProjectApp.widgets.recordAdmin',
+                                                     'mapProjectApp.widgets.feedback',
+                                                     'mapProjectApp.widgets.feedbackConversation',
+                                                     'mapProjectApp.widgets.mapProjectAdmin',
                                                      'LocalStorageModule',
                                                      'ngCookies',
-                                                     'ui.tinymce'
-                                                     
+                                                     'ui.tinymce',
+                                                     'angularjs-dropdown-multiselect'
                                                      ])
                                                      .value('prefix', '')
                                                      .config(function(dashboardProvider){
@@ -125,6 +131,11 @@ mapProjectApp.config(['$routeProvider',
 		templateUrl: 'partials/otf-dashboard.html',
 		controller: 'RecordConceptDashboardCtrl'
 	});
+	
+	$routeProvider.when('/conversation/recordId/:recordId', {
+		templateUrl: 'partials/otf-dashboard.html',
+		controller: 'FeedbackConversationsDashboardCtrl'
+	});
 
 	$routeProvider.when('/record/recordId/:recordId', {
 		templateUrl: 'partials/otf-dashboard.html',
@@ -132,6 +143,11 @@ mapProjectApp.config(['$routeProvider',
 	});
 
 	$routeProvider.when('/record/conflicts/:recordId', {
+		templateUrl: 'partials/otf-dashboard.html',
+		controller: 'ResolveConflictsDashboardCtrl'
+	});
+	
+	$routeProvider.when('/record/review/:recordId', {
 		templateUrl: 'partials/otf-dashboard.html',
 		controller: 'ResolveConflictsDashboardCtrl'
 	});

@@ -3,13 +3,9 @@ package org.ihtsdo.otf.mapping.workflow;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
-import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface TrackingRecord.
- * 
- * @author ${author}
+ * Generically represents a workflow tracking record.
  */
 public interface TrackingRecord {
 

@@ -29,6 +29,9 @@ public abstract class AbstractComponent implements Component {
 
   /** The terminology version. */
   private String terminologyVersion;
+  
+  /** The label */
+  private String label;
 
   /**
    * {@inheritDoc}
@@ -183,5 +186,25 @@ public abstract class AbstractComponent implements Component {
         + this.getTerminologyId() + "," + this.getTerminologyVersion() + ","
         + this.getEffectiveTime() + "," + this.isActive() + ","
         + this.getModuleId(); // end of basic component fields
+  }
+
+  /**
+   * Returns the label.
+   *
+   * @return the label
+   */
+  @Override
+  public String getLabel() {
+    return label;
+  }
+
+  /**
+   * Sets the label.
+   *
+   * @param label the label to set
+   */
+  @Override
+  public void setLabel(String label) {
+    this.label = label;
   }
 }

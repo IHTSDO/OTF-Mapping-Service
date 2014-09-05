@@ -109,8 +109,15 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 		
 		// construct html parameters parameter
 		var pfsParameterObj = constructPfsParameterObj(page);
-		var query_url = root_mapping + "record/project/id/" + $scope.project.objectId;
-
+		
+		var query_url;
+		if ($scope.currentRole === 'Viewer') {
+			query_url = root_mapping + "record/project/id/" + $scope.project.objectId + "/published";
+		} else if ($scope.currentRole === 'Specialist' || $scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+			query_url = root_mapping + "record/project/id/" + $scope.project.objectId;
+		} else {
+			console.debug("ERROR: Invalid role detected in retrieveRecords()");
+		}
 
 		$rootScope.glassPane++;
 		
@@ -149,10 +156,6 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 					$scope.mapNotesPresent = true;
 				}
 				for (var j = 0; j < $scope.records[i].mapEntry.length; j++) {
-
-					if ($scope.records[i].mapEntry[j].mapNote.length > 0) {
-						$scope.mapNotesPresent = true;
-					};
 					if ($scope.records[i].mapEntry[j].mapAdvice.length > 0) {
 						$scope.mapAdvicesPresent = true;
 					}
@@ -286,7 +289,7 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 
 		if (($scope.currentRole === 'Specialist' ||
 				$scope.currentRole === 'Lead' ||
-				$scope.currentRole === 'Admin') &&
+				$scope.currentRole === 'Administrator') &&
 				(record.workflowStatus === 'PUBLISHED' || record.workflowStatus === 'READY_FOR_PUBLICATION')) {
 
 			return true;
@@ -297,48 +300,74 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 	};
 
 	$scope.editRecord = function(record) {
+		
+		console.debug("EditRecord()");
+		console.debug(record);
+		
+		// check if this record is assigned to the user and not in a publication ready state
+		if (record.owner.userName === $scope.currentUser.userName
+				&& record.workflowStatus != 'PUBLISHED' && record.workflowStatus != 'READY_FOR_PUBLICATION') {
+			
+			// go to the edit page
+			$location.path("/record/recordId/" + id);
+		
+		// otherwise, assign this record along the FIX_ERROR_PATH
+		} else  {
 
-		// assign the record along the FIX_ERROR_PATH
-		$rootScope.glassPane++;
-
-		console.debug("Edit record clicked, assigning record if necessary");
-		$http({
-			url: root_workflow + "assignFromRecord/user/id/" + $scope.currentUser.userName,
-			 method: "POST",
-			 dataType: 'json',
-			 data: record,
-			 headers: {
-				 "Content-Type": "application/json"
-			 }		
-		}).success(function(data) {
-			console.debug('Assignment successful');
+			$rootScope.glassPane++;
+	
+			console.debug("Edit record clicked, assigning record along FIX_ERROR_PATH");
 			$http({
-				url: root_workflow + "record/project/id/" + $scope.focusProject.id +
-				"/concept/id/" + record.conceptId +
-				"/user/id/" + $scope.currentUser.userName,
-				 method: "GET",
+				url: root_workflow + "assignFromRecord/user/id/" + $scope.currentUser.userName,
+				 method: "POST",
 				 dataType: 'json',
 				 data: record,
 				 headers: {
 					 "Content-Type": "application/json"
-				 }
+				 }		
 			}).success(function(data) {
+				console.debug('Assignment successful');
+				$http({
+					url: root_workflow + "record/project/id/" + $scope.focusProject.id +
+					"/concept/id/" + record.conceptId +
+					"/user/id/" + $scope.currentUser.userName,
+					 method: "GET",
+					 dataType: 'json',
+					 data: record,
+					 headers: {
+						 "Content-Type": "application/json"
+					 }
+				}).success(function(data) {
+					
+					$rootScope.glassPane--;
+					
+					// open the record edit view
+					$location.path("/record/recordId/" + data.id);
+				}).error(function(data, status, headers, config) {
+				    $rootScope.glassPane--;
+	
+				    $rootScope.handleHttpError(data, status, headers, config);
+				});
 				
-				$rootScope.glassPane--;
-				
-				// open the record edit view
-				$location.path("/record/recordId/" + data.id);
 			}).error(function(data, status, headers, config) {
 			    $rootScope.glassPane--;
-
+	
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
-			
-		}).error(function(data, status, headers, config) {
-		    $rootScope.glassPane--;
-
-		    $rootScope.handleHttpError(data, status, headers, config);
-		});
+		}
 	};
 
+	$scope.truncate = function(string, length) {
+		if (length == null) length = 100;
+		if (string.length > length) return string.slice(0, length-3);
+		else return string;
+	};
+
+	$scope.truncated = function(string, length) {
+		if (length == null) length = 100;
+		if (string.length > length) 
+			return true;
+		else 
+			return false;
+	};
 });

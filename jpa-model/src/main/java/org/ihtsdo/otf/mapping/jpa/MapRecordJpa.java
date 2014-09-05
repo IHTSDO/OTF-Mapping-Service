@@ -21,6 +21,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
@@ -106,17 +107,16 @@ public class MapRecordJpa implements MapRecord {
 	private List<MapEntry> mapEntries = new ArrayList<>();
 
 	/** The map notes. */
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapNoteJpa.class)
-	@IndexedEmbedded(targetElement = MapNoteJpa.class)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = MapNoteJpa.class)
 	private Set<MapNote> mapNotes = new HashSet<>();
 
 	/** The map principles. */
-	@ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.EAGER)
+	@ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.LAZY)
 	@IndexedEmbedded(targetElement = MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
 	/** The originIds. */
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "map_records_origin_ids", joinColumns = @JoinColumn(name = "id"))
 	@Column(nullable = true)
 	private Set<Long> originIds = new HashSet<>();
@@ -136,6 +136,10 @@ public class MapRecordJpa implements MapRecord {
 	/** The workflow status. */
 	@Enumerated(EnumType.STRING)
 	private WorkflowStatus workflowStatus;
+	
+	/** Whether this record has discrepancy review */
+	@Transient
+	private boolean isDiscrepancyReview = false;
 
 	/**
 	 * Default constructor.
@@ -398,6 +402,7 @@ public class MapRecordJpa implements MapRecord {
 	@Override
 	@XmlElement(type = MapNoteJpa.class, name = "mapNote")
 	public Set<MapNote> getMapNotes() {
+		if (mapNotes == null) mapNotes = new HashSet<>(); // ensures proper deserialization
 		return mapNotes;
 	}
 
@@ -443,6 +448,7 @@ public class MapRecordJpa implements MapRecord {
 	@Override
 	@XmlElement(type = MapEntryJpa.class, name = "mapEntry")
 	public List<MapEntry> getMapEntries() {
+		if (mapEntries == null) mapEntries = new ArrayList<>(); // ensures proper deserialization
 		return mapEntries;
 	}
 
@@ -720,7 +726,7 @@ public class MapRecordJpa implements MapRecord {
 			if (!mapRecord.getMapNotes().contains(note)) return false;
 		}
 
-		// check entries
+		// check principles
 		if (mapRecord.getMapPrinciples().size() != mapPrinciples.size()) return false;
 		for (MapPrinciple principle : mapPrinciples) {
 			if (!mapRecord.getMapPrinciples().contains(principle)) return false;
@@ -765,6 +771,15 @@ public class MapRecordJpa implements MapRecord {
 	}
 
 
+	@Override
+	public boolean isDiscrepancyReview() {
+		return isDiscrepancyReview;
+	}
+
+	@Override
+	public void setDiscrepancyReview(boolean isDiscrepancyReview) {
+		this.isDiscrepancyReview = isDiscrepancyReview;
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()

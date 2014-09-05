@@ -19,55 +19,37 @@
 
 <table width="100%" class="table">
   <thead>
-    <tr>
-      <th style="width: 39%;"><div tooltip-placement="top"
+    <th>
+      <span style="width: 36%; float: left;"><div tooltip-placement="top"
         tooltip="Source Concept Name and Id">
         <b>Concept Name</b>
-      </div></th>
-      <th style="width: 4%;"><div tooltip-placement="top"
+      </div></span>
+      <span style="width: 10%; float: left;"><div tooltip-placement="top"
         tooltip="Group Id / Map Priority">
         <b>Grp/Prty</b>
-      </div></th>
-      <th style="width: 14%;" ng-show="project.ruleBased == true"><div tooltip-placement="top"
+      </div></span>
+      <span style="width: 12%; float: left;" ng-show="project.ruleBased == true"><div tooltip-placement="top"
         tooltip="Map Rule">
         <b>Rule</b>
-      </div></th>
-
-      <th style="width: 42%;"><div tooltip-placement="top"
+      </div></span>
+      <span style="width: 40%; float: left;"><div tooltip-placement="top"
         tooltip="Target Preferred Name and Code">
         <b>Target Name</b>
-      </div></th>
-      <th style="width: 5%;"></th>
-    </tr>
-  </thead>
+      </div></span>
+      <span style="width: 5%; float: left;"></span>
+      </th>
+  </thead> 
 
-  <tbody ng-repeat="record in records" style="border: 2px solid #ccc;">
+  <tbody ng-repeat="record in records"  ng-class-odd="'odd'" ng-class-even="'even'">
 
-    <tr ng-repeat="entry in record.mapEntry" style="">
+    <tr ng-repeat="entry in record.mapEntry" >
 
-     
-      <td><div>{{record.conceptName}}</div>
-          <div><a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
-      <span ng-show="record.mapNote.length > 0 && currentRole != 'Viewer'"> <span
-          class="dropdown"> <a class="dropdown-toggle"> <img
-              src="img/notepad.png" alt="notepad icon">
-          </a> <span class="dropdown-menu project-records-dropdown-menu"> <strong>Notes</strong>
-              <p></p>
-              <p ng-repeat="note in record.mapNote"
-                ng-bind-html="to_trusted(note.note)"></p>
-          </span>
-        </span>
-      </span> <span ng-show="entry.mapAdvice.length > 0">
-          <span class="dropdown">
-            <a class="dropdown-toggle"> <img src="img/dialog-question.png"
-              alt="question icon">
-            </a> <span class="dropdown-menu project-records-dropdown-menu"> <strong>Advice</strong>
-              <p></p>
-              <p ng-repeat="advice in entry.mapAdvice"
-                ng-bind-html="to_trusted(advice.detail)"></p>
-            </span>
-          </span>
-      </span> <span ng-show="record.unmappedDescendants.length > 0"> <span
+      <td  style="border-top:0px;">
+        <div style="float: left; width: 39%;">
+          <div>{{record.conceptName}}</div>
+          <div>
+            <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
+             <span ng-show="record.unmappedDescendants.length > 0"> <span
           class="dropdown"> <a class="dropdown-toggle"> <img
               src="img/warning.png" alt="question icon">
           </a>
@@ -77,23 +59,69 @@
                 href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
                   {{concept.value}}</a></li>
             </ul>
-        </span>
-      </span>          
-       </div>   
+           </span>
+          </span>         
+          </div>
+        </div>
+        <div style="float: left; width: 4%;">{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</div>
+        <div style="float: left; width: 14%; "
+          ng-show="project.ruleBased == true">{{entry.rule}}</div>
+        <div style="float: left; width: 39%;" ng-show="entry.targetId != ''">
+          <div>{{entry.targetName}}</div>
+          <div>{{entry.targetId}}</div>
+        </div>
+        <div style="float: left; width: 39%;"
+          ng-show="entry.targetId == null || entry.targetId == ''">{{entry.mapRelation.abbreviation}}</div>
+
+        <div style="float: right; width: 3%;">
+          <a title="Edit" ng-show="isEditable(record)" 
+            ng-click="editRecord(record)"><i
+            class="glyphicon glyphicon glyphicon-pencil"></i></a>
+        </div>
+
+        
+        <!-- ADVICE -->
+        <div
+          style="float: left; width: 100%; font-size: 12px;"
+          ng-repeat="advice in entry.mapAdvice"><img
+              src="img/dialog-question.png" alt="advice icon" tooltip-placement="top" tooltip="Map Advice">&nbsp;{{advice.detail}}
+        </div>
+
       </td>
-      <td>{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</td>
-      <td ng-show="project.ruleBased == true">{{entry.rule}}</td>
-      <td ng-show="entry.targetId != ''"><div>{{entry.targetName}}</div><div>{{entry.targetId}}</div></td>
-      <td ng-show="entry.targetId == null || entry.targetId == ''">{{entry.mapRelation.abbreviation}}</td>
-      
-      <td><a
-              title="Edit"
-              ng-show="isEditable(record)" 
-              ng-click="editRecord(record)"><i
-              class="glyphicon glyphicon glyphicon-pencil"></i></a>
+
+    </tr>
+    
+
+    
+    <!-- NOTES -->
+    <tr ng-show="record.mapNote.length > 0 && currentRole != 'Viewer'" 
+    	style="width: 100%;" ng-repeat="note in record.mapNote">
+      <td style="border-top:0px;">
+        <div style="float: left; width: 3%;"><img
+              src="img/notepad.png" alt="notepad icon" tooltip-placement="top" tooltip="Notes"></div>
+        <div style="float: left; width: 97%;">
+          <span ng-bind-html="to_trusted(truncate(note.note, 200))"></span>
+          <span ng-show="truncated(note.note, 200)"
+                class="dropdown">
+                <a style="display:inline;" class="dropdown-toggle">...</a> <span style="width: 100%"
+                  class="dropdown-menu term-browser-dropdown-menu">
+                  <p>{{note.note}}</p>
+                </span>
+              </span>
+        </div>
       </td>
     </tr>
-
+    
+    <!-- PRINCIPLES -->
+    <tr style="width: 100%;" ng-repeat="principle in record.mapPrinciple">
+      <td>
+        <div ng-show="$first" style="float: left; width: 7%;">Principle:&nbsp;</div>
+        <div ng-show="!$first" style="float: left; width: 7%;">&nbsp;</div>
+        <div style="float: left; width: 93%;">
+          <p ng-bind-html="to_trusted(principle.detail)"></p>
+        </div>
+      </td>
+    </tr>
   </tbody>
   
   <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
