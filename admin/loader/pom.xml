@@ -297,6 +297,30 @@
         </plugins>
       </build>
     </profile>
+    
+    <!-- Compute workflow for a map project -->
+    <profile>
+      <id>ImportUserErrors</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>import-user-errors</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>import-user-errors</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
 
   </profiles>
 </project>

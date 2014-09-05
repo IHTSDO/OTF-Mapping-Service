@@ -729,5 +729,17 @@ public class MapRecordImpl implements MapRecord {
 	  
   }
 
+@Override
+public boolean isDiscrepancyReview() {
+	// TODO Auto-generated method stub
+	return false;
+}
+
+@Override
+public void setDiscrepancyReview(boolean isDiscrepancyReview) {
+	// TODO Auto-generated method stub
+	
+}
+
 
 }
