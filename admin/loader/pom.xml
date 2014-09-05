@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>otf-mapping-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -33,6 +33,32 @@
                 <phase>package</phase>
                 <goals>
                   <goal>load-rf2-snapshot</goal>
+                </goals>
+                <configuration>
+                  <terminology>SNOMEDCT</terminology>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+     <!-- Load SNOMED delta -->
+    <profile>
+      <id>SNOMEDCTDelta</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>load-rf2-delta</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-rf2-delta</goal>
                 </goals>
                 <configuration>
                   <terminology>SNOMEDCT</terminology>
@@ -170,6 +196,29 @@
         </plugins>
       </build>
     </profile>
+    
+     <!-- Load asample of map records from RF2 map file -->
+    <profile>
+      <id>MapRecordsSample</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>load-rf2-complex-map-sample</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-rf2-complex-map-sample</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
     <!-- Create map records from content tables -->
     <profile>
@@ -241,6 +290,30 @@
                 <configuration>
                   <refSetId>${refset.id}</refSetId>
                 </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+    
+    <!-- Compute workflow for a map project -->
+    <profile>
+      <id>ImportUserErrors</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>import-user-errors</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>import-user-errors</goal>
+                </goals>
               </execution>
             </executions>
           </plugin>

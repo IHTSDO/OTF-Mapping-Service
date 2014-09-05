@@ -290,41 +290,47 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
       MetadataService metadataService = new MetadataServiceJpa();
       while ((line = projectsReader.readLine()) != null) {
+    	  
+    	int i = 0; 
+    	  
         String[] fields = line.split("\t");
         MapProjectJpa mapProject = new MapProjectJpa();
-        mapProject.setName(fields[0]);
-        mapProject.setRefSetId(fields[1]);
-        mapProject.setPublished(fields[2].equals("true") ? true : false);
-        mapProject.setSourceTerminology(fields[3]);
+        mapProject.setName(fields[i++]);
+        mapProject.setRefSetId(fields[i++]);
+        mapProject.setPublished(fields[i++].equals("true") ? true : false);
+        mapProject.setSourceTerminology(fields[i++]);
         // Override setting from the file and use the current version in the DB.
-        String terminologyVersion = metadataService.getTerminologyLatestVersions().get(fields[3]);
+        String terminologyVersion = metadataService.getTerminologyLatestVersions().get(mapProject.getSourceTerminology());
         if (terminologyVersion == null) {
-          throw new Exception("Unexpected failure to find current version of " + fields[3]);
+          throw new Exception("Unexpected failure to find current version of " + mapProject.getSourceTerminology());
         }
+        i++; // increment the counter
         mapProject.setSourceTerminologyVersion(terminologyVersion);
-        mapProject.setDestinationTerminology(fields[5]);
+        mapProject.setDestinationTerminology(fields[i++]);
         // Override setting from the file and use the current version in the DB.
-        terminologyVersion = metadataService.getTerminologyLatestVersions().get(fields[5]);
+        terminologyVersion = metadataService.getTerminologyLatestVersions().get(mapProject.getDestinationTerminology());
         if (terminologyVersion == null) {
-          throw new Exception("Unexpected failure to find current version of " + fields[5]);
+          throw new Exception("Unexpected failure to find current version of " + mapProject.getDestinationTerminology());
         }
+        i++; // increment the counter
         mapProject.setDestinationTerminologyVersion(terminologyVersion);
-        mapProject.setBlockStructure(fields[7].toLowerCase().equals("true")
+        mapProject.setBlockStructure(fields[i++].toLowerCase().equals("true")
             ? true : false);
-        mapProject.setGroupStructure(fields[8].toLowerCase().equals("true")
+        mapProject.setGroupStructure(fields[i++].toLowerCase().equals("true")
             ? true : false);
-        mapProject.setPublished(fields[9].toLowerCase().equals("true") ? true
+        mapProject.setPublished(fields[i++].toLowerCase().equals("true") ? true
             : false);
-        mapProject.setMapRelationStyle(fields[10]);
-        mapProject.setMapPrincipleSourceDocument(fields[11]);
-        mapProject.setRuleBased(fields[12].toLowerCase().equals("true") ? true
+        mapProject.setMapRelationStyle(fields[i++]);
+        mapProject.setWorkflowType(fields[i++]);
+        mapProject.setMapPrincipleSourceDocument(fields[i++]);
+        mapProject.setRuleBased(fields[i++].toLowerCase().equals("true") ? true
             : false);
-        mapProject.setMapRefsetPattern(fields[13]);
-        mapProject.setProjectSpecificAlgorithmHandlerClass(fields[14]);
+        mapProject.setMapRefsetPattern(fields[i++]);
+        mapProject.setProjectSpecificAlgorithmHandlerClass(fields[i++]);
         getLog().info("  " + mapProject.getRefSetId());
         getLog().info("  " + mapProject.getName());
 
-        String mapAdvices = fields[15].replaceAll("\"", "");
+        String mapAdvices = fields[i++].replaceAll("\"", "");
         if (!mapAdvices.equals("")) {
           for (String advice : mapAdvices.split(";")) {
             for (MapAdvice ml : mappingService.getMapAdvices().getIterable()) {
@@ -334,7 +340,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
 
-        String mapRelations = fields[16].replaceAll("\"", "");
+        String mapRelations = fields[i++].replaceAll("\"", "");
         if (!mapRelations.equals("")) {
           for (String terminologyId : mapRelations.split(",")) {
             for (MapRelation ml : mappingService.getMapRelations()
@@ -346,7 +352,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
 
-        String mapPrinciples = fields[17].replaceAll("\"", "");
+        String mapPrinciples = fields[i++].replaceAll("\"", "");
         if (!mapPrinciples.equals("")) {
           for (String principle : mapPrinciples.split(",")) {
             for (MapPrinciple ml : mappingService.getMapPrinciples()
@@ -358,7 +364,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
 
-        String mapLeads = fields[18].replaceAll("\"", "");
+        String mapLeads = fields[i++].replaceAll("\"", "");
         for (String lead : mapLeads.split(",")) {
           for (MapUser ml : mappingService.getMapUsers().getIterable()) {
             if (ml.getUserName().equals(lead))
@@ -366,7 +372,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
 
-        String mapSpecialists = fields[19].replaceAll("\"", "");
+        String mapSpecialists = fields[i++].replaceAll("\"", "");
         for (String specialist : mapSpecialists.split(",")) {
 
           for (MapUser ml : mappingService.getMapUsers().getIterable()) {
@@ -375,7 +381,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
         
-        String mapAdministrators = fields[20].replaceAll("\"", "");
+        String mapAdministrators = fields[i++].replaceAll("\"", "");
         for (String administrator : mapAdministrators.split(",")) {
 
           for (MapUser ma : mappingService.getMapUsers().getIterable()) {
@@ -384,9 +390,9 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
 
-        mapProject.setScopeDescendantsFlag(fields[21].toLowerCase().equals(
+        mapProject.setScopeDescendantsFlag(fields[i++].toLowerCase().equals(
             "true") ? true : false);
-        mapProject.setScopeExcludedDescendantsFlag(fields[22].toLowerCase()
+        mapProject.setScopeExcludedDescendantsFlag(fields[i++].toLowerCase()
             .equals("true") ? true : false);
 
         // add the preset age ranges

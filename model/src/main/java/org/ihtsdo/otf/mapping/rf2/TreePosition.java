@@ -2,6 +2,9 @@ package org.ihtsdo.otf.mapping.rf2;
 
 import java.util.List;
 
+import org.ihtsdo.otf.mapping.helpers.TreePositionDescriptionGroup;
+
+// TODO: Auto-generated Javadoc
 /**
  * Represents a tree position.
  * 
@@ -178,5 +181,19 @@ public interface TreePosition {
 	 * @return true, if is valid
 	 */
 	public boolean isValid();
+
+	/**
+	 * Gets the desc groups.
+	 *
+	 * @return the desc groups
+	 */
+	public List<TreePositionDescriptionGroup> getDescGroups();
+
+	/**
+	 * Sets the desc groups.
+	 *
+	 * @param descGroups the new desc groups
+	 */
+	public void setDescGroups(List<TreePositionDescriptionGroup> descGroups);
 
 }

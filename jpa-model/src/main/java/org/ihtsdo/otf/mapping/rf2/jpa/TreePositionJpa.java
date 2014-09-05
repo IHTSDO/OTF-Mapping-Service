@@ -21,6 +21,7 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.mapping.helpers.TreePositionDescriptionGroup;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 /**
@@ -64,6 +65,9 @@ public class TreePositionJpa implements TreePosition {
 	/** Flag for whether this tree position is assignable (not persisted). */
 	@Transient
 	private boolean valid;
+	
+	@Transient
+	private List<TreePositionDescriptionGroup> descGroups = new ArrayList<>();
 
 	/** The children count. */
 	@Column(nullable = false)
@@ -329,6 +333,17 @@ public class TreePositionJpa implements TreePosition {
 	@Override
 	public void setValid(boolean valid) {
 		this.valid = valid;
+	}
+	
+	
+	@Override
+	public List<TreePositionDescriptionGroup> getDescGroups() {
+		return descGroups;
+	}
+
+	@Override
+	public void setDescGroups(List<TreePositionDescriptionGroup> descGroups) {
+		this.descGroups = descGroups;
 	}
 
 	/* (non-Javadoc)
