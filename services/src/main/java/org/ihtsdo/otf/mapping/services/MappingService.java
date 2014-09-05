@@ -844,5 +844,19 @@ public interface MappingService {
 	public void checkMapGroupsForMapProject(MapProject mapProject,
 			boolean updateRecords) throws Exception;
 
+	/**
+	 * Creates the map records for map project.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param complexMapRefSetMembers the complex map ref set members
+	 * @param workflowStatus the workflow status
+	 * @param samplingRate the sampling rate
+	 * @throws Exception the exception
+	 */
+	void createMapRecordsForMapProject(Long mapProjectId,
+			List<ComplexMapRefSetMember> complexMapRefSetMembers,
+			WorkflowStatus workflowStatus, float samplingRate) throws Exception;
+
+
 	
 }
