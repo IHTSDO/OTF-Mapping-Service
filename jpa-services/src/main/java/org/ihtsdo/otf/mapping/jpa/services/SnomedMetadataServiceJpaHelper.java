@@ -6,14 +6,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.GraphHelper;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
- * The Class SnomedMetadataServiceJpaHelper.
- * 
- * @author ${author}
+ * Implementation of {@link MetadataService} for SNOMEDCT.
  */
 public class SnomedMetadataServiceJpaHelper implements MetadataService {
 
@@ -51,7 +50,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("900000000000443000", terminology,
+        getDescendantConcepts(contentService, "900000000000443000", terminology,
             version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -63,6 +62,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     contentService.close();
     return map;
   }
+
 
   /*
    * (non-Javadoc)
@@ -81,7 +81,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("900000000000480006", terminology,
+        getDescendantConcepts(contentService,"900000000000480006", terminology,
             version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -111,7 +111,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("447250001", terminology, version,
+        getDescendantConcepts(contentService,"447250001", terminology, version,
             isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -142,7 +142,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("900000000000506000", terminology,
+        getDescendantConcepts(contentService,"900000000000506000", terminology,
             version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -172,7 +172,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("900000000000496009", terminology,
+        getDescendantConcepts(contentService,"900000000000496009", terminology,
             version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -202,7 +202,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("446609009", terminology, version,
+        getDescendantConcepts(contentService,"446609009", terminology, version,
             isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -233,7 +233,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("447634004", terminology, version,
+        getDescendantConcepts(contentService,"447634004", terminology, version,
             isaRelationshipType);
 
     Logger.getLogger(this.getClass()).debug(
@@ -249,7 +249,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     // 447247004 - SNOMED CT source code not mappable to target coding scheme
     // want all descendants, do not use pfsParameter
     descendants =
-        contentService.getDescendants("447247004", terminology, version,
+        getDescendantConcepts(contentService,"447247004", terminology, version,
             isaRelationshipType);
 
     Logger.getLogger(this.getClass()).debug(
@@ -282,7 +282,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("900000000000444006", terminology,
+        getDescendantConcepts(contentService,"900000000000444006", terminology,
             version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -312,7 +312,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("900000000000446008", terminology,
+        getDescendantConcepts(contentService,"900000000000446008", terminology,
             version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -342,7 +342,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("900000000000447004", terminology,
+        getDescendantConcepts(contentService,"900000000000447004", terminology,
             version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -372,7 +372,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("106237007", terminology, version,
+        getDescendantConcepts(contentService,"106237007", terminology, version,
             isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -423,7 +423,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("900000000000449001", terminology,
+        getDescendantConcepts(contentService,"900000000000449001", terminology,
             version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -453,7 +453,7 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     
     // want all descendants, do not use pfsParameter
     Set<Concept> descendants =
-        contentService.getDescendants("900000000000450001", terminology,
+        getDescendantConcepts(contentService,"900000000000450001", terminology,
             version, isaRelationshipType);
 
     for (Concept descendant : descendants) {
@@ -495,4 +495,22 @@ public class SnomedMetadataServiceJpaHelper implements MetadataService {
     return null;
   }
 
+
+  /**
+   * Helper method for getting descendants.
+   * @param contentService
+   * @param terminologyId
+   * @param terminology
+   * @param terminologyVersion
+   * @param typeId
+   * @return
+   * @throws Exception
+   */
+  private Set<Concept> getDescendantConcepts(ContentService contentService,
+    String terminologyId, String terminology, String terminologyVersion,
+    String typeId) throws Exception {
+    Concept concept = contentService.getConcept(terminologyId, terminology, terminologyVersion);
+    return GraphHelper.getDescendantConcepts(concept, typeId);
+
+  }
 }

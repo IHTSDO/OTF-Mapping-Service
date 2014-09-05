@@ -4,18 +4,23 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.dto.KeyValuePair;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairList;
 import org.ihtsdo.otf.mapping.dto.KeyValuePairLists;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.SecurityService;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -29,29 +34,40 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-@SuppressWarnings("static-method")
-public class MetadataServiceRest {
+public class MetadataServiceRest extends RootServiceRest {
 
+	/**  The security service. */
+	private SecurityService securityService = new SecurityServiceJpa();
+	
   /**
-   * Returns the all metadata.
+   * Returns all metadata for a terminology and version
    * 
    * @param terminology the terminology
    * @param version the version
+   * @param authToken 
    * @return the all metadata
    */
   @GET
-  @Path("/all/{terminology}/{version}")
+  @Path("/metadata/terminology/id/{terminology}/{version}")
   @ApiOperation(value = "Get metadata for terminology and version", notes = "Gets the key-value pairs representing metadata for a particular terminology and version", response = KeyValuePairLists.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public KeyValuePairLists getMetadata(
     @ApiParam(value = "terminology string", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "terminology version string", required = true) @PathParam("version") String version) {
+    @ApiParam(value = "terminology version string", required = true) @PathParam("version") String version,
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
     
-	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /all/" + terminology + "/" + version);
+	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /metadata/" + terminology + "/" + version);
 	  
 	  try {
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the metadata.").build());
+			
+  		
       // call jpa service and get complex map return type
       MetadataService metadataService = new MetadataServiceJpa();
       Map<String, Map<String, String>> mapOfMaps =
@@ -75,57 +91,79 @@ public class MetadataServiceRest {
       }
       metadataService.close();
       return keyValuePairLists;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
+		} catch (Exception e) { 
+			handleException(e, "trying to retrieve the metadata");
+			return null;
+		}
   }
 
   /**
    * Returns all metadata for the latest version.
    * 
    * @param terminology the terminology
-   * @return the all metadata
+   * @param authToken 
+   * @return the metadata
    */
   @GET
-  @Path("/all/{terminology}")
-  @ApiOperation(value = "Get all metadata with the latest version", notes = "Returns all metadata with the latest version in either JSON or XML format", response = KeyValuePairLists.class)
+  @Path("/metadata/terminology/id/{terminology}/latest")
+  @ApiOperation(value = "Get the latest version of terminology metadata", notes = "Returns all metadata for a specified terminology with the latest version in either JSON or XML format", response = KeyValuePairLists.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public KeyValuePairLists getAllMetadata(
-    @ApiParam(value = "terminology string", required = true) @PathParam("terminology") String terminology) {
+    @ApiParam(value = "terminology string", required = true) @PathParam("terminology") String terminology,
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 	  
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /all/" + terminology); 
-	  
+	    	
     try {
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve all metadata.").build());
+			
+  		
       MetadataService metadataService = new MetadataServiceJpa();
       String version = metadataService.getLatestVersion(terminology);
       KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
-      keyValuePairLists = getMetadata(terminology, version);
+      keyValuePairLists = getMetadata(terminology, version, authToken);
 
       metadataService.close();
       return keyValuePairLists;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
+		} catch (Exception e) { 
+			handleException(e, "trying to retrieve all metadata");
+			return null;
+		}
   }
 
   /**
-   * Returns the all terminologies latest versions.
+   * Returns all terminologies with only their latest version
+   * @param authToken 
    * 
    * @return the all terminologies latest versions
    */
   @GET
-  @Path("/terminologies/latest/")
+  @Path("/terminology/terminologies/latest")
   @ApiOperation(value = "Get all terminologies and their latest versions", notes = "Returns list of terminologies and their latest versions in either JSON or XML format", response = KeyValuePairList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public KeyValuePairList getAllTerminologiesLatestVersions() {
+  public KeyValuePairList getAllTerminologiesLatestVersions(
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 	  
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /terminologies/latest/");
 	  
+
+		
     try {
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the latest versions of all terminologies.").build());
+			
+  		
       MetadataService metadataService = new MetadataServiceJpa();
       Map<String, String> terminologyVersionMap =
           metadataService.getTerminologyLatestVersions();
@@ -137,26 +175,38 @@ public class MetadataServiceRest {
       }
       metadataService.close();
       return keyValuePairList;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
+		} catch (Exception e) { 
+			handleException(e, "trying to retrieve the latest versions of all terminologies");
+			return null;
+		}
   }
 
   /**
-   * Returns the all terminologies versions.
+   * Returns all terminologies and all versions
+   * @param authToken 
    * 
-   * @return the all terminologies versions
+   * @return all terminologies and versions
    */
   @GET
-  @Path("/terminologies/")
+  @Path("/terminology/terminologies")
   @ApiOperation(value = "Get all terminologies and all their versions", notes = "Returns list of terminologies and their versions in either JSON or XML format", response = KeyValuePairList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public KeyValuePairLists getAllTerminologiesVersions() {
+  public KeyValuePairLists getAllTerminologiesVersions(
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 	  
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /terminologies");
+	  
+  	
     try {
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(Response.status(401).entity(
+						"User does not have permissions to retrieve the versions of all terminologies.").build());
+			
+  		
       KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
       MetadataService metadataService = new MetadataServiceJpa();
       List<String> terminologies = metadataService.getTerminologies();
@@ -172,9 +222,11 @@ public class MetadataServiceRest {
       }
       metadataService.close();
       return keyValuePairLists;
-    } catch (Exception e) {
-      throw new WebApplicationException(e);
-    }
+		} catch (Exception e) { 
+			handleException(e, "trying to retrieve the versions of all terminologies");
+			return null;
+		}
   }
+  
 
 }

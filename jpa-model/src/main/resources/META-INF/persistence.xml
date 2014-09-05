@@ -32,6 +32,6 @@
     <class>org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa</class>
     <class>org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa</class>
     <class>org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa</class>
-    <class>org.ihtsdo.otf.mapping.workflow.WorkflowTrackingRecordJpa</class>
+    <class>org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa</class>
   </persistence-unit>
 </persistence>

@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
-// TODO: Auto-generated Javadoc
 /**
  * Represents a map project.
  * 
@@ -223,8 +222,7 @@ public interface MapProject {
 
 	/**
 	 * Sets the map administrators.
-	 * 
-	 * @param mapLeads the map administrators
+	 * @param mapAdministrators the map administrators
 	 */
 	public void setMapAdministrators(Set<MapUser> mapAdministrators);
 
@@ -509,6 +507,20 @@ public interface MapProject {
 	 */
 	public void setProjectSpecificAlgorithmHandlerClass(
 			String projectSpecificAlgorithmHandlerClass);
+
+	/**
+	 * Gets the workflow type.
+	 *
+	 * @return the workflow type
+	 */
+	public String getWorkflowType();
+
+	/**
+	 * Sets the workflow type.
+	 *
+	 * @param workflowType the new workflow type
+	 */
+	public void setWorkflowType(String workflowType);
 
 
 

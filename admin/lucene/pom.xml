@@ -5,8 +5,8 @@
   <!-- Module Metadata -->
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
-    <artifactId>mapping-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>otf-mapping-service</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -39,6 +39,9 @@
                 <goals>
                   <goal>reindex</goal>
                 </goals>
+                <configuration>
+                  <indexedObjects>${indexedObjects}</indexedObjects>
+                </configuration>
               </execution>
             </executions>
           </plugin>
