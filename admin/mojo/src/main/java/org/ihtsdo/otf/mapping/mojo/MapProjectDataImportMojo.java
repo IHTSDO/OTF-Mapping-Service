@@ -13,6 +13,7 @@ import java.util.StringTokenizer;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
@@ -21,6 +22,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -30,6 +32,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
  * Goal which imports project data from text files.
@@ -140,6 +143,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         mapUser.setName(st.nextToken());
         mapUser.setUserName(st.nextToken());
         mapUser.setEmail(st.nextToken());
+        String role = st.nextToken();       
+        mapUser.setApplicationRole(MapUserRole.valueOf(role));
         mappingService.addMapUser(mapUser);
         getLog().info("  " + mapUser.getUserName());
       }
@@ -276,39 +281,56 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         getLog().info("  " + mapAgeRange.toString());
       }
       getLog().info(
-          "  " + Integer.toString(mappingService.getMapAgeRanges().size())
+          "  " + Integer.toString(mappingService.getMapAgeRanges().getCount())
               + " ageranges added from "
               + Integer.toString(projectAgeRanges.size()) + " map projects.");
 
       // Add map projects
       getLog().info("Adding projects...");
 
+      MetadataService metadataService = new MetadataServiceJpa();
       while ((line = projectsReader.readLine()) != null) {
+    	  
+    	int i = 0; 
+    	  
         String[] fields = line.split("\t");
         MapProjectJpa mapProject = new MapProjectJpa();
-        mapProject.setName(fields[0]);
-        mapProject.setRefSetId(fields[1]);
-        mapProject.setPublished(fields[2].equals("true") ? true : false);
-        mapProject.setSourceTerminology(fields[3]);
-        mapProject.setSourceTerminologyVersion(fields[4]);
-        mapProject.setDestinationTerminology(fields[5]);
-        mapProject.setDestinationTerminologyVersion(fields[6]);
-        mapProject.setBlockStructure(fields[7].toLowerCase().equals("true")
+        mapProject.setName(fields[i++]);
+        mapProject.setRefSetId(fields[i++]);
+        mapProject.setPublished(fields[i++].equals("true") ? true : false);
+        mapProject.setSourceTerminology(fields[i++]);
+        // Override setting from the file and use the current version in the DB.
+        String terminologyVersion = metadataService.getTerminologyLatestVersions().get(mapProject.getSourceTerminology());
+        if (terminologyVersion == null) {
+          throw new Exception("Unexpected failure to find current version of " + mapProject.getSourceTerminology());
+        }
+        i++; // increment the counter
+        mapProject.setSourceTerminologyVersion(terminologyVersion);
+        mapProject.setDestinationTerminology(fields[i++]);
+        // Override setting from the file and use the current version in the DB.
+        terminologyVersion = metadataService.getTerminologyLatestVersions().get(mapProject.getDestinationTerminology());
+        if (terminologyVersion == null) {
+          throw new Exception("Unexpected failure to find current version of " + mapProject.getDestinationTerminology());
+        }
+        i++; // increment the counter
+        mapProject.setDestinationTerminologyVersion(terminologyVersion);
+        mapProject.setBlockStructure(fields[i++].toLowerCase().equals("true")
             ? true : false);
-        mapProject.setGroupStructure(fields[8].toLowerCase().equals("true")
+        mapProject.setGroupStructure(fields[i++].toLowerCase().equals("true")
             ? true : false);
-        mapProject.setPublished(fields[9].toLowerCase().equals("true") ? true
+        mapProject.setPublished(fields[i++].toLowerCase().equals("true") ? true
             : false);
-        mapProject.setMapRelationStyle(fields[10]);
-        mapProject.setMapPrincipleSourceDocument(fields[11]);
-        mapProject.setRuleBased(fields[12].toLowerCase().equals("true") ? true
+        mapProject.setMapRelationStyle(fields[i++]);
+        mapProject.setWorkflowType(fields[i++]);
+        mapProject.setMapPrincipleSourceDocument(fields[i++]);
+        mapProject.setRuleBased(fields[i++].toLowerCase().equals("true") ? true
             : false);
-        mapProject.setMapRefsetPattern(fields[13]);
-        mapProject.setProjectSpecificAlgorithmHandlerClass(fields[14]);
+        mapProject.setMapRefsetPattern(fields[i++]);
+        mapProject.setProjectSpecificAlgorithmHandlerClass(fields[i++]);
         getLog().info("  " + mapProject.getRefSetId());
         getLog().info("  " + mapProject.getName());
 
-        String mapAdvices = fields[15].replaceAll("\"", "");
+        String mapAdvices = fields[i++].replaceAll("\"", "");
         if (!mapAdvices.equals("")) {
           for (String advice : mapAdvices.split(";")) {
             for (MapAdvice ml : mappingService.getMapAdvices().getIterable()) {
@@ -318,7 +340,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
 
-        String mapRelations = fields[16].replaceAll("\"", "");
+        String mapRelations = fields[i++].replaceAll("\"", "");
         if (!mapRelations.equals("")) {
           for (String terminologyId : mapRelations.split(",")) {
             for (MapRelation ml : mappingService.getMapRelations()
@@ -330,7 +352,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
 
-        String mapPrinciples = fields[17].replaceAll("\"", "");
+        String mapPrinciples = fields[i++].replaceAll("\"", "");
         if (!mapPrinciples.equals("")) {
           for (String principle : mapPrinciples.split(",")) {
             for (MapPrinciple ml : mappingService.getMapPrinciples()
@@ -342,7 +364,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
 
-        String mapLeads = fields[18].replaceAll("\"", "");
+        String mapLeads = fields[i++].replaceAll("\"", "");
         for (String lead : mapLeads.split(",")) {
           for (MapUser ml : mappingService.getMapUsers().getIterable()) {
             if (ml.getUserName().equals(lead))
@@ -350,7 +372,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
 
-        String mapSpecialists = fields[19].replaceAll("\"", "");
+        String mapSpecialists = fields[i++].replaceAll("\"", "");
         for (String specialist : mapSpecialists.split(",")) {
 
           for (MapUser ml : mappingService.getMapUsers().getIterable()) {
@@ -359,7 +381,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
         
-        String mapAdministrators = fields[20].replaceAll("\"", "");
+        String mapAdministrators = fields[i++].replaceAll("\"", "");
         for (String administrator : mapAdministrators.split(",")) {
 
           for (MapUser ma : mappingService.getMapUsers().getIterable()) {
@@ -368,9 +390,9 @@ public class MapProjectDataImportMojo extends AbstractMojo {
           }
         }
 
-        mapProject.setScopeDescendantsFlag(fields[21].toLowerCase().equals(
+        mapProject.setScopeDescendantsFlag(fields[i++].toLowerCase().equals(
             "true") ? true : false);
-        mapProject.setScopeExcludedDescendantsFlag(fields[22].toLowerCase()
+        mapProject.setScopeExcludedDescendantsFlag(fields[i++].toLowerCase()
             .equals("true") ? true : false);
 
         // add the preset age ranges
@@ -395,6 +417,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         mappingService.addMapProject(mapProject);
       }
 
+      metadataService.close();
+
       getLog().info(
           "  "
               + Integer.toString(mappingService.getMapProjects()
@@ -410,24 +434,32 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
       getLog().info("Adding scope includes...");
 
+      ContentService contentService = new ContentServiceJpa();
       while ((line = scopeIncludesReader.readLine()) != null) {
 
         String[] fields = line.split("\\t");
 
         // retrieve the project id associated with this refSetId
         Long projectId =
-            mappingService.getMapProjectByRefSetId(fields[0]).getId();
+            mappingService.getMapProjectForRefSetId(fields[0]).getId();
+        MapProject project = mappingService.getMapProject(projectId);
 
-        // if project already added, add list of concepts
-        if (projectToConceptsInScope.containsKey(projectId))
-          projectToConceptsInScope.get(projectId).add(fields[1]);
+        Concept c = contentService.getConcept(fields[1], project.getSourceTerminology(), 
+        		project.getSourceTerminologyVersion());
+        if (c == null) {
+          getLog().warn("Scope Includes concept + " + fields[1] + " is not in the data.");
+        } else {
+					// if project already added, add list of concepts
+					if (projectToConceptsInScope.containsKey(projectId))
+						projectToConceptsInScope.get(projectId).add(fields[1]);
 
-        // otherwise add project with list of concepts
-        else {
-          Set<String> conceptsInScope = new HashSet<>();
-          conceptsInScope.add(fields[1]);
-          projectToConceptsInScope.put(projectId, conceptsInScope);
-        }
+					// otherwise add project with list of concepts
+					else {
+						Set<String> conceptsInScope = new HashSet<>();
+						conceptsInScope.add(fields[1]);
+						projectToConceptsInScope.put(projectId, conceptsInScope);
+					}
+				}
       }
 
       // set the map project scope concepts and update the project
@@ -461,20 +493,28 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
         // retrieve the project id associated with this refSetId
         Long projectId =
-            mappingService.getMapProjectByRefSetId(fields[0]).getId();
+            mappingService.getMapProjectForRefSetId(fields[0]).getId();
+        MapProject project = mappingService.getMapProject(projectId);
 
-        // if project in set, add this new set of concept ids
-        if (projectToConceptsExcludedFromScope.containsKey(projectId))
-          projectToConceptsExcludedFromScope.get(projectId).add(fields[1]);
-
-        // otherwise, insert project into hash set with the excluded concept
-        // list
+        Concept c = contentService.getConcept(fields[1], project.getSourceTerminology(), 
+        		project.getSourceTerminologyVersion());
+        
+        if (c == null)
+          getLog().warn("Scope Excludes concept + " + fields[1] + " is not in the data.");
         else {
-          Set<String> conceptsExcludedFromScope = new HashSet<>();
-          conceptsExcludedFromScope.add(fields[1]);
-          projectToConceptsExcludedFromScope.put(projectId,
-              conceptsExcludedFromScope);
-        }
+					// if project in set, add this new set of concept ids
+					if (projectToConceptsExcludedFromScope.containsKey(projectId))
+						projectToConceptsExcludedFromScope.get(projectId).add(fields[1]);
+
+					// otherwise, insert project into hash set with the excluded concept
+					// list
+					else {
+						Set<String> conceptsExcludedFromScope = new HashSet<>();
+						conceptsExcludedFromScope.add(fields[1]);
+						projectToConceptsExcludedFromScope.put(projectId,
+								conceptsExcludedFromScope);
+					}
+				}
       }
 
       // cycle over detected project excludes and update map projects
@@ -497,6 +537,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
                   .size()) + " projects.");
 
       getLog().info("done ...");
+      contentService.close();
       mappingService.close();
       agerangesReader.close();
       usersReader.close();

@@ -34,6 +34,7 @@ hibernate.jdbc.default_batch_fetch_size=500
 # SNOMEDCT data location
 #
 loader.SNOMEDCT.input.data=/home/ihtsdo/data/snomedct-20140131-snapshot
+loader.SNOMEDCT.delta.data=/home/ihtsdo/data/snomedct-dailybuild-snapshot
 # SNOMED CT RF2 SCTID for "Synonym"
 loader.defaultPreferredNames.typeId=900000000000013009
 # SNOMED CT RF2 SCTID for the US English language refset
@@ -81,5 +82,19 @@ export.output.dir=/home/ihtsdo/data/ihtsdo-project-data
 #
 base.url=
 
+#
+# URL for security service
+#
+ihtsdo.security.activated=false
+ihtsdo.security.url=https://usermanagement.ihtsdotools.org/security-web/query/
 
-
+#
+# Exception processing emails
+#
+mail.smtp.user=mapping@ihtsdotools.org
+mail.smtp.password=***REMOVED***
+mail.smtp.host=auth.smtp.1and1.co.uk
+mail.smtp.port=587
+mail.smtp.starttls.enable=true
+mail.smtp.auth=true
+mail.smtp.to=EDIT_THIS

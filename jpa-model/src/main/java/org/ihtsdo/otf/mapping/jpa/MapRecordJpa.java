@@ -21,6 +21,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
@@ -76,11 +77,11 @@ public class MapRecordJpa implements MapRecord {
 	@Column(nullable = false)
 	private Long timestamp = (new Date()).getTime();
 
-	/** The user last modifying this record */
+	/** The user last modifying this record. */
 	@ManyToOne(targetEntity = MapUserJpa.class)
 	private MapUser lastModifiedBy;
 
-	/** The time at which the last user modified this record */
+	/** The time at which the last user modified this record. */
 	@Column(nullable = false)
 	private Long lastModified = (new Date()).getTime();
 
@@ -106,17 +107,16 @@ public class MapRecordJpa implements MapRecord {
 	private List<MapEntry> mapEntries = new ArrayList<>();
 
 	/** The map notes. */
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapNoteJpa.class)
-	@IndexedEmbedded(targetElement = MapNoteJpa.class)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = MapNoteJpa.class)
 	private Set<MapNote> mapNotes = new HashSet<>();
 
 	/** The map principles. */
-	@ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.EAGER)
+	@ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.LAZY)
 	@IndexedEmbedded(targetElement = MapPrincipleJpa.class)
 	private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
 	/** The originIds. */
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "map_records_origin_ids", joinColumns = @JoinColumn(name = "id"))
 	@Column(nullable = true)
 	private Set<Long> originIds = new HashSet<>();
@@ -136,6 +136,10 @@ public class MapRecordJpa implements MapRecord {
 	/** The workflow status. */
 	@Enumerated(EnumType.STRING)
 	private WorkflowStatus workflowStatus;
+	
+	/** Whether this record has discrepancy review */
+	@Transient
+	private boolean isDiscrepancyReview = false;
 
 	/**
 	 * Default constructor.
@@ -398,6 +402,7 @@ public class MapRecordJpa implements MapRecord {
 	@Override
 	@XmlElement(type = MapNoteJpa.class, name = "mapNote")
 	public Set<MapNote> getMapNotes() {
+		if (mapNotes == null) mapNotes = new HashSet<>(); // ensures proper deserialization
 		return mapNotes;
 	}
 
@@ -443,6 +448,7 @@ public class MapRecordJpa implements MapRecord {
 	@Override
 	@XmlElement(type = MapEntryJpa.class, name = "mapEntry")
 	public List<MapEntry> getMapEntries() {
+		if (mapEntries == null) mapEntries = new ArrayList<>(); // ensures proper deserialization
 		return mapEntries;
 	}
 
@@ -644,6 +650,9 @@ public class MapRecordJpa implements MapRecord {
 		flagForConsensusReview = flag;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#isEquivalent(org.ihtsdo.otf.mapping.model.MapRecord)
+	 */
 	@Override
 	public boolean isEquivalent(MapRecord mapRecord) {
 
@@ -717,7 +726,7 @@ public class MapRecordJpa implements MapRecord {
 			if (!mapRecord.getMapNotes().contains(note)) return false;
 		}
 
-		// check entries
+		// check principles
 		if (mapRecord.getMapPrinciples().size() != mapPrinciples.size()) return false;
 		for (MapPrinciple principle : mapPrinciples) {
 			if (!mapRecord.getMapPrinciples().contains(principle)) return false;
@@ -727,7 +736,54 @@ public class MapRecordJpa implements MapRecord {
 		return true;
 
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.model.MapRecord#setWorkflowStatus(org.ihtsdo.otf
+	 * .mapping.helpers.WorkflowStatus)
+	 */
+	@Override
+	public void setWorkflowStatus(WorkflowStatus workflowStatus) {
+		this.workflowStatus = workflowStatus;
+	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getWorkflowStatus()
+	 */
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	public WorkflowStatus getWorkflowStatus() {
+		return workflowStatus;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addOrigins(java.util.Set)
+	 */
+	@Override
+	public void addOrigins(Set<Long> origins) {
+		originIds.addAll(origins);
+	}
+
+
+	@Override
+	public boolean isDiscrepancyReview() {
+		return isDiscrepancyReview;
+	}
+
+	@Override
+	public void setDiscrepancyReview(boolean isDiscrepancyReview) {
+		this.isDiscrepancyReview = isDiscrepancyReview;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -761,6 +817,9 @@ public class MapRecordJpa implements MapRecord {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -841,6 +900,9 @@ public class MapRecordJpa implements MapRecord {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "MapRecordJpa [id=" + id + ", owner=" + owner + ", timestamp="
@@ -857,37 +919,8 @@ public class MapRecordJpa implements MapRecord {
 				+ "]";
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapRecord#setWorkflowStatus(org.ihtsdo.otf
-	 * .mapping.helpers.WorkflowStatus)
-	 */
-	@Override
-	public void setWorkflowStatus(WorkflowStatus workflowStatus) {
-		this.workflowStatus = workflowStatus;
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getWorkflowStatus()
-	 */
-	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-	public WorkflowStatus getWorkflowStatus() {
-		return workflowStatus;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addOrigins(java.util.Set)
-	 */
-	@Override
-	public void addOrigins(Set<Long> origins) {
-		originIds.addAll(origins);
-	}
+	
+	
 
 }

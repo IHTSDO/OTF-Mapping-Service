@@ -22,7 +22,6 @@ import java.util.Set;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
@@ -110,17 +109,6 @@ public class MapNoteRemoverMojo extends AbstractMojo {
       for (MapProject project : mapProjects) {
         for (MapRecord record : mappingService.getMapRecordsForMapProject(
             project.getId()).getMapRecords()) {
-          for (MapEntry entry : record.getMapEntries()) {
-            if (entry.getMapNotes().size() > 0) {
-              getLog().debug(
-                  "    Remove map record note from entry - " + entry.getId());
-              entry.getMapNotes().clear();
-              mappingService.updateMapEntry(entry);
-              if (++ct % 500 == 0) {
-                getLog().info("      " + ct + " notes processed");
-              }
-            }
-          }
           if (record.getMapNotes().size() > 0) {
             getLog().debug(
                 "    Remove map record notes from record - " + record.getId());
