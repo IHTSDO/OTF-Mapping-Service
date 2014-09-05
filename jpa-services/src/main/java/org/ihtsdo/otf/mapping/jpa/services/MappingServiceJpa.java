@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import javax.persistence.NoResultException;
@@ -2140,6 +2141,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	// / Services for Map Project Creation
 	// ///////////////////////////////////////
 
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -2245,6 +2247,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	}
 
+	@Override
+	public void createMapRecordsForMapProject(Long mapProjectId,
+			List<ComplexMapRefSetMember> complexMapRefSetMembers,
+			WorkflowStatus workflowStatus) throws Exception {
+		createMapRecordsForMapProject(mapProjectId, complexMapRefSetMembers, workflowStatus, -1.0f);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -2255,7 +2264,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	@Override
 	public void createMapRecordsForMapProject(Long mapProjectId,
 			List<ComplexMapRefSetMember> complexMapRefSetMembers,
-			WorkflowStatus workflowStatus) throws Exception {
+			WorkflowStatus workflowStatus, float samplingRate) throws Exception {
 		MapProject mapProject = getMapProject(mapProjectId);
 		Logger.getLogger(MappingServiceJpa.class).debug(
 				"  Creating map records for map project - "
@@ -2314,6 +2323,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			MapRecord mapRecord = null;
 			int ct = 0;
 			MapUser loaderUser = getMapUser("loader");
+			Random random = new Random();
 
 			if (loaderUser == null) {
 				throw new Exception("Loader user could not be found");
@@ -2402,8 +2412,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					mapRecord.setOwner(loaderUser);
 					mapRecord.setLastModifiedBy(loaderUser);
 
-					// set the workflow status to published
-					mapRecord.setWorkflowStatus(workflowStatus);
+					// random determine workflow state
+					// based on sampling percentage
+					// NOTE: Explicit equality check for -1.0f put in to avoid any possible errors
+					// in multiplication/division/comparison
+					if (samplingRate != -1.0f && random.nextInt(100 + 1) / 100.0 <= samplingRate) {
+						mapRecord.setWorkflowStatus(workflowStatus);
+					} else {
+						mapRecord.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+					}
 
 					// persist the record
 					addMapRecord(mapRecord);
@@ -3411,4 +3428,5 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				"  " + nRecordsChecked + " total records processed ("
 						+ nRecordsRemapped + " with group errors");
 	}
+
 }
