@@ -203,7 +203,6 @@ public class MapRecordJpaTest {
     MapEntry entry = mapRecord.getMapEntries().iterator().next();
     Long entryId = entry.getId();
     Long entryAdviceId = entry.getMapAdvices().iterator().next().getId();
-    Long entryNoteId = entry.getMapNotes().iterator().next().getId();
     // Long entryPrincipleId =
     // entry.getMapPrinciples().iterator().next().getId();
 
@@ -233,9 +232,6 @@ public class MapRecordJpaTest {
     // assertTrue(manager.find(MapPrincipleJpa.class, entryPrincipleId) !=
     // null);
 
-    // test existence of entry note (should have been deleted)
-    assertTrue(manager.find(MapNoteJpa.class, entryNoteId) == null);
-
     // test existence of entry advice (should not have been deleted)
     assertTrue(manager.find(MapAdviceJpa.class, entryAdviceId) != null);
 
@@ -263,8 +259,6 @@ public class MapRecordJpaTest {
 
     Long entryId = mapEntry.getId();
     Long entryAdviceId = mapEntry.getMapAdvices().iterator().next().getId();
-    Long entryNoteId = mapEntry.getMapNotes().iterator().next().getId();
-
     Logger.getLogger(MapRecordJpaTest.class).info("entryId " + entryId);
 
     // delete the map entry
@@ -279,9 +273,6 @@ public class MapRecordJpaTest {
 
     // test existence of entry (should have been deleted)
     assertTrue(manager.find(MapEntryJpa.class, entryId) == null);
-
-    // test existence of entry note (should have been deleted)
-    assertTrue(manager.find(MapNoteJpa.class, entryNoteId) == null);
 
     // test existence of entry advice (should not have been deleted)
     assertTrue(manager.find(MapAdviceJpa.class, entryAdviceId) != null);
@@ -387,7 +378,6 @@ public class MapRecordJpaTest {
     // add elements to map entry
     // mapEntry.addMapPrinciple(mapPrinciple);
     mapEntry.addMapAdvice(mapAdvice);
-    mapEntry.addMapNote(mapNote);
 
     // add elements to map record
     mapRecord1.addMapEntry(mapEntry);

@@ -134,7 +134,6 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
    * 
    * @see org.apache.maven.plugin.Mojo#execute()
    */
-  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoFailureException {
     getLog().info("Starting loading RF2 data ...");
@@ -148,12 +147,13 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       String configFileName = System.getProperty("run.config");
       getLog().info("  run.config = " + configFileName);
       Properties config = new Properties();
-      FileReader in = new FileReader(new File(configFileName)); 
+      FileReader in = new FileReader(new File(configFileName));
       config.load(in);
       in.close();
       getLog().info("  properties = " + config);
-      factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
-     
+      factory =
+          Persistence.createEntityManagerFactory("MappingServiceDS", config);
+
       // set the input directory
       String coreInputDirString =
           config.getProperty("loader." + terminology + ".input.data");
@@ -630,9 +630,12 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         coreIdentifierInputFile = f;
       }
     }
-    getLog().info(
-        "  Core Identifier Input File = " + coreIdentifierInputFile.toString()
-            + " " + coreIdentifierInputFile.exists());
+    if (coreIdentifierInputFile != null) {
+      getLog().info(
+          "  Core Identifier Input File = "
+              + coreIdentifierInputFile.toString() + " "
+              + coreIdentifierInputFile.exists());
+    }
 
     for (File f : coreTerminologyInputDir.listFiles()) {
       if (f.getName().contains("sct2_TextDefinition_")) {
@@ -780,7 +783,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
         new File(outputDir, "simple_refsets_by_concept.sort");
     File simpleMapRefsetsByConceptFile =
         new File(outputDir, "simple_map_refsets_by_concept.sort");
-    File comlpexMapRefsetsByConceptFile =
+    File complexMapRefsetsByConceptFile =
         new File(outputDir, "complex_map_refsets_by_concept.sort");
     File extendedMapRefsetsByConceptsFile =
         new File(outputDir, "extended_map_refsets_by_concept.sort");
@@ -836,7 +839,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
     sortRf2File(coreAttributeValueInputFile, attributeRefsetsByConceptFile, 5);
     sortRf2File(coreSimpleRefsetInputFile, simpleRefsetsByConceptFile, 5);
     sortRf2File(coreSimpleMapInputFile, simpleMapRefsetsByConceptFile, 5);
-    sortRf2File(coreComplexMapInputFile, comlpexMapRefsetsByConceptFile, 5);
+    sortRf2File(coreComplexMapInputFile, complexMapRefsetsByConceptFile, 5);
     sortRf2File(coreExtendedMapInputFile, extendedMapRefsetsByConceptsFile, 5);
     sortRf2File(coreLanguageInputFile, languageRefsetsByDescriptionFile, 5);
 
@@ -874,7 +877,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     // Complex map
     complexMapRefsetsByConcept =
-        new BufferedReader(new FileReader(comlpexMapRefsetsByConceptFile));
+        new BufferedReader(new FileReader(complexMapRefsetsByConceptFile));
 
     // Extended map
     extendedMapRefsetsByConcept =

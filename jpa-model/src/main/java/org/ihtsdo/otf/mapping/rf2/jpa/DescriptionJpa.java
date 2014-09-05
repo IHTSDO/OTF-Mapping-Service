@@ -19,7 +19,6 @@ import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
@@ -46,7 +45,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   private Long typeId;
 
   /** The term. */
-  @Column(nullable = false, length = 256)
+  @Column(nullable = false, length = 4000)
   private String term;
 
   /** The case significance id. */
@@ -60,7 +59,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 
   /** The language RefSet members */
   @OneToMany(mappedBy = "description", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = LanguageRefSetMemberJpa.class)
-  @IndexedEmbedded(targetElement = LanguageRefSetMemberJpa.class)
+ // @IndexedEmbedded(targetElement = LanguageRefSetMemberJpa.class) PG
   private Set<LanguageRefSetMember> languageRefSetMembers = new HashSet<>();
 
   /**

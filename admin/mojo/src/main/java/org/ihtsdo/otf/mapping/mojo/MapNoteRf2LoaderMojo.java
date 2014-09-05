@@ -51,7 +51,6 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
    * 
    * @throws MojoExecutionException the mojo execution exception
    */
-  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Start loading map notes data ...");
@@ -96,7 +95,6 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
       String line = null;
       int ct = 0;
       while ((line = mapNoteReader.readLine()) != null) {
-        ct++;
 
         // parse fields and create object
         // id effectiveTime active moduleId refSetId referencedComponentId
@@ -134,7 +132,8 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
             for (MapProject mapProject : mapProjects) {
 
               // find matching refset id
-              if (mapProject.getRefSetId().equals(fields[4])) {
+              if (mapProject.getRefSetId().equals(fields[4])
+                  && mapRecord.getMapProjectId().equals(mapProject.getId())) {
                 getLog().debug(
                     mapNote.getNote().length() + " "
                         + "    Adding note to record "

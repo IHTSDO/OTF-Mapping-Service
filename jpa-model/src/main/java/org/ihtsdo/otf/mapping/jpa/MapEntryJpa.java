@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,7 +10,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlElement;
@@ -29,7 +27,6 @@ import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
-import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 
@@ -56,22 +53,17 @@ public class MapEntryJpa implements MapEntry {
   @ContainedIn
   private MapRecord mapRecord;
 
-  /** The map notes. */
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER, targetEntity = MapNoteJpa.class)
-  @IndexedEmbedded(targetElement = MapNoteJpa.class)
-  private Set<MapNote> mapNotes = new HashSet<>();
-
   /** The map advices. */
-  @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.EAGER)
+  @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.LAZY)
   @IndexedEmbedded(targetElement = MapAdviceJpa.class)
   private Set<MapAdvice> mapAdvices = new HashSet<>();
 
   /** The target. */
-  @Column(nullable = true)
+  @Column(nullable = true, length = 4000)
   private String targetId;
 
   /** The target name. */
-  @Column(nullable = true)
+  @Column(nullable = true, length = 4000)
   private String targetName;
 
   /** The rule. */
@@ -83,6 +75,7 @@ public class MapEntryJpa implements MapEntry {
   private int mapPriority;
 
   @OneToOne(targetEntity = MapRelationJpa.class, fetch = FetchType.EAGER)
+  @IndexedEmbedded(targetElement = MapRelationJpa.class)
   private MapRelation mapRelation;
 
   /** The mapBlock. */
@@ -106,7 +99,6 @@ public class MapEntryJpa implements MapEntry {
    * 
    * @param id
    * @param mapRecord
-   * @param mapNotes
    * @param mapAdvices
    * @param targetId
    * @param targetName
@@ -116,14 +108,13 @@ public class MapEntryJpa implements MapEntry {
    * @param mapBlock
    * @param mapGroup
    */
-  public MapEntryJpa(Long id, MapRecord mapRecord, Set<MapNote> mapNotes,
+  public MapEntryJpa(Long id, MapRecord mapRecord, 
 		Set<MapAdvice> mapAdvices, String targetId, String targetName,
 		String rule, int mapPriority, MapRelation mapRelation, int mapBlock,
 		int mapGroup) {
 	super();
 	this.id = id;
 	this.mapRecord = mapRecord;
-	this.mapNotes = mapNotes;
 	this.mapAdvices = mapAdvices;
 	this.targetId = targetId;
 	this.targetName = targetName;
@@ -169,12 +160,6 @@ public class MapEntryJpa implements MapEntry {
 		  this.mapRelation = new MapRelationJpa(mapEntry.getMapRelation());
 	  }
 	  
-	  // copy notes
-	  for (MapNote mapNote : mapRecord.getMapNotes()) {
-		  addMapNote(new MapNoteJpa(mapNote, keepIds));
-	  }
-	  
-	  System.out.println("  " + toString());
   }
 
   /**
@@ -206,51 +191,6 @@ public class MapEntryJpa implements MapEntry {
   @Override
   public String getObjectId() {
     return (this.id == null ? null : id.toString());
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapNotes()
-   */
-  @Override
-  @XmlElement(type = MapNoteJpa.class, name = "mapNote")
-  public Set<MapNote> getMapNotes() {
-    return mapNotes;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapNotes(java.util.Set)
-   */
-  @Override
-  public void setMapNotes(Set<MapNote> notes) {
-    this.mapNotes = notes;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapEntry#addMapNote(org.ihtsdo.otf.mapping
-   * .model.MapNote)
-   */
-  @Override
-  public void addMapNote(MapNote note) {
-    mapNotes.add(note);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.MapEntry#removeMapNote(org.ihtsdo.otf.mapping
-   * .model.MapNote)
-   */
-  @Override
-  public void removeMapNote(MapNote note) {
-    mapNotes.remove(note);
   }
 
   /*
@@ -315,7 +255,8 @@ public class MapEntryJpa implements MapEntry {
   @XmlElement(type = MapAdviceJpa.class, name = "mapAdvice")
   @Override
   public Set<MapAdvice> getMapAdvices() {
-    return mapAdvices;
+	  if (mapAdvices == null) mapAdvices = new HashSet<>();// ensures proper serialization
+	  return mapAdvices;
   }
 
   /*
@@ -484,56 +425,82 @@ public class MapEntryJpa implements MapEntry {
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result =
-        prime * result + ((mapRelation == null) ? 0 : mapRelation.hashCode());
-    result = prime * result + ((rule == null) ? 0 : rule.hashCode());
-    result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());
-    result =
-        prime * result + ((targetName == null) ? 0 : targetName.hashCode());
-    return result;
-  }
+public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime * result
+			+ ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
+	result = prime * result + mapBlock;
+	result = prime * result + mapGroup;
+	result = prime * result + mapPriority;
+	
+	// note:  use map record id instead of map record to prevent hashCode() circular reference chain
+	result = prime * result + ((mapRecord.getId() == null) ? 0 : mapRecord.getId().hashCode());
+	result = prime * result
+			+ ((mapRelation == null) ? 0 : mapRelation.hashCode());
+	result = prime * result + ((rule == null) ? 0 : rule.hashCode());
+	result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());
+	result = prime * result
+			+ ((targetName == null) ? 0 : targetName.hashCode());
+	return result;
+}
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    MapEntryJpa other = (MapEntryJpa) obj;
-    if (mapRelation == null) {
-      if (other.mapRelation != null)
-        return false;
-    } else if (!mapRelation.equals(other.mapRelation))
-      return false;
-    if (rule == null) {
-      if (other.rule != null)
-        return false;
-    } else if (!rule.equals(other.rule))
-      return false;
-    if (targetId == null) {
-      if (other.targetId != null)
-        return false;
-    } else if (!targetId.equals(other.targetId))
-      return false;
-    if (targetName == null) {
-      if (other.targetName != null)
-        return false;
-    } else if (!targetName.equals(other.targetName))
-      return false;
-    return true;
-  }
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (obj == null)
+		return false;
+	if (getClass() != obj.getClass())
+		return false;
+	MapEntryJpa other = (MapEntryJpa) obj;
+	if (mapAdvices == null) {
+		if (other.mapAdvices != null)
+			return false;
+	} else if (!mapAdvices.equals(other.mapAdvices))
+		return false;
+	if (mapBlock != other.mapBlock)
+		return false;
+	if (mapGroup != other.mapGroup)
+		return false;
+	if (mapPriority != other.mapPriority)
+		return false;
+	
+	// note:  only compare map record id, otherwise equals() circular reference chain
+	if (mapRecord.getId() == null) {
+		if (other.mapRecord.getId() != null)
+			return false;
+	} else if (!mapRecord.getId().equals(other.mapRecord.getId()))
+		return false;
+	if (mapRelation == null) {
+		if (other.mapRelation != null)
+			return false;
+	} else if (!mapRelation.equals(other.mapRelation))
+		return false;
+	if (rule == null) {
+		if (other.rule != null)
+			return false;
+	} else if (!rule.equals(other.rule))
+		return false;
+	if (targetId == null) {
+		if (other.targetId != null)
+			return false;
+	} else if (!targetId.equals(other.targetId))
+		return false;
+	if (targetName == null) {
+		if (other.targetName != null)
+			return false;
+	} else if (!targetName.equals(other.targetName))
+		return false;
+	return true;
+}
 
   @Override
   public String toString() {
-    return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord.getId().toString() + ", mapNotes="
-        + mapNotes + ", mapAdvices=" + mapAdvices + ", targetId=" + targetId
+	  return "MapEntryJpa [id=" + id + ", mapRecord=" + mapRecord.getId().toString() + 
+        ", mapAdvices=" + (mapAdvices == null ? "null" : mapAdvices) + ", targetId=" + targetId
         + ", targetName=" + targetName + ", rule=" + rule + ", mapPriority="
-        + mapPriority + ", mapRelation=" + mapRelation + ", mapBlock="
+        + mapPriority + ", mapRelation=" + (mapRelation == null ? "null" : mapRelation) + ", mapBlock="
         + mapBlock + ", mapGroup=" + mapGroup + "]";
   }
 
