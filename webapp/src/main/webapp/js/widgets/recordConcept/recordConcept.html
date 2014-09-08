@@ -17,7 +17,21 @@
     <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
     Records</button>
   </h4>
-  <table class="table">
+  
+
+ <div ng-repeat="record in recordsInProject" otf-map-record-wide record="record" project="focusProject" show-title="false" ng-class-odd="'odd'" ng-class-even="'even'"></div>
+
+
+  <h4>Map Records for Other Projects</h4>
+<div ng-repeat="recordsForProject in recordsNotInProject">
+
+	<h4>{{getProjectName(recordsForProject[0])}}</h4>
+
+	 <div ng-repeat="record in recordsForProject" otf-map-record-wide record="record" project="focusProject" show-title="false" ng-class-odd="'odd'" ng-class-even="'even'"></div>
+	
+</div>
+  
+  <!-- <table class="table">
     <thead>
       <tr>
         <th style="width: 5%;"></th>
@@ -115,16 +129,20 @@
     </tbody>
 
 
-  </table>
+  </table> -->
 
 
 </div>
 
-<hr>
 <div ng-show="recordsNotInProject.length > 0">
 
-  <h4>Map Records for Other Projects</h4>
-  <table width="100%" class="table">
+
+  
+   <div ng-repeat="record in recordsNotInProject">
+   <div otf-map-record-wide record="record" project="focusProject" show-title="false"></div>
+   </div>
+  
+  <!-- <table width="100%" class="table">
     <thead>
       <tr>
         <th style="width: 3%;"></th>
@@ -202,8 +220,8 @@
         <td>
         
         	{{getProjectName(record)}}
-        <!-- 	<a ng-click="changeFocusProjectByRecord(record)"><i class="glyphicon glyphicon-share-alt"></i></a>
-        	 -->
+        	<a ng-click="changeFocusProjectByRecord(record)"><i class="glyphicon glyphicon-share-alt"></i></a>
+        	
         	</td>
        
         <td>{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</td>
@@ -220,7 +238,7 @@
 
 
     </tbody>
-  </table>
+  </table> -->
 </div>
 
 <hr>
