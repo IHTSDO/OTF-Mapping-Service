@@ -783,25 +783,14 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 							}]
 						}]
 
-/*					},{
-						columns: [{
-							class: 'col-md-12',
-							widgets: [{
-								type: "projectAdmin",
-								config: {
-								},
-								title: "Project Administration"
-							}]
-						}]
-*/
 					},{
 						columns: [{
 							class: 'col-md-12',
 							widgets: [{
-								type: "mapProjectAdmin",
+								type: "applicationAdmin",
 								config: {
 								},
-								title: "Map Project Administration"
+								title: "Application Administration"
 							}]
 						}]
 					}]
