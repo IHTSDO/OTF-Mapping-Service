@@ -1,21 +1,21 @@
 
 'use strict';
 
-angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
+angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 .config(function(dashboardProvider){
 	dashboardProvider
-	.widget('mapProjectAdmin', {
+	.widget('applicationAdmin', {
 		title: 'Application Administration',
 		description: 'Provides for the addition, deletion and updating of application level metadata.',
-		templateUrl: 'js/widgets/mapProjectAdmin/mapProjectAdmin.html',
-		controller: 'mapProjectAdminCtrl',
+		templateUrl: 'js/widgets/applicationAdmin/applicationAdmin.html',
+		controller: 'applicationAdminCtrl',
 		resolve: {},
 		edit: {}
 	});
 })
-.controller('mapProjectAdminCtrl', 
-			['$scope', '$http', '$sce', '$rootScope', '$location', 'localStorageService',
-			 function ($scope, $http, $sce, $rootScope, $location, localStorageService) {
+.controller('applicationAdminCtrl', 
+			['$scope', '$http', '$sce', '$rootScope', '$location', 'localStorageService', '$upload',
+			 function ($scope, $http, $sce, $rootScope, $location, localStorageService, $upload) {
 
 			    $scope.page =  'project';
 
@@ -1222,6 +1222,49 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 					});
 				};
 				
+				/*$scope.add = function(){
+					  var f = document.getElementById('file').files[0],
+					      r = new FileReader();
+					  r.onloadend = function(e){
+					    var data = e.target.result;
+					    //send you binary data via $http or $resource or do anything else with it
+					  };
+					  r.readAsBinaryString(f);
+				};
+				
+				$scope.uploadFile = function(files) {
+				    var fd = new FormData();
+				    //Take the first selected file
+				    fd.append("file", files[0]);
+
+				    $http.post('doc/test.txt', fd, {
+				        withCredentials: true,
+				        headers: {'Content-Type': undefined },
+				        transformRequest: angular.identity
+				    }).success(function(data) {
+						console.log(data);
+				    }).error(function(data, status, headers, config) {
+				    	$rootScope.handleHttpError(data, status, headers, config);
+				    });
+
+				};*/
+				
+				
+				$scope.onFileSelect = function($files) {
+				    //$files: an array of files selected, each file has name, size, and type.
+				    for (var i = 0; i < $files.length; i++) {
+				      var $file = $files[i];
+				      $upload.upload({
+				        url: 'doc',
+				        file: $file,
+				        progress: function(e){}
+				      }).then(function(data, status, headers, config) {
+				        // file is uploaded successfully
+				        console.log(data);
+				      }); 
+				    }
+				  }
+				
 				$scope.submitNewMapProject = function(
 						newMapProjectName, newMapProjectSourceVersion, newMapProjectDestinationVersion, 
 						newMapProjectRefSetId, newMapProjectPublished, newMapProjectRuleBased, 
@@ -1236,14 +1279,31 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 						res = newMapProjectDestinationVersion.split(" "); 
 						var newMapProjectDestination = res[0];
 						var newMapProjectDestinationVersion = res[1];
+					  	var newMapProjectRefSetName = "";
 						
 						// check ref set id
 					  	if (newMapProjectRefSetId == null || newMapProjectRefSetId.length == 0) {
 							alert("You must specify a unique ref set id.");
 							return;
 						}
-					  			
-						var project = {
+					  	
+					  	// get the refsetid name
+					  	$http({
+							url: root_content + "concept/id/" + newMapProjectSource + "/" +
+							  newMapProjectSourceVersion + "/" + newMapProjectRefSetId,
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {
+							console.debug("Success in getting concept for refsetid.");
+							newMapProjectRefSetName = data.defaultPreferredName;
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						}).then(function(data) {
+					  						  	
+							var project = {
 								"name": newMapProjectName,
 								"sourceTerminology": newMapProjectSource,
 								"sourceTerminologyVersion": newMapProjectSourceVersion,
@@ -1251,6 +1311,7 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 								"destinationTerminologyVersion": newMapProjectDestinationVersion,
 								"blockStructure": false,			
 								"refSetId": newMapProjectRefSetId,
+								"refSetName": newMapProjectRefSetName,
 								"published": newMapProjectPublished,
 								"ruleBased": newMapProjectRuleBased,
 								"groupStructure": newMapProjectGroupStructure,
@@ -1260,47 +1321,70 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 								"public": newMapProjectPublic,
 								"scopeDescendantsFlag": newMapProjectScopeDescendantsFlag,
 								"scopeExcludedDescendantsFlag": newMapProjectScopeExcludedDescendantsFlag
-						};
-						
-						if ($scope.checkRefSetId(project) == false) {
-							alert("The ref set id you provided is not unique.");
-							return;
-						}
-						
-						$rootScope.glassPane++;
-						
+							};
+							
 
-						$http({
-							url: root_mapping + "project/add",
-							method: "PUT",
-							dataType: "json",
-							data: project,
-							headers: {
-								"Content-Type": "application/json"
+							
+						
+							if ($scope.checkRefSetId(project) == false) {
+								alert("The ref set id you provided is not unique.");
+								return;
 							}
-						}).success(function(data) {
-						  	$rootScope.glassPane--;
-						  	
-						  	// set the admin project to response
-						  	var newProject = data;
+						
+							$rootScope.glassPane++;
+						
 
-						  	$scope.successMsg = 'Successfully added project ' + newProject.id;
+							$http({
+								url: root_mapping + "project/add",
+								method: "PUT",
+								dataType: "json",
+								data: project,
+								headers: {
+								"Content-Type": "application/json"
+								}
+							}).success(function(data) {
+								$rootScope.glassPane--;
 						  	
-						  	// add to local projects and to cache
-						  	$scope.mapProjects.push(data);
-						  	localStorageService.add('mapProjects', $scope.mapProjects);
-						  	
-						  	// broadcast change
-						  	$rootScope.$broadcast(
-									'localStorageModule.notification.setMapProjects', {
-										key : 'mapProjects',
-										mapProjects : $scope.mapProjects
-									});
-										 
-						}).error(function(data, status, headers, config) {
-						    $rootScope.glassPane--;
-						    $rootScope.handleHttpError(data, status, headers, config);
-						});						
+								// set the admin project to response
+								var newProject = data;
+
+								$scope.successMsg = 'Successfully added project ' + newProject.id;
+								
+								newProject.mapAdministrator.push($scope.currentUser);
+								$http({
+									url: root_mapping + "project/update",
+									dataType: "json",
+									data: newProject,
+									method: "POST",
+									headers: {
+										"Content-Type": "application/json"
+									}
+								}).success(function(data) {
+									console.debug("success to updateMapProject");
+									// add to local projects and to cache
+									$scope.mapProjects.push(newProject);
+									localStorageService.add('mapProjects', $scope.mapProjects);
+							  	
+									// broadcast change
+									$rootScope.$broadcast(
+										'localStorageModule.notification.setMapProjects', {
+											key : 'mapProjects',
+											mapProjects : $scope.mapProjects
+										});
+									
+								}).error(function(data, status, headers, config) {
+									$scope.recordError = "Error updating map project.";
+									$rootScope.handleHttpError(data, status, headers, config);
+								});
+								
+								
+								
+								
+							}).error(function(data, status, headers, config) {
+								$rootScope.glassPane--;
+								$rootScope.handleHttpError(data, status, headers, config);
+							});		
+						});
 					};
 					
 					$scope.checkRefSetId = function(project) {
@@ -1314,5 +1398,4 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 					};
 
 			}]);
-
 
