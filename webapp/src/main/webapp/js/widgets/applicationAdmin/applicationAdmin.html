@@ -1,9 +1,6 @@
 
-<!-- 
-<div>
-  <input type="file" ng-file-select="onFileSelect($files)">
-</div>
- -->
+
+
 
 
 <accordion close-others="false"> <accordion-group is-open="true">
@@ -109,6 +106,9 @@
                 ng-options="item as item.displayName for item in allowableMapRelationStyles"  ng-change="setEditingPerformed(project)"
                 style="margin-bottom:5px; width:100%;">
                 </select>
+                <input tooltip-placement="top" tooltip="Map Principle Document Name" 
+                  ng-model="project.mapPrincipleSourceDocumentName" ng-change="setEditingPerformed(project)"
+                  style="margin-bottom:5px; width:100%;"></input>
             </td>    
             <td><button class="btn btn-sm btn-primary" ng-click="updateMapProject(project)" ng-show="isComponentChanged(project) == true" >Save</button></td>
             
@@ -175,19 +175,23 @@
       <tr><td>Map Relation Style </td><td><select ng-model="newMapRelationStyle"
         ng-options="item as item.displayName for item in allowableMapRelationStyles">
       </select></td></tr>
+      <tr><td>Map Principle Document Name </td><td>
+        <input id="newMapProjectMapPrincipleSourceDocumentName" type="text" 
+          ng-model="newMapProjectMapPrincipleSourceDocumentName">  </td></tr>
           
       <tr><td><button class="btn btn-sm btn-primary" 
         ng-click="submitNewMapProject(newMapProjectName, newMapProjectSourceVersion, 
         newMapProjectDestinationVersion, newMapProjectRefSetId, newMapProjectPublished, 
         newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic, 
         newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag, 
-        newMapProjectMapType, newWorkflowType, newMapRelationStyle); 
+        newMapProjectMapType, newWorkflowType, newMapRelationStyle, newMapProjectMapPrincipleSourceDocumentName); 
           newMapProjectName = ''; newMapProjectRefSetId = ''; 
           newMapProjectSourceVersion = ''; newMapProjectDestinationVersion = '';
           newMapProjectPublished = false; 
           newMapProjectRuleBased = false; newMapProjectGroupStructure = false; 
           newMapProjectPublic = false; newMapProjectScopeDescendantsFlag = false; 
-          newMapProjectScopeExcludedDescendantsFlag = false; ">Submit</button></td><td></td></tr>
+          newMapProjectScopeExcludedDescendantsFlag = false; 
+          newMapProjectMapPrincipleSourceDocumentName = '';">Submit</button></td><td></td></tr>
     </tbody></table></form>
     
   </accordion-group>

@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
+// TODO: Auto-generated Javadoc
 /**
  * Represents a map project.
  * 
@@ -46,14 +47,14 @@ public interface MapProject {
 
 
 	/**
-	 * Checks if the project is viewable by public roles
+	 * Checks if the project is viewable by public roles.
 	 *
 	 * @return true, if is public
 	 */
 	public boolean isPublic();
 
 	/**
-	 * Sets whether the project is viewable by public roles
+	 * Sets whether the project is viewable by public roles.
 	 *
 	 * @param isPublic the new public
 	 */
@@ -354,6 +355,22 @@ public interface MapProject {
 	 */
 	public String getMapPrincipleSourceDocument();
 
+
+	/**
+	 * Sets the map principle source document name.
+	 *
+	 * @param mapPrincipleSourceDocumentName the map principle source document name
+	 */
+	public void setMapPrincipleSourceDocumentName(String mapPrincipleSourceDocumentName);
+
+
+	/**
+	 * Returns the map principle source document name.
+	 *
+	 * @return the map principle source document name
+	 */
+	public String getMapPrincipleSourceDocumentName();
+	
 	/**
 	 * Returns boolean flag for whether project is rule based.
 	 * 
