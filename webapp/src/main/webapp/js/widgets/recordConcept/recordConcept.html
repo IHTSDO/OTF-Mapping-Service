@@ -3,21 +3,71 @@
 
 <!--  No map records for this project -->
 <div ng-show="recordsInProjectNotFound == true">
-  <h4>
-    <img src="img/warning-circle_25px.png">&nbspNo Map Records exist for
-    {{focusProject.name}}
-  </h4>
+	<h4>
+		<img src="img/warning-circle_25px.png">&nbspNo Map Records exist
+		for {{focusProject.name}}
+	</h4>
 </div>
 
 <!--  Map Records Found for this project -->
 <div ng-show="recordsInProject.length > 0">
-  
-  <h4><a href="#/project/details">{{focusProject.name}}</a>&nbsp;&nbsp;
-    <!-- <button class="btn btn-sm btn-primary" ng-click="goProjectDetails()">Project Details</button>-->
-    <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
-    Records</button>
-  </h4>
-  <table class="table">
+
+	<h4>
+		<a href="#/project/details">{{focusProject.name}}</a>&nbsp;&nbsp;
+		<!-- <button class="btn btn-sm btn-primary" ng-click="goProjectDetails()">Project Details</button>-->
+		<button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
+			Records</button>
+	</h4>
+
+
+	<div style="width: 100%" ng-repeat="record in recordsInProject"
+		ng-class-odd="'odd'" ng-class-even="'even'">
+		
+		<div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+			Owner: {{record.owner.name}}&nbsp<a
+              title="Edit"
+              ng-show="isEditable(record) == true" 
+              ng-click="editRecord(record)"><i
+              class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
+			Status: {{record.workflowStatus}}
+        
+        </div>
+		
+		
+		<div otf-map-record-wide record="record" project="focusProject"
+			show-title="false"></div>
+		
+	</div>
+
+
+	<h4 ng-show="recordsNotInProject.length > 0">Map Records for Other Projects</h4>
+	<div ng-repeat="recordsForProject in recordsNotInProject">
+
+		<h4>{{getProjectName(recordsForProject[0])}}</h4>
+		
+		
+
+		<div ng-repeat="record in recordsForProject" ng-class-odd="'odd'"
+			ng-class-even="'even'">
+			
+			
+			<div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+			Owner: {{record.owner.name}}&nbsp<a
+              title="Edit"
+              ng-show="isEditable(record) == true" 
+              ng-click="editRecord(record)"><i
+              class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
+			Status: {{record.workflowStatus}}
+        
+        </div>
+			
+			<div otf-map-record-wide record="record" project="focusProject"
+				show-title="false" style="width: 80%;"></div>
+		</div>
+
+	</div>
+	
+	<!-- <table class="table">
     <thead>
       <tr>
         <th style="width: 5%;"></th>
@@ -115,16 +165,21 @@
     </tbody>
 
 
-  </table>
+  </table> -->
 
 
 </div>
 
-<hr>
 <div ng-show="recordsNotInProject.length > 0">
 
-  <h4>Map Records for Other Projects</h4>
-  <table width="100%" class="table">
+
+
+	<div ng-repeat="record in recordsNotInProject">
+		<div otf-map-record-wide record="record" project="focusProject"
+			show-title="false"></div>
+	</div>
+
+	<!-- <table width="100%" class="table">
     <thead>
       <tr>
         <th style="width: 3%;"></th>
@@ -202,8 +257,8 @@
         <td>
         
         	{{getProjectName(record)}}
-        <!-- 	<a ng-click="changeFocusProjectByRecord(record)"><i class="glyphicon glyphicon-share-alt"></i></a>
-        	 -->
+        	<a ng-click="changeFocusProjectByRecord(record)"><i class="glyphicon glyphicon-share-alt"></i></a>
+        	
         	</td>
        
         <td>{{entry.mapGroup}}&nbsp;/&nbsp;{{entry.mapPriority}}</td>
@@ -220,75 +275,77 @@
 
 
     </tbody>
-  </table>
+  </table> -->
 </div>
 
 <hr>
-<div ng-show="concept.relationship.length > 0 || concept.children.length > 0">
+<div
+	ng-show="concept.relationship.length > 0 || concept.children.length > 0">
 
-  <h4>Concept Navigation</h4>
-  <p></p>
+	<h4>Concept Navigation</h4>
+	<p></p>
 
-  <table width="100%">
+	<table width="100%">
 
-    <tbody style="border: 0px solid #ccc;">
-      <tr>
-        <td style="width: 5%"></td>
-        <td style="width: 95%">
-          <!--  Navigation and Unmapped Descendants -->
-          <div class="dropdown" ng-show="concept.relationship.length > 0">
-            <a class="dropdown-toggle">Parents</a>
-            <ul class="dropdown-menu">
-              <strong>Parents</strong>
-              <li
-                ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
-                <a
-                href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:
-                  {{relationship.destinationConceptPreferredName}}</a>
-              </li>
-            </ul>
-          </div>
-          <div class="dropdown" ng-show="concept.children.length > 0">
-            <a class="dropdown-toggle">Children</a>
-            <ul class="dropdown-menu">
-              <strong>Children</strong>
-              <li ng-repeat="concept in concept.children | orderBy: 'value'">
-                <a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
-                  {{concept.value}}</a>
-              </li>
-            </ul>
-          </div>
-        </td>
-      </tr>
-  </table>
-  <p></p>
+		<tbody style="border: 0px solid #ccc;">
+			<tr>
+				<td style="width: 5%"></td>
+				<td style="width: 95%">
+					<!--  Navigation and Unmapped Descendants -->
+					<div class="dropdown" ng-show="concept.relationship.length > 0">
+						<a class="dropdown-toggle">Parents</a>
+						<ul class="dropdown-menu">
+							<strong>Parents</strong>
+							<li
+								ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
+								<a
+								href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:
+									{{relationship.destinationConceptPreferredName}}</a>
+							</li>
+						</ul>
+					</div>
+					<div class="dropdown" ng-show="concept.children.length > 0">
+						<a class="dropdown-toggle">Children</a>
+						<ul class="dropdown-menu">
+							<strong>Children</strong>
+							<li ng-repeat="concept in concept.children | orderBy: 'value'">
+								<a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
+									{{concept.value}}</a>
+							</li>
+						</ul>
+					</div>
+				</td>
+			</tr>
+	</table>
+	<p></p>
 </div>
 
 <div ng-show="concept.unmappedDescendants.length > 0">
 
-  <h3>Concept Alerts</h3>
-  <p></p>
-  <table width="100%">
+	<h3>Concept Alerts</h3>
+	<p></p>
+	<table width="100%">
 
-    <tbody style="border: 0px solid #ccc">
-      <tr>
-        <td align=center style="width: 5%"><img src="img/warning.png"
-          alt="question icon"></td>
-        <td style="width: 95%">
+		<tbody style="border: 0px solid #ccc">
+			<tr>
+				<td align=center style="width: 5%"><img src="img/warning.png"
+					alt="question icon"></td>
+				<td style="width: 95%">
 
-          <div class="dropdown" ng-show="concept.unmappedDescendants.length > 0">
-            <a class="dropdown-toggle"> Unmapped descendants. </a>
-            <ul class="dropdown-menu">
-              <strong>Unmapped Descendants</strong>
-              <li ng-repeat="concept in concept.unmappedDescendants"><a
-                href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
-                  {{concept.value}}</a></li>
-            </ul>
-          </div>
-        </td>
-      </tr>
-  </table>
-  <p></p>
+					<div class="dropdown"
+						ng-show="concept.unmappedDescendants.length > 0">
+						<a class="dropdown-toggle"> Unmapped descendants. </a>
+						<ul class="dropdown-menu">
+							<strong>Unmapped Descendants</strong>
+							<li ng-repeat="concept in concept.unmappedDescendants"><a
+								href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
+									{{concept.value}}</a></li>
+						</ul>
+					</div>
+				</td>
+			</tr>
+	</table>
+	<p></p>
 
 </div>
 
