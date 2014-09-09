@@ -65,10 +65,11 @@
 					error</button>
 			</div>
 		</form>
+		<hr>
 	</div>
 
 	<!--  Record 2 -->
-	<div style="float: right; width: 50%; padding:10px">
+	<div style="float: right; width: 50%; padding:10px" ng-show="record2 != null">
 		<h4>Record owned by {{record2.owner.name}}</h4>
 		<hr>
 		<div otf-map-record-narrow record="record2" project="project"
@@ -121,11 +122,13 @@
 					error</button>
 			</div>
 		</form>
+		
+		<hr>
 	</div>
 	
-	<hr>
+
 	
-	<div style="float:left; width: 100%" id="report" ng-show="record2 != null">
+	<div style="float:left; width: 100%" id="report">
 			<accordion close-others = "false"> 
 				<accordion-group is-open="isGroupFeedbackOpen">
 				<accordion-heading> Group Feedback<i
@@ -161,7 +164,7 @@
                 </select> -->
         </accordion-group>
                 
-				<accordion-group is-open="isReportOpen">
+			<accordion-group ng-show="record2 != null" is-open="isReportOpen">
 				<accordion-heading> Conflict Report <i
 					class="pull-right glyphicon"
 					ng-class="{'glyphicon-chevron-down': isReportOpen, 'glyphicon-chevron-right': !isReportOpen}"></i>
