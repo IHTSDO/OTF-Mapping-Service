@@ -1222,55 +1222,16 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					});
 				};
 				
-				/*$scope.add = function(){
-					  var f = document.getElementById('file').files[0],
-					      r = new FileReader();
-					  r.onloadend = function(e){
-					    var data = e.target.result;
-					    //send you binary data via $http or $resource or do anything else with it
-					  };
-					  r.readAsBinaryString(f);
-				};
 				
-				$scope.uploadFile = function(files) {
-				    var fd = new FormData();
-				    //Take the first selected file
-				    fd.append("file", files[0]);
 
-				    $http.post('doc/test.txt', fd, {
-				        withCredentials: true,
-				        headers: {'Content-Type': undefined },
-				        transformRequest: angular.identity
-				    }).success(function(data) {
-						console.log(data);
-				    }).error(function(data, status, headers, config) {
-				    	$rootScope.handleHttpError(data, status, headers, config);
-				    });
-
-				};*/
-				
-				
-				$scope.onFileSelect = function($files) {
-				    //$files: an array of files selected, each file has name, size, and type.
-				    for (var i = 0; i < $files.length; i++) {
-				      var $file = $files[i];
-				      $upload.upload({
-				        url: 'doc',
-				        file: $file,
-				        progress: function(e){}
-				      }).then(function(data, status, headers, config) {
-				        // file is uploaded successfully
-				        console.log(data);
-				      }); 
-				    }
-				  }
 				
 				$scope.submitNewMapProject = function(
 						newMapProjectName, newMapProjectSourceVersion, newMapProjectDestinationVersion, 
 						newMapProjectRefSetId, newMapProjectPublished, newMapProjectRuleBased, 
 						newMapProjectGroupStructure, newMapProjectPublic, 
 					    newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag,
-					    newMapProjectMapType, newWorkflowType, newMapRelationStyle) {
+					    newMapProjectMapType, newWorkflowType, newMapRelationStyle, 
+					    newMapProjectMapPrincipleSourceDocumentName) {
 						
 						// get source and version and dest and version
 						var res = newMapProjectSourceVersion.split(" "); 
@@ -1320,10 +1281,9 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 								"mapRelationStyle": newMapRelationStyle.name,
 								"public": newMapProjectPublic,
 								"scopeDescendantsFlag": newMapProjectScopeDescendantsFlag,
-								"scopeExcludedDescendantsFlag": newMapProjectScopeExcludedDescendantsFlag
+								"scopeExcludedDescendantsFlag": newMapProjectScopeExcludedDescendantsFlag,
+								"mapPrincipleSourceDocumentName": newMapProjectMapPrincipleSourceDocumentName
 							};
-							
-
 							
 						
 							if ($scope.checkRefSetId(project) == false) {

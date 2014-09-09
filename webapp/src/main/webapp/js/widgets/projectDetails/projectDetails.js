@@ -183,14 +183,14 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					$scope.selectedMapRelationStyle = $scope.getSelectedMapRelationStyle();
 					$scope.selectedWorkflowType = $scope.getSelectedWorkflowType();
 					
-					// determine if this project has a principles document
+					/*// determine if this project has a principles document
 					if ($scope.focusProject.destinationTerminology == "ICD10") {
 						$scope.focusProject.mapPrincipleDocumentPath = "doc/";
 						$scope.focusProject.mapPrincipleDocument = "ICD10_MappingPersonnelHandbook.docx";
 						$scope.focusProject.mapPrincipleDocumentName = "Mapping Personnel Handbook";
 					} else {
 						$scope.focusProject.mapPrincipleDocument = null;
-					}
+					}*/
 
 					// set the scope maps
 					$scope.scopeMap = {};
@@ -1031,6 +1031,21 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 						$rootScope.handleHttpError(data, status, headers, config);
 					});
 				};
+				
+				$scope.onFileSelect = function($files) {
+				    //$files: an array of files selected, each file has name, size, and type.
+				    for (var i = 0; i < $files.length; i++) {
+				      var $file = $files[i];
+				      $upload.upload({
+				        url: root_mapping + "upload/" + $scope.focusProject.id,
+				        file: $file,
+				        progress: function(e){}
+				      }).then(function(data, status, headers, config) {
+				        // file is uploaded successfully
+				        console.log(data);
+				      }); 
+				    }
+				  }
 			}]);
 
 
