@@ -269,10 +269,16 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				}).success(function(data) {
 					$rootScope.glassPane--;
 					$scope.leadConversation = data;
-					// if no prior conversation, initialize with two specialists
+					
+					// if no prior conversation, initialize with the specialists
 					if ($scope.leadConversation == null || $scope.leadConversation == "") {
-						$scope.returnRecipients.push($scope.record1.owner);
-						$scope.returnRecipients.push($scope.record2.owner);
+						
+						if ($scope.record1 != null)
+							$scope.returnRecipients.push($scope.record1.owner);
+						
+						if ($scope.record2 != null) 
+							$scope.returnRecipients.push($scope.record2.owner);
+						
 					// otherwise initialize with recipients on prior feedback
 					}	else {
 						initializeReturnRecipients($scope.leadConversation);
@@ -296,23 +302,28 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			initializeEntries();
 
 			// obtain the validationResults from compareRecords
-			$rootScope.glassPane++;
-			$http({
-				url: root_mapping + "validation/record/id/" + $scope.record1.id + "/record/id/" + $scope.record2.id + "/compare",
-				dataType: "json",
-				method: "GET",
-				headers: { "Content-Type": "application/json"}	
-			}).success(function(data) {
-				$rootScope.glassPane--;
-				for (var i = 0; i < data.errors.length; i++) {				
-				  data.errors[i] = data.errors[i].replace("Specialist 1", $scope.record1.owner.name);
-				  data.errors[i] = data.errors[i].replace("Specialist 2", $scope.record2.owner.name);
-				}
-				$scope.validationResult = data;
-			}).error(function(data, status, headers, config) {
-				$rootScope.glassPane--;
-			    $rootScope.handleHttpError(data, status, headers, config);
-			});
+			if ($scope.record2 != null) {
+				$rootScope.glassPane++;
+				$http({
+					url: root_mapping + "validation/record/id/" + $scope.record1.id + "/record/id/" + $scope.record2.id + "/compare",
+					dataType: "json",
+					method: "GET",
+					headers: { "Content-Type": "application/json"}	
+				}).success(function(data) {
+					$rootScope.glassPane--;
+					for (var i = 0; i < data.errors.length; i++) {				
+					  if ($scope.record1 != null)
+						  data.errors[i] = data.errors[i].replace("Specialist 1", $scope.record1.owner.name);
+					  
+					  if ($scope.record2 != null)
+						  data.errors[i] = data.errors[i].replace("Specialist 2", $scope.record2.owner.name);
+					}
+					$scope.validationResult = data;
+				}).error(function(data, status, headers, config) {
+					$rootScope.glassPane--;
+				    $rootScope.handleHttpError(data, status, headers, config);
+				});
+			}
 		});
 
 		

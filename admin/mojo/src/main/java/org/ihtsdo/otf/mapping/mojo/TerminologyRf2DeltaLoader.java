@@ -514,7 +514,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 							+ conceptCache.size());
 		}
 
-		// load relationships
+		/*// load relationships
 		if (statedRelationshipReader != null) {
 			getLog().info("Loading Stated Relationships...");
 			startTime = System.nanoTime();
@@ -527,7 +527,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 			getLog().info(
 					"  Running total of concepts modified: "
 							+ conceptCache.size());
-		}
+		}*/
 
 		// load descriptions
 		if (descriptionReader != null) {
