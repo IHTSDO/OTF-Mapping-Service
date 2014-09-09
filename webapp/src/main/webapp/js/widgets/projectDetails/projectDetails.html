@@ -490,10 +490,18 @@
          newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button>
                      
       
-      <div ng-show="focusProject.mapPrincipleSourceDocument != null">
+      <!-- <div ng-show="focusProject.mapPrincipleSourceDocument != null">
         Principles taken from <a
           href="doc/{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
           Principles Document</a>
+      </div> -->
+      <div ng-show="focusProject.mapPrincipleSourceDocument != null">
+        Principles taken from <a
+          href="{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
+          Principles Document</a>
+      </div>
+      <div ng-show="editModeEnabled == true" >
+        <input type="file" ng-file-select="onFileSelect($files)">
       </div>
   </accordion-group>
   <accordion-group ng-show="focusProject.mapAgeRange.length > 0 || editModeEnabled == true">

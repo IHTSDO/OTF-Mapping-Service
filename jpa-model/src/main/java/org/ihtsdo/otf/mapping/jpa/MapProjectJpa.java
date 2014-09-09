@@ -111,9 +111,13 @@ public class MapProjectJpa implements MapProject {
 	@Column(nullable = false)
 	private String mapRelationStyle;
 
-	/** The name of the mapping principle document. */
+	/** The mapping principle document. */
 	@Column(nullable = true)
 	private String mapPrincipleSourceDocument;
+	
+	/** The name of the mapping principle document. */
+	@Column(nullable = true)
+	private String mapPrincipleSourceDocumentName;
 
 	/** Flag for whether this project is rule based. */
 	@Column(nullable = false)
@@ -1214,6 +1218,21 @@ public class MapProjectJpa implements MapProject {
 		} else if (!sourceTerminologyVersion.equals(other.sourceTerminologyVersion))
 			return false;
 		return true;
+	}
+
+
+
+	@Override
+	public void setMapPrincipleSourceDocumentName(
+		String mapPrincipleSourceDocumentName) {
+		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
+	}
+
+
+
+	@Override
+	public String getMapPrincipleSourceDocumentName() {
+		return mapPrincipleSourceDocumentName;
 	}
 
 
