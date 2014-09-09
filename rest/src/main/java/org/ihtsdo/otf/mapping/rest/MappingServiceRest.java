@@ -1,7 +1,16 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -62,6 +71,8 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -2727,5 +2738,120 @@ public class MappingServiceRest extends RootServiceRest {
 			return null;
 		}
 	}
+	
 
+
+	    
+	    	 
+	    	   
+	    	    @POST
+	    	    @Path("/upload/{projectId}")
+	    	    @Consumes(MediaType.MULTIPART_FORM_DATA)
+	    	    public Response uploadFile(
+	    	            @FormDataParam("file") InputStream fileInputStream,
+	    	            @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+	    	            @PathParam("projectId") String projectId,
+	    	      			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+	    	    	
+	    	    	// TODO: add authentication
+	    	    	// TODO: get real location on file system
+	    	    	System.out.println(new File("./").getAbsolutePath());
+	  	        
+	    	    	MapProject mapProject = getMapProject(new Long(projectId), authToken);
+	    	    	
+	    	    	
+	    	    	File dir = new File("C:\\data\\test");    	  
+	    	    	if (!dir.exists()) {
+	    	    		if (dir.mkdir()) {
+	    	    			System.out.println("Directory is created!");
+	    	    		} else {
+	    	    			System.out.println("Failed to create directory!");
+	    	    		}
+	    	    	}
+	    	    	
+	    	    	File archiveDir = new File("C:\\data\\test\\archive");	  	    	  
+	    	    	if (!archiveDir.exists()) {
+	    	    		if (archiveDir.mkdir()) {
+	    	    			System.out.println("Archive Directory is created!");
+	    	    		} else {
+	    	    			System.out.println("Failed to create directory!");
+	    	    		}
+	    	    	}
+	    	    	
+
+	    	      SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+	    	      String date = dt.format(new Date());
+	    	      
+	    	    	String extension = contentDispositionHeader.getFileName().substring(
+	    	    			contentDispositionHeader.getFileName().lastIndexOf("."));
+	    	    	String camelCaseFileName = mapProject.getMapPrincipleSourceDocumentName().replaceAll(" ", "");
+	    	    	File file = new File(dir, projectId + "_" + camelCaseFileName + extension);
+	    	    	File archiveFile = new File(archiveDir, projectId + "_" + camelCaseFileName + "." + date + extension);
+	    	    	
+	    	 
+	    	        // save the file to the server
+	    	        saveFile(fileInputStream, file.getAbsolutePath());
+	    	        try {
+									copyFile(file, archiveFile);
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+	    	 
+	    	        String output = "File saved to server location : " + file.getAbsolutePath() + " and " + 
+	    	          archiveFile.getAbsolutePath();
+	    	 
+	    	        // update project
+	    	        mapProject.setMapPrincipleSourceDocument(archiveFile.getAbsolutePath());
+	    	        updateMapProject((MapProjectJpa)mapProject, authToken);
+	    	        
+	    	        return Response.status(200).entity(output).build();
+	    	 
+	    	    }
+	    	 
+	    	    // save uploaded file to a defined location on the server
+	    	    private void saveFile(InputStream uploadedInputStream,
+	    	            String serverLocation) {
+	    	 
+	   	        try {
+	   	        				
+	    	            OutputStream outputStream = new FileOutputStream(new File(serverLocation));
+	    	            int read = 0;
+	    	            byte[] bytes = new byte[1024];
+	    	 
+	    	            outputStream = new FileOutputStream(new File(serverLocation));
+	    	            while ((read = uploadedInputStream.read(bytes)) != -1) {
+	    	                outputStream.write(bytes, 0, read);
+	   	            }
+	    	            outputStream.flush();
+	    	            outputStream.close();
+	    	        } catch (IOException e) {
+	     
+	    	            e.printStackTrace();
+	    	        }
+	    	 
+	    	    }
+	    	 
+	    	    public static void copyFile(File sourceFile, File destFile) throws IOException {
+	    	      if(!destFile.exists()) {
+	    	          destFile.createNewFile();
+	    	      }
+
+	    	      FileChannel source = null;
+	    	      FileChannel destination = null;
+
+	    	      try {
+	    	          source = new FileInputStream(sourceFile).getChannel();
+	    	          destination = new FileOutputStream(destFile).getChannel();
+	    	          destination.transferFrom(source, 0, source.size());
+	    	      }
+	    	      finally {
+	    	          if(source != null) {
+	    	              source.close();
+	    	          }
+	    	          if(destination != null) {
+	    	              destination.close();
+	    	          }
+	    	      }
+	    	  }
 }
