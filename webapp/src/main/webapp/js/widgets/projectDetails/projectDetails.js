@@ -69,8 +69,8 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
     };
 })
 .controller('projectDetailsCtrl', 
-			['$scope', '$http', '$sce', '$rootScope', '$location', 'localStorageService',
-			 function ($scope, $http, $sce, $rootScope, $location, localStorageService) {
+			['$scope', '$http', '$sce', '$rootScope', '$location', 'localStorageService', '$upload',
+			 function ($scope, $http, $sce, $rootScope, $location, localStorageService, $upload) {
 
 			    $scope.page =  'project';
 
