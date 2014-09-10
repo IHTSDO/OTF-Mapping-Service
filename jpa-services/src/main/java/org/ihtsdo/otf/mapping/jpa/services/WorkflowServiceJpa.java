@@ -3900,7 +3900,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			// create the feedback object
 			Feedback feedback = new FeedbackJpa();
-			feedback.setError(true);
+			feedback.setIsError(true);
 			feedback.setMapError(userError.getError());
 			feedback.setMessage(userError.getNote()
 					+ " (NOTE: Added by the original user error method)");
