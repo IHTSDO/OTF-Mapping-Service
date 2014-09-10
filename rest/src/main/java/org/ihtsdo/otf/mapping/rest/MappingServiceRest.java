@@ -2760,7 +2760,7 @@ public class MappingServiceRest extends RootServiceRest {
 	    	    	MapProject mapProject = getMapProject(new Long(projectId), authToken);
 	    	    	
 	    	    	
-	    	    	File dir = new File("C:\\data\\test");    	  
+	    	    	File dir = new File(".\\doc");    	  
 	    	    	if (!dir.exists()) {
 	    	    		if (dir.mkdir()) {
 	    	    			System.out.println("Directory is created!");
@@ -2769,7 +2769,7 @@ public class MappingServiceRest extends RootServiceRest {
 	    	    		}
 	    	    	}
 	    	    	
-	    	    	File archiveDir = new File("C:\\data\\test\\archive");	  	    	  
+	    	    	File archiveDir = new File(".\\doc\\archive");	  	    	  
 	    	    	if (!archiveDir.exists()) {
 	    	    		if (archiveDir.mkdir()) {
 	    	    			System.out.println("Archive Directory is created!");
