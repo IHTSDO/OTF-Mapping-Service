@@ -2782,8 +2782,11 @@ public class MappingServiceRest extends RootServiceRest {
 	    	      SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
 	    	      String date = dt.format(new Date());
 	    	      
-	    	    	String extension = contentDispositionHeader.getFileName().substring(
+	    	    	String extension = "";
+	    	    	if (contentDispositionHeader.getFileName().indexOf(".") != -1) {	    	    		
+	    	    	  extension = contentDispositionHeader.getFileName().substring(
 	    	    			contentDispositionHeader.getFileName().lastIndexOf("."));
+	    	    	}
 	    	    	String camelCaseFileName = mapProject.getMapPrincipleSourceDocumentName().replaceAll(" ", "");
 	    	    	File file = new File(dir, projectId + "_" + camelCaseFileName + extension);
 	    	    	File archiveFile = new File(archiveDir, projectId + "_" + camelCaseFileName + "." + date + extension);
