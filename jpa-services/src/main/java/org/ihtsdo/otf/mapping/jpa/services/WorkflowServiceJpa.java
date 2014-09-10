@@ -27,6 +27,7 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.FeedbackList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackListJpa;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
+import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
@@ -3934,5 +3935,31 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		mappingService.close();
 
+	}
+	
+	@Override
+	public void fixFeedbackErrorFlag() throws Exception {
+		List<FeedbackConversation> conversations = null;
+		// construct query
+		javax.persistence.Query query = manager
+				.createQuery("select m from FeedbackConversationJpa m");
+		// Try query
+		conversations = query.getResultList();
+
+		boolean needsUpdate = false;
+		for (FeedbackConversation conversation : conversations) {
+      for (Feedback feedback : conversation.getFeedbacks()) {
+    	    if (feedback.getMapError() != null && !feedback.getMapError().equals("") && 
+    			  !feedback.getMapError().equals("None")) {
+    		    feedback.setIsError(true);
+    		    needsUpdate = true;
+    	    }
+      }
+      if (needsUpdate) {
+      	updateFeedbackConversation(conversation);
+      	needsUpdate = false;
+      }
+		}
+ 
 	}
 }
