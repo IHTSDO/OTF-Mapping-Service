@@ -322,5 +322,27 @@
       </build>
     </profile>
 
+       <!-- Fix the error flag in feedback objects --> 
+       <profile>
+       <id>FixFeedbackErrorFlag</id>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.ihtsdo.otf.mapping</groupId>
+              <artifactId>mapping-admin-mojo</artifactId>
+              <version>${project.version}</version>
+              <executions>
+                <execution>
+                  <id>fix-feedback-error-flag</id>
+                  <phase>package</phase>
+                  <goals>
+                    <goal>fix-feedback-error-flag</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </build>
+      </profile> 
   </profiles>
 </project>
