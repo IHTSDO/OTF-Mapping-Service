@@ -1,8 +1,4 @@
 
-
-
-
-
 <accordion close-others="false"> <accordion-group is-open="true">
 
   <accordion-group ng-show="mapProjects.length > 0 ">
@@ -453,7 +449,10 @@
         ng-click="submitNewMapPrinciple(newPrincipleName, newPrincipleId, newPrincipleDetail, newPrincipleSectionRef);
          newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button></td><td></td></tr>
       </tbody></table> 
-      </form>              
+      </form>  
+      <div>
+        <input type="file" ng-file-select="onFileSelect($files)">
+      </div>            
   </accordion-group>
   <accordion-group ng-show="mapAgeRanges.length > 0">
       <accordion-heading>
