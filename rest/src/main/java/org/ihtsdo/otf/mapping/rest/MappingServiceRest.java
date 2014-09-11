@@ -2805,7 +2805,7 @@ public class MappingServiceRest extends RootServiceRest {
 	    	          archiveFile.getAbsolutePath();
 	    	 
 	    	        // update project
-	    	        mapProject.setMapPrincipleSourceDocument(archiveFile.getAbsolutePath());
+	    	        mapProject.setMapPrincipleSourceDocumentName(archiveFile.getAbsolutePath());
 	    	        updateMapProject((MapProjectJpa)mapProject, authToken);
 	    	        
 	    	        return Response.status(200).entity(output).build();
