@@ -604,7 +604,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						.equals(principles2.get(i).getPrincipleId()))
 					validationResult
 							.addError("Map Principle Assignment is Different: " + 
-					principles1.get(i).getName() + " vs " + principles2.get(i).getName());
+					principles1.get(i).getName() + " vs. " + principles2.get(i).getName());
 			}
 		}
 

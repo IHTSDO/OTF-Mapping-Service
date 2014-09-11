@@ -60,7 +60,10 @@ public class MetadataServiceRest extends RootServiceRest {
     
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /metadata/" + terminology + "/" + version);
 	  
-	  try {
+	  String user = "";
+		try {
+  		user = securityService.getUsernameForToken(authToken);
+			
 			// authorize call
 			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
 			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
@@ -92,7 +95,7 @@ public class MetadataServiceRest extends RootServiceRest {
       metadataService.close();
       return keyValuePairLists;
 		} catch (Exception e) { 
-			handleException(e, "trying to retrieve the metadata");
+			handleException(e, "trying to retrieve the metadata", user, "", "");
 			return null;
 		}
   }
@@ -116,8 +119,10 @@ public class MetadataServiceRest extends RootServiceRest {
 	  
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /all/" + terminology); 
 	    	
-    try {
-			// authorize call
+	  String user = "";
+		try {
+  		// authorize call
+			user = securityService.getUsernameForToken(authToken);
 			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
 			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(Response.status(401).entity(
@@ -132,7 +137,7 @@ public class MetadataServiceRest extends RootServiceRest {
       metadataService.close();
       return keyValuePairLists;
 		} catch (Exception e) { 
-			handleException(e, "trying to retrieve all metadata");
+			handleException(e, "trying to retrieve all metadata", user, "", "");
 			return null;
 		}
   }
@@ -156,8 +161,10 @@ public class MetadataServiceRest extends RootServiceRest {
 	  
 
 		
-    try {
-			// authorize call
+	  String user = "";
+		try {
+  		// authorize call
+			user = securityService.getUsernameForToken(authToken);
 			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
 			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(Response.status(401).entity(
@@ -176,7 +183,7 @@ public class MetadataServiceRest extends RootServiceRest {
       metadataService.close();
       return keyValuePairList;
 		} catch (Exception e) { 
-			handleException(e, "trying to retrieve the latest versions of all terminologies");
+			handleException(e, "trying to retrieve the latest versions of all terminologies", user, "", "");
 			return null;
 		}
   }
@@ -199,8 +206,10 @@ public class MetadataServiceRest extends RootServiceRest {
 	  Logger.getLogger(MetadataServiceRest.class).info("RESTful call (Metadata): /terminologies");
 	  
   	
-    try {
-			// authorize call
+	  String user = "";
+		try {
+  		// authorize call
+			user = securityService.getUsernameForToken(authToken);
 			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
 			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
 				throw new WebApplicationException(Response.status(401).entity(
@@ -223,7 +232,7 @@ public class MetadataServiceRest extends RootServiceRest {
       metadataService.close();
       return keyValuePairLists;
 		} catch (Exception e) { 
-			handleException(e, "trying to retrieve the versions of all terminologies");
+			handleException(e, "trying to retrieve the versions of all terminologies", user, "", "");
 			return null;
 		}
   }
