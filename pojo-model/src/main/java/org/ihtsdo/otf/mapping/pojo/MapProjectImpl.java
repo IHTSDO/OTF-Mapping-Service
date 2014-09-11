@@ -80,8 +80,11 @@ public class MapProjectImpl implements MapProject {
 	/** The relation style. */
 	private String mapRelationStyle;
 
-	/** The name of the document containing the map principles. */
+	/** The document containing the map principles. */
 	private String mapPrincipleSourceDocument;
+
+	/** The name of the document containing the map principles. */
+	private String mapPrincipleSourceDocumentName;
 
 	/** Flag for whether the project is rule based. */
 	private boolean ruleBased;
@@ -107,6 +110,9 @@ public class MapProjectImpl implements MapProject {
 	/** The name of the handler class for project specific algorithms. */
 	private String projectSpecificAlgorithmHandlerClass;
 	
+	/**  The workflow type. */
+	private String workflowType;
+
 	/**
 	 * The Enum WorkflowType.
 	 */
@@ -1427,6 +1433,11 @@ public class MapProjectImpl implements MapProject {
 	@Override
 	public void setWorkflowType(WorkflowType workflowType) {
 		this.workflowType = workflowType;
+		
+	@Override
+	public void setMapPrincipleSourceDocumentName(
+		String mapPrincipleSourceDocumentName) {
+		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
 		
 	}
 

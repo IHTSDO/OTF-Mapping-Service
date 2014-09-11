@@ -2,8 +2,6 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
-import org.ihtsdo.otf.mapping.helpers.WorkflowType;
-
 // TODO: Auto-generated Javadoc
 /**
  * Represents a map project.
@@ -357,6 +355,22 @@ public interface MapProject {
 	 */
 	public String getMapPrincipleSourceDocument();
 
+
+	/**
+	 * Sets the map principle source document name.
+	 *
+	 * @param mapPrincipleSourceDocumentName the map principle source document name
+	 */
+	public void setMapPrincipleSourceDocumentName(String mapPrincipleSourceDocumentName);
+
+
+	/**
+	 * Returns the map principle source document name.
+	 *
+	 * @return the map principle source document name
+	 */
+	public String getMapPrincipleSourceDocumentName();
+	
 	/**
 	 * Returns boolean flag for whether project is rule based.
 	 * 
