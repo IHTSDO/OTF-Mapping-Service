@@ -2362,10 +2362,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			String prevConceptId = null;
 			MapRecord mapRecord = null;
 			int ct = 0;
-			MapUser loaderUser = getMapUser("loader");
 			Random random = new Random();
 
-			if (loaderUser == null) {
+			if (mapUser == null) {
 				throw new Exception("Loader user could not be found");
 			}
 
@@ -2449,8 +2448,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 					// set the owner and lastModifiedBy user fields to
 					// loaderUser
-					mapRecord.setOwner(loaderUser);
-					mapRecord.setLastModifiedBy(loaderUser);
+					mapRecord.setOwner(mapUser);
+					mapRecord.setLastModifiedBy(mapUser);
 
 					// random determine workflow state
 					// based on sampling percentage
