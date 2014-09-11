@@ -2,6 +2,8 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
+
 // TODO: Auto-generated Javadoc
 /**
  * Represents a map project.
