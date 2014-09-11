@@ -615,13 +615,15 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				
 				var terminologyIdsReview = [];
 				
-				$rootScope.glassPane++;
+				
 				console.debug("Retrieving review work to unassign...");
 				var pfsParameterObj = {
 						"startIndex": -1,
 						"maxResults": -1,
 						"sortField": 'sortKey',
 						"queryRestriction": result.unassignEditedWork == true ? 'ALL' : 'REVIEW_NEW'};
+				
+				$rootScope.glassPane++;
 				
 				$http({
 					url: root_workflow + "project/id/" 
@@ -655,14 +657,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 			}
 			
-			
-			
-			
-			
-			
-		/*	if (unassignEditType === 'all') $scope.unassignAllWork(mapUser, workType, true);
-			else if (unassignEditType === 'unedited') $scope.unassignAllWork(mapUser, workType, false);
-			else("Alert: Unexpected error attempting to unassign work");*/
 		});
 	};
 	
@@ -701,7 +695,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		    $rootScope.handleHttpError(data, status, headers, config);
 		});
 	
-	}
+	};
 	
 	var UnassignModalCtrl = function($scope, $modalInstance, mapUserToUnassign, isMapLead, unassignWorkType) { 
 		
@@ -994,6 +988,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 			console.debug("Retrieving record", recordId);
 			
+			$rootScope.glassPane++;
+			
 			// perform the retrieval call
 			$http({
 				url: root_mapping + "record/id/" + recordId,
@@ -1002,6 +998,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					"Content-Type": "application/json"
 				}
 			}).success(function(data) {
+				
+				// do not close glass pane here, validate record first
 			  
 				// set scope record
 			  	$scope.currentRecord = data;
