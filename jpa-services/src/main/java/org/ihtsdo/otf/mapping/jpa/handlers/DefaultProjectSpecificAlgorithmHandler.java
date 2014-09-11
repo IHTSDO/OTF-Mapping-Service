@@ -597,34 +597,45 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		Collections.sort(principles2, principlesComparator);
 
 		if (principles1.size() != principles2.size()) {
-			validationResult.addWarning("Differences in map principles.");
+			validationResult.addError("Map Principle Assignment is Different: different number of principles selected");
 		} else {
 			for (int i = 0; i < principles1.size(); i++) {
 				if (!principles1.get(i).getPrincipleId()
 						.equals(principles2.get(i).getPrincipleId()))
 					validationResult
-							.addWarning("Differences in map principles.");
+							.addError("Map Principle Assignment is Different: " + 
+					principles1.get(i).getName() + " vs " + principles2.get(i).getName());
 			}
 		}
 
 		// check force map lead review flag
 		if (record1.isFlagForMapLeadReview()) {
 			validationResult
-					.addError("The first record requests MAP LEAD REVIEW.");
+					.addError("Mapping Specialist #1 requests MAP LEAD REVIEW.");
 		}
 		if (record2.isFlagForMapLeadReview()) {
 			validationResult
-					.addError("The second record requests MAP LEAD REVIEW.");
+					.addError("Mapping Specialist #2 requests MAP LEAD REVIEW.");
 		}
 
 		// check consensus review flag
 		if (record1.isFlagForConsensusReview()) {
 			validationResult
-					.addError("The first record requests CONSENSUS REVIEW.");
+					.addError("Mapping Specialist #1 requests CONSENSUS REVIEW.");
 		}
 		if (record2.isFlagForConsensusReview()) {
 			validationResult
-					.addError("The second record requests CONSENSUS REVIEW.");
+					.addError("Mapping Specialist #2 requests CONSENSUS REVIEW.");
+		}
+		
+		// check editorial review flag
+		if (record1.isFlagForEditorialReview()) {
+			validationResult
+					.addError("Mapping Specialist #1 requests EDITORIAL REVIEW.");
+		}
+		if (record2.isFlagForEditorialReview()) {
+			validationResult
+					.addError("Mapping Specialist #2 requests EDITORIAL REVIEW.");
 		}
 
 		// compare mapEntries
@@ -653,6 +664,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				groupToMapEntryList2.put(entry.getMapGroup(), entryList);
 			}
 		}
+		
+		// if records have differing numbers of groups
+		if (groupToMapEntryList1.keySet().size() != groupToMapEntryList2.keySet().size()) {
+			validationResult
+			.addError("Number of Map Groups is Different");
+		}
 
 		// for each group
 		for (int i = 1; i < Math.max(groupToMapEntryList1.size(),
@@ -663,18 +680,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			// error if different numbers of entries
 			if (entries1 == null) {
 				validationResult
-						.addError("The first record has an empty group " + i
-								+ ".");
+						.addError("Number of Map Entries is Different");
 				continue;
 			} else if (entries2 == null) {
 				validationResult
-						.addError("The second record has an empty group " + i
-								+ ".");
+						.addError("Number of Map Entries is Different");
 				continue;
 			} else if (entries1.size() != entries2.size()) {
 				validationResult
-						.addError("The records have different numbers of entries for group "
-								+ i + ".");
+						.addError("Number of Map Entries is Different");
 			}
 
 			// create string lists for entry comparison
@@ -706,13 +720,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			}
 			if (outOfOrderFlag && !missingEntry) {
 				validationResult
-						.addWarning("The records have the same entries for group "
-								+ i + ", but in a different order.");
+						.addWarning("Map Entries in Different Order");
 				continue; // to next group for comparison
 			}
 
 			// check for details of missing entries
-			boolean matchFound = false;
+			
 			for (int d = 0; d < entries1.size(); d++) {
 				for (int f = 0; f < entries2.size(); f++) {
 					if (isRulesEqual(entries1.get(d), entries2.get(f))
@@ -720,14 +733,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 									entries2.get(f))
 							&& !isMapRelationsEqual(entries1.get(d),
 									entries2.get(f)))
-						matchFound = true;
+						validationResult.addError("Map Relation is Different: "
+								+ entries1.get(d).getMapRelation() + " vs. " + entries2.get(f).getMapRelation());
 				}
-				if (matchFound) {
-					validationResult
-							.addError("Records have a matching entry but with different map relation: "
-									+ convertToString(entries1.get(d)) + ".");
-				}
-				matchFound = false;
 			}
 			for (int d = 0; d < entries1.size(); d++) {
 				for (int f = 0; f < entries2.size(); f++) {
@@ -736,39 +744,32 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 									entries2.get(f))
 							&& !entries1.get(d).getMapAdvices()
 									.equals(entries2.get(f).getMapAdvices()))
-						matchFound = true;
-				}
-				if (matchFound) {
+						
 					validationResult
-							.addError("Records have a matching entry but with different advice: "
-									+ convertToString(entries1.get(d)) + ".");
+							.addError("Map Advice is Different: "
+									+  printAdviceDifferences(entries1.get(d), entries2.get(f)));
 				}
-				matchFound = false;
 			}
 			for (int d = 0; d < entries1.size(); d++) {
 				for (int f = 0; f < entries2.size(); f++) {
 					if (isRulesEqual(entries1.get(d), entries2.get(f))
 							&& !isTargetIdsEqual(entries1.get(d),
 									entries2.get(f)))
-						matchFound = true;
-				}
-				if (matchFound) {
+						
 					validationResult
-							.addError("Records have an entry with the same rule but different target code: "
-									+ convertToString(entries1.get(d)) + ".");
-				}
-				matchFound = false;
+							.addError("Target Code is Different: "
+									+ entries1.get(d).getTargetId() + " vs. " + entries2.get(f).getTargetId());				
+			  }
 			}
 			for (int d = 0; d < entries1.size(); d++) {
 				for (int f = 0; f < entries2.size(); f++) {
-					if (isRulesEqual(entries1.get(d), entries2.get(f)))
-						matchFound = true;
+					if (!entries1.get(d).getRule().equals("TRUE") &&
+					    !entries2.get(f).getRule().equals("TRUE") &&
+							!isRulesEqual(entries1.get(d), entries2.get(f)))
+						
+					validationResult.addError("Map Rule is Different: "
+							+ entries1.get(d).getRule() + " vs. " + entries2.get(f).getRule());
 				}
-				if (!matchFound) {
-					validationResult.addError("Record entry does not match: "
-							+ convertToString(entries1.get(d)) + ".");
-				}
-				matchFound = false;
 			}
 
 		}
@@ -840,6 +841,46 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				.equals(entry2.getMapRelation().getId());
 	}
 
+	
+	/**
+	 * Prints the advice differences.
+	 *
+	 * @param entry1 the entry1
+	 * @param entry2 the entry2
+	 * @return the string
+	 */
+	private String printAdviceDifferences(MapEntry entry1, MapEntry entry2) {
+
+		Comparator<Object> advicesComparator = new Comparator<Object>() {
+			@Override
+			public int compare(Object o1, Object o2) {
+				String x1 = ((MapAdvice) o1).getName();
+				String x2 = ((MapAdvice) o2).getName();
+				if (!x1.equals(x2)) {
+					return x1.compareTo(x2);
+				}
+				return 0;
+			}
+		};
+
+		List<MapAdvice> advices1 = new ArrayList<>(entry1.getMapAdvices());
+		Collections.sort(advices1, advicesComparator);
+		List<MapAdvice> advices2 = new ArrayList<>(entry2.getMapAdvices());
+		Collections.sort(advices2, advicesComparator);
+
+    StringBuffer sb = new StringBuffer();
+    for (int i=0; i<Math.max(advices1.size(), advices2.size()); i++) {
+    	if (advices1.get(i) == null && advices2.get(i) != null)
+    		continue;
+    	if (advices1.get(i) != null && advices2.get(i) == null)
+    		continue;
+    	if (!advices1.get(i).equals(advices2.get(i)))
+    		sb.append(advices1.get(i).getName()).append(" vs. ").append(advices2.get(i).getName());
+    			
+    }
+    return sb.toString();   
+	}
+	
 	/**
 	 * Convert to string.
 	 * 
@@ -849,7 +890,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 */
 	private String convertToString(MapEntry mapEntry) {
 
-		// check map advices
 		Comparator<Object> advicesComparator = new Comparator<Object>() {
 			@Override
 			public int compare(Object o1, Object o2) {
