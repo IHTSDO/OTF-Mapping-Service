@@ -85,6 +85,11 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	}
 	
 	$scope.getValidTarget = function(targetCode) {
+		
+		// exit routine if target code is not set
+		if (targetCode == null || targetCode == undefined || targetCode === '')
+			return;
+		
 		$scope.getValidTargetError = "";
 		$http({
 			url: root_mapping + "project/id/" + $scope.project.id + "/concept/" + targetCode + "/isValid",
