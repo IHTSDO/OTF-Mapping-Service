@@ -247,13 +247,12 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 				for (MapRecord mr : mappingService.getMapRecordsForMapProject(
 						mapProjectMap.get(refSetId).getId()).getIterable()) {
 
-					// set the user
-					mr.setOwner(loaderUser);
-					
 					// ensure this record's concept is in the scope includes
 					mapProject.addScopeConcept(mr.getConceptId());
 					
 				}
+				
+				mappingService.updateMapProject(mapProject);
 			}
 			
 			getLog().info("done ...");
