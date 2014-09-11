@@ -3992,4 +3992,29 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
  
 	}
+
+	@Override
+	public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord) throws Exception {
+		
+		List<Feedback> feedbacksWithError = new ArrayList<>();
+		
+		// find any feedback conersations for this record
+		FeedbackConversationList conversations = this.getFeedbackConversationsForRecord(mapRecord.getId());
+		
+		// cycle over feedbacks
+		for (FeedbackConversation conversation : conversations.getIterable()) {
+			for (Feedback feedback : conversation.getFeedbacks()) {
+				if (feedback.isError()) {
+					feedbacksWithError.add(feedback);
+
+
+
+				}
+
+			}
+		}
+		FeedbackList feedbackList = new FeedbackListJpa();
+		feedbackList.setFeedbacks(feedbacksWithError);
+		return feedbackList;
+	}
 }
