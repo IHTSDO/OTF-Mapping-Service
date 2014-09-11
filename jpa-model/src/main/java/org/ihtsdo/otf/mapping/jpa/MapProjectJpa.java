@@ -117,11 +117,8 @@ public class MapProjectJpa implements MapProject {
 
 	/** The mapping principle document. */
 	@Column(nullable = true)
-	private String mapPrincipleSourceDocument;
-	
-	/** The name of the mapping principle document. */
-	@Column(nullable = true)
 	private String mapPrincipleSourceDocumentName;
+	
 
 	/** Flag for whether this project is rule based. */
 	@Column(nullable = false)
@@ -219,7 +216,7 @@ public class MapProjectJpa implements MapProject {
 	 * @param destinationTerminologyVersion the destination terminology version
 	 * @param mapRefsetPattern the map refset pattern
 	 * @param mapRelationStyle the map relation style
-	 * @param mapPrincipleSourceDocument the map principle source document
+	 * @param mapPrincipleSourceDocumentName the map principle source document
 	 * @param ruleBased the rule based
 	 * @param projectSpecificAlgorithmHandlerClass the project specific algorithm handler class
 	 * @param algorithmHandler the algorithm handler
@@ -240,7 +237,7 @@ public class MapProjectJpa implements MapProject {
 			String refSetId, String refSetName, String sourceTerminology,
 			String sourceTerminologyVersion, String destinationTerminology,
 			String destinationTerminologyVersion, String mapRefsetPattern,
-			String mapRelationStyle, String mapPrincipleSourceDocument,
+			String mapRelationStyle, String mapPrincipleSourceDocumentName,
 			boolean ruleBased, String projectSpecificAlgorithmHandlerClass,
 			ProjectSpecificAlgorithmHandler algorithmHandler,
 			Set<MapAgeRange> presetAgeRanges, Set<MapUser> mapLeads,
@@ -263,7 +260,7 @@ public class MapProjectJpa implements MapProject {
 		this.destinationTerminologyVersion = destinationTerminologyVersion;
 		this.mapRefsetPattern = mapRefsetPattern;
 		this.mapRelationStyle = mapRelationStyle;
-		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
 		this.ruleBased = ruleBased;
 		this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
 		this.algorithmHandler = algorithmHandler;
@@ -714,23 +711,23 @@ public class MapProjectJpa implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapProject#getMapPrincipleSourceDocument()
+	 * org.ihtsdo.otf.mapping.model.MapProject#getmapPrincipleSourceDocumentName()
 	 */
 	@Override
-	public String getMapPrincipleSourceDocument() {
-		return mapPrincipleSourceDocument;
+	public String getMapPrincipleSourceDocumentName() {
+		return mapPrincipleSourceDocumentName;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapProject#setMapPrincipleSourceDocument(java
+	 * org.ihtsdo.otf.mapping.model.MapProject#setmapPrincipleSourceDocumentName(java
 	 * .lang.String)
 	 */
 	@Override
-	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
-		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+	public void setMapPrincipleSourceDocumentName(String mapPrincipleSourceDocumentName) {
+		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
 	}
 
 	/*
@@ -1096,8 +1093,8 @@ public class MapProjectJpa implements MapProject {
 				+ ", destinationTerminology=" + destinationTerminology
 				+ ", destinationTerminologyVersion=" + destinationTerminologyVersion
 				+ ", mapRefsetPattern=" + mapRefsetPattern + ", mapRelationStyle="
-				+ mapRelationStyle + ", mapPrincipleSourceDocument="
-				+ mapPrincipleSourceDocument + ", ruleBased=" + ruleBased
+				+ mapRelationStyle + ", mapPrincipleSourceDocumentName="
+				+ mapPrincipleSourceDocumentName + ", ruleBased=" + ruleBased
 				+ ", presetAgeRanges=" + presetAgeRanges + ", mapLeads=" + mapLeads
 				+ ", mapSpecialists=" + mapSpecialists + ", mapAdministrators=" + mapAdministrators + ", mapPrinciples="
 				+ mapPrinciples + ", mapAdvices=" + mapAdvices + ", mapRelations="
@@ -1134,8 +1131,8 @@ public class MapProjectJpa implements MapProject {
 		result =
 				prime
 				* result
-				+ ((mapPrincipleSourceDocument == null) ? 0
-						: mapPrincipleSourceDocument.hashCode());
+				+ ((mapPrincipleSourceDocumentName == null) ? 0
+						: mapPrincipleSourceDocumentName.hashCode());
 		result =
 				prime * result
 				+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
@@ -1257,19 +1254,6 @@ public class MapProjectJpa implements MapProject {
 	}
 
 
-
-	@Override
-	public void setMapPrincipleSourceDocumentName(
-		String mapPrincipleSourceDocumentName) {
-		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
-	}
-
-
-
-	@Override
-	public String getMapPrincipleSourceDocumentName() {
-		return mapPrincipleSourceDocumentName;
-	}
 
 
 
