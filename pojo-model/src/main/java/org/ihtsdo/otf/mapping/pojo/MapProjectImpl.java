@@ -109,9 +109,6 @@ public class MapProjectImpl implements MapProject {
 
 	/** The name of the handler class for project specific algorithms. */
 	private String projectSpecificAlgorithmHandlerClass;
-	
-	/**  The workflow type. */
-	private String workflowType;
 
 	/**
 	 * The Enum WorkflowType.
@@ -1433,6 +1430,13 @@ public class MapProjectImpl implements MapProject {
 	@Override
 	public void setWorkflowType(WorkflowType workflowType) {
 		this.workflowType = workflowType;
+	}
+	
+	@Override
+	public String getMapPrincipleSourceDocumentName() {
+		return this.mapPrincipleSourceDocumentName;
+		
+	}
 		
 	@Override
 	public void setMapPrincipleSourceDocumentName(
