@@ -1,5 +1,8 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -592,11 +595,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// Try query
 		mapRecords = query.getResultList();
 		MapRecordListJpa mapRecordList = new MapRecordListJpa();
-		
+
 		for (MapRecord mr : mapRecordList.getIterable()) {
 			this.handleMapRecordLazyInitialization(mr);
 		}
-		
+
 		mapRecordList.setMapRecords(mapRecords);
 		mapRecordList.setTotalCount(mapRecords.size());
 
@@ -995,6 +998,20 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		MapRecordList mapRecordList = new MapRecordListJpa();
 		mapRecordList.setMapRecords(query.getResultList());
 		return mapRecordList;
+	}
+
+	@Override
+	public MapRecord getMapRecordForProjectAndConcept(Long mapProjectId,
+			String terminologyId) throws Exception {
+
+		MapRecord mapRecord = (MapRecord) manager
+				.createQuery(
+						"select m from MapRecordJpa m where mapProjectId = :mapProjectId and conceptId = :conceptId")
+				.setParameter("mapProjectId", mapProjectId)
+				.setParameter("conceptId", terminologyId).getSingleResult();
+
+		return mapRecord;
+
 	}
 
 	/*
@@ -2141,7 +2158,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	// / Services for Map Project Creation
 	// ///////////////////////////////////////
 
-	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -2161,6 +2177,19 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					"The application must let the service manage transactions for this method");
 		}
 
+		// get the loader user
+		MapUser loaderUser = getMapUser("loader");
+
+		// if loader user does not exist, add it
+		if (loaderUser == null) {
+			loaderUser = new MapUserJpa();
+			loaderUser.setApplicationRole(MapUserRole.VIEWER);
+			loaderUser.setUserName("loader");
+			loaderUser.setName("Loader Record");
+			loaderUser.setEmail("none");
+			loaderUser = addMapUser(loaderUser);
+		}
+
 		// retrieve all complex map ref set members for mapProject
 		javax.persistence.Query query = manager
 				.createQuery("select r from ComplexMapRefSetMemberJpa r "
@@ -2172,10 +2201,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			ComplexMapRefSetMember refSetMember = (ComplexMapRefSetMember) member;
 			complexMapRefSetMembers.add(refSetMember);
 		}
+
 		Logger.getLogger(MappingServiceJpa.class).warn(
 				"  " + complexMapRefSetMembers.size()
 						+ " complex map refset members found (some skipped)");
-		createMapRecordsForMapProject(mapProjectId, complexMapRefSetMembers,
+		createMapRecordsForMapProject(mapProjectId, loaderUser, complexMapRefSetMembers,
 				workflowStatus);
 	}
 
@@ -2247,13 +2277,18 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	}
 
+	/**
+	 * Helper function to call main routine with null value for sampling rate
+	 */
 	@Override
 	public void createMapRecordsForMapProject(Long mapProjectId,
+			MapUser mapUser,
 			List<ComplexMapRefSetMember> complexMapRefSetMembers,
 			WorkflowStatus workflowStatus) throws Exception {
-		createMapRecordsForMapProject(mapProjectId, complexMapRefSetMembers, workflowStatus, -1.0f);
+		createMapRecordsForMapProject(mapProjectId, mapUser,
+				complexMapRefSetMembers, workflowStatus, -1.0f);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -2263,6 +2298,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 */
 	@Override
 	public void createMapRecordsForMapProject(Long mapProjectId,
+			MapUser mapUser,
 			List<ComplexMapRefSetMember> complexMapRefSetMembers,
 			WorkflowStatus workflowStatus, float samplingRate) throws Exception {
 		MapProject mapProject = getMapProject(mapProjectId);
@@ -2317,6 +2353,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		MapAdviceList mapAdvices = getMapAdvices();
 		int mapPriorityCt = 0;
 		int prevMapGroup = 0;
+		
+		// sampling tracker variables
+		int samplingRecordsCreated = 0;
+		int samplingRecordsPublished = 0;
 		try {
 			// instantiate other local variables
 			String prevConceptId = null;
@@ -2414,11 +2454,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 					// random determine workflow state
 					// based on sampling percentage
-					// NOTE: Explicit equality check for -1.0f put in to avoid any possible errors
+					// NOTE: Explicit equality check for -1.0f put in to avoid
+					// any possible errors
 					// in multiplication/division/comparison
-					if (samplingRate != -1.0f && random.nextInt(100 + 1) / 100.0 <= samplingRate) {
+					if (samplingRate != -1.0f
+							&& random.nextInt(100 + 1) / 100.0 <= samplingRate) {
+						samplingRecordsCreated++;
 						mapRecord.setWorkflowStatus(workflowStatus);
 					} else {
+						samplingRecordsPublished++;
 						mapRecord.setWorkflowStatus(WorkflowStatus.PUBLISHED);
 					}
 
@@ -2505,6 +2549,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						}
 					}
 				}
+			}
+			
+			Logger.getLogger(MappingServiceJpa.class).info(
+					"    " + ct + " records created");
+			if (samplingRate != -1.0f) {
+				Logger.getLogger(MappingServiceJpa.class).info(
+						"    " + samplingRecordsCreated + " records set to " + workflowStatus);
+				Logger.getLogger(MappingServiceJpa.class).info(
+						"    " + samplingRecordsPublished + " records set to PUBLISHED");
 			}
 
 			commit();
@@ -3041,7 +3094,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						WorkflowStatus.REVIEW_NEW)
 				|| mapRecord.getWorkflowStatus().equals(
 						WorkflowStatus.REVIEW_IN_PROGRESS)
-				|| mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
+				|| mapRecord.getWorkflowStatus().equals(
+						WorkflowStatus.REVIEW_RESOLVED)) {
 
 			System.out.println("Getting origin id for REVIEW_PROJECT record");
 
@@ -3056,26 +3110,27 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				for (Long originId : mapRecord.getOriginIds()) {
 
 					try {
-					MapRecord mr = getMapRecord(mapRecord.getOriginIds()
-							.iterator().next());
-					
-					// check assumption
-					if (!mr.getWorkflowStatus().equals(
-							WorkflowStatus.REVIEW_NEEDED)) {
-						throw new Exception(
-								"Single origin record found for review, but was not REVIEW_NEEDED");
-					}
+						MapRecord mr = getMapRecord(mapRecord.getOriginIds()
+								.iterator().next());
 
-					// add and return this record
-					conflictRecords.addMapRecord(mr);
-					conflictRecords.setTotalCount(conflictRecords.getCount());
+						// check assumption
+						if (!mr.getWorkflowStatus().equals(
+								WorkflowStatus.REVIEW_NEEDED)) {
+							throw new Exception(
+									"Single origin record found for review, but was not REVIEW_NEEDED");
+						}
 
-					return conflictRecords;
+						// add and return this record
+						conflictRecords.addMapRecord(mr);
+						conflictRecords.setTotalCount(conflictRecords
+								.getCount());
+
+						return conflictRecords;
 
 					} catch (Exception e) {
 						// do nothing
 					}
-					
+
 				}
 
 			} else if (tr.getWorkflowPath().equals(WorkflowPath.FIX_ERROR_PATH)) {
@@ -3241,14 +3296,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		int nMessageInterval = (int) Math
 				.floor(mapRecordsInProject.getCount() / 10);
 
-		// instantiate the algorithm handler
-		// ProjectSpecificAlgorithmHandler algorithmHandler =
-		// this.getProjectSpecificAlgorithmHandler(mapProject);
-
-		// instantiate the services
-		ContentService contentService = new ContentServiceJpa();
-		WorkflowService workflowService = new WorkflowServiceJpa();
-
 		// cycle over all records
 		for (MapRecord mapRecord : mapRecordsInProject.getIterable()) {
 
@@ -3346,12 +3393,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// if errors detected and update mode specified, update
 				if (mapGroupsRemapped == true && updateRecords == true) {
 
-					// get the concept
-					Concept concept = contentService.getConcept(
-							mapRecord.getConceptId(),
-							mapProject.getSourceTerminology(),
-							mapProject.getSourceTerminologyVersion());
-
 					this.handleMapRecordLazyInitialization(mapRecord);
 
 					for (MapEntry me : mapRecord.getMapEntries()) {
@@ -3364,52 +3405,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					Logger.getLogger(MappingServiceJpa.class).info(
 							"  Updating record.");
 					this.updateMapRecord(mapRecord);
-
-					/*
-					 * // process workflow action depending on current status
-					 * switch (mapRecord.getWorkflowStatus()) {
-					 * 
-					 * // re-finish all records in a completed state case
-					 * EDITING_DONE: case CONFLICT_DETECTED: case REVIEW_NEEDED:
-					 * case CONSENSUS_NEEDED:
-					 * Logger.getLogger(MappingServiceJpa.
-					 * class).warn("Finishing record, id = " + mapRecord.getId()
-					 * + ", workflow status = " +
-					 * mapRecord.getWorkflowStatus());
-					 * workflowService.processWorkflowAction(mapProject,
-					 * concept, mapRecord.getOwner(), mapRecord,
-					 * WorkflowAction.FINISH_EDITING); break;
-					 * 
-					 * 
-					 * // actions requiring Save For Later case
-					 * CONFLICT_IN_PROGRESS: case CONSENSUS_IN_PROGRESS: case
-					 * EDITING_IN_PROGRESS: case REVIEW_IN_PROGRESS:
-					 * Logger.getLogger(MappingServiceJpa.class).warn(
-					 * "Savng record for later, id = " + mapRecord.getId() +
-					 * ", workflow status = " + mapRecord.getWorkflowStatus());
-					 * workflowService.processWorkflowAction(mapProject,
-					 * concept, mapRecord.getOwner(), mapRecord,
-					 * WorkflowAction.SAVE_FOR_LATER); break;
-					 * 
-					 * // qa situations outside the workflow (i.e. published
-					 * material), simple database update case
-					 * READY_FOR_PUBLICATION: case PUBLISHED: case REVISION:
-					 * this.updateMapRecord(mapRecord);
-					 * Logger.getLogger(MappingServiceJpa
-					 * .class).warn("Updating record outside the workflow: id = "
-					 * + mapRecord.getId() + ", workflow status=" +
-					 * mapRecord.getWorkflowStatus()); break;
-					 * 
-					 * // workflow statuses that should not even have entries,
-					 * do nothing and output a warning case NEW: case
-					 * REVIEW_NEW: case CONFLICT_NEW: case CONSENSUS_NEW:
-					 * default: Logger.getLogger(MappingServiceJpa.class).error(
-					 * "Record has erroneous workflow state: id = " +
-					 * mapRecord.getId() + ", workflow status=" +
-					 * mapRecord.getWorkflowStatus()); break;
-					 * 
-					 * }
-					 */
 
 				}
 
@@ -3427,6 +3422,332 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"  " + nRecordsChecked + " total records processed ("
 						+ nRecordsRemapped + " with group errors");
+	}
+
+	@Override
+	public void processRelease(MapProject mapProject, String outputFileName,
+			String effectiveTime, String moduleId) throws Exception {
+
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"Processing publication release for project "
+						+ mapProject.getName());
+
+		// check file directory exists and open writer
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"  Creating output file: " + outputFileName);
+		BufferedWriter writer = new BufferedWriter(new FileWriter(
+				outputFileName));
+
+		// retrieve the PUBLICATION and READY_FOR_PUBLICATION map records
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"  Retrieving publication ready records...");
+		List<MapRecord> mapRecords = (List<MapRecord>) this
+				.getPublishedAndReadyForPublicationMapRecordsForMapProject(
+						mapProject.getId(), null).getIterable();
+
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"    " + mapRecords.size() + " records eligible.");
+
+		Collections.sort(mapRecords, new Comparator<MapRecord>() {
+			@Override
+			public int compare(MapRecord mr1, MapRecord mr2) {
+				return mr1.getConceptId().compareTo(mr2.getConceptId());
+			}
+		});
+
+		// Create a map by concept id for quick retrieval of descendants
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"  Creating terminology id map");
+		Map<String, MapRecord> mapRecordMap = new HashMap<>();
+
+		for (MapRecord mr : mapRecords) {
+			mapRecordMap.put(mr.getConceptId(), mr);
+		}
+
+		// perform the release
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"  Processing release...");
+		for (MapRecord mapRecord : mapRecords) {
+
+			// first check whether this map record has already been processed
+			// via up-propagation
+			if (!mapRecordMap.containsKey(mapRecord.getConceptId()))
+				continue;
+
+			// second, check whether this record should be up-propagated
+			boolean isUpPropagated = false;
+			if (mapRecord.getCountDescendantConcepts() < 11) {
+				mapRecord = upPropagate(mapRecord, mapProject);
+				isUpPropagated = true;
+			}
+
+			// extract the entries
+			List<MapEntry> mapEntries = mapRecord.getMapEntries();
+
+			// ensure entries are sorted by group and priority
+			Collections.sort(mapEntries, new Comparator<MapEntry>() {
+				@Override
+				public int compare(MapEntry me1, MapEntry me2) {
+					if (me1.getMapGroup() == me2.getMapGroup()) {
+						return (me1.getMapPriority() < me2.getMapPriority() ? -1
+								: 1);
+					} else
+						return (me1.getMapGroup() < me2.getMapGroup() ? -1 : 1);
+				}
+			});
+
+			// write each entry
+			for (MapEntry mapEntry : mapEntries) {
+				this.writeReleaseEntry(writer, mapEntry, mapRecord, mapProject,
+						effectiveTime, moduleId, isUpPropagated);
+
+			}
+		}
+	}
+
+	// create UUID from refset id, concept id, map group, map rule, map target
+	// TODO Can't find good documentation on creating UUID from field/hash value
+	public String getReleaseUuid(MapEntry mapEntry, MapRecord mapRecord,
+			MapProject mapProject) {
+
+		long hashCode = 17;
+
+		hashCode = hashCode * 31 + mapProject.getRefSetId().hashCode();
+		hashCode = hashCode * 31 + mapRecord.getConceptId().hashCode();
+		hashCode = hashCode * 31 + mapEntry.getMapGroup();
+		hashCode = hashCode * 31 + mapEntry.getRule().hashCode();
+		hashCode = hashCode * 31 + mapEntry.getTargetId().hashCode();
+
+		return "";
+	}
+
+	public MapRecord upPropagate(MapRecord mapRecord, MapProject mapProject)
+			throws Exception {
+
+		// extract the existing entries
+		List<MapEntry> parentEntries = mapRecord.getMapEntries();
+
+		// clear the existing entries
+		mapRecord.setMapEntries(null);
+
+		// get the records matching descendant concepts
+		ContentService contentService = new ContentServiceJpa();
+
+		// TODO Change this to a routine (maybe add to ContentService) w
+		TreePositionList treePositions = contentService
+				.getTreePositionsWithDescendants(mapRecord.getConceptId(),
+						mapProject.getSourceTerminology(),
+						mapProject.getDestinationTerminologyVersion());
+
+		// get the tree position corresponding to this map record
+		TreePosition parentTreePosition = treePositions.getIterable()
+				.iterator().next();
+
+		// cycle over parent tree position and extract all tree positions into
+		// single list
+
+		// CANNOT ASSUME: All tree positions found have no second-level
+		// descendants (e.g. grandchildren of the original concept)
+		// construct entries based on children
+		int mapPriority = 1;
+
+		for (TreePosition treePosition : parentTreePosition.getChildren()) {
+
+			// get the map record corresponding to this tree position
+			MapRecord childRecord = this.getMapRecordForProjectAndConcept(
+					mapProject.getId(), treePosition.getTerminologyId());
+
+			// extract the child entries
+			List<MapEntry> childEntries = childRecord.getMapEntries();
+
+			// cycle over children entries
+			for (MapEntry childEntry : childEntries) {
+
+				MapEntry mapEntry = new MapEntryJpa();
+				mapEntry.setMapGroup(1); // should this be set to child's
+											// mapGroup?
+				mapEntry.setMapPriority(mapPriority++); // if set to child's
+														// mapGroup, need to
+														// track this
+														// differently
+				mapEntry.setMapRecord(mapRecord);
+				mapEntry.setMapRelation(childEntry.getMapRelation());
+				mapEntry.setRule("IFA " + childRecord.getConceptId() + " | "
+						+ childRecord.getConceptName() + " |");
+
+				MapAdvice mapAdvice = new MapAdviceJpa();
+
+				// if no target, use relation
+				// example: IFA 230597003 | Intercostal post-herpetic neuralgia
+				// (disorder) | MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH
+				// AVAILABLE DATA 447561005 447638001
+				if (childEntry.getTargetId() == null) {
+					mapAdvice.setDetail(childEntry.getMapRelation().getName());
+
+					// otherwise, construct human readable
+					// example: IFA 70171009 | Open wound of alveolar process
+					// with complication (disorder) | IF OPEN WOUND OF ALVEOLAR
+					// PROCESS WITH COMPLICATION CHOOSE S01.5
+				} else {
+					String adviceText = "IF "
+							+ childRecord.getConceptName().replace(" (*)", "") // Remove
+																				// any
+																				// (disorder),
+																				// (disease),
+																				// etc.
+							+ " CHOOSE " + childEntry.getTargetId();
+
+					mapAdvice.setDetail(adviceText.toUpperCase());
+				}
+
+				// add the advice
+				mapEntry.addMapAdvice(mapAdvice);
+
+				// and entry to original record
+				mapRecord.addMapEntry(mapEntry);
+
+			}
+		}
+
+		// add the original entries
+		// Example:
+		// 1 1 IFA 230597003 | Intercostal post-herpetic neuralgia (disorder) |
+		// IF INTERCOSTAL POST-HERPETIC NEURALGIA CHOOSE G58.0 | MAP OF SOURCE
+		// CONCEPT IS CONTEXT DEPENDENT | POSSIBLE REQUIREMENT FOR ADDITIONAL
+		// CODE TO FULLY DESCRIBE DISEASE OR CONDITION G58.0 447561005 447639009
+		// 1 2 OTHERWISE TRUE ALWAYS B02.2 B02.2 447561005 447637006
+		// 2 1 IFA 230597003 | Intercostal post-herpetic neuralgia (disorder) |
+		// MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA 447561005
+		// 447638001
+		// 2 2 OTHERWISE TRUE ALWAYS G53.0 G53.0 447561005 447637006
+
+		for (MapEntry mapEntry : parentEntries) {
+			// ??? see example -- how to construct that?
+			// also relates to whether entries above are being handled properly
+		}
+
+		return mapRecord;
+	}
+
+	public void writeReleaseEntry(BufferedWriter writer, MapEntry mapEntry,
+			MapRecord mapRecord, MapProject mapProject, String effectiveTime,
+			String moduleId, boolean isUpPropagated) throws IOException {
+		// create UUID from refset id, concept id, map group, map rule,
+		// map target
+		String uuid = getReleaseUuid(mapEntry, mapRecord, mapProject);
+
+		// construct human-readable map advice based on rule
+		String mapAdviceStr = "";
+
+		// if up-propagated
+		if (isUpPropagated) {
+
+			// find the propagated advice and add it first
+			MapAdvice propagatedAdvice = null;
+			for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
+				if (mapAdvice.getDetail().matches("IFA * | * |")) {
+					mapAdviceStr += mapAdvice.getDetail();
+					propagatedAdvice = mapAdvice;
+				}
+			}
+
+			// remove this advice so it will not be added later
+			mapEntry.removeMapAdvice(propagatedAdvice);
+
+		} else {
+
+			// if not propagated, construct map advice based on TRUE/AGE rules
+			if (mapEntry.getRule().equals("TRUE"))
+				mapAdviceStr += "ALWAYS " + mapEntry.getTargetId();
+			else if (mapEntry.getRule().contains("Age at onset")) {
+				String[] ruleComponents = mapEntry.getRule().split("|");
+
+				// find if this is a less-than-or-equal to or greater-than
+				// rule
+				// CHANGE THIS to detect all <, <=, >, >=
+				boolean lte1 = ruleComponents[2].contains("<=");
+
+				// extract the value and units
+				String valueAndUnits1 = (lte1 ? ruleComponents[2].replace(
+						" <= ", "") : ruleComponents[2].replace(" > ", ""));
+
+				// add single-age element
+				if (ruleComponents.length == 3) {
+					mapAdviceStr += "IF AGE AT ONSET OF CLINICAL FINDING "
+							+ (lte1 ? "BEFORE " : "ON OR AFTER ")
+							+ valueAndUnits1;
+				}
+
+				// add double-age element
+				else if (ruleComponents.length == 6) {
+					String valueAndUnits2 = ruleComponents[5].replace(" <= ",
+							"");
+
+					// EXAMPLE:
+					// bb173faf-f53c-5cf0-b576-946bfa90d34e 20140901 1
+					// 5991000124107 6011000124106 1771000119109 Arthritis of
+					// wrist (disorder) 1 8 IFA 445518008 | Age at onset of
+					// clinical finding (observable entity) | >= 1.0 year AND
+					// IFA 445518008 | Age at onset of clinical finding
+					// (observable entity) | < 18.0 years IF AGE AT ONSET OF
+					// CLINICAL FINDING BETWEEN 1.0 YEAR AND 18.0 YEARS CHOOSE
+					// M08.939 | CONSIDER ADDITIONAL CODE TO IDENTIFY SPECIFIC
+					// CONDITION OR DISEASE | CONSIDER LATERALITY SPECIFICATION
+					// | MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT M08.939
+					// Juvenile arthritis, unspecified, unspecified wrist
+					// 447639009 Map of source concept is context dependent
+					mapAdviceStr += "IF AGE AT ONSET OF CLINICAL FINDING ON OR AFTER "
+							+ valueAndUnits1 + " AND BEFORE " + valueAndUnits2;
+				}
+
+				// add the CHOOSE TARGET
+				mapAdviceStr += " CHOOSE " + mapEntry.getTargetId();
+			}
+		}
+
+		List<MapAdvice> mapAdvices = new ArrayList<>(mapEntry.getMapAdvices());
+		Collections.sort(mapAdvices, new Comparator<MapAdvice>() {
+			@Override
+			public int compare(MapAdvice ma1, MapAdvice ma2) {
+				return ma1.getDetail().compareTo(ma2.getDetail());
+			}
+		});
+
+		// add the entry's map advices
+		for (MapAdvice mapAdvice : mapAdvices) {
+			mapAdviceStr += " | " + mapAdvice.getDetail();
+		}
+
+		String entryLine = uuid
+				+ "\t"
+				+ "1"
+				+ "\t"
+				+ moduleId
+				+ "\t"
+				+ mapProject.getRefSetId()
+				+ "\t"
+				+ mapRecord.getConceptId()
+				+ "\t"
+				+ mapEntry.getMapGroup()
+				+ "\t"
+				+ mapEntry.getMapPriority()
+				+ "\t"
+				+ mapEntry.getRule()
+				+ "\t"
+				+ mapAdviceStr
+				+ "\t"
+				+ (mapEntry.getTargetId() == null ? "" : mapEntry.getTargetId())
+				+ "\t"
+				+ effectiveTime
+				+ "\t"
+				+ "447561005"
+				+ "\t"
+				+ (mapEntry.getMapRelation() == null ? "THIS SHOULD NOT HAVE HAPPENED!!!"
+						: mapEntry.getMapRelation().getId());
+
+		// write the line
+		writer.write(entryLine);
+		writer.newLine();
 	}
 
 }

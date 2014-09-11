@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
@@ -81,11 +80,11 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 					.getProperty("loader.complexmap.rf2.sample.input.data");
 			if (inputFile == null) {
 				throw new MojoFailureException(
-						"Input file directory loader.complexmap.rf2.sample.input.user must be specified");
+						"Input file loader.complexmap.rf2.sample.input.user must be specified");
 			}
 			if (!new File(inputFile).exists()) {
 				throw new MojoFailureException(
-						"Specified loader.complexmap.rf2.sample.input.data directory does not exist: "
+						"Specified loader.complexmap.rf2.sample.input.data file does not exist: "
 								+ inputFile);
 			}
 
@@ -234,19 +233,29 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 
 			// Call mapping service to create records as we go along
 			for (String refSetId : complexMapRefSetMemberMap.keySet()) {
+				
+				MapProject mapProject = mapProjectMap.get(refSetId);
+				
+				getLog().info("Sampling map records from file for project " + mapProject.getName());
+				
 				mappingService.createMapRecordsForMapProject(
-						mapProjectMap.get(refSetId).getId(),
+						mapProject.getId(), loaderUser,
 						complexMapRefSetMemberMap.get(refSetId),
 						WorkflowStatus.REVIEW_NEEDED, samplingRate);
 
+				// cycle over map records for this project
 				for (MapRecord mr : mappingService.getMapRecordsForMapProject(
 						mapProjectMap.get(refSetId).getId()).getIterable()) {
 
-					// TODO Set the user here
+					// set the user
 					mr.setOwner(loaderUser);
+					
+					// ensure this record's concept is in the scope includes
+					mapProject.addScopeConcept(mr.getConceptId());
+					
 				}
 			}
-
+			
 			getLog().info("done ...");
 			// clean-up
 			mappingService.close();
@@ -284,11 +293,6 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 			complexMapRefSetMemberMap.put(mapProject.getRefSetId(),
 					new ArrayList<ComplexMapRefSetMember>());
 		}
-
-		Random random = new Random();
-
-		int refSetMemberCt = 0;
-		int refSetMemberSkippedCt = 0;
 
 		final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
 		while ((line = complexMapReader.readLine()) != null) {
@@ -334,7 +338,7 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 
 				if (concept != null) {
 					complexMapRefSetMember.setConcept(concept);
-					// don't persist, non-published shouldn't be in the db
+					
 					complexMapRefSetMemberMap.get(refSetId).add(
 							complexMapRefSetMember);
 				} else {
@@ -343,11 +347,8 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
 							+ complexMapRefSetMember.getTerminologyId()
 							+ " references non-existent concept " + fields[5]);
 				}
-
-				refSetMemberCt++;
-			} else {
-				refSetMemberSkippedCt++;
 			}
+
 		}
 
 		complexMapReader.close();

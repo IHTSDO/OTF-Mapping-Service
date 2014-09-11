@@ -11,6 +11,7 @@ import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
@@ -91,7 +92,7 @@ public class ConflictProjectWorkflowJpaTest {
 		// initialize the map project
 		mapProject = new MapProjectJpa();
 		mapProject.setName("Map Project");
-		mapProject.setWorkflowType("CONFLICT_PROJECT");
+		mapProject.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
 		mapProject.setRefSetId("refSetId");
 		mapProject.setRefSetName("refSetName");
 		mapProject.setMapRefsetPattern("refSetPattern");

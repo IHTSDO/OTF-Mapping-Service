@@ -804,6 +804,17 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 								title: "Map Project Administration"
 							}]
 						}]
+					},
+					{
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "report",
+								config: {
+								},
+								title: "Reports"
+							}]
+						}]
 					}]
 			};
 

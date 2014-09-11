@@ -7,6 +7,8 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -27,6 +29,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -36,6 +39,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class MapProjectJpa.
  * 
@@ -77,9 +81,9 @@ public class MapProjectJpa implements MapProject {
 	@Column(unique = false, nullable = false)
 	private boolean published = false;
 	
-	/** Indicates what type of workflow to use for this project, defaults to conflict review */
-	@Column(unique = false, nullable = false)
-	private String workflowType = "";
+	/** Indicates what type of workflow to use for this project, defaults to conflict review. */
+	@Enumerated(EnumType.STRING)
+	private WorkflowType workflowType = null;
 
 	/** The ref set id. */
 	private String refSetId;
@@ -634,7 +638,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getWorkflowType()
 	 */
 	@Override
-	public String getWorkflowType() {
+	public WorkflowType getWorkflowType() {
 		return workflowType;
 	}
 
@@ -643,7 +647,7 @@ public class MapProjectJpa implements MapProject {
      * @see org.ihtsdo.otf.mapping.model.MapProject#setWorkflowType(org.ihtsdo.otf.mapping.helpers.WorkflowType)
      */
     @Override
-	public void setWorkflowType(String workflowType) {
+	public void setWorkflowType(WorkflowType workflowType) {
 		this.workflowType = workflowType;
 	}
 
@@ -890,6 +894,22 @@ public class MapProjectJpa implements MapProject {
 	public void setScopeConcepts(Set<String> scopeConcepts) {
 		this.scopeConcepts = scopeConcepts;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#addScopeConcept(java.lang.String)
+	 */
+	@Override
+	public void addScopeConcept(String terminologyId) {
+		this.scopeConcepts.add(terminologyId);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#removeScopeConcept(java.lang.String)
+	 */
+	@Override
+	public void removeScopeConcept(String terminologyId) {
+		this.scopeConcepts.remove(terminologyId);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -932,6 +952,22 @@ public class MapProjectJpa implements MapProject {
 	@Override
 	public void setScopeExcludedConcepts(Set<String> scopeExcludedConcepts) {
 		this.scopeExcludedConcepts = scopeExcludedConcepts;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#addScopeExcludedConcept(java.lang.String)
+	 */
+	@Override
+	public void addScopeExcludedConcept(String terminologyId) {
+		this.scopeExcludedConcepts.add(terminologyId);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#removeScopeExcludedConcept(java.lang.String)
+	 */
+	@Override
+	public void removeScopeExcludedConcept(String terminologyId) {
+		this.scopeExcludedConcepts.remove(terminologyId);
 	}
 
 	/*
