@@ -783,38 +783,7 @@ public class MapProjectImpl implements MapProject {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapProject#getMapPrincipleSourceDocument()
-	 */
-	/**
-	 * Gets the map principle source document.
-	 *
-	 * @return the map principle source document
-	 */
-	@Override
-	public String getMapPrincipleSourceDocument() {
-		return mapPrincipleSourceDocument;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapProject#setMapPrincipleSourceDocument(java
-	 * .lang.String)
-	 */
-	/**
-	 * Sets the map principle source document.
-	 *
-	 * @param mapPrincipleSourceDocument the new map principle source document
-	 */
-	@Override
-	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
-		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
-	}
+	
 
 	/*
 	 * (non-Javadoc)
