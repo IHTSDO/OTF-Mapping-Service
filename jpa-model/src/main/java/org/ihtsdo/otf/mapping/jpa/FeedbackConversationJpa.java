@@ -14,6 +14,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -36,7 +37,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author ${author}
  */
 @Entity
-@Table(name = "feedback_conversations")
+@Table(name = "feedback_conversations", uniqueConstraints = {
+		@UniqueConstraint(columnNames = {
+				"mapRecordId", "id"
+		})
+})
 @Audited
 @Indexed
 @XmlRootElement(name = "feedbackConversation")

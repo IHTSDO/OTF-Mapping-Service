@@ -27,6 +27,7 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.FeedbackList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackListJpa;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
+import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
@@ -3930,7 +3931,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			// create the feedback object
 			Feedback feedback = new FeedbackJpa();
-			feedback.setError(true);
+			feedback.setIsError(true);
 			feedback.setMapError(userError.getError());
 			feedback.setMessage(userError.getNote()
 					+ " (NOTE: Added by the original user error method)");
@@ -3967,23 +3968,28 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	}
 	
 	@Override
-	public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord) throws Exception {
-		
-		List<Feedback> feedbacksWithError = new ArrayList<>();
-		
-		// find any feedback conersations for this record
-		FeedbackConversationList conversations = this.getFeedbackConversationsForRecord(mapRecord.getId());
-		
-		// cycle over feedbacks
-		for (FeedbackConversation conversation : conversations.getIterable()) {
-			for (Feedback feedback : conversation.getFeedbacks()) {
-				if (feedback.isError()) {
-					feedbacksWithError.add(feedback);
-				}
-			}
+	public void fixFeedbackErrorFlag() throws Exception {
+		List<FeedbackConversation> conversations = null;
+		// construct query
+		javax.persistence.Query query = manager
+				.createQuery("select m from FeedbackConversationJpa m");
+		// Try query
+		conversations = query.getResultList();
+
+		boolean needsUpdate = false;
+		for (FeedbackConversation conversation : conversations) {
+      for (Feedback feedback : conversation.getFeedbacks()) {
+    	    if (feedback.getMapError() != null && !feedback.getMapError().equals("") && 
+    			  !feedback.getMapError().equals("None")) {
+    		    feedback.setIsError(true);
+    		    needsUpdate = true;
+    	    }
+      }
+      if (needsUpdate) {
+      	updateFeedbackConversation(conversation);
+      	needsUpdate = false;
+      }
 		}
-		FeedbackList feedbackList = new FeedbackListJpa();
-		feedbackList.setFeedbacks(feedbacksWithError);
-		return feedbackList;
+ 
 	}
 }
