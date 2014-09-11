@@ -1411,7 +1411,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 
     $scope.openConceptBrowser = function() {
-    	window.open($scope.getBrowserUrl(), "browserWindow");
+    	var myWindow = window.open($scope.getBrowserUrl(), "browserWindow");
+    	myWindow.focus();
     };
     
 	$scope.isFeedbackViewed = function() {
