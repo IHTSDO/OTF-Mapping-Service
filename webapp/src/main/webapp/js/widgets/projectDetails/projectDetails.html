@@ -112,7 +112,7 @@
   </table>
   <p></p>
   </accordion-group>
-  <accordion-group ng-show="focusProject.mapLead.length > 0">
+  <accordion-group ng-show="focusProject.mapLead.length > 0 || editModeEnabled == true">
     <accordion-heading>
   <h5><span tooltip-placement="right"
         tooltip="List of the map leads for this project.">
@@ -161,7 +161,7 @@
     </table>
 
   </accordion-group>
-  <accordion-group ng-show="focusProject.mapSpecialist.length > 0">
+  <accordion-group ng-show="focusProject.mapSpecialist.length > 0 || editModeEnabled == true">
     <accordion-heading>
   <h5><span tooltip-placement="right"
         tooltip="List of the map specialists for this project.">
@@ -316,7 +316,7 @@
     </form>
     
   </accordion-group>  
-  <accordion-group ng-show="focusProject.mapRelation.length > 0">
+  <accordion-group ng-show="focusProject.mapRelation.length > 0 || editModeEnabled == true">
       <accordion-heading>
   <h5><span tooltip-placement="right"
         tooltip="List of the map relations for this project.">
@@ -490,13 +490,21 @@
          newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button>
                      
       
-      <div ng-show="focusProject.mapPrincipleSourceDocument != null">
+      <!-- <div ng-show="focusProject.mapPrincipleSourceDocument != null">
         Principles taken from <a
           href="doc/{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
           Principles Document</a>
+      </div> -->
+      <div ng-show="focusProject.mapPrincipleSourceDocument != null">
+        Principles taken from <a
+          href="{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
+          Principles Document</a>
+      </div>
+      <div ng-show="editModeEnabled == true" >
+        <input type="file" ng-file-select="onFileSelect($files)">
       </div>
   </accordion-group>
-  <accordion-group ng-show="focusProject.mapAgeRange.length > 0">
+  <accordion-group ng-show="focusProject.mapAgeRange.length > 0 || editModeEnabled == true">
       <accordion-heading>
   <h5><span tooltip-placement="right"
         tooltip="List of the preset age ranges used for rule construction for this project.">
@@ -591,7 +599,7 @@
       </form>
       
       </accordion-group> 
-          <accordion-group ng-show="focusProject.scopeConcepts.length > 0">
+          <accordion-group ng-show="focusProject.scopeConcepts.length > 0 || editModeEnabled == true">
       <accordion-heading>
   <h5><span tooltip-placement="right"
         tooltip="List of the concepts in scope for this project.">
@@ -650,7 +658,7 @@
        </div>
             
   </accordion-group>
-  <accordion-group ng-show="focusProject.scopeExcludedConcepts.length > 0">
+  <accordion-group ng-show="focusProject.scopeExcludedConcepts.length > 0 || editModeEnabled == true">
       <accordion-heading>
   <h5><span tooltip-placement="right"
         tooltip="List of the concepts excluded from scope for this project.">

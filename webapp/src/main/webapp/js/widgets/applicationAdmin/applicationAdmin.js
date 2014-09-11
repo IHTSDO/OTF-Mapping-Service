@@ -1,21 +1,21 @@
 
 'use strict';
 
-angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
+angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 .config(function(dashboardProvider){
 	dashboardProvider
-	.widget('mapProjectAdmin', {
-		title: 'Map Project Administration',
+	.widget('applicationAdmin', {
+		title: 'Application Administration',
 		description: 'Provides for the addition, deletion and updating of application level metadata.',
-		templateUrl: 'js/widgets/mapProjectAdmin/mapProjectAdmin.html',
-		controller: 'mapProjectAdminCtrl',
+		templateUrl: 'js/widgets/applicationAdmin/applicationAdmin.html',
+		controller: 'applicationAdminCtrl',
 		resolve: {},
 		edit: {}
 	});
 })
-.controller('mapProjectAdminCtrl', 
-			['$scope', '$http', '$sce', '$rootScope', '$location', 'localStorageService',
-			 function ($scope, $http, $sce, $rootScope, $location, localStorageService) {
+.controller('applicationAdminCtrl', 
+			['$scope', '$http', '$sce', '$rootScope', '$location', 'localStorageService', '$upload',
+			 function ($scope, $http, $sce, $rootScope, $location, localStorageService, $upload) {
 
 			    $scope.page =  'project';
 
@@ -39,6 +39,9 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 				
 				$scope.terminologyVersionPairs = new Array();
 				var editingPerformed = new Array();
+				var previousAdvicePage = 1;
+				var previousPrinciplePage = 1;
+				var previousRelationPage = 1;
 				
 				$scope.allowableMapTypes = [{displayName: 'Extended Map', name: 'ExtendedMap'}, 
 				                            {displayName: 'Complex Map', name: 'ComplexMap'}, 
@@ -182,6 +185,12 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 				// - returns artificial page via slice
 				$scope.getPagedAdvices = function (page, filter) {
 					console.debug('getPagedAdvices', filter);
+					if ($scope.adviceInEditingPerformed() == true) {
+					  if(confirm("You have unsaved changes.\n\n Are you sure that you want to switch pages?") == false) {
+						  $scope.pageAdvice = previousAdvicePage;
+						  return;
+					  }
+					}
 					$scope.adviceFilter = filter;
 					$scope.pagedAdvice = $scope.sortByKey($scope.mapAdvices, 'id')
 					.filter(containsAdviceFilter);
@@ -189,9 +198,16 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 					$scope.pagedAdvice = $scope.pagedAdvice
 					.slice((page-1)*$scope.pageSize,
 							page*$scope.pageSize);
+					previousAdvicePage = page;
 				};
 
 				$scope.getPagedRelations = function (page, filter) {
+					if ($scope.relationInEditingPerformed() == true) {
+						  if(confirm("You have unsaved changes.\n\n Are you sure that you want to switch pages?") == false) {
+							  $scope.pageRelation = previousRelationPage;
+							  return;
+						  }
+						}
 					$scope.relationFilter = filter;
 					$scope.pagedRelation = $scope.sortByKey($scope.mapRelations, 'id')
 					.filter(containsRelationFilter);
@@ -199,9 +215,16 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 					$scope.pagedRelation = $scope.pagedRelation
 					.slice((page-1)*$scope.pageSize,
 							page*$scope.pageSize);
+					previousRelationPage = page;
 				};
 
 				$scope.getPagedPrinciples = function (page, filter) {
+					if ($scope.principleInEditingPerformed() == true) {
+						  if(confirm("You have unsaved changes.\n\n Are you sure that you want to switch pages?") == false) {
+							  $scope.pagePrinciple = previousPrinciplePage;
+							  return;
+						  }
+						}
 					$scope.principleFilter = filter;
 					$scope.pagedPrinciple = $scope.sortByKey($scope.mapPrinciples, 'id')
 					.filter(containsPrincipleFilter);
@@ -209,6 +232,7 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 					$scope.pagedPrinciple = $scope.pagedPrinciple
 					.slice((page-1)*$scope.pageSize,
 							page*$scope.pageSize);
+					previousPrinciplePage = page;
 				};
 
 
@@ -320,9 +344,9 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 					}
 				};
 				
-				$scope.setEditingPerformed = function(component) {
+				$scope.setEditingPerformed =  function(component) {
 					editingPerformed.push(component);
-				};
+				};				
 				
 				$scope.isComponentChanged = function(component) {
 					for(var i = editingPerformed.length; i--;) {
@@ -341,7 +365,202 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 		        		}
 		        	}
 				};
+				
+				// indicates if any unsaved advice
+				$scope.adviceInEditingPerformed = function() {
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].name != null && editingPerformed[i].isComputed != null) {
+		        			return true;
+		        		}
+		        	}
+					return false;
+				};
+				
+				// reverts advice to last saved state
+				$scope.revertUnsavedAdvices = function() {
+					console.log("in resetAdvice");
+					
+					// clear advice from editingPerformed
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].name != null && editingPerformed[i].isComputed != null) {
+		        			editingPerformed.splice(i, 1);
+		        		}
+		        	}
+					// get last saved state of advice
+					$http({
+						url: root_mapping + "advice/advices",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.mapAdvices = data.mapAdvice;
+						localStorageService.add('mapAdvices', data.mapAdvice);
+						$rootScope.$broadcast('localStorageModule.notification.setMapAdvices',{key: 'mapAdvices', mapAdvices: data.mapAdvices});  
+						$scope.allowableMapAdvices = localStorageService.get('mapAdvices');
+						$scope.getPagedAdvices(1, "");
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+				};
 
+				// indicates if any unsaved principle
+				$scope.principleInEditingPerformed = function() {
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].principleId != null) {
+		        			return true;
+		        		}
+		        	}
+					return false;
+				};
+				
+				// reverts principle to last saved state
+				$scope.revertUnsavedPrinciples = function() {
+					console.log("in resetPrinciple");
+					
+					// clear principle from editingPerformed
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].principleId != null) {
+		        			editingPerformed.splice(i, 1);
+		        		}
+		        	}
+					// get last saved state of principle
+					$http({
+						url: root_mapping + "principle/principles",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.mapPrinciples = data.mapPrinciple;
+						localStorageService.add('mapPrinciples', data.mapPrinciple);
+						$rootScope.$broadcast('localStorageModule.notification.setMapPrinciples',{key: 'mapPrinciples', mapPrinciples: data.mapPrinciples});  
+						$scope.allowableMapPrinciples = localStorageService.get('mapPrinciples');
+						$scope.getPagedPrinciples(1, "");
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+				};
+				
+				// indicates if any unsaved relation
+				$scope.relationInEditingPerformed = function() {
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].terminologyId != null) {
+		        			return true;
+		        		}
+		        	}
+					return false;
+				};
+				
+				// reverts relation to last saved state
+				$scope.revertUnsavedRelations = function() {
+					console.log("in resetRelation");
+					
+					// clear relation from editingPerformed
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].terminologyId != null) {
+		        			editingPerformed.splice(i, 1);
+		        		}
+		        	}
+					// get last saved state of relation
+					$http({
+						url: root_mapping + "relation/relations",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.mapRelations = data.mapRelation;
+						localStorageService.add('mapRelations', data.mapRelation);
+						$rootScope.$broadcast('localStorageModule.notification.setMapRelations',{key: 'mapRelations', mapRelations: data.mapRelations});  
+						$scope.allowableMapRelations = localStorageService.get('mapRelations');
+						$scope.getPagedRelations(1, "");
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+				};
+				
+				// indicates if any unsaved ageRange
+				$scope.ageRangeInEditingPerformed = function() {
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].lowerUnits != null) {
+		        			return true;
+		        		}
+		        	}
+					return false;
+				};
+				
+				// reverts ageRange to last saved state
+				$scope.revertUnsavedAgeRanges = function() {
+					console.log("in resetAgeRange");
+					
+					// clear ageRange from editingPerformed
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].lowerUnits != null) {
+		        			editingPerformed.splice(i, 1);
+		        		}
+		        	}
+					// get last saved state of ageRange
+					$http({
+						url: root_mapping + "ageRange/ageRanges",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.mapAgeRanges = data.mapAgeRange;
+						localStorageService.add('mapAgeRanges', data.mapAgeRange);
+						$rootScope.$broadcast('localStorageModule.notification.setMapAgeRanges',{key: 'mapAgeRanges', mapAgeRanges: data.mapAgeRanges});  
+						$scope.allowableMapAgeRanges = localStorageService.get('mapAgeRanges');
+						$scope.getPagedAgeRanges(1, "");
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+				};
+				
+				// indicates if any unsaved project
+				$scope.projectInEditingPerformed = function() {
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].sourceTerminology != null) {
+		        			return true;
+		        		}
+		        	}
+					return false;
+				};
+				
+				// reverts project to last saved state
+				$scope.revertUnsavedProjects = function() {
+					console.log("in resetProject");
+					
+					// clear project from editingPerformed
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].sourceTerminology != null) {
+		        			editingPerformed.splice(i, 1);
+		        		}
+		        	}
+					// get last saved state of project
+					$http({
+						url: root_mapping + "project/projects",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.mapProjects = data.mapProject;
+						localStorageService.add('mapProjects', data.mapProject);
+						$rootScope.$broadcast('localStorageModule.notification.setMapProjects',{key: 'mapProjects', mapProjects: data.mapProjects});  
+						$scope.allowableMapProjects = localStorageService.get('mapProjects');
+						$scope.getPagedProjects(1, "");
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+				};
+				
 				// function to change project from the header
 				$scope.changeFocusProject = function(mapProject) {
 					$scope.focusProject = mapProject;
@@ -374,6 +593,10 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 			
 				$scope.deleteAdvice = function(advice) {
 					console.debug("in deleteAdvice from application");
+					
+					if (confirm("Are you sure that you want to delete a map advice?") == false)
+						return;
+					
 					$http({						
 						url: root_mapping + "advice/delete",
 						dataType: "json",
@@ -513,6 +736,10 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 
 				$scope.deleteRelation = function(relation) {
 					console.debug("in deleteRelation from application");
+					
+					if (confirm("Are you sure that you want to delete a map relation?") == false)
+						return;
+					
 					$http({						
 						url: root_mapping + "relation/delete",
 						dataType: "json",
@@ -700,6 +927,10 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 				
 				$scope.deletePrinciple = function(principle) {
 					console.debug("in deletePrinciple from application");
+					
+					if (confirm("Are you sure that you want to delete a map principle?") == false)
+						return;
+					
 					$http({						
 						url: root_mapping + "principle/delete",
 						dataType: "json",
@@ -785,6 +1016,10 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 				
 				$scope.deleteAgeRange = function(ageRange) {
 					console.debug("in deleteAgeRange");
+					
+					if (confirm("Are you sure that you want to delete an age range?") == false)
+						return;
+					
 					for (var j = 0; j < $scope.focusProject.mapAgeRange.length; j++) {
 						if (ageRange.name === $scope.focusProject.mapAgeRange[j].name) {
 							$scope.focusProject.mapAgeRange.splice(j, 1);
@@ -906,8 +1141,38 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 					}).success(function(data) {
 						console.debug("success to updateMapProject");
 						removeComponentFromArray(editingPerformed, project);
-						localStorageService.set('focusProject', project);
-						$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: project});  
+						//localStorageService.set('focusProject', project);
+						//$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: project});  
+					
+						// retrieve updated projects and broadcast
+						$http({
+							url: root_mapping + "project/projects",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}	
+
+						}).success(function(data) {
+									localStorageService.add('mapProjects', data.mapProject);
+									$rootScope.$broadcast(
+											'localStorageModule.notification.setMapProjects', {
+												key : 'mapProjects',
+												mapProjects : data.mapProject
+											});
+									$scope.mapProjects = data.mapProject;
+						}).error(function(data, status, headers, config) {
+							$rootScope.glassPane--;
+						    $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+						
+						$rootScope.$broadcast(
+								'localStorageModule.notification.setMapProjects', {
+									key : 'mapProjects',
+									mapProjects : $scope.mapProjects
+								});
+						
 					}).error(function(data, status, headers, config) {
 						$scope.recordError = "Error updating map project.";
 						$rootScope.handleHttpError(data, status, headers, config);
@@ -950,8 +1215,6 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 									mapProjects : $scope.mapProjects
 								});
 					  	
-					  	// clear the viewed project
-						$scope.adminProject = null;
 									 
 					}).error(function(data, status, headers, config) {
 					    $rootScope.glassPane--;
@@ -959,12 +1222,16 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 					});
 				};
 				
+				
+
+				
 				$scope.submitNewMapProject = function(
 						newMapProjectName, newMapProjectSourceVersion, newMapProjectDestinationVersion, 
 						newMapProjectRefSetId, newMapProjectPublished, newMapProjectRuleBased, 
 						newMapProjectGroupStructure, newMapProjectPublic, 
 					    newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag,
-					    newMapProjectMapType, newWorkflowType, newMapRelationStyle) {
+					    newMapProjectMapType, newWorkflowType, newMapRelationStyle, 
+					    newMapProjectMapPrincipleSourceDocumentName) {
 						
 						// get source and version and dest and version
 						var res = newMapProjectSourceVersion.split(" "); 
@@ -973,9 +1240,31 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 						res = newMapProjectDestinationVersion.split(" "); 
 						var newMapProjectDestination = res[0];
 						var newMapProjectDestinationVersion = res[1];
-							
+					  	var newMapProjectRefSetName = "";
 						
-						var project = {
+						// check ref set id
+					  	if (newMapProjectRefSetId == null || newMapProjectRefSetId.length == 0) {
+							alert("You must specify a unique ref set id.");
+							return;
+						}
+					  	
+					  	// get the refsetid name
+					  	$http({
+							url: root_content + "concept/id/" + newMapProjectSource + "/" +
+							  newMapProjectSourceVersion + "/" + newMapProjectRefSetId,
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {
+							console.debug("Success in getting concept for refsetid.");
+							newMapProjectRefSetName = data.defaultPreferredName;
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						}).then(function(data) {
+					  						  	
+							var project = {
 								"name": newMapProjectName,
 								"sourceTerminology": newMapProjectSource,
 								"sourceTerminologyVersion": newMapProjectSourceVersion,
@@ -983,6 +1272,7 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 								"destinationTerminologyVersion": newMapProjectDestinationVersion,
 								"blockStructure": false,			
 								"refSetId": newMapProjectRefSetId,
+								"refSetName": newMapProjectRefSetName,
 								"published": newMapProjectPublished,
 								"ruleBased": newMapProjectRuleBased,
 								"groupStructure": newMapProjectGroupStructure,
@@ -991,59 +1281,95 @@ angular.module('mapProjectApp.widgets.mapProjectAdmin', ['adf.provider'])
 								"mapRelationStyle": newMapRelationStyle.name,
 								"public": newMapProjectPublic,
 								"scopeDescendantsFlag": newMapProjectScopeDescendantsFlag,
-								"scopeExcludedDescendantsFlag": newMapProjectScopeExcludedDescendantsFlag
-						};
+								"scopeExcludedDescendantsFlag": newMapProjectScopeExcludedDescendantsFlag,
+								"mapPrincipleSourceDocumentName": newMapProjectMapPrincipleSourceDocumentName
+							};
+							
 						
-						$rootScope.glassPane++;
+							if ($scope.checkRefSetId(project) == false) {
+								alert("The ref set id you provided is not unique.");
+								return;
+							}
+						
+							$rootScope.glassPane++;
 						
 
-						$http({
-							url: root_mapping + "project/add",
-							method: "PUT",
-							dataType: "json",
-							data: project,
-							headers: {
+							$http({
+								url: root_mapping + "project/add",
+								method: "PUT",
+								dataType: "json",
+								data: project,
+								headers: {
 								"Content-Type": "application/json"
-							}
-						}).success(function(data) {
-						  	$rootScope.glassPane--;
-						  	
-						  	// set the admin project to response
-						  	var newProject = data;
-						  	
-						  	// check ref set id
-						  	//$scope.checkRefSetId();
-
-						  	$scope.successMsg = 'Successfully added project ' + newProject.id;
-						  	
-						  	// add to local projects and to cache
-						  	$scope.mapProjects.push(data);
-						  	localStorageService.add('mapProjects', $scope.mapProjects);
-						  	
-						  	// broadcast change
-						  	$rootScope.$broadcast(
-									'localStorageModule.notification.setMapProjects', {
-										key : 'mapProjects',
-										mapProjects : $scope.mapProjects
-									});
-										 
-						}).error(function(data, status, headers, config) {
-						    $rootScope.glassPane--;
-						    $rootScope.handleHttpError(data, status, headers, config);
-						});
-						
-						$scope.checkRefSetId = function() {
-							$scope.isDuplicateRefSetId = false;
-							for (var i = 0; i < $scope.mapProjects.length; i++) {
-								if ($scope.mapProjects[i].id != $scope.adminProject.id
-										&& $scope.mapProjects[i].refSetId === $scope.adminProject.refSetId) {
-									$scope.isDuplicateRefSetId = true;
 								}
+							}).success(function(data) {
+								$rootScope.glassPane--;
+						  	
+								// set the admin project to response
+								var newProject = data;
+
+								$scope.successMsg = 'Successfully added project ' + newProject.id;
+								
+								newProject.mapAdministrator.push($scope.currentUser);
+								$http({
+									url: root_mapping + "project/update",
+									dataType: "json",
+									data: newProject,
+									method: "POST",
+									headers: {
+										"Content-Type": "application/json"
+									}
+								}).success(function(data) {
+									console.debug("success to updateMapProject");
+									// add to local projects and to cache
+									$scope.mapProjects.push(newProject);
+									localStorageService.add('mapProjects', $scope.mapProjects);
+							  	
+									// broadcast change
+									$rootScope.$broadcast(
+										'localStorageModule.notification.setMapProjects', {
+											key : 'mapProjects',
+											mapProjects : $scope.mapProjects
+										});
 									
-							}
-						};
+								}).error(function(data, status, headers, config) {
+									$scope.recordError = "Error updating map project.";
+									$rootScope.handleHttpError(data, status, headers, config);
+								});
+								
+								
+								
+								
+							}).error(function(data, status, headers, config) {
+								$rootScope.glassPane--;
+								$rootScope.handleHttpError(data, status, headers, config);
+							});		
+						});
 					};
-
+					
+					$scope.checkRefSetId = function(project) {
+						for (var i = 0; i < $scope.mapProjects.length; i++) {
+							if ($scope.mapProjects[i].id != project.id
+									&& $scope.mapProjects[i].refSetId === project.refSetId) {
+								return false;
+							}			
+						}
+						return true;
+					};
+					
+					$scope.onFileSelect = function($files) {
+					    //$files: an array of files selected, each file has name, size, and type.
+					    for (var i = 0; i < $files.length; i++) {
+					      var $file = $files[i];
+					      $upload.upload({
+					        url: root_mapping + "upload/" + $scope.focusProject.id,
+					        file: $file,
+					        progress: function(e){}
+					      }).then(function(data, status, headers, config) {
+					        // file is uploaded successfully
+					        console.log(data);
+					      }); 
+					    }
+					};
 			}]);
-
 
