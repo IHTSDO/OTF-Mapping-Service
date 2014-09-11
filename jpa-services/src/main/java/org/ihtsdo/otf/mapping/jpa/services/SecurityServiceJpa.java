@@ -32,7 +32,7 @@ import com.sun.jersey.api.representation.Form;
  * 
  * @author ${author}
  */
-public class SecurityServiceJpa implements SecurityService {
+public class SecurityServiceJpa extends RootServiceJpa implements SecurityService {
 
   /** The token username map. */
   private static Map<String, String> tokenUsernameMap = new HashMap<>();
@@ -43,8 +43,8 @@ public class SecurityServiceJpa implements SecurityService {
   /**
    * Instantiates an empty {@link SecurityServiceJpa}.
    */
-  public SecurityServiceJpa() {
-    // do nothing
+  public SecurityServiceJpa() throws Exception {
+    super();
   }
 
   @SuppressWarnings("unchecked")
