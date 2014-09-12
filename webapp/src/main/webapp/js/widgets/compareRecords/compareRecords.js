@@ -20,8 +20,6 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	
 	console.debug("Entering compareRecordsCtrl");
 
-   /*$scope.page =  'resolveConflictsDashboard';*/
-
 	// initialize scope variables
 	$scope.concept = 	null;
 	$scope.project = 	localStorageService.get('focusProject');
