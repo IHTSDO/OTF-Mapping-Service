@@ -948,7 +948,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			$rootScope.handleHttpError(data, status, headers, config);
 		});
 		
-	}
+	};
 
 	
 	// function to return trusted html code (for advice content)

@@ -87,13 +87,13 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MappingServiceRest extends RootServiceRest {
 
-	private SecurityService securityService = new SecurityServiceJpa();
+	private SecurityService securityService;
 
 	/**
 	 * Instantiates an empty {@link MappingServiceRest}.
 	 */
-	public MappingServiceRest() {
-
+	public MappingServiceRest() throws Exception {
+		securityService = new SecurityServiceJpa();
 	}
 
 	// ///////////////////////////////////////////////////

@@ -9,7 +9,7 @@ import org.ihtsdo.otf.mapping.helpers.MapUserRole;
  * where we can inject any security solution we want into the background.
  * 
  */
-public interface SecurityService {
+public interface SecurityService extends RootService {
 
   /**
    * Authenticate the user.

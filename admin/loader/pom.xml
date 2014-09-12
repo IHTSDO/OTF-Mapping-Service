@@ -197,7 +197,7 @@
       </build>
     </profile>
     
-     <!-- Load asample of map records from RF2 map file -->
+     <!-- Load a sample of map records from RF2 map file -->
     <profile>
       <id>MapRecordsSample</id>
       <build>

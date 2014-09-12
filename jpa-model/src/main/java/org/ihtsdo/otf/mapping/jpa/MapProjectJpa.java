@@ -7,6 +7,8 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -27,6 +29,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -36,6 +39,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class MapProjectJpa.
  * 
@@ -77,9 +81,9 @@ public class MapProjectJpa implements MapProject {
 	@Column(unique = false, nullable = false)
 	private boolean published = false;
 	
-	/** Indicates what type of workflow to use for this project, defaults to conflict review */
-	@Column(unique = false, nullable = false)
-	private String workflowType = "";
+	/** Indicates what type of workflow to use for this project, defaults to conflict review. */
+	@Enumerated(EnumType.STRING)
+	private WorkflowType workflowType = null;
 
 	/** The ref set id. */
 	private String refSetId;
@@ -113,11 +117,8 @@ public class MapProjectJpa implements MapProject {
 
 	/** The mapping principle document. */
 	@Column(nullable = true)
-	private String mapPrincipleSourceDocument;
-	
-	/** The name of the mapping principle document. */
-	@Column(nullable = true)
 	private String mapPrincipleSourceDocumentName;
+	
 
 	/** Flag for whether this project is rule based. */
 	@Column(nullable = false)
@@ -215,7 +216,7 @@ public class MapProjectJpa implements MapProject {
 	 * @param destinationTerminologyVersion the destination terminology version
 	 * @param mapRefsetPattern the map refset pattern
 	 * @param mapRelationStyle the map relation style
-	 * @param mapPrincipleSourceDocument the map principle source document
+	 * @param mapPrincipleSourceDocumentName the map principle source document
 	 * @param ruleBased the rule based
 	 * @param projectSpecificAlgorithmHandlerClass the project specific algorithm handler class
 	 * @param algorithmHandler the algorithm handler
@@ -236,7 +237,7 @@ public class MapProjectJpa implements MapProject {
 			String refSetId, String refSetName, String sourceTerminology,
 			String sourceTerminologyVersion, String destinationTerminology,
 			String destinationTerminologyVersion, String mapRefsetPattern,
-			String mapRelationStyle, String mapPrincipleSourceDocument,
+			String mapRelationStyle, String mapPrincipleSourceDocumentName,
 			boolean ruleBased, String projectSpecificAlgorithmHandlerClass,
 			ProjectSpecificAlgorithmHandler algorithmHandler,
 			Set<MapAgeRange> presetAgeRanges, Set<MapUser> mapLeads,
@@ -259,7 +260,7 @@ public class MapProjectJpa implements MapProject {
 		this.destinationTerminologyVersion = destinationTerminologyVersion;
 		this.mapRefsetPattern = mapRefsetPattern;
 		this.mapRelationStyle = mapRelationStyle;
-		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
 		this.ruleBased = ruleBased;
 		this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
 		this.algorithmHandler = algorithmHandler;
@@ -638,7 +639,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getWorkflowType()
 	 */
 	@Override
-	public String getWorkflowType() {
+	public WorkflowType getWorkflowType() {
 		return workflowType;
 	}
 
@@ -647,7 +648,7 @@ public class MapProjectJpa implements MapProject {
      * @see org.ihtsdo.otf.mapping.model.MapProject#setWorkflowType(org.ihtsdo.otf.mapping.helpers.WorkflowType)
      */
     @Override
-	public void setWorkflowType(String workflowType) {
+	public void setWorkflowType(WorkflowType workflowType) {
 		this.workflowType = workflowType;
 	}
 
@@ -710,23 +711,23 @@ public class MapProjectJpa implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapProject#getMapPrincipleSourceDocument()
+	 * org.ihtsdo.otf.mapping.model.MapProject#getmapPrincipleSourceDocumentName()
 	 */
 	@Override
-	public String getMapPrincipleSourceDocument() {
-		return mapPrincipleSourceDocument;
+	public String getMapPrincipleSourceDocumentName() {
+		return mapPrincipleSourceDocumentName;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapProject#setMapPrincipleSourceDocument(java
+	 * org.ihtsdo.otf.mapping.model.MapProject#setmapPrincipleSourceDocumentName(java
 	 * .lang.String)
 	 */
 	@Override
-	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
-		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+	public void setMapPrincipleSourceDocumentName(String mapPrincipleSourceDocumentName) {
+		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
 	}
 
 	/*
@@ -894,6 +895,22 @@ public class MapProjectJpa implements MapProject {
 	public void setScopeConcepts(Set<String> scopeConcepts) {
 		this.scopeConcepts = scopeConcepts;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#addScopeConcept(java.lang.String)
+	 */
+	@Override
+	public void addScopeConcept(String terminologyId) {
+		this.scopeConcepts.add(terminologyId);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#removeScopeConcept(java.lang.String)
+	 */
+	@Override
+	public void removeScopeConcept(String terminologyId) {
+		this.scopeConcepts.remove(terminologyId);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -936,6 +953,22 @@ public class MapProjectJpa implements MapProject {
 	@Override
 	public void setScopeExcludedConcepts(Set<String> scopeExcludedConcepts) {
 		this.scopeExcludedConcepts = scopeExcludedConcepts;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#addScopeExcludedConcept(java.lang.String)
+	 */
+	@Override
+	public void addScopeExcludedConcept(String terminologyId) {
+		this.scopeExcludedConcepts.add(terminologyId);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#removeScopeExcludedConcept(java.lang.String)
+	 */
+	@Override
+	public void removeScopeExcludedConcept(String terminologyId) {
+		this.scopeExcludedConcepts.remove(terminologyId);
 	}
 
 	/*
@@ -1060,8 +1093,8 @@ public class MapProjectJpa implements MapProject {
 				+ ", destinationTerminology=" + destinationTerminology
 				+ ", destinationTerminologyVersion=" + destinationTerminologyVersion
 				+ ", mapRefsetPattern=" + mapRefsetPattern + ", mapRelationStyle="
-				+ mapRelationStyle + ", mapPrincipleSourceDocument="
-				+ mapPrincipleSourceDocument + ", ruleBased=" + ruleBased
+				+ mapRelationStyle + ", mapPrincipleSourceDocumentName="
+				+ mapPrincipleSourceDocumentName + ", ruleBased=" + ruleBased
 				+ ", presetAgeRanges=" + presetAgeRanges + ", mapLeads=" + mapLeads
 				+ ", mapSpecialists=" + mapSpecialists + ", mapAdministrators=" + mapAdministrators + ", mapPrinciples="
 				+ mapPrinciples + ", mapAdvices=" + mapAdvices + ", mapRelations="
@@ -1098,8 +1131,8 @@ public class MapProjectJpa implements MapProject {
 		result =
 				prime
 				* result
-				+ ((mapPrincipleSourceDocument == null) ? 0
-						: mapPrincipleSourceDocument.hashCode());
+				+ ((mapPrincipleSourceDocumentName == null) ? 0
+						: mapPrincipleSourceDocumentName.hashCode());
 		result =
 				prime * result
 				+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
@@ -1221,19 +1254,6 @@ public class MapProjectJpa implements MapProject {
 	}
 
 
-
-	@Override
-	public void setMapPrincipleSourceDocumentName(
-		String mapPrincipleSourceDocumentName) {
-		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
-	}
-
-
-
-	@Override
-	public String getMapPrincipleSourceDocumentName() {
-		return mapPrincipleSourceDocumentName;
-	}
 
 
 

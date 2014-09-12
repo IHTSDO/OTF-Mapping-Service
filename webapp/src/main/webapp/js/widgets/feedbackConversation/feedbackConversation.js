@@ -94,6 +94,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 			console.debug($scope.record);
 			setTitle();
 		}).error(function(data, status, headers, config) {
+			
 			// if no active record, look for historical record
 			$http({
 				url: root_mapping + "record/id/" + $scope.conversation.mapRecordId + "/historical",
@@ -173,6 +174,8 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 			
 			localFeedback.push(feedback);
 			conversation.feedback = localFeedback;
+			
+			$rootScope.glassPane++;
 				
 			$http({						
 				url: root_workflow + "conversation/update",
@@ -183,8 +186,10 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 					"Content-Type": "application/json"
 				}
 			}).success(function(data) {
+				$rootScope.glassPane--;
 				console.debug("success to update Feedback conversation.");
 			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
 				$scope.recordError = "Error updating feedback conversation.";
 				$rootScope.handleHttpError(data, status, headers, config);
 			});
@@ -208,6 +213,8 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
     	}
     	
     	if (needToUpdate == true) {
+
+			$rootScope.glassPane++;
 		  $http({						
 				url: root_workflow + "conversation/update",
 				dataType: "json",
@@ -217,8 +224,12 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 					"Content-Type": "application/json"
 				}
 			}).success(function(data) {
+
+				$rootScope.glassPane--;
 				console.debug("success to update Feedback conversation.");
 			}).error(function(data, status, headers, config) {
+
+				$rootScope.glassPane--;
 				$scope.recordError = "Error updating feedback conversation.";
 				$rootScope.handleHttpError(data, status, headers, config);
 			});
