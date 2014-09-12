@@ -38,9 +38,13 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		initializeReturnRecipients($scope.conversation);
 	});	
 	
-	// on any change of focusProject, retrieve new available work
+	// required for authorization when right-clicking to open feedback conversation from feedback list
 	$scope.currentUserToken = localStorageService.get('userToken');
-	$scope.$watch(['focusProject', 'user', 'userToken'], function() {
+	if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null) {
+		$http.defaults.headers.common.Authorization = $scope.currentUserToken;	
+	}
+	// on any change of focusProject, retrieve new available work
+	$scope.$watch(['focusProject', 'currentUser', 'currentUserToken'], function() {
 		console.debug('feedbackConversationCtrl:  Detected project or user set/change');
 		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null) {
 			$http.defaults.headers.common.Authorization = $scope.currentUserToken;				
