@@ -83,6 +83,11 @@ export.output.dir=C:/data/ihtsdo-project-data
 base.url=
 
 #
+# Directory for mapping personnel handbooks and other documents
+#
+map.principle.source.document.dir=C:/data/doc
+
+#
 # URL for security service
 #
 ihtsdo.security.activated=false

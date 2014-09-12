@@ -424,8 +424,7 @@
           </tr>
         </tbody>
       </table>
-      <button class="btn btn-sm btn-primary" ng-click="revertUnsavedPrinciples()"  ng-show="principleInEditingPerformed() == true" >Revert Unsaved</button>
-      
+      <button class="btn btn-sm btn-primary" ng-click="revertUnsavedPrinciples()"  ng-show="principleInEditingPerformed() == true" >Revert Unsaved</button> 
       
       <form>
       <div style="margin-top:15px;"><b>Create New Map Principle</b></div><hr>           
@@ -449,10 +448,11 @@
         ng-click="submitNewMapPrinciple(newPrincipleName, newPrincipleId, newPrincipleDetail, newPrincipleSectionRef);
          newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button></td><td></td></tr>
       </tbody></table> 
-      </form>  
+      </form>
+      <!-- <div style="margin-top:15px;"><b>Upload Map Principle Handbook</b></div><hr>                 
       <div>
         <input type="file" ng-file-select="onFileSelect($files)">
-      </div>            
+      </div>       -->      
   </accordion-group>
   <accordion-group ng-show="mapAgeRanges.length > 0">
       <accordion-heading>
