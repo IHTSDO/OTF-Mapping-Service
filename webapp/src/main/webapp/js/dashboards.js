@@ -793,6 +793,17 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 								title: "Application Administration"
 							}]
 						}]
+					},
+					{
+						columns: [{
+							class: 'col-md-12',
+							widgets: [{
+								type: "report",
+								config: {
+								},
+								title: "Reports"
+							}]
+						}]
 					}]
 			};
 

@@ -2,6 +2,8 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
+
 // TODO: Auto-generated Javadoc
 /**
  * Represents a map project.
@@ -340,21 +342,6 @@ public interface MapProject {
 	 */
 	public void setMapRelationStyle(String mapRelationStyle);
 
-	/**
-	 * Sets the map principle source document name.
-	 * 
-	 * @param mapPrincipleSourceDocument the name of the map principle source
-	 *          document
-	 */
-	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument);
-
-	/**
-	 * Gets the map principle source document name.
-	 * 
-	 * @return the name of the map principle source document
-	 */
-	public String getMapPrincipleSourceDocument();
-
 
 	/**
 	 * Sets the map principle source document name.
@@ -530,14 +517,42 @@ public interface MapProject {
 	 *
 	 * @return the workflow type
 	 */
-	public String getWorkflowType();
+	public WorkflowType getWorkflowType();
 
 	/**
 	 * Sets the workflow type.
 	 *
 	 * @param workflowType the new workflow type
 	 */
-	public void setWorkflowType(String workflowType);
+	public void setWorkflowType(WorkflowType workflowType);
+
+	/**
+	 * Adds the scope excluded concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	public void addScopeExcludedConcept(String terminologyId);
+
+	/**
+	 * Removes the scope excluded concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	public void removeScopeExcludedConcept(String terminologyId);
+
+	/**
+	 * Adds the scope concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	public void addScopeConcept(String terminologyId);
+
+	/**
+	 * Removes the scope concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	public void removeScopeConcept(String terminologyId);
 
 
 

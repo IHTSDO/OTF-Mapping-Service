@@ -24,7 +24,7 @@ import org.ihtsdo.otf.mapping.workflow.WorkflowException;
  * Represents a service for answering questions and performing actions related
  * to workflow management.
  */
-public interface WorkflowService {
+public interface WorkflowService extends RootService {
 
 	/**
 	 * Gets the workflow tracking record.
@@ -489,6 +489,26 @@ public interface WorkflowService {
 		Long mapProjectId, String terminologyId) throws Exception;
 
 	/**
+	 * Gets the feedback conversations for record.
+	 *
+	 * @param mapRecordId the map record id
+	 * @return the feedback conversations for record
+	 * @throws Exception the exception
+	 */
+	public FeedbackConversationList getFeedbackConversationsForRecord(Long mapRecordId)
+			throws Exception;
+	
+	/**
+	 * Gets the feedback errors for record.
+	 *
+	 * @param mapRecord the map record
+	 * @return the feedback errors for record
+	 * @throws Exception the exception
+	 */
+	FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord)
+			throws Exception;
+	
+	/**
 	 * Convert user errors.
 	 *
 	 * @throws Exception the exception
@@ -501,6 +521,9 @@ public interface WorkflowService {
 	 * @throws Exception the exception
 	 */
 	public void fixFeedbackErrorFlag() throws Exception;
+
+
+
 
 
 }
