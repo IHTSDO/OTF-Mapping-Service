@@ -14,9 +14,15 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 /**
  * Implementation of {@link MetadataService} for SNOMEDCT.
  */
-public class SnomedMetadataServiceJpaHelper implements MetadataService {
+public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements MetadataService {
 
-  /** The Constant isaRelationshipType. */
+  public SnomedMetadataServiceJpaHelper() throws Exception {
+		super();
+		
+	}
+
+
+/** The Constant isaRelationshipType. */
   private final static String isaRelationshipType = "116680003";
 
   /*

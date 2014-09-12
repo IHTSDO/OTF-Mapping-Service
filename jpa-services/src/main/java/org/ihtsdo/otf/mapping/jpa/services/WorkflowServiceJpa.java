@@ -579,13 +579,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// user must not be this user
 
 		switch (mapProject.getWorkflowType()) {
-		case "CONFLICT_PROJECT":
+		case CONFLICT_PROJECT:
 			full_query += " AND workflowPath:NON_LEGACY_PATH";
 			full_query += " AND (assignedUserCount:0 OR "
 					+ "(assignedUserCount:1 AND NOT assignedUserNames:"
 					+ mapUser.getUserName() + "))";
 			break;
-		case "REVIEW_PROJECT":
+		case REVIEW_PROJECT:
 			full_query += " AND workflowPath:REVIEW_PROJECT_PATH";
 			full_query += " AND assignedUserCount:0";
 			break;
@@ -3131,10 +3131,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					if (editingRecordFound == false) {
 						errors.add("FIX_ERROR_PATH, but no specialist-level record found");
 					}
-
-					// no need to output anything about lead review record,
-					// above
-					// messages with capture
+					
+					// lead record may or may not exist
+					if (reviewRecordFound == false) {
+						// do nothing, not required
+						// any aberrant records will be reported above
+					}
+					
 
 					break;
 				case LEGACY_PATH:
@@ -3638,6 +3641,33 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return feedbackConversationList;
 
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public FeedbackConversationList getFeedbackConversationsForRecord(
+			Long mapRecordId) throws Exception {
+
+		javax.persistence.Query query = manager
+				.createQuery(
+						"select m from FeedbackConversationJpa m where mapRecordId=:mapRecordId")
+				.setParameter("mapRecordId", mapRecordId);
+
+		List<FeedbackConversation> feedbackConversations = query
+				.getResultList();
+		for (FeedbackConversation feedbackConversation : feedbackConversations) {
+			handleFeedbackConversationLazyInitialization(feedbackConversation);
+		}
+
+		// set the total count
+		FeedbackConversationListJpa feedbackConversationList = new FeedbackConversationListJpa();
+		feedbackConversationList.setTotalCount(feedbackConversations.size());
+
+		// extract the required sublist of feedback conversations
+		feedbackConversationList
+				.setFeedbackConversations(feedbackConversations);
+
+		return feedbackConversationList;
+	}
 
 	private static String constructQuery(Long mapProjectId,
 			PfsParameter pfsParameter) {
@@ -3961,5 +3991,30 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
       }
 		}
  
+	}
+
+	@Override
+	public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord) throws Exception {
+		
+		List<Feedback> feedbacksWithError = new ArrayList<>();
+		
+		// find any feedback conersations for this record
+		FeedbackConversationList conversations = this.getFeedbackConversationsForRecord(mapRecord.getId());
+		
+		// cycle over feedbacks
+		for (FeedbackConversation conversation : conversations.getIterable()) {
+			for (Feedback feedback : conversation.getFeedbacks()) {
+				if (feedback.isError()) {
+					feedbacksWithError.add(feedback);
+
+
+
+				}
+
+			}
+		}
+		FeedbackList feedbackList = new FeedbackListJpa();
+		feedbackList.setFeedbacks(feedbacksWithError);
+		return feedbackList;
 	}
 }

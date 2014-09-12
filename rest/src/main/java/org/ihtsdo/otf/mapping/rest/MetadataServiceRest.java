@@ -37,7 +37,11 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class MetadataServiceRest extends RootServiceRest {
 
 	/**  The security service. */
-	private SecurityService securityService = new SecurityServiceJpa();
+	private SecurityService securityService;
+	
+	public MetadataServiceRest() throws Exception {
+		securityService = new SecurityServiceJpa();
+	}
 	
   /**
    * Returns all metadata for a terminology and version
