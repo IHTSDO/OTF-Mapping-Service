@@ -30,7 +30,7 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
 /**
  * Services for interacting with mapping objects.
  */
-public interface MappingService {
+public interface MappingService extends RootService {
 
 	/**
 	 * Closes the manager associated with service.
@@ -64,7 +64,8 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public MapProject getMapProjectForRefSetId(String refSetId) throws Exception;
+	public MapProject getMapProjectForRefSetId(String refSetId)
+			throws Exception;
 
 	/**
 	 * Return map user for auto-generated id.
@@ -87,7 +88,7 @@ public interface MappingService {
 	 *             the exception
 	 */
 	public MapRecord getMapRecord(Long id) throws Exception;
-	
+
 	/**
 	 * Gets the map principle.
 	 * 
@@ -245,7 +246,8 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public MapPrinciple addMapPrinciple(MapPrinciple mapPrinciple) throws Exception;
+	public MapPrinciple addMapPrinciple(MapPrinciple mapPrinciple)
+			throws Exception;
 
 	/**
 	 * Adds the map advice.
@@ -370,10 +372,8 @@ public interface MappingService {
 	// Other services ///
 	// /////////////////////////
 
-
 	/**
-	 * Gets the map records for concept id.
-	 * Only used by MapNote
+	 * Gets the map records for concept id. Only used by MapNote
 	 * 
 	 * @param terminologyId
 	 *            the concept id
@@ -383,7 +383,7 @@ public interface MappingService {
 	 */
 	public MapRecordList getMapRecordsForConcept(String terminologyId)
 			throws Exception;
-	
+
 	/**
 	 * Returns the unmapped descendants for concept.
 	 * 
@@ -395,16 +395,15 @@ public interface MappingService {
 	 *            the terminology version
 	 * @param threshold
 	 *            the threshold
-	 * @param pfsParameter 
+	 * @param pfsParameter
 	 * @return the unmapped descendants for concept
 	 * @throws Exception
 	 *             the exception
 	 */
 	public SearchResultList findUnmappedDescendantsForConcept(
 			String terminologyId, String terminology,
-			String terminologyVersion, int threshold, PfsParameter pfsParameter) throws Exception;
-
-	
+			String terminologyVersion, int threshold, PfsParameter pfsParameter)
+			throws Exception;
 
 	/**
 	 * Creates the map records for map project.
@@ -431,7 +430,7 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void createMapRecordsForMapProject(Long mapProjectId,
+	public void createMapRecordsForMapProject(Long mapProjectId, MapUser mapUser,
 			List<ComplexMapRefSetMember> complexMapRefSetMembers,
 			WorkflowStatus workflowStatus) throws Exception;
 
@@ -444,7 +443,8 @@ public interface MappingService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public Long removeMapRecordsForMapProject(Long mapProjectId) throws Exception;
+	public Long removeMapRecordsForMapProject(Long mapProjectId)
+			throws Exception;
 
 	/**
 	 * Helper function not requiring a PFS object.
@@ -463,52 +463,52 @@ public interface MappingService {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
-	 * @param pfsParameter 
+	 * @param pfsParameter
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
 	 */
-	public SearchResultList findConceptsInScope(Long mapProjectId, PfsParameter pfsParameter)
-			throws Exception;
+	public SearchResultList findConceptsInScope(Long mapProjectId,
+			PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find unmapped concepts in scope.
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
-	 * @param pfsParameter 
+	 * @param pfsParameter
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
 	 */
-	public SearchResultList findUnmappedConceptsInScope(Long mapProjectId, PfsParameter pfsParameter)
-			throws Exception;
+	public SearchResultList findUnmappedConceptsInScope(Long mapProjectId,
+			PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find mapped concepts out of scope bounds.
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
-	 * @param pfsParameter 
+	 * @param pfsParameter
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
 	 */
-	public SearchResultList findMappedConceptsOutOfScopeBounds(Long mapProjectId, PfsParameter pfsParameter)
-			throws Exception;
+	public SearchResultList findMappedConceptsOutOfScopeBounds(
+			Long mapProjectId, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Find concepts excluded from scope.
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
-	 * @param pfsParameter 
+	 * @param pfsParameter
 	 * @return the search result list
 	 * @throws Exception
 	 *             the exception
 	 */
-	public SearchResultList findConceptsExcludedFromScope(Long mapProjectId, PfsParameter pfsParameter)
-			throws Exception;
+	public SearchResultList findConceptsExcludedFromScope(Long mapProjectId,
+			PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Indicates whether or not concept in scope is the case.
@@ -558,82 +558,100 @@ public interface MappingService {
 	 * @param userName
 	 *            the user name
 	 * @return the map user
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	public MapUser getMapUser(String userName) throws Exception;
 
 	/**
 	 * Returns the map age ranges.
-	 *
+	 * 
 	 * @return the map age ranges
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	public MapAgeRangeList getMapAgeRanges() throws Exception;
 
 	/**
 	 * Adds the map age range.
-	 *
-	 * @param ageRange            the age range
+	 * 
+	 * @param ageRange
+	 *            the age range
 	 * @return the map age range
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	public MapAgeRange addMapAgeRange(MapAgeRange ageRange) throws Exception;
 
 	/**
 	 * Removes the map age range.
-	 *
-	 * @param ageRangeId            the age range id
-	 * @throws Exception the exception
+	 * 
+	 * @param ageRangeId
+	 *            the age range id
+	 * @throws Exception
+	 *             the exception
 	 */
 	public void removeMapAgeRange(Long ageRangeId) throws Exception;
 
 	/**
 	 * Update map age range.
-	 *
-	 * @param ageRange            the age range
-	 * @throws Exception the exception
+	 * 
+	 * @param ageRange
+	 *            the age range
+	 * @throws Exception
+	 *             the exception
 	 */
 	public void updateMapAgeRange(MapAgeRange ageRange) throws Exception;
 
 	/**
 	 * Gets the record revisions.
-	 *
-	 * @param mapRecordId            the map record id
+	 * 
+	 * @param mapRecordId
+	 *            the map record id
 	 * @return the record revisions
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
-	public MapRecordList getMapRecordRevisions(Long mapRecordId) throws Exception;
+	public MapRecordList getMapRecordRevisions(Long mapRecordId)
+			throws Exception;
 
 	/**
 	 * Returns the map relations.
-	 *
+	 * 
 	 * @return the map relations
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	public MapRelationList getMapRelations() throws Exception;
 
 	/**
 	 * Adds the map relation.
-	 *
-	 * @param mapRelation            the map relation
+	 * 
+	 * @param mapRelation
+	 *            the map relation
 	 * @return the map relation
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	public MapRelation addMapRelation(MapRelation mapRelation) throws Exception;
 
 	/**
 	 * Update map relation.
-	 *
-	 * @param mapRelation            the map relation
-	 * @throws Exception the exception
+	 * 
+	 * @param mapRelation
+	 *            the map relation
+	 * @throws Exception
+	 *             the exception
 	 */
 	public void updateMapRelation(MapRelation mapRelation) throws Exception;
 
 	/**
 	 * Removes the map relation.
-	 *
-	 * @param mapRelationId            the map relation id
-	 * @throws Exception the exception
+	 * 
+	 * @param mapRelationId
+	 *            the map relation id
+	 * @throws Exception
+	 *             the exception
 	 */
 	public void removeMapRelation(Long mapRelationId) throws Exception;
 
@@ -708,38 +726,46 @@ public interface MappingService {
 
 	/**
 	 * Gets the map user preferences.
-	 *
+	 * 
 	 * @return the map user preferences
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	public MapUserPreferencesList getMapUserPreferences() throws Exception;
 
 	/**
 	 * Adds the map user preferences.
-	 *
-	 * @param mapUserPreferences            the map user preferences
+	 * 
+	 * @param mapUserPreferences
+	 *            the map user preferences
 	 * @return the map user preferences
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	public MapUserPreferences addMapUserPreferences(
 			MapUserPreferences mapUserPreferences) throws Exception;
 
 	/**
 	 * Update map user preferences.
-	 *
-	 * @param mapUserPreferences            the map user preferences
-	 * @throws Exception the exception
+	 * 
+	 * @param mapUserPreferences
+	 *            the map user preferences
+	 * @throws Exception
+	 *             the exception
 	 */
-	public void updateMapUserPreferences(MapUserPreferences mapUserPreferences) throws Exception;
+	public void updateMapUserPreferences(MapUserPreferences mapUserPreferences)
+			throws Exception;
 
 	/**
 	 * Removes the map user preferences.
-	 *
-	 * @param mapUserPreferencesId            the map user preferences id
-	 * @throws Exception the exception
+	 * 
+	 * @param mapUserPreferencesId
+	 *            the map user preferences id
+	 * @throws Exception
+	 *             the exception
 	 */
-	public void removeMapUserPreferences(Long mapUserPreferencesId) throws Exception;
-
+	public void removeMapUserPreferences(Long mapUserPreferencesId)
+			throws Exception;
 
 	/**
 	 * Given a list of tree positions and a map project id, sets the valid codes
@@ -755,7 +781,7 @@ public interface MappingService {
 	 */
 	public TreePositionList setTreePositionValidCodes(
 			List<TreePosition> treePositions, Long mapProjectId)
-					throws Exception;
+			throws Exception;
 
 	/**
 	 * Computes any display notes for tree position, depending on project
@@ -771,7 +797,7 @@ public interface MappingService {
 	 */
 	public TreePositionList setTreePositionTerminologyNotes(
 			List<TreePosition> treePositions, Long mapProjectId)
-					throws Exception;
+			throws Exception;
 
 	/**
 	 * Given a map record, returns the origin map records giving rise to a
@@ -788,12 +814,15 @@ public interface MappingService {
 
 	/**
 	 * Gets the map user preferences.
-	 *
-	 * @param userName            the user name
+	 * 
+	 * @param userName
+	 *            the user name
 	 * @return the map user preferences
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
-	public MapUserPreferences getMapUserPreferences(String userName) throws Exception;
+	public MapUserPreferences getMapUserPreferences(String userName)
+			throws Exception;
 
 	/**
 	 * Gets the published and ready for publication map records for map project.
@@ -809,37 +838,43 @@ public interface MappingService {
 	 */
 	public MapRecordList getPublishedAndReadyForPublicationMapRecordsForMapProject(
 			Long mapProjectId, PfsParameter pfsParameter) throws Exception;
-	
+
 	/**
 	 * Gets the published map records for map project.
-	 *
-	 * @param mapProjectId the map project id
-	 * @param pfsParameter the pfs parameter
+	 * 
+	 * @param mapProjectId
+	 *            the map project id
+	 * @param pfsParameter
+	 *            the pfs parameter
 	 * @return the published map records for map project
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public MapRecordList getPublishedMapRecordsForMapProject(
-			Long mapProjectId, PfsParameter pfsParameter) throws Exception;
-
+	public MapRecordList getPublishedMapRecordsForMapProject(Long mapProjectId,
+			PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Returns the map user role.
-	 *
-	 * @param userName            the user name
-	 * @param mapProjectId            the map project id
+	 * 
+	 * @param userName
+	 *            the user name
+	 * @param mapProjectId
+	 *            the map project id
 	 * @return the map user role
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
-	public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId) throws Exception;
-
-
+	public MapUserRole getMapUserRoleForMapProject(String userName,
+			Long mapProjectId) throws Exception;
 
 	/**
 	 * Check map groups for map project.
-	 *
-	 * @param mapProject the map project
-	 * @param updateRecords whether to update records or simply check for map group errors
-	 * @throws Exception the exception
+	 * 
+	 * @param mapProject
+	 *            the map project
+	 * @param updateRecords
+	 *            whether to update records or simply check for map group errors
+	 * @throws Exception
+	 *             the exception
 	 */
 	public void checkMapGroupsForMapProject(MapProject mapProject,
 			boolean updateRecords) throws Exception;
@@ -848,15 +883,42 @@ public interface MappingService {
 	 * Creates the map records for map project.
 	 *
 	 * @param mapProjectId the map project id
+	 * @param loaderUser 
 	 * @param complexMapRefSetMembers the complex map ref set members
+	 * @param mapUser the map user
 	 * @param workflowStatus the workflow status
 	 * @param samplingRate the sampling rate
 	 * @throws Exception the exception
 	 */
 	void createMapRecordsForMapProject(Long mapProjectId,
-			List<ComplexMapRefSetMember> complexMapRefSetMembers,
-			WorkflowStatus workflowStatus, float samplingRate) throws Exception;
+			MapUser mapUser, List<ComplexMapRefSetMember> complexMapRefSetMembers,
+			WorkflowStatus workflowStatus, float samplingRate)
+			throws Exception;
+
+	/**
+	 * Process release at publication time
+	 * 
+	 * @param mapProject
+	 *            the map project
+	 * @param outputDirName
+	 */
+	void processRelease(MapProject mapProject, String outputFileName,
+			String effectiveTime, String moduleId) throws Exception;
+
+	/**
+	 * Gets the map record for project and concept.
+	 * 
+	 * @param mapProjectId
+	 *            the map project id
+	 * @param terminologyId
+	 *            the terminology id
+	 * @return the map record for project and concept
+	 * @throws Exception
+	 *             the exception
+	 */
+	public MapRecord getMapRecordForProjectAndConcept(Long mapProjectId,
+			String terminologyId) throws Exception;
 
 
-	
+
 }

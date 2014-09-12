@@ -18,7 +18,11 @@ import org.junit.Test;
 public class MappingServiceRestTest {
 
 	/** The edit mapping service */
-	private static MappingServiceRest service = new MappingServiceRest();
+	private static MappingServiceRest service;
+	
+	public MappingServiceRestTest() throws Exception {
+		service = new MappingServiceRest();
+	}
 
 
 	/**

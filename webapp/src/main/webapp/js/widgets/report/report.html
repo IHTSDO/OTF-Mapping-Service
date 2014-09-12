@@ -1,0 +1,68 @@
+<form>
+	<table>
+
+		<tr>
+			<td>Report Type:</td>
+			<td><select
+				ng-options="reportType as reportType for reportType in reportTypes"
+				ng-model="reportTypeSelected"></select></td>
+		</tr>
+		<tr>
+			<td>Specialist:</td>
+			<td><select ng-model="specialistSelected"
+				ng-options="specialist as specialist.name for specialist in specialists"></select></td>
+		<tr>
+			<td>Start Time:</td>
+			<td><input type="text" datepicker-popup="{{format}}"
+				ng-model="startDate" is-open="startDateOpened"
+				datepicker-options="dateOptions"
+				date-disabled="disabled(date, mode)" ng-required="true"
+				close-text="Close" />
+				<button type="button" class="btn btn-default"
+					ng-click="startDateOpened = !startDateOpened">
+					<i class="glyphicon glyphicon-calendar"></i>
+				</button></td>
+		<tr>
+			<td>End Time:</td>
+			<td><input type="text" datepicker-popup="{{format}}"
+				ng-model="endDate" is-open="endDateOpened" min-date="minDate"
+				max-date="'2015-06-22'" datepicker-options="dateOptions"
+				date-disabled="disabled(date, mode)" ng-required="true"
+				close-text="Close" />
+
+				<button type="button" class="btn btn-default"
+					ng-click="endDateOpened = !endDateOpened">
+					<i class="glyphicon glyphicon-calendar"></i>
+				</button></td>
+		</tr>
+	</table>
+	<button class="btn btn-sm btn-primary"
+		ng-click="getReport(specialistSelected, reportTypeSelected, startDate, endDate)">Get
+		Report</button>
+
+</form>
+
+<div ng-show="report != null">
+
+	<table class="table">
+
+		<tr>
+			<td>Concepts</td>
+			<td>{{report.totalCount}}</td>
+		</tr>
+		<tr>
+			<td>Finished</td>
+			<td>{{report.finishedCount}}</td>
+		</tr>
+		<tr ng-show="focusProject.workflowType === 'CONFLICT_PROJECT'">
+			<td>Conflicts</td>
+			<td>{{report.conflictCount}}</td>
+		</tr>
+		<tr>
+			<td>Errors</td>
+			<td>{{report.errorCount}}</td>
+		</tr>
+
+	</table>
+
+</div>
