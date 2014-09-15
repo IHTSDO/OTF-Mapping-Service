@@ -423,7 +423,6 @@ public class MappingServiceJpaTest {
     mapProject.setSourceTerminologyVersion("20140131");
     mapProject.setDestinationTerminology("ICD10");
     mapProject.setDestinationTerminologyVersion("2010");
-    mapProject.setBlockStructure(false);
     mapProject.setGroupStructure(true);
     mapProject.setPublished(true);
     mapProject.setMapRelationStyle("mapRelationStyle1");
@@ -454,7 +453,6 @@ public class MappingServiceJpaTest {
     mapProject.setSourceTerminologyVersion("20140131");
     mapProject.setDestinationTerminology("ICD9CM");
     mapProject.setDestinationTerminologyVersion("2013");
-    mapProject.setBlockStructure(false);
     mapProject.setGroupStructure(true);
     mapProject.setPublished(true);
     mapProject.setMapRelationStyle("mapRelationStyle2");
@@ -483,7 +481,6 @@ public class MappingServiceJpaTest {
     mapProject.setSourceTerminologyVersion("20130731");
     mapProject.setDestinationTerminology("ICPC");
     mapProject.setDestinationTerminologyVersion("2");
-    mapProject.setBlockStructure(false);
     mapProject.setGroupStructure(false);
     mapProject.setPublished(false);
     mapProject.setMapRelationStyle("mapRelationStyle3");

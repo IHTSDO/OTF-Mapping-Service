@@ -65,11 +65,6 @@ public class MapProjectJpa implements MapProject {
 	/** Whether this project is viewable by public roles. */
 	@Column(unique = false, nullable = false)
 	private boolean isPublic = false;
-	/**
-	 * Indicates whether there is block structure for map records of this project.
-	 */
-	@Column(unique = false, nullable = false)
-	private boolean blockStructure = false;
 
 	/**
 	 * Indicates whether there is group structure for map records of this project.
@@ -208,7 +203,6 @@ public class MapProjectJpa implements MapProject {
 	 * @param id the id
 	 * @param name the name
 	 * @param isPublic the is public
-	 * @param blockStructure the block structure
 	 * @param groupStructure the group structure
 	 * @param published the published
 	 * @param refSetId the ref set id
@@ -236,11 +230,12 @@ public class MapProjectJpa implements MapProject {
 	 * @param scopeExcludedDescendantsFlag the scope excluded descendants flag
 	 */
 	public MapProjectJpa(Long id, String name, boolean isPublic,
-			boolean blockStructure, boolean groupStructure, boolean published,
+			boolean groupStructure, boolean published,
 			String refSetId, String refSetName, String sourceTerminology,
 			String sourceTerminologyVersion, String destinationTerminology,
 			String destinationTerminologyVersion, String mapRefsetPattern,
-			String mapRelationStyle, String mapPrincipleSourceDocumentName,
+			String mapRelationStyle, String mapPrincipleSourceDocument,
+			String mapPrincipleSourceDocumentName,
 			boolean ruleBased, String projectSpecificAlgorithmHandlerClass,
 			ProjectSpecificAlgorithmHandler algorithmHandler,
 			Set<MapAgeRange> presetAgeRanges, Set<MapUser> mapLeads,
@@ -252,7 +247,6 @@ public class MapProjectJpa implements MapProject {
 		this.id = id;
 		this.name = name;
 		this.isPublic = isPublic;
-		this.blockStructure = blockStructure;
 		this.groupStructure = groupStructure;
 		this.published = published;
 		this.refSetId = refSetId;
@@ -263,6 +257,7 @@ public class MapProjectJpa implements MapProject {
 		this.destinationTerminologyVersion = destinationTerminologyVersion;
 		this.mapRefsetPattern = mapRefsetPattern;
 		this.mapRelationStyle = mapRelationStyle;
+		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
 		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
 		this.ruleBased = ruleBased;
 		this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
@@ -577,25 +572,6 @@ public class MapProjectJpa implements MapProject {
 		this.isPublic = isPublic;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#isBlockStructure()
-	 */
-	@Override
-	public boolean isBlockStructure() {
-		return blockStructure;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#setBlockStructure(boolean)
-	 */
-	@Override
-	public void setBlockStructure(boolean blockStructure) {
-		this.blockStructure = blockStructure;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -1090,7 +1066,7 @@ public class MapProjectJpa implements MapProject {
 	@Override
 	public String toString() {
 		return "MapProjectJpa [id=" + id + ", name=" + name + ", isPublic="
-				+ isPublic + ", blockStructure=" + blockStructure + ", groupStructure="
+				+ isPublic + ", groupStructure="
 				+ groupStructure + ", published=" + published + ", workflowType="
 				+ workflowType + ", refSetId=" + refSetId + ", refSetName="
 				+ refSetName + ", sourceTerminology=" + sourceTerminology
@@ -1126,7 +1102,6 @@ public class MapProjectJpa implements MapProject {
 		result =
 				prime * result
 						+ ((algorithmHandler == null) ? 0 : algorithmHandler.hashCode());
-		result = prime * result + (blockStructure ? 1231 : 1237);
 		result =
 				prime
 						* result
@@ -1225,8 +1200,6 @@ public class MapProjectJpa implements MapProject {
 			if (other.algorithmHandler != null)
 				return false;
 		} else if (!algorithmHandler.equals(other.algorithmHandler))
-			return false;
-		if (blockStructure != other.blockStructure)
 			return false;
 		if (destinationTerminology == null) {
 			if (other.destinationTerminology != null)
