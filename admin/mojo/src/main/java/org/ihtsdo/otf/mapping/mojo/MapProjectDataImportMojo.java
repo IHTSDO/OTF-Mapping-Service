@@ -315,8 +315,6 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         }
         i++; // increment the counter
         mapProject.setDestinationTerminologyVersion(terminologyVersion);
-        mapProject.setBlockStructure(fields[i++].toLowerCase().equals("true")
-            ? true : false);
         mapProject.setGroupStructure(fields[i++].toLowerCase().equals("true")
             ? true : false);
         mapProject.setPublished(fields[i++].toLowerCase().equals("true") ? true
