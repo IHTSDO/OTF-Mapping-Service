@@ -1270,7 +1270,6 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 								"sourceTerminologyVersion": newMapProjectSourceVersion,
 								"destinationTerminology": newMapProjectDestination,
 								"destinationTerminologyVersion": newMapProjectDestinationVersion,
-								"blockStructure": false,			
 								"refSetId": newMapProjectRefSetId,
 								"refSetName": newMapProjectRefSetName,
 								"published": newMapProjectPublished,

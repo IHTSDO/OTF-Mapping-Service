@@ -597,14 +597,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		Collections.sort(principles2, principlesComparator);
 
 		if (principles1.size() != principles2.size()) {
-			validationResult.addError("Map Principle Assignment is Different: different number of principles selected");
+			validationResult.addError("Map Principle Assignment is Different: Number of Principles is Different");
 		} else {
 			for (int i = 0; i < principles1.size(); i++) {
 				if (!principles1.get(i).getPrincipleId()
 						.equals(principles2.get(i).getPrincipleId()))
 					validationResult
 							.addError("Map Principle Assignment is Different: " + 
-					principles1.get(i).getName() + " vs " + principles2.get(i).getName());
+					principles1.get(i).getName() + " vs. " + principles2.get(i).getName());
 			}
 		}
 
@@ -734,7 +734,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 							&& !isMapRelationsEqual(entries1.get(d),
 									entries2.get(f)))
 						validationResult.addError("Map Relation is Different: "
-								+ entries1.get(d).getMapRelation() + " vs. " + entries2.get(f).getMapRelation());
+								+ entries1.get(d).getMapRelation().getName() + " vs. " + entries2.get(f).getMapRelation().getName());
 				}
 			}
 			for (int d = 0; d < entries1.size(); d++) {
@@ -745,9 +745,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 							&& !entries1.get(d).getMapAdvices()
 									.equals(entries2.get(f).getMapAdvices()))
 						
-					validationResult
-							.addError("Map Advice is Different: "
-									+  printAdviceDifferences(entries1.get(d), entries2.get(f)));
+					 printAdviceDifferences(validationResult, entries1.get(d), entries2.get(f));
 				}
 			}
 			for (int d = 0; d < entries1.size(); d++) {
@@ -757,8 +755,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 									entries2.get(f)))
 						
 					validationResult
-							.addError("Target Code is Different: "
-									+ entries1.get(d).getTargetId() + " vs. " + entries2.get(f).getTargetId());				
+							.addError("Target Code is Different: " + 
+									(entries1.get(d).getTargetId() == null || entries1.get(d).getTargetId().equals("") ? 
+											"No target" : entries1.get(d).getTargetId()) + 
+									" vs. " + 
+									(entries2.get(f).getTargetId() == null || entries2.get(f).getTargetId().equals("") ? 
+											"No target" : entries2.get(f).getTargetId()));				
 			  }
 			}
 			for (int d = 0; d < entries1.size(); d++) {
@@ -842,14 +844,16 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	}
 
 	
+	
 	/**
 	 * Prints the advice differences.
 	 *
+	 * @param validationResult the validation result
 	 * @param entry1 the entry1
 	 * @param entry2 the entry2
-	 * @return the string
 	 */
-	private String printAdviceDifferences(MapEntry entry1, MapEntry entry2) {
+	private void printAdviceDifferences(ValidationResult validationResult, 
+		MapEntry entry1, MapEntry entry2) {
 
 		Comparator<Object> advicesComparator = new Comparator<Object>() {
 			@Override
@@ -868,17 +872,24 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		List<MapAdvice> advices2 = new ArrayList<>(entry2.getMapAdvices());
 		Collections.sort(advices2, advicesComparator);
 
-    StringBuffer sb = new StringBuffer();
+
     for (int i=0; i<Math.max(advices1.size(), advices2.size()); i++) {
-    	if (advices1.get(i) == null && advices2.get(i) != null)
-    		continue;
-    	if (advices1.get(i) != null && advices2.get(i) == null)
-    		continue;
-    	if (!advices1.get(i).equals(advices2.get(i)))
-    		sb.append(advices1.get(i).getName()).append(" vs. ").append(advices2.get(i).getName());
-    			
-    }
-    return sb.toString();   
+    	try {
+    	  if (advices1.get(i) == null && advices2.get(i) != null)
+    		  continue;
+    	  if (advices1.get(i) != null && advices2.get(i) == null)
+    		  continue;
+    	  if (!advices1.get(i).equals(advices2.get(i))) {
+    	  	validationResult.addError("Map Advice is Different: " + 
+    		  (advices1.get(i).getName() + " vs. " + advices2.get(i).getName()));
+    	  }
+    	} catch (IndexOutOfBoundsException e) {
+    		validationResult.addError("Map Advice is Different: " + 
+    		  (advices1.size() > i ? advices1.get(i).getName() : "No advice") + " vs. " +
+    			(advices2.size() > i ? advices2.get(i).getName() : "No advice"));
+      	
+    	}
+    }  
 	}
 	
 	/**
