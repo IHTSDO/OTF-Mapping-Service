@@ -554,6 +554,19 @@ public interface MapProject {
 	 */
 	public void removeScopeConcept(String terminologyId);
 
-
+	/**
+	 * Sets the map principle source document name.
+	 *
+	 * @param mapPrincipleSourceDocument the name of the map principle source
+	 * document
+	 */
+	 public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument);
+	
+	 /**
+	 * Gets the map principle source document name.
+	 *
+	 * @return the name of the map principle source document
+	 */
+	 public String getMapPrincipleSourceDocument();
 
 }

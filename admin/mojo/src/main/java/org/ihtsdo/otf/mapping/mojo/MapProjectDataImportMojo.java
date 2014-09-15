@@ -327,6 +327,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         else if (fields[i++].equals(WorkflowType.REVIEW_PROJECT.toString())) 
         	mapProject.setWorkflowType(WorkflowType.REVIEW_PROJECT);
 
+        mapProject.setMapPrincipleSourceDocument(fields[i++]);
         mapProject.setMapPrincipleSourceDocumentName(fields[i++]);
         mapProject.setRuleBased(fields[i++].toLowerCase().equals("true") ? true
             : false);
