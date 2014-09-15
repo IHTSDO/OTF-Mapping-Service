@@ -11,7 +11,6 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapProject}.
  * 
@@ -1456,5 +1455,16 @@ public class MapProjectImpl implements MapProject {
 	public void removeScopeConcept(String terminologyId) {
 		this.scopeConcepts.remove(terminologyId);
 		
+	}
+
+	@Override
+	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
+		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+		
+	}
+
+	@Override
+	public String getMapPrincipleSourceDocument() {
+		return mapPrincipleSourceDocument;
 	}
 }

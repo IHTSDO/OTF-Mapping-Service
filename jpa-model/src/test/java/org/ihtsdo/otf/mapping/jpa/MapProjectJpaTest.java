@@ -178,6 +178,7 @@ public class MapProjectJpaTest {
     mapProject1.setGroupStructure(testGroupStructure);
     mapProject1.setPublished(testPublished);
     mapProject1.setMapRelationStyle("mapRelationStyle1");
+    mapProject1.setMapPrincipleSourceDocument("mapPrincipleSourceDocument1");
     mapProject1.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument1");
     mapProject1.setRuleBased(true);
     mapProject1.setMapRefsetPattern("mapRefsetPattern1");
@@ -202,6 +203,7 @@ public class MapProjectJpaTest {
     mapProject3.setGroupStructure(testGroupStructure);
     mapProject3.setPublished(testPublished);
     mapProject3.setMapRelationStyle("mapRelationStyle3");
+    mapProject3.setMapPrincipleSourceDocument("mapPrincipleSourceDocument3");
     mapProject3.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument3");
     mapProject3.setRuleBased(true);
     mapProject3.setMapRefsetPattern("mapRefsetPattern3");
