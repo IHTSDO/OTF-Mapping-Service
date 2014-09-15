@@ -315,8 +315,6 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         }
         i++; // increment the counter
         mapProject.setDestinationTerminologyVersion(terminologyVersion);
-        mapProject.setBlockStructure(fields[i++].toLowerCase().equals("true")
-            ? true : false);
         mapProject.setGroupStructure(fields[i++].toLowerCase().equals("true")
             ? true : false);
         mapProject.setPublished(fields[i++].toLowerCase().equals("true") ? true
@@ -327,6 +325,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         else if (fields[i++].equals(WorkflowType.REVIEW_PROJECT.toString())) 
         	mapProject.setWorkflowType(WorkflowType.REVIEW_PROJECT);
 
+        mapProject.setMapPrincipleSourceDocument(fields[i++]);
         mapProject.setMapPrincipleSourceDocumentName(fields[i++]);
         mapProject.setRuleBased(fields[i++].toLowerCase().equals("true") ? true
             : false);
