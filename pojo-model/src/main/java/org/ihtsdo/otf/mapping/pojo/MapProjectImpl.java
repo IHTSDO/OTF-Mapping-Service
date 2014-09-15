@@ -11,7 +11,6 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapProject}.
  * 
@@ -28,11 +27,6 @@ public class MapProjectImpl implements MapProject {
 	/** Indicates whether this project is viewable by public roles. */
 	private boolean isPublic;
 	
-	/**
-	 * Indicates whether there is block structure for map records of this project.
-	 */
-	private boolean blockStructure = false;
-
 	/**
 	 * Indicates whether there is group structure for map records of this project.
 	 */
@@ -434,35 +428,6 @@ public class MapProjectImpl implements MapProject {
 		this.name = name;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#isBlockStructure()
-	 */
-	/**
-	 * Checks if is block structure.
-	 *
-	 * @return true, if is block structure
-	 */
-	@Override
-	public boolean isBlockStructure() {
-		return blockStructure;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#setBlockStructure(boolean)
-	 */
-	/**
-	 * Sets the block structure.
-	 *
-	 * @param blockStructure the new block structure
-	 */
-	@Override
-	public void setBlockStructure(boolean blockStructure) {
-		this.blockStructure = blockStructure;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -1100,7 +1065,6 @@ public class MapProjectImpl implements MapProject {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (blockStructure ? 1231 : 1237);
 		result =
 				prime
 				* result
@@ -1177,8 +1141,6 @@ public class MapProjectImpl implements MapProject {
 		if (getClass() != obj.getClass())
 			return false;
 		MapProjectImpl other = (MapProjectImpl) obj;
-		if (blockStructure != other.blockStructure)
-			return false;
 		if (destinationTerminology == null) {
 			if (other.destinationTerminology != null)
 				return false;
@@ -1294,8 +1256,7 @@ public class MapProjectImpl implements MapProject {
 	 */
 	@Override
 	public String toString() {
-		return "MapProjectImpl [name=" + name + ", blockStructure="
-				+ blockStructure + ", groupStructure=" + groupStructure
+		return "MapProjectImpl [name=" + name + ", groupStructure=" + groupStructure
 				+ ", published=" + published + ", mapLeads=" + mapLeads
 				+ ", mapAdministrators=" + mapAdministrators
 				+ ", mapSpecialists=" + mapSpecialists + ", mapAdvices=" + mapAdvices
@@ -1456,5 +1417,16 @@ public class MapProjectImpl implements MapProject {
 	public void removeScopeConcept(String terminologyId) {
 		this.scopeConcepts.remove(terminologyId);
 		
+	}
+
+	@Override
+	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
+		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+		
+	}
+
+	@Override
+	public String getMapPrincipleSourceDocument() {
+		return mapPrincipleSourceDocument;
 	}
 }

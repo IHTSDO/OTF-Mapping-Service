@@ -488,16 +488,11 @@
       <button ng-show="editModeEnabled == true" class="btn btn-sm btn-primary style="margin-bottom:15px;"" 
         ng-click="submitNewMapPrinciple(newPrincipleName, newPrincipleId, newPrincipleDetail, newPrincipleSectionRef);
          newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button>
-                     
       
-      <!-- <div ng-show="focusProject.mapPrincipleSourceDocument != null">
-        Principles taken from <a
-          href="doc/{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
-          Principles Document</a>
-      </div> -->
+      <div style="margin-top:15px;"><b>Create New Map Principle</b></div><hr>                               
       <div ng-show="focusProject.mapPrincipleSourceDocument != null">
         Principles taken from <a
-          href="{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
+          href="doc/{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
           Principles Document</a>
       </div>
       <div ng-show="editModeEnabled == true" >

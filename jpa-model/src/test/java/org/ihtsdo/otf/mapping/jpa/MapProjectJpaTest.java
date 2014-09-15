@@ -94,9 +94,6 @@ public class MapProjectJpaTest {
   /** The test destination terminology version for the mapping to ICD9CM. */
   private static String testDestinationTerminologyVersion3 = "2009";
 
-  /** The test block structure. */
-  private static boolean testBlockStructure = true;
-
   /** The test group structure. */
   private static boolean testGroupStructure = false;
 
@@ -174,10 +171,10 @@ public class MapProjectJpaTest {
     mapProject1.setDestinationTerminology(testDestinationTerminology);
     mapProject1
         .setDestinationTerminologyVersion(testDestinationTerminologyVersion);
-    mapProject1.setBlockStructure(testBlockStructure);
     mapProject1.setGroupStructure(testGroupStructure);
     mapProject1.setPublished(testPublished);
     mapProject1.setMapRelationStyle("mapRelationStyle1");
+    mapProject1.setMapPrincipleSourceDocument("mapPrincipleSourceDocument1");
     mapProject1.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument1");
     mapProject1.setRuleBased(true);
     mapProject1.setMapRefsetPattern("mapRefsetPattern1");
@@ -198,10 +195,10 @@ public class MapProjectJpaTest {
     mapProject3.setDestinationTerminology(testDestinationTerminology3);
     mapProject3
         .setDestinationTerminologyVersion(testDestinationTerminologyVersion3);
-    mapProject3.setBlockStructure(testBlockStructure);
     mapProject3.setGroupStructure(testGroupStructure);
     mapProject3.setPublished(testPublished);
     mapProject3.setMapRelationStyle("mapRelationStyle3");
+    mapProject3.setMapPrincipleSourceDocument("mapPrincipleSourceDocument3");
     mapProject3.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument3");
     mapProject3.setRuleBased(true);
     mapProject3.setMapRefsetPattern("mapRefsetPattern3");

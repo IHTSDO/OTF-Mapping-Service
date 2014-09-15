@@ -62,19 +62,6 @@ public interface MapProject {
 	 */
 	public void setPublic(boolean isPublic);
 
-	/**
-	 * Indicates whether there is block structure for map records of this project.
-	 * 
-	 * @return <code>true</code> if so, <code>false</code> otherwise
-	 */
-	public boolean isBlockStructure();
-
-	/**
-	 * Sets whether there is block structure for map records of this project.
-	 * 
-	 * @param blockStructure the block structure
-	 */
-	public void setBlockStructure(boolean blockStructure);
 
 	/**
 	 * Indicates whether there is group structure for map records of this project.
@@ -554,6 +541,19 @@ public interface MapProject {
 	 */
 	public void removeScopeConcept(String terminologyId);
 
-
+	/**
+	 * Sets the map principle source document name.
+	 *
+	 * @param mapPrincipleSourceDocument the name of the map principle source
+	 * document
+	 */
+	 public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument);
+	
+	 /**
+	 * Gets the map principle source document name.
+	 *
+	 * @return the name of the map principle source document
+	 */
+	 public String getMapPrincipleSourceDocument();
 
 }
