@@ -1719,9 +1719,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 
 				// check if two specialists have completed work (lowest workflow
-				// status is EDITING_DONE)
+				// status is EDITING_DONE, highest workflow status is CONFLICT_DETECTED)
 				if (getLowestWorkflowStatus(mapRecords).compareTo(
-						WorkflowStatus.EDITING_DONE) >= 0
+						WorkflowStatus.EDITING_DONE) >= 0 && getWorkflowStatus(mapRecords).equals(WorkflowStatus.CONFLICT_DETECTED)
 						&& mapRecords.size() == 2) {
 
 					Logger.getLogger(
@@ -1881,7 +1881,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 				// assumption check: should only be 2 records
 				// 1) The original record (now marked REVISION)
-				// 2) The modified record (NEW or EDITING_IN_PROGRESS
+				// 2) The modified record (NEW, EDITING_IN_PROGRESS, EDITING_DONE, or REVIEW_NEEDED)
 				boolean foundOriginalRecord = false;
 				boolean foundModifiedRecord = false;
 
@@ -1890,7 +1890,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						foundOriginalRecord = true;
 					if (mr.getWorkflowStatus().equals(WorkflowStatus.NEW)
 							|| mr.getWorkflowStatus().equals(
-									WorkflowStatus.EDITING_IN_PROGRESS))
+									WorkflowStatus.EDITING_IN_PROGRESS)
+									|| mr.getWorkflowStatus().equals(WorkflowStatus.EDITING_DONE)
+									|| mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
 						foundModifiedRecord = true;
 				}
 
