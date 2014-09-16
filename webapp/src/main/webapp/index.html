@@ -24,6 +24,9 @@
 	<!--  IHTSDO Mapping Tool webapp override CSS -->
 	<link rel="stylesheet" href="css/app.css">
 
+<!--  file upload script must be before angular.js -->
+<script src="components/file-upload/angular-file-upload-shim.js"></script> 
+
   <!--  angular includes -->
   <script type="text/javascript" src="components/angular/angular.js"></script>
   <script type="text/javascript" src="components/angular/angular-route.js"></script>
@@ -34,6 +37,10 @@
 
   <script src="js/controllers.js"></script>
   <script src="js/app.js"></script>
+
+
+<!--  file upload script must be after angular.js -->
+<script src="components/file-upload/angular-file-upload.js"></script> 
 
  <!-- build:js js/jquery.min.js -->
     <script type="text/javascript" src="components/jquery/jquery.js"></script>
@@ -99,8 +106,8 @@
     <script type="text/javascript" src="js/widgets/feedback/feedback.js"></script> 
     <script type="text/javascript" src="js/widgets/feedbackConversation/feedbackConversation.js"></script>
     <script type="text/javascript" src="js/widgets/recordAdmin/recordAdmin.js"></script>
-    <script type="text/javascript" src="js/widgets/projectAdmin/projectAdmin.js"></script>
-    <script type="text/javascript" src="js/widgets/mapProjectAdmin/mapProjectAdmin.js"></script>
+    <script type="text/javascript" src="js/widgets/applicationAdmin/applicationAdmin.js"></script>
+    <script type="text/javascript" src="js/widgets/report/report.js"></script>
     
     <!-- Feedback link -->
     <script type="text/javascript" src="https://jira.ihtsdotools.org/s/d41d8cd98f00b204e9800998ecf8427e/en_US49ycqb-1988229788/6262/3/1.4.7/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?collectorId=2101c2db"></script>

@@ -89,7 +89,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
 	/** File readers. */
 	private BufferedReader conceptReader, descriptionReader,
-			textDefinitionReader, relationshipReader, statedRelationshipReader,
+			textDefinitionReader, relationshipReader, // statedRelationshipReader,
 			languageReader;
 
 	/** progress tracking variables */
@@ -458,9 +458,10 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 				getLog().info("  Relationship file: " + f.getName());
 				relationshipReader = new BufferedReader(new FileReader(f));
 
-			} else if (f.getName().contains("_StatedRelationship_")) {
+			/* Removed due to invalid relationship loading
+			   } else if (f.getName().contains("_StatedRelationship_")) {
 				getLog().info("  Stated Relationship file: " + f.getName());
-				statedRelationshipReader = new BufferedReader(new FileReader(f));
+				statedRelationshipReader = new BufferedReader(new FileReader(f));*/
 			} else if (f.getName().contains("_Description_")) {
 				getLog().info("  Description file: " + f.getName());
 				descriptionReader = new BufferedReader(new FileReader(f));
@@ -514,7 +515,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 							+ conceptCache.size());
 		}
 
-		// load relationships
+		/*// load relationships
 		if (statedRelationshipReader != null) {
 			getLog().info("Loading Stated Relationships...");
 			startTime = System.nanoTime();
@@ -527,7 +528,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 			getLog().info(
 					"  Running total of concepts modified: "
 							+ conceptCache.size());
-		}
+		}*/
 
 		// load descriptions
 		if (descriptionReader != null) {
