@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.pojo;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -23,14 +24,9 @@ public class MapProjectImpl implements MapProject {
 	/** The name. */
 	private String name;
 
-	/** Indicates whether this project is viewable by public roles */
+	/** Indicates whether this project is viewable by public roles. */
 	private boolean isPublic;
 	
-	/**
-	 * Indicates whether there is block structure for map records of this project.
-	 */
-	private boolean blockStructure = false;
-
 	/**
 	 * Indicates whether there is group structure for map records of this project.
 	 */
@@ -78,8 +74,11 @@ public class MapProjectImpl implements MapProject {
 	/** The relation style. */
 	private String mapRelationStyle;
 
-	/** The name of the document containing the map principles. */
+	/** The document containing the map principles. */
 	private String mapPrincipleSourceDocument;
+
+	/** The name of the document containing the map principles. */
+	private String mapPrincipleSourceDocumentName;
 
 	/** Flag for whether the project is rule based. */
 	private boolean ruleBased;
@@ -102,8 +101,13 @@ public class MapProjectImpl implements MapProject {
 	/** The scope excluded descendants flag. */
 	private boolean scopeExcludedDescendantsFlag = false;
 
-	/** The name of the handler class for project specific algorithms */
+	/** The name of the handler class for project specific algorithms. */
 	private String projectSpecificAlgorithmHandlerClass;
+
+	/**
+	 * The Enum WorkflowType.
+	 */
+	private WorkflowType workflowType = null;
 
 	/**
 	 * Return the id.
@@ -140,6 +144,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapLeads()
 	 */
+	/**
+	 * Gets the map leads.
+	 *
+	 * @return the map leads
+	 */
 	@Override
 	public Set<MapUser> getMapLeads() {
 		return mapLeads;
@@ -149,6 +158,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapLeads(java.util.Set)
+	 */
+	/**
+	 * Sets the map leads.
+	 *
+	 * @param mapLeads the new map leads
 	 */
 	@Override
 	public void setMapLeads(Set<MapUser> mapLeads) {
@@ -162,6 +176,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#addMapLead(org.ihtsdo.otf.mapping
 	 * .model.MapLead)
 	 */
+	/**
+	 * Adds the map lead.
+	 *
+	 * @param mapLead the map lead
+	 */
 	@Override
 	public void addMapLead(MapUser mapLead) {
 		mapLeads.add(mapLead);
@@ -174,6 +193,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#removeMapLead(org.ihtsdo.otf.mapping
 	 * .model.MapLead)
 	 */
+	/**
+	 * Removes the map lead.
+	 *
+	 * @param mapLead the map lead
+	 */
 	@Override
 	public void removeMapLead(MapUser mapLead) {
 		mapLeads.remove(mapLead);
@@ -183,6 +207,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapSpecialists()
+	 */
+	/**
+	 * Gets the map specialists.
+	 *
+	 * @return the map specialists
 	 */
 	@Override
 	public Set<MapUser> getMapSpecialists() {
@@ -194,6 +223,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see
 	 * org.ihtsdo.otf.mapping.model.MapProject#setMapSpecialists(java.util.Set)
+	 */
+	/**
+	 * Sets the map specialists.
+	 *
+	 * @param mapSpecialists the new map specialists
 	 */
 	@Override
 	public void setMapSpecialists(Set<MapUser> mapSpecialists) {
@@ -207,6 +241,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#addMapSpecialist(org.ihtsdo.otf
 	 * .mapping.model.MapSpecialist)
 	 */
+	/**
+	 * Adds the map specialist.
+	 *
+	 * @param mapSpecialist the map specialist
+	 */
 	@Override
 	public void addMapSpecialist(MapUser mapSpecialist) {
 		mapSpecialists.add(mapSpecialist);
@@ -219,6 +258,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#removeMapSpecialist(org.ihtsdo.
 	 * otf.mapping.model.MapSpecialist)
 	 */
+	/**
+	 * Removes the map specialist.
+	 *
+	 * @param mapSpecialist the map specialist
+	 */
 	@Override
 	public void removeMapSpecialist(MapUser mapSpecialist) {
 		mapSpecialists.remove(mapSpecialist);
@@ -228,6 +272,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getSourceTerminology()
+	 */
+	/**
+	 * Gets the source terminology.
+	 *
+	 * @return the source terminology
 	 */
 	@Override
 	public String getSourceTerminology() {
@@ -241,6 +290,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#setSourceTerminology(java.lang.
 	 * String)
 	 */
+	/**
+	 * Sets the source terminology.
+	 *
+	 * @param sourceTerminology the new source terminology
+	 */
 	@Override
 	public void setSourceTerminology(String sourceTerminology) {
 		this.sourceTerminology = sourceTerminology;
@@ -250,6 +304,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getDestinationTerminology()
+	 */
+	/**
+	 * Gets the destination terminology.
+	 *
+	 * @return the destination terminology
 	 */
 	@Override
 	public String getDestinationTerminology() {
@@ -263,6 +322,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#setDestinationTerminology(java.
 	 * lang.String)
 	 */
+	/**
+	 * Sets the destination terminology.
+	 *
+	 * @param destinationTerminology the new destination terminology
+	 */
 	@Override
 	public void setDestinationTerminology(String destinationTerminology) {
 		this.destinationTerminology = destinationTerminology;
@@ -272,6 +336,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getSourceTerminologyVersion()
+	 */
+	/**
+	 * Gets the source terminology version.
+	 *
+	 * @return the source terminology version
 	 */
 	@Override
 	public String getSourceTerminologyVersion() {
@@ -285,6 +354,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#setSourceTerminologyVersion(java
 	 * .lang.String)
 	 */
+	/**
+	 * Sets the source terminology version.
+	 *
+	 * @param sourceTerminologyVersion the new source terminology version
+	 */
 	@Override
 	public void setSourceTerminologyVersion(String sourceTerminologyVersion) {
 		this.sourceTerminologyVersion = sourceTerminologyVersion;
@@ -295,6 +369,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see
 	 * org.ihtsdo.otf.mapping.model.MapProject#getDestinationTerminologyVersion()
+	 */
+	/**
+	 * Gets the destination terminology version.
+	 *
+	 * @return the destination terminology version
 	 */
 	@Override
 	public String getDestinationTerminologyVersion() {
@@ -308,6 +387,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#setDestinationTerminologyVersion
 	 * (java.lang.String)
 	 */
+	/**
+	 * Sets the destination terminology version.
+	 *
+	 * @param destinationTerminologyVersion the new destination terminology version
+	 */
 	@Override
 	public void setDestinationTerminologyVersion(
 			String destinationTerminologyVersion) {
@@ -319,6 +403,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getName()
 	 */
+	/**
+	 * Gets the name.
+	 *
+	 * @return the name
+	 */
 	@Override
 	public String getName() {
 		return name;
@@ -329,35 +418,26 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setName(java.lang.String)
 	 */
+	/**
+	 * Sets the name.
+	 *
+	 * @param name the new name
+	 */
 	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#isBlockStructure()
-	 */
-	@Override
-	public boolean isBlockStructure() {
-		return blockStructure;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#setBlockStructure(boolean)
-	 */
-	@Override
-	public void setBlockStructure(boolean blockStructure) {
-		this.blockStructure = blockStructure;
-	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#isGroupStructure()
+	 */
+	/**
+	 * Checks if is group structure.
+	 *
+	 * @return true, if is group structure
 	 */
 	@Override
 	public boolean isGroupStructure() {
@@ -369,6 +449,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setGroupStructure(boolean)
 	 */
+	/**
+	 * Sets the group structure.
+	 *
+	 * @param groupStructure the new group structure
+	 */
 	@Override
 	public void setGroupStructure(boolean groupStructure) {
 		this.groupStructure = groupStructure;
@@ -379,6 +464,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapAdvices()
 	 */
+	/**
+	 * Gets the map advices.
+	 *
+	 * @return the map advices
+	 */
 	@Override
 	public Set<MapAdvice> getMapAdvices() {
 		return mapAdvices;
@@ -388,6 +478,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapAdvices(java.util.Set)
+	 */
+	/**
+	 * Sets the map advices.
+	 *
+	 * @param mapAdvices the new map advices
 	 */
 	@Override
 	public void setMapAdvices(Set<MapAdvice> mapAdvices) {
@@ -401,6 +496,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#addMapAdvice(org.ihtsdo.otf.mapping
 	 * .model.MapAdvice)
 	 */
+	/**
+	 * Adds the map advice.
+	 *
+	 * @param mapAdvice the map advice
+	 */
 	@Override
 	public void addMapAdvice(MapAdvice mapAdvice) {
 		this.mapAdvices.add(mapAdvice);
@@ -413,6 +513,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#removeMapAdvice(org.ihtsdo.otf.
 	 * mapping.model.MapAdvice)
 	 */
+	/**
+	 * Removes the map advice.
+	 *
+	 * @param mapAdvice the map advice
+	 */
 	@Override
 	public void removeMapAdvice(MapAdvice mapAdvice) {
 		this.mapAdvices.remove(mapAdvice);
@@ -422,6 +527,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapPrinciples()
+	 */
+	/**
+	 * Gets the map principles.
+	 *
+	 * @return the map principles
 	 */
 	@Override
 	public Set<MapPrinciple> getMapPrinciples() {
@@ -433,6 +543,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see
 	 * org.ihtsdo.otf.mapping.model.MapProject#setMapPrinciples(java.util.Set)
+	 */
+	/**
+	 * Sets the map principles.
+	 *
+	 * @param mapPrinciples the new map principles
 	 */
 	@Override
 	public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
@@ -446,6 +561,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#addMapPrinciple(org.ihtsdo.otf.
 	 * mapping.model.MapPrinciple)
 	 */
+	/**
+	 * Adds the map principle.
+	 *
+	 * @param mapPrinciple the map principle
+	 */
 	@Override
 	public void addMapPrinciple(MapPrinciple mapPrinciple) {
 		mapPrinciples.add(mapPrinciple);
@@ -458,6 +578,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#removeMapPrinciple(org.ihtsdo.otf
 	 * .mapping.model.MapPrinciple)
 	 */
+	/**
+	 * Removes the map principle.
+	 *
+	 * @param mapPrinciple the map principle
+	 */
 	@Override
 	public void removeMapPrinciple(MapPrinciple mapPrinciple) {
 		mapPrinciples.remove(mapPrinciple);
@@ -467,6 +592,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#isPublished()
+	 */
+	/**
+	 * Checks if is published.
+	 *
+	 * @return true, if is published
 	 */
 	@Override
 	public boolean isPublished() {
@@ -478,6 +608,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setPublished(boolean)
 	 */
+	/**
+	 * Sets the published.
+	 *
+	 * @param published the new published
+	 */
 	@Override
 	public void setPublished(boolean published) {
 		this.published = published;
@@ -487,6 +622,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getRefSetId()
+	 */
+	/**
+	 * Gets the ref set id.
+	 *
+	 * @return the ref set id
 	 */
 	@Override
 	public String getRefSetId() {
@@ -498,6 +638,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setRefSetId(java.lang.Long)
 	 */
+	/**
+	 * Sets the ref set id.
+	 *
+	 * @param refSetId the new ref set id
+	 */
 	@Override
 	public void setRefSetId(String refSetId) {
 		this.refSetId = refSetId;
@@ -507,6 +652,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getRefSetName()
+	 */
+	/**
+	 * Gets the ref set name.
+	 *
+	 * @return the ref set name
 	 */
 	@Override
 	public String getRefSetName() {
@@ -519,6 +669,11 @@ public class MapProjectImpl implements MapProject {
 	 * @see
 	 * org.ihtsdo.otf.mapping.model.MapProject#setRefSetName(java.lang.String)
 	 */
+	/**
+	 * Sets the ref set name.
+	 *
+	 * @param refSetName the new ref set name
+	 */
 	@Override
 	public void setRefSetName(String refSetName) {
 		this.refSetName = refSetName;
@@ -529,6 +684,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapRelationStyle()
+	 */
+	/**
+	 * Gets the map relation style.
+	 *
+	 * @return the map relation style
 	 */
 	@Override
 	public String getMapRelationStyle() {
@@ -542,6 +702,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#setMapRelationStyle(java.lang.String
 	 * )
 	 */
+	/**
+	 * Sets the map relation style.
+	 *
+	 * @param mapRelationStyle the new map relation style
+	 */
 	@Override
 	public void setMapRelationStyle(String mapRelationStyle) {
 		this.mapRelationStyle = mapRelationStyle;
@@ -553,6 +718,11 @@ public class MapProjectImpl implements MapProject {
 	 * @see
 	 * org.ihtsdo.otf.mapping.model.MapProject#addMapRelation(org.ihtsdo.otf.mapping
 	 * .model.MapRelation)
+	 */
+	/**
+	 * Adds the map relation.
+	 *
+	 * @param mr the mr
 	 */
 	@Override
 	public void addMapRelation(MapRelation mr) {
@@ -567,39 +737,28 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#removeMapRelation(org.ihtsdo.otf
 	 * .mapping.model.MapRelation)
 	 */
+	/**
+	 * Removes the map relation.
+	 *
+	 * @param mr the mr
+	 */
 	@Override
 	public void removeMapRelation(MapRelation mr) {
 		this.mapRelations.remove(mr);
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapProject#getMapPrincipleSourceDocument()
-	 */
-	@Override
-	public String getMapPrincipleSourceDocument() {
-		return mapPrincipleSourceDocument;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapProject#setMapPrincipleSourceDocument(java
-	 * .lang.String)
-	 */
-	@Override
-	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
-		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
-	}
+	
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#isRuleBased()
+	 */
+	/**
+	 * Checks if is rule based.
+	 *
+	 * @return true, if is rule based
 	 */
 	@Override
 	public boolean isRuleBased() {
@@ -611,6 +770,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setRuleBased(boolean)
 	 */
+	/**
+	 * Sets the rule based.
+	 *
+	 * @param ruleBased the new rule based
+	 */
 	@Override
 	public void setRuleBased(boolean ruleBased) {
 		this.ruleBased = ruleBased;
@@ -620,6 +784,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapRefsetPattern()
+	 */
+	/**
+	 * Gets the map refset pattern.
+	 *
+	 * @return the map refset pattern
 	 */
 	@Override
 	public String getMapRefsetPattern() {
@@ -633,6 +802,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#setMapRefsetPattern(java.lang.String
 	 * )
 	 */
+	/**
+	 * Sets the map refset pattern.
+	 *
+	 * @param mapRefsetPattern the new map refset pattern
+	 */
 	@Override
 	public void setMapRefsetPattern(String mapRefsetPattern) {
 		this.mapRefsetPattern = mapRefsetPattern;
@@ -642,6 +816,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getScopeConcepts()
+	 */
+	/**
+	 * Gets the scope concepts.
+	 *
+	 * @return the scope concepts
 	 */
 	@Override
 	public Set<String> getScopeConcepts() {
@@ -654,6 +833,11 @@ public class MapProjectImpl implements MapProject {
 	 * @see
 	 * org.ihtsdo.otf.mapping.model.MapProject#setScopeConcepts(java.util.Set)
 	 */
+	/**
+	 * Sets the scope concepts.
+	 *
+	 * @param scopeConcepts the new scope concepts
+	 */
 	@Override
 	public void setScopeConcepts(Set<String> scopeConcepts) {
 		this.scopeConcepts = scopeConcepts;
@@ -663,6 +847,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#isScopeDescendantsFlag()
+	 */
+	/**
+	 * Checks if is scope descendants flag.
+	 *
+	 * @return true, if is scope descendants flag
 	 */
 	@Override
 	public boolean isScopeDescendantsFlag() {
@@ -675,6 +864,11 @@ public class MapProjectImpl implements MapProject {
 	 * @see
 	 * org.ihtsdo.otf.mapping.model.MapProject#setScopeDescendantsFlag(boolean)
 	 */
+	/**
+	 * Sets the scope descendants flag.
+	 *
+	 * @param flag the new scope descendants flag
+	 */
 	@Override
 	public void setScopeDescendantsFlag(boolean flag) {
 		scopeDescendantsFlag = flag;
@@ -684,6 +878,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getScopeExcludedConcepts()
+	 */
+	/**
+	 * Gets the scope excluded concepts.
+	 *
+	 * @return the scope excluded concepts
 	 */
 	@Override
 	public Set<String> getScopeExcludedConcepts() {
@@ -697,6 +896,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#setScopeExcludedConcepts(java.util
 	 * .Set)
 	 */
+	/**
+	 * Sets the scope excluded concepts.
+	 *
+	 * @param scopeExcludedConcepts the new scope excluded concepts
+	 */
 	@Override
 	public void setScopeExcludedConcepts(Set<String> scopeExcludedConcepts) {
 		this.scopeExcludedConcepts = scopeExcludedConcepts;
@@ -707,6 +911,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see
 	 * org.ihtsdo.otf.mapping.model.MapProject#isScopeExcludedDescendantsFlag()
+	 */
+	/**
+	 * Checks if is scope excluded descendants flag.
+	 *
+	 * @return true, if is scope excluded descendants flag
 	 */
 	@Override
 	public boolean isScopeExcludedDescendantsFlag() {
@@ -720,6 +929,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#setScopeExcludedDescendantsFlag
 	 * (boolean)
 	 */
+	/**
+	 * Sets the scope excluded descendants flag.
+	 *
+	 * @param flag the new scope excluded descendants flag
+	 */
 	@Override
 	public void setScopeExcludedDescendantsFlag(boolean flag) {
 		scopeExcludedDescendantsFlag = flag;
@@ -729,6 +943,11 @@ public class MapProjectImpl implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getPresetAgeRanges()
+	 */
+	/**
+	 * Gets the preset age ranges.
+	 *
+	 * @return the preset age ranges
 	 */
 	@Override
 	public Set<MapAgeRange> getPresetAgeRanges() {
@@ -741,6 +960,11 @@ public class MapProjectImpl implements MapProject {
 	 * @see
 	 * org.ihtsdo.otf.mapping.model.MapProject#setPresetAgeRanges(java.util.Set)
 	 */
+	/**
+	 * Sets the preset age ranges.
+	 *
+	 * @param ageRanges the new preset age ranges
+	 */
 	@Override
 	public void setPresetAgeRanges(Set<MapAgeRange> ageRanges) {
 		this.presetAgeRanges = ageRanges;
@@ -752,6 +976,11 @@ public class MapProjectImpl implements MapProject {
 	 * @see
 	 * org.ihtsdo.otf.mapping.model.MapProject#addPresetAgeRange(org.ihtsdo.otf
 	 * .mapping.model.MapAgeRange)
+	 */
+	/**
+	 * Adds the preset age range.
+	 *
+	 * @param ageRange the age range
 	 */
 	@Override
 	public void addPresetAgeRange(MapAgeRange ageRange) {
@@ -766,6 +995,11 @@ public class MapProjectImpl implements MapProject {
 	 * org.ihtsdo.otf.mapping.model.MapProject#removePresetAgeRange(org.ihtsdo
 	 * .otf.mapping.model.MapAgeRange)
 	 */
+	/**
+	 * Removes the preset age range.
+	 *
+	 * @param ageRange the age range
+	 */
 	@Override
 	public void removePresetAgeRange(MapAgeRange ageRange) {
 		this.presetAgeRanges.remove(ageRange);
@@ -777,6 +1011,11 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapRelations()
 	 */
+	/**
+	 * Gets the map relations.
+	 *
+	 * @return the map relations
+	 */
 	@Override
 	public Set<MapRelation> getMapRelations() {
 		return mapRelations;
@@ -787,16 +1026,31 @@ public class MapProjectImpl implements MapProject {
 	 * 
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapRelations(java.util.Set)
 	 */
+	/**
+	 * Sets the map relations.
+	 *
+	 * @param mapRelations the new map relations
+	 */
 	@Override
 	public void setMapRelations(Set<MapRelation> mapRelations) {
 		this.mapRelations = mapRelations;
 	}
 
+	/**
+	 * Gets the project specific algorithm handler class.
+	 *
+	 * @return the project specific algorithm handler class
+	 */
 	@Override
 	public String getProjectSpecificAlgorithmHandlerClass() {
 		return projectSpecificAlgorithmHandlerClass;
 	}
 
+	/**
+	 * Sets the project specific algorithm handler class.
+	 *
+	 * @param projectSpecificAlgorithmHandlerClass the new project specific algorithm handler class
+	 */
 	@Override
 	public void setProjectSpecificAlgorithmHandlerClass(
 			String projectSpecificAlgorithmHandlerClass) {
@@ -804,11 +1058,13 @@ public class MapProjectImpl implements MapProject {
 				projectSpecificAlgorithmHandlerClass;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Enum#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (blockStructure ? 1231 : 1237);
 		result =
 				prime
 				* result
@@ -873,6 +1129,9 @@ public class MapProjectImpl implements MapProject {
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Enum#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -882,8 +1141,6 @@ public class MapProjectImpl implements MapProject {
 		if (getClass() != obj.getClass())
 			return false;
 		MapProjectImpl other = (MapProjectImpl) obj;
-		if (blockStructure != other.blockStructure)
-			return false;
 		if (destinationTerminology == null) {
 			if (other.destinationTerminology != null)
 				return false;
@@ -994,10 +1251,12 @@ public class MapProjectImpl implements MapProject {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Enum#toString()
+	 */
 	@Override
 	public String toString() {
-		return "MapProjectImpl [name=" + name + ", blockStructure="
-				+ blockStructure + ", groupStructure=" + groupStructure
+		return "MapProjectImpl [name=" + name + ", groupStructure=" + groupStructure
 				+ ", published=" + published + ", mapLeads=" + mapLeads
 				+ ", mapAdministrators=" + mapAdministrators
 				+ ", mapSpecialists=" + mapSpecialists + ", mapAdvices=" + mapAdvices
@@ -1020,6 +1279,11 @@ public class MapProjectImpl implements MapProject {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#isPublic()
 	 */
+	/**
+	 * Checks if is public.
+	 *
+	 * @return true, if is public
+	 */
 	@Override
 	public boolean isPublic() {
 		return isPublic;
@@ -1028,40 +1292,141 @@ public class MapProjectImpl implements MapProject {
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#setPublic(boolean)
 	 */
+	/**
+	 * Sets the public.
+	 *
+	 * @param isPublic the new public
+	 */
 	@Override
 	public void setPublic(boolean isPublic) {
 		this.isPublic = isPublic;
 	}
 
+	/**
+	 * Gets the map administrators.
+	 *
+	 * @return the map administrators
+	 */
 	@Override
 	public Set<MapUser> getMapAdministrators() {
 		return mapAdministrators;
 	}
 
+	/**
+	 * Sets the map administrators.
+	 *
+	 * @param mapAdministrators the new map administrators
+	 */
 	@Override
 	public void setMapAdministrators(Set<MapUser> mapAdministrators) {
 		this.mapAdministrators = mapAdministrators;
 	}
 
+	/**
+	 * Adds the map administrator.
+	 *
+	 * @param mapAdministrator the map administrator
+	 */
 	@Override
 	public void addMapAdministrator(MapUser mapAdministrator) {
 		mapAdministrators.add(mapAdministrator);
 	}
 
+	/**
+	 * Removes the map administrator.
+	 *
+	 * @param mapAdministrator the map administrator
+	 */
 	@Override
 	public void removeMapAdministrator(MapUser mapAdministrator) {
 		mapAdministrators.remove(mapAdministrator);
 	}
 
+	/**
+	 * Gets the workflow type.
+	 *
+	 * @return the workflow type
+	 */
 	@Override
-	public String getWorkflowType() {
-		// TODO Auto-generated method stub
-		return null;
+	public WorkflowType getWorkflowType() {
+		return this.workflowType;
+	}
+
+	/**
+	 * Sets the workflow type.
+	 *
+	 * @param workflowType the new workflow type
+	 */
+	@Override
+	public void setWorkflowType(WorkflowType workflowType) {
+		this.workflowType = workflowType;
+	}
+	
+	@Override
+	public String getMapPrincipleSourceDocumentName() {
+		return this.mapPrincipleSourceDocumentName;
+		
+	}
+		
+	@Override
+	public void setMapPrincipleSourceDocumentName(
+		String mapPrincipleSourceDocumentName) {
+		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
+		
+	}
+
+	/**
+	 * Adds the scope excluded concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	@Override
+	public void addScopeExcludedConcept(String terminologyId) {
+		this.scopeExcludedConcepts.add(terminologyId);
+		
+	}
+
+	/**
+	 * Removes the scope excluded concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	@Override
+	public void removeScopeExcludedConcept(String terminologyId) {
+		this.scopeExcludedConcepts.remove(terminologyId);
+		
+	}
+
+	/**
+	 * Adds the scope concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	@Override
+	public void addScopeConcept(String terminologyId) {
+		this.scopeConcepts.add(terminologyId);
+		
+	}
+
+	/**
+	 * Removes the scope concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	@Override
+	public void removeScopeConcept(String terminologyId) {
+		this.scopeConcepts.remove(terminologyId);
+		
 	}
 
 	@Override
-	public void setWorkflowType(String workflowType) {
-		// TODO Auto-generated method stub
+	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
+		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
 		
+	}
+
+	@Override
+	public String getMapPrincipleSourceDocument() {
+		return mapPrincipleSourceDocument;
 	}
 }

@@ -16,17 +16,18 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'mapProjectApp.widgets.compareRecords',
                                                      'mapProjectApp.widgets.projectDetails',
                                                      'mapProjectApp.widgets.projectRecords',
-                                                     'mapProjectApp.widgets.projectAdmin',
                                                      'mapProjectApp.widgets.recordConcept',
                                                      'mapProjectApp.widgets.recordSummary',
                                                      'mapProjectApp.widgets.recordAdmin',
                                                      'mapProjectApp.widgets.feedback',
                                                      'mapProjectApp.widgets.feedbackConversation',
-                                                     'mapProjectApp.widgets.mapProjectAdmin',
+                                                     'mapProjectApp.widgets.applicationAdmin',
+                                                     'mapProjectApp.widgets.report',
                                                      'LocalStorageModule',
                                                      'ngCookies',
                                                      'ui.tinymce',
-                                                     'angularjs-dropdown-multiselect'
+                                                     'angularjs-dropdown-multiselect',
+                                                     'angularFileUpload'
                                                      ])
                                                      .value('prefix', '')
                                                      .config(function(dashboardProvider){

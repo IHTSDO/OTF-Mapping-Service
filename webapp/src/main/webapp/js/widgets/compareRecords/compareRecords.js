@@ -20,8 +20,6 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	
 	console.debug("Entering compareRecordsCtrl");
 
-   /*$scope.page =  'resolveConflictsDashboard';*/
-
 	// initialize scope variables
 	$scope.concept = 	null;
 	$scope.project = 	localStorageService.get('focusProject');
@@ -59,9 +57,9 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	
 	
 	// TODO: needs to be moved to server-side
-	$scope.errorMessages = [{displayName: 'None'}, 
+	$scope.icd10ErrorMessages = [{displayName: 'None'}, 
 	                        {displayName: 'Map Group is not relevant'}, 
-                            {displayName: 'Map Group  has been omitted'},
+                            {displayName: 'Map Group has been omitted'},
                             {displayName: 'Sequencing of Map Groups is incorrect'}, 
                             {displayName: 'The number of map records per group is incorrect'},
                             {displayName: 'Target code selection for a map record is in error'}, 
@@ -76,6 +74,20 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
                             {displayName: 'Age rule has been omitted'},
                             {displayName: 'Other'}
                             ];
+
+
+	$scope.icd9cmErrorMessages = [{displayName: 'None'}, 
+	                        {displayName: 'Map Group is not relevant'}, 
+                            {displayName: 'Map Group has been omitted'},
+                            {displayName: 'Sequencing of Map Groups is incorrect'}, 
+                            {displayName: 'Target code selection for a map record is in error'}, 
+                            {displayName: 'Map parameter assignment is in error'}, 
+                            {displayName: 'Other'}
+                            ];
+	if ($scope.project.destinationTerminology == "ICD9CM")
+		$scope.errorMessages = $scope.icd9cmErrorMessages;
+	else
+		$scope.errorMessages = $scope.icd10ErrorMessages;
 	
     $scope.selectedErrorMessage1 = $scope.errorMessages[0];
     $scope.selectedErrorMessage2 = $scope.errorMessages[0];
@@ -84,6 +96,10 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	// coupled with $watch below, this avoids premature work fetching
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 			$scope.project = parameters.focusProject;
+			if ($scope.project.destinationTerminology == "ICD9CM")
+				$scope.errorMessages = $scope.icd9cmErrorMessages;
+			else
+				$scope.errorMessages = $scope.icd10ErrorMessages;
 			$scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
 			organizeUsers($scope.allUsers);
 	});
@@ -630,9 +646,9 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				$rootScope.glassPane--;
 				console.debug("success to addFeedbackConversation");
 				if (recordInError.id == $scope.record1.id)
-					$scope.conversation1 = feedbackConversation;
+					$scope.conversation1 = data;
 				else
-					$scope.conversation2 = feedbackConversation;
+					$scope.conversation2 = data;
 			}).error(function(data, status, headers, config) {
 				$rootScope.glassPane--;
 				$scope.recordError = "Error adding new feedback conversation.";
@@ -742,7 +758,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			}).success(function(data) {
 				$rootScope.glassPane--;
 				console.debug("success to addFeedbackConversation for group feedback");
-				$scope.leadConversation = feedbackConversation;
+				$scope.leadConversation = data;
 			}).error(function(data, status, headers, config) {
 				$rootScope.glassPane--;
 				$scope.recordError = "Error adding new feedback conversation for group feedback.";
@@ -932,7 +948,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			$rootScope.handleHttpError(data, status, headers, config);
 		});
 		
-	}
+	};
 
 	
 	// function to return trusted html code (for advice content)

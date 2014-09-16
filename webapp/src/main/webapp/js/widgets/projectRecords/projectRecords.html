@@ -16,6 +16,23 @@
     &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
 </form>
 
+<!-- <div ng-repeat="record in records" ng-class-odd="'odd'" ng-class-even="'even'">
+ 	<h4>{{record.conceptName}}, <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a></h4>
+ 	<span ng-show="record.unmappedDescendants.length > 0"> <span
+          class="dropdown"> <a class="dropdown-toggle"> <img
+              src="img/warning.png" alt="question icon">
+          </a>
+            <ul class="dropdown-menu project-records-dropdown-menu">
+              <b>Unmapped Descendants</b>
+              <li ng-repeat="concept in record.unmappedDescendants"><a
+                href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
+                  {{concept.value}}</a></li>
+            </ul>
+           </span>
+      </span>
+	<div otf-map-record-wide record="record" project="focusProject" show-title="false" ></div>
+</div> -->
+
 
 <table width="100%" class="table">
   <thead>
@@ -80,7 +97,7 @@
         </div>
 
         
-        <!-- ADVICE -->
+        <!--  ADVICE -->
         <div
           style="float: left; width: 100%; font-size: 12px;"
           ng-repeat="advice in entry.mapAdvice"><img
@@ -93,7 +110,7 @@
     
 
     
-    <!-- NOTES -->
+   <!--  NOTES -->
     <tr ng-show="record.mapNote.length > 0 && currentRole != 'Viewer'" 
     	style="width: 100%;" ng-repeat="note in record.mapNote">
       <td style="border-top:0px;">

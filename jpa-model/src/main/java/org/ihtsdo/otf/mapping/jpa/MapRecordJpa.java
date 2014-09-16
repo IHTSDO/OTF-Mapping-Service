@@ -459,7 +459,8 @@ public class MapRecordJpa implements MapRecord {
 	 */
 	@Override
 	public void setMapEntries(List<MapEntry> mapEntries) {
-		this.mapEntries = mapEntries;
+		if (mapEntries == null) this.mapEntries = new ArrayList<>();
+		else this.mapEntries = mapEntries;
 	}
 
 	/*
