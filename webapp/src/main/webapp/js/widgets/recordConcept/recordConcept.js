@@ -440,6 +440,17 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 	
 	function setTitle(terminology, conceptId, defaultPreferredName) {
 		$scope.model.title = terminology + " Concept " + conceptId + ": " + defaultPreferredName;
+		
+		
 	};
+	
+    // opens SNOMED CT browser
+	$scope.getBrowserUrl = function() {
+		return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.conceptId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+	};
+
+    $scope.openConceptBrowser = function() {
+    	window.open($scope.getBrowserUrl(), "browserWindow");
+    };
 
 });

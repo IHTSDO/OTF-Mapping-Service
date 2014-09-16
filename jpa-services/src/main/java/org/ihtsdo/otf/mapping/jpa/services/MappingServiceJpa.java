@@ -3011,14 +3011,29 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			throw new Exception(
 					"getRecordsInConflict: Could not find map record with id = "
 							+ mapRecordId.toString() + "!");
+		
+		/*
+		 * Three cases where this is called
+		 * CONFLICT_PROJECT:  Two specialists in conflict
+		 *   					Requires two CONFLICT_DETECTED records in database
+		 *   					Record must be CONFLICT_NEW, CONFLICT_IN_PROGRESS, CONFLICT_RESOLVED
+		 * FIX_ERROR_PATH:	  For any project type
+		 * 						Requires one REVIEW_NEEDED record in database
+		 * 						Requires one REVISION record in database
+		 * 						Record must be REVIEW_NEW, REVIEW_IN_PROGRESS, REVIEW_RESOLVED
+		 * REVIEW_PROJECT:	  For either normal workflow or FIX_ERROR_PATH
+		 * 						Requires one REVIEW_NEEDED record in database
+		 * 						Record must be REVIEW_NEW, REVIEW_IN_PROGRESS, REVIEW_RESOLVED record
+		 */
 
-		// if a conflict between two specialists, retrieve the CONFLICT_DETECTED
+		// if a conflict project and two specialist records in conflict, retrieve the CONFLICT_DETECTED
 		// records
-		if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
+		if (mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_PROJECT)
+				&& (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
 				|| mapRecord.getWorkflowStatus().equals(
 						WorkflowStatus.CONFLICT_IN_PROGRESS)
 				|| mapRecord.getWorkflowStatus().equals(
-						WorkflowStatus.CONFLICT_RESOLVED)) {
+						WorkflowStatus.CONFLICT_RESOLVED))) {
 
 			// As with review record below, this try/catch block is a
 			// method to handle situations where originId set has more than
@@ -3038,6 +3053,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				if (conflictRecords.getCount() == 2) {
 					conflictRecords.setTotalCount(conflictRecords.getCount());
 					return conflictRecords;
+				} else {
+					throw new Exception("Could not retrieve two CONFLICT_DETECTED records for conflict");
 				}
 			} catch (Exception e) {
 				// do nothing

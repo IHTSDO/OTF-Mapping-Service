@@ -1463,7 +1463,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		if (mapRecord == null)
 			throw new Exception(
-					"finishEditing:  Record for user could not be found");
+					"publish:  Record for user could not be found");
 
 		switch (trackingRecord.getWorkflowPath()) {
 		case CONSENSUS_PATH:
@@ -1514,7 +1514,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			newRecords.add(mapRecord);
 
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-					.info("finishEditing - FIX_ERROR_PATH - Creating READY_FOR_PUBLICATION record "
+					.info("publish - FIX_ERROR_PATH - Creating READY_FOR_PUBLICATION record "
 							+ mapRecord.toString());
 
 			break;
@@ -1578,7 +1578,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				newRecords.add(newRecord);
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-						.info("finishEditing - NON_LEGACY_PATH - Creating READY_FOR_PUBLICATION record "
+						.info("publish- NON_LEGACY_PATH - Creating READY_FOR_PUBLICATION record "
 								+ newRecord.toString());
 
 			} else if (mapRecords.size() == 3) {
