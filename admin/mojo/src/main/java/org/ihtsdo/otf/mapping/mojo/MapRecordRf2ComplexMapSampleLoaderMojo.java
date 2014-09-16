@@ -32,8 +32,10 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * Loads a sampling unpublished complex maps.
  * 
  * Sample execution:
- * 
+ *  
  * <pre>
+ * <profile>
+      <id>MapRecordsSample</id>
  *     <plugin>
  *       <groupId>org.ihtsdo.otf.mapping</groupId>
  *       <artifactId>mapping-admin-mojo</artifactId>
@@ -48,6 +50,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *         </execution>
  *       </executions>
  *     </plugin>
+ * </profile>
  * </pre>
  * 
  * @goal load-rf2-complex-map-sample
