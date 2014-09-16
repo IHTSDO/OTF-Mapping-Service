@@ -46,12 +46,13 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class ContentServiceRest extends RootServiceRest {
 
 	/** The security service. */
-	private SecurityService securityService = new SecurityServiceJpa();
+	private SecurityService securityService;
 
 	/**
 	 * Instantiates an empty {@link ContentServiceRest}.
 	 */
-	public ContentServiceRest() {
+	public ContentServiceRest() throws Exception {
+		securityService = new SecurityServiceJpa();
 	}
 
 	/**

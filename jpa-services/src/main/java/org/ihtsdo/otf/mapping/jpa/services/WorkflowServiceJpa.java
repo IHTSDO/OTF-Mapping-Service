@@ -27,6 +27,7 @@ import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.FeedbackList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackListJpa;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
+import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
@@ -44,6 +45,7 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
@@ -578,13 +580,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// user must not be this user
 
 		switch (mapProject.getWorkflowType()) {
-		case "CONFLICT_PROJECT":
+		case CONFLICT_PROJECT:
 			full_query += " AND workflowPath:NON_LEGACY_PATH";
 			full_query += " AND (assignedUserCount:0 OR "
 					+ "(assignedUserCount:1 AND NOT assignedUserNames:"
 					+ mapUser.getUserName() + "))";
 			break;
-		case "REVIEW_PROJECT":
+		case REVIEW_PROJECT:
 			full_query += " AND workflowPath:REVIEW_PROJECT_PATH";
 			full_query += " AND assignedUserCount:0";
 			break;
@@ -1947,15 +1949,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// otherwise, set to the WorkflowPath corresponding to the
 				// project WorkflowType
 			} else {
-				if (mapProject.getWorkflowType().equals("CONFLICT_PROJECT"))
+				if (mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_PROJECT))
 					trackingRecord
 							.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH);
-				else if (mapProject.getWorkflowType().equals("REVIEW_PROJECT"))
+				else if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT))
 					trackingRecord
 							.setWorkflowPath(WorkflowPath.REVIEW_PROJECT_PATH);
 				else {
 					throw new Exception(
-							"Could not determine workflow path for records "
+							"Could not set workflow path from workflow type " + mapProject.getWorkflowType() + " for records "
 									+ trackingRecord.getMapRecordIds()
 											.toString());
 				}
@@ -3050,11 +3052,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			} catch (Exception e1) {
 
 				for (Long id : tr.getMapRecordIds()) {
+					MapRecord mr = null;
 					try {
-						MapRecord mr = mappingService.getMapRecord(id);
+						mr = mappingService.getMapRecord(id);
 					} catch (Exception e2) {
 						errors.add("Could not retrieve map record " + id);
 					}
+					
+					// check that the workflow status on record matches that on tracking record
+					if (!tr.getUserAndWorkflowStatusPairs().contains(mr.getWorkflowStatus().toString() + "_" + mr.getOwner().getUserName()))
+							errors.add("Workflow mismatch found for user " + mr.getOwner().getUserName() + ":  record has workflow status " + mr.getWorkflowStatus().toString() + " while tracking record has user/workflow pairs " + tr.getUserAndWorkflowStatusPairs());
 				}
 
 			}
@@ -3125,10 +3132,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					if (editingRecordFound == false) {
 						errors.add("FIX_ERROR_PATH, but no specialist-level record found");
 					}
-
-					// no need to output anything about lead review record,
-					// above
-					// messages with capture
+					
+					// lead record may or may not exist
+					if (reviewRecordFound == false) {
+						// do nothing, not required
+						// any aberrant records will be reported above
+					}
+					
 
 					break;
 				case LEGACY_PATH:
@@ -3198,7 +3208,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 							} else if (mr.getWorkflowStatus().equals(
 									WorkflowStatus.CONFLICT_NEW)
 									|| mr.getWorkflowStatus()
-											.equals(WorkflowStatus.CONFLICT_IN_PROGRESS)) {
+											.equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
+									|| mr.getWorkflowStatus().equals(
+											WorkflowStatus.CONFLICT_RESOLVED)) {
 								leadRecordFound = true;
 							} else {
 								errors.add("NON_LEGACY_PATH, three records, expected conflict resolution status, but map record "
@@ -3235,8 +3247,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					// switch on number of records
 					switch (mapRecords.size()) {
 					case 0:
-						// do nothing, this merely indicates a concept with no
-						// work
 						break;
 					case 1:
 						MapRecord editingRecord = mapRecords.iterator().next();
@@ -3260,7 +3270,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					case 2:
 						// MUST have:
 						// - REVIEW_NEEDED
-						// - REVIEW_NEW or REVIEW_IN_PROGRESS
+						// - REVIEW_NEW or REVIEW_IN_PROGRESS or REVIEW_RESOLVED
 						boolean specialistRecordFound = false;
 						boolean leadRecordFound = false;
 
@@ -3268,7 +3278,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 							if (mr.getWorkflowStatus().equals(
 									WorkflowStatus.REVIEW_NEW)
 									|| mr.getWorkflowStatus().equals(
-											WorkflowStatus.REVIEW_IN_PROGRESS)) {
+											WorkflowStatus.REVIEW_IN_PROGRESS)
+									|| mr.getWorkflowStatus().equals(
+											WorkflowStatus.REVIEW_RESOLVED)) {
 								leadRecordFound = true;
 							} else if (mr.getWorkflowStatus().equals(
 									WorkflowStatus.REVIEW_NEEDED)) {
@@ -3630,6 +3642,33 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return feedbackConversationList;
 
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public FeedbackConversationList getFeedbackConversationsForRecord(
+			Long mapRecordId) throws Exception {
+
+		javax.persistence.Query query = manager
+				.createQuery(
+						"select m from FeedbackConversationJpa m where mapRecordId=:mapRecordId")
+				.setParameter("mapRecordId", mapRecordId);
+
+		List<FeedbackConversation> feedbackConversations = query
+				.getResultList();
+		for (FeedbackConversation feedbackConversation : feedbackConversations) {
+			handleFeedbackConversationLazyInitialization(feedbackConversation);
+		}
+
+		// set the total count
+		FeedbackConversationListJpa feedbackConversationList = new FeedbackConversationListJpa();
+		feedbackConversationList.setTotalCount(feedbackConversations.size());
+
+		// extract the required sublist of feedback conversations
+		feedbackConversationList
+				.setFeedbackConversations(feedbackConversations);
+
+		return feedbackConversationList;
+	}
 
 	private static String constructQuery(Long mapProjectId,
 			PfsParameter pfsParameter) {
@@ -3833,80 +3872,150 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	}
 
 	@Override
-public void convertUserErrors() throws Exception {
-		
+	public void convertUserErrors() throws Exception {
+
 		int errorCt = 0;
-	
+
 		MappingService mappingService = new MappingServiceJpa();
-		
-		javax.persistence.Query query = manager.createQuery(
-				"select e from UserErrorJpa e");
-		
+
+		javax.persistence.Query query = manager
+				.createQuery("select e from UserErrorJpa e");
+
 		@SuppressWarnings("unchecked")
 		List<UserError> userErrors = query.getResultList();
-		
+
 		for (UserError userError : userErrors) {
-			
-			Logger.getLogger(WorkflowServiceJpa.class).info("Importing user error: " + userError.toString());
-			
+
+			Logger.getLogger(WorkflowServiceJpa.class).info(
+					"Importing user error: " + userError.toString());
+
 			// get the most recent record for this error (may have been deleted)
-			MapRecord mapRecord = mappingService.getMapRecordRevisions(userError.getMapRecordId()).getMapRecords().get(0);			
-			MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
-			
+			MapRecord mapRecord = mappingService
+					.getMapRecordRevisions(userError.getMapRecordId())
+					.getMapRecords().get(0);
+			MapProject mapProject = mappingService.getMapProject(mapRecord
+					.getMapProjectId());
+
 			FeedbackConversation feedbackConversation = null;
-			
-			// try to retrieve any existing feedback conversation for this concept
+
+			// try to retrieve any existing feedback conversation for this
+			// concept
 			try {
-				feedbackConversation = (FeedbackConversation) manager.createQuery("select f from FeedbackConversationJpa f where mapRecordId = :mapRecordId")
-					.setParameter("mapRecordId", mapRecord.getId()).getSingleResult();
-				
-				Logger.getLogger(WorkflowServiceJpa.class).info("  Found existing feedback conversation, id = " + feedbackConversation.getId());
-				
-			// otherwise create a new feedback conversatoin
+				feedbackConversation = (FeedbackConversation) manager
+						.createQuery(
+								"select f from FeedbackConversationJpa f where mapRecordId = :mapRecordId")
+						.setParameter("mapRecordId", mapRecord.getId())
+						.getSingleResult();
+
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"  Found existing feedback conversation, id = "
+								+ feedbackConversation.getId());
+
+				// otherwise create a new feedback conversatoin
 			} catch (NoResultException e) {
 				feedbackConversation = new FeedbackConversationJpa();
 				feedbackConversation.setActive(true);
-				feedbackConversation.setDefaultPreferredName(mapRecord.getConceptName());
+				feedbackConversation.setDefaultPreferredName(mapRecord
+						.getConceptName());
 				feedbackConversation.setDiscrepancyReview(false);
 				feedbackConversation.setMapRecordId(mapRecord.getId());
-				feedbackConversation.setTerminology(mapProject.getSourceTerminology());
-				feedbackConversation.setTerminologyVersion(mapProject.getSourceTerminologyVersion());
+				feedbackConversation.setTerminology(mapProject
+						.getSourceTerminology());
+				feedbackConversation.setTerminologyVersion(mapProject
+						.getSourceTerminologyVersion());
 				feedbackConversation.setTerminologyId(mapRecord.getConceptId());
 				feedbackConversation.setTitle("Error Feedback");
-				
-				Logger.getLogger(WorkflowServiceJpa.class).info("  Created new feedback conversation.");
+
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"  Created new feedback conversation.");
 			}
-			
+
 			// create the feedback object
 			Feedback feedback = new FeedbackJpa();
-			feedback.setError(true);
+			feedback.setIsError(true);
 			feedback.setMapError(userError.getError());
-			feedback.setMessage(userError.getNote() + " (NOTE: Added by the original user error method)");
+			feedback.setMessage(userError.getNote()
+					+ " (NOTE: Added by the original user error method)");
 			feedback.setSender(userError.getUserReportingError());
 			Set<MapUser> recipients = new HashSet<>();
 			recipients.add(userError.getUserInError());
 			feedback.setRecipients(recipients);
 			feedback.setTimestamp(userError.getTimestamp());
-			
-			Logger.getLogger(WorkflowServiceJpa.class).info("  Created feedback: " + feedback.toString());
-			
+
+			Logger.getLogger(WorkflowServiceJpa.class).info(
+					"  Created feedback: " + feedback.toString());
+
 			// attach to conversation
 			feedbackConversation.addFeedback(feedback);
-			
+
 			// add or update the conversation
 			if (feedbackConversation.getId() == null) {
-				Logger.getLogger(WorkflowServiceJpa.class).info("  Adding feedback conversation");
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"  Adding feedback conversation");
 				this.addFeedbackConversation(feedbackConversation);
 			} else {
-				Logger.getLogger(WorkflowServiceJpa.class).info("  Updating feedback conversation");
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"  Updating feedback conversation");
 				this.updateFeedbackConversation(feedbackConversation);
 			}
-			
+
 		}
-		
-		Logger.getLogger(WorkflowServiceJpa.class).info(errorCt + " errors successfully converted");
-		
+
+		Logger.getLogger(WorkflowServiceJpa.class).info(
+				errorCt + " errors successfully converted");
+
 		mappingService.close();
+
+	}
+	
+	@Override
+	public void fixFeedbackErrorFlag() throws Exception {
+		List<FeedbackConversation> conversations = null;
+		// construct query
+		javax.persistence.Query query = manager
+				.createQuery("select m from FeedbackConversationJpa m");
+		// Try query
+		conversations = query.getResultList();
+
+		boolean needsUpdate = false;
+		for (FeedbackConversation conversation : conversations) {
+      for (Feedback feedback : conversation.getFeedbacks()) {
+    	    if (feedback.getMapError() != null && !feedback.getMapError().equals("") && 
+    			  !feedback.getMapError().equals("None")) {
+    		    feedback.setIsError(true);
+    		    needsUpdate = true;
+    	    }
+      }
+      if (needsUpdate) {
+      	updateFeedbackConversation(conversation);
+      	needsUpdate = false;
+      }
+		}
+ 
+	}
+
+	@Override
+	public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord) throws Exception {
 		
+		List<Feedback> feedbacksWithError = new ArrayList<>();
+		
+		// find any feedback conersations for this record
+		FeedbackConversationList conversations = this.getFeedbackConversationsForRecord(mapRecord.getId());
+		
+		// cycle over feedbacks
+		for (FeedbackConversation conversation : conversations.getIterable()) {
+			for (Feedback feedback : conversation.getFeedbacks()) {
+				if (feedback.isError()) {
+					feedbacksWithError.add(feedback);
+
+
+
+				}
+
+			}
+		}
+		FeedbackList feedbackList = new FeedbackListJpa();
+		feedbackList.setFeedbacks(feedbacksWithError);
+		return feedbackList;
 	}
 }
