@@ -43,8 +43,8 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 
 	// on any change of focusProject, retrieve new available work
 	$scope.currentUserToken = localStorageService.get('userToken');
-	$scope.$watch(['focusProject', 'user', 'userToken'], function() {
-		console.debug('feedbackCtrl:  Detected project or user set/change');
+	$scope.$watch(['focusProject', 'currentUser', 'currentUserToken'], function() {
+		console.debug('feedbackCtrl:', $scope.focusProject, $scope.currentUser, $scope.currentUserToken);
 		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null) {
 			$http.defaults.headers.common.Authorization = $scope.currentUserToken;			
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);

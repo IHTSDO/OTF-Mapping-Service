@@ -14,6 +14,7 @@ import java.util.StringTokenizer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
@@ -314,15 +315,18 @@ public class MapProjectDataImportMojo extends AbstractMojo {
         }
         i++; // increment the counter
         mapProject.setDestinationTerminologyVersion(terminologyVersion);
-        mapProject.setBlockStructure(fields[i++].toLowerCase().equals("true")
-            ? true : false);
         mapProject.setGroupStructure(fields[i++].toLowerCase().equals("true")
             ? true : false);
         mapProject.setPublished(fields[i++].toLowerCase().equals("true") ? true
             : false);
         mapProject.setMapRelationStyle(fields[i++]);
-        mapProject.setWorkflowType(fields[i++]);
+        if (fields[i++].equals(WorkflowType.CONFLICT_PROJECT.toString())) 
+        	mapProject.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
+        else if (fields[i++].equals(WorkflowType.REVIEW_PROJECT.toString())) 
+        	mapProject.setWorkflowType(WorkflowType.REVIEW_PROJECT);
+
         mapProject.setMapPrincipleSourceDocument(fields[i++]);
+        mapProject.setMapPrincipleSourceDocumentName(fields[i++]);
         mapProject.setRuleBased(fields[i++].toLowerCase().equals("true") ? true
             : false);
         mapProject.setMapRefsetPattern(fields[i++]);

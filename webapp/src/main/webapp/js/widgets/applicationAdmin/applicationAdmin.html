@@ -1,3 +1,4 @@
+
 <accordion close-others="false"> <accordion-group is-open="true">
 
   <accordion-group ng-show="mapProjects.length > 0 ">
@@ -8,7 +9,7 @@
       </span></h5>
   </accordion-heading>
 
-      <table width="100%" class="table pure-table">
+      <table width="100%" class="table pure-table" style="margin-bottom:5px;">
         <thead>
           <tr>
             <th style="width: 22%;">Name / Source / Destination</th>           
@@ -101,6 +102,9 @@
                 ng-options="item as item.displayName for item in allowableMapRelationStyles"  ng-change="setEditingPerformed(project)"
                 style="margin-bottom:5px; width:100%;">
                 </select>
+                <input tooltip-placement="top" tooltip="Map Principle Document Name" 
+                  ng-model="project.mapPrincipleSourceDocumentName" ng-change="setEditingPerformed(project)"
+                  style="margin-bottom:5px; width:100%;"></input>
             </td>    
             <td><button class="btn btn-sm btn-primary" ng-click="updateMapProject(project)" ng-show="isComponentChanged(project) == true" >Save</button></td>
             
@@ -113,10 +117,11 @@
 
         </tbody>
       </table>
+   <button class="btn btn-sm btn-primary" ng-click="revertUnsavedProjects()"  ng-show="projectInEditingPerformed() == true" >Revert Unsaved</button>
    
 
     <form>
-      <div><b>Create New Map Project</b></div><hr>
+      <div style="margin-top:15px;"><b>Create New Map Project</b></div><hr>
       <table class="table pure-table">
       <thead>
           <tr>
@@ -137,7 +142,7 @@
       </select></td></tr>
       <tr><td>Ref Set Id </td><td>
         <input id="newMapProjectRefSetId" type="text" ng-model="newMapProjectRefSetId">  </div>       
-      <tr><td>Published: </td><td><select ng-model="newMapProjectPublished"
+      <tr><td>Published </td><td><select ng-model="newMapProjectPublished"
         ng-options="item for item in [true, false]">
       </select></td></tr>
       <tr><td>Rule Based </td><td><select ng-model="newMapProjectRuleBased"
@@ -166,19 +171,23 @@
       <tr><td>Map Relation Style </td><td><select ng-model="newMapRelationStyle"
         ng-options="item as item.displayName for item in allowableMapRelationStyles">
       </select></td></tr>
+      <tr><td>Map Principle Document Name </td><td>
+        <input id="newMapProjectMapPrincipleSourceDocumentName" type="text" 
+          ng-model="newMapProjectMapPrincipleSourceDocumentName">  </td></tr>
           
       <tr><td><button class="btn btn-sm btn-primary" 
         ng-click="submitNewMapProject(newMapProjectName, newMapProjectSourceVersion, 
         newMapProjectDestinationVersion, newMapProjectRefSetId, newMapProjectPublished, 
         newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic, 
         newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag, 
-        newMapProjectMapType, newWorkflowType, newMapRelationStyle); 
+        newMapProjectMapType, newWorkflowType, newMapRelationStyle, newMapProjectMapPrincipleSourceDocumentName); 
           newMapProjectName = ''; newMapProjectRefSetId = ''; 
           newMapProjectSourceVersion = ''; newMapProjectDestinationVersion = '';
           newMapProjectPublished = false; 
           newMapProjectRuleBased = false; newMapProjectGroupStructure = false; 
           newMapProjectPublic = false; newMapProjectScopeDescendantsFlag = false; 
-          newMapProjectScopeExcludedDescendantsFlag = false; ">Submit</button></td><td></td></tr>
+          newMapProjectScopeExcludedDescendantsFlag = false; 
+          newMapProjectMapPrincipleSourceDocumentName = '';">Submit</button></td><td></td></tr>
     </tbody></table></form>
     
   </accordion-group>
@@ -200,7 +209,7 @@
           value="Reset Filter" ng-click="resetAdviceFilter()">
       </form>
 
-      <table width="100%" class="table pure-table">
+      <table width="100%" class="table pure-table"  style="margin-bottom:5px;">
         <thead>
           <tr>
             <th style="width: 40%;">Advice</th>           
@@ -240,11 +249,11 @@
 
         </tbody>
       </table>
-   
+      <button class="btn btn-sm btn-primary" ng-click="revertUnsavedAdvices()"  ng-show="adviceInEditingPerformed() == true" >Revert Unsaved</button>
 
     <form>
-      <div><b>Create New Map Advice</b></div><hr>
-      <table class="table pure-table">
+      <div style="margin-top:15px;"><b>Create New Map Advice</b></div><hr>
+      <table class="table pure-table" >
       <thead>
           <tr>
             <th style="width: 25%;"></th>           
@@ -288,7 +297,7 @@
           value="Reset Filter" ng-click="resetRelationFilter()">
       </form>
 
-      <table width="100%" class="table pure-table">
+      <table width="100%" class="table pure-table"  style="margin-bottom:5px;">
         <thead>
           <tr>
             <th style="width: 12%;">Id</th>
@@ -331,10 +340,11 @@
 
         </tbody>
       </table>
+      <button class="btn btn-sm btn-primary" ng-click="revertUnsavedRelations()"  ng-show="relationInEditingPerformed() == true" >Revert Unsaved</button>
                
 
     <form>
-      <div><b>Create New Map Relation</b></div><hr>      
+      <div style="margin-top:15px;"><b>Create New Map Relation</b></div><hr>      
       <table class="table pure-table">
       <thead>
           <tr>
@@ -380,7 +390,7 @@
           value="Reset Filter" ng-click="resetPrincipleFilter()">
       </form>
 
-      <table width="100%" class="table pure-table">
+      <table width="100%" class="table pure-table"  style="margin-bottom:5px;">
         <thead>
           <tr>
             <th style="width: 10%;">Id</th>
@@ -414,10 +424,11 @@
           </tr>
         </tbody>
       </table>
+      <button class="btn btn-sm btn-primary" ng-click="revertUnsavedPrinciples()"  ng-show="principleInEditingPerformed() == true" >Revert Unsaved</button> 
       
       <form>
-      <div><b>Create New Map Principle</b></div><hr>           
-      <table class="table pure-table">
+      <div style="margin-top:15px;"><b>Create New Map Principle</b></div><hr>           
+      <table class="table pure-table"  style="margin-bottom:5px;">
       <thead>
           <tr>
             <th style="width: 25%;"></th>           
@@ -437,7 +448,11 @@
         ng-click="submitNewMapPrinciple(newPrincipleName, newPrincipleId, newPrincipleDetail, newPrincipleSectionRef);
          newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button></td><td></td></tr>
       </tbody></table> 
-      </form>              
+      </form>
+      <!-- <div style="margin-top:15px;"><b>Upload Map Principle Handbook</b></div><hr>                 
+      <div>
+        <input type="file" ng-file-select="onFileSelect($files)">
+      </div>       -->      
   </accordion-group>
   <accordion-group ng-show="mapAgeRanges.length > 0">
       <accordion-heading>
@@ -446,7 +461,7 @@
         Preset Age Ranges
       </span></h5>
   </accordion-heading> 
-  <table width="100%" class="table pure-table"" >
+  <table width="100%" class="table pure-table"  style="margin-bottom:5px;" >
         <thead>
           <tr>
             <th style="width: 30%;">Name</th>
@@ -494,11 +509,13 @@
           </tr>
         </tbody>
       </table>
+      <button class="btn btn-sm btn-primary" ng-click="revertUnsavedAgeRanges()"  ng-show="ageRangeInEditingPerformed() == true" >Revert Unsaved</button>
+      
       
     
     <form name="ageRangeForm" >
-      <div><b>Create New Map Age Range</b></div><hr>
-      <table class="table pure-table">
+      <div style="margin-top:15px;"><b>Create New Map Age Range</b></div><hr>
+      <table class="table pure-table" >
       <thead>
           <tr>
             <th style="width: 25%;"></th>           
