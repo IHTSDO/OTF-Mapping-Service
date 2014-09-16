@@ -62,13 +62,13 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class WorkflowServiceRest extends RootServiceRest {
 
 	/**  The security service. */
-	private SecurityService securityService = new SecurityServiceJpa();
+	private SecurityService securityService;
 
 	/**
 	 * Instantiates an empty {@link WorkflowServiceRest}.
 	 */
-	public WorkflowServiceRest() {
-		// do nothing
+	public WorkflowServiceRest() throws Exception {
+		securityService = new SecurityServiceJpa();
 	}
 
 	/**

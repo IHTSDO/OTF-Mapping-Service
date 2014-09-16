@@ -1,7 +1,7 @@
 <h4 ng-show="showTitle == true">{{record.conceptName}}<br>{{project.sourceTerminology}} concept {{record.conceptId}}</h4>
 <div ng-show="record.flagForLeadReview == true" style="color:red">Flagged For Lead Review</div>
 <div ng-show="record.mapEntry.length == 0">No map entries available.</div>
-<div ng-show="record.mapEntry.length > 0"><strong>Map Entries</strong></div>
+<div ng-show="record.mapEntry.length > 0">Map Entries</div>
 <div style="padding:0px; border-bottom:thin solid grey;" ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
 	<!-- Group/Priority, Target Id, Target Name -->
 	<div style="display:inline-block;padding:0px;width:48%;">
