@@ -3060,7 +3060,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// do nothing
 			}
 
-		} else if ((mapProject.getWorkflowType().equals("CONFLICT_PROJECT") && (mapRecord
+		} else if ((mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_PROJECT) && (mapRecord
 				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
 				|| mapRecord.getWorkflowStatus().equals(
 						WorkflowStatus.REVIEW_IN_PROGRESS) || mapRecord
@@ -3068,7 +3068,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				||
 
-				(mapProject.getWorkflowType().equals("REVIEW_PROJECT") && mapRecord
+				(mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT) && mapRecord
 						.getOriginIds().size() > 2)) {
 
 			boolean foundReviewRecord = false; // the specialist's completed
@@ -3106,7 +3106,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 			}
 
-		} else if (mapProject.getWorkflowType().equals("REVIEW_PROJECT")
+		} else if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)
 				&& mapRecord.getWorkflowStatus().equals(
 						WorkflowStatus.REVIEW_NEW)
 				|| mapRecord.getWorkflowStatus().equals(
