@@ -1741,18 +1741,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 										.toString());
 
 				if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
-					/*
-					 * Logger.getLogger(WorkflowServiceJpa.class).info(
-					 * "Updating record: " + mr.getId().toString() + " with " +
-					 * mr.getMapEntries().get(0) + " advices");
-					 */
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							"  Changed: UPDATING");
 					mappingService.updateMapRecord(mr);
 				} else {
-					/*
-					 * Logger.getLogger(WorkflowServiceJpa.class).info(
-					 * "Record " + mr.getId().toString() +
-					 * " has not changed, not updating");
-					 */
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							"  No change: NOT UPDATING");
 				}
 
 				syncedRecords.add(mr);
@@ -1764,6 +1758,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			// if old record is not in the new record set, delete it
 			if (getMapRecordInSet(syncedRecords, mr.getId()) == null) {
+
+				Logger.getLogger(WorkflowServiceJpa.class).info(
+						"Deleting record " + mr.getId());
 				mappingService.removeMapRecord(mr.getId());
 			}
 		}
@@ -1949,15 +1946,19 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// otherwise, set to the WorkflowPath corresponding to the
 				// project WorkflowType
 			} else {
-				if (mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_PROJECT))
+				if (mapProject.getWorkflowType().equals(
+						WorkflowType.CONFLICT_PROJECT))
 					trackingRecord
 							.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH);
-				else if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT))
+				else if (mapProject.getWorkflowType().equals(
+						WorkflowType.REVIEW_PROJECT))
 					trackingRecord
 							.setWorkflowPath(WorkflowPath.REVIEW_PROJECT_PATH);
 				else {
 					throw new Exception(
-							"Could not set workflow path from workflow type " + mapProject.getWorkflowType() + " for records "
+							"Could not set workflow path from workflow type "
+									+ mapProject.getWorkflowType()
+									+ " for records "
 									+ trackingRecord.getMapRecordIds()
 											.toString());
 				}
@@ -3058,10 +3059,18 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					} catch (Exception e2) {
 						errors.add("Could not retrieve map record " + id);
 					}
-					
-					// check that the workflow status on record matches that on tracking record
-					if (!tr.getUserAndWorkflowStatusPairs().contains(mr.getWorkflowStatus().toString() + "_" + mr.getOwner().getUserName()))
-							errors.add("Workflow mismatch found for user " + mr.getOwner().getUserName() + ":  record has workflow status " + mr.getWorkflowStatus().toString() + " while tracking record has user/workflow pairs " + tr.getUserAndWorkflowStatusPairs());
+
+					// check that the workflow status on record matches that on
+					// tracking record
+					if (!tr.getUserAndWorkflowStatusPairs().contains(
+							mr.getWorkflowStatus().toString() + "_"
+									+ mr.getOwner().getUserName()))
+						errors.add("Workflow mismatch found for user "
+								+ mr.getOwner().getUserName()
+								+ ":  record has workflow status "
+								+ mr.getWorkflowStatus().toString()
+								+ " while tracking record has user/workflow pairs "
+								+ tr.getUserAndWorkflowStatusPairs());
 				}
 
 			}
@@ -3103,7 +3112,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						else if (mr.getWorkflowStatus().equals(
 								WorkflowStatus.REVIEW_NEW)
 								|| mr.getWorkflowStatus().equals(
-										WorkflowStatus.REVIEW_IN_PROGRESS))
+										WorkflowStatus.REVIEW_IN_PROGRESS)
+								|| mr.getWorkflowStatus().equals(
+										WorkflowStatus.REVIEW_RESOLVED))
 							reviewRecordFound = true;
 
 						// check for specialist record
@@ -3132,13 +3143,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					if (editingRecordFound == false) {
 						errors.add("FIX_ERROR_PATH, but no specialist-level record found");
 					}
-					
+
 					// lead record may or may not exist
 					if (reviewRecordFound == false) {
 						// do nothing, not required
 						// any aberrant records will be reported above
 					}
-					
 
 					break;
 				case LEGACY_PATH:
@@ -3642,7 +3652,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return feedbackConversationList;
 
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public FeedbackConversationList getFeedbackConversationsForRecord(
@@ -3884,6 +3894,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		@SuppressWarnings("unchecked")
 		List<UserError> userErrors = query.getResultList();
 
+		// map for ensuring duplicate record ids are attached to the same
+		// conversation
+		Map<Long, FeedbackConversation> feedbackConversationMap = new HashMap<>();
+
 		for (UserError userError : userErrors) {
 
 			Logger.getLogger(WorkflowServiceJpa.class).info(
@@ -3898,36 +3912,43 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 			FeedbackConversation feedbackConversation = null;
 
-			// try to retrieve any existing feedback conversation for this
-			// concept
-			try {
-				feedbackConversation = (FeedbackConversation) manager
-						.createQuery(
-								"select f from FeedbackConversationJpa f where mapRecordId = :mapRecordId")
-						.setParameter("mapRecordId", mapRecord.getId())
-						.getSingleResult();
+			if (feedbackConversationMap.containsKey(mapRecord.getId())) {
+				feedbackConversation = feedbackConversationMap.get(mapRecord
+						.getId());
+			} else {
 
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						"  Found existing feedback conversation, id = "
-								+ feedbackConversation.getId());
+				// try to retrieve any existing feedback conversation for this
+				// concept
+				try {
+					feedbackConversation = (FeedbackConversation) manager
+							.createQuery(
+									"select f from FeedbackConversationJpa f where mapRecordId = :mapRecordId")
+							.setParameter("mapRecordId", mapRecord.getId())
+							.getSingleResult();
 
-				// otherwise create a new feedback conversatoin
-			} catch (NoResultException e) {
-				feedbackConversation = new FeedbackConversationJpa();
-				feedbackConversation.setActive(true);
-				feedbackConversation.setDefaultPreferredName(mapRecord
-						.getConceptName());
-				feedbackConversation.setDiscrepancyReview(false);
-				feedbackConversation.setMapRecordId(mapRecord.getId());
-				feedbackConversation.setTerminology(mapProject
-						.getSourceTerminology());
-				feedbackConversation.setTerminologyVersion(mapProject
-						.getSourceTerminologyVersion());
-				feedbackConversation.setTerminologyId(mapRecord.getConceptId());
-				feedbackConversation.setTitle("Error Feedback");
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							"  Found existing feedback conversation, id = "
+									+ feedbackConversation.getId());
 
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						"  Created new feedback conversation.");
+					// otherwise create a new feedback conversatoin
+				} catch (NoResultException e) {
+					feedbackConversation = new FeedbackConversationJpa();
+					feedbackConversation.setActive(true);
+					feedbackConversation.setDefaultPreferredName(mapRecord
+							.getConceptName());
+					feedbackConversation.setDiscrepancyReview(false);
+					feedbackConversation.setMapRecordId(mapRecord.getId());
+					feedbackConversation.setTerminology(mapProject
+							.getSourceTerminology());
+					feedbackConversation.setTerminologyVersion(mapProject
+							.getSourceTerminologyVersion());
+					feedbackConversation.setTerminologyId(mapRecord
+							.getConceptId());
+					feedbackConversation.setTitle("Error Feedback");
+
+					Logger.getLogger(WorkflowServiceJpa.class).info(
+							"  Created new feedback conversation.");
+				}
 			}
 
 			// create the feedback object
@@ -3959,6 +3980,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				this.updateFeedbackConversation(feedbackConversation);
 			}
 
+			// put the persisted feedback conversation in the map
+			feedbackConversationMap
+					.put(mapRecord.getId(), feedbackConversation);
+
 		}
 
 		Logger.getLogger(WorkflowServiceJpa.class).info(
@@ -3967,7 +3992,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		mappingService.close();
 
 	}
-	
+
 	@Override
 	public void fixFeedbackErrorFlag() throws Exception {
 		List<FeedbackConversation> conversations = null;
@@ -3979,36 +4004,37 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		boolean needsUpdate = false;
 		for (FeedbackConversation conversation : conversations) {
-      for (Feedback feedback : conversation.getFeedbacks()) {
-    	    if (feedback.getMapError() != null && !feedback.getMapError().equals("") && 
-    			  !feedback.getMapError().equals("None")) {
-    		    feedback.setIsError(true);
-    		    needsUpdate = true;
-    	    }
-      }
-      if (needsUpdate) {
-      	updateFeedbackConversation(conversation);
-      	needsUpdate = false;
-      }
+			for (Feedback feedback : conversation.getFeedbacks()) {
+				if (feedback.getMapError() != null
+						&& !feedback.getMapError().equals("")
+						&& !feedback.getMapError().equals("None")) {
+					feedback.setIsError(true);
+					needsUpdate = true;
+				}
+			}
+			if (needsUpdate) {
+				updateFeedbackConversation(conversation);
+				needsUpdate = false;
+			}
 		}
- 
+
 	}
 
 	@Override
-	public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord) throws Exception {
-		
+	public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord)
+			throws Exception {
+
 		List<Feedback> feedbacksWithError = new ArrayList<>();
-		
+
 		// find any feedback conersations for this record
-		FeedbackConversationList conversations = this.getFeedbackConversationsForRecord(mapRecord.getId());
-		
+		FeedbackConversationList conversations = this
+				.getFeedbackConversationsForRecord(mapRecord.getId());
+
 		// cycle over feedbacks
 		for (FeedbackConversation conversation : conversations.getIterable()) {
 			for (Feedback feedback : conversation.getFeedbacks()) {
 				if (feedback.isError()) {
 					feedbacksWithError.add(feedback);
-
-
 
 				}
 

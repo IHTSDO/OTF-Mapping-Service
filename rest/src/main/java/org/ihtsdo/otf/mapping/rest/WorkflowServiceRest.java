@@ -1075,7 +1075,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
-				"RESTful call (Workflow): /finish"
+				"RESTful call (Workflow): /publish"
 				+ " for map record with id = " + mapRecord.getId().toString());
 		
 		String user = "";
@@ -1086,7 +1086,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
 			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
 				throw new WebApplicationException(Response.status(401).entity(
-						"User does not have permissions to set a record to finished.").build());
+						"User does not have permissions to set a record to published.").build());
   		
 			MappingService mappingService = new MappingServiceJpa();
 

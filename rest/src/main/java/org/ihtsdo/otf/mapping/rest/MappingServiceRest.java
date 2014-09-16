@@ -2575,7 +2575,7 @@ public class MappingServiceRest extends RootServiceRest {
 
 			return records;
 		} catch (Exception e) {
-			handleException(e, "trying to save work", user, "", mapRecordId.toString());
+			handleException(e, "trying to retrieve origin records for conflict/review", user, "", mapRecordId.toString());
 			return null;
 		}
 
