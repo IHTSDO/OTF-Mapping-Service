@@ -154,13 +154,35 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 	$scope.filterRecords = function() {
 		$scope.recordsInProject = [];
 		$scope.recordsNotInProject = [];
+		
+		console.debug("Filtering records (" + $scope.records.length + ")");
 		for (var i = 0; i < $scope.records.length; i++) {
 			if ($scope.records[i].mapProjectId === $scope.focusProject.id) {
 				$scope.recordsInProject.push($scope.records[i]);
 			} else {
-				$scope.recordsNotInProject.push($scope.records[i]);
+				
+				var projectExists = false;
+				for (var j = 0; j < $scope.recordsNotInProject.length; j++) {
+					
+					if ($scope.recordsNotInProject[j][0].mapProjectId === $scope.records[i].mapProjectId) {
+						console.debug("Found match for " + $scope.records[i].mapProjectId);
+						$scope.recordsNotInProject[j].push($scope.records[i]);
+						projectExists = true;
+				}
+				}
+				
+				if (!projectExists) {
+					var newArray = [];
+					newArray.push($scope.records[i]);
+					$scope.recordsNotInProject.push(newArray);
+				}
 			}
 		}
+		
+		console.debug($scope.recordsInProject.length + " records in project " + $scope.focusProject.name);
+		
+		for (var i = 0; i < $scope.recordsNotInProject.length; i++)
+			console.debug($scope.recordsNotInProject[i].length + " records in project " + $scope.recordsNotInProject[i][0].mapProjectId);
 		
 		// if no records for this project found, set flag
 		if ($scope.recordsInProject.length == 0) {

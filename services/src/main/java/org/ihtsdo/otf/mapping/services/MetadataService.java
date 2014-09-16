@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Services to retrieve metadata objects.
  */
-public interface MetadataService {
+public interface MetadataService extends RootService {
 
 	/**
 	 * Close the service.

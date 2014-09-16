@@ -1,8 +1,19 @@
 package org.ihtsdo.otf.mapping.rest;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -62,6 +73,8 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -74,13 +87,13 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MappingServiceRest extends RootServiceRest {
 
-	private SecurityService securityService = new SecurityServiceJpa();
+	private SecurityService securityService;
 
 	/**
 	 * Instantiates an empty {@link MappingServiceRest}.
 	 */
-	public MappingServiceRest() {
-
+	public MappingServiceRest() throws Exception {
+		securityService = new SecurityServiceJpa();
 	}
 
 	// ///////////////////////////////////////////////////
@@ -2727,5 +2740,128 @@ public class MappingServiceRest extends RootServiceRest {
 			return null;
 		}
 	}
+	
 
+	@POST
+	@Path("/upload/{mapProjectId}")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response uploadFile(
+		@FormDataParam("file") InputStream fileInputStream,
+		@FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+		@PathParam("mapProjectId") Long mapProjectId,
+		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+		
+		String user = "";
+		try {
+			MappingService mappingService = new MappingServiceJpa();
+
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(
+					authToken, mapProjectId);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to check valid target codes")
+								.build());
+
+			// get destination directory for uploaded file
+			String configFileName = System.getProperty("run.config");
+			Logger.getLogger(MappingServiceRest.class).info(
+					"  run.config = " + configFileName);
+			Properties config = new Properties();
+			FileReader in = new FileReader(new File(configFileName));
+			config.load(in);
+			in.close();
+			Logger.getLogger(MappingServiceRest.class).info(
+					"  properties = " + config);
+
+			String docDir = config.getProperty("map.principle.source.document.dir");
+			
+			File dir = new File(docDir);
+			File archiveDir = new File(docDir + "/archive");
+
+		  // compose the name of the stored file
+			MapProject mapProject = getMapProject(new Long(mapProjectId), authToken);
+			SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");
+			String date = dt.format(new Date());
+
+			String extension = "";
+			if (contentDispositionHeader.getFileName().indexOf(".") != -1) {
+				extension =
+						contentDispositionHeader.getFileName().substring(
+								contentDispositionHeader.getFileName().lastIndexOf("."));
+			}
+			String camelCaseFileName =
+					mapProject.getMapPrincipleSourceDocumentName().replaceAll(" ", "");
+			File file =
+					new File(dir, mapProjectId + "_" + camelCaseFileName + extension);
+			File archiveFile =
+					new File(archiveDir, mapProjectId + "_" + camelCaseFileName + "." + date
+							+ extension);
+
+			// save the file to the server
+			saveFile(fileInputStream, file.getAbsolutePath());
+		  copyFile(file, archiveFile);
+
+			String output =
+					"File saved to server location : " + file.getAbsolutePath() + " and "
+							+ archiveFile.getAbsolutePath();
+
+			// update project
+			mapProject.setMapPrincipleSourceDocument(mapProjectId + "_" + camelCaseFileName + extension);
+			updateMapProject((MapProjectJpa) mapProject, authToken);
+
+			return Response.status(200).entity(output).build();
+		} catch (Exception e) {
+			handleException(e, "trying to upload a file", user, mapProjectId.toString(), "");
+			return null;
+		}
+	}
+
+	// save uploaded file to a defined location on the server
+	private void saveFile(InputStream uploadedInputStream, String serverLocation) {
+
+		try {
+
+			OutputStream outputStream =
+					new FileOutputStream(new File(serverLocation));
+			int read = 0;
+			byte[] bytes = new byte[1024];
+
+			outputStream = new FileOutputStream(new File(serverLocation));
+			while ((read = uploadedInputStream.read(bytes)) != -1) {
+				outputStream.write(bytes, 0, read);
+			}
+			outputStream.flush();
+			outputStream.close();
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+	}
+
+	public static void copyFile(File sourceFile, File destFile)
+		throws IOException {
+		if (!destFile.exists()) {
+			destFile.createNewFile();
+		}
+
+		FileChannel source = null;
+		FileChannel destination = null;
+
+		try {
+			source = new FileInputStream(sourceFile).getChannel();
+			destination = new FileOutputStream(destFile).getChannel();
+			destination.transferFrom(source, 0, source.size());
+		} finally {
+			if (source != null) {
+				source.close();
+			}
+			if (destination != null) {
+				destination.close();
+			}
+		}
+	}
 }

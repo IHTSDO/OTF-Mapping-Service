@@ -33,5 +33,6 @@
     <class>org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa</class>
     <class>org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa</class>
     <class>org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa</class>
+    <class>org.ihtsdo.otf.mapping.reports.MapReportSpecialistOutputJpa</class>
   </persistence-unit>
 </persistence>

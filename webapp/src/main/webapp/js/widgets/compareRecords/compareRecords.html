@@ -128,7 +128,7 @@
 	
 
 	
-	<div style="float:left; width: 100%" id="report" ng-show="record2 != null">
+	<div style="float:left; width: 100%" id="report">
 			<accordion close-others = "false"> 
 				<accordion-group is-open="isGroupFeedbackOpen">
 				<accordion-heading> Group Feedback<i
@@ -164,7 +164,7 @@
                 </select> -->
         </accordion-group>
                 
-				<accordion-group is-open="isReportOpen">
+			<accordion-group ng-show="record2 != null" is-open="isReportOpen">
 				<accordion-heading> Conflict Report <i
 					class="pull-right glyphicon"
 					ng-class="{'glyphicon-chevron-down': isReportOpen, 'glyphicon-chevron-right': !isReportOpen}"></i>
