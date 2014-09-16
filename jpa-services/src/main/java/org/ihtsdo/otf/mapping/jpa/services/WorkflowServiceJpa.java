@@ -45,6 +45,7 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
@@ -1948,15 +1949,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				// otherwise, set to the WorkflowPath corresponding to the
 				// project WorkflowType
 			} else {
-				if (mapProject.getWorkflowType().equals("CONFLICT_PROJECT"))
+				if (mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_PROJECT))
 					trackingRecord
 							.setWorkflowPath(WorkflowPath.NON_LEGACY_PATH);
-				else if (mapProject.getWorkflowType().equals("REVIEW_PROJECT"))
+				else if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT))
 					trackingRecord
 							.setWorkflowPath(WorkflowPath.REVIEW_PROJECT_PATH);
 				else {
 					throw new Exception(
-							"Could not determine workflow path for records "
+							"Could not set workflow path from workflow type " + mapProject.getWorkflowType() + " for records "
 									+ trackingRecord.getMapRecordIds()
 											.toString());
 				}
