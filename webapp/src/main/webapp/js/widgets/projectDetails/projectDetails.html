@@ -303,16 +303,32 @@
         </tr>
       </tbody>
     </table>            
-
+    
     <form ng-show="editModeEnabled == true">
-      <div><b>Create New Map Advice</b></div><hr>
-      <div style="margin-bottom:5px;">Advice Name: 
-        <input id="newAdviceName" type="text" ng-model="newAdviceName">  </div> 
-      <div>Advice Detail: 
-        <input id="newAdviceDetail" type="text" ng-model="newAdviceDetail">   </div>     
+      <div style="margin-top:15px;"><b>Create New Map Advice</b></div><hr>
+      <table class="table pure-table" >
+      <thead>
+          <tr>
+            <th style="width: 25%;"></th>           
+            <th style="width: 75%;"></th>
+          </tr>
+      </thead>
+      <tbody>
+      <tr><td>Advice Name</td><td> 
+        <input id="newAdviceName" type="text" ng-model="newAdviceName"></td></tr>
+      <tr><td>Advice Detail</td><td> 
+        <input id="newAdviceDetail" type="text" ng-model="newAdviceDetail"></td></tr>   
+      <tr><td>Allowable for Null Target</td><td> <select ng-model="newAllowableForNullTarget"
+        ng-options="item for item in [true, false]">
+      </select></td></tr>
+      <tr><td>Is Computed</td><td> <select ng-model="newIsComputed"
+        ng-options="item for item in [true, false]">
+      </select></td></tr>
+      </tbody></table>
+      
       <button class="btn btn-sm btn-primary" 
-        ng-click="submitNewMapAdvice(newAdviceName, newAdviceDetail); 
-          newAdviceName = ''; newAdviceDetail = '';">Submit</button>
+        ng-click="submitNewMapAdvice(newAdviceName, newAdviceDetail, newAllowableForNullTarget, newIsComputed); 
+          newAdviceName = ''; newAdviceDetail = ''; newAllowableForNullTarget = false; newIsComputed = false; ">Submit</button>
     </form>
     
   </accordion-group>  
@@ -385,19 +401,37 @@
           </td>
         </tr>
       </tbody>
-    </table>            
-
-    <div ng-show="editModeEnabled == true">
-      <div><b>Create New Map Relation</b></div><hr>
-      <div style="margin-bottom:5px;">Relation Name: 
-        <input id="newRelationName" type="text" ng-model="newRelationName">  </div> 
-      <div style="margin-bottom:5px;">Relation Abbreviation: 
-        <input id="newRelationAbbreviation" type="text" ng-model="newRelationAbbreviation">   </div>   
-      <div>Relation Terminology Id: 
-        <input id="newRelationTerminologyId" type="text" ng-model="newRelationTerminologyId">   </div>       
-      <button class="btn btn-sm btn-primary" 
-        ng-click="submitNewMapRelation(newRelationName, newRelationAbbreviation, newRelationTerminologyId); newRelationName = ''; newRelationAbbreviation = ''; newRelationTerminologyId = '';">Submit</button>
-    </div>  
+    </table>             
+    
+    <form ng-show="editModeEnabled == true">
+      <div style="margin-top:15px;"><b>Create New Map Relation</b></div><hr>      
+      <table class="table pure-table">
+      <thead>
+          <tr>
+            <th style="width: 25%;"></th>           
+            <th style="width: 75%;"></th>
+          </tr>
+      </thead>
+      <tbody>
+      <tr><td>Relation Terminology Id </td><td>
+        <input id="newRelationTerminologyId" type="text" ng-model="newRelationTerminologyId"> </td></tr>       
+      <tr><td>Relation Code </td><td>
+        <input id="newRelationAbbreviation" type="text" ng-model="newRelationAbbreviation"> </td></tr> 
+      <tr><td>Relation Name </td><td>
+        <input id="newRelationName" type="text" ng-model="newRelationName"> </td></tr>
+      <tr><td>Allowable for Null Target </td><td><select ng-model="newRelationAllowableForNullTarget"
+        ng-options="item for item in [true, false]">
+      </select></td></tr>
+      <tr><td>Is Computed </td><td><select ng-model="newRelationIsComputed"
+        ng-options="item for item in [true, false]">
+      </select></td></tr>
+      <tr><td><button class="btn btn-sm btn-primary" 
+        ng-click="submitNewMapRelation(newRelationName, newRelationAbbreviation, newRelationTerminologyId, 
+        newRelationAllowableForNullTarget, newRelationIsComputed); 
+        newRelationName = ''; newRelationAbbreviation = ''; newRelationTerminologyId = '';
+        newRelationAllowableForNullTarget = false; newRelationIsComputed = false;">Submit</button></td><td></td></tr>
+      </tbody></table>
+    </form>  
   </accordion-group>  
   <accordion-group ng-show="focusProject.mapPrinciple.length > 0 || editModeEnabled == true">
       <accordion-heading>
@@ -476,27 +510,40 @@
       </tbody>
     </table> 
     
-      <div ng-show="editModeEnabled == true"><b>Create New Map Principle</b></div><hr>
-      <div ng-show="editModeEnabled == true" style="margin-bottom:5px;">Principle Name: 
-        <input id="newPrincipleName" type="text" ng-model="newPrincipleName">  </div> 
-      <div ng-show="editModeEnabled == true" style="margin-bottom:5px;">Principle Id: 
-        <input id="newPrincipleId" type="text" ng-model="newPrincipleId">   </div>   
-      <div ng-show="editModeEnabled == true" style="margin-bottom:5px;">Principle Detail: 
-        <input id="newPrincipleDetail" type="text" ng-model="newPrincipleDetail">   </div>   
-      <div ng-show="editModeEnabled == true">Principle Section Ref: 
-        <input id="newPrincipleSectionRef" type="text" ng-model="newPrincipleSectionRef">   </div>           
-      <button ng-show="editModeEnabled == true" class="btn btn-sm btn-primary style="margin-bottom:15px;"" 
+      <form ng-show="editModeEnabled == true">
+      <div style="margin-top:15px;"><b>Create New Map Principle</b></div><hr>           
+      <table class="table pure-table"  style="margin-bottom:5px;">
+      <thead>
+          <tr>
+            <th style="width: 25%;"></th>           
+            <th style="width: 75%;"></th>
+          </tr>
+      </thead>
+      <tbody>
+      <tr><td>Principle Name</td><td>
+        <input id="newPrincipleName" style="width:100%;" type="text" ng-model="newPrincipleName">  </td></tr> 
+      <tr><td>Principle Id</td><td> 
+        <input id="newPrincipleId" style="width:100%;" type="text" ng-model="newPrincipleId">  </td></tr>   
+      <tr><td>Principle Detail</td><td> 
+        <input id="newPrincipleDetail" style="width:100%;" type="text" ng-model="newPrincipleDetail"> </td></tr>   
+      <tr><td>Principle Section Ref</td><td> 
+        <input id="newPrincipleSectionRef" style="width:100%;" type="text" ng-model="newPrincipleSectionRef">  </td></tr>           
+      <tr><td><button class="btn btn-sm btn-primary style="margin-bottom:15px;"" 
         ng-click="submitNewMapPrinciple(newPrincipleName, newPrincipleId, newPrincipleDetail, newPrincipleSectionRef);
-         newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button>
-      
-      <div style="margin-top:15px;"><b>Create New Map Principle</b></div><hr>                               
-      <div ng-show="focusProject.mapPrincipleSourceDocument != null">
+         newPrincipleName = ''; newPrincipleId = ''; newPrincipleDetail = ''; newPrincipleSectionRef = '';">Submit</button></td><td></td></tr>
+      </tbody></table> 
+      </form>
+      <hr>
+
+      <div ng-show="editModeEnabled == true" >
+        <div style="margin-top:15px;"><b>Add New Map Principle Document</b></div><hr>
+        <input type="file" ng-file-select="onFileSelect($files)">
+      </div>
+      <div ng-show="focusProject.mapPrincipleSourceDocument != null &&
+                    focusProject.mapPrincipleSourceDocument != ''">
         Principles taken from <a
           href="doc/{{focusProject.mapPrincipleSourceDocument}}" target="_blank">Map
           Principles Document</a>
-      </div>
-      <div ng-show="editModeEnabled == true" >
-        <input type="file" ng-file-select="onFileSelect($files)">
       </div>
   </accordion-group>
   <accordion-group ng-show="focusProject.mapAgeRange.length > 0 || editModeEnabled == true">
@@ -568,29 +615,41 @@
       </tbody>
     </table>         
     
-    <form name="ageRangeForm" ng-show="editModeEnabled == true">
-      <div><b>Create New Map Age Range</b></div><hr>
-      <div style="margin-bottom:5px;">Age Range Name: 
-        <input id="newAgeRangeName" type="text" ng-model="newAgeRangeName">  </div> 
-      <div style="margin-bottom:5px;">Age Range Lower Inclusive: 
-        <input id="newAgeRangeLowerInclusive" type="text" ng-model="newAgeRangeLowerInclusive">   </div>   
-      <div style="margin-bottom:5px;">Age Range Lower Units: 
-        <input id="newAgeRangeLowerUnits" type="text" ng-model="newAgeRangeLowerUnits">   </div>    
-      <div style="margin-bottom:5px;">Age Range Lower Value: 
-        <input id="newAgeRangeLowerValue" type="text" ng-model="newAgeRangeLowerValue">   </div>
-      <div style="margin-bottom:5px;">Age Range Upper Inclusive: 
-        <input id="newAgeRangeUpperInclusive" type="text" ng-model="newAgeRangeUpperInclusive">   </div>   
-      <div style="margin-bottom:5px;">Age Range Upper Units: 
-        <input id="newAgeRangeUpperUnits" type="text" ng-model="newAgeRangeUpperUnits">   </div>    
-      <div style="margin-bottom:5px;">Age Range Upper Value: 
-        <input id="newAgeRangeUpperValue" type="text" ng-model="newAgeRangeUpperValue">   </div>                       
-
-      <button class="btn btn-sm btn-primary" 
+    <form ng-show="editModeEnabled == true" name="ageRangeForm" >
+      <div style="margin-top:15px;"><b>Create New Map Age Range</b></div><hr>
+      <table class="table pure-table" >
+      <thead>
+          <tr>
+            <th style="width: 25%;"></th>           
+            <th style="width: 75%;"></th>
+          </tr>
+      </thead>
+      <tbody>
+      <tr><td>Age Range Name</td><td>
+        <input id="newAgeRangeName" type="text" ng-model="newAgeRangeName">  </td></tr>
+      <tr><td>Age Range Lower Value</td><td>
+        <input id="newAgeRangeLowerValue" type="text" ng-model="newAgeRangeLowerValue">   </td></tr>
+      <tr><td>Age Range Lower Units</td><td> 
+        <input id="newAgeRangeLowerUnits" type="text" ng-model="newAgeRangeLowerUnits">   </td></tr>    
+      <tr><td>Age Range Lower Inclusive</td><td> 
+        <select ng-model="newAgeRangeLowerInclusive"
+        ng-options="item for item in [true, false]">
+      </select> </td></tr>
+      <tr><td>Age Range Upper Value</td><td> 
+        <input id="newAgeRangeUpperValue" type="text" ng-model="newAgeRangeUpperValue">   </td></tr>                           
+      <tr><td>Age Range Upper Units</td><td>
+        <input id="newAgeRangeUpperUnits" type="text" ng-model="newAgeRangeUpperUnits">    </td></tr>  
+      <tr><td>Age Range Upper Inclusive</td><td>
+        <select ng-model="newAgeRangeUpperInclusive"
+        ng-options="item for item in [true, false]">
+      </select>  </td></tr>
+      <tr><td><button class="btn btn-sm btn-primary" 
         ng-click="submitNewMapAgeRange(newAgeRangeName, newAgeRangeLowerInclusive, newAgeRangeLowerUnits,
          newAgeRangeLowerValue, newAgeRangeUpperInclusive, newAgeRangeUpperUnits, newAgeRangeUpperValue);
          newAgeRangeName = ''; newAgeRangeLowerInclusive = ''; newAgeRangeLowerUnits = '';
          newAgeRangeLowerValue = ''; newAgeRangeUpperInclusive = ''; newAgeRangeUpperUnits = '';
-         newAgeRangeUpperValue = '';">Submit</button>
+         newAgeRangeUpperValue = '';">Submit</button></td><td></td></tr>
+      </tbody></table>
       </form>
       
       </accordion-group> 
