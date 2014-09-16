@@ -960,7 +960,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		console.debug("in getCurrentConversation");
 		if (currentRecord.id == $scope.record1.id)
 			return $scope.conversation1;
-		else if (currentRecord.id == $scope.record2.id)
+		else if ($scope.record2 != null && currentRecord.id == $scope.record2.id)
 			return $scope.conversation2;
 		else if (currentRecord.id == $scope.leadRecord.id)
 			return $scope.leadConversation;
