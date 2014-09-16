@@ -123,7 +123,7 @@ public interface Feedback {
    *
    * @param error the error
    */
-  public void setError(boolean error);
+  public void setIsError(boolean error);
   
   /**
    * Returns the map users who have viewed this feedback item.

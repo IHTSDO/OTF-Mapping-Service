@@ -188,7 +188,7 @@ public class FeedbackImpl implements Feedback {
 	 * @see org.ihtsdo.otf.mapping.model.Feedback#setError(boolean)
 	 */
 	@Override
-	public void setError(boolean error) {
+	public void setIsError(boolean error) {
 		this.isError = error;
 	}
 

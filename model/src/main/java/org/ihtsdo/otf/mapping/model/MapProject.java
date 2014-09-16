@@ -2,6 +2,9 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
+
+// TODO: Auto-generated Javadoc
 /**
  * Represents a map project.
  * 
@@ -46,32 +49,19 @@ public interface MapProject {
 
 
 	/**
-	 * Checks if the project is viewable by public roles
+	 * Checks if the project is viewable by public roles.
 	 *
 	 * @return true, if is public
 	 */
 	public boolean isPublic();
 
 	/**
-	 * Sets whether the project is viewable by public roles
+	 * Sets whether the project is viewable by public roles.
 	 *
 	 * @param isPublic the new public
 	 */
 	public void setPublic(boolean isPublic);
 
-	/**
-	 * Indicates whether there is block structure for map records of this project.
-	 * 
-	 * @return <code>true</code> if so, <code>false</code> otherwise
-	 */
-	public boolean isBlockStructure();
-
-	/**
-	 * Sets whether there is block structure for map records of this project.
-	 * 
-	 * @param blockStructure the block structure
-	 */
-	public void setBlockStructure(boolean blockStructure);
 
 	/**
 	 * Indicates whether there is group structure for map records of this project.
@@ -339,21 +329,22 @@ public interface MapProject {
 	 */
 	public void setMapRelationStyle(String mapRelationStyle);
 
+
 	/**
 	 * Sets the map principle source document name.
-	 * 
-	 * @param mapPrincipleSourceDocument the name of the map principle source
-	 *          document
+	 *
+	 * @param mapPrincipleSourceDocumentName the map principle source document name
 	 */
-	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument);
+	public void setMapPrincipleSourceDocumentName(String mapPrincipleSourceDocumentName);
+
 
 	/**
-	 * Gets the map principle source document name.
-	 * 
-	 * @return the name of the map principle source document
+	 * Returns the map principle source document name.
+	 *
+	 * @return the map principle source document name
 	 */
-	public String getMapPrincipleSourceDocument();
-
+	public String getMapPrincipleSourceDocumentName();
+	
 	/**
 	 * Returns boolean flag for whether project is rule based.
 	 * 
@@ -513,15 +504,56 @@ public interface MapProject {
 	 *
 	 * @return the workflow type
 	 */
-	public String getWorkflowType();
+	public WorkflowType getWorkflowType();
 
 	/**
 	 * Sets the workflow type.
 	 *
 	 * @param workflowType the new workflow type
 	 */
-	public void setWorkflowType(String workflowType);
+	public void setWorkflowType(WorkflowType workflowType);
 
+	/**
+	 * Adds the scope excluded concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	public void addScopeExcludedConcept(String terminologyId);
 
+	/**
+	 * Removes the scope excluded concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	public void removeScopeExcludedConcept(String terminologyId);
+
+	/**
+	 * Adds the scope concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	public void addScopeConcept(String terminologyId);
+
+	/**
+	 * Removes the scope concept.
+	 *
+	 * @param terminologyId the terminology id
+	 */
+	public void removeScopeConcept(String terminologyId);
+
+	/**
+	 * Sets the map principle source document name.
+	 *
+	 * @param mapPrincipleSourceDocument the name of the map principle source
+	 * document
+	 */
+	 public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument);
+	
+	 /**
+	 * Gets the map principle source document name.
+	 *
+	 * @return the name of the map principle source document
+	 */
+	 public String getMapPrincipleSourceDocument();
 
 }

@@ -16,10 +16,13 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.FileSorter;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
@@ -163,10 +166,26 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 
       // Set up map of refSetIds that we may encounter
       MappingService mappingService = new MappingServiceJpa();
+      
+      // get the loader user
+      MapUser loaderUser = mappingService.getMapUser("loader");
+      
+      // if loader user does not exist, add it
+      if (loaderUser == null) {
+    	  loaderUser = new MapUserJpa();
+    	  loaderUser.setApplicationRole(MapUserRole.VIEWER);
+    	  loaderUser.setUserName("loader");
+    	  loaderUser.setName("Loader Record");
+    	  loaderUser.setEmail("none");
+    	  loaderUser = mappingService.addMapUser(loaderUser);
+      }
+      
       Map<String, MapProject> mapProjectMap = new HashMap<>();
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
         mapProjectMap.put(project.getRefSetId(), project);
       }
+      
+      
 
       // load complexMapRefSetMembers from extendedMap file
       Map<String, List<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
@@ -175,7 +194,7 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
       // Call mapping service to create records as we go along
       for (String refSetId : complexMapRefSetMemberMap.keySet()) {
         mappingService.createMapRecordsForMapProject(mapProjectMap
-            .get(refSetId).getId(), complexMapRefSetMemberMap.get(refSetId),
+            .get(refSetId).getId(), loaderUser, complexMapRefSetMemberMap.get(refSetId),
             WorkflowStatus.READY_FOR_PUBLICATION);
       }
 

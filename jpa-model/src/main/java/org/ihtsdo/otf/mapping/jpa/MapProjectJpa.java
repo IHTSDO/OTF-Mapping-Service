@@ -7,6 +7,8 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -27,6 +29,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -36,6 +39,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class MapProjectJpa.
  * 
@@ -61,11 +65,6 @@ public class MapProjectJpa implements MapProject {
 	/** Whether this project is viewable by public roles. */
 	@Column(unique = false, nullable = false)
 	private boolean isPublic = false;
-	/**
-	 * Indicates whether there is block structure for map records of this project.
-	 */
-	@Column(unique = false, nullable = false)
-	private boolean blockStructure = false;
 
 	/**
 	 * Indicates whether there is group structure for map records of this project.
@@ -77,9 +76,9 @@ public class MapProjectJpa implements MapProject {
 	@Column(unique = false, nullable = false)
 	private boolean published = false;
 	
-	/** Indicates what type of workflow to use for this project, defaults to conflict review */
-	@Column(unique = false, nullable = false)
-	private String workflowType = "";
+	/** Indicates what type of workflow to use for this project, defaults to conflict review. */
+	@Enumerated(EnumType.STRING)
+	private WorkflowType workflowType = null;
 
 	/** The ref set id. */
 	private String refSetId;
@@ -111,10 +110,14 @@ public class MapProjectJpa implements MapProject {
 	@Column(nullable = false)
 	private String mapRelationStyle;
 
-	/** The name of the mapping principle document. */
+	/** The mapping principle document name. */
+	@Column(nullable = true)
+	private String mapPrincipleSourceDocumentName;
+	
+	/** The mapping principle document. */
 	@Column(nullable = true)
 	private String mapPrincipleSourceDocument;
-
+	
 	/** Flag for whether this project is rule based. */
 	@Column(nullable = false)
 	private boolean ruleBased;
@@ -200,7 +203,6 @@ public class MapProjectJpa implements MapProject {
 	 * @param id the id
 	 * @param name the name
 	 * @param isPublic the is public
-	 * @param blockStructure the block structure
 	 * @param groupStructure the group structure
 	 * @param published the published
 	 * @param refSetId the ref set id
@@ -211,7 +213,7 @@ public class MapProjectJpa implements MapProject {
 	 * @param destinationTerminologyVersion the destination terminology version
 	 * @param mapRefsetPattern the map refset pattern
 	 * @param mapRelationStyle the map relation style
-	 * @param mapPrincipleSourceDocument the map principle source document
+	 * @param mapPrincipleSourceDocumentName the map principle source document
 	 * @param ruleBased the rule based
 	 * @param projectSpecificAlgorithmHandlerClass the project specific algorithm handler class
 	 * @param algorithmHandler the algorithm handler
@@ -228,11 +230,12 @@ public class MapProjectJpa implements MapProject {
 	 * @param scopeExcludedDescendantsFlag the scope excluded descendants flag
 	 */
 	public MapProjectJpa(Long id, String name, boolean isPublic,
-			boolean blockStructure, boolean groupStructure, boolean published,
+			boolean groupStructure, boolean published,
 			String refSetId, String refSetName, String sourceTerminology,
 			String sourceTerminologyVersion, String destinationTerminology,
 			String destinationTerminologyVersion, String mapRefsetPattern,
 			String mapRelationStyle, String mapPrincipleSourceDocument,
+			String mapPrincipleSourceDocumentName,
 			boolean ruleBased, String projectSpecificAlgorithmHandlerClass,
 			ProjectSpecificAlgorithmHandler algorithmHandler,
 			Set<MapAgeRange> presetAgeRanges, Set<MapUser> mapLeads,
@@ -244,7 +247,6 @@ public class MapProjectJpa implements MapProject {
 		this.id = id;
 		this.name = name;
 		this.isPublic = isPublic;
-		this.blockStructure = blockStructure;
 		this.groupStructure = groupStructure;
 		this.published = published;
 		this.refSetId = refSetId;
@@ -256,6 +258,7 @@ public class MapProjectJpa implements MapProject {
 		this.mapRefsetPattern = mapRefsetPattern;
 		this.mapRelationStyle = mapRelationStyle;
 		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
 		this.ruleBased = ruleBased;
 		this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
 		this.algorithmHandler = algorithmHandler;
@@ -569,25 +572,6 @@ public class MapProjectJpa implements MapProject {
 		this.isPublic = isPublic;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#isBlockStructure()
-	 */
-	@Override
-	public boolean isBlockStructure() {
-		return blockStructure;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.model.MapProject#setBlockStructure(boolean)
-	 */
-	@Override
-	public void setBlockStructure(boolean blockStructure) {
-		this.blockStructure = blockStructure;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -634,7 +618,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getWorkflowType()
 	 */
 	@Override
-	public String getWorkflowType() {
+	public WorkflowType getWorkflowType() {
 		return workflowType;
 	}
 
@@ -643,7 +627,7 @@ public class MapProjectJpa implements MapProject {
      * @see org.ihtsdo.otf.mapping.model.MapProject#setWorkflowType(org.ihtsdo.otf.mapping.helpers.WorkflowType)
      */
     @Override
-	public void setWorkflowType(String workflowType) {
+	public void setWorkflowType(WorkflowType workflowType) {
 		this.workflowType = workflowType;
 	}
 
@@ -706,23 +690,23 @@ public class MapProjectJpa implements MapProject {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapProject#getMapPrincipleSourceDocument()
+	 * org.ihtsdo.otf.mapping.model.MapProject#getmapPrincipleSourceDocumentName()
 	 */
 	@Override
-	public String getMapPrincipleSourceDocument() {
-		return mapPrincipleSourceDocument;
+	public String getMapPrincipleSourceDocumentName() {
+		return mapPrincipleSourceDocumentName;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.ihtsdo.otf.mapping.model.MapProject#setMapPrincipleSourceDocument(java
+	 * org.ihtsdo.otf.mapping.model.MapProject#setmapPrincipleSourceDocumentName(java
 	 * .lang.String)
 	 */
 	@Override
-	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
-		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+	public void setMapPrincipleSourceDocumentName(String mapPrincipleSourceDocumentName) {
+		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
 	}
 
 	/*
@@ -890,6 +874,22 @@ public class MapProjectJpa implements MapProject {
 	public void setScopeConcepts(Set<String> scopeConcepts) {
 		this.scopeConcepts = scopeConcepts;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#addScopeConcept(java.lang.String)
+	 */
+	@Override
+	public void addScopeConcept(String terminologyId) {
+		this.scopeConcepts.add(terminologyId);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#removeScopeConcept(java.lang.String)
+	 */
+	@Override
+	public void removeScopeConcept(String terminologyId) {
+		this.scopeConcepts.remove(terminologyId);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -932,6 +932,22 @@ public class MapProjectJpa implements MapProject {
 	@Override
 	public void setScopeExcludedConcepts(Set<String> scopeExcludedConcepts) {
 		this.scopeExcludedConcepts = scopeExcludedConcepts;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#addScopeExcludedConcept(java.lang.String)
+	 */
+	@Override
+	public void addScopeExcludedConcept(String terminologyId) {
+		this.scopeExcludedConcepts.add(terminologyId);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#removeScopeExcludedConcept(java.lang.String)
+	 */
+	@Override
+	public void removeScopeExcludedConcept(String terminologyId) {
+		this.scopeExcludedConcepts.remove(terminologyId);
 	}
 
 	/*
@@ -1043,23 +1059,29 @@ public class MapProjectJpa implements MapProject {
 				projectSpecificAlgorithmHandlerClass;
 	}
 
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "MapProjectJpa [name=" + name + ", blockStructure=" + blockStructure
-				+ ", groupStructure=" + groupStructure + ", published=" + published
-				+ ", refSetId=" + refSetId + ", refSetName=" + refSetName
-				+ ", sourceTerminology=" + sourceTerminology
+		return "MapProjectJpa [id=" + id + ", name=" + name + ", isPublic="
+				+ isPublic + ", groupStructure="
+				+ groupStructure + ", published=" + published + ", workflowType="
+				+ workflowType + ", refSetId=" + refSetId + ", refSetName="
+				+ refSetName + ", sourceTerminology=" + sourceTerminology
 				+ ", sourceTerminologyVersion=" + sourceTerminologyVersion
 				+ ", destinationTerminology=" + destinationTerminology
 				+ ", destinationTerminologyVersion=" + destinationTerminologyVersion
 				+ ", mapRefsetPattern=" + mapRefsetPattern + ", mapRelationStyle="
-				+ mapRelationStyle + ", mapPrincipleSourceDocument="
+				+ mapRelationStyle + ", mapPrincipleSourceDocumentName="
+				+ mapPrincipleSourceDocumentName + ", mapPrincipleSourceDocument="
 				+ mapPrincipleSourceDocument + ", ruleBased=" + ruleBased
-				+ ", presetAgeRanges=" + presetAgeRanges + ", mapLeads=" + mapLeads
-				+ ", mapSpecialists=" + mapSpecialists + ", mapAdministrators=" + mapAdministrators + ", mapPrinciples="
+				+ ", projectSpecificAlgorithmHandlerClass="
+				+ projectSpecificAlgorithmHandlerClass + ", algorithmHandler="
+				+ algorithmHandler + ", presetAgeRanges=" + presetAgeRanges
+				+ ", mapLeads=" + mapLeads + ", mapSpecialists=" + mapSpecialists
+				+ ", mapAdministrators=" + mapAdministrators + ", mapPrinciples="
 				+ mapPrinciples + ", mapAdvices=" + mapAdvices + ", mapRelations="
 				+ mapRelations + ", scopeConcepts=" + scopeConcepts
 				+ ", scopeExcludedConcepts=" + scopeExcludedConcepts
@@ -1068,6 +1090,8 @@ public class MapProjectJpa implements MapProject {
 				+ "]";
 	}
 
+
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -1075,42 +1099,61 @@ public class MapProjectJpa implements MapProject {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (blockStructure ? 1231 : 1237);
+		result =
+				prime * result
+						+ ((algorithmHandler == null) ? 0 : algorithmHandler.hashCode());
 		result =
 				prime
-				* result
-				+ ((destinationTerminology == null) ? 0 : destinationTerminology
-						.hashCode());
+						* result
+						+ ((destinationTerminology == null) ? 0 : destinationTerminology
+								.hashCode());
 		result =
 				prime
-				* result
-				+ ((destinationTerminologyVersion == null) ? 0
-						: destinationTerminologyVersion.hashCode());
+						* result
+						+ ((destinationTerminologyVersion == null) ? 0
+								: destinationTerminologyVersion.hashCode());
 		result = prime * result + (groupStructure ? 1231 : 1237);
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + (isPublic ? 1231 : 1237);
+		result =
+				prime * result
+						+ ((mapAdministrators == null) ? 0 : mapAdministrators.hashCode());
 		result =
 				prime * result + ((mapAdvices == null) ? 0 : mapAdvices.hashCode());
 		result = prime * result + ((mapLeads == null) ? 0 : mapLeads.hashCode());
-		result = prime * result + ((mapAdministrators == null) ? 0 : mapAdministrators.hashCode());
 		result =
 				prime
-				* result
-				+ ((mapPrincipleSourceDocument == null) ? 0
-						: mapPrincipleSourceDocument.hashCode());
+						* result
+						+ ((mapPrincipleSourceDocument == null) ? 0
+								: mapPrincipleSourceDocument.hashCode());
+		result =
+				prime
+						* result
+						+ ((mapPrincipleSourceDocumentName == null) ? 0
+								: mapPrincipleSourceDocumentName.hashCode());
 		result =
 				prime * result
-				+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
+						+ ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
 		result =
 				prime * result
-				+ ((mapRefsetPattern == null) ? 0 : mapRefsetPattern.hashCode());
+						+ ((mapRefsetPattern == null) ? 0 : mapRefsetPattern.hashCode());
 		result =
 				prime * result
-				+ ((mapRelationStyle == null) ? 0 : mapRelationStyle.hashCode());
+						+ ((mapRelationStyle == null) ? 0 : mapRelationStyle.hashCode());
 		result =
 				prime * result + ((mapRelations == null) ? 0 : mapRelations.hashCode());
 		result =
 				prime * result
-				+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
+						+ ((mapSpecialists == null) ? 0 : mapSpecialists.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result =
+				prime * result
+						+ ((presetAgeRanges == null) ? 0 : presetAgeRanges.hashCode());
+		result =
+				prime
+						* result
+						+ ((projectSpecificAlgorithmHandlerClass == null) ? 0
+								: projectSpecificAlgorithmHandlerClass.hashCode());
 		result = prime * result + (published ? 1231 : 1237);
 		result = prime * result + ((refSetId == null) ? 0 : refSetId.hashCode());
 		result =
@@ -1118,14 +1161,28 @@ public class MapProjectJpa implements MapProject {
 		result = prime * result + (ruleBased ? 1231 : 1237);
 		result =
 				prime * result
-				+ ((sourceTerminology == null) ? 0 : sourceTerminology.hashCode());
+						+ ((scopeConcepts == null) ? 0 : scopeConcepts.hashCode());
+		result = prime * result + (scopeDescendantsFlag ? 1231 : 1237);
 		result =
 				prime
-				* result
-				+ ((sourceTerminologyVersion == null) ? 0
-						: sourceTerminologyVersion.hashCode());
+						* result
+						+ ((scopeExcludedConcepts == null) ? 0 : scopeExcludedConcepts
+								.hashCode());
+		result = prime * result + (scopeExcludedDescendantsFlag ? 1231 : 1237);
+		result =
+				prime * result
+						+ ((sourceTerminology == null) ? 0 : sourceTerminology.hashCode());
+		result =
+				prime
+						* result
+						+ ((sourceTerminologyVersion == null) ? 0
+								: sourceTerminologyVersion.hashCode());
+		result =
+				prime * result + ((workflowType == null) ? 0 : workflowType.hashCode());
 		return result;
 	}
+
+
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
@@ -1139,7 +1196,10 @@ public class MapProjectJpa implements MapProject {
 		if (getClass() != obj.getClass())
 			return false;
 		MapProjectJpa other = (MapProjectJpa) obj;
-		if (blockStructure != other.blockStructure)
+		if (algorithmHandler == null) {
+			if (other.algorithmHandler != null)
+				return false;
+		} else if (!algorithmHandler.equals(other.algorithmHandler))
 			return false;
 		if (destinationTerminology == null) {
 			if (other.destinationTerminology != null)
@@ -1158,6 +1218,40 @@ public class MapProjectJpa implements MapProject {
 			if (other.id != null)
 				return false;
 		} else if (!id.equals(other.id))
+			return false;
+		if (isPublic != other.isPublic)
+			return false;
+		if (mapAdministrators == null) {
+			if (other.mapAdministrators != null)
+				return false;
+		} else if (!mapAdministrators.equals(other.mapAdministrators))
+			return false;
+		if (mapAdvices == null) {
+			if (other.mapAdvices != null)
+				return false;
+		} else if (!mapAdvices.equals(other.mapAdvices))
+			return false;
+		if (mapLeads == null) {
+			if (other.mapLeads != null)
+				return false;
+		} else if (!mapLeads.equals(other.mapLeads))
+			return false;
+		if (mapPrincipleSourceDocument == null) {
+			if (other.mapPrincipleSourceDocument != null)
+				return false;
+		} else if (!mapPrincipleSourceDocument
+				.equals(other.mapPrincipleSourceDocument))
+			return false;
+		if (mapPrincipleSourceDocumentName == null) {
+			if (other.mapPrincipleSourceDocumentName != null)
+				return false;
+		} else if (!mapPrincipleSourceDocumentName
+				.equals(other.mapPrincipleSourceDocumentName))
+			return false;
+		if (mapPrinciples == null) {
+			if (other.mapPrinciples != null)
+				return false;
+		} else if (!mapPrinciples.equals(other.mapPrinciples))
 			return false;
 		if (mapRefsetPattern == null) {
 			if (other.mapRefsetPattern != null)
@@ -1179,15 +1273,21 @@ public class MapProjectJpa implements MapProject {
 				return false;
 		} else if (!mapSpecialists.equals(other.mapSpecialists))
 			return false;
-		if (mapAdministrators == null) {
-			if (other.mapAdministrators != null)
-				return false;
-		} else if (!mapAdministrators.equals(other.mapAdministrators))
-			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
+			return false;
+		if (presetAgeRanges == null) {
+			if (other.presetAgeRanges != null)
+				return false;
+		} else if (!presetAgeRanges.equals(other.presetAgeRanges))
+			return false;
+		if (projectSpecificAlgorithmHandlerClass == null) {
+			if (other.projectSpecificAlgorithmHandlerClass != null)
+				return false;
+		} else if (!projectSpecificAlgorithmHandlerClass
+				.equals(other.projectSpecificAlgorithmHandlerClass))
 			return false;
 		if (published != other.published)
 			return false;
@@ -1203,6 +1303,20 @@ public class MapProjectJpa implements MapProject {
 			return false;
 		if (ruleBased != other.ruleBased)
 			return false;
+		if (scopeConcepts == null) {
+			if (other.scopeConcepts != null)
+				return false;
+		} else if (!scopeConcepts.equals(other.scopeConcepts))
+			return false;
+		if (scopeDescendantsFlag != other.scopeDescendantsFlag)
+			return false;
+		if (scopeExcludedConcepts == null) {
+			if (other.scopeExcludedConcepts != null)
+				return false;
+		} else if (!scopeExcludedConcepts.equals(other.scopeExcludedConcepts))
+			return false;
+		if (scopeExcludedDescendantsFlag != other.scopeExcludedDescendantsFlag)
+			return false;
 		if (sourceTerminology == null) {
 			if (other.sourceTerminology != null)
 				return false;
@@ -1213,8 +1327,32 @@ public class MapProjectJpa implements MapProject {
 				return false;
 		} else if (!sourceTerminologyVersion.equals(other.sourceTerminologyVersion))
 			return false;
+		if (workflowType != other.workflowType)
+			return false;
 		return true;
 	}
+
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapPrincipleSourceDocument(java.lang.String)
+	 */
+	@Override
+	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
+		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapPrincipleSourceDocument()
+	 */
+	@Override
+	public String getMapPrincipleSourceDocument() {
+		return mapPrincipleSourceDocument;
+	}
+
+
 
 
 
