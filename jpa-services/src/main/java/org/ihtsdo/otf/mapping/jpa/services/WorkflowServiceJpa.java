@@ -3562,6 +3562,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return feedbackConversationList;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getFeedbackConversationsForProject(java.lang.Long, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
+	 */
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public FeedbackConversationList getFeedbackConversationsForProject(
@@ -3576,8 +3579,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		String full_query = constructQuery(mapProjectId,
 				pfsParameter == null ? new PfsParameterJpa() : pfsParameter);
 
-		full_query += "terminology:" + mapProject.getDestinationTerminology()
-				+ " AND " + " terminologyVersion:"
+		full_query += " mapProjectId:" + mapProjectId + " AND terminology:" + mapProject.getDestinationTerminology()
+				+ " AND terminologyVersion:"
 				+ mapProject.getDestinationTerminologyVersion() + " AND "
 				+ "( feedbacks.sender.userName:" + userName + " OR "
 				+ "feedbacks.recipients.userName:" + userName + ")";

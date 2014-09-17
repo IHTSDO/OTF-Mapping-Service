@@ -848,7 +848,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		$scope.focusProject = mapProject;
 		console.debug("dashboardCtrl:  changing project to " + $scope.focusProject.name);
 
-		// update and broadcast the new focus project
+/*		// update and broadcast the new focus project
 		localStorageService.add('focusProject', $scope.focusProject);
 		$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
 
@@ -856,7 +856,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 		$scope.preferences.lastMapProjectId = $scope.focusProject.id;
 		localStorageService.add('preferences', $scope.preferences);
 		$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
-
+*/
 		$http({
 			url: root_mapping + "userPreferences/update",
 			dataType: "json",
@@ -871,17 +871,17 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 				$rootScope.globalError = "Authorization failed.  Please log in again.";
 				$location.path("/");
 			}
-		});
+		}).then(function(data) {
 		
-		// get the role for this user and project
-		console.debug("Retrieving role for " + $scope.focusProject.name + ", " + $scope.currentUser.userName);
-		$http({
+		  // get the role for this user and project
+		  console.debug("Retrieving role for " + $scope.focusProject.name + ", " + $scope.currentUser.userName);
+		  $http({
 			url: root_mapping + "userRole/user/id/" + $scope.currentUser.userName + "/project/id/" + $scope.focusProject.id,
 			method : "GET",
 			headers: {
 				"Content-Type": "application/json"
 			}	
-		}).success(function(data) {
+		  }).success(function(data) {
 			console.debug("Role set to: " + data);
 			$scope.currentRole = data.substring(1, data.length - 1);
 			if ($scope.currentRole.toLowerCase() == "specialist") {
@@ -894,6 +894,16 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 				$scope.currentRole = "Viewer";
 			}
 			localStorageService.add('currentRole', $scope.currentRole);
+			
+			// update and broadcast the new focus project
+			localStorageService.add('focusProject', $scope.focusProject);
+			$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+			// update the user preferences
+			$scope.preferences.lastMapProjectId = $scope.focusProject.id;
+			localStorageService.add('preferences', $scope.preferences);
+			$rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {key: 'userPreferences', userPreferences: $scope.preferences});
+		  });
 		}).then(function() {
 			setTimeout(function() {
 				location.reload();

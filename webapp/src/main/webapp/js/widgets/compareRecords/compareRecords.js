@@ -630,7 +630,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"mapRecordId": recordInError.id,
 					"feedback": feedbacks,
 					"defaultPreferredName": $scope.concept.defaultPreferredName,
-					"title": $scope.getTitle(false, errorMessage.displayName)
+					"title": $scope.getTitle(false, errorMessage.displayName),
+					"mapProjectId": $scope.project.id
 				  };
 			
 			$rootScope.glassPane++;
@@ -744,7 +745,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"mapRecordId": $scope.leadRecord.id,
 					"feedback": feedbacks,
 					"defaultPreferredName": $scope.concept.defaultPreferredName,
-					"title": $scope.getTitle(true, "")
+					"title": $scope.getTitle(true, ""),
+					"mapProjectId": $scope.project.id
 				  };
 			$rootScope.glassPane++;
 			$http({						
