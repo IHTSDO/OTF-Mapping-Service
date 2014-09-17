@@ -35,7 +35,10 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
-		$scope.retrieveFeedback(1);
+		console.debug(localStorageService.get('currentRole'));
+		$scope.currentRole = localStorageService.get('currentRole');
+		if ($scope.currentRole != 'Viewer')
+		  $scope.retrieveFeedback(1);
 	});	
 	
 
