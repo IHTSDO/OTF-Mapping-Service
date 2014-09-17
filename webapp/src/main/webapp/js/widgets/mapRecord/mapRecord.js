@@ -558,8 +558,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 	$scope.clearMapRecord = function() {
 		$scope.groups = new Array();
-		$scope.entries = new Array(10);
-		for (var i = 0; i < $scope.entries.length; i++) $scope.entries[i] = new Array();
+		$scope.entries = new Array();
+
 		$scope.record.mapPrinciple = [];
 		$scope.record.mapNote = [];
 		$scope.record.flagForLeadReview = false;
@@ -1102,13 +1102,13 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		// create blank entry associated with this id
 		var newEntry = {
-				"id": "",
+				"id": null,
 				"mapRecordId": $scope.record.id,
-				"targetId":"",
-				"targetName":"",
+				"targetId":null,
+				"targetName":null,
 				"rule":"TRUE",
 				"mapPriority": "",
-				"mapRelation": "",
+				"mapRelation": null,
 				"mapBlock":"",
 				"mapGroup": "",
 				"mapAdvice":[],
@@ -1237,13 +1237,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 	// Adds a map group to the existing list
 	$scope.addMapGroup = function() {
-/*
-		// find first numeric group not already in list
-		var i = 1;
-		while ($scope.groups.indexOf(i) != -1) i++;
-
-		$scope.groups.push(i);
-		$scope.addMapEntry(i);*/
+		
+		// check if zero (null) group is present, add if it not
+		if ($scope.entries.length == 0)
+			$scope.entries.push(new Array());
 		
 		console.debug("Adding group to: ", $scope.entries);
 		
