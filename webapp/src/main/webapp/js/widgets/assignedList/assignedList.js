@@ -425,6 +425,19 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	// function to relinquish work (i.e. unassign the user)
 	$scope.unassignWork = function(record, mapUser) {
 		
+		console.debug("unassignWork", record, record.terminologyVersion);
+		
+		// show a confirmation dialog if requested
+		// NOTE:  workflow status is contained in terminologyVersion for a searchResult object
+		if (record.terminologyVersion === "EDITING_DONE" 
+				|| record.terminologyVersion === "REVIEW_RESOLVED"
+				|| record.terminologyVersion === "CONFLICT_RESOLVED") {
+			var response = confirm("Are you sure you want to return finished work?  You will lose any work done.");
+			if (response == false)
+				return;
+		}
+
+		
 		$rootScope.glassPane++;
 		
 		$http({
