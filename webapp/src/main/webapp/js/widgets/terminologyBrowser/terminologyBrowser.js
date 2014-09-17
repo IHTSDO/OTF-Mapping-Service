@@ -48,6 +48,10 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		console.debug("TerminologyBrowserWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
 	});
+	
+	$scope.$on('mapEntryWidget.notification.clearTargetConcept'	, function(event, parameters) { 	
+		$scope.query = "";
+	});
 
 
 	// on any change of project, metadata, or user token, perform widget initialization
