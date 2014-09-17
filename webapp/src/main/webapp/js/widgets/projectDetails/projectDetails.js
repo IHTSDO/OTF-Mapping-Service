@@ -607,7 +607,8 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 				    // update and broadcast the updated focus project
 					localStorageService.set('focusProject', $scope.focusProject);
 					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject}); 
-					$scope.resetAdviceFilter();		
+					$scope.pageAdvice = 1;					  
+					$scope.resetAdviceFilter();	
 					$scope.updateMapProject();
 				};
 				
@@ -668,11 +669,14 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					});				
 				};
 				
-				$scope.submitNewMapAdvice = function(mapAdviceName, mapAdviceDetail) {
+				
+				$scope.submitNewMapAdvice = function(mapAdviceName, mapAdviceDetail,
+						allowableForNullTarget, isComputed) {
 					console.debug("in submitNewMapAdvice");
 					var obj = 			  
 					{"name":mapAdviceName,"detail":mapAdviceDetail,
-							"isAllowableForNullTarget":false,"isComputed":true};
+							"isAllowableForNullTarget":allowableForNullTarget,
+							"isComputed":isComputed};
 					
 					$http({						
 						url: root_mapping + "advice/add",
@@ -684,8 +688,6 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 						}
 					}).success(function(data) {
 						console.debug("success to addMapAdvice");
-						$scope.newAdviceName = "";
-						$scope.newAdviceDetail = "";
 					}).error(function(data, status, headers, config) {
 						$scope.recordError = "Error adding new map advice.";
 						$rootScope.handleHttpError(data, status, headers, config);
@@ -699,6 +701,7 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 							}
 						}).success(function(data) {
 							$scope.mapAdvices = data.mapAdvice;
+							$scope.resetAdviceFilter();
 							localStorageService.add('mapAdvices', data.mapAdvice);
 							$rootScope.$broadcast('localStorageModule.notification.setMapAdvices',{key: 'mapAdvices', mapAdvices: data.mapAdvices});  
 							$scope.allowableMapAdvices = localStorageService.get('mapAdvices');
@@ -708,6 +711,7 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 
 					});
 				};
+
 
 				$scope.deleteRelation = function(relation) {
 					console.debug("in deleteRelation");
@@ -733,11 +737,12 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					$scope.updateMapProject();
 				};
 				
-				$scope.submitNewMapRelation = function(mapRelationName, mapRelationAbbreviation, mapRelationTerminologyId) {
-					console.debug("in submitNewMapRelation");
+				$scope.submitNewMapRelation = function(mapRelationName, mapRelationAbbreviation, mapRelationTerminologyId,
+						allowableForNullTarget, isComputed) {
+					console.debug("in submitNewMapRelation for application");
 					var obj = 	
 					{"terminologyId":mapRelationTerminologyId,"name":mapRelationName,"abbreviation":mapRelationAbbreviation,
-						"isAllowableForNullTarget":false,"isComputed":false};
+						"isAllowableForNullTarget":allowableForNullTarget,"isComputed":isComputed};
 					$http({						
 						url: root_mapping + "relation/add",
 						dataType: "json",
@@ -747,9 +752,9 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 							"Content-Type": "application/json"
 						}
 					}).success(function(data) {
-						console.debug("success to addMapRelation");
+						console.debug("success to addMapRelation to application");
 					}).error(function(data, status, headers, config) {
-						$scope.recordError = "Error adding new map relation.";
+						$scope.recordError = "Error adding new map relation for the application.";
 						$rootScope.handleHttpError(data, status, headers, config);
 					}).then(function(data) {
 						$http({
@@ -761,6 +766,7 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 							}
 						}).success(function(data) {
 							$scope.mapRelations = data.mapRelation;
+							$scope.resetRelationFilter();
 							localStorageService.add('mapRelations', data.mapRelation);
 							$rootScope.$broadcast('localStorageModule.notification.setMapRelations',{key: 'mapRelations', mapRelations: data.mapRelations});  
 							$scope.allowableMapRelations = localStorageService.get('mapRelations');
@@ -925,9 +931,6 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 						}
 					}).success(function(data) {
 						console.debug("success to addMapAgeRange");
-					              //make the record pristine
-					              $scope.ageRangeForm.$setPristine();
-					              $scope.name = "";
 					}).error(function(data, status, headers, config) {
 						$scope.recordError = "Error adding new map age range.";
 						$rootScope.handleHttpError(data, status, headers, config);
@@ -1045,8 +1048,11 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 				        console.log(data);
 				      }); 
 				    }
-				  }
-			}]);
+				};
+				
+				
+				
+	}]);
 
 
 
