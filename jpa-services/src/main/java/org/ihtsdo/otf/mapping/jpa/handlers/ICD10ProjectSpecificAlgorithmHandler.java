@@ -49,9 +49,13 @@ DefaultProjectSpecificAlgorithmHandler {
 
 		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 			
-
-			// check the target code only if this entry does not has a map relation specified
-			if (mapEntry.getMapRelation() == null ) {
+			// add an error if neither relation nor target are set
+			if (mapEntry.getMapRelation() == null && (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals(""))) {
+				
+				validationResult.addError("A relation indicating the reason must be selected when no target is assigned.");
+			
+			// if a target is specified check it
+			} else if (mapEntry.getTargetId() != null && mapEntry.getTargetId() != "") {
 
 				// first, check terminology id based on above rules
 				if ( !mapEntry.getTargetId().equals("") && (!mapEntry.getTargetId().matches(".[0-9].*")
@@ -82,11 +86,14 @@ DefaultProjectSpecificAlgorithmHandler {
 										+ " map  priority " + Integer.toString(mapEntry.getMapPriority()));
 
 					}
-				} else if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals("")) {
-					validationResult.addError("A reason must be selected from the picklist when no target is assigned.");
+				} 
+
+
+			// otherwise, check that relation is assignable to null target
+			} else {
+				if (!mapEntry.getMapRelation().isAllowableForNullTarget()) {
+					validationResult.addError("The map relation " + mapEntry.getMapRelation().getName() + " is not allowable for null targets");
 				}
-
-
 			}
 		}
 
