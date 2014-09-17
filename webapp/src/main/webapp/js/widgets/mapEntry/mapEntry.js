@@ -28,15 +28,11 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		sortByKey($scope.allowableAdvices, 'detail');
 		$scope.allowableMapRelations = getAllowableRelations(parameters.entry, parameters.project.mapRelation);
 		
-		// compute relation and advice
+		// compute relation and advice IFF a target or entry has been set
 		// attempt to autocompute the map relation, then update the entry
-		computeRelation($scope.entry).then(function() {
-			console.debug('Relation computed');
-			computeAdvice($scope.entry).then(function() {
-				console.debug('Advice computed');
-				updateEntry();
-			});
-		});
+		$scope.computeParameters(false);
+		
+		
 	});	
 	
 	// watch for entry deletion from map record page
@@ -105,18 +101,9 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 				$scope.entry.targetId = data.terminologyId;
 				$scope.entry.targetName = data.defaultPreferredName;
 				
-				// clear the relation and advices
-				$scope.entry.mapRelation = null;
-				$scope.entry.mapAdvice = [];
-				
 				// attempt to autocompute the map relation, then update the entry
-				computeRelation($scope.entry).then(function() {
-					console.debug('Relation computed');
-					computeAdvice($scope.entry).then(function() {
-						console.debug('Advice computed');
-						updateEntry();
-					});
-				});
+				$scope.computeParameters(false);
+				
 				
 			} else {
 				console.debug("invalid target entered");
@@ -147,13 +134,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		$scope.entry.mapAdvice = [];
 		
 		// attempt to autocompute the map relation, then update the entry
-		computeRelation($scope.entry).then(function() {
-			console.debug('Relation computed');
-			computeAdvice($scope.entry).then(function() {
-				console.debug('Advice computed');
-				updateEntry();
-			});
-		});
+		$scope.computeParameters(false);
 		
 		// get the allowable advices and relations
 		$scope.allowableAdvices = getAllowableAdvices($scope.entry, $scope.project.mapAdvice);
@@ -170,6 +151,10 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		entry.mapRelation = null;
 		entry.mapAdvice = [];
 		
+		$rootScope.$broadcast(
+				'mapEntryWidget.notification.clearTargetConcept'				
+		);
+		
 		// get the allowable advices and relations
 		$scope.allowableAdvices = getAllowableAdvices($scope.entry, $scope.project.mapAdvice);
 		sortByKey($scope.allowableAdvices, 'detail');
@@ -181,13 +166,10 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 		}
 		
 		// attempt to autocompute the map relation, then update the entry
-		computeRelation($scope.entry).then(function() {
-			console.debug('Relation computed');
-			computeAdvice($scope.entry).then(function() {
-				console.debug('Advice computed');
-				updateEntry();
-			});
-		});	
+		$scope.computeParameters(false);
+		
+		// update the entry
+		updateEntry();
 	};
 	
 	function computeRelation(entry) {
@@ -324,11 +306,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 			$scope.entry.ruleSummary = $scope.getRuleSummary($scope.entry);
 			
 			// compute relation and advice (if any), then update entry
-			computeRelation($scope.entry).then(function() {
-				computeAdvice($scope.entry).then(function() {
-					updateEntry();
-				});
-			});
+			$scope.computeParameters(false);
 		});
 	};
 
@@ -574,11 +552,57 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	$scope.clearMapRelation = function(mapRelation) {
 		$scope.entry.mapRelation = null;
 		
-		// compute advice (if any), then update entry
-		computeAdvice($scope.entry).then(function() {
-			updateEntry();	
-		});
+		$scope.computeParameters(false);
 	};
+	
+
+	$scope.setNullTarget = function() {
+		$scope.entry.targetId = null;
+		$scope.entry.targetName = null;
+		$scope.computeParameters(true);
+	};
+	
+
+	/**
+	 * Function to compute relation and advice for an entry
+	 * Parameter:
+	 * 	ignoreNullValues
+	 * 		false: if both target and relation are null, do nothing
+	 * 		true:  make computation API calls regardless of target and relation
+	 */
+	$scope.computeParameters = function(ignoreNullValues) {
+	
+	
+	var targetNotNull = 	$scope.entry.targetId != null 
+							&& $scope.entry.targetId != undefined 
+							&& $scope.entry.targetId != "";
+	var relationNotNull = 	$scope.entry.mapRelation != null
+							&& $scope.entry.mapRelation != undefined 
+							&& $scope.entry.mapRelation != "";
+	
+	console
+	.debug("Computing parameters",
+			targetNotNull,
+			relationNotNull);
+	
+	// either target or relation must be non-null to compute relation/advice
+	if (targetNotNull || relationNotNull || ignoreNullValues) {
+
+		computeRelation($scope.entry).then(function() {
+			console.debug('Relation computed');
+			computeAdvice($scope.entry).then(function() {
+				console.debug('Advice computed');
+				updateEntry();
+			});
+		});
+		
+	// set these to null for consistency
+	} else {
+		console.debug("Setting parameters to null");
+		$scope.entry.targetId = null;
+		$scope.entry.mapRelation = null;
+	}
+};
 
 
 	// Function for MapAdvice and MapRelations, returns allowable lists based on null target and element properties
