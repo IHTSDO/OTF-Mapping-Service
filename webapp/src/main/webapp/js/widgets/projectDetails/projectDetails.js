@@ -571,6 +571,12 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 				
 				$scope.addLead = function(user) {
 					console.debug("in addLead");
+					for (var i=0; i < $scope.focusProject.mapSpecialist.length; i++) {
+						if ($scope.focusProject.mapSpecialist[i].name == user.name) {
+						  confirm("User " + user.name + " is already a Map Specialist.\nUser cannot have more than one role.");
+						  return;
+						}  
+					}
 					$scope.focusProject.mapLead.push(user);
 				    // update and broadcast the updated focus project
 					localStorageService.set('focusProject', $scope.focusProject);
@@ -591,6 +597,12 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 				
 				$scope.addSpecialist = function(user) {
 					console.debug("in addSpecialist");
+					for (var i=0; i < $scope.focusProject.mapLead.length; i++) {
+						if ($scope.focusProject.mapLead[i].name == user.name) {
+						  confirm("User " + user.name + " is already a Map Lead.\nUser cannot have more than one role.");
+						  return;
+						}  
+					}
 					$scope.focusProject.mapSpecialist.push(user);
 				    // update and broadcast the updated focus project
 					localStorageService.set('focusProject', $scope.focusProject);
