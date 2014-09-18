@@ -862,8 +862,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			
 			var feedbacks = new Array();
 			feedbacks.push(feedback);
-			
-			
+						
 			  // create feedback conversation
 			  var feedbackConversation = {
 					"lastModified":  new Date(),
