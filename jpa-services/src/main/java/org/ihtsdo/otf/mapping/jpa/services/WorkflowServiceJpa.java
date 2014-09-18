@@ -3948,6 +3948,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					feedbackConversation.setTerminologyId(mapRecord
 							.getConceptId());
 					feedbackConversation.setTitle("Error Feedback");
+					feedbackConversation.setMapProjectId(mapRecord.getMapProjectId());
 
 					Logger.getLogger(WorkflowServiceJpa.class).info(
 							"  Created new feedback conversation.");
