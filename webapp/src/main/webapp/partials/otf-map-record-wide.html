@@ -41,7 +41,7 @@
 	<strong>Map Notes</strong>
 	<div style="padding:0px" ng-repeat="note in record.mapNote">
 		<div class="alert alert-warning">
-	 		[By <a href="mailto:{{user.email}}">{{note.user.userName}}</a> on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}] 
+	 		[By <a href="mailto:{{user.email}}">{{note.user.name}}</a> on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}] 
 			<div style="padding-left:20px;" ng-bind-html="to_trusted(note.note)"></div>
 				
 		</div>
