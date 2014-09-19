@@ -866,6 +866,22 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 				"Content-Type": "application/json"
 			}	
 		}).success(function(data) {
+		}).error(function(data) {
+			if (response.indexOf("HTTP Status 401") != -1) {
+				$rootScope.globalError = "Authorization failed.  Please log in again.";
+				$location.path("/");
+			}
+		});
+		
+		// get the role for this user and project
+		console.debug("Retrieving role for " + $scope.focusProject.name + ", " + $scope.currentUser.userName);
+		$http({
+			url: root_mapping + "userRole/user/id/" + $scope.currentUser.userName + "/project/id/" + $scope.focusProject.id,
+			method : "GET",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
 			console.debug("Role set to: " + data);
 			$scope.currentRole = data.substring(1, data.length - 1);
 			if ($scope.currentRole.toLowerCase() == "specialist") {
@@ -878,12 +894,6 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 				$scope.currentRole = "Viewer";
 			}
 			localStorageService.add('currentRole', $scope.currentRole);
-					  
-		}).error(function(data) {
-			if (response.indexOf("HTTP Status 401") != -1) {
-				$rootScope.globalError = "Authorization failed.  Please log in again.";
-				$location.path("/");
-			}
 		}).then(function() {
 			setTimeout(function() {
 				location.reload();
