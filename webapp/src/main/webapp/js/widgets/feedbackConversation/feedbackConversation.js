@@ -146,7 +146,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 
 	// send feedback on already started conversation
 	$scope.sendFeedback = function(record, feedbackMessage, conversation, recipientList) {
-		console.debug("Sending feedback email", record);
+		console.debug("Add feedback to conversation", record);
 		
 		   if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
 			   window.alert("The feedback field cannot be blank. ");
@@ -172,7 +172,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 					"timestamp": new Date(),
 					"sender": $scope.currentUser,
 					"recipients": newRecipients,
-					"isError": "true",
+					"isError": "false",
 					"viewedBy": [$scope.currentUser]
 			};
 			
