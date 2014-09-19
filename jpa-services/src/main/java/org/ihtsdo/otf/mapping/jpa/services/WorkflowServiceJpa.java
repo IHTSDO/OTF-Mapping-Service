@@ -4006,20 +4006,20 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// Try query
 		conversations = query.getResultList();
 
-		boolean needsUpdate = false;
+
 		for (FeedbackConversation conversation : conversations) {
 			for (Feedback feedback : conversation.getFeedbacks()) {
 				if (feedback.getMapError() != null
 						&& !feedback.getMapError().equals("")
 						&& !feedback.getMapError().equals("None")) {
 					feedback.setIsError(true);
-					needsUpdate = true;
+				} else {
+					feedback.setIsError(false);
 				}
 			}
-			if (needsUpdate) {
-				updateFeedbackConversation(conversation);
-				needsUpdate = false;
-			}
+
+			updateFeedbackConversation(conversation);
+
 		}
 
 	}
