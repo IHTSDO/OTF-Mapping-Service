@@ -95,6 +95,7 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+// TODO: Auto-generated Javadoc
 /**
  * JPA implementation of the {@link MappingService}.
  */
@@ -102,8 +103,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Instantiates an empty {@link MappingServiceJpa}.
-	 * 
-	 * @throws Exception
+	 *
+	 * @throws Exception the exception
 	 */
 	public MappingServiceJpa() throws Exception {
 		super();
@@ -135,10 +136,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Return map project for auto-generated id.
-	 * 
-	 * @param id
-	 *            the auto-generated id
+	 *
+	 * @param id the auto-generated id
 	 * @return the MapProject
+	 * @throws Exception the exception
 	 */
 	@Override
 	public MapProject getMapProject(Long id) throws Exception {
@@ -295,10 +296,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Add a map project.
-	 * 
-	 * @param mapProject
-	 *            the map project
+	 *
+	 * @param mapProject the map project
 	 * @return the map project
+	 * @throws Exception the exception
 	 */
 	@Override
 	public MapProject addMapProject(MapProject mapProject) throws Exception {
@@ -326,9 +327,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Update a map project.
-	 * 
-	 * @param mapProject
-	 *            the changed map project
+	 *
+	 * @param mapProject the changed map project
+	 * @throws Exception the exception
 	 */
 	@Override
 	public void updateMapProject(MapProject mapProject) throws Exception {
@@ -418,10 +419,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Return map specialist for auto-generated id.
-	 * 
-	 * @param id
-	 *            the auto-generated id
+	 *
+	 * @param id the auto-generated id
 	 * @return the MapSpecialist
+	 * @throws Exception the exception
 	 */
 	@Override
 	public MapUser getMapUser(Long id) throws Exception {
@@ -613,10 +614,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Retrieve map record for given id.
-	 * 
-	 * @param id
-	 *            the map record id
+	 *
+	 * @param id the map record id
 	 * @return the map record
+	 * @throws Exception the exception
 	 */
 	@Override
 	public MapRecord getMapRecord(Long id) throws Exception {
@@ -1005,6 +1006,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return mapRecordList;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordForProjectAndConcept(java.lang.Long, java.lang.String)
+	 */
 	@Override
 	public MapRecord getMapRecordForProjectAndConcept(Long mapProjectId,
 			String terminologyId) throws Exception {
@@ -1775,20 +1779,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * 
 	 * Given a concept, returns a list of descendant concepts that have no
 	 * associated map record.
-	 * 
-	 * @param terminologyId
-	 *            the terminology id
-	 * @param terminology
-	 *            the terminology
-	 * @param terminologyVersion
-	 *            the terminology version
-	 * @param thresholdLlc
-	 *            the maximum number of descendants a concept can have before it
-	 *            is no longer considered a low-level concept (i.e. return an
-	 *            empty list)
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param thresholdLlc the maximum number of descendants a concept can have before it
+	 * is no longer considered a low-level concept (i.e. return an
+	 * empty list)
+	 * @param pfsParameter the pfs parameter
 	 * @return the list of unmapped descendant concepts
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception the exception
 	 */
 	@Override
 	public SearchResultList findUnmappedDescendantsForConcept(
@@ -2283,7 +2283,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	}
 
 	/**
-	 * Helper function to call main routine with null value for sampling rate
+	 * Helper function to call main routine with null value for sampling rate.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param mapUser the map user
+	 * @param complexMapRefSetMembers the complex map ref set members
+	 * @param workflowStatus the workflow status
+	 * @throws Exception the exception
 	 */
 	@Override
 	public void createMapRecordsForMapProject(Long mapProjectId,
@@ -2737,6 +2743,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	// MAP USER PREFERENCES FUNCTIONS
 	// /////////////////////////////////////
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapUserPreferences(java.lang.String)
+	 */
 	@Override
 	public MapUserPreferences getMapUserPreferences(String userName)
 			throws Exception {
@@ -2773,8 +2782,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	}
 
 	/**
-	 * Retrieve all map user preferences
-	 * 
+	 * Retrieve all map user preferences.
+	 *
 	 * @return a List of MapUserPreferencess
 	 */
 	@Override
@@ -2902,6 +2911,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return MapUserRole.VIEWER;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getProjectSpecificAlgorithmHandler(org.ihtsdo.otf.mapping.model.MapProject)
+	 */
 	@Override
 	@XmlTransient
 	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(
@@ -2976,6 +2988,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#setTreePositionTerminologyNotes(java.util.List, java.lang.Long)
+	 */
 	@Override
 	public TreePositionList setTreePositionTerminologyNotes(
 			List<TreePosition> treePositions, Long mapProjectId)
@@ -2999,6 +3014,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return treePositionList;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getOriginMapRecordsForConflict(java.lang.Long)
+	 */
 	@SuppressWarnings("unused")
 	@Override
 	public MapRecordList getOriginMapRecordsForConflict(Long mapRecordId)
@@ -3451,6 +3469,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						+ nRecordsRemapped + " with group errors");
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#processRelease(org.ihtsdo.otf.mapping.model.MapProject, java.lang.String, java.lang.String, java.lang.String)
+	 */
 	@Override
 	public void processRelease(MapProject mapProject, String outputFileName,
 			String effectiveTime, String moduleId) throws Exception {
@@ -3587,8 +3608,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					me.setMapPriority(this.getNextMapPriority(mapRecord, me));
 
 					// if true rule, set to OTHERWISE TRUE
-					// TODO: Only do this if the calculated map priority is
-					// higher than 1
 					if (me.getMapPriority() > 1 && me.getRule().equals("TRUE"))
 						me.setRule("OTHERWISE TRUE");
 
@@ -3631,13 +3650,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	}
 
 	/**
-	 * Function to construct propagated rule for an entry
-	 * 
-	 * @param mapEntry
-	 *            the map entry
-	 * @param mapRecord
-	 *            the map record containing this map entry
-	 * @return
+	 * Function to construct propagated rule for an entry.
+	 *
+	 * @param mapEntry the map entry
+	 * @return the map entry
 	 */
 	public MapEntry setPropagatedRuleForMapEntry(MapEntry mapEntry) {
 
@@ -3676,6 +3692,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return mapEntry;
 	}
 
+	/**
+	 * Gets the human readable map advice.
+	 *
+	 * @param mapEntry the map entry
+	 * @return the human readable map advice
+	 */
 	public String getHumanReadableMapAdvice(MapEntry mapEntry) {
 
 		MapRecord mapRecord = mapEntry.getMapRecord();
@@ -3734,16 +3756,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// add appropriate text based on comparator
 				switch (comparatorComponents[0]) {
 				case ">":
-					advice += "AFTER";
+					advice += " AFTER";
 					break;
 				case "<":
-					advice += "BEFORE";
+					advice += " BEFORE";
 					break;
 				case ">=":
-					advice += "ON OR AFTER";
+					advice += " ON OR AFTER";
 					break;
 				case "<=":
-					advice += "ON OR BEFORE";
+					advice += " ON OR BEFORE";
 					break;
 				}
 
@@ -3766,13 +3788,20 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						+ comparatorComponents[2];
 			}
 		} else if(mapEntry.getRule().toUpperCase().contains("MALE|FEMALE")) {
-			// TODO ???
+			
+			// TODO IF MALE CHOOSE, IF FEMALE CHOOSE
 		}
 
 		return advice;
 
 	}
 
+	/**
+	 * Gets the sorted tree position descendant list.
+	 *
+	 * @param tp the tp
+	 * @return the sorted tree position descendant list
+	 */
 	public List<TreePosition> getSortedTreePositionDescendantList(
 			TreePosition tp) {
 
@@ -3805,10 +3834,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Recursive helper function Given a tree position, return a list of
-	 * descendants
-	 * 
-	 * @param existingList
-	 * @return
+	 * descendants.
+	 *
+	 * @param tp the tp
+	 * @return the unsorted tree position descendant list
 	 */
 	public List<TreePosition> getUnsortedTreePositionDescendantList(
 			TreePosition tp) {
@@ -3830,7 +3859,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Given a map record and map entry, return the next assignable map priority
-	 * for this map entry
+	 * for this map entry.
+	 *
+	 * @param mapRecord the map record
+	 * @param mapEntry the map entry
+	 * @return the next map priority
 	 */
 	public int getNextMapPriority(MapRecord mapRecord, MapEntry mapEntry) {
 
@@ -3845,7 +3878,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return maxPriority + 1;
 	}
 
-	// create UUID from refset id, concept id, map group, map rule, map target
+	
 	
 	/*public String getReleaseUuid(MapEntry mapEntry, MapRecord mapRecord,
 			MapProject mapProject) {
@@ -3861,8 +3894,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return "";
 	}*/
 	
-	// TODO Exact structure of name
-	 public static UUID getReleaseUuid(String name) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+	
+	 /**
+	 * Gets the release uuid.
+	 *
+	 * @param name the name
+	 * @return the release uuid
+	 * @throws NoSuchAlgorithmException the no such algorithm exception
+	 * @throws UnsupportedEncodingException the unsupported encoding exception
+	 */
+	public static UUID getReleaseUuid(String name) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 	        MessageDigest sha1Algorithm = MessageDigest.getInstance("SHA-1");
 
 	        String encoding = "UTF-8";
@@ -3891,16 +3932,37 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	    
     }
 
+	/**
+	 * Write release entry.
+	 *
+	 * @param writer the writer
+	 * @param mapEntry the map entry
+	 * @param mapRecord the map record
+	 * @param mapProject the map project
+	 * @param effectiveTime the effective time
+	 * @param moduleId the module id
+	 * @param isUpPropagated the flag for a propagated field (no longer used)
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws NoSuchAlgorithmException the no such algorithm exception
+	 */
 	public void writeReleaseEntry(BufferedWriter writer, MapEntry mapEntry,
 			MapRecord mapRecord, MapProject mapProject, String effectiveTime,
 			String moduleId, boolean isUpPropagated) throws IOException, NoSuchAlgorithmException {
 		// create UUID from refset id, concept id, map group, map rule,
 		// map target
+		// TODO simply append the values together without delimiters
 		UUID uuid = getReleaseUuid(""); // mapEntry, mapRecord, mapProject);
 
 		// construct human-readable map advice based on rule
 		String mapAdviceStr = this.getHumanReadableMapAdvice(mapEntry);
 
+	
+
+		// add the entry's map advices
+		for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
+			mapAdviceStr += " | " + mapAdvice.getDetail();
+		}
+		
 		/**
 		 * 
 		 * THESE THREE WILL BE IN THE writeEntry routines If the map target is
@@ -3910,13 +3972,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		 * If it's an IFA rule (gender) * add MAP OF SOURCE CONCEPT IS CONTEXT
 		 * DEPENDENT FOR GENDER
 		 */
+		
 
-		// add the entry's map advices
-		for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
-			mapAdviceStr += " | " + mapAdvice.getDetail();
-		}
+		// TODO Out of date -- construct the entry line
+		// id	effectiveTime	active	moduleId	refSetId	referencedComponentId	mapGroup	mapPriority	mapRule	mapAdvice	mapTarget	correlationId	mapCategoryId
 
-		// construct the entry line
+		// TODO Check the ICD9CM vs ICD10 headers
+		// ComplexMap Project:  CorrelationId is the relation id
+		// ExtendedMap:  CorrelationId is fixed at hardcoded value, and mapCategoryId is relation id
+		// -- add defaultCorrelationId to algorithm handlers, needs to go into metadata later (make ticket)
 		String entryLine = uuid.toString()
 				+ "\t"
 				+ "1"
