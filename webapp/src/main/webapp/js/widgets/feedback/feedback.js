@@ -12,14 +12,17 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 		edit: {}
 	});
 }).controller('feedbackCtrl', function($scope, $rootScope, $http, $location, $modal, $sce, localStorageService){
-
+    $scope.currentUser = null;
+	$scope.currentRole = null;
+	$scope.focusProject = null;
+	$scope.feedbackConversations = null;
+	
 	// initialize as empty to indicate still initializing database connection
 	$scope.currentUser = localStorageService.get('currentUser');
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
 	
-    $scope.feedbackConversations = null;
-	
+    
 	// table sort fields
 	$scope.tableFields = [ {id: 0, title: 'id', sortDir: 'asc', sortOn: false}];
 	
@@ -35,10 +38,10 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
-		console.debug(localStorageService.get('currentRole'));
-		$scope.currentRole = localStorageService.get('currentRole');
-		if ($scope.currentRole != 'Viewer')
-		  $scope.retrieveFeedback(1);
+		//console.debug(localStorageService.get('currentRole'));
+		//$scope.currentRole = localStorageService.get('currentRole');
+		/*if ($scope.currentRole != 'Viewer')
+		  $scope.retrieveFeedback(1);*/
 	});	
 	
 
@@ -46,9 +49,10 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 
 	// on any change of focusProject, retrieve new available work
 	$scope.currentUserToken = localStorageService.get('userToken');
-	$scope.$watch(['focusProject', 'currentUser', 'currentUserToken'], function() {
+	$scope.$watch(['focusProject', 'currentUser', 'currentUserToken', 'currentRole'], function() {
 		console.debug('feedbackCtrl:', $scope.focusProject, $scope.currentUser, $scope.currentUserToken);
-		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null) {
+		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null
+				&& $scope.currentRole != null) {
 			$http.defaults.headers.common.Authorization = $scope.currentUserToken;			
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
 			$scope.retrieveFeedback(1);
@@ -57,6 +61,10 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	
 
     $scope.retrieveFeedback = function(page) {
+    	
+    	if ($scope.currentRole == 'Viewer')
+  		  return;
+    	
 	// construct a paging/filtering/sorting object
 	var pfsParameterObj = 
 				{"startIndex": (page-1)*$scope.recordsPerPage,
