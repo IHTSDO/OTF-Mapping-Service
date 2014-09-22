@@ -2185,9 +2185,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			System.out.println("Previous record = " + revision.toString());
 			if (revision.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
 					|| revision.getWorkflowStatus().equals(
-							WorkflowStatus.READY_FOR_PUBLICATION))
+							WorkflowStatus.READY_FOR_PUBLICATION)) {
 				mappingService.close();
-			return revision;
+				return revision;
+			}
 		}
 
 		mappingService.close();
