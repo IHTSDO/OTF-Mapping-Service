@@ -12,13 +12,16 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 	});
 }).controller('feedbackConversationCtrl', function($scope, $rootScope, $routeParams, $http, $location, $modal, $sce, localStorageService){
 
+	$scope.currentUser = null;
+	$scope.currentRole = null;
+	$scope.focusProject = null;
+    $scope.conversation = null;
+	
 	// initialize as empty to indicate still initializing database connection
 	$scope.currentUser = localStorageService.get('currentUser');
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
-	
-    $scope.conversation = null;
-    
+	   
     $scope.recordId = $routeParams.recordId;
     
     // settings for recipients mechanism
@@ -56,6 +59,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 	$scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
 	organizeUsers($scope.allUsers);
 	
+	// TODO: getFeedbackConversation() which is called by watch statement
 	// get feedback conversation associated with given recordId
   	$rootScope.glassPane++;
 	$http({
@@ -142,7 +146,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 
 	// send feedback on already started conversation
 	$scope.sendFeedback = function(record, feedbackMessage, conversation, recipientList) {
-		console.debug("Sending feedback email", record);
+		console.debug("Add feedback to conversation", record);
 		
 		   if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
 			   window.alert("The feedback field cannot be blank. ");
@@ -168,7 +172,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 					"timestamp": new Date(),
 					"sender": $scope.currentUser,
 					"recipients": newRecipients,
-					"isError": "true",
+					"isError": "false",
 					"viewedBy": [$scope.currentUser]
 			};
 			

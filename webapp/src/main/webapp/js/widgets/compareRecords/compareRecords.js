@@ -600,6 +600,17 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 
 		   var currentConversation = $scope.getCurrentConversation(recordInError);
 		   
+		   // determine if feedback is an error or not and remove 'None' text
+		   var mapError = '';
+		   var isError = false;
+		   if (errorMessage.displayName != null &&
+		    			  errorMessage.displayName != '' &&
+		    			  errorMessage.displayName != 'None') {
+		       isError = true;
+			   mapError = errorMessage.displayName;
+		   }
+		   
+		    
 		   // if the conversation hasn't yet been started
 		   if (currentConversation == "") {
 			   
@@ -607,11 +618,11 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		    var receivingUsers =  [recordInError.owner];
 			var feedback = {
 						"message": feedbackMessage,
-						"mapError": errorMessage.displayName,
+						"mapError": mapError,
 						"timestamp": new Date(),
 						"sender": $scope.user,
 						"recipients": receivingUsers,
-						"isError": "true",
+						"isError": isError,
 						"feedbackConversation": currentConversation,
 						"viewedBy": [$scope.user]
 					  };
@@ -660,13 +671,14 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			   
 			   // create feedback msg to be added to the conversation
 			    var receivingUsers =  [recordInError.owner];
+
 				var feedback = {
 							"message": feedbackMessage,
-							"mapError": errorMessage.displayName,
+							"mapError": mapError,
 							"timestamp": new Date(),
 							"sender": $scope.user,
 							"recipients": receivingUsers,
-							"isError": "true",
+							"isError": isError,
 							"viewedBy": [$scope.user]
 						  };
 			
