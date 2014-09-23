@@ -103,8 +103,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Instantiates an empty {@link MappingServiceJpa}.
-	 *
-	 * @throws Exception the exception
+	 * 
+	 * @throws Exception
+	 *             the exception
 	 */
 	public MappingServiceJpa() throws Exception {
 		super();
@@ -136,10 +137,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Return map project for auto-generated id.
-	 *
-	 * @param id the auto-generated id
+	 * 
+	 * @param id
+	 *            the auto-generated id
 	 * @return the MapProject
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public MapProject getMapProject(Long id) throws Exception {
@@ -296,10 +299,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Add a map project.
-	 *
-	 * @param mapProject the map project
+	 * 
+	 * @param mapProject
+	 *            the map project
 	 * @return the map project
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public MapProject addMapProject(MapProject mapProject) throws Exception {
@@ -327,9 +332,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Update a map project.
-	 *
-	 * @param mapProject the changed map project
-	 * @throws Exception the exception
+	 * 
+	 * @param mapProject
+	 *            the changed map project
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public void updateMapProject(MapProject mapProject) throws Exception {
@@ -419,10 +426,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Return map specialist for auto-generated id.
-	 *
-	 * @param id the auto-generated id
+	 * 
+	 * @param id
+	 *            the auto-generated id
 	 * @return the MapSpecialist
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public MapUser getMapUser(Long id) throws Exception {
@@ -614,10 +623,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Retrieve map record for given id.
-	 *
-	 * @param id the map record id
+	 * 
+	 * @param id
+	 *            the map record id
 	 * @return the map record
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public MapRecord getMapRecord(Long id) throws Exception {
@@ -1006,8 +1017,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return mapRecordList;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordForProjectAndConcept(java.lang.Long, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#
+	 * getMapRecordForProjectAndConcept(java.lang.Long, java.lang.String)
 	 */
 	@Override
 	public MapRecord getMapRecordForProjectAndConcept(Long mapProjectId,
@@ -1779,16 +1793,22 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * 
 	 * Given a concept, returns a list of descendant concepts that have no
 	 * associated map record.
-	 *
-	 * @param terminologyId the terminology id
-	 * @param terminology the terminology
-	 * @param terminologyVersion the terminology version
-	 * @param thresholdLlc the maximum number of descendants a concept can have before it
-	 * is no longer considered a low-level concept (i.e. return an
-	 * empty list)
-	 * @param pfsParameter the pfs parameter
+	 * 
+	 * @param terminologyId
+	 *            the terminology id
+	 * @param terminology
+	 *            the terminology
+	 * @param terminologyVersion
+	 *            the terminology version
+	 * @param thresholdLlc
+	 *            the maximum number of descendants a concept can have before it
+	 *            is no longer considered a low-level concept (i.e. return an
+	 *            empty list)
+	 * @param pfsParameter
+	 *            the pfs parameter
 	 * @return the list of unmapped descendant concepts
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public SearchResultList findUnmappedDescendantsForConcept(
@@ -2284,12 +2304,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Helper function to call main routine with null value for sampling rate.
-	 *
-	 * @param mapProjectId the map project id
-	 * @param mapUser the map user
-	 * @param complexMapRefSetMembers the complex map ref set members
-	 * @param workflowStatus the workflow status
-	 * @throws Exception the exception
+	 * 
+	 * @param mapProjectId
+	 *            the map project id
+	 * @param mapUser
+	 *            the map user
+	 * @param complexMapRefSetMembers
+	 *            the complex map ref set members
+	 * @param workflowStatus
+	 *            the workflow status
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public void createMapRecordsForMapProject(Long mapProjectId,
@@ -2743,8 +2768,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	// MAP USER PREFERENCES FUNCTIONS
 	// /////////////////////////////////////
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapUserPreferences(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MappingService#getMapUserPreferences(
+	 * java.lang.String)
 	 */
 	@Override
 	public MapUserPreferences getMapUserPreferences(String userName)
@@ -2783,7 +2812,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Retrieve all map user preferences.
-	 *
+	 * 
 	 * @return a List of MapUserPreferencess
 	 */
 	@Override
@@ -2911,8 +2940,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return MapUserRole.VIEWER;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#getProjectSpecificAlgorithmHandler(org.ihtsdo.otf.mapping.model.MapProject)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#
+	 * getProjectSpecificAlgorithmHandler
+	 * (org.ihtsdo.otf.mapping.model.MapProject)
 	 */
 	@Override
 	@XmlTransient
@@ -2988,8 +3021,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#setTreePositionTerminologyNotes(java.util.List, java.lang.Long)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#
+	 * setTreePositionTerminologyNotes(java.util.List, java.lang.Long)
 	 */
 	@Override
 	public TreePositionList setTreePositionTerminologyNotes(
@@ -3014,8 +3050,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return treePositionList;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#getOriginMapRecordsForConflict(java.lang.Long)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MappingService#getOriginMapRecordsForConflict
+	 * (java.lang.Long)
 	 */
 	@SuppressWarnings("unused")
 	@Override
@@ -3469,16 +3509,31 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						+ nRecordsRemapped + " with group errors");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.MappingService#processRelease(org.ihtsdo.otf.mapping.model.MapProject, java.lang.String, java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MappingService#processRelease(org.ihtsdo
+	 * .otf.mapping.model.MapProject, java.lang.String, java.lang.String,
+	 * java.lang.String)
 	 */
 	@Override
 	public void processRelease(MapProject mapProject, String outputFileName,
-			String effectiveTime, String moduleId) throws Exception {
+			Set<MapRecord> mapRecordsToPublish, String effectiveTime,
+			String moduleId) throws Exception {
+		
+				
+		System.out.println(this.getReleaseUuid("abcdef"));
+
+		
 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Processing publication release for project "
 						+ mapProject.getName());
+
+		Logger.getLogger(MappingServiceJpa.class).info(
+				" " + mapRecordsToPublish.size()
+						+ " records selected for publication");
 
 		// check file directory exists and open writer
 		Logger.getLogger(MappingServiceJpa.class).info(
@@ -3486,25 +3541,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		BufferedWriter writer = new BufferedWriter(new FileWriter(
 				outputFileName));
 
-		// retrieve the scope included concepts
-		Set<String> scopeConcepts = mapProject.getScopeConcepts();
-
-		// retrieve the PUBLICATION and READY_FOR_PUBLICATION map records
-		Logger.getLogger(MappingServiceJpa.class).info(
-				"  Retrieving publication ready records...");
-		List<MapRecord> mapRecords = (List<MapRecord>) this
-				.getPublishedAndReadyForPublicationMapRecordsForMapProject(
-						mapProject.getId(), null).getIterable();
-
-		Logger.getLogger(MappingServiceJpa.class).info(
-				"    " + mapRecords.size() + " records eligible.");
-
 		// Create a map by concept id for quick retrieval of descendants
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"  Creating terminology id map");
 		Map<String, MapRecord> mapRecordMap = new HashMap<>();
 
-		for (MapRecord mr : mapRecords) {
+		for (MapRecord mr : mapRecordsToPublish) {
 			mapRecordMap.put(mr.getConceptId(), mr);
 		}
 
@@ -3520,25 +3562,38 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// perform the release
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"  Processing release...");
-		for (MapRecord mapRecord : mapRecords) {
+		for (MapRecord mapRecord : mapRecordsToPublish) {
+
+			Logger.getLogger(MappingServiceJpa.class).info(
+					"   Processing map record " + mapRecord.getId() + ", "
+							+ mapRecord.getConceptId() + ", "
+							+ mapRecord.getConceptName());
 
 			// this concept has already been analyzed, skip
 			// This accounts for possibility of multiple tree-position routes to
 			// the same concept
-			if (conceptsProcessed.contains(mapRecord.getConceptId()))
+			if (conceptsProcessed.contains(mapRecord.getConceptId())) {
+				Logger.getLogger(MappingServiceJpa.class).info(
+						"    Concept has already been processed.");
 				continue;
-			else
+			} else {
 				conceptsProcessed.add(mapRecord.getConceptId());
+			}
 
-			// look-up set to determine if a entry was original or added via
-			// propagation
-			// initially empty (set only if appropriate)
+			// instantiate map of entries by group
+			Map<Integer, List<MapEntry>> entriesByGroup = new HashMap<>();
+
+			// create a look-up set to determine if a entry was original
+			// or added via propagation
+			// initially empty (populated if up-propagated
 			Set<Long> nonPropagatedEntryIds = new HashSet<>();
 
 			// second, check whether this record should be up-propagated
-			// TODO Add project specific routine
-			// algorithmHandler.isPropagatedRecord()
-			if (mapRecord.getCountDescendantConcepts() < 11) {
+			if (algorithmHandler
+					.isUpPropagatedRecordForReleaseProcessing(mapRecord)) {
+
+				Logger.getLogger(MappingServiceJpa.class).info(
+						"    Record is up-propagated.");
 
 				// get the descendant tree positions for this record's concept
 				ContentService contentService = new ContentServiceJpa();
@@ -3555,8 +3610,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				List<TreePosition> treePositionDescendantList = getSortedTreePositionDescendantList(treePosition);
 
 				// add the original entry ids to look up set
-				for (MapEntry me : mapRecord.getMapEntries())
+				for (MapEntry me : mapRecord.getMapEntries()) {
 					nonPropagatedEntryIds.add(me.getId());
+				}
 
 				// save the original entries for the top level record
 				List<MapEntry> mapEntriesForRootRecord = mapRecord
@@ -3570,89 +3626,171 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// hierarchy depth
 				for (TreePosition tp : treePositionDescendantList) {
 
-					// retrieve from the cache
-					MapRecord mr = mapRecordMap.get(tp.getTerminologyId());
+					// skip this record's concept, added below
+					if (!tp.getTerminologyId().equals(mapRecord.getConceptId())) {
 
-					// output warning if this
-					if (mr == null
-							&& !scopeConcepts.contains(mr.getConceptId())) {
-						Logger.getLogger(MappingServiceJpa.class).warn(
-								"No record found for descendant scope concept "
-										+ mr.getConceptId()
-										+ ", descendant of "
-										+ mapRecord.getConceptId());
-					}
-
-					// cycle over the entries
-					for (MapEntry me : mr.getMapEntries()) {
-
-						// reset the map priority based on current state of
-						// record
-						me.setMapPriority(this
-								.getNextMapPriority(mapRecord, me));
-
-						// reset the rule based on whether it is propagated
-						if (!nonPropagatedEntryIds.contains(me.getId())) {
-							this.setPropagatedRuleForMapEntry(me);
+						// retrieve from the cache
+						MapRecord mr;
+						if (mapRecordMap.containsKey(tp.getTerminologyId())) {
+							mr = mapRecordMap.get(tp.getTerminologyId());
+						} else {
+							mr = this.getMapRecordForProjectAndConcept(
+									mapProject.getId(), tp.getTerminologyId());
 						}
 
-						// add map entry to record
-						mapRecord.addMapEntry(me);
+						Logger.getLogger(MappingServiceJpa.class).info(
+								"     Adding entries from map record "
+										+ mr.getId() + ", " + mr.getConceptId()
+										+ ", " + mr.getConceptName());
+
+						// cycle over the entries
+						for (MapEntry me : mr.getMapEntries()) {
+
+							// get the current list of entries for this group
+							List<MapEntry> existingEntries = entriesByGroup
+									.get(me.getMapGroup());
+
+							if (existingEntries == null)
+								existingEntries = new ArrayList<>();
+
+							// determine whether this entry already exists on
+							// the up-propagated record in this group
+
+							boolean isDuplicateEntry = false;
+
+							// compare to the entries added via up-propagation
+							for (MapEntry existingEntry : existingEntries) {
+
+								if (existingEntry.isEquivalent(me))
+									isDuplicateEntry = true;
+							}
+
+							// compare to the entries on the original record
+							for (MapEntry rootEntry : mapEntriesForRootRecord) {
+
+								if (rootEntry.getMapGroup() == me.getMapGroup() && rootEntry.isEquivalent(me))
+									isDuplicateEntry = true;
+							}
+
+							// if not a duplicate entry, add it to the map
+							if (isDuplicateEntry == false) {
+								// alter the rule if a propagated entry
+								if (!nonPropagatedEntryIds.contains(me.getId())) {
+									this.setPropagatedRuleForMapEntry(me);
+								}
+
+								// set map priority based on size of current
+								// list
+								me.setMapPriority(existingEntries.size() + 1);
+
+								// add to the list
+								existingEntries.add(me);
+
+								System.out.println("Adding entry: "
+										+ me.toString());
+
+								// replace existing list with modified list
+								entriesByGroup.put(me.getMapGroup(),
+										existingEntries);
+
+							} else {
+								System.out.println("Duplicate entry: "
+										+ me.toString());
+							}
+						}
 					}
 				}
 
 				// add the original entries
+				System.out.println("Adding original entries: ");
 				for (MapEntry me : mapEntriesForRootRecord) {
 
-					// reset the map priority based on current state of record
-					me.setMapPriority(this.getNextMapPriority(mapRecord, me));
+					List<MapEntry> existingEntries = entriesByGroup.get(me
+							.getMapGroup());
 
-					// if true rule, set to OTHERWISE TRUE
+					if (existingEntries == null)
+						existingEntries = new ArrayList<>();
+
+					// if not the first entry and contains TRUE rule, set to
+					// OTHERWISE TRUE
 					if (me.getMapPriority() > 1 && me.getRule().equals("TRUE"))
 						me.setRule("OTHERWISE TRUE");
 
-					// add map entry to record
-					mapRecord.addMapEntry(me);
+					// add map entry to map
+					me.setMapPriority(existingEntries.size() + 1);
+
+					System.out.println("  Adding existing entry as: "
+							+ me.toString());
+
+					existingEntries.add(me);
+
+					entriesByGroup.put(me.getMapGroup(), existingEntries);
+				}
+
+				// check that each group is "capped" with a TRUE or OTHERWISE
+				// TRUE rule
+				for (int mapGroup : entriesByGroup.keySet()) {
+
+					List<MapEntry> existingEntries = entriesByGroup
+							.get(mapGroup);
+
+					// if the rule on the last entry is not TRUE or OTHERWISE
+					// TRUE
+					if (existingEntries.size() == 0
+							|| !existingEntries.get(existingEntries.size() - 1)
+									.getRule().contains("TRUE")) {
+
+						// create a new map entry
+						MapEntry me = new MapEntryJpa();
+
+						// set the record and group
+						me.setMapRecord(mapRecord);
+						me.setMapGroup(mapGroup);
+						me.setMapPriority(existingEntries.size() + 1);
+
+						// set the rule to TRUE if no entries, OTHERWISE true if
+						// entries exist
+						if (existingEntries.size() == 0)
+							me.setRule("TRUE");
+						else
+							me.setRule("OTHERWISE TRUE");
+
+						// compute the map relation for no target for this
+						// project
+						me.setMapRelation(algorithmHandler.computeMapRelation(
+								mapRecord, me));
+
+						existingEntries.add(me);
+						entriesByGroup.put(mapGroup, existingEntries);
+
+					}
 				}
 			}
 
-			// TODO Check for "uncapped" groups that do not end with an
-			// OTHERWISE TRUE or TRUE rule
-			// Add the appropriate NC/Not Mappable relation based on project
+			// write each group in sequence
+			for (int mapGroup : entriesByGroup.keySet()) {
+				for (MapEntry mapEntry : entriesByGroup.get(mapGroup)) {
+					boolean isPropagatedEntry = !nonPropagatedEntryIds
+							.contains(mapEntry.getId());
 
-			// extract the entries
-			List<MapEntry> mapEntries = mapRecord.getMapEntries();
-
-			// ensure entries are sorted by group and priority
-			Collections.sort(mapEntries, new Comparator<MapEntry>() {
-				@Override
-				public int compare(MapEntry me1, MapEntry me2) {
-					if (me1.getMapGroup() == me2.getMapGroup()) {
-						return (me1.getMapPriority() < me2.getMapPriority() ? -1
-								: 1);
-					} else
-						return (me1.getMapGroup() < me2.getMapGroup() ? -1 : 1);
+					// write this entry
+					this.writeReleaseEntry(writer, mapEntry, mapRecord,
+							mapProject, effectiveTime, moduleId,
+							isPropagatedEntry);
 				}
-			});
-
-			// write each entry
-			for (MapEntry mapEntry : mapEntries) {
-
-				boolean isPropagatedEntry = !nonPropagatedEntryIds
-						.contains(mapEntry.getId());
-
-				// write this entry
-				this.writeReleaseEntry(writer, mapEntry, mapRecord, mapProject,
-						effectiveTime, moduleId, isPropagatedEntry);
-
 			}
+
 		}
+
+		// close the writer
+		writer.close();
 	}
 
 	/**
 	 * Function to construct propagated rule for an entry.
-	 *
-	 * @param mapEntry the map entry
+	 * 
+	 * @param mapEntry
+	 *            the map entry
 	 * @return the map entry
 	 */
 	public MapEntry setPropagatedRuleForMapEntry(MapEntry mapEntry) {
@@ -3679,6 +3817,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// set the rule
 		mapEntry.setRule(rule);
 
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"       Set rule to " + rule);
 		/**
 		 * e.g. for age IFA 104831000119109 | Drug induced central sleep apnea
 		 * (disorder) | AND IFA 445518008 | Age at onset of clinical finding
@@ -3694,26 +3834,23 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Gets the human readable map advice.
-	 *
-	 * @param mapEntry the map entry
+	 * 
+	 * @param mapEntry
+	 *            the map entry
 	 * @return the human readable map advice
 	 */
 	public String getHumanReadableMapAdvice(MapEntry mapEntry) {
 
-		MapRecord mapRecord = mapEntry.getMapRecord();
-
 		String advice = "";
+		
+		System.out.println("Constructing human-readable advice for:  " + mapEntry.getRule());
 
 		String[] comparatorComponents; // used for parsing age rules
 
 		// if map target is blank
 		if (mapEntry.getTargetId() == null || mapEntry.getTargetId() == "") {
+			System.out.println("  Use map relation");
 			advice = mapEntry.getMapRelation().getName();
-		}
-
-		// if not an IFA rule (i.e. TRUE, OTHERWISE TRUE), simply return ALWAYS
-		else if (!mapEntry.getRule().contains("IFA")) {
-			advice = "ALWAYS " + mapEntry.getTargetId();
 		}
 
 		// if map rule is IFA (age)
@@ -3787,10 +3924,36 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				advice += comparatorComponents[1] + " "
 						+ comparatorComponents[2];
 			}
-		} else if(mapEntry.getRule().toUpperCase().contains("MALE|FEMALE")) {
+
+			// finally, add the CHOOSE {targetId}
+			advice += " CHOOSE " + mapEntry.getTargetId();
+
+			// if a gender rule (i.e. contains (FE)MALE)
+		} else if (mapEntry.getRule().toUpperCase().contains("MALE")) {
+
+			// add the advice based on gender
+			if (mapEntry.getRule().contains("FEMALE")) {
+				advice += "IF FEMALE CHOOSE " + mapEntry.getTargetId();
+			} else {
+				advice += "IF MALE CHOOSE " + mapEntry.getTargetId();
+			}
+		} // if not an IFA rule (i.e. TRUE, OTHERWISE TRUE), simply return ALWAYS
+		else if (!mapEntry.getRule().toUpperCase().contains("IFA")) {
 			
-			// TODO IF MALE CHOOSE, IF FEMALE CHOOSE
+			advice = "ALWAYS " + mapEntry.getTargetId();
+			
+		// otherwise an IFA rule
+		} else {
+			String[] ifaComponents = mapEntry.getRule().toUpperCase().split("\\|");
+			
+			// remove any (disorder), etc.
+			String targetName = ifaComponents[1].trim(); // .replace("[(.*)]", "");
+			
+			advice = "IF " + targetName + " CHOOSE " + mapEntry.getTargetId();
 		}
+
+		System.out.println(
+				"   Human-readable advice: " + advice);
 
 		return advice;
 
@@ -3798,8 +3961,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 	/**
 	 * Gets the sorted tree position descendant list.
-	 *
-	 * @param tp the tp
+	 * 
+	 * @param tp
+	 *            the tp
 	 * @return the sorted tree position descendant list
 	 */
 	public List<TreePosition> getSortedTreePositionDescendantList(
@@ -3833,10 +3997,34 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	}
 
 	/**
+	 * Helper function: Given a set of map entries and a group number returns
+	 * the last entry in that group
+	 * 
+	 * @param mapEntries
+	 * @param group
+	 * @return
+	 */
+	public MapEntry getLastMapEntryForGroup(List<MapEntry> mapEntries, int group) {
+		MapEntry lastEntry = null;
+		for (MapEntry me : mapEntries) {
+			if (me.getMapGroup() == group) {
+				if (lastEntry == null
+						|| lastEntry.getMapPriority() < me.getMapPriority()) {
+					lastEntry = me;
+				}
+
+			}
+		}
+
+		return lastEntry;
+	}
+
+	/**
 	 * Recursive helper function Given a tree position, return a list of
 	 * descendants.
-	 *
-	 * @param tp the tp
+	 * 
+	 * @param tp
+	 *            the tp
 	 * @return the unsorted tree position descendant list
 	 */
 	public List<TreePosition> getUnsortedTreePositionDescendantList(
@@ -3860,9 +4048,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	/**
 	 * Given a map record and map entry, return the next assignable map priority
 	 * for this map entry.
-	 *
-	 * @param mapRecord the map record
-	 * @param mapEntry the map entry
+	 * 
+	 * @param mapRecord
+	 *            the map record
+	 * @param mapEntry
+	 *            the map entry
 	 * @return the next map priority
 	 */
 	public int getNextMapPriority(MapRecord mapRecord, MapEntry mapEntry) {
@@ -3878,91 +4068,150 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return maxPriority + 1;
 	}
 
-	
-	
-	/*public String getReleaseUuid(MapEntry mapEntry, MapRecord mapRecord,
-			MapProject mapProject) {
-
-		long hashCode = 17;
-
-		hashCode = hashCode * 31 + mapProject.getRefSetId().hashCode();
-		hashCode = hashCode * 31 + mapRecord.getConceptId().hashCode();
-		hashCode = hashCode * 31 + mapEntry.getMapGroup();
-		hashCode = hashCode * 31 + mapEntry.getRule().hashCode();
-		hashCode = hashCode * 31 + mapEntry.getTargetId().hashCode();
-
-		return "";
-	}*/
-	
-	
-	 /**
-	 * Gets the release uuid.
-	 *
-	 * @param name the name
-	 * @return the release uuid
-	 * @throws NoSuchAlgorithmException the no such algorithm exception
-	 * @throws UnsupportedEncodingException the unsupported encoding exception
+	/*
+	 * public String getReleaseUuid(MapEntry mapEntry, MapRecord mapRecord,
+	 * MapProject mapProject) {
+	 * 
+	 * long hashCode = 17;
+	 * 
+	 * hashCode = hashCode * 31 + mapProject.getRefSetId().hashCode(); hashCode
+	 * = hashCode * 31 + mapRecord.getConceptId().hashCode(); hashCode =
+	 * hashCode * 31 + mapEntry.getMapGroup(); hashCode = hashCode * 31 +
+	 * mapEntry.getRule().hashCode(); hashCode = hashCode * 31 +
+	 * mapEntry.getTargetId().hashCode();
+	 * 
+	 * return ""; }
 	 */
-	public static UUID getReleaseUuid(String name) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-	        MessageDigest sha1Algorithm = MessageDigest.getInstance("SHA-1");
+	
+	public static byte[] getRawBytes(UUID uid) {
+        String id = uid.toString();
+        byte[] rawBytes = new byte[16];
 
-	        String encoding = "UTF-8";
-	        
-	        // Generate the digest.
-	        sha1Algorithm.reset();
+        for (int i = 0, j = 0; i < 36; ++j) {
+            // Need to bypass hyphens:
+            switch (i) {
+            case 8:
+            case 13:
+            case 18:
+            case 23:
+                ++i;
+            }
+            char c = id.charAt(i);
 
-	        sha1Algorithm.update(name.getBytes(encoding));
-	        byte[] sha1digest = sha1Algorithm.digest();
+            if (c >= '0' && c <= '9') {
+                rawBytes[j] = (byte) ((c - '0') << 4);
+            } else if (c >= 'a' && c <= 'f') {
+                rawBytes[j] = (byte) ((c - 'a' + 10) << 4);
+            }
 
-	        sha1digest[6] &= 0x0f; /* clear version */
-	        sha1digest[6] |= 0x50; /* set to version 5 */
-	        sha1digest[8] &= 0x3f; /* clear variant */
-	        sha1digest[8] |= 0x80; /* set to IETF variant */
+            c = id.charAt(++i);
 
-	        long msb = 0;
-	        long lsb = 0;
-	        for (int i = 0; i < 8; i++) {
-	            msb = (msb << 8) | (sha1digest[i] & 0xff);
-	        }
-	        for (int i = 8; i < 16; i++) {
-	            lsb = (lsb << 8) | (sha1digest[i] & 0xff);
-	        }
-
-	        return new UUID(msb, lsb);
-	    
+            if (c >= '0' && c <= '9') {
+                rawBytes[j] |= (byte) (c - '0');
+            } else if (c >= 'a' && c <= 'f') {
+                rawBytes[j] |= (byte) (c - 'a' + 10);
+            }
+            ++i;
+        }
+        return rawBytes;
     }
 
 	/**
+	 * Gets the release uuid.
+	 * 
+	 * @param name
+	 *            the name
+	 * @return the release uuid
+	 * @throws NoSuchAlgorithmException
+	 *             the no such algorithm exception
+	 * @throws UnsupportedEncodingException
+	 *             the unsupported encoding exception
+	 */
+	public static UUID getReleaseUuid(String name)
+			throws NoSuchAlgorithmException, UnsupportedEncodingException {
+		MessageDigest sha1Algorithm = MessageDigest.getInstance("SHA-1");
+
+		String namespace = "00000000-0000-0000-0000-000000000000";
+		String encoding = "UTF-8";
+		
+		UUID namespaceUUID = UUID.fromString(namespace);
+
+		// Generate the digest.
+		sha1Algorithm.reset();
+		
+		 // Generate the digest.
+        sha1Algorithm.reset();
+        if (namespace != null) {
+            sha1Algorithm.update(getRawBytes(namespaceUUID));
+        }
+
+		sha1Algorithm.update(name.getBytes(encoding));
+		byte[] sha1digest = sha1Algorithm.digest();
+
+		sha1digest[6] &= 0x0f; /* clear version */
+		sha1digest[6] |= 0x50; /* set to version 5 */
+		sha1digest[8] &= 0x3f; /* clear variant */
+		sha1digest[8] |= 0x80; /* set to IETF variant */
+
+		long msb = 0;
+		long lsb = 0;
+		for (int i = 0; i < 8; i++) {
+			msb = (msb << 8) | (sha1digest[i] & 0xff);
+		}
+		for (int i = 8; i < 16; i++) {
+			lsb = (lsb << 8) | (sha1digest[i] & 0xff);
+		}
+
+		return new UUID(msb, lsb);
+
+	}
+
+	/**
 	 * Write release entry.
-	 *
-	 * @param writer the writer
-	 * @param mapEntry the map entry
-	 * @param mapRecord the map record
-	 * @param mapProject the map project
-	 * @param effectiveTime the effective time
-	 * @param moduleId the module id
-	 * @param isUpPropagated the flag for a propagated field (no longer used)
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 * @throws NoSuchAlgorithmException the no such algorithm exception
+	 * 
+	 * @param writer
+	 *            the writer
+	 * @param mapEntry
+	 *            the map entry
+	 * @param mapRecord
+	 *            the map record
+	 * @param mapProject
+	 *            the map project
+	 * @param effectiveTime
+	 *            the effective time
+	 * @param moduleId
+	 *            the module id
+	 * @param isUpPropagated
+	 *            the flag for a propagated field (no longer used)
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws NoSuchAlgorithmException
+	 *             the no such algorithm exception
 	 */
 	public void writeReleaseEntry(BufferedWriter writer, MapEntry mapEntry,
 			MapRecord mapRecord, MapProject mapProject, String effectiveTime,
-			String moduleId, boolean isUpPropagated) throws IOException, NoSuchAlgorithmException {
+			String moduleId, boolean isUpPropagated) throws IOException,
+			NoSuchAlgorithmException {
+
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"     Writing entry for concept " + mapRecord.getConceptId()
+						+ ", map group " + mapEntry.getMapGroup()
+						+ ", priority " + mapEntry.getMapPriority());
+
 		// create UUID from refset id, concept id, map group, map rule,
 		// map target
-		// TODO simply append the values together without delimiters
-		UUID uuid = getReleaseUuid(""); // mapEntry, mapRecord, mapProject);
+		UUID uuid = getReleaseUuid(mapProject.getRefSetId()
+				+ mapRecord.getConceptId() + mapEntry.getMapGroup()
+				+ mapEntry.getRule() + mapEntry.getTargetId());
 
 		// construct human-readable map advice based on rule
 		String mapAdviceStr = this.getHumanReadableMapAdvice(mapEntry);
-
-	
 
 		// add the entry's map advices
 		for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
 			mapAdviceStr += " | " + mapAdvice.getDetail();
 		}
-		
+
 		/**
 		 * 
 		 * THESE THREE WILL BE IN THE writeEntry routines If the map target is
@@ -3972,15 +4221,18 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		 * If it's an IFA rule (gender) * add MAP OF SOURCE CONCEPT IS CONTEXT
 		 * DEPENDENT FOR GENDER
 		 */
-		
 
 		// TODO Out of date -- construct the entry line
-		// id	effectiveTime	active	moduleId	refSetId	referencedComponentId	mapGroup	mapPriority	mapRule	mapAdvice	mapTarget	correlationId	mapCategoryId
+		// id effectiveTime active moduleId refSetId referencedComponentId
+		// mapGroup mapPriority mapRule mapAdvice mapTarget correlationId
+		// mapCategoryId
 
 		// TODO Check the ICD9CM vs ICD10 headers
-		// ComplexMap Project:  CorrelationId is the relation id
-		// ExtendedMap:  CorrelationId is fixed at hardcoded value, and mapCategoryId is relation id
-		// -- add defaultCorrelationId to algorithm handlers, needs to go into metadata later (make ticket)
+		// ComplexMap Project: CorrelationId is the relation id
+		// ExtendedMap: CorrelationId is fixed at hardcoded value, and
+		// mapCategoryId is relation id
+		// -- add defaultCorrelationId to algorithm handlers, needs to go into
+		// metadata later (make ticket)
 		String entryLine = uuid.toString()
 				+ "\t"
 				+ "1"
@@ -4006,8 +4258,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				+ "447561005"
 				+ "\t"
 				+ (mapEntry.getMapRelation() == null ? "THIS SHOULD NOT HAVE HAPPENED!!!"
-						: mapEntry.getMapRelation().getId())
-				+ "\r\n";
+						: mapEntry.getMapRelation().getId()) + "\r\n";
 
 		// write the line
 		writer.write(entryLine);
