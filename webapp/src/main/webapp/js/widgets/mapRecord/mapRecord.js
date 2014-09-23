@@ -98,7 +98,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	
 	$scope.userToken = localStorageService.get('userToken');
 	// on successful retrieval of project, get the record/concept
-	$scope.$watch(['project', 'userToken'], function() {
+	$scope.$watch(['project', 'userToken', 'role', 'user', 'record'], function() {
 		if ($scope.project != null && $scope.userToken != null) {
 			$http.defaults.headers.common.Authorization = $scope.userToken;
 			retrieveRecord();
@@ -779,7 +779,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		} else {
 			console.debug("Save Edit Record Note called when not in edit mode");
 		}
-	}
+	};
+	
 	$scope.addRecordNote = function(record, note) {
 		// check if note non-empty
 		if (note === '' || note == null) {
@@ -792,7 +793,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			mapNote.localId = currentLocalId++;
 			mapNote.note = note;
 			mapNote.timestamp = (new Date()).getTime();
-			mapNote.user = localStorageService.get('currentUser');
+			mapNote.user = $scope.user;
 			
 			// add note to record
 			record['mapNote'].addElement(mapNote);
