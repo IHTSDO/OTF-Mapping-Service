@@ -10,7 +10,6 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface ProjectSpecificAlgorithmHandler.
  */
@@ -262,4 +261,11 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	 */
 	public Set<MapRecord> publish(TrackingRecord trackingRecord, Set<MapRecord> mapRecords,
 			MapUser mapUser) throws Exception;
+
+	/**
+	 * Checks if is propagated record for release processing.
+	 *
+	 * @return true, if is propagated record for release processing
+	 */
+	public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord);
 }
