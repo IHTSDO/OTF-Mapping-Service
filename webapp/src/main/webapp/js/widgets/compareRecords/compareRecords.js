@@ -82,6 +82,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
                             {displayName: 'Sequencing of Map Groups is incorrect'}, 
                             {displayName: 'Target code selection for a map record is in error'}, 
                             {displayName: 'Map parameter assignment is in error'}, 
+                            {displayName: 'Map parameter missing or incomplete'}, 
                             {displayName: 'Other'}
                             ];
 	if ($scope.project.destinationTerminology == "ICD9CM")
