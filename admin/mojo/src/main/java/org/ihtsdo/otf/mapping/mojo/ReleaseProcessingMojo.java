@@ -12,6 +12,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
@@ -82,7 +83,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		getLog().info("Starting workflow quality assurance checks - " + refSetId);
+		getLog().info("Processing release for ref set ids: " + refSetId);
 
 	    if (refSetId == null) {
 	      throw new MojoExecutionException("You must specify a refSetId.");
@@ -94,7 +95,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 	    
 	    File outputDir = new File(outputDirName);
 	    if (!outputDir.isDirectory())
-	    	throw new MojoExecutionException("Output file directory specified could not be found.");
+	    	throw new MojoExecutionException("Output file directory (" + outputDirName + ") could not be found.");
 	    
 	    if (effectiveTime == null)
 	    	throw new MojoExecutionException("You must specify a release time");
@@ -120,15 +121,34 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 	      
 	      // Perform the release processing
 	      for (MapProject mapProject : mapProjects) {
+	    	  
+	    	  // add check for scope concepts contained in the map record set
+	    	  
+	    	  
+	    	  // FOR TESTING ONLY
+	    	  Set<String> conceptIds = new HashSet<>();
+	    	  Set<MapRecord> mapRecords = new HashSet<>();
+	    	  
+	    	  // POPULATE CONCEPT SET HERE
+	    	  conceptIds.add("276008");
+	    	  
+	    	  // RETRIEVE MAP RECORDS HERE
+	    	  for (String terminologyId : conceptIds) {
+	    		  mapRecords.add(mappingService.getMapRecordForProjectAndConcept(mapProject.getId(), terminologyId));
+	    	  }
+
 	        getLog().info(
 	            "Processing release for " + mapProject.getName() + ", "
 	                + mapProject.getId());
 	        
 	        
+	        // ensure output directory name has a terminating /
+	        if (!outputDirName.endsWith("/"))
+	        	outputDirName += "/";
 	        
-	        String releaseFileName = "release_" + mapProject.getSourceTerminology() + "_" + mapProject.getSourceTerminologyVersion()
+	        String releaseFileName = outputDirName + "release_" + mapProject.getSourceTerminology() + "_" + mapProject.getSourceTerminologyVersion()
 	        		+ "_" + mapProject.getDestinationTerminology() + "_" + mapProject.getDestinationTerminologyVersion()
-	        		+ "_" + df.format(new Date());
+	        		+ "_" + df.format(new Date())  + ".txt";
 	        
 	        getLog().info(
 		            "  Release file:  " + releaseFileName);
@@ -136,7 +156,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 	        
 	        
 	        
-	        mappingService.processRelease(mapProject, releaseFileName, effectiveTime, moduleId);
+	        mappingService.processRelease(mapProject, releaseFileName, mapRecords, effectiveTime, moduleId);
 	      }
 
 	      getLog().info("done ...");

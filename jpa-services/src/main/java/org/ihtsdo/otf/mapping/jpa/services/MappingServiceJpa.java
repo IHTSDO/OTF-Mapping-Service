@@ -3,6 +3,9 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.NoResultException;
 import javax.xml.bind.annotation.XmlTransient;
@@ -91,6 +95,7 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+// TODO: Auto-generated Javadoc
 /**
  * JPA implementation of the {@link MappingService}.
  */
@@ -100,6 +105,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * Instantiates an empty {@link MappingServiceJpa}.
 	 * 
 	 * @throws Exception
+	 *             the exception
 	 */
 	public MappingServiceJpa() throws Exception {
 		super();
@@ -135,6 +141,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @param id
 	 *            the auto-generated id
 	 * @return the MapProject
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public MapProject getMapProject(Long id) throws Exception {
@@ -295,6 +303,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @param mapProject
 	 *            the map project
 	 * @return the map project
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public MapProject addMapProject(MapProject mapProject) throws Exception {
@@ -325,6 +335,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * 
 	 * @param mapProject
 	 *            the changed map project
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public void updateMapProject(MapProject mapProject) throws Exception {
@@ -418,6 +430,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @param id
 	 *            the auto-generated id
 	 * @return the MapSpecialist
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public MapUser getMapUser(Long id) throws Exception {
@@ -613,6 +627,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @param id
 	 *            the map record id
 	 * @return the map record
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public MapRecord getMapRecord(Long id) throws Exception {
@@ -1001,6 +1017,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return mapRecordList;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#
+	 * getMapRecordForProjectAndConcept(java.lang.Long, java.lang.String)
+	 */
 	@Override
 	public MapRecord getMapRecordForProjectAndConcept(Long mapProjectId,
 			String terminologyId) throws Exception {
@@ -1782,6 +1804,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 *            the maximum number of descendants a concept can have before it
 	 *            is no longer considered a low-level concept (i.e. return an
 	 *            empty list)
+	 * @param pfsParameter
+	 *            the pfs parameter
 	 * @return the list of unmapped descendant concepts
 	 * @throws Exception
 	 *             the exception
@@ -2279,7 +2303,18 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	}
 
 	/**
-	 * Helper function to call main routine with null value for sampling rate
+	 * Helper function to call main routine with null value for sampling rate.
+	 * 
+	 * @param mapProjectId
+	 *            the map project id
+	 * @param mapUser
+	 *            the map user
+	 * @param complexMapRefSetMembers
+	 *            the complex map ref set members
+	 * @param workflowStatus
+	 *            the workflow status
+	 * @throws Exception
+	 *             the exception
 	 */
 	@Override
 	public void createMapRecordsForMapProject(Long mapProjectId,
@@ -2733,6 +2768,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	// MAP USER PREFERENCES FUNCTIONS
 	// /////////////////////////////////////
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MappingService#getMapUserPreferences(
+	 * java.lang.String)
+	 */
 	@Override
 	public MapUserPreferences getMapUserPreferences(String userName)
 			throws Exception {
@@ -2769,7 +2811,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	}
 
 	/**
-	 * Retrieve all map user preferences
+	 * Retrieve all map user preferences.
 	 * 
 	 * @return a List of MapUserPreferencess
 	 */
@@ -2898,6 +2940,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return MapUserRole.VIEWER;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#
+	 * getProjectSpecificAlgorithmHandler
+	 * (org.ihtsdo.otf.mapping.model.MapProject)
+	 */
 	@Override
 	@XmlTransient
 	public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(
@@ -2972,6 +3021,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#
+	 * setTreePositionTerminologyNotes(java.util.List, java.lang.Long)
+	 */
 	@Override
 	public TreePositionList setTreePositionTerminologyNotes(
 			List<TreePosition> treePositions, Long mapProjectId)
@@ -2995,6 +3050,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		return treePositionList;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MappingService#getOriginMapRecordsForConflict
+	 * (java.lang.Long)
+	 */
 	@SuppressWarnings("unused")
 	@Override
 	public MapRecordList getOriginMapRecordsForConflict(Long mapRecordId)
@@ -3447,13 +3509,31 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 						+ nRecordsRemapped + " with group errors");
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.MappingService#processRelease(org.ihtsdo
+	 * .otf.mapping.model.MapProject, java.lang.String, java.lang.String,
+	 * java.lang.String)
+	 */
 	@Override
 	public void processRelease(MapProject mapProject, String outputFileName,
-			String effectiveTime, String moduleId) throws Exception {
+			Set<MapRecord> mapRecordsToPublish, String effectiveTime,
+			String moduleId) throws Exception {
+		
+				
+		System.out.println(this.getReleaseUuid("abcdef"));
+
+		
 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Processing publication release for project "
 						+ mapProject.getName());
+
+		Logger.getLogger(MappingServiceJpa.class).info(
+				" " + mapRecordsToPublish.size()
+						+ " records selected for publication");
 
 		// check file directory exists and open writer
 		Logger.getLogger(MappingServiceJpa.class).info(
@@ -3461,392 +3541,699 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		BufferedWriter writer = new BufferedWriter(new FileWriter(
 				outputFileName));
 
-		// retrieve the PUBLICATION and READY_FOR_PUBLICATION map records
-		Logger.getLogger(MappingServiceJpa.class).info(
-				"  Retrieving publication ready records...");
-		List<MapRecord> mapRecords = (List<MapRecord>) this
-				.getPublishedAndReadyForPublicationMapRecordsForMapProject(
-						mapProject.getId(), null).getIterable();
-
-		Logger.getLogger(MappingServiceJpa.class).info(
-				"    " + mapRecords.size() + " records eligible.");
-
-		// sort map records by concept id
-		// TODO:  Don't need to sort here, use the sorter in MapRecordRf2ComplexMapLoader
-		Collections.sort(mapRecords, new Comparator<MapRecord>() {
-			@Override
-			public int compare(MapRecord mr1, MapRecord mr2) {
-				return mr1.getConceptId().compareTo(mr2.getConceptId());
-			}
-		});
-
 		// Create a map by concept id for quick retrieval of descendants
-		// TODO:  Descendants are still output, this is unecessary
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"  Creating terminology id map");
 		Map<String, MapRecord> mapRecordMap = new HashMap<>();
 
-		for (MapRecord mr : mapRecords) {
+		for (MapRecord mr : mapRecordsToPublish) {
 			mapRecordMap.put(mr.getConceptId(), mr);
 		}
-		
+
+		// Create a concept set to represent processed concepts
+		// Multiple tree positions may point to the same concept, don't want to
+		// process twice
+		Set<String> conceptsProcessed = new HashSet<>();
+
 		// instantiate the project specific handler
-		ProjectSpecificAlgorithmHandler algorithmHandler = this.getProjectSpecificAlgorithmHandler(mapProject);
+		ProjectSpecificAlgorithmHandler algorithmHandler = this
+				.getProjectSpecificAlgorithmHandler(mapProject);
 
 		// perform the release
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"  Processing release...");
-		for (MapRecord mapRecord : mapRecords) {
+		for (MapRecord mapRecord : mapRecordsToPublish) {
 
-			// first check whether this map record has already been processed
-			// via up-propagation
-			// TODO DO NOT perform this check
-			if (!mapRecordMap.containsKey(mapRecord.getConceptId()))
+			Logger.getLogger(MappingServiceJpa.class).info(
+					"   Processing map record " + mapRecord.getId() + ", "
+							+ mapRecord.getConceptId() + ", "
+							+ mapRecord.getConceptName());
+
+			// this concept has already been analyzed, skip
+			// This accounts for possibility of multiple tree-position routes to
+			// the same concept
+			if (conceptsProcessed.contains(mapRecord.getConceptId())) {
+				Logger.getLogger(MappingServiceJpa.class).info(
+						"    Concept has already been processed.");
 				continue;
-			
-			// look-up set to determine if a entry was original or added via propagation
-			// initially empty (set only if appropriate)
+			} else {
+				conceptsProcessed.add(mapRecord.getConceptId());
+			}
+
+			// instantiate map of entries by group
+			Map<Integer, List<MapEntry>> entriesByGroup = new HashMap<>();
+
+			// create a look-up set to determine if a entry was original
+			// or added via propagation
+			// initially empty (populated if up-propagated
 			Set<Long> nonPropagatedEntryIds = new HashSet<>();
 
 			// second, check whether this record should be up-propagated
-			// TODO Add project specific routine
-			// algorithmHandler.isPropagatedRecord()
-			if (mapRecord.getCountDescendantConcepts() < 11) {
-				
+			if (algorithmHandler
+					.isUpPropagatedRecordForReleaseProcessing(mapRecord)) {
+
+				Logger.getLogger(MappingServiceJpa.class).info(
+						"    Record is up-propagated.");
+
 				// get the descendant tree positions for this record's concept
 				ContentService contentService = new ContentServiceJpa();
-				
-				TreePosition treePosition = contentService.getTreePositionsWithDescendants(
-						mapRecord.getConceptId(), 
-						mapProject.getSourceTerminology(), 
-						mapProject.getSourceTerminologyVersion())
-						.getIterable()
-						.iterator()
-						.next();
-				
-				// get a list of tree positions sorted by position in hiearchy (deepest-first)
-				List<TreePosition> treePositionDescendantList = 
-						getSortedTreePositionDescendantList(treePosition);
-				
+
+				TreePosition treePosition = contentService
+						.getTreePositionsWithDescendants(
+								mapRecord.getConceptId(),
+								mapProject.getSourceTerminology(),
+								mapProject.getSourceTerminologyVersion())
+						.getIterable().iterator().next();
+
+				// get a list of tree positions sorted by position in hiearchy
+				// (deepest-first)
+				List<TreePosition> treePositionDescendantList = getSortedTreePositionDescendantList(treePosition);
+
 				// add the original entry ids to look up set
-				for (MapEntry me : mapRecord.getMapEntries())
+				for (MapEntry me : mapRecord.getMapEntries()) {
 					nonPropagatedEntryIds.add(me.getId());
-				
+				}
+
 				// save the original entries for the top level record
-				List<MapEntry> mapEntriesForRootRecord = mapRecord.getMapEntries();
-				
+				List<MapEntry> mapEntriesForRootRecord = mapRecord
+						.getMapEntries();
+
 				// clear the original entries
 				mapRecord.setMapEntries(null);
-				
+
 				// cycle over the tree positions and retrieve records
-				// note that the tree positions are in reverse order of hierarchy depth
+				// note that the tree positions are in reverse order of
+				// hierarchy depth
 				for (TreePosition tp : treePositionDescendantList) {
-					
-					MapRecord mr = this.getMapRecordForProjectAndConcept(mapProject.getId(), tp.getTerminologyId());
-					
-					// TODO If this concept has already been analyzed, skip
-					//      This accounts for possibility of multiple tree-position routes to the same concept
 
-					// cycle over the entries
-					for (MapEntry me : mr.getMapEntries()) {
-						
-						// ignore entries with no target code
-						// TODO: Get rid of this -- we'll leave redundant entries in
-						// if (me.getTargetId() != null && me.getTargetId() != "") {
-							
-							// reset the map priority based on current state of record
-							me.setMapPriority(this.getNextMapPriority(mapRecord, me));
-							
-							// reset the rule based on whether it is propagated
-							if (!nonPropagatedEntryIds.contains(me.getId())) {
-								this.setPropagatedParametersForMapEntry(me, mapRecord);
+					// skip this record's concept, added below
+					if (!tp.getTerminologyId().equals(mapRecord.getConceptId())) {
+
+						// retrieve from the cache
+						MapRecord mr;
+						if (mapRecordMap.containsKey(tp.getTerminologyId())) {
+							mr = mapRecordMap.get(tp.getTerminologyId());
+						} else {
+							mr = this.getMapRecordForProjectAndConcept(
+									mapProject.getId(), tp.getTerminologyId());
+						}
+
+						Logger.getLogger(MappingServiceJpa.class).info(
+								"     Adding entries from map record "
+										+ mr.getId() + ", " + mr.getConceptId()
+										+ ", " + mr.getConceptName());
+
+						// cycle over the entries
+						for (MapEntry me : mr.getMapEntries()) {
+
+							// get the current list of entries for this group
+							List<MapEntry> existingEntries = entriesByGroup
+									.get(me.getMapGroup());
+
+							if (existingEntries == null)
+								existingEntries = new ArrayList<>();
+
+							// determine whether this entry already exists on
+							// the up-propagated record in this group
+
+							boolean isDuplicateEntry = false;
+
+							// compare to the entries added via up-propagation
+							for (MapEntry existingEntry : existingEntries) {
+
+								if (existingEntry.isEquivalent(me))
+									isDuplicateEntry = true;
 							}
-							
-							// add map entry to record
-							mapRecord.addMapEntry(me);
-						//}
+
+							// compare to the entries on the original record
+							for (MapEntry rootEntry : mapEntriesForRootRecord) {
+
+								if (rootEntry.getMapGroup() == me.getMapGroup() && rootEntry.isEquivalent(me))
+									isDuplicateEntry = true;
+							}
+
+							// if not a duplicate entry, add it to the map
+							if (isDuplicateEntry == false) {
+								// alter the rule if a propagated entry
+								if (!nonPropagatedEntryIds.contains(me.getId())) {
+									this.setPropagatedRuleForMapEntry(me);
+								}
+
+								// set map priority based on size of current
+								// list
+								me.setMapPriority(existingEntries.size() + 1);
+
+								// add to the list
+								existingEntries.add(me);
+
+								System.out.println("Adding entry: "
+										+ me.toString());
+
+								// replace existing list with modified list
+								entriesByGroup.put(me.getMapGroup(),
+										existingEntries);
+
+							} else {
+								System.out.println("Duplicate entry: "
+										+ me.toString());
+							}
+						}
 					}
-					
-					// remove this record from the id map
-					// TODO THIS is no longer needed (see above) mapRecordMap.remove(mr.getConceptId());
 				}
-				
+
 				// add the original entries
+				System.out.println("Adding original entries: ");
 				for (MapEntry me : mapEntriesForRootRecord) {
-					// TODO Always write, even for no-target entries
-					// if (me.getTargetId() != null && me.getTargetId() != "") {
-						
-						// reset the map priority based on current state of record
-						me.setMapPriority(this.getNextMapPriority(mapRecord, me));
-						
-						// if true rule, set to OTHERWISE TRUE
-						// TODO:  Only do this if the calculated map priority is higher than 1
-						if (me.getRule().equals("TRUE")) 
+
+					List<MapEntry> existingEntries = entriesByGroup.get(me
+							.getMapGroup());
+
+					if (existingEntries == null)
+						existingEntries = new ArrayList<>();
+
+					// if not the first entry and contains TRUE rule, set to
+					// OTHERWISE TRUE
+					if (me.getMapPriority() > 1 && me.getRule().equals("TRUE"))
+						me.setRule("OTHERWISE TRUE");
+
+					// add map entry to map
+					me.setMapPriority(existingEntries.size() + 1);
+
+					System.out.println("  Adding existing entry as: "
+							+ me.toString());
+
+					existingEntries.add(me);
+
+					entriesByGroup.put(me.getMapGroup(), existingEntries);
+				}
+
+				// check that each group is "capped" with a TRUE or OTHERWISE
+				// TRUE rule
+				for (int mapGroup : entriesByGroup.keySet()) {
+
+					List<MapEntry> existingEntries = entriesByGroup
+							.get(mapGroup);
+
+					// if the rule on the last entry is not TRUE or OTHERWISE
+					// TRUE
+					if (existingEntries.size() == 0
+							|| !existingEntries.get(existingEntries.size() - 1)
+									.getRule().contains("TRUE")) {
+
+						// create a new map entry
+						MapEntry me = new MapEntryJpa();
+
+						// set the record and group
+						me.setMapRecord(mapRecord);
+						me.setMapGroup(mapGroup);
+						me.setMapPriority(existingEntries.size() + 1);
+
+						// set the rule to TRUE if no entries, OTHERWISE true if
+						// entries exist
+						if (existingEntries.size() == 0)
+							me.setRule("TRUE");
+						else
 							me.setRule("OTHERWISE TRUE");
-						
-						// add map entry to record
-						mapRecord.addMapEntry(me);
 
-					//}
+						// compute the map relation for no target for this
+						// project
+						me.setMapRelation(algorithmHandler.computeMapRelation(
+								mapRecord, me));
+
+						existingEntries.add(me);
+						entriesByGroup.put(mapGroup, existingEntries);
+
+					}
 				}
 			}
-			
-			// TODO Check for "uncapped" groups that do not end with an OTHERWISE TRUE or TRUE rule
-			// 		Add the appropriate NC/Not Mappable relation based on project
-			
 
-			// extract the entries
-			List<MapEntry> mapEntries = mapRecord.getMapEntries();
+			// write each group in sequence
+			for (int mapGroup : entriesByGroup.keySet()) {
+				for (MapEntry mapEntry : entriesByGroup.get(mapGroup)) {
+					boolean isPropagatedEntry = !nonPropagatedEntryIds
+							.contains(mapEntry.getId());
 
-			// ensure entries are sorted by group and priority
-			Collections.sort(mapEntries, new Comparator<MapEntry>() {
-				@Override
-				public int compare(MapEntry me1, MapEntry me2) {
-					if (me1.getMapGroup() == me2.getMapGroup()) {
-						return (me1.getMapPriority() < me2.getMapPriority() ? -1
-								: 1);
-					} else
-						return (me1.getMapGroup() < me2.getMapGroup() ? -1 : 1);
+					// write this entry
+					this.writeReleaseEntry(writer, mapEntry, mapRecord,
+							mapProject, effectiveTime, moduleId,
+							isPropagatedEntry);
 				}
-			});
-
-
-			// write each entry
-			for (MapEntry mapEntry : mapEntries) {
-				
-				boolean isPropagatedEntry = !nonPropagatedEntryIds.contains(mapEntry.getId());
-				
-				// write this entry
-				this.writeReleaseEntry(writer, mapEntry, mapRecord, mapProject,
-						effectiveTime, moduleId, isPropagatedEntry);
-
 			}
+
 		}
+
+		// close the writer
+		writer.close();
 	}
-	
-	public MapEntry setPropagatedParametersForMapEntry(MapEntry mapEntry, MapRecord mapRecord) {
-		
-		
-		
-		mapEntry.setRule("IFA " + mapRecord.getConceptId() + " | "
-				+ mapRecord.getConceptName() + " |");
-		
-		// TODO Also add the machine and human readable for age and gender
-		/** e.g. for age IFA 104831000119109 | Drug induced central sleep apnea (disorder) | AND IFA 445518008 | Age at onset of clinical finding (observable entity) | <= 28.0 days	IF DRUG INDUCED CENTRAL SLEEP APNEA AND IF AGE AT ONSET OF CLINICAL FINDING BEFORE 28.0 DAYS CHOOSE P28.3 | MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT	P28.3	447561005	447639009
-		67fecd6d-f583-53de-9fbb-df292a764d08	20130731	1	449080006	447562003	27405005	1	3	IFA 
-		*/
-		MapAdvice mapAdvice = new MapAdviceJpa();
 
-		/**
-		 * 
-		 * THESE THREE WILL BE IN THE writeEntry routines
-		 * If the map target is blank
-		 * * advice contains the map relation name
-		 * If it's an IFA rule (age)
-		 * * add MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT
-		 * 
-		 * If it's an IFA rule (gender)
-		 * * add MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT FOR GENDER
-		 */
-		
-		
-		// if no target, use relation (e.g. portion in ***)
-		// example: IFA 230597003 | Intercostal post-herpetic neuralgia
-		// (disorder) | ***MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH
-		// AVAILABLE DATA***
-		if (mapEntry.getTargetId() == null) {
-			mapAdvice.setDetail(mapEntry.getMapRelation().getName());
+	/**
+	 * Function to construct propagated rule for an entry.
+	 * 
+	 * @param mapEntry
+	 *            the map entry
+	 * @return the map entry
+	 */
+	public MapEntry setPropagatedRuleForMapEntry(MapEntry mapEntry) {
 
-			// otherwise, construct human readable (e.g. portion in ***)
-			// example: IFA 70171009 | Open wound of alveolar process
-			// with complication (disorder) | ***IF OPEN WOUND OF ALVEOLAR
-			// PROCESS WITH COMPLICATION CHOOSE S01.5***
-		} else {
-			String adviceText = "IF "
-					+ mapRecord.getConceptName().replace(" (*)", "") // Remove
-																		// any
-																		// (disorder),
-																		// (disease),
-																		// etc.
-					+ " CHOOSE " + mapEntry.getTargetId();
-			
-			// also add the human readable advice for age and gender
+		MapRecord mapRecord = mapEntry.getMapRecord();
 
-			mapAdvice.setDetail(adviceText.toUpperCase());
+		// construct propagated rule based on concept id and name
+		// e.g. for TRUE rule
+		// IFA 104831000119109 | Drug induced central sleep apnea
+		//
+		// for age rule
+		// IFA 104831000119109 | Drug induced central sleep apnea
+		// (disorder) | AND IFA 445518008 | Age at onset of clinical finding
+		// (observable entity) | <= 28.0 days
+		// (disorder)
+		String rule = "IFA " + mapRecord.getConceptId() + " | "
+				+ mapRecord.getConceptName() + " |";
+
+		// if an age or gender rule, append the existing rule
+		if (!mapEntry.getRule().contains("TRUE")) {
+			rule += " AND " + mapEntry.getRule();
 		}
-		
-		mapEntry.addMapAdvice(mapAdvice);
-		
+
+		// set the rule
+		mapEntry.setRule(rule);
+
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"       Set rule to " + rule);
+		/**
+		 * e.g. for age IFA 104831000119109 | Drug induced central sleep apnea
+		 * (disorder) | AND IFA 445518008 | Age at onset of clinical finding
+		 * (observable entity) | <= 28.0 days IF DRUG INDUCED CENTRAL SLEEP
+		 * APNEA AND IF AGE AT ONSET OF CLINICAL FINDING BEFORE 28.0 DAYS CHOOSE
+		 * P28.3 | MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT P28.3 447561005
+		 * 447639009 67fecd6d-f583-53de-9fbb-df292a764d08 20130731 1 449080006
+		 * 447562003 27405005 1 3 IFA
+		 */
+
 		return mapEntry;
 	}
-	
-	public List<TreePosition> getSortedTreePositionDescendantList(TreePosition tp) {
-		
-		// get the unsorted list from recursive helper function
-		List<TreePosition> sortedTreePositionDescendantList = this.getUnsortedTreePositionDescendantList(tp);
-		
-		// sort the tree positions by position in the hierarchy (e.g. # of ~ characters)
-		Collections.sort(sortedTreePositionDescendantList, new Comparator<TreePosition>() {
-			@Override
-			public int compare(TreePosition tp1, TreePosition tp2) {
-				int levels1 = tp1.getAncestorPath().length() - tp1.getAncestorPath().replace("~", "").length();
-				int levels2 = tp1.getAncestorPath().length() - tp1.getAncestorPath().replace("~", "").length();
-				
-				// if first has more ~'s than second, it is considered LESS than the second
-				// i.e. this is a reverse sort
-				return levels2 - levels1;
-			}
-		});
-		
-		return sortedTreePositionDescendantList;
-	}
-	
+
 	/**
-	 * Recursive helper function
-	 * Given a tree position, return a list of descendants
-	 * @param existingList
-	 * @return
+	 * Gets the human readable map advice.
+	 * 
+	 * @param mapEntry
+	 *            the map entry
+	 * @return the human readable map advice
 	 */
-	public List<TreePosition> getUnsortedTreePositionDescendantList(TreePosition tp) {
+	public String getHumanReadableMapAdvice(MapEntry mapEntry) {
+
+		String advice = "";
 		
-		List<TreePosition> descendantTreePositionList = new ArrayList<>();
-		
-		// for each child tree position, recursively call function to add its children
-		for (TreePosition tpChild : tp.getChildren()) {
-			descendantTreePositionList.addAll(getUnsortedTreePositionDescendantList(tpChild));
+		System.out.println("Constructing human-readable advice for:  " + mapEntry.getRule());
+
+		String[] comparatorComponents; // used for parsing age rules
+
+		// if map target is blank
+		if (mapEntry.getTargetId() == null || mapEntry.getTargetId() == "") {
+			System.out.println("  Use map relation");
+			advice = mapEntry.getMapRelation().getName();
 		}
-		
-		// add this tree position to the list
-		descendantTreePositionList.add(tp);
-		
-		return descendantTreePositionList;	
+
+		// if map rule is IFA (age)
+		else if (mapEntry.getRule().toUpperCase().contains("AGE")) {
+			// IF AGE AT ONSET OF
+			// CLINICAL FINDING BETWEEN 1.0 YEAR AND 18.0 YEARS CHOOSE
+			// M08.939
+
+			// Rule examples
+			// IFA 104831000119109 | Drug induced central sleep apnea
+			// (disorder) | AND IFA 445518008 | Age at onset of clinical finding
+			// (observable
+			// entity) | < 65 years
+			// IFA 104831000119109 | Drug induced central sleep apnea
+			// (disorder) | AND IFA 445518008 | Age at onset of clinical finding
+			// (observable entity) | <= 28.0 days
+			// (disorder)
+
+			// split by pipe (|) character. Expected fields
+			// 0: IFA conceptId
+			// 1: conceptName
+			// 2: AND IFA ageConceptId
+			// 3: Age rule type (Age at onset, Current chronological age)
+			// 4: Comparator, Value, Units (e.g. < 65 years)
+			// ---- The following only exist for two-value age rules
+			// 5: AND IFA ageConceptId
+			// 6: Age rule type (Age at onset, Current chronological age
+			// 7: Comparator, Value, Units
+			String[] ruleComponents = mapEntry.getRule().split("|");
+
+			// add the type of age rule
+			advice = "IF " + ruleComponents[3];
+
+			// if a single component age rule, construct per example:
+			// IF CURRENT CHRONOLOGICAL AGE ON OR AFTER 15.0 YEARS CHOOSE J20.9
+			if (ruleComponents.length == 5) {
+
+				comparatorComponents = ruleComponents[4].split(" ");
+
+				// add appropriate text based on comparator
+				switch (comparatorComponents[0]) {
+				case ">":
+					advice += " AFTER";
+					break;
+				case "<":
+					advice += " BEFORE";
+					break;
+				case ">=":
+					advice += " ON OR AFTER";
+					break;
+				case "<=":
+					advice += " ON OR BEFORE";
+					break;
+				}
+
+				// add the value and units
+				advice += " " + comparatorComponents[1] + " "
+						+ comparatorComponents[2];
+
+				// otherwise, if a double-component age rule, construct per
+				// example
+				// IF AGE AT ONSET OF CLINICAL FINDING BETWEEN 1.0 YEAR AND 18.0
+				// YEARS CHOOSE M08.939
+			} else if (ruleComponents.length == 8) {
+
+				advice += " BETWEEN ";
+
+				// get the first comparator/value/units triple
+				comparatorComponents = ruleComponents[4].split(" ");
+
+				advice += comparatorComponents[1] + " "
+						+ comparatorComponents[2];
+			}
+
+			// finally, add the CHOOSE {targetId}
+			advice += " CHOOSE " + mapEntry.getTargetId();
+
+			// if a gender rule (i.e. contains (FE)MALE)
+		} else if (mapEntry.getRule().toUpperCase().contains("MALE")) {
+
+			// add the advice based on gender
+			if (mapEntry.getRule().contains("FEMALE")) {
+				advice += "IF FEMALE CHOOSE " + mapEntry.getTargetId();
+			} else {
+				advice += "IF MALE CHOOSE " + mapEntry.getTargetId();
+			}
+		} // if not an IFA rule (i.e. TRUE, OTHERWISE TRUE), simply return ALWAYS
+		else if (!mapEntry.getRule().toUpperCase().contains("IFA")) {
+			
+			advice = "ALWAYS " + mapEntry.getTargetId();
+			
+		// otherwise an IFA rule
+		} else {
+			String[] ifaComponents = mapEntry.getRule().toUpperCase().split("\\|");
+			
+			// remove any (disorder), etc.
+			String targetName = ifaComponents[1].trim(); // .replace("[(.*)]", "");
+			
+			advice = "IF " + targetName + " CHOOSE " + mapEntry.getTargetId();
+		}
+
+		System.out.println(
+				"   Human-readable advice: " + advice);
+
+		return advice;
+
 	}
 
-	
-	
 	/**
-	 * Given a map record and map entry, return the next assignable map priority for this map entry
+	 * Gets the sorted tree position descendant list.
+	 * 
+	 * @param tp
+	 *            the tp
+	 * @return the sorted tree position descendant list
+	 */
+	public List<TreePosition> getSortedTreePositionDescendantList(
+			TreePosition tp) {
+
+		// get the unsorted list from recursive helper function
+		List<TreePosition> sortedTreePositionDescendantList = this
+				.getUnsortedTreePositionDescendantList(tp);
+
+		// sort the tree positions by position in the hierarchy (e.g. # of ~
+		// characters)
+		Collections.sort(sortedTreePositionDescendantList,
+				new Comparator<TreePosition>() {
+					@Override
+					public int compare(TreePosition tp1, TreePosition tp2) {
+						int levels1 = tp1.getAncestorPath().length()
+								- tp1.getAncestorPath().replace("~", "")
+										.length();
+						int levels2 = tp1.getAncestorPath().length()
+								- tp1.getAncestorPath().replace("~", "")
+										.length();
+
+						// if first has more ~'s than second, it is considered
+						// LESS than the second
+						// i.e. this is a reverse sort
+						return levels2 - levels1;
+					}
+				});
+
+		return sortedTreePositionDescendantList;
+	}
+
+	/**
+	 * Helper function: Given a set of map entries and a group number returns
+	 * the last entry in that group
+	 * 
+	 * @param mapEntries
+	 * @param group
+	 * @return
+	 */
+	public MapEntry getLastMapEntryForGroup(List<MapEntry> mapEntries, int group) {
+		MapEntry lastEntry = null;
+		for (MapEntry me : mapEntries) {
+			if (me.getMapGroup() == group) {
+				if (lastEntry == null
+						|| lastEntry.getMapPriority() < me.getMapPriority()) {
+					lastEntry = me;
+				}
+
+			}
+		}
+
+		return lastEntry;
+	}
+
+	/**
+	 * Recursive helper function Given a tree position, return a list of
+	 * descendants.
+	 * 
+	 * @param tp
+	 *            the tp
+	 * @return the unsorted tree position descendant list
+	 */
+	public List<TreePosition> getUnsortedTreePositionDescendantList(
+			TreePosition tp) {
+
+		List<TreePosition> descendantTreePositionList = new ArrayList<>();
+
+		// for each child tree position, recursively call function to add its
+		// children
+		for (TreePosition tpChild : tp.getChildren()) {
+			descendantTreePositionList
+					.addAll(getUnsortedTreePositionDescendantList(tpChild));
+		}
+
+		// add this tree position to the list
+		descendantTreePositionList.add(tp);
+
+		return descendantTreePositionList;
+	}
+
+	/**
+	 * Given a map record and map entry, return the next assignable map priority
+	 * for this map entry.
+	 * 
+	 * @param mapRecord
+	 *            the map record
+	 * @param mapEntry
+	 *            the map entry
+	 * @return the next map priority
 	 */
 	public int getNextMapPriority(MapRecord mapRecord, MapEntry mapEntry) {
-		
+
 		int maxPriority = 0;
 		for (MapEntry me : mapRecord.getMapEntries()) {
-			if (me.getMapGroup() == mapEntry.getMapGroup() && mapEntry.getMapPriority() > maxPriority)
+			if (me.getMapGroup() == mapEntry.getMapGroup()
+					&& mapEntry.getMapPriority() > maxPriority)
 				maxPriority = mapEntry.getMapPriority();
-				
+
 		}
 
 		return maxPriority + 1;
 	}
+
+	/*
+	 * public String getReleaseUuid(MapEntry mapEntry, MapRecord mapRecord,
+	 * MapProject mapProject) {
+	 * 
+	 * long hashCode = 17;
+	 * 
+	 * hashCode = hashCode * 31 + mapProject.getRefSetId().hashCode(); hashCode
+	 * = hashCode * 31 + mapRecord.getConceptId().hashCode(); hashCode =
+	 * hashCode * 31 + mapEntry.getMapGroup(); hashCode = hashCode * 31 +
+	 * mapEntry.getRule().hashCode(); hashCode = hashCode * 31 +
+	 * mapEntry.getTargetId().hashCode();
+	 * 
+	 * return ""; }
+	 */
 	
-	// create UUID from refset id, concept id, map group, map rule, map target
-	// TODO Can't find good documentation on creating UUID from field/hash value
-	public String getReleaseUuid(MapEntry mapEntry, MapRecord mapRecord,
-			MapProject mapProject) {
+	public static byte[] getRawBytes(UUID uid) {
+        String id = uid.toString();
+        byte[] rawBytes = new byte[16];
 
-		long hashCode = 17;
+        for (int i = 0, j = 0; i < 36; ++j) {
+            // Need to bypass hyphens:
+            switch (i) {
+            case 8:
+            case 13:
+            case 18:
+            case 23:
+                ++i;
+            }
+            char c = id.charAt(i);
 
-		hashCode = hashCode * 31 + mapProject.getRefSetId().hashCode();
-		hashCode = hashCode * 31 + mapRecord.getConceptId().hashCode();
-		hashCode = hashCode * 31 + mapEntry.getMapGroup();
-		hashCode = hashCode * 31 + mapEntry.getRule().hashCode();
-		hashCode = hashCode * 31 + mapEntry.getTargetId().hashCode();
+            if (c >= '0' && c <= '9') {
+                rawBytes[j] = (byte) ((c - '0') << 4);
+            } else if (c >= 'a' && c <= 'f') {
+                rawBytes[j] = (byte) ((c - 'a' + 10) << 4);
+            }
 
-		return "";
-	}
+            c = id.charAt(++i);
 
-	public void writeReleaseEntry(BufferedWriter writer, MapEntry mapEntry,
-			MapRecord mapRecord, MapProject mapProject, String effectiveTime,
-			String moduleId, boolean isUpPropagated) throws IOException {
-		// create UUID from refset id, concept id, map group, map rule,
-		// map target
-		String uuid = getReleaseUuid(mapEntry, mapRecord, mapProject);
+            if (c >= '0' && c <= '9') {
+                rawBytes[j] |= (byte) (c - '0');
+            } else if (c >= 'a' && c <= 'f') {
+                rawBytes[j] |= (byte) (c - 'a' + 10);
+            }
+            ++i;
+        }
+        return rawBytes;
+    }
 
-		// construct human-readable map advice based on rule
-		String mapAdviceStr = "";
+	/**
+	 * Gets the release uuid.
+	 * 
+	 * @param name
+	 *            the name
+	 * @return the release uuid
+	 * @throws NoSuchAlgorithmException
+	 *             the no such algorithm exception
+	 * @throws UnsupportedEncodingException
+	 *             the unsupported encoding exception
+	 */
+	public static UUID getReleaseUuid(String name)
+			throws NoSuchAlgorithmException, UnsupportedEncodingException {
+		MessageDigest sha1Algorithm = MessageDigest.getInstance("SHA-1");
 
-		// if up-propagated
-		if (isUpPropagated) {
+		String namespace = "00000000-0000-0000-0000-000000000000";
+		String encoding = "UTF-8";
+		
+		UUID namespaceUUID = UUID.fromString(namespace);
 
-			// find the propagated advice and add it first
-			MapAdvice propagatedAdvice = null;
-			for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
-				if (mapAdvice.getDetail().matches("IFA * | * |")) {
-					mapAdviceStr += mapAdvice.getDetail();
-					propagatedAdvice = mapAdvice;
-				}
-			}
+		// Generate the digest.
+		sha1Algorithm.reset();
+		
+		 // Generate the digest.
+        sha1Algorithm.reset();
+        if (namespace != null) {
+            sha1Algorithm.update(getRawBytes(namespaceUUID));
+        }
 
-			// remove this advice so it will not be added later
-			mapEntry.removeMapAdvice(propagatedAdvice);
+		sha1Algorithm.update(name.getBytes(encoding));
+		byte[] sha1digest = sha1Algorithm.digest();
 
-		} else {
+		sha1digest[6] &= 0x0f; /* clear version */
+		sha1digest[6] |= 0x50; /* set to version 5 */
+		sha1digest[8] &= 0x3f; /* clear variant */
+		sha1digest[8] |= 0x80; /* set to IETF variant */
 
-			// if not propagated, construct map advice based on TRUE/AGE rules
-			
-			// if TRUE or OTHERWISE TRUE and has a target, use ALWAYS
-			if (mapEntry.getRule().contains("TRUE") && mapEntry.getTargetId() != null && mapEntry.getTargetId() != "")
-				mapAdviceStr += "ALWAYS " + mapEntry.getTargetId();
-			else if (mapEntry.getRule().contains("Age at onset")) {
-				String[] ruleComponents = mapEntry.getRule().split("|");
-
-				// find if this is a less-than-or-equal to or greater-than
-				// rule
-				// CHANGE THIS to detect all <, <=, >, >=
-				boolean lte1 = ruleComponents[2].contains("<=");
-
-				// extract the value and units
-				String valueAndUnits1 = (lte1 ? ruleComponents[2].replace(
-						" <= ", "") : ruleComponents[2].replace(" > ", ""));
-
-				// add single-age element
-				if (ruleComponents.length == 3) {
-					mapAdviceStr += "IF AGE AT ONSET OF CLINICAL FINDING "
-							+ (lte1 ? "BEFORE " : "ON OR AFTER ")
-							+ valueAndUnits1;
-				}
-
-				// add double-age element
-				else if (ruleComponents.length == 6) {
-					String valueAndUnits2 = ruleComponents[5].replace(" <= ",
-							"");
-
-					// EXAMPLE:
-					// bb173faf-f53c-5cf0-b576-946bfa90d34e 20140901 1
-					// 5991000124107 6011000124106 1771000119109 Arthritis of
-					// wrist (disorder) 1 8 IFA 445518008 | Age at onset of
-					// clinical finding (observable entity) | >= 1.0 year AND
-					// IFA 445518008 | Age at onset of clinical finding
-					// (observable entity) | < 18.0 years IF AGE AT ONSET OF
-					// CLINICAL FINDING BETWEEN 1.0 YEAR AND 18.0 YEARS CHOOSE
-					// M08.939 | CONSIDER ADDITIONAL CODE TO IDENTIFY SPECIFIC
-					// CONDITION OR DISEASE | CONSIDER LATERALITY SPECIFICATION
-					// | MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT M08.939
-					// Juvenile arthritis, unspecified, unspecified wrist
-					// 447639009 Map of source concept is context dependent
-					mapAdviceStr += "IF AGE AT ONSET OF CLINICAL FINDING ON OR AFTER "
-							+ valueAndUnits1 + " AND BEFORE " + valueAndUnits2;
-				}
-
-				// add the CHOOSE TARGET
-				mapAdviceStr += " CHOOSE " + mapEntry.getTargetId();
-			}
+		long msb = 0;
+		long lsb = 0;
+		for (int i = 0; i < 8; i++) {
+			msb = (msb << 8) | (sha1digest[i] & 0xff);
+		}
+		for (int i = 8; i < 16; i++) {
+			lsb = (lsb << 8) | (sha1digest[i] & 0xff);
 		}
 
-		List<MapAdvice> mapAdvices = new ArrayList<>(mapEntry.getMapAdvices());
-		Collections.sort(mapAdvices, new Comparator<MapAdvice>() {
-			@Override
-			public int compare(MapAdvice ma1, MapAdvice ma2) {
-				return ma1.getDetail().compareTo(ma2.getDetail());
-			}
-		});
+		return new UUID(msb, lsb);
+
+	}
+
+	/**
+	 * Write release entry.
+	 * 
+	 * @param writer
+	 *            the writer
+	 * @param mapEntry
+	 *            the map entry
+	 * @param mapRecord
+	 *            the map record
+	 * @param mapProject
+	 *            the map project
+	 * @param effectiveTime
+	 *            the effective time
+	 * @param moduleId
+	 *            the module id
+	 * @param isUpPropagated
+	 *            the flag for a propagated field (no longer used)
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws NoSuchAlgorithmException
+	 *             the no such algorithm exception
+	 */
+	public void writeReleaseEntry(BufferedWriter writer, MapEntry mapEntry,
+			MapRecord mapRecord, MapProject mapProject, String effectiveTime,
+			String moduleId, boolean isUpPropagated) throws IOException,
+			NoSuchAlgorithmException {
+
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"     Writing entry for concept " + mapRecord.getConceptId()
+						+ ", map group " + mapEntry.getMapGroup()
+						+ ", priority " + mapEntry.getMapPriority());
+
+		// create UUID from refset id, concept id, map group, map rule,
+		// map target
+		UUID uuid = getReleaseUuid(mapProject.getRefSetId()
+				+ mapRecord.getConceptId() + mapEntry.getMapGroup()
+				+ mapEntry.getRule() + mapEntry.getTargetId());
+
+		// construct human-readable map advice based on rule
+		String mapAdviceStr = this.getHumanReadableMapAdvice(mapEntry);
 
 		// add the entry's map advices
-		for (MapAdvice mapAdvice : mapAdvices) {
+		for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
 			mapAdviceStr += " | " + mapAdvice.getDetail();
 		}
 
-		String entryLine = uuid
+		/**
+		 * 
+		 * THESE THREE WILL BE IN THE writeEntry routines If the map target is
+		 * blank * advice contains the map relation name If it's an IFA rule
+		 * (age) * add MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT
+		 * 
+		 * If it's an IFA rule (gender) * add MAP OF SOURCE CONCEPT IS CONTEXT
+		 * DEPENDENT FOR GENDER
+		 */
+
+		// TODO Out of date -- construct the entry line
+		// id effectiveTime active moduleId refSetId referencedComponentId
+		// mapGroup mapPriority mapRule mapAdvice mapTarget correlationId
+		// mapCategoryId
+
+		// TODO Check the ICD9CM vs ICD10 headers
+		// ComplexMap Project: CorrelationId is the relation id
+		// ExtendedMap: CorrelationId is fixed at hardcoded value, and
+		// mapCategoryId is relation id
+		// -- add defaultCorrelationId to algorithm handlers, needs to go into
+		// metadata later (make ticket)
+		String entryLine = uuid.toString()
 				+ "\t"
 				+ "1"
 				+ "\t"
@@ -3871,13 +4258,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				+ "447561005"
 				+ "\t"
 				+ (mapEntry.getMapRelation() == null ? "THIS SHOULD NOT HAVE HAPPENED!!!"
-						: mapEntry.getMapRelation().getId());
-		
-		
+						: mapEntry.getMapRelation().getId()) + "\r\n";
 
 		// write the line
 		writer.write(entryLine);
-		writer.newLine(); // TODO Lines always end in \r\n
 	}
 
 }

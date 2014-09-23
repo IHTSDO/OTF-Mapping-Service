@@ -332,4 +332,10 @@ public class MapEntryImpl implements MapEntry {
         + ", mapGroup=" + mapGroup + ", mapBlock=" + mapBlock + "]";
   }
 
+@Override
+public boolean isEquivalent(MapEntry me) {
+	// TODO Auto-generated method stub
+	return false;
+}
+
 }
