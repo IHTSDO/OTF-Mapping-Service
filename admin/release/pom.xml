@@ -36,7 +36,7 @@
                 </goals>
                 <configuration>
                   <refSetId>${refset.id}</refSetId>
-                  <outputDirName>$(output.dir)</outputDirName>
+                  <outputDirName>${output.dir}</outputDirName>
                   <effectiveTime>${time}</effectiveTime>
                   <moduleId>${module.id}</moduleId>>
                 </configuration>
