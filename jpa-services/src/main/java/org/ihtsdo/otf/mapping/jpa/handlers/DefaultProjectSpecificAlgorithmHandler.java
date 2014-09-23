@@ -2264,4 +2264,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// DO NOTHING -- Override in project specific handlers if necessary
 	}
 
+	@Override
+	public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord) {
+		return false;
+	}
+	
 }

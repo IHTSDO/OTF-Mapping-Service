@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
@@ -430,7 +431,8 @@ public interface MappingService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void createMapRecordsForMapProject(Long mapProjectId, MapUser mapUser,
+	public void createMapRecordsForMapProject(Long mapProjectId,
+			MapUser mapUser,
 			List<ComplexMapRefSetMember> complexMapRefSetMembers,
 			WorkflowStatus workflowStatus) throws Exception;
 
@@ -881,29 +883,25 @@ public interface MappingService extends RootService {
 
 	/**
 	 * Creates the map records for map project.
-	 *
-	 * @param mapProjectId the map project id
-	 * @param loaderUser 
-	 * @param complexMapRefSetMembers the complex map ref set members
-	 * @param mapUser the map user
-	 * @param workflowStatus the workflow status
-	 * @param samplingRate the sampling rate
-	 * @throws Exception the exception
-	 */
-	void createMapRecordsForMapProject(Long mapProjectId,
-			MapUser mapUser, List<ComplexMapRefSetMember> complexMapRefSetMembers,
-			WorkflowStatus workflowStatus, float samplingRate)
-			throws Exception;
-
-	/**
-	 * Process release at publication time
 	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param outputDirName
+	 * @param mapProjectId
+	 *            the map project id
+	 * @param loaderUser
+	 * @param complexMapRefSetMembers
+	 *            the complex map ref set members
+	 * @param mapUser
+	 *            the map user
+	 * @param workflowStatus
+	 *            the workflow status
+	 * @param samplingRate
+	 *            the sampling rate
+	 * @throws Exception
+	 *             the exception
 	 */
-	void processRelease(MapProject mapProject, String outputFileName,
-			String effectiveTime, String moduleId) throws Exception;
+	void createMapRecordsForMapProject(Long mapProjectId, MapUser mapUser,
+			List<ComplexMapRefSetMember> complexMapRefSetMembers,
+			WorkflowStatus workflowStatus, float samplingRate) throws Exception;
+
 
 	/**
 	 * Gets the map record for project and concept.
@@ -919,6 +917,18 @@ public interface MappingService extends RootService {
 	public MapRecord getMapRecordForProjectAndConcept(Long mapProjectId,
 			String terminologyId) throws Exception;
 
-
+	/**
+	 * Process release.
+	 *
+	 * @param mapProject the map project
+	 * @param outputFileName the output file name
+	 * @param mapRecordsToPublish the map records to publish
+	 * @param effectiveTime the effective time
+	 * @param moduleId the module id
+	 * @throws Exception the exception
+	 */
+	public void processRelease(MapProject mapProject, String outputFileName,
+			Set<MapRecord> mapRecordsToPublish, String effectiveTime,
+			String moduleId) throws Exception;
 
 }
