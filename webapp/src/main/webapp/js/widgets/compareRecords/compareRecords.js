@@ -108,52 +108,55 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.userToken = localStorageService.get('userToken');
 	$scope.$watch(['project', 'userToken'], function() {
 		
-		console.debug('compareRecords:  Detected change in project');
-		$http.defaults.headers.common.Authorization = $scope.userToken;
+		if ($scope.project != null && $scope.userToken != null) {
 		
-		// if first visit, retrieve the records to be compared
-		if ($scope.leadRecord == null) {
-			console.debug("First visit, getting conflict records");
-			$scope.getRecordsInConflict();
+			console.debug('compareRecords:  Detected change in project');
+			$http.defaults.headers.common.Authorization = $scope.userToken;
 			
-
-			$scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
-			organizeUsers($scope.allUsers);
-			
-			console.debug("Checking whether this is a false conflict.");
-			$rootScope.glassPane++;
-			$http({
-				url: root_workflow + "record/id/" + $routeParams.recordId + "/isFalseConflict",
-				dataType: "json",
-				method: "GET",
-				headers: { "Content-Type": "application/json"}	
-			}).success(function(data) {
-				$rootScope.glassPane--;
-				$scope.isFalseConflict = data === 'true' ? true : false;
-			}).error(function(data, status, headers, config) {
-				$rootScope.glassPane--;
-			    $rootScope.handleHttpError(data, status, headers, config);    	  
-			});
-			
-			
-		
-		// otherwise, return to dashboard (mismatch between record and project)
-		} else {
-			console.debug("Redirecting");
-		
-			var path = "";
+			// if first visit, retrieve the records to be compared
+			if ($scope.leadRecord == null) {
+				console.debug("First visit, getting conflict records");
+				$scope.getRecordsInConflict();
+				
 	
-			if ($scope.role === "Specialist") {
-				path = "/specialist/dash";
-			} else if ($scope.role === "Lead") {
-				path = "/lead/dash";
-			} else if ($scope.role === "Administrator") {
-				path = "/admin/dash";
-			} else if ($scope.role === "Viewer") {
-				path = "/viewer/dash";
+				$scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
+				organizeUsers($scope.allUsers);
+				
+				console.debug("Checking whether this is a false conflict.");
+				$rootScope.glassPane++;
+				$http({
+					url: root_workflow + "record/id/" + $routeParams.recordId + "/isFalseConflict",
+					dataType: "json",
+					method: "GET",
+					headers: { "Content-Type": "application/json"}	
+				}).success(function(data) {
+					$rootScope.glassPane--;
+					$scope.isFalseConflict = data === 'true' ? true : false;
+				}).error(function(data, status, headers, config) {
+					$rootScope.glassPane--;
+				    $rootScope.handleHttpError(data, status, headers, config);    	  
+				});
+				
+				
+			
+			// otherwise, return to dashboard (mismatch between record and project)
+			} else {
+				console.debug("Redirecting");
+			
+				var path = "";
+		
+				if ($scope.role === "Specialist") {
+					path = "/specialist/dash";
+				} else if ($scope.role === "Lead") {
+					path = "/lead/dash";
+				} else if ($scope.role === "Administrator") {
+					path = "/admin/dash";
+				} else if ($scope.role === "Viewer") {
+					path = "/viewer/dash";
+				}
+				console.debug("redirecting to " + path);
+				$location.path(path);
 			}
-			console.debug("redirecting to " + path);
-			$location.path(path);
 		}
 	});
 

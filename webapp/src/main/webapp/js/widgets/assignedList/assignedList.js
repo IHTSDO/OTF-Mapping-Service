@@ -127,10 +127,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 
 	// on any change of focusProject, retrieve new available work
 	$scope.currentUserToken = localStorageService.get('userToken');
-	$scope.$watch(['focusProject', 'user', 'userToken'], function() {
+	$scope.$watch(['focusProject', 'user', 'userToken', 'currentRole'], function() {
 		console.debug('assignedListCtrl:  Detected project or user set/change');
 
-		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null) {
+		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null && $scope.currentRole != null) {
 
 			$http.defaults.headers.common.Authorization = $scope.currentUserToken;	
 			
