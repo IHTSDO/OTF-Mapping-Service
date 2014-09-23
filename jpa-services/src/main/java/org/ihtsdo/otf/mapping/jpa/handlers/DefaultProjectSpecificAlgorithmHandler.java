@@ -2185,9 +2185,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			System.out.println("Previous record = " + revision.toString());
 			if (revision.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
 					|| revision.getWorkflowStatus().equals(
-							WorkflowStatus.READY_FOR_PUBLICATION))
+							WorkflowStatus.READY_FOR_PUBLICATION)) {
 				mappingService.close();
-			return revision;
+				return revision;
+			}
 		}
 
 		mappingService.close();
@@ -2263,4 +2264,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// DO NOTHING -- Override in project specific handlers if necessary
 	}
 
+	@Override
+	public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord) {
+		return false;
+	}
+	
 }
