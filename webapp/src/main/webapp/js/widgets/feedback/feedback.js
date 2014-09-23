@@ -19,6 +19,7 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	
 	// initialize as empty to indicate still initializing database connection
 	$scope.currentUser = localStorageService.get('currentUser');
+	$scope.currentUserToken = localStorageService.get('userToken');
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
 	
@@ -38,19 +39,15 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
-		//console.debug(localStorageService.get('currentRole'));
-		//$scope.currentRole = localStorageService.get('currentRole');
-		/*if ($scope.currentRole != 'Viewer')
-		  $scope.retrieveFeedback(1);*/
 	});	
 	
 
 
 
 	// on any change of focusProject, retrieve new available work
-	$scope.currentUserToken = localStorageService.get('userToken');
+
 	$scope.$watch(['focusProject', 'currentUser', 'currentUserToken', 'currentRole'], function() {
-		console.debug('feedbackCtrl:', $scope.focusProject, $scope.currentUser, $scope.currentUserToken);
+		
 		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null
 				&& $scope.currentRole != null) {
 			$http.defaults.headers.common.Authorization = $scope.currentUserToken;			
@@ -65,38 +62,38 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
     	if ($scope.currentRole == 'Viewer')
   		  return;
     	
-	// construct a paging/filtering/sorting object
-	var pfsParameterObj = 
-				{"startIndex": (page-1)*$scope.recordsPerPage,
-		 	 	 "maxResults": $scope.recordsPerPage,
-		 	 	 "sortField":  null,
-		 	 	 "queryRestriction": $scope.query == null ? null : $scope.query};  
-
-  	$rootScope.glassPane++;
-
-	$http({
-		url: root_workflow + "conversation/project/id/" + $scope.focusProject.id + "/" + $scope.currentUser.userName,
-		dataType: "json",
-		data: pfsParameterObj,
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		}
-	}).success(function(data) {
-	  	$rootScope.glassPane--;
-		
-		// set pagination variables
-		$scope.nRecords = data.totalCount;
-		$scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
-
-		$scope.feedbackConversations = data.feedbackConversation;
-		console.debug("Feedback Conversations:");
-		console.debug($scope.feedbackConversations);
-					 
-	}).error(function(data, status, headers, config) {
-	    $rootScope.glassPane--;
-	    $rootScope.handleHttpError(data, status, headers, config);
-	});
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": (page-1)*$scope.recordsPerPage,
+			 	 	 "maxResults": $scope.recordsPerPage,
+			 	 	 "sortField":  null,
+			 	 	 "queryRestriction": $scope.query == null ? null : $scope.query};  
+	
+	  	$rootScope.glassPane++;
+	
+		$http({
+			url: root_workflow + "conversation/project/id/" + $scope.focusProject.id + "/" + $scope.currentUser.userName,
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+		  	$rootScope.glassPane--;
+			
+			// set pagination variables
+			$scope.nRecords = data.totalCount;
+			$scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
+	
+			$scope.feedbackConversations = data.feedbackConversation;
+			console.debug("Feedback Conversations:");
+			console.debug($scope.feedbackConversations);
+						 
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
 
     };
 
