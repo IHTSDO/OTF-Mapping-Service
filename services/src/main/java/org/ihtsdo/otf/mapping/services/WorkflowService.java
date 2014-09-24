@@ -522,6 +522,13 @@ public interface WorkflowService extends RootService {
 	 */
 	public void fixFeedbackErrorFlag() throws Exception;
 
+	/**
+	 * Fix error messages.
+	 *
+	 * @throws Exception the exception
+	 */
+	public void fixErrorMessages() throws Exception;
+
 
 
 
