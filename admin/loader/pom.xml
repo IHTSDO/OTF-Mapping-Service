@@ -344,5 +344,28 @@
           </plugins>
         </build>
       </profile> 
+      
+       <!-- Fix the error messages in feedback objects --> 
+       <profile>
+       <id>FixErrorMessages</id>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.ihtsdo.otf.mapping</groupId>
+              <artifactId>mapping-admin-mojo</artifactId>
+              <version>${project.version}</version>
+              <executions>
+                <execution>
+                  <id>fix-error-messages</id>
+                  <phase>package</phase>
+                  <goals>
+                    <goal>fix-error-messages</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </build>
+      </profile> 
   </profiles>
 </project>
