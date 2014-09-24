@@ -8,6 +8,7 @@
     Details</button>
   <button class="btn btn-sm btn-primary" ng-click="goMapRecords()">Map
     Records</button>
+    <button ng-show="project.sourceTerminology === 'SNOMEDCT'" class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMEDCT Browser</button>
 
   <span ng-show="currentRole === 'Administrator'">
     <button class="btn btn-sm btn-primary" ng-click="computeWorkflow()">Compute
