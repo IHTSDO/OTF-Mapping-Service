@@ -3521,11 +3521,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	public void processRelease(MapProject mapProject, String outputFileName,
 			Set<MapRecord> mapRecordsToPublish, String effectiveTime,
 			String moduleId) throws Exception {
-		
-				
-		System.out.println(this.getReleaseUuid("abcdef"));
-
-		
 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"Processing publication release for project "
@@ -4235,6 +4230,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		// metadata later (make ticket)
 		String entryLine = uuid.toString()
 				+ "\t"
+				+ effectiveTime
+				+ "\t"
 				+ "1"
 				+ "\t"
 				+ moduleId
@@ -4252,8 +4249,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				+ mapAdviceStr
 				+ "\t"
 				+ (mapEntry.getTargetId() == null ? "" : mapEntry.getTargetId())
-				+ "\t"
-				+ effectiveTime
 				+ "\t"
 				+ "447561005"
 				+ "\t"
