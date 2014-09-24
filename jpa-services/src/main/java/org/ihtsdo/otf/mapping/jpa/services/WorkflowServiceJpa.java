@@ -3998,6 +3998,39 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	}
 
 	@Override
+	public void fixErrorMessages() throws Exception {
+		List<FeedbackConversation> conversations = null;
+		// construct query
+		javax.persistence.Query query = manager
+				.createQuery("select m from FeedbackConversationJpa m");
+		// Try query
+		conversations = query.getResultList();
+
+		Long icd9cmProjectId = 0L;
+		MappingService mappingService = new MappingServiceJpa();
+		MapProjectList projects = mappingService.getMapProjects();
+		for (MapProject project : projects.getMapProjects()) {
+			if (project.getDestinationTerminology().equals("ICD9CM"))
+				icd9cmProjectId = project.getId();
+		}
+		mappingService.close();
+
+		for (FeedbackConversation conversation : conversations) {
+			for (Feedback feedback : conversation.getFeedbacks()) {
+				if (conversation.getMapProjectId() == icd9cmProjectId &&
+						feedback.getMapError().equals("Map advice assignment is in error"))
+					feedback.setMapError("Map parameter missing or incomplete");
+				else if (feedback.getMapError().equals("Map Group  has been omitted"))
+					feedback.setMapError("Map Group has been omitted");	
+				else if (feedback.getMapError().equals("None"))
+					feedback.setMapError("");
+			}
+			updateFeedbackConversation(conversation);
+		}
+
+	}
+	
+	@Override
 	public void fixFeedbackErrorFlag() throws Exception {
 		List<FeedbackConversation> conversations = null;
 		// construct query
