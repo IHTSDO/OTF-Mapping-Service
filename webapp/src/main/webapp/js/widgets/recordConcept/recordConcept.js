@@ -28,11 +28,12 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 	$scope.mapProjects = null;
 
 	// retrieve cached values
-	$scope.focusProject = localStorageService.get("focusProject");
-	$scope.mapProjects = localStorageService.get("mapProjects");
-	$scope.currentUser = localStorageService.get("currentUser");
-	$scope.currentRole = localStorageService.get("currentRole");
-	$scope.preferences = localStorageService.get("preferences");
+	$scope.focusProject = 	localStorageService.get("focusProject");
+	$scope.mapProjects = 	localStorageService.get("mapProjects");
+	$scope.currentUser = 	localStorageService.get("currentUser");
+	$scope.currentRole = 	localStorageService.get("currentRole");
+	$scope.preferences = 	localStorageService.get("preferences");	
+	$scope.userToken = 		localStorageService.get('userToken');
 
 	// watch for changes to focus project
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
@@ -41,8 +42,7 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		$scope.filterRecords();
 	});	
 
-	// once focus project retrieved, retrieve the concept and records
-	$scope.userToken = localStorageService.get('userToken');
+	// once focus project, user token, and map projects retrieved, retrieve the concept and records
 	$scope.$watch(['focusProject', 'userToken', 'mapProjects'], function() {
 		
 		// need both focus project and user token set before executing main functions
