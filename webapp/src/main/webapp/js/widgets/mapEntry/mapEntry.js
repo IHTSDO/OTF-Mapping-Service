@@ -13,6 +13,9 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	});
 }).controller('mapEntryWidgetCtrl', function($scope, $rootScope, $q, $http, $routeParams, $modal, $location, localStorageService){
 
+	// for this widget, the only local storage service variable used is user token
+	$scope.userToken = localStorageService.get('userToken');
+	
 	// watch for entry change
 	$scope.$on('mapRecordWidget.notification.changeSelectedEntry', function(event, parameters) { 	
 		console.debug("MapEntryWidget: Detected change in selected entry");
@@ -53,8 +56,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	$scope.isTargetOpen = true;
 	$scope.isParametersOpen = true;
 	$scope.localErrorRule = "";
-	
-	$scope.userToken = localStorageService.get('userToken');
+
 	$scope.$watch('userToken', function() {
 		
 		$http.defaults.headers.common.Authorization = $scope.userToken;

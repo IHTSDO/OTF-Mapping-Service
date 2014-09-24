@@ -31,6 +31,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.entries =    null;
 	$scope.user = 		localStorageService.get('currentUser');
 	$scope.role = 		localStorageService.get('currentRole');
+	$scope.userToken = 	localStorageService.get('userToken');
 	$scope.conversation = null;
 	$scope.mapLeads = $scope.project.mapLead;
 	organizeUsers($scope.mapLeads);
@@ -95,8 +96,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 
 	});
-	
-	$scope.userToken = localStorageService.get('userToken');
+
 	// on successful retrieval of project, get the record/concept
 	$scope.$watch(['project', 'userToken', 'role', 'user', 'record'], function() {
 		if ($scope.project != null && $scope.userToken != null) {

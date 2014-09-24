@@ -20,6 +20,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 	// initialize as empty to indicate still initializing database connection
 	$scope.currentUser = localStorageService.get('currentUser');
 	$scope.currentRole = localStorageService.get('currentRole');
+	$scope.currentUserToken = localStorageService.get('userToken');
 	$scope.focusProject = localStorageService.get('focusProject');
 	   
     $scope.recordId = $routeParams.recordId;
@@ -42,10 +43,8 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 	});	
 	
 	// required for authorization when right-clicking to open feedback conversation from feedback list
-	$scope.currentUserToken = localStorageService.get('userToken');
-	if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null) {
-		$http.defaults.headers.common.Authorization = $scope.currentUserToken;	
-	}
+	
+	
 	// on any change of focusProject, retrieve new available work
 	$scope.$watch(['focusProject', 'currentUser', 'currentUserToken'], function() {
 		console.debug('feedbackConversationCtrl:  Detected project or user set/change');
@@ -53,76 +52,77 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 			$http.defaults.headers.common.Authorization = $scope.currentUserToken;				
 			$scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
 			organizeUsers($scope.allUsers);
+			$scope.getFeedbackConversation();
 		}
 	});
  
 	$scope.allUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
 	organizeUsers($scope.allUsers);
-	
-	// TODO: getFeedbackConversation() which is called by watch statement
-	// get feedback conversation associated with given recordId
-  	$rootScope.glassPane++;
-	$http({
-		url: root_workflow + "conversation/id/" + $scope.recordId,
-		dataType: "json",
-		method: "GET",
-		headers: {
-			 "Content-Type": "application/json"
-		}
-	}).success(function(data) {
-	  	$rootScope.glassPane--;		
-		$scope.conversation = data;
-		console.debug("Feedback Conversation:");
-		console.debug($scope.conversation);
-		$scope.markViewed($scope.conversation, $scope.currentUser);
-		initializeReturnRecipients($scope.conversation)
 
-		$scope.record = null;
-		// load record associated with feedback conversations
-		$rootScope.glassPane++;
-
-		var token = localStorageService.get('userToken');
-		// load record to be displayed; try to find active record first
+	// function to retrieve the feedback conversation based on record id
+	$scope.getFeedbackConversation = function() {
+	  	$rootScope.glassPane++;
 		$http({
-			url: root_mapping + "record/id/" + $scope.conversation.mapRecordId,
+			url: root_workflow + "conversation/id/" + $scope.recordId,
 			dataType: "json",
 			method: "GET",
-			authorization: token,
 			headers: {
-				"Content-Type": "application/json"
+				 "Content-Type": "application/json"
 			}
 		}).success(function(data) {
-			$rootScope.glassPane--;	
-			$scope.record = data;
-			console.debug("Record:");
-			console.debug($scope.record);
-			setTitle();
-		}).error(function(data, status, headers, config) {
-			
-			// if no active record, look for historical record
+		  	$rootScope.glassPane--;		
+			$scope.conversation = data;
+			console.debug("Feedback Conversation:");
+			console.debug($scope.conversation);
+			$scope.markViewed($scope.conversation, $scope.currentUser);
+			initializeReturnRecipients($scope.conversation)
+	
+			$scope.record = null;
+			// load record associated with feedback conversations
+			$rootScope.glassPane++;
+	
+			// load record to be displayed; try to find active record first
 			$http({
-				url: root_mapping + "record/id/" + $scope.conversation.mapRecordId + "/historical",
+				url: root_mapping + "record/id/" + $scope.conversation.mapRecordId,
 				dataType: "json",
 				method: "GET",
+				authorization: $scope.currentUserToken,
 				headers: {
 					"Content-Type": "application/json"
 				}
 			}).success(function(data) {
 				$rootScope.glassPane--;	
 				$scope.record = data;
-				console.debug("Historical Record:");
+				console.debug("Record:");
 				console.debug($scope.record);
 				setTitle();
-				$scope.conversation.active = false;
 			}).error(function(data, status, headers, config) {
-				$rootScope.glassPane--;
-				$rootScope.handleHttpError(data, status, headers, config);
-			});
-		});	
-	}).error(function(data, status, headers, config) {
-	    $rootScope.glassPane--;
-	    $rootScope.handleHttpError(data, status, headers, config);
-	});
+				
+				// if no active record, look for historical record
+				$http({
+					url: root_mapping + "record/id/" + $scope.conversation.mapRecordId + "/historical",
+					dataType: "json",
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json"
+					}
+				}).success(function(data) {
+					$rootScope.glassPane--;	
+					$scope.record = data;
+					console.debug("Historical Record:");
+					console.debug($scope.record);
+					setTitle();
+					$scope.conversation.active = false;
+				}).error(function(data, status, headers, config) {
+					$rootScope.glassPane--;
+					$rootScope.handleHttpError(data, status, headers, config);
+				});
+			});	
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
+	};
 
 	
 	// function to return trusted html code 
