@@ -221,7 +221,13 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 				});
 				
 				
-			}
+			};
 			$scope.getConcepts(1, null);
-		}
+		};
+		
+
+	    $scope.openConceptBrowser = function() {
+	    	var myWindow = window.open("http://dailybuild.ihtsdotools.org/index.html?perspective=full&diagrammingMarkupEnabled=true&acceptLicense=true", "browserWindow");
+	    	myWindow.focus();
+	    };
   });
