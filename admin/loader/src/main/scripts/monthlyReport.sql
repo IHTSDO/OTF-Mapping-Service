@@ -27,7 +27,7 @@ group by map_projects.name, recipients_id,
    DATE_FORMAT(timestamp,'%Y-%m');
 
 -- Total number of errors by type and specialist 
-select 'Specialist errors by type' name, map_projects.name name, concat(userName, ' ', mapError) value, DATE_FORMAT(timestamp,'%Y-%m') date, count(*) ct
+select 'Specialist errors by type' name, map_projects.name name, concat(userName, ',', mapError) value, DATE_FORMAT(timestamp,'%Y-%m') date, count(*) ct
 from feedbacks, map_users, feedback_recipients , map_projects, feedback_conversations
 where isError = '1' 
 and feedbacks.feedbackConversation_id = feedback_conversations.id
@@ -40,8 +40,58 @@ group by map_projects.name, recipients_id, mapError,
    DATE_FORMAT(timestamp,'%Y-%m')
 ORDER BY 2,3,4;
 
+-- Total mapped by project and specialist
+select 'Specialist productivity' name, mp.name, mu.userName value,
+         DATE_FORMAT(from_unixtime(mra.lastModified/1000),'%Y-%m') date, 
+     count(distinct mra.id) ct
+from map_records mr, map_projects mp, 
+     map_records_origin_ids mroi, map_records_AUD mra,
+     map_users mu
+where mra.mapProjectId = mp.id
+and mr.id = mroi.id
+and mroi.originIds = mra.id
+and mra.owner_id = mu.id
+and mr.workflowStatus IN ('READY_FOR_PUBLICATION')
+and mu.username != 'loader'
+and from_unixtime(mr.lastModified/1000) > date('2014-06-01')
+and from_unixtime(mr.lastModified/1000) < date('2014-12-01')
+group by mp.name, mu.userName,
+   DATE_FORMAT(from_unixtime(mra.lastModified/1000),'%Y-%m')
+ORDER BY 2,3,4;
+
+-- Errors/total mapped by project and specialist
+select 'Specialist error rate by error' name, mp.name project, 
+  concat(total.userName value,',',errors.mapError), 
+  total.dateRange date, format(errors.ct*100/total.ct,2) pct, errors.ct, total.ct
+from map_projects mp, 
+ (select fc.mapProjectId, mu.userName, f.mapError,
+         DATE_FORMAT(f.timestamp,'%Y-%m') dateRange, count(distinct fc.terminologyId) ct
+  from feedbacks f, map_users mu, feedback_recipients fr, feedback_conversations fc
+  where isError = '1' 
+  and f.feedbackConversation_id = fc.id
+  and timestamp > date('2014-06-01')
+  and timestamp < date('2014-12-01')
+  and fr.feedbacks_id = f.id  
+  and fr.recipients_id = mu.id 
+  group by fc.mapProjectId, mu.userName, f.mapError, DATE_FORMAT(timestamp,'%Y-%m')) errors,
+ (select mr.mapProjectId, mu.userName, 
+    DATE_FORMAT(from_unixtime(mra.lastModified/1000),'%Y-%m') dateRange, count(distinct mr.conceptId) ct
+  from map_records mr, map_records_origin_ids mroi, map_records_AUD mra, map_users mu
+  where mr.id = mroi.id
+  and mroi.originIds = mra.id
+  and mra.owner_id = mu.id
+  and mr.workflowStatus IN ('READY_FOR_PUBLICATION')
+  and mu.username != 'loader'
+  and from_unixtime(mr.lastModified/1000) > date('2014-06-01')
+  and from_unixtime(mr.lastModified/1000) < date('2014-12-01')
+  group by mr.mapProjectId, mu.userName, DATE_FORMAT(from_unixtime(mra.lastModified/1000),'%Y-%m')) total
+where mp.id = errors.mapProjectId
+  and mp.id = total.mapProjectId
+  and errors.userName = total.userName
+  and errors.dateRange = total.dateRange;
+
 -- Principles being applied 
-SELECT 'Map Principles' name, map_projects.name name, concat(map_principles.principleId, ' ', map_principles.name) value, DATE_FORMAT(from_unixtime(timestamp/1000),'%Y-%m') date, count(*) ct
+SELECT 'Map Principles' name, map_projects.name name, concat(map_principles.principleId, ',', map_principles.name) value, DATE_FORMAT(from_unixtime(timestamp/1000),'%Y-%m') date, count(*) ct
 from map_principles, map_records_map_principles, map_records, map_projects
 where mapPrinciples_id = map_principles.id 
 and map_records_id = map_records.id 
@@ -103,26 +153,6 @@ and assignedUserCount > 0
 and userAndWorkflowStatusPairs not like '%CONFLICT_DETECTED%'
 and userAndWorkflowStatusPairs not like '%REVIEW_NEEDED%'
 group by mp.name;
-
-
--- Total mapped by project and specialist
-select 'Specialist productivity' name, mp.name, mu.userName value,
-         DATE_FORMAT(from_unixtime(mra.lastModified/1000),'%Y-%m') date, 
-     count(distinct mra.id) ct
-from map_records mr, map_projects mp, 
-     map_records_origin_ids mroi, map_records_AUD mra,
-     map_users mu
-where mra.mapProjectId = mp.id
-and mr.id = mroi.id
-and mroi.originIds = mra.id
-and mra.owner_id = mu.id
-and mr.workflowStatus IN ('READY_FOR_PUBLICATION')
-and mu.username != 'loader'
-and from_unixtime(mr.lastModified/1000) > date('2014-06-01')
-and from_unixtime(mr.lastModified/1000) < date('2014-12-01')
-group by mp.name, mu.userName,
-   DATE_FORMAT(from_unixtime(mra.lastModified/1000),'%Y-%m')
-ORDER BY 2,3,4;
 
 
 -- Total concepts in this release (by map project)
