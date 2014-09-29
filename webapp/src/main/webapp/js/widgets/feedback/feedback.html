@@ -1,16 +1,27 @@
 
 <form>
   <input ng-model="query"> <input type="submit" value="Search"
-    ng-click="retrieveFeedback(1)"> <input type="submit" value="Reset"
+    ng-click="retrieveFeedback(1, feedbackType)"> <input type="submit" value="Reset"
     ng-click="resetSearch()">
     &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
 </form>
 
   <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
     class="pagination-sm" boundary-links="true" rotate="true"
-    num-pages="numRecordPages" on-select-page="retrieveFeedback(page)"></pagination>
+    num-pages="numRecordPages" on-select-page="retrieveFeedback(page, feedbackType)"></pagination>
   
-    
+      <form>
+        <input type="radio" ng-model="feedbackType" value="ALL"
+          ng-change="retrieveFeedback(1, feedbackType)">All</input>
+        <!-- <input type="radio" ng-model="feedbackType" value="FEEDBACK"
+          ng-change="retrieveFeedback(1, feedbackType)">Feedback</input> -->
+        <input type="radio" ng-model="feedbackType" value="GROUP_FEEDBACK"
+          ng-change="retrieveFeedback(1, feedbackType)">Group Feedback</input>
+        <input type="radio" ng-model="feedbackType" value="ERROR_FEEDBACK"
+          ng-change="retrieveFeedback(1, feedbackType)">Error Feedback</input>
+        <input type="radio" ng-model="feedbackType" value="DISCREPANCY_REVIEW_FEEDBACK"
+          ng-change="retrieveFeedback(1, feedbackType)">Discrepancy Feedback</input>
+      </form>
 
 <div ng-show="feedbackConversations.length > 0">
 
