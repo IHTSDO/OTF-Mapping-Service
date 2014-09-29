@@ -61,7 +61,7 @@ ORDER BY 2,3,4;
 
 -- Errors/total mapped by project and specialist
 select 'Specialist error rate by error' name, mp.name project, 
-  concat(total.userName value,',',errors.mapError), 
+  concat(total.userName,',',errors.mapError) value, 
   total.dateRange date, format(errors.ct*100/total.ct,2) pct, errors.ct, total.ct
 from map_projects mp, 
  (select fc.mapProjectId, mu.userName, f.mapError,
