@@ -333,10 +333,10 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
                 .info(
                     "  INACTIVE concept encountered: "
                         + concept.getTerminologyId());
+          } else {
+            complexMapRefSetMember.setConcept(concept);
+            complexMapRefSetMemberMap.get(refSetId).add(complexMapRefSetMember);
           }
-          complexMapRefSetMember.setConcept(concept);
-
-          complexMapRefSetMemberMap.get(refSetId).add(complexMapRefSetMember);
         } else {
           complexMapReader.close();
           throw new IllegalStateException("complexMapRefSetMember "
