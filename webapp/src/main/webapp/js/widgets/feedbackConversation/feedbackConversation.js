@@ -286,6 +286,35 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 			return false;
 	};
 	
+	$scope.markFeedbackUnviewed = function(conversation) {
+    	for (var i = conversation.feedback.length; i--;) {
+    		var alreadyViewedBy =  conversation.feedback[i].viewedBy;
+    		for (var j = 0; j < alreadyViewedBy.length; j++) {
+    			if (alreadyViewedBy[j].userName == $scope.currentUser.userName) {
+    				alreadyViewedBy.splice(j, 1);
+    				  $http({						
+    						url: root_workflow + "conversation/update",
+    						dataType: "json",
+    						data: conversation,
+    						method: "POST",
+    						headers: {
+    							"Content-Type": "application/json"
+    						}
+    					}).success(function(data) {
+
+    						$rootScope.glassPane--;
+    						console.debug("success to update Feedback conversation.");
+    					}).error(function(data, status, headers, config) {
+
+    						$rootScope.glassPane--;
+    						$scope.recordError = "Error updating feedback conversation.";
+    						$rootScope.handleHttpError(data, status, headers, config);
+    					});
+    			}
+    		}
+    	}
+	};
+	
 	// determines default recipients dependending on the conversation
     function initializeReturnRecipients(conversation) {
 		
