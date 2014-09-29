@@ -38,3 +38,6 @@
 <span ng-show ="conversation.active == false"  class="alert alert-warning" disabled>
     Record is inactive.
 </span>
+<input type="checkbox" ng-model="markUnviewed" ng-click="markUnviewed ? 
+   markViewed(conversation, currentUser) : markFeedbackUnviewed(conversation)">
+   Mark unviewed<br>
