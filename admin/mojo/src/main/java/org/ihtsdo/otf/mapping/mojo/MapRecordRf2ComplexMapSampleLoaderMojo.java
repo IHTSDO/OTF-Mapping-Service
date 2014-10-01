@@ -125,9 +125,9 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
       }
 
       // Bail if sampling percentage not in range (0, 1]
-      if (samplingRate <= 0 || samplingRate > 1) {
+      if (samplingRate < 0 || samplingRate > 1) {
         throw new MojoExecutionException(
-            "Sampling percentage must be greater than zero and less than or equal to one");
+            "Sampling percentage must be greater than or equal to zero and less than or equal to one");
       }
 
       // sort input file
@@ -327,16 +327,16 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
                 mapProjectMap.get(refSetId).getSourceTerminologyVersion());
 
         // Only add entries for active concept
-        if (concept != null && concept.isActive()) {
+        if (concept != null) {
           if (!concept.isActive()) {
             getLog()
                 .info(
                     "  INACTIVE concept encountered: "
                         + concept.getTerminologyId());
+          } else {
+            complexMapRefSetMember.setConcept(concept);
+            complexMapRefSetMemberMap.get(refSetId).add(complexMapRefSetMember);
           }
-          complexMapRefSetMember.setConcept(concept);
-
-          complexMapRefSetMemberMap.get(refSetId).add(complexMapRefSetMember);
         } else {
           complexMapReader.close();
           throw new IllegalStateException("complexMapRefSetMember "

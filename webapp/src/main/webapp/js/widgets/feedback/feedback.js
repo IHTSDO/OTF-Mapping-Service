@@ -29,7 +29,8 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	
 	$scope.mapUserViewed == null;
 	$scope.searchPerformed = false;  		// initialize variable to track whether search was performed
-
+    $scope.feedbackType = 'ALL';
+    $scope.recordIdOwnerMap = new Array();
 	
 	// pagination variables
 	$scope.recordsPerPage = 10;
@@ -52,12 +53,12 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 				&& $scope.currentRole != null) {
 			$http.defaults.headers.common.Authorization = $scope.currentUserToken;			
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
-			$scope.retrieveFeedback(1);
+			$scope.retrieveFeedback(1, $scope.feedbackType);
 		}
 	});
 	
 
-    $scope.retrieveFeedback = function(page) {
+    $scope.retrieveFeedback = function(page, feedbackType) {
     	
     	if ($scope.currentRole == 'Viewer')
   		  return;
@@ -66,8 +67,8 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 		var pfsParameterObj = 
 					{"startIndex": (page-1)*$scope.recordsPerPage,
 			 	 	 "maxResults": $scope.recordsPerPage,
-			 	 	 "sortField":  null,
-			 	 	 "queryRestriction": $scope.query == null ? null : $scope.query};  
+			 	 	 "sortField":  'lastModified',
+			 	 	 "queryRestriction": feedbackType};  
 	
 	  	$rootScope.glassPane++;
 	
@@ -97,7 +98,8 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 
     };
 
-	
+	// if any of the feedbacks are not yet viewed, return false indicating
+    // that conversation is not yet viewed
 	$scope.isFeedbackViewed = function(conversation) {
     	for (var i = 0; i < conversation.feedback.length; i++) {
     		var alreadyViewedBy =  conversation.feedback[i].viewedBy;
@@ -111,6 +113,7 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
     	}
     	return true;
 	};
+	
 	
 	$scope.goFeedbackConversations = function (id) {
 		var path = "/conversation/recordId/" + id;
@@ -126,6 +129,6 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	// function to clear input box and return to initial view
 	$scope.resetSearch = function() {
 		$scope.query = null;
-		$scope.retrieveFeedback(1);
+		$scope.retrieveFeedback(1, $scope.feedbackType);
 	};
 });

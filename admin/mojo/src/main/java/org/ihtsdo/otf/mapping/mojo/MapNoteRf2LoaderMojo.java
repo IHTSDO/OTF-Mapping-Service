@@ -149,7 +149,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
             }
           }
         } else {
-          throw new IllegalStateException(
+          getLog().info(
               "Map note references non-existent concept " + fields[5]);
         }
       }

@@ -16,6 +16,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 	$scope.currentRole = null;
 	$scope.focusProject = null;
     $scope.conversation = null;
+    $scope.record = null;
 	
 	// initialize as empty to indicate still initializing database connection
 	$scope.currentUser = localStorageService.get('currentUser');
@@ -24,6 +25,10 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 	$scope.focusProject = localStorageService.get('focusProject');
 	   
     $scope.recordId = $routeParams.recordId;
+    
+    // conflict records
+	$scope.record1 = 	null;
+	$scope.record2 = 	null;
     
     // settings for recipients mechanism
 	$scope.allUsers = new Array();
@@ -75,15 +80,14 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 			console.debug("Feedback Conversation:");
 			console.debug($scope.conversation);
 			$scope.markViewed($scope.conversation, $scope.currentUser);
-			initializeReturnRecipients($scope.conversation)
+			initializeReturnRecipients($scope.conversation);
 	
 			$scope.record = null;
-			// load record associated with feedback conversations
 			$rootScope.glassPane++;
 	
 			// load record to be displayed; try to find active record first
 			$http({
-				url: root_mapping + "record/id/" + $scope.conversation.mapRecordId,
+				url: root_mapping + "record/id/" + $scope.conversation.mapRecordId + "/historical",
 				dataType: "json",
 				method: "GET",
 				authorization: $scope.currentUserToken,
@@ -96,27 +100,51 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 				console.debug("Record:");
 				console.debug($scope.record);
 				setTitle();
-			}).error(function(data, status, headers, config) {
 				
-				// if no active record, look for historical record
-				$http({
-					url: root_mapping + "record/id/" + $scope.conversation.mapRecordId + "/historical",
-					dataType: "json",
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json"
-					}
-				}).success(function(data) {
-					$rootScope.glassPane--;	
-					$scope.record = data;
-					console.debug("Historical Record:");
-					console.debug($scope.record);
-					setTitle();
-					$scope.conversation.active = false;
-				}).error(function(data, status, headers, config) {
-					$rootScope.glassPane--;
-					$rootScope.handleHttpError(data, status, headers, config);
-				});
+				// get the conflict records if they exist
+				var originIds = $scope.record.originIds;
+				if (originIds != null && originIds.length > 0) {
+					$http({
+						url: root_mapping + "record/id/" + originIds[0],
+						dataType: "json",
+						method: "GET",
+						authorization: $scope.currentUserToken,
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$rootScope.glassPane--;	
+						$scope.record1 = data;
+						console.debug("Record1:");
+						console.debug($scope.record1);
+						if (originIds != null && originIds.length == 2) {
+							$http({
+								url: root_mapping + "record/id/" + originIds[1],
+								dataType: "json",
+								method: "GET",
+								authorization: $scope.currentUserToken,
+								headers: {
+									"Content-Type": "application/json"
+								}
+							}).success(function(data) {
+								$rootScope.glassPane--;	
+								$scope.record2 = data;
+								console.debug("Record2:");
+								console.debug($scope.record2);
+								setDisplayRecords();
+							}).error(function(data, status, headers, config) {
+							    $rootScope.glassPane--;
+							    $rootScope.handleHttpError(data, status, headers, config);
+							});	
+						}
+					}).error(function(data, status, headers, config) {
+					    $rootScope.glassPane--;
+					    $rootScope.handleHttpError(data, status, headers, config);
+					});	
+				}
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
+			    $rootScope.handleHttpError(data, status, headers, config);
 			});	
 		}).error(function(data, status, headers, config) {
 		    $rootScope.glassPane--;
@@ -124,6 +152,34 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		});
 	};
 
+    function setDisplayRecords() {
+	  if ($scope.currentRole == 'Lead') {
+		// keep main record and both conflict records if they exist
+		// do nothing - keep all records
+	  } else if ($scope.currentRole == 'Specialist') {
+	    // check if owner of main record
+	    if ($scope.record.owner.userName == $scope.currentUser.userName) {
+	  	  // set blank conflict records
+		  $scope.record1 = null;
+		  $scope.record2 = null;
+	    } else {
+	      // check if owner of either conflict record
+		  if ($scope.record1 != null && $scope.record1.owner.userName == $scope.currentUser.userName) {
+			// set blank main record and other conflict record
+			$scope.record = null;
+			$scope.record2 = null;
+		  } else if ($scope.record2 != null && $scope.record2.owner.userName == $scope.currentUser.userName) {
+			// set blank main record and other conflict record
+			$scope.record = null;
+			$scope.record1 = null;
+		  } else {  // specialist is not involved 
+			// display only main record, if exists
+			$scope.record1 = null;
+			$scope.record2 = null;
+		  }
+	    }
+	  }
+    }
 	
 	// function to return trusted html code 
 	$scope.to_trusted = function(html_code) {
@@ -286,6 +342,35 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 			return false;
 	};
 	
+	$scope.markFeedbackUnviewed = function(conversation) {
+    	for (var i = conversation.feedback.length; i--;) {
+    		var alreadyViewedBy =  conversation.feedback[i].viewedBy;
+    		for (var j = 0; j < alreadyViewedBy.length; j++) {
+    			if (alreadyViewedBy[j].userName == $scope.currentUser.userName) {
+    				alreadyViewedBy.splice(j, 1);
+    				  $http({						
+    						url: root_workflow + "conversation/update",
+    						dataType: "json",
+    						data: conversation,
+    						method: "POST",
+    						headers: {
+    							"Content-Type": "application/json"
+    						}
+    					}).success(function(data) {
+
+    						$rootScope.glassPane--;
+    						console.debug("success to update Feedback conversation.");
+    					}).error(function(data, status, headers, config) {
+
+    						$rootScope.glassPane--;
+    						$scope.recordError = "Error updating feedback conversation.";
+    						$rootScope.handleHttpError(data, status, headers, config);
+    					});
+    			}
+    		}
+    	}
+	};
+	
 	// determines default recipients dependending on the conversation
     function initializeReturnRecipients(conversation) {
 		
@@ -310,6 +395,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 		}
 		return;
     };
+    
     
     function organizeUsers(arr) {
     	// remove Current user
