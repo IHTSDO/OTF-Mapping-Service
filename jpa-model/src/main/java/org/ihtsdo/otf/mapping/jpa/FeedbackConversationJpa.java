@@ -101,6 +101,10 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 	@Column(nullable = true)
 	private Long mapProjectId;
 	
+	/** The associated record owner's userName */
+	@Column(nullable = true, length = 4000)
+	private String userName;
+	
   /**
    * Returns the id.
    * 
@@ -319,6 +323,17 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 		return defaultPreferredName;
 	}
 
+	@Override
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+	
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	public String getUserName() {
+		return userName;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#setTitle(java.lang.String)
 	 */
