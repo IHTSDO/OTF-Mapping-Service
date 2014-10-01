@@ -3832,7 +3832,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			if (project.getDestinationTerminology().equals("ICD9CM"))
 				icd9cmProjectId = project.getId();
 		}
-		mappingService.close();
 
 		for (FeedbackConversation conversation : conversations) {
 			for (Feedback feedback : conversation.getFeedbacks()) {
@@ -3844,9 +3843,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				else if (feedback.getMapError().equals("None"))
 					feedback.setMapError("");
 			}
+			if (conversation.getUserName() == null || conversation.getUserName().equals("")) {
+				MapRecord record = mappingService.getMapRecord(conversation.getMapRecordId());
+				conversation.setUserName(record.getOwner().getUserName());
+			}
 			updateFeedbackConversation(conversation);
 		}
 
+		mappingService.close();
 	}
 	
 	@Override
