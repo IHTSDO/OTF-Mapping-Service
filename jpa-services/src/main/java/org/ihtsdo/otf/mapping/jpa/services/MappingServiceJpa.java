@@ -3756,9 +3756,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 								// set map priority based on size of current
 								// list
 								me.setMapPriority(existingEntries.size() + 1);
-								
+
 								// recalculate the map relation
-								me.setMapRelation(algorithmHandler.computeMapRelation(mapRecordToWrite, me));
+								me.setMapRelation(algorithmHandler
+										.computeMapRelation(mapRecordToWrite,
+												me));
 
 								// add to the list
 								existingEntries.add(me);
@@ -3813,8 +3815,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				List<MapEntry> existingEntries = entriesByGroup.get(mapGroup);
 
-				// if the rule on the last entry is not TRUE or OTHERWISE
-				// TRUE
+				// if no entries or last entry is not true
 				if (existingEntries.size() == 0
 						|| !existingEntries.get(existingEntries.size() - 1)
 								.getRule().contains("TRUE")) {
@@ -4325,23 +4326,24 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 
 		/**
-		 * 
-		 * THESE THREE WILL BE IN THE writeEntry routines If the map target is
-		 * blank * advice contains the map relation name If it's an IFA rule
-		 * (age) * add MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT
-		 * 
-		 * If it's an IFA rule (gender) * add MAP OF SOURCE CONCEPT IS CONTEXT
-		 * DEPENDENT FOR GENDER
+		 * Add to advice based on target/relation and rule - If the map target
+		 * is blank, advice contains the map relation name - If it's an IFA rule
+		 * (gender), add MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT FOR GENDER -
+		 * If it's an IFA rule (age/upproagated), add MAP OF SOURCE CONCEPT IS
+		 * CONTEXT DEPENDENT
 		 */
-		
+
 		if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals(""))
 			mapAdviceStr += " | " + mapEntry.getMapRelation().getName();
-		
-		else if (mapEntry.getRule().startsWith("IFA") && mapEntry.getRule().contains("MALE"))
-			mapAdviceStr += " | " + "MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT FOR GENDER";
-		
+
+		else if (mapEntry.getRule().startsWith("IFA")
+				&& mapEntry.getRule().contains("MALE"))
+			mapAdviceStr += " | "
+					+ "MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT FOR GENDER";
+
 		else if (mapEntry.getRule().startsWith("IFA"))
-			mapAdviceStr += " | " + "MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT";
+			mapAdviceStr += " | "
+					+ "MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT";
 
 		// TODO Check the ICD9CM vs ICD10 headers
 		// ComplexMap Project: CorrelationId is the relation id
@@ -4382,78 +4384,83 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	}
 
 	@Override
-	public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice) throws Exception {
-		
+	public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice)
+			throws Exception {
+
 		// commit changes after each object type
 		setTransactionPerOperation(false);
-		
+
 		// flag used to only update objects where advice was removed
 		boolean adviceRemoved;
-		
+
 		// counter for number of objects advice removed from
 		int nAdviceRemoved = 0;
-		
-		Logger.getLogger(MappingServiceJpa.class).info("Removing map advice from map records...");
-		
+
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"Removing map advice from map records...");
+
 		// remove map advice from all map entries, found via map records
 		beginTransaction();
-		
+
 		for (MapRecord mr : getMapRecords().getIterable()) {
-			
+
 			adviceRemoved = false;
-			
+
 			// cycle over entries
 			for (MapEntry me : mr.getMapEntries()) {
-				
+
 				if (me.getMapAdvices().contains(mapAdvice)) {
 					me.removeMapAdvice(mapAdvice);
 					adviceRemoved = true;
 					nAdviceRemoved++;
 				}
 			}
-			
+
 			if (adviceRemoved == true)
 				updateMapRecord(mr);
-			
-			
-		}
-		
-		Logger.getLogger(MappingServiceJpa.class).info("  " + nAdviceRemoved + " instances removed from map entries");
-		commit();	
-		Logger.getLogger(MappingServiceJpa.class).info("  " + "Changes committed");
 
-		
+		}
+
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"  " + nAdviceRemoved + " instances removed from map entries");
+		commit();
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"  " + "Changes committed");
+
 		// remove map advice from all project allowable sets
-		Logger.getLogger(MappingServiceJpa.class).info("Removing map advice from map projects...");
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"Removing map advice from map projects...");
 		beginTransaction();
 		nAdviceRemoved = 0;
-		
+
 		for (MapProject mp : getMapProjects().getIterable()) {
-			
+
 			adviceRemoved = false;
-			
+
 			if (mp.getMapAdvices().contains(mapAdvice)) {
 				mp.removeMapAdvice(mapAdvice);
 				adviceRemoved = true;
 			}
-			
+
 			if (adviceRemoved == true)
 				updateMapProject(mp);
 		}
-		
-		Logger.getLogger(MappingServiceJpa.class).info("  " + nAdviceRemoved + " instances removed from map projects");
-		commit();	
-		Logger.getLogger(MappingServiceJpa.class).info("  " + "Changes committed");
-		
+
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"  " + nAdviceRemoved + " instances removed from map projects");
+		commit();
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"  " + "Changes committed");
+
 		// delete the advice itself
 		beginTransaction();
 		removeMapAdvice(mapAdvice.getId());
-		Logger.getLogger(MappingServiceJpa.class).info("Removing map advice from database");
-		commit();	
-		Logger.getLogger(MappingServiceJpa.class).info("  " + "Changes committed");
-		
-		
-		
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"Removing map advice from database");
+		commit();
+		Logger.getLogger(MappingServiceJpa.class).info(
+				"  " + "Changes committed");
+
 	}
 
 }
