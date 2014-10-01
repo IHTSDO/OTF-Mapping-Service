@@ -189,6 +189,24 @@ public class MapProjectJpa implements MapProject {
 	@Column(unique = false, nullable = false)
 	private boolean scopeExcludedDescendantsFlag = false;
 
+	/** The error messages allowed for this project. */
+	@ElementCollection
+	@CollectionTable(name = "map_projects_error_messages", joinColumns = @JoinColumn(name = "id"))
+	@Column(nullable = true)
+	private Set<String> errorMessages = new HashSet<>();
+	
+	/**  The propagated flag. */
+	@Column(unique = false, nullable = false)
+	private boolean propagatedFlag = false;
+	
+
+
+	/**  The propagation descendant threshold. */
+	@Column(nullable = false)
+	private Integer propagationDescendantThreshold;
+	
+
+
 	/**
 	 * Default constructor.
 	 */
@@ -213,6 +231,7 @@ public class MapProjectJpa implements MapProject {
 	 * @param destinationTerminologyVersion the destination terminology version
 	 * @param mapRefsetPattern the map refset pattern
 	 * @param mapRelationStyle the map relation style
+	 * @param mapPrincipleSourceDocument the map principle source document
 	 * @param mapPrincipleSourceDocumentName the map principle source document
 	 * @param ruleBased the rule based
 	 * @param projectSpecificAlgorithmHandlerClass the project specific algorithm handler class
@@ -228,6 +247,7 @@ public class MapProjectJpa implements MapProject {
 	 * @param scopeExcludedConcepts the scope excluded concepts
 	 * @param scopeDescendantsFlag the scope descendants flag
 	 * @param scopeExcludedDescendantsFlag the scope excluded descendants flag
+	 * @param errorMessages the error messages
 	 */
 	public MapProjectJpa(Long id, String name, boolean isPublic,
 			boolean groupStructure, boolean published,
@@ -242,7 +262,8 @@ public class MapProjectJpa implements MapProject {
 			Set<MapUser> mapSpecialists, Set<MapUser> mapAdministrators, Set<MapPrinciple> mapPrinciples,
 			Set<MapAdvice> mapAdvices, Set<MapRelation> mapRelations,
 			Set<String> scopeConcepts, Set<String> scopeExcludedConcepts,
-			boolean scopeDescendantsFlag, boolean scopeExcludedDescendantsFlag) {
+			boolean scopeDescendantsFlag, boolean scopeExcludedDescendantsFlag,
+			Set<String> errorMessages) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -273,6 +294,7 @@ public class MapProjectJpa implements MapProject {
 		this.scopeExcludedConcepts = scopeExcludedConcepts;
 		this.scopeDescendantsFlag = scopeDescendantsFlag;
 		this.scopeExcludedDescendantsFlag = scopeExcludedDescendantsFlag;
+		this.errorMessages = errorMessages;
 	}
 
 
@@ -1042,6 +1064,22 @@ public class MapProjectJpa implements MapProject {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getErrorMessages()
+	 */
+	@Override
+	public Set<String> getErrorMessages() {
+		return errorMessages;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setErrorMessages(java.util.Set)
+	 */
+	@Override
+	public void setErrorMessages(Set<String> errorMessages) {
+		this.errorMessages = errorMessages;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getProjectSpecificAlgorithmHandlerClass()
 	 */
 	@Override
@@ -1085,6 +1123,7 @@ public class MapProjectJpa implements MapProject {
 				+ mapPrinciples + ", mapAdvices=" + mapAdvices + ", mapRelations="
 				+ mapRelations + ", scopeConcepts=" + scopeConcepts
 				+ ", scopeExcludedConcepts=" + scopeExcludedConcepts
+				+ ", errorMessages=" + errorMessages
 				+ ", scopeDescendantsFlag=" + scopeDescendantsFlag
 				+ ", scopeExcludedDescendantsFlag=" + scopeExcludedDescendantsFlag
 				+ "]";
@@ -1159,6 +1198,9 @@ public class MapProjectJpa implements MapProject {
 		result =
 				prime * result + ((refSetName == null) ? 0 : refSetName.hashCode());
 		result = prime * result + (ruleBased ? 1231 : 1237);
+		result =
+				prime * result
+						+ ((errorMessages == null) ? 0 : errorMessages.hashCode());
 		result =
 				prime * result
 						+ ((scopeConcepts == null) ? 0 : scopeConcepts.hashCode());
@@ -1303,6 +1345,11 @@ public class MapProjectJpa implements MapProject {
 			return false;
 		if (ruleBased != other.ruleBased)
 			return false;
+		if (errorMessages == null) {
+			if (other.errorMessages != null)
+				return false;
+		} else if (!errorMessages.equals(other.errorMessages))
+			return false;
 		if (scopeConcepts == null) {
 			if (other.scopeConcepts != null)
 				return false;
@@ -1352,9 +1399,46 @@ public class MapProjectJpa implements MapProject {
 		return mapPrincipleSourceDocument;
 	}
 
+  /**
+   * Returns the propagation descendant threshold.
+   *
+   * @return the propagation descendant threshold
+   */
+  @Override
+	public Integer getPropagationDescendantThreshold() {
+		return propagationDescendantThreshold;
+	}
 
 
+  /**
+   * Sets the propagation descendant threshold.
+   *
+   * @param propagationDescendantThreshold the propagation descendant threshold
+   */
+  @Override
+	public void setPropagationDescendantThreshold(
+		Integer propagationDescendantThreshold) {
+		this.propagationDescendantThreshold = propagationDescendantThreshold;
+	}
 
+  /**
+   * Indicates whether or not propagated flag is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  @Override
+	public boolean isPropagatedFlag() {
+		return propagatedFlag;
+	}
 
+  /**
+   * Sets the propagated flag.
+   *
+   * @param propagatedFlag the propagated flag
+   */
+  @Override
+	public void setPropagatedFlag(boolean propagatedFlag) {
+		this.propagatedFlag = propagatedFlag;
+	}
 
 }
