@@ -71,40 +71,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-	 * isMapAdviceComputable(org.ihtsdo.otf.mapping.model.MapRecord)
-	 */
-	@Override
-	public boolean isMapAdviceComputable(MapRecord mapRecord) {
-		if (mapProject != null) {
-			for (MapAdvice mapAdvice : mapProject.getMapAdvices()) {
-				if (mapAdvice.isComputed() == true)
-					return true;
-			}
-		}
-		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-	 * isMapRelationComputable(org.ihtsdo.otf.mapping.model.MapRecord)
-	 */
-	@Override
-	public boolean isMapRelationComputable(MapRecord mapRecord) {
-		if (mapProject != null) {
-			for (MapRelation mapRelation : mapProject.getMapRelations()) {
-				if (mapRelation.isComputed() == true)
-					return true;
-			}
-		}
-		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
 	 * computeMapAdvice (org.ihtsdo.otf.mapping.model.MapRecord,
 	 * org.ihtsdo.otf.mapping.model.MapEntry)
 	 */
@@ -238,7 +204,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	// HELPER FUNCTIONS //
 	// ////////////////////
 
-	public ValidationResult checkMapRecordGroupStructure(MapRecord mapRecord,
+  /**
+	 * Check map record group structure.
+	 *
+	 * @param mapRecord the map record
+	 * @param entryGroups the entry groups
+	 * @return the validation result
+	 */
+	@SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordGroupStructure(MapRecord mapRecord,
 			Map<Integer, List<MapEntry>> entryGroups) {
 
 		ValidationResult validationResult = new ValidationResultJpa();
@@ -2114,7 +2088,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		return newRecords;
 	}
 
-	public MapRecord getCurrentMapRecordForUser(Set<MapRecord> mapRecords,
+	/**
+	 * Returns the current map record for user.
+	 *
+	 * @param mapRecords the map records
+	 * @param mapUser the map user
+	 * @return the current map record for user
+	 */
+	@SuppressWarnings("static-method")
+  public MapRecord getCurrentMapRecordForUser(Set<MapRecord> mapRecords,
 			MapUser mapUser) {
 
 		MapRecord mapRecord = null;
