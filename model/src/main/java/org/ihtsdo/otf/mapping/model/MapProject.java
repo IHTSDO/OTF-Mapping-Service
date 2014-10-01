@@ -556,4 +556,46 @@ public interface MapProject {
 	 */
 	 public String getMapPrincipleSourceDocument();
 
+	 /**
+ 	 * Returns the error messages.
+ 	 *
+ 	 * @return the error messages
+ 	 */
+ 	 public Set<String> getErrorMessages();
+
+	 /**
+ 	 * Sets the error messages.
+ 	 *
+ 	 * @param errorMessages the error messages
+ 	 */
+ 	public void setErrorMessages(Set<String> errorMessages);
+
+	/**
+	 * Returns the propagation descendant threshold.
+	 *
+	 * @return the propagation descendant threshold
+	 */
+	public Integer getPropagationDescendantThreshold();
+
+	/**
+	 * Sets the propagation descendant threshold.
+	 *
+	 * @param propagationDescendantThreshold the propagation descendant threshold
+	 */
+	public void setPropagationDescendantThreshold(Integer propagationDescendantThreshold);
+
+	/**
+	 * Indicates whether or not propagated flag is the case.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isPropagatedFlag();
+
+	/**
+	 * Sets the propagated flag.
+	 *
+	 * @param propagatedFlag the propagated flag
+	 */
+	public void setPropagatedFlag(boolean propagatedFlag);
+
 }
