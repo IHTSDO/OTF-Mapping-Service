@@ -3845,7 +3845,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			}
 			if (conversation.getUserName() == null || conversation.getUserName().equals("")) {
 				MapRecord record = mappingService.getMapRecord(conversation.getMapRecordId());
-				conversation.setUserName(record.getOwner().getUserName());
+				if (record != null && record.getOwner() != null)
+				  conversation.setUserName(record.getOwner().getUserName());
 			}
 			updateFeedbackConversation(conversation);
 		}
