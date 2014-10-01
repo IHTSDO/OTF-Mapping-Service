@@ -876,7 +876,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					"feedback": feedbacks,
 					"defaultPreferredName": $scope.concept.defaultPreferredName,
 					"title": "Feedback",
-					"mapProjectId": $scope.project.id
+					"mapProjectId": $scope.project.id,
+					"userName": record.owner.userName
 				  };
 			
 			  $http({						

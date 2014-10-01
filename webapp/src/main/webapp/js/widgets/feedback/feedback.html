@@ -55,7 +55,7 @@
           <td><a href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">{{feedbackConversation.terminologyId}}</a></td>
           <td>{{feedbackConversation.defaultPreferredName}}</td>
           <td ng-bind-html="to_trusted(feedbackConversation.title)"></td>
-          <td>{{feedbackConversation.feedback[0].sender.userName}}</td>
+          <td>{{feedbackConversation.userName}}</td>
           <td>{{feedbackConversation.lastModified | date:'MM-dd-yyyy HH:mm'}}&nbsp;
           ({{feedbackConversation.feedback[feedbackConversation.feedback.length -1].sender.userName}})</td>
         </tr>
