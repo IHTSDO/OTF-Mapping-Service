@@ -3600,6 +3600,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			full_query += "";
 			break;
 		}
+		
+		//full_query += " ORDER BY lastModified";
+		
 		Logger.getLogger(MappingServiceJpa.class).info(full_query);
 
 		FullTextEntityManager fullTextEntityManager = Search
@@ -3631,7 +3634,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		if (pfsParameter != null && pfsParameter.getSortField() != null
 				&& !pfsParameter.getSortField().isEmpty()) {
 			ftquery.setSort(new Sort(new SortField(pfsParameter.getSortField(),
-					SortField.STRING)));
+					SortField.STRING, true)));
 		} else if (pfsParameter != null
 				&& pfsParameter.getQueryRestriction() != null
 				&& !pfsParameter.getQueryRestriction().isEmpty()) {

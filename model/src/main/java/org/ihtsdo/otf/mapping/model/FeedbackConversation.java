@@ -203,4 +203,18 @@ public interface FeedbackConversation {
 	 */
 	public void addFeedback(Feedback feedback);
 
+	/**
+	 * Sets the user name.
+	 *
+	 * @param userName the user name
+	 */
+	public void setUserName(String userName);
+
+	/**
+	 * Returns the user name.
+	 *
+	 * @return the user name
+	 */
+	public String getUserName();
+
 }
