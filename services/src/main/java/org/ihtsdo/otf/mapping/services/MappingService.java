@@ -931,4 +931,12 @@ public interface MappingService extends RootService {
 			Set<MapRecord> mapRecordsToPublish, String effectiveTime,
 			String moduleId) throws Exception;
 
+	/**
+	 * Simple routine to removes a map advice from the environment
+	 *
+	 * @param mapAdviceId the map advice name
+	 * @throws Exception 
+	 */
+	public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice) throws Exception;
+
 }
