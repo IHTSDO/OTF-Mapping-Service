@@ -3260,6 +3260,20 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						break;
 					case 1:
 						MapRecord editingRecord = mapRecords.iterator().next();
+						
+						// TODO
+						// Add null check to record iterator
+						/*[INFO] Checking workflow for Unmapped SNOMED to ICD10, 10
+						2014-10-01_12:18:19.489 INFO org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa computeWorkflowStatusErrors - Retrieving tracking records for project 10, Unmapped SNOMED to ICD10
+						2014-10-01_12:18:19.643 INFO org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa computeWorkflowStatusErrors -   308 retrieved
+						2014-10-01_12:18:20.504 INFO org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa computeWorkflowStatusErrors -   30 tracking records processed, 0 in error
+						2014-10-01_12:18:20.971 INFO org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa computeWorkflowStatusErrors -   60 tracking records processed, 0 in error
+						2014-10-01_12:18:21.356 INFO org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa computeWorkflowStatusErrors -   90 tracking records processed, 0 in error
+						2014-10-01_12:18:21.718 INFO org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa computeWorkflowStatusErrors -   120 tracking records processed, 0 in error
+						java.lang.NullPointerException
+						        at org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa.computeWorkflowStatusErrors(WorkflowServiceJpa.java:3266)
+						        at org.ihtsdo.otf.mapping.mojo.QAWorkflow.execute(QAWorkflow.java:90)
+*/
 
 						// record MUST be NEW, EDITING_IN_PROGRESS, or
 						// REVIEW_NEEDED
