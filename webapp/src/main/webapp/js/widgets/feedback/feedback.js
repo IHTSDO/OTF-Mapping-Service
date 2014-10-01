@@ -30,6 +30,7 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	$scope.mapUserViewed == null;
 	$scope.searchPerformed = false;  		// initialize variable to track whether search was performed
     $scope.feedbackType = 'ALL';
+    $scope.recordIdOwnerMap = new Array();
 	
 	// pagination variables
 	$scope.recordsPerPage = 10;
@@ -66,7 +67,7 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 		var pfsParameterObj = 
 					{"startIndex": (page-1)*$scope.recordsPerPage,
 			 	 	 "maxResults": $scope.recordsPerPage,
-			 	 	 "sortField":  null,
+			 	 	 "sortField":  'lastModified',
 			 	 	 "queryRestriction": feedbackType};  
 	
 	  	$rootScope.glassPane++;
@@ -112,6 +113,7 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
     	}
     	return true;
 	};
+	
 	
 	$scope.goFeedbackConversations = function (id) {
 		var path = "/conversation/recordId/" + id;
