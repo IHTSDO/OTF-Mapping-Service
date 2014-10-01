@@ -3844,9 +3844,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					feedback.setMapError("");
 			}
 			if (conversation.getUserName() == null || conversation.getUserName().equals("")) {
-				MapRecord record = mappingService.getMapRecord(conversation.getMapRecordId());
-				if (record != null && record.getOwner() != null)
-				  conversation.setUserName(record.getOwner().getUserName());
+				MapRecord mapRecord = mappingService.getMapRecord(conversation.getMapRecordId());
+				if (mapRecord == null) {
+				  mapRecord = mappingService
+						.getMapRecordRevisions(conversation.getMapRecordId()).getMapRecords().get(0);
+				}
+				conversation.setUserName(mapRecord.getOwner().getUserName());
 			}
 			updateFeedbackConversation(conversation);
 		}
