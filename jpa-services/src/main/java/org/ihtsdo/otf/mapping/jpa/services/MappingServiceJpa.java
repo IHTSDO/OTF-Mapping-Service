@@ -3349,7 +3349,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		mapProject.getMapSpecialists().size();
 		mapProject.getMapPrinciples().size();
 		mapProject.getPresetAgeRanges().size();
-
+		mapProject.getErrorMessages().size();
 	}
 
 	/*
