@@ -133,20 +133,13 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 				// add check for scope concepts contained in the map record set
 
 				// FOR TESTING ONLY
-				// Set<String> conceptIds = new HashSet<>();
 				Set<MapRecord> mapRecords = new HashSet<>();
 
-				// POPULATE CONCEPT SET HERE
-				// conceptIds.add("276008");
 
 				// RETRIEVE MAP RECORDS HERE
-				// for (String terminologyId : conceptIds) {
 				mapRecords.addAll(mappingService
 						.getPublishedMapRecordsForMapProject(
 								mapProject.getId(), null).getMapRecords());
-				// mappingService.getMapRecordForProjectAndConcept(mapProject.getId(),
-				// terminologyId));
-				// }
 
 				getLog().info(
 						"Processing release for " + mapProject.getName() + ", "
@@ -169,7 +162,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 						mapRecords, effectiveTime, moduleId);
 
 				// sort the file into a temporary file
-				FileSorter.sortFile(releaseFileName, releaseFileName + ".tmp",
+				/*FileSorter.sortFile(releaseFileName, releaseFileName + ".tmp",
 						new Comparator<String>() {
 
 							@Override
@@ -241,13 +234,13 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 									}
 								}
 							}
-						});
-
-				// delete the original file and move the tmp (sorted) file into the original file's place
-				File file = new File(releaseFileName);
-				file.delete();			
-				file = new File(releaseFileName + ".tmp");
-				file.renameTo(new File(releaseFileName));
+						});*/
+				
+				/*File tmpFile = new File(releaseFileName + ".tmp");
+				File oldFile = new File(releaseFileName);
+				oldFile.delete();
+				tmpFile.renameTo(oldFile);*/
+				
 				
 				getLog().info("  Done sorting the file ");
 
