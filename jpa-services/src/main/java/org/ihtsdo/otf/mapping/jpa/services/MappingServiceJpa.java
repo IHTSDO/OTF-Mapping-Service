@@ -3568,13 +3568,29 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		int nRecords = 0;
 		int nRecordsPropagated = 0;
+		
+		// create a list from the set
+		Logger.getLogger(MappingServiceJpa.class).info("  Sorting records");
+		
+		List<MapRecord> mapRecordsToPublishList = new ArrayList<>(mapRecordsToPublish);
+		Collections.sort(mapRecordsToPublishList, new Comparator<MapRecord>() {
+
+							@Override
+							public int compare(MapRecord o1, MapRecord o2) {
+								Long conceptId1 = Long.parseLong(o1.getConceptId());
+								Long conceptId2 = Long.parseLong(o2.getConceptId());
+								
+								return conceptId1.compareTo(conceptId2);
+							
+							}
+		});
 
 		// perform the release
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"  Processing release...");
 
 		// cycle over the map records marked for publishing
-		for (MapRecord mapRecord : mapRecordsToPublish) {
+		for (MapRecord mapRecord : mapRecordsToPublishList) {
 
 			Logger.getLogger(MappingServiceJpa.class).info(
 					"   Processing map record " + mapRecord.getId() + ", "
@@ -3793,13 +3809,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				if (existingEntries == null)
 					existingEntries = new ArrayList<>();
 
+				// add map entry to map
+				me.setMapPriority(existingEntries.size() + 1);
+				
 				// if not the first entry and contains TRUE rule, set to
 				// OTHERWISE TRUE
 				if (me.getMapPriority() > 1 && me.getRule().equals("TRUE"))
 					me.setRule("OTHERWISE TRUE");
-
-				// add map entry to map
-				me.setMapPriority(existingEntries.size() + 1);
 
 				System.out.println("  Adding existing entry as: "
 						+ me.toString());
@@ -4448,15 +4464,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"  " + nAdviceRemoved + " instances removed from map projects");
-		commit();
-		Logger.getLogger(MappingServiceJpa.class).info(
-				"  " + "Changes committed");
-
-		// delete the advice itself
-		beginTransaction();
-		removeMapAdvice(mapAdvice.getId());
-		Logger.getLogger(MappingServiceJpa.class).info(
-				"Removing map advice from database");
 		commit();
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"  " + "Changes committed");
