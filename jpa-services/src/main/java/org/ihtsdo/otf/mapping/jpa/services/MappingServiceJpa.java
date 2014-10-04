@@ -90,7 +90,6 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
-import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -3568,21 +3567,22 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		int nRecords = 0;
 		int nRecordsPropagated = 0;
-		
+
 		// create a list from the set
 		Logger.getLogger(MappingServiceJpa.class).info("  Sorting records");
-		
-		List<MapRecord> mapRecordsToPublishList = new ArrayList<>(mapRecordsToPublish);
+
+		List<MapRecord> mapRecordsToPublishList = new ArrayList<>(
+				mapRecordsToPublish);
 		Collections.sort(mapRecordsToPublishList, new Comparator<MapRecord>() {
 
-							@Override
-							public int compare(MapRecord o1, MapRecord o2) {
-								Long conceptId1 = Long.parseLong(o1.getConceptId());
-								Long conceptId2 = Long.parseLong(o2.getConceptId());
-								
-								return conceptId1.compareTo(conceptId2);
-							
-							}
+			@Override
+			public int compare(MapRecord o1, MapRecord o2) {
+				Long conceptId1 = Long.parseLong(o1.getConceptId());
+				Long conceptId2 = Long.parseLong(o2.getConceptId());
+
+				return conceptId1.compareTo(conceptId2);
+
+			}
 		});
 
 		// perform the release
@@ -3620,12 +3620,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				TreePosition treePosition;
 				try {
+					// get the first tree position (may be several for this concept)
 					treePosition = contentService
-							.getTreePositionsWithDescendants(
+							.getTreePositions(
 									mapRecord.getConceptId(),
 									mapProject.getSourceTerminology(),
 									mapProject.getSourceTerminologyVersion())
 							.getIterable().iterator().next();
+					
+					// use the first tree position to retrieve a tree position graph with populated descendants
+					treePosition = contentService.getTreePositionWithDescendants(treePosition);
 				} catch (NoSuchElementException e) {
 					conceptErrors.put(mapRecord.getConceptId(),
 							"Could not retrieve tree positions");
@@ -3637,6 +3641,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// get a list of tree positions sorted by position in hiearchy
 				// (deepest-first)
 				List<TreePosition> treePositionDescendantList = getSortedTreePositionDescendantList(treePosition);
+				
+				System.out.println("*** Descendant list has " + treePositionDescendantList.size() + " elements");
 
 				// construct a map of ancestor path + terminologyId to map
 				// records
@@ -3708,8 +3714,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 										+ ", " + mr.getConceptName());
 
 						// get the parent map record for this tree position
-						System.out.println("Retrieving parent entry for "
-								+ tp.getAncestorPath());
+						/*
+						 * System.out.println("Retrieving parent entry for " +
+						 * tp.getAncestorPath());
+						 */
 						MapRecord mrParent = treePositionToMapRecordMap.get(tp
 								.getAncestorPath());
 
@@ -3719,9 +3727,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 							mrParent = new MapRecordJpa(); // only here during
 															// testing
 						} else {
-							System.out.println("Parent record has "
-									+ mrParent.getMapEntries().size()
-									+ " entries");
+							/*
+							 * System.out.println("Parent record has " +
+							 * mrParent.getMapEntries().size() + " entries");
+							 */
 						}
 
 						// cycle over the entries
@@ -3744,7 +3753,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 							for (MapEntry parentEntry : mrParent
 									.getMapEntries()) {
 
-								System.out.println("Checking parent entry");
+								/* System.out.println("Checking parent entry"); */
 
 								if (parentEntry.getMapGroup() == me
 										.getMapGroup()
@@ -3752,15 +3761,16 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 									isDuplicateEntry = true;
 							}
 
-							// set the propagated rule for this entry
-							this.setPropagatedRuleForMapEntry(me);
+							
 
 							// compare to the entries added via up-propagation
 							// (prevent duplication)
 							// NOTE: This uses modified rules for propagation
 							for (MapEntry existingEntry : existingEntries) {
 
-								System.out.println("Checking existing entry");
+								/*
+								 * System.out.println("Checking existing entry");
+								 */
 
 								if (existingEntry.isEquivalent(me))
 									isDuplicateEntry = true;
@@ -3768,10 +3778,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 							// if not a duplicate entry, add it to the map
 							if (isDuplicateEntry == false) {
-
+								
 								// set map priority based on size of current
 								// list
 								me.setMapPriority(existingEntries.size() + 1);
+								
+								// set the propagated rule for this entry
+								this.setPropagatedRuleForMapEntry(me);
 
 								// recalculate the map relation
 								me.setMapRelation(algorithmHandler
@@ -3781,16 +3794,20 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 								// add to the list
 								existingEntries.add(me);
 
-								System.out.println("Adding entry: "
-										+ me.toString());
+								/*
+								 * System.out.println("Adding entry: " +
+								 * me.toString());
+								 */
 
 								// replace existing list with modified list
 								entriesByGroup.put(me.getMapGroup(),
 										existingEntries);
 
 							} else {
-								System.out.println("Duplicate entry: "
-										+ me.toString());
+								/*
+								 * System.out.println("Duplicate entry: " +
+								 * me.toString());
+								 */
 							}
 						}
 					}
@@ -3811,7 +3828,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				// add map entry to map
 				me.setMapPriority(existingEntries.size() + 1);
-				
+
 				// if not the first entry and contains TRUE rule, set to
 				// OTHERWISE TRUE
 				if (me.getMapPriority() > 1 && me.getRule().equals("TRUE"))
@@ -3871,6 +3888,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 							mapProject, effectiveTime, moduleId);
 				}
 			}
+/*
+			if (nRecords > 10)
+				break;*/
 
 		}
 
@@ -3893,24 +3913,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		// close the writer
 		writer.close();
-	}
-
-	/**
-	 * Helper function to get the direct parent tree positions for a descendant
-	 * map record.
-	 * 
-	 * @param treePosition
-	 *            the tree position matching the descendant record
-	 * @param treePositions
-	 *            the tree positions representing the full descendant list of
-	 *            the propagated record
-	 * @return the parent tree positions
-	 */
-	public List<TreePosition> getParentTreePositionsFromDescendantList(
-			TreePosition treePosition, List<TreePosition> treePositions) {
-		List<TreePosition> parentTreePositions = new ArrayList<>();
-
-		return parentTreePositions;
 	}
 
 	/**
@@ -4090,18 +4092,36 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	}
 
 	/**
-	 * Gets the sorted tree position descendant list.
-	 * 
-	 * @param tp
-	 *            the tp
+	 * Takes a tree position graph and converts it to a sorted list of tree positions
+	 * where order is based on depth in tree
+	 *
+	 * @param tp the tp
 	 * @return the sorted tree position descendant list
+	 * @throws Exception the exception
 	 */
 	public List<TreePosition> getSortedTreePositionDescendantList(
-			TreePosition tp) {
+			TreePosition tp) throws Exception {
 
-		// get the unsorted list from recursive helper function
-		List<TreePosition> sortedTreePositionDescendantList = this
-				.getUnsortedTreePositionDescendantList(tp);
+		// construct list of unprocessed tree positions and initialize with root position
+		List<TreePosition> positionsToAdd = new ArrayList<>();
+		positionsToAdd.add(tp);
+		
+		List<TreePosition> sortedTreePositionDescendantList = new ArrayList<>();
+		
+		while (!positionsToAdd.isEmpty()) {
+			
+			// add the first element
+			sortedTreePositionDescendantList.add(positionsToAdd.get(0));
+			
+			// add the children of first element
+			for (TreePosition childTp : positionsToAdd.get(0).getChildren()) {
+				positionsToAdd.add(childTp);
+			}
+			
+			// remove the first element
+			positionsToAdd.remove(0);
+		}
+		
 
 		// sort the tree positions by position in the hierarchy (e.g. # of ~
 		// characters)
@@ -4124,55 +4144,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				});
 
 		return sortedTreePositionDescendantList;
-	}
-
-	/**
-	 * Helper function: Given a set of map entries and a group number returns
-	 * the last entry in that group
-	 * 
-	 * @param mapEntries
-	 * @param group
-	 * @return
-	 */
-	public MapEntry getLastMapEntryForGroup(List<MapEntry> mapEntries, int group) {
-		MapEntry lastEntry = null;
-		for (MapEntry me : mapEntries) {
-			if (me.getMapGroup() == group) {
-				if (lastEntry == null
-						|| lastEntry.getMapPriority() < me.getMapPriority()) {
-					lastEntry = me;
-				}
-
-			}
-		}
-
-		return lastEntry;
-	}
-
-	/**
-	 * Recursive helper function Given a tree position, return a list of
-	 * descendants.
-	 * 
-	 * @param tp
-	 *            the tp
-	 * @return the unsorted tree position descendant list
-	 */
-	public List<TreePosition> getUnsortedTreePositionDescendantList(
-			TreePosition tp) {
-
-		List<TreePosition> descendantTreePositionList = new ArrayList<>();
-
-		// for each child tree position, recursively call function to add its
-		// children
-		for (TreePosition tpChild : tp.getChildren()) {
-			descendantTreePositionList
-					.addAll(getUnsortedTreePositionDescendantList(tpChild));
-		}
-
-		// add this tree position to the list
-		descendantTreePositionList.add(tp);
-
-		return descendantTreePositionList;
 	}
 
 	/**

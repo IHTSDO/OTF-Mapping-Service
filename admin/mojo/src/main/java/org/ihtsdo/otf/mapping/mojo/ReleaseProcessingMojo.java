@@ -140,6 +140,25 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 				mapRecords.addAll(mappingService
 						.getPublishedMapRecordsForMapProject(
 								mapProject.getId(), null).getMapRecords());
+				
+				/*String conceptIds[] = { "10000006",
+				                      "10001005",
+				                     "1001000119102",
+				                      "10041001",
+				                      "10050004",
+				                      "100581000119102",
+				                      "10061007",
+				                      "10065003",
+				                      "10070005" }; */
+				                      
+				
+				/*String conceptIds[] = { "1001000119102" }; */
+	   
+				
+			/*	for (String conceptId : conceptIds) {
+					MapRecord mr = mappingService.getMapRecordForProjectAndConcept(mapProject.getId(), conceptId);
+					mapRecords.add(mr);
+				}*/
 
 				getLog().info(
 						"Processing release for " + mapProject.getName() + ", "

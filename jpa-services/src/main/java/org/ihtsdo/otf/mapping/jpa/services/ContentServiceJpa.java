@@ -1589,21 +1589,33 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		TreePositionListJpa treePositionList = new TreePositionListJpa();
 		treePositionList.setTreePositions(treePositions);
 		treePositionList.setTotalCount(treePositions.size());
+		
+		TreePositionListJpa treePositionsWithDescendants = new TreePositionListJpa();
 
 		// for each tree position
 		for (TreePosition treePosition : treePositionList.getTreePositions()) {
 
-			// if this tree position has children
-			if (treePosition.getChildrenCount() > 0) {
-
-				// retrieve the children
-				treePosition.setChildren(getChildTreePositions(treePosition)
-						.getTreePositions());
+			treePositionsWithDescendants.addTreePosition(getTreePositionWithDescendants(treePosition));
+		}
+		treePositionsWithDescendants.setTotalCount(treePositionsWithDescendants.getTreePositions()
+				.size());
+		return treePositionsWithDescendants;
+	}
+	
+	@Override
+	public TreePosition getTreePositionWithDescendants(TreePosition tp) throws Exception {
+		
+		
+		if (tp.getChildrenCount() > 0) {
+			
+			TreePositionList tpChildren = getChildTreePositions(tp);
+			
+			for (TreePosition tpChild : tpChildren.getTreePositions()) {
+				tp.addChild(getTreePositionWithDescendants(tpChild));
 			}
 		}
-		treePositionList.setTotalCount(treePositionList.getTreePositions()
-				.size());
-		return treePositionList;
+		
+		return tp;
 	}
 
 	/**
