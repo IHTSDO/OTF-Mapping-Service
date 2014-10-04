@@ -46,7 +46,6 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 
 
 	// on any change of focusProject, retrieve new available work
-
 	$scope.$watch(['focusProject', 'currentUser', 'currentUserToken', 'currentRole'], function() {
 		
 		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null
@@ -62,6 +61,14 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
     	
     	if ($scope.currentRole == 'Viewer')
   		  return;
+    	
+    	// add a check to ensure page is not null
+    	if (page == null)
+    		page = 1;
+    	
+    	// add a check to prevent NPE due to threading issues
+    	if (feedbackType == null)
+    		feedbackType = 'ALL';
     	
 		// construct a paging/filtering/sorting object
 		var pfsParameterObj = 
