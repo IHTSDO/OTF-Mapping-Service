@@ -198,9 +198,11 @@ public class WorkflowServiceRest extends RootServiceRest {
 			SearchResultList revisedResults = new SearchResultListJpa();
 			ContentService contentService = new ContentServiceJpa();
 			for (SearchResult result : results.getIterable()) {
+				
+				
 				Concept c = contentService.getConcept(
-						result.getTerminologyId(), result.getTerminology(),
-						result.getTerminologyVersion());
+						result.getTerminologyId(), mapProject.getSourceTerminology(),
+						mapProject.getSourceTerminologyVersion());
 				if (c.isActive() == true) {
 					revisedResults.addSearchResult(result);
 				} else {
