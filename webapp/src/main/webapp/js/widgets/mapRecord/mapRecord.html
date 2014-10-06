@@ -224,10 +224,12 @@
 <accordion-heading> Flags <i
 	class="pull-right glyphicon"
 	ng-class="{'glyphicon-chevron-down': isFlagsOpen, 'glyphicon-chevron-right': !isFlagsOpen}"></i>
-</accordion-heading> <input type="checkbox" disabled ng-model="record.flagForConsensusReview">
-<span style="color:grey;">Flag for consensus review (not yet available)</span><br>
-<input type="checkbox" disabled ng-model="record.flagForEditorialReview">
-<span style="color:grey;">Flag for editorial review  (not yet available)</span><br>
+</accordion-heading> <input type="checkbox" ng-model="record.flagForConsensusReview">
+<!-- Consensus review temporarily removed
+span style="color:grey;">Flag for consensus review (not yet available)</span><br>
+ -->
+ <input type="checkbox" ng-model="record.flagForEditorialReview">
+<span style="color:grey;">Flag for editorial review</span><br>
 <input type="checkbox" ng-model="record.flagForMapLeadReview"
 	ng-show="page != 'resolveConflictsDashboard'"> Flag for map
 lead review<br>

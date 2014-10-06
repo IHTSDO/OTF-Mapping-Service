@@ -18,6 +18,7 @@ import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -794,4 +795,13 @@ public interface ContentService extends RootService {
 	 * @throws Exception the exception
 	 */
 	public ConceptList getConcepts() throws Exception;
+
+	/**
+	 * Gets the tree position with descendants.
+	 *
+	 * @param tp the tp
+	 * @return the tree position with descendants
+	 * @throws Exception 
+	 */
+	public TreePosition getTreePositionWithDescendants(TreePosition tp) throws Exception;
 }
