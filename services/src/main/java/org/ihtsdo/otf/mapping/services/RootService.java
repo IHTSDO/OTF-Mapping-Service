@@ -6,55 +6,60 @@ package org.ihtsdo.otf.mapping.services;
  */
 public interface RootService {
 
-	/**
-	 * Open the factory.
-	 *
-	 * @throws Exception the exception
-	 */
-	public void openFactory() throws Exception;
-	
-	/**
-	 * Close the factory.
-	 *
-	 * @throws Exception the exception
-	 */
-	public void closeFactory() throws Exception;
-	
-	/**
-	 * Initialize field names.
-	 *
-	 * @throws Exception the exception
-	 */
-	public void initializeFieldNames() throws Exception;
+  /**
+   * Open the factory.
+   *
+   * @throws Exception the exception
+   */
+  public void openFactory() throws Exception;
 
-	/**
-	 * Gets the transaction per operation.
-	 *
-	 * @return the transaction per operation
-	 */
-	public boolean getTransactionPerOperation() throws Exception;
+  /**
+   * Close the factory.
+   *
+   * @throws Exception the exception
+   */
+  public void closeFactory() throws Exception;
 
-	
-	/**
-	 * Sets the transaction per operation.
-	 *
-	 * @param transactionPerOperation the new transaction per operation
-	 */
-	public void setTransactionPerOperation(boolean transactionPerOperation) throws Exception;
-	
-	/**
-	 * Commit.
-	 */
-	public void commit() throws Exception;
+  /**
+   * Initialize field names.
+   *
+   * @throws Exception the exception
+   */
+  public void initializeFieldNames() throws Exception;
 
-	/**
-	 * Begin transaction.
-	 */
-	public void beginTransaction() throws Exception;
-	
-	/**
-	 * Closes the manager
-	 */
-	public void close() throws Exception;
-	 
+  /**
+   * Gets the transaction per operation.
+   *
+   * @return the transaction per operation
+   * @throws Exception
+   */
+  public boolean getTransactionPerOperation() throws Exception;
+
+  /**
+   * Sets the transaction per operation.
+   *
+   * @param transactionPerOperation the new transaction per operation
+   * @throws Exception 
+   */
+  public void setTransactionPerOperation(boolean transactionPerOperation)
+    throws Exception;
+
+  /**
+   * Commit.
+   * @throws Exception 
+   */
+  public void commit() throws Exception;
+
+  /**
+   * Begin transaction.
+   * @throws Exception 
+   */
+  public void beginTransaction() throws Exception;
+
+  /**
+   * Closes the manager
+   * @throws Exception 
+   */
+  public void close() throws Exception;
+
 }
