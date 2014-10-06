@@ -1,12 +1,13 @@
 package org.ihtsdo.otf.mapping.services;
 
-import java.util.Date;
+import org.ihtsdo.otf.mapping.helpers.PfsParameter;
+import org.ihtsdo.otf.mapping.helpers.ReportList;
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.reports.Report;
+import org.ihtsdo.otf.mapping.reports.ReportNote;
+import org.ihtsdo.otf.mapping.reports.ReportResult;
+import org.ihtsdo.otf.mapping.reports.ReportResultItem;
 
-import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapUser;
-import org.ihtsdo.otf.mapping.reports.MapReportSpecialistOutput;
-
-// TODO: Auto-generated Javadoc
 /**
  * The Interface ReportService.
  */
@@ -21,46 +22,147 @@ public interface ReportService {
 	 */
 	public void close() throws Exception;
 	
-	/**
-	 * UserReportSpecialistOutput.
-	 *
-	 * @param specialistOutputId the specialist output id
-	 * @return the user report specialist output
-	 */
-	public MapReportSpecialistOutput getUserReportSpecialistOutput(Long specialistOutputId);
-	
-	/**
-	 * Adds the user report specialist output.
-	 *
-	 * @param specialistOutput the specialist output
-	 * @return the map report specialist output
-	 */
-	public MapReportSpecialistOutput addUserReportSpecialistOutput(MapReportSpecialistOutput specialistOutput);
-	
-	/**
-	 * Update user report specialist output.
-	 *
-	 * @param specialistOutput the specialist output
-	 */
-	public void updateUserReportSpecialistOutput(MapReportSpecialistOutput specialistOutput);
-	
-	/**
-	 * Removes the user report specialist output.
-	 *
-	 * @param specialistOutputId the specialist output id
-	 */
-	public void removeUserReportSpecialistOutput(Long specialistOutputId);
 
 	/**
-	 * Compute specialist output report.
+	 * Gets the reports.
 	 *
-	 * @param mapUser the map user
-	 * @param mapProject the map project
-	 * @param startDate the start date
-	 * @param endDate the end date
-	 * @return the map report specialist output
-	 * @throws Exception 
+	 * @return the reports
 	 */
-	public MapReportSpecialistOutput computeSpecialistOutputReport(MapUser mapUser,
-			MapProject mapProject, Date startDate, Date endDate) throws Exception;
+	public ReportList getReports();
+	
+	/**
+	 * Find reports for query.
+	 *
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findReportsForQuery(String query, PfsParameter pfsParameter)
+			throws Exception;
+	
+	/**
+	 * Gets the report.
+	 *
+	 * @param reportId the report id
+	 * @return the report
+	 */
+	public Report getReport(Long reportId);
+	
+	/**
+	 * Adds the report.
+	 *
+	 * @param report the report
+	 * @return the report
+	 */
+	public Report addReport(Report report);
+	
+	/**
+	 * Update report.
+	 *
+	 * @param report the report
+	 */
+	public void updateReport(Report report);
+	
+	/**
+	 * Removes the remport.
+	 *
+	 * @param reportId the report id
+	 */
+	public void removeReport(Long reportId);
+	
+	/**
+	 * Gets the report result.
+	 *
+	 * @param reportResultId the report result id
+	 * @return the report result
+	 */
+	public ReportResult getReportResult(Long reportResultId);
+	
+	/**
+	 * Adds the report result.
+	 *
+	 * @param reportResult the report result
+	 * @return the report result
+	 */
+	public ReportResult addReportResult(ReportResult reportResult);
+	
+	/**
+	 * Update report result.
+	 *
+	 * @param reportResult the report result
+	 */
+	public void updateReportResult(ReportResult reportResult);
+	
+	/**
+	 * Removes the report result.
+	 *
+	 * @param reportResultId the report result id
+	 */
+	public void removeReportResult(Long reportResultId);
+	
+	/**
+	 * Gets the report result item.
+	 *
+	 * @param reportResultItemId the report result item id
+	 * @return the report result item
+	 */
+	public ReportResultItem getReportResultItem(Long reportResultItemId);
+	
+	/**
+	 * Adds the report result item.
+	 *
+	 * @param reportResultItem the report result item
+	 * @return the report result item
+	 */
+	public ReportResultItem addReportResultItem(ReportResultItem reportResultItem);
+	
+	/**
+	 * Update report result item.
+	 *
+	 * @param reportResultItem the report result item
+	 */
+	public void updateReportResultItem(ReportResultItem reportResultItem);
+	
+	/**
+	 * Removes the report result item.
+	 *
+	 * @param reportResultItemId the report result item id
+	 */
+	public void removeReportResultItem(Long reportResultItemId);
+	
+	/**
+	 * Gets the report note.
+	 *
+	 * @param reportNoteId the report note id
+	 * @return the report note
+	 */
+	public ReportNote getReportNote(Long reportNoteId);
+	
+	/**
+	 * Adds the report note.
+	 *
+	 * @param reportNote the report note
+	 * @return the report note
+	 */
+	public ReportNote addReportNote(ReportNote reportNote);
+	
+	/**
+	 * Update report note.
+	 *
+	 * @param reportNote the report note
+	 */
+	public void updateReportNote(ReportNote reportNote);
+	
+	/**
+	 * Removes the report note.
+	 *
+	 * @param reportNoteId the report note id
+	 */
+	public void removeReportNote(Long reportNoteId);
+
+
+
+
+
 }
