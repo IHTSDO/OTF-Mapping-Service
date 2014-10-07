@@ -30,8 +30,6 @@ public class RootServiceJpa implements RootService {
 
 	/** The indexed field names. */
 	protected static Set<String> fieldNames;
-	
-	protected static Set<String> treePositionFieldNames;
 
 	/** The lock. */
 	private static String lock = "lock";
@@ -136,28 +134,7 @@ public class RootServiceJpa implements RootService {
 
 			fullTextEntityManager.close();
 		}
-		
-		if (treePositionFieldNames == null) {
-			treePositionFieldNames = new HashSet<>();
-			EntityManager manager = factory.createEntityManager();
-			FullTextEntityManager fullTextEntityManager = org.hibernate.search.jpa.Search
-					.getFullTextEntityManager(manager);
-			IndexReaderAccessor indexReaderAccessor = fullTextEntityManager
-					.getSearchFactory().getIndexReaderAccessor();
-			
-			IndexReader indexReader = indexReaderAccessor.open("org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa");
-			try {
-				for (FieldInfo info : ReaderUtil
-						.getMergedFieldInfos(indexReader)) {
-					treePositionFieldNames.add(info.name);
-				}
-			} finally {
-				indexReaderAccessor.close(indexReader);
-			}
-			
 
-			fullTextEntityManager.close();
-		}
 	}
 
 	/*
