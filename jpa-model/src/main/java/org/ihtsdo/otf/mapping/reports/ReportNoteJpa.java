@@ -11,8 +11,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.hibernate.search.annotations.Indexed;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
