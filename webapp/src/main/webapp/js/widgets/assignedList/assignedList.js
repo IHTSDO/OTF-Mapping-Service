@@ -13,27 +13,37 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	});
 }).controller('assignedListCtrl', function($scope, $rootScope, $http, $location, $modal, localStorageService){
 
-	// initialize as empty to indicate still initializing database connection
+	// on initialization, explicitly assign to null and/or empty array
+	$scope.currentUser = null;
+	$scope.currentRole = null;
+	$scope.focusProject = null;
+	$scope.assignedTab = null;
+	$scope.currentUserToken = null;
 	$scope.assignedRecords = [];
+	
+	// retrieve the necessary scope variables from local storage service
 	$scope.currentUser = localStorageService.get('currentUser');
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
+	$scope.currentUserToken = localStorageService.get('userToken');
 	$scope.assignedTab = localStorageService.get('assignedTab');
+
 	
-	// tab variables, defaults to first active tab?
+	// tab variables
 	$scope.tabs = [ {id: 0, title: 'Concepts', active:false}, 
 	                {id: 1, title: 'Conflicts', active:false},
 	                {id: 2, title: 'Review', active:false},
 	                {id: 3, title: 'By User', active:false}];
 	
 	
-	// table sort fields
+	// table sort fields - currently unused
 	$scope.tableFields = [ {id: 0, title: 'id', sortDir: 'asc', sortOn: false}];
 	
 	$scope.mapUserViewed == null;
 	$scope.ownTab = true; // variable to track whether viewing own work or other users work
 	$scope.searchPerformed = false;  		// initialize variable to track whether search was performed
 	
+	// initial work types for each tab
 	$scope.assignedWorkType = 'NEW'; 		// initialize variable to track which type of work has been requested
 	$scope.assignedConflictType = 'CONFLICT_NEW'; 	// initialize variable to track which type of conflict has been requested
 	$scope.assignedReviewWorkType = 'REVIEW_NEW';
@@ -125,8 +135,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		}
 	});
 
-	// on any change of focusProject, retrieve new available work
-	$scope.currentUserToken = localStorageService.get('userToken');
+	// on any change of relevant scope variables, retrieve work
 	$scope.$watch(['focusProject', 'user', 'userToken', 'currentRole'], function() {
 		console.debug('assignedListCtrl:  Detected project or user set/change');
 

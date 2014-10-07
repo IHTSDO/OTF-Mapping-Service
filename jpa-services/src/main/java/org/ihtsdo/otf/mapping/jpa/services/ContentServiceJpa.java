@@ -12,18 +12,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 import org.hibernate.search.SearchFactory;
+import org.hibernate.search.indexes.IndexReaderAccessor;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
@@ -86,7 +91,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	/** The compute tree position last time. */
 	Long computeTreePositionLastTime;
 
-	/**
+    /**  The tree position field names. */
+    private static Set<String> treePositionFieldNames;
+
+    /**
 	 * Instantiates an empty {@link ContentServiceJpa}.
 	 * 
 	 * @throws Exception
@@ -95,7 +103,38 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		super();
 	}
 
-	/*
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.ihtsdo.otf.mapping.services.RootService#initializeFieldNames()
+     */
+    @Override
+    public void initializeFieldNames() throws Exception {
+      super.initializeFieldNames();
+        if (treePositionFieldNames == null) {
+            treePositionFieldNames = new HashSet<>();
+            EntityManager manager = factory.createEntityManager();
+            FullTextEntityManager fullTextEntityManager = org.hibernate.search.jpa.Search
+                    .getFullTextEntityManager(manager);
+            IndexReaderAccessor indexReaderAccessor = fullTextEntityManager
+                    .getSearchFactory().getIndexReaderAccessor();
+            
+            IndexReader indexReader = indexReaderAccessor.open("org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa");
+            try {
+                for (FieldInfo info : ReaderUtil
+                        .getMergedFieldInfos(indexReader)) {
+                    treePositionFieldNames.add(info.name);
+                }
+            } finally {
+                indexReaderAccessor.close(indexReader);
+            }
+            
+
+            fullTextEntityManager.close();
+        }
+    }
+    /*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.services.ContentService#close()
@@ -170,7 +209,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		try {
 			query.setParameter("terminology", terminology);
 			query.setParameter("terminologyVersion", terminologyVersion);
-			List<Concept> concepts = (List<Concept>) query.getResultList();
+			List<Concept> concepts = query.getResultList();
 			ConceptList conceptList = new ConceptListJpa();
 			conceptList.setConcepts(concepts);
 			return conceptList;
@@ -1284,8 +1323,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			Logger.getLogger(this.getClass()).info(
 					"  " + results + " tree positions deleted");
 		}
-		;
-
+		
 		Logger.getLogger(this.getClass()).info(
 				"Finished:  deleted " + results + " tree positions");
 
@@ -1589,21 +1627,33 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		TreePositionListJpa treePositionList = new TreePositionListJpa();
 		treePositionList.setTreePositions(treePositions);
 		treePositionList.setTotalCount(treePositions.size());
+		
+		TreePositionListJpa treePositionsWithDescendants = new TreePositionListJpa();
 
 		// for each tree position
 		for (TreePosition treePosition : treePositionList.getTreePositions()) {
 
-			// if this tree position has children
-			if (treePosition.getChildrenCount() > 0) {
-
-				// retrieve the children
-				treePosition.setChildren(getChildTreePositions(treePosition)
-						.getTreePositions());
+			treePositionsWithDescendants.addTreePosition(getTreePositionWithDescendants(treePosition));
+		}
+		treePositionsWithDescendants.setTotalCount(treePositionsWithDescendants.getTreePositions()
+				.size());
+		return treePositionsWithDescendants;
+	}
+	
+	@Override
+	public TreePosition getTreePositionWithDescendants(TreePosition tp) throws Exception {
+		
+		
+		if (tp.getChildrenCount() > 0) {
+			
+			TreePositionList tpChildren = getChildTreePositions(tp);
+			
+			for (TreePosition tpChild : tpChildren.getTreePositions()) {
+				tp.addChild(getTreePositionWithDescendants(tpChild));
 			}
 		}
-		treePositionList.setTotalCount(treePositionList.getTreePositions()
-				.size());
-		return treePositionList;
+		
+		return tp;
 	}
 
 	/**
@@ -1967,7 +2017,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			}
 		}
 
-		treePosition.setDescGroups(new ArrayList<TreePositionDescriptionGroup>(
+		treePosition.setDescGroups(new ArrayList<>(
 				descGroups.values()));
 
 		// calculate information for all children
@@ -2220,7 +2270,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				"terminology", terminology);
 
 		Date tempDate = (Date) query.getSingleResult();
-		System.out.println("Max date   = " + tempDate.toString());
+        Logger.getLogger(ContentServiceJpa.class).info(
+            "Max date   = " + tempDate.toString());
 
 		if (date == null) {
 			date = tempDate;
@@ -2258,7 +2309,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 							.createQuery()).createQuery();
 
 		}
-		Logger.getLogger(ContentServiceJpa.class).info(
+        Logger.getLogger(ContentServiceJpa.class).info(
 				"Query text: " + luceneQuery.toString());
 
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
