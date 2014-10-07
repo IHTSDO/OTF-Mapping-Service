@@ -28,6 +28,14 @@ public interface ReportResult {
 
 	public void setReportResultItems(List<ReportResultItem> reportResultItems);
 
+	public String getProjectName();
+
+	public void setProjectName(String projectName);
+
+	public String getDateValue();
+
+	public void setDateValue(String dateValue);
+
 /*	public List<ReportNote> getNotes();
 
 	public void setNotes(List<ReportNote> notes);*/

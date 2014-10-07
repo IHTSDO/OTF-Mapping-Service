@@ -783,7 +783,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 							}]
 						}]
 
-					},{
+					/*},{
 						columns: [{
 							class: 'col-md-12',
 							widgets: [{
@@ -792,9 +792,8 @@ mapProjectAppDashboards.controller('dashboardCtrl', function ($rootScope, $scope
 								},
 								title: "Application Administration"
 							}]
-						}]
-					},
-					{
+						}]*/
+					},{
 						columns: [{
 							class: 'col-md-12',
 							widgets: [{

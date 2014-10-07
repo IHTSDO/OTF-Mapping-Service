@@ -198,12 +198,15 @@ public class WorkflowServiceRest extends RootServiceRest {
 			SearchResultList revisedResults = new SearchResultListJpa();
 			ContentService contentService = new ContentServiceJpa();
 			for (SearchResult result : results.getIterable()) {
-				
-				
+
 				Concept c = contentService.getConcept(
 						result.getTerminologyId(), mapProject.getSourceTerminology(),
 						mapProject.getSourceTerminologyVersion());
-				if (c.isActive() == true) {
+				if (c == null) {
+					Logger.getLogger(WorkflowServiceJpa.class).warn(
+							"Could not get concept " + result.getTerminologyId() + ", " + mapProject.getSourceTerminology() + ", " + mapProject.getSourceTerminologyVersion());
+				}
+				else if (c.isActive() == true) {
 					revisedResults.addSearchResult(result);
 				} else {
 					Logger.getLogger(WorkflowServiceJpa.class).warn(
@@ -211,6 +214,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 									+ result.getTerminologyId());
 				}
 			}
+			
+			revisedResults.setTotalCount(results.getTotalCount());
+			
+			System.out.println(revisedResults.getCount());
 			contentService.close();
 
 			results = revisedResults;
