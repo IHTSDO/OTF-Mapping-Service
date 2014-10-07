@@ -180,7 +180,8 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 				}
 			}
 
-		} else if (mapEntry.getRule().equals("TRUE")) {
+		// using contains here to capture TRUE and OTHERWISE TRUE
+		} else if (mapEntry.getRule().contains("TRUE")) {
 
 			System.out.println("Entry has TRUE rule");
 
