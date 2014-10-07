@@ -211,6 +211,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 									+ result.getTerminologyId());
 				}
 			}
+			contentService.close();
 
 			results = revisedResults;
 
