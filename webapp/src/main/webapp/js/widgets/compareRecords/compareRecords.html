@@ -50,7 +50,7 @@
 					<td>Error Message:&nbsp;</td>
 					<td><select ng-model="selectedErrorMessage1"
 						style="margin: 4px"
-						ng-options="msg as msg.displayName for msg in errorMessages track by msg.displayName">
+						ng-options=" msg as msg for msg in errorMessages">
 					</select></td>
 				</tr>
 			</table>
