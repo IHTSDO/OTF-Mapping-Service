@@ -966,6 +966,25 @@ angular.module('mapProjectApp.widgets.projectDetails', ['adf.provider'])
 					});
 				};
 	
+				$scope.submitNewErrorMessage = function(message) {
+					var localErrorMessages = $scope.focusProject.errorMessages;
+					localErrorMessages.push(message);
+					$scope.focusProject.errorMessages = localErrorMessages;
+					$scope.updateMapProject();
+				};	
+				
+				$scope.deleteErrorMessage = function(message) {
+					console.debug("in deleteErrorMessage ");
+					for (var j = 0; j < $scope.focusProject.errorMessages.length; j++) {
+						if (message === $scope.focusProject.errorMessages[j]) {
+							$scope.focusProject.errorMessages.splice(j, 1);
+						}
+					}
+				    // update and broadcast the updated focus project
+					localStorageService.set('focusProject', $scope.focusProject);
+					$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject}); 
+					$scope.updateMapProject();
+				};
 				
 				$scope.deleteScopeIncludedConcept = function(scopeConcept) {
 					// TODO: recalculate workflow
