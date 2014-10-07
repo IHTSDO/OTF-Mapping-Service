@@ -1698,7 +1698,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// check if two specialists have completed work (lowest workflow
 				// status is EDITING_DONE, highest workflow status is CONFLICT_DETECTED)
 				if (getLowestWorkflowStatus(mapRecords).compareTo(
-						WorkflowStatus.EDITING_DONE) >= 0 && getWorkflowStatus(mapRecords).equals(WorkflowStatus.CONFLICT_DETECTED)
+						WorkflowStatus.EDITING_DONE) >= 0
 						&& mapRecords.size() == 2) {
 
 					Logger.getLogger(

@@ -3610,6 +3610,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			}
 
 			// instantiate map of entries by group
+			// this is the object containing entries to write
 			Map<Integer, List<MapEntry>> entriesByGroup = new HashMap<>();
 
 			// second, check whether this record should be up-propagated
@@ -3637,22 +3638,25 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					continue;
 				}
 
+				// increment the propagated counter
 				nRecordsPropagated++;
 
 				// get a list of tree positions sorted by position in hiearchy
 				// (deepest-first)
+				// NOTE:  This list will contain the top-level/root map record
 				List<TreePosition> treePositionDescendantList = getSortedTreePositionDescendantList(treePosition);
 				
 				System.out.println("*** Descendant list has " + treePositionDescendantList.size() + " elements");
 
 				// construct a map of ancestor path + terminologyId to map
-				// records
-				// format: A~B~C~D corresponds to the map record for concept D
-				// Note that the same map record may be placed with different
-				// keys, if multiple tree positions
-				// used to easily retrieve parent records for descendants of
+				// records, used to easily retrieve parent records for descendants of
 				// up-propagated records
+				// key: A~B~C~D, value: map record for concept D
 				Map<String, MapRecord> treePositionToMapRecordMap = new HashMap<>();
+				
+				// cycle over all descendants of this position
+				// and add all required records to the map
+				// for use later
 				for (TreePosition tp : treePositionDescendantList) {
 
 					System.out.println("Retrieving record for concept "
@@ -3664,42 +3668,41 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					if (mapRecordMap.containsKey(tp.getTerminologyId())) {
 						mr = mapRecordMap.get(tp.getTerminologyId());
 					} else {
+						
+						// if not in cache yet, try to retrieve it
 						try {
 							mr = this.getMapRecordForProjectAndConcept(
 									mapProject.getId(), tp.getTerminologyId());
 							mapRecordMap.put(mr.getConceptId(), mr);
+							
+						// catch no result for error outputting
+						// does not interrupt the routine
 						} catch (NoResultException e) {
 
+							// if on excluded list, add to errors to output
 							if (mapProject.getScopeExcludedConcepts().contains(
 									tp.getTerminologyId()))
 								System.out
 										.println("  Concept on excluded list for project");
+							// if not found, add to errors to output
 							else
 								conceptErrors.put(tp.getTerminologyId(),
 										"No record for concept.");
 						}
 					}
 
-					// add to TreePosition->MapRecord map
+					// add record to TreePosition->MapRecord map
 					treePositionToMapRecordMap.put(tp.getAncestorPath() + "~"
 							+ tp.getTerminologyId(), mr);
-
-					System.out.println("Added tp path: " + tp.getAncestorPath()
-							+ "~" + tp.getTerminologyId());
-					System.out.println("   MapRecord: " + mr.toString());
 				}
 
-				// create the new, blank record -- only required element is
-				// Concept Id
-				MapRecord mapRecordToWrite = new MapRecordJpa();
-				mapRecordToWrite.setConceptId(mapRecord.getConceptId());
-
-				// cycle over the tree positions and retrieve records
+				// cycle over the tree positions again and add entries
 				// note that the tree positions are in reverse order of
 				// hierarchy depth
 				for (TreePosition tp : treePositionDescendantList) {
 
-					// skip this record's concept, added below
+					// skip the root level record, these entries are added 
+					// below, after the up-propagated entries
 					if (!tp.getTerminologyId().equals(mapRecord.getConceptId())) {
 
 						// get the map record corresponding to this specific
@@ -3715,23 +3718,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 										+ ", " + mr.getConceptName());
 
 						// get the parent map record for this tree position
-						/*
-						 * System.out.println("Retrieving parent entry for " +
-						 * tp.getAncestorPath());
-						 */
+						// used to check if entries are duplicated on parent
 						MapRecord mrParent = treePositionToMapRecordMap.get(tp
 								.getAncestorPath());
 
+						// if no parent, continue, but log error
 						if (mrParent == null) {
 							Logger.getLogger(MappingServiceJpa.class).warn(
 									"Could not retrieve parent map record!");
 							mrParent = new MapRecordJpa(); // only here during
 															// testing
-						} else {
-							/*
-							 * System.out.println("Parent record has " +
-							 * mrParent.getMapEntries().size() + " entries");
-							 */
+							conceptErrors.put(tp.getTerminologyId(), "Could not retrieve parent record along ancestor path " + tp.getAncestorPath());
 						}
 
 						// cycle over the entries
@@ -3754,67 +3751,54 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 							for (MapEntry parentEntry : mrParent
 									.getMapEntries()) {
 
-								/* System.out.println("Checking parent entry"); */
-
 								if (parentEntry.getMapGroup() == me
 										.getMapGroup()
 										&& parentEntry.isEquivalent(me))
 									isDuplicateEntry = true;
 							}
 
-							
-
-							// compare to the entries added via up-propagation
-							// (prevent duplication)
-							// NOTE: This uses modified rules for propagation
-							for (MapEntry existingEntry : existingEntries) {
-
-								/*
-								 * System.out.println("Checking existing entry");
-								 */
-
-								if (existingEntry.isEquivalent(me))
-									isDuplicateEntry = true;
-							}
-
 							// if not a duplicate entry, add it to the map
 							if (isDuplicateEntry == false) {
 								
+								// create new map entry to prevent hibernate-managed entity modification
+								// TODO This probably could be handled by the entry copy routines
+								// for testing purposes, doing this explicitly
+								MapEntry newEntry = new MapEntryJpa();
+								newEntry.setMapAdvices(me.getMapAdvices());
+								newEntry.setMapGroup(me.getMapGroup());
+								newEntry.setMapBlock(me.getMapBlock());
+								newEntry.setMapRecord(mr);  // used for rule propagation (i.e. concept Id and concept Name)
+								newEntry.setRule(me.getRule());
+								newEntry.setTargetId(me.getTargetId());
+								newEntry.setTargetName(me.getTargetName());
+								
+								
 								// set map priority based on size of current
 								// list
-								me.setMapPriority(existingEntries.size() + 1);
+								newEntry.setMapPriority(existingEntries.size() + 1);
 								
 								// set the propagated rule for this entry
-								this.setPropagatedRuleForMapEntry(me);
+								this.setPropagatedRuleForMapEntry(newEntry);
 
 								// recalculate the map relation
-								me.setMapRelation(algorithmHandler
-										.computeMapRelation(mapRecordToWrite,
+								newEntry.setMapRelation(algorithmHandler
+										.computeMapRelation(mapRecord,
 												me));
 
 								// add to the list
-								existingEntries.add(me);
-
-								/*
-								 * System.out.println("Adding entry: " +
-								 * me.toString());
-								 */
+								existingEntries.add(newEntry);
 
 								// replace existing list with modified list
-								entriesByGroup.put(me.getMapGroup(),
+								entriesByGroup.put(newEntry.getMapGroup(),
 										existingEntries);
 
-							} else {
-								/*
-								 * System.out.println("Duplicate entry: " +
-								 * me.toString());
-								 */
 							}
 						}
 					}
 				}
 			}
 
+			// increment the total record count
 			nRecords++;
 
 			// add the original entries
@@ -3826,21 +3810,35 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				if (existingEntries == null)
 					existingEntries = new ArrayList<>();
+					
+				// create a new managed instance for this entry
+				MapEntry newEntry = new MapEntryJpa();
+				newEntry.setMapAdvices(me.getMapAdvices());
+				newEntry.setMapGroup(me.getMapGroup());
+				newEntry.setMapBlock(me.getMapBlock());
+				newEntry.setMapRecord(mapRecord);  // used for rule propagation (i.e. concept Id and concept Name)
+				newEntry.setRule(me.getRule());
+				newEntry.setTargetId(me.getTargetId());
+				newEntry.setTargetName(me.getTargetName());
 
 				// add map entry to map
-				me.setMapPriority(existingEntries.size() + 1);
+				newEntry.setMapPriority(existingEntries.size() + 1);
 
 				// if not the first entry and contains TRUE rule, set to
 				// OTHERWISE TRUE
-				if (me.getMapPriority() > 1 && me.getRule().equals("TRUE"))
-					me.setRule("OTHERWISE TRUE");
+				if (newEntry.getMapPriority() > 1 && newEntry.getRule().equals("TRUE"))
+					newEntry.setRule("OTHERWISE TRUE");
+				
+				// recalculate the map relation
+				newEntry.setMapRelation(algorithmHandler
+						.computeMapRelation(mapRecord,
+								me));
 
-				System.out.println("  Adding existing entry as: "
-						+ me.toString());
+				// add to the existing entries list
+				existingEntries.add(newEntry);
 
-				existingEntries.add(me);
-
-				entriesByGroup.put(me.getMapGroup(), existingEntries);
+				// replace the previous list with the new list
+				entriesByGroup.put(newEntry.getMapGroup(), existingEntries);
 			}
 
 			// check that each group is "capped" with a TRUE or OTHERWISE
@@ -3855,26 +3853,26 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 								.getRule().contains("TRUE")) {
 
 					// create a new map entry
-					MapEntry me = new MapEntryJpa();
+					MapEntry newEntry = new MapEntryJpa();
 
 					// set the record and group
-					me.setMapRecord(mapRecord);
-					me.setMapGroup(mapGroup);
-					me.setMapPriority(existingEntries.size() + 1);
+					newEntry.setMapRecord(mapRecord);
+					newEntry.setMapGroup(mapGroup);
+					newEntry.setMapPriority(existingEntries.size() + 1);
 
 					// set the rule to TRUE if no entries, OTHERWISE true if
 					// entries exist
 					if (existingEntries.size() == 0)
-						me.setRule("TRUE");
+						newEntry.setRule("TRUE");
 					else
-						me.setRule("OTHERWISE TRUE");
+						newEntry.setRule("OTHERWISE TRUE");
 
 					// compute the map relation for no target for this
 					// project
-					me.setMapRelation(algorithmHandler.computeMapRelation(
-							mapRecord, me));
+					newEntry.setMapRelation(algorithmHandler.computeMapRelation(
+							mapRecord, newEntry));
 
-					existingEntries.add(me);
+					existingEntries.add(newEntry);
 					entriesByGroup.put(mapGroup, existingEntries);
 
 				}
@@ -3889,9 +3887,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 							mapProject, effectiveTime, moduleId);
 				}
 			}
-/*
-			if (nRecords > 10)
-				break;*/
 
 		}
 
