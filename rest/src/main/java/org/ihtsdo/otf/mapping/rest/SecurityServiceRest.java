@@ -25,36 +25,36 @@ import com.wordnik.swagger.annotations.ApiParam;
 })
 public class SecurityServiceRest extends RootServiceRest {
 
-	/**
-	 * Authenticate.
-	 * 
+  /**
+   * Authenticate.
+   * 
    * @param username the username
    * @param password the password
-	 * @return the string
-	 */
+   * @return the string
+   */
   @POST
-	@Path("/authenticate/{username}")
+  @Path("/authenticate/{username}")
   @Consumes({
     MediaType.TEXT_PLAIN
   })
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @ApiOperation(value = "Authenticates a map user", notes = "Performs authentication on a map user by taking a username as a URL parameter and the password as string POST data", response = String.class)
-	public String authenticate(
-			@ApiParam(value = "username", required = true) @PathParam("username") String username,
-			@ApiParam(value = "password", required = true) String password) {
+  @ApiOperation(value = "Authenticate a map user.", notes = "Performs authentication on specified username and password and returns a token upon successful authentication. Throws 401 error if not.", response = String.class)
+  public String authenticate(
+    @ApiParam(value = "Username", required = true) @PathParam("username") String username,
+    @ApiParam(value = "Password, as string post data", required = true) String password) {
 
-		Logger.getLogger(SecurityServiceRest.class).info(
-				"RESTful call (Authentication): /authentication for map user = "
-						+ username);
-		try {
-			SecurityService securityService = new SecurityServiceJpa();
-			return securityService.authenticate(username, password);
-		} catch (Exception e) { 
-			handleException(e, "trying to authenticate a map user");
-			return null;
-		}
+    Logger.getLogger(SecurityServiceRest.class).info(
+        "RESTful call (Authentication): /authentication for map user = "
+            + username);
+    try {
+      SecurityService securityService = new SecurityServiceJpa();
+      return securityService.authenticate(username, password);
+    } catch (Exception e) {
+      handleException(e, "trying to authenticate a map user");
+      return null;
+    }
 
-	}
+  }
 }

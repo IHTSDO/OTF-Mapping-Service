@@ -2204,10 +2204,11 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		}
 
 		// get the loader user
-		MapUser loaderUser = getMapUser("loader");
-
-		// if loader user does not exist, add it
-		if (loaderUser == null) {
+		MapUser loaderUser;
+		try {
+		    loaderUser = getMapUser("loader");
+		} catch (Exception e) {
+		    // if loader user does not exist, add it		
 			loaderUser = new MapUserJpa();
 			loaderUser.setApplicationRole(MapUserRole.VIEWER);
 			loaderUser.setUserName("loader");
