@@ -237,15 +237,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
 		  	
-		  	// open/close the concept list based on whether a query is used
-		  	if (query === 'null') {
-		  		console.debug('closing concept list');
-		  		$scope.isConceptListOpen = false;
-		  	} else  {
-		  		console.debug('opening concept list');
-		  		$scope.isConceptListOpen = true;
-		  	}
-
+		  	console.debug(data);
+		  	
 			$scope.availableWork = data.searchResult;
 			
 			// set pagination
