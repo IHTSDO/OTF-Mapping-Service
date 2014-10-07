@@ -35,7 +35,7 @@ import com.wordnik.swagger.annotations.ApiParam;
  * The Workflow Services REST package.
  */
 @Path("/reporting")
-@Api(value = "/report", description = "Operations supporting reporting")
+@Api(value = "/report", description = "Operations supporting reporting.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class ReportServiceRest extends RootServiceRest {
 
@@ -48,6 +48,12 @@ public class ReportServiceRest extends RootServiceRest {
 		securityService = new SecurityServiceJpa();
 	}
 	
+	/**
+	 * Returns the report.
+	 *
+	 * @param authToken the auth token
+	 * @return the report
+	 */
 	@GET
 	@Path("/definition/definitions")
 	@ApiOperation(value = "Get all currently defined reports", notes = "Returns all report definitions in either JSON or XML format", response = MapProjectListJpa.class)
@@ -119,10 +125,10 @@ public class ReportServiceRest extends RootServiceRest {
 	
 	@POST
 	@Path("/report/add")
-	@ApiOperation(value = "Add a report", notes = "Returns all MapProjects in either JSON or XML format", response = MapProjectListJpa.class)
+	@ApiOperation(value = "Add a report", notes = "Adds the specified report.", response = MapProjectListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Report addReport(
-			@ApiParam(value = "Report to add", required = true) ReportJpa report,
+			@ApiParam(value = "Report, in JSON or XML POST data", required = true) ReportJpa report,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(

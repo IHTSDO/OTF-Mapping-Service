@@ -248,6 +248,7 @@ public class MapProjectJpa implements MapProject {
 	 * @param scopeDescendantsFlag the scope descendants flag
 	 * @param scopeExcludedDescendantsFlag the scope excluded descendants flag
 	 * @param errorMessages the error messages
+	 * @param workflowType the workflow type
 	 */
 	public MapProjectJpa(Long id, String name, boolean isPublic,
 			boolean groupStructure, boolean published,
@@ -263,7 +264,7 @@ public class MapProjectJpa implements MapProject {
 			Set<MapAdvice> mapAdvices, Set<MapRelation> mapRelations,
 			Set<String> scopeConcepts, Set<String> scopeExcludedConcepts,
 			boolean scopeDescendantsFlag, boolean scopeExcludedDescendantsFlag,
-			Set<String> errorMessages) {
+			Set<String> errorMessages, WorkflowType workflowType) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -295,8 +296,47 @@ public class MapProjectJpa implements MapProject {
 		this.scopeDescendantsFlag = scopeDescendantsFlag;
 		this.scopeExcludedDescendantsFlag = scopeExcludedDescendantsFlag;
 		this.errorMessages = errorMessages;
+		this.propagatedFlag = propagatedFlag;
+		this.propagationDescendantThreshold = propagationDescendantThreshold;
+		this.workflowType = workflowType;
 	}
 
+	public MapProjectJpa(MapProject project) {
+		super();
+		this.id = project.getId();
+		this.name = project.getName();
+		this.isPublic = project.isPublic();
+		this.groupStructure = project.isGroupStructure();
+		this.published = project.isPublished();
+		this.refSetId = project.getRefSetId();
+		this.refSetName = project.getRefSetName();
+		this.sourceTerminology = project.getSourceTerminology();
+		this.sourceTerminologyVersion = project.getSourceTerminologyVersion();
+		this.destinationTerminology = project.getDestinationTerminology();
+		this.destinationTerminologyVersion = project.getDestinationTerminologyVersion();
+		this.mapRefsetPattern = project.getMapRefsetPattern();
+		this.mapRelationStyle = project.getMapRelationStyle();
+		this.mapPrincipleSourceDocument = project.getMapPrincipleSourceDocument();
+		this.mapPrincipleSourceDocumentName = project.getMapPrincipleSourceDocumentName();
+		this.ruleBased = project.isRuleBased();
+		this.projectSpecificAlgorithmHandlerClass = project.getProjectSpecificAlgorithmHandlerClass();
+		//this.algorithmHandler = project.algorithmHandler;
+		this.presetAgeRanges = project.getPresetAgeRanges();
+		this.mapLeads = project.getMapLeads();
+		this.mapSpecialists = project.getMapSpecialists();
+		this.mapAdministrators = project.getMapAdministrators();
+		this.mapPrinciples = project.getMapPrinciples();
+		this.mapAdvices = project.getMapAdvices();
+		this.mapRelations = project.getMapRelations();
+		this.scopeConcepts = project.getScopeConcepts();
+		this.scopeExcludedConcepts = project.getScopeExcludedConcepts();
+		this.scopeDescendantsFlag = project.isScopeDescendantsFlag();
+		this.scopeExcludedDescendantsFlag = project.isScopeExcludedDescendantsFlag();
+		this.errorMessages = project.getErrorMessages();
+		this.propagatedFlag = project.isPropagatedFlag();
+		this.propagationDescendantThreshold = project.getPropagationDescendantThreshold();
+		this.workflowType = project.getWorkflowType();
+	}
 
 
 	/**
