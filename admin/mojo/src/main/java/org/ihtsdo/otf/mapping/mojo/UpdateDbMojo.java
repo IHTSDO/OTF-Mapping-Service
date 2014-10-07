@@ -4,12 +4,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Properties;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 
 /**
  * Goal which updates the db to sync it with the model via JPA.
@@ -37,14 +34,12 @@ import org.apache.maven.plugin.MojoFailureException;
  */
 public class UpdateDbMojo extends AbstractMojo {
 
-  /** The manager. */
-  private EntityManager manager;
-
   /**
    * Instantiates a {@link UpdateDbMojo} from the specified parameters.
    * 
    */
   public UpdateDbMojo() {
+    // do nothing
   }
 
   /*
@@ -63,13 +58,9 @@ public class UpdateDbMojo extends AbstractMojo {
       config.load(in);
       in.close();
       getLog().info("  properties = " + config);
-      EntityManagerFactory factory =
-          Persistence.createEntityManagerFactory("MappingServiceDS", config);
-      manager = factory.createEntityManager();
-      manager.close();
-      factory.close();
+      // Trigger a JPA event
+      new RootServiceJpa().close();
       getLog().info("done ...");
-
     } catch (Throwable e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);
