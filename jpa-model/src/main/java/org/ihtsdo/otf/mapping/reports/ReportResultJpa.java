@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.search.annotations.ContainedIn;
 
@@ -26,7 +27,7 @@ import org.hibernate.search.annotations.ContainedIn;
 public class ReportResultJpa implements ReportResult {
 
 	/** The report. */
-	@ManyToOne(targetEntity=ReportJpa.class, optional = false)
+	@ManyToOne(targetEntity = ReportJpa.class, optional = false)
 	@ContainedIn
 	private Report report;
 
@@ -34,137 +35,268 @@ public class ReportResultJpa implements ReportResult {
 	@Id
 	@GeneratedValue
 	private Long id;
-	
+
 	/** The name. */
 	@Column(nullable = true)
 	private String name;
-	
+
+	/** The project name. */
+	@Column(nullable = true)
+	private String projectName;
+
 	/** The value. */
 	@Column(nullable = true)
 	private String value;
 	
+	/** The date value string */
+	@Column(nullable = true)
+	private String dateValue;
+
 	/** The ct. */
 	@Column(nullable = true)
 	private long ct;
-	
+
 	/** The report result items. */
 	@OneToMany(mappedBy = "reportResult", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = ReportResultItemJpa.class)
 	private List<ReportResultItem> reportResultItems = new ArrayList<>();
-	
-	/** The reportResultNotes. *//*
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = ReportNoteJpa.class)
-	private List<ReportNote> reportResultNotes = new ArrayList<>();
-*/
-	/* (non-Javadoc)
+
+	/**
+	 * The reportResultNotes.
+	 *
+	 * @return the report
+	 */
+	/*
+	 * @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER,
+	 * orphanRemoval = true, targetEntity = ReportNoteJpa.class) private
+	 * List<ReportNote> reportResultNotes = new ArrayList<>();
+	 */
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#getReport()
 	 */
 	@Override
+	@XmlTransient
 	public Report getReport() {
 		return report;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#setReport(org.ihtsdo.otf.mapping.reports.Report)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.reports.ReportResult#setReport(org.ihtsdo.otf.
+	 * mapping.reports.Report)
+	 */
+	/**
+	 * Sets the report.
+	 *
+	 * @param report the new report
 	 */
 	@Override
 	public void setReport(Report report) {
 		this.report = report;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#getId()
+	 */
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
 	 */
 	@Override
 	public Long getId() {
 		return id;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#setId(java.lang.Long)
+	 */
+	/**
+	 * Sets the id.
+	 *
+	 * @param id the new id
 	 */
 	@Override
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#getName()
+	 */
+	/**
+	 * Gets the name.
+	 *
+	 * @return the name
 	 */
 	@Override
 	public String getName() {
 		return name;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#setName(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.reports.ReportResult#setName(java.lang.String)
+	 */
+	/**
+	 * Sets the name.
+	 *
+	 * @param name the new name
 	 */
 	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * Gets the project name.
+	 *
+	 * @return the project name
+	 */
+	@Override
+	public String getProjectName() {
+		return projectName;
+	}
+
+	/**
+	 * Sets the project name.
+	 *
+	 * @param projectName the new project name
+	 */
+	@Override
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#getValue()
+	 */
+	/**
+	 * Gets the value.
+	 *
+	 * @return the value
 	 */
 	@Override
 	public String getValue() {
 		return value;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#setValue(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.reports.ReportResult#setValue(java.lang.String)
+	 */
+	/**
+	 * Sets the value.
+	 *
+	 * @param value the new value
 	 */
 	@Override
 	public void setValue(String value) {
 		this.value = value;
 	}
+	
+	
+	@Override
+	public String getDateValue() {
+		return dateValue;
+	}
+	
+	@Override
+	public void setDateValue(String dateValue) {
+		this.dateValue = dateValue;
+	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#getCt()
+	 */
+	/**
+	 * Gets the ct.
+	 *
+	 * @return the ct
 	 */
 	@Override
 	public long getCt() {
 		return ct;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#setCt(long)
+	 */
+	/**
+	 * Sets the ct.
+	 *
+	 * @param ct the new ct
 	 */
 	@Override
 	public void setCt(long ct) {
 		this.ct = ct;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#getReportResultItems()
+	 */
+	/**
+	 * Gets the report result items.
+	 *
+	 * @return the report result items
 	 */
 	@Override
 	public List<ReportResultItem> getReportResultItems() {
 		return reportResultItems;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#setReportResultItems(java.util.List)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.reports.ReportResult#setReportResultItems(java
+	 * .util.List)
+	 */
+	/**
+	 * Sets the report result items.
+	 *
+	 * @param reportResultItems the new report result items
 	 */
 	@Override
 	public void setReportResultItems(List<ReportResultItem> reportResultItems) {
 		this.reportResultItems = reportResultItems;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#getNotes()
-	 
-	@Override
-	public List<ReportNote> getNotes() {
-		return reportResultNotes;
-	}
-
-	 (non-Javadoc)
+	 * 
+	 * @Override public List<ReportNote> getNotes() { return reportResultNotes;
+	 * }
+	 * 
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#setNotes(java.util.List)
-	 
-	@Override
-	public void setNotes(List<ReportNote> reportResultNotes) {
-		this.reportResultNotes = reportResultNotes;
-	}*/
+	 * 
+	 * @Override public void setNotes(List<ReportNote> reportResultNotes) {
+	 * this.reportResultNotes = reportResultNotes; }
+	 */
 
 }
