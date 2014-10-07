@@ -1,25 +1,24 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import java.util.Date;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
-import org.ihtsdo.otf.mapping.model.MapUser;
-import org.ihtsdo.otf.mapping.reports.MapReportSpecialistOutput;
-import org.ihtsdo.otf.mapping.reports.MapReportSpecialistOutputJpa;
+import org.ihtsdo.otf.mapping.reports.Report;
+import org.ihtsdo.otf.mapping.reports.ReportJpa;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
@@ -31,7 +30,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 /**
  * The Workflow Services REST package.
  */
-@Path("/report")
+@Path("/reporting")
 @Api(value = "/report", description = "Operations supporting reporting")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class ReportServiceRest extends RootServiceRest {
@@ -44,75 +43,83 @@ public class ReportServiceRest extends RootServiceRest {
 	public ReportServiceRest() throws Exception {
 		securityService = new SecurityServiceJpa();
 	}
-
-	/**
-	 * Compute and return a report for a specialist
-	 * 
-	 * @throws Exception
-	 */
+	
 	@GET
-	@Path("/project/id/{projectId}/user/id/{userName}/start/{startTime}/end/{endTime}/specialistOutput")
-	@ApiOperation(value = "Compute specialist output report", notes = "Calculates productivity and output of a specialist on a project for a given time frame")
-	public MapReportSpecialistOutput computeSpecialistOutput(
-			@ApiParam(value = "Map Project id", required = true) @PathParam("projectId") Long mapProjectId,
-			@ApiParam(value = "Map User name", required = true) @PathParam("userName") String mapUserName,
-			@ApiParam(value = "Start Time (in ms)", required = true) @PathParam("startTime") Long startTime,
-			@ApiParam(value = "End Time (in ms)", required = true) @PathParam("endTime") Long endTime,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-			throws Exception {
-		
+	@Path("/report/reports")
+	@ApiOperation(value = "Get all projects", notes = "Returns all MapProjects in either JSON or XML format", response = MapProjectListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public ReportList getReport(
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping):  /report/project/id/" + mapProjectId + "/user/id/" + mapUserName + "/start/" + startTime + "/end/" + endTime + "/specialistOutput");
-
-		System.out.println(startTime);
-		System.out.println((new Date(startTime)).toString());
+				"RESTful call (Mapping):  /project/projects");
+		String user = "";
 		
-		MapReportSpecialistOutput report = new MapReportSpecialistOutputJpa();
-
-		// instantiate the services
-		MappingService mappingService = new MappingServiceJpa();
-		ReportService reportService = new ReportServiceJpa();
-
-		// get the mapping objects
-		MapProject mapProject = mappingService.getMapProject(mapProjectId);
-		MapUser mapUser = mappingService.getMapUser(mapUserName);
-
-		// initialize calling user's name
-		String userName = securityService.getUsernameForToken(authToken);
-
 		try {
 			// authorize call
-
-			MapUserRole role = securityService.getMapProjectRoleForToken(
-					authToken, mapProjectId);
-
-			// if not a lead or administrator, check that user is requesting own
-			// report
-			if (!role.hasPrivilegesOf(MapUserRole.LEAD)) {
-				if (!userName.equals(mapUserName))
-					throw new WebApplicationException(
-							Response.status(401)
-									.entity("User does not have permission to view another user's reports.")
-									.build());
-			}
-
-			// if not a specialist, no access to reports
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
 				throw new WebApplicationException(
 						Response.status(401)
-								.entity("User does not have permissions to view reports.")
+								.entity("User does not have permissions to retrieve map projects.")
 								.build());
-			}
-
-			report = reportService.computeSpecialistOutputReport(mapUser, mapProject,
-					new Date(startTime), new Date(endTime));
-
+			
+			// get the reports
+			ReportService reportService = new ReportServiceJpa();
+			ReportList reportList = reportService.getReports();
+			reportService.close();
+			
+			return reportList;
 		} catch (Exception e) {
-
-			handleException(e, "trying to compute workflow", userName,
-					mapProject.getName(), "");
+			handleException(e, "trying to retrieve all reports", user, "", "");
+			return null;
 		}
 
-		return report;
 	}
+	
+	@POST
+	@Path("/report/add")
+	@ApiOperation(value = "Add a report", notes = "Returns all MapProjects in either JSON or XML format", response = MapProjectListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public Report addReport(
+			@ApiParam(value = "Report to add", required = true) ReportJpa report,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping):  /project/projects");
+		String user = "(not retrieved)";
+		String mapProjectName = "(not retrieved)";
+		
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve map projects.")
+								.build());
+			
+			// get the project for this report -- used for error reporting
+			MappingService mappingService = new MappingServiceJpa();
+			mapProjectName = mappingService.getMapProject(report.getMapProjectId()).getName();
+			mappingService.close();
+			
+			// get the reports
+			ReportService reportService = new ReportServiceJpa();
+			Report reportAdded = reportService.addReport(report);
+			reportService.close();
+			
+			return reportAdded;
+		} catch (Exception e) {
+			
+			handleException(e, "trying to add a report", user, mapProjectName, "");
+			return null;
+		}
+
+	}
+	
 }
