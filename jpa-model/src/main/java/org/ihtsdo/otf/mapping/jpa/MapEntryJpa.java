@@ -522,19 +522,18 @@ public class MapEntryJpa implements MapEntry {
 	@Override
 	public boolean isEquivalent(MapEntry me) {
 		System.out.println("Comparing map entries");
-		System.out.println("     " + me.toString());
-		System.out.println("     " + this.toString());
-		
-		System.out.println("Here we go...");
+		System.out.println("   Targets:  " + this.targetId + " <=>" + me.getTargetId());
+		System.out.println("   Rules:    " + this.rule + "  <=> " + me.getRule());
+		System.out.println("   Realtion: " + this.mapRelation.getName() + " <=> " + me.getMapRelation().getName());
 
 		// targets must be equal
-		if (this.targetId != me.getTargetId())
+		if (! this.targetId.equals(me.getTargetId()))
 			return false;
 		
 		System.out.println("  Targets equal");
 
 		// rules must be identical
-		if (this.rule != me.getRule())
+		if (! this.rule.equals(me.getRule()))
 			return false;
 		
 		System.out.println("  Rules equal");
@@ -576,6 +575,8 @@ public class MapEntryJpa implements MapEntry {
 		}
 		
 		System.out.println("  Advices equal");
+		
+		System.out.println("Entries equivalent.");
 
 		return true;
 	}
