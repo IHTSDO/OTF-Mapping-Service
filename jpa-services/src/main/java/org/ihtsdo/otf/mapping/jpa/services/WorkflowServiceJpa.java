@@ -633,6 +633,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			}
 		}
 		List<TrackingRecord> results = ftquery.getResultList();
+		
+		System.out.println("Hi results: " + results.size());
 
 		for (TrackingRecord tr : results) {
 			SearchResult result = new SearchResultJpa();
@@ -969,6 +971,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			WorkflowStatus mapLeadAlternateRecordStatus = null;
 
 			for (MapRecord mr : mapRecords) {
+				
+				System.out.println(mapUser.toString());
+				System.out.println(mr.getOwner());
 
 				if (mr.getOwner().equals(mapUser)) {
 
