@@ -2761,13 +2761,18 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/upload/{mapProjectId}")
+	// Swagger does not support this
+	@ApiOperation(value = "Upload a mapping handbook file for a project.", notes = "Uploads a mapping handbook file for the specified project.", response = TreePositionListJpa.class)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-    @ApiOperation(value = "Upload a mapping handbook file for a project.", notes = "Uploads a mapping handbook file for the specified project.", response = TreePositionListJpa.class)
 	public Response uploadMappingHandbookFile(
-	  @ApiParam(value = "The mapping handbook data", required = true) @FormDataParam("file") InputStream fileInputStream,
-	  @ApiParam(value = "The file upload header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-	  @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("mapProjectId") Long mapProjectId,
-	  @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+//      @ApiParam(value = "The mapping handbook data", required = true) @FormDataParam("file") InputStream fileInputStream,
+//      @ApiParam(value = "The file upload header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+//      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("mapProjectId") Long mapProjectId,
+//      @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+      @FormDataParam("file") InputStream fileInputStream,
+      @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+      @PathParam("mapProjectId") Long mapProjectId,
+      @HeaderParam("Authorization") String authToken) {
 		
 		String user = "";
 		try {
