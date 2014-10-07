@@ -58,7 +58,7 @@ import com.wordnik.swagger.annotations.ApiParam;
  * The Workflow Services REST package.
  */
 @Path("/workflow")
-@Api(value = "/workflow", description = "Operations supporting workflow")
+@Api(value = "/workflow", description = "Operations supporting workflow.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class WorkflowServiceRest extends RootServiceRest {
 
@@ -67,6 +67,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 	/**
 	 * Instantiates an empty {@link WorkflowServiceRest}.
+	 * @throws Exception 
 	 */
 	public WorkflowServiceRest() throws Exception {
 		securityService = new SecurityServiceJpa();
@@ -81,9 +82,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/compute")
-	@ApiOperation(value = "Compute workflow for project", notes = "Destroys and recomputes the current workflow status from existing map records for a map project.  No mapping data is modified.")
+	@ApiOperation(value = "Compute workflow for a map project.", notes = "Recomputes workflow for the specified map project.")
 	public void computeWorkflow(
-			@ApiParam(value = "Map Project id", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -133,14 +134,14 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/availableConcepts")
-	@ApiOperation(value = "Find available concepts", notes = "Returns a paged list of work available to a specialist or lead for the specified map project.", response = SearchResultList.class)
+	@ApiOperation(value = "Find available concepts.", notes = "Gets a list of search results for concepts available to be worked on for the specified parameters.", response = SearchResultList.class)
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAvailableConcepts(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+			@ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -247,14 +248,14 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/assignedConcepts")
-	@ApiOperation(value = "Find assigned concepts", notes = "Returns a paged list of concepts assigned to a specialist or lead for the specified map project.", response = SearchResultList.class)
+	@ApiOperation(value = "Find assigned concepts for a map project.", notes = "Gets a list of search results of assigned concepts for the specified parameters.", response = SearchResultList.class)
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAssignedConcepts(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+      @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+      @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+      @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -319,13 +320,13 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/availableConflicts")
-	@ApiOperation(value = "Find available conflicts", notes = "Returns a paged list of detected conflicts eligible for a lead's resolution for a specified map project.", response = SearchResultList.class)
+	@ApiOperation(value = "Find available conflicts for a map project.", notes = "Gets a list of search results of available conflicts for the specified parameters.", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAvailableConflicts(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+      @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+      @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+      @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -389,13 +390,13 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/assignedConflicts")
-	@ApiOperation(value = "Find assigned conflicts", notes = "Returns a paged list of conflicts assigned to a map lead for resolution for a specified map project.", response = SearchResultList.class)
+	@ApiOperation(value = "Find assigned conflicts for a map project.", notes = "Gets a list of search results of assigned conflicts for the specified parameters.", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAssignedConflicts(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+      @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+      @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+      @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -459,13 +460,13 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/availableReviewWork")
-	@ApiOperation(value = "Find available review work", notes = "Returns a paged list of detected review work eligible for a lead's resolution for a specified map project.", response = SearchResultList.class)
+	@ApiOperation(value = "Find available review work for a map project.", notes = "Gets a list of search results of available review work for the specified parameters.", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAvailableReviewWork(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+      @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+      @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+      @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -529,13 +530,13 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/assignedReviewWork")
-	@ApiOperation(value = "Find assigned review work", notes = "Returns a paged list of review work assigned to a map lead for resolution for a specified map project.", response = SearchResultList.class)
+	@ApiOperation(value = "Find assigned review work for a map project.", notes = "Gets a list of search results of assigned review work for the specified parameters.", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findAssignedReviewWork(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Id of map user", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Lucene query string", required = true) @PathParam("query") String query,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+      @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+      @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+      @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -595,11 +596,11 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/assignFromRecord/user/id/{userName}")
-	@ApiOperation(value = "Assign user to concept", notes = "Assigns a user (specialist or lead) to a previously mapped concept.  The existing map record must be attached.")
+	@ApiOperation(value = "Assign user to concept", notes = "Assigns a user (specialist or lead) to a previously mapped concept.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void assignConceptFromMapRecord(
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Initial map record to copy", required = true) MapRecordJpa mapRecord,
+			@ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Initial map record to copy, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -659,12 +660,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/assign/project/id/{id}/concept/id/{terminologyId}/user/id/{userName}")
-	@ApiOperation(value = "Assign user to concept", notes = "Assigns a user to an unmapped concept for a specified map project.")
+	@ApiOperation(value = "Assign user to concept", notes = "Assigns specified user to map the specified concept for the specified project.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void assignConcept(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId,
-			@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId,
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") String mapProjectId,
+			@ApiParam(value = "Concept id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
+			@ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -722,12 +723,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/assignBatch/project/id/{projectId}/user/id/{userName}")
-	@ApiOperation(value = "Assign user to batch of concepts", notes = "Assigns the given user to a batch of concepts corresponding to the passed list of concept ids.")
+    @ApiOperation(value = "Assign user to batch of concepts.", notes = "Assigns specified user to map the specified list of concept ids for the specified project.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void assignBatch(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("projectId") String mapProjectId,
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "List of terminology ids to be assigned", required = true) List<String> terminologyIds,
+      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") String mapProjectId,
+      @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "List of terminology ids to be assigned, in JSON or XML POST data", required = true) List<String> terminologyIds,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -809,12 +810,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/unassign/project/id/{id}/concept/id/{terminologyId}/user/id/{userName}")
-	@ApiOperation(value = "Unassign user from work", notes = "Ununassigns the user from either concept mapping or conflict resolution.", response = Response.class)
+    @ApiOperation(value = "Unassign user from a concept.", notes = "Unassigns specified user from the specified concept for the specified project.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Response unassignConcept(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId,
-			@ApiParam(value = "Id of concept", required = true) @PathParam("terminologyId") String terminologyId,
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
+      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") String mapProjectId,
+      @ApiParam(value = "Concept id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
+      @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -876,12 +877,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/unassign/project/id/{id}/user/id/{userName}/batch")
-	@ApiOperation(value = "Unassign user from specified batch of work.", notes = "Unassigns the user from a specified batch currently assigned work.")
+    @ApiOperation(value = "Unassign user from a batch of concepts.", notes = "Unassigns specified user from the specified list of concept ids for the specified project.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void unassignWorkBatch(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "List of terminology ids to be assigned", required = true) List<String> terminologyIds,
+      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+      @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+            @ApiParam(value = "List of terminology ids to be assigned, in JSON or XML POST data", required = true) List<String> terminologyIds,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -943,11 +944,11 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/unassign/project/id/{id}/user/id/{userName}/all")
-	@ApiOperation(value = "Unassign user from all currently assigned work", notes = "Unassigns the user from all currently assigned work.  Destroys any editing completed.")
+	@ApiOperation(value = "Unassign user from all currently assigned work for a map project.", notes = "Unassigns the specified user from all work in the specified project.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void unassignAllWork(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -1030,11 +1031,11 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/unassign/project/id/{id}/user/id/{userName}/unedited")
-	@ApiOperation(value = "Unassign user from all currently assigned work", notes = "Unassigns the user from all currently assigned work.  Destroys any editing completed.")
+	@ApiOperation(value = "Unassign user from all currently edited work", notes = "Unassigns the specified user from all edited work for the specified project.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void unassignAllUneditedWork(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -1125,9 +1126,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 	@POST
 	@Path("/finish")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Attempt to validate and finish work on a record", notes = "If a completed map record passes vlidation checks, updates the map record and advances the record in the workflow.")
+	@ApiOperation(value = "Finish work on a map record.", notes = "Finished work on the specified map record if it passes validation, then moves it forward in the worfklow.")
 	public void finishWork(
-			@ApiParam(value = "Completed map record", required = true) MapRecordJpa mapRecord,
+			@ApiParam(value = "Completed map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -1190,9 +1191,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 	@POST
 	@Path("/publish")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Attempt to publish a previously resolved record", notes = "Moves a previously resolved conflict or review record owned by a lead out of the workflow and into publication-ready status")
+	@ApiOperation(value = "Mark a map record for publication.", notes = "Moves a previously resolved conflict or review record owned by a lead out of the workflow and into publication-ready status")
 	public void publishWork(
-			@ApiParam(value = "Completed map record", required = true) MapRecordJpa mapRecord,
+			@ApiParam(value = "Completed map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -1254,9 +1255,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 	@POST
 	@Path("/save")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Saves an in-progress record", notes = "Updates the map record and sets workflow to editing in progress. Does not validate the record or advance it in the workflow process")
+	@ApiOperation(value = "Save work on a map record.", notes = "Updates the map record and sets workflow accordingly.")
 	public void saveWork(
-			@ApiParam(value = "Map record to save", required = true) MapRecordJpa mapRecord,
+			@ApiParam(value = "Map record to save, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -1318,9 +1319,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/cancel")
-	@ApiOperation(value = "Cancel editing a map record", notes = "Cancels editing a record.  Performs any necessary workflow action depending on workflow path and status")
+	@ApiOperation(value = "Cancel editing of a map record.", notes = "Cancels editing of a map record.  Performs necessary workflow actions for current workflow path and status.")
 	public void cancelWorkForMapRecord(
-			@ApiParam(value = "The map record to cancel work for") MapRecordJpa mapRecord,
+			@ApiParam(value = "Map record to cancel work for , in JSON or XML POST data") MapRecordJpa mapRecord,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
 			throws Exception {
 
@@ -1384,12 +1385,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/record/project/id/{id}/concept/id/{terminologyId}/user/id/{userName}")
-	@ApiOperation(value = "Return record for concept and user", notes = "Given concept and user information, returns an assigned record if record exists in current workflow.")
+	@ApiOperation(value = "Get a map record for concept and user", notes = "Gets a map record for the specified project, concept id, and user info.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecord getAssignedMapRecordForConceptAndMapUser(
-			@ApiParam(value = "Map project id", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Terminology id of concept", required = true) @PathParam("terminologyId") String terminologyId,
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Concept id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
+			@ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
 			throws Exception {
 
@@ -1460,9 +1461,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/generateConflicts/maxConflicts/{nConflicts:[0-9][0-9]*}")
-	@ApiOperation(value = "Generate random conflicts", notes = "Attempts to generate up to a specified number of conflicts using randomized assignment and editing of map records.")
+	@ApiOperation(value = "Generate random conflicts.", notes = "Attempts to generate up to a specified number of conflicts using randomized assignment and editing of map records.")
 	public void generateRandomConflicts(
-			@ApiParam(value = "Map Project id", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Map Project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Number of conflicts to randomly generate", required = true) @PathParam("nConflicts") int nConflicts,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
 			throws Exception {
@@ -1507,9 +1508,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/generateTestingStateKLININ")
-	@ApiOperation(value = "Generate a workflow testing scenario for project", notes = "Performs concept assignment to test functionality, using concepts mapped in Cartographer prior to June 2014.")
+	@ApiOperation(value = "Generate a workflow testing scenario for project.", notes = "Performs concept assignment to test functionality, using concepts mapped in Cartographer prior to June 2014.")
 	public void generateMappingTestingState(
-			@ApiParam(value = "Id of map project to generate the testing state for", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
 			throws Exception {
 
@@ -1547,9 +1548,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/project/id/{id:[0-9][0-9]*}/generateTestingStateBHEKRE")
-	@ApiOperation(value = "Generate a workflow testing scenario for project", notes = "Performs concept assignment to test functionality, using concepts previously mapped in Cartographer for users BHE and KRE.")
+	@ApiOperation(value = "Generate a workflow testing scenario for project.", notes = "Performs concept assignment to test functionality, using concepts previously mapped in Cartographer for users BHE and KRE.")
 	public void generateMappingTestingStateBHEKRE(
-			@ApiParam(value = "Id of map project to generate the testing state for", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
 			throws Exception {
 
@@ -1575,44 +1576,20 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 	}
 
-	@POST
-	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/sendFeedback")
-	@ApiOperation(value = "Sends feedback email", notes = "Sends a map record editing feedback email given a FeedbackEmail object.", response = Response.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Response sendFeeback(
-			@ApiParam(value = "Map project id", required = true) @PathParam("id") String mapProjectId,
-			@ApiParam(value = "Feedback email object", required = true) FeedbackEmailJpa feedbackEmail,
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
-
-		Logger.getLogger(WorkflowServiceRest.class).info(
-				"RESTful call (Workflow): /project/id/" + mapProjectId
-						+ "/user/id/" + userName + "/sendFeedback");
-
-		try {
-			// authorize call
-			MapUserRole role = securityService.getMapProjectRoleForToken(
-					authToken, new Long(mapProjectId));
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(
-						Response.status(401)
-								.entity("User does not have permissions to send record feedback emails")
-								.build());
-
-			this.sendEmail(feedbackEmail);
-		} catch (Exception e) {
-			handleException(e, "trying to send a record feedback email",
-					userName, mapProjectId, "");
-		}
-		return null;
-	}
-
+	/**
+	 * Is map record false conflict.
+	 *
+	 * @param recordId the record id
+	 * @param authToken the auth token
+	 * @return the boolean
+	 * @throws Exception the exception
+	 */
 	@GET
 	@Path("/record/id/{id:[0-9][0-9]*}/isFalseConflict")
-	@ApiOperation(value = "Checks if record is false conflict", notes = "Given a record id, returns true or false depending on whether this record has been flagged as a false conflict.", response = Boolean.class)
+	@ApiOperation(value = "Indicate whether a map record is a false conflict", notes = "Indicates whether the specified map record id is a false conflict.", response = Boolean.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Boolean isMapRecordFalseConflict(
-			@ApiParam(value = "Map record id", required = true) @PathParam("id") Long recordId,
+			@ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long recordId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
 			throws Exception {
 
@@ -1678,9 +1655,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 	@PUT
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/conversation/add")
-	@ApiOperation(value = "Add a feedback conversation", notes = "Adds a FeedbackConversation", response = FeedbackConversationJpa.class)
+	@ApiOperation(value = "Add a feedback conversation.", notes = "Adds the specified feedback conversation.", response = FeedbackConversationJpa.class)
 	public FeedbackConversation addFeedbackConversation(
-			@ApiParam(value = "The feedback conversation to add. Must be in Json or Xml format", required = true) FeedbackConversationJpa conversation,
+			@ApiParam(value = "Feedback conversation, in JSON or XML POST data", required = true) FeedbackConversationJpa conversation,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1715,11 +1692,11 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 	@POST
 	@Path("/record/id/{id:[0-9][0-9]*}/falseConflict/{isFalseConflict}")
-	@ApiOperation(value = "Sets whether record is false conflict", notes = "Given a record id and boolean flag, sets whether this record is a false conflict.", response = Response.class)
+	@ApiOperation(value = "Sets whether record is false conflict.", notes = "Sets a flag indicating a false conflict for the specified parameters.", response = Response.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void setMapRecordFalseConflict(
-			@ApiParam(value = "Map record id", required = true) @PathParam("id") Long recordId,
-			@ApiParam(value = "Whether is false conflict", required = true) @PathParam("isFalseConflict") boolean isFalseConflict,
+			@ApiParam(value = "Map record id, e.g. 7", required = true) @PathParam("id") Long recordId,
+			@ApiParam(value = "Whether is false conflict, e.g. true", required = true) @PathParam("isFalseConflict") boolean isFalseConflict,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
 			throws Exception {
 
@@ -1816,9 +1793,9 @@ public class WorkflowServiceRest extends RootServiceRest {
 	@Path("/conversation/update")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Update a feedback conversation", notes = "Updates a feedback conversation", response = Response.class)
+	@ApiOperation(value = "Update a feedback conversation.", notes = "Updates specified feedback conversation.", response = Response.class)
 	public void updateFeedbackConversation(
-			@ApiParam(value = "The feedback conversation to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) FeedbackConversationJpa feedbackConversation,
+			@ApiParam(value = "Feedback conversation, in JSON or XML POST data", required = true) FeedbackConversationJpa feedbackConversation,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1854,10 +1831,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/conversation/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Get feedback conversation by record id", notes = "Returns a FeedbackConversation given a record id in either JSON or XML format", response = FeedbackConversation.class)
+	@ApiOperation(value = "Get feedback conversation by map record id", notes = "Gets a feedback conversation for the specified map record id.", response = FeedbackConversation.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public FeedbackConversation getFeedbackConversation(
-			@ApiParam(value = "Id of map record to get feedback about", required = true) @PathParam("id") Long mapRecordId,
+			@ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long mapRecordId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
@@ -1887,16 +1864,25 @@ public class WorkflowServiceRest extends RootServiceRest {
 		}
 	}
 
+	/**
+	 * Returns the feedback conversations for map project.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userName the user name
+	 * @param pfsParameter the pfs parameter
+	 * @param authToken the auth token
+	 * @return the feedback conversations for map project
+	 */
 	@POST
 	@Path("/conversation/project/id/{id:[0-9][0-9]*}/{userName}")
-	@ApiOperation(value = "Get paged feedback conversations by project id", notes = "Returns delimited page of FeedbackConversations given a paging/filtering/sorting parameters object", response = FeedbackConversationListJpa.class)
+	@ApiOperation(value = "Get feedback conversations by map project", notes = "Gets a list of feedback conversations for the specified map project and user.", response = FeedbackConversationListJpa.class)
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@CookieParam(value = "userInfo")
-	public FeedbackConversationList getFeedbackConversationsForMapProject(
-			@ApiParam(value = "Project id associated with feedback conversations", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+	public FeedbackConversationList getFeedbackConversationsForMapProjectAndUser(
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1925,7 +1911,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 								.build());
 
 			WorkflowService workflowService = new WorkflowServiceJpa();
-			FeedbackConversationList feedbackConversationList = (FeedbackConversationList) workflowService
+			FeedbackConversationList feedbackConversationList = workflowService
 					.getFeedbackConversationsForProject(mapProjectId, userName,
 							pfsParameter);
 			workflowService.close();
@@ -1940,13 +1926,21 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 	}
 
+	/**
+	 * Returns the feedback conversations for terminology id.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param conceptId the concept id
+	 * @param authToken the auth token
+	 * @return the feedback conversations for terminology id
+	 */
 	@GET
 	@Path("/conversation/project/id/{id:[0-9][0-9]*}/concept/id/{terminologyId}")
-	@ApiOperation(value = "Get feedback conversations by concept id", notes = "Returns FeedbackConversations given a concept id in either JSON or XML format", response = MapRecord.class)
+	@ApiOperation(value = "Get feedback conversations by concept id.", notes = "Gets a list of feedback conversations for the specified concept and project.", response = MapRecord.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public FeedbackConversationListJpa getFeedbackConversationsForTerminologyId(
-			@ApiParam(value = "Project id associated with feedback conversations", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("terminologyId") String conceptId,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Concept id, e.g. 22298006", required = true) @PathParam("terminologyId") String conceptId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
