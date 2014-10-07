@@ -1,68 +1,68 @@
+<tabset>
+<tab heading="Current Reports">
+<button class="btn btn-sm btn-primary"
+					ng-click="retrieveReports()">Get Reports</button>
+		
+<!--  
+select 'Project productivity' name, mp.name, mr.workflowStatus value, DATE_FORM\
+AT(from_unixtime(mr.lastModified/1000),'%Y-%m') date, count(*) ct
+from map_records mr, map_projects mp
+where mr.mapProjectId = mp.id
+and from_unixtime(lastModified/1000) > date('2014-06-01')
+and from_unixtime(lastModified/1000) < date('2014-12-01')
+and workflowStatus IN ('READY_FOR_PUBLICATION')
+group by mp.name, mr.workflowStatus,
+   DATE_FORMAT(from_unixtime(mr.lastModified/1000),'%Y-%m');
+ -->
+				
+<table class="table" ng-show="reports.length > 0">
+
+	<thead>
+		<th>Name</th>
+		<th>Type</th>
+		<th>QueryType</th>
+		<th>Query</th>
+	</thead>
+	
+	<tr ng-repeat = "report in reports">
+		<td>{{report.name}}</td>
+		<td>{{report.reportType}}</td>
+		<td>{{report.queryType}}</td>
+		<td>{{report.query}}</td>
+	</tr>
+
+</table>
+
+{{reports}}
+</tab>
+<tab heading="Add Report">
+
 <form>
-	<table>
 
-		<tr>
-			<td>Report Type:</td>
-			<td><select
-				ng-options="reportType as reportType for reportType in reportTypes"
-				ng-model="reportTypeSelected"></select></td>
-		</tr>
-		<tr>
-			<td>Specialist:</td>
-			<td><select ng-model="specialistSelected"
-				ng-options="specialist as specialist.name for specialist in specialists"></select></td>
-		<tr>
-			<td>Start Time:</td>
-			<td><input type="text" datepicker-popup="{{format}}"
-				ng-model="startDate" is-open="startDateOpened"
-				datepicker-options="dateOptions"
-				date-disabled="disabled(date, mode)" ng-required="true"
-				close-text="Close" />
-				<button type="button" class="btn btn-default"
-					ng-click="startDateOpened = !startDateOpened">
-					<i class="glyphicon glyphicon-calendar"></i>
-				</button></td>
-		<tr>
-			<td>End Time:</td>
-			<td><input type="text" datepicker-popup="{{format}}"
-				ng-model="endDate" is-open="endDateOpened" min-date="minDate"
-				max-date="'2015-06-22'" datepicker-options="dateOptions"
-				date-disabled="disabled(date, mode)" ng-required="true"
-				close-text="Close" />
+<table class="table">
 
-				<button type="button" class="btn btn-default"
-					ng-click="endDateOpened = !endDateOpened">
-					<i class="glyphicon glyphicon-calendar"></i>
-				</button></td>
-		</tr>
-	</table>
-	<button class="btn btn-sm btn-primary"
-		ng-click="getReport(specialistSelected, reportTypeSelected, startDate, endDate)">Get
-		Report</button>
+	<tr>
+		<td>Name</td>
+		<td><input ng-model="report.name"></td>
+	</tr>
+	<tr>
+		<td>Type</td>
+		<td><select ng-model="report.type" ng-options="reportType as reportType for reportType in reportTypes"></select></td>
+	</tr>
+	<tr>
+		<td>Query Type</td>
+		<td><select ng-model="report.queryType" ng-options="queryType as queryType for queryType in queryTypes"></select></td>
+	<tr>
+		<td>Query</td>
+		<td><textarea ng-model="report.query"></textarea></td>
+	</tr>
+</table>
+
+<button class="btn btn-sm btn-primary"
+					ng-click="addReport()">Add Report</button>
+
+
 
 </form>
-
-<div ng-show="report != null">
-
-	<table class="table">
-
-		<tr>
-			<td>Concepts</td>
-			<td>{{report.totalCount}}</td>
-		</tr>
-		<tr>
-			<td>Finished</td>
-			<td>{{report.finishedCount}}</td>
-		</tr>
-		<tr ng-show="focusProject.workflowType === 'CONFLICT_PROJECT'">
-			<td>Conflicts</td>
-			<td>{{report.conflictCount}}</td>
-		</tr>
-		<tr>
-			<td>Errors</td>
-			<td>{{report.errorCount}}</td>
-		</tr>
-
-	</table>
-
-</div>
+</tab>
+</tabset>

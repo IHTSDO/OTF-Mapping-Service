@@ -83,7 +83,6 @@ public class MapProjectDataExportMojo extends AbstractMojo {
                 + outputDirString);
       }
       
-      StringWriter writer = new StringWriter();
       JAXBContext jaxbContext = null;
       jaxbContext = JAXBContext.newInstance(MapProjectJpa.class);
       Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
@@ -91,6 +90,8 @@ public class MapProjectDataExportMojo extends AbstractMojo {
       // export project data to project specific files
       MappingService mappingService = new MappingServiceJpa();
       for (MapProject mpr : mappingService.getMapProjects().getMapProjects()) {
+      	StringWriter writer = new StringWriter();
+        
         File projectsFile = new File(outputDir, "Project" + mpr.getId() + ".xml");
         // if file doesn't exist, then create it
         if (!projectsFile.exists()) {
@@ -104,6 +105,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
         jaxbMarshaller.marshal(mpr, writer);
 
         projectWriter.write(writer.toString());
+        writer.close();
         projectWriter.close();
         
         

@@ -707,8 +707,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 									entries2.get(f))
 							&& !isMapRelationsEqual(entries1.get(d),
 									entries2.get(f)))
+
 						validationResult.addError("Map Relation is Different: "
-								+ entries1.get(d).getMapRelation().getName() + " vs. " + entries2.get(f).getMapRelation().getName());
+								+ (entries1.get(d).getMapRelation() == null ? "No relation specified" : entries1.get(d).getMapRelation().getName()) 
+								+ " vs. " 
+								+ (entries2.get(f).getMapRelation() == null ? "No relation specified" : entries2.get(f).getMapRelation().getName())	);
 				}
 			}
 			for (int d = 0; d < entries1.size(); d++) {
