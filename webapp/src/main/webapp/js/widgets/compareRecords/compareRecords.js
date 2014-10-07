@@ -55,41 +55,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		    scrollable: true, showCheckAll: false, showUncheckAll: false};
 	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Users'};
 	
-	
-	// TODO: needs to be moved to server-side
-	$scope.icd10ErrorMessages = [{displayName: 'None'}, 
-	                        {displayName: 'Map Group is not relevant'}, 
-                            {displayName: 'Map Group has been omitted'},
-                            {displayName: 'Sequencing of Map Groups is incorrect'}, 
-                            {displayName: 'The number of map records per group is incorrect'},
-                            {displayName: 'Target code selection for a map record is in error'}, 
-                            {displayName: 'Map rule type assignment is in error'},
-                            {displayName: 'Map target type assignment is in error'}, 
-                            {displayName: 'Map advice missing or incomplete'},
-                            {displayName: 'Map advice assignment is in error'}, 
-                            {displayName: 'Mapping Personnel Handbook principle not followed'},
-                            {displayName: 'Gender rule is not relevant'}, 
-                            {displayName: 'Gender rule has been omitted'},
-                            {displayName: 'Age rule is not relevant'}, 
-                            {displayName: 'Age rule has been omitted'},
-                            {displayName: 'Other'}
-                            ];
-
-
-	$scope.icd9cmErrorMessages = [{displayName: 'None'}, 
-	                        {displayName: 'Map Group is not relevant'}, 
-                            {displayName: 'Map Group has been omitted'},
-                            {displayName: 'Sequencing of Map Groups is incorrect'}, 
-                            {displayName: 'Target code selection for a map record is in error'}, 
-                            {displayName: 'Map parameter assignment is in error'}, 
-                            {displayName: 'Map parameter missing or incomplete'}, 
-                            {displayName: 'Other'}
-                            ];
-	if ($scope.project.destinationTerminology == "ICD9CM")
-		$scope.errorMessages = $scope.icd9cmErrorMessages;
-	else
-		$scope.errorMessages = $scope.icd10ErrorMessages;
-	
+	$scope.errorMessages = $scope.project.errorMessages;
+	$scope.errorMessages.unshift('None');
     $scope.selectedErrorMessage1 = $scope.errorMessages[0];
     $scope.selectedErrorMessage2 = $scope.errorMessages[0];
 	
@@ -97,10 +64,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	// coupled with $watch below, this avoids premature work fetching
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 			$scope.project = parameters.focusProject;
-			if ($scope.project.destinationTerminology == "ICD9CM")
-				$scope.errorMessages = $scope.icd9cmErrorMessages;
-			else
-				$scope.errorMessages = $scope.icd10ErrorMessages;
+			$scope.errorMessages = $scope.project.errorMessages;
+			$scope.errorMessages.unshift('None');
 			$scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
 			organizeUsers($scope.allUsers);
 	});
@@ -607,11 +572,11 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		   // determine if feedback is an error or not and remove 'None' text
 		   var mapError = '';
 		   var isError = false;
-		   if (errorMessage.displayName != null &&
-		    			  errorMessage.displayName != '' &&
-		    			  errorMessage.displayName != 'None') {
+		   if (errorMessage != null &&
+		    			  errorMessage != '' &&
+		    			  errorMessage != 'None') {
 		       isError = true;
-			   mapError = errorMessage.displayName;
+			   mapError = errorMessage;
 		   }
 		   
 		    
@@ -645,7 +610,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"mapRecordId": recordInError.id,
 					"feedback": feedbacks,
 					"defaultPreferredName": $scope.concept.defaultPreferredName,
-					"title": $scope.getTitle(false, errorMessage.displayName),
+					"title": $scope.getTitle(false, errorMessage),
 					"mapProjectId": $scope.project.id,
 					"userName": recordInError.owner.userName
 				  };
@@ -690,7 +655,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 				var localFeedback = currentConversation.feedback;
 				localFeedback.push(feedback);
 				currentConversation.feedback = localFeedback;
-				currentConversation.title = $scope.getTitle(false, errorMessage.displayName);
+				currentConversation.title = $scope.getTitle(false, errorMessage);
 				
 			  $rootScope.glassPane++;
 			  $http({						
