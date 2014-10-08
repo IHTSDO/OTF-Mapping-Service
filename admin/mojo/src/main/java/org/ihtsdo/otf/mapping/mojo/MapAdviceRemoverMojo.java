@@ -1,13 +1,9 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
-import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**

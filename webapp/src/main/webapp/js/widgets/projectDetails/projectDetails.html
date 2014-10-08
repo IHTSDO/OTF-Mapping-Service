@@ -653,7 +653,62 @@
       </form>
       
       </accordion-group> 
-          <accordion-group ng-show="focusProject.scopeConcepts.length > 0 || editModeEnabled == true">
+   
+   
+      
+  <accordion-group ng-show="focusProject.errorMessages.length > 0 || editModeEnabled == true">
+      <accordion-heading>
+  <h5><span tooltip-placement="right"
+        tooltip="List of the potential error messages available for this project.">
+        Error Messages
+      </span></h5>
+  </accordion-heading> 
+  <table width="100%" class="table pure-table"" >
+        <thead>
+          <tr>
+            <th style="width: 95%;">Error Message</th>
+          </tr>
+        </thead>
+        <tbody
+          ng-repeat="errorMessage in focusProject.errorMessages | orderBy: 'toString()'">
+
+          <tr>
+            <td>{{errorMessage}}</td>
+ 
+            <td ng-show="editModeEnabled == true">
+              <i class="glyphicon glyphicon-remove"
+                ng-click="deleteErrorMessage(errorMessage)"></i>
+            </td>
+            <td ng-show="editModeEnabled == false || (editModeEnabled == true)"></td>
+          </tr>
+        </tbody>
+      </table>
+         
+    <form ng-show="editModeEnabled == true" name="errorMessageForm" >
+      <div style="margin-top:15px;"><b>Create New Error Message</b></div>
+      <table class="table pure-table" >
+      <thead>
+          <tr>
+            <th style="width: 25%;"></th>           
+            <th style="width: 75%;"></th>
+          </tr>
+      </thead>
+      <tbody>
+      <tr><td>Error Message</td><td>
+        <input id="newErrorMessage" type="text" ng-model="newErrorMessage">  </td></tr>
+
+      <tr><td><button class="btn btn-sm btn-primary" 
+        ng-click="submitNewErrorMessage(newErrorMessage);
+         newErrorMessage = '';">Submit</button></td><td></td></tr>
+      </tbody></table>
+      </form>
+      
+  </accordion-group>
+      
+      
+      
+      
+  <accordion-group ng-show="focusProject.scopeConcepts.length > 0 || editModeEnabled == true">
       <accordion-heading>
   <h5><span tooltip-placement="right"
         tooltip="List of the concepts in scope for this project.">
