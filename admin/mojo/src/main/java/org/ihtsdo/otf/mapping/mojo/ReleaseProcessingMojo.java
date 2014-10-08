@@ -1,11 +1,8 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,7 +10,6 @@ import java.util.Set;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.helpers.FileSorter;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -135,34 +131,37 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 				// FOR TESTING ONLY
 				Set<MapRecord> mapRecords = new HashSet<>();
 
+				boolean testRun = false;
 
-				// RETRIEVE MAP RECORDS HERE
-				mapRecords.addAll(mappingService
-						.getPublishedMapRecordsForMapProject(
-								mapProject.getId(), null).getMapRecords());
-				
-				/*String conceptIds[] = { "10000006",
-				                      "10001005",
-				                     "1001000119102",
-				                      "10041001",
-				                      "10050004",
-				                      "100581000119102",
-				                      "10061007",
-				                      "10065003",
-				                      "10070005" }; */
-				                      
-				
-				/*String conceptIds[] = { "1001000119102" }; */
-	   
-				
-			/*	for (String conceptId : conceptIds) {
-					MapRecord mr = mappingService.getMapRecordForProjectAndConcept(mapProject.getId(), conceptId);
-					mapRecords.add(mr);
-				}*/
+				if (!testRun) {
+
+					// RETRIEVE MAP RECORDS HERE
+					mapRecords.addAll(mappingService
+							.getPublishedMapRecordsForMapProject(
+									mapProject.getId(), null).getMapRecords());
+				}
+
+				if (testRun) {
+
+					/*
+					 * String conceptIds[] = { "10000006", "10001005",
+					 * "1001000119102", "10041001", "10050004",
+					 * "100581000119102", "10061007", "10065003", "10070005" };
+					 */
+
+					/*String conceptIds[] = { "42434002" };
+
+					for (String conceptId : conceptIds) {
+						MapRecord mr = mappingService
+								.getMapRecordForProjectAndConcept(
+										mapProject.getId(), conceptId);
+						mapRecords.add(mr);
+					}*/
+				}
 
 				getLog().info(
 						"Processing release for " + mapProject.getName() + ", "
-								+ mapProject.getId());
+								+ mapProject.getId() + ", with " + mapRecords.size() + " records to publish");
 
 				// ensure output directory name has a terminating /
 				if (!outputDirName.endsWith("/"))
@@ -181,87 +180,40 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 						mapRecords, effectiveTime, moduleId);
 
 				// sort the file into a temporary file
-				/*FileSorter.sortFile(releaseFileName, releaseFileName + ".tmp",
-						new Comparator<String>() {
+				/*
+				 * FileSorter.sortFile(releaseFileName, releaseFileName +
+				 * ".tmp", new Comparator<String>() {
+				 * 
+				 * @Override public int compare(String o1, String o2) { String[]
+				 * fields1 = o1.split("\t"); String[] fields2 = o2.split("\t");
+				 * long i = fields1[4].compareTo(fields2[4]); if (i != 0) {
+				 * return (int) i; } else { i = (Long.parseLong(fields1[5]) -
+				 * Long .parseLong(fields2[5])); if (i != 0) { return (int) i; }
+				 * else { i = Long.parseLong(fields1[6]) -
+				 * Long.parseLong(fields2[6]); if (i != 0) { return (int) i; }
+				 * else { i = Long.parseLong(fields1[7]) -
+				 * Long.parseLong(fields2[7]); if (i != 0) { return (int) i; }
+				 * else { i = (fields1[0] + fields1[1] + fields1[2] +
+				 * fields1[3]) .compareTo(fields1[0] + fields1[1] + fields1[2] +
+				 * fields1[3]); if (i != 0) { return (int) i; } else { i =
+				 * fields1[8] .compareTo(fields2[8]); if (i != 0) { return (int)
+				 * i; } else { i = fields1[9] .compareTo(fields2[9]); if (i !=
+				 * 0) { return (int) i; } else { i = fields1[10]
+				 * .compareTo(fields2[10]); if (i != 0) { return (int) i; } else
+				 * { i = fields1[11] .compareTo(fields2[11]); if (i != 0) {
+				 * return (int) i; } else { i = fields1[12]
+				 * .compareTo(fields2[12]); if (i != 0) { return (int) i; } else
+				 * { return 0; } } } } } } } } } } } });
+				 */
 
-							@Override
-							public int compare(String o1, String o2) {
-								String[] fields1 = o1.split("\t");
-								String[] fields2 = o2.split("\t");
-								long i = fields1[4].compareTo(fields2[4]);
-								if (i != 0) {
-									return (int) i;
-								} else {
-									i = (Long.parseLong(fields1[5]) - Long
-											.parseLong(fields2[5]));
-									if (i != 0) {
-										return (int) i;
-									} else {
-										i = Long.parseLong(fields1[6])
-												- Long.parseLong(fields2[6]);
-										if (i != 0) {
-											return (int) i;
-										} else {
-											i = Long.parseLong(fields1[7])
-													- Long.parseLong(fields2[7]);
-											if (i != 0) {
-												return (int) i;
-											} else {
-												i = (fields1[0] + fields1[1]
-														+ fields1[2] + fields1[3])
-														.compareTo(fields1[0]
-																+ fields1[1]
-																+ fields1[2]
-																+ fields1[3]);
-												if (i != 0) {
-													return (int) i;
-												} else {
-													i = fields1[8]
-															.compareTo(fields2[8]);
-													if (i != 0) {
-														return (int) i;
-													} else {
-														i = fields1[9]
-																.compareTo(fields2[9]);
-														if (i != 0) {
-															return (int) i;
-														} else {
-															i = fields1[10]
-																	.compareTo(fields2[10]);
-															if (i != 0) {
-																return (int) i;
-															} else {
-																i = fields1[11]
-																		.compareTo(fields2[11]);
-																if (i != 0) {
-																	return (int) i;
-																} else {
-																	i = fields1[12]
-																			.compareTo(fields2[12]);
-																	if (i != 0) {
-																		return (int) i;
-																	} else {
-																		return 0;
-																	}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						});*/
+				/*
+				 * File tmpFile = new File(releaseFileName + ".tmp"); File
+				 * oldFile = new File(releaseFileName); oldFile.delete();
+				 * tmpFile.renameTo(oldFile);
+				 * getLog().info("  Done sorting the file ");
+				 */
+
 				
-				/*File tmpFile = new File(releaseFileName + ".tmp");
-				File oldFile = new File(releaseFileName);
-				oldFile.delete();
-				tmpFile.renameTo(oldFile);*/
-				
-				
-				getLog().info("  Done sorting the file ");
 
 			}
 

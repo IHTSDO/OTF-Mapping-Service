@@ -83,6 +83,20 @@ p {
   padding: 5px;
 }
 
+.alert-info-select {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 5px;
+}
+
+.alert-info-select {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 5px;
+  border-color: #E2E2E2;
+  background-color: #FFFFFF;
+}
+
 /** from bootstrap.css, want the global error to take up less space */
 .border-error {	
   padding: 0px 0px 0px 0px;
