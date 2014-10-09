@@ -96,7 +96,6 @@ public class ClamlMetadataHelper {
    * @throws Exception the exception
    */
   public Map<String, Concept> createMetadata() throws Exception {
-    contentService.beginTransaction();
     conceptMap = new HashMap<>();
 
     // terminology id counter, start at 1
@@ -499,8 +498,6 @@ public class ClamlMetadataHelper {
     createIsaRelationship(simpleRefsetsConcept, daggerRefsetConcept,
         new Integer(metadataCounter++).toString(), terminology,
         terminologyVersion, effectiveTime);
-
-    contentService.commit();
 
     return conceptMap;
   }
