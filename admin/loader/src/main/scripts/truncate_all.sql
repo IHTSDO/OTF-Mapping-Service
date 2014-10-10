@@ -14,3 +14,17 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 -- Reenable foreign key constraints
 SET FOREIGN_KEY_CHECKS = 1;
+
+
+--
+-- Sample code for loading a temp table
+--
+-- Concept file.
+DROP TABLE IF EXISTS tmp1;
+CREATE TABLE tmp1 (
+    id NUMERIC(18) UNSIGNED NOT NULL PRIMARY KEY
+) CHARACTER SET utf8;
+
+-- % mysqlimport --local -uuser -ppwd db tmp1.txt 
+
+
