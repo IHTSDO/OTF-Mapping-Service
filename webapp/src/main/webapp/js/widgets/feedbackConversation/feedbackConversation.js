@@ -235,24 +235,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 			localFeedback.push(feedback);
 			conversation.feedback = localFeedback;
 			
-			$rootScope.glassPane++;
-				
-			$http({						
-				url: root_workflow + "conversation/update",
-				dataType: "json",
-				data: conversation,
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json"
-				}
-			}).success(function(data) {
-				$rootScope.glassPane--;
-				console.debug("success to update Feedback conversation.");
-			}).error(function(data, status, headers, config) {
-				$rootScope.glassPane--;
-				$scope.recordError = "Error updating feedback conversation.";
-				$rootScope.handleHttpError(data, status, headers, config);
-			});
+	    	updateFeedbackConversation(conversation);
 		   
 	};
 	
@@ -273,26 +256,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
     	}
     	
     	if (needToUpdate == true) {
-
-			$rootScope.glassPane++;
-		  $http({						
-				url: root_workflow + "conversation/update",
-				dataType: "json",
-				data: conversation,
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json"
-				}
-			}).success(function(data) {
-
-				$rootScope.glassPane--;
-				console.debug("success to update Feedback conversation.");
-			}).error(function(data, status, headers, config) {
-
-				$rootScope.glassPane--;
-				$scope.recordError = "Error updating feedback conversation.";
-				$rootScope.handleHttpError(data, status, headers, config);
-			});
+	    	updateFeedbackConversation(conversation);
     	}
     };
     
@@ -348,27 +312,20 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
     		for (var j = 0; j < alreadyViewedBy.length; j++) {
     			if (alreadyViewedBy[j].userName == $scope.currentUser.userName) {
     				alreadyViewedBy.splice(j, 1);
-    				  $http({						
-    						url: root_workflow + "conversation/update",
-    						dataType: "json",
-    						data: conversation,
-    						method: "POST",
-    						headers: {
-    							"Content-Type": "application/json"
-    						}
-    					}).success(function(data) {
-
-    						$rootScope.glassPane--;
-    						console.debug("success to update Feedback conversation.");
-    					}).error(function(data, status, headers, config) {
-
-    						$rootScope.glassPane--;
-    						$scope.recordError = "Error updating feedback conversation.";
-    						$rootScope.handleHttpError(data, status, headers, config);
-    					});
+    		    	updateFeedbackConversation(conversation);
     			}
     		}
     	}
+	};
+	
+	$scope.markActive = function(conversation) {
+    	conversation.resolved = 'false';    	
+    	updateFeedbackConversation(conversation);    
+	}
+	
+	$scope.markFeedbackResolved = function(conversation) {
+    	conversation.resolved = 'true';
+    	updateFeedbackConversation(conversation);    		
 	};
 	
 	// determines default recipients dependending on the conversation
@@ -394,6 +351,27 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 			}
 		}
 		return;
+    };
+    
+    function updateFeedbackConversation(conversation) {
+		$rootScope.glassPane++;
+
+		  $http({						
+				url: root_workflow + "conversation/update",
+				dataType: "json",
+				data: conversation,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+				console.debug("success to update Feedback conversation.");
+			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
+				$scope.recordError = "Error updating feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			});
     };
     
     

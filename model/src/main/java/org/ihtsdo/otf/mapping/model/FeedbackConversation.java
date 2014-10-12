@@ -62,14 +62,14 @@ public interface FeedbackConversation {
 	 * @param active
 	 *            the active
 	 */
-	public void setActive(boolean active);
+	public void setResolved(boolean active);
 
 	/**
 	 * Indicates whether or not active is the case.
 	 * 
 	 * @return <code>true</code> if so, <code>false</code> otherwise
 	 */
-	public boolean isActive();
+	public boolean isResolved();
 
 	/**
 	 * Returns the map record id.
