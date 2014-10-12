@@ -1061,6 +1061,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     // begin transaction
     ContentService contentService = new ContentServiceJpa();
+    contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
 
     while ((line = conceptsByConcept.readLine()) != null) {
@@ -1122,6 +1123,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     // begin transaction
     ContentService contentService = new ContentServiceJpa();
+    contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
 
     while ((line = relationshipsBySourceConcept.readLine()) != null) {
@@ -1205,6 +1207,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     // begin transaction
     ContentService contentService = new ContentServiceJpa();
+    contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
 
     // load and persist first description
@@ -1316,6 +1319,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     // Begin transaction
     ContentService contentService = new ContentServiceJpa();
+    contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
 
     Iterator<Concept> conceptIterator = conceptCache.values().iterator();
@@ -1482,6 +1486,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     // begin transaction
     ContentService contentService = new ContentServiceJpa();
+    contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
 
     while ((line = attributeRefsetsByDescription.readLine()) != null) {
@@ -1559,6 +1564,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     // begin transaction
     ContentService contentService = new ContentServiceJpa();
+    contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
 
     while ((line = simpleRefsetsByConcept.readLine()) != null) {
@@ -1629,6 +1635,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     // begin transaction
     ContentService contentService = new ContentServiceJpa();
+    contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
 
     while ((line = simpleMapRefsetsByConcept.readLine()) != null) {
@@ -1701,6 +1708,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     // begin transaction
     ContentService contentService = new ContentServiceJpa();
+    contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
 
     while ((line = complexMapRefsetsByConcept.readLine()) != null) {
@@ -1788,6 +1796,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     // begin transaction
     ContentService contentService = new ContentServiceJpa();
+    contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
 
     while ((line = extendedMapRefsetsByConcept.readLine()) != null) {
