@@ -24,6 +24,7 @@ import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
@@ -94,6 +95,7 @@ public class ReportJpa implements Report {
 
 	/** The results. */
 	@OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = ReportResultJpa.class)
+	@IndexedEmbedded(targetElement=ReportResultJpa.class)
 	private List<ReportResult> results = new ArrayList<>();
 
 	/** The reportNotes. */
