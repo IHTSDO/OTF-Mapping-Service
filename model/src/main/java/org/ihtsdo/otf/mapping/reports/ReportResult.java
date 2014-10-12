@@ -36,8 +36,6 @@ public interface ReportResult {
 
 	public void setDateValue(String dateValue);
 
-/*	public List<ReportNote> getNotes();
-
-	public void setNotes(List<ReportNote> notes);*/
+	public void addReportResultItem(ReportResultItem reportResultItem);
 
 }
