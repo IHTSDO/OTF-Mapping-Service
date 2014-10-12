@@ -62,7 +62,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 	
 	/** Flag for whether this feedback conversation is still active. */
 	@Column(nullable = false)
-	private boolean isActive = true;
+	private boolean isResolved = false;
 
 	/** Flag for whether this feedback conversation requires discrepancy review. */
 	@Column(nullable = false)
@@ -144,22 +144,22 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   }
   
   /**
-   * Sets the active.
+   * Sets the status to resolved.
    *
-   * @param active the active
+   * @param resolved the resolved flag
    */
-  public void setActive(boolean active) {
-  	this.isActive = active;
+  public void setResolved(boolean resolved) {
+  	this.isResolved = resolved;
   }
   
   /**
-   * Indicates whether or not active is the case.
+   * Indicates whether or not resolved is the case.
    *
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  public boolean isActive() {
-  	return isActive;
+  public boolean isResolved() {
+  	return isResolved;
   }
   
   /**
@@ -346,7 +346,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 	 * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#getTitle()
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
 	public String getTitle() {
 		return title;
 	}
