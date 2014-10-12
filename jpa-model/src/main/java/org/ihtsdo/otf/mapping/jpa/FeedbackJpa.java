@@ -77,7 +77,7 @@ public class FeedbackJpa implements Feedback {
 	
   /**  The indicates feedback of type error, rather than general. */
 	@Column(nullable = false)
-  boolean isError = false;
+  private boolean isError = false;
   
   /** The feedback conversation. */
   @ManyToOne(targetEntity = FeedbackConversationJpa.class, optional = false)
