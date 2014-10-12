@@ -26,7 +26,7 @@ public interface ReportResultItem {
 	 * 
 	 * @return the item id
 	 */
-	public Long getItemId();
+	public String getItemId();
 
 	/**
 	 * Sets the item id.
@@ -34,7 +34,11 @@ public interface ReportResultItem {
 	 * @param itemId
 	 *            the new item id
 	 */
-	public void setItemId(Long itemId);
+	public void setItemId(String itemId);
+	
+	public String getItemName();
+	
+	public void setItemName(String itemName);
 
 	/**
 	 * Gets the result type.
@@ -51,8 +55,20 @@ public interface ReportResultItem {
 	 */
 	public void setResultType(ReportResultType resultType);
 
-	ReportResult getReportResult();
+	/**
+	 * Gets the report result.
+	 *
+	 * @return the report result
+	 */
+	public ReportResult getReportResult();
 
-	void setReportResult(ReportResult reportResult);
+	/**
+	 * Sets the report result.
+	 *
+	 * @param reportResult the new report result
+	 */
+	public void setReportResult(ReportResult reportResult);
+	
+	
 
 }

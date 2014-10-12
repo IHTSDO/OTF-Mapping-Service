@@ -14,7 +14,7 @@ import org.ihtsdo.otf.mapping.reports.ReportJpa;
 /**
  * JAXB enabled implementation of {@link ReportList}
  */
-@XmlRootElement(name = "ReportList")
+@XmlRootElement(name = "reportList")
 public class ReportListJpa extends AbstractResultList<Report> implements
     ReportList {
 
@@ -74,7 +74,7 @@ public class ReportListJpa extends AbstractResultList<Report> implements
    * @see org.ihtsdo.otf.mapping.helpers.ReportList#getreports()
    */
   @Override
-  @XmlElement(type = ReportJpa.class, name = "Report")
+  @XmlElement(type = ReportJpa.class, name = "report")
   public List<Report> getReports() {
     return reports;
   }
