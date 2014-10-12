@@ -1,30 +1,206 @@
-<select ng-options = "definition as definition.reportType for definition in definitions" ng-model="selectedDefinition"></select>
+<tabset> <tab heading="View Reports">
 
-<button class="btn btn-sm btn-primary" ng-click="generateReport(selectedDefinition)">Generate Report</button>
 
-<div ng-show="report != null">
+<div
+	style="float: left; width: 40%; padding: 10px; border-right: thin solid #ddd;">
 
-	<hr>
-	Name:  {{report.name}}<br>
-	Type:  {{report.type}}
-	
+
+	<form>
+		<table>
+			<tr>
+				<td style="padding: 5px;">Filter by Report Type:</td>
+				<td style="padding: 5px;"><select id="reportSearch"
+					ng-options="definition as definition.reportName for definition in definitions"
+					ng-change="getReports(1, selectedDefinition.reportType, queryReport)"
+					ng-model="selectedDefinition"></select></td>
+				<td style="padding: 5px">
+					<!-- Currently no filtering for reports, only selection by type
+					 <button class="btn btn-sm btn-primary"
+						ng-click="getReports(1, selectedDefinition.reportType, queryReport)">Search</button> -->
+					<button class="btn btn-sm btn-primary"
+						ng-click="getReports(1, null, queryReport); selectedDefinition = null;">Reset</button>
+				</td>
+			</tr>
+		</table>
+	</form>
+
+	<pagination ng-show="nReportPages > 1" total-items="nReports"
+		page="reportPage" max-size="5" class="pagination-sm"
+		boundary-links="true" rotate="true" num-pages="nReportPages"
+		on-select-page="getReports(page, selectedDefinition.reportType, queryReport)"></pagination>
+
+	<div ng-show="nReports != 0">
+
+
+
+		<table class="table"">
+
+			<thead>
+				<tr>
+					<th style="width: 70%; padding: 5px;">Name</th>
+					<th style="width: 30%; padding: 5px;">Date</th>
+
+				</tr>
+
+			</thead>
+
+			<tbody>
+
+				<tr ng-repeat="report in reports">
+
+
+					<td style="width: 70%; padding: 5px;"><a
+						ng-click="viewReport(report)">{{report.name}}</a></td>
+					<td style="width: 30%; padding: 5px;">{{report.timestamp |
+						date: 'MM/dd/yyyy'}}</td>
+			</tbody>
+
+		</table>
+	</div>
+</div>
+
+<div>
+	<div style="float: right; width: 60%; padding: 10px">
+
+
+
+		<h4 ng-show="reportDisplayed == null">No report selected</h4>
+
+		<div ng-show="reportDisplayed != null">
+
+			<table class="table">
+				<tr><td>Report:</td><td>  {{reportDisplayed.name}}</td></tr>
+				<tr><td>Date run:</td><td> {{reportDisplayed.timestamp | date: 'MM/dd/yyyy'}}</td></tr>
+			</table>
+			
+			
+			<div style="float: left; padding: 5px; width: 5%"></div>
+			<div style="float: left; padding: 5px; width: 10%"><strong>Count</strong></div>
+			<div style="float: left; padding: 5px; width: 85%"><strong>Value</strong></div>
+
+			<div ng-repeat="result in reportDisplayed.results" ">
+
+				<!--  First row:  The result items expander, value, and count -->
+				<div style="width: 100%; style="padding: 5px;">
+					<div style="float: left; padding: 5px; width: 5%">
+						<a ng-click="result.isCollapsed = !result.isCollapsed"> [<i
+							ng-class="{'glyphicon-minus': !result.isCollapsed, 'glyphicon-plus': result.isCollapsed}"></i>]
+						</a>
+					</div>
+					<div style="float: left; padding: 5px; width: 10%">{{result.ct}}</div>
+					<div style="float: left; padding: 5px; width: 85%">{{result.value}}</div>
+
+
+				</div>
+
+				<!--  Second row:  The result items -->
+
+				<div collapse="result.isCollapsed">
+					<div ng-repeat="reportResultItem in result.reportResultItems"">
+						<!--  Placeholder divs to ensure table-like format -->
+						<div style="float: left; padding: 5px; width: 5%"></div>
+						<div style="float: left; padding: 5px; width: 10%"></div>
+
+						<!-- the actual result items -->
+						<div style="overflow: auto; max-height: 300px; float: left; padding: 5px; width:85%;">
+
+							<a
+								ng-href="{{'index.html#/record/conceptId/' + reportResultItem.itemId}}"
+								target="_blank">{{reportResultItem.itemId}}</a>,
+							{{reportResultItem.itemName}}
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+			<!-- <table class="table">
+
+
+				<thead>
+					<th style="width: 50%;">Value</th>
+					<th style="width: 50%;">Count</th>
+				</thead>
+
+				<tr ng-repeat="result in reportDisplayed.results">
+					<td style="width: 50%;">{{result.value}}</td>
+					<td style="width: 50%;">{{result.ct}} <a
+						ng-click="result.isCollapsed = !result.isCollapsed"> [<i
+							ng-class="{'glyphicon-minus': !result.isCollapsed, 'glyphicon-plus': result.isCollapsed}"></i>]
+					</a>
+						<div collapse="result.isCollapsed">
+							<div ng-repeat="reportResultItem in result.reportResultItems"
+								style="overflow: auto; max-height: 300px"></div>
+						</div>
+					</td>
+				</tr>
+
+
+
+			</table> -->
+
+		</div>
+
+
+	</div>
+</div>
+</tab> <tab heading="Report Definitions"
+	ng-show="currentRole === 'Administrator'"> <br>
+<h4>
+	Select Existing Report <select
+		ng-options="definition as definition.reportName for definition in definitions"
+		ng-model="definitionEditing"></select>
+</h4>
+<form>
 	<table class="table">
-	
-		<thead>
-			<th>Project Name</th>
-			<th>Value</th>
-			<th>Date</th>
-			<th>Count</th>
-		</thead>
-		
-		<tr ng-repeat="result in report.results">
-			<td>{{result.projectName}}</td>
-			<td>{{result.value}}</td>
-			<td>{{result.dateValue}}</td>
-			<td>{{result.ct}}</td>
+		<tr>
+			<td>Report Name</td>
+			<td><input ng-model="definitionEditing.reportName"></td>
 		</tr>
-	
+
+		<tr>
+			<td>Report Type</td>
+			<td><select
+				ng-options="reportType as reportType for reportType in reportTypes"
+				ng-model="definitionEditing.reportType"></select></td>
+		<tr>
+		<tr>
+			<td>Result Type</td>
+			<td><select
+				ng-options="resultType as resultType for resultType in resultTypes"
+				ng-model="definitionEditing.resultType"></select></td>
+		</tr>
+
+		<tr>
+			<td>Role Required</td>
+			<td><select
+				ng-options="availableRole as availableRole for availableRole in availableRoles"
+				ng-model="definitionEditing.roleRequired"></select></td>
+		</tr>
+
+		<tr>
+			<td>Query Type</td>
+			<td><select
+				ng-options="queryType as queryType for queryType in queryTypes"
+				ng-model="definitionEditing.queryType"></select></td>
+		</tr>
+
+		<tr>
+			<td>Query</td>
+			<td><textarea style="width: 100%;"
+					ng-model="definitionEditing.query"></textarea></td>
+		</tr>
+
+
 	</table>
 
+	<button class="btn btn-sm btn-primary"
+		ng-click="saveDefinition(definitionEditing)">Save</button>
+	<button class="btn btn-sm btn-warning"
+		ng-click="definitionEditing = null">Cancel</button>
 
-</div>				
+	{{definitionMsg}}
+
+</form>
+
+</tab> </tabset>
