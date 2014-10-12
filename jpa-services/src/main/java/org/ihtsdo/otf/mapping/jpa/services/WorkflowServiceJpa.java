@@ -3604,23 +3604,21 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// add terms based on query restriction
 		switch (pfsParameter.getQueryRestriction()) {
 		case "DISCREPANCY_REVIEW_FEEDBACK":
-			full_query += " AND title:Discrepancy Review Feedback";
+			full_query += " AND title:\"Discrepancy Review Feedback\"";
 			break;
 		case "ERROR_FEEDBACK":
-			full_query += " AND title:Error Feedback";
+			full_query += " AND title:\"Error Feedback\"";
 			break;
 		case "GROUP_FEEDBACK":
-			full_query += " AND title:Group Feedback";
+			full_query += " AND title:\"Group Feedback\"";
 			break;
-		/*case "FEEDBACK":
-			full_query += " AND title:Feedback";
-			break;*/
+		case "FEEDBACK":
+			full_query += " AND title:\"Feedback\"";
+			break;
 		default:
-			full_query += "";
 			break;
 		}
 		
-		//full_query += " ORDER BY lastModified";
 		
 		Logger.getLogger(MappingServiceJpa.class).info(full_query);
 
@@ -3774,7 +3772,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					// otherwise create a new feedback conversatoin
 				} catch (NoResultException e) {
 					feedbackConversation = new FeedbackConversationJpa();
-					feedbackConversation.setActive(true);
+					feedbackConversation.setResolved(true);
 					feedbackConversation.setDefaultPreferredName(mapRecord
 							.getConceptName());
 					feedbackConversation.setDiscrepancyReview(false);

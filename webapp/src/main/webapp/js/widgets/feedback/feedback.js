@@ -122,6 +122,37 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	};
 	
 	
+	$scope.markActive = function(conversation) {
+    	conversation.resolved = 'false';    	
+    	updateFeedbackConversation(conversation);    
+	}
+	
+	$scope.markFeedbackResolved = function(conversation) {
+    	conversation.resolved = 'true';
+    	updateFeedbackConversation(conversation);    		
+	};
+	
+    function updateFeedbackConversation(conversation) {
+		$rootScope.glassPane++;
+
+		  $http({						
+				url: root_workflow + "conversation/update",
+				dataType: "json",
+				data: conversation,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+				console.debug("success to update Feedback conversation.");
+			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
+				$scope.recordError = "Error updating feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			});
+    };
+	
 	$scope.goFeedbackConversations = function (id) {
 		var path = "/conversation/recordId/" + id;
 			// redirect page
