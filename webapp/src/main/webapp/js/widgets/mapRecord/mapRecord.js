@@ -870,7 +870,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					"terminology": $scope.project.destinationTerminology,
 					"terminologyId": record.conceptId,
 					"terminologyVersion": $scope.project.destinationTerminologyVersion,
-					"isActive": "true",
+					"isResolved": "false",
 					"isDiscrepancyReview": "false",
 					"mapRecordId": record.id,
 					"feedback": feedbacks,
