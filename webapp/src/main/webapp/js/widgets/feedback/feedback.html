@@ -13,8 +13,8 @@
       <form>
         <input type="radio" ng-model="feedbackType" value="ALL"
           ng-change="retrieveFeedback(1, feedbackType)">All</input>
-        <!-- <input type="radio" ng-model="feedbackType" value="FEEDBACK"
-          ng-change="retrieveFeedback(1, feedbackType)">Feedback</input> -->
+        <input type="radio" ng-model="feedbackType" value="FEEDBACK"
+          ng-change="retrieveFeedback(1, feedbackType)">Feedback</input>
         <input type="radio" ng-model="feedbackType" value="GROUP_FEEDBACK"
           ng-change="retrieveFeedback(1, feedbackType)">Group Feedback</input>
         <input type="radio" ng-model="feedbackType" value="ERROR_FEEDBACK"
@@ -34,7 +34,11 @@
         <i
           class="glyphicon glyphicon-eye-close pull-right"></i></a>
       </th>
-      <th style="width: 17%; padding: 5px;">Id</th>
+      <th style="width: 3%; padding: 5px;"><a title="Resolved">
+        <i
+          class="glyphicon glyphicon-ok"></i></a>
+      </th>
+      <th style="width: 14%; padding: 5px;">Id</th>
       <th style="width: 35%; padding: 5px;">Preferred Name</th>
       <th style="width: 20%; padding: 5px;">Title</th>
       <th style="width: 7%; padding: 5px;">Owner</th>
@@ -52,6 +56,13 @@
             <i class="glyphicon glyphicon-eye-close pull-right"></i></a>
           </td>
           <td ng-show="isFeedbackViewed(feedbackConversation) == true"></td>
+          <td>   
+             <span ng-show="feedbackConversation.userName == currentUser.userName">
+               <input type="checkbox" ng-model="feedbackConversation.resolved" 
+                 ng-click="feedbackConversation.resolved ? 
+   				 markActive(feedbackConversation) : markFeedbackResolved(feedbackConversation)">  
+             </span>
+          </td>
           <td><a href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">{{feedbackConversation.terminologyId}}</a></td>
           <td>{{feedbackConversation.defaultPreferredName}}</td>
           <td ng-bind-html="to_trusted(feedbackConversation.title)"></td>
@@ -59,8 +70,6 @@
           <td>{{feedbackConversation.lastModified | date:'MM-dd-yyyy HH:mm'}}&nbsp;
           ({{feedbackConversation.feedback[feedbackConversation.feedback.length -1].sender.userName}})</td>
         </tr>
-   
-
   </tbody>
 
 
