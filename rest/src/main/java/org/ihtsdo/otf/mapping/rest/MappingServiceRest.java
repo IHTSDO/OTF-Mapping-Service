@@ -1790,7 +1790,7 @@ public class MappingServiceRest extends RootServiceRest {
 						.getMapProjectRoleForToken(authToken,
 								mr.getMapProjectId());
 
-				System.out.println(projectRole + " " + mr.toString());
+				// System.out.println(projectRole + " " + mr.toString());
 
 				switch (mr.getWorkflowStatus()) {
 
@@ -2102,11 +2102,11 @@ public class MappingServiceRest extends RootServiceRest {
 								.entity("User does not have permissions to compute the map relation.")
 								.build());
 
-			System.out.println(mapRecord.toString());
+			// System.out.println(mapRecord.toString());
 			if (mapRecord.getMapProjectId() == null) {
 				return null;
 			}
-			System.out.println("Retrieving project handler");
+			// System.out.println("Retrieving project handler");
 
 			ProjectSpecificAlgorithmHandler algorithmHandler = mappingService
 					.getProjectSpecificAlgorithmHandler(mappingService
