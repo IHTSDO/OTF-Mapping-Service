@@ -69,21 +69,31 @@
 		<div ng-show="reportDisplayed != null">
 
 			<table class="table">
-				<tr><td>Report:</td><td>  {{reportDisplayed.name}}</td></tr>
-				<tr><td>Date run:</td><td> {{reportDisplayed.timestamp | date: 'MM/dd/yyyy'}}</td></tr>
+				<tr>
+					<td>Report:</td>
+					<td>{{reportDisplayed.name}}</td>
+				</tr>
+				<tr>
+					<td>Date run:</td>
+					<td>{{reportDisplayed.timestamp | date: 'MM/dd/yyyy'}}</td>
+				</tr>
 			</table>
-			
-			
-			<div style="float: left; padding: 5px; width: 5%"></div>
-			<div style="float: left; padding: 5px; width: 10%"><strong>Count</strong></div>
-			<div style="float: left; padding: 5px; width: 85%"><strong>Value</strong></div>
 
-			<div ng-repeat="result in reportDisplayed.results" ">
+
+			<div style="float: left; padding: 5px; width: 5%"></div>
+			<div style="float: left; padding: 5px; width: 10%">
+				<strong>Count</strong>
+			</div>
+			<div style="float: left; padding: 5px; width: 85%">
+				<strong>Value</strong>
+			</div>
+
+			<div ng-repeat="result in reportDisplayed.results" style="border-bottom: line solid #ddd">
 
 				<!--  First row:  The result items expander, value, and count -->
-				<div style="width: 100%; style="padding: 5px;">
+				<div style="width: 100%;"padding: 5px;">
 					<div style="float: left; padding: 5px; width: 5%">
-						<a ng-click="result.isCollapsed = !result.isCollapsed"> [<i
+						<a ng-click="toggleResultItems(result, result.page)"> [<i
 							ng-class="{'glyphicon-minus': !result.isCollapsed, 'glyphicon-plus': result.isCollapsed}"></i>]
 						</a>
 					</div>
@@ -96,13 +106,24 @@
 				<!--  Second row:  The result items -->
 
 				<div collapse="result.isCollapsed">
+
+					<!--  Placeholder divs to ensure table-like format -->
+					<div style="float: left; padding: 5px; width: 5%"></div>
+					<div style="float: left; padding: 5px; width: 10%"></div>
+					<div style="float: left; padding: 5px; width: 85%;">
+						<pagination ng-show="result.nPages > 1" total-items="result.ct"
+							page="result.page" max-size="5" class="pagination-sm"
+							boundary-links="true" rotate="true" num-pages="result.nPages"
+							on-select-page="getReportItems(result, page)"></pagination>
+					</div>
+
 					<div ng-repeat="reportResultItem in result.reportResultItems"">
 						<!--  Placeholder divs to ensure table-like format -->
 						<div style="float: left; padding: 5px; width: 5%"></div>
 						<div style="float: left; padding: 5px; width: 10%"></div>
 
 						<!-- the actual result items -->
-						<div style="overflow: auto; max-height: 300px; float: left; padding: 5px; width:85%;">
+						<div style="float: left; padding: 5px; width: 85%;">
 
 							<a
 								ng-href="{{'index.html#/record/conceptId/' + reportResultItem.itemId}}"
@@ -110,8 +131,10 @@
 							{{reportResultItem.itemName}}
 						</div>
 					</div>
+					
+				
 				</div>
-
+					<hr>
 			</div>
 
 			<!-- <table class="table">

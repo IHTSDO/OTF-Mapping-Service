@@ -31,6 +31,9 @@ import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
 import org.ihtsdo.otf.mapping.helpers.ReportDefinitionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
+import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
+import org.ihtsdo.otf.mapping.helpers.ReportResultItemListJpa;
+import org.ihtsdo.otf.mapping.helpers.ReportResultList;
 import org.ihtsdo.otf.mapping.helpers.ReportType;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
@@ -713,67 +716,67 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		tx.commit();
 
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public ReportList getReportsForMapProject(MapProject mapProject,
 			PfsParameter pfsParameter) {
-		
-		return getReportsForMapProjectAndReportType(mapProject, null, pfsParameter);
+
+		return getReportsForMapProjectAndReportType(mapProject, null,
+				pfsParameter);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ReportList getReportsForMapProjectAndReportType(MapProject mapProject,
-			String reportType, PfsParameter pfsParameter) {
-		
+	public ReportList getReportsForMapProjectAndReportType(
+			MapProject mapProject, String reportType, PfsParameter pfsParameter) {
+
 		// instantiate empty paging/filtering/sorting object if null
 		if (pfsParameter == null)
 			pfsParameter = new PfsParameterJpa();
 
 		ReportList reportList = new ReportListJpa();
-		
-		// TODO: This is temporary, move this to a QueryBuilder structure instead of using direct queries
+
+		// TODO: This is temporary, move this to a QueryBuilder structure
+		// instead of using direct queries
 		javax.persistence.Query query;
-		
+
 		// construct query based on whether reportType is specified
 		// note that results are ordered by descending timestamp
 		if (reportType != null) {
-		
-		query = manager
-				.createQuery(
-						"select r from ReportJpa r where mapProjectId = :mapProjectId and reportType = :reportType order by timestamp desc")
-						.setParameter("reportType", ReportType.valueOf(reportType));
-				
-		} else {
+
 			query = manager
 					.createQuery(
-							"select r from ReportJpa r where mapProjectId = :mapProjectId order by timestamp desc");
+							"select r from ReportJpa r where mapProjectId = :mapProjectId and reportType = :reportType order by timestamp desc")
+					.setParameter("reportType", ReportType.valueOf(reportType));
+
+		} else {
+			query = manager
+					.createQuery("select r from ReportJpa r where mapProjectId = :mapProjectId order by timestamp desc");
 		}
-		
+
 		// add project parameter for both cases
 		query.setParameter("mapProjectId", mapProject.getId());
-		
+
 		// execute the query to get the number of reports
 		// TODO This will be folded into lucene query builder later
 		reportList.setTotalCount(query.getResultList().size());
-		
+
 		// if paging requested, set result parameters
-		if (pfsParameter.getStartIndex() != -1 && pfsParameter.getMaxResults() != -1) {
+		if (pfsParameter.getStartIndex() != -1
+				&& pfsParameter.getMaxResults() != -1) {
 			query.setFirstResult(pfsParameter.getStartIndex());
 			query.setMaxResults(pfsParameter.getMaxResults());
 		}
-		
+
 		// reports are ALWAYS sorted in reverse order of date
-		
+
 		List<Report> reports = query.getResultList();
 
 		for (Report report : reports)
 			this.handleReportLazyInitialization(report);
 
 		reportList.setReports(reports);
-		
-		
 
 		return reportList;
 	}
@@ -824,8 +827,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 					.getIterable()) {
 
 				this.generateReport(mapProject, mapUser,
-				reportDefinition.getReportName(), reportDefinition,
-				startDate, true);
+						reportDefinition.getReportName(), reportDefinition,
+						startDate, true);
 			}
 
 			// increment startDate by 1 day
@@ -973,49 +976,83 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		return rs;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ReportService#removeReportsForMapProject(org.ihtsdo.otf.mapping.model.MapProject)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#removeReportsForMapProject
+	 * (org.ihtsdo.otf.mapping.model.MapProject)
 	 */
 	@Override
 	public void removeReportsForMapProject(MapProject mapProject) {
-		
+
 		this.setTransactionPerOperation(true);
-		
-		Logger.getLogger(ReportServiceJpa.class).info("Retrieving reports for project " + mapProject.getName() + "...");
-		
+
+		Logger.getLogger(ReportServiceJpa.class).info(
+				"Retrieving reports for project " + mapProject.getName()
+						+ "...");
+
 		ReportList reports = getReportsForMapProject(mapProject, null);
-		
-		Logger.getLogger(ReportServiceJpa.class).info("Removing " + reports.getCount() + " reports.");
-		
+
+		Logger.getLogger(ReportServiceJpa.class).info(
+				"Removing " + reports.getCount() + " reports.");
+
 		for (Report report : reports.getReports()) {
-			
-			Logger.getLogger(ReportServiceJpa.class).info("  Removing report with id " + report.getId());
-			
+
+			Logger.getLogger(ReportServiceJpa.class).info(
+					"  Removing report with id " + report.getId());
+
 			// remove all result items
 			for (ReportResult result : report.getResults()) {
-				
-				Logger.getLogger(ReportServiceJpa.class).info("    Removing report result with id " + result.getId());
-				
+
+				Logger.getLogger(ReportServiceJpa.class).info(
+						"    Removing report result with id " + result.getId());
+
 				// remove all report result items
 				for (ReportResultItem item : result.getReportResultItems()) {
-					
-					Logger.getLogger(ReportServiceJpa.class).info("      Removing report result item with id " + item.getId());
+
+					Logger.getLogger(ReportServiceJpa.class).info(
+							"      Removing report result item with id "
+									+ item.getId());
 					removeReportResultItem(item.getId());
 				}
 				removeReportResult(result.getId());
 			}
-			
+
 			// remove all notes
 			for (ReportNote note : report.getNotes()) {
-				
-				Logger.getLogger(ReportServiceJpa.class).info("    Removing report note with id " + note.getId());
+
+				Logger.getLogger(ReportServiceJpa.class).info(
+						"    Removing report note with id " + note.getId());
 				removeReportNote(note.getId());
 			}
 			// remove the report
 			removeReport(report.getId());
-			
+
+		}
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public ReportResultItemList getReportResultItemsForReportResult(Long reportResultId,
+			PfsParameter pfsParameter) {
+
+		ReportResultItemList reportResultItemList = new ReportResultItemListJpa();
+
+		javax.persistence.Query query = manager.createQuery(
+				"select r from ReportResultItemJpa r where reportResult_id = :reportResultId")
+				.setParameter("reportResultId", reportResultId);
+
+		if (pfsParameter.getStartIndex() != -1
+				&& pfsParameter.getMaxResults() != -1) {
+			query.setFirstResult(pfsParameter.getStartIndex());
+			query.setMaxResults(pfsParameter.getMaxResults());
 		}
 		
+		reportResultItemList.setReportResultItems(query.getResultList());
+		
+		return reportResultItemList;
 	}
 
 }
