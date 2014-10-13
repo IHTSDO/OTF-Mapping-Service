@@ -346,7 +346,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 	 * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#getTitle()
 	 */
 	@Override
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	public String getTitle() {
 		return title;
 	}
