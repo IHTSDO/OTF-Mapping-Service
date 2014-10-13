@@ -33,7 +33,7 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
 	public ValidationResult validateTargetCodes(MapRecord mapRecord)
 			throws Exception {
 
-		System.out.println("Validating target codes");
+		// System.out.println("Validating target codes");
 
 		ValidationResult validationResult = new ValidationResultJpa();
 		ContentService contentService = new ContentServiceJpa();
@@ -43,8 +43,7 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
 		// if present, there should be only one map entry
 		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 			if (mapEntry.getMapRelation() != null) {
-				System.out.println("Found map relation: "
-						+ mapEntry.getMapRelation().toString());
+			
 				if (mapEntry.getMapRelation().getTerminologyId()
 						.equals("447556008")) {
 					// if more than one entry is present, add an error
