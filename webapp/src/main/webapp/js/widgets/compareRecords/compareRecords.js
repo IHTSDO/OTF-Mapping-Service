@@ -56,6 +56,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Users'};
 	
 	$scope.errorMessages = $scope.project.errorMessages;
+    $scope.errorMessages.sort();
 	$scope.errorMessages.unshift('None');
     $scope.selectedErrorMessage1 = $scope.errorMessages[0];
     $scope.selectedErrorMessage2 = $scope.errorMessages[0];
