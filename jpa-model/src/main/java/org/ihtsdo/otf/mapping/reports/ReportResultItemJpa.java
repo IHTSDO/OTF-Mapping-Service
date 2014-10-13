@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
@@ -34,7 +35,11 @@ public class ReportResultItemJpa implements ReportResultItem {
 
 	/** The item id. */
 	@Column(nullable = false)
-	private Long itemId;
+	private String itemId;
+	
+	/** The item name. */
+	@Column(nullable = true)
+	private String itemName;
 
 	/** The result type. */
 	@Enumerated(EnumType.STRING)
@@ -62,6 +67,7 @@ public class ReportResultItemJpa implements ReportResultItem {
 	 * @return the report result
 	 */
 	@Override
+	@XmlTransient
 	public ReportResult getReportResult() {
 		return reportResult;
 	}
@@ -80,7 +86,7 @@ public class ReportResultItemJpa implements ReportResultItem {
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResultItem#getItemId()
 	 */
 	@Override
-	public Long getItemId() {
+	public String getItemId() {
 		return itemId;
 	}
 
@@ -88,7 +94,7 @@ public class ReportResultItemJpa implements ReportResultItem {
 	 * @see org.ihtsdo.otf.mapping.reports.ReportResultItem#setItemId(java.lang.Long)
 	 */
 	@Override
-	public void setItemId(Long itemId) {
+	public void setItemId(String itemId) {
 		this.itemId = itemId;
 	}
 
@@ -106,6 +112,16 @@ public class ReportResultItemJpa implements ReportResultItem {
 	@Override
 	public void setResultType(ReportResultType resultType) {
 		this.resultType = resultType;
+	}
+
+	@Override
+	public String getItemName() {
+		return this.itemName;
+	}
+
+	@Override
+	public void setItemName(String itemName) {
+		this.itemName = itemName;
 	}
 
 }
