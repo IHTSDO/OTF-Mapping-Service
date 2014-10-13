@@ -144,11 +144,11 @@ public class ReportServiceRest extends RootServiceRest {
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(
-						Response.status(401)
-								.entity("User does not have permissions to retrieve map projects.")
-								.build());
+//			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+//				throw new WebApplicationException(
+//						Response.status(401)
+//								.entity("User does not have permissions to retrieve map projects.")
+//								.build());
 			
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
@@ -215,11 +215,11 @@ public class ReportServiceRest extends RootServiceRest {
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
-				throw new WebApplicationException(
-						Response.status(401)
-								.entity("User does not have permissions to retrieve map projects.")
-								.build());
+//			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+//				throw new WebApplicationException(
+//						Response.status(401)
+//								.entity("User does not have permissions to retrieve map projects.")
+//								.build());
 			
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(projectId);
