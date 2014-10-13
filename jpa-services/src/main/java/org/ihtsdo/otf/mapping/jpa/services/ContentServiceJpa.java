@@ -184,16 +184,15 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			query.setParameter("terminology", terminology);
 			query.setParameter("terminologyVersion", terminologyVersion);
 			Concept c = (Concept) query.getSingleResult();
-			return c;
-		} catch (NoResultException e) {
-			return null;
-			/*
-			 * throw new LocalException( "Concept query for terminologyId = " +
-			 * terminologyId + ", terminology = " + terminology +
-			 * ", terminologyVersion = " + terminologyVersion +
-			 * " returned no results!", e);
-			 */
-		}
+      return c;
+    } catch (NoResultException e) {
+      e.printStackTrace();
+      Logger.getLogger(ContentServiceJpa.class).info(
+          "Concept query for terminologyId = " + terminologyId
+              + ", terminology = " + terminology + ", terminologyVersion = "
+              + terminologyVersion + " returned no results!");
+      return null;
+    }
 	}
 
 	@SuppressWarnings("unchecked")
@@ -214,13 +213,11 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			conceptList.setConcepts(concepts);
 			return conceptList;
 		} catch (NoResultException e) {
+          e.printStackTrace();
+          Logger.getLogger(ContentServiceJpa.class).info(
+              "Concept query terminology = " + terminology + ", terminologyVersion = "
+                  + terminologyVersion + " returned no results!");
 			return null;
-			/*
-			 * throw new LocalException( "Concept query for terminologyId = " +
-			 * terminologyId + ", terminology = " + terminology +
-			 * ", terminologyVersion = " + terminologyVersion +
-			 * " returned no results!", e);
-			 */
 		}
 	}
 
@@ -443,11 +440,12 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 							+ " and version " + terminologyVersion);
 			return null;
 		} catch (Exception e) {
-			Logger.getLogger(ContentServiceJpa.class).info(
-					"Unexpected exception retrieving relationship id for"
-							+ terminologyId + " for terminology " + terminology
-							+ " and version " + terminologyVersion);
-			return null;
+		  e.printStackTrace();
+		  Logger.getLogger(ContentServiceJpa.class).info(
+		      "Unexpected exception retrieving relationship id for"
+		          + terminologyId + " for terminology " + terminology
+		          + " and version " + terminologyVersion);
+		  return null;
 		}
 
 	}
@@ -471,7 +469,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 			Relationship c = (Relationship) query.getSingleResult();
 			return c;
 		} catch (Exception e) {
-
+		  e.printStackTrace();
 			Logger.getLogger(ContentServiceJpa.class).info(
 					"Relationship query for terminologyId = " + terminologyId
 							+ ", terminology = " + terminology
