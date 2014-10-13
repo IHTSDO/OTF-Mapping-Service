@@ -51,30 +51,22 @@ public class ReportResultJpa implements ReportResult {
 	/** The date value string */
 	@Column(nullable = true)
 	private String dateValue;
+	
+	/** The qualified user */
+	@Column(nullable = true)
+	private String qualifiedUserName;
 
 	/** The ct. */
 	@Column(nullable = true)
 	private long ct;
 
-	/** The report result items. */
+	/** The report result items. 
+	 * NOTE:  These are set to @XmlTransient below due to the potentiall huge size of the list
+	 */
 	@OneToMany(mappedBy = "reportResult", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = ReportResultItemJpa.class)
 	private List<ReportResultItem> reportResultItems = new ArrayList<>();
 
-	/**
-	 * The reportResultNotes.
-	 *
-	 * @return the report
-	 */
-	/*
-	 * @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER,
-	 * orphanRemoval = true, targetEntity = ReportNoteJpa.class) private
-	 * List<ReportNote> reportResultNotes = new ArrayList<>();
-	 */
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.reports.ReportResult#getReport()
-	 */
+	
 	@Override
 	@XmlTransient
 	public Report getReport() {
@@ -262,6 +254,7 @@ public class ReportResultJpa implements ReportResult {
 	 * @return the report result items
 	 */
 	@Override
+	@XmlTransient
 	public List<ReportResultItem> getReportResultItems() {
 		return reportResultItems;
 	}
@@ -281,6 +274,14 @@ public class ReportResultJpa implements ReportResult {
 	@Override
 	public void setReportResultItems(List<ReportResultItem> reportResultItems) {
 		this.reportResultItems = reportResultItems;
+	}
+
+	@Override
+	public void addReportResultItem(ReportResultItem reportResultItem) {
+		if (this.reportResultItems == null)
+			this.reportResultItems = new ArrayList<>();
+		this.reportResultItems.add(reportResultItem);
+		
 	}
 
 	/*

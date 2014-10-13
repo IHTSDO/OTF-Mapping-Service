@@ -5,24 +5,40 @@ import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.ReportType;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Interface ReportDefinition.
  */
 public interface ReportDefinition {
+	
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
+	public Long getId();
 
 	/**
-	 * Gets the report type.
+	 * Sets the id.
 	 *
-	 * @return the report type
+	 * @param id the new id
 	 */
-	public ReportType getReportType();
+	public void setId(Long id);
 
 	/**
-	 * Sets the report type.
+	 * Gets the report name.
 	 *
-	 * @param reportType the new report type
+	 * @return the report name
 	 */
-	public void setReportType(ReportType reportType);
+	public String getReportName();
+
+	/**
+	 * Sets the report name.
+	 *
+	 * @param reportName the new report name
+	 */
+	public void setReportName(String reportName);
+
 
 	/**
 	 * Gets the result type.
@@ -74,10 +90,18 @@ public interface ReportDefinition {
 	public MapUserRole getRoleRequired();
 
 	/**
-	 * Sets the role required.
+	 * Gets the report type.
 	 *
-	 * @param roleRequired the new role required
+	 * @return the report type
 	 */
-	public void setRoleRequired(MapUserRole roleRequired);
+	public ReportType getReportType();
 
+	/**
+	 * Sets the report type.
+	 *
+	 * @param reportType the new report type
+	 */
+	public void setReportType(ReportType reportType);
+
+	
 }
