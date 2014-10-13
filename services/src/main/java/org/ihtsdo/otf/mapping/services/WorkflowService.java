@@ -469,12 +469,13 @@ public interface WorkflowService extends RootService {
 	 *
 	 * @param mapProjectId the map project id
 	 * @param userName the user name
+	 * @param query the query
 	 * @param pfsParameter the pfs parameter
 	 * @return the feedback conversations for project
 	 * @throws Exception the exception
 	 */
-	public FeedbackConversationList getFeedbackConversationsForProject(Long mapProjectId, String userName,
-		PfsParameter pfsParameter)
+	public FeedbackConversationList findFeedbackConversationsForProject(Long mapProjectId, String userName,
+		String query, PfsParameter pfsParameter)
 		throws Exception;
 
 	/**
