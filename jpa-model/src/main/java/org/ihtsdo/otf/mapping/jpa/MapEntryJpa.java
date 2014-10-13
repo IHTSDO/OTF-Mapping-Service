@@ -134,7 +134,7 @@ public class MapEntryJpa implements MapEntry {
 	public MapEntryJpa(MapEntry mapEntry, boolean keepIds) {
 		super();
 
-		System.out.println("Deep copying entry.");
+		// System.out.println("Deep copying entry.");
 
 		// if deep copy not indicated, copy id, otherwise leave null
 		if (keepIds == false)
@@ -521,22 +521,22 @@ public class MapEntryJpa implements MapEntry {
 	 */
 	@Override
 	public boolean isEquivalent(MapEntry me) {
-		System.out.println("Comparing map entries");
-		System.out.println("   Targets:  " + this.targetId + " <=>" + me.getTargetId());
-		System.out.println("   Rules:    " + this.rule + "  <=> " + me.getRule());
-		System.out.println("   Realtion: " + this.mapRelation.getName() + " <=> " + me.getMapRelation().getName());
+		// System.out.println("Comparing map entries");
+		// System.out.println("   Targets:  " + this.targetId + " <=>" + me.getTargetId());
+		// System.out.println("   Rules:    " + this.rule + "  <=> " + me.getRule());
+		// System.out.println("   Realtion: " + this.mapRelation.getName() + " <=> " + me.getMapRelation().getName());
 
 		// targets must be equal
 		if (! this.targetId.equals(me.getTargetId()))
 			return false;
 		
-		System.out.println("  Targets equal");
+		// System.out.println("  Targets equal");
 
 		// rules must be identical
 		if (! this.rule.equals(me.getRule()))
 			return false;
 		
-		System.out.println("  Rules equal");
+		// System.out.println("  Rules equal");
 
 		// relation must be identical
 		if (this.mapRelation != null) {
@@ -559,7 +559,7 @@ public class MapEntryJpa implements MapEntry {
 			return false;
 		}
 
-		System.out.println("  Relations equal");
+		// System.out.println("  Relations equal");
 		// advices must be identical
 		if (this.mapAdvices == null && me.getMapAdvices() != null) {
 			return false;
@@ -574,9 +574,9 @@ public class MapEntryJpa implements MapEntry {
 			}
 		}
 		
-		System.out.println("  Advices equal");
+		// System.out.println("  Advices equal");
 		
-		System.out.println("Entries equivalent.");
+		// System.out.println("Entries equivalent.");
 
 		return true;
 	}
