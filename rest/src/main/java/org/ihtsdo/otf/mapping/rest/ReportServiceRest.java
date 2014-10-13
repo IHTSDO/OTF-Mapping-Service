@@ -11,10 +11,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
+import org.ihtsdo.otf.mapping.helpers.ReportDefinitionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportList;
+import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
+import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
 import org.ihtsdo.otf.mapping.helpers.ReportType;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
@@ -22,6 +25,8 @@ import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
+import org.ihtsdo.otf.mapping.reports.ReportDefinition;
+import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 import org.ihtsdo.otf.mapping.reports.ReportJpa;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
@@ -56,7 +61,7 @@ public class ReportServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/definition/definitions")
-	@ApiOperation(value = "Get all currently defined reports", notes = "Returns all report definitions in either JSON or XML format", response = MapProjectListJpa.class)
+	@ApiOperation(value = "Get all currently defined reports", notes = "Returns all report definitions in either JSON or XML format", response = ReportDefinitionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public ReportDefinitionList getReportDefinitions(
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -88,11 +93,79 @@ public class ReportServiceRest extends RootServiceRest {
 
 	}
 	
+	@POST
+	@Path("/definition/add")
+	@ApiOperation(value = "Add a report definition", notes = "Adds a report definition based on a JSON or XML object", response = ReportDefinitionJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public ReportDefinition addReportDefinitions(
+			@ApiParam(value = "The report definition to add", required = true) ReportDefinitionJpa reportDefinition,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Report):  /definition/definitions");
+		String user = "";
+		
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve map projects.")
+								.build());
+			
+			// get the reports
+			ReportService reportService = new ReportServiceJpa();
+			ReportDefinition definition = reportService.addReportDefinition(reportDefinition);
+			reportService.close();
+			
+			return definition;
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve all reports", user, "", "");
+			return null;
+		}
+
+	}
+	
+	@POST
+	@Path("/definition/update")
+	@ApiOperation(value = "Updates a report definition", notes = "Updates the attached report definition", response = Response.class )
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public void updateReportDefinitions(
+			@ApiParam(value = "Report definition to update", required = true) ReportDefinitionJpa definition,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Report):  /definition/definitions");
+		String user = "";
+		
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve map projects.")
+								.build());
+			
+			// get the reports
+			ReportService reportService = new ReportServiceJpa();
+			reportService.updateReportDefinition(definition);
+			reportService.close();
+
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve all reports", user, "", "");
+		}
+
+	}
+	
 	@GET
 	@Path("/report/reports")
-	@ApiOperation(value = "Get all reports", notes = "Returns all reports in either JSON or XML format", response = MapProjectListJpa.class)
+	@ApiOperation(value = "Get all reports", notes = "Returns all reports in either JSON or XML format", response = ReportDefinitionListJpa.class )
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public ReportList getReport(
+	public ReportList getReports(
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -124,17 +197,18 @@ public class ReportServiceRest extends RootServiceRest {
 	}
 	
 	@POST
-	@Path("/report/add")
-	@ApiOperation(value = "Add a report", notes = "Adds the specified report.", response = MapProjectListJpa.class)
+	@Path("/report/reports/project/id/{projectId}")
+	@ApiOperation(value = "Get all reports of a certain type", notes = "Returns all reports in either JSON or XML format", response = ReportListJpa.class )
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Report addReport(
-			@ApiParam(value = "Report, in JSON or XML POST data", required = true) ReportJpa report,
+	public ReportList getReportsForMapProject(
+			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+			@ApiParam(value = "Paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping):  /project/projects");
-		String user = "(not retrieved)";
-		String mapProjectName = "(not retrieved)";
+				"RESTful call (Report):  /report/reports");
+		String user = "";
+		String projectName = "";
 		
 		try {
 			// authorize call
@@ -147,37 +221,124 @@ public class ReportServiceRest extends RootServiceRest {
 								.entity("User does not have permissions to retrieve map projects.")
 								.build());
 			
-			// get the project for this report -- used for error reporting
 			MappingService mappingService = new MappingServiceJpa();
-			mapProjectName = mappingService.getMapProject(report.getMapProjectId()).getName();
+			MapProject mapProject = mappingService.getMapProject(projectId);
+			projectName = mapProject.getName();
 			mappingService.close();
 			
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
-			Report reportAdded = reportService.addReport(report);
+			ReportList reportList = reportService.getReportsForMapProjectAndReportType(mapProject, null, pfsParameter);
 			reportService.close();
 			
-			return reportAdded;
+			return reportList;
 		} catch (Exception e) {
+			handleException(e, "trying to retrieve all reports", user, projectName, "");
+			return null;
+		}
+
+	}
+	
+	@POST
+	@Path("/report/reports/project/id/{projectId}/type/{reportType}")
+	@ApiOperation(value = "Get all reports of a certain type", notes = "Returns all reports in either JSON or XML format", response = ReportListJpa.class )
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public ReportList getReportsForMapProjectAndReportType(
+			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+			@ApiParam(value = "Type of report", required = true) @PathParam("reportType") String reportType,
+			@ApiParam(value = "Paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Report):  /report/reports");
+		String user = "";
+		String projectName = "";
+		
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve map projects.")
+								.build());
 			
-			handleException(e, "trying to add a report", user, mapProjectName, "");
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(projectId);
+			projectName = mapProject.getName();
+			mappingService.close();
+			
+			// get the reports
+			ReportService reportService = new ReportServiceJpa();
+			ReportList reportList = reportService.getReportsForMapProjectAndReportType(mapProject, reportType, pfsParameter);
+			reportService.close();
+			
+			return reportList;
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve all reports", user, projectName, "");
 			return null;
 		}
 
 	}
 	
 	@GET
-	@Path("/report/generate/project/id/{projectId}/user/id/{userName}/definition/id/{definitionName}")
-	@ApiOperation(value = "Add a report", notes = "Returns all MapProjects in either JSON or XML format", response = MapProjectListJpa.class)
+	@Path("/report/project/id/{projectId}/type/{reportType}")
+	@ApiOperation(value = "Get most recent report of a certain type", notes = "Returns the most recent report given a report type in either JSON or XML format", response = ReportJpa.class )
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public Report generateReport(
+	public Report getLastReportForReportType(
 			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
-			@ApiParam(value = "User generating report", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Type of report to generate", required = true) @PathParam("definitionName") String definitionName,
+			@ApiParam(value = "Type of report", required = true) @PathParam("reportType") String reportType,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Report):  /report/generate/project/id/" + projectId + "/user/id/" + userName + "/definition/id/" + definitionName);
+				"RESTful call (Report):  /report/project/id" + projectId + "/type/" + reportType);
+		String user = "";
+		String projectName = "";
+		
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve map projects.")
+								.build());
+			
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(projectId);
+			projectName = mapProject.getName();
+			mappingService.close();
+			
+			// get the reports
+			ReportService reportService = new ReportServiceJpa();
+			Report report = reportService.getLastReportForReportType(mapProject, reportType);
+			reportService.close();
+			
+			return report;
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve all reports", user, projectName, "");
+			return null;
+		}
+
+	}
+	
+	
+	@POST
+	@Path("/report/generate/project/id/{projectId}/user/id/{userName}/type/{reportType}")
+	@ApiOperation(value = "Add a report", notes = "Returns all MapProjects in either JSON or XML format", response = ReportJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public Report generateReport(
+			@ApiParam(value = "The report definition name", required = true)  @PathParam("reportType") String reportType,
+			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+			@ApiParam(value = "User generating report", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Report):  /report/generate/project/id/" + projectId + "/user/id/" + userName + "/type/" + reportType	);
 		
 		String mapProjectName = "(not retrieved)";
 		String user = "(not retrieved)";
@@ -203,13 +364,56 @@ public class ReportServiceRest extends RootServiceRest {
 			mappingService.close();
 			
 			ReportService reportService = new ReportServiceJpa();
-			report = reportService.generateReport(mapProject, mapUser, "test report", ReportType.valueOf(definitionName), null, false);
+			ReportDefinition reportDefinition = reportService.getReportDefinition(ReportType.valueOf(reportType));
+			report = reportService.generateReport(mapProject, mapUser, reportDefinition.getReportName(), reportDefinition, null, false);
 			reportService.close();
 			
 			return report;
 		} catch (Exception e) {
 			
-			handleException(e, "trying to add a report", userName, mapProjectName, "");
+			handleException(e, "trying to generate a report", userName, mapProjectName, "");
+			return null;
+			
+		}
+	}
+	
+	@POST
+	@Path("/reportResult/id/{reportResultId}/items")
+	@ApiOperation(value = "Add a report", notes = "Returns all MapProjects in either JSON or XML format", response = ReportJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public ReportResultItemList getReportResults(
+			@ApiParam(value = "The paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Report id", required = true) @PathParam("reportResultId") Long reportResultId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Report):  /reportResult/id/" + reportResultId + "/items/");
+		
+		String mapProjectName = "(not retrieved)";
+		String user = "(not retrieved)";
+		
+		Report report = null;
+		
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve map projects.")
+								.build());
+			
+			ReportService reportService = new ReportServiceJpa();
+			ReportResultItemList reportResultItemList = reportService.getReportResultItemsForReportResult(reportResultId, pfsParameter);
+			
+			reportService.close();
+			
+			return reportResultItemList;
+		} catch (Exception e) {
+			
+			handleException(e, "trying to retrieve report result items", user, reportResultId.toString(), "");
 			return null;
 			
 		}

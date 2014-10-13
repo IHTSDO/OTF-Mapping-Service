@@ -722,7 +722,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 * @param authToken
 	 */
 	@POST
-	@Path("/assignBatch/project/id/{projectId}/user/id/{userName}")
+	@Path("/assignBatch/project/id/{id}/user/id/{userName}")
     @ApiOperation(value = "Assign user to batch of concepts.", notes = "Assigns specified user to map the specified list of concept ids for the specified project.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void assignBatch(
@@ -733,7 +733,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 		Logger.getLogger(WorkflowServiceRest.class).info(
 				"RESTful call (Workflow): /assignBatch/project/id/"
-						+ mapProjectId.toString() + "/user/id/" + userName);
+						+ mapProjectId + "/user/id/" + userName);
 
 		WorkflowService workflowService = null;
 		MappingService mappingService = null;

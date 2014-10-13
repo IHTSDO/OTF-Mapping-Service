@@ -275,6 +275,32 @@
 				</plugins>
 			</build>
 		</profile>
+		
+		<!-- Remove reports for a project -->
+		<profile>
+			<id>Reports</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.ihtsdo.otf.mapping</groupId>
+						<artifactId>mapping-admin-mojo</artifactId>
+						<version>${project.version}</version>
+						<executions>
+							<execution>
+								<id>remove-map-advice</id>
+								<phase>package</phase>
+								<goals>
+									<goal>remove-reports</goal>
+								</goals>
+								<configuration>
+									<refSetId>${refset.id}</refSetId>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 
 	</profiles>
 </project>
