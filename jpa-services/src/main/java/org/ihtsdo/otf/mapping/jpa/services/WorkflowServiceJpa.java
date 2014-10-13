@@ -3846,9 +3846,49 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		MappingService mappingService = new MappingServiceJpa();
 		MapProjectList projects = mappingService.getMapProjects();
 		for (MapProject project : projects.getMapProjects()) {
-			if (project.getDestinationTerminology().equals("ICD9CM"))
+			if (project.getDestinationTerminology().equals("ICD9CM") && 
+					project.getErrorMessages().size() == 0) {
 				icd9cmProjectId = project.getId();
+				Set<String> errorMessages = new HashSet<>();
+				errorMessages.add("Map Group is not relevant");
+				errorMessages.add("Map Group has been omitted");
+				errorMessages.add("Sequencing of Map Groups is incorrect");
+				errorMessages
+				.add("Target code selection for a map record is in error");
+				errorMessages.add("Map parameter assignment is in error");
+				errorMessages.add("Map parameter missing or incomplete");
+				errorMessages.add("Other");
+				
+				project.setErrorMessages(errorMessages);
+				mappingService.updateMapProject(project);
+				
+			} else if (project.getErrorMessages().size() == 0) {
+				Set<String> errorMessages = new HashSet<>();
+				errorMessages.add("Map Group is not relevant");
+				errorMessages.add("Map Group has been omitted");
+				errorMessages.add("Sequencing of Map Groups is incorrect");
+				errorMessages
+						.add("The number of map records per group is incorrect");
+				errorMessages
+						.add("Target code selection for a map record is in error");
+				errorMessages.add("Map rule type assignment is in error");
+				errorMessages.add("Map target type assignment is in error");
+				errorMessages.add("Map advice missing or incomplete");
+				errorMessages.add("Map advice assignment is in error");
+				errorMessages
+						.add("Mapping Personnel Handbook principle not followed");
+				errorMessages.add("Gender rule is not relevant");
+				errorMessages.add("Gender rule has been omitted");
+				errorMessages.add("Age rule is not relevant");
+				errorMessages.add("Age rule has been omitted");
+				errorMessages.add("Other");
+
+				project.setErrorMessages(errorMessages);
+				mappingService.updateMapProject(project);
+			}
 		}
+		
+		
 
 		for (FeedbackConversation conversation : conversations) {
 			for (Feedback feedback : conversation.getFeedbacks()) {
