@@ -57,7 +57,7 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	});
 	
 
-    $scope.retrieveFeedback = function(page, feedbackType) {
+    $scope.retrieveFeedback = function(page, feedbackType, query) {
     	
     	if ($scope.currentRole == 'Viewer')
   		  return;
@@ -80,7 +80,8 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	  	$rootScope.glassPane++;
 	
 		$http({
-			url: root_workflow + "conversation/project/id/" + $scope.focusProject.id + "/" + $scope.currentUser.userName,
+			url: root_workflow + "conversation/project/id/" + $scope.focusProject.id + "/" 
+			  + $scope.currentUser.userName + "/query/" + query,
 			dataType: "json",
 			data: pfsParameterObj,
 			method: "POST",

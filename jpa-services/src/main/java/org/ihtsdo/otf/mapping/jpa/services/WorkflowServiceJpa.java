@@ -358,13 +358,13 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 	}
 
-	private static String constructTrackingRecordForMapProjectIdQuery(
+	private static String constructMapProjectIdQuery(
 			Long mapProjectId, String query) {
 
 		String full_query;
 
 		// if no filter supplied, return query based on map project id only
-		if (query == null || query.equals("") || query.equals("null")) {
+		if (query == null || query.equals("") || query.equals("null") || query.equals("undefined")) {
 			full_query = "mapProjectId:" + mapProjectId;
 			return full_query;
 		}
@@ -568,7 +568,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Query luceneQuery;
 
 		// construct basic query
-		String full_query = constructTrackingRecordForMapProjectIdQuery(
+		String full_query = constructMapProjectIdQuery(
 				mapProject.getId(), query);
 
 		// add the query terms specific to findAvailableWork
@@ -673,7 +673,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Query luceneQuery;
 
 		// construct basic query
-		String full_query = constructTrackingRecordForMapProjectIdQuery(
+		String full_query = constructMapProjectIdQuery(
 				mapProject.getId(), query);
 
 		// add the query terms specific to findAvailableConflicts
@@ -754,7 +754,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Query luceneQuery;
 
 		// construct basic query
-		String full_query = constructTrackingRecordForMapProjectIdQuery(
+		String full_query = constructMapProjectIdQuery(
 				mapProject.getId(), query);
 
 		// add the query terms specific to findAvailableReviewWork
@@ -857,7 +857,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Query luceneQuery;
 
 		// construct basic query
-		String full_query = constructTrackingRecordForMapProjectIdQuery(
+		String full_query = constructMapProjectIdQuery(
 				mapProject.getId(), query);
 
 		// add the query terms specific to findAssignedWork
@@ -1067,7 +1067,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Query luceneQuery;
 
 		// construct basic query
-		String full_query = constructTrackingRecordForMapProjectIdQuery(
+		String full_query = constructMapProjectIdQuery(
 				mapProject.getId(), query);
 
 		// add the query terms specific to findAssignedConflicts
@@ -1216,7 +1216,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Query luceneQuery;
 
 		// construct basic query
-		String full_query = constructTrackingRecordForMapProjectIdQuery(
+		String full_query = constructMapProjectIdQuery(
 				mapProject.getId(), query);
 
 		// add the query terms specific to findAssignedReviewWork
@@ -3569,12 +3569,12 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 	}
 
 	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#getFeedbackConversationsForProject(java.lang.Long, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#findFeedbackConversationsForProject(java.lang.Long, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
 	 */
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	public FeedbackConversationList getFeedbackConversationsForProject(
-			Long mapProjectId, String userName, PfsParameter pfsParameter)
+	public FeedbackConversationList findFeedbackConversationsForProject(
+			Long mapProjectId, String userName, String query, PfsParameter pfsParameter)
 			throws Exception {
 
 		MappingService mappingService = new MappingServiceJpa();
@@ -3582,7 +3582,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		mappingService.close();
 
 		// construct basic query
-		String full_query = " mapProjectId:" + mapProjectId + " AND terminology:" + mapProject.getDestinationTerminology()
+		String full_query = constructMapProjectIdQuery(
+						mapProject.getId(), query);
+		
+		full_query += " AND terminology:" + mapProject.getDestinationTerminology()
 				+ " AND terminologyVersion:"
 				+ mapProject.getDestinationTerminologyVersion() + " AND "
 				+ "( feedbacks.sender.userName:" + userName + " OR "
@@ -3591,16 +3594,16 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// add terms based on query restriction
 		switch (pfsParameter.getQueryRestriction()) {
 		case "DISCREPANCY_REVIEW_FEEDBACK":
-			full_query += " AND title:\"Discrepancy Review Feedback\"";
+			full_query += " AND title:Discrepancy Review Feedback";
 			break;
 		case "ERROR_FEEDBACK":
-			full_query += " AND title:\"Error Feedback\"";
+			full_query += " AND title:Error Feedback";
 			break;
 		case "GROUP_FEEDBACK":
-			full_query += " AND title:\"Group Feedback\"";
+			full_query += " AND title:Group Feedback";
 			break;
 		case "FEEDBACK":
-			full_query += " AND title:\"Feedback\"";
+			full_query += " AND title:Feedback NOT title:Discrepancy NOT title:Error NOT title:Group";
 			break;
 		default:
 			break;
