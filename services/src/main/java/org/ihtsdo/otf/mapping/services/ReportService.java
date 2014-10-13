@@ -9,6 +9,8 @@ import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
 import org.ihtsdo.otf.mapping.helpers.ReportList;
+import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
+import org.ihtsdo.otf.mapping.helpers.ReportResultList;
 import org.ihtsdo.otf.mapping.helpers.ReportType;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -342,6 +344,16 @@ public interface ReportService {
 	 * @param mapProject the map project
 	 */
 	public void removeReportsForMapProject(MapProject mapProject);
+
+	/**
+	 * Gets the report result items for report result.
+	 *
+	 * @param reportResultId the report result id
+	 * @param pfsParameter the pfs parameter
+	 * @return the report result items for report result
+	 */
+	public ReportResultItemList getReportResultItemsForReportResult(Long reportResultId,
+			PfsParameter pfsParameter);
 
 
 
