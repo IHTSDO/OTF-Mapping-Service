@@ -60,7 +60,9 @@ public class ReportResultJpa implements ReportResult {
 	@Column(nullable = true)
 	private long ct;
 
-	/** The report result items. */
+	/** The report result items. 
+	 * NOTE:  These are set to @XmlTransient below due to the potentiall huge size of the list
+	 */
 	@OneToMany(mappedBy = "reportResult", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = ReportResultItemJpa.class)
 	private List<ReportResultItem> reportResultItems = new ArrayList<>();
 
@@ -252,6 +254,7 @@ public class ReportResultJpa implements ReportResult {
 	 * @return the report result items
 	 */
 	@Override
+	@XmlTransient
 	public List<ReportResultItem> getReportResultItems() {
 		return reportResultItems;
 	}

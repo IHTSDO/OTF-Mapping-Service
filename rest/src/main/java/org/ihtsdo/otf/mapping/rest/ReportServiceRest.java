@@ -17,6 +17,7 @@ import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
 import org.ihtsdo.otf.mapping.helpers.ReportDefinitionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
+import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
 import org.ihtsdo.otf.mapping.helpers.ReportType;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
@@ -371,6 +372,48 @@ public class ReportServiceRest extends RootServiceRest {
 		} catch (Exception e) {
 			
 			handleException(e, "trying to generate a report", userName, mapProjectName, "");
+			return null;
+			
+		}
+	}
+	
+	@POST
+	@Path("/reportResult/id/{reportResultId}/items")
+	@ApiOperation(value = "Add a report", notes = "Returns all MapProjects in either JSON or XML format", response = ReportJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public ReportResultItemList getReportResults(
+			@ApiParam(value = "The paging/filtering/sorting object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Report id", required = true) @PathParam("reportResultId") Long reportResultId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Report):  /reportResult/id/" + reportResultId + "/items/");
+		
+		String mapProjectName = "(not retrieved)";
+		String user = "(not retrieved)";
+		
+		Report report = null;
+		
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve map projects.")
+								.build());
+			
+			ReportService reportService = new ReportServiceJpa();
+			ReportResultItemList reportResultItemList = reportService.getReportResultItemsForReportResult(reportResultId, pfsParameter);
+			
+			reportService.close();
+			
+			return reportResultItemList;
+		} catch (Exception e) {
+			
+			handleException(e, "trying to retrieve report result items", user, reportResultId.toString(), "");
 			return null;
 			
 		}
