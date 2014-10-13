@@ -1874,14 +1874,15 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 * @return the feedback conversations for map project
 	 */
 	@POST
-	@Path("/conversation/project/id/{id:[0-9][0-9]*}/{userName}")
+	@Path("/conversation/project/id/{id:[0-9][0-9]*}/{userName}/query/{query}")
 	@ApiOperation(value = "Get feedback conversations by map project", notes = "Gets a list of feedback conversations for the specified map project and user.", response = FeedbackConversationListJpa.class)
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@CookieParam(value = "userInfo")
-	public FeedbackConversationList getFeedbackConversationsForMapProjectAndUser(
+	public FeedbackConversationList findFeedbackConversationsForMapProjectAndUser(
 			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+		    @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
 			@ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
@@ -1889,6 +1890,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Mapping): /conversation/project/id/"
 						+ mapProjectId.toString() + " userName: " + userName
+						+ " query: " + query
 						+ " with PfsParameter: " + "\n"
 						+ "     Index/Results = "
 						+ Integer.toString(pfsParameter.getStartIndex()) + "/"
@@ -1912,7 +1914,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			WorkflowService workflowService = new WorkflowServiceJpa();
 			FeedbackConversationList feedbackConversationList = workflowService
-					.getFeedbackConversationsForProject(mapProjectId, userName,
+					.findFeedbackConversationsForProject(mapProjectId, userName, query,
 							pfsParameter);
 			workflowService.close();
 			return feedbackConversationList;

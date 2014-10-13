@@ -1,7 +1,7 @@
 
 <form>
   <input ng-model="query"> <input type="submit" value="Search"
-    ng-click="retrieveFeedback(1, feedbackType)"> <input type="submit" value="Reset"
+    ng-click="retrieveFeedback(1, feedbackType, query)"> <input type="submit" value="Reset"
     ng-click="resetSearch()">
     &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
 </form>
@@ -12,15 +12,15 @@
   
       <form>
         <input type="radio" ng-model="feedbackType" value="ALL"
-          ng-change="retrieveFeedback(1, feedbackType)">All</input>
+          ng-change="retrieveFeedback(1, feedbackType, query)">All</input>
         <input type="radio" ng-model="feedbackType" value="FEEDBACK"
-          ng-change="retrieveFeedback(1, feedbackType)">Feedback</input>
+          ng-change="retrieveFeedback(1, feedbackType, query)">Feedback</input>
         <input type="radio" ng-model="feedbackType" value="GROUP_FEEDBACK"
-          ng-change="retrieveFeedback(1, feedbackType)">Group Feedback</input>
+          ng-change="retrieveFeedback(1, feedbackType, query)">Group Feedback</input>
         <input type="radio" ng-model="feedbackType" value="ERROR_FEEDBACK"
-          ng-change="retrieveFeedback(1, feedbackType)">Error Feedback</input>
+          ng-change="retrieveFeedback(1, feedbackType, query)">Error Feedback</input>
         <input type="radio" ng-model="feedbackType" value="DISCREPANCY_REVIEW_FEEDBACK"
-          ng-change="retrieveFeedback(1, feedbackType)">Discrepancy Feedback</input>
+          ng-change="retrieveFeedback(1, feedbackType, query)">Discrepancy Feedback</input>
       </form>
 
 <div ng-show="feedbackConversations.length > 0">
