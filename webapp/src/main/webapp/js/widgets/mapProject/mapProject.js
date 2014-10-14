@@ -159,7 +159,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 				    $rootScope.handleHttpError(data, status, headers, config);
 				});
 			}
-		};	
+		};			
 		
 		$scope.showDelta = function() {
 			

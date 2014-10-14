@@ -1790,59 +1790,47 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	}
 
 	/**
-	 * TODO: Is this used? Should require map project id
-	 * 
 	 * Given a concept, returns a list of descendant concepts that have no
 	 * associated map record.
-	 * 
-	 * @param terminologyId
-	 *            the terminology id
-	 * @param terminology
-	 *            the terminology
-	 * @param terminologyVersion
-	 *            the terminology version
-	 * @param thresholdLlc
-	 *            the maximum number of descendants a concept can have before it
-	 *            is no longer considered a low-level concept (i.e. return an
-	 *            empty list)
-	 * @param pfsParameter
-	 *            the pfs parameter
+	 *
+	 * @param terminologyId            the terminology id
+	 * @param mapProjectId the map project id
+	 * @param pfsParameter            the pfs parameter
 	 * @return the list of unmapped descendant concepts
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception             the exception
 	 */
 	@Override
 	public SearchResultList findUnmappedDescendantsForConcept(
-			String terminologyId, String terminology,
-			String terminologyVersion, int thresholdLlc,
+			String terminologyId, Long mapProjectId, 
 			PfsParameter pfsParameter) throws Exception {
-
+		
+		MapProject project = getMapProject(mapProjectId);
 		SearchResultList unmappedDescendants = new SearchResultListJpa();
 
 		// get hierarchical rel
 		MetadataService metadataService = new MetadataServiceJpa();
 		Map<String, String> hierarchicalRelationshipTypeMap = metadataService
-				.getHierarchicalRelationshipTypes(terminology,
-						terminologyVersion);
+				.getHierarchicalRelationshipTypes(project.getSourceTerminology(),
+						project.getSourceTerminologyVersion());
 		if (hierarchicalRelationshipTypeMap.keySet().size() > 1) {
 			throw new IllegalStateException(
 					"Map project source terminology has too many hierarchical relationship types - "
-							+ terminology);
+							+ project.getSourceTerminology());
 		}
 		if (hierarchicalRelationshipTypeMap.keySet().size() < 1) {
 			throw new IllegalStateException(
 					"Map project source terminology has too few hierarchical relationship types - "
-							+ terminology);
+							+ project.getSourceTerminology());
 		}
 
 		// get descendants -- no pfsParameter, want all results
 		ContentService contentService = new ContentServiceJpa();
 		SearchResultList descendants = contentService.findDescendantConcepts(
-				terminologyId, terminology, terminologyVersion, null);
+				terminologyId, project.getSourceTerminology(), project.getSourceTerminologyVersion(), null);
 
 		// if number of descendants <= low-level concept threshold, treat as
 		// high-level concept and report no unmapped
-		if (descendants.getCount() <= thresholdLlc) {
+		if (descendants.getCount() <= project.getPropagationDescendantThreshold()) {
 
 			// cycle over descendants
 			for (SearchResult sr : descendants.getSearchResults()) {

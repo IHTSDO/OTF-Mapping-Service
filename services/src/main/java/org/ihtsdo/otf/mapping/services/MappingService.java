@@ -385,26 +385,17 @@ public interface MappingService extends RootService {
 	public MapRecordList getMapRecordsForConcept(String terminologyId)
 			throws Exception;
 
+
 	/**
 	 * Returns the unmapped descendants for concept.
-	 * 
-	 * @param terminologyId
-	 *            the terminology id
-	 * @param terminology
-	 *            the terminology
-	 * @param terminologyVersion
-	 *            the terminology version
-	 * @param threshold
-	 *            the threshold
-	 * @param pfsParameter
-	 * @return the unmapped descendants for concept
-	 * @throws Exception
-	 *             the exception
+	 *
+	 * @param terminologyId the terminology id
+	 * @param mapProjectId the map project id
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 * @throws Exception the exception
 	 */
-	public SearchResultList findUnmappedDescendantsForConcept(
-			String terminologyId, String terminology,
-			String terminologyVersion, int threshold, PfsParameter pfsParameter)
-			throws Exception;
+	public SearchResultList findUnmappedDescendantsForConcept( String terminologyId, Long mapProjectId, PfsParameter pfsParameter) throws Exception;
 
 	/**
 	 * Creates the map records for map project.

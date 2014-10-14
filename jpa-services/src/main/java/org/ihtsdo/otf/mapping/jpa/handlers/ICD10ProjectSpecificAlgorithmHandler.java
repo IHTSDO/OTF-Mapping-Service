@@ -460,20 +460,4 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler
-	 * #
-	 * isPropagatedRecordForReleaseProcessing(org.ihtsdo.otf.mapping.model.MapRecord
-	 * )
-	 */
-	@Override
-	public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord) {
-
-		// for ICD10 project, a map record is up-propagated if the descendant
-		// count is less than 11
-		return mapRecord.getCountDescendantConcepts() < 11;
-	}
 }
