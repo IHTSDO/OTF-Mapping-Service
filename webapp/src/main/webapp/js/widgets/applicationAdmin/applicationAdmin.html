@@ -63,16 +63,17 @@
                      ng-options="item for item in [true, false]">
                 </select>
                 </td></tr>
-                </tbody></table>
-            </td> 
-            <td>
-                <table><tbody>
                 <tr>
                 <td>Public:</td>
                 <td><select ng-model="project.public" ng-change="setEditingPerformed(project)"
                      ng-options="item for item in [true, false]">
                 </select></td>
                 </tr>
+                </tbody></table>
+            </td> 
+            <td>
+                <table><tbody>
+
                 <tr>
                 <td style="padding-top:5px; padding-bottom:5px;">Scope Desc:</td> 
                 <td><select ng-model="project.scopeDescendantsFlag" ng-change="setEditingPerformed(project)"
@@ -84,6 +85,17 @@
                 <td><select ng-model="project.scopeExcludedDescendantsFlag" ng-change="setEditingPerformed(project)"
                      ng-options="item for item in [true, false]">
                 </select>
+                </td></tr>
+                <tr>
+                <td>Propagated:</td> 
+                <td><select ng-model="project.propagatedFlag" ng-change="setEditingPerformed(project)"
+                     ng-options="item for item in [true, false]">
+                </select>
+                </td></tr>
+                <tr ng-show="project.propagatedFlag == true">
+                <td>Propagation Threshold:</td> 
+                <td><input ng-model="project.propagationDescendantThreshold" ng-change="setEditingPerformed(project)"
+                  style="width:85%;"></input>
                 </td></tr>
                 </tbody></table>
             </td> 
