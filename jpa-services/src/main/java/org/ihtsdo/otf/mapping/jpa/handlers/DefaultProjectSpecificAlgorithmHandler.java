@@ -1712,13 +1712,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 					// if map records validation is successful, publish
 					if (validationResult.isValid() == true) {
+						
+						Logger.getLogger(
+								DefaultProjectSpecificAlgorithmHandler.class)
+								.info("NON_LEGACY_PATH - No conflicts detected.");
 
 						newRecords = publish(trackingRecord, mapRecords,
 								mapUser);
 
-						Logger.getLogger(
-								DefaultProjectSpecificAlgorithmHandler.class)
-								.info("NON_LEGACY_PATH - No conflicts detected.");
+						
 
 					} else {
 
