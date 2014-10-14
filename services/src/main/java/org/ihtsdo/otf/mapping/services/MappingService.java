@@ -39,7 +39,8 @@ public interface MappingService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void close() throws Exception;
+	@Override
+  public void close() throws Exception;
 
 	// ////////////////////////////
 	// Basic retrieval services //
@@ -415,6 +416,7 @@ public interface MappingService extends RootService {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
+	 * @param mapUser 
 	 * @param complexMapRefSetMembers
 	 *            the complex map ref set members
 	 * @param workflowStatus
@@ -655,7 +657,8 @@ public interface MappingService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public boolean getTransactionPerOperation() throws Exception;
+	@Override
+  public boolean getTransactionPerOperation() throws Exception;
 
 	/**
 	 * Sets the transaction per operation.
@@ -665,7 +668,8 @@ public interface MappingService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void setTransactionPerOperation(boolean transactionPerOperation)
+	@Override
+  public void setTransactionPerOperation(boolean transactionPerOperation)
 			throws Exception;
 
 	/**
@@ -674,7 +678,8 @@ public interface MappingService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void beginTransaction() throws Exception;
+	@Override
+  public void beginTransaction() throws Exception;
 
 	/**
 	 * Commit.
@@ -682,7 +687,8 @@ public interface MappingService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void commit() throws Exception;
+	@Override
+  public void commit() throws Exception;
 
 	/**
 	 * Returns the most recent map record revision.
@@ -924,8 +930,8 @@ public interface MappingService extends RootService {
 
 	/**
 	 * Simple routine to removes a map advice from the environment
+	 * @param mapAdvice 
 	 *
-	 * @param mapAdviceId the map advice name
 	 * @throws Exception 
 	 */
 	public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice) throws Exception;
