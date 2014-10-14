@@ -42,7 +42,7 @@
 				</plugins>
 			</build>
 		</profile>
-		
+
 		<!-- QA Map Groups for project -->
 		<profile>
 			<id>MapGroups</id>
@@ -62,6 +62,30 @@
 								<configuration>
 									<refSetId>${refset.id}</refSetId>
 									<mode>${mode}</mode>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>FinishSpecialistEditing</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.ihtsdo.otf.mapping</groupId>
+						<artifactId>mapping-admin-mojo</artifactId>
+						<version>${project.version}</version>
+						<executions>
+							<execution>
+								<id>finish-specialist-editing</id>
+								<phase>package</phase>
+								<goals>
+									<goal>finish-specialist-editing</goal>
+								</goals>
+								<configuration>
+									<refSetId>${refset.id}</refSetId>
 								</configuration>
 							</execution>
 						</executions>
