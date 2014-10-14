@@ -3823,6 +3823,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void fixErrorMessages() throws Exception {
 		List<FeedbackConversation> conversations = null;
@@ -3904,6 +3905,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		mappingService.close();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void fixFeedbackErrorFlag() throws Exception {
 		List<FeedbackConversation> conversations = null;

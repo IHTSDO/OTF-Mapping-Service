@@ -5,8 +5,6 @@ import java.io.FileReader;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -720,7 +718,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public ReportList getReportsForMapProject(MapProject mapProject,
 			PfsParameter pfsParameter) {
@@ -819,19 +816,47 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		// get all report definitions
 		ReportDefinitionList reportDefinitions = this.getReportDefinitions();
-
+		
+	
 		// cycle over dates until end date is passed
 		while (startDate.compareTo(endDate) <= 0) {
+			
+			cal.setTime(startDate);
 
 			Logger.getLogger(ReportServiceJpa.class).info(
 					"  Generating reports for " + startDate.toString());
 
 			for (ReportDefinition reportDefinition : reportDefinitions
 					.getIterable()) {
+				
+				boolean isProperDate = false;
+				
+				switch (reportDefinition.getTimePeriod()) {
+				case ANNUALLY:
+					// do nothing
+					break;
+				case DAILY:
+					isProperDate = true;
+					break;
+				case MONTHLY:
+					if (cal.get(Calendar.DAY_OF_MONTH) == 1) 
+						isProperDate = true;
+					break;
+				case WEEKLY:
+					if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY )
+						isProperDate = true;
+					break;
+				default:
+					throw new Exception("Report definition found with invalid time period.");
 
-				this.generateReport(mapProject, mapUser,
-						reportDefinition.getReportName(), reportDefinition,
-						startDate, true);
+				}
+				
+				if (isProperDate == true) {
+
+					this.generateReport(mapProject, mapUser,
+							reportDefinition.getReportName(), reportDefinition,
+							startDate, true);
+				}
 
 			}
 
@@ -867,8 +892,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		// expect the date to be lacking time, convert to end-of-day time
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
-		// System.out.println(Long.toString(cal.getTimeInMillis()));
-		// System.out.println(Long.toString(cal.getTimeInMillis()));
 
 		query = query.replaceAll(":MAP_PROJECT_ID:", mapProject.getId()
 				.toString());
@@ -876,20 +899,35 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		// if a diff report, replace the second time stamp
 		if (reportDefinition.isDiffReport() == true) {
+			
+			// modify date by appropriate increment
+			switch(reportDefinition.getTimePeriod()) {
+			case ANNUALLY:
+				cal.add(Calendar.YEAR, -1);
+				break;
+			case DAILY:
+				cal.add(Calendar.DAY_OF_MONTH, -1);
+				break;
+			case MONTHLY:
+				cal.add(Calendar.MONTH, -1);
+				break;
+			case WEEKLY:
+				cal.add(Calendar.DAY_OF_MONTH, -7);
+				break;
+			default:
+				break;
+			
+			}
 
-			// System.out.println("Diff report");
-
-			// decrement the start date
-			cal.setTime(date);
-			cal.add(Calendar.DATE, -reportDefinition.getTimePeriodInDays());
+			// replace the second timestamp with the modified date
 			query = query.replaceAll(":TIMESTAMP2:",
 					Long.toString(cal.getTimeInMillis()));
+			
 		} else if (reportDefinition.isRateReport() == true) {
-			// System.out.println("Rate report");
-		} else {
-			// System.out.println("Not a diff or rate report");
+			// do nothing, not yet implemented
 		}
-		/*
+		
+		/* TODO:  This provides some interesting problems with parsing in SQL, escape characters do not provide correct result
 		 * query = query.replaceAll("$\\{MAP_PROJECT_ID\\}", mapProject.getId()
 		 * .toString()); query = query.replaceAll("$\\{TIMESTAMP\\}",
 		 * Long.toString(date.getTime()));
@@ -935,10 +973,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 			// get the ids corresponding to reports to be diffed
 			try {
 				resultSet.next();
-				// System.out.println(resultSet.getString("itemId"));
 				report.setReport1Id(new Long(resultSet.getString("itemId")));
 				resultSet.next();
-				// System.out.println(resultSet.getString("itemId"));
 				report.setReport2Id(new Long(resultSet.getString("itemId")));
 			} catch (SQLException e) {
 				Logger.getLogger(ReportServiceJpa.class).warn(
@@ -952,19 +988,10 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 			// get the two reports
 			Report report1 = getReport(report.getReport1Id());
 			Report report2 = getReport(report.getReport2Id());
-
-			// System.out.println("Report 1 has " + report1.getResults().size()
-			//		+ " results");
-			// System.out.println("Report 2 has " + report2.getResults().size()
-			//		+ " results");
-
-			List<ReportResult> reportResults = new ArrayList<>();
-
+			
 			// cycle over first result and find matching values in the second
 			// report
 			for (ReportResult result1 : report1.getResults()) {
-
-				// System.out.println("  Checking result " + result1.getId());
 
 				ReportResult resultDiff = new ReportResultJpa();
 				resultDiff.setReport(report);
@@ -973,39 +1000,17 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 				for (ReportResult result2 : report2.getResults()) {
 					if (result1.getValue().equals(result2.getValue())) {
-						resultDiff.setValue(result1.getValue());
+						resultDiff.setValue("Items added since last report");
 						resultDiff.setCt(result1.getCt() - result2.getCt());
 
-						/*ReportResultItemList itemList = getReportResultItemsAdded(
-								result1, result2);
-						for (ReportResultItem item : itemList.getReportResultItems()) {
-							item.setReportResult(resultDiff);
-						}
-							
-						
-						resultDiff
-								.setReportResultItems(itemList.getReportResultItems());
-*/
 						matchingValueFound = true;
-
-						// System.out.println("    Found match with "
-						//		+ result2.getId());
 					}
 				}
 
 				if (matchingValueFound == false) {
-					// System.out.println("    No match found");
+					
 					resultDiff.setValue(result1.getValue());
 					resultDiff.setCt(result1.getCt());
-					/*for (ReportResultItem item1 : result1
-							.getReportResultItems()) {
-						ReportResultItem item = new ReportResultItemJpa();
-						item.setItemId(item1.getItemId());
-						item.setItemName(item1.getItemName());
-						item.setResultType(item1.getResultType());
-						item.setReportResult(resultDiff);
-						resultDiff.addReportResultItem(item);
-					}*/
 				}
 
 				report.addResult(resultDiff);
@@ -1016,8 +1021,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 			// (i.e. removed values)
 			for (ReportResult result2 : report2.getResults()) {
 				
-				// System.out.println("Checking result in result2 with id " + result2.getId() + " and ct = " + result2.getCt());
-				
 				boolean matchingValueFound = false;
 				for (ReportResult result1 : report1.getResults()) {
 					if (result1.getValue().equals(result2.getValue()))
@@ -1025,27 +1028,12 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 				}
 
 				if (matchingValueFound == false) {
-					// System.out.println("  Match not found");
+
 					ReportResult resultDiff = new ReportResultJpa();
 					resultDiff.setReport(report);
-					resultDiff.setValue(result2.getValue());
+					resultDiff.setValue("Items removed since previous report");
 					resultDiff.setCt(-result2.getCt());
-					
-					/*ReportResultItemList itemList = getReportResultItemsAdded(
-							result2, null);
-					for (ReportResultItem item : itemList.getReportResultItems()) {
-						item.setReportResult(resultDiff);
-					}
-						
-					
-					resultDiff
-							.setReportResultItems(itemList.getReportResultItems());
-					
-					
-					resultDiff.setReportResultItems(this
-							.getReportResultItemsAdded(result2, null)
-							.getReportResultItems());
-					*/
+
 					report.addResult(resultDiff);
 				}
 			}
