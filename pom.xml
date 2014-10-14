@@ -28,16 +28,38 @@
     <module>admin</module>
   </modules>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>external.atlassian.jgitflow</groupId>
+        <artifactId>jgitflow-maven-plugin</artifactId>
+        <configuration>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <enableSshAgent>true</enableSshAgent>
+          <noDeploy>true</noDeploy>
+          <flowInitContext>
+            <masterBranchName>master</masterBranchName>
+            <developBranchName>develop</developBranchName>
+            <featureBranchPrefix>feature-</featureBranchPrefix>
+            <releaseBranchPrefix>release-</releaseBranchPrefix>
+            <hotfixBranchPrefix>hotfix-</hotfixBranchPrefix>
+            <versionTagPrefix>version-</versionTagPrefix>
+          </flowInitContext>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <distributionManagement>
     <repository>
       <id>ihtsdo-public-nexus</id>
       <name>IHTSDO Public Nexus Releases</name>
-      <url>https://maven.ihtsdotools.org/content/repositories/releases/</url>
+      <url>https://nexus.ihtsdotools.org/content/repositories/releases/</url>
     </repository>
     <snapshotRepository>
       <id>ihtsdo-public-nexus</id>
       <name>IHTSDO Public Nexus Snapshots</name>
-      <url>https://maven.ihtsdotools.org/content/repositories/snapshots/</url>
+      <url>https://nexus.ihtsdotools.org/content/repositories/snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
 
