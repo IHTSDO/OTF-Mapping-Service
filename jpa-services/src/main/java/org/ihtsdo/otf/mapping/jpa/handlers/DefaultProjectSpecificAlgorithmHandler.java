@@ -2251,7 +2251,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 	@Override
 	public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord) {
-		return false;
+
+		// for ICD10 project, a map record is up-propagated if the descendant
+		// count is less than 11
+		return mapRecord.getCountDescendantConcepts() < mapProject.getPropagationDescendantThreshold();
 	}
 	
 }
