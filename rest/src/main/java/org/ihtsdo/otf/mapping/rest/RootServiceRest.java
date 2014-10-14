@@ -298,7 +298,7 @@ public class RootServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			for (String recipient : feedbackEmail.getRecipients()) {
 				MapUser mapUser = mappingService.getMapUser(recipient);
-				System.out.println(mapUser.getEmail());
+				// System.out.println(mapUser.getEmail());
 				msg.addRecipient(Message.RecipientType.TO, new InternetAddress(mapUser.getEmail()));	
 			}
 			

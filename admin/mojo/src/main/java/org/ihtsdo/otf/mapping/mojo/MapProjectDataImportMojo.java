@@ -130,7 +130,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 						mappingService.getMapAdvices().getMapAdvices();
 				for (MapAdvice advice : advices) {
 					if (!currentAdvices.contains(advice)) {
-						System.out.println("ready to add " + advice);
+						// System.out.println("ready to add " + advice);
 						advice.setId(null);
 						mappingService.addMapAdvice(advice);
 					}
@@ -141,7 +141,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 						mappingService.getMapPrinciples().getMapPrinciples();
 				for (MapPrinciple principle : principles) {
 					if (!currentPrinciples.contains(principle)) {
-						System.out.println("ready to add " + principle);
+						// System.out.println("ready to add " + principle);
 						principle.setId(null);
 						mappingService.addMapPrinciple(principle);
 					}
@@ -152,7 +152,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 						mappingService.getMapRelations().getMapRelations();
 				for (MapRelation relation : relations) {
 					if (!currentRelations.contains(relation)) {
-						System.out.println("ready to add " + relation);
+						// System.out.println("ready to add " + relation);
 						relation.setId(null);
 						mappingService.addMapRelation(relation);
 					}
@@ -163,7 +163,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 						mappingService.getMapAgeRanges().getMapAgeRanges();
 				for (MapAgeRange mapAgeRange : ageRanges) {
 					if (!currentAgeRanges.contains(mapAgeRange)) {
-						System.out.println("ready to add " + mapAgeRange);
+						// System.out.println("ready to add " + mapAgeRange);
 						mapAgeRange.setId(null);
 						mappingService.addMapAgeRange(mapAgeRange);
 					}
@@ -175,21 +175,21 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				List<MapUser> currentUsers = mappingService.getMapUsers().getMapUsers();
 				for (MapUser user : leads) {
 					if (!currentUsers.contains(user)) {
-						System.out.println("ready to add " + user);
+						// System.out.println("ready to add " + user);
 						user.setId(null);
 						mappingService.addMapUser(user);
 					}
 				}
 				for (MapUser user : specialists) {
 					if (!currentUsers.contains(user)) {
-						System.out.println("ready to add " + user);
+						// System.out.println("ready to add " + user);
 						user.setId(null);
 						mappingService.addMapUser(user);
 					}
 				}
 				for (MapUser user : admins) {
 					if (!currentUsers.contains(user)) {
-						System.out.println("ready to add " + user);
+						// System.out.println("ready to add " + user);
 						user.setId(null);
 						mappingService.addMapUser(user);
 					}

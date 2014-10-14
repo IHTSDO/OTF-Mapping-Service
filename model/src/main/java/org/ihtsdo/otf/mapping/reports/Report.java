@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.reports;
 
-import java.util.Date;
 import java.util.List;
 
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
@@ -64,7 +63,7 @@ public interface Report {
 	 * 
 	 * @return the timestamp
 	 */
-	public Date getTimestamp();
+	public Long getTimestamp();
 
 	/**
 	 * Sets the timestamp.
@@ -72,7 +71,7 @@ public interface Report {
 	 * @param timestamp
 	 *            the new timestamp
 	 */
-	public void setTimestamp(Date timestamp);
+	public void setTimestamp(Long timestamp);
 
 	/**
 	 * Gets the map project id.
@@ -255,11 +254,33 @@ public interface Report {
 	 */
 	public void setReport2Id(Long report);
 
+	
 	/**
-	 * Checks if is comparison report.
-	 * 
-	 * @return true, if is comparison report
+	 * Checks if is diff report.
+	 *
+	 * @return true, if is diff report
 	 */
-	public boolean isComparisonReport();
+	public boolean isDiffReport();
+
+	/**
+	 * Sets the diff report.
+	 *
+	 * @param isDiffReport the new diff report
+	 */
+	public void setDiffReport(boolean isDiffReport);
+
+	/**
+	 * Checks if is rate report.
+	 *
+	 * @return true, if is rate report
+	 */
+	public boolean isRateReport();
+
+	/**
+	 * Sets the rate report.
+	 *
+	 * @param isRateReport the new rate report
+	 */
+	public void setRateReport(boolean isRateReport);
 
 }
