@@ -101,6 +101,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	public ContentServiceJpa() throws Exception {
 		super();
+		initializeFieldNames();
 	}
 
 
@@ -2255,11 +2256,11 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	public ConceptList getConceptsModifiedSinceDate(String terminology,
 			Date date, PfsParameter pfsParameter) throws Exception {
 		ConceptList results = new ConceptListJpa();
-
+		Date localDate = date;
 		javax.persistence.Query query;
-
-		if (pfsParameter == null)
-			pfsParameter = new PfsParameterJpa();
+		PfsParameter localPfsParameter = pfsParameter;
+		if (localPfsParameter == null)
+			localPfsParameter = new PfsParameterJpa();
 
 		// if no date provided, get the latest modified concepts
 		query = manager.createQuery(
@@ -2271,8 +2272,8 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
         Logger.getLogger(ContentServiceJpa.class).info(
             "Max date   = " + tempDate.toString());
 
-		if (date == null) {
-			date = tempDate;
+		if (localDate == null) {
+			localDate = tempDate;
 
 		} else {
 			// System.out.println("Date input = " + date.toString());
@@ -2287,23 +2288,23 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				.forEntity(ConceptJpa.class).get();
 
 		Query luceneQuery;
-		if (pfsParameter.getQueryRestriction() == null) {
+		if (localPfsParameter.getQueryRestriction() == null) {
 			luceneQuery = qb
 					.bool()
-					.must(qb.keyword().onField("effectiveTime").matching(date)
+					.must(qb.keyword().onField("effectiveTime").matching(localDate)
 							.createQuery())
 					.must(qb.keyword().onField("terminology")
 							.matching(terminology).createQuery()).createQuery();
 		} else {
 			luceneQuery = qb
 					.bool()
-					.must(qb.keyword().onField("effectiveTime").matching(date)
+					.must(qb.keyword().onField("effectiveTime").matching(localDate)
 							.createQuery())
 					.must(qb.keyword().onField("terminology")
 							.matching(terminology).createQuery())
 					.must(qb.keyword()
 							.onFields("terminologyId", "defaultPreferredName")
-							.matching(pfsParameter.getQueryRestriction())
+							.matching(localPfsParameter.getQueryRestriction())
 							.createQuery()).createQuery();
 
 		}
@@ -2313,10 +2314,10 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, ConceptJpa.class);
 
-		if (pfsParameter.getStartIndex() != -1
-				&& pfsParameter.getMaxResults() != -1) {
-			ftquery.setFirstResult(pfsParameter.getStartIndex());
-			ftquery.setMaxResults(pfsParameter.getMaxResults());
+		if (localPfsParameter.getStartIndex() != -1
+				&& localPfsParameter.getMaxResults() != -1) {
+			ftquery.setFirstResult(localPfsParameter.getStartIndex());
+			ftquery.setMaxResults(localPfsParameter.getMaxResults());
 
 		}
 		results.setTotalCount(ftquery.getResultSize());

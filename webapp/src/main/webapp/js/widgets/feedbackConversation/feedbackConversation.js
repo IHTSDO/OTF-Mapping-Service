@@ -101,7 +101,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 				console.debug($scope.record);
 				setTitle();
 				
-				// get the conflict records if they exist
+				// get the origin records if they exist
 				var originIds = $scope.record.originIds;
 				if (originIds != null && originIds.length > 0) {
 					$http({
@@ -154,22 +154,22 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 
     function setDisplayRecords() {
 	  if ($scope.currentRole == 'Lead') {
-		// keep main record and both conflict records if they exist
+		// keep main record and both origin records if they exist
 		// do nothing - keep all records
 	  } else if ($scope.currentRole == 'Specialist') {
 	    // check if owner of main record
 	    if ($scope.record.owner.userName == $scope.currentUser.userName) {
-	  	  // set blank conflict records
+	  	  // set blank origin records
 		  $scope.record1 = null;
 		  $scope.record2 = null;
 	    } else {
-	      // check if owner of either conflict record
+	      // check if owner of either origin record
 		  if ($scope.record1 != null && $scope.record1.owner.userName == $scope.currentUser.userName) {
-			// set blank main record and other conflict record
+			// set blank main record and other origin record
 			$scope.record = null;
 			$scope.record2 = null;
 		  } else if ($scope.record2 != null && $scope.record2.owner.userName == $scope.currentUser.userName) {
-			// set blank main record and other conflict record
+			// set blank main record and other origin record
 			$scope.record = null;
 			$scope.record1 = null;
 		  } else {  // specialist is not involved 
