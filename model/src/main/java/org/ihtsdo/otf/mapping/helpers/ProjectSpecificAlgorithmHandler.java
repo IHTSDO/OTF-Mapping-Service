@@ -10,7 +10,6 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface ProjectSpecificAlgorithmHandler.
  */
@@ -30,24 +29,6 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	 *            the new map project
 	 */
 	public void setMapProject(MapProject mapProject);
-
-	/**
-	 * Checks if the map advice is computable.
-	 * 
-	 * @param mapRecord
-	 *            the map record
-	 * @return true, if is map advice computable
-	 */
-	public boolean isMapAdviceComputable(MapRecord mapRecord);
-
-	/**
-	 * Checks if the map relation is computable.
-	 * 
-	 * @param mapRecord
-	 *            the map record
-	 * @return true, if is map relation computable
-	 */
-	public boolean isMapRelationComputable(MapRecord mapRecord);
 
 	/**
 	 * Performs basic checks against: - record with no entries - duplicate map
@@ -257,9 +238,18 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	 *            the map records
 	 * @param mapUser
 	 *            the map user
+	 * @return the published records.
 	 * @throws Exception
 	 *             the exception
 	 */
 	public Set<MapRecord> publish(TrackingRecord trackingRecord, Set<MapRecord> mapRecords,
 			MapUser mapUser) throws Exception;
+
+	/**
+	 * Checks if is propagated record for release processing.
+	 * @param mapRecord the map record to check
+	 *
+	 * @return true, if is propagated record for release processing
+	 */
+	public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord);
 }

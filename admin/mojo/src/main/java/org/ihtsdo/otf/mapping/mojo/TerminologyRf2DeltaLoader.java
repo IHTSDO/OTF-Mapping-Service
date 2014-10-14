@@ -1010,8 +1010,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
 	private void loadRelationships(BufferedReader reader) throws Exception {
 
-		System.out.println("Cached relationships size: "
-				+ relationshipCache.size());
 
 		String line = "";
 		objectCt = 0;
@@ -1080,7 +1078,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 					 * 
 					 * relationship = contentService.getRelationship(fields[0],
 					 * terminology, terminologyVersion);
-					 * System.out.println("  Complete");
+					 * // System.out.println("  Complete");
 					 */
 
 					if (relationship == null) {

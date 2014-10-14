@@ -30,7 +30,6 @@ import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class FeedbackConversationJpa.
  *
@@ -40,6 +39,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table(name = "feedback_conversations", uniqueConstraints = {
 		@UniqueConstraint(columnNames = {
 				"mapRecordId"
+		}),
+		@UniqueConstraint(columnNames = {
+				"mapProjectId", "id"
 		})
 })
 @Audited
@@ -60,7 +62,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 	
 	/** Flag for whether this feedback conversation is still active. */
 	@Column(nullable = false)
-	private boolean isActive = true;
+	private boolean isResolved = false;
 
 	/** Flag for whether this feedback conversation requires discrepancy review. */
 	@Column(nullable = false)
@@ -94,6 +96,14 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   /**  The default preferred name. */
   @Column(nullable = true, length = 4000)
   private String defaultPreferredName;
+	
+	/** The map project id. */
+	@Column(nullable = true)
+	private Long mapProjectId;
+	
+	/** The associated record owner's userName */
+	@Column(nullable = true, length = 4000)
+	private String userName;
 	
   /**
    * Returns the id.
@@ -134,22 +144,22 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   }
   
   /**
-   * Sets the active.
+   * Sets the status to resolved.
    *
-   * @param active the active
+   * @param resolved the resolved flag
    */
-  public void setActive(boolean active) {
-  	this.isActive = active;
+  public void setResolved(boolean resolved) {
+  	this.isResolved = resolved;
   }
   
   /**
-   * Indicates whether or not active is the case.
+   * Indicates whether or not resolved is the case.
    *
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  public boolean isActive() {
-  	return isActive;
+  public boolean isResolved() {
+  	return isResolved;
   }
   
   /**
@@ -313,6 +323,17 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 		return defaultPreferredName;
 	}
 
+	@Override
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+	
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	public String getUserName() {
+		return userName;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#setTitle(java.lang.String)
 	 */
@@ -336,5 +357,26 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 	@Override
 	public void addFeedback(Feedback feedback) {
 		this.feedbacks.add(feedback);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapProjectId()
+	 */
+	@Override
+	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+	public Long getMapProjectId() {
+		return mapProjectId;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapProjectId(java.lang.Long)
+	 */
+	@Override
+	public void setMapProjectId(Long mapProjectId) {
+		this.mapProjectId = mapProjectId;
 	}
 }

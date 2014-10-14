@@ -13,9 +13,10 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
       });
   }).controller('MapProjectWidgetCtrl', function($scope, $http, $rootScope, $location, $modal, localStorageService){
 	  
-	  // get the project
+	  // get the local storage variables
 	  $scope.project = localStorageService.get('focusProject');
 	  $scope.currentRole = localStorageService.get('currentRole');
+	  $scope.userToken = localStorageService.get('userToken');
 	  
 	  // watch for project change
   	  $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
@@ -25,7 +26,8 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
           console.debug($scope.project);
 	  });	
   	  
-  	$scope.userToken = localStorageService.get('userToken');
+
+  	 // the only local storage variable required for this app is userToken
 	$scope.$watch('userToken', function() {
 		
 		$http.defaults.headers.common.Authorization = $scope.userToken;
@@ -80,7 +82,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 		$scope.generateTestData = function() {
 
 			if ($scope.nConflicts == undefined || $scope.nConflicts == null) {
-				alert("You must specify the number of conflicts to be generated.")
+				alert("You must specify the number of conflicts to be generated.");
 			} else {
 
 				console.debug("Generating test data");
@@ -157,7 +159,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 				    $rootScope.handleHttpError(data, status, headers, config);
 				});
 			}
-		};	
+		};			
 		
 		$scope.showDelta = function() {
 			
@@ -219,7 +221,13 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 				});
 				
 				
-			}
+			};
 			$scope.getConcepts(1, null);
-		}
+		};
+		
+
+	    $scope.openConceptBrowser = function() {
+	    	var myWindow = window.open("http://dailybuild.ihtsdotools.org/index.html?perspective=full&diagrammingMarkupEnabled=true&acceptLicense=true", "browserWindow");
+	    	myWindow.focus();
+	    };
   });

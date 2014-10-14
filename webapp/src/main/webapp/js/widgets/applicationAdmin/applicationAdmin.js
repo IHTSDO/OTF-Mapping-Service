@@ -55,6 +55,8 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				$scope.allowableWorkflowTypes = [{displayName: 'Conflict Project', name: 'CONFLICT_PROJECT'},
 				                                 {displayName: 'Review Project', name: 'REVIEW_PROJECT'}];
 				$scope.newWorkflowType = $scope.allowableWorkflowTypes[0];
+				
+				$scope.newHandler;
 											
 				// watch for focus project change
 				$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -156,7 +158,23 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 						 $rootScope.handleHttpError(data, status, headers, config);
 					});
 
+					$http({
+						url: root_mapping + "handler/handlers",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
 
+					    $scope.handlers = new Array();
+						for (var i = 0; i < data.searchResult.length; i++) {
+						  $scope.handlers.push(data.searchResult[i].value);
+						}
+						$scope.newHandler = $scope.handlers[0];
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
 					// set pagination variables
 					$scope.pageSize = 5;
 					$scope.maxSize = 5;
@@ -341,6 +359,13 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					for (var i = $scope.allowableMapRelationStyles.length; i--;) {
 						if ($scope.allowableMapRelationStyles[i].name === project.mapRelationStyle)
 							return $scope.allowableMapRelationStyles[i];
+					}
+				};
+				
+				$scope.getHandler = function(project) {
+					for (var i = $scope.handlers.length; i--;) {
+						if ($scope.handlers[i].value === project.projectSpecificAlgorithmHandlerClass)
+							return $scope.handlers[i];
 					}
 				};
 				
@@ -1230,7 +1255,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 						newMapProjectRefSetId, newMapProjectPublished, newMapProjectRuleBased, 
 						newMapProjectGroupStructure, newMapProjectPublic, 
 					    newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag,
-					    newMapProjectMapType, newWorkflowType, newMapRelationStyle, 
+					    newMapProjectMapType, newWorkflowType, newMapRelationStyle, newHandler,
 					    newMapProjectMapPrincipleSourceDocumentName) {
 						
 						// get source and version and dest and version
@@ -1279,6 +1304,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 								"workflowType": newWorkflowType.name, 
 								"mapRelationStyle": newMapRelationStyle.name,
 								"public": newMapProjectPublic,
+								"projectSpecificAlgorithmHandlerClass": newHandler,
 								"scopeDescendantsFlag": newMapProjectScopeDescendantsFlag,
 								"scopeExcludedDescendantsFlag": newMapProjectScopeExcludedDescendantsFlag,
 								"mapPrincipleSourceDocumentName": newMapProjectMapPrincipleSourceDocumentName

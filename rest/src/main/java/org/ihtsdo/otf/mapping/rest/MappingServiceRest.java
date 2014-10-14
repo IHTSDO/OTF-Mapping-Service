@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -43,7 +44,10 @@ import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -72,6 +76,9 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
@@ -83,7 +90,7 @@ import com.wordnik.swagger.annotations.ApiParam;
  * The Mapping Services REST package
  */
 @Path("/mapping")
-@Api(value = "/mapping", description = "Operations supporting Map objects.")
+@Api(value = "/mapping", description = "Operations supporting map objects.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MappingServiceRest extends RootServiceRest {
 
@@ -91,6 +98,7 @@ public class MappingServiceRest extends RootServiceRest {
 
 	/**
 	 * Instantiates an empty {@link MappingServiceRest}.
+	 * @throws Exception 
 	 */
 	public MappingServiceRest() throws Exception {
 		securityService = new SecurityServiceJpa();
@@ -109,7 +117,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/project/projects")
-	@ApiOperation(value = "Get all projects", notes = "Returns all MapProjects in either JSON or XML format", response = MapProjectListJpa.class)
+	@ApiOperation(value = "Get map projects.", notes = "Gets a list of all map projects.", response = MapProjectListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectListJpa getMapProjects(
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -159,10 +167,10 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/project/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Get project by id", notes = "Returns a MapProject given a project id in either JSON or XML format", response = MapProject.class)
+	@ApiOperation(value = "Get map project by id.", notes = "Gets a map project for the specified parameters.", response = MapProject.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProject getMapProject(
-			@ApiParam(value = "Id of map project to fetch", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -212,9 +220,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@PUT
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/project/add")
-	@ApiOperation(value = "Add a project", notes = "Adds a MapProject", response = MapProjectJpa.class)
+	@ApiOperation(value = "Add a map project.", notes = "Adds the specified map project.", response = MapProjectJpa.class)
 	public MapProject addMapProject(
-			@ApiParam(value = "The map project to add. Must be in Json or Xml format", required = true) MapProjectJpa mapProject,
+			@ApiParam(value = "Map project, in JSON or XML POST data", required = true) MapProjectJpa mapProject,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -258,9 +266,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/project/update")
-	@ApiOperation(value = "Update a project", notes = "Updates a map project", response = MapProjectJpa.class)
+	@ApiOperation(value = "Update a map project.", notes = "Updates specified map project if it already exists.", response = MapProjectJpa.class)
 	public void updateMapProject(
-			@ApiParam(value = "The map project to update. Must exist in mapping database. Must be in Json or Xml format", required = true) MapProjectJpa mapProject,
+			@ApiParam(value = "Map project, in JSON or XML POST data", required = true) MapProjectJpa mapProject,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -303,9 +311,9 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@DELETE
 	@Path("/project/delete")
-	@ApiOperation(value = "Remove a project", notes = "Removes a map project", response = MapProject.class)
+	@ApiOperation(value = "Remove a map project.", notes = "Removes specified map project if it already exists.", response = MapProject.class)
 	public void removeMapProject(
-			@ApiParam(value = "Map project object to delete", required = true) MapProjectJpa mapProject,
+			@ApiParam(value = "Map project, in JSON or XML POST data", required = true) MapProjectJpa mapProject,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -345,10 +353,10 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/project/query/{String}")
-	@ApiOperation(value = "Find projects by query", notes = "Returns map projects for a query in either JSON or XML format", response = SearchResultList.class)
+	@ApiOperation(value = "Find map projects by query.", notes = "Gets a list of search results for map projects matching the lucene query.", response = SearchResultList.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList findMapProjectsForQuery(
-			@ApiParam(value = "lucene search string", required = true) @PathParam("String") String query,
+			@ApiParam(value = "Query, e.g. 'SNOMED to ICD10'", required = true) @PathParam("String") String query,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -387,10 +395,10 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/project/user/id/{username}")
-	@ApiOperation(value = "Get all projects for user", notes = "Returns a MapUser's MapProjects in either JSON or XML format", response = MapProjectListJpa.class)
+	@ApiOperation(value = "Get all map projects for a user.", notes = "Gets a list of map projects for the specified user.", response = MapProjectListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapProjectListJpa getMapProjectsForUser(
-			@ApiParam(value = "Username of map user to fetch projects for", required = true) @PathParam("username") String mapUserName,
+			@ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String mapUserName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -452,7 +460,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/user/users")
-	@ApiOperation(value = "Get all mapping users", notes = "Returns all MapUsers in either JSON or XML format", response = MapUserListJpa.class)
+	@ApiOperation(value = "Get all mapping users.", notes = "Gets all map users.", response = MapUserListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapUserListJpa getMapUsers(
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -500,10 +508,10 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/user/id/{username}")
-	@ApiOperation(value = "Get user by username", notes = "Returns a MapUser given a user name in either JSON or XML format", response = MapUser.class)
+	@ApiOperation(value = "Get user by username.", notes = "Gets a user by a username.", response = MapUser.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapUser getMapUser(
-			@ApiParam(value = "Username of MapUser to fetch", required = true) @PathParam("username") String mapUserName,
+			@ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String mapUserName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -541,9 +549,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@PUT
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/user/add")
-	@ApiOperation(value = "Add a user", notes = "Adds a MapUser", response = MapUserJpa.class)
+	@ApiOperation(value = "Add a user.", notes = "Adds the specified user.", response = MapUserJpa.class)
 	public MapUser addMapUser(
-			@ApiParam(value = "The map user to add. Must be in Json or Xml format", required = true) MapUserJpa mapUser,
+			@ApiParam(value = "User, in JSON or XML POST data", required = true) MapUserJpa mapUser,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -583,9 +591,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/user/update")
-	@ApiOperation(value = "Update a user", notes = "Updates a map user", response = MapUserJpa.class)
+	@ApiOperation(value = "Update a user.", notes = "Updates the specified user.", response = MapUserJpa.class)
 	public void updateMapUser(
-			@ApiParam(value = "The map user to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapUserJpa mapUser,
+			@ApiParam(value = "User, in JSON or XML POST data", required = true) MapUserJpa mapUser,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -620,9 +628,9 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@DELETE
 	@Path("/user/delete")
-	@ApiOperation(value = "Remove a user", notes = "Removes a map user", response = MapUser.class)
+	@ApiOperation(value = "Remove a user.", notes = "Removes the specified user.", response = MapUser.class)
 	public void removeMapUser(
-			@ApiParam(value = "The map user object to delete", required = true) MapUserJpa mapUser,
+			@ApiParam(value = "Map project, in JSON or XML POST data", required = true) MapUserJpa mapUser,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -662,7 +670,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/advice/advices")
-	@ApiOperation(value = "Get all mapping advices", notes = "Returns all MapAdvices in either JSON or XML format", response = MapAdviceListJpa.class)
+	@ApiOperation(value = "Get all mapping advices.", notes = "Gets a list of all map advices.", response = MapAdviceListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapAdviceListJpa getMapAdvices(
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -711,9 +719,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@PUT
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/advice/add")
-	@ApiOperation(value = "Add an advice", notes = "Adds a MapAdvice", response = MapAdviceJpa.class)
+	@ApiOperation(value = "Add an advice.", notes = "Adds the specified map advice.", response = MapAdviceJpa.class)
 	public MapUser addMapAdvice(
-			@ApiParam(value = "The map advice to add. Must be in Json or Xml format", required = true) MapAdviceJpa mapAdvice,
+			@ApiParam(value = "Map advice, in JSON or XML POST data", required = true) MapAdviceJpa mapAdvice,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -753,9 +761,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/advice/update")
-	@ApiOperation(value = "Update an advice", notes = "Updates a map advice", response = MapAdviceJpa.class)
+	@ApiOperation(value = "Update an advice.", notes = "Updates the specified advice.", response = MapAdviceJpa.class)
 	public void updateMapAdvice(
-			@ApiParam(value = "The map advice to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapAdviceJpa mapAdvice,
+			@ApiParam(value = "Map advice, in JSON or XML POST data", required = true) MapAdviceJpa mapAdvice,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -790,9 +798,9 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@DELETE
 	@Path("/advice/delete")
-	@ApiOperation(value = "Remove an advice", notes = "Removes a map advice", response = MapAdviceJpa.class)
+	@ApiOperation(value = "Remove an advice.", notes = "Removes the specified map advice.", response = MapAdviceJpa.class)
 	public void removeMapAdvice(
-			@ApiParam(value = "The map advice object to delete", required = true) MapAdviceJpa mapAdvice,
+			@ApiParam(value = "Map advice, in JSON or XML POST data", required = true) MapAdviceJpa mapAdvice,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -833,7 +841,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/ageRange/ageRanges")
-	@ApiOperation(value = "Get all mapping age ranges", notes = "Returns all MapAgeRanges in either JSON or XML format", response = MapAgeRangeListJpa.class)
+	@ApiOperation(value = "Get all mapping age ranges.", notes = "Gets a list of all mapping age ranges.", response = MapAgeRangeListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapAgeRangeListJpa getMapAgeRanges(
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -882,9 +890,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@PUT
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/ageRange/add")
-	@ApiOperation(value = "Add an age range", notes = "Adds a MapAgeRange", response = MapAgeRangeJpa.class)
+	@ApiOperation(value = "Add an age range.", notes = "Adds the specified age range.", response = MapAgeRangeJpa.class)
 	public MapUser addMapAgeRange(
-			@ApiParam(value = "The map ageRange to add. Must be in Json or Xml format", required = true) MapAgeRangeJpa mapAgeRange,
+			@ApiParam(value = "Age range, in JSON or XML POST data", required = true) MapAgeRangeJpa mapAgeRange,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -924,9 +932,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/ageRange/update")
-	@ApiOperation(value = "Update an age range", notes = "Updates a map age range", response = MapAgeRangeJpa.class)
+	@ApiOperation(value = "Update an age range.", notes = "Updates the specified age range.", response = MapAgeRangeJpa.class)
 	public void updateMapAgeRange(
-			@ApiParam(value = "The map age range to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapAgeRangeJpa mapAgeRange,
+			@ApiParam(value = "Age range, in JSON or XML POST data", required = true) MapAgeRangeJpa mapAgeRange,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -961,9 +969,9 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@DELETE
 	@Path("/ageRange/delete")
-	@ApiOperation(value = "Remove an age range", notes = "Removes a map age range", response = MapAgeRangeJpa.class)
+	@ApiOperation(value = "Remove an age range.", notes = "Removes the specified age range.", response = MapAgeRangeJpa.class)
 	public void removeMapAgeRange(
-			@ApiParam(value = "The map age range object to delete", required = true) MapAgeRangeJpa mapAgeRange,
+			@ApiParam(value = "Age range, in JSON or XML POST data", required = true) MapAgeRangeJpa mapAgeRange,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1004,7 +1012,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/relation/relations")
-	@ApiOperation(value = "Get all relations", notes = "Returns all MapRelations in either JSON or XML format", response = MapRelationListJpa.class)
+	@ApiOperation(value = "Get all relations.", notes = "Gets a list of all map relations.", response = MapRelationListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRelationListJpa getMapRelations(
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -1052,9 +1060,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@PUT
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/relation/add")
-	@ApiOperation(value = "Add an relation", notes = "Adds a MapRelation", response = MapRelationJpa.class)
+	@ApiOperation(value = "Add a map relation.", notes = "Adds the specified map relation.", response = MapRelationJpa.class)
 	public MapUser addMapRelation(
-			@ApiParam(value = "The map relation to add. Must be in Json or Xml format", required = true) MapRelationJpa mapRelation,
+			@ApiParam(value = "Map relation, in JSON or XML POST data", required = true) MapRelationJpa mapRelation,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1094,9 +1102,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/relation/update")
-	@ApiOperation(value = "Update an relation", notes = "Updates a map relation", response = MapRelationJpa.class)
+	@ApiOperation(value = "Update a map relation.", notes = "Updates the specified map relation.", response = MapRelationJpa.class)
 	public void updateMapRelation(
-			@ApiParam(value = "The map relation to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRelationJpa mapRelation,
+			@ApiParam(value = "Map relation, in JSON or XML POST data", required = true) MapRelationJpa mapRelation,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1131,9 +1139,9 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@DELETE
 	@Path("/relation/delete")
-	@ApiOperation(value = "Remove an relation", notes = "Removes a map relation", response = MapRelationJpa.class)
+	@ApiOperation(value = "Remove a map relation.", notes = "Removes the specified map relation.", response = MapRelationJpa.class)
 	public void removeMapRelation(
-			@ApiParam(value = "The map relation object to delete", required = true) MapRelationJpa mapRelation,
+			@ApiParam(value = "Map relation, in JSON or XML POST data", required = true) MapRelationJpa mapRelation,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1175,7 +1183,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/principle/principles")
-	@ApiOperation(value = "Get all principles", notes = "Returns all MapPrinciples in either JSON or XML format", response = MapPrincipleListJpa.class)
+	@ApiOperation(value = "Get all map principles.", notes = "Gets a list of all map principles.", response = MapPrincipleListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapPrincipleListJpa getMapPrinciples(
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -1222,10 +1230,10 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/principle/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Get principle", notes = "Returns a MapPrinciple given a principle id in either JSON or XML format", response = MapPrinciple.class)
+	@ApiOperation(value = "Get a map principle.", notes = "Gets a map principle for the specified id.", response = MapPrinciple.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapPrinciple getMapPrinciple(
-			@ApiParam(value = "Id of map principle to fetch", required = true) @PathParam("id") Long mapPrincipleId,
+			@ApiParam(value = "Map principle identifer", required = true) @PathParam("id") Long mapPrincipleId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1268,9 +1276,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/principle/add")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Add a map principle object", notes = "Adds a MapPrinciple", response = MapPrincipleJpa.class)
+	@ApiOperation(value = "Add a map principle.", notes = "Adds the specified map principle.", response = MapPrincipleJpa.class)
 	public MapPrinciple addMapPrinciple(
-			@ApiParam(value = "The map principle object to add. Must be in Json or XML format", required = true) MapPrincipleJpa mapPrinciple,
+			@ApiParam(value = "Map principle, in JSON or XML POST data", required = true) MapPrincipleJpa mapPrinciple,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1309,10 +1317,10 @@ public class MappingServiceRest extends RootServiceRest {
 	@POST
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Path("/principle/update")
-	@ApiOperation(value = "Update principle", notes = "Updates a MapPrinciple. Must exist in mapping database. Must be in Json or Xml format", response = MapPrincipleJpa.class)
+	@ApiOperation(value = "Update a map principle.", notes = "Updates the specified map principle.", response = MapPrincipleJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void updateMapPrinciple(
-			@ApiParam(value = "Map Principle to update", required = true) MapPrincipleJpa mapPrinciple,
+			@ApiParam(value = "Map principle, in JSON or XML POST data", required = true) MapPrincipleJpa mapPrinciple,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1348,9 +1356,9 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@DELETE
 	@Path("/principle/delete")
-	@ApiOperation(value = "Remove map principle", notes = "Removes a map principle")
+	@ApiOperation(value = "Remove a map principle.", notes = "Removes the specified map principle.")
 	public void removeMapPrinciple(
-			@ApiParam(value = "Map user preferences object to remove", required = true) MapPrincipleJpa principle,
+			@ApiParam(value = "Map principle, in JSON or XML POST data", required = true) MapPrincipleJpa principle,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1386,20 +1394,20 @@ public class MappingServiceRest extends RootServiceRest {
 	/**
 	 * Gets a map user preferences object for a specified user
 	 * 
-	 * @param userName
+	 * @param username
 	 * @param authToken
 	 * @return result the newly created map user preferences object
 	 */
 	@GET
-	@Path("/userPreferences/user/id/{userName}")
+	@Path("/userPreferences/user/id/{username}")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Gets a user preferences object", notes = "Gets a MapUserPreferences object for a given userName", response = MapUserPreferencesJpa.class)
+	@ApiOperation(value = "Get user preferences.", notes = "Gets user preferences for the specified username.", response = MapUserPreferencesJpa.class)
 	public MapUserPreferences getMapUserPreferences(
-			@ApiParam(value = "The map user's user name", required = true) @PathParam("userName") String userName,
+			@ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String username,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call:  /userPreferences/user/id/" + userName);
+				"RESTful call:  /userPreferences/user/id/" + username);
 
 		String user = "";
 		try {
@@ -1415,7 +1423,7 @@ public class MappingServiceRest extends RootServiceRest {
 
 			MappingService mappingService = new MappingServiceJpa();
 			MapUserPreferences result = mappingService
-					.getMapUserPreferences(userName);
+					.getMapUserPreferences(username);
 			mappingService.close();
 			return result;
 		} catch (Exception e) {
@@ -1436,9 +1444,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/userPreferences/add")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Add a user preferences object", notes = "Adds a MapUserPreferences", response = MapUserPreferencesJpa.class)
+	@ApiOperation(value = "Add user preferences.", notes = "Adds the specified user preferences.", response = MapUserPreferencesJpa.class)
 	public MapUserPreferences addMapUserPreferences(
-			@ApiParam(value = "The map user preferences object to add. Must be in Json or XML format", required = true) MapUserPreferencesJpa mapUserPreferences,
+			@ApiParam(value = "User preferences, in JSON or XML POST data", required = true) MapUserPreferencesJpa mapUserPreferences,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1481,9 +1489,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@POST
 	@Path("/userPreferences/update")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Update user preferences", notes = "Updates a set of map user preferences", response = MapUserPreferencesJpa.class)
+	@ApiOperation(value = "Update user preferences.", notes = "Updates the specified user preferences.", response = MapUserPreferencesJpa.class)
 	public void updateMapUserPreferences(
-			@ApiParam(value = "The map user preferences to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapUserPreferencesJpa mapUserPreferences,
+			@ApiParam(value = "User preferences, in JSON or XML POST data", required = true) MapUserPreferencesJpa mapUserPreferences,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1524,9 +1532,9 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@DELETE
 	@Path("/userPreferences/remove")
-	@ApiOperation(value = "Remove user preferences", notes = "Removes a set of map user preferences")
+	@ApiOperation(value = "Remove user preferences.", notes = "Removes specified user preferences.")
 	public void removeMapUserPreferences(
-			@ApiParam(value = "Map user preferences object to remove", required = true) MapUserPreferencesJpa mapUserPreferences,
+			@ApiParam(value = "User preferences, in JSON or XML POST data", required = true) MapUserPreferencesJpa mapUserPreferences,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1575,10 +1583,10 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/record/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Get record by id", notes = "Returns a MapRecord given a record id in either JSON or XML format", response = MapRecord.class)
+	@ApiOperation(value = "Get map record by id.", notes = "Gets a map record for the specified id.", response = MapRecord.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecord getMapRecord(
-			@ApiParam(value = "Id of map record to fetch", required = true) @PathParam("id") Long mapRecordId,
+			@ApiParam(value = "Map record id", required = true) @PathParam("id") Long mapRecordId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -1623,9 +1631,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/record/add")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Add a record", notes = "Adds a MapRecord", response = MapRecordJpa.class)
+	@ApiOperation(value = "Add a map record.", notes = "Adds the specified map record.", response = MapRecordJpa.class)
 	public MapRecord addMapRecord(
-			@ApiParam(value = "The map record to add. Must be in Json or XML format", required = true) MapRecordJpa mapRecord,
+			@ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1666,9 +1674,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/record/update")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Update a record", notes = "Updates a map record", response = Response.class)
+	@ApiOperation(value = "Update a map record.", notes = "Updates the specified map record.", response = Response.class)
 	public void updateMapRecord(
-			@ApiParam(value = "The map record to update.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord,
+			@ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1707,9 +1715,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@DELETE
 	@Path("/record/delete")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Remove a record", notes = "Removes a map record", response = MapRecordJpa.class)
+	@ApiOperation(value = "Remove a map record.", notes = "Removes the specified map record.", response = MapRecordJpa.class)
 	public Response removeMapRecord(
-			@ApiParam(value = "Map Record object to delete", required = true) MapRecordJpa mapRecord,
+			@ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1748,11 +1756,11 @@ public class MappingServiceRest extends RootServiceRest {
 	 * @return the mapRecords
 	 */
 	@GET
-	@Path("/record/concept/id/{terminologyId}")
-	@ApiOperation(value = "Get records by concept id", notes = "Returns MapRecords given a concept id in either JSON or XML format", response = MapRecord.class)
+	@Path("/record/concept/id/{conceptId}")
+	@ApiOperation(value = "Get map records by concept id.", notes = "Gets a list of map records for the specified concept id.", response = MapRecord.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public MapRecordListJpa getMapRecordsForTerminologyId(
-			@ApiParam(value = "Concept id of map record to fetch", required = true) @PathParam("terminologyId") String conceptId,
+	public MapRecordListJpa getMapRecordsForConceptId(
+			@ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -1789,7 +1797,7 @@ public class MappingServiceRest extends RootServiceRest {
 						.getMapProjectRoleForToken(authToken,
 								mr.getMapProjectId());
 
-				System.out.println(projectRole + " " + mr.toString());
+				// System.out.println(projectRole + " " + mr.toString());
 
 				switch (mr.getWorkflowStatus()) {
 
@@ -1852,13 +1860,13 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/record/project/id/{id:[0-9][0-9]*}")
-	@ApiOperation(value = "Get paged records by project id", notes = "Returns delimited page of published or ready-for-publicatoin MapRecords given a paging/filtering/sorting parameters object", response = MapRecordListJpa.class)
+	@ApiOperation(value = "Get published map records by project id.", notes = "Gets a list of map records for the specified map project id that have a workflow status of PUBLISHED or READY_FOR_PUBLICATION.", response = MapRecordListJpa.class)
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@CookieParam(value = "userInfo")
 	public MapRecordListJpa getPublishedAndReadyForPublicationMapRecordsForMapProject(
-			@ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -1911,15 +1919,14 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/record/project/id/{id:[0-9][0-9]*}/published")
-	@ApiOperation(value = "Get paged records by project id", notes = "Returns delimited page of published or ready-for-publicatoin MapRecords given a paging/filtering/sorting parameters object", response = MapRecordListJpa.class)
+	@ApiOperation(value = "Get published map records by map project id.", notes = "Gets a list of map records for the specified map project id that have a workflow status of PUBLISHED.", response = MapRecordListJpa.class)
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@CookieParam(value = "userInfo")
 	public MapRecordListJpa getPublishedMapRecordsForMapProject(
-			@ApiParam(value = "Project id associated with map records", required = true) @PathParam("id") Long mapProjectId,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
-
 		// log call
 		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Mapping): /record/project/id/"
@@ -1973,9 +1980,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/record/id/{id:[0-9][0-9]*}/revisions")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Get record revision history", notes = "Returns a map record's previous versions from the audit trail", response = MapRecordListJpa.class)
+	@ApiOperation(value = "Get map record revision history.", notes = "Gets a list of all revisions of a map record for the specified id.", response = MapRecordListJpa.class)
 	public MapRecordListJpa getMapRecordRevisions(
-			@ApiParam(value = "Id of map record to get revisions for", required = true) @PathParam("id") Long mapRecordId,
+			@ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long mapRecordId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -2018,9 +2025,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/record/id/{id:[0-9][0-9]*}/historical")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Get record using revision history if necessary", notes = "Returns a map record using previous versions from the audit trail if it no longer exists", response = MapRecordListJpa.class)
+	@ApiOperation(value = "Get latest state of a map record.", notes = "Gets the current form of the map record or its last historical state for the specified map record id.", response = MapRecordListJpa.class)
 	public MapRecord getMapRecordHistorical(
-			@ApiParam(value = "Id of map record to get revisions for", required = true) @PathParam("id") Long mapRecordId,
+			@ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long mapRecordId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -2071,9 +2078,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/relation/compute")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Compute map relation", notes = "Computes a map relation given the current state of a map entry", response = MapRelationJpa.class)
+	@ApiOperation(value = "Compute map relation.", notes = "Gets the computed map relation for the specified map entry.", response = MapRelationJpa.class)
 	public MapRelation computeMapRelation(
-			@ApiParam(value = "", required = true) MapEntryJpa mapEntry,
+			@ApiParam(value = "Map entry, in JSON or XML POST data", required = true) MapEntryJpa mapEntry,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
@@ -2102,11 +2109,11 @@ public class MappingServiceRest extends RootServiceRest {
 								.entity("User does not have permissions to compute the map relation.")
 								.build());
 
-			System.out.println(mapRecord.toString());
+			// System.out.println(mapRecord.toString());
 			if (mapRecord.getMapProjectId() == null) {
 				return null;
 			}
-			System.out.println("Retrieving project handler");
+			// System.out.println("Retrieving project handler");
 
 			ProjectSpecificAlgorithmHandler algorithmHandler = mappingService
 					.getProjectSpecificAlgorithmHandler(mappingService
@@ -2136,9 +2143,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/advice/compute")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Compute map advice", notes = "Computes a map advice given the current state of a map entry", response = MapAdviceJpa.class)
+	@ApiOperation(value = "Compute map advices.", notes = "Gets the computed map advices for the specified map entry.", response = MapAdviceJpa.class)
 	public MapAdviceList computeMapAdvice(
-			@ApiParam(value = "", required = true) MapEntryJpa mapEntry,
+			@ApiParam(value = "Map entry, in JSON or XML POST data", required = true) MapEntryJpa mapEntry,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// call log
@@ -2186,32 +2193,32 @@ public class MappingServiceRest extends RootServiceRest {
 	/**
 	 * Gets a map user's role for a given map project
 	 * 
-	 * @param userName
+	 * @param username
 	 * @param mapProjectId
 	 * @param authToken
 	 * @return result the role
 	 */
 	@GET
-	@Path("/userRole/user/id/{userName}/project/id/{id:[0-9][0-9]*}")
+	@Path("/userRole/user/id/{username}/project/id/{id:[0-9][0-9]*}")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Gets the role.", notes = "Gets the role for the given userName and projectId", response = SearchResultList.class)
+	@ApiOperation(value = "Get the user's role for a map project.", notes = "Gets the role for the specified user and map project.", response = SearchResultList.class)
 	public MapUserRole getMapUserRoleForMapProject(
-			@ApiParam(value = "The map user's user name", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String username,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call:  /userRole/user/id" + userName + "/project/id/"
+				"RESTful call:  /userRole/user/id" + username + "/project/id/"
 						+ mapProjectId);
 
 		try {
 			MappingService mappingService = new MappingServiceJpa();
 			MapUserRole mapUserRole = mappingService
-					.getMapUserRoleForMapProject(userName, mapProjectId);
+					.getMapUserRoleForMapProject(username, mapProjectId);
 			mappingService.close();
 			return mapUserRole;
 		} catch (Exception e) { 
-			handleException(e, "trying to get the map user role for a map project", userName, mapProjectId.toString(), "");
+			handleException(e, "trying to get the map user role for a map project", username, mapProjectId.toString(), "");
 			return null;
 		}
 	}
@@ -2228,33 +2235,22 @@ public class MappingServiceRest extends RootServiceRest {
 	 * 
 	 * @param terminologyId
 	 *            the concept terminology id
-	 * @param terminology
-	 *            the concept terminology
-	 * @param terminologyVersion
-	 *            the concept terminology version
-	 * @param threshold
-	 *            the maximum number of descendants before a concept is no
-	 *            longer considered a low-level concept, and will return an
-	 *            empty list
 	 * @param authToken
 	 * @return the ConceptList of unmapped descendants
 	 */
 	@GET
-	@Path("/concept/id/{terminology}/{version}/{id}/unmappedDescendants/threshold/{threshold:[0-9][0-9]*}")
-	@ApiOperation(value = "Find unmapped descendants", notes = "Returns a concept's unmapped descendants given a concept id, terminology, terminology version, and low-level concept threshold", response = Concept.class)
+	@Path("/concept/id/{terminologyId}/unmappedDescendants/project/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Find unmapped descendants of a concept.", notes = "Gets a list of search results for concepts having unmapped descendants.", response = Concept.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList getUnmappedDescendantsForConcept(
-			@ApiParam(value = "concept terminology id", required = true) @PathParam("id") String terminologyId,
-			@ApiParam(value = "concept terminology", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "concept terminology version", required = true) @PathParam("version") String terminologyVersion,
-			@ApiParam(value = "threshold max number of descendants for a low-level concept", required = true) @PathParam("threshold") int threshold,
+	    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("id") String terminologyId,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /concept/id/" + terminology + "/"
-						+ terminologyVersion + "/" + terminologyId
-						+ "/unmappedDescendants/threshold/" + threshold);
+				"RESTful call (Mapping): /concept/id/" + terminologyId + 
+				"/project/id/" + mapProjectId);
 
 		String user = "";
 		try {
@@ -2272,7 +2268,7 @@ public class MappingServiceRest extends RootServiceRest {
 
 			SearchResultList results = mappingService
 					.findUnmappedDescendantsForConcept(terminologyId,
-							terminology, terminologyVersion, threshold, null);
+							mapProjectId, null);
 
 			mappingService.close();
 			return results;
@@ -2302,14 +2298,14 @@ public class MappingServiceRest extends RootServiceRest {
 	 * @return the search result list
 	 */
 	@GET
-	@Path("/treePosition/project/id/{projectId}/concept/id/{terminology}/{terminologyVersion}/{terminologyId}")
-	@ApiOperation(value = "Get concept's local tree", notes = "Returns a tree structure representing the position of a concept in a terminology and its children", response = TreePositionListJpa.class)
+	@Path("/treePosition/project/id/{mapProjectId}/concept/id/{terminology}/{terminologyVersion}/{terminologyId}")
+	@ApiOperation(value = "Get a tree position with desendants.", notes = "Gets a list of tree positions and their descendants for the specified parameters.", response = TreePositionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public TreePositionList getTreePositionsWithDescendants(
-			@ApiParam(value = "terminology id of concept", required = true) @PathParam("terminologyId") String terminologyId,
-			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
-			@ApiParam(value = "id of map project this tree will be displayed for", required = true) @PathParam("projectId") Long mapProjectId,
+      @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
+      @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+      @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("mapProjectId") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken
 
 	) {
@@ -2369,12 +2365,12 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/treePosition/project/id/{projectId}/terminology/id/{terminology}/{terminologyVersion}")
-	@ApiOperation(value = "Get top-level trees", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
+	@ApiOperation(value = "Get root tree positions.", notes = "Gets a list of tree positions at the root of the terminology.", response = TreePositionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public TreePositionList getRootTreePositionsForTerminology(
-			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
-			@ApiParam(value = "id of map project this tree will be displayed for", required = true) @PathParam("projectId") Long mapProjectId,
+      @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+      @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -2430,13 +2426,13 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/treePosition/project/id/{projectId}/terminology/id/{terminology}/{terminologyVersion}/query/{query}")
-	@ApiOperation(value = "Get tree positions for query", notes = "Returns tree structures representing results a given terminology, terminology version, and query ", response = TreePositionListJpa.class)
+	@ApiOperation(value = "Get tree positions for query.", notes = "Gets a list of tree positions for the specified parameters.", response = TreePositionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public TreePositionList getTreePositionGraphsForQuery(
-			@ApiParam(value = "terminology of concept", required = true) @PathParam("terminology") String terminology,
-			@ApiParam(value = "terminology version of concept", required = true) @PathParam("terminologyVersion") String terminologyVersion,
-			@ApiParam(value = "paging/filtering/sorting object", required = true) @PathParam("query") String query,
-			@ApiParam(value = "id of map project this tree will be displayed for", required = true) @PathParam("projectId") Long mapProjectId,
+      @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+      @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
+			@ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) @PathParam("query") String query,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(ContentServiceJpa.class).info(
@@ -2490,7 +2486,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 * 
 	 * @param mapProjectId
 	 *            the map project id
-	 * @param userName
+	 * @param username
 	 *            the user name
 	 * @param pfsParameter
 	 *            the pfs parameter
@@ -2498,18 +2494,18 @@ public class MappingServiceRest extends RootServiceRest {
 	 * @return the recently edited map records
 	 */
 	@POST
-	@Path("/record/project/id/{id}/user/id/{userName}/edited")
-	@ApiOperation(value = "Get user's edited map records", notes = "Returns a paged list of records edited by a user, in reverse chronological order (most recent first)", response = MapRecordListJpa.class)
+	@Path("/record/project/id/{id}/user/id/{username}/edited")
+	@ApiOperation(value = "Get map records edited by a user.", notes = "Gets a list of map records for the specified map project and user.", response = MapRecordListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public MapRecordListJpa getMapRecordsEditedByMapUser(
-			@ApiParam(value = "Id of map project", required = true) @PathParam("id") String mapProjectId,
-			@ApiParam(value = "User name", required = true) @PathParam("userName") String userName,
-			@ApiParam(value = "Paging/filtering/sorting parameter object", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") String mapProjectId,
+			@ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String username,
+			@ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Mapping): /record/project/id/" + mapProjectId
-						+ "/user/id" + userName + "/edited");
+						+ "/user/id" + username + "/edited");
 
 		String user = "";
 		try {
@@ -2523,7 +2519,7 @@ public class MappingServiceRest extends RootServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			MapRecordListJpa recordList = (MapRecordListJpa) mappingService
 					.getRecentlyEditedMapRecords(new Long(mapProjectId),
-							userName, pfsParameter);
+							username, pfsParameter);
 			mappingService.close();
 			return recordList;
 		} catch (Exception e) {
@@ -2543,9 +2539,9 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/record/id/{id:[0-9][0-9]*}/conflictOrigins")
-	@ApiOperation(value = "Get specialist records for assigned conflict", notes = "Return's a list of records in conflict for a lead's conflict resolution record", response = MapRecordListJpa.class)
+	@ApiOperation(value = "Get specialist records for an assigned conflict.", notes = "Gets a list of specialist map records corresponding to a lead conflict record.", response = MapRecordListJpa.class)
 	public MapRecordList getOriginMapRecordsForConflict(
-			@ApiParam(value = "id of the map lead's conflict-in-progress or review record", required = true) @PathParam("id") Long mapRecordId,
+			@ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long mapRecordId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
 			throws Exception {
 
@@ -2575,7 +2571,7 @@ public class MappingServiceRest extends RootServiceRest {
 
 			return records;
 		} catch (Exception e) {
-			handleException(e, "trying to save work", user, "", mapRecordId.toString());
+			handleException(e, "trying to retrieve origin records for conflict/review", user, "", mapRecordId.toString());
 			return null;
 		}
 
@@ -2597,9 +2593,9 @@ public class MappingServiceRest extends RootServiceRest {
 	@Path("/validation/record/validate")
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	@ApiOperation(value = "Validates a map record", notes = "Performs validation checks on a map record", response = MapRecordJpa.class)
+	@ApiOperation(value = "Validate a map record.", notes = "Performs validation checks on a map record and returns the validation results.", response = MapRecordJpa.class)
 	public ValidationResult validateMapRecord(
-			@ApiParam(value = "The map record to validate.  Must exist in mapping database. Must be in Json or Xml format", required = true) MapRecordJpa mapRecord,
+			@ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
@@ -2650,11 +2646,11 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/validation/record/id/{recordId1}/record/id/{recordId2}/compare")
-	@ApiOperation(value = "Compare two map records", notes = "Returns a list of warnings and errors from comparing two map records", response = ValidationResultJpa.class)
+	@ApiOperation(value = "Compare two map records.", notes = "Compares two map records and returns the validation results.", response = ValidationResultJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public ValidationResult compareMapRecords(
-			@ApiParam(value = "id of first map record", required = true) @PathParam("recordId1") Long mapRecordId1,
-			@ApiParam(value = "id of second map record", required = true) @PathParam("recordId2") Long mapRecordId2,
+			@ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("recordId1") Long mapRecordId1,
+			@ApiParam(value = "Map record id, e.g. 28124", required = true) @PathParam("recordId2") Long mapRecordId2,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Mapping): /validation/record/id/" + mapRecordId1
@@ -2693,13 +2689,21 @@ public class MappingServiceRest extends RootServiceRest {
 		}
 	}
 
+	/**
+	 * Is target code valid.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @param authToken the auth token
+	 * @return the concept
+	 */
 	@GET
 	@Path("/project/id/{mapProjectId}/concept/{terminologyId}/isValid")
-	@ApiOperation(value = "Get the root tree (top-level concepts) for a given terminology", notes = "Returns a tree structure with an artificial root node and children representing the top-level concepts of a terminology", response = TreePositionListJpa.class)
+    @ApiOperation(value = "Indicate whether a target code is valid.", notes = "Gets either a valid concept corresponding to the id, or returns null if not valid.", response = TreePositionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Concept isTargetCodeValid(
-			@ApiParam(value = "map project id", required = true) @PathParam("mapProjectId") Long mapProjectId,
-			@ApiParam(value = "terminology id", required = true) @PathParam("terminologyId") String terminologyId,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("mapProjectId") Long mapProjectId,
+            @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Mapping): /project/id/" + mapProjectId
@@ -2742,19 +2746,28 @@ public class MappingServiceRest extends RootServiceRest {
 	}
 	
 
+	/**
+	 * Upload file.
+	 *
+	 * @param fileInputStream the file input stream
+	 * @param contentDispositionHeader the content disposition header
+	 * @param mapProjectId the map project id
+	 * @param authToken the auth token
+	 * @return the response
+	 */
 	@POST
 	@Path("/upload/{mapProjectId}")
+	// Swagger does not support this
+	@ApiOperation(value = "Upload a mapping handbook file for a project.", notes = "Uploads a mapping handbook file for the specified project.", response = TreePositionListJpa.class)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response uploadFile(
-		@FormDataParam("file") InputStream fileInputStream,
-		@FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-		@PathParam("mapProjectId") Long mapProjectId,
-		@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+	public Response uploadMappingHandbookFile(
+      @FormDataParam("file") InputStream fileInputStream,
+      @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+      @PathParam("mapProjectId") Long mapProjectId,
+      @HeaderParam("Authorization") String authToken) {
 		
 		String user = "";
 		try {
-			MappingService mappingService = new MappingServiceJpa();
-
 			// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(
 					authToken, mapProjectId);
@@ -2819,11 +2832,67 @@ public class MappingServiceRest extends RootServiceRest {
 		}
 	}
 
-	// save uploaded file to a defined location on the server
-	private void saveFile(InputStream uploadedInputStream, String serverLocation) {
+	/**
+	 * Returns all project specific algorithm handlers
+	 * 
+	 * @param authToken
+	 * 
+	 * @return the project specific algorithm handlers
+	 */
+	@GET
+	@Path("/handler/handlers")
+	@ApiOperation(value = "Get all project specific algorithm handlers.", notes = "Gets all project specific algorithm handlers.", response = SearchResultListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultListJpa getProjectSpecificAlgorithmHandlers(
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /handler/handlers");
+		String user = "";
+		
 		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve the project specific algorithm handlers.")
+								.build());
 
+			MappingService mappingService = new MappingServiceJpa();
+			SearchResultListJpa handlers = new SearchResultListJpa();
+			
+			Reflections reflections = new Reflections(
+				    ClasspathHelper.forPackage("org.ihtsdo.otf.mapping.jpa.handlers"), new SubTypesScanner());
+			Set<Class<? extends ProjectSpecificAlgorithmHandler>> implementingTypes =
+				     reflections.getSubTypesOf(ProjectSpecificAlgorithmHandler.class);
+			
+			for (Class<? extends ProjectSpecificAlgorithmHandler> handler : implementingTypes) {
+				SearchResult result = new SearchResultJpa();
+				result.setValue(handler.getName());
+				handlers.addSearchResult(result);
+			}
+			mappingService.close();
+			return handlers;
+
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve project specific algorithm handlers", user, "", "");
+			return null;
+		}
+	}
+	
+	
+	/**
+	 * Save uploaded file to a defined location on the server.
+	 *
+	 * @param uploadedInputStream the uploaded input stream
+	 * @param serverLocation the server location
+	 */
+	@SuppressWarnings("resource")
+  private void saveFile(InputStream uploadedInputStream, String serverLocation) {
+		try {
 			OutputStream outputStream =
 					new FileOutputStream(new File(serverLocation));
 			int read = 0;
@@ -2842,15 +2911,20 @@ public class MappingServiceRest extends RootServiceRest {
 
 	}
 
+	/**
+	 * Copy file.
+	 *
+	 * @param sourceFile the source file
+	 * @param destFile the dest file
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static void copyFile(File sourceFile, File destFile)
 		throws IOException {
 		if (!destFile.exists()) {
 			destFile.createNewFile();
 		}
-
 		FileChannel source = null;
 		FileChannel destination = null;
-
 		try {
 			source = new FileInputStream(sourceFile).getChannel();
 			destination = new FileOutputStream(destFile).getChannel();

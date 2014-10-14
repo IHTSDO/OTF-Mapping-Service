@@ -55,40 +55,9 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		    scrollable: true, showCheckAll: false, showUncheckAll: false};
 	$scope.multiSelectCustomTexts = {buttonDefaultText: 'Select Users'};
 	
-	
-	// TODO: needs to be moved to server-side
-	$scope.icd10ErrorMessages = [{displayName: 'None'}, 
-	                        {displayName: 'Map Group is not relevant'}, 
-                            {displayName: 'Map Group has been omitted'},
-                            {displayName: 'Sequencing of Map Groups is incorrect'}, 
-                            {displayName: 'The number of map records per group is incorrect'},
-                            {displayName: 'Target code selection for a map record is in error'}, 
-                            {displayName: 'Map rule type assignment is in error'},
-                            {displayName: 'Map target type assignment is in error'}, 
-                            {displayName: 'Map advice missing or incomplete'},
-                            {displayName: 'Map advice assignment is in error'}, 
-                            {displayName: 'Mapping Personnel Handbook principle not followed'},
-                            {displayName: 'Gender rule is not relevant'}, 
-                            {displayName: 'Gender rule has been omitted'},
-                            {displayName: 'Age rule is not relevant'}, 
-                            {displayName: 'Age rule has been omitted'},
-                            {displayName: 'Other'}
-                            ];
-
-
-	$scope.icd9cmErrorMessages = [{displayName: 'None'}, 
-	                        {displayName: 'Map Group is not relevant'}, 
-                            {displayName: 'Map Group has been omitted'},
-                            {displayName: 'Sequencing of Map Groups is incorrect'}, 
-                            {displayName: 'Target code selection for a map record is in error'}, 
-                            {displayName: 'Map parameter assignment is in error'}, 
-                            {displayName: 'Other'}
-                            ];
-	if ($scope.project.destinationTerminology == "ICD9CM")
-		$scope.errorMessages = $scope.icd9cmErrorMessages;
-	else
-		$scope.errorMessages = $scope.icd10ErrorMessages;
-	
+	$scope.errorMessages = $scope.project.errorMessages;
+    $scope.errorMessages.sort();
+	$scope.errorMessages.unshift('None');
     $scope.selectedErrorMessage1 = $scope.errorMessages[0];
     $scope.selectedErrorMessage2 = $scope.errorMessages[0];
 	
@@ -96,10 +65,8 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	// coupled with $watch below, this avoids premature work fetching
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 			$scope.project = parameters.focusProject;
-			if ($scope.project.destinationTerminology == "ICD9CM")
-				$scope.errorMessages = $scope.icd9cmErrorMessages;
-			else
-				$scope.errorMessages = $scope.icd10ErrorMessages;
+			$scope.errorMessages = $scope.project.errorMessages;
+			$scope.errorMessages.unshift('None');
 			$scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
 			organizeUsers($scope.allUsers);
 	});
@@ -108,52 +75,55 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	$scope.userToken = localStorageService.get('userToken');
 	$scope.$watch(['project', 'userToken'], function() {
 		
-		console.debug('compareRecords:  Detected change in project');
-		$http.defaults.headers.common.Authorization = $scope.userToken;
+		if ($scope.project != null && $scope.userToken != null) {
 		
-		// if first visit, retrieve the records to be compared
-		if ($scope.leadRecord == null) {
-			console.debug("First visit, getting conflict records");
-			$scope.getRecordsInConflict();
+			console.debug('compareRecords:  Detected change in project');
+			$http.defaults.headers.common.Authorization = $scope.userToken;
 			
-
-			$scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
-			organizeUsers($scope.allUsers);
-			
-			console.debug("Checking whether this is a false conflict.");
-			$rootScope.glassPane++;
-			$http({
-				url: root_workflow + "record/id/" + $routeParams.recordId + "/isFalseConflict",
-				dataType: "json",
-				method: "GET",
-				headers: { "Content-Type": "application/json"}	
-			}).success(function(data) {
-				$rootScope.glassPane--;
-				$scope.isFalseConflict = data === 'true' ? true : false;
-			}).error(function(data, status, headers, config) {
-				$rootScope.glassPane--;
-			    $rootScope.handleHttpError(data, status, headers, config);    	  
-			});
-			
-			
-		
-		// otherwise, return to dashboard (mismatch between record and project)
-		} else {
-			console.debug("Redirecting");
-		
-			var path = "";
+			// if first visit, retrieve the records to be compared
+			if ($scope.leadRecord == null) {
+				console.debug("First visit, getting conflict records");
+				$scope.getRecordsInConflict();
+				
 	
-			if ($scope.role === "Specialist") {
-				path = "/specialist/dash";
-			} else if ($scope.role === "Lead") {
-				path = "/lead/dash";
-			} else if ($scope.role === "Administrator") {
-				path = "/admin/dash";
-			} else if ($scope.role === "Viewer") {
-				path = "/viewer/dash";
+				$scope.allUsers = $scope.project.mapSpecialist.concat($scope.project.mapLead);
+				organizeUsers($scope.allUsers);
+				
+				console.debug("Checking whether this is a false conflict.");
+				$rootScope.glassPane++;
+				$http({
+					url: root_workflow + "record/id/" + $routeParams.recordId + "/isFalseConflict",
+					dataType: "json",
+					method: "GET",
+					headers: { "Content-Type": "application/json"}	
+				}).success(function(data) {
+					$rootScope.glassPane--;
+					$scope.isFalseConflict = data === 'true' ? true : false;
+				}).error(function(data, status, headers, config) {
+					$rootScope.glassPane--;
+				    $rootScope.handleHttpError(data, status, headers, config);    	  
+				});
+				
+				
+			
+			// otherwise, return to dashboard (mismatch between record and project)
+			} else {
+				console.debug("Redirecting");
+			
+				var path = "";
+		
+				if ($scope.role === "Specialist") {
+					path = "/specialist/dash";
+				} else if ($scope.role === "Lead") {
+					path = "/lead/dash";
+				} else if ($scope.role === "Administrator") {
+					path = "/admin/dash";
+				} else if ($scope.role === "Viewer") {
+					path = "/viewer/dash";
+				}
+				console.debug("redirecting to " + path);
+				$location.path(path);
 			}
-			console.debug("redirecting to " + path);
-			$location.path(path);
 		}
 	});
 
@@ -600,6 +570,17 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 
 		   var currentConversation = $scope.getCurrentConversation(recordInError);
 		   
+		   // determine if feedback is an error or not and remove 'None' text
+		   var mapError = '';
+		   var isError = false;
+		   if (errorMessage != null &&
+		    			  errorMessage != '' &&
+		    			  errorMessage != 'None') {
+		       isError = true;
+			   mapError = errorMessage;
+		   }
+		   
+		    
 		   // if the conversation hasn't yet been started
 		   if (currentConversation == "") {
 			   
@@ -607,11 +588,11 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		    var receivingUsers =  [recordInError.owner];
 			var feedback = {
 						"message": feedbackMessage,
-						"mapError": errorMessage.displayName,
+						"mapError": mapError,
 						"timestamp": new Date(),
 						"sender": $scope.user,
 						"recipients": receivingUsers,
-						"isError": "true",
+						"isError": isError,
 						"feedbackConversation": currentConversation,
 						"viewedBy": [$scope.user]
 					  };
@@ -625,12 +606,14 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"terminology": $scope.project.destinationTerminology,
 					"terminologyId": recordInError.conceptId,
 					"terminologyVersion": $scope.project.destinationTerminologyVersion,
-					"isActive": "true",
+					"isResolved": "false",
 					"isDiscrepancyReview": "false",
 					"mapRecordId": recordInError.id,
 					"feedback": feedbacks,
 					"defaultPreferredName": $scope.concept.defaultPreferredName,
-					"title": $scope.getTitle(false, errorMessage.displayName)
+					"title": $scope.getTitle(false, errorMessage),
+					"mapProjectId": $scope.project.id,
+					"userName": recordInError.owner.userName
 				  };
 			
 			$rootScope.glassPane++;
@@ -659,20 +642,21 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 			   
 			   // create feedback msg to be added to the conversation
 			    var receivingUsers =  [recordInError.owner];
+
 				var feedback = {
 							"message": feedbackMessage,
-							"mapError": errorMessage.displayName,
+							"mapError": mapError,
 							"timestamp": new Date(),
 							"sender": $scope.user,
 							"recipients": receivingUsers,
-							"isError": "true",
+							"isError": isError,
 							"viewedBy": [$scope.user]
 						  };
 			
 				var localFeedback = currentConversation.feedback;
 				localFeedback.push(feedback);
 				currentConversation.feedback = localFeedback;
-				currentConversation.title = $scope.getTitle(false, errorMessage.displayName);
+				currentConversation.title = $scope.getTitle(false, errorMessage);
 				
 			  $rootScope.glassPane++;
 			  $http({						
@@ -739,12 +723,14 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					"terminology": $scope.project.destinationTerminology,
 					"terminologyId": $scope.leadRecord.conceptId,
 					"terminologyVersion": $scope.project.destinationTerminologyVersion,
-					"isActive": "true",
+					"isResolved": "false",
 					"isDiscrepancyReview": $scope.indicateDiscrepancyReview,
 					"mapRecordId": $scope.leadRecord.id,
 					"feedback": feedbacks,
 					"defaultPreferredName": $scope.concept.defaultPreferredName,
-					"title": $scope.getTitle(true, "")
+					"title": $scope.getTitle(true, ""),
+					"mapProjectId": $scope.project.id,
+					"userName": $scope.leadRecord.owner.userName
 				  };
 			$rootScope.glassPane++;
 			$http({						
@@ -960,7 +946,7 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 		console.debug("in getCurrentConversation");
 		if (currentRecord.id == $scope.record1.id)
 			return $scope.conversation1;
-		else if (currentRecord.id == $scope.record2.id)
+		else if ($scope.record2 != null && currentRecord.id == $scope.record2.id)
 			return $scope.conversation2;
 		else if (currentRecord.id == $scope.leadRecord.id)
 			return $scope.leadConversation;

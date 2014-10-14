@@ -25,9 +25,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 	$scope.terminologyVersion = null;
 	$scope.metadata = null;
 	
-	//$scope.metadata = localStorageService.get('metadata_' + terminology.name);
-
-	console.debug(localStorageService.get('metadata_SNOMEDCT'));
 
 	// initialize currently displayed concept as empty object
 	$scope.currentOpenConcepts = {};
@@ -48,9 +45,13 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 		console.debug("TerminologyBrowserWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
 	});
+	
+	$scope.$on('mapEntryWidget.notification.clearTargetConcept'	, function(event, parameters) { 	
+		$scope.query = "";
+	});
 
 
-	// on any change of project, metadata, or user token, perform widget initialization
+	// REQUIRED WATCH VARIABLES: focusProject, userToken.  None others needed.
 	$scope.$watch(['focusProject', 'userToken'], function() {
 		
 		console.debug("TB: WATCH", $scope.focusProject, $scope.userToken);
@@ -71,36 +72,6 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', ['adf.provider'])
 			$scope.metadata = localStorageService.get('metadata_' + $scope.focusProject.destinationTerminology.name);
 		}
 	});
-	
-/*	
- * NO LONGER NEEDED AFTER MOVING INFORMATION PANELS TO SERVICE LAYER
- * $scope.$watch('metadata', function() {
-		
-		// find the description and relation type metadata and convert to normal JSON object structure
-		for (var i = 0; i < $scope.metadata.length; i++) {
-			if ($scope.metadata[i].name === 'Description Types') {
-
-				for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
-					$scope.descTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
-				}
-
-			}
-			else if ($scope.metadata[i].name === 'Relationship Types') {
-				for (var j = 0; j < $scope.metadata[i].keyValuePair.length; j++) {
-					$scope.relTypes[$scope.metadata[i].keyValuePair[j].key] = $scope.metadata[i].keyValuePair[j].value;
-				}
-			}
-		}
-
-		console.debug("Desc types:");
-		console.debug($scope.descTypes);
-
-		console.debug("Rel types:");
-		console.debug($scope.relTypes);
-
-
-	});	*/
-
 	
 	/**
 	 * Helper function to ensure all the collapsible truncated information is initially not expanded

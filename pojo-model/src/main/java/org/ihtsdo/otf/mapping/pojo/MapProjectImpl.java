@@ -103,6 +103,15 @@ public class MapProjectImpl implements MapProject {
 
 	/** The name of the handler class for project specific algorithms. */
 	private String projectSpecificAlgorithmHandlerClass;
+	
+	/**  The error messages. */
+	private Set<String> errorMessages = new HashSet<>();
+	
+	/**  The propagation flag. */
+	private boolean propagatedFlag = false;
+	
+	/**  The propagation descendant threshold. */
+	private Integer propagationDescendantThreshold;
 
 	/**
 	 * The Enum WorkflowType.
@@ -1428,5 +1437,36 @@ public class MapProjectImpl implements MapProject {
 	@Override
 	public String getMapPrincipleSourceDocument() {
 		return mapPrincipleSourceDocument;
+	}
+
+	@Override
+	public Set<String> getErrorMessages() {
+		return errorMessages;
+	}
+
+	@Override
+	public void setErrorMessages(Set<String> errorMessages) {
+		this.errorMessages = errorMessages;
+	}
+
+	@Override
+	public Integer getPropagationDescendantThreshold() {
+		return propagationDescendantThreshold;
+	}
+
+	@Override
+	public void setPropagationDescendantThreshold(
+		Integer propagationDescendantThreshold) {
+		this.propagationDescendantThreshold = propagationDescendantThreshold;
+	}
+
+	@Override
+	public boolean isPropagatedFlag() {
+		return propagatedFlag;
+	}
+
+	@Override
+	public void setPropagatedFlag(boolean propagatedFlag) {
+		this.propagatedFlag = propagatedFlag;
 	}
 }

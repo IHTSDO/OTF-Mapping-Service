@@ -61,7 +61,6 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("ProjectRecordCtrl:  Detected change in focus project");      
 		$scope.focusProject = parameters.focusProject;
-		if ($scope.userToken != null) $scope.getRecordsForProject();
 	});	
 
 	// retrieve the current global variables
@@ -77,8 +76,8 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 		// need both focus project and user token set before executing main functions
 		if ($scope.focusProject != null && $scope.userToken != null) {
 			$http.defaults.headers.common.Authorization = $scope.userToken;
-		$scope.projectId = $scope.focusProject.id;
-		$scope.getRecordsForProject();
+			$scope.projectId = $scope.focusProject.id;
+			$scope.getRecordsForProject();
 		}
 	});
 
@@ -202,10 +201,8 @@ angular.module('mapProjectApp.widgets.projectRecords', ['adf.provider'])
 
 			$http({
 				url: root_mapping + "concept/id/" 
-				+ $scope.project.sourceTerminology + "/"
-				+ $scope.project.sourceTerminologyVersion + "/"
 				+ $scope.records[index].conceptId + "/"
-				+ "unmappedDescendants/threshold/10",
+				+ "unmappedDescendants/project/id/" + $scope.project.id,
 				dataType: "json",
 				method: "GET",
 				headers: {
