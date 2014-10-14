@@ -71,40 +71,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 * (non-Javadoc)
 	 * 
 	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-	 * isMapAdviceComputable(org.ihtsdo.otf.mapping.model.MapRecord)
-	 */
-	@Override
-	public boolean isMapAdviceComputable(MapRecord mapRecord) {
-		if (mapProject != null) {
-			for (MapAdvice mapAdvice : mapProject.getMapAdvices()) {
-				if (mapAdvice.isComputed() == true)
-					return true;
-			}
-		}
-		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
-	 * isMapRelationComputable(org.ihtsdo.otf.mapping.model.MapRecord)
-	 */
-	@Override
-	public boolean isMapRelationComputable(MapRecord mapRecord) {
-		if (mapProject != null) {
-			for (MapRelation mapRelation : mapProject.getMapRelations()) {
-				if (mapRelation.isComputed() == true)
-					return true;
-			}
-		}
-		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler#
 	 * computeMapAdvice (org.ihtsdo.otf.mapping.model.MapRecord,
 	 * org.ihtsdo.otf.mapping.model.MapEntry)
 	 */
@@ -238,7 +204,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	// HELPER FUNCTIONS //
 	// ////////////////////
 
-	public ValidationResult checkMapRecordGroupStructure(MapRecord mapRecord,
+  /**
+	 * Check map record group structure.
+	 *
+	 * @param mapRecord the map record
+	 * @param entryGroups the entry groups
+	 * @return the validation result
+	 */
+	@SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordGroupStructure(MapRecord mapRecord,
 			Map<Integer, List<MapEntry>> entryGroups) {
 
 		ValidationResult validationResult = new ValidationResultJpa();
@@ -733,8 +707,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 									entries2.get(f))
 							&& !isMapRelationsEqual(entries1.get(d),
 									entries2.get(f)))
+
 						validationResult.addError("Map Relation is Different: "
-								+ entries1.get(d).getMapRelation().getName() + " vs. " + entries2.get(f).getMapRelation().getName());
+								+ (entries1.get(d).getMapRelation() == null ? "No relation specified" : entries1.get(d).getMapRelation().getName()) 
+								+ " vs. " 
+								+ (entries2.get(f).getMapRelation() == null ? "No relation specified" : entries2.get(f).getMapRelation().getName())	);
 				}
 			}
 			for (int d = 0; d < entries1.size(); d++) {
@@ -994,7 +971,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 				// check that only one record exists for this tracking record
 				if (!(trackingRecord.getMapRecordIds().size() == 1)) {
-					System.out.println(trackingRecord.toString());
+					// System.out.println(trackingRecord.toString());
 					throw new Exception(
 							"DefaultProjectSpecificHandlerException - assignFromInitialRecord: More than one record exists for FIX_ERROR_PATH assignment.");
 				}
@@ -1019,10 +996,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// new records
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVISION);
 				newRecords.add(mapRecord);
-				System.out.println("fix_error_path record to add: "
-						+ mapRecord.toString());
+				
 			}
-
 			break;
 
 		case CONSENSUS_PATH:
@@ -1079,7 +1054,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
 		for (MapRecord mr : mapRecords) {
-			System.out.println(mr.toString());
+			// System.out.println(mr.toString());
 		}
 
 		// create new record
@@ -1180,7 +1155,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 				// check that only two records exists for this tracking record
 				if (!(trackingRecord.getMapRecordIds().size() == 2)) {
-					System.out.println(trackingRecord.toString());
+					// System.out.println(trackingRecord.toString());
 					throw new Exception(
 							"assignFromScratch: More than one record exists for FIX_ERROR_PATH assignment.");
 				}
@@ -1463,7 +1438,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		if (mapRecord == null)
 			throw new Exception(
-					"finishEditing:  Record for user could not be found");
+					"publish:  Record for user could not be found");
 
 		switch (trackingRecord.getWorkflowPath()) {
 		case CONSENSUS_PATH:
@@ -1514,7 +1489,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			newRecords.add(mapRecord);
 
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-					.info("finishEditing - FIX_ERROR_PATH - Creating READY_FOR_PUBLICATION record "
+					.info("publish - FIX_ERROR_PATH - Creating READY_FOR_PUBLICATION record "
 							+ mapRecord.toString());
 
 			break;
@@ -1578,7 +1553,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				newRecords.add(newRecord);
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-						.info("finishEditing - NON_LEGACY_PATH - Creating READY_FOR_PUBLICATION record "
+						.info("publish- NON_LEGACY_PATH - Creating READY_FOR_PUBLICATION record "
 								+ newRecord.toString());
 
 			} else if (mapRecords.size() == 3) {
@@ -1721,7 +1696,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// check if two specialists have completed work (lowest workflow
 				// status is EDITING_DONE, highest workflow status is CONFLICT_DETECTED)
 				if (getLowestWorkflowStatus(mapRecords).compareTo(
-						WorkflowStatus.EDITING_DONE) >= 0 && getWorkflowStatus(mapRecords).equals(WorkflowStatus.CONFLICT_DETECTED)
+						WorkflowStatus.EDITING_DONE) >= 0
 						&& mapRecords.size() == 2) {
 
 					Logger.getLogger(
@@ -1864,7 +1839,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		case FIX_ERROR_PATH:
 
 			for (MapRecord mr : mapRecords)
-				System.out.println(mr.getWorkflowStatus().toString());
+				// System.out.println(mr.getWorkflowStatus().toString());
 
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 					.info("FIX_ERROR_PATH");
@@ -2111,7 +2086,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		return newRecords;
 	}
 
-	public MapRecord getCurrentMapRecordForUser(Set<MapRecord> mapRecords,
+	/**
+	 * Returns the current map record for user.
+	 *
+	 * @param mapRecords the map records
+	 * @param mapUser the map user
+	 * @return the current map record for user
+	 */
+	@SuppressWarnings("static-method")
+  public MapRecord getCurrentMapRecordForUser(Set<MapRecord> mapRecords,
 			MapUser mapUser) {
 
 		MapRecord mapRecord = null;
@@ -2182,12 +2165,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// published/ready-for-publication
 		// state record is found
 		for (MapRecord revision : revisions) {
-			System.out.println("Previous record = " + revision.toString());
+			// System.out.println("Previous record = " + revision.toString());
 			if (revision.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
 					|| revision.getWorkflowStatus().equals(
-							WorkflowStatus.READY_FOR_PUBLICATION))
+							WorkflowStatus.READY_FOR_PUBLICATION)) {
 				mappingService.close();
-			return revision;
+				return revision;
+			}
 		}
 
 		mappingService.close();
@@ -2209,7 +2193,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	public WorkflowStatus getWorkflowStatus(Set<MapRecord> mapRecords) {
 		WorkflowStatus workflowStatus = WorkflowStatus.NEW;
 		for (MapRecord mr : mapRecords) {
-			System.out.println(mr.getWorkflowStatus());
+			// System.out.println(mr.getWorkflowStatus());
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
 				workflowStatus = mr.getWorkflowStatus();
 		}
@@ -2263,4 +2247,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// DO NOTHING -- Override in project specific handlers if necessary
 	}
 
+	@Override
+	public boolean isUpPropagatedRecordForReleaseProcessing(MapRecord mapRecord) {
+
+		// for ICD10 project, a map record is up-propagated if the descendant
+		// count is less than 11
+		return mapRecord.getCountDescendantConcepts() < mapProject.getPropagationDescendantThreshold();
+	}
+	
 }

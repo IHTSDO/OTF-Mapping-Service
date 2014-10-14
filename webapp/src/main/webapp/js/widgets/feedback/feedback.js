@@ -12,20 +12,25 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 		edit: {}
 	});
 }).controller('feedbackCtrl', function($scope, $rootScope, $http, $location, $modal, $sce, localStorageService){
-
+    $scope.currentUser = null;
+	$scope.currentRole = null;
+	$scope.focusProject = null;
+	$scope.feedbackConversations = null;
+	
 	// initialize as empty to indicate still initializing database connection
 	$scope.currentUser = localStorageService.get('currentUser');
+	$scope.currentUserToken = localStorageService.get('userToken');
 	$scope.currentRole = localStorageService.get('currentRole');
 	$scope.focusProject = localStorageService.get('focusProject');
 	
-    $scope.feedbackConversations = null;
-	
+    
 	// table sort fields
 	$scope.tableFields = [ {id: 0, title: 'id', sortDir: 'asc', sortOn: false}];
 	
 	$scope.mapUserViewed == null;
 	$scope.searchPerformed = false;  		// initialize variable to track whether search was performed
-
+    $scope.feedbackType = 'ALL';
+    $scope.recordIdOwnerMap = new Array();
 	
 	// pagination variables
 	$scope.recordsPerPage = 10;
@@ -35,61 +40,74 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) { 	
 		console.debug("MapProjectWidgetCtrl:  Detected change in focus project");
 		$scope.focusProject = parameters.focusProject;
-		$scope.retrieveFeedback(1);
 	});	
 	
 
 
 
 	// on any change of focusProject, retrieve new available work
-	$scope.currentUserToken = localStorageService.get('userToken');
-	$scope.$watch(['focusProject', 'currentUser', 'currentUserToken'], function() {
-		console.debug('feedbackCtrl:', $scope.focusProject, $scope.currentUser, $scope.currentUserToken);
-		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null) {
+	$scope.$watch(['focusProject', 'currentUser', 'currentUserToken', 'currentRole'], function() {
+		
+		if ($scope.focusProject != null && $scope.currentUser != null && $scope.currentUserToken != null
+				&& $scope.currentRole != null) {
 			$http.defaults.headers.common.Authorization = $scope.currentUserToken;			
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
-			$scope.retrieveFeedback(1);
+			$scope.retrieveFeedback(1, $scope.feedbackType);
 		}
 	});
 	
 
-    $scope.retrieveFeedback = function(page) {
-	// construct a paging/filtering/sorting object
-	var pfsParameterObj = 
-				{"startIndex": (page-1)*$scope.recordsPerPage,
-		 	 	 "maxResults": $scope.recordsPerPage,
-		 	 	 "sortField":  null,
-		 	 	 "queryRestriction": $scope.query == null ? null : $scope.query};  
-
-  	$rootScope.glassPane++;
-
-	$http({
-		url: root_workflow + "conversation/project/id/" + $scope.focusProject.id + "/" + $scope.currentUser.userName,
-		dataType: "json",
-		data: pfsParameterObj,
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		}
-	}).success(function(data) {
-	  	$rootScope.glassPane--;
-		
-		// set pagination variables
-		$scope.nRecords = data.totalCount;
-		$scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
-
-		$scope.feedbackConversations = data.feedbackConversation;
-		console.debug("Feedback Conversations:");
-		console.debug($scope.feedbackConversations);
-					 
-	}).error(function(data, status, headers, config) {
-	    $rootScope.glassPane--;
-	    $rootScope.handleHttpError(data, status, headers, config);
-	});
+    $scope.retrieveFeedback = function(page, feedbackType, query) {
+    	
+    	if ($scope.currentRole == 'Viewer')
+  		  return;
+    	
+    	// add a check to ensure page is not null
+    	if (page == null)
+    		page = 1;
+    	
+    	// add a check to prevent NPE due to threading issues
+    	if (feedbackType == null)
+    		feedbackType = 'ALL';
+    	
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": (page-1)*$scope.recordsPerPage,
+			 	 	 "maxResults": $scope.recordsPerPage,
+			 	 	 "sortField":  'lastModified',
+			 	 	 "queryRestriction": feedbackType};  
+	
+	  	$rootScope.glassPane++;
+	
+		$http({
+			url: root_workflow + "conversation/project/id/" + $scope.focusProject.id + "/" 
+			  + $scope.currentUser.userName + "/query/" + query,
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+		  	$rootScope.glassPane--;
+			
+			// set pagination variables
+			$scope.nRecords = data.totalCount;
+			$scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
+	
+			$scope.feedbackConversations = data.feedbackConversation;
+			console.debug("Feedback Conversations:");
+			console.debug($scope.feedbackConversations);
+						 
+		}).error(function(data, status, headers, config) {
+		    $rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
 
     };
 
-	
+	// if any of the feedbacks are not yet viewed, return false indicating
+    // that conversation is not yet viewed
 	$scope.isFeedbackViewed = function(conversation) {
     	for (var i = 0; i < conversation.feedback.length; i++) {
     		var alreadyViewedBy =  conversation.feedback[i].viewedBy;
@@ -103,6 +121,38 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
     	}
     	return true;
 	};
+	
+	
+	$scope.markActive = function(conversation) {
+    	conversation.resolved = 'false';    	
+    	updateFeedbackConversation(conversation);    
+	}
+	
+	$scope.markFeedbackResolved = function(conversation) {
+    	conversation.resolved = 'true';
+    	updateFeedbackConversation(conversation);    		
+	};
+	
+    function updateFeedbackConversation(conversation) {
+		$rootScope.glassPane++;
+
+		  $http({						
+				url: root_workflow + "conversation/update",
+				dataType: "json",
+				data: conversation,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+				console.debug("success to update Feedback conversation.");
+			}).error(function(data, status, headers, config) {
+				$rootScope.glassPane--;
+				$scope.recordError = "Error updating feedback conversation.";
+				$rootScope.handleHttpError(data, status, headers, config);
+			});
+    };
 	
 	$scope.goFeedbackConversations = function (id) {
 		var path = "/conversation/recordId/" + id;
@@ -118,6 +168,6 @@ angular.module('mapProjectApp.widgets.feedback', ['adf.provider'])
 	// function to clear input box and return to initial view
 	$scope.resetSearch = function() {
 		$scope.query = null;
-		$scope.retrieveFeedback(1);
+		$scope.retrieveFeedback(1, $scope.feedbackType);
 	};
 });

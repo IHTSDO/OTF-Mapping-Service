@@ -35,12 +35,13 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.availableReviewWorkTitle = "Review";
 	
 	// retrieve focus project, current user, and current role
-	$scope.focusProject = localStorageService.get('focusProject');
-	$scope.currentUser = localStorageService.get('currentUser');
-	$scope.currentRole = localStorageService.get('currentRole');
-	$scope.availableTab = localStorageService.get('availableTab');
-	$scope.isConceptListOpen = false;
-	$scope.queryAvailable = null;
+	$scope.focusProject = 		localStorageService.get('focusProject');
+	$scope.currentUser = 		localStorageService.get('currentUser');
+	$scope.currentRole = 		localStorageService.get('currentRole');
+	$scope.userToken = 			localStorageService.get('userToken');
+	$scope.availableTab = 		localStorageService.get('availableTab');
+	$scope.isConceptListOpen = 	false;
+	$scope.queryAvailable = 	null;
 	
 	// intiialize the user list
 	$scope.mapUsers = {};
@@ -106,19 +107,17 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		$scope.assignedMapLead = $scope.currentUser;
 	});
 
-	// on any change of focusProject, retrieve new available work
-	$scope.userToken = localStorageService.get('userToken');
 	
 	// on retrieval of either focus project or user token, try to retrieve work
-	$scope.$watch(['focusProject', 'userToken'], function() {
+	$scope.$watch(['focusProject', 'userToken', 'currentUser', 'currentRole'], function() {
 		console.debug('workAvailableWidget:  scope project changed!');
 
 		// both variables must be non-null
-		if ($scope.focusProject != null && $scope.userToken != null) {
+		if ($scope.focusProject != null && $scope.userToken != null && $scope.currentUser != null && $scope.currentRole != null) {
 			
+			// set the authorization header
 			$http.defaults.headers.common.Authorization = $scope.userToken;
 
-			
 			// construct the list of users
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
 			console.debug('Project Users:');
@@ -238,15 +237,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		}).success(function(data) {
 		  	$rootScope.glassPane--;
 		  	
-		  	// open/close the concept list based on whether a query is used
-		  	if (query === 'null') {
-		  		console.debug('closing concept list');
-		  		$scope.isConceptListOpen = false;
-		  	} else  {
-		  		console.debug('opening concept list');
-		  		$scope.isConceptListOpen = true;
-		  	}
-
+		  	console.debug(data);
+		  	
 			$scope.availableWork = data.searchResult;
 			
 			// set pagination
