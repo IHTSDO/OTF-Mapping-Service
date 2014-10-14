@@ -1613,8 +1613,12 @@ public class MappingServiceRest extends RootServiceRest {
 
 			return mapRecord;
 		} catch (Exception e) {
+		  String mapProjectId = null;
+		  if (mapRecord != null && mapRecord.getMapProjectId() != null) {
+		    mapProjectId = mapRecord.getMapProjectId().toString();
+		  }
 			handleException(e, "trying to retrieve the map record", 
-					user, mapRecord.getMapProjectId().toString(), mapRecordId.toString());
+					user, mapProjectId, mapRecordId.toString());
 			return null;
 		}
 	}
@@ -2235,6 +2239,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 * 
 	 * @param terminologyId
 	 *            the concept terminology id
+	 * @param mapProjectId 
 	 * @param authToken
 	 * @return the ConceptList of unmapped descendants
 	 */
