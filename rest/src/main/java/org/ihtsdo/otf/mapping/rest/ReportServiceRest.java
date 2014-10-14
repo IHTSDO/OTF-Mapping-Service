@@ -52,11 +52,12 @@ public class ReportServiceRest extends RootServiceRest {
 	public ReportServiceRest() throws Exception {
 		securityService = new SecurityServiceJpa();
 	}
-	
+
 	/**
 	 * Returns the report.
-	 *
-	 * @param authToken the auth token
+	 * 
+	 * @param authToken
+	 *            the auth token
 	 * @return the report
 	 */
 	@GET
@@ -68,23 +69,24 @@ public class ReportServiceRest extends RootServiceRest {
 		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Report):  /definition/definitions");
 		String user = "";
-		
+
 		try {
 			// authorize call
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-//			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-//				throw new WebApplicationException(
-//						Response.status(401)
-//								.entity("User does not have permissions to retrieve map projects.")
-//								.build());
-			
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve reports.")
+								.build());
+
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
-			ReportDefinitionList definitionList = reportService.getReportDefinitionsForRole(role);
+			ReportDefinitionList definitionList = reportService
+					.getReportDefinitionsForRole(role);
 			reportService.close();
-			
+
 			return definitionList;
 		} catch (Exception e) {
 			handleException(e, "trying to retrieve all reports", user, "", "");
@@ -92,7 +94,7 @@ public class ReportServiceRest extends RootServiceRest {
 		}
 
 	}
-	
+
 	@POST
 	@Path("/definition/add")
 	@ApiOperation(value = "Add a report definition", notes = "Adds a report definition based on a JSON or XML object", response = ReportDefinitionJpa.class)
@@ -103,23 +105,24 @@ public class ReportServiceRest extends RootServiceRest {
 		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Report):  /definition/definitions");
 		String user = "";
-		
+
 		try {
 			// authorize call
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-//			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-//				throw new WebApplicationException(
-//						Response.status(401)
-//								.entity("User does not have permissions to retrieve map projects.")
-//								.build());
-			
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve reports.")
+								.build());
+
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
-			ReportDefinition definition = reportService.addReportDefinition(reportDefinition);
+			ReportDefinition definition = reportService
+					.addReportDefinition(reportDefinition);
 			reportService.close();
-			
+
 			return definition;
 		} catch (Exception e) {
 			handleException(e, "trying to retrieve all reports", user, "", "");
@@ -127,10 +130,10 @@ public class ReportServiceRest extends RootServiceRest {
 		}
 
 	}
-	
+
 	@POST
 	@Path("/definition/update")
-	@ApiOperation(value = "Updates a report definition", notes = "Updates the attached report definition", response = Response.class )
+	@ApiOperation(value = "Updates a report definition", notes = "Updates the attached report definition", response = Response.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public void updateReportDefinitions(
 			@ApiParam(value = "Report definition to update", required = true) ReportDefinitionJpa definition,
@@ -138,18 +141,18 @@ public class ReportServiceRest extends RootServiceRest {
 		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Report):  /definition/definitions");
 		String user = "";
-		
+
 		try {
 			// authorize call
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-//			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-//				throw new WebApplicationException(
-//						Response.status(401)
-//								.entity("User does not have permissions to retrieve map projects.")
-//								.build());
-			
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve reports.")
+								.build());
+
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
 			reportService.updateReportDefinition(definition);
@@ -160,10 +163,10 @@ public class ReportServiceRest extends RootServiceRest {
 		}
 
 	}
-	
+
 	@GET
 	@Path("/report/reports")
-	@ApiOperation(value = "Get all reports", notes = "Returns all reports in either JSON or XML format", response = ReportDefinitionListJpa.class )
+	@ApiOperation(value = "Get all reports", notes = "Returns all reports in either JSON or XML format", response = ReportDefinitionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public ReportList getReports(
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -171,23 +174,23 @@ public class ReportServiceRest extends RootServiceRest {
 		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Report):  /report/reports");
 		String user = "";
-		
+
 		try {
 			// authorize call
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-//			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
-//				throw new WebApplicationException(
-//						Response.status(401)
-//								.entity("User does not have permissions to retrieve map projects.")
-//								.build());
-			
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve reports.")
+								.build());
+
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
 			ReportList reportList = reportService.getReports();
 			reportService.close();
-			
+
 			return reportList;
 		} catch (Exception e) {
 			handleException(e, "trying to retrieve all reports", user, "", "");
@@ -195,10 +198,10 @@ public class ReportServiceRest extends RootServiceRest {
 		}
 
 	}
-	
+
 	@POST
 	@Path("/report/reports/project/id/{projectId}")
-	@ApiOperation(value = "Get all reports of a certain type", notes = "Returns all reports in either JSON or XML format", response = ReportListJpa.class )
+	@ApiOperation(value = "Get all reports of a certain type", notes = "Returns all reports in either JSON or XML format", response = ReportListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public ReportList getReportsForMapProject(
 			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
@@ -209,39 +212,42 @@ public class ReportServiceRest extends RootServiceRest {
 				"RESTful call (Report):  /report/reports");
 		String user = "";
 		String projectName = "";
-		
+
 		try {
 			// authorize call
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-//			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
-//				throw new WebApplicationException(
-//						Response.status(401)
-//								.entity("User does not have permissions to retrieve map projects.")
-//								.build());
-			
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve reports.")
+								.build());
+
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(projectId);
 			projectName = mapProject.getName();
 			mappingService.close();
-			
+
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
-			ReportList reportList = reportService.getReportsForMapProjectAndReportType(mapProject, null, pfsParameter);
+			ReportList reportList = reportService
+					.getReportsForMapProjectAndReportType(mapProject, null,
+							pfsParameter);
 			reportService.close();
-			
+
 			return reportList;
 		} catch (Exception e) {
-			handleException(e, "trying to retrieve all reports", user, projectName, "");
+			handleException(e, "trying to retrieve all reports", user,
+					projectName, "");
 			return null;
 		}
 
 	}
-	
+
 	@POST
 	@Path("/report/reports/project/id/{projectId}/type/{reportType}")
-	@ApiOperation(value = "Get all reports of a certain type", notes = "Returns all reports in either JSON or XML format", response = ReportListJpa.class )
+	@ApiOperation(value = "Get all reports of a certain type", notes = "Returns all reports in either JSON or XML format", response = ReportListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public ReportList getReportsForMapProjectAndReportType(
 			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
@@ -253,39 +259,42 @@ public class ReportServiceRest extends RootServiceRest {
 				"RESTful call (Report):  /report/reports");
 		String user = "";
 		String projectName = "";
-		
+
 		try {
 			// authorize call
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-//			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
-//				throw new WebApplicationException(
-//						Response.status(401)
-//								.entity("User does not have permissions to retrieve map projects.")
-//								.build());
-			
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve reports.")
+								.build());
+
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(projectId);
 			projectName = mapProject.getName();
 			mappingService.close();
-			
+
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
-			ReportList reportList = reportService.getReportsForMapProjectAndReportType(mapProject, reportType, pfsParameter);
+			ReportList reportList = reportService
+					.getReportsForMapProjectAndReportType(mapProject,
+							reportType, pfsParameter);
 			reportService.close();
-			
+
 			return reportList;
 		} catch (Exception e) {
-			handleException(e, "trying to retrieve all reports", user, projectName, "");
+			handleException(e, "trying to retrieve all reports", user,
+					projectName, "");
 			return null;
 		}
 
 	}
-	
+
 	@GET
 	@Path("/report/project/id/{projectId}/type/{reportType}")
-	@ApiOperation(value = "Get most recent report of a certain type", notes = "Returns the most recent report given a report type in either JSON or XML format", response = ReportJpa.class )
+	@ApiOperation(value = "Get most recent report of a certain type", notes = "Returns the most recent report given a report type in either JSON or XML format", response = ReportJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Report getLastReportForReportType(
 			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
@@ -293,90 +302,96 @@ public class ReportServiceRest extends RootServiceRest {
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Report):  /report/project/id" + projectId + "/type/" + reportType);
+				"RESTful call (Report):  /report/project/id" + projectId
+						+ "/type/" + reportType);
 		String user = "";
 		String projectName = "";
-		
+
 		try {
 			// authorize call
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-//			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
-//				throw new WebApplicationException(
-//						Response.status(401)
-//								.entity("User does not have permissions to retrieve map projects.")
-//								.build());
-			
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve map reports.")
+								.build());
+
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(projectId);
 			projectName = mapProject.getName();
 			mappingService.close();
-			
+
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
-			Report report = reportService.getLastReportForReportType(mapProject, reportType);
+			Report report = reportService.getLastReportForReportType(
+					mapProject, reportType);
 			reportService.close();
-			
+
 			return report;
 		} catch (Exception e) {
-			handleException(e, "trying to retrieve all reports", user, projectName, "");
+			handleException(e, "trying to retrieve all reports", user,
+					projectName, "");
 			return null;
 		}
 
 	}
-	
-	
+
 	@POST
 	@Path("/report/generate/project/id/{projectId}/user/id/{userName}/type/{reportType}")
 	@ApiOperation(value = "Add a report", notes = "Returns all MapProjects in either JSON or XML format", response = ReportJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Report generateReport(
-			@ApiParam(value = "The report definition name", required = true)  @PathParam("reportType") String reportType,
+			@ApiParam(value = "The report definition name", required = true) @PathParam("reportType") String reportType,
 			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
 			@ApiParam(value = "User generating report", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Report):  /report/generate/project/id/" + projectId + "/user/id/" + userName + "/type/" + reportType	);
-		
+				"RESTful call (Report):  /report/generate/project/id/"
+						+ projectId + "/user/id/" + userName + "/type/"
+						+ reportType);
+
 		String mapProjectName = "(not retrieved)";
-		String user = "(not retrieved)";
-		
+
 		Report report = null;
-		
+
 		try {
 			// authorize call
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
-			user = securityService.getUsernameForToken(authToken);
-//			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
-//				throw new WebApplicationException(
-//						Response.status(401)
-//								.entity("User does not have permissions to retrieve map projects.")
-//								.build());
-			
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve reports.")
+								.build());
+
 			// get the required objects
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(projectId);
 			mapProjectName = mapProject.getName(); // for error handling
 			MapUser mapUser = mappingService.getMapUser(userName);
 			mappingService.close();
-			
+
 			ReportService reportService = new ReportServiceJpa();
-			ReportDefinition reportDefinition = reportService.getReportDefinition(ReportType.valueOf(reportType));
-			report = reportService.generateReport(mapProject, mapUser, reportDefinition.getReportName(), reportDefinition, null, false);
+			ReportDefinition reportDefinition = reportService
+					.getReportDefinition(ReportType.valueOf(reportType));
+			report = reportService.generateReport(mapProject, mapUser,
+					reportDefinition.getReportName(), reportDefinition, null,
+					false);
 			reportService.close();
-			
+
 			return report;
 		} catch (Exception e) {
-			
-			handleException(e, "trying to generate a report", userName, mapProjectName, "");
+
+			handleException(e, "trying to generate a report", userName,
+					mapProjectName, "");
 			return null;
-			
+
 		}
 	}
-	
+
 	@POST
 	@Path("/reportResult/id/{reportResultId}/items")
 	@ApiOperation(value = "Add a report", notes = "Returns all MapProjects in either JSON or XML format", response = ReportJpa.class)
@@ -387,37 +402,37 @@ public class ReportServiceRest extends RootServiceRest {
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Report):  /reportResult/id/" + reportResultId + "/items/");
-		
-		String mapProjectName = "(not retrieved)";
+				"RESTful call (Report):  /reportResult/id/" + reportResultId
+						+ "/items/");
+
 		String user = "(not retrieved)";
-		
-		Report report = null;
-		
+
 		try {
 			// authorize call
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-//			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-//				throw new WebApplicationException(
-//						Response.status(401)
-//								.entity("User does not have permissions to retrieve map projects.")
-//								.build());
-			
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve reports.")
+								.build());
+
 			ReportService reportService = new ReportServiceJpa();
-			ReportResultItemList reportResultItemList = reportService.getReportResultItemsForReportResult(reportResultId, pfsParameter);
-			
+			ReportResultItemList reportResultItemList = reportService
+					.getReportResultItemsForReportResult(reportResultId,
+							pfsParameter);
+
 			reportService.close();
-			
+
 			return reportResultItemList;
 		} catch (Exception e) {
-			
-			handleException(e, "trying to retrieve report result items", user, reportResultId.toString(), "");
+
+			handleException(e, "trying to retrieve report result items", user,
+					reportResultId.toString(), "");
 			return null;
-			
+
 		}
 	}
-		
-	
+
 }
