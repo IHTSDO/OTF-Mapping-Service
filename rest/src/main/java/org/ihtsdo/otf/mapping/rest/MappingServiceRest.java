@@ -2476,7 +2476,8 @@ public class MappingServiceRest extends RootServiceRest {
 			return treePositions;
 
 		} catch (Exception e) { 
-			handleException(e, "trying to get the tree position graphs for a query", user, mapProjectId.toString(), "");
+			handleException(e, "trying to get the tree position graphs for a query", user, 
+			    String.valueOf(mapProjectId), "");
 			return null;
 		}
 	}
