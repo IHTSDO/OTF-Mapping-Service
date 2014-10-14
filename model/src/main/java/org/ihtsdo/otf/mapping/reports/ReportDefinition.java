@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.reports;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
+import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
 import org.ihtsdo.otf.mapping.helpers.ReportType;
 
 // TODO: Auto-generated Javadoc
@@ -105,9 +106,9 @@ public interface ReportDefinition {
 	 */
 	public void setReportType(ReportType reportType);
 
-	public int getTimePeriodInDays();
+	public ReportTimePeriod getTimePeriod();
 	
-	public void setTimePeriodInDays(int timePeriod);
+	public void setTimePeriod(ReportTimePeriod timePeriod);
 
 	boolean isDiffReport();
 
