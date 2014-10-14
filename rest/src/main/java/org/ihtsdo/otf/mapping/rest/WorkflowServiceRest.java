@@ -159,8 +159,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 		String user = "";
 
 		try {
-			System.out.println("Authorizing at: " + System.currentTimeMillis()
-					/ 1000);
+			// System.out.println("Authorizing at: " + System.currentTimeMillis()
+			//		/ 1000);
 
 			// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(
@@ -171,8 +171,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 								.entity("User does not have permissions to find available work.")
 								.build());
 
-			System.out.println("Retrieving objects at "
-					+ System.currentTimeMillis() / 1000);
+			// System.out.println("Retrieving objects at "
+			//		+ System.currentTimeMillis() / 1000);
 
 			// retrieve the project and user
 			MappingService mappingService = new MappingServiceJpa();
@@ -182,8 +182,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 			user = mapUser.getUserName();
 			mappingService.close();
 
-			System.out.println("Getting available work at "
-					+ System.currentTimeMillis() / 1000);
+			// System.out.println("Getting available work at "
+			//		+ System.currentTimeMillis() / 1000);
 
 			// retrieve the workflow tracking records
 			WorkflowService workflowService = new WorkflowServiceJpa();
@@ -218,12 +218,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 			
 			revisedResults.setTotalCount(results.getTotalCount());
 			
-			System.out.println(revisedResults.getCount());
+			// System.out.println(revisedResults.getCount());
 			contentService.close();
 
 			results = revisedResults;
 
-			System.out.println("Done at " + System.currentTimeMillis() / 1000);
+			// System.out.println("Done at " + System.currentTimeMillis() / 1000);
 
 			return results;
 		} catch (Exception e) {
@@ -986,13 +986,13 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// unassign both types of work
 			for (SearchResult searchResult : assignedConcepts
 					.getSearchResults()) {
-				System.out.println(searchResult.toString());
+				// System.out.println(searchResult.toString());
 				Concept concept = contentService.getConcept(
 						searchResult.getTerminologyId(),
 						mapProject.getSourceTerminology(),
 						mapProject.getSourceTerminologyVersion());
-				System.out.println(concept);
-				System.out.println("Concept: " + concept.getTerminologyId());
+				// System.out.println(concept);
+				// System.out.println("Concept: " + concept.getTerminologyId());
 
 				workflowService.processWorkflowAction(mapProject, concept,
 						mapUser, null, WorkflowAction.UNASSIGN);
@@ -1074,12 +1074,12 @@ public class WorkflowServiceRest extends RootServiceRest {
 			for (SearchResult searchResult : assignedConcepts
 					.getSearchResults()) {
 
-				System.out.println(searchResult.toString());
+				// System.out.println(searchResult.toString());
 				Concept concept = contentService.getConcept(
 						searchResult.getTerminologyId(),
 						mapProject.getSourceTerminology(),
 						mapProject.getSourceTerminologyVersion());
-				System.out.println("Concept: " + concept.getTerminologyId());
+				// System.out.println("Concept: " + concept.getTerminologyId());
 
 				if (searchResult.getTerminologyVersion().equals("NEW")) {
 					workflowService.processWorkflowAction(mapProject, concept,

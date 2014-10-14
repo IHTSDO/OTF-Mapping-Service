@@ -971,7 +971,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 				// check that only one record exists for this tracking record
 				if (!(trackingRecord.getMapRecordIds().size() == 1)) {
-					System.out.println(trackingRecord.toString());
+					// System.out.println(trackingRecord.toString());
 					throw new Exception(
 							"DefaultProjectSpecificHandlerException - assignFromInitialRecord: More than one record exists for FIX_ERROR_PATH assignment.");
 				}
@@ -996,10 +996,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// new records
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVISION);
 				newRecords.add(mapRecord);
-				System.out.println("fix_error_path record to add: "
-						+ mapRecord.toString());
+				
 			}
-
 			break;
 
 		case CONSENSUS_PATH:
@@ -1056,7 +1054,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
 		for (MapRecord mr : mapRecords) {
-			System.out.println(mr.toString());
+			// System.out.println(mr.toString());
 		}
 
 		// create new record
@@ -1157,7 +1155,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 				// check that only two records exists for this tracking record
 				if (!(trackingRecord.getMapRecordIds().size() == 2)) {
-					System.out.println(trackingRecord.toString());
+					// System.out.println(trackingRecord.toString());
 					throw new Exception(
 							"assignFromScratch: More than one record exists for FIX_ERROR_PATH assignment.");
 				}
@@ -1841,7 +1839,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		case FIX_ERROR_PATH:
 
 			for (MapRecord mr : mapRecords)
-				System.out.println(mr.getWorkflowStatus().toString());
+				// System.out.println(mr.getWorkflowStatus().toString());
 
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 					.info("FIX_ERROR_PATH");
@@ -2167,7 +2165,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// published/ready-for-publication
 		// state record is found
 		for (MapRecord revision : revisions) {
-			System.out.println("Previous record = " + revision.toString());
+			// System.out.println("Previous record = " + revision.toString());
 			if (revision.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)
 					|| revision.getWorkflowStatus().equals(
 							WorkflowStatus.READY_FOR_PUBLICATION)) {
@@ -2195,7 +2193,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	public WorkflowStatus getWorkflowStatus(Set<MapRecord> mapRecords) {
 		WorkflowStatus workflowStatus = WorkflowStatus.NEW;
 		for (MapRecord mr : mapRecords) {
-			System.out.println(mr.getWorkflowStatus());
+			// System.out.println(mr.getWorkflowStatus());
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
 				workflowStatus = mr.getWorkflowStatus();
 		}

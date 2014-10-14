@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -33,7 +37,6 @@ import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemListJpa;
-import org.ihtsdo.otf.mapping.helpers.ReportResultList;
 import org.ihtsdo.otf.mapping.helpers.ReportType;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
@@ -577,8 +580,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	public ReportDefinitionList getReportDefinitionsForRole(MapUserRole role) {
 		ReportDefinitionList definitionList = new ReportDefinitionListJpa();
 
-		System.out.println("Getting report definitions for role: "
-				+ role.toString());
+		// System.out.println("Getting report definitions for role: "
+		//		+ role.toString());
 
 		// get all definitions
 		List<ReportDefinition> definitions = manager.createQuery(
@@ -636,7 +639,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	public ReportDefinition getReportDefinition(ReportType reportType) {
 		ReportDefinition r = null;
 
-		System.out.println(reportType.toString() + " " + reportType);
+		// System.out.println(reportType.toString() + " " + reportType);
 
 		javax.persistence.Query query = manager
 				.createQuery("select r from ReportDefinitionJpa r where reportType = :reportType");
@@ -829,6 +832,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 				this.generateReport(mapProject, mapUser,
 						reportDefinition.getReportName(), reportDefinition,
 						startDate, true);
+
 			}
 
 			// increment startDate by 1 day
@@ -859,10 +863,32 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		// replace parameters in the query
 		String query = reportDefinition.getQuery();
+		
+		// expect the date to be lacking time, convert to end-of-day time
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		// System.out.println(Long.toString(cal.getTimeInMillis()));
+		// System.out.println(Long.toString(cal.getTimeInMillis()));
 
 		query = query.replaceAll(":MAP_PROJECT_ID:", mapProject.getId()
 				.toString());
 		query = query.replaceAll(":TIMESTAMP:", Long.toString(date.getTime()));
+
+		// if a diff report, replace the second time stamp
+		if (reportDefinition.isDiffReport() == true) {
+
+			// System.out.println("Diff report");
+
+			// decrement the start date
+			cal.setTime(date);
+			cal.add(Calendar.DATE, -reportDefinition.getTimePeriodInDays());
+			query = query.replaceAll(":TIMESTAMP2:",
+					Long.toString(cal.getTimeInMillis()));
+		} else if (reportDefinition.isRateReport() == true) {
+			// System.out.println("Rate report");
+		} else {
+			// System.out.println("Not a diff or rate report");
+		}
 		/*
 		 * query = query.replaceAll("$\\{MAP_PROJECT_ID\\}", mapProject.getId()
 		 * .toString()); query = query.replaceAll("$\\{TIMESTAMP\\}",
@@ -881,6 +907,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		report.setQueryType(reportDefinition.getQueryType());
 		report.setReportType(reportDefinition.getReportType());
 		report.setResultType(reportDefinition.getResultType());
+		report.setTimestamp(date.getTime());
 
 		// execute the query
 		ResultSet resultSet = null;
@@ -902,34 +929,162 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		Map<String, ReportResult> valueMap = new HashMap<>();
 
-		while (resultSet.next()) {
-			String value = resultSet.getString("value");
-			String itemName = resultSet.getString("itemName");
-			String itemId = resultSet.getString("itemId");
+		// if a difference report
+		if (reportDefinition.isDiffReport() == true) {
 
-			// get report result (create if nessary)
-			ReportResult reportResult = valueMap.get(value);
-			if (reportResult == null) {
-				reportResult = new ReportResultJpa();
-				reportResult.setDateValue("");
-				reportResult.setValue(value);
-				reportResult.setName(reportDefinition.getReportName());
-				reportResult.setProjectName(mapProject.getName());
-				reportResult.setReport(report);
+			// get the ids corresponding to reports to be diffed
+			try {
+				resultSet.next();
+				// System.out.println(resultSet.getString("itemId"));
+				report.setReport1Id(new Long(resultSet.getString("itemId")));
+				resultSet.next();
+				// System.out.println(resultSet.getString("itemId"));
+				report.setReport2Id(new Long(resultSet.getString("itemId")));
+			} catch (SQLException e) {
+				Logger.getLogger(ReportServiceJpa.class).warn(
+						"Could not retrieve report ids for diff report");
 			}
-			// construct the ReportResultItem
-			ReportResultItem item = new ReportResultItemJpa();
-			item.setResultType(report.getResultType());
-			item.setItemId(itemId);
-			item.setItemName(itemName);
-			item.setReportResult(reportResult);
 
-			// add the item to the list and update count
-			reportResult.addReportResultItem(item);
-			reportResult.setCt(reportResult.getReportResultItems().size());
+			// if either report id is null, cannot construct report, return null
+			if (report.getReport1Id() == null || report.getReport2Id() == null)
+				return null;
 
-			// update the value map
-			valueMap.put(value, reportResult);
+			// get the two reports
+			Report report1 = getReport(report.getReport1Id());
+			Report report2 = getReport(report.getReport2Id());
+
+			// System.out.println("Report 1 has " + report1.getResults().size()
+			//		+ " results");
+			// System.out.println("Report 2 has " + report2.getResults().size()
+			//		+ " results");
+
+			List<ReportResult> reportResults = new ArrayList<>();
+
+			// cycle over first result and find matching values in the second
+			// report
+			for (ReportResult result1 : report1.getResults()) {
+
+				// System.out.println("  Checking result " + result1.getId());
+
+				ReportResult resultDiff = new ReportResultJpa();
+				resultDiff.setReport(report);
+
+				boolean matchingValueFound = false;
+
+				for (ReportResult result2 : report2.getResults()) {
+					if (result1.getValue().equals(result2.getValue())) {
+						resultDiff.setValue(result1.getValue());
+						resultDiff.setCt(result1.getCt() - result2.getCt());
+
+						/*ReportResultItemList itemList = getReportResultItemsAdded(
+								result1, result2);
+						for (ReportResultItem item : itemList.getReportResultItems()) {
+							item.setReportResult(resultDiff);
+						}
+							
+						
+						resultDiff
+								.setReportResultItems(itemList.getReportResultItems());
+*/
+						matchingValueFound = true;
+
+						// System.out.println("    Found match with "
+						//		+ result2.getId());
+					}
+				}
+
+				if (matchingValueFound == false) {
+					// System.out.println("    No match found");
+					resultDiff.setValue(result1.getValue());
+					resultDiff.setCt(result1.getCt());
+					/*for (ReportResultItem item1 : result1
+							.getReportResultItems()) {
+						ReportResultItem item = new ReportResultItemJpa();
+						item.setItemId(item1.getItemId());
+						item.setItemName(item1.getItemName());
+						item.setResultType(item1.getResultType());
+						item.setReportResult(resultDiff);
+						resultDiff.addReportResultItem(item);
+					}*/
+				}
+
+				report.addResult(resultDiff);
+
+			}
+
+			// cycle over the second result and find any non-matching values
+			// (i.e. removed values)
+			for (ReportResult result2 : report2.getResults()) {
+				
+				// System.out.println("Checking result in result2 with id " + result2.getId() + " and ct = " + result2.getCt());
+				
+				boolean matchingValueFound = false;
+				for (ReportResult result1 : report1.getResults()) {
+					if (result1.getValue().equals(result2.getValue()))
+						matchingValueFound = true;
+				}
+
+				if (matchingValueFound == false) {
+					// System.out.println("  Match not found");
+					ReportResult resultDiff = new ReportResultJpa();
+					resultDiff.setReport(report);
+					resultDiff.setValue(result2.getValue());
+					resultDiff.setCt(-result2.getCt());
+					
+					/*ReportResultItemList itemList = getReportResultItemsAdded(
+							result2, null);
+					for (ReportResultItem item : itemList.getReportResultItems()) {
+						item.setReportResult(resultDiff);
+					}
+						
+					
+					resultDiff
+							.setReportResultItems(itemList.getReportResultItems());
+					
+					
+					resultDiff.setReportResultItems(this
+							.getReportResultItemsAdded(result2, null)
+							.getReportResultItems());
+					*/
+					report.addResult(resultDiff);
+				}
+			}
+
+			// if a rate report
+		} else if (reportDefinition.isRateReport()) {
+
+			// if a data-point report
+		} else {
+
+			while (resultSet.next()) {
+				String value = resultSet.getString("value");
+				String itemName = resultSet.getString("itemName");
+				String itemId = resultSet.getString("itemId");
+
+				// get report result (create if nessary)
+				ReportResult reportResult = valueMap.get(value);
+				if (reportResult == null) {
+					reportResult = new ReportResultJpa();
+					reportResult.setDateValue("");
+					reportResult.setValue(value);
+					reportResult.setName(reportDefinition.getReportName());
+					reportResult.setProjectName(mapProject.getName());
+					reportResult.setReport(report);
+				}
+				// construct the ReportResultItem
+				ReportResultItem item = new ReportResultItemJpa();
+				item.setResultType(report.getResultType());
+				item.setItemId(itemId);
+				item.setItemName(itemName);
+				item.setReportResult(reportResult);
+
+				// add the item to the list and update count
+				reportResult.addReportResultItem(item);
+				reportResult.setCt(reportResult.getReportResultItems().size());
+
+				// update the value map
+				valueMap.put(value, reportResult);
+			}
 		}
 
 		// add each report result to the report
@@ -944,13 +1099,52 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 	}
 
+	public ReportResult getReportResultForValue(Report report, String value) {
+		for (ReportResult result : report.getResults()) {
+			if (result.getValue().equals(value))
+				return result;
+		}
+		return null;
+	}
+	
+	public Long getEndOfDayTime(Date date) {
+		
+		return null;
+	}
+
+	/**
+	 * Helper function Returns the result items in the first result that are not
+	 * present in the second result
+	 * 
+	 * @param result1
+	 * @param result2
+	 * @return
+	 */
+	public ReportResultItemList getReportResultItemsAdded(ReportResult result1,
+			ReportResult result2) {
+
+		ReportResultItemList newItems = new ReportResultItemListJpa();
+
+		for (ReportResultItem item1 : result1.getReportResultItems()) {
+			if (result2 == null || !result2.getReportResultItems().contains(item1)) {
+				ReportResultItem newItem = new ReportResultItemJpa();
+				newItem.setItemId(item1.getItemId());
+				newItem.setItemName(item1.getItemName());
+				newItem.setResultType(item1.getResultType());
+				newItems.addReportResultItem(newItem);
+			}
+		}
+
+		return newItems;
+	}
+
 	// /////////////////////////////////////////////////////
 	// Query Handlers
 	// /////////////////////////////////////////////////////
 	public ResultSet executeSqlQuery(String query) throws Exception {
 
-		System.out.println("Executing query: ");
-		System.out.println(query);
+		// System.out.println("Executing query: ");
+		// System.out.println(query);
 
 		// get the database parameters
 		String configFileName = System.getProperty("run.config");
@@ -986,8 +1180,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	@Override
 	public void removeReportsForMapProject(MapProject mapProject) {
 
-		this.setTransactionPerOperation(true);
-
 		Logger.getLogger(ReportServiceJpa.class).info(
 				"Retrieving reports for project " + mapProject.getName()
 						+ "...");
@@ -999,49 +1191,53 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		for (Report report : reports.getReports()) {
 
-			Logger.getLogger(ReportServiceJpa.class).info(
-					"  Removing report with id " + report.getId());
-
-			// remove all result items
-			for (ReportResult result : report.getResults()) {
-
-				Logger.getLogger(ReportServiceJpa.class).info(
-						"    Removing report result with id " + result.getId());
-
-				// remove all report result items
-				for (ReportResultItem item : result.getReportResultItems()) {
-
-					Logger.getLogger(ReportServiceJpa.class).info(
-							"      Removing report result item with id "
-									+ item.getId());
-					removeReportResultItem(item.getId());
-				}
-				removeReportResult(result.getId());
-			}
-
-			// remove all notes
-			for (ReportNote note : report.getNotes()) {
-
-				Logger.getLogger(ReportServiceJpa.class).info(
-						"    Removing report note with id " + note.getId());
-				removeReportNote(note.getId());
-			}
-			// remove the report
-			removeReport(report.getId());
-
+			this.removeReport(report.getId());
 		}
 
+		/*
+		 * Logger.getLogger(ReportServiceJpa.class).info(
+		 * "  Removing report with id " + report.getId());
+		 * 
+		 * // remove all result items for (ReportResult result :
+		 * report.getResults()) {
+		 * 
+		 * Logger.getLogger(ReportServiceJpa.class).info(
+		 * "    Removing report result with id " + result.getId());
+		 * 
+		 * // remove all report result items for (ReportResultItem item :
+		 * result.getReportResultItems()) {
+		 * 
+		 * Logger.getLogger(ReportServiceJpa.class).info(
+		 * "      Removing report result item with id " + item.getId());
+		 * removeReportResultItem(item.getId()); }
+		 * 
+		 * this.commit(); this.beginTransaction();
+		 * result.setReportResultItems(null); updateReportResult(result);
+		 * removeReportResult(result.getId()); }
+		 * 
+		 * // remove all notes for (ReportNote note : report.getNotes()) {
+		 * 
+		 * Logger.getLogger(ReportServiceJpa.class).info(
+		 * "    Removing report note with id " + note.getId());
+		 * removeReportNote(note.getId()); } report.setResults(null);
+		 * report.setNotes(null); //removeReport(report.getId());
+		 * 
+		 * }
+		 * 
+		 * this.commit();
+		 */
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ReportResultItemList getReportResultItemsForReportResult(Long reportResultId,
-			PfsParameter pfsParameter) {
+	public ReportResultItemList getReportResultItemsForReportResult(
+			Long reportResultId, PfsParameter pfsParameter) {
 
 		ReportResultItemList reportResultItemList = new ReportResultItemListJpa();
 
-		javax.persistence.Query query = manager.createQuery(
-				"select r from ReportResultItemJpa r where reportResult_id = :reportResultId")
+		javax.persistence.Query query = manager
+				.createQuery(
+						"select r from ReportResultItemJpa r where reportResult_id = :reportResultId")
 				.setParameter("reportResultId", reportResultId);
 
 		if (pfsParameter.getStartIndex() != -1
@@ -1049,9 +1245,9 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 			query.setFirstResult(pfsParameter.getStartIndex());
 			query.setMaxResults(pfsParameter.getMaxResults());
 		}
-		
+
 		reportResultItemList.setReportResultItems(query.getResultList());
-		
+
 		return reportResultItemList;
 	}
 

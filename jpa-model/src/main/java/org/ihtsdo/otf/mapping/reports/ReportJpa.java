@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.reports;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -15,11 +14,8 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
@@ -69,9 +65,8 @@ public class ReportJpa implements Report {
 	private ReportType reportType;
 
 	/** The timestamp. */
-	@Temporal(TemporalType.TIMESTAMP)
 	@Column(nullable = false)
-	private Date timestamp = new Date();
+	private Long timestamp = null;
 
 	/** The project id. */
 	@Column(nullable = false)
@@ -109,6 +104,13 @@ public class ReportJpa implements Report {
 	
 	@Column(nullable = true)
 	private Long report2Id = null;
+	
+	/** Flags for diff and rate report */
+	@Column(nullable = false)
+	private boolean isDiffReport = false;
+	
+	@Column(nullable = false)
+	private boolean isRateReport = false;
 
 	/**
 	 * Constructors.
@@ -252,7 +254,7 @@ public class ReportJpa implements Report {
 	 */
 	@Override
 	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-	public Date getTimestamp() {
+	public Long getTimestamp() {
 		return timestamp;
 	}
 
@@ -263,7 +265,7 @@ public class ReportJpa implements Report {
 	 *            the new timestamp
 	 */
 	@Override
-	public void setTimestamp(Date timestamp) {
+	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
 
@@ -437,10 +439,25 @@ public class ReportJpa implements Report {
 		this.report2Id = reportId;
 		
 	}
-	
 	@Override
-	public boolean isComparisonReport() {
-		return this.report1Id != null && this.report2Id != null;
+	public boolean isDiffReport() {
+		return isDiffReport;
 	}
+	@Override
+	public void setDiffReport(boolean isDiffReport) {
+		this.isDiffReport = isDiffReport;
+	}
+	@Override
+	public boolean isRateReport() {
+		return isRateReport;
+	}
+	@Override
+	public void setRateReport(boolean isRateReport) {
+		this.isRateReport = isRateReport;
+	}
+	
+	
+	
+	
 
 }

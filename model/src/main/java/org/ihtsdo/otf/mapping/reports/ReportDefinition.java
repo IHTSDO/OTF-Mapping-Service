@@ -89,6 +89,8 @@ public interface ReportDefinition {
 	 */
 	public MapUserRole getRoleRequired();
 
+	
+	void setRoleRequired(MapUserRole roleRequired);
 	/**
 	 * Gets the report type.
 	 *
@@ -102,6 +104,20 @@ public interface ReportDefinition {
 	 * @param reportType the new report type
 	 */
 	public void setReportType(ReportType reportType);
+
+	public int getTimePeriodInDays();
+	
+	public void setTimePeriodInDays(int timePeriod);
+
+	boolean isDiffReport();
+
+	void setDiffReport(boolean isDiffReport);
+
+	boolean isRateReport();
+
+	void setRateReport(boolean isRateReport);
+
+
 
 	
 }
