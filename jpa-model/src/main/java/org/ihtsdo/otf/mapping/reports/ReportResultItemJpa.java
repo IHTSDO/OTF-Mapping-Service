@@ -124,4 +124,42 @@ public class ReportResultItemJpa implements ReportResultItem {
 		this.itemName = itemName;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((itemId == null) ? 0 : itemId.hashCode());
+		result = prime * result
+				+ ((itemName == null) ? 0 : itemName.hashCode());
+		result = prime * result
+				+ ((resultType == null) ? 0 : resultType.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ReportResultItemJpa other = (ReportResultItemJpa) obj;
+		if (itemId == null) {
+			if (other.itemId != null)
+				return false;
+		} else if (!itemId.equals(other.itemId))
+			return false;
+		if (itemName == null) {
+			if (other.itemName != null)
+				return false;
+		} else if (!itemName.equals(other.itemName))
+			return false;
+		if (resultType != other.resultType)
+			return false;
+		return true;
+	}
+	
+	
+
 }

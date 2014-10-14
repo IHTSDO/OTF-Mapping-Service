@@ -35,9 +35,22 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	@Column(nullable = false)
 	private String reportName;
 	
+	/** The report type. */
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private ReportType reportType;
+	
+	/** The is diff report. */
+	@Column(nullable = false)
+	private boolean isDiffReport = false;
+	
+	/** The is rate report. */
+	@Column(nullable = false)
+	private boolean isRateReport = false;
+	
+	/** The time period (in days) for diff and rate reports */
+	@Column(nullable = true)
+	private int timePeriodInDays;
 
 	/** The result type. */
 	@Enumerated(EnumType.STRING)
@@ -98,11 +111,17 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getReportType()
+	 */
 	@Override
 	public ReportType getReportType() {
 		return reportType;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setReportType(org.ihtsdo.otf.mapping.helpers.ReportType)
+	 */
 	@Override
 	public void setReportType(ReportType reportType) {
 		this.reportType = reportType;
@@ -220,6 +239,65 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	@Override
 	public MapUserRole getRoleRequired() {
 		return roleRequired;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setRoleRequired(org.ihtsdo.otf.mapping.helpers.MapUserRole)
+	 */
+	@Override
+	public void setRoleRequired(MapUserRole roleRequired) {
+		this.roleRequired = roleRequired;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#isDiffReport()
+	 */
+	@Override
+	public boolean isDiffReport() {
+		return isDiffReport;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setDiffReport(boolean)
+	 */
+	@Override
+	public void setDiffReport(boolean isDiffReport) {
+		this.isDiffReport = isDiffReport;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#isRateReport()
+	 */
+	@Override
+	public boolean isRateReport() {
+		return isRateReport;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setRateReport(boolean)
+	 */
+	@Override
+	public void setRateReport(boolean isRateReport) {
+		this.isRateReport = isRateReport;
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getTimePeriodInDays()
+	 */
+	@Override
+	public int getTimePeriodInDays() {
+		return timePeriodInDays;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setTimePeriodInDays(int)
+	 */
+	@Override
+	public void setTimePeriodInDays(int timePeriod) {
+		this.timePeriodInDays = timePeriod;
+		
 	}
 
 }

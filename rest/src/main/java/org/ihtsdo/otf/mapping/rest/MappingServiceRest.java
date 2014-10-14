@@ -1797,7 +1797,7 @@ public class MappingServiceRest extends RootServiceRest {
 						.getMapProjectRoleForToken(authToken,
 								mr.getMapProjectId());
 
-				System.out.println(projectRole + " " + mr.toString());
+				// System.out.println(projectRole + " " + mr.toString());
 
 				switch (mr.getWorkflowStatus()) {
 
@@ -2109,11 +2109,11 @@ public class MappingServiceRest extends RootServiceRest {
 								.entity("User does not have permissions to compute the map relation.")
 								.build());
 
-			System.out.println(mapRecord.toString());
+			// System.out.println(mapRecord.toString());
 			if (mapRecord.getMapProjectId() == null) {
 				return null;
 			}
-			System.out.println("Retrieving project handler");
+			// System.out.println("Retrieving project handler");
 
 			ProjectSpecificAlgorithmHandler algorithmHandler = mappingService
 					.getProjectSpecificAlgorithmHandler(mappingService
@@ -2243,7 +2243,7 @@ public class MappingServiceRest extends RootServiceRest {
 	@ApiOperation(value = "Find unmapped descendants of a concept.", notes = "Gets a list of search results for concepts having unmapped descendants.", response = Concept.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList getUnmappedDescendantsForConcept(
-	    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
+	    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("id") String terminologyId,
 			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 

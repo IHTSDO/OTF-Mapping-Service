@@ -634,7 +634,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		}
 		List<TrackingRecord> results = ftquery.getResultList();
 		
-		System.out.println("Hi results: " + results.size());
+		// System.out.println("Hi results: " + results.size());
 
 		for (TrackingRecord tr : results) {
 			SearchResult result = new SearchResultJpa();
@@ -782,7 +782,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
 				+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*" + ")";
 
-		System.out.println("FindAvailableReviewWork query: " + full_query);
+		// System.out.println("FindAvailableReviewWork query: " + full_query);
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
@@ -838,8 +838,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			MapUser mapUser, String query, PfsParameter pfsParameter)
 			throws Exception {
 
-		System.out.println("Testing new findAssignedWork with query: '" + query
-				+ "'");
 		PfsParameter localPfsParameter = pfsParameter;
 
 		SearchResultList assignedWork = new SearchResultListJpa();
@@ -911,7 +909,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				+ " OR userAndWorkflowStatusPairs:REVIEW_NEEDED_*"
 				+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*)";
 
-		System.out.println("FindAssignedWork query: " + full_query);
+		// System.out.println("FindAssignedWork query: " + full_query);
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
@@ -971,9 +969,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			WorkflowStatus mapLeadAlternateRecordStatus = null;
 
 			for (MapRecord mr : mapRecords) {
-				
-				System.out.println(mapUser.toString());
-				System.out.println(mr.getOwner());
 
 				if (mr.getOwner().equals(mapUser)) {
 
@@ -986,9 +981,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 									WorkflowStatus.REVIEW_NEW)
 							|| mr.getWorkflowStatus().equals(
 									WorkflowStatus.REVIEW_IN_PROGRESS)) {
-
-						System.out.println("FOUND ALTERNATE LEAD RECORD: "
-								+ mr.getId() + " - " + mr.getWorkflowStatus());
 
 						mapLeadAlternateRecordStatus = mr.getWorkflowStatus();
 
@@ -1054,9 +1046,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			MapUser mapUser, String query, PfsParameter pfsParameter)
 			throws Exception {
 
-		System.out.println("Testing new findAssignedConflicts with query: '"
-				+ query + "'");
-
 		SearchResultList assignedConflicts = new SearchResultListJpa();
 
 		if (mapProject.getWorkflowType().equals("REVIEW_PROJECT_PATH"))
@@ -1108,7 +1097,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					+ mapUser.getUserName() + ")";
 			break;
 		}
-		System.out.println("FindAssignedConflict query: " + full_query);
+		// System.out.println("FindAssignedConflict query: " + full_query);
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
@@ -1150,7 +1139,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		List<TrackingRecord> results = ftquery.getResultList();
 		MappingService mappingService = new MappingServiceJpa();
 		for (TrackingRecord tr : results) {
-			System.out.println("Assigned conflict: " + tr.toString());
+			// System.out.println("Assigned conflict: " + tr.toString());
 			SearchResult result = new SearchResultJpa();
 
 			Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
@@ -1191,8 +1180,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				result.setTerminologyVersion(mapRecord.getWorkflowStatus()
 						.toString());
 
-				System.out.println(mapRecord.getWorkflowStatus());
-				System.out.println(mapRecord.getWorkflowStatus().toString());
+				// System.out.println(mapRecord.getWorkflowStatus());
+				// System.out.println(mapRecord.getWorkflowStatus().toString());
 
 				result.setId(mapRecord.getId());
 				assignedConflicts.addSearchResult(result);
@@ -1208,8 +1197,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			MapUser mapUser, String query, PfsParameter pfsParameter)
 			throws Exception {
 
-		System.out.println("Testing new findAssignedReviewWork with query: '"
-				+ query + "'");
 
 		SearchResultList assignedReviewWork = new SearchResultListJpa();
 		PfsParameter localPfsParameter = pfsParameter;
@@ -1261,7 +1248,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			break;
 		}
 
-		System.out.println("FindAssignedReviewWork query: " + full_query);
+		// System.out.println("FindAssignedReviewWork query: " + full_query);
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
@@ -3355,10 +3342,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		// output the errors
 		for (TrackingRecord tr : trackingRecordsInError.keySet()) {
-			System.out.println("Concept " + tr.getTerminologyId() + " on path "
+			Logger.getLogger(WorkflowServiceJpa.class).info("Concept " + tr.getTerminologyId() + " on path "
 					+ tr.getWorkflowPath());
 			for (String s : trackingRecordsInError.get(tr)) {
-				System.out.println("  " + s);
+				Logger.getLogger(WorkflowServiceJpa.class).info("  " + s);
 			}
 		}
 

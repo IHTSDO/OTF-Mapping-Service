@@ -122,7 +122,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 	@Override
 	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) {
 
-		System.out.println("Computing map relation");
+		// System.out.println("Computing map relation");
 		// if entry has no target
 		if (mapEntry.getTargetId() == null || mapEntry.getTargetId().isEmpty()) {
 
@@ -148,7 +148,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 			return null;
 		}
 
-		System.out.println("Entry has target");
+		// System.out.println("Entry has target");
 
 		// if entry has a gender rule
 		if (mapEntry.getRule().contains("MALE")) {
@@ -183,7 +183,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 		// using contains here to capture TRUE and OTHERWISE TRUE
 		} else if (mapEntry.getRule().contains("TRUE")) {
 
-			System.out.println("Entry has TRUE rule");
+			// System.out.println("Entry has TRUE rule");
 
 			// retrieve the relations by terminology id
 			for (MapRelation relation : mapProject.getMapRelations()) {
@@ -195,7 +195,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 			// if entry has a target and not TRUE rule
 		} else {
 
-			System.out.println("Entry has rule not TRUE");
+			// System.out.println("Entry has rule not TRUE");
 			// retrieve the relations by terminology id
 			for (MapRelation relation : mapProject.getMapRelations()) {
 				if (relation.getTerminologyId().equals("447639009")) {
@@ -213,9 +213,6 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 	public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry)
 			throws Exception {
 
-		System.out.println("Computing map advice for entry: "
-				+ mapEntry.toString());
-
 		List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
 
 		// TODO Check if this needs to be re-added
@@ -230,7 +227,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 		 * !mapEntry.getMapRelation().getTerminologyId().equals("447637006")) {
 		 * boolean adviceFound = false;
 		 * 
-		 * System.out.println("Checking advices for mapProject, " +
+		 * // System.out.println("Checking advices for mapProject, " +
 		 * mapProject.getMapAdvices().size() + " advices found");
 		 * 
 		 * for (MapAdvice advice : mapProject.getMapAdvices()) { if
@@ -238,7 +235,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 		 * ().toUpperCase().equals(mapEntry.getMapRelation().getName
 		 * ().toUpperCase())) { advices.add(advice); adviceFound = true;
 		 * 
-		 * System.out.println("Found advice: " + advice.toString()); } } if
+		 * // System.out.println("Found advice: " + advice.toString()); } } if
 		 * (!adviceFound) throw new Exception
 		 * ("Advice was not found in mapProject " + mapProject.getName() +
 		 * " that matches mapRelation " + mapEntry.getMapRelation().getName() +
@@ -281,14 +278,14 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 						.equals("DESCENDANTS NOT EXHAUSTIVELY MAPPED"
 								.toLowerCase())) {
 					advices.add(advice);
-					System.out.println("Found advice: " + advice.toString());
+					// System.out.println("Found advice: " + advice.toString());
 				}
 			}
 		}
 
-		System.out.println("computed advices: ");
+		// System.out.println("computed advices: ");
 		for (MapAdvice advice : advices) {
-			System.out.println("  " + advice.getName());
+			// System.out.println("  " + advice.getName());
 		}
 
 		MapAdviceList mapAdviceList = new MapAdviceListJpa();
