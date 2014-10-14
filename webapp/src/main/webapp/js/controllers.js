@@ -10,7 +10,7 @@ var root_content = root_url + "content/";
 var root_metadata = root_url + "metadata/";
 var root_workflow = root_url + "workflow/";
 var root_security = root_url + "security/";
-var root_report = root_url + "report/";
+var root_reporting = root_url + "reporting/";
 
 mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $location) {
 	

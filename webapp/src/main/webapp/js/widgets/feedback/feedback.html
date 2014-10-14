@@ -1,16 +1,27 @@
 
 <form>
   <input ng-model="query"> <input type="submit" value="Search"
-    ng-click="retrieveFeedback(1)"> <input type="submit" value="Reset"
+    ng-click="retrieveFeedback(1, feedbackType, query)"> <input type="submit" value="Reset"
     ng-click="resetSearch()">
     &nbsp&nbsp{{nRecords}} results, page {{recordPage}} of {{numRecordPages}}
 </form>
 
   <pagination total-items="nRecords" page="recordPage" max-size="recordsPerPage"
     class="pagination-sm" boundary-links="true" rotate="true"
-    num-pages="numRecordPages" on-select-page="retrieveFeedback(page)"></pagination>
+    num-pages="numRecordPages" on-select-page="retrieveFeedback(page, feedbackType)"></pagination>
   
-    
+      <form>
+        <input type="radio" ng-model="feedbackType" value="ALL"
+          ng-change="retrieveFeedback(1, feedbackType, query)">All</input>
+        <input type="radio" ng-model="feedbackType" value="FEEDBACK"
+          ng-change="retrieveFeedback(1, feedbackType, query)">Feedback</input>
+        <input type="radio" ng-model="feedbackType" value="GROUP_FEEDBACK"
+          ng-change="retrieveFeedback(1, feedbackType, query)">Group Feedback</input>
+        <input type="radio" ng-model="feedbackType" value="ERROR_FEEDBACK"
+          ng-change="retrieveFeedback(1, feedbackType, query)">Error Feedback</input>
+        <input type="radio" ng-model="feedbackType" value="DISCREPANCY_REVIEW_FEEDBACK"
+          ng-change="retrieveFeedback(1, feedbackType, query)">Discrepancy Feedback</input>
+      </form>
 
 <div ng-show="feedbackConversations.length > 0">
 
@@ -23,7 +34,11 @@
         <i
           class="glyphicon glyphicon-eye-close pull-right"></i></a>
       </th>
-      <th style="width: 17%; padding: 5px;">Id</th>
+      <th style="width: 3%; padding: 5px;"><a title="Resolved">
+        <i
+          class="glyphicon glyphicon-ok"></i></a>
+      </th>
+      <th style="width: 14%; padding: 5px;">Id</th>
       <th style="width: 35%; padding: 5px;">Preferred Name</th>
       <th style="width: 20%; padding: 5px;">Title</th>
       <th style="width: 7%; padding: 5px;">Owner</th>
@@ -41,15 +56,20 @@
             <i class="glyphicon glyphicon-eye-close pull-right"></i></a>
           </td>
           <td ng-show="isFeedbackViewed(feedbackConversation) == true"></td>
+          <td>   
+             <span ng-show="feedbackConversation.userName == currentUser.userName">
+               <input type="checkbox" ng-model="feedbackConversation.resolved" 
+                 ng-click="feedbackConversation.resolved ? 
+   				 markActive(feedbackConversation) : markFeedbackResolved(feedbackConversation)">  
+             </span>
+          </td>
           <td><a href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">{{feedbackConversation.terminologyId}}</a></td>
           <td>{{feedbackConversation.defaultPreferredName}}</td>
           <td ng-bind-html="to_trusted(feedbackConversation.title)"></td>
-          <td>{{feedbackConversation.feedback[0].sender.userName}}</td>
+          <td>{{feedbackConversation.userName}}</td>
           <td>{{feedbackConversation.lastModified | date:'MM-dd-yyyy HH:mm'}}&nbsp;
           ({{feedbackConversation.feedback[feedbackConversation.feedback.length -1].sender.userName}})</td>
         </tr>
-   
-
   </tbody>
 
 

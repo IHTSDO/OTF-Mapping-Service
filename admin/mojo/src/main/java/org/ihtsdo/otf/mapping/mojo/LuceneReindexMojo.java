@@ -19,6 +19,7 @@ import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.reports.ReportJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
@@ -89,6 +90,7 @@ public class LuceneReindexMojo extends AbstractMojo {
 			objectsToReindex.add("TreePositionJpa");
 			objectsToReindex.add("TrackingRecordJpa");
 			objectsToReindex.add("FeedbackConversationJpa");
+			objectsToReindex.add("ReportJpa");
 			
 		// otherwise, construct set of indexed objects
 		} else {
@@ -200,6 +202,18 @@ public class LuceneReindexMojo extends AbstractMojo {
 				.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
 				.startAndWait();
 				objectsToReindex.remove("FeedbackConversationJpa");
+			}
+			
+			// Feedback Conversations
+			if (objectsToReindex.contains("ReportJpa")) {
+				getLog().info("  Creating indexes for ReportJpa");
+				fullTextEntityManager.purgeAll(ReportJpa.class);
+				fullTextEntityManager.flushToIndexes();
+				fullTextEntityManager.createIndexer(ReportJpa.class)
+				.batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+				.threadsToLoadObjects(4).threadsForSubsequentFetching(8)
+				.startAndWait();
+				objectsToReindex.remove("ReportJpa");
 			}
 			
 			if (objectsToReindex.size() != 0) {

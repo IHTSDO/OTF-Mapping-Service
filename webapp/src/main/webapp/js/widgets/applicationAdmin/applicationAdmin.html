@@ -102,6 +102,11 @@
                 ng-options="item as item.displayName for item in allowableMapRelationStyles"  ng-change="setEditingPerformed(project)"
                 style="margin-bottom:5px; width:100%;">
                 </select>
+                <select tooltip-placement="top" tooltip="Project Specific Algorithm Handler" 
+                ng-init="projectSpecificAlgorithmHandlerClass=getHandler(project)" ng-model="project.projectSpecificAlgorithmHandlerClass"
+                ng-options="item as item for item in handlers"   ng-change="setEditingPerformed(project)"
+                style="margin-bottom:5px; width:100%;">
+                </select>
                 <input tooltip-placement="top" tooltip="Map Principle Document Name" 
                   ng-model="project.mapPrincipleSourceDocumentName" ng-change="setEditingPerformed(project)"
                   style="margin-bottom:5px; width:100%;"></input>
@@ -171,6 +176,9 @@
       <tr><td>Map Relation Style </td><td><select ng-model="newMapRelationStyle"
         ng-options="item as item.displayName for item in allowableMapRelationStyles">
       </select></td></tr>
+      <tr><td>Project Specific Algorithm Handler </td><td><select ng-model="newHandler"
+        ng-options="item as item.value for item in handlers">
+      </select></td></tr>
       <tr><td>Map Principle Document Name </td><td>
         <input id="newMapProjectMapPrincipleSourceDocumentName" type="text" 
           ng-model="newMapProjectMapPrincipleSourceDocumentName">  </td></tr>
@@ -180,8 +188,8 @@
         newMapProjectDestinationVersion, newMapProjectRefSetId, newMapProjectPublished, 
         newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic, 
         newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag, 
-        newMapProjectMapType, newWorkflowType, newMapRelationStyle, newMapProjectMapPrincipleSourceDocumentName); 
-          newMapProjectName = ''; newMapProjectRefSetId = ''; 
+        newMapProjectMapType, newWorkflowType, newMapRelationStyle, newHandler, newMapProjectMapPrincipleSourceDocumentName); 
+          newMapProjectName = ''; newMapProjectRefSetId = ''; newHandler = '';
           newMapProjectSourceVersion = ''; newMapProjectDestinationVersion = '';
           newMapProjectPublished = false; 
           newMapProjectRuleBased = false; newMapProjectGroupStructure = false; 
