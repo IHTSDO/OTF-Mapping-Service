@@ -97,6 +97,8 @@ public class TerminologyRemoverMojo extends AbstractMojo {
       config.load(in);
       in.close();
       getLog().info("  properties = " + config);
+      // NOTE: ideall this would not use entity manager, 
+      // but we do not have services for all data types yet.
       EntityManagerFactory factory =
           Persistence.createEntityManagerFactory("MappingServiceDS", config);
       EntityManager manager = factory.createEntityManager();

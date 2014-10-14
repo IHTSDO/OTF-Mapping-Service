@@ -1,7 +1,13 @@
-
+  
+ <span ng-show="record != null && record.mapEntry.length > 0" >Record owned by: {{record.owner.name}}
  <div otf-map-record-wide record="record" project="focusProject" show-title="false"></div>
-   <hr>  
-   Record owned by: {{record.owner.name}}     
+ <hr> </span> 
+ <span ng-show="record1 != null && record1.mapEntry.length > 0" >Record owned by: {{record1.owner.name}}
+ <div otf-map-record-wide record="record1" project="focusProject" show-title="false"></div>
+ <hr></span>
+ <span ng-show="record2 != null && record2.mapEntry.length > 0">Record owned by: {{record2.owner.name}}
+ <div otf-map-record-wide record="record2" project="focusProject" show-title="false"></div>
+ <hr></span>  
          <!-- display items in feedback conversation -->
          <div ng-show="conversation.feedback.length > 0" style="margin-top:3px;">
             <div ng-repeat="feedback in conversation.feedback">
@@ -38,3 +44,10 @@
 <span ng-show ="conversation.active == false"  class="alert alert-warning" disabled>
     Record is inactive.
 </span>
+<input type="checkbox" ng-model="markUnviewed" ng-click="markUnviewed ? 
+   markViewed(conversation, currentUser) : markFeedbackUnviewed(conversation)">
+   Mark unviewed
+<span ng-show="conversation.userName == currentUser.userName">
+  <input type="checkbox" ng-model="conversation.resolved" ng-click="conversation.resolved ? 
+    markActive(conversation) : markFeedbackResolved(conversation)">
+    Mark resolved</span><br>

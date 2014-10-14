@@ -27,6 +27,21 @@ public interface FeedbackConversation {
 	public void setId(Long id);
 
 	/**
+	 * Returns the map project id.
+	 * 
+	 * @return the map project id
+	 */
+	public Long getMapProjectId();
+
+	/**
+	 * Sets the map project id.
+	 * 
+	 * @param mapProjectId
+	 *            the map project id
+	 */
+	public void setMapProjectId(Long mapProjectId);
+	
+	/**
 	 * Returns the feedbacks.
 	 * 
 	 * @return the feedbacks
@@ -47,14 +62,14 @@ public interface FeedbackConversation {
 	 * @param active
 	 *            the active
 	 */
-	public void setActive(boolean active);
+	public void setResolved(boolean active);
 
 	/**
 	 * Indicates whether or not active is the case.
 	 * 
 	 * @return <code>true</code> if so, <code>false</code> otherwise
 	 */
-	public boolean isActive();
+	public boolean isResolved();
 
 	/**
 	 * Returns the map record id.
@@ -187,5 +202,19 @@ public interface FeedbackConversation {
 	 * @param feedback the feedback
 	 */
 	public void addFeedback(Feedback feedback);
+
+	/**
+	 * Sets the user name.
+	 *
+	 * @param userName the user name
+	 */
+	public void setUserName(String userName);
+
+	/**
+	 * Returns the user name.
+	 *
+	 * @return the user name
+	 */
+	public String getUserName();
 
 }

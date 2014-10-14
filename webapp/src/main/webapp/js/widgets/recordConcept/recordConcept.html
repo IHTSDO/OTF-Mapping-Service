@@ -22,51 +22,50 @@
 
 	<div style="width: 100%" ng-repeat="record in recordsInProject"
 		ng-class-odd="'odd'" ng-class-even="'even'">
-		
-		<div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-			Owner: {{record.owner.name}}&nbsp<a
-              title="Edit"
-              ng-show="isEditable(record) == true" 
-              ng-click="editRecord(record)"><i
-              class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
+
+		<div
+			ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+			Owner: {{record.owner.name}}&nbsp<a title="Edit"
+				ng-show="isEditable(record) == true" ng-click="editRecord(record)"><i
+				class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
 			Status: {{record.workflowStatus}}
-        
-        </div>
-		
-		
+
+		</div>
+
+
 		<div otf-map-record-wide record="record" project="focusProject"
 			show-title="false"></div>
-		
+
 	</div>
 
 
-	<h4 ng-show="recordsNotInProject.length > 0">Map Records for Other Projects</h4>
+	<h4 ng-show="recordsNotInProject.length > 0">Map Records for Other
+		Projects</h4>
 	<div ng-repeat="recordsForProject in recordsNotInProject">
 
 		<h4>{{getProjectName(recordsForProject[0])}}</h4>
-		
-		
+
+
 
 		<div ng-repeat="record in recordsForProject" ng-class-odd="'odd'"
 			ng-class-even="'even'">
-			
-			
-			<div ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-			Owner: {{record.owner.name}}&nbsp<a
-              title="Edit"
-              ng-show="isEditable(record) == true" 
-              ng-click="editRecord(record)"><i
-              class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
-			Status: {{record.workflowStatus}}
-        
-        </div>
-			
+
+
+			<div
+				ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+				Owner: {{record.owner.name}}&nbsp<a title="Edit"
+					ng-show="isEditable(record) == true" ng-click="editRecord(record)"><i
+					class="glyphicon glyphicon glyphicon-pencil pull-right"></i></a><br>
+				Status: {{record.workflowStatus}}
+
+			</div>
+
 			<div otf-map-record-wide record="record" project="focusProject"
 				show-title="false" style="width: 80%;"></div>
 		</div>
 
 	</div>
-	
+
 	<!-- <table class="table">
     <thead>
       <tr>
@@ -282,8 +281,32 @@
 <div
 	ng-show="concept.relationship.length > 0 || concept.children.length > 0">
 
-	<h4>Concept Navigation</h4>
-	<p></p>
+	<h4>Concept Information</h4>
+	<button class="btn btn-sm btn-primary" ng-click="openConceptBrowser()">SNOMED
+		CT Browser</button>
+	<div style="display: inline" class="dropdown"
+		ng-show="concept.relationship.length > 0">
+		<button class="dropdown-toggle btn btn-sm btn-primary">Parents</button>
+		<ul class="dropdown-menu">
+			<strong>Parents</strong>
+			<li
+				ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
+				<a href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:
+					{{relationship.destinationConceptPreferredName}}</a>
+			</li>
+		</ul>
+	</div>
+	<div style="display: inline" class="dropdown"
+		ng-show="concept.children.length > 0">
+		<button class="dropdown-toggle btn btn-sm btn-primary">Children</button>
+		<ul class="dropdown-menu">
+			<strong>Children</strong>
+			<li ng-repeat="concept in concept.children | orderBy: 'value'">
+				<a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
+					{{concept.value}}</a>
+			</li>
+		</ul>
+	</div>
 
 	<table width="100%">
 
@@ -292,28 +315,8 @@
 				<td style="width: 5%"></td>
 				<td style="width: 95%">
 					<!--  Navigation and Unmapped Descendants -->
-					<div class="dropdown" ng-show="concept.relationship.length > 0">
-						<a class="dropdown-toggle">Parents</a>
-						<ul class="dropdown-menu">
-							<strong>Parents</strong>
-							<li
-								ng-repeat="relationship in concept.relationship | orderBy:'destinationConceptPreferredName'">
-								<a
-								href="#/record/conceptId/{{relationship.destinationConceptId}}">{{relationship.destinationConceptId}}:
-									{{relationship.destinationConceptPreferredName}}</a>
-							</li>
-						</ul>
-					</div>
-					<div class="dropdown" ng-show="concept.children.length > 0">
-						<a class="dropdown-toggle">Children</a>
-						<ul class="dropdown-menu">
-							<strong>Children</strong>
-							<li ng-repeat="concept in concept.children | orderBy: 'value'">
-								<a href="#/record/conceptId/{{concept.terminologyId}}">{{concept.terminologyId}}:
-									{{concept.value}}</a>
-							</li>
-						</ul>
-					</div>
+
+
 				</td>
 			</tr>
 	</table>
@@ -348,5 +351,7 @@
 	<p></p>
 
 </div>
+
+<div style="height: 400px; width: 100%;"> </div>
 
 <div ng-include src="'./partials/footer.html'"></div>

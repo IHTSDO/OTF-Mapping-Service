@@ -32,24 +32,28 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
 	@Override
 	public ValidationResult validateTargetCodes(MapRecord mapRecord)
 			throws Exception {
-		
-		System.out.println("Validating target codes");
+
+		// System.out.println("Validating target codes");
 
 		ValidationResult validationResult = new ValidationResultJpa();
 		ContentService contentService = new ContentServiceJpa();
-		
-		// first check if there is a SNOMED CT SOURCE CODE NOT MAPPABLE TO TARGET CODING SCHEME relation present
+
+		// first check if there is a SNOMED CT SOURCE CODE NOT MAPPABLE TO
+		// TARGET CODING SCHEME relation present
 		// if present, there should be only one map entry
 		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 			if (mapEntry.getMapRelation() != null) {
-				System.out.println("Found map relation: " + mapEntry.getMapRelation().toString());
-				if (mapEntry.getMapRelation().getTerminologyId().equals("447556008")) {
+			
+				if (mapEntry.getMapRelation().getTerminologyId()
+						.equals("447556008")) {
 					// if more than one entry is present, add an error
 					if (mapRecord.getMapEntries().size() > 1) {
-						validationResult.addError("Cannot assign NOT MAPPABLE map relation to an entry when other entries are present");
+						validationResult
+								.addError("Cannot assign NOT MAPPABLE map relation to an entry when other entries are present");
 						return validationResult;
-					// otherwise, this record is fine
-					} else return validationResult;
+						// otherwise, this record is fine
+					} else
+						return validationResult;
 				}
 			}
 		}
@@ -57,42 +61,51 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
 		// otherwise, validate the target codes
 		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 
-			// get concept
-			Concept concept = contentService.getConcept(
-					mapEntry.getTargetId(),
-					mapProject.getDestinationTerminology(),
-					mapProject.getDestinationTerminologyVersion());
+			// add an error if neither relation nor target are set
+			if (mapEntry.getMapRelation() == null
+					&& (mapEntry.getTargetId() == null || mapEntry
+							.getTargetId().equals(""))) {
 
-			// verify that concept exists
-			if (concept == null) {
-				validationResult.addError("Target code "
-						+ mapEntry.getTargetId()
-						+ " not found in database!"
-						+ " Entry:"
-						+ (mapProject.isGroupStructure() ? " group "
-								+ Integer.toString(mapEntry.getMapGroup())
-								+ "," : "") + " map priority "
-						+ Integer.toString(mapEntry.getMapPriority()));
+				validationResult
+						.addError("A relation indicating the reason must be selected when no target is assigned.");
 
-				// if concept exists, verify that it is a leaf node (no
-				// children)
 			} else {
-				if (!isTargetCodeValid(mapEntry.getTargetId())) {
+				// get concept
+				Concept concept = contentService.getConcept(
+						mapEntry.getTargetId(),
+						mapProject.getDestinationTerminology(),
+						mapProject.getDestinationTerminologyVersion());
 
-					validationResult.addError("Target "
+				// verify that concept exists
+				if (concept == null) {
+					validationResult.addError("Target code "
 							+ mapEntry.getTargetId()
-							+ " is not a leaf node!"
+							+ " not found in database!"
 							+ " Entry:"
 							+ (mapProject.isGroupStructure() ? " group "
-									+ Integer.toString(mapEntry
-											.getMapGroup()) + "," : "")
-							+ " map priority "
+									+ Integer.toString(mapEntry.getMapGroup())
+									+ "," : "") + " map priority "
 							+ Integer.toString(mapEntry.getMapPriority()));
 
+					// if concept exists, verify that it is a leaf node (no
+					// children)
+				} else {
+					if (!isTargetCodeValid(mapEntry.getTargetId())) {
+
+						validationResult.addError("Target "
+								+ mapEntry.getTargetId()
+								+ " is not a leaf node!"
+								+ " Entry:"
+								+ (mapProject.isGroupStructure() ? " group "
+										+ Integer.toString(mapEntry
+												.getMapGroup()) + "," : "")
+								+ " map priority "
+								+ Integer.toString(mapEntry.getMapPriority()));
+
+					}
 				}
 			}
 		}
-		
 
 		contentService.close();
 		return validationResult;

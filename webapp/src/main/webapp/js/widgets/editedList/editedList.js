@@ -31,7 +31,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 
 	$scope.$on('availableWork.notification.editWork', function(event, parameters) {
 
-		console.debug("editedListCtrl: Detected editWork notificatoin from availableWork widget");
+		console.debug("editedListCtrl: Detected editWork notification from availableWork widget");
 		$scope.editWork(parameters.editedWork);
 
 	});
@@ -48,6 +48,7 @@ angular.module('mapProjectApp.widgets.editedList', ['adf.provider'])
 		}
 	});
 	
+	// called by user-click, not automatically loaded
 	$scope.retrieveEditedWork = function(page, queryTerms) {
 
 		console.debug("Retrieving edited work", page, queryTerms);

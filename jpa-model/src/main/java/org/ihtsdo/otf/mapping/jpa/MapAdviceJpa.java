@@ -83,7 +83,7 @@ public class MapAdviceJpa implements MapAdvice {
 	 */
 	public MapAdviceJpa(MapAdvice mapAdvice) {
 		super();
-		System.out.println("Copying map advice");
+		// System.out.println("Copying map advice");
 
 		this.id = mapAdvice.getId();
 		this.name = mapAdvice.getName();
@@ -91,7 +91,7 @@ public class MapAdviceJpa implements MapAdvice {
 		this.isAllowableForNullTarget = mapAdvice.isAllowableForNullTarget();
 		this.isComputed = mapAdvice.isComputed();
 
-		System.out.println("  " + toString());
+		// System.out.println("  " + toString());
 	}
 
 	/**

@@ -120,12 +120,16 @@ public class RootServiceRest {
 		throws WebApplicationException {
 
 		e.printStackTrace(); 
-		if (e instanceof LocalException) {				
-			throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
-		}
-		
+        if (e instanceof LocalException) {              
+          throw new WebApplicationException(Response.status(500).entity(e.getMessage()).build());
+        }
+ 
+        if (e instanceof WebApplicationException) {              
+          throw (WebApplicationException)e;
+        }
+
 		try {
-  	 	getConfigProperties();				
+  	   	  getConfigProperties();				
 		  sendEmail(e, whatIsHappening, userName, project, recordId);
 		} catch(Exception ex) {
 			ex.printStackTrace();
@@ -263,6 +267,11 @@ public class RootServiceRest {
 		}
 	}
 
+	/**
+	 * Sends email.
+	 *
+	 * @param feedbackEmail the feedback email
+	 */
 	public void sendEmail(FeedbackEmail feedbackEmail) {
 		
 		
@@ -289,7 +298,7 @@ public class RootServiceRest {
 			MappingService mappingService = new MappingServiceJpa();
 			for (String recipient : feedbackEmail.getRecipients()) {
 				MapUser mapUser = mappingService.getMapUser(recipient);
-				System.out.println(mapUser.getEmail());
+				// System.out.println(mapUser.getEmail());
 				msg.addRecipient(Message.RecipientType.TO, new InternetAddress(mapUser.getEmail()));	
 			}
 			
