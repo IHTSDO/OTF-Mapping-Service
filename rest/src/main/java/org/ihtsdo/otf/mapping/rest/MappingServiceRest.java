@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -43,7 +44,10 @@ import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -72,6 +76,9 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
@@ -2228,33 +2235,22 @@ public class MappingServiceRest extends RootServiceRest {
 	 * 
 	 * @param terminologyId
 	 *            the concept terminology id
-	 * @param terminology
-	 *            the concept terminology
-	 * @param terminologyVersion
-	 *            the concept terminology version
-	 * @param threshold
-	 *            the maximum number of descendants before a concept is no
-	 *            longer considered a low-level concept, and will return an
-	 *            empty list
 	 * @param authToken
 	 * @return the ConceptList of unmapped descendants
 	 */
 	@GET
-	@Path("/concept/id/{terminology}/{version}/{id}/unmappedDescendants/threshold/{threshold:[0-9][0-9]*}")
+	@Path("/concept/id/{terminologyId}/unmappedDescendants/project/id/{id:[0-9][0-9]*}")
 	@ApiOperation(value = "Find unmapped descendants of a concept.", notes = "Gets a list of search results for concepts having unmapped descendants.", response = Concept.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public SearchResultList getUnmappedDescendantsForConcept(
 	    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
-	    @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
-	    @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
-			@ApiParam(value = "Max descendants threshold, e.g. 11", required = true) @PathParam("threshold") int threshold,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
 		// log call
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /concept/id/" + terminology + "/"
-						+ terminologyVersion + "/" + terminologyId
-						+ "/unmappedDescendants/threshold/" + threshold);
+				"RESTful call (Mapping): /concept/id/" + terminologyId + 
+				"/project/id/" + mapProjectId);
 
 		String user = "";
 		try {
@@ -2272,7 +2268,7 @@ public class MappingServiceRest extends RootServiceRest {
 
 			SearchResultList results = mappingService
 					.findUnmappedDescendantsForConcept(terminologyId,
-							terminology, terminologyVersion, threshold, null);
+							mapProjectId, null);
 
 			mappingService.close();
 			return results;
@@ -2765,10 +2761,6 @@ public class MappingServiceRest extends RootServiceRest {
 	@ApiOperation(value = "Upload a mapping handbook file for a project.", notes = "Uploads a mapping handbook file for the specified project.", response = TreePositionListJpa.class)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response uploadMappingHandbookFile(
-//      @ApiParam(value = "The mapping handbook data", required = true) @FormDataParam("file") InputStream fileInputStream,
-//      @ApiParam(value = "The file upload header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-//      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("mapProjectId") Long mapProjectId,
-//      @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
       @FormDataParam("file") InputStream fileInputStream,
       @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
       @PathParam("mapProjectId") Long mapProjectId,
@@ -2840,6 +2832,58 @@ public class MappingServiceRest extends RootServiceRest {
 		}
 	}
 
+	/**
+	 * Returns all project specific algorithm handlers
+	 * 
+	 * @param authToken
+	 * 
+	 * @return the project specific algorithm handlers
+	 */
+	@GET
+	@Path("/handler/handlers")
+	@ApiOperation(value = "Get all project specific algorithm handlers.", notes = "Gets all project specific algorithm handlers.", response = SearchResultListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultListJpa getProjectSpecificAlgorithmHandlers(
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /handler/handlers");
+		String user = "";
+		
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve the project specific algorithm handlers.")
+								.build());
+
+			MappingService mappingService = new MappingServiceJpa();
+			SearchResultListJpa handlers = new SearchResultListJpa();
+			
+			Reflections reflections = new Reflections(
+				    ClasspathHelper.forPackage("org.ihtsdo.otf.mapping.jpa.handlers"), new SubTypesScanner());
+			Set<Class<? extends ProjectSpecificAlgorithmHandler>> implementingTypes =
+				     reflections.getSubTypesOf(ProjectSpecificAlgorithmHandler.class);
+			
+			for (Class<? extends ProjectSpecificAlgorithmHandler> handler : implementingTypes) {
+				SearchResult result = new SearchResultJpa();
+				result.setValue(handler.getName());
+				handlers.addSearchResult(result);
+			}
+			mappingService.close();
+			return handlers;
+
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve project specific algorithm handlers", user, "", "");
+			return null;
+		}
+	}
+	
+	
 	/**
 	 * Save uploaded file to a defined location on the server.
 	 *

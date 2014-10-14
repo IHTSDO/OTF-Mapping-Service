@@ -316,10 +316,8 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 
 		$http({
 			url: root_mapping + "concept/id/" 
-			+ $scope.concept.terminology + "/"
-			+ $scope.concept.terminologyVersion + "/"
 			+ $scope.concept.terminologyId + "/"
-			+ "unmappedDescendants/threshold/10",
+			+ "unmappedDescendants/project/id/"  + $scope.focusProject.id,
 			dataType: "json",
 			method: "GET",
 			headers: {
