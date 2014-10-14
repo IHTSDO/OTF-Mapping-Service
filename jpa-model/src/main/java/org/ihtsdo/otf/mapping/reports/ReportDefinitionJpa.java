@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
+import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
 import org.ihtsdo.otf.mapping.helpers.ReportType;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -49,9 +50,9 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	private boolean isRateReport = false;
 	
 	/** The time period (in days) for diff and rate reports */
-	@Column(nullable = true)
-	private int timePeriodInDays;
-
+	@Enumerated(EnumType.STRING)
+	private ReportTimePeriod timePeriod;
+	
 	/** The result type. */
 	@Enumerated(EnumType.STRING)
 	private ReportResultType resultType;
@@ -287,16 +288,16 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getTimePeriodInDays()
 	 */
 	@Override
-	public int getTimePeriodInDays() {
-		return timePeriodInDays;
+	public ReportTimePeriod getTimePeriod() {
+		return this.timePeriod;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setTimePeriodInDays(int)
 	 */
 	@Override
-	public void setTimePeriodInDays(int timePeriod) {
-		this.timePeriodInDays = timePeriod;
+	public void setTimePeriod(ReportTimePeriod timePeriod) {
+		this.timePeriod = timePeriod;
 		
 	}
 
