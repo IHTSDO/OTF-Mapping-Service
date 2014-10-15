@@ -893,21 +893,6 @@ public interface MappingService extends RootService {
 			List<ComplexMapRefSetMember> complexMapRefSetMembers,
 			WorkflowStatus workflowStatus, float samplingRate) throws Exception;
 
-
-	/**
-	 * Gets the map record for project and concept.
-	 * 
-	 * @param mapProjectId
-	 *            the map project id
-	 * @param terminologyId
-	 *            the terminology id
-	 * @return the map record for project and concept
-	 * @throws Exception
-	 *             the exception
-	 */
-	public MapRecord getMapRecordForProjectAndConcept(Long mapProjectId,
-			String terminologyId) throws Exception;
-
 	/**
 	 * Process release.
 	 *
@@ -929,5 +914,8 @@ public interface MappingService extends RootService {
 	 * @throws Exception 
 	 */
 	public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice) throws Exception;
+
+	MapRecordList getMapRecordsForProjectAndConcept(Long mapProjectId,
+			String terminologyId) throws Exception;
 
 }
