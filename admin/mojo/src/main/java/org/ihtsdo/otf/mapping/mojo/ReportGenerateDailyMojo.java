@@ -83,6 +83,13 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
+		
+	
+		
+		try {
+			
+			ReportService reportService = new ReportServiceJpa();
+			
 		getLog().info("Starting generation of daily reports ...");
 		
 		if (refSetId == null)
@@ -100,8 +107,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 		else 
 			getLog().info("End date:   " + endDate);
 		
-		try {
-			
+	
 			// parse the dates
 			DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 			Date start = dateFormat.parse(startDate);
@@ -126,7 +132,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 			
 			mappingService.close();
 			
-			ReportService reportService = new ReportServiceJpa();
+
 			
 			for (MapProject mapProject : mapProjects) {
 				reportService.generateReportsForDateRange(mapProject, mapUser, start, end);

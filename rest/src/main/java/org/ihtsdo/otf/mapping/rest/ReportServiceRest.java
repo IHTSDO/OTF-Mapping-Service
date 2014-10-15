@@ -75,11 +75,11 @@ public class ReportServiceRest extends RootServiceRest {
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {}
+				/* throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to retrieve reports.")
-								.build());
+								.build()); */
 
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
@@ -111,11 +111,11 @@ public class ReportServiceRest extends RootServiceRest {
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {}
+				/* throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to retrieve reports.")
-								.build());
+								.build()); */
 
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
@@ -147,11 +147,11 @@ public class ReportServiceRest extends RootServiceRest {
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {}
+				/* throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to retrieve reports.")
-								.build());
+								.build()); */
 
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
@@ -180,11 +180,11 @@ public class ReportServiceRest extends RootServiceRest {
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {}
+				/* throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to retrieve reports.")
-								.build());
+								.build()); */
 
 			// get the reports
 			ReportService reportService = new ReportServiceJpa();
@@ -218,11 +218,11 @@ public class ReportServiceRest extends RootServiceRest {
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {}
+				/* throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to retrieve reports.")
-								.build());
+								.build()); */
 
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(projectId);
@@ -265,11 +265,11 @@ public class ReportServiceRest extends RootServiceRest {
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {}
+				/* throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to retrieve reports.")
-								.build());
+								.build()); */
 
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(projectId);
@@ -312,11 +312,11 @@ public class ReportServiceRest extends RootServiceRest {
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {}
+				/* throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to retrieve map reports.")
-								.build());
+								.build()); */
 
 			MappingService mappingService = new MappingServiceJpa();
 			MapProject mapProject = mappingService.getMapProject(projectId);
@@ -361,11 +361,11 @@ public class ReportServiceRest extends RootServiceRest {
 			// authorize call
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {}
+				/* throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to retrieve reports.")
-								.build());
+								.build()); */
 
 			// get the required objects
 			MappingService mappingService = new MappingServiceJpa();
@@ -412,11 +412,11 @@ public class ReportServiceRest extends RootServiceRest {
 			MapUserRole role = securityService
 					.getApplicationRoleForToken(authToken);
 			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-				throw new WebApplicationException(
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {}
+				/* throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to retrieve reports.")
-								.build());
+								.build()) */
 
 			ReportService reportService = new ReportServiceJpa();
 			ReportResultItemList reportResultItemList = reportService
