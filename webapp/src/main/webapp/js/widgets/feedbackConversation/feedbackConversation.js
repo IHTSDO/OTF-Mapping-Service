@@ -105,7 +105,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 				var originIds = $scope.record.originIds;
 				if (originIds != null && originIds.length > 0) {
 					$http({
-						url: root_mapping + "record/id/" + originIds[0],
+						url: root_mapping + "record/id/" + originIds[0] + "/historical",
 						dataType: "json",
 						method: "GET",
 						authorization: $scope.currentUserToken,
@@ -119,7 +119,7 @@ angular.module('mapProjectApp.widgets.feedbackConversation', ['adf.provider'])
 						console.debug($scope.record1);
 						if (originIds != null && originIds.length == 2) {
 							$http({
-								url: root_mapping + "record/id/" + originIds[1],
+								url: root_mapping + "record/id/" + originIds[1] + "/historical",
 								dataType: "json",
 								method: "GET",
 								authorization: $scope.currentUserToken,

@@ -71,7 +71,6 @@ public class MapProjectDataImportMojo extends AbstractMojo {
    * 
    * @see org.apache.maven.plugin.Mojo#execute()
    */
-  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoFailureException {
     getLog().info("Starting importing metadata ...");
