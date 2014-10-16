@@ -51,6 +51,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
    * 
    * @throws MojoExecutionException the mojo execution exception
    */
+  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Start loading map notes data ...");

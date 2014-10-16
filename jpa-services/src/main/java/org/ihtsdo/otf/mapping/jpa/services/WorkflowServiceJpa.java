@@ -47,7 +47,6 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
-import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
@@ -65,7 +64,6 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
-import org.ihtsdo.otf.mapping.workflow.UserError;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 import org.ihtsdo.otf.mapping.workflow.WorkflowExceptionJpa;
 
@@ -3708,120 +3706,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return feedbackConversationList;
 	}
 
-
-
-	@Override
-	public void convertUserErrors() throws Exception {
-
-		int errorCt = 0;
-
-		MappingService mappingService = new MappingServiceJpa();
-
-		javax.persistence.Query query = manager
-				.createQuery("select e from UserErrorJpa e");
-
-		@SuppressWarnings("unchecked")
-		List<UserError> userErrors = query.getResultList();
-
-		// map for ensuring duplicate record ids are attached to the same
-		// conversation
-		Map<Long, FeedbackConversation> feedbackConversationMap = new HashMap<>();
-
-		for (UserError userError : userErrors) {
-
-			Logger.getLogger(WorkflowServiceJpa.class).info(
-					"Importing user error: " + userError.toString());
-
-			// get the most recent record for this error (may have been deleted)
-			MapRecord mapRecord = mappingService
-					.getMapRecordRevisions(userError.getMapRecordId())
-					.getMapRecords().get(0);
-			MapProject mapProject = mappingService.getMapProject(mapRecord
-					.getMapProjectId());
-
-			FeedbackConversation feedbackConversation = null;
-
-			if (feedbackConversationMap.containsKey(mapRecord.getId())) {
-				feedbackConversation = feedbackConversationMap.get(mapRecord
-						.getId());
-			} else {
-
-				// try to retrieve any existing feedback conversation for this
-				// concept
-				try {
-					feedbackConversation = (FeedbackConversation) manager
-							.createQuery(
-									"select f from FeedbackConversationJpa f where mapRecordId = :mapRecordId")
-							.setParameter("mapRecordId", mapRecord.getId())
-							.getSingleResult();
-
-					Logger.getLogger(WorkflowServiceJpa.class).info(
-							"  Found existing feedback conversation, id = "
-									+ feedbackConversation.getId());
-
-					// otherwise create a new feedback conversatoin
-				} catch (NoResultException e) {
-					feedbackConversation = new FeedbackConversationJpa();
-					feedbackConversation.setResolved(true);
-					feedbackConversation.setDefaultPreferredName(mapRecord
-							.getConceptName());
-					feedbackConversation.setDiscrepancyReview(false);
-					feedbackConversation.setMapRecordId(mapRecord.getId());
-					feedbackConversation.setTerminology(mapProject
-							.getSourceTerminology());
-					feedbackConversation.setTerminologyVersion(mapProject
-							.getSourceTerminologyVersion());
-					feedbackConversation.setTerminologyId(mapRecord
-							.getConceptId());
-					feedbackConversation.setTitle("Error Feedback");
-					feedbackConversation.setMapProjectId(mapRecord.getMapProjectId());
-
-					Logger.getLogger(WorkflowServiceJpa.class).info(
-							"  Created new feedback conversation.");
-				}
-			}
-
-			// create the feedback object
-			Feedback feedback = new FeedbackJpa();
-			feedback.setIsError(true);
-			feedback.setMapError(userError.getError());
-			feedback.setMessage(userError.getNote()
-					+ " (NOTE: Added by the original user error method)");
-			feedback.setSender(userError.getUserReportingError());
-			Set<MapUser> recipients = new HashSet<>();
-			recipients.add(userError.getUserInError());
-			feedback.setRecipients(recipients);
-			feedback.setTimestamp(userError.getTimestamp());
-
-			Logger.getLogger(WorkflowServiceJpa.class).info(
-					"  Created feedback: " + feedback.toString());
-
-			// attach to conversation
-			feedbackConversation.addFeedback(feedback);
-
-			// add or update the conversation
-			if (feedbackConversation.getId() == null) {
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						"  Adding feedback conversation");
-				this.addFeedbackConversation(feedbackConversation);
-			} else {
-				Logger.getLogger(WorkflowServiceJpa.class).info(
-						"  Updating feedback conversation");
-				this.updateFeedbackConversation(feedbackConversation);
-			}
-
-			// put the persisted feedback conversation in the map
-			feedbackConversationMap
-					.put(mapRecord.getId(), feedbackConversation);
-
-		}
-
-		Logger.getLogger(WorkflowServiceJpa.class).info(
-				errorCt + " errors successfully converted");
-
-		mappingService.close();
-
-	}
 
 	@SuppressWarnings("unchecked")
 	@Override
