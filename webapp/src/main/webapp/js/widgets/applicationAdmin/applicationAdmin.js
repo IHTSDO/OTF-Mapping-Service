@@ -23,7 +23,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				$scope.currentUser = localStorageService.get('currentUser');
 				$scope.focusProject = localStorageService.get('focusProject');
 				$scope.mapProjects = localStorageService.get("mapProjects");
-				$scope.mapUsers = localStorageService.get('mapUsers');
+				$scope.mapUsers = localStorageService.get('mapUsers');				
 				$scope.newAllowableForNullTarget = false;
 				$scope.newIsComputed = false;
 				$scope.newRelationAllowableForNullTarget = false;
@@ -166,7 +166,6 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 							"Content-Type": "application/json"
 						}
 					}).success(function(data) {
-
 					    $scope.handlers = new Array();
 						for (var i = 0; i < data.searchResult.length; i++) {
 						  $scope.handlers.push(data.searchResult[i].value);
@@ -175,6 +174,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					}).error(function(data, status, headers, config) {
 						 $rootScope.handleHttpError(data, status, headers, config);
 					});
+					
 					// set pagination variables
 					$scope.pageSize = 5;
 					$scope.maxSize = 5;
