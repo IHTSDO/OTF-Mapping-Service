@@ -23,7 +23,6 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
-import org.ihtsdo.otf.mapping.helpers.FeedbackEmailJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
@@ -1690,6 +1689,14 @@ public class WorkflowServiceRest extends RootServiceRest {
 		}
 	}
 
+	/**
+	 * Sets the map record false conflict.
+	 *
+	 * @param recordId the record id
+	 * @param isFalseConflict the is false conflict
+	 * @param authToken the auth token
+	 * @throws Exception the exception
+	 */
 	@POST
 	@Path("/record/id/{id:[0-9][0-9]*}/falseConflict/{isFalseConflict}")
 	@ApiOperation(value = "Sets whether record is false conflict.", notes = "Sets a flag indicating a false conflict for the specified parameters.", response = Response.class)
@@ -1869,6 +1876,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 	 *
 	 * @param mapProjectId the map project id
 	 * @param userName the user name
+	 * @param query the query
 	 * @param pfsParameter the pfs parameter
 	 * @param authToken the auth token
 	 * @return the feedback conversations for map project
