@@ -581,7 +581,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 	 * 
 	 * @throws Exception
 	 */
-	private void retireData() throws Exception {
+	@SuppressWarnings("unused")
+  private void retireData() throws Exception {
 
 		// //////////////
 		// Concepts
@@ -1329,8 +1330,13 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 		}
 	}
 
-	// helper function for relationships
-	private void cacheRelationship(Relationship r) {
+	/**
+	 * Cache relationship.
+	 *
+	 * @param r the r
+	 */
+	@SuppressWarnings("unused")
+  private void cacheRelationship(Relationship r) {
 
 		r.setEffectiveTime(this.deltaLoaderStartDate);
 

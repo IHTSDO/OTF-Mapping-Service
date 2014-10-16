@@ -301,6 +301,11 @@ public class MapProjectJpa implements MapProject {
 		this.workflowType = workflowType;
 	}
 
+	/**
+	 * Instantiates a {@link MapProjectJpa} from the specified parameters.
+	 *
+	 * @param project the project
+	 */
 	public MapProjectJpa(MapProject project) {
 		super();
 		this.id = project.getId();
