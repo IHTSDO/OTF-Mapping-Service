@@ -111,29 +111,5 @@ public class ICPCProjectSpecificAlgorithmHandler extends
 
   }
 
-  @Override
-  public boolean isTargetCodeValid(String terminologyId) throws Exception {
-
-    // check code for validity
-    if (!terminologyId.matches(".[0-9].*") || terminologyId.contains("-")) {
-      return false;
-    }
-
-    // second, verify concept exists in database
-    ContentService contentService = new ContentServiceJpa();
-    Concept concept =
-        contentService.getConcept(terminologyId,
-            mapProject.getDestinationTerminology(),
-            mapProject.getDestinationTerminologyVersion());
-
-    if (concept == null) {
-      contentService.close();
-      return false;
-    }
-
-    // otherwise, return true
-    contentService.close();
-    return true;
-  }
 
 }

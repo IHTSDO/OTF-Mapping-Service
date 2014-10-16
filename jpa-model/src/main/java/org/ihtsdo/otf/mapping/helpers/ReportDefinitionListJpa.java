@@ -28,6 +28,11 @@ public class ReportDefinitionListJpa extends AbstractResultList<ReportDefinition
     // do nothing
   }
   
+  /**
+   * Instantiates a {@link ReportDefinitionListJpa} from the specified parameters.
+   *
+   * @param reportDefinitions the report definitions
+   */
   public ReportDefinitionListJpa(List<ReportDefinition> reportDefinitions) {
 	  this.reportDefinitions = reportDefinitions;
   }

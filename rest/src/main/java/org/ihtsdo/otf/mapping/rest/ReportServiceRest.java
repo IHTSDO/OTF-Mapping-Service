@@ -6,7 +6,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -35,18 +34,24 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Workflow Services REST package.
+ *
+ * @author ${author}
  */
 @Path("/reporting")
 @Api(value = "/report", description = "Operations supporting reporting.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class ReportServiceRest extends RootServiceRest {
 
+	/**  The security service. */
 	private SecurityService securityService;
 
 	/**
 	 * Instantiates an empty {@link WorkflowServiceRest}.
+	 *
+	 * @throws Exception the exception
 	 */
 	public ReportServiceRest() throws Exception {
 		securityService = new SecurityServiceJpa();
@@ -87,7 +92,13 @@ public class ReportServiceRest extends RootServiceRest {
 
 	}
 
-
+	/**
+	 * Adds the report definitions.
+	 *
+	 * @param reportDefinition the report definition
+	 * @param authToken the auth token
+	 * @return the report definition
+	 */
 	@POST
 	@Path("/definition/add")
 	@ApiOperation(value = "Add a report definition", notes = "Adds a report definition based on a JSON or XML object", response = ReportDefinitionJpa.class)
@@ -124,6 +135,12 @@ public class ReportServiceRest extends RootServiceRest {
 
 	}
 
+	/**
+	 * Update report definitions.
+	 *
+	 * @param definition the definition
+	 * @param authToken the auth token
+	 */
 	@POST
 	@Path("/definition/update")
 	@ApiOperation(value = "Updates a report definition", notes = "Updates the attached report definition", response = Response.class)
@@ -157,6 +174,14 @@ public class ReportServiceRest extends RootServiceRest {
 
 	}
 
+	/**
+	 * Returns the reports for map project.
+	 *
+	 * @param projectId the project id
+	 * @param pfsParameter the pfs parameter
+	 * @param authToken the auth token
+	 * @return the reports for map project
+	 */
 	@POST
 	@Path("/report/reports/project/id/{projectId}")
 	@ApiOperation(value = "Get all reports of a certain type", notes = "Returns all reports in either JSON or XML format", response = ReportListJpa.class)
@@ -203,6 +228,15 @@ public class ReportServiceRest extends RootServiceRest {
 
 	}
 
+	/**
+	 * Returns the reports for map project and report type.
+	 *
+	 * @param projectId the project id
+	 * @param reportType the report type
+	 * @param pfsParameter the pfs parameter
+	 * @param authToken the auth token
+	 * @return the reports for map project and report type
+	 */
 	@POST
 	@Path("/report/reports/project/id/{projectId}/definition/id/{definitionId}")
 	@ApiOperation(value = "Get all reports for a definition", notes = "Returns all reports for a definition in either JSON or XML format", response = ReportListJpa.class)
@@ -251,6 +285,15 @@ public class ReportServiceRest extends RootServiceRest {
 
 	}
 	
+	/**
+	 * Generate report.
+	 *
+	 * @param reportType the report type
+	 * @param projectId the project id
+	 * @param userName the user name
+	 * @param authToken the auth token
+	 * @return the report
+	 */
 	@POST
 	@Path("/report/generate/project/id/{projectId}/user/id/{userName}")
 	@ApiOperation(value = "Generate a report", notes = "Generates and returns a report given a definition, in either JSON or XML format", response = ReportJpa.class)
@@ -303,6 +346,14 @@ public class ReportServiceRest extends RootServiceRest {
 		}
 	}
 
+	/**
+	 * Returns the report results.
+	 *
+	 * @param pfsParameter the pfs parameter
+	 * @param reportResultId the report result id
+	 * @param authToken the auth token
+	 * @return the report results
+	 */
 	@POST
 	@Path("/reportResult/id/{reportResultId}/items")
 	@ApiOperation(value = "Gets report result items", notes = "Returns paged report result items in either JSON or XML format", response = ReportJpa.class)

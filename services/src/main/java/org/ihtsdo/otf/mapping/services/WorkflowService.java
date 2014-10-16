@@ -23,6 +23,8 @@ import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 /**
  * Represents a service for answering questions and performing actions related
  * to workflow management.
+ *
+ * @author ${author}
  */
 public interface WorkflowService extends RootService {
 
@@ -320,7 +322,8 @@ public interface WorkflowService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void close() throws Exception;
+	@Override
+  public void close() throws Exception;
 
 	/**
 	 * Gets the transaction per operation.
@@ -329,7 +332,8 @@ public interface WorkflowService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public boolean getTransactionPerOperation() throws Exception;
+	@Override
+  public boolean getTransactionPerOperation() throws Exception;
 
 	/**
 	 * Sets the transaction per operation.
@@ -339,7 +343,8 @@ public interface WorkflowService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void setTransactionPerOperation(boolean transactionPerOperation)
+	@Override
+  public void setTransactionPerOperation(boolean transactionPerOperation)
 			throws Exception;
 
 	/**
@@ -348,7 +353,8 @@ public interface WorkflowService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void beginTransaction() throws Exception;
+	@Override
+  public void beginTransaction() throws Exception;
 
 	/**
 	 * Commit.
@@ -356,7 +362,8 @@ public interface WorkflowService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void commit() throws Exception;
+	@Override
+  public void commit() throws Exception;
 
 	/**
 	 * Generate random conflict data.
@@ -438,6 +445,12 @@ public interface WorkflowService extends RootService {
 	 */
 	public FeedbackConversation addFeedbackConversation(FeedbackConversation conversation) throws Exception;
 
+	/**
+	 * Update workflow exception.
+	 *
+	 * @param workflowException the workflow exception
+	 * @throws Exception the exception
+	 */
 	public void updateWorkflowException(WorkflowException workflowException)
 			throws Exception;
 	/**
@@ -448,6 +461,12 @@ public interface WorkflowService extends RootService {
 	 */
 	public void updateFeedbackConversation(FeedbackConversation conversation) throws Exception;
 
+	/**
+	 * Removes the workflow exception.
+	 *
+	 * @param workflowExceptiondId the workflow exceptiond id
+	 * @throws Exception the exception
+	 */
 	public void removeWorkflowException(Long workflowExceptiondId) throws Exception;
 	/**
 	 * Returns the feedback conversation.
@@ -458,9 +477,23 @@ public interface WorkflowService extends RootService {
 	 */
 	FeedbackConversation getFeedbackConversation(Long id) throws Exception;
 
+	/**
+	 * Adds the workflow exception.
+	 *
+	 * @param workflowException the workflow exception
+	 * @return the workflow exception
+	 * @throws Exception the exception
+	 */
 	public WorkflowException addWorkflowException(WorkflowException workflowException)
 			throws Exception;
 
+	/**
+	 * Returns the workflow exception.
+	 *
+	 * @param mapProject the map project
+	 * @param terminologyId the terminology id
+	 * @return the workflow exception
+	 */
 	public WorkflowException getWorkflowException(MapProject mapProject,
 			String terminologyId);
 	
@@ -508,13 +541,6 @@ public interface WorkflowService extends RootService {
 	 */
 	FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord)
 			throws Exception;
-	
-	/**
-	 * Convert user errors.
-	 *
-	 * @throws Exception the exception
-	 */
-	public void convertUserErrors() throws Exception;
 
 	/**
 	 * Fix feedback error flag.
@@ -535,13 +561,9 @@ public interface WorkflowService extends RootService {
 	 * Used for one-off error correction.
 	 *
 	 * @param mapProject the map project
-	 * @throws Exception 
+	 * @throws Exception the exception
 	 */
 	public void finishEditingDoneTrackingRecords(MapProject mapProject) throws Exception;
-
-
-
-
 
 }
 
