@@ -7,13 +7,14 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
-import org.ihtsdo.otf.mapping.helpers.ReportType;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -22,7 +23,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * The Class ReportDefinitionJpa.
  */
 @Entity
-@Table(name = "report_definitions")
+@Audited
+@Table(name = "report_definitions", uniqueConstraints = {
+		@UniqueConstraint(columnNames = {
+				"name"
+		})
+})
 @JsonIgnoreProperties(ignoreUnknown = true)
 @XmlRootElement(name = "reportDefinition")
 public class ReportDefinitionJpa implements ReportDefinition {
@@ -34,12 +40,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
 
 	/** The report type name. */
 	@Column(nullable = false)
-	private String reportName;
-	
-	/** The report type. */
-	@Column(nullable = false)
-	@Enumerated(EnumType.STRING)
-	private ReportType reportType;
+	private String name;
 	
 	/** The is diff report. */
 	@Column(nullable = false)
@@ -96,36 +97,19 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	 * @return the report name
 	 */
 	@Override
-	public String getReportName() {
-		return reportName;
+	public String getName() {
+		return name;
 	}
 
 	/**
 	 * Sets the report name.
 	 * 
-	 * @param reportName
+	 * @param name
 	 *            the new report name
 	 */
 	@Override
-	public void setReportName(String reportName) {
-		this.reportName = reportName;
-	}
-	
-	
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getReportType()
-	 */
-	@Override
-	public ReportType getReportType() {
-		return reportType;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setReportType(org.ihtsdo.otf.mapping.helpers.ReportType)
-	 */
-	@Override
-	public void setReportType(ReportType reportType) {
-		this.reportType = reportType;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	/*
@@ -265,24 +249,6 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	public void setDiffReport(boolean isDiffReport) {
 		this.isDiffReport = isDiffReport;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#isRateReport()
-	 */
-	@Override
-	public boolean isRateReport() {
-		return isRateReport;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setRateReport(boolean)
-	 */
-	@Override
-	public void setRateReport(boolean isRateReport) {
-		this.isRateReport = isRateReport;
-	}
-
-
 
 	/* (non-Javadoc)
 	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getTimePeriodInDays()
