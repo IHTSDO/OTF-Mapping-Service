@@ -2,6 +2,9 @@ package org.ihtsdo.otf.mapping.helpers;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a group of tree positions with descriptions.
+ */
 public class TreePositionDescriptionGroupJpa implements TreePositionDescriptionGroup {
 
 	private String typeId;
