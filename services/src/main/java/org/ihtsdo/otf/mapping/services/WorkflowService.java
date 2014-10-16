@@ -530,6 +530,15 @@ public interface WorkflowService extends RootService {
 	 */
 	public void fixErrorMessages() throws Exception;
 
+	/**
+	 * Finish editing done tracking records.
+	 * Used for one-off error correction.
+	 *
+	 * @param mapProject the map project
+	 * @throws Exception 
+	 */
+	public void finishEditingDoneTrackingRecords(MapProject mapProject) throws Exception;
+
 
 
 
