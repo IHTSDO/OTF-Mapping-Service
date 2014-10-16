@@ -3,8 +3,8 @@ package org.ihtsdo.otf.mapping.model;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
+import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 
-// TODO: Auto-generated Javadoc
 /**
  * Represents a map project.
  * 
@@ -597,5 +597,9 @@ public interface MapProject {
 	 * @param propagatedFlag the propagated flag
 	 */
 	public void setPropagatedFlag(boolean propagatedFlag);
+	
+	public Set<ReportDefinition> getReportDefinitions();
+	
+	public void setReportDefinitions(Set<ReportDefinition> reportDefinitions);
 
 }

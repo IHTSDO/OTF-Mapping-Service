@@ -36,6 +36,8 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.reports.ReportDefinition;
+import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -166,6 +168,11 @@ public class MapProjectJpa implements MapProject {
 	@ManyToMany(targetEntity = MapRelationJpa.class, fetch = FetchType.LAZY)
 	@IndexedEmbedded(targetElement = MapRelationJpa.class)
 	private Set<MapRelation> mapRelations = new HashSet<>();
+	
+	/** The allowable map relations for this MapProject. */
+	@ManyToMany(targetEntity = ReportDefinitionJpa.class, fetch = FetchType.LAZY)
+	@IndexedEmbedded(targetElement = ReportDefinitionJpa.class)
+	private Set<ReportDefinition> reportDefinitions = new HashSet<>();
 
 	/** The concepts in scope for this project. */
 	@ElementCollection
@@ -1480,5 +1487,23 @@ public class MapProjectJpa implements MapProject {
 	public void setPropagatedFlag(boolean propagatedFlag) {
 		this.propagatedFlag = propagatedFlag;
 	}
+  
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getReportDefinitions()
+	 */
+	@Override
+	@XmlElement(type = ReportDefinitionJpa.class, name = "reportDefinition")
+	public Set<ReportDefinition> getReportDefinitions() {
+		return reportDefinitions;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setReportDefinitions(java.util.Set)
+	 */
+	@Override
+	public void setReportDefinitions(Set<ReportDefinition> reportDefinitions) {
+		this.reportDefinitions = reportDefinitions;
+	}
+	
 
 }

@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -35,7 +34,6 @@ import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportListJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemListJpa;
-import org.ihtsdo.otf.mapping.helpers.ReportType;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -633,21 +631,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		return r;
 	}
 
-	@Override
-	public ReportDefinition getReportDefinition(ReportType reportType) {
-		ReportDefinition r = null;
-
-		// System.out.println(reportType.toString() + " " + reportType);
-
-		javax.persistence.Query query = manager
-				.createQuery("select r from ReportDefinitionJpa r where reportType = :reportType");
-		query.setParameter("reportType", reportType);
-
-		r = (ReportDefinition) query.getSingleResult();
-
-		return r;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -722,14 +705,14 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	public ReportList getReportsForMapProject(MapProject mapProject,
 			PfsParameter pfsParameter) {
 
-		return getReportsForMapProjectAndReportType(mapProject, null,
+		return getReportsForMapProjectAndReportDefinition(mapProject, null,
 				pfsParameter);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ReportList getReportsForMapProjectAndReportType(
-			MapProject mapProject, String reportType, PfsParameter pfsParameter) {
+	public ReportList getReportsForMapProjectAndReportDefinition(
+			MapProject mapProject, ReportDefinition reportDefinition, PfsParameter pfsParameter) {
 
 		// instantiate empty paging/filtering/sorting object if null
 		if (pfsParameter == null)
@@ -743,13 +726,13 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		// construct query based on whether reportType is specified
 		// note that results are ordered by descending timestamp
-		if (reportType != null) {
+		if (reportDefinition != null) {
 
 			query = manager
 					.createQuery(
-							"select r from ReportJpa r where mapProjectId = :mapProjectId and reportType = :reportType order by timestamp desc")
-					.setParameter("reportType", ReportType.valueOf(reportType));
-
+							"select r from ReportJpa r where mapProjectId = :mapProjectId and reportDefinition_id = :reportDefinition_id order by timestamp desc")
+					.setParameter("reportDefinition_id", reportDefinition.getId());
+							;
 		} else {
 			query = manager
 					.createQuery("select r from ReportJpa r where mapProjectId = :mapProjectId order by timestamp desc");
@@ -781,33 +764,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		return reportList;
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public Report getLastReportForReportType(MapProject mapProject,
-			String reportType) {
-
-		Logger.getLogger(ReportServiceJpa.class).info(
-				"Getting last report of type " + reportType
-						+ " for map project " + mapProject.getName());
-
-		try {
-
-			List<Report> reports = manager
-					.createQuery(
-							"select r from ReportJpa r where mapProjectId = :mapProjectId and reportType = :reportType order by timestamp desc")
-					.setParameter("reportType", ReportType.valueOf(reportType))
-					.setParameter("mapProjectId", mapProject.getId())
-					.getResultList();
-
-			this.handleReportLazyInitialization(reports.get(0));
-
-			return reports.get(0);
-		} catch (NoResultException e) {
-			return null;
-		}
-
-	}
-
+	
 	@Override
 	public void generateReportsForDateRange(MapProject mapProject,
 			MapUser mapUser, Date startDate, Date endDate) throws Exception {
@@ -854,7 +811,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 				if (isProperDate == true) {
 
 					this.generateReport(mapProject, mapUser,
-							reportDefinition.getReportName(), reportDefinition,
+							reportDefinition.getName(), reportDefinition,
 							startDate, true);
 				}
 
@@ -922,9 +879,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 			// replace the second timestamp with the modified date
 			query = query.replaceAll(":TIMESTAMP2:",
 					Long.toString(cal.getTimeInMillis()));
-			
-		} else if (reportDefinition.isRateReport() == true) {
-			// do nothing, not yet implemented
 		}
 		
 		/* TODO:  This provides some interesting problems with parsing in SQL, escape characters do not provide correct result
@@ -943,7 +897,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		report.setQuery(query); // use the modified query (i.e. the actually
 								// executed query)
 		report.setQueryType(reportDefinition.getQueryType());
-		report.setReportType(reportDefinition.getReportType());
 		report.setResultType(reportDefinition.getResultType());
 		report.setTimestamp(date.getTime());
 
@@ -1038,9 +991,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 				}
 			}
 
-			// if a rate report
-		} else if (reportDefinition.isRateReport()) {
-
 			// if a data-point report
 		} else {
 
@@ -1055,7 +1005,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 					reportResult = new ReportResultJpa();
 					reportResult.setDateValue("");
 					reportResult.setValue(value);
-					reportResult.setName(reportDefinition.getReportName());
+					reportResult.setName(reportDefinition.getName());
 					reportResult.setProjectName(mapProject.getName());
 					reportResult.setReport(report);
 				}

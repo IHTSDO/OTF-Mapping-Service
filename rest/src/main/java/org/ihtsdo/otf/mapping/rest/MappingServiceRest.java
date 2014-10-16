@@ -152,7 +152,7 @@ public class MappingServiceRest extends RootServiceRest {
 			return mapProjects;
 
 		} catch (Exception e) {
-			handleException(e, "trying to retrieve map projects", user, "", "");
+			this.handleException(e, "trying to retrieve map projects", user, "", "");
 			return null;
 		}
 	}

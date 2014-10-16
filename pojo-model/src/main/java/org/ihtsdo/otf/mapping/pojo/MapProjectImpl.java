@@ -10,7 +10,9 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 
+// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapProject}.
  * 
@@ -52,6 +54,9 @@ public class MapProjectImpl implements MapProject {
 
 	/** The allowable map relations for this MapProject. */
 	private Set<MapRelation> mapRelations = new HashSet<>();
+	
+	/** The report definitions available to this MapProject. */
+	private Set<ReportDefinition> reportDefinitions = new HashSet<>();
 
 	/** The ref set id. */
 	private String refSetId;
@@ -1371,12 +1376,18 @@ public class MapProjectImpl implements MapProject {
 		this.workflowType = workflowType;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapPrincipleSourceDocumentName()
+	 */
 	@Override
 	public String getMapPrincipleSourceDocumentName() {
 		return this.mapPrincipleSourceDocumentName;
 		
 	}
 		
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapPrincipleSourceDocumentName(java.lang.String)
+	 */
 	@Override
 	public void setMapPrincipleSourceDocumentName(
 		String mapPrincipleSourceDocumentName) {
@@ -1428,45 +1439,87 @@ public class MapProjectImpl implements MapProject {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setMapPrincipleSourceDocument(java.lang.String)
+	 */
 	@Override
 	public void setMapPrincipleSourceDocument(String mapPrincipleSourceDocument) {
 		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapPrincipleSourceDocument()
+	 */
 	@Override
 	public String getMapPrincipleSourceDocument() {
 		return mapPrincipleSourceDocument;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getErrorMessages()
+	 */
 	@Override
 	public Set<String> getErrorMessages() {
 		return errorMessages;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setErrorMessages(java.util.Set)
+	 */
 	@Override
 	public void setErrorMessages(Set<String> errorMessages) {
 		this.errorMessages = errorMessages;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getPropagationDescendantThreshold()
+	 */
 	@Override
 	public Integer getPropagationDescendantThreshold() {
 		return propagationDescendantThreshold;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setPropagationDescendantThreshold(java.lang.Integer)
+	 */
 	@Override
 	public void setPropagationDescendantThreshold(
 		Integer propagationDescendantThreshold) {
 		this.propagationDescendantThreshold = propagationDescendantThreshold;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#isPropagatedFlag()
+	 */
 	@Override
 	public boolean isPropagatedFlag() {
 		return propagatedFlag;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setPropagatedFlag(boolean)
+	 */
 	@Override
 	public void setPropagatedFlag(boolean propagatedFlag) {
 		this.propagatedFlag = propagatedFlag;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getReportDefinitions()
+	 */
+	@Override
+	public Set<ReportDefinition> getReportDefinitions() {
+		return reportDefinitions;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setReportDefinitions(java.util.Set)
+	 */
+	@Override
+	public void setReportDefinitions(Set<ReportDefinition> reportDefinitions) {
+		this.reportDefinitions = reportDefinitions;
+	}
+	
+	
 }
