@@ -14,7 +14,8 @@ public interface MetadataService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void close() throws Exception;
+	@Override
+  public void close() throws Exception;
 
 	/**
 	 * Returns the terminologies.

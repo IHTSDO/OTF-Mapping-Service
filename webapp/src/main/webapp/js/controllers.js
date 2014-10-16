@@ -22,13 +22,9 @@ mapProjectAppControllers.run(function($rootScope, $http, localStorageService, $l
 	
 	// global function to handle any type of error.  Currently only specifically implemented for authorizatoin failures.
     $rootScope.handleHttpError = function (data, status, headers, config) {
+		$rootScope.globalError = data.replace(/"/g, '');
 		if (status == "401") {
-	    	$rootScope.globalError = $rootScope.globalError + " Authorization failed.  Please log in again.";
 			$location.path("/");
-		} else if (data.indexOf("AuthToken does not have a valid username.") > 0) {
-			$location.path("/");
-		} else {
-			$rootScope.globalError = data.replace(/"/g, '');
 		}
 		window.scrollTo(0,0);		
     }

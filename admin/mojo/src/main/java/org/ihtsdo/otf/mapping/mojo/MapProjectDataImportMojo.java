@@ -95,7 +95,8 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 
       // get all project .xml files
       FilenameFilter projectFilter = new FilenameFilter() {
-  			public boolean accept(File dir, String name) {
+  			@Override
+        public boolean accept(File dir, String name) {
   				String lowercaseName = name.toLowerCase();
   				if (lowercaseName.endsWith(".xml") && lowercaseName.startsWith("project")) {
   					return true;

@@ -3,6 +3,9 @@ package org.ihtsdo.otf.mapping.helpers;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A tree position with a description.
+ */
 public class TreePositionDescriptionJpa implements TreePositionDescription {
 
 	private String name;

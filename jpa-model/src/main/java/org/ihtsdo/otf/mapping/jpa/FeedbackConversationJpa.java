@@ -58,7 +58,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   /**  List of feedback threads in the feedback conversation. */
 	@OneToMany(mappedBy = "feedbackConversation", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = FeedbackJpa.class)
 	@IndexedEmbedded(targetElement = FeedbackJpa.class)
-  private List<Feedback> feedbacks = new ArrayList<Feedback>();
+  private List<Feedback> feedbacks = new ArrayList<>();
 	
 	/** Flag for whether this feedback conversation is still active. */
 	@Column(nullable = false)
@@ -110,6 +110,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    * 
    * @return the id
    */
+  @Override
   public Long getId() {
   	return id;
   }
@@ -119,6 +120,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    * 
    * @param id the id
    */
+  @Override
   public void setId(Long id) {
   	this.id = id;
   }
@@ -128,7 +130,8 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    *
    * @return the feedbacks
    */
-	@XmlElement(type = FeedbackJpa.class, name = "feedback")
+	@Override
+  @XmlElement(type = FeedbackJpa.class, name = "feedback")
   public List<Feedback> getFeedbacks() {
 		if (feedbacks == null) feedbacks = new ArrayList<>(); // ensures proper deserialization
 		return feedbacks;
@@ -139,6 +142,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    *
    * @param feedbacks the feedbacks
    */
+  @Override
   public void setFeedbacks(List<Feedback> feedbacks) {
   	this.feedbacks = feedbacks;
   }
@@ -148,6 +152,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    *
    * @param resolved the resolved flag
    */
+  @Override
   public void setResolved(boolean resolved) {
   	this.isResolved = resolved;
   }
@@ -157,7 +162,8 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    *
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
-	@Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+	@Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public boolean isResolved() {
   	return isResolved;
   }
@@ -167,6 +173,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    *
    * @return the map record id
    */
+  @Override
   public Long getMapRecordId() {
   	return mapRecordId;
   }
@@ -176,6 +183,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    *
    * @param mapRecordId the map record id
    */
+  @Override
   public void setMapRecordId(Long mapRecordId) {
   	this.mapRecordId = mapRecordId;
   }

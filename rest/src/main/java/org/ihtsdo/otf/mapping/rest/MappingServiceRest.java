@@ -2231,11 +2231,11 @@ public class MappingServiceRest extends RootServiceRest {
 	 * TODO:  Make this project specific
 	 * 
 	 * Given concept information, returns a ConceptList of descendant concepts
-	 * without associated map records
-	 * 
-	 * @param terminologyId
-	 *            the concept terminology id
-	 * @param authToken
+	 * without associated map records.
+	 *
+	 * @param terminologyId            the concept terminology id
+	 * @param mapProjectId the map project id
+	 * @param authToken the auth token
 	 * @return the ConceptList of unmapped descendants
 	 */
 	@GET
@@ -2890,6 +2890,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 * @param uploadedInputStream the uploaded input stream
 	 * @param serverLocation the server location
 	 */
+  @SuppressWarnings("resource")
   private void saveFile(InputStream uploadedInputStream, String serverLocation) {
 		try {
 			OutputStream outputStream =
