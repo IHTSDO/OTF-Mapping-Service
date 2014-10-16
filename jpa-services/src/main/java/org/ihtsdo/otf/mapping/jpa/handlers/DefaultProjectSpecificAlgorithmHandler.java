@@ -1139,7 +1139,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 			} else {
 				throw new Exception(
-						"ASSIGN_FROM_SCRATCH on REVIEW_PROJECT_PATH failed.");
+						"ASSIGN_FROM_SCRATCH on REVIEW_PROJECT_PATH failed for concept " + mapRecord.getConceptId());
 			}
 
 			break;

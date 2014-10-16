@@ -52,6 +52,7 @@ public class SecurityServiceRest extends RootServiceRest {
       SecurityService securityService = new SecurityServiceJpa();
       return securityService.authenticate(username, password);
     } catch (Exception e) {
+  
       handleException(e, "trying to authenticate a map user");
       return null;
     }
