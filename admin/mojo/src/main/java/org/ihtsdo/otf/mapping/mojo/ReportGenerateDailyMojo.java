@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.handlers.ErrorHandler;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -53,20 +54,23 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 	 * @required
 	 */
 	private String refSetId = null;
-	
+
 	/**
 	 * Start date
+	 * 
 	 * @parameter
 	 * @required
 	 */
 	private String startDate = null;
-	
+
 	/**
 	 * End date
+	 * 
 	 * @parameter
 	 * 
 	 */
 	private String endDate = null;
+
 	/**
 	 * Instantiates a {@link ReportDailyPopulationMojo} from the specified
 	 * parameters.
@@ -83,68 +87,78 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
-		
-	
-		
+
+		ReportService reportService = null;
+		MapUser mapUser = null;
+		MapProject mapProject = null;
 		try {
-			
-			ReportService reportService = new ReportServiceJpa();
-			
-		getLog().info("Starting generation of daily reports ...");
-		
-		if (refSetId == null)
-			throw new MojoFailureException("You must specify at least one ref set id");
-		else
-			getLog().info("RefSetId(s): " + refSetId);
-		
-		if (startDate == null)
-			throw new MojoFailureException("You must specify a start date");
-		else 
-			getLog().info("Start date: " + startDate);
-		
-		if (endDate == null)
-			getLog().warn("No end date specified.  Reports will be computed through today");
-		else 
-			getLog().info("End date:   " + endDate);
-		
-	
+
+			reportService = new ReportServiceJpa();
+
+			getLog().info("Starting generation of daily reports ...");
+
+			if (refSetId == null)
+				throw new MojoFailureException(
+						"You must specify at least one ref set id");
+			else
+				getLog().info("RefSetId(s): " + refSetId);
+
+			if (startDate == null)
+				throw new MojoFailureException("You must specify a start date");
+			else
+				getLog().info("Start date: " + startDate);
+
+			if (endDate == null)
+				getLog().warn(
+						"No end date specified.  Reports will be computed through today");
+			else
+				getLog().info("End date:   " + endDate);
+
 			// parse the dates
 			DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 			Date start = dateFormat.parse(startDate);
 			Date end = endDate == null ? new Date() : dateFormat.parse(endDate);
-			
+
 			getLog().info("Parsed start date: " + start.toString());
 			getLog().info("Parsed end date:   " + end.toString());
-			
+
 			MappingService mappingService = new MappingServiceJpa();
-	
+
 			String refsetIds[] = refSetId.split(",");
 			List<MapProject> mapProjects = new ArrayList<>();
-			
+
 			// retrieve the map project objects
 			for (String id : refsetIds) {
-				MapProject mapProject = mappingService.getMapProjectForRefSetId(id);
+				mapProject = mappingService.getMapProjectForRefSetId(id);
 				mapProjects.add(mapProject);
 			}
-			
-			// get the loader map user
-			MapUser mapUser = mappingService.getMapUser("loader");
-			
-			mappingService.close();
-			
 
-			
-			for (MapProject mapProject : mapProjects) {
-				reportService.generateReportsForDateRange(mapProject, mapUser, start, end);
+			// get the loader map user
+			mapUser = mappingService.getMapUser("loader");
+
+			mappingService.close();
+
+			for (MapProject mp : mapProjects) {
+				reportService.generateReportsForDateRange(mp, mapUser, start,
+						end);
 			}
 			reportService.close();
-			
+
 			getLog().info("done ...");
 
-		} catch (Throwable e) {
+		} catch (Exception e) {
+			
+			ErrorHandler errorHandler = new ErrorHandler();
+			
+			errorHandler.sendEmail(e, "Error generating reports", "admin mojo",
+					mapProject == null ? "Project could not be retrieved" : mapProject.getName(),
+					"");
+				
+		
+
+			
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);
 		}
 	}
-
 }

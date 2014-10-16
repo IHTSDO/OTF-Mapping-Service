@@ -25,15 +25,12 @@ angular
 
 					// select options
 					$scope.reportSelected = null;
-
-					// select options
-					$scope.reportTypes = [ 'SPECIALIST_PRODUCTIVITY',
-							'TOTAL_EDITING', 'TOTAL_MAPPED' ];
+					
 					$scope.resultTypes = [ 'CONCEPT', 'MAP_RECORD' ];
 					$scope.availableRoles = [ 'VIEWER', 'SPECIALIST', 'LEAD',
 							'ADMINISTRATOR' ];
 					$scope.queryTypes = [ 'SQL', 'HQL', 'LUCENE' ];
-					$scope.timeRanges = [ 'Daily', 'Weekly', 'Monthly' ];
+					$scope.timeRanges = [ 'DAILY', 'WEEKLY', 'MONTHLY' ];
 
 					// value field parsing
 					$scope.valueFields = [];
@@ -66,38 +63,13 @@ angular
 											$http.defaults.headers.common.Authorization = $scope.currentUserToken;
 
 											// retrieve the definitions
-											$scope.retrieveReportDefinitions();
+											$scope.definitions = $scope.focusProject.reportDefinition;
 											
 											// retrieve the first page of
 											// reports
 											$scope.getReports(1, null, null);
 										}
 									});
-
-					$scope.retrieveReportDefinitions = function() {
-						// obtain the record
-						$http({
-							url : root_reporting + "definition/definitions",
-							dataType : "json",
-							method : "GET",
-							headers : {
-								"Content-Type" : "application/json"
-							}
-						}).success(function(data) {
-							$rootScope.glassPane--;
-							$scope.definitions = data.reportDefinition;
-
-						}).error(
-								function(data, status, headers, config) {
-									$rootScope.glassPane--;
-									$scope.definitions = null;
-									$rootScope.handleHttpError(data, status,
-											headers, config);
-								});
-
-					};
-
-			
 
 					$scope.getReports = function(page, reportType, queryReport) {
 						

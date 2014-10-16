@@ -3099,7 +3099,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 						if (mr.getWorkflowStatus().equals(
 								WorkflowStatus.REVISION))
 							revisionRecordFound = true;
-
+						
 						// check for lead review of a fixed error
 						else if (mr.getWorkflowStatus().equals(
 								WorkflowStatus.REVIEW_NEW)
