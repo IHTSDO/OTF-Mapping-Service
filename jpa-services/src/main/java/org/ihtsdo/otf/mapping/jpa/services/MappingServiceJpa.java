@@ -3526,6 +3526,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		BufferedWriter writer = new BufferedWriter(new FileWriter(
 				outputFileName));
 
+		// Write header
+		if (mapProject.getMapRefsetPattern() == "ExtendedMap") {
+          writer.write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId\r\n");
+		} else if (mapProject.getMapRefsetPattern() == "ComplexMap") {
+          writer.write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\r\n");
+		} else {
+		  writer.close();
+		  throw new Exception("Unsupported map refset pattern.");
+		}
+		writer.flush();
+		
 		// Create a map by concept id for quick retrieval of descendants
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"  Creating terminology id map");
