@@ -37,8 +37,9 @@
                 <configuration>
                   <refSetId>${refset.id}</refSetId>
                   <outputDirName>${output.dir}</outputDirName>
+                  <!-- e.g. 20150131 -->
                   <effectiveTime>${time}</effectiveTime>
-                  <moduleId>${module.id}</moduleId>>
+                  <moduleId>${module.id}</moduleId>
                 </configuration>
               </execution>
             </executions>
@@ -47,6 +48,6 @@
       </build>
     </profile>
 
-  
+ 
   </profiles>
 </project>
