@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import java.io.File;
-import java.io.FileReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -26,6 +24,7 @@ import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Top level class for all REST services.
@@ -70,24 +69,15 @@ public class RootServiceRest {
 	 */
 	public void getConfigProperties() throws Exception {
 
-		if (config == null) {
-
-			String configFileName = System.getProperty("run.config");
-			Logger.getLogger(this.getClass())
-					.info("  run.config = " + configFileName);
-			config = new Properties();
-			FileReader in = new FileReader(new File(configFileName));
-			config.load(in);
-			in.close();
+	  Properties config = ConfigUtility.getConfigProperties();
 			
-			m_from = config.getProperty("mail.smtp.user");
-			host_password = config.getProperty("mail.smtp.password");
-			host = config.getProperty("mail.smtp.host");
-			port = config.getProperty("mail.smtp.port");
-			recipients = config.getProperty("mail.smtp.to");
-
-			Logger.getLogger(this.getClass()).info("  properties = " + config);
-		}
+	  m_from = config.getProperty("mail.smtp.user");
+	  host_password = config.getProperty("mail.smtp.password");
+	  host = config.getProperty("mail.smtp.host");
+	  port = config.getProperty("mail.smtp.port");
+	  recipients = config.getProperty("mail.smtp.to");
+	  
+	  Logger.getLogger(this.getClass()).info("  properties = " + config);
 
 	}
 

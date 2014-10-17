@@ -30,6 +30,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Goal which loads an RF2 Delta of SNOMED CT data
@@ -371,14 +372,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 	 */
 	private void instantiateGlobalVars() throws Exception {
 
-		// create Entity Manager
-		String configFileName = System.getProperty("run.config");
-		getLog().info("  run.config = " + configFileName);
-		Properties config = new Properties();
-		FileReader in = new FileReader(new File(configFileName));
-		config.load(in);
-		in.close();
-		getLog().info("  properties = " + config);
+        Properties config = ConfigUtility.getConfigProperties();
 
 		// instantiate the services
 		contentService = new ContentServiceJpa();

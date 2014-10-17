@@ -76,6 +76,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
@@ -2779,15 +2780,7 @@ public class MappingServiceRest extends RootServiceRest {
 								.build());
 
 			// get destination directory for uploaded file
-			String configFileName = System.getProperty("run.config");
-			Logger.getLogger(MappingServiceRest.class).info(
-					"  run.config = " + configFileName);
-			Properties config = new Properties();
-			FileReader in = new FileReader(new File(configFileName));
-			config.load(in);
-			in.close();
-			Logger.getLogger(MappingServiceRest.class).info(
-					"  properties = " + config);
+		    Properties config = ConfigUtility.getConfigProperties();
 
 			String docDir = config.getProperty("map.principle.source.document.dir");
 			

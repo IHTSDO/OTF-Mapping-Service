@@ -28,6 +28,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Goal which imports project data from text files.
@@ -76,13 +77,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
     getLog().info("Starting importing metadata ...");
     try {
 
-      String configFileName = System.getProperty("run.config");
-      getLog().info("  run.config = " + configFileName);
-      Properties config = new Properties();
-      FileReader in = new FileReader(new File(configFileName)); 
-      config.load(in);
-      in.close();
-      getLog().info("  properties = " + config);
+      Properties config = ConfigUtility.getConfigProperties();
 
       // set the input directory
       String inputDirString = config.getProperty("import.input.dir");
