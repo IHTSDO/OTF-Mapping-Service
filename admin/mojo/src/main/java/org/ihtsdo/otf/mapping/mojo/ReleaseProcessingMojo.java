@@ -137,7 +137,7 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 
 					// RETRIEVE MAP RECORDS HERE
 					mapRecords.addAll(mappingService
-							.getPublishedMapRecordsForMapProject(
+							.getPublishedAndReadyForPublicationMapRecordsForMapProject(
 									mapProject.getId(), null).getMapRecords());
 				}
 
