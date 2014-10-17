@@ -3527,13 +3527,14 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				outputFileName));
 
 		// Write header
-		if (mapProject.getMapRefsetPattern() == "ExtendedMap") {
+		if (mapProject.getMapRefsetPattern().equals("ExtendedMap")) {
           writer.write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId\r\n");
-		} else if (mapProject.getMapRefsetPattern() == "ComplexMap") {
+		} else if (mapProject.getMapRefsetPattern().equals("ComplexMap")) {
           writer.write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\r\n");
 		} else {
 		  writer.close();
-		  throw new Exception("Unsupported map refset pattern.");
+		  throw new Exception("Unsupported map refset pattern - " 
+		      + mapProject.getMapRefsetPattern());
 		}
 		writer.flush();
 		
