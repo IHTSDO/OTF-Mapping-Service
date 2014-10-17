@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.io.File;
-import java.io.FileReader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +18,7 @@ import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.Client;
@@ -42,6 +41,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements SecurityServic
 
   /**
    * Instantiates an empty {@link SecurityServiceJpa}.
+   * @throws Exception 
    */
   public SecurityServiceJpa() throws Exception {
     super();
@@ -58,16 +58,10 @@ public class SecurityServiceJpa extends RootServiceJpa implements SecurityServic
           "Invalid password: null");
 
     // read ihtsdo security url and active status from config file
-    String configFileName = System.getProperty("run.config");
-    Logger.getLogger(this.getClass()).info("  run.config = " + configFileName);
-
-    Properties config = new Properties();
-    FileReader in = new FileReader(new File(configFileName));
-    config.load(in);
+    Properties config = ConfigUtility.getConfigProperties();
     String ihtsdoSecurityUrl = config.getProperty("ihtsdo.security.url");
     boolean ihtsdoSecurityActivated =
         new Boolean(config.getProperty("ihtsdo.security.activated"));
-    in.close();
 
     // if ihtsdo security is off, use username as token
     if (!ihtsdoSecurityActivated || username.equals("guest")) {
