@@ -18,7 +18,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 /**
  * Loads unpublished complex maps.
  * 
- * Sample execution:
+ * Sample execution in pom.xml:
  * 
  * <pre>
  *     <profile>
@@ -37,10 +37,10 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *                   <goal>release</goal>
  *                 </goals>
  *                 <configuration>
- *                   <refSetId>${refset.id}</refSetId>
- *                   <outputDirName>$(output.dir)</outputDirName>
- *                   <effectiveTime>${time}</effectiveTime>
- *                   <moduleId>${module.id}</moduleId>
+ *                   <refSetId>450993002</refSetId>
+ *                   <outputDirName>/tmp</outputDirName>
+ *                   <effectiveTime>20150131</effectiveTime>
+ *                   <moduleId>900000000000207008</moduleId>
  *                 </configuration>
  *               </execution>
  *             </executions>
@@ -48,6 +48,14 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  *         </plugins>
  *       </build>
  *     </profile>
+ * </pre>
+ *
+ * Sample execution of a pom.xml with this configuration:
+ * 
+ * <pre>
+ * % mvn -PRelease -Drun.config=/home/ihtsdo/config/config.properties \
+ *       -Drefset.id=450993002 -Doutput.dir=/tmp -Dtime=20150131 \
+ *       -Dmodule.id=900000000000207008 install
  * </pre>
  * 
  * @goal release
