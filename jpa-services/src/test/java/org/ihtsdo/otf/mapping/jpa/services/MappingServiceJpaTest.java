@@ -1,8 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +69,7 @@ public class MappingServiceJpaTest {
    * @throws Exception 
    * @throws FileNotFoundException 
    */
+  @SuppressWarnings("static-method")
   @After
   public void cleanup() throws Exception {
 
