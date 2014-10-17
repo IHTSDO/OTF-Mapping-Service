@@ -40,6 +40,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -120,6 +121,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    * Executes the plugin.
    * @throws MojoExecutionException the mojo execution exception
    */
+  @SuppressWarnings("null")
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting loading " + terminology + " data ...");
@@ -130,14 +132,7 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     FileReader in = null;
     try {
 
-      // create Entity manager
-      String configFileName = System.getProperty("run.config");
-      getLog().info("  run.config = " + configFileName);
-      Properties config = new Properties();
-      in = new FileReader(new File(configFileName));
-      config.load(in);
-      in.close();
-      getLog().info("  properties = " + config);
+      Properties config = ConfigUtility.getConfigProperties();
       contentService = new ContentServiceJpa();
       contentService.setTransactionPerOperation(false);
       contentService.beginTransaction();

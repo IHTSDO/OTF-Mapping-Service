@@ -16,8 +16,6 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.io.File;
-import java.io.FileReader;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,6 +31,7 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Goal which removes a terminology from a database.
@@ -89,14 +88,8 @@ public class TerminologyRemoverMojo extends AbstractMojo {
     getLog().info("Starting removing " + terminology + " data ...");
 
     try {
-      // create Entity Manager
-      String configFileName = System.getProperty("run.config");
-      getLog().info("  run.config = " + configFileName);
-      Properties config = new Properties();
-      FileReader in = new FileReader(new File(configFileName)); 
-      config.load(in);
-      in.close();
-      getLog().info("  properties = " + config);
+      Properties config = ConfigUtility.getConfigProperties();
+
       // NOTE: ideall this would not use entity manager, 
       // but we do not have services for all data types yet.
       EntityManagerFactory factory =
