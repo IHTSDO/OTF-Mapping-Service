@@ -4321,9 +4321,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			mapAdviceStr += " | " + mapEntry.getMapRelation().getName();
 
 		else if (mapEntry.getRule().startsWith("IFA")
-				&& mapEntry.getRule().contains("MALE"))
-			mapAdviceStr += " | "
-					+ "MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT FOR GENDER";
+				&& mapEntry.getRule().contains("MALE")) {
+		  // do nothing
+		  }        
 
 		else if (mapEntry.getRule().startsWith("IFA"))
 			mapAdviceStr += " | "
