@@ -1,9 +1,5 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.io.File;
-import java.io.FileReader;
-import java.util.Properties;
-
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
@@ -51,13 +47,6 @@ public class UpdateDbMojo extends AbstractMojo {
   public void execute() throws MojoFailureException {
     getLog().info("Start updating database schema...");
     try {
-      String configFileName = System.getProperty("run.config");
-      getLog().info("  run.config = " + configFileName);
-      Properties config = new Properties();
-      FileReader in = new FileReader(new File(configFileName)); 
-      config.load(in);
-      in.close();
-      getLog().info("  properties = " + config);
       // Trigger a JPA event
       new RootServiceJpa().close();
       getLog().info("done ...");
