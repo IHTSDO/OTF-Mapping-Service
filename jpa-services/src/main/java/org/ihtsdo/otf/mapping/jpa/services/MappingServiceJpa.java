@@ -4329,10 +4329,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		 * CONTEXT DEPENDENT
 		 */
 
-		if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals(""))
-			mapAdviceStr += " | " + mapEntry.getMapRelation().getName();
-
-		else if (mapEntry.getRule().startsWith("IFA")
+		// THIS is already done in getHumanReadableMapAdvice
+		//if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals(""))
+		//	mapAdviceStr += " | " + mapEntry.getMapRelation().getName();
+		// else
+		
+		if (mapEntry.getRule().startsWith("IFA")
 				&& mapEntry.getRule().toUpperCase().contains("MALE")) {
 		  // do nothing
 		  }        
