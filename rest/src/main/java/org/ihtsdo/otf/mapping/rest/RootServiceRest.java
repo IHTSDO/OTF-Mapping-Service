@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import java.io.File;
-import java.io.FileReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -26,6 +24,7 @@ import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Top level class for all REST services.
@@ -70,24 +69,15 @@ public class RootServiceRest {
 	 */
 	public void getConfigProperties() throws Exception {
 
-		if (config == null) {
-
-			String configFileName = System.getProperty("run.config");
-			Logger.getLogger(this.getClass())
-					.info("  run.config = " + configFileName);
-			config = new Properties();
-			FileReader in = new FileReader(new File(configFileName));
-			config.load(in);
-			in.close();
+	  Properties config = ConfigUtility.getConfigProperties();
 			
-			m_from = config.getProperty("mail.smtp.user");
-			host_password = config.getProperty("mail.smtp.password");
-			host = config.getProperty("mail.smtp.host");
-			port = config.getProperty("mail.smtp.port");
-			recipients = config.getProperty("mail.smtp.to");
-
-			Logger.getLogger(this.getClass()).info("  properties = " + config);
-		}
+	  m_from = config.getProperty("mail.smtp.user");
+	  host_password = config.getProperty("mail.smtp.password");
+	  host = config.getProperty("mail.smtp.host");
+	  port = config.getProperty("mail.smtp.port");
+	  recipients = config.getProperty("mail.smtp.to");
+	  
+	  Logger.getLogger(this.getClass()).info("  properties = " + config);
 
 	}
 
@@ -195,70 +185,6 @@ public class RootServiceRest {
 			String[] recipientsArray = recipients.split(";");
 			for (String recipient : recipientsArray) {
 			  msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
-			}
-			Transport.send(msg);
-
-		} catch (Exception mex) {
-			mex.printStackTrace();
-		}
-	}
-
-	/**
-	 * Send user error email.
-	 *
-	 * @param userError the user error
-	 */
-	public void sendUserErrorEmail(Feedback userError) {
-		
-		Properties props = new Properties();
-		props.put("mail.smtp.user", m_from);
-		props.put("mail.smtp.password", host_password);
-		props.put("mail.smtp.host", host);
-		props.put("mail.smtp.port", port);
-		props.put("mail.smtp.starttls.enable", "true");
-		props.put("mail.smtp.auth", "true");
-
-		try {
-			Long mapRecordId = userError.getFeedbackConversation().getMapRecordId();
-			MappingServiceJpa mappingService = new MappingServiceJpa();
-			MapRecord errorRecord = mappingService.getMapRecord(mapRecordId);
-
-			m_subject =
-					"IHTSDO Mapping Tool Editing Error Report: "
-							+ errorRecord.getConceptId();
-			String[] recipientsArray =
-					new String[userError.getRecipients().size()];
-			int i = 0;
-			for (MapUser user : userError.getRecipients()) {
-				recipientsArray[i++] = user.getEmail();
-			}
-
-			m_text = new StringBuffer();
-
-			m_text.append(
-					"USER ERROR on " + errorRecord.getConceptId() + ": "
-							+ errorRecord.getConceptName()).append("\n\n");
-			m_text.append("Error type: " + userError.getMapError()).append("\n");
-			m_text.append("Reporting lead: " + userError.getSender().getName())
-					.append("\n");
-			m_text.append("Comment: " + userError.getMessage()).append("\n");
-			m_text.append("Reporting date: " + userError.getTimestamp()).append(
-					"\n\n");
-			// TODO: the base url here can not be hardcoded, won't work in dev and uat
-			m_text
-					.append("Record URL: https://mapping.snomedtools.org/index.html#/record/recordId/"
-							+ mapRecordId);
-
-			Authenticator auth = new SMTPAuthenticator();
-			Session session = Session.getInstance(props, auth);
-
-			MimeMessage msg = new MimeMessage(session);
-			msg.setText(m_text.toString());
-			msg.setSubject(m_subject);
-			msg.setFrom(new InternetAddress(m_from));
-			for (String recipient : recipientsArray) {
-				msg.addRecipient(Message.RecipientType.TO, new InternetAddress(
-						recipient));
 			}
 			Transport.send(msg);
 

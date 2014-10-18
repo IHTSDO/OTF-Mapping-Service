@@ -1,8 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +25,7 @@ import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -70,6 +69,7 @@ public class MappingServiceJpaTest {
    * @throws Exception 
    * @throws FileNotFoundException 
    */
+  @SuppressWarnings("static-method")
   @After
   public void cleanup() throws Exception {
 
@@ -77,13 +77,7 @@ public class MappingServiceJpaTest {
         "Cleaning up MappingServiceJpaTest");
 
     // create new database connection
-    String configFileName = System.getProperty("run.config.test");
-    Logger.getLogger(this.getClass()).info("  run.config.test = " + configFileName);
-    Properties config = new Properties();
-    FileReader in = new FileReader(new File(configFileName)); 
-    config.load(in);
-    in.close();
-    Logger.getLogger(this.getClass()).info("  properties = " + config);
+    Properties config = ConfigUtility.getTestConfigProperties();
     factory = Persistence.createEntityManagerFactory("MappingServiceDS", config);
     manager = factory.createEntityManager();
     EntityTransaction tx = manager.getTransaction();

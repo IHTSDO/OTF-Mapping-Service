@@ -39,6 +39,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.SimpleMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 import com.google.common.io.Files;
 
@@ -135,14 +136,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       // Track system level information
       long startTimeOrig = System.nanoTime();
 
-      // create Entity Manager
-      String configFileName = System.getProperty("run.config");
-      getLog().info("  run.config = " + configFileName);
-      Properties config = new Properties();
-      FileReader in = new FileReader(new File(configFileName));
-      config.load(in);
-      in.close();
-      getLog().info("  properties = " + config);
+      Properties config = ConfigUtility.getConfigProperties();
 
       // set the input directory
       String coreInputDirString =
