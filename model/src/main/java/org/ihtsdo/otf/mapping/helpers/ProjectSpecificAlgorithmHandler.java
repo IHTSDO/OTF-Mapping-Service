@@ -80,8 +80,10 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 	 * @param mapEntry
 	 *            the map entry
 	 * @return the list
+	 * @throws Exception 
 	 */
-	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry);
+	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
+	  throws Exception;
 
 	/**
 	 * Compute map record conflicts.

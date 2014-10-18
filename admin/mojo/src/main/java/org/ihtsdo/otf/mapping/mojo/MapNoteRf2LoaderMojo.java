@@ -18,6 +18,7 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Loads map notes.
@@ -51,6 +52,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
    * 
    * @throws MojoExecutionException the mojo execution exception
    */
+  @SuppressWarnings("resource")
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Start loading map notes data ...");
@@ -58,13 +60,7 @@ public class MapNoteRf2LoaderMojo extends AbstractMojo {
     BufferedReader mapNoteReader = null;
     try {
 
-      String configFileName = System.getProperty("run.config");
-      getLog().info("  run.config = " + configFileName);
-      Properties config = new Properties();
-      FileReader in = new FileReader(new File(configFileName));
-      config.load(in);
-      in.close();
-      getLog().info("  properties = " + config);
+      Properties config = ConfigUtility.getConfigProperties();
 
       // Set date format for parsing "effectiveTime"
       final SimpleDateFormat dt = new SimpleDateFormat("yyyymmdd");

@@ -34,7 +34,8 @@ public interface ContentService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void close() throws Exception;
+	@Override
+  public void close() throws Exception;
 
 	/**
 	 * Returns the concept.
@@ -593,7 +594,8 @@ public interface ContentService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public boolean getTransactionPerOperation() throws Exception;
+	@Override
+  public boolean getTransactionPerOperation() throws Exception;
 
 	/**
 	 * Sets the transaction per operation.
@@ -603,7 +605,8 @@ public interface ContentService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void setTransactionPerOperation(boolean transactionPerOperation)
+	@Override
+  public void setTransactionPerOperation(boolean transactionPerOperation)
 			throws Exception;
 
 	/**
@@ -723,7 +726,6 @@ public interface ContentService extends RootService {
 	 * Compute tree position concept information.
 	 *
 	 * @param tpList the tp list
-	 * @return the tree position list
 	 * @throws Exception the exception
 	 */
 	public void computeTreePositionInformation(TreePositionList tpList) throws Exception;
