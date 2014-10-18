@@ -68,7 +68,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 	 */
 	private String endDate = null;
 	/**
-	 * Instantiates a {@link ReportDailyPopulationMojo} from the specified
+	 * Instantiates a {@link ReportGenerateDailyMojo} from the specified
 	 * parameters.
 	 * 
 	 */
