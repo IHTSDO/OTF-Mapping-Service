@@ -2890,7 +2890,6 @@ public class MappingServiceRest extends RootServiceRest {
 	 * @param uploadedInputStream the uploaded input stream
 	 * @param serverLocation the server location
 	 */
-  @SuppressWarnings("resource")
   private void saveFile(InputStream uploadedInputStream, String serverLocation) {
 		try {
 			OutputStream outputStream =

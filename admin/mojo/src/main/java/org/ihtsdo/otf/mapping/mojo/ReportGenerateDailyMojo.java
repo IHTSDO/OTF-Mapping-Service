@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.handlers.ErrorHandler;
+import org.ihtsdo.otf.mapping.handlers.OtfErrorHandler;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -148,9 +148,9 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
 
 		} catch (Exception e) {
 			
-			ErrorHandler errorHandler = new ErrorHandler();
+			OtfErrorHandler errorHandler = new OtfErrorHandler();
 			
-			errorHandler.sendEmail(e, "Error generating reports", "admin mojo",
+			errorHandler.handleException(e, "Error generating reports", "admin mojo",
 					mapProject == null ? "Project could not be retrieved" : mapProject.getName(),
 					"");
 				
