@@ -67,7 +67,7 @@ public class ReportServiceRest extends RootServiceRest {
 	 * @param authToken the auth token
 	 * @return the report definition
 	 */
-	@POST
+	@GET
 	@Path("/definition/definitions")
 	@ApiOperation(value = "Gets all report definitions", notes = "Returns all report definitions in JSON or XML format", response = ReportDefinitionJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
