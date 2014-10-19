@@ -825,9 +825,13 @@ public class WorkflowServiceRest extends RootServiceRest {
 		String project = "";
 
 		try {
+			
+			// TODO RENABLE THIS ONCE EMAIL VERIFICATION COMPLETE
+			throw new Exception("Testing exception handler");
 			// authorize call
+			
+			/*
 			MapUserRole role = securityService.getMapProjectRoleForToken(
-					authToken, new Long(mapProjectId));
 			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(
 						Response.status(401)
@@ -854,7 +858,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			contentService.close();
 
 			return null;
-
+*/
 		} catch (Exception e) {
 			handleException(e, "trying to unassign work", userName, project,
 					terminologyId);
@@ -892,6 +896,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 		String project = "";
 
 		try {
+			
 			// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(
 					authToken, mapProjectId);

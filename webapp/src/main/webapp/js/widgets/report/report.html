@@ -4,19 +4,15 @@
 <div
 	style="float: left; width: 40%; padding: 10px; border-right: thin solid #ddd;">
 
-
 	<form>
 		<table>
 			<tr>
 				<td style="padding: 5px;">Filter by Report Type:</td>
 				<td style="padding: 5px;"><select id="reportSearch"
-					ng-options="definition as definition.reportName for definition in definitions"
-					ng-change="getReports(1, selectedDefinition.reportType, queryReport)"
+					ng-options="definition as definition.name for definition in definitions"
+					ng-change="getReports(1, selectedDefinition, queryReport)"
 					ng-model="selectedDefinition"></select></td>
 				<td style="padding: 5px">
-					<!-- Currently no filtering for reports, only selection by type
-					 <button class="btn btn-sm btn-primary"
-						ng-click="getReports(1, selectedDefinition.reportType, queryReport)">Search</button> -->
 					<button class="btn btn-sm btn-primary"
 						ng-click="getReports(1, null, queryReport); selectedDefinition = null;">Reset</button>
 				</td>
@@ -27,7 +23,7 @@
 	<pagination ng-show="nReportPages > 1" total-items="nReports"
 		page="reportPage" max-size="5" class="pagination-sm"
 		boundary-links="true" rotate="true" num-pages="nReportPages"
-		on-select-page="getReports(page, selectedDefinition.reportType, queryReport)"></pagination>
+		on-select-page="getReports(page, selectedDefinition, queryReport)"></pagination>
 
 	<div ng-show="nReports != 0">
 
@@ -171,22 +167,16 @@
 	ng-show="currentRole === 'Administrator'"> <br>
 <h4>
 	Select Existing Report <select
-		ng-options="definition as definition.reportName for definition in definitions"
+		ng-options="definition as definition.name for definition in definitions"
 		ng-model="definitionEditing"></select>
 </h4>
 <form>
 	<table class="table">
 		<tr>
 			<td>Report Name</td>
-			<td><input ng-model="definitionEditing.reportName"></td>
+			<td><input ng-model="definitionEditing.name"></td>
 		</tr>
 
-		<tr>
-			<td>Report Type</td>
-			<td><select
-				ng-options="reportType as reportType for reportType in reportTypes"
-				ng-model="definitionEditing.reportType"></select></td>
-		<tr>
 		<tr>
 			<td>Result Type</td>
 			<td><select

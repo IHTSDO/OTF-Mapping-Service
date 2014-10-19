@@ -6,6 +6,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -184,7 +185,7 @@ public class ReportServiceRest extends RootServiceRest {
 	 */
 	@POST
 	@Path("/report/reports/project/id/{projectId}")
-	@ApiOperation(value = "Get all reports of a certain type", notes = "Returns all reports in either JSON or XML format", response = ReportListJpa.class)
+	@ApiOperation(value = "Get all reports for a project", notes = "Returns all reports for a project in either JSON or XML format", response = ReportListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public ReportList getReportsForMapProject(
 			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
