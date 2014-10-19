@@ -4405,7 +4405,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		  // do nothing
 		  }        
 
-		// TODO Make sure this doesn't add twice with 
 		else if (mapEntry.getRule().startsWith("IFA"))
 			mapAdviceStr += " | "
 					+ "MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT";

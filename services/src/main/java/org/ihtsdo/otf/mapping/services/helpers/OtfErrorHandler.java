@@ -1,4 +1,4 @@
-package org.ihtsdo.otf.mapping.handlers;
+package org.ihtsdo.otf.mapping.services.helpers;
 
 import java.io.File;
 import java.io.FileReader;

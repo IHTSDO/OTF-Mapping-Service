@@ -287,7 +287,7 @@
 						<version>${project.version}</version>
 						<executions>
 							<execution>
-								<id>remove-map-advice</id>
+								<id>remove-reports</id>
 								<phase>package</phase>
 								<goals>
 									<goal>remove-reports</goal>
