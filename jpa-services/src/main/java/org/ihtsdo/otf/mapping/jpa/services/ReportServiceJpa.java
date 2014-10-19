@@ -713,6 +713,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	@Override
 	public ReportList getReportsForMapProjectAndReportDefinition(
 			MapProject mapProject, ReportDefinition reportDefinition, PfsParameter pfsParameter) {
+		
+		Logger.getLogger(ReportServiceJpa.class).info("Retrieving reports for project " + mapProject.getName() + (reportDefinition == null ? "" : " of type " + reportDefinition.getName()));
 
 		// instantiate empty paging/filtering/sorting object if null
 		if (pfsParameter == null)
