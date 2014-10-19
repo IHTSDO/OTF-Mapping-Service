@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.util.Properties;
@@ -16,6 +15,7 @@ import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Goal which exports project data to text files.
@@ -65,13 +65,7 @@ public class MapProjectDataExportMojo extends AbstractMojo {
 
     try {
 
-      String configFileName = System.getProperty("run.config");
-      getLog().info("  run.config = " + configFileName);
-      Properties config = new Properties();
-      FileReader in = new FileReader(new File(configFileName)); 
-      config.load(in);
-      in.close();
-      getLog().info("  properties = " + config);
+      Properties config = ConfigUtility.getConfigProperties();
 
       // set the output directory
       String outputDirString = config.getProperty("export.output.dir");

@@ -118,9 +118,10 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 	 * Computes the map relation for the SNOMEDCT->ICD10 map project. Based
 	 * solely on whether an entry has a TRUE rule or not. No advices are
 	 * computed for this project.
+	 * @throws Exception 
 	 */
 	@Override
-	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) {
+	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
 
 		// System.out.println("Computing map relation");
 		// if entry has no target
@@ -133,6 +134,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 				return mapEntry.getMapRelation();
 			else {
 				// retrieve the not classifiable relation
+			    // 447638001 - Map source concept cannot be classified with available data
 				for (MapRelation relation : mapProject.getMapRelations()) {
 					if (relation.getTerminologyId().equals("447638001"))
 						return relation;
@@ -154,6 +156,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 		if (mapEntry.getRule().contains("MALE")) {
 
 			// retrieve the relations by terminology id
+		    // 447639009 - Map of source concept is context dependent
 			for (MapRelation relation : mapProject.getMapRelations()) {
 				if (relation.getTerminologyId().equals("447639009")) {
 					return relation;
@@ -164,6 +167,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 		} else if (mapEntry.getRule().contains("AGE")) {
 
 			// retrieve the relations by terminology id
+            // 447639009 - Map of source concept is context dependent
 			for (MapRelation relation : mapProject.getMapRelations()) {
 				if (relation.getTerminologyId().equals("447639009")) {
 					return relation;
@@ -174,6 +178,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 		} else if (mapEntry.getRule().startsWith("IFA")) {
 
 			// retrieve the relations by terminology id
+            // 447639009 - Map of source concept is context dependent
 			for (MapRelation relation : mapProject.getMapRelations()) {
 				if (relation.getTerminologyId().equals("447639009")) {
 					return relation;
@@ -187,6 +192,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 
 			// retrieve the relations by terminology id
 			for (MapRelation relation : mapProject.getMapRelations()) {
+                // 447637006 - Map source concept is properly classified
 				if (relation.getTerminologyId().equals("447637006")) {
 					return relation;
 				}
@@ -195,13 +201,7 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 			// if entry has a target and not TRUE rule
 		} else {
 
-			// System.out.println("Entry has rule not TRUE");
-			// retrieve the relations by terminology id
-			for (MapRelation relation : mapProject.getMapRelations()) {
-				if (relation.getTerminologyId().equals("447639009")) {
-					return relation;
-				}
-			}
+		  throw new Exception("Unexpected map relation condition.");
 		}
 
 		// if relation not found, return null
@@ -284,9 +284,9 @@ public class ICD10ProjectSpecificAlgorithmHandler extends
 		}
 
 		// System.out.println("computed advices: ");
-		for (MapAdvice advice : advices) {
+		//for (MapAdvice advice : advices) {
 			// System.out.println("  " + advice.getName());
-		}
+		//}
 
 		MapAdviceList mapAdviceList = new MapAdviceListJpa();
 		mapAdviceList.setMapAdvices(advices);
