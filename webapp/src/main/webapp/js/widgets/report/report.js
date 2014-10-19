@@ -65,19 +65,21 @@ angular
 											// retrieve the definitions
 											$scope.definitions = $scope.focusProject.reportDefinition;
 											
+											console.debug("Report definitions: ", $scope.definitions);
+											
 											// retrieve the first page of
 											// reports
 											$scope.getReports(1, null, null);
 										}
 									});
 
-					$scope.getReports = function(page, reportType, queryReport) {
+					$scope.getReports = function(page, definition, queryReport) {
 						
 						// force reportType to null if undefined or blank string
-						if (reportType == undefined || reportType === '')
-							reportType = null;
+						if (definition == undefined || definition === '')
+							definition = null;
 						
-						console.debug("getReports", page, reportType, queryReport);
+						console.debug("getReports", page, definition, queryReport);
 						
 						// construct a PFS object
 						var pfsParameterObj = 
@@ -93,7 +95,7 @@ angular
 						// null
 						var url = root_reporting
 						+ "report/reports/project/id/"
-						+ $scope.focusProject.id + (reportType == null ? "" : "/type/" + reportType);
+						+ $scope.focusProject.id + (definition == null ? "" : "/definition/id/" + definition.id);
 						
 						console.debug("getReports URL", url);
 						
