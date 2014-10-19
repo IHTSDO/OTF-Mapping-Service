@@ -100,8 +100,7 @@
 
 						<button ng-show="reportDisplayed.id == null"
 							class="btn btn-sm btn-primary"
-							ng-click="saveNewReport(reportDisplayed)">Save
-							Report</button>
+							ng-click="saveNewReport(reportDisplayed)">Save Report</button>
 
 						<div ng-show="reportDisplayedSaved == true" style="color: green">Report
 							successfully saved</div>
@@ -185,13 +184,14 @@
 
 </div>
 
-{{reportDisplayed}}
-</tab> <tab heading="Report Definitions"
+{{reportDisplayed}} </tab> <tab heading="Report Definitions"
 	ng-show="currentRole === 'Administrator'"> <br>
 <h4>
 	Select Existing Report <select
 		ng-options="definition as definition.name for definition in definitions"
-		ng-model="definitionEditing"></select>
+		ng-model="definitionEditing"></select> or <button ng-show="isAddingDefinition == false"
+		class="btn btn-sm btn-primary"
+		ng-click="addReportDefinition()">Create New Definition</button>
 </h4>
 <form>
 	<table class="table">
@@ -226,16 +226,29 @@
 			<td><textarea style="width: 100%;"
 					ng-model="definitionEditing.query"></textarea></td>
 		</tr>
+		
+		<tr>
+			<td>Diff Report</td>
+			<td><input type="checkbox" ng-model="definitionEditing.isDiffReport" ng-change="definitionEditing.timePeriod = null;">
+				<select ng-disabled="definitionEditing.isDiffReport == false" ng-options="timePeriod as timePeriod for timePeriod in timePeriods"
+				ng-model="definitionEditing.timePeriod"></select>
+		</tr>
+		<tr>
 
 
 	</table>
-
+	
+	<!-- TODO:  This will be moved to the application admin, don't use this for now
+	<div ng-show="isAddingDefinition"><input type="checkbox" ng-model="addDefinitionToProject"> Add new report to current project </div>
+ -->
 	<button class="btn btn-sm btn-primary"
 		ng-click="saveDefinition(definitionEditing)">Save</button>
 	<button class="btn btn-sm btn-warning"
-		ng-click="definitionEditing = null">Cancel</button>
+		ng-click="definitionEditing = null; isAddingDefinition = false">Cancel</button>
 
 	{{definitionMsg}}
+	<hr>
+	{{definitionEditing}}
 
 </form>
 
