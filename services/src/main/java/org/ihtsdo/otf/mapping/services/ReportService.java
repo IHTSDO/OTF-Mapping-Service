@@ -276,7 +276,7 @@ public interface ReportService extends RootService {
 	ReportList getReportsForMapProject(MapProject mapProject, PfsParameter pfsParameter);
 	
 	/**
-	 * Generate daily reports.
+	 * Helper function to generate reports for the current day
 	 * 
 	 * @param mapProject
 	 *            the map project
@@ -284,9 +284,9 @@ public interface ReportService extends RootService {
 	 *            the map user
 	 * @param date
 	 *            the date
+	 * @throws Exception 
 	 */
-	public void generateDailyReports(MapProject mapProject, MapUser mapUser,
-			Date date);
+	public void generateDailyReports(MapProject mapProject, MapUser mapUser) throws Exception;
 
 	/**
 	 * Generate reports for date range.

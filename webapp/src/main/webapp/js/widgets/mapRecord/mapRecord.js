@@ -278,6 +278,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				return;
 			};
 		}
+		
+		$rootScope.glassPane++;
 	
 		///////////////////////////
 		// Group and MapPriority //
@@ -337,6 +339,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			console.debug(data);
 			$scope.validationResult = data;
 		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
 			$scope.validationResult = null;
 			$scope.recordError = "Unexpected error reported by server.  Contact an admin.";
 			console.debug("Failed to validate map record");
@@ -392,8 +395,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						
 						if (!returnBack) {
 							console.debug("************* ReturnBack is false");
-
-							$rootScope.glassPane++;
 							
 							// if specialist level work, query for assigned concepts
 							if ($scope.record.workflowStatus === 'NEW' 
@@ -532,10 +533,12 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 							}
 
 						} else {
+							$rootScope.glassPane--;
 							console.debug("Simple finish called, return to dashboard");
 							$location.path($scope.role + "/dash");
 						}
 					}).error(function(data, status, headers, config) {
+						$rootScope.glassPane--;
 						$scope.recordError = "Unexpected server error.  Try saving your work for later, and contact an admin.";
 					    $rootScope.handleHttpError(data, status, headers, config);
 						console.debug('SERVER ERROR');
@@ -544,12 +547,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				
 				// if the warning checks were not passed, save the warnings
 				} else {
+					$rootScope.glassPane--;
 					$scope.savedValidationWarnings = $scope.validationResult.warnings;
 				}
 
 				
 			// if errors found, clear the recordSuccess field
 			}  else {
+				$rootScope.glassPane--;
 				$scope.recordSuccess = "";
 			}
 
@@ -574,6 +579,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 
 	$scope.saveMapRecord = function(returnBack) {
+		
+		$rootScope.glassPane++;
 
 		console.debug("saveMapRecord called with " + returnBack);
 		console.debug("Note content: ", $scope.tinymceContent);
@@ -649,10 +656,12 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			//$scope.record = data;
 			$scope.recordSuccess = "Record saved.";
 			$scope.recordError = "";
+			$rootScope.glassPane--;
 			if (returnBack) {
-			  window.history.back(); 
+				$location.path($scope.role + "/dash");
 			}
 		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
 			$scope.recordError = "Error saving record.";
 			$rootScope.handleHttpError(data, status, headers, config);
 			$scope.recordSuccess = "";			

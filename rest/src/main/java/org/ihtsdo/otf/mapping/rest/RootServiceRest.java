@@ -1,6 +1,9 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import org.ihtsdo.otf.mapping.handlers.OtfErrorHandler;
+import java.util.Properties;
+
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+import org.ihtsdo.otf.mapping.services.helpers.OtfErrorHandler;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -8,25 +11,7 @@ import org.ihtsdo.otf.mapping.handlers.OtfErrorHandler;
  */
 public class RootServiceRest {
 	
-	
-	/**
-	 * Returns the config properties.
-	 *
-	 * @throws Exception the exception
-	 */
-	public void getConfigProperties() throws Exception {
 
-	  Properties config = ConfigUtility.getConfigProperties();
-			
-	  m_from = config.getProperty("mail.smtp.user");
-	  host_password = config.getProperty("mail.smtp.password");
-	  host = config.getProperty("mail.smtp.host");
-	  port = config.getProperty("mail.smtp.port");
-	  recipients = config.getProperty("mail.smtp.to");
-	  
-	  Logger.getLogger(this.getClass()).info("  properties = " + config);
-
-	}
 
 	/**
 	 * Handle exception.
