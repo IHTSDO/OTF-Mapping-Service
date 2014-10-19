@@ -60,6 +60,46 @@ public class ReportServiceRest extends RootServiceRest {
 		securityService = new SecurityServiceJpa();
 	}
 	
+	/**
+	 * Adds the report definitions.
+	 *
+	 * @param reportDefinition the report definition
+	 * @param authToken the auth token
+	 * @return the report definition
+	 */
+	@POST
+	@Path("/definition/definitions")
+	@ApiOperation(value = "Gets all report definitions", notes = "Returns all report definitions in JSON or XML format", response = ReportDefinitionJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public ReportDefinitionList getReportDefinitionss(
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Report):  /definition/definitions");
+		String user = "";
+
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to get report definitions.")
+								.build()); 
+
+			// get the reports
+			ReportService reportService = new ReportServiceJpa();
+			ReportDefinitionList definitionList = reportService.getReportDefinitions();
+			reportService.close();
+
+			return definitionList;
+		} catch (Exception e) {
+			handleException(e, "trying to get report definitions", user, "", "");
+			return null;
+		}
+	}
+	
 
 	/**
 	 * Adds the report definitions.
@@ -76,7 +116,7 @@ public class ReportServiceRest extends RootServiceRest {
 			@ApiParam(value = "The report definition to add", required = true) ReportDefinitionJpa reportDefinition,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Report):  /definition/definitions");
+				"RESTful call (Report):  /definition/add");
 		String user = "";
 
 		try {
@@ -118,7 +158,7 @@ public class ReportServiceRest extends RootServiceRest {
 			@ApiParam(value = "Report definition to update", required = true) ReportDefinitionJpa definition,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Report):  /definition/definitions");
+				"RESTful call (Report):  /definition/update");
 		String user = "";
 
 		try {
