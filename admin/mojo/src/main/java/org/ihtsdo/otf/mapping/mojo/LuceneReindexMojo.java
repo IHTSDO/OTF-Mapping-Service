@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.io.File;
-import java.io.FileReader;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -22,6 +20,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.reports.ReportJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
 /**
@@ -108,13 +107,7 @@ public class LuceneReindexMojo extends AbstractMojo {
 		}
 		
 		try {
-			String configFileName = System.getProperty("run.config");
-			getLog().info("  run.config = " + configFileName);
-			Properties config = new Properties();
-			FileReader in = new FileReader(new File(configFileName)); 
-			config.load(in);
-			in.close();
-			getLog().info("  properties = " + config);
+			Properties config = ConfigUtility.getConfigProperties();
 
 			EntityManagerFactory factory =
 					Persistence.createEntityManagerFactory("MappingServiceDS", config);
