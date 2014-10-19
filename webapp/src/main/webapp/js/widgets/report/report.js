@@ -25,12 +25,15 @@ angular
 
 					// select options
 					$scope.reportSelected = null;
+		
+					$scope.definitionEditing = null;
+					$scope.isAddingDefinition = false;
 
 					$scope.resultTypes = [ 'CONCEPT', 'MAP_RECORD' ];
 					$scope.availableRoles = [ 'VIEWER', 'SPECIALIST', 'LEAD',
 							'ADMINISTRATOR' ];
 					$scope.queryTypes = [ 'SQL', 'HQL', 'LUCENE' ];
-					$scope.timeRanges = [ 'DAILY', 'WEEKLY', 'MONTHLY' ];
+					$scope.timePeriods = [ 'DAILY', 'WEEKLY', 'MONTHLY' ];
 
 					// value field parsing
 					$scope.valueFields = [];
@@ -272,20 +275,73 @@ angular
 
 						$rootScope.glassPane++;
 						console.debug("Definition", definition);
-						// obtain the record
-						$http({
-							url : root_reporting + "definition/update",
-							method : "POST",
-							dataType : "json",
-							data : definition,
-							headers : {
-								"Content-Type" : "application/json"
-							}
-						})
+						// add or update based on whether definition has a
+						// hibernate id
+						$http(
+								{
+									url : root_reporting
+											+ "definition/"
+											+ (definition.id != null ? "update"
+													: "add"),
+									method : "POST",
+									dataType : "json",
+									data : definition,
+									headers : {
+										"Content-Type" : "application/json"
+									}
+								})
 								.success(
 										function(data) {
 											$rootScope.glassPane--;
 											$scope.definitionMsg = "Successfully saved definition";
+
+											// if new report, and selected to
+											// add to project, update project
+											if ($scope.isAddingDefinition == true
+													&& $scope.addDefinitionToProject == true) {
+												
+												console.debug("Also adding to project");
+												$rootScope.glassPane++;
+
+												// add this definition to
+												// locally cached project
+												$scope.focusProject.reportDefinition
+														.push(definition);
+
+												// update the project
+												$http(
+														{
+															url : root_mapping
+																	+ "project/update",
+															method : "POST",
+															dataType : "json",
+															data : $scope.focusProject,
+															headers : {
+																"Content-Type" : "application/json"
+															}
+														})
+														.success(
+																function(data) {
+																	$rootScope.glassPane--;
+																	$scope.definitionMsg = "Successfully updated project";
+																})
+														.error(
+																function(
+																		data,
+																		status,
+																		headers,
+																		config) {
+																	$rootScope.glassPane--;
+																	$rootScope
+																			.handleHttpError(
+																					data,
+																					status,
+																					headers,
+																					config);
+																});
+											}
+
+											$scope.isAddingDefinition = false;
 										})
 								.error(
 										function(data, status, headers, config) {
@@ -299,17 +355,22 @@ angular
 
 					$scope.generateNewReport = function(reportDefinition) {
 						$rootScope.glassPane++;
-	
+
 						// obtain the record
-						$http({
-							url : root_reporting + "report/generate/project/id/" + $scope.focusProject.id + "/user/id/" + $scope.currentUser.userName,
-							method : "POST",
-							dataType : "json",
-							data : reportDefinition,
-							headers : {
-								"Content-Type" : "application/json"
-							}
-						})
+						$http(
+								{
+									url : root_reporting
+											+ "report/generate/project/id/"
+											+ $scope.focusProject.id
+											+ "/user/id/"
+											+ $scope.currentUser.userName,
+									method : "POST",
+									dataType : "json",
+									data : reportDefinition,
+									headers : {
+										"Content-Type" : "application/json"
+									}
+								})
 								.success(
 										function(data) {
 											$rootScope.glassPane--;
@@ -348,9 +409,29 @@ angular
 								});
 
 					};
-					
+
 					$scope.exportReport = function(report) {
 						alert("Export function still in development");
+					};
+
+					$scope.addReportDefinition = function() {
+
+						console.debug("Adding new report definition");
+
+						var definition = {
+							"id" : null,
+							"name" : "(New Report)",
+							"query" : null,
+							"queryType" : null,
+							"resultType" : null,
+							"roleRequired" : null,
+							"isDiffReport" : false,
+							"timePeriod" : null
+						};
+
+						$scope.definitionEditing = definition;
+						$scope.isAddingDefinition = true;
+
 					};
 
 				});
