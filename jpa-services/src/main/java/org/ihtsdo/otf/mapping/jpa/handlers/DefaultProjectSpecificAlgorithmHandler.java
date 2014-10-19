@@ -95,9 +95,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 	 * @param mapEntry
 	 *            the map entry
 	 * @return computed map relation
+	 * @throws Exception 
 	 */
 	@Override
-	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) {
+	public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
 		return null;
 	}
 
@@ -1053,9 +1054,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// the list of map records to return
 		Set<MapRecord> newRecords = new HashSet<>(mapRecords);
 
-		for (MapRecord mr : mapRecords) {
+		//for (MapRecord mr : mapRecords) {
 			// System.out.println(mr.toString());
-		}
+		//}
 
 		// create new record
 		MapRecord mapRecord = new MapRecordJpa();
@@ -1840,7 +1841,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 		case FIX_ERROR_PATH:
 
-			for (MapRecord mr : mapRecords)
+			//for (MapRecord mr : mapRecords)
 				// System.out.println(mr.getWorkflowStatus().toString());
 
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
