@@ -307,6 +307,8 @@ angular
 												// locally cached project
 												$scope.focusProject.reportDefinition
 														.push(definition);
+												
+												
 
 												// update the project
 												$http(
