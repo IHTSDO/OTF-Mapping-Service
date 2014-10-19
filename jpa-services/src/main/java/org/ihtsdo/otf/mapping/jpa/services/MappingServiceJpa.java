@@ -3565,6 +3565,18 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		BufferedWriter writer = new BufferedWriter(new FileWriter(
 				outputFileName));
 
+		// Write header
+		if (mapProject.getMapRefsetPattern().equals("ExtendedMap")) {
+          writer.write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId\r\n");
+		} else if (mapProject.getMapRefsetPattern().equals("ComplexMap")) {
+          writer.write("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\r\n");
+		} else {
+		  writer.close();
+		  throw new Exception("Unsupported map refset pattern - " 
+		      + mapProject.getMapRefsetPattern());
+		}
+		writer.flush();
+		
 		// Create a map by concept id for quick retrieval of descendants
 		Logger.getLogger(MappingServiceJpa.class).info(
 				"  Creating terminology id map");
@@ -3970,6 +3982,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 *            the map entry
 	 * @return the map entry
 	 */
+	@SuppressWarnings("static-method")
 	public MapEntry setPropagatedRuleForMapEntry(MapEntry mapEntry) {
 
 		MapRecord mapRecord = mapEntry.getMapRecord();
@@ -4016,6 +4029,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 *            the map entry
 	 * @return the human readable map advice
 	 */
+	@SuppressWarnings("static-method")
 	public String getHumanReadableMapAdvice(MapEntry mapEntry) {
 
 		String advice = "";
@@ -4082,6 +4096,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				case "<=":
 					advice += " ON OR BEFORE";
 					break;
+				default:
+                    break;
 				}
 
 				// add the value and units
@@ -4149,6 +4165,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * @throws Exception
 	 *             the exception
 	 */
+	@SuppressWarnings("static-method")
 	public List<TreePosition> getSortedTreePositionDescendantList(
 			TreePosition tp) throws Exception {
 
@@ -4206,6 +4223,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 *            the map entry
 	 * @return the next map priority
 	 */
+	@SuppressWarnings("static-method")
 	public int getNextMapPriority(MapRecord mapRecord, MapEntry mapEntry) {
 
 		int maxPriority = 0;
@@ -4234,6 +4252,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 * return ""; }
 	 */
 
+	/**
+	 * Returns the raw bytes.
+	 *
+	 * @param uid the uid
+	 * @return the raw bytes
+	 */
 	public static byte[] getRawBytes(UUID uid) {
 		String id = uid.toString();
 		byte[] rawBytes = new byte[16];
@@ -4246,6 +4270,9 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			case 18:
 			case 23:
 				++i;
+				break;
+			default:
+                break;
 			}
 			char c = id.charAt(i);
 
@@ -4332,8 +4359,6 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	 *            the effective time
 	 * @param moduleId
 	 *            the module id
-	 * @param isUpPropagated
-	 *            the flag for a propagated field (no longer used)
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 * @throws NoSuchAlgorithmException
@@ -4370,13 +4395,15 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		 * CONTEXT DEPENDENT
 		 */
 
-		if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals(""))
-			mapAdviceStr += " | " + mapEntry.getMapRelation().getName();
+		// THIS is already done in getHumanReadableMapAdvice
+		//if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals(""))
+		//	mapAdviceStr += " | " + mapEntry.getMapRelation().getName();
+		// else
 
-		else if (mapEntry.getRule().startsWith("IFA")
-				&& mapEntry.getRule().toUpperCase().contains("MALE"))
-			mapAdviceStr += " | "
-					+ "MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT FOR GENDER";
+		if (mapEntry.getRule().startsWith("IFA")
+				&& mapEntry.getRule().toUpperCase().contains("MALE")) {
+		  // do nothing
+		  }        
 
 		// TODO Make sure this doesn't add twice with 
 		else if (mapEntry.getRule().startsWith("IFA"))
