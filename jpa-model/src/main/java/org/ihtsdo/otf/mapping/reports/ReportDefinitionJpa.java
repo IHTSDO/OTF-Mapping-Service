@@ -267,4 +267,13 @@ public class ReportDefinitionJpa implements ReportDefinition {
 		
 	}
 
+	@Override
+	public String toString() {
+		return "ReportDefinitionJpa [name=" + name + ", isDiffReport="
+				+ isDiffReport + ", isRateReport=" + isRateReport
+				+ ", timePeriod=" + timePeriod + ", resultType=" + resultType
+				+ ", queryType=" + queryType + ", query=" + query
+				+ ", roleRequired=" + roleRequired + "]";
+	}
+
 }
