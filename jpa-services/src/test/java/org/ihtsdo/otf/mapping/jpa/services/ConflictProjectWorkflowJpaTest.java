@@ -7,7 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
+import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.helpers.RelationStyle;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
@@ -95,8 +97,8 @@ public class ConflictProjectWorkflowJpaTest {
 		mapProject.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
 		mapProject.setRefSetId("refSetId");
 		mapProject.setRefSetName("refSetName");
-		mapProject.setMapRefsetPattern("refSetPattern");
-		mapProject.setMapRelationStyle("mapRelationStyle");
+		mapProject.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
+		mapProject.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
 		mapProject.setSourceTerminology("SourceTerminology");
 		mapProject.setSourceTerminologyVersion("version");
 		mapProject.setDestinationTerminology("DestinationTerminology");
