@@ -7,9 +7,11 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
@@ -792,6 +794,17 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		// get all report definitions
 		ReportDefinitionList reportDefinitions = this.getReportDefinitions();
+		
+		// separate report definitions into daily and diff sets
+		Set<ReportDefinition> dailyReportDefinitions = new HashSet<>();
+		Set<ReportDefinition> diffReportDefinitions = new HashSet<>();
+		
+		for (ReportDefinition reportDefinition : reportDefinitions.getIterable()) {
+			if (reportDefinition.isDiffReport() == true)
+				diffReportDefinitions.add(reportDefinition);
+			else
+				dailyReportDefinitions.add(reportDefinition);
+		}
 
 		// cycle over dates until end date is passed
 		while (startDate.compareTo(endDate) <= 0) {
@@ -800,9 +813,29 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 			Logger.getLogger(ReportServiceJpa.class).info(
 					"  Generating reports for " + startDate.toString());
+			
+			
 
-			for (ReportDefinition reportDefinition : reportDefinitions
-					.getIterable()) {
+			// first, do the non-diff reports
+			for (ReportDefinition reportDefinition : dailyReportDefinitions) {
+				Logger.getLogger(ReportServiceJpa.class).info(
+						"    Generating report "
+								+ reportDefinition.getName());
+
+				Report report = this.generateReport(mapProject, mapUser,
+						reportDefinition.getName(), reportDefinition,
+						startDate, true);
+
+				Logger.getLogger(ReportServiceJpa.class).info(
+						"     Persisting report.");
+
+				// persist the report
+				report = this.addReport(report);
+			}
+			
+			// second, do the diff reports
+			// note that this requires the current daily report to be present (i.e. calculated above)
+			for (ReportDefinition reportDefinition : diffReportDefinitions) {
 
 				boolean isProperDate = false;
 
@@ -837,11 +870,15 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 							reportDefinition.getName(), reportDefinition,
 							startDate, true);
 
-					Logger.getLogger(ReportServiceJpa.class).info(
-							"     Persisting report.");
-
-					// persist the report
-					report = this.addReport(report);
+					if (report != null) {
+						Logger.getLogger(ReportServiceJpa.class).info(
+								"     Persisting report " + report.toString());
+	
+						// persist the report
+						report = this.addReport(report);
+					} else {
+						Logger.getLogger(ReportService.class).warn("    Skipping report");
+					}
 
 				}
 
