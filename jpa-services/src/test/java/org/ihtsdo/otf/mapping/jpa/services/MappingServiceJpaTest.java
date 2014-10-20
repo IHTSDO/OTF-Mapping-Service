@@ -17,8 +17,10 @@ import javax.persistence.Persistence;
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.ihtsdo.otf.mapping.helpers.MapProjectList;
+import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.RelationStyle;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
@@ -425,11 +427,11 @@ public class MappingServiceJpaTest {
     mapProject.setDestinationTerminologyVersion("2010");
     mapProject.setGroupStructure(true);
     mapProject.setPublished(true);
-    mapProject.setMapRelationStyle("mapRelationStyle1");
+    mapProject.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject.setMapPrincipleSourceDocument("mapPrincipleSourceDocument1");
     mapProject.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument1");
     mapProject.setRuleBased(true);
-    mapProject.setMapRefsetPattern("mapRefsetPattern1");
+    mapProject.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     mapProject
         .setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass1");
     mapProject.addMapLead(leads.get(0));
@@ -455,11 +457,11 @@ public class MappingServiceJpaTest {
     mapProject.setDestinationTerminologyVersion("2013");
     mapProject.setGroupStructure(true);
     mapProject.setPublished(true);
-    mapProject.setMapRelationStyle("mapRelationStyle2");
+    mapProject.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject.setMapPrincipleSourceDocument("mapPrincipleSourceDocument2");
     mapProject.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument2");
     mapProject.setRuleBased(true);
-    mapProject.setMapRefsetPattern("mapRefsetPattern2");
+    mapProject.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     mapProject
         .setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass1");
     mapProject.addMapLead(leads.get(0));
@@ -483,11 +485,11 @@ public class MappingServiceJpaTest {
     mapProject.setDestinationTerminologyVersion("2");
     mapProject.setGroupStructure(false);
     mapProject.setPublished(false);
-    mapProject.setMapRelationStyle("mapRelationStyle3");
+    mapProject.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject.setMapPrincipleSourceDocument("mapPrincipleSourceDocument3");
     mapProject.setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument3");
     mapProject.setRuleBased(true);
-    mapProject.setMapRefsetPattern("mapRefsetPattern1");
+    mapProject.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     mapProject
         .setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass3");
     mapProject.addMapLead(leads.get(2));
