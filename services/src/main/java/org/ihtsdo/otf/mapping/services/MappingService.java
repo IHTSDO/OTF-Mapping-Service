@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
@@ -920,6 +921,14 @@ public interface MappingService extends RootService {
 	 * @throws Exception 
 	 */
 	public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice) throws Exception;
+
+	/**
+	 * Gets the map project metadata.
+	 *
+	 * @return the map project metadata
+	 * @throws Exception the exception
+	 */
+	public Map<String, Map<String, String>> getMapProjectMetadata() throws Exception;
 
 	MapRecordList getMapRecordsForProjectAndConcept(Long mapProjectId,
 			String terminologyId) throws Exception;
