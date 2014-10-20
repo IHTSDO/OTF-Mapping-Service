@@ -1023,20 +1023,20 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 				ReportResult resultDiff = new ReportResultJpa();
 				resultDiff.setReport(report);
+				resultDiff.setValue(result1.getValue());
 
 				boolean matchingValueFound = false;
 
+				// cycle over second report to find the corresponding value (if it exists)
 				for (ReportResult result2 : report2.getResults()) {
-					if (result1.getValue().equals(result2.getValue())) {
-						resultDiff.setValue("Items added since last report");
+					if (result1.getValue().equals(result2.getValue())) {	
 						resultDiff.setCt(result1.getCt() - result2.getCt());
-
 						matchingValueFound = true;
 					}
 				}
 
+				// if matching value was not found, this is a new item (i.e. no diff)
 				if (matchingValueFound == false) {
-
 					resultDiff.setValue(result1.getValue());
 					resultDiff.setCt(result1.getCt());
 				}
