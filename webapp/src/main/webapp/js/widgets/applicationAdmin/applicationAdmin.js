@@ -24,6 +24,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				$scope.focusProject = localStorageService.get('focusProject');
 				$scope.mapProjects = localStorageService.get("mapProjects");
 				$scope.mapUsers = localStorageService.get('mapUsers');				
+				$scope.mapProjectMetadata = localStorageService.get('mapProjectMetadata');
 				$scope.newAllowableForNullTarget = false;
 				$scope.newIsComputed = false;
 				$scope.newRelationAllowableForNullTarget = false;
@@ -36,18 +37,22 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				$scope.newMapProjectScopeDescendantsFlag = false;
 				$scope.newMapProjectScopeExcludedDescendantsFlag = false;
 				$scope.newMapProjectPublic = false;
+				$scope.newMapProjectPropagationFlag = false;
+				$scope.newMapProjectPropagationThreshold = null;
+				$scope.newHandler;
 				
 				$scope.terminologyVersionPairs = new Array();
+				$scope.mapProjectMetadataPairs = new Array();
 				var editingPerformed = new Array();
 				var previousAdvicePage = 1;
 				var previousPrinciplePage = 1;
 				var previousRelationPage = 1;
 				var previousReportDefinitionPage = 1;
 				
-				$scope.allowableMapTypes = [{displayName: 'Extended Map', name: 'ExtendedMap'}, 
-				                            {displayName: 'Complex Map', name: 'ComplexMap'}, 
-				                            {displayName: 'Simple Map', name: 'SimpleMap'}];
-				$scope.newMapProjectMapType = $scope.allowableMapTypes[0];
+				$scope.allowableMapTypes = new Array();				
+				$scope.allowableMapRelationStyles = new Array();				
+				$scope.allowableWorkflowTypes = new Array(); 			
+				$scope.handlers = new Array();
 				
 				$scope.allowableMapRelationStyles = [{displayName: 'Map Category Style', name: 'MAP_CATEGORY_STYLE'},
 				                                {displayName: 'Relationship Style', name: 'RELATIONSHIP_STYLE'}];
@@ -68,6 +73,18 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				$scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
 					console.debug("MapProjectDetailCtrl: Detected change in focus project");
 					$scope.focusProject = parameters.focusProject;  
+				});
+				
+				$scope.$on('localStorageModule.notification.setMapProjectMetadata', function(event, parameters) {
+					console.debug("MapProjectDetailCtrl: Detected change in map project metadata");
+					$scope.mapProjectMetadata = parameters.value; 
+					
+					initializeMapProjectMetadata();
+
+					// force the gui to update the select pick-lists after metadata is loaded
+					$scope.mapProjects = null;
+					$scope.mapProjects = localStorageService.get("mapProjects");
+					
 				});
 				
 				$scope.userToken = localStorageService.get('userToken');
@@ -96,6 +113,10 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					}).error(function(data, status, headers, config) {
 						 $rootScope.handleHttpError(data, status, headers, config);
 					});					
+					
+			
+					// initialize map project metadata variables
+					initializeMapProjectMetadata();
 					
 					$http({
 						url: root_mapping + "advice/advices",
@@ -165,23 +186,6 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					});
 
 					$http({
-						url: root_mapping + "handler/handlers",
-						dataType: "json",
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json"
-						}
-					}).success(function(data) {
-					    $scope.handlers = new Array();
-						for (var i = 0; i < data.searchResult.length; i++) {
-						  $scope.handlers.push(data.searchResult[i].value);
-						}
-						$scope.newHandler = $scope.handlers[0];
-					}).error(function(data, status, headers, config) {
-						 $rootScope.handleHttpError(data, status, headers, config);
-					});
-					
-					$http({
 						url: root_reporting + "definition/definitions",
 						dataType: "json",
 						method: "GET",
@@ -210,7 +214,6 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				$scope.to_trusted = function(html_code) {
 					return $sce.trustAsHtml(html_code);
 				};
-
 
 
 				///////////////////////////////////////////////////////////////
@@ -382,10 +385,39 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					return false;
 				};
 
+				function initializeMapProjectMetadata() {
+				  if($scope.mapProjectMetadata != null) {
+				    for (var i = 0; i < $scope.mapProjectMetadata.keyValuePairList.length; i++) {
+						if ($scope.mapProjectMetadata.keyValuePairList[i].name == 'Map Refset Patterns') {
+							for (var j = 0; j < $scope.mapProjectMetadata.keyValuePairList[i].keyValuePair.length; j++) {
+							  $scope.allowableMapTypes.push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].key);
+						    }
+						}
+						if ($scope.mapProjectMetadata.keyValuePairList[i].name == 'Relation Styles') {
+							for (var j = 0; j < $scope.mapProjectMetadata.keyValuePairList[i].keyValuePair.length; j++) {
+								$scope.allowableMapRelationStyles.push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].key);
+					    	}
+						}
+						if ($scope.mapProjectMetadata.keyValuePairList[i].name == 'Workflow Types') {
+							for (var j = 0; j < $scope.mapProjectMetadata.keyValuePairList[i].keyValuePair.length; j++) {
+								$scope.allowableWorkflowTypes.push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].key);
+					    	}
+						}
+						if ($scope.mapProjectMetadata.keyValuePairList[i].name == 'Project Specific Handlers') {
+							for (var j = 0; j < $scope.mapProjectMetadata.keyValuePairList[i].keyValuePair.length; j++) {
+								$scope.handlers.push($scope.mapProjectMetadata.keyValuePairList[i].keyValuePair[j].key);
+					    	}
+						}
+					}
+					$scope.newMapProjectMapType = $scope.allowableMapTypes[0];
+					$scope.newMapRelationStyle = $scope.allowableMapRelationStyles[0];
+					$scope.newWorkflowType = $scope.allowableWorkflowTypes[0];
+					$scope.newHandler = $scope.handlers[0];
+				  }
+				}
 		
 
 	
-
 				// helper function to sort a JSON array by field
 				$scope.sortByKey = function sortById(array, key) {
 					return array.sort(function(a, b) {
@@ -404,28 +436,28 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				
 				$scope.getMapType = function(project) {
 					for (var i = $scope.allowableMapTypes.length; i--;) {
-						if ($scope.allowableMapTypes[i].name === project.mapRefsetPattern)
+						if ($scope.allowableMapTypes[i] === project.mapRefsetPattern)
 							return $scope.allowableMapTypes[i];
 					}
 				};
 				
 				$scope.getWorkflowType  = function(project) {
 					for (var i = $scope.allowableWorkflowTypes.length; i--;) {
-						if ($scope.allowableWorkflowTypes[i].name === project.workflowType)
+						if ($scope.allowableWorkflowTypes[i] === project.workflowType)
 							return $scope.allowableWorkflowTypes[i];
 					}
 				};
 				
 				$scope.getMapRelationStyle = function(project) {
 					for (var i = $scope.allowableMapRelationStyles.length; i--;) {
-						if ($scope.allowableMapRelationStyles[i].name === project.mapRelationStyle)
+						if ($scope.allowableMapRelationStyles[i] === project.mapRelationStyle)
 							return $scope.allowableMapRelationStyles[i];
 					}
 				};
 				
 				$scope.getHandler = function(project) {
 					for (var i = $scope.handlers.length; i--;) {
-						if ($scope.handlers[i].value === project.projectSpecificAlgorithmHandlerClass)
+						if ($scope.handlers[i] === project.projectSpecificAlgorithmHandlerClass)
 							return $scope.handlers[i];
 					}
 				};
@@ -1505,7 +1537,8 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 						newMapProjectGroupStructure, newMapProjectPublic, 
 					    newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag,
 					    newMapProjectMapType, newWorkflowType, newMapRelationStyle, newHandler,
-					    newMapProjectMapPrincipleSourceDocumentName) {
+					    newMapProjectMapPrincipleSourceDocumentName, newMapProjectPropagationFlag,
+				        newMapProjectPropagationThreshold) {
 						
 						// get source and version and dest and version
 						var res = newMapProjectSourceVersion.split(" "); 
@@ -1549,14 +1582,16 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 								"published": newMapProjectPublished,
 								"ruleBased": newMapProjectRuleBased,
 								"groupStructure": newMapProjectGroupStructure,
-								"mapRefsetPattern": newMapProjectMapType.name, 
-								"workflowType": newWorkflowType.name, 
-								"mapRelationStyle": newMapRelationStyle.name,
+								"mapRefsetPattern": newMapProjectMapType, 
+								"workflowType": newWorkflowType, 
+								"mapRelationStyle": newMapRelationStyle,
 								"public": newMapProjectPublic,
 								"projectSpecificAlgorithmHandlerClass": newHandler,
 								"scopeDescendantsFlag": newMapProjectScopeDescendantsFlag,
 								"scopeExcludedDescendantsFlag": newMapProjectScopeExcludedDescendantsFlag,
-								"mapPrincipleSourceDocumentName": newMapProjectMapPrincipleSourceDocumentName
+								"mapPrincipleSourceDocumentName": newMapProjectMapPrincipleSourceDocumentName,
+								"propagatedFlag": newMapProjectPropagationFlag,
+						        "propagationDescendantThreshold": newMapProjectPropagationThreshold
 							};
 							
 						

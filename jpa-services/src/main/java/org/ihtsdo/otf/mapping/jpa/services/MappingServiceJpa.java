@@ -41,6 +41,7 @@ import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapRelationList;
 import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
@@ -51,6 +52,7 @@ import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.RelationStyle;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -88,7 +90,7 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * JPA implementation of the {@link MappingService}.
  */
@@ -3600,5 +3602,42 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				"  " + "Changes committed");
 
 	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapProjectMetadata()
+	 */
+	@Override
+	public Map<String, Map<String, String>> getMapProjectMetadata() throws Exception {
+		Map<String, Map<String, String>> idNameMapList = new HashMap<>();
+		
+		Map<String, String> workflowNameMap = new HashMap<String, String>();
+		for (WorkflowType type : WorkflowType.values() ) {
+			workflowNameMap.put(type.name(), type.getDisplayName());
+		}
+		if (workflowNameMap.size() > 0) {
+			idNameMapList.put("Workflow Types", workflowNameMap);
+		}
+		
+		Map<String, String> relationStyleNameMap = new HashMap<String, String>();
+		for (RelationStyle type : RelationStyle.values() ) {
+			relationStyleNameMap.put(type.name(), type.getDisplayName());
+		}
+		if (relationStyleNameMap.size() > 0) {
+			idNameMapList.put("Relation Styles", relationStyleNameMap);
+		}		
+		
+		Map<String, String> mapRefsetPatternNameMap = new HashMap<String, String>();
+		for (MapRefsetPattern type : MapRefsetPattern.values() ) {
+			mapRefsetPatternNameMap.put(type.name(), type.getDisplayName());
+		}
+		if (mapRefsetPatternNameMap.size() > 0) {
+			idNameMapList.put("Map Refset Patterns", mapRefsetPatternNameMap);
+		}		
+		
+		
+		return idNameMapList;
+	}
+
+	
 
 }
