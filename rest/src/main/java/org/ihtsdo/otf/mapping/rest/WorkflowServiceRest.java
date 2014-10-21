@@ -812,7 +812,7 @@ public class WorkflowServiceRest extends RootServiceRest {
     @ApiOperation(value = "Unassign user from a concept.", notes = "Unassigns specified user from the specified concept for the specified project.")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Response unassignConcept(
-      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") String mapProjectId,
+      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
       @ApiParam(value = "Concept id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
       @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
@@ -826,12 +826,8 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 		try {
 			
-			// TODO RENABLE THIS ONCE EMAIL VERIFICATION COMPLETE
-			throw new Exception("Testing exception handler");
-			// authorize call
-			
-			/*
-			MapUserRole role = securityService.getMapProjectRoleForToken(
+		
+			MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
 			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(
 						Response.status(401)
@@ -858,7 +854,6 @@ public class WorkflowServiceRest extends RootServiceRest {
 			contentService.close();
 
 			return null;
-*/
 		} catch (Exception e) {
 			handleException(e, "trying to unassign work", userName, project,
 					terminologyId);
