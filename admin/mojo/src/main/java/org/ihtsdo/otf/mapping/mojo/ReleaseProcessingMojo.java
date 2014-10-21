@@ -176,18 +176,19 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 				// ensure output directory name has a terminating /
 				if (!outputDirName.endsWith("/"))
 					outputDirName += "/";
+				
+				//der2_iisssccRefset_ExtendedMapSnapshot_INT_20140731
 
-				String machineReadableOutputFileName = outputDirName + "release_"
-						+ mapProject.getSourceTerminology() + "_"
-						+ mapProject.getSourceTerminologyVersion() + "_"
-						+ mapProject.getDestinationTerminology() + "_"
-						+ mapProject.getDestinationTerminologyVersion() + "_"
-						+ df.format(new Date()) + ".txt";
+				String machineReadableOutputFileName = outputDirName + "der2_"
+						
+						+ mapProject.getDestinationTerminology() +
+						mapProject.getMapRefsetPattern() + "_INT_" +
+						effectiveTime + ".txt";
 				
 				//tls_${project}HumanReadableMap_INT_${releaseVersion}.tsv
 				
 				String humanReadableOutputFileName = outputDirName + "tls_"
-						+ mapProject.getName() + "HumanReadableMap_INT_"
+						+ mapProject.getDestinationTerminology() + "HumanReadableMap_INT_"
 						+ mapProject.getSourceTerminologyVersion() + "_"
 						+ effectiveTime + ".tsv";
 
