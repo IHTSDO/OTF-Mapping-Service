@@ -1,7 +1,5 @@
 package org.ihtsdo.otf.mapping.reports;
 
-import java.util.List;
-
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
