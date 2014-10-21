@@ -998,8 +998,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 					+ "447561005"
 					+ "\t"
 					+ (mapEntry.getMapRelation() == null ? "THIS SHOULD NOT HAVE HAPPENED!!!"
-							: mapEntry.getMapRelation().getTerminologyId())
-					+ "\r\n";
+							: mapEntry.getMapRelation().getTerminologyId());
 
 			// ComplexMap style is identical to ExtendedMap
 			// with the exception of the terminating map relation terminology id
