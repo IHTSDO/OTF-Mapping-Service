@@ -42,6 +42,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				var previousAdvicePage = 1;
 				var previousPrinciplePage = 1;
 				var previousRelationPage = 1;
+				var previousReportDefinitionPage = 1;
 				
 				$scope.allowableMapTypes = [{displayName: 'Extended Map', name: 'ExtendedMap'}, 
 				                            {displayName: 'Complex Map', name: 'ComplexMap'}, 
@@ -55,6 +56,11 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				$scope.allowableWorkflowTypes = [{displayName: 'Conflict Project', name: 'CONFLICT_PROJECT'},
 				                                 {displayName: 'Review Project', name: 'REVIEW_PROJECT'}];
 				$scope.newWorkflowType = $scope.allowableWorkflowTypes[0];
+				
+				$scope.definitionQueryTypes = ['SQL', 'HQL', 'LUCENE'];
+				$scope.definitionResultTypes = ['CONCEPT', 'MAP_RECORD'];
+				$scope.definitionRoles = ['VIEWER', 'SPECIALIST', 'LEAD', 'ADMIN'];
+				$scope.definitionTimePeriods = ['DAILY', 'WEEKLY', 'MONTHLY', 'ANNUALLY'];
 				
 				$scope.newHandler;
 											
@@ -175,12 +181,27 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 						 $rootScope.handleHttpError(data, status, headers, config);
 					});
 					
+					$http({
+						url: root_reporting + "definition/definitions",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.reportDefinitions = data.reportDefinition;
+						localStorageService.add('reportDefinitions', data.reportDefinition);
+						$rootScope.$broadcast('localStorageModule.notification.setReportDefinitions',{key: 'reportDefinitions', reportDefinitions: data.reportDefinitions});  
+						$scope.allowableReportDefinitions = localStorageService.get('reportDefinitions');
+						$scope.getPagedReportDefinitions(1, "");
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+					
 					// set pagination variables
 					$scope.pageSize = 5;
 					$scope.maxSize = 5;
-					$scope.getPagedAdvices(1);
-					$scope.getPagedRelations(1);
-					$scope.getPagedPrinciples(1);
+
 					$scope.orderProp = 'id';
 				};
 
@@ -252,6 +273,24 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 							page*$scope.pageSize);
 					previousPrinciplePage = page;
 				};
+				
+				$scope.getPagedReportDefinitions = function (page, filter) {
+					console.debug('getPagedReportDefinitions', filter);
+					if ($scope.reportDefinitionInEditingPerformed() == true) {
+					  if(confirm("You have unsaved changes.\n\n Are you sure that you want to switch pages?") == false) {
+						  $scope.pageReportDefinition = previousReportDefinitionPage;
+						  return;
+					  }
+					}
+					$scope.reportDefinitionFilter = filter;
+					$scope.pagedReportDefinition = $scope.sortByKey($scope.reportDefinitions, 'id')
+					.filter(containsReportDefinitionFilter);
+					$scope.pagedReportDefinitionCount = $scope.pagedReportDefinition.length;
+					$scope.pagedReportDefinition = $scope.pagedReportDefinition
+					.slice((page-1)*$scope.pageSize,
+							page*$scope.pageSize);
+					previousReportDefinitionPage = page;
+				};
 
 
 
@@ -271,6 +310,11 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					$scope.principleFilter = "";
 					$scope.getPagedPrinciples(1);
 				};
+				
+				$scope.resetReportDefinitionFilter = function() {
+					$scope.reportDefinitionFilter = "";
+					$scope.getPagedReportDefinitions(1);
+				};
 	
 
 				// element-specific functions for filtering
@@ -287,6 +331,23 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					if ( element.detail.toString().toUpperCase().indexOf( $scope.adviceFilter.toString().toUpperCase()) != -1) return true;
 					if ( element.name.toString().toUpperCase().indexOf( $scope.adviceFilter.toString().toUpperCase()) != -1) return true;
 
+					// otherwise return false
+					return false;
+				};
+				
+				function containsReportDefinitionFilter(element) {
+					
+					console.debug("Checking definitions: ", $scope.reportDefinitionFilter);
+
+					// check if advice filter is empty
+					if ($scope.reportDefinitionFilter === "" || $scope.reportDefinitionFilter == null) return true;
+
+					console.debug('checking name against filter', element.name)
+					// otherwise check if upper-case report definition filter matches upper-case element name or detail
+					if ( element.name.toString().toUpperCase().indexOf( $scope.reportDefinitionFilter.toString().toUpperCase()) != -1) return true;
+					
+					console.debug('not found');
+					
 					// otherwise return false
 					return false;
 				};
@@ -542,6 +603,45 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 						$rootScope.$broadcast('localStorageModule.notification.setMapAgeRanges',{key: 'mapAgeRanges', mapAgeRanges: data.mapAgeRanges});  
 						$scope.allowableMapAgeRanges = localStorageService.get('mapAgeRanges');
 						$scope.getPagedAgeRanges(1, "");
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+				};
+				
+				// indicates if any unsaved reportDefinition
+				$scope.reportDefinitionInEditingPerformed = function() {
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].resultType != null) {
+		        			return true;
+		        		}
+		        	}
+					return false;
+				};
+				
+				// reverts reportDefinition to last saved state
+				$scope.revertUnsavedReportDefinitions = function() {
+					console.log("in resetReportDefinition");
+					
+					// clear reportDefinition from editingPerformed
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].reportDefinitionId != null) {
+		        			editingPerformed.splice(i, 1);
+		        		}
+		        	}
+					// get last saved state of reportDefinitions
+					$http({
+						url: root_reporting + "definition/definitions",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.reportDefinitions = data.reportDefinition;
+						localStorageService.add('reportDefinitions', data.reportDefinition);
+						$rootScope.$broadcast('localStorageModule.notification.setReportDefinitions',{key: 'reportDefinitions', reportDefinitions: data.reportDefinitions});  
+						$scope.allowableMapReportDefinitions = localStorageService.get('reportDefinitions');
+						$scope.getPagedReportDefinitions(1, "");
 					}).error(function(data, status, headers, config) {
 						 $rootScope.handleHttpError(data, status, headers, config);
 					});
@@ -1146,6 +1246,155 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 							localStorageService.add('mapAgeRanges', data.mapAgeRange);
 							$rootScope.$broadcast('localStorageModule.notification.setMapAgeRanges',{key: 'mapAgeRanges', mapAgeRanges: data.mapAgeRanges});  
 							$scope.allowableMapAgeRanges = localStorageService.get('mapAgeRanges');
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});
+				};
+				
+				$scope.deleteReportDefinition = function(reportDefinition) {
+					console.debug("in deleteReportDefinition from application");
+					
+					if (confirm("Are you sure that you want to delete a map reportDefinition?") == false)
+						return;
+					
+					$http({						
+						url: root_reporting + "definition/delete",
+						dataType: "json",
+						data: reportDefinition,
+						method: "DELETE",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to deleteReportDefinition from application");
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error deleting map reportDefinition from application.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_reporting + "definition/definitions",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {				
+							$scope.reportDefinitions = data.reportDefinition;
+							$scope.resetReportDefinitionFilter();
+							for (var j = 0; j < $scope.focusProject.reportDefinition.length; j++) {
+								if (reportDefinition.id === $scope.focusProject.reportDefinition[j].id) {
+									$scope.focusProject.reportDefinition[j] = reportDefinition;
+								}
+							}
+							localStorageService.add('reportDefinitions', data.reportDefinition);
+							$rootScope.$broadcast('localStorageModule.notification.setReportDefinitions',{key: 'reportDefinitions', reportDefinitions: data.reportDefinitions});  
+							$scope.allowableReportDefinitions = localStorageService.get('reportDefinitions');
+							
+							// update and broadcast the updated focus project
+							localStorageService.add('focusProject', $scope.focusProject);
+							$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+							$scope.updateMapProject($scope.focusProject);
+							
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});				
+				};
+
+				$scope.updateReportDefinition = function(reportDefinition) {
+					console.debug("in updateReportDefinition");
+					$http({						
+						url: root_reporting + "definition/update",
+						dataType: "json",
+						data: reportDefinition,
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to updateReportDefinition");
+						removeComponentFromArray(editingPerformed, reportDefinition);
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error updating map reportDefinition.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_reporting + "definition/definitions",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {				
+							$scope.reportDefinitions = data.reportDefinition;
+							for (var j = 0; j < $scope.focusProject.reportDefinition.length; j++) {
+								if (reportDefinition.id === $scope.focusProject.reportDefinition[j].id) {
+									$scope.focusProject.reportDefinition[j] = reportDefinition;
+								}
+							}
+							localStorageService.add('reportDefinitions', data.reportDefinition);
+							$rootScope.$broadcast('localStorageModule.notification.setReportDefinitions',{key: 'reportDefinitions', reportDefinitions: data.reportDefinitions});  
+							$scope.allowableReportDefinitions = localStorageService.get('reportDefinitions');
+							
+							// update and broadcast the updated focus project
+							localStorageService.add('focusProject', $scope.focusProject);
+							$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+							$scope.updateMapProject($scope.focusProject);
+							
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});				
+				};
+				
+				$scope.submitNewReportDefinition = function(name, roleRequired, resultType, queryType, diffReport, timePeriod, query) {
+				
+					if (timePeriod === undefined || timePeriod === '')
+						timePeriod = null;
+					
+					console.debug("in submitNewReportDefinition");
+					var obj = 			  
+					{		"name":name,
+							"roleRequired":roleRequired,
+							"resultType":resultType,
+							"queryType":queryType,
+							"diffReport":diffReport,
+							"timePeriod":timePeriod,
+							"query":query };
+					
+					$http({						
+						url: root_reporting + "definition/add",
+						dataType: "json",
+						data: obj,
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to addReportDefinition");
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error adding new map reportDefinition.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_reporting + "definition/definitions",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {
+							$scope.reportDefinitions = data.reportDefinition;
+							$scope.resetReportDefinitionFilter();
+							localStorageService.add('reportDefinitions', data.reportDefinition);
+							$rootScope.$broadcast('localStorageModule.notification.setReportDefinitions',{key: 'reportDefinitions', reportDefinitions: data.reportDefinitions});  
+							$scope.allowableReportDefinitions = localStorageService.get('reportDefinitions');
 						}).error(function(data, status, headers, config) {
 							 $rootScope.handleHttpError(data, status, headers, config);
 						});

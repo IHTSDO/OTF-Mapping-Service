@@ -23,6 +23,7 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
+import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
@@ -48,6 +49,7 @@ import org.ihtsdo.otf.mapping.reports.ReportResult;
 import org.ihtsdo.otf.mapping.reports.ReportResultItem;
 import org.ihtsdo.otf.mapping.reports.ReportResultItemJpa;
 import org.ihtsdo.otf.mapping.reports.ReportResultJpa;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
@@ -690,10 +692,21 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	 * removeReportDefinition(java.lang. Long)
 	 */
 	@Override
-	public void removeReportDefinition(Long reportDefinitionId) {
+	public void removeReportDefinition(Long reportDefinitionId) throws Exception {
 
 		ReportDefinition reportDefinition = manager.find(
 				ReportDefinitionJpa.class, reportDefinitionId);
+		
+		// check if this definition is used by map projects
+		MappingService mappingService = new MappingServiceJpa();
+		MapProjectList mapProjects = mappingService.getMapProjects();
+		mappingService.close();
+		
+		for (MapProject mapProject : mapProjects.getIterable()) {
+			if (mapProject.getReportDefinitions().contains(reportDefinition)) {
+				throw new LocalException("Report definition is currently in use by project " + mapProject.getName() + " and cannot be deleted");
+			}
+		}
 
 		// now remove the entry
 		tx.begin();
