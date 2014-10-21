@@ -392,7 +392,7 @@ angular
 
 						// obtain the record
 						$http({
-							url : root_reporting + "report/add",
+							url : root_reporting + "report/add/project/" + $scope.focusProject.id,
 							method : "POST",
 							dataType : "json",
 							data : report,
