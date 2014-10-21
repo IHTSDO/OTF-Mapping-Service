@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.rest;
 
 import java.util.Date;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -179,6 +180,47 @@ public class ReportServiceRest extends RootServiceRest {
 
 		} catch (Exception e) {
 			handleException(e, "trying to update a report definition", user, "", "");
+		}
+
+	}
+	
+	/**
+	 * Adds the report definitions.
+	 *
+	 * @param reportDefinition the report definition
+	 * @param authToken the auth token
+	 * @return the report definition
+	 */
+	@DELETE
+	@Path("/definition/delete")
+	@ApiOperation(value = "Delete a report definition", notes = "Deletes a report definition based on a JSON or XML object", response = ReportDefinitionJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public void removeReportDefinitions(
+			@ApiParam(value = "The report definition to delete", required = true) ReportDefinitionJpa reportDefinition,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Report):  /definition/delete");
+		String user = "";
+
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to delete a report definition.")
+								.build()); 
+
+			// get the reports
+			ReportService reportService = new ReportServiceJpa();
+			reportService
+					.removeReportDefinition(reportDefinition.getId());
+			reportService.close();
+
+		} catch (Exception e) {
+			handleException(e, "trying to delete a report definition", user, "", "");
 		}
 
 	}

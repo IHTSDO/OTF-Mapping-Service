@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.mojo;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
