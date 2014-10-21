@@ -10,10 +10,12 @@ import java.util.Set;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
 /**
  * Loads unpublished complex maps.
@@ -174,54 +176,27 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 				// ensure output directory name has a terminating /
 				if (!outputDirName.endsWith("/"))
 					outputDirName += "/";
-
-				String releaseFileName = outputDirName + "release_"
-						+ mapProject.getSourceTerminology() + "_"
-						+ mapProject.getSourceTerminologyVersion() + "_"
-						+ mapProject.getDestinationTerminology() + "_"
-						+ mapProject.getDestinationTerminologyVersion() + "_"
-						+ df.format(new Date()) + ".txt";
-
-				getLog().info("  Release file:  " + releaseFileName);
-
-				mappingService.processRelease(mapProject, releaseFileName,
-						mapRecords, effectiveTime, moduleId);
-
-				// sort the file into a temporary file
-				/*
-				 * FileSorter.sortFile(releaseFileName, releaseFileName +
-				 * ".tmp", new Comparator<String>() {
-				 * 
-				 * @Override public int compare(String o1, String o2) { String[]
-				 * fields1 = o1.split("\t"); String[] fields2 = o2.split("\t");
-				 * long i = fields1[4].compareTo(fields2[4]); if (i != 0) {
-				 * return (int) i; } else { i = (Long.parseLong(fields1[5]) -
-				 * Long .parseLong(fields2[5])); if (i != 0) { return (int) i; }
-				 * else { i = Long.parseLong(fields1[6]) -
-				 * Long.parseLong(fields2[6]); if (i != 0) { return (int) i; }
-				 * else { i = Long.parseLong(fields1[7]) -
-				 * Long.parseLong(fields2[7]); if (i != 0) { return (int) i; }
-				 * else { i = (fields1[0] + fields1[1] + fields1[2] +
-				 * fields1[3]) .compareTo(fields1[0] + fields1[1] + fields1[2] +
-				 * fields1[3]); if (i != 0) { return (int) i; } else { i =
-				 * fields1[8] .compareTo(fields2[8]); if (i != 0) { return (int)
-				 * i; } else { i = fields1[9] .compareTo(fields2[9]); if (i !=
-				 * 0) { return (int) i; } else { i = fields1[10]
-				 * .compareTo(fields2[10]); if (i != 0) { return (int) i; } else
-				 * { i = fields1[11] .compareTo(fields2[11]); if (i != 0) {
-				 * return (int) i; } else { i = fields1[12]
-				 * .compareTo(fields2[12]); if (i != 0) { return (int) i; } else
-				 * { return 0; } } } } } } } } } } } });
-				 */
-
-				/*
-				 * File tmpFile = new File(releaseFileName + ".tmp"); File
-				 * oldFile = new File(releaseFileName); oldFile.delete();
-				 * tmpFile.renameTo(oldFile);
-				 * getLog().info("  Done sorting the file ");
-				 */
-
 				
+				//der2_iisssccRefset_ExtendedMapSnapshot_INT_20140731
+
+				String machineReadableOutputFileName = outputDirName + "der2_"
+						
+						+ mapProject.getDestinationTerminology() +
+						mapProject.getMapRefsetPattern() + "_INT_" +
+						effectiveTime + ".txt";
+				
+				//tls_${project}HumanReadableMap_INT_${releaseVersion}.tsv
+				
+				String humanReadableOutputFileName = outputDirName + "tls_"
+						+ mapProject.getDestinationTerminology() + "HumanReadableMap_INT_"
+						+ mapProject.getSourceTerminologyVersion() + "_"
+						+ effectiveTime + ".tsv";
+
+				getLog().info("  Machine-readable release file:  " + machineReadableOutputFileName);
+				getLog().info("  Human-readable release file:    " + humanReadableOutputFileName);
+				
+				ReleaseHandler releaseHandler = new ReleaseHandlerJpa();		
+				releaseHandler.processRelease(mapProject, machineReadableOutputFileName, humanReadableOutputFileName, mapRecords, effectiveTime, moduleId );
 
 			}
 
