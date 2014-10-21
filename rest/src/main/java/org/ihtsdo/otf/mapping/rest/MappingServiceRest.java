@@ -11,7 +11,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -30,6 +32,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.dto.KeyValuePair;
+import org.ihtsdo.otf.mapping.dto.KeyValuePairList;
+import org.ihtsdo.otf.mapping.dto.KeyValuePairLists;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
@@ -38,6 +43,7 @@ import org.ihtsdo.otf.mapping.helpers.MapPrincipleListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
@@ -62,6 +68,7 @@ import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
@@ -2823,57 +2830,82 @@ public class MappingServiceRest extends RootServiceRest {
 			return null;
 		}
 	}
+	
+	  /**
+	   * Returns all map projects metadata
+	   * 
+	   * @param authToken
+	   * @return the map projects metadata
+	   */
+	  @GET
+	  @Path("/mapProject/metadata")
+	  @ApiOperation(value = "Get metadata for map projects.", notes = "Gets the key-value pairs representing all metadata for the map projects.", response = KeyValuePairLists.class)
+	  @Produces({
+	      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	  })
+	  public KeyValuePairLists getMapProjectMetadata(
+	    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
-	/**
-	 * Returns all project specific algorithm handlers
-	 * 
-	 * @param authToken
-	 * 
-	 * @return the project specific algorithm handlers
-	 */
-	@GET
-	@Path("/handler/handlers")
-	@ApiOperation(value = "Get all project specific algorithm handlers.", notes = "Gets all project specific algorithm handlers.", response = SearchResultListJpa.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultListJpa getProjectSpecificAlgorithmHandlers(
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+	    Logger.getLogger(MetadataServiceRest.class).info(
+	        "RESTful call (Mapping): /mapProject/metadata");
 
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /handler/handlers");
-		String user = "";
-		
-		try {
-			// authorize call
-			MapUserRole role = securityService
-					.getApplicationRoleForToken(authToken);
-			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
-				throw new WebApplicationException(
-						Response.status(401)
-								.entity("User does not have permissions to retrieve the project specific algorithm handlers.")
-								.build());
+	    String user = "";
+	    try {
+	      user = securityService.getUsernameForToken(authToken);
 
-			MappingService mappingService = new MappingServiceJpa();
-			SearchResultListJpa handlers = new SearchResultListJpa();
-			
+	      // authorize call
+	      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+	      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+	        throw new WebApplicationException(Response.status(401)
+	            .entity("User does not have permissions to retrieve the map project metadata.")
+	            .build());
+
+	      // call jpa service and get complex map return type
+	      MappingService mappingService = new MappingServiceJpa();
+	      Map<String, Map<String, String>> mapOfMaps =
+	          mappingService.getMapProjectMetadata();
+	      
+	      // add project specific handlers
+	      // TODO: move this to jpa layer
 			Reflections reflections = new Reflections(
 				    ClasspathHelper.forPackage("org.ihtsdo.otf.mapping.jpa.handlers"), new SubTypesScanner());
 			Set<Class<? extends ProjectSpecificAlgorithmHandler>> implementingTypes =
 				     reflections.getSubTypesOf(ProjectSpecificAlgorithmHandler.class);
-			
-			for (Class<? extends ProjectSpecificAlgorithmHandler> handler : implementingTypes) {
-				SearchResult result = new SearchResultJpa();
-				result.setValue(handler.getName());
-				handlers.addSearchResult(result);
-			}
-			mappingService.close();
-			return handlers;
 
-		} catch (Exception e) {
-			handleException(e, "trying to retrieve project specific algorithm handlers", user, "", "");
-			return null;
-		}
-	}
+			Map<String, String> handlerMap = new HashMap<String, String>();
+			for (Class<? extends ProjectSpecificAlgorithmHandler> handler : implementingTypes) {
+				handlerMap.put(handler.getName(), handler.getSimpleName());
+			}
+			if (handlerMap.size() > 0) {
+				mapOfMaps.put("Project Specific Handlers", handlerMap);
+			}		
+			
+			
+	
+
+	      // convert complex map to KeyValuePair objects for easy transformation to
+	      // XML/JSON
+	      KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
+	      for (Map.Entry<String, Map<String, String>> entry : mapOfMaps.entrySet()) {
+	        String metadataType = entry.getKey();
+	        Map<String, String> metadataPairs = entry.getValue();
+	        KeyValuePairList keyValuePairList = new KeyValuePairList();
+	        keyValuePairList.setName(metadataType);
+	        for (Map.Entry<String, String> pairEntry : metadataPairs.entrySet()) {
+	          KeyValuePair keyValuePair =
+	              new KeyValuePair(pairEntry.getKey().toString(),
+	                  pairEntry.getValue());
+	          keyValuePairList.addKeyValuePair(keyValuePair);
+	        }
+	        keyValuePairLists.addKeyValuePairList(keyValuePairList);
+	      }
+	      mappingService.close();
+	      return keyValuePairLists;
+	    } catch (Exception e) {
+	      handleException(e, "trying to retrieve the map project metadata", user, "", "");
+	      return null;
+	    }
+	  }
 	
 	
 	/**
