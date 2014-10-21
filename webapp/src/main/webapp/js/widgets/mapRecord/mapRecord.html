@@ -286,14 +286,15 @@ lead review<br>
 </div>
 
 <button class="btn btn-sm btn-primary" ng-click="finishMapRecord(true)">Finish</button>
-<button class="btn btn-sm btn-primary"
-	ng-show="page != 'resolveConflictsDashboard'"
-	ng-click="finishMapRecord(false)">Finish/Next</button>
 <button class="btn btn-sm btn-warning" ng-click="cancelMapRecord()">Cancel</button>
 <button class="btn btn-sm btn-danger" ng-click="clearMapRecord()">Clear</button>
 
-<button class="btn btn-sm btn-primary" style="float: right;"
+<button class="btn btn-sm btn-primary" style="float: right;" 
 	ng-click="saveMapRecord(true)">Save For Later</button>
+<button class="btn btn-sm btn-primary" tooltip-placement="top" tooltip="{{dynamicTooltip}}"
+	ng-show="page != 'resolveConflictsDashboard'" style="float: right; margin-right:5px;"
+	ng-click="saveMapRecord(false)">Save/Next</button>
+
 
 <p></p>
 <p></p>

@@ -100,23 +100,23 @@
                 </tbody></table>
             </td> 
             <td><select tooltip-placement="top" tooltip="Map Type" 
-                ng-init="mapType=getMapType(project)" ng-model="mapType"
-                ng-options="item as item.displayName for item in allowableMapTypes"   ng-change="setEditingPerformed(project)"
+                ng-init="project.mapRefsetPattern=getMapType(project)" ng-model="project.mapRefsetPattern"
+                ng-options="item for item in allowableMapTypes"   ng-change="setEditingPerformed(project)"
                 style="margin-bottom:5px; width:100%;">
                 </select>
-                <select tooltip-placement="top" tooltip="Workflow Type" 
-                ng-init="workflowType=getWorkflowType(project)" ng-model="workflowType"
-                ng-options="item as item.displayName for item in allowableWorkflowTypes"  ng-change="setEditingPerformed(project)"
+                <select tooltip-placement="top" tooltip="Workflow Type"
+                ng-init="project.workflowType=getWorkflowType(project)" ng-model="project.workflowType"                
+                ng-options="item for item in allowableWorkflowTypes"  ng-change="setEditingPerformed(project)"
                 style="margin-bottom:5px; width:100%;">
                 </select>
                 <select tooltip-placement="top" tooltip="Map Relation Style" 
-                ng-init="relationStyle=getMapRelationStyle(project)" ng-model="relationStyle"
-                ng-options="item as item.displayName for item in allowableMapRelationStyles"  ng-change="setEditingPerformed(project)"
+                ng-init="project.mapRelationStyle=getMapRelationStyle(project)" ng-model="project.mapRelationStyle"
+                ng-options="item for item in allowableMapRelationStyles"  ng-change="setEditingPerformed(project)"
                 style="margin-bottom:5px; width:100%;">
                 </select>
                 <select tooltip-placement="top" tooltip="Project Specific Algorithm Handler" 
-                ng-init="projectSpecificAlgorithmHandlerClass=getHandler(project)" ng-model="project.projectSpecificAlgorithmHandlerClass"
-                ng-options="item as item for item in handlers"   ng-change="setEditingPerformed(project)"
+                ng-init="project.projectSpecificAlgorithmHandlerClass=getHandler(project)" ng-model="project.projectSpecificAlgorithmHandlerClass"
+                ng-options="item for item in handlers"   ng-change="setEditingPerformed(project)"
                 style="margin-bottom:5px; width:100%;">
                 </select>
                 <input tooltip-placement="top" tooltip="Map Principle Document Name" 
@@ -177,19 +177,23 @@
       <tr><td>Scope Excluded Descendants </td><td><select ng-model="newMapProjectScopeExcludedDescendantsFlag" 
          ng-options="item for item in [true, false]">
       </select></td></tr>
-      
+      <tr><td>Propagated </td><td><select ng-model="newMapProjectPropagationFlag" 
+         ng-options="item for item in [true, false]">
+      </select></td></tr>
+      <tr><td>Propagation Threshold </td><td>
+        <input id="newMapProjectPropagationThreshold" type="text" ng-model="newMapProjectPropagationThreshold">  </td></tr>
       
       <tr><td>Map Type </td><td><select ng-model="newMapProjectMapType"
-        ng-options="item as item.displayName for item in allowableMapTypes">
+        ng-options="item for item in allowableMapTypes">
       </select></td></tr>
       <tr><td>Workflow Type </td><td><select ng-model="newWorkflowType"
-        ng-options="item as item.displayName for item in allowableWorkflowTypes">
+        ng-options="item for item in allowableWorkflowTypes">
       </select></td></tr>
       <tr><td>Map Relation Style </td><td><select ng-model="newMapRelationStyle"
-        ng-options="item as item.displayName for item in allowableMapRelationStyles">
+        ng-options="item for item in allowableMapRelationStyles">
       </select></td></tr>
       <tr><td>Project Specific Algorithm Handler </td><td><select ng-model="newHandler"
-        ng-options="item as item.value for item in handlers">
+        ng-options="item for item in handlers">
       </select></td></tr>
       <tr><td>Map Principle Document Name </td><td>
         <input id="newMapProjectMapPrincipleSourceDocumentName" type="text" 
@@ -200,13 +204,15 @@
         newMapProjectDestinationVersion, newMapProjectRefSetId, newMapProjectPublished, 
         newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic, 
         newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag, 
-        newMapProjectMapType, newWorkflowType, newMapRelationStyle, newHandler, newMapProjectMapPrincipleSourceDocumentName); 
+        newMapProjectMapType, newWorkflowType, newMapRelationStyle, newHandler, 
+        newMapProjectMapPrincipleSourceDocumentName, newMapProjectPropagationFlag,
+        newMapProjectPropagationThreshold); 
           newMapProjectName = ''; newMapProjectRefSetId = ''; newHandler = '';
           newMapProjectSourceVersion = ''; newMapProjectDestinationVersion = '';
-          newMapProjectPublished = false; 
+          newMapProjectPropagationThreshold = ''; newMapProjectPublished = false; 
           newMapProjectRuleBased = false; newMapProjectGroupStructure = false; 
           newMapProjectPublic = false; newMapProjectScopeDescendantsFlag = false; 
-          newMapProjectScopeExcludedDescendantsFlag = false; 
+          newMapProjectScopeExcludedDescendantsFlag = false; newMapProjectPropagationFlag = false;
           newMapProjectMapPrincipleSourceDocumentName = '';">Submit</button></td><td></td></tr>
     </tbody></table></form>
     
@@ -263,7 +269,7 @@
             <td><div tooltip-placement="top"
                 tooltip="Delete advice">
               <i class="glyphicon glyphicon-remove"
-                ng-click="deleteAdvice(advice)" ng-change="setEditingPerformed(advice)"></i></div>
+                ng-click="deleteAdvice(advice)"></i></div>
             </td>           
           </tr>
 

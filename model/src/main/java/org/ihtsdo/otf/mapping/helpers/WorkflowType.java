@@ -7,8 +7,14 @@ package org.ihtsdo.otf.mapping.helpers;
 public enum WorkflowType {
   
 	/** Two specialists map, lead reviews conflicts */
-	CONFLICT_PROJECT,
+	CONFLICT_PROJECT("Conflict Project"),
 	
 	/** One specialist maps, lead reviews result */
-	REVIEW_PROJECT
+	REVIEW_PROJECT("Review Project");
+	
+	private String displayName = null;
+	private WorkflowType(String displayName) {
+		this.displayName = displayName;
+	}
+	public String getDisplayName() {return displayName;}
 }

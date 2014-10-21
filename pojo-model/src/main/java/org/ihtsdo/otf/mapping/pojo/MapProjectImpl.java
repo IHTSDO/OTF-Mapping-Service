@@ -3,6 +3,8 @@ package org.ihtsdo.otf.mapping.pojo;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
+import org.ihtsdo.otf.mapping.helpers.RelationStyle;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
@@ -77,7 +79,7 @@ public class MapProjectImpl implements MapProject {
 	private String destinationTerminologyVersion;
 
 	/** The relation style. */
-	private String mapRelationStyle;
+	private RelationStyle mapRelationStyle;
 
 	/** The document containing the map principles. */
 	private String mapPrincipleSourceDocument;
@@ -89,7 +91,7 @@ public class MapProjectImpl implements MapProject {
 	private boolean ruleBased;
 
 	/** The mapping behavior (i.e. SIMPLE_MAP, COMPLEX_MAP, EXTENDED_MAP) */
-	private String mapRefsetPattern;
+	private MapRefsetPattern mapRefsetPattern;
 
 	/** The set of preset age ranges for rule generation. */
 	private Set<MapAgeRange> presetAgeRanges = new HashSet<>();
@@ -705,7 +707,7 @@ public class MapProjectImpl implements MapProject {
 	 * @return the map relation style
 	 */
 	@Override
-	public String getMapRelationStyle() {
+	public RelationStyle getMapRelationStyle() {
 		return mapRelationStyle;
 	}
 
@@ -722,7 +724,7 @@ public class MapProjectImpl implements MapProject {
 	 * @param mapRelationStyle the new map relation style
 	 */
 	@Override
-	public void setMapRelationStyle(String mapRelationStyle) {
+	public void setMapRelationStyle(RelationStyle mapRelationStyle) {
 		this.mapRelationStyle = mapRelationStyle;
 	}
 
@@ -805,7 +807,7 @@ public class MapProjectImpl implements MapProject {
 	 * @return the map refset pattern
 	 */
 	@Override
-	public String getMapRefsetPattern() {
+	public MapRefsetPattern getMapRefsetPattern() {
 		return mapRefsetPattern;
 	}
 
@@ -822,7 +824,7 @@ public class MapProjectImpl implements MapProject {
 	 * @param mapRefsetPattern the new map refset pattern
 	 */
 	@Override
-	public void setMapRefsetPattern(String mapRefsetPattern) {
+	public void setMapRefsetPattern(MapRefsetPattern mapRefsetPattern) {
 		this.mapRefsetPattern = mapRefsetPattern;
 	}
 
