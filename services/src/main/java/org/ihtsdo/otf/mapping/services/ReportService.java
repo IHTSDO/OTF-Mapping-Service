@@ -262,8 +262,9 @@ public interface ReportService extends RootService {
 	 * 
 	 * @param id
 	 *            the id
+	 * @throws Exception 
 	 */
-	public void removeReportDefinition(Long id);
+	public void removeReportDefinition(Long id) throws Exception;
 
 	
 	/**

@@ -1,6 +1,3 @@
-<tabset> <tab heading="View Reports">
-
-
 <div
 	style="float: left; width: 40%; padding: 10px; border-right: thin solid #ddd;">
 
@@ -183,72 +180,3 @@
 
 
 </div>
-
-</tab> <tab heading="Report Definitions"
-	ng-show="currentRole === 'Administrator'"> <br>
-<h4>
-	Select Existing Report <select
-		ng-options="definition as definition.name for definition in definitions"
-		ng-model="definitionEditing"></select> or <button ng-show="isAddingDefinition == false"
-		class="btn btn-sm btn-primary"
-		ng-click="addReportDefinition()">Create New Definition</button>
-</h4>
-<form>
-	<table class="table">
-		<tr>
-			<td>Report Name</td>
-			<td><input ng-model="definitionEditing.name"></td>
-		</tr>
-
-		<tr>
-			<td>Result Type</td>
-			<td><select
-				ng-options="resultType as resultType for resultType in resultTypes"
-				ng-model="definitionEditing.resultType"></select></td>
-		</tr>
-
-		<tr>
-			<td>Role Required</td>
-			<td><select
-				ng-options="availableRole as availableRole for availableRole in availableRoles"
-				ng-model="definitionEditing.roleRequired"></select></td>
-		</tr>
-
-		<tr>
-			<td>Query Type</td>
-			<td><select
-				ng-options="queryType as queryType for queryType in queryTypes"
-				ng-model="definitionEditing.queryType"></select></td>
-		</tr>
-
-		<tr>
-			<td>Query</td>
-			<td><textarea style="width: 100%;"
-					ng-model="definitionEditing.query"></textarea></td>
-		</tr>
-		
-		<tr>
-			<td>Diff Report</td>
-			<td><input type="checkbox" ng-model="definitionEditing.isDiffReport" ng-change="definitionEditing.timePeriod = null;">
-				<select ng-disabled="definitionEditing.isDiffReport == false" ng-options="timePeriod as timePeriod for timePeriod in timePeriods"
-				ng-model="definitionEditing.timePeriod"></select>
-		</tr>
-		<tr>
-
-
-	</table>
-	
-	<!-- TODO:  This will be moved to the application admin, don't use this for now
-	<div ng-show="isAddingDefinition"><input type="checkbox" ng-model="addDefinitionToProject"> Add new report to current project </div>
- -->
-	<button class="btn btn-sm btn-primary"
-		ng-click="saveDefinition(definitionEditing)">Save</button>
-	<button class="btn btn-sm btn-warning"
-		ng-click="definitionEditing = null; isAddingDefinition = false">Cancel</button>
-
-	{{definitionMsg}}
-
-
-</form>
-
-</tab> </tabset>
