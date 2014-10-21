@@ -900,19 +900,6 @@ public interface MappingService extends RootService {
 			List<ComplexMapRefSetMember> complexMapRefSetMembers,
 			WorkflowStatus workflowStatus, float samplingRate) throws Exception;
 
-	/**
-	 * Process release.
-	 *
-	 * @param mapProject the map project
-	 * @param outputFileName the output file name
-	 * @param mapRecordsToPublish the map records to publish
-	 * @param effectiveTime the effective time
-	 * @param moduleId the module id
-	 * @throws Exception the exception
-	 */
-	public void processRelease(MapProject mapProject, String outputFileName,
-			Set<MapRecord> mapRecordsToPublish, String effectiveTime,
-			String moduleId) throws Exception;
 
 	/**
 	 * Simple routine to removes a map advice from the environment

@@ -1,8 +1,5 @@
 package org.ihtsdo.otf.mapping.rest;
 
-import java.util.Properties;
-
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.OtfErrorHandler;
 
 // TODO: Auto-generated Javadoc
