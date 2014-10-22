@@ -125,4 +125,47 @@ angular
 										});
 					};
 
+					$scope.removeRecordBatch = function(terminologyIdsUnsplit) {
+						console.debug(
+								"Removing batch of records by terminologyId",
+								terminologyIdsUnsplit);
+
+						var terminologyIds = terminologyIdsUnsplit
+								.split(/,\s*|\s+/);
+
+						$rootScope.glassPane++;
+						$http(
+								{
+									url : root_mapping
+											+ "record/records/delete/project/id/"
+											+ $scope.project.id + "/batch",
+									method : "DELETE",
+									dataType : "json",
+									data : terminologyIds,
+									headers : {
+										"Content-Type" : "application/json"
+									}
+								})
+								.success(
+										function(data) {
+											$rootScope.glassPane--;
+											
+											$scope.removeRecordBatchSuccess = "Operation Complete";
+
+											if (data.length > 0) {
+												$scope.removeRecordBatchError = "Could not find records to delete for the following terminology ids:\n";
+												for (var i = 0; i < data.length; i++) {
+													$scope.removeRecordBatchError += "  "
+															+ data[i] + "\n";
+												}
+											}
+										})
+								.error(
+										function(data, status, headers, config) {
+											$rootScope.glassPane--;
+											$rootScope.handleHttpError(data,
+													status, headers, config);
+										});
+
+					};
 				});
