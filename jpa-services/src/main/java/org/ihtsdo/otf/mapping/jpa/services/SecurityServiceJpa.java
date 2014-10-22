@@ -199,27 +199,32 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
 		// see if this user has previously been logged in
 		if (tokenUsernameMap.containsKey(parsedToken)) {
-			
+
 			// get user name
 			String username = tokenUsernameMap.get(parsedToken);
-			
+
 			// get last activity
 			Date lastActivity = tokenLoginMap.get(parsedToken);
-			
+
 			Logger.getLogger(this.getClass()).info(
-					"User = " + username + " Token = " + parsedToken + " Last Activity = " + lastActivity.toString());
-			
-			// check for user inactivity (timeout)
-			if ((new Date()).getTime() - lastActivity.getTime() > new Long(
-					config.getProperty("ihtsdo.security.timeout"))) {
-				throw new LocalException(
-						"Your session has expired.  Please log in again.",
-						"401");
+					"User = " + username + " Token = " + parsedToken
+							+ " Last Activity = " + lastActivity.toString());
+
+			String timeout = config.getProperty("ihtsdo.security.timeout");
+
+			// if the timeout parameter has been set
+			if (timeout != null && !timeout.isEmpty()) {
+
+				// check timeout against current time minus time of last activity
+				if ((new Date()).getTime() - lastActivity.getTime() > new Long(timeout)) {
+					throw new LocalException(
+							"Your session has expired.  Please log in again.",
+							"401");
+				}
 			}
-			
+
 			tokenLoginMap.put(parsedToken, new Date());
 
-			
 			return username;
 
 			// throw exception, this user has attempted to view a page without
