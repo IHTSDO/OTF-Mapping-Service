@@ -1746,6 +1746,69 @@ public class MappingServiceRest extends RootServiceRest {
 			return null;
 		}
 	}
+	
+	/**
+	 * Removes a map record given the object
+	 * 
+	 * @param mapRecord
+	 *            the map record to delete
+	 * @param authToken
+	 * @return Response the response
+	 */
+	@DELETE
+	@Path("/record/records/delete/project/id/{projectId}/batch")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Remove a set of map records.", notes = "Removes map records for specified project and a set of concept terminology ids", response = List.class)
+	public List<String> removeMapRecordsForMapProjectAndTerminologyIds(
+			@ApiParam(value = "Terminology ids, in JSON or XML POST data", required = true) List<String> terminologyIds,
+			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /record/records/delete/project/id/" + projectId + "/batch with string argument " + terminologyIds);
+
+		String user = "";
+		String projectName = "(not retrieved)";
+		try {
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to delete the map record.")
+								.build());
+			
+			List<String> conceptsNotRemoved = new ArrayList<>();
+			
+			for (String s : terminologyIds) {
+				System.out.println("  " + s);
+			}
+			
+			MappingService mappingService = new MappingServiceJpa();
+			projectName = mappingService.getMapProject(projectId).getName();
+			for (String terminologyId : terminologyIds) {
+				System.out.println("Getting map records for concept " + terminologyId);
+				MapRecordList mapRecordList = mappingService.getMapRecordsForProjectAndConcept(projectId, terminologyId);
+				if (mapRecordList.getCount() == 0) {
+					Logger.getLogger(MappingServiceRest.class).warn("No records found for project for concept id " + terminologyId);
+					conceptsNotRemoved.add(terminologyId);
+				} else {
+					for (MapRecord mapRecord : mapRecordList.getMapRecords()) {
+						Logger.getLogger(MappingServiceRest.class).info("Removing map record " + mapRecord.getId() + " for concept " + mapRecord.getConceptId() + ", " + mapRecord.getConceptName());
+						mappingService.removeMapRecord(mapRecord.getId());
+					}
+				}
+			}
+
+			mappingService.close();
+			return conceptsNotRemoved;
+		} catch (Exception e) {
+			handleException(e, "trying to delete map records by terminology id", user, terminologyIds.toString(), projectName );
+			return null;
+		}
+	}
 
 	/**
 	 * Returns the records for a given concept id. We don't need to know
