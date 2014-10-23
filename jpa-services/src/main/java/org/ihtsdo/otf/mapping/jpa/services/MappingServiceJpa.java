@@ -857,6 +857,46 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		mapRecordList.setTotalCount(revisions.size());
 		return mapRecordList;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.MappingService#getMapRecordRevisionsForConcept(java.lang.String)
+	 */
+	@Override
+	public MapRecordList getMapRecordRevisionsForConcept(String conceptId, Long mapProjectId) {
+
+		AuditReader reader = AuditReaderFactory.get(manager);
+		List<MapRecord> revisions = reader.createQuery()
+
+		// all revisions, returned as objects, not finding deleted entries
+				.forRevisionsOfEntity(MapRecordJpa.class, true, false)
+
+				// search by conceptId
+				.add(AuditEntity.property("conceptId").eq(conceptId))
+				
+				// constrain by mapProjectId
+				.add(AuditEntity.property("mapProjectId").eq(mapProjectId))
+				
+				// order by descending timestamp
+				.addOrder(AuditEntity.property("lastModified").desc())
+
+				// execute query
+				.getResultList();
+
+		// construct the map keeping only the most recent for each recordId
+		MapRecordListJpa mapRecordList = new MapRecordListJpa();
+		Set<Long> usedRecordIds = new HashSet<>();
+		List<MapRecord> mostRecentHistoricalRecords = new ArrayList<>();
+		for (MapRecord mapRecord : revisions) {
+			if (!usedRecordIds.contains(mapRecord.getId())) {
+				handleMapRecordLazyInitialization(mapRecord);
+				usedRecordIds.add(mapRecord.getId());
+				mostRecentHistoricalRecords.add(mapRecord);
+			}
+		}
+		mapRecordList.setMapRecords(mostRecentHistoricalRecords);		
+		mapRecordList.setTotalCount(mapRecordList.getMapRecords().size());
+		return mapRecordList;
+	}
 
 	/*
 	 * (non-Javadoc)

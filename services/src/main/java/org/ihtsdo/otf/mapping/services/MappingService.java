@@ -917,7 +917,25 @@ public interface MappingService extends RootService {
 	 */
 	public Map<String, Map<String, String>> getMapProjectMetadata() throws Exception;
 
-	MapRecordList getMapRecordsForProjectAndConcept(Long mapProjectId,
+	/**
+	 * Gets the map records for a given project and concept.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @return the map records for project and concept
+	 * @throws Exception the exception
+	 */
+	public MapRecordList getMapRecordsForProjectAndConcept(Long mapProjectId,
 			String terminologyId) throws Exception;
+
+	/**
+	 * Gets the latest map record revision for each map record for a given concept.
+	 *
+	 * @param conceptId the concept id
+	 * @param mapProjectId the map project id
+	 * @return the latest map record revisions for concept
+	 * @throws Exception the exception
+	 */
+	public MapRecordList getMapRecordRevisionsForConcept(String conceptId, Long mapProjectId) throws Exception;
 
 }
