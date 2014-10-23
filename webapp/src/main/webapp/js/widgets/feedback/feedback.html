@@ -57,10 +57,19 @@
           </td>
           <td ng-show="isFeedbackViewed(feedbackConversation) == true"></td>
           <td>   
-             <span ng-show="feedbackConversation.userName == currentUser.userName">
+             <!--  only show resolved checkbox if current user is owner of record, 
+                   or if current user initiated the feedback conversation -->
+             <span ng-show="feedbackConversation.userName == currentUser.userName ||
+             			currentUser.userName == feedbackConversation.feedback[0].sender.userName">
                <input type="checkbox" ng-model="feedbackConversation.resolved" 
                  ng-click="feedbackConversation.resolved ? 
    				 markActive(feedbackConversation) : markFeedbackResolved(feedbackConversation)">  
+             </span>
+             <!-- if no edit privileges to resolve checkbox, just show resolved state -->
+             <span ng-show="feedbackConversation.userName != currentUser.userName &&
+             			currentUser.userName != feedbackConversation.feedback[0].sender.userName &&
+             			feedbackConversation.resolved == true">
+                 <i class="glyphicon glyphicon-ok"></i>
              </span>
           </td>
           <td><a href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">{{feedbackConversation.terminologyId}}</a></td>
