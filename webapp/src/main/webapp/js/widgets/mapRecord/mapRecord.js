@@ -284,7 +284,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				return;
 			};
 		}
-		
+		if ($rootScope.glassPane > 0) return;
 		$rootScope.glassPane++;
 	
 		///////////////////////////
