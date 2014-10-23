@@ -22,6 +22,7 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 	$scope.conceptId = $routeParams.conceptId;
 	$scope.recordsInProject = [];
 	$scope.recordsNotInProject = [];
+	$scope.historicalRecords = [];
 	$scope.recordsInProjectNotFound = false; // set to true after record retrieval returns no records for focus project
 	
 	$scope.focusProject = null;
@@ -75,6 +76,7 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 			setTitle($scope.focusProject.sourceTerminology, $routeParams.conceptId, 
 					$scope.concept.defaultPreferredName);
 			$scope.getRecordsForConcept();
+			$scope.getRecordsForConceptHistorical();
 			$scope.findUnmappedDescendants();
 
 			// find children based on source terminology
@@ -143,6 +145,43 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 		});
 	};
 	
+	$scope.getRecordsForConceptHistorical = function() {
+		// retrieve all records with this concept id
+		$http({
+			url: root_mapping + "record/concept/id/" + $routeParams.conceptId + 
+				"/project/id/" + $scope.focusProject.id + "/historical",
+			dataType: "json",
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+			$scope.historicalRecords = data.mapRecord;
+			// remove records that are already displayed in focus project section
+			for (var i = $scope.historicalRecords.length; i--;) {
+				var found = false;
+				for (var j = 0; j < $scope.recordsInProject.length; j++) {
+					if ($scope.historicalRecords[i].id == $scope.recordsInProject[j].id)
+						found = true;
+				}
+				if (found == true) {
+					$scope.historicalRecords.splice(i, 1);
+				}
+			}
+		}).error(function(data, status, headers, config) {
+		    $rootScope.handleHttpError(data, status, headers, config);
+		}).then(function() {			
+			// check relation style flags
+			/*if ($scope.focusProject.mapRelationStyle === "MAP_CATEGORY_STYLE") {
+				applyMapCategoryStyle();
+			}
+
+			if ($scope.focusProject.mapRelationStyle === "RELATIONSHIP_STYLE") {
+				applyRelationshipStyle();
+			}*/
+		});
+	};
+	
 	$scope.displayToViewer = function(record) {
 		if ($scope.currentRole === 'Viewer' &&
 				record.workflowStatus === 'READY_FOR_PUBLICATION') {
@@ -168,9 +207,8 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 						console.debug("Found match for " + $scope.records[i].mapProjectId);
 						$scope.recordsNotInProject[j].push($scope.records[i]);
 						projectExists = true;
+					}
 				}
-				}
-				
 				if (!projectExists) {
 					var newArray = [];
 					newArray.push($scope.records[i]);

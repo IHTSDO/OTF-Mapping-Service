@@ -454,7 +454,7 @@ angular
 												page * $scope.pageSize);
 
 								// find concept based on source terminology
-								for (var i = 0; i < $scope.pagedScopeConcept.length; i++) {
+								for (var i = (page - 1) * $scope.pageSize; i < (page * $scope.pageSize) + $scope.pageSize; i++) {
 									$rootScope.glassPane++;
 									$http(
 											{
@@ -492,7 +492,6 @@ angular
 																		headers,
 																		config);
 													});
-
 								}
 
 								console.debug($scope.pagedScopeConcept);
@@ -515,10 +514,9 @@ angular
 												page * $scope.pageSize);
 
 								// fill the scope map for these variables
-								for (var i = 0; i < $scope.pagedScopeExcludedConcept.length; i++) {
+								for (var i = (page - 1) * $scope.pageSize; i < (page * $scope.pageSize) + $scope.pageSize; i++) {
 									$rootScope.glassPane++;
-									$http(
-											{
+									$http({
 												url : root_content
 														+ "concept/id/"
 														+ $scope.focusProject.sourceTerminology
