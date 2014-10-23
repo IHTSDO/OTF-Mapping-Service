@@ -282,6 +282,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				// add scope concepts to project from Project*ScopeExcludes.txt file
 				BufferedReader scopeExcludesReader = new BufferedReader(
 						new FileReader(new File(projectFile.getAbsolutePath().replace(".xml", "ScopeExcludes.txt"))));
+				Set<String> conceptsExcludedScope = new HashSet<>();
 
 				while ((line = scopeExcludesReader.readLine()) != null) {
 
@@ -293,16 +294,16 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 								"Scope Excludes concept + " + line.trim()
 										+ " is not in the data.");
 					} else {
-						conceptsInScope.add(line.trim());
+						conceptsExcludedScope.add(line.trim());
 					}
 				}
 
 				// set the map project scope concepts and update the project
-				bareProject.setScopeConcepts(conceptsInScope);
+				bareProject.setScopeExcludedConcepts(conceptsExcludedScope);
 				mappingService.updateMapProject(bareProject);
 
 				getLog().info(
-						"  " + Integer.toString(conceptsInScope.size())
+						"  " + Integer.toString(conceptsExcludedScope.size())
 								+ " excluded concepts added for "
 								+ bareProject.getName() + " projects.");
 
