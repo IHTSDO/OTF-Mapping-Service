@@ -1872,7 +1872,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		// if number of descendants <= low-level concept threshold, treat as
 		// high-level concept and report no unmapped
-		if (descendants.getCount() <= project
+		if (descendants.getCount() < project
 				.getPropagationDescendantThreshold()) {
 
 			// cycle over descendants
