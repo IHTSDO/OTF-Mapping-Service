@@ -92,7 +92,7 @@
                      ng-options="item for item in [true, false]">
                 </select>
                 </td></tr>
-                <tr ng-show="project.propagatedFlag == true">
+                <tr>
                 <td>Propagation Threshold:</td> 
                 <td><input ng-model="project.propagationDescendantThreshold" ng-change="setEditingPerformed(project)"
                   style="width:85%;"></input>
