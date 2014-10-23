@@ -2,6 +2,7 @@
 <div ng-show="record.flagForLeadReview == true" style="color:red">Flagged For Lead Review</div>
 <div ng-show="record.mapEntry.length == 0">No map entries available.</div>
 <div ng-show="record.mapEntry.length > 0">Map Entries</div>
+<div style="padding:0px; border-bottom:thin solid grey;">
 <div style="padding:0px;" ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
 	<!-- Group/Priority, Target Id, Target Name -->
 	<div style="display:inline-block;padding:0px;width:48%;">
@@ -39,7 +40,7 @@
 
 <div ng-show="record.mapNote.length > 0">
 	Map Notes
-	<div style="padding:0px" ng-repeat="note in record.mapNote">
+	<div style="padding: 0px 10px 10px 10px;" ng-repeat="note in record.mapNote">
 		<div class="alert alert-warning">
 	 		[By <a href="mailto:{{user.email}}">{{note.user.name}}</a> on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}] 
 			<div style="padding-left:20px;" ng-bind-html="to_trusted(note.note)"></div>
@@ -49,7 +50,8 @@
 </div>
 <div ng-show="record.mapPrinciple.length > 0">
 	Map Principles
-	<div class="alert alert-warning" style="padding:0px" ng-repeat="principle in record.mapPrinciple">
+	<div class="alert alert-warning" style="padding: 0px 10px 10px 10px;" ng-repeat="principle in record.mapPrinciple">
 		{{principle.principleId}}: {{principle.name}}
 	</div>
+</div>
 </div>
