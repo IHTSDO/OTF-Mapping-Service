@@ -43,16 +43,12 @@ import org.ihtsdo.otf.mapping.helpers.MapPrincipleListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
-import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
-import org.ihtsdo.otf.mapping.helpers.SearchResult;
-import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
-import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -68,7 +64,6 @@ import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
@@ -1848,6 +1843,105 @@ public class MappingServiceRest extends RootServiceRest {
 			return mapRecordList;
 		} catch (Exception e) {
 			handleException(e, "trying to find records by the given concept id", user, "", conceptId);
+			return null;
+		}
+	}
+	
+	/**
+	 * Gets the latest map record revision for each map record with given concept id.
+	 *
+	 * @param conceptId the concept id
+	 * @param authToken the auth token
+	 * @return the map records for concept id historical
+	 */
+	@GET
+	@Path("/record/concept/id/{conceptId}/project/id/{id:[0-9][0-9]*}/historical")
+	@ApiOperation(value = "Get historical map records by concept id.", notes = "Gets the latest map record revision for each map record with given concept id.", response = MapRecord.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordListJpa getMapRecordsForConceptIdHistorical(
+			@ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /record/concept/id/" + conceptId + 
+				"/project/id/" + mapProjectId + "/historical");
+
+
+		String user = "";
+		try {
+  		// authorize call
+			MapUserRole applicationRole = securityService.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			
+			
+			if (!applicationRole.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to find historical records by the given concept id.")
+								.build());
+
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
+					.getMapRecordRevisionsForConcept(conceptId, mapProjectId);
+
+			// return records that this user does not have permission to see
+			MapUser mapUser = mappingService.getMapUser(securityService
+					.getUsernameForToken(authToken));
+			List<MapRecord> mapRecords = new ArrayList<>();
+
+			// cycle over records and determine if this user can see them
+			for (MapRecord mr : mapRecordList.getMapRecords()) {
+
+				// get the user's role for this record's project
+				MapUserRole projectRole = securityService
+						.getMapProjectRoleForToken(authToken,
+								mr.getMapProjectId());
+
+				// System.out.println(projectRole + " " + mr.toString());
+
+				switch (mr.getWorkflowStatus()) {
+
+				// any role can see published
+				case PUBLISHED:
+					mapRecords.add(mr);
+					break;
+
+				// only roles above specialist can see ready_for_publication
+				case READY_FOR_PUBLICATION:
+					if (projectRole.hasPrivilegesOf(MapUserRole.SPECIALIST))
+						mapRecords.add(mr);
+					break;
+				// otherwise
+				// - if lead, add record
+				// - if specialist, only add record if owned
+				default:
+					if (projectRole.hasPrivilegesOf(MapUserRole.LEAD))
+						mapRecords.add(mr);
+					else if (mr.getOwner().equals(mapUser))
+						mapRecords.add(mr);
+					break;
+
+				}
+			}
+
+			// if not a mapping user (specialist or above), remove all notes
+			// from records prior to returning
+			// TODO: Make this flag on MapUserRole for Application (add a GUEST
+			// enum?)
+			if (mapUser.getUserName().equals("guest")) {
+				for (MapRecord mr : mapRecords) {
+					mr.setMapNotes(null);
+				}
+			}
+
+			// set the list of records to the filtered object and return
+			mapRecordList.setMapRecords(mapRecords);
+
+			mappingService.close();
+			return mapRecordList;
+		} catch (Exception e) {
+			handleException(e, "trying to find historical records by the given concept id", user, "", conceptId);
 			return null;
 		}
 	}
