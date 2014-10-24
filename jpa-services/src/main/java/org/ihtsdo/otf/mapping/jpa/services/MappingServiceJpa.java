@@ -2477,23 +2477,21 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 				// check if a map record with this terminology id and workflow
 				// status already exists
-				MapRecordList mapRecordList = new MapRecordListJpa();				
-				try {
-					mapRecordList = this.getMapRecordsForProjectAndConcept(
-								mapProject.getId(), mapRecord.getConceptId());
-				} catch (Exception e) {
-					// do nothing, meant to catch any errors for non-existent records
+				MapRecordList mapRecordList = null;
+				mapRecordList = this.getMapRecordsForProjectAndConcept(
+							mapProject.getId(), mapRecord.getConceptId());
+                boolean recordForWorkflowStatusExists = false;
+				if (mapRecordList != null ) {
+				  // cycle over any records found and check for user and workflow status
+				  for (MapRecord mr : mapRecordList.getMapRecords()) {
+				    if (mr.getWorkflowStatus().equals(workflowStatus) && mr.getOwner().equals(mapUser)) {
+				      recordForWorkflowStatusExists = true;
+				      break;
+				    }
+                  }
 				}
-
-				// cycle over any records found and check for user and workflow status
-				boolean recordForWorkflowStatusExists = false;
-				for (MapRecord mr : mapRecordList.getMapRecords()) {
-					if (mr.getWorkflowStatus().equals(workflowStatus) && mr.getOwner().equals(mapUser))
-						recordForWorkflowStatusExists = true;
-				}
-
 				// if this record does not already exist
-				if (recordForWorkflowStatusExists == false) {
+				if (!recordForWorkflowStatusExists) {
 
 					// if different concept than previous ref set member, create
 					// new
