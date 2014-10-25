@@ -10,7 +10,6 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
 import org.ihtsdo.otf.mapping.helpers.ReportList;
 import org.ihtsdo.otf.mapping.helpers.ReportResultItemList;
-import org.ihtsdo.otf.mapping.helpers.ReportType;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -24,7 +23,7 @@ import org.ihtsdo.otf.mapping.reports.ReportResultItem;
 /**
  * The Interface ReportService.
  */
-public interface ReportService {
+public interface ReportService extends RootService {
 
 	/**
 	 * Close the service.
@@ -263,8 +262,9 @@ public interface ReportService {
 	 * 
 	 * @param id
 	 *            the id
+	 * @throws Exception 
 	 */
-	public void removeReportDefinition(Long id);
+	public void removeReportDefinition(Long id) throws Exception;
 
 	
 	/**
@@ -277,30 +277,7 @@ public interface ReportService {
 	ReportList getReportsForMapProject(MapProject mapProject, PfsParameter pfsParameter);
 	
 	/**
-	 * Gets the reports for report type.
-	 *
-	 * @param mapProject the map project
-	 * @param reportType the report type
-	 * @param pfsParameter the pfs parameter
-	 * @return the reports for report type
-	 */
-	ReportList getReportsForMapProjectAndReportType(MapProject mapProject, String reportType,
-			PfsParameter pfsParameter);
-
-	/**
-	 * Gets the last report for report type.
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param reportType
-	 *            the report type
-	 * @return the last report for report type
-	 */
-	public Report getLastReportForReportType(MapProject mapProject,
-			String reportType);
-
-	/**
-	 * Generate daily reports.
+	 * Helper function to generate reports for the current day
 	 * 
 	 * @param mapProject
 	 *            the map project
@@ -308,9 +285,9 @@ public interface ReportService {
 	 *            the map user
 	 * @param date
 	 *            the date
+	 * @throws Exception 
 	 */
-	public void generateDailyReports(MapProject mapProject, MapUser mapUser,
-			Date date);
+	public void generateDailyReports(MapProject mapProject, MapUser mapUser) throws Exception;
 
 	/**
 	 * Generate reports for date range.
@@ -330,14 +307,6 @@ public interface ReportService {
 			MapUser mapUser, Date startDate, Date endDate) throws Exception;
 
 	/**
-	 * Gets the report definition.
-	 *
-	 * @param reportType the report type
-	 * @return the report definition
-	 */
-	public ReportDefinition getReportDefinition(ReportType reportType);
-
-	/**
 	 * Removes the reports for map project.
 	 *
 	 * @param mapProject the map project
@@ -352,6 +321,10 @@ public interface ReportService {
 	 * @return the report result items for report result
 	 */
 	public ReportResultItemList getReportResultItemsForReportResult(Long reportResultId,
+			PfsParameter pfsParameter);
+
+	public ReportList getReportsForMapProjectAndReportDefinition(
+			MapProject mapProject, ReportDefinition reportDefinition,
 			PfsParameter pfsParameter);
 
 

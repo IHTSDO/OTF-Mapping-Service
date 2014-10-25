@@ -20,6 +20,14 @@ echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
 
+echo "Taking down the server"
+service tomcat7 stop
+if ($status != 0) then
+	echo "ERROR stopping server"
+	cat mvn.log
+	exit 1
+endif
+
 echo "    Delete current wb-release-process-1.18-SNAPSHOT-delta file ...`/bin/date`"
 cd /home/ihtsdo/.m2/repository/org/ihtsdo/intl/release/process/wb-release-process/1.18-SNAPSHOT
 rm -fr wb-release-process-1.18-SNAPSHOT-delta
@@ -86,6 +94,9 @@ if ($status != 0) then
     cat mvn.log
     exit 1
 endif
+
+echo "    Restarting tomcat7 server ...`/bin/date`"
+service tomcat7 start
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"

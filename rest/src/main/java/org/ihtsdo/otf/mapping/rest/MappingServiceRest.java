@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.rest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,7 +11,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -31,6 +32,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.dto.KeyValuePair;
+import org.ihtsdo.otf.mapping.dto.KeyValuePairList;
+import org.ihtsdo.otf.mapping.dto.KeyValuePairLists;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
@@ -44,10 +48,7 @@ import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
-import org.ihtsdo.otf.mapping.helpers.SearchResult;
-import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
-import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -143,6 +144,19 @@ public class MappingServiceRest extends RootServiceRest {
 			MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService
 					.getMapProjects();
 
+			if (role == MapUserRole.VIEWER) {
+			  MapProject toRemove = null;
+			  for (MapProject project : mapProjects.getIterable()) {
+			    // Remove unmapped for viewer - MAP-921, 
+			    // Implement this better: MAP-922
+			    if (project.getId() == 10) {
+			      toRemove = project;
+			      break;
+			    }
+			  }
+			  mapProjects.removeMapProject(toRemove);
+			  mapProjects.setTotalCount(mapProjects.getTotalCount()-1);
+			}
 			mapProjects.sortBy(new Comparator<MapProject>() {
 				@Override
 				public int compare(MapProject o1, MapProject o2) {
@@ -153,7 +167,7 @@ public class MappingServiceRest extends RootServiceRest {
 			return mapProjects;
 
 		} catch (Exception e) {
-			handleException(e, "trying to retrieve map projects", user, "", "");
+			this.handleException(e, "trying to retrieve map projects", user, "", "");
 			return null;
 		}
 	}
@@ -1745,6 +1759,69 @@ public class MappingServiceRest extends RootServiceRest {
 			return null;
 		}
 	}
+	
+	/**
+	 * Removes a map record given the object
+	 * 
+	 * @param mapRecord
+	 *            the map record to delete
+	 * @param authToken
+	 * @return Response the response
+	 */
+	@DELETE
+	@Path("/record/records/delete/project/id/{projectId}/batch")
+	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	@ApiOperation(value = "Remove a set of map records.", notes = "Removes map records for specified project and a set of concept terminology ids", response = List.class)
+	public List<String> removeMapRecordsForMapProjectAndTerminologyIds(
+			@ApiParam(value = "Terminology ids, in JSON or XML POST data", required = true) List<String> terminologyIds,
+			@ApiParam(value = "Map project id", required = true) @PathParam("projectId") Long projectId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		// log call
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /record/records/delete/project/id/" + projectId + "/batch with string argument " + terminologyIds);
+
+		String user = "";
+		String projectName = "(not retrieved)";
+		try {
+			// authorize call
+			MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.ADMINISTRATOR))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to delete the map record.")
+								.build());
+			
+			List<String> conceptsNotRemoved = new ArrayList<>();
+			
+			for (String s : terminologyIds) {
+				System.out.println("  " + s);
+			}
+			
+			MappingService mappingService = new MappingServiceJpa();
+			projectName = mappingService.getMapProject(projectId).getName();
+			for (String terminologyId : terminologyIds) {
+				System.out.println("Getting map records for concept " + terminologyId);
+				MapRecordList mapRecordList = mappingService.getMapRecordsForProjectAndConcept(projectId, terminologyId);
+				if (mapRecordList.getCount() == 0) {
+					Logger.getLogger(MappingServiceRest.class).warn("No records found for project for concept id " + terminologyId);
+					conceptsNotRemoved.add(terminologyId);
+				} else {
+					for (MapRecord mapRecord : mapRecordList.getMapRecords()) {
+						Logger.getLogger(MappingServiceRest.class).info("Removing map record " + mapRecord.getId() + " for concept " + mapRecord.getConceptId() + ", " + mapRecord.getConceptName());
+						mappingService.removeMapRecord(mapRecord.getId());
+					}
+				}
+			}
+
+			mappingService.close();
+			return conceptsNotRemoved;
+		} catch (Exception e) {
+			handleException(e, "trying to delete map records by terminology id", user, terminologyIds.toString(), projectName );
+			return null;
+		}
+	}
 
 	/**
 	 * Returns the records for a given concept id. We don't need to know
@@ -1842,6 +1919,105 @@ public class MappingServiceRest extends RootServiceRest {
 			return mapRecordList;
 		} catch (Exception e) {
 			handleException(e, "trying to find records by the given concept id", user, "", conceptId);
+			return null;
+		}
+	}
+	
+	/**
+	 * Gets the latest map record revision for each map record with given concept id.
+	 *
+	 * @param conceptId the concept id
+	 * @param authToken the auth token
+	 * @return the map records for concept id historical
+	 */
+	@GET
+	@Path("/record/concept/id/{conceptId}/project/id/{id:[0-9][0-9]*}/historical")
+	@ApiOperation(value = "Get historical map records by concept id.", notes = "Gets the latest map record revision for each map record with given concept id.", response = MapRecord.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapRecordListJpa getMapRecordsForConceptIdHistorical(
+			@ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /record/concept/id/" + conceptId + 
+				"/project/id/" + mapProjectId + "/historical");
+
+
+		String user = "";
+		try {
+  		// authorize call
+			MapUserRole applicationRole = securityService.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			
+			
+			if (!applicationRole.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to find historical records by the given concept id.")
+								.build());
+
+			MappingService mappingService = new MappingServiceJpa();
+			MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
+					.getMapRecordRevisionsForConcept(conceptId, mapProjectId);
+
+			// return records that this user does not have permission to see
+			MapUser mapUser = mappingService.getMapUser(securityService
+					.getUsernameForToken(authToken));
+			List<MapRecord> mapRecords = new ArrayList<>();
+
+			// cycle over records and determine if this user can see them
+			for (MapRecord mr : mapRecordList.getMapRecords()) {
+
+				// get the user's role for this record's project
+				MapUserRole projectRole = securityService
+						.getMapProjectRoleForToken(authToken,
+								mr.getMapProjectId());
+
+				// System.out.println(projectRole + " " + mr.toString());
+
+				switch (mr.getWorkflowStatus()) {
+
+				// any role can see published
+				case PUBLISHED:
+					mapRecords.add(mr);
+					break;
+
+				// only roles above specialist can see ready_for_publication
+				case READY_FOR_PUBLICATION:
+					if (projectRole.hasPrivilegesOf(MapUserRole.SPECIALIST))
+						mapRecords.add(mr);
+					break;
+				// otherwise
+				// - if lead, add record
+				// - if specialist, only add record if owned
+				default:
+					if (projectRole.hasPrivilegesOf(MapUserRole.LEAD))
+						mapRecords.add(mr);
+					else if (mr.getOwner().equals(mapUser))
+						mapRecords.add(mr);
+					break;
+
+				}
+			}
+
+			// if not a mapping user (specialist or above), remove all notes
+			// from records prior to returning
+			// TODO: Make this flag on MapUserRole for Application (add a GUEST
+			// enum?)
+			if (mapUser.getUserName().equals("guest")) {
+				for (MapRecord mr : mapRecords) {
+					mr.setMapNotes(null);
+				}
+			}
+
+			// set the list of records to the filtered object and return
+			mapRecordList.setMapRecords(mapRecords);
+
+			mappingService.close();
+			return mapRecordList;
+		} catch (Exception e) {
+			handleException(e, "trying to find historical records by the given concept id", user, "", conceptId);
 			return null;
 		}
 	}
@@ -2824,57 +3000,82 @@ public class MappingServiceRest extends RootServiceRest {
 			return null;
 		}
 	}
+	
+	  /**
+	   * Returns all map projects metadata
+	   * 
+	   * @param authToken
+	   * @return the map projects metadata
+	   */
+	  @GET
+	  @Path("/mapProject/metadata")
+	  @ApiOperation(value = "Get metadata for map projects.", notes = "Gets the key-value pairs representing all metadata for the map projects.", response = KeyValuePairLists.class)
+	  @Produces({
+	      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+	  })
+	  public KeyValuePairLists getMapProjectMetadata(
+	    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
-	/**
-	 * Returns all project specific algorithm handlers
-	 * 
-	 * @param authToken
-	 * 
-	 * @return the project specific algorithm handlers
-	 */
-	@GET
-	@Path("/handler/handlers")
-	@ApiOperation(value = "Get all project specific algorithm handlers.", notes = "Gets all project specific algorithm handlers.", response = SearchResultListJpa.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-	public SearchResultListJpa getProjectSpecificAlgorithmHandlers(
-			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+	    Logger.getLogger(MetadataServiceRest.class).info(
+	        "RESTful call (Mapping): /mapProject/metadata");
 
-		Logger.getLogger(MappingServiceRest.class).info(
-				"RESTful call (Mapping): /handler/handlers");
-		String user = "";
-		
-		try {
-			// authorize call
-			MapUserRole role = securityService
-					.getApplicationRoleForToken(authToken);
-			user = securityService.getUsernameForToken(authToken);
-			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
-				throw new WebApplicationException(
-						Response.status(401)
-								.entity("User does not have permissions to retrieve the project specific algorithm handlers.")
-								.build());
+	    String user = "";
+	    try {
+	      user = securityService.getUsernameForToken(authToken);
 
-			MappingService mappingService = new MappingServiceJpa();
-			SearchResultListJpa handlers = new SearchResultListJpa();
-			
+	      // authorize call
+	      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+	      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+	        throw new WebApplicationException(Response.status(401)
+	            .entity("User does not have permissions to retrieve the map project metadata.")
+	            .build());
+
+	      // call jpa service and get complex map return type
+	      MappingService mappingService = new MappingServiceJpa();
+	      Map<String, Map<String, String>> mapOfMaps =
+	          mappingService.getMapProjectMetadata();
+	      
+	      // add project specific handlers
+	      // TODO: move this to jpa layer
 			Reflections reflections = new Reflections(
 				    ClasspathHelper.forPackage("org.ihtsdo.otf.mapping.jpa.handlers"), new SubTypesScanner());
 			Set<Class<? extends ProjectSpecificAlgorithmHandler>> implementingTypes =
 				     reflections.getSubTypesOf(ProjectSpecificAlgorithmHandler.class);
-			
-			for (Class<? extends ProjectSpecificAlgorithmHandler> handler : implementingTypes) {
-				SearchResult result = new SearchResultJpa();
-				result.setValue(handler.getName());
-				handlers.addSearchResult(result);
-			}
-			mappingService.close();
-			return handlers;
 
-		} catch (Exception e) {
-			handleException(e, "trying to retrieve project specific algorithm handlers", user, "", "");
-			return null;
-		}
-	}
+			Map<String, String> handlerMap = new HashMap<String, String>();
+			for (Class<? extends ProjectSpecificAlgorithmHandler> handler : implementingTypes) {
+				handlerMap.put(handler.getName(), handler.getSimpleName());
+			}
+			if (handlerMap.size() > 0) {
+				mapOfMaps.put("Project Specific Handlers", handlerMap);
+			}		
+			
+			
+	
+
+	      // convert complex map to KeyValuePair objects for easy transformation to
+	      // XML/JSON
+	      KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
+	      for (Map.Entry<String, Map<String, String>> entry : mapOfMaps.entrySet()) {
+	        String metadataType = entry.getKey();
+	        Map<String, String> metadataPairs = entry.getValue();
+	        KeyValuePairList keyValuePairList = new KeyValuePairList();
+	        keyValuePairList.setName(metadataType);
+	        for (Map.Entry<String, String> pairEntry : metadataPairs.entrySet()) {
+	          KeyValuePair keyValuePair =
+	              new KeyValuePair(pairEntry.getKey().toString(),
+	                  pairEntry.getValue());
+	          keyValuePairList.addKeyValuePair(keyValuePair);
+	        }
+	        keyValuePairLists.addKeyValuePairList(keyValuePairList);
+	      }
+	      mappingService.close();
+	      return keyValuePairLists;
+	    } catch (Exception e) {
+	      handleException(e, "trying to retrieve the map project metadata", user, "", "");
+	      return null;
+	    }
+	  }
 	
 	
 	/**
@@ -2883,7 +3084,6 @@ public class MappingServiceRest extends RootServiceRest {
 	 * @param uploadedInputStream the uploaded input stream
 	 * @param serverLocation the server location
 	 */
-  @SuppressWarnings("resource")
   private void saveFile(InputStream uploadedInputStream, String serverLocation) {
 		try {
 			OutputStream outputStream =
