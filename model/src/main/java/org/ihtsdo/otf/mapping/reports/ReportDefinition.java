@@ -4,7 +4,6 @@ import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
-import org.ihtsdo.otf.mapping.helpers.ReportType;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -31,14 +30,14 @@ public interface ReportDefinition {
 	 *
 	 * @return the report name
 	 */
-	public String getReportName();
+	public String getName();
 
 	/**
 	 * Sets the report name.
 	 *
-	 * @param reportName the new report name
+	 * @param name the new report name
 	 */
-	public void setReportName(String reportName);
+	public void setName(String name);
 
 
 	/**
@@ -91,34 +90,39 @@ public interface ReportDefinition {
 	public MapUserRole getRoleRequired();
 
 	
+	/**
+	 * Sets the role required.
+	 *
+	 * @param roleRequired the new role required
+	 */
 	void setRoleRequired(MapUserRole roleRequired);
+	
 	/**
-	 * Gets the report type.
+	 * Gets the time period.
 	 *
-	 * @return the report type
+	 * @return the time period
 	 */
-	public ReportType getReportType();
-
-	/**
-	 * Sets the report type.
-	 *
-	 * @param reportType the new report type
-	 */
-	public void setReportType(ReportType reportType);
-
 	public ReportTimePeriod getTimePeriod();
 	
+	/**
+	 * Sets the time period.
+	 *
+	 * @param timePeriod the new time period
+	 */
 	public void setTimePeriod(ReportTimePeriod timePeriod);
 
+	/**
+	 * Checks if is diff report.
+	 *
+	 * @return true, if is diff report
+	 */
 	boolean isDiffReport();
 
+	/**
+	 * Sets the diff report.
+	 *
+	 * @param isDiffReport the new diff report
+	 */
 	void setDiffReport(boolean isDiffReport);
-
-	boolean isRateReport();
-
-	void setRateReport(boolean isRateReport);
-
-
-
 	
 }

@@ -2,9 +2,11 @@ package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
+import org.ihtsdo.otf.mapping.helpers.RelationStyle;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
+import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 
-// TODO: Auto-generated Javadoc
 /**
  * Represents a map project.
  * 
@@ -320,14 +322,14 @@ public interface MapProject {
 	 * 
 	 * @return the map relation style
 	 */
-	public String getMapRelationStyle();
+	public RelationStyle getMapRelationStyle();
 
 	/**
 	 * Sets the map relation style.
 	 * 
 	 * @param mapRelationStyle the map relation style
 	 */
-	public void setMapRelationStyle(String mapRelationStyle);
+	public void setMapRelationStyle(RelationStyle mapRelationStyle);
 
 
 	/**
@@ -363,13 +365,13 @@ public interface MapProject {
 	 * Returns the map behavior type (e.g. COMPLEX_MAP)
 	 * @return the map type
 	 */
-	public String getMapRefsetPattern();
+	public MapRefsetPattern getMapRefsetPattern();
 
 	/**
 	 * Sets the map behavior type (e.g. COMPLEX_MAP)
 	 * @param mapRefsetPattern the map type
 	 */
-	public void setMapRefsetPattern(String mapRefsetPattern);
+	public void setMapRefsetPattern(MapRefsetPattern mapRefsetPattern);
 
 	/**
 	 * Returns the scope concepts.
@@ -597,5 +599,9 @@ public interface MapProject {
 	 * @param propagatedFlag the propagated flag
 	 */
 	public void setPropagatedFlag(boolean propagatedFlag);
+	
+	public Set<ReportDefinition> getReportDefinitions();
+	
+	public void setReportDefinitions(Set<ReportDefinition> reportDefinitions);
 
 }

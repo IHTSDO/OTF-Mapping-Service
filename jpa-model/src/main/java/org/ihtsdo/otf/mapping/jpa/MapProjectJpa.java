@@ -28,7 +28,9 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.RelationStyle;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
@@ -36,10 +38,11 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.reports.ReportDefinition;
+import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class MapProjectJpa.
  * 
@@ -103,12 +106,12 @@ public class MapProjectJpa implements MapProject {
 	private String destinationTerminologyVersion;
 
 	/** The RF2 refset pattern for this map project. */
-	@Column(nullable = false)
-	private String mapRefsetPattern;
+	@Enumerated(EnumType.STRING)
+	private MapRefsetPattern mapRefsetPattern = null;
 
 	/** The relation behavior. */
-	@Column(nullable = false)
-	private String mapRelationStyle;
+	@Enumerated(EnumType.STRING)
+	private RelationStyle mapRelationStyle = null;
 
 	/** The mapping principle document name. */
 	@Column(nullable = true)
@@ -166,6 +169,11 @@ public class MapProjectJpa implements MapProject {
 	@ManyToMany(targetEntity = MapRelationJpa.class, fetch = FetchType.LAZY)
 	@IndexedEmbedded(targetElement = MapRelationJpa.class)
 	private Set<MapRelation> mapRelations = new HashSet<>();
+	
+	/** The allowable map relations for this MapProject. */
+	@ManyToMany(targetEntity = ReportDefinitionJpa.class, fetch = FetchType.LAZY)
+	@IndexedEmbedded(targetElement = ReportDefinitionJpa.class)
+	private Set<ReportDefinition> reportDefinitions = new HashSet<>();
 
 	/** The concepts in scope for this project. */
 	@ElementCollection
@@ -202,7 +210,7 @@ public class MapProjectJpa implements MapProject {
 
 
 	/**  The propagation descendant threshold. */
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private Integer propagationDescendantThreshold;
 	
 
@@ -254,8 +262,8 @@ public class MapProjectJpa implements MapProject {
 			boolean groupStructure, boolean published,
 			String refSetId, String refSetName, String sourceTerminology,
 			String sourceTerminologyVersion, String destinationTerminology,
-			String destinationTerminologyVersion, String mapRefsetPattern,
-			String mapRelationStyle, String mapPrincipleSourceDocument,
+			String destinationTerminologyVersion, MapRefsetPattern mapRefsetPattern,
+			RelationStyle mapRelationStyle, String mapPrincipleSourceDocument,
 			String mapPrincipleSourceDocumentName,
 			boolean ruleBased, String projectSpecificAlgorithmHandlerClass,
 			ProjectSpecificAlgorithmHandler algorithmHandler,
@@ -749,7 +757,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapRelationStyle()
 	 */
 	@Override
-	public String getMapRelationStyle() {
+	public RelationStyle getMapRelationStyle() {
 		return mapRelationStyle;
 	}
 
@@ -784,7 +792,7 @@ public class MapProjectJpa implements MapProject {
 	 * )
 	 */
 	@Override
-	public void setMapRelationStyle(String mapRelationStyle) {
+	public void setMapRelationStyle(RelationStyle mapRelationStyle) {
 		this.mapRelationStyle = mapRelationStyle;
 	}
 
@@ -814,7 +822,7 @@ public class MapProjectJpa implements MapProject {
 	 * @see org.ihtsdo.otf.mapping.model.MapProject#getMapRefsetPattern()
 	 */
 	@Override
-	public String getMapRefsetPattern() {
+	public MapRefsetPattern getMapRefsetPattern() {
 		return mapRefsetPattern;
 	}
 
@@ -826,7 +834,7 @@ public class MapProjectJpa implements MapProject {
 	 * )
 	 */
 	@Override
-	public void setMapRefsetPattern(String mapRefsetPattern) {
+	public void setMapRefsetPattern(MapRefsetPattern mapRefsetPattern) {
 		this.mapRefsetPattern = mapRefsetPattern;
 	}
 
@@ -1485,5 +1493,23 @@ public class MapProjectJpa implements MapProject {
 	public void setPropagatedFlag(boolean propagatedFlag) {
 		this.propagatedFlag = propagatedFlag;
 	}
+  
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#getReportDefinitions()
+	 */
+	@Override
+	@XmlElement(type = ReportDefinitionJpa.class, name = "reportDefinition")
+	public Set<ReportDefinition> getReportDefinitions() {
+		return reportDefinitions;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapProject#setReportDefinitions(java.util.Set)
+	 */
+	@Override
+	public void setReportDefinitions(Set<ReportDefinition> reportDefinitions) {
+		this.reportDefinitions = reportDefinitions;
+	}
+	
 
 }

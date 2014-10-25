@@ -59,6 +59,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	$scope.noteEditId = null;
 	$scope.noteInput = '';
 	
+	// tooltip for Save/Next button
+	$scope.dynamicTooltip = "";
+	
 	// accordion functions
 	$scope.openAll = function() {
 		$scope.isConceptOpen = true;
@@ -151,6 +154,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}).success(function(data) {
 				$scope.concept = data;
 				$scope.conceptBrowserUrl = $scope.getBrowserUrl();
+				// initialize the dynamic tooltip on the Save/Next button with the next 
+				// concept to be mapped
+				$scope.resolveNextConcept(true);
 			}).error(function(data, status, headers, config) {
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
@@ -278,6 +284,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				return;
 			};
 		}
+		if ($rootScope.glassPane > 0) return;
+		$rootScope.glassPane++;
 	
 		///////////////////////////
 		// Group and MapPriority //
@@ -337,6 +345,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			console.debug(data);
 			$scope.validationResult = data;
 		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
 			$scope.validationResult = null;
 			$scope.recordError = "Unexpected error reported by server.  Contact an admin.";
 			console.debug("Failed to validate map record");
@@ -388,154 +397,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						$scope.recordError = "";
 						
 						// user has successfully finished record, page is no longer "dirty"
-						$rootScope.currentPageDirty = false;
-						
-						if (!returnBack) {
-							console.debug("************* ReturnBack is false");
-
-							$rootScope.glassPane++;
-							
-							// if specialist level work, query for assigned concepts
-							if ($scope.record.workflowStatus === 'NEW' 
-								|| $scope.record.workflowStatus === 'EDITING_IN_PROGRESS' 
-								|| $scope.record.workflowStatus === 'EDITING_DONE') {
-								
-								// construct a paging/filtering/sorting object
-								var pfsParameterObj = 
-								{"startIndex": 0,
-										"maxResults": 1, 
-										"sortField": 'sortKey',
-										"queryRestriction": 'NEW'};  
-
-								// get the assigned work list
-								$http({
-									url: root_workflow + "project/id/" + $scope.project.id 
-									+ "/user/id/" + $scope.user.userName
-									+ "/query/null/assignedConcepts",
-									
-									dataType: "json",
-									data: pfsParameterObj,
-									method: "POST",
-									headers: {
-										"Content-Type": "application/json"
-									}
-								}).success(function(data) {
-									$rootScope.glassPane--;
-	
-									var assignedWork = data.searchResult;
-									
-									// if there is no more assigned work, return to dashboard
-									if (assignedWork.length == 0) {
-										console.debug("No more assigned work, return to dashboard");
-										$location.path($scope.role + "/dash");
-									
-									// otherwise redirect to the next record to be edited
-									} else {
-										console.debug("More work, redirecting");
-										$location.path("record/recordId/" + assignedWork[0].id);
-									}
-	
-								}).error(function(data, status, headers, config) {
-								    $rootScope.glassPane--;
-								    $rootScope.handleHttpError(data, status, headers, config);
-								});
-								
-							// otherwise, if a conflict record, query available conflicts
-							} else if ($scope.record.workflowStatus === 'CONFLICT_NEW' || $scope.record.workflowStatus === 'CONFLICT_IN_PROGRESS') {
-								
-								// construct a paging/filtering/sorting object
-								var pfsParameterObj = 
-								{"startIndex": 0,
-										"maxResults": 1, 
-										"sortField": 'sortKey',
-										"queryRestriction": 'CONFLICT_NEW'};  
-								
-								// get the assigned conflicts
-								$http({
-									url: root_workflow + "project/id/" + $scope.project.id 
-									+ "/user/id/" + $scope.user.userName
-									+ "/query/null/assignedConflicts",
-									
-									dataType: "json",
-									data: pfsParameterObj,
-									method: "POST",
-									headers: {
-										"Content-Type": "application/json"
-									}
-								}).success(function(data) {
-									$rootScope.glassPane--;
-	
-									var assignedWork = data.searchResult;
-									
-									// if there is no more assigned work, return to dashboard
-									if (assignedWork.length == 0) {
-										console.debug("No more assigned conflicts, return to dashboard");
-										$location.path($scope.role + "/dash");
-									
-									// otherwise redirect to the next record to be edited
-									} else {
-										console.debug("More work, redirecting");
-										$location.path("record/conflicts/" + assignedWork[0].id);
-									}
-	
-								}).error(function(data, status, headers, config) {
-								    $rootScope.glassPane--;
-								    $rootScope.handleHttpError(data, status, headers, config);
-								});
-								
-							// otherwise, if a review record, query available review work
-							} else if ($scope.record.workflowStatus === 'REVIEW_NEW' || $scope.record.workflowStatus === 'REVIEW_IN_PROGRESS') {
-								
-								// construct a paging/filtering/sorting object
-								var pfsParameterObj = 
-								{"startIndex": 0,
-										"maxResults": 1, 
-										"sortField": 'sortKey',
-										"queryRestriction": 'REVIEW_NEW'}
-								;  
-								// get the assigned review work
-								$http({
-									url: root_workflow + "project/id/" + $scope.project.id 
-									+ "/user/id/" + $scope.user.userName
-									+ "/query/null/assignedReviewWork",
-									
-									dataType: "json",
-									data: pfsParameterObj,
-									method: "POST",
-									headers: {
-										"Content-Type": "application/json"
-									}
-								}).success(function(data) {
-									$rootScope.glassPane--;
-	
-									var assignedWork = data.searchResult;
-									
-									// if there is no more assigned work, return to dashboard
-									if (assignedWork.length == 0) {
-										console.debug("No more assigned review work, return to dashboard");
-										$location.path($scope.role + "/dash");
-									
-									// otherwise redirect to the next record to be edited
-									} else {
-										console.debug("More work, redirecting");
-										$location.path("record/review/" + assignedWork[0].id);
-									}
-	
-								}).error(function(data, status, headers, config) {
-								    $rootScope.glassPane--;
-								    $rootScope.handleHttpError(data, status, headers, config);
-								});
-							} else {
-								$rootScope.glassPane--;
-								console.debug("MapRecord finish/next can't determine type of work, returning to dashboard");
-								$location.path($scope.role + "/dash");
-							}
-
-						} else {
-							console.debug("Simple finish called, return to dashboard");
-							$location.path($scope.role + "/dash");
-						}
+						$rootScope.currentPageDirty = false;						
 					}).error(function(data, status, headers, config) {
+						$rootScope.glassPane--;
 						$scope.recordError = "Unexpected server error.  Try saving your work for later, and contact an admin.";
 					    $rootScope.handleHttpError(data, status, headers, config);
 						console.debug('SERVER ERROR');
@@ -544,12 +408,14 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				
 				// if the warning checks were not passed, save the warnings
 				} else {
+					$rootScope.glassPane--;
 					$scope.savedValidationWarnings = $scope.validationResult.warnings;
 				}
 
 				
 			// if errors found, clear the recordSuccess field
 			}  else {
+				$rootScope.glassPane--;
 				$scope.recordSuccess = "";
 			}
 
@@ -573,7 +439,182 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		broadcastRecord();
 	};
 
+	// returns the next concept to be worked on
+	// used to get the next concept when Save/Next is pressed
+	// also used to get next concept to display conceptId in tooltip on Save/Next button
+	$scope.resolveNextConcept = function(tooltipOnly) {
+		var startIndex;
+		if (tooltipOnly == true) {
+			startIndex = 1;
+		} else {
+			startIndex = 0;
+		}
+		
+		// if specialist level work, query for assigned concepts
+		if ($scope.record.workflowStatus === 'NEW' 
+			|| $scope.record.workflowStatus === 'EDITING_IN_PROGRESS' 
+			|| $scope.record.workflowStatus === 'EDITING_DONE') {
+			
+			// construct a paging/filtering/sorting object
+			var pfsParameterObj = 
+			{"startIndex": startIndex,
+					"maxResults": 1, 
+					"sortField": 'sortKey',
+					"queryRestriction": 'NEW'};  
+
+			// get the assigned work list
+			$http({
+				url: root_workflow + "project/id/" + $scope.project.id 
+				+ "/user/id/" + $scope.user.userName
+				+ "/query/null/assignedConcepts",
+				
+				dataType: "json",
+				data: pfsParameterObj,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+
+				var assignedWork = data.searchResult;
+				
+				if (tooltipOnly == true) {
+					if (assignedWork.length == 0) {
+						$scope.dynamicTooltip = "";
+					} else {
+					    $scope.dynamicTooltip = assignedWork[0].terminologyId + " " 
+					     + assignedWork[0].value;
+					}
+				} else {
+				  // if there is no more assigned work, return to dashboard
+				  if (assignedWork.length == 0) {
+					console.debug("No more assigned work, return to dashboard");
+					$location.path($scope.role + "/dash");
+				
+				  // otherwise redirect to the next record to be edited
+				  } else {
+					console.debug("More work, redirecting");
+					$location.path("record/recordId/" + assignedWork[0].id);
+				  }
+				}
+
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
+			    $rootScope.handleHttpError(data, status, headers, config);
+			});
+			
+		// otherwise, if a conflict record, query available conflicts
+		} else if ($scope.record.workflowStatus === 'CONFLICT_NEW' || $scope.record.workflowStatus === 'CONFLICT_IN_PROGRESS') {
+			
+			// construct a paging/filtering/sorting object
+			var pfsParameterObj = 
+			{"startIndex": startIndex,
+					"maxResults": 1, 
+					"sortField": 'sortKey',
+					"queryRestriction": 'CONFLICT_NEW'};  
+			
+			// get the assigned conflicts
+			$http({
+				url: root_workflow + "project/id/" + $scope.project.id 
+				+ "/user/id/" + $scope.user.userName
+				+ "/query/null/assignedConflicts",
+				
+				dataType: "json",
+				data: pfsParameterObj,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+
+				var assignedWork = data.searchResult;
+
+				if (tooltipOnly == true) {
+					if (assignedWork.length == 0) {
+						$scope.dynamicTooltip = "";
+					} else {
+					    $scope.dynamicTooltip = assignedWork[0].terminologyId + " " 
+					     + assignedWork[0].value;
+					}
+				} else {
+				    // if there is no more assigned work, return to dashboard
+				    if (assignedWork.length == 0) {
+					    console.debug("No more assigned conflicts, return to dashboard");
+					    $location.path($scope.role + "/dash");
+				
+				    // otherwise redirect to the next record to be edited
+				    } else {
+					    console.debug("More work, redirecting");
+					    $location.path("record/conflicts/" + assignedWork[0].id);
+				    }
+				}
+
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
+			    $rootScope.handleHttpError(data, status, headers, config);
+			});
+			
+		// otherwise, if a review record, query available review work
+		} else if ($scope.record.workflowStatus === 'REVIEW_NEW' || $scope.record.workflowStatus === 'REVIEW_IN_PROGRESS') {
+			
+			// construct a paging/filtering/sorting object
+			var pfsParameterObj = 
+			{"startIndex": startIndex,
+					"maxResults": 1, 
+					"sortField": 'sortKey',
+					"queryRestriction": 'REVIEW_NEW'}
+			;  
+			// get the assigned review work
+			$http({
+				url: root_workflow + "project/id/" + $scope.project.id 
+				+ "/user/id/" + $scope.user.userName
+				+ "/query/null/assignedReviewWork",
+				
+				dataType: "json",
+				data: pfsParameterObj,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+
+				var assignedWork = data.searchResult;
+				if (tooltipOnly == true) {
+					if (assignedWork.length == 0) {
+						$scope.dynamicTooltip = "";
+					} else {
+					    $scope.dynamicTooltip = assignedWork[0].terminologyId + " " 
+					     + assignedWork[0].value;
+					}
+				} else {
+				    // if there is no more assigned work, return to dashboard
+				    if (assignedWork.length == 0) {
+					    console.debug("No more assigned review work, return to dashboard");
+					    $location.path($scope.role + "/dash");
+				
+				    // otherwise redirect to the next record to be edited
+				    } else {
+					    console.debug("More work, redirecting");
+					    $location.path("record/review/" + assignedWork[0].id);
+				    }
+				}
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
+			    $rootScope.handleHttpError(data, status, headers, config);
+			});
+		} else {
+			$rootScope.glassPane--;
+			console.debug("MapRecord finish/next can't determine type of work, returning to dashboard");
+			$location.path($scope.role + "/dash");
+		}
+	}
+	
 	$scope.saveMapRecord = function(returnBack) {
+		
+		$rootScope.glassPane++;
 
 		console.debug("saveMapRecord called with " + returnBack);
 		console.debug("Note content: ", $scope.tinymceContent);
@@ -649,10 +690,19 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			//$scope.record = data;
 			$scope.recordSuccess = "Record saved.";
 			$scope.recordError = "";
-			if (returnBack) {
-			  window.history.back(); 
+			$rootScope.glassPane--;
+			if (!returnBack) {
+				console.debug("************* ReturnBack is false");
+				
+				$scope.resolveNextConcept(false);
+
+			} else {
+				$rootScope.glassPane--;
+				console.debug("Simple save called, return to dashboard");
+				$location.path($scope.role + "/dash");
 			}
 		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
 			$scope.recordError = "Error saving record.";
 			$rootScope.handleHttpError(data, status, headers, config);
 			$scope.recordSuccess = "";			
