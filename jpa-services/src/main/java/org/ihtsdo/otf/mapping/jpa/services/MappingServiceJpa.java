@@ -2479,7 +2479,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				// status already exists
 				MapRecordList mapRecordList = null;
 				mapRecordList = this.getMapRecordsForProjectAndConcept(
-							mapProject.getId(), mapRecord.getConceptId());
+							mapProjectId, refSetMember.getTerminologyId());
                 boolean recordForWorkflowStatusExists = false;
 				if (mapRecordList != null ) {
 				  // cycle over any records found and check for user and workflow status
