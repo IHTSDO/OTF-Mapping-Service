@@ -244,5 +244,4 @@ where mapProjectId = mp.id
 and mp.id = 10
 group by mp.name;
 
-
-
+select now();
