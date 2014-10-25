@@ -201,7 +201,7 @@ left outer join
 on tr.mapProjectId = mp.id;
 
 -- Concepts flagged for editorial
-select 'Concepts flagged for editorial', 
+select 'Concepts flagged for editorial' name, 
     mp.name project, '' value, '' date, ifnull(ct,0) ct
 from map_projects mp
 left outer join 
@@ -212,7 +212,7 @@ left outer join
 on tr.mapProjectId = mp.id;
 
 -- Concepts with MAPPING GUIDANCE FROM WHO IS AMBIGUOUS
-select 'Concepts with MAPPING GUIDANCE FROM WHO IS AMBIGUOUS', 
+select 'Concepts with MAPPING GUIDANCE FROM WHO IS AMBIGUOUS' name, 
     mp.name project, '' value, '' date, ifnull(ct,0) ct
 from map_projects mp
 left outer join 
@@ -220,12 +220,12 @@ left outer join
  from map_records_AUD mr, map_entries_AUD me, map_relations rel
  where mr.id = me.mapRecord_Id
    and me.mapRelation_id = rel.id
-   and rel.name = 'MAPPING GUIDANCE FROM WHO IS AMBIGUOUS'
+   and rel.name = 'MAPPING GUIDANCE FROM WHO IS AMBIGUOUS' 
  group by mapProjectId) tr
 on tr.mapProjectId = mp.id;
 
 -- Concepts with MAPPING GUIDANCE FROM WHO IS AMBIGUOUS
-select 'Concepts with SOURCE SNOMED CONCEPT IS AMBIGUOUS', 
+select 'Concepts with SOURCE SNOMED CONCEPT IS AMBIGUOUS' name, 
     mp.name project, '' value, '' date, ifnull(ct,0) ct
 from map_projects mp
 left outer join 
@@ -237,7 +237,7 @@ left outer join
  group by mapProjectId) tr
 on tr.mapProjectId = mp.id;
 
-select 'Mapped concepts in Unmapped SNOMED to ICD10',
+select 'Mapped concepts in Unmapped SNOMED to ICD10' name,
     mp.name project, '' value, '' date, count(distinct mr.conceptId)
 from map_projects mp, map_records mr
 where mapProjectId = mp.id
