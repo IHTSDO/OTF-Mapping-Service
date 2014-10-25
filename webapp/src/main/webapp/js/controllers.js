@@ -332,6 +332,26 @@ mapProjectAppControllers.controller('LoginCtrl', ['$scope', 'localStorageService
 					}).error(function(data, status, headers, config) {
 						$rootScope.glassPane--;	
 					    $rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_mapping + "mapProject/metadata",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(response) {
+
+							localStorageService.add('mapProjectMetadata', response);
+							$rootScope.$broadcast(
+									'localStorageModule.notification.setMapProjectMetadata', {
+										key : 'mapProjectMetadata',
+										value : response
+									});
+						}).error(function(data, status, headers, config) {
+							$rootScope.glassPane--;	
+						    $rootScope.handleHttpError(data, status, headers, config);
+						});
 					});
 
 				});

@@ -1,7 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
@@ -901,39 +901,40 @@ public interface MappingService extends RootService {
 
 
 	/**
-	 * Gets the map record for project and concept.
-	 * 
-	 * @param mapProjectId
-	 *            the map project id
-	 * @param terminologyId
-	 *            the terminology id
-	 * @return the map record for project and concept
-	 * @throws Exception
-	 *             the exception
-	 */
-	public MapRecord getMapRecordForProjectAndConcept(Long mapProjectId,
-			String terminologyId) throws Exception;
-
-	/**
-	 * Process release.
-	 *
-	 * @param mapProject the map project
-	 * @param outputFileName the output file name
-	 * @param mapRecordsToPublish the map records to publish
-	 * @param effectiveTime the effective time
-	 * @param moduleId the module id
-	 * @throws Exception the exception
-	 */
-	public void processRelease(MapProject mapProject, String outputFileName,
-			Set<MapRecord> mapRecordsToPublish, String effectiveTime,
-			String moduleId) throws Exception;
-
-	/**
 	 * Simple routine to removes a map advice from the environment
 	 *
 	 * @param mapAdvice the map advice name
 	 * @throws Exception 
 	 */
 	public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice) throws Exception;
+
+	/**
+	 * Gets the map project metadata.
+	 *
+	 * @return the map project metadata
+	 * @throws Exception the exception
+	 */
+	public Map<String, Map<String, String>> getMapProjectMetadata() throws Exception;
+
+	/**
+	 * Gets the map records for a given project and concept.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param terminologyId the terminology id
+	 * @return the map records for project and concept
+	 * @throws Exception the exception
+	 */
+	public MapRecordList getMapRecordsForProjectAndConcept(Long mapProjectId,
+			String terminologyId) throws Exception;
+
+	/**
+	 * Gets the latest map record revision for each map record for a given concept.
+	 *
+	 * @param conceptId the concept id
+	 * @param mapProjectId the map project id
+	 * @return the latest map record revisions for concept
+	 * @throws Exception the exception
+	 */
+	public MapRecordList getMapRecordRevisionsForConcept(String conceptId, Long mapProjectId) throws Exception;
 
 }

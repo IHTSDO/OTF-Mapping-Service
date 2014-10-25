@@ -92,7 +92,7 @@
                      ng-options="item for item in [true, false]">
                 </select>
                 </td></tr>
-                <tr ng-show="project.propagatedFlag == true">
+                <tr>
                 <td>Propagation Threshold:</td> 
                 <td><input ng-model="project.propagationDescendantThreshold" ng-change="setEditingPerformed(project)"
                   style="width:85%;"></input>
@@ -100,23 +100,23 @@
                 </tbody></table>
             </td> 
             <td><select tooltip-placement="top" tooltip="Map Type" 
-                ng-init="mapType=getMapType(project)" ng-model="mapType"
-                ng-options="item as item.displayName for item in allowableMapTypes"   ng-change="setEditingPerformed(project)"
+                ng-init="project.mapRefsetPattern=getMapType(project)" ng-model="project.mapRefsetPattern"
+                ng-options="item for item in allowableMapTypes"   ng-change="setEditingPerformed(project)"
                 style="margin-bottom:5px; width:100%;">
                 </select>
-                <select tooltip-placement="top" tooltip="Workflow Type" 
-                ng-init="workflowType=getWorkflowType(project)" ng-model="workflowType"
-                ng-options="item as item.displayName for item in allowableWorkflowTypes"  ng-change="setEditingPerformed(project)"
+                <select tooltip-placement="top" tooltip="Workflow Type"
+                ng-init="project.workflowType=getWorkflowType(project)" ng-model="project.workflowType"                
+                ng-options="item for item in allowableWorkflowTypes"  ng-change="setEditingPerformed(project)"
                 style="margin-bottom:5px; width:100%;">
                 </select>
                 <select tooltip-placement="top" tooltip="Map Relation Style" 
-                ng-init="relationStyle=getMapRelationStyle(project)" ng-model="relationStyle"
-                ng-options="item as item.displayName for item in allowableMapRelationStyles"  ng-change="setEditingPerformed(project)"
+                ng-init="project.mapRelationStyle=getMapRelationStyle(project)" ng-model="project.mapRelationStyle"
+                ng-options="item for item in allowableMapRelationStyles"  ng-change="setEditingPerformed(project)"
                 style="margin-bottom:5px; width:100%;">
                 </select>
                 <select tooltip-placement="top" tooltip="Project Specific Algorithm Handler" 
-                ng-init="projectSpecificAlgorithmHandlerClass=getHandler(project)" ng-model="project.projectSpecificAlgorithmHandlerClass"
-                ng-options="item as item for item in handlers"   ng-change="setEditingPerformed(project)"
+                ng-init="project.projectSpecificAlgorithmHandlerClass=getHandler(project)" ng-model="project.projectSpecificAlgorithmHandlerClass"
+                ng-options="item for item in handlers"   ng-change="setEditingPerformed(project)"
                 style="margin-bottom:5px; width:100%;">
                 </select>
                 <input tooltip-placement="top" tooltip="Map Principle Document Name" 
@@ -177,19 +177,23 @@
       <tr><td>Scope Excluded Descendants </td><td><select ng-model="newMapProjectScopeExcludedDescendantsFlag" 
          ng-options="item for item in [true, false]">
       </select></td></tr>
-      
+      <tr><td>Propagated </td><td><select ng-model="newMapProjectPropagationFlag" 
+         ng-options="item for item in [true, false]">
+      </select></td></tr>
+      <tr><td>Propagation Threshold </td><td>
+        <input id="newMapProjectPropagationThreshold" type="text" ng-model="newMapProjectPropagationThreshold">  </td></tr>
       
       <tr><td>Map Type </td><td><select ng-model="newMapProjectMapType"
-        ng-options="item as item.displayName for item in allowableMapTypes">
+        ng-options="item for item in allowableMapTypes">
       </select></td></tr>
       <tr><td>Workflow Type </td><td><select ng-model="newWorkflowType"
-        ng-options="item as item.displayName for item in allowableWorkflowTypes">
+        ng-options="item for item in allowableWorkflowTypes">
       </select></td></tr>
       <tr><td>Map Relation Style </td><td><select ng-model="newMapRelationStyle"
-        ng-options="item as item.displayName for item in allowableMapRelationStyles">
+        ng-options="item for item in allowableMapRelationStyles">
       </select></td></tr>
       <tr><td>Project Specific Algorithm Handler </td><td><select ng-model="newHandler"
-        ng-options="item as item.value for item in handlers">
+        ng-options="item for item in handlers">
       </select></td></tr>
       <tr><td>Map Principle Document Name </td><td>
         <input id="newMapProjectMapPrincipleSourceDocumentName" type="text" 
@@ -200,13 +204,15 @@
         newMapProjectDestinationVersion, newMapProjectRefSetId, newMapProjectPublished, 
         newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic, 
         newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag, 
-        newMapProjectMapType, newWorkflowType, newMapRelationStyle, newHandler, newMapProjectMapPrincipleSourceDocumentName); 
+        newMapProjectMapType, newWorkflowType, newMapRelationStyle, newHandler, 
+        newMapProjectMapPrincipleSourceDocumentName, newMapProjectPropagationFlag,
+        newMapProjectPropagationThreshold); 
           newMapProjectName = ''; newMapProjectRefSetId = ''; newHandler = '';
           newMapProjectSourceVersion = ''; newMapProjectDestinationVersion = '';
-          newMapProjectPublished = false; 
+          newMapProjectPropagationThreshold = ''; newMapProjectPublished = false; 
           newMapProjectRuleBased = false; newMapProjectGroupStructure = false; 
           newMapProjectPublic = false; newMapProjectScopeDescendantsFlag = false; 
-          newMapProjectScopeExcludedDescendantsFlag = false; 
+          newMapProjectScopeExcludedDescendantsFlag = false; newMapProjectPropagationFlag = false;
           newMapProjectMapPrincipleSourceDocumentName = '';">Submit</button></td><td></td></tr>
     </tbody></table></form>
     
@@ -263,7 +269,7 @@
             <td><div tooltip-placement="top"
                 tooltip="Delete advice">
               <i class="glyphicon glyphicon-remove"
-                ng-click="deleteAdvice(advice)" ng-change="setEditingPerformed(advice)"></i></div>
+                ng-click="deleteAdvice(advice)"></i></div>
             </td>           
           </tr>
 
@@ -570,6 +576,251 @@
       </tbody></table>
       </form>
       
-      </accordion-group> 
+      </accordion-group> <accordion-group> <accordion-heading>
+<h5>
+	<span tooltip-placement="right"
+		tooltip="List of the map relations for the application.">
+		Report Definitions</span>
+</h5>
+</accordion-heading> <pagination ng-show="reportDefinitions.length > pageSize"
+	direction-links="false" boundary-links="true"
+	total-items="pagedReportDefinitionCount" items-per-page="pageSize"
+	page="pageReportDefinition"
+	on-select-page="getPagedReportDefinitions(page, reportDefinitionFilter)"></pagination>
+
+<form>
+	<input type="text" ng-model="reportDefinitionFilter"
+		ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)">
+	<input type="submit" value="Reset Filter"
+		ng-click="resetReportDefinitionFilter()">
+</form>
+
+<table width="100%" class="table pure-table" style="margin-bottom: 5px;">
+	<thead>
+		<th style="width: 40%">Parameters</th>
+		<th style="width: 54%">Report Query</th>
+		<th style="width: 3%;"></th>
+		<th style="width: 3%;"></th>
+	</thead>
+
+
+	<tbody ng-repeat="definition in pagedReportDefinition | orderBy: 'name'"
+		style="border: 2px solid #ccc;">
+
+		<tr>
+
+			<td style="width: 40%;">
+
+
+
+				<table style="width: 100%;" class="table pure-table">
+
+					<thead>
+						<tr>
+							<th style="width: 40%;">Parameter</th>
+							<th style="width: 60%;">Value</th>
+						</tr>
+					</thead>
+					Name
+					</td>
+								<td style="width:60%;"><input style="width:100%;"
+						ng-model="definition.name"
+						ng-change="setEditingPerformed(definition)" style="width: 100%;">
+								</td>
+							</tr>
+							<tr>
+								<td style="width:40%;" tooltip-placement="top"
+							tooltip="Project role required to view report results">Role Required</td>
+								<td style="width:60%;">
+								<select style="width:100%;" ng-model="definition.roleRequired"
+							ng-options="role as role for role in definitionRoles"
+							ng-change="setEditingPerformed(definition)"
+							style="width: 100%; padding:5px;"></select>
+								</td>
+							</tr>
+							<tr>
+								<td style="width:40%;" tooltip-placement="top"
+							tooltip="Type of object this report counts">Result Type</td>
+								<td style="width:60%;">
+								<select style="width:100%;" ng-model="definition.resultType"
+							ng-options="resultType as resultType for resultType in definitionResultTypes"
+							ng-change="setEditingPerformed(definition)" style="width: 100%;"></select>
+								</td>
+							</tr>
+							<tr>
+								<td style="width:40%;" tooltip-placement="top"
+							tooltip="Query type/engine used to retrieve report results">Query Type</td>
+								<td style="width:60%;">
+								<select style="width:100%;" ng-model="definition.queryType"
+							ng-options="queryType as queryType for queryType in definitionQueryTypes"
+							ng-change="setEditingPerformed(definition)" style="width: 100%;"></select>
+								</td>
+							</tr>
+							<tr>
+								<td style="width:40%;" tooltip-placement="top"
+							tooltip="Whether this report is a difference report between two other reports">Diff Report
+								</td>
+								<td style="width:60%;">
+								<select style="width:100%;" ng-model="definition.diffReport"
+							ng-options="item for item in [true, false]"
+							ng-change="setEditingPerformed(definition); definition.timePeriod = null;"
+							style="width:100%;"></select>
+								</td>
+							</tr>
+							<tr ng-show="definition.diffReport == true">
+								<td style="width:40%;" tooltip-placement="top"
+							tooltip="Time period this difference report operates over ">Diff Report
+								</td>
+								<td style="width:60%;">
+								<select style="width:100%;" ng-model="definition.timePeriod"
+							ng-options="timePeriod as timePeriod for timePeriod in definitionTimePeriods"
+							ng-change="setEditingPerformed(definition)" style="width:100%;"></select>
+								</td>
+							</tr>
+						</tbody>
+						</table>
+					</td>	
+					<td style="width:60%;">
+						<textarea style="width:100%; height:100%" 	tooltip-placement="top"
+						tooltip="Query executed to retrieve report results"
+						ng-model="definition.query"
+						ng-change="setEditingPerformed(definition)"></textarea>
+					</td>
+					 <td><button class="btn btn-sm btn-primary" ng-click="updateReportDefinition(definition)" ng-show="isComponentChanged(definition) == true" >Save</button></td>
+ 
+		            <td><div tooltip-placement="top"
+		                tooltip="Delete report definition">
+		              <i class="glyphicon glyphicon-remove"
+		                ng-click="deleteReportDefinition(definition)"></i></div>
+		            </td>           
+				</tr>
+			</tbody>	
+		</table>
+		<button class="btn btn-sm btn-primary" ng-click="revertUnsavedReportDefinitions()"  ng-show="reportDefinitionInEditingPerformed() == true" >Revert Unsaved</button>
+
+	 <form name="reportDefinitionForm" >
+      <div style="margin-top:15px;"><b>Create New Report Definition</b></div><hr>
+      <table class="table pure-table" >
+      <thead>
+          <tr>
+            <th style="width: 25%;"></th>           
+            <th style="width: 75%;"></th>
+          </tr>
+      </thead>
+      <tbody>
+      <tr><td>Report Definition Name</td><td>
+        <input id="newReportDefinitionName" type="text" ng-model="newReportDefinitionName">  </td></tr>
+         <tr><td>Report Definition Role Required</td><td> 
+        <select  
+								ng-model="newReportDefinitionRoleRequired"
+								ng-options="role as role for role in definitionRoles"
+								></select>
+      </td></tr>
+      <tr><td>Report Definition Result Type</td><td>
+        <select 
+								ng-model="newReportDefinitionResultType"
+								ng-options="resultType as resultType for resultType in definitionResultTypes"
+								></select>   </td></tr>
+      <tr><td>Report Definition Query Type</td><td> 
+        <select 
+								ng-model="newReportDefinitionQueryType"
+								ng-options="queryType as queryType for queryType in definitionQueryTypes"
+								></select>   </td></tr>    
+     
+      <tr><td>Report Definition Diff Report Flag</td><td> 
+         <select ng-model="newReportDefinitionDiffReport"
+        ng-options="item for item in [true, false]">   </td></tr>     
+        <tr ng-show="newReportDefinitionDiffReport == true"><td>Report Definition Diff Report Time Period</td><td> 
+         <select ng-model="newReportDefinitionDiffReportTimePeriod"
+        ng-options="timePeriod as timePeriod for timePeriod in definitionTimePeriods">   </td></tr>                           
+      <tr><td>Report Definition Query</td><td>
+        <textarea
+						ng-model="newReportDefinitionQuery"
+						></textarea>    </td></tr>
+
+			<tr>
+				<td><button class="btn btn-sm btn-primary"
+						ng-click="submitNewReportDefinition(newReportDefinitionName, newReportDefinitionRoleRequired, newReportDefinitionResultType, newReportDefinitionQueryType, newReportDefinitionDiffReport, newReportDefinitionDiffReportTimePeriod, newReportDefinitionQuery)">Submit</button></td>
+				<td></td>
+			</tr>
+		</tbody></table>
+      </form>
+      
+	</accordion-group>
+
+
+    		
+    		
+    	
+    
+ <!--      
+</tab> <tab heading="Report Definitions"
+	ng-show="currentRole === 'Administrator'"> <br>
+<h4>
+	Select Existing Report <select
+		ng-options="definition as definition.name for definition in definitions"
+		ng-model="definitionEditing"></select> or <button ng-show="isAddingDefinition == false"
+		class="btn btn-sm btn-primary"
+		ng-click="addReportDefinition()">Create New Definition</button>
+</h4>
+<form>
+	<table class="table">
+		<tr>
+			<td>Report Name</td>
+			<td><input ng-model="definitionEditing.name"></td>
+		</tr>
+
+		<tr>
+			<td>Result Type</td>
+			<td><select
+				ng-options="resultType as resultType for resultType in resultTypes"
+				ng-model="definitionEditing.resultType"></select></td>
+		</tr>
+
+		<tr>
+			<td>Role Required</td>
+			<td><select
+				ng-options="availableRole as availableRole for availableRole in availableRoles"
+				ng-model="definitionEditing.roleRequired"></select></td>
+		</tr>
+
+		<tr>
+			<td>Query Type</td>
+			<td><select
+				ng-options="queryType as queryType for queryType in queryTypes"
+				ng-model="definitionEditing.queryType"></select></td>
+		</tr>
+
+		<tr>
+			<td>Query</td>
+			<td><textarea style="width: 100%;"
+					ng-model="definitionEditing.query"></textarea></td>
+		</tr>
+		
+		<tr>
+			<td>Diff Report</td>
+			<td><input type="checkbox" ng-model="definitionEditing.isDiffReport" ng-change="definitionEditing.timePeriod = null;">
+				<select ng-disabled="definitionEditing.isDiffReport == false" ng-options="timePeriod as timePeriod for timePeriod in timePeriods"
+				ng-model="definitionEditing.timePeriod"></select>
+		</tr>
+		<tr>
+
+
+	</table>
+	
+	TODO:  This will be moved to the application admin, don't use this for now
+	<div ng-show="isAddingDefinition"><input type="checkbox" ng-model="addDefinitionToProject"> Add new report to current project </div>
+
+	<button class="btn btn-sm btn-primary"
+		ng-click="saveDefinition(definitionEditing)">Save</button>
+	<button class="btn btn-sm btn-warning"
+		ng-click="definitionEditing = null; isAddingDefinition = false">Cancel</button>
+
+	{{definitionMsg}}
+
+
+</form>
+
+</tab> </tabset> -->
 
    </accordion>
