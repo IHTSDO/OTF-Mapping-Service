@@ -14,7 +14,7 @@ group by mp.name, mr.workflowStatus,
    DATE_FORMAT(from_unixtime(mr.lastModified/1000),'%Y-%m');
 
 -- Number of errors by specialist
-select 'Specialist errors' name, map_projects.name, userName value, DATE_FORMAT(timestamp,'%Y-%m') date, count(*) ct 
+select 'Specialist errors' name, map_projects.name, map_users.userName value, DATE_FORMAT(timestamp,'%Y-%m') date, count(*) ct 
 from feedbacks, map_users, feedback_recipients, map_projects, feedback_conversations
 where isError = '1' 
 and feedbacks.feedbackConversation_id = feedback_conversations.id
@@ -27,7 +27,8 @@ group by map_projects.name, recipients_id,
    DATE_FORMAT(timestamp,'%Y-%m');
 
 -- Total number of errors by type and specialist 
-select 'Specialist errors by type' name, map_projects.name name, concat(userName, ',', mapError) value, DATE_FORMAT(timestamp,'%Y-%m') date, count(*) ct
+select 'Specialist errors by type' name, map_projects.name name, 
+     concat(map_users.userName, ',', mapError) value, DATE_FORMAT(timestamp,'%Y-%m') date, count(*) ct
 from feedbacks, map_users, feedback_recipients , map_projects, feedback_conversations
 where isError = '1' 
 and feedbacks.feedbackConversation_id = feedback_conversations.id
