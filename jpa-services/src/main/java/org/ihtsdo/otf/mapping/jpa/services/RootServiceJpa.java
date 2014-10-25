@@ -41,6 +41,9 @@ public class RootServiceJpa implements RootService {
 
 	/** The transaction entity. */
 	protected EntityTransaction tx;
+	
+	/**  The config. */
+	public Properties config = null;
 
 	/**
 	 * Instantiates an empty {@link RootServiceJpa}.
@@ -196,6 +199,9 @@ public class RootServiceJpa implements RootService {
 			manager.close();
 		}
 	}
+	
+	
+	
 
 
 }

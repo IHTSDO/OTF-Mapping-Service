@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
-import org.ihtsdo.otf.mapping.helpers.ReportType;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
 // TODO: Auto-generated Javadoc
@@ -210,21 +209,6 @@ public interface Report {
 	public void setResultType(ReportResultType resultType);
 
 	/**
-	 * Gets the report definition.
-	 * 
-	 * @return the report definition
-	 */
-	public ReportType getReportType();
-
-	/**
-	 * Sets the report definition.
-	 * 
-	 * @param reportType
-	 *            the new report type
-	 */
-	public void setReportType(ReportType reportType);
-
-	/**
 	 * Gets the report1 id.
 	 * 
 	 * @return the report1 id
@@ -270,17 +254,17 @@ public interface Report {
 	public void setDiffReport(boolean isDiffReport);
 
 	/**
-	 * Checks if is rate report.
+	 * Gets the report definition.
 	 *
-	 * @return true, if is rate report
+	 * @return the report definition
 	 */
-	public boolean isRateReport();
-
+	public ReportDefinition getReportDefinition();
+	
 	/**
-	 * Sets the rate report.
+	 * Sets the report definition.
 	 *
-	 * @param isRateReport the new rate report
+	 * @param reportDefinition the new report definition
 	 */
-	public void setRateReport(boolean isRateReport);
+	public void setReportDefinition(ReportDefinition reportDefinition);
 
 }

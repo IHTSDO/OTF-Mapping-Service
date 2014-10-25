@@ -19,15 +19,18 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
@@ -102,6 +105,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
   		};
       File [] projectFiles = inputDir.listFiles(projectFilter);
       
+      ReportService reportService = new ReportServiceJpa();
       MappingService mappingService = new MappingServiceJpa();
       ContentService contentService = new ContentServiceJpa();
       
@@ -187,6 +191,16 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 						// System.out.println("ready to add " + user);
 						user.setId(null);
 						mappingService.addMapUser(user);
+					}
+				}
+				
+				Set<ReportDefinition> reportDefinitions = project.getReportDefinitions();
+				List<ReportDefinition> currentReportDefinitions =
+						reportService.getReportDefinitions().getReportDefinitions();
+				for (ReportDefinition reportDefinition : reportDefinitions) {
+					if (!currentReportDefinitions.contains(reportDefinition)) {
+						reportDefinition.setId(null);
+						reportService.addReportDefinition(reportDefinition);
 					}
 				}
 
@@ -282,6 +296,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 				// add scope concepts to project from Project*ScopeExcludes.txt file
 				BufferedReader scopeExcludesReader = new BufferedReader(
 						new FileReader(new File(projectFile.getAbsolutePath().replace(".xml", "ScopeExcludes.txt"))));
+				Set<String> conceptsExcludedScope = new HashSet<>();
 
 				while ((line = scopeExcludesReader.readLine()) != null) {
 
@@ -293,16 +308,16 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 								"Scope Excludes concept + " + line.trim()
 										+ " is not in the data.");
 					} else {
-						conceptsInScope.add(line.trim());
+						conceptsExcludedScope.add(line.trim());
 					}
 				}
 
 				// set the map project scope concepts and update the project
-				bareProject.setScopeConcepts(conceptsInScope);
+				bareProject.setScopeExcludedConcepts(conceptsExcludedScope);
 				mappingService.updateMapProject(bareProject);
 
 				getLog().info(
-						"  " + Integer.toString(conceptsInScope.size())
+						"  " + Integer.toString(conceptsExcludedScope.size())
 								+ " excluded concepts added for "
 								+ bareProject.getName() + " projects.");
 

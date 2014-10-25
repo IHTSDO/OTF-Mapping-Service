@@ -1,7 +1,5 @@
 <h4 ng-show="showTitle == true">{{record.conceptName}}<br>{{project.sourceTerminology}} concept {{record.conceptId}}</h4>
-
-<strong>Map Entries</strong>
-
+Map Entries
 <div style="padding:0px;" ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
 	
 	<!-- Group/Priority, Target Id, Target Name -->
@@ -38,7 +36,7 @@
 </div>
 
 <div ng-show="record.mapNote.length > 0">
-	<strong>Map Notes</strong>
+	Map Notes
 	<div style="padding:2px" ng-repeat="note in record.mapNote">
 		<div class="alert alert-warning">
 	 		[By <a href="mailto:{{user.email}}">{{note.user.name}}</a> on {{note.timestamp | date:'MM-dd-yyyy HH:mm'}}] 
@@ -51,7 +49,7 @@
 	</div>
 </div>
 <div ng-show="record.mapPrinciple.length > 0">
-	<strong>Map Principles</strong>
+	Map Principles
 	<div class="alert alert-warning" style="padding:2px" ng-repeat="principle in record.mapPrinciple">
 		{{principle.principleId}}: {{principle.name}}
 	</div>

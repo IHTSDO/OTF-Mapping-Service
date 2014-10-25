@@ -16,9 +16,13 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  */
 public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements MetadataService {
 
+  /**
+   * Instantiates an empty {@link SnomedMetadataServiceJpaHelper}.
+   *
+   * @throws Exception the exception
+   */
   public SnomedMetadataServiceJpaHelper() throws Exception {
 		super();
-		
 	}
 
 

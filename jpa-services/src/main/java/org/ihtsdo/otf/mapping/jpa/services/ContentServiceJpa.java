@@ -101,6 +101,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	public ContentServiceJpa() throws Exception {
 		super();
+		initializeFieldNames();
 	}
 
 
