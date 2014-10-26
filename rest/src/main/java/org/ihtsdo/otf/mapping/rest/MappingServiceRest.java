@@ -144,7 +144,7 @@ public class MappingServiceRest extends RootServiceRest {
 			MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService
 					.getMapProjects();
 
-			if (role == MapUserRole.VIEWER) {
+			if (role == MapUserRole.VIEWER && user.equals("guest")) {
 			  MapProject toRemove = null;
 			  for (MapProject project : mapProjects.getIterable()) {
 			    // Remove unmapped for viewer - MAP-921, 
