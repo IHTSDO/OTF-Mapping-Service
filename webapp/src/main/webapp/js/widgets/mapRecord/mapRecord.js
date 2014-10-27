@@ -1456,7 +1456,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 
 	$scope.getBrowserUrl = function() {
-		return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+		if ($scope.user.userName === 'guest') 
+			return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+		else
+			return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
 	};
 
     $scope.openConceptBrowser = function() {

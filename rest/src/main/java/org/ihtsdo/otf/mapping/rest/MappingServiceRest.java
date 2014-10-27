@@ -144,7 +144,7 @@ public class MappingServiceRest extends RootServiceRest {
 			MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService
 					.getMapProjects();
 
-			if (role == MapUserRole.VIEWER) {
+			if (role == MapUserRole.VIEWER && user.equals("guest")) {
 			  MapProject toRemove = null;
 			  for (MapProject project : mapProjects.getIterable()) {
 			    // Remove unmapped for viewer - MAP-921, 
@@ -1625,6 +1625,11 @@ public class MappingServiceRest extends RootServiceRest {
 						Response.status(401)
 								.entity("User does not have permissions to retrieve the map record.")
 								.build());
+			
+			// remove notes if this is not a specialist or above
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+				mapRecord.setMapNotes(null);
+			}
 
 			return mapRecord;
 		} catch (Exception e) {
@@ -1869,11 +1874,16 @@ public class MappingServiceRest extends RootServiceRest {
 
 			// cycle over records and determine if this user can see them
 			for (MapRecord mr : mapRecordList.getMapRecords()) {
-
+				
 				// get the user's role for this record's project
 				MapUserRole projectRole = securityService
 						.getMapProjectRoleForToken(authToken,
 								mr.getMapProjectId());
+				
+				// remove notes if this is not a specialist or above
+				if (!projectRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+					mr.setMapNotes(null);
+				}
 
 				// System.out.println(projectRole + " " + mr.toString());
 
@@ -1902,15 +1912,6 @@ public class MappingServiceRest extends RootServiceRest {
 				}
 			}
 
-			// if not a mapping user (specialist or above), remove all notes
-			// from records prior to returning
-			// TODO: Make this flag on MapUserRole for Application (add a GUEST
-			// enum?)
-			if (mapUser.getUserName().equals("guest")) {
-				for (MapRecord mr : mapRecords) {
-					mr.setMapNotes(null);
-				}
-			}
 
 			// set the list of records to the filtered object and return
 			mapRecordList.setMapRecords(mapRecords);
@@ -1973,6 +1974,11 @@ public class MappingServiceRest extends RootServiceRest {
 				MapUserRole projectRole = securityService
 						.getMapProjectRoleForToken(authToken,
 								mr.getMapProjectId());
+				
+				// remove notes if this is not a specialist or above
+				if (!projectRole.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+					mr.setMapNotes(null);
+				}
 
 				// System.out.println(projectRole + " " + mr.toString());
 
@@ -1998,16 +2004,6 @@ public class MappingServiceRest extends RootServiceRest {
 						mapRecords.add(mr);
 					break;
 
-				}
-			}
-
-			// if not a mapping user (specialist or above), remove all notes
-			// from records prior to returning
-			// TODO: Make this flag on MapUserRole for Application (add a GUEST
-			// enum?)
-			if (mapUser.getUserName().equals("guest")) {
-				for (MapRecord mr : mapRecords) {
-					mr.setMapNotes(null);
 				}
 			}
 
@@ -2073,6 +2069,13 @@ public class MappingServiceRest extends RootServiceRest {
 			MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
 					.getPublishedAndReadyForPublicationMapRecordsForMapProject(
 							mapProjectId, pfsParameter);
+			
+			for (MapRecord mr : mapRecordList.getMapRecords()) {
+				// remove notes if this is not a specialist or above
+				if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+					mr.setMapNotes(null);
+				}
+			}
 			mappingService.close();
 			return mapRecordList;
 		} catch (Exception e) { 
@@ -2132,6 +2135,13 @@ public class MappingServiceRest extends RootServiceRest {
 			MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
 					.getPublishedMapRecordsForMapProject(mapProjectId,
 							pfsParameter);
+			
+			for (MapRecord mr : mapRecordList.getMapRecords()) {
+				// remove notes if this is not a specialist or above
+				if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+					mr.setMapNotes(null);
+				}
+			}
 			mappingService.close();
 			return mapRecordList;
 		} catch (Exception e) { 
@@ -2158,7 +2168,7 @@ public class MappingServiceRest extends RootServiceRest {
 	@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	@ApiOperation(value = "Get map record revision history.", notes = "Gets a list of all revisions of a map record for the specified id.", response = MapRecordListJpa.class)
-	public MapRecordListJpa getMapRecordRevisions(
+	public MapRecordList getMapRecordRevisions(
 			@ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long mapRecordId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
@@ -2180,8 +2190,15 @@ public class MappingServiceRest extends RootServiceRest {
 								.build());
 
 			MappingService mappingService = new MappingServiceJpa();
-			MapRecordListJpa revisions = (MapRecordListJpa) mappingService
+			MapRecordList revisions = mappingService
 					.getMapRecordRevisions(mapRecordId);
+			
+			for (MapRecord mr : revisions.getMapRecords()) {
+				// remove notes if this is not a specialist or above
+				if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+					mr.setMapNotes(null);
+				}
+			}
 			mappingService.close();
 			return revisions;
 		} catch (Exception e) {
@@ -2229,6 +2246,11 @@ public class MappingServiceRest extends RootServiceRest {
 			  mapRecord = mappingService
 					.getMapRecordRevisions(mapRecordId).getMapRecords().get(0);
 			}
+			
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+				mapRecord.setMapNotes(null);
+			}
+
 			mappingService.close();
 			return mapRecord;
 			
