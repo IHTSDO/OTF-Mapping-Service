@@ -482,7 +482,10 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 	
     // opens SNOMED CT browser
 	$scope.getBrowserUrl = function() {
-		return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.conceptId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+		if ($scope.currentUser.userName === 'guest')
+			return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.conceptId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+		else
+			return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.conceptId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
 	};
 
     $scope.openConceptBrowser = function() {
