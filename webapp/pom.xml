@@ -42,8 +42,10 @@
             <resource>
               <directory>src/main/webapp</directory>
               <filtering>true</filtering>
-              <includes><include>partials/footer.html</include></includes>
-              <includes><include>partials/header.html</include></includes>
+              <includes>
+                <include>partials/footer.html</include>
+                <include>partials/header.html</include>
+              </includes>
             </resource>
             <resource>
 				<directory>src/main/webapp</directory>
