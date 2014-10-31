@@ -87,7 +87,7 @@ public class SnomedTreeposRemoverMojo extends AbstractMojo {
 
       getLog().info("Finished removing " + terminology + " treepos data ...");
 
-    } catch (Throwable e) {
+    } catch (Exception e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);
     }
