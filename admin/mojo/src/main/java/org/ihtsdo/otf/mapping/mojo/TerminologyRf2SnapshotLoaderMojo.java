@@ -362,7 +362,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       }
 
       // Clean-up
-    } catch (Throwable e) {
+    } catch (Exception e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);
     }
