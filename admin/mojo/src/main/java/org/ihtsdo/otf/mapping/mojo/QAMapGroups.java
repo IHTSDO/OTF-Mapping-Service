@@ -90,7 +90,7 @@ public class QAMapGroups extends AbstractMojo {
           .getIterable()) {
         for (String id : refSetId.split(",")) {
           if (mapProject.getRefSetId().equals(id)) {
-        	  if (mapProject.isGroupStructure() == false) {
+        	  if (!mapProject.isGroupStructure()) {
         		  getLog().info("Map Project " + mapProject.getName() + " does not have group structure, skipping.");
         	  }
             mapProjects.add(mapProject);

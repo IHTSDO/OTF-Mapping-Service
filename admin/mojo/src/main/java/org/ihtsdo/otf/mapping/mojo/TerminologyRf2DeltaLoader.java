@@ -357,7 +357,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 			getLog().info("==================================");
 			getLog().info("Delta load completed successfully!");
 			getLog().info("==================================");
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new MojoFailureException("Unexpected exception:", e);
 		}
@@ -1165,7 +1165,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 		// cycle over concepts
 		for (Concept concept : modifiedConcepts.getConcepts()) {
 
-			if (concept.isActive() == false) {
+			if (!concept.isActive()) {
 				dpnSkippedCt++;
 			} else {
 
@@ -1246,7 +1246,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 					}
 				}
 
-				if (dpnFound == false) {
+				if (!dpnFound) {
 
 					dpnNotFoundCt++;
 					getLog().warn(

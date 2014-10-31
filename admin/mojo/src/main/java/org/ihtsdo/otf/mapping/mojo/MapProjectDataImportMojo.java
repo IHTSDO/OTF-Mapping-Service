@@ -328,7 +328,7 @@ public class MapProjectDataImportMojo extends AbstractMojo {
 			mappingService.close();
 			contentService.close();
 
-    } catch (Throwable e) {
+    } catch (Exception e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);
     }
