@@ -61,7 +61,7 @@ public class CompareMapRecordJpaTest {
     entry2.setMapRelation(relation2);
     record2.addMapEntry(entry2);
 
-    if (handler.compareMapRecords(record1, record2).isValid()) {
+    if (!handler.compareMapRecords(record1, record2).isValid()) {
       fail("testSingleGroupSingleEntryMatching failed!");
     }
   }
