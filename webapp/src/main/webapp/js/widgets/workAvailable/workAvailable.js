@@ -28,11 +28,13 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.availableWorkPage = 1;
 	$scope.availableConflictsPage = 1;
 	$scope.availableReviewPage = 1;
+	$scope.availableQAPage = 1;
 	
 	// initial titles
 	$scope.availableWorkTitle = "Concepts";
 	$scope.availableConflictsTitle = "Conflicts";
 	$scope.availableReviewWorkTitle = "Review";
+	$scope.availableQAWorkTitle = "QA";
 	
 	// retrieve focus project, current user, and current role
 	$scope.focusProject = 		localStorageService.get('focusProject');
@@ -49,7 +51,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	// tab variables, defaults to first active tab?
 	$scope.tabs = [ {id: 0, title: 'Concepts', active:false}, 
 	                {id: 1, title: 'Conflicts', active:false},
-	                {id: 2, title: 'Review', active:false}];
+	                {id: 2, title: 'Review', active:false},
+	                {id: 3, title: 'QA', active:false}];
 
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
@@ -65,6 +68,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
 			$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 			$scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
+			$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
 		}
 	});
 	
@@ -75,6 +79,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
 			$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 			$scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
+			$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
 		}
 	});
 	
@@ -127,6 +132,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
 				$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 				$scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
+				$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
 			}
 		}
 	});
@@ -257,8 +263,72 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		});
 	};
 	
+	$scope.retrieveAvailableQAWork = function(page, query, user) {
+		console.debug('workAvailableCtrl: Retrieving available qa work');
+		
+		// clear local error
+		$scope.error = null;
+
+		// if user not supplied, assume current user
+		if (user == null || user == undefined) user = $scope.currentUser;
+		
+		// clear the existing work
+		$scope.availableQAWork = null;
+		
+		// set query to null if undefined
+		if (query == undefined) query = null;
+		
+		// if null query, reset the search field
+		if (query == null) $scope.queryAvailable = null;
+			
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": $scope.itemsPerPage, 
+			 	 	 "sortField": 'sortKey',
+			 	 	 "queryRestriction": null}; 
+		
+
+	  	$rootScope.glassPane++;
+
+		$http({
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/query/" 
+			+ (query == null ? 'null' : query)
+			+ "/availableQAWork",
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+		  	$rootScope.glassPane--;
+		  	
+		  	console.debug(data);
+		  	
+			$scope.availableQAWork = data.searchResult;
+			
+			// set pagination
+			$scope.nAvailableQAWork = data.totalCount;
+			$scope.numAvailableQAWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+			
+			// set title
+			$scope.tabs[3].title = "QA (" + data.totalCount + ")";
+			console.debug($scope.numAvailableQAWorkPages);
+			//$scope.availableCount = data.totalCount;
+			//console.debug(data.totalCount);
+
+		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
+	};
+	
+	
 	$scope.retrieveAvailableReviewWork = function(page, query, user) {
-		console.debug('************* workAvailableCtrl: Retrieving available work');
+		console.debug('************* workAvailableCtrl: Retrieving available review work');
 		
 		// clear local review error message
 		$scope.errorReview = null;
@@ -323,7 +393,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	 * - trackingRecord:  the full search result object representing the tracking record
 	 * - mapUser:  the full user object representing the user to assign to
 	 * - query:  the query for this type of work, passed in to ensure correct refresh of available work
-	 * - workType: the type of work ('concept', 'conflict', 'review'), used for broadcasting assignment 
+	 * - workType: the type of work ('concept', 'conflict', 'review', 'qa'), used for broadcasting assignment 
 	* query passed in to ensure correct retrieval of work
 	*/
 	$scope.assignWork = function(trackingRecord, mapUser, query, workType, workPage) {
@@ -353,13 +423,15 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		  	$rootScope.glassPane--;
 			$rootScope.$broadcast('workAvailableWidget.notification.assignWork', { assignUser: mapUser, assignType: workType});
 			
-			console.debug($scope.availableWorkPage, $scope.availableConflictsPage, $scope.availableReviewWorkPage);
+			console.debug($scope.availableWorkPage, $scope.availableConflictsPage, $scope.availableReviewWorkPage, $scope.availableQAWorkPage);
 			if (workType == 'concept') {
 				$scope.retrieveAvailableWork(workPage, query, mapUser);
 			} else if (workType === 'conflict') {
 				$scope.retrieveAvailableConflicts(workPage, query, mapUser);
 			} else if (workType === 'review') {
 				$scope.retrieveAvailableReviewWork(workPage, query, mapUser);
+			} else if (workType === 'qa') {
+				$scope.retrieveAvailableQAWork(workPage, query, mapUser);
 			}
 		}).error(function(data, status, headers, config) {
 			$rootScope.glassPane--;
@@ -607,7 +679,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		};
 		
 		if (batchSize > $scope.nAvailableReviewWork) {
-			$scope.errorReview = "Batch size is greater than available number of conflicts.";
+			$scope.errorReview = "Batch size is greater than available number of review items.";
 			return;
 		} else {
 			$scope.errorReview = null;
@@ -705,6 +777,114 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		   
 	};
 
+	// assign a batch of qa work to the current user
+	$scope.assignBatchQA = function(mapUser, batchSize, query) {
+		
+		// set query to null string if not provided
+		if (query == undefined) query == null;
+		
+		if (mapUser == null || mapUser == undefined) {
+			$scope.errorReview = "Work recipient must be selected from list.";
+			return;	
+		};
+		
+		if (batchSize > $scope.nAvailableQAWork) {
+			$scope.errorReview = "Batch size is greater than available number of qa items.";
+			return;
+		} else {
+			$scope.errorReview = null;
+		}
+				
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": ($scope.availableQAWorkPage-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": batchSize, 
+			 	 	 "sortField": 'sortKey',
+			 	 	 "queryRestriction": null};  
+
+	  	$rootScope.glassPane++;
+		$http({
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/query/" + (query == null ? 'null' : query)
+			+ "/availableQAWork",
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}	
+		}).success(function(data) {
+
+		  	$rootScope.glassPane--;
+			console.debug("Claim batch:  Checking against viewed qa work");
+			
+			var trackingRecords = data.searchResult;
+			var conceptListValid = true;
+
+			
+			// if user is viewing conflicts, confirm that the returned batch matches the displayed conflicts
+			if ($scope.currentUser.userName === mapUser.userName) {
+				for (var i = 0; i < $scope.itemsPerPage && i < batchSize && i < $scope.availableQAWork; i++) {
+
+					if (trackingRecords[i].id != $scope.availableQAWork[i].id) {
+						retrieveAvailableQAWork($scope.availableQAWorkPage, query);
+						alert("One or more of the qa items you are viewing are not in the first available batch.  Please try again.  \n\nTo claim the first available batch, leave the Viewer closed and click 'Claim Batch'");
+						$scope.isConceptListOpen = false;
+						conceptListValid = false;
+					}
+				}
+			} 
+			
+			if (conceptListValid == true) {
+				console.debug("Claiming qa work batch of size: " + batchSize);
+				
+				var terminologyIds = [];
+				for (var i = 0; i < trackingRecords.length; i++) {
+					
+					terminologyIds.push(trackingRecords[i].terminologyId);
+					console.debug('  -> Review ' + trackingRecords[i].terminologyId);
+				}
+				
+				console.debug("Calling batch assignment API");
+
+			  	$rootScope.glassPane++;
+				$http({
+					url: root_workflow + "assignBatch/project/id/" + $scope.focusProject.id 
+									   + "/user/id/" + mapUser.userName,	
+					dataType: "json",
+					data: terminologyIds,
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					}	
+				}).success(function(data) {
+				  	$rootScope.glassPane--;
+				  	
+				  	// broadcast the work assignment
+					$rootScope.$broadcast('workAvailableWidget.notification.assignWork', {assignUser: mapUser, assignType: 'qa'});
+					
+					// refresh the displayed list of qa items
+					$scope.retrieveAvailableQAWork(1, query, mapUser);				
+				}).error(function(data, status, headers, config) {
+				  	$rootScope.glassPane--;
+
+				    $rootScope.handleHttpError(data, status, headers, config);
+					console.debug("Could not retrieve available qa work when assigning batch.");
+				});
+			} else {
+				console.debug("Unexpected error in assigning qa batch");
+			}
+		}).error(function(data, status, headers, config) {
+			$rootScope.glassPane--;
+
+		    $rootScope.handleHttpError(data, status, headers, config);	
+		});
+				
+			
+		   
+	};
+	
 	// remove an element from an array by key
 	Array.prototype.removeElement = function(elem) {
 

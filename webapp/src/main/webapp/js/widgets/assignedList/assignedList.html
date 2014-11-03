@@ -522,4 +522,139 @@
 
 
 </table>
-</tab> </tabset>
+</tab><tab heading="{{tabs[4].title}}" active="tabs[4].active"
+  select="setTab(4)"
+  ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+
+
+
+<table style="margin-top: 10px; margin-bottom: 10px;">
+  <tr>
+    <td style="padding: 5px";>Filter concepts:</td>
+    <td style="padding: 5px;">
+      <form>
+        <input id="reviewSearch" ng-model="queryReviewWork">
+        <button class="btn btn-sm btn-primary"
+          ng-click="retrieveAssignedQAWork(1, queryReviewWork, assignedReviewWorkType)">Search</button>
+        <button class="btn btn-sm btn-primary"
+          ng-click="retrieveAssignedQAWork(1, 'null', assignedReviewWorkType); queryReviewWork = null">Reset</button>
+      </form>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>
+      <form>
+        <input type="radio" ng-model="assignedQAWorkType" value="ALL"
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">All</input>
+        <input type="radio" ng-model="assignedQAWorkType"
+          value="REVIEW_NEW"
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">New</input>
+        <input type="radio" ng-model="assignedQAWorkType"
+          value="REVIEW_IN_PROGRESS"
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Editing</input>
+        <input type="radio" ng-model="assignedQAWorkType"
+          value="REVIEW_RESOLVED"
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Resolved</input>
+      </form>
+    </td>
+  </tr>
+</table>
+
+<!--  do not display controls if no records are assigned and the query term is null -->
+<div style="padding: 10px;" ng-show="nAssignedQAWork == 0">
+  <p></p>
+  <div class="alert alert-warning" disabled>No review work found.</div>
+</div>
+
+<div ng-show="nAssignedQAWork > 0">
+
+  <pagination total-items="nAssignedQAWork"
+    ng-show="numAssignedQAWorkPages > 1" page="assignedQAWorkPage"
+    class="pagination-sm" boundary-links="true" rotate="true"
+    num-pages="numAssignedQAWorkPages" max-size="5"
+    on-select-page="retrieveAssignedQAWork(page, queryQAWork, assignedQAWorkType)"></pagination>
+
+  <table class="table">
+
+    <thead>
+      <tr>
+        <th style="width: 3%; padding: 5px;"></th>
+        <th style="width: 14%; padding: 5px;">Id</th>
+        
+        <!--  Extra column if on editing in progress page for dashboard finish commands -->
+        <th style="width: 3%; padding: 5px;">
+          <a ng-show="assignedQAWorkType === 'REVIEW_IN_PROGRESS'" title='Finish Editing All QA Work'
+            ng-click="finishOrPublishBatch(assignedQAWorkType)"> <i
+              class="glyphicon glyphicon-check"></i>
+          </a>
+          <a ng-show="assignedQAWorkType === 'REVIEW_RESOLVED'" title='Publish All Resolved QA Work'
+            ng-click="finishOrPublishBatch(assignedQAWorkType)"> <i
+              class="glyphicon glyphicon-check"></i>
+          </a>
+        </th>
+        <th style="width: 80%; padding: 5px;">Preferred Name</th>
+        <th style="width: 3%; padding: 5px;"><a title="Return All Work"
+          ng-click="openUnassignModal(currentUser, 'review')"><i
+            class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
+        </a></th>
+
+      </tr>
+
+    </thead>
+
+    <tbody>
+
+      <tr ng-repeat="result in assignedQAWork">
+
+        <td style="width: 3%; padding: 5px;"> <!-- Display a pushpin if this record has previously been edited -->
+            <a title='Continue reviewing work.'
+            ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS'">
+              <i ng-click="goEditQAWork(result.id)"
+              class="glyphicon glyphicon-pushpin"></i>
+          </a> <!-- Display a pencil if this record has not yet been edited --> <a
+            title='Start reviewing this work'
+            ng-show="result.terminologyVersion === 'REVIEW_NEW'"> <i
+              ng-click="goEditQAWork(result.id)"
+              class="glyphicon glyphicon-pencil"></i>
+          </a>
+          <!-- Display a finished icon if this record has previously been edited -->
+          <a title='Continue working on this conflict'
+            ng-show="result.terminologyVersion === 'REVIEW_RESOLVED'">
+              <i ng-click="goEditQAWork(result.id)"
+              class="glyphicon glyphicon-saved"></i>
+          </a></td>
+
+        <td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
+        
+        <td style="width: 3%; padding: 5px;">
+          <!-- Display a checkmark if this record has previously been edited -->
+          <a style:"display:inline" title='Finish this review work'
+          ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS' && assignedQAWorkType === 'REVIEW_IN_PROGRESS'">
+            <i ng-click="finishOrPublish(result)"
+            class="glyphicon glyphicon-ok"></i>
+          </a>
+          
+          <!-- Display a checkmark if this record has previously resolved -->
+          <a style:"display:inline" title='Publish this resolved review work'
+          ng-show="result.terminologyVersion === 'REVIEW_RESOLVED' && assignedQAWorkType === 'REVIEW_RESOLVED'">
+            <i ng-click="finishOrPublish(result)"
+            class="glyphicon glyphicon-ok"></i>
+          </a>
+        </td>
+        
+        <td style="width: 80%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 3%; padding: 5px;"><a title="Return"
+          ng-click="unassignWork(result, currentUser)"><i
+            class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
+      </tr>
+    </tbody>
+
+
+
+  </table>
+
+</div>
+
+
+</tab>  </tabset>
