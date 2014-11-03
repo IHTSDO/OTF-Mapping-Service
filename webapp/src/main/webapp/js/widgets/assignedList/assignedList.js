@@ -33,7 +33,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.tabs = [ {id: 0, title: 'Concepts', active:false}, 
 	                {id: 1, title: 'Conflicts', active:false},
 	                {id: 2, title: 'Review', active:false},
-	                {id: 3, title: 'By User', active:false}];
+	                {id: 3, title: 'By User', active:false},
+	                {id: 4, title: 'QA', active:false}];
 	
 	
 	// table sort fields - currently unused
@@ -99,7 +100,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		// perform action based on notification parameters
 		// Expect:
 		// - assignUser: String, IHTSDO username (e.g. dmo, kli)
-		// - assignType: String, either 'concept' or 'conflict'
+		// - assignType: String, either 'concept' or 'conflict' or 'review' or 'qa'
 		if ($scope.currentRole === 'Lead') {
 			
 			// if user name matches current user's user name, reload work
@@ -118,6 +119,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					$scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage, null, 'REVIEW_NEW');
 					$scope.setTab(2);
 					$scope.assignedReviewWorkType = 'REVIEW_NEW';
+				} else if (parameters.assignType === 'qa') {
+					$scope.retrieveAssignedQAWork($scope.assignedQAWorkPage, null, 'REVIEW_NEW');
+					$scope.setTab(4);
+					$scope.assignedQAWorkType = 'REVIEW_NEW';
 				}
 			} else {
 				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser.userName, 'NEW');
@@ -149,6 +154,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 				$scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType);
 				$scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType);
+				$scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType);
 				$scope.retrieveAssignedWorkForUser(1, null, $scope.mapUserViewed, $scope.assignedWorkForUserType);
 			}
 		}
@@ -267,6 +273,67 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			console.debug($scope.nAssignedRecords);
 			console.debug(data.totalCount);
 			console.debug($scope.assignedWorkTitle);
+			
+			
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
+	};
+	
+	$scope.retrieveAssignedQAWork = function(page, query, assignedWorkType) {
+		
+		console.debug('Retrieving Assigned QA Work: ', page, query, assignedWorkType);
+
+		// ensure query is set to null if undefined
+		if (query == undefined) query = null;
+		
+		// reset the search input box if null
+		if (query == null) {
+			$scope.searchPerformed = false;
+		} else {
+			$scope.searchPerformed = true;
+		
+		}
+		
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": page == -1 ? -1 : (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": page == -1 ? -1 : $scope.itemsPerPage, 
+			 	 	 "sortField": 'sortKey',
+			 	 	 "queryRestriction": assignedWorkType};
+
+	  	$rootScope.glassPane++;
+
+		$http({
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/user/id/" 
+			+ $scope.currentUser.userName 
+			+ "/query/" + (query == null ? null : query)
+			+ "/assignedQAWork",
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
+			$scope.assignedQAWorkPage = page;
+			$scope.assignedQAWork = data.searchResult;
+			console.debug($scope.assignedQAWork);
+		
+			// set pagination
+			$scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+			$scope.nAssignedQAWork = data.totalCount;
+			
+			// set title
+			$scope.tabs[4].title = "QA (" + $scope.nAssignedQAWork + ")";
+			console.debug($scope.nAssignedQAWork);
+			console.debug(data.totalCount);
+			console.debug($scope.assignedQAWorkTitle);
 			
 			
 		}).error(function(data, status, headers, config) {
@@ -466,6 +533,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, $scope.queryConflict);
 					$scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage, $scope.queryReviewWork);
+					$scope.retrieveAssignedQAWork($scope.assignedQAWorkPage, $scope.queryQAWork);
 				}
 			
 			} else {
@@ -802,6 +870,12 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	};
 	
 	$scope.goEditReviewWork = function (id) {
+		var path = "/record/review/" + id;
+			// redirect page
+			$location.path(path);
+	};
+	
+	$scope.goEditQAWork = function (id) {
 		var path = "/record/review/" + id;
 			// redirect page
 			$location.path(path);
