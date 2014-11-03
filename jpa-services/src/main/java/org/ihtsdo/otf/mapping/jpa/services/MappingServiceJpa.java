@@ -3232,7 +3232,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				}
 
 			}
-
+			
+			if (foundReviewRecord || foundRevisionRecord) {
+				conflictRecords.setTotalCount(conflictRecords.getCount());
+				return conflictRecords;
+			}
+			
 		} else if (mapProject.getWorkflowType().equals(
 				WorkflowType.REVIEW_PROJECT)
 				&& mapRecord.getWorkflowStatus().equals(

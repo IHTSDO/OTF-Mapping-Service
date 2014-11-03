@@ -37,7 +37,7 @@ angular
 										}
 									});
 
-					$scope.getRecord = function(id) {
+					$scope.getRecord = function(id, createQA) {
 
 						$rootScope.glassPane++;
 						$http({
@@ -47,6 +47,33 @@ angular
 								"Content-Type" : "application/json"
 							}
 						}).success(function(data) {
+							$rootScope.glassPane--;
+
+							$scope.record = data;
+							if (createQA == true) {
+								$scope.createQARecord(id);
+							}
+
+						}).error(
+								function(data, status, headers, config) {
+									$rootScope.glassPane--;
+									$rootScope.handleHttpError(data, status,
+											headers, config);
+								});
+					};
+					
+					$scope.createQARecord = function(id) {
+						$rootScope.glassPane++;
+						$http({
+							url: root_workflow + "createQARecord",
+							dataType: "json",
+							data: $scope.record,
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {
+							
 							$rootScope.glassPane--;
 
 							$scope.record = data;

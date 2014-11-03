@@ -515,6 +515,74 @@ public class WorkflowServiceRest extends RootServiceRest {
 	}
 
 	/**
+	 * Find available qa work.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @param authToken the auth token
+	 * @return the search result list
+	 */
+	@POST
+	@Path("/project/id/{id:[0-9][0-9]*}/query/{query}/availableQAWork")
+	@ApiOperation(value = "Find available qa work for a map project.", notes = "Gets a list of search results of available qa work for the specified parameters.", response = SearchResultList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findAvailableQAWork(
+      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+      @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+      @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
+	  @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /project/id/"
+						+ mapProjectId.toString() 
+						+ "/availableQAWork" + " with PfsParameter: "
+						+ "\n" + "     Index/Results = "
+						+ Integer.toString(pfsParameter.getStartIndex()) + "/"
+						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
+						+ "     Sort field    = " + pfsParameter.getSortField()
+						+ "     Filter String = "
+						+ pfsParameter.getQueryRestriction());
+
+		String project = "";
+		// all qa work will have user "qa"
+		// TODO: make QA user and use that instead of dsh
+		String user = "dsh";
+
+		try {
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(
+					authToken, mapProjectId);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to find available review work.")
+								.build());
+
+			// retrieve the project and user
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();
+			MapUser mapUser = mappingService.getMapUser(user);
+			user = mapUser.getUserName();
+			mappingService.close();
+
+			// retrieve the workflow tracking records
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			SearchResultList results = workflowService.findAvailableQAWork(
+					mapProject, mapUser, query, pfsParameter);
+			workflowService.close();
+
+			return results;
+		} catch (Exception e) {
+			handleException(e, "trying to find available review work", user,
+					project, "");
+			return null;
+		}
+	}
+
+	
+	/**
 	 * Finds assigned review work for the specified map project and user.
 	 * 
 	 * @param mapProjectId
@@ -579,6 +647,73 @@ public class WorkflowServiceRest extends RootServiceRest {
 			return results;
 		} catch (Exception e) {
 			handleException(e, "trying to find assigned review work", user,
+					project, "");
+			return null;
+		}
+	}
+	
+	/**
+	 * Find assigned qa work.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param userName the user name
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @param authToken the auth token
+	 * @return the search result list
+	 */
+	@POST
+	@Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/query/{query}/assignedQAWork")
+	@ApiOperation(value = "Find assigned qa work for a map project.", notes = "Gets a list of search results of assigned qa work for the specified parameters.", response = SearchResultList.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public SearchResultList findAssignedQAWork(
+      @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+      @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+      @ApiParam(value = "Query, e.g. 'heart attack'", required = true) @PathParam("query") String query,
+      @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
+
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /project/id/"
+						+ mapProjectId.toString() + "/user/id/" + userName
+						+ "/assignedQAWork" + " with PfsParameter: " + "\n"
+						+ "     Index/Results = "
+						+ Integer.toString(pfsParameter.getStartIndex()) + "/"
+						+ Integer.toString(pfsParameter.getMaxResults()) + "\n"
+						+ "     Sort field    = " + pfsParameter.getSortField()
+						+ "     Filter String = "
+						+ pfsParameter.getQueryRestriction());
+
+		String project = "";
+		String user = "";
+
+		try {
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(
+					authToken, mapProjectId);
+			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to find assigned qa work.")
+								.build());
+
+			// retrieve the project and user
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			project = mapProject.getName();
+			MapUser mapUser = mappingService.getMapUser(userName);
+			user = mapUser.getUserName();
+			mappingService.close();
+
+			// retrieve the map records
+			WorkflowService workflowService = new WorkflowServiceJpa();
+			SearchResultList results = workflowService.findAssignedQAWork(
+					mapProject, mapUser, query, pfsParameter);
+			workflowService.close();
+
+			return results;
+		} catch (Exception e) {
+			handleException(e, "trying to find assigned qa work", user,
 					project, "");
 			return null;
 		}
@@ -1362,6 +1497,57 @@ public class WorkflowServiceRest extends RootServiceRest {
 					mapRecord.getOwner(), mapRecord, WorkflowAction.CANCEL);
 		} catch (Exception e) {
 			handleException(e, "trying to cancel editing a map record",
+					userName, project, mapRecord.getId().toString());
+		}
+
+	}
+
+	@POST
+	@Path("/createQARecord")
+	@ApiOperation(value = "Creates a qa record.", notes = "Creates a qa record given a map record.")
+	public void createQARecord(
+			@ApiParam(value = "Map record to create qa record for , in JSON or XML POST data") MapRecordJpa mapRecord,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+			throws Exception {
+
+		Logger.getLogger(WorkflowServiceRest.class).info(
+				"RESTful call (Workflow): /createQARecord for map record with id = "
+						+ mapRecord.getId());
+
+		String userName = "";
+		String project = "";
+
+		try {
+			// authorize call
+			userName = securityService.getUsernameForToken(authToken);
+			// authorize call
+			MapUserRole role = securityService.getMapProjectRoleForToken(
+					authToken, mapRecord.getMapProjectId());
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to create a qa record from a map record.")
+								.build());
+
+			// open the services
+			ContentService contentService = new ContentServiceJpa();
+			MappingService mappingService = new MappingServiceJpa();
+			WorkflowService workflowService = new WorkflowServiceJpa();
+
+			// get the map project and concept
+			MapProject mapProject = mappingService.getMapProject(mapRecord
+					.getMapProjectId());
+			project = mapProject.getName();
+			Concept concept = contentService.getConcept(
+					mapRecord.getConceptId(),
+					mapProject.getSourceTerminology(),
+					mapProject.getSourceTerminologyVersion());
+
+			// process the workflow action
+			workflowService.processWorkflowAction(mapProject, concept,
+					mapRecord.getOwner(), mapRecord, WorkflowAction.CREATE_QA_RECORD);
+		} catch (Exception e) {
+			handleException(e, "trying to create a qa map record",
 					userName, project, mapRecord.getId().toString());
 		}
 

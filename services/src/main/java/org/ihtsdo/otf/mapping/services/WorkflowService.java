@@ -565,5 +565,32 @@ public interface WorkflowService extends RootService {
 	 */
 	public void finishEditingDoneTrackingRecords(MapProject mapProject) throws Exception;
 
+	/**
+	 * Find available qa work.
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findAvailableQAWork(MapProject mapProject,
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception;
+
+	/**
+	 * Find assigned qa work.
+	 *
+	 * @param mapProject the map project
+	 * @param mapUser the map user
+	 * @param query the query
+	 * @param pfsParameter the pfs parameter
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+	public SearchResultList findAssignedQAWork(MapProject mapProject, MapUser mapUser,
+			String query, PfsParameter pfsParameter) throws Exception;
+
 }
 
