@@ -53,6 +53,11 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	                {id: 1, title: 'Conflicts', active:false},
 	                {id: 2, title: 'Review', active:false},
 	                {id: 3, title: 'QA', active:false}];
+	
+	$scope.labelNames = [];
+	$scope.labelNames.push("TEST_LABEL");
+	$scope.labelNames.push("TEST_LABEL2");
+	$scope.labelNames.push("TEST_LABEL3");
 
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
@@ -104,6 +109,13 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		localStorageService.add('availableTab', tabNumber);
 		
 	};
+	
+
+	
+	$scope.addAssignment = function(name) {
+	    alert(name);
+	    return;
+	 };
 	
 	// on retrieval, set the user drop-down lists to the current user
 	$scope.$watch(['currentUser'], function () {

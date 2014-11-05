@@ -704,8 +704,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			if (result.unassignReviewWork == true) {
 				
 				var terminologyIdsReview = [];
-				
-				
+								
 				console.debug("Retrieving review work to unassign...");
 				var pfsParameterObj = {
 						"startIndex": -1,
@@ -747,6 +746,54 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 			}
 			
+
+		
+		if (result.unassignQAWork == true) {
+			
+			var terminologyIdsQA = [];
+			
+			
+			console.debug("Retrieving qa work to unassign...");
+			var pfsParameterObj = {
+					"startIndex": -1,
+					"maxResults": -1,
+					"sortField": 'sortKey',
+					"queryRestriction": result.unassignEditedWork == true ? 'ALL' : 'REVIEW_NEW'};
+			
+			$rootScope.glassPane++;
+			
+			$http({
+				url: root_workflow + "project/id/" 
+				+ $scope.focusProject.id 
+				+ "/user/id/" 
+				+ mapUser.userName 
+				+ "/query/null"
+				+ "/assignedQAWork",
+				dataType: "json",
+				data: pfsParameterObj,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+				for (var i = 0; i < data.searchResult.length; i++) {
+					terminologyIdsQA.push(data.searchResult[i].terminologyId);
+				}
+				// call the batch unassign API
+				console.debug("Unassigning qa work (" + terminologyIdsQA.length + ")", terminologyIdsQA);
+				unassignBatch(mapUser, terminologyIdsQA, 'qa');
+				
+				$rootScope.glassPane--;
+				
+				
+			}).error(function(data, status, headers, config) {
+			  	$rootScope.glassPane--;
+			    $rootScope.handleHttpError(data, status, headers, config);
+			});
+		
+		}
+		
 		});
 	};
 	
@@ -797,6 +844,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		$scope.unassignConcepts = false;
 		$scope.unassignConflicts = false;
 		$scope.unassignReviewWork = false;
+		$scope.unassignQAWork = false;
 		
 		if ($scope.unassignWorkType == 'concepts' || isMapLead == false) 
 			$scope.unassignConcepts = true;
@@ -804,17 +852,21 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.unassignConflicts = true;
 		else if ($scope.unassignWorkType == 'review') 
 			$scope.unassignReviewWork = true;
+		else if ($scope.unassignWorkType == 'qa') 
+			$scope.unassignQAWork = true;
 		
 		$scope.selectAll = function(isSelected) {
 			$scope.unassignConcepts = isSelected;
 			$scope.unassignConflicts = isSelected;
 			$scope.unassignReviewWork = isSelected;
+			$scope.unassignQAWork = isSelected;
 		};
 	
-		$scope.ok = function(unassignEditedWork, unassignConcepts, unassignConflicts, unassignReviewWork) {
+		$scope.ok = function(unassignEditedWork, unassignConcepts, unassignConflicts, unassignReviewWork, unassignQAWork) {
 			
 			if (unassignEditedWork == null) alert("You must select whether to delete edited work.");
-			if (unassignConcepts == false && unassignConflicts == false && unassignReviewWork == false) {
+			if (unassignConcepts == false && unassignConflicts == false && unassignReviewWork == false 
+					&& unassignQAWork == false) {
 				alert("You must select a type of work to return");
 			}
 			else {
@@ -822,7 +874,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 						'unassignEditedWork':	unassignEditedWork === 'Unedited' ? false : true,
 						'unassignConcepts':		unassignConcepts,
 						'unassignConflicts':	unassignConflicts,
-						'unassignReviewWork':	unassignReviewWork
+						'unassignReviewWork':	unassignReviewWork,
+						'unassignQAWork':	unassignQAWork
 				};				
 				$modalInstance.close(result);
 			}
