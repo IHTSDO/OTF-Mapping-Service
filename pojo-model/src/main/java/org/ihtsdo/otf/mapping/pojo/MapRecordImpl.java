@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.pojo;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -68,6 +69,12 @@ public class MapRecordImpl implements MapRecord {
   /** The workflow status. */
   private WorkflowStatus workflowStatus;
 
+  /** The flag for discrepancy review. */
+  private boolean isDiscrepancyReview = false;
+  
+  /** The labels. */
+  private Set<String> labels = new HashSet<>();
+  
   /**
    * Return the id.
    * 
@@ -729,17 +736,53 @@ public class MapRecordImpl implements MapRecord {
 	  
   }
 
-@Override
-public boolean isDiscrepancyReview() {
-	// TODO Auto-generated method stub
-	return false;
-}
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapRecord#isDiscrepancyReview()
+   */
+  @Override
+  public boolean isDiscrepancyReview() {
+  	return isDiscrepancyReview;
+  }
 
-@Override
-public void setDiscrepancyReview(boolean isDiscrepancyReview) {
-	// TODO Auto-generated method stub
-	
-}
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapRecord#setDiscrepancyReview(boolean)
+   */
+  @Override
+  public void setDiscrepancyReview(boolean isDiscrepancyReview) {
+  	this.isDiscrepancyReview = isDiscrepancyReview;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapRecord#getLabels()
+   */
+  @Override
+  public Set<String> getLabels() {
+  	return labels;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapRecord#setLabels(java.util.Set)
+   */
+  @Override
+  public void setLabels(Set<String> labels) {
+  	this.labels = labels;
+  }
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addLabel(java.lang.String)
+	 */
+	@Override
+	public void addLabel(String label) {
+		labels.add(label);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeLabel(java.lang.String)
+	 */
+	@Override
+	public void removeLabel(String label) {
+		labels.remove(label);
+	}
 
 
 }

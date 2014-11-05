@@ -1047,6 +1047,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				newRecord.setOwner(mapUser);
 				newRecord.setLastModifiedBy(mapUser);
 				newRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
+				// TODO: remove label setting here
+				newRecord.addLabel("TEST_LABEL");
 
 				// add the record to the list
 				newRecords.add(newRecord);
@@ -1234,20 +1236,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 					.info("Assigning concept along QA_PATH");
 
-			/*if (getWorkflowStatus(mapRecords).equals(
-					WorkflowStatus.REVIEW_NEEDED)) {
-				// check that one record exists and is not owned by this user
-				if (mapRecords.size() == 1) {
-					
-					 * TODO: Removed this, see MAP-617 if
-					 * (mapRecords.iterator().next().getOwner().equals(mapUser))
-					 * throw new Exception(
-					 * "  Cannot assign review record, user attempting to review own work"
-					 * );
-					 
-				} else {
-					throw new Exception("  Expected exactly one map record");
-				}*/
 			if (getLowestWorkflowStatus(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)) {
 				if (mapRecords.size() == 2) {
 					
@@ -1256,14 +1244,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				}
 
 				// set origin id to the existing record
-				//mapRecord.addOrigin(mapRecords.iterator().next().getId());
-			// set origin ids
-				MapRecord lRecord = mapRecords.iterator().next();
-				mapRecord.addOrigin(lRecord.getId());
-				/*mapRecord.addOrigins(lRecord.getOriginIds());
-				lRecord = mapRecords.iterator().next();
-				mapRecord.addOrigin(lRecord.getId());
-				mapRecord.addOrigins(lRecord.getOriginIds());*/
+				mapRecord.addOrigin(mapRecords.iterator().next().getId());
 
 				// set workflow status to review needed
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
@@ -1521,7 +1502,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 						|| mr.getWorkflowStatus().equals(
 								WorkflowStatus.REVIEW_IN_PROGRESS)
 						|| mr.getWorkflowStatus().equals(
-								WorkflowStatus.REVIEW_RESOLVED))
+								WorkflowStatus.REVIEW_RESOLVED)
+						|| mr.getWorkflowStatus().equals(
+										WorkflowStatus.REVIEW_NEW))
 					reviewRecord = mr;
 			}
 
