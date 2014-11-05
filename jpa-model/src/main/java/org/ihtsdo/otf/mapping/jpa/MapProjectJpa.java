@@ -256,6 +256,8 @@ public class MapProjectJpa implements MapProject {
 	 * @param scopeDescendantsFlag the scope descendants flag
 	 * @param scopeExcludedDescendantsFlag the scope excluded descendants flag
 	 * @param errorMessages the error messages
+	 * @param propagatedFlag indicates if propagated to descendants
+	 * @param propagationDescendantThreshold indicates the propagation threshold
 	 * @param workflowType the workflow type
 	 */
 	public MapProjectJpa(Long id, String name, boolean isPublic,
@@ -272,6 +274,7 @@ public class MapProjectJpa implements MapProject {
 			Set<MapAdvice> mapAdvices, Set<MapRelation> mapRelations,
 			Set<String> scopeConcepts, Set<String> scopeExcludedConcepts,
 			boolean scopeDescendantsFlag, boolean scopeExcludedDescendantsFlag,
+			boolean propagatedFlag, Integer propagationDescendantThreshold, 
 			Set<String> errorMessages, WorkflowType workflowType) {
 		super();
 		this.id = id;

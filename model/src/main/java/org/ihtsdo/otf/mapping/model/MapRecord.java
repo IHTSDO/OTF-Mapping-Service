@@ -373,4 +373,34 @@ public interface MapRecord {
 	 * @param isDiscrepancyReview the new discrepancy review
 	 */
 	public void setDiscrepancyReview(boolean isDiscrepancyReview);
+	
+
+	/**
+	 * Gets the labels.
+	 *
+	 * @return the labels
+	 */
+	public Set<String> getLabels();
+
+	/**
+	 * Sets the labels.
+	 *
+	 * @param labels the new labels
+	 */
+	public void setLabels(Set<String> labels);
+
+	/**
+	 * Adds the label.
+	 *
+	 * @param label the label
+	 */
+	public void addLabel(String label);
+	
+	/**
+	 * Removes the label.
+	 *
+	 * @param label the label
+	 */
+	public void removeLabel(String label);
+	
 }
