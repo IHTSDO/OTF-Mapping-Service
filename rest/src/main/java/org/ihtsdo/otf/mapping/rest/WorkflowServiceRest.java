@@ -553,10 +553,10 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(
 					authToken, mapProjectId);
-			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(
 						Response.status(401)
-								.entity("User does not have permissions to find available review work.")
+								.entity("User does not have permissions to find available qa work.")
 								.build());
 
 			// retrieve the project and user
@@ -691,7 +691,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(
 					authToken, mapProjectId);
-			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to find assigned qa work.")
