@@ -557,7 +557,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			});
 			
 		// otherwise, if a review record, query available review work
-		} else if ($scope.record.workflowStatus === 'REVIEW_NEW' || $scope.record.workflowStatus === 'REVIEW_IN_PROGRESS') {
+			// TODO: figure out how to differentiate between QA_PATH and REVIEW_PROJECT_PATH so
+			// that we can provide a next concept of the correct type
+			// then we can comment this section back in
+		/*} else if ($scope.record.workflowStatus === 'REVIEW_NEW' || $scope.record.workflowStatus === 'REVIEW_IN_PROGRESS') {
 			
 			// construct a paging/filtering/sorting object
 			var pfsParameterObj = 
@@ -604,7 +607,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}).error(function(data, status, headers, config) {
 			    $rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);
-			});
+			});*/
 		} else {
 			$rootScope.glassPane--;
 			console.debug("MapRecord finish/next can't determine type of work, returning to dashboard");

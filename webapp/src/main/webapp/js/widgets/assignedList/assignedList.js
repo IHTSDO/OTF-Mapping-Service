@@ -109,8 +109,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				if (parameters.assignType === 'concept') {
 					$scope.retrieveAssignedWork($scope.assignedWorkPage, null, 'NEW');
 					$scope.setTab(0);
-					$scope.assignedWorkType = 'NEW';
-				
+					$scope.assignedWorkType = 'NEW';				
 				} else if (parameters.assignType === 'conflict') {
 					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, null, 'CONFLICT_NEW');
 					$scope.setTab(1);
@@ -151,10 +150,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
 			
 			$scope.retrieveAssignedWork($scope.assignedWorkPage, null, $scope.assignedWorkType);
+			$scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 				$scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType);
 				$scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType);
-				$scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType);
 				$scope.retrieveAssignedWorkForUser(1, null, $scope.mapUserViewed, $scope.assignedWorkForUserType);
 			}
 		}
@@ -530,10 +529,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				$rootScope.$broadcast('assignedListWidget.notification.unassignWork');
 
 				$scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.queryAssigned);
+				$scope.retrieveAssignedQAWork($scope.assignedQAWorkPage, $scope.queryQAWork);
 				if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, $scope.queryConflict);
 					$scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage, $scope.queryReviewWork);
-					$scope.retrieveAssignedQAWork($scope.assignedQAWorkPage, $scope.queryQAWork);
 				}
 			
 			} else {

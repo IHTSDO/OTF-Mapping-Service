@@ -2738,7 +2738,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/record/id/{id:[0-9][0-9]*}/conflictOrigins")
-	@ApiOperation(value = "Get specialist records for an assigned conflict.", notes = "Gets a list of specialist map records corresponding to a lead conflict record.", response = MapRecordListJpa.class)
+	@ApiOperation(value = "Get specialist records for an assigned conflict or review record.", notes = "Gets a list of specialist map records corresponding to a lead conflict or review record.", response = MapRecordListJpa.class)
 	public MapRecordList getOriginMapRecordsForConflict(
 			@ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long mapRecordId,
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -2758,9 +2758,10 @@ public class MappingServiceRest extends RootServiceRest {
 		  // authorize call
 		  MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
 			user = securityService.getUsernameForToken(authToken);
-		  if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+			// needed at specialist level, so specialists can review on QA_PATH
+		  if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 		  	throw new WebApplicationException(Response.status(401).entity(
-					"User does not have permissions to retrieve the origin map records for a conflict.").build());
+					"User does not have permissions to retrieve the origin map records for a conflict/review.").build());
 		
 		  MapRecordList records = new MapRecordListJpa();
 
