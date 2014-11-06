@@ -70,10 +70,10 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.$on('assignedListWidget.notification.unassignWork', function(event, parameters) { 	
 		console.debug("WorkAvailableCtrl:  Detected unassign work notification");
 		$scope.retrieveAvailableWork($scope.availableWorkPage);
+		$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
 			$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 			$scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
-			$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
 		}
 	});
 	
@@ -81,10 +81,10 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.$on('mapProjectWidget.notification.workflowComputed', function(event, parameters) { 	
 		console.debug("WorkAvailableCtrl:  Detected recomputation of workflow");
 		$scope.retrieveAvailableWork($scope.availableWorkPage);
+		$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
 		if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
 			$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 			$scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
-			$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
 		}
 	});
 	
@@ -141,10 +141,10 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			console.debug($scope.projectUsers);
 			
 			$scope.retrieveAvailableWork($scope.availableWorkPage);
+			$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
 				$scope.retrieveAvailableConflicts($scope.availableConflictsPage);
 				$scope.retrieveAvailableReviewWork($scope.availableReviewWorkPage);
-				$scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
 			}
 		}
 	});

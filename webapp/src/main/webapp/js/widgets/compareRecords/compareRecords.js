@@ -499,7 +499,10 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 	};
 
 	function setAccordianTitle(id, term) {
-		if ($scope.record2 == null) {
+		if ($scope.record2 == null && $scope.record1 != null &&
+				$scope.record1.owner.userName == 'qa') {
+			$scope.model.title = "QA Record: " + id + " " + term;
+		} else if ($scope.record2 == null) {
 			$scope.model.title = "Review Record: " + id + " " + term;
 		} else {
 			$scope.model.title = "Compare Records: " + id + "  " + term;

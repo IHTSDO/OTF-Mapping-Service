@@ -1246,7 +1246,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// set origin id to the existing record
 				mapRecord.addOrigin(mapRecords.iterator().next().getId());
 
-				// set workflow status to review needed
+				// set workflow status to review new
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
 			} else {
 				throw new Exception(
@@ -1545,6 +1545,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		if (mapRecord == null)
 			throw new Exception(
 					"publish:  Record for user could not be found");
+		
+		// clear any labels before publication
+		mapRecord.setLabels(new HashSet<String>());
 
 		switch (trackingRecord.getWorkflowPath()) {
 		case CONSENSUS_PATH:

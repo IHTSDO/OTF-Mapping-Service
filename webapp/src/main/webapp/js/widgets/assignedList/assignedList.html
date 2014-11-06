@@ -523,8 +523,7 @@
 
 </table>
 </tab><tab heading="{{tabs[4].title}}" active="tabs[4].active"
-  select="setTab(4)"
-  ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+  select="setTab(4)">
 
 
 
@@ -564,7 +563,7 @@
 <!--  do not display controls if no records are assigned and the query term is null -->
 <div style="padding: 10px;" ng-show="nAssignedQAWork == 0">
   <p></p>
-  <div class="alert alert-warning" disabled>No review work found.</div>
+  <div class="alert alert-warning" disabled>No qa work found.</div>
 </div>
 
 <div ng-show="nAssignedQAWork > 0">
