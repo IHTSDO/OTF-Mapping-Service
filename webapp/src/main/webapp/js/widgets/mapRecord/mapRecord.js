@@ -21,7 +21,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	/////////////////////////////////////
 
 	// this controller handles a potentially "dirty" page
-	$rootScope.currentPageDirty = true;
+	//$rootScope.currentPageDirty = true;
 	
 	// initialize scope variables
 	$scope.record = 	null;
@@ -611,10 +611,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			    $rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
-		} else {
+		} /*else {
 			console.debug("MapRecord finish/next can't determine type of work, returning to dashboard");
 			$location.path($scope.role + "/dash");
-		}
+		}*/
 	}
 	
 	$scope.saveMapRecord = function(returnBack) {
