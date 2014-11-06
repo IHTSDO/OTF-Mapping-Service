@@ -675,8 +675,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		$scope.record.lastModifiedBy = $scope.user;
 
 		// if only displaying record again, don't make rest call
-		if ($rootScope.currentPageDirty == false && !returnBack)
-			return;
+		//if ($rootScope.currentPageDirty == false && !returnBack)
+		//	return;
 
 		$rootScope.glassPane++;
 
