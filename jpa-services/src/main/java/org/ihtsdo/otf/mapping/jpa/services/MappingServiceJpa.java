@@ -3206,7 +3206,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				System.out.println("Getting origin id:  " + originId);
 				MapRecord mr = getMapRecord(originId);
 
-				// This try/cactch block is here to prevent problems
+				// This try/catch block is here to prevent problems
 				// with the origin ids being an unordered set
 				// Only records currently in the database are returned
 				try {
@@ -3233,6 +3233,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 			}
 			
+			// this is the case on the QA_PATH
 			if (foundReviewRecord || foundRevisionRecord) {
 				conflictRecords.setTotalCount(conflictRecords.getCount());
 				return conflictRecords;
