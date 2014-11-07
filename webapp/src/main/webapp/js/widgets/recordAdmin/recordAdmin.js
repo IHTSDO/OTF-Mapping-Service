@@ -153,17 +153,7 @@ angular
 								.success(
 										function(data) {
 											$rootScope.glassPane--;
-											
-											$scope.removeRecordBatchSuccess = "Operation Complete";
-
-											if (data.length > 0) {
-												$scope.removeRecordBatchError = "Could not find records to delete for the following terminology ids:\n";
-												for (var i = 0; i < data.length; i++) {
-													$scope.removeRecordBatchError += "  "
-															+ data[i] + "\n";
-												}
-											}
-										})
+											$scope.validationResult = data;										})
 								.error(
 										function(data, status, headers, config) {
 											$rootScope.glassPane--;
