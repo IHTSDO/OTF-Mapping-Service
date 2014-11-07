@@ -112,6 +112,19 @@ public interface ReportDefinition {
 	public void setTimePeriod(ReportTimePeriod timePeriod);
 
 	/**
+	 * Gets the frequency.
+	 *
+	 * @return the frequency
+	 */
+	public ReportTimePeriod getFrequency();
+	
+	/**
+	 * Sets the frequency.
+	 *
+	 * @param timePeriod the new frequency
+	 */
+	public void setFrequency(ReportTimePeriod timePeriod);
+	/**
 	 * Checks if is diff report.
 	 *
 	 * @return true, if is diff report
