@@ -54,6 +54,10 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	@Enumerated(EnumType.STRING)
 	private ReportTimePeriod timePeriod;
 	
+	/** The frequency with which the report is run */
+	@Enumerated(EnumType.STRING)
+	private ReportTimePeriod frequency;
+	
 	/** The result type. */
 	@Enumerated(EnumType.STRING)
 	private ReportResultType resultType;
@@ -274,6 +278,16 @@ public class ReportDefinitionJpa implements ReportDefinition {
 				+ ", timePeriod=" + timePeriod + ", resultType=" + resultType
 				+ ", queryType=" + queryType + ", query=" + query
 				+ ", roleRequired=" + roleRequired + "]";
+	}
+
+	@Override
+	public ReportTimePeriod getFrequency() {
+		return this.frequency;
+	}
+
+	@Override
+	public void setFrequency(ReportTimePeriod timePeriod) {
+		this.frequency = timePeriod;
 	}
 
 }

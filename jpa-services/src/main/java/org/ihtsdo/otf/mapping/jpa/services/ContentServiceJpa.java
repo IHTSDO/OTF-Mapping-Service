@@ -1536,7 +1536,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return descConceptIds;
 
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 
