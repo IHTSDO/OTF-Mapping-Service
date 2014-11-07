@@ -25,7 +25,8 @@ import org.ihtsdo.otf.mapping.rf2.Relationship;
 @XmlRootElement(name = "relationship")
 public class RelationshipJpa extends AbstractComponent implements Relationship {
 
-  /** The source concept. */
+
+/** The source concept. */
   @ManyToOne(targetEntity = ConceptJpa.class, optional = false)
   @ContainedIn
   private Concept sourceConcept;
@@ -50,6 +51,35 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
   @Column(nullable = true)
   private Integer relationshipGroup;
 
+  /**
+   * Instantiates a new relationship jpa.
+   */
+  public RelationshipJpa() {
+	//empty  
+  }
+  
+  /**
+   * Instantiates a new relationship jpa.
+   *
+   * @param relationship the relationship
+   */
+  public RelationshipJpa(Relationship relationship) {
+	    super.setId(relationship.getId());
+	    super.setActive(relationship.isActive());
+	    super.setEffectiveTime(relationship.getEffectiveTime());
+	    super.setLabel(relationship.getLabel());
+	    super.setModuleId(relationship.getModuleId());
+	    super.setTerminology(relationship.getTerminology());
+	    super.setTerminologyId(relationship.getTerminologyId());
+	    super.setTerminologyVersion(relationship.getTerminologyVersion());
+		this.sourceConcept = relationship.getSourceConcept();
+		this.destinationConcept = relationship.getDestinationConcept();
+		this.typeId = relationship.getTypeId();
+		this.characteristicTypeId = relationship.getCharacteristicTypeId();
+		this.modifierId = relationship.getModifierId();
+		this.relationshipGroup = relationship.getRelationshipGroup();
+  }  
+  
   /**
    * Returns the type id.
    * 
@@ -259,13 +289,29 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
    */
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (!super.equals(obj))
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    RelationshipJpa other = (RelationshipJpa) obj;
+		if (this == obj)
+			return true;
+		if (getClass() != obj.getClass())
+			return false;
+		RelationshipJpa other = (RelationshipJpa) obj;
+		if (super.getLabel() == null) {
+			if (other.getLabel() != null)
+				return false;
+		} else if (!super.getLabel().equals(other.getLabel())) {
+			return false;
+		}
+
+		if (super.isActive() != other.isActive())
+			return false;
+		if (!super.getModuleId().equals(other.getModuleId()))
+			return false;
+		if (!super.getTerminology().equals(other.getTerminology()))
+			return false;
+		if (!super.getTerminologyId().equals(other.getTerminologyId()))
+			return false;
+		if (!super.getTerminologyVersion()
+				.equals(other.getTerminologyVersion()))
+			return false;
     if (destinationConcept == null) {
       if (other.destinationConcept != null)
         return false;
@@ -286,6 +332,16 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
         return false;
     } else if (!typeId.equals(other.typeId))
       return false;
+    if (characteristicTypeId == null) {
+        if (other.characteristicTypeId != null)
+          return false;
+      } else if (!characteristicTypeId.equals(other.characteristicTypeId))
+        return false;
+    if (modifierId == null) {
+        if (other.modifierId != null)
+          return false;
+      } else if (!modifierId.equals(other.modifierId))
+        return false;    
     return true;
   }
 
