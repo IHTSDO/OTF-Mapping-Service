@@ -36,7 +36,8 @@ import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 @XmlRootElement(name = "description")
 public class DescriptionJpa extends AbstractComponent implements Description {
 
-  /** The language code. */
+
+/** The language code. */
   @Column(nullable = false, length = 10)
   private String languageCode;
 
@@ -78,6 +79,29 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     this.typeId = type;
   }
 
+  /**
+   * Instantiates a new description jpa.
+   *
+   * @param description the description
+   */
+  public DescriptionJpa(Description description) {
+
+	    super.setId(description.getId());
+	    super.setActive(description.isActive());
+	    super.setEffectiveTime(description.getEffectiveTime());
+	    super.setLabel(description.getLabel());
+	    super.setModuleId(description.getModuleId());
+	    super.setTerminology(description.getTerminology());
+	    super.setTerminologyId(description.getTerminologyId());
+	    super.setTerminologyVersion(description.getTerminologyVersion());
+		this.languageCode = description.getLanguageCode();
+		this.typeId = description.getTypeId();
+		this.term = description.getTerm();
+		this.caseSignificanceId = description.getCaseSignificanceId();
+		this.concept = description.getConcept();
+		this.languageRefSetMembers = description.getLanguageRefSetMembers();
+	}
+  
   /**
    * Returns the language code.
    * 
@@ -277,18 +301,33 @@ public class DescriptionJpa extends AbstractComponent implements Description {
    * org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (!super.equals(obj))
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    DescriptionJpa other = (DescriptionJpa) obj;
-    if (languageCode == null) {
-      if (other.languageCode != null)
-        return false;
-    } else if (!languageCode.equals(other.languageCode))
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (getClass() != obj.getClass())
+			return false;
+		DescriptionJpa other = (DescriptionJpa) obj;
+		if (super.getLabel() == null) {
+			if (other.getLabel() != null)
+				return false;
+		} else if (!super.getLabel().equals(other.getLabel())) {
+			return false;
+		}
+		if (super.isActive() != other.isActive())
+			return false;
+		if (!super.getModuleId().equals(other.getModuleId()))
+			return false;
+		if (!super.getTerminology().equals(other.getTerminology()))
+			return false;
+		if (!super.getTerminologyId().equals(other.getTerminologyId()))
+			return false;
+		if (!super.getTerminologyVersion()
+				.equals(other.getTerminologyVersion()))
+			return false;
+		if (languageCode == null) {
+			if (other.languageCode != null)
+				return false;
+		} else if (!languageCode.equals(other.languageCode))
       return false;
     if (term == null) {
       if (other.term != null)
@@ -300,6 +339,11 @@ public class DescriptionJpa extends AbstractComponent implements Description {
         return false;
     } else if (!typeId.equals(other.typeId))
       return false;
+    if (caseSignificanceId == null) {
+        if (other.caseSignificanceId != null)
+          return false;
+      } else if (!caseSignificanceId.equals(other.caseSignificanceId))
+        return false;
     return true;
   }
 

@@ -41,7 +41,8 @@ import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 @XmlRootElement(name = "concept")
 public class ConceptJpa extends AbstractComponent implements Concept {
 
-  /** The definition status id. */
+
+/** The definition status id. */
   @Column(nullable = false)
   private Long definitionStatusId;
 
@@ -80,6 +81,38 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Column(nullable = false, length = 256)
   private String defaultPreferredName;
 
+  /**
+   * Instantiates a new concept jpa.
+   */
+  public ConceptJpa() {
+	  
+  }
+  
+  /**
+   * Instantiates a new concept jpa.
+   *
+   * @param concept the concept
+   */
+  public ConceptJpa(Concept concept) {
+	    super.setId(concept.getId());
+	    super.setActive(concept.isActive());
+	    super.setEffectiveTime(concept.getEffectiveTime());
+	    super.setLabel(concept.getLabel());
+	    super.setModuleId(concept.getModuleId());
+	    super.setTerminology(concept.getTerminology());
+	    super.setTerminologyId(concept.getTerminologyId());
+	    super.setTerminologyVersion(concept.getTerminologyVersion());
+		this.definitionStatusId = concept.getDefinitionStatusId();
+		this.descriptions = concept.getDescriptions();
+		this.relationships = concept.getRelationships();
+		this.inverseRelationships = concept.getInverseRelationships();
+		this.simpleRefSetMembers = concept.getSimpleRefSetMembers();
+		this.simpleMapRefSetMembers = concept.getSimpleMapRefSetMembers();
+		this.complexMapRefSetMembers = concept.getComplexMapRefSetMembers();
+		this.attributeValueRefSetMembers = concept.getAttributeValueRefSetMembers();
+		this.defaultPreferredName = concept.getDefaultPreferredName();
+	}
+  
   /**
    * Returns the definition status id.
    * 
@@ -430,12 +463,86 @@ public class ConceptJpa extends AbstractComponent implements Concept {
                                                                              // fields
   }
 
+
+
+@Override
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (getClass() != obj.getClass())
+		return false;
+	ConceptJpa other = (ConceptJpa) obj;
+	if (super.getLabel() == null) {
+		if (other.getLabel() != null)
+			return false;
+	} else if (!super.getLabel().equals(other.getLabel())) {
+		return false;
+	}
+	if (super.isActive() != other.isActive())
+		return false;
+	if (!super.getModuleId().equals(other.getModuleId()))
+		return false;
+	if (!super.getTerminology().equals(other.getTerminology()))
+		return false;
+	if (!super.getTerminologyId().equals(other.getTerminologyId()))
+		return false;
+	if (!super.getTerminologyVersion().equals(other.getTerminologyVersion()))
+		return false;
+	if (definitionStatusId == null) {
+		if (other.definitionStatusId != null)
+			return false;
+	} else if (!definitionStatusId.equals(other.definitionStatusId))
+		return false;
+/*	if (attributeValueRefSetMembers == null) {
+		if (other.attributeValueRefSetMembers != null)
+			return false;
+	} else if (!attributeValueRefSetMembers
+			.equals(other.attributeValueRefSetMembers))
+		return false;
+	if (complexMapRefSetMembers == null) {
+		if (other.complexMapRefSetMembers != null)
+			return false;
+	} else if (!complexMapRefSetMembers.equals(other.complexMapRefSetMembers))
+		return false;
+	if (definitionStatusId == null) {
+		if (other.definitionStatusId != null)
+			return false;
+	} else if (!definitionStatusId.equals(other.definitionStatusId))
+		return false;
+	if (descriptions == null) {
+		if (other.descriptions != null)
+			return false;
+	} else if (!descriptions.equals(other.descriptions))
+		return false;
+	if (inverseRelationships == null) {
+		if (other.inverseRelationships != null)
+			return false;
+	} else if (!inverseRelationships.equals(other.inverseRelationships))
+		return false;
+	if (relationships == null) {
+		if (other.relationships != null)
+			return false;
+	} else if (!relationships.equals(other.relationships))
+		return false;
+	if (simpleMapRefSetMembers == null) {
+		if (other.simpleMapRefSetMembers != null)
+			return false;
+	} else if (!simpleMapRefSetMembers.equals(other.simpleMapRefSetMembers))
+		return false;
+	if (simpleRefSetMembers == null) {
+		if (other.simpleRefSetMembers != null)
+			return false;
+	} else if (!simpleRefSetMembers.equals(other.simpleRefSetMembers))
+		return false;*/
+	return true;
+}
+
   /*
    * (non-Javadoc)
    * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
-  @Override
+ /* @Override
   public boolean equals(Object obj) {
     if (this == obj)
       return true;
@@ -444,5 +551,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     if (getClass() != obj.getClass())
       return false;
     return true;
-  }
+  }*/
+  
+  
 }
