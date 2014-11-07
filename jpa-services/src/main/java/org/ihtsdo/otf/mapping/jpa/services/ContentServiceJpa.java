@@ -2429,4 +2429,17 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 
 	}
 
+
+	@Override
+	public TreePositionList getTreePositionsWithChildren(String terminologyId,
+			String terminology, String terminologyVersion) throws Exception {
+		TreePositionList treePositionList = this.getTreePositions(terminologyId, terminology, terminologyVersion);
+		
+		for (TreePosition tp : treePositionList.getTreePositions()) {
+			tp.setChildren(this.getChildTreePositions(tp).getTreePositions());
+		}
+
+		return treePositionList;
+	}
+
 }
