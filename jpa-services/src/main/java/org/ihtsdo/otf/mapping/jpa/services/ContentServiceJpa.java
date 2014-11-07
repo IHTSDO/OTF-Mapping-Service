@@ -1698,7 +1698,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				}
 			}
 
-			if (ancestors[i].length() != 0 && ancestorFound == false) {
+			if (ancestors[i].length() != 0 && !ancestorFound) {
 				throw new Exception("Ancestor tree position " + ancestors[i]
 						+ " not found!");
 			}

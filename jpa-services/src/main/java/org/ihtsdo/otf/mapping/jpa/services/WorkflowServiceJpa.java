@@ -2404,7 +2404,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					if (conceptProcessed == true)
 						specialistTrackingRecords.remove(trackingRecord);
 
-				} while (conceptProcessed == false);
+				} while (!conceptProcessed);
 
 				// increment the counter
 				nRecordsAssignedToSpecialist++;
@@ -3125,17 +3125,17 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 					}
 
 					// revision record must exist
-					if (revisionRecordFound == false) {
+					if (!revisionRecordFound) {
 						errors.add("FIX_ERROR_PATH, but no REVISION record");
 					}
 
 					// specialist editing record must exist
-					if (editingRecordFound == false) {
+					if (!editingRecordFound) {
 						errors.add("FIX_ERROR_PATH, but no specialist-level record found");
 					}
 
 					// lead record may or may not exist
-					if (reviewRecordFound == false) {
+					if (!reviewRecordFound) {
 						// do nothing, not required
 						// any aberrant records will be reported above
 					}
@@ -3220,7 +3220,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 							}
 						}
 
-						if (leadRecordFound == false) {
+						if (!leadRecordFound) {
 							errors.add("NON_LEGACY_PATH, three records, expected conflict resolution status, but could not find lead's resolution record");
 						}
 
@@ -3293,10 +3293,10 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 							}
 						}
 
-						if (specialistRecordFound == false)
+						if (!specialistRecordFound)
 							errors.add("REVIEW_PROJECT_PATH, two records, but could not find the specialist's record requiring review");
 
-						if (leadRecordFound == false)
+						if (!leadRecordFound)
 							errors.add("REVIEW_PROJECT_PATH, two records, but could not find the lead's review resolution record");
 
 						break;
