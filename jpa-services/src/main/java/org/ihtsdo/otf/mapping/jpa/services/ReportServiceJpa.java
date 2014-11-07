@@ -572,8 +572,12 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ReportService#getReportDefinitionsForRole(org.ihtsdo.otf.mapping.helpers.MapUserRole)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#getReportDefinitionsForRole
+	 * (org.ihtsdo.otf.mapping.helpers.MapUserRole)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -597,7 +601,9 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		return definitionList;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.ihtsdo.otf.mapping.services.ReportService#getReportDefinitions()
 	 */
 	@Override
@@ -692,19 +698,23 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	 * removeReportDefinition(java.lang. Long)
 	 */
 	@Override
-	public void removeReportDefinition(Long reportDefinitionId) throws Exception {
+	public void removeReportDefinition(Long reportDefinitionId)
+			throws Exception {
 
 		ReportDefinition reportDefinition = manager.find(
 				ReportDefinitionJpa.class, reportDefinitionId);
-		
+
 		// check if this definition is used by map projects
 		MappingService mappingService = new MappingServiceJpa();
 		MapProjectList mapProjects = mappingService.getMapProjects();
 		mappingService.close();
-		
+
 		for (MapProject mapProject : mapProjects.getIterable()) {
 			if (mapProject.getReportDefinitions().contains(reportDefinition)) {
-				throw new LocalException("Report definition is currently in use by project " + mapProject.getName() + " and cannot be deleted");
+				throw new LocalException(
+						"Report definition is currently in use by project "
+								+ mapProject.getName()
+								+ " and cannot be deleted");
 			}
 		}
 
@@ -719,8 +729,13 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ReportService#getReportsForMapProject(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.helpers.PfsParameter)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#getReportsForMapProject
+	 * (org.ihtsdo.otf.mapping.model.MapProject,
+	 * org.ihtsdo.otf.mapping.helpers.PfsParameter)
 	 */
 	@Override
 	public ReportList getReportsForMapProject(MapProject mapProject,
@@ -730,8 +745,14 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 				pfsParameter);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ReportService#getReportsForMapProjectAndReportDefinition(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.reports.ReportDefinition, org.ihtsdo.otf.mapping.helpers.PfsParameter)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ReportService#
+	 * getReportsForMapProjectAndReportDefinition
+	 * (org.ihtsdo.otf.mapping.model.MapProject,
+	 * org.ihtsdo.otf.mapping.reports.ReportDefinition,
+	 * org.ihtsdo.otf.mapping.helpers.PfsParameter)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -796,8 +817,13 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		return reportList;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ReportService#generateReportsForDateRange(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser, java.util.Date, java.util.Date)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#generateReportsForDateRange
+	 * (org.ihtsdo.otf.mapping.model.MapProject,
+	 * org.ihtsdo.otf.mapping.model.MapUser, java.util.Date, java.util.Date)
 	 */
 	@Override
 	public void generateReportsForDateRange(MapProject mapProject,
@@ -807,12 +833,16 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		// get all report definitions
 		ReportDefinitionList reportDefinitions = this.getReportDefinitions();
-		
+
 		// separate report definitions into daily and diff sets
+		// note that this is necessary as diff reports require
+		// a daily report to be present prior to calculation
 		Set<ReportDefinition> dailyReportDefinitions = new HashSet<>();
 		Set<ReportDefinition> diffReportDefinitions = new HashSet<>();
-		
-		for (ReportDefinition reportDefinition : reportDefinitions.getIterable()) {
+
+		// sort the report definitions into daily and diff sets
+		for (ReportDefinition reportDefinition : reportDefinitions
+				.getIterable()) {
 			if (reportDefinition.isDiffReport() == true)
 				diffReportDefinitions.add(reportDefinition);
 			else
@@ -826,54 +856,34 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 			Logger.getLogger(ReportServiceJpa.class).info(
 					"  Generating reports for " + startDate.toString());
-			
-			
 
 			// first, do the non-diff reports
+			// note that these must be calculated prior to diff reports
 			for (ReportDefinition reportDefinition : dailyReportDefinitions) {
-				Logger.getLogger(ReportServiceJpa.class).info(
-						"    Generating report "
-								+ reportDefinition.getName());
 
-				Report report = this.generateReport(mapProject, mapUser,
-						reportDefinition.getName(), reportDefinition,
-						startDate, true);
+				if (isDateToRunReport(reportDefinition, startDate)) {
+					Logger.getLogger(ReportServiceJpa.class).info(
+							"    Generating report "
+									+ reportDefinition.getName());
 
-				Logger.getLogger(ReportServiceJpa.class).info(
-						"     Persisting report.");
+					Report report = this.generateReport(mapProject, mapUser,
+							reportDefinition.getName(), reportDefinition,
+							startDate, true);
 
-				// persist the report
-				report = this.addReport(report);
+					Logger.getLogger(ReportServiceJpa.class).info(
+							"     Persisting report.");
+
+					// persist the report
+					report = this.addReport(report);
+				}
 			}
-			
+
 			// second, do the diff reports
-			// note that this requires the current daily report to be present (i.e. calculated above)
+			// note that this requires the current daily report to be present
+			// (i.e. calculated above)
 			for (ReportDefinition reportDefinition : diffReportDefinitions) {
 
-				boolean isProperDate = false;
-
-				switch (reportDefinition.getTimePeriod()) {
-				case ANNUALLY:
-					// do nothing
-					break;
-				case DAILY:
-					isProperDate = true;
-					break;
-				case MONTHLY:
-					if (cal.get(Calendar.DAY_OF_MONTH) == 1)
-						isProperDate = true;
-					break;
-				case WEEKLY:
-					if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
-						isProperDate = true;
-					break;
-				default:
-					throw new Exception(
-							"Report definition found with invalid time period.");
-
-				}
-
-				if (isProperDate == true) {
+				if (isDateToRunReport(reportDefinition, startDate) == true) {
 
 					Logger.getLogger(ReportServiceJpa.class).info(
 							"    Generating report "
@@ -886,11 +896,12 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 					if (report != null) {
 						Logger.getLogger(ReportServiceJpa.class).info(
 								"     Persisting report " + report.toString());
-	
+
 						// persist the report
 						report = this.addReport(report);
 					} else {
-						Logger.getLogger(ReportService.class).warn("    Skipping report");
+						Logger.getLogger(ReportService.class).warn(
+								"    Skipping report");
 					}
 
 				}
@@ -905,15 +916,61 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ReportService#generateDailyReports(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser)
+	/**
+	 * Helper function Given a report definition and a date, assesses whether
+	 * this report should be run, based on definition frequency
+	 * 
+	 * @param reportDefinition
+	 * @param date
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean isDateToRunReport(ReportDefinition reportDefinition,
+			Date date) throws Exception {
+
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		;
+
+		switch (reportDefinition.getFrequency()) {
+		case ANNUALLY:
+			if (cal.get(Calendar.DAY_OF_YEAR) == 1)
+				return true;
+			break;
+		case DAILY:
+			return true;
+
+		case MONTHLY:
+			if (cal.get(Calendar.DAY_OF_MONTH) == 1)
+				return true;
+			break;
+		case WEEKLY:
+			if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
+				return true;
+			break;
+		default:
+			throw new Exception(
+					"Report definition found with invalid time period.");
+		}
+
+		return false;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#generateDailyReports(org
+	 * .ihtsdo.otf.mapping.model.MapProject,
+	 * org.ihtsdo.otf.mapping.model.MapUser)
 	 */
 	@Override
-	public void generateDailyReports(MapProject mapProject, MapUser mapUser) throws Exception {
-		
+	public void generateDailyReports(MapProject mapProject, MapUser mapUser)
+			throws Exception {
+
 		// get today's date
 		Date date = new Date();
-		
+
 		// call date range report generation with start and end date as today
 		this.generateReportsForDateRange(mapProject, mapUser, date, date);
 
@@ -922,8 +979,14 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	// /////////////////////////////////////////////////////
 	// Report Generation Service
 	// /////////////////////////////////////////////////////
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ReportService#generateReport(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser, java.lang.String, org.ihtsdo.otf.mapping.reports.ReportDefinition, java.util.Date, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ihtsdo.otf.mapping.services.ReportService#generateReport(org.ihtsdo
+	 * .otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser,
+	 * java.lang.String, org.ihtsdo.otf.mapping.reports.ReportDefinition,
+	 * java.util.Date, boolean)
 	 */
 	@Override
 	public Report generateReport(MapProject mapProject, MapUser owner,
@@ -946,7 +1009,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 				.toString());
 		query = query.replaceAll(":TIMESTAMP:", Long.toString(date.getTime()));
 
-		// if a diff report, need to construct a second timestamp corresponding to earlier report
+		// if a diff report, need to construct a second timestamp corresponding
+		// to earlier report
 		if (reportDefinition.isDiffReport() == true) {
 
 			// modify date by appropriate increment
@@ -1040,15 +1104,17 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 				boolean matchingValueFound = false;
 
-				// cycle over second report to find the corresponding value (if it exists)
+				// cycle over second report to find the corresponding value (if
+				// it exists)
 				for (ReportResult result2 : report2.getResults()) {
-					if (result1.getValue().equals(result2.getValue())) {	
+					if (result1.getValue().equals(result2.getValue())) {
 						resultDiff.setCt(result1.getCt() - result2.getCt());
 						matchingValueFound = true;
 					}
 				}
 
-				// if matching value was not found, this is a new item (i.e. no diff)
+				// if matching value was not found, this is a new item (i.e. no
+				// diff)
 				if (matchingValueFound == false) {
 					resultDiff.setValue(result1.getValue());
 					resultDiff.setCt(result1.getCt());
@@ -1124,9 +1190,11 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 	/**
 	 * Gets the report result for value.
-	 *
-	 * @param report the report
-	 * @param value the value
+	 * 
+	 * @param report
+	 *            the report
+	 * @param value
+	 *            the value
 	 * @return the report result for value
 	 */
 	public ReportResult getReportResultForValue(Report report, String value) {
@@ -1138,22 +1206,13 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	}
 
 	/**
-	 * Gets the end of day time.
-	 *
-	 * @param date the date
-	 * @return the end of day time
-	 */
-	public Long getEndOfDayTime(Date date) {
-
-		return null;
-	}
-
-	/**
 	 * Helper function Returns the result items in the first result that are not
 	 * present in the second result.
-	 *
-	 * @param result1 the result1
-	 * @param result2 the result2
+	 * 
+	 * @param result1
+	 *            the result1
+	 * @param result2
+	 *            the result2
 	 * @return the report result items added
 	 */
 	public ReportResultItemList getReportResultItemsAdded(ReportResult result1,
@@ -1180,10 +1239,12 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 	// /////////////////////////////////////////////////////
 	/**
 	 * Execute sql query.
-	 *
-	 * @param query the query
+	 * 
+	 * @param query
+	 *            the query
 	 * @return the result set
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	public ResultSet executeSqlQuery(String query) throws Exception {
 
@@ -1268,8 +1329,12 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 		 */
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ihtsdo.otf.mapping.services.ReportService#getReportResultItemsForReportResult(java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameter)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ihtsdo.otf.mapping.services.ReportService#
+	 * getReportResultItemsForReportResult(java.lang.Long,
+	 * org.ihtsdo.otf.mapping.helpers.PfsParameter)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
