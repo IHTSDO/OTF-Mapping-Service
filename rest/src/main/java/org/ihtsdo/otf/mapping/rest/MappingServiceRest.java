@@ -1877,26 +1877,29 @@ public class MappingServiceRest extends RootServiceRest {
 					}
 				}
 
-				// check if descendants need to be removed as well
-				if (mapProject.isScopeDescendantsFlag() == true) {
+				// if a non-descendant-based project (i.e. enumerated scope), remove scope concept
+				if (mapProject.isScopeDescendantsFlag() == false) {
 
 					// remove this terminology id from the scope concepts
 					if (mapProject.getScopeConcepts().contains(terminologyId)) {
 						mapProject.removeScopeConcept(terminologyId);
 						nScopeConceptsRemoved++;
 					}
+					
+					// update the map project
+					mappingService.updateMapProject(mapProject);
+
 				}
 
-				// update the map project
-				mappingService.updateMapProject(mapProject);
-
+				
 			}
 
 			// add the counter information to the validation result
 			validationResult.addMessage(nRecordsRemoved
 					+ " records successfully removed");
 
-			if (mapProject.isScopeDescendantsFlag() == true) {
+			// if scope concepts were removed, add a success message
+			if (mapProject.isScopeDescendantsFlag() == false) {
 
 				validationResult.addMessage(nScopeConceptsRemoved
 						+ " concepts removed from project scope definition");
