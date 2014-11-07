@@ -982,7 +982,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				if (mr.getId().equals(mapRecord.getId()))
 					recordExists = true;
 			}
-			if (recordExists == false)
+			if (!recordExists)
 				uniqueRecords.add(mapRecord);
 		}
 

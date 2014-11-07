@@ -1115,7 +1115,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 				// if matching value was not found, this is a new item (i.e. no
 				// diff)
-				if (matchingValueFound == false) {
+				if (!matchingValueFound) {
 					resultDiff.setValue(result1.getValue());
 					resultDiff.setCt(result1.getCt());
 				}
@@ -1134,7 +1134,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 						matchingValueFound = true;
 				}
 
-				if (matchingValueFound == false) {
+				if (!matchingValueFound) {
 
 					ReportResult resultDiff = new ReportResultJpa();
 					resultDiff.setReport(report);
