@@ -2618,7 +2618,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 */
 	@GET
 	@Path("/treePosition/project/id/{mapProjectId}/concept/id/{terminology}/{terminologyVersion}/{terminologyId}")
-	@ApiOperation(value = "Get a tree position with desendants.", notes = "Gets a list of tree positions and their descendants for the specified parameters.", response = TreePositionListJpa.class)
+	@ApiOperation(value = "Gets project-specific tree positions with desendants.", notes = "Gets a list of tree positions and their descendants for the specified parameters. Sets flags for valid targets and assigns any terminology notes based on project.", response = TreePositionListJpa.class)
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public TreePositionList getTreePositionsWithDescendants(
 			@ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
@@ -2650,7 +2650,7 @@ public class MappingServiceRest extends RootServiceRest {
 			// get the local tree positions from content service
 			ContentService contentService = new ContentServiceJpa();
 			TreePositionList treePositions = contentService
-					.getTreePositionsWithDescendants(terminologyId,
+					.getTreePositionsWithChildren(terminologyId,
 							terminology, terminologyVersion);
 			contentService.computeTreePositionInformation(treePositions);
 			contentService.close();
