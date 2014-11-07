@@ -12,6 +12,12 @@ Map Entries
 		
 	</div>
 
+	<div ng-show="entry.targetId == null || entry.targetId.length == 0" style="vertical-align:top;width:90%;display:inline-block;padding:2px">
+		<em>No target</em>
+		
+	</div>
+
+
 	<div style="vertical-align:top;width:7%;display:inline-block;padding:2px"></div>
 	<div style="vertical-align:top;width:85%;display:inline-block;padding:2px"> {{entry.rule}}</div>
 	
