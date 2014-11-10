@@ -3256,7 +3256,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					.getTrackingRecordForMapProjectAndConcept(mapProject,
 							mapRecord.getConceptId());
 
-			if (tr.getWorkflowPath().equals(WorkflowPath.REVIEW_PROJECT_PATH)) {
+			if (tr.getWorkflowPath().equals(WorkflowPath.REVIEW_PROJECT_PATH) ||
+					tr.getWorkflowPath().equals(WorkflowPath.QA_PATH)) {
 
 				for (Long originId : mapRecord.getOriginIds()) {
 
