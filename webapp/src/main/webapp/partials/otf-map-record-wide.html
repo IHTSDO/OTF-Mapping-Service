@@ -50,8 +50,10 @@
 </div>
 <div ng-show="record.mapPrinciple.length > 0">
 	Map Principles
-	<div class="alert alert-warning" style="padding: 0px 10px 10px 10px;" ng-repeat="principle in record.mapPrinciple">
-		{{principle.principleId}}: {{principle.name}}
-	</div>
+    <div style="padding: 0px 10px 10px 10px;" ng-repeat="principle in record.mapPrinciple">
+	    <div class="alert alert-warning"> 
+		    {{principle.principleId}}: {{principle.name}}
+	    </div>
+    </div>
 </div>
 </div>
