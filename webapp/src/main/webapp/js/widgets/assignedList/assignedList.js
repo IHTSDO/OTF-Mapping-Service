@@ -49,6 +49,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.assignedConflictType = 'CONFLICT_NEW'; 	// initialize variable to track which type of conflict has been requested
 	$scope.assignedReviewWorkType = 'REVIEW_NEW';
 	$scope.assignedWorkForUserType = 'ALL';	// initialize variable to track which type of work (for another user) has been requested
+	$scope.assignedQAWorkType = 'REVIEW_NEW';
 	
 	// function to change tab
 	$scope.setTab = function(tabNumber) {
