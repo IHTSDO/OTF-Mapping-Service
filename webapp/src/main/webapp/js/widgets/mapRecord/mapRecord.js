@@ -608,10 +608,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			    $rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});*/
-		} else {
+		/*} else {
 			$rootScope.glassPane--;
 			console.debug("MapRecord finish/next can't determine type of work, returning to dashboard");
-			$location.path($scope.role + "/dash");
+			$location.path($scope.role + "/dash");*/
 		}
 	}
 	
@@ -1334,46 +1334,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 	};
 
-	///////////////////////
-	// Modal Functions //
-	///////////////////////
-	
-	// HACKISH:  Variable passed in is the currently viewed map user in the lead's View Other Work tab
-	$scope.displayMapRecord = function() {
-		
-		console.debug("displayMapRecord with ");
-		console.debug($scope.project);
-		
-		
-		console.debug($scope.record);
-
-		var modalInstance = $modal.open({
-			templateUrl: 'js/widgets/mapRecord/displayMapRecord.html',
-			controller: DisplayMapRecordCtrl,
-		    size: 'lg',
-			resolve: {				
-				record: function() {
-					return $scope.record;
-				},
-	            project: function() {
-	                return $scope.project;
-	            }
-			}
-		});
-
-	};
-	
-	var DisplayMapRecordCtrl = function($scope, $modalInstance, record, project) { 
-		
-		console.debug("Entered display map record modal control");
-		$scope.mapRecord = record;
-		$scope.project = project;
-	
-
-		$scope.cancel = function() {
-			$modalInstance.dismiss('cancel');
-		};
-	}
 	
 	
 	///////////////////////
