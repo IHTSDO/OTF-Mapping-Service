@@ -290,4 +290,65 @@ public class ReportDefinitionJpa implements ReportDefinition {
 		this.frequency = timePeriod;
 	}
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((frequency == null) ? 0 : frequency.hashCode());
+    result = prime * result + (isDiffReport ? 1231 : 1237);
+    result = prime * result + (isRateReport ? 1231 : 1237);
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((query == null) ? 0 : query.hashCode());
+    result = prime * result + ((queryType == null) ? 0 : queryType.hashCode());
+    result =
+        prime * result + ((resultType == null) ? 0 : resultType.hashCode());
+    result =
+        prime * result + ((roleRequired == null) ? 0 : roleRequired.hashCode());
+    result =
+        prime * result + ((timePeriod == null) ? 0 : timePeriod.hashCode());
+    return result;
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    ReportDefinitionJpa other = (ReportDefinitionJpa) obj;
+    if (frequency != other.frequency)
+      return false;
+    if (isDiffReport != other.isDiffReport)
+      return false;
+    if (isRateReport != other.isRateReport)
+      return false;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    if (query == null) {
+      if (other.query != null)
+        return false;
+    } else if (!query.equals(other.query))
+      return false;
+    if (queryType != other.queryType)
+      return false;
+    if (resultType != other.resultType)
+      return false;
+    if (roleRequired != other.roleRequired)
+      return false;
+    if (timePeriod != other.timePeriod)
+      return false;
+    return true;
+  }
+
 }

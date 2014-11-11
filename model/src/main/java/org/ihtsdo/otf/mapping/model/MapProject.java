@@ -600,8 +600,18 @@ public interface MapProject {
 	 */
 	public void setPropagatedFlag(boolean propagatedFlag);
 	
+	/**
+	 * Returns the report definitions.
+	 *
+	 * @return the report definitions
+	 */
 	public Set<ReportDefinition> getReportDefinitions();
 	
+	/**
+	 * Sets the report definitions.
+	 *
+	 * @param reportDefinitions the report definitions
+	 */
 	public void setReportDefinitions(Set<ReportDefinition> reportDefinitions);
 
 }

@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.reports;
 
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
+
 /**
  * The Interface ReportResultItem.
  */
@@ -36,8 +37,18 @@ public interface ReportResultItem {
 	 */
 	public void setItemId(String itemId);
 	
+	/**
+	 * Returns the item name.
+	 *
+	 * @return the item name
+	 */
 	public String getItemName();
 	
+	/**
+	 * Sets the item name.
+	 *
+	 * @param itemName the item name
+	 */
 	public void setItemName(String itemName);
 
 	/**

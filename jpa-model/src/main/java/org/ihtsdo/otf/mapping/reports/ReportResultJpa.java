@@ -284,6 +284,73 @@ public class ReportResultJpa implements ReportResult {
 		
 	}
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (int) (ct ^ (ct >>> 32));
+    result = prime * result + ((dateValue == null) ? 0 : dateValue.hashCode());
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result =
+        prime * result + ((projectName == null) ? 0 : projectName.hashCode());
+    result =
+        prime * result
+            + ((qualifiedUserName == null) ? 0 : qualifiedUserName.hashCode());
+    result = prime * result + ((report == null) ? 0 : report.hashCode());
+    result = prime * result + ((value == null) ? 0 : value.hashCode());
+    return result;
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    ReportResultJpa other = (ReportResultJpa) obj;
+    if (ct != other.ct)
+      return false;
+    if (dateValue == null) {
+      if (other.dateValue != null)
+        return false;
+    } else if (!dateValue.equals(other.dateValue))
+      return false;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    if (projectName == null) {
+      if (other.projectName != null)
+        return false;
+    } else if (!projectName.equals(other.projectName))
+      return false;
+    if (qualifiedUserName == null) {
+      if (other.qualifiedUserName != null)
+        return false;
+    } else if (!qualifiedUserName.equals(other.qualifiedUserName))
+      return false;
+    if (report == null) {
+      if (other.report != null)
+        return false;
+    } else if (!report.equals(other.report))
+      return false;
+    if (value == null) {
+      if (other.value != null)
+        return false;
+    } else if (!value.equals(other.value))
+      return false;
+    return true;
+  }
+
 	/*
 	 * (non-Javadoc)
 	 * 
