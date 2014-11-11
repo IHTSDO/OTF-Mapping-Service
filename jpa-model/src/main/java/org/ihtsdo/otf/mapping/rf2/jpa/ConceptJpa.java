@@ -466,74 +466,29 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
 
 @Override
+public int hashCode() {
+	final int prime = 31;
+	int result = super.hashCode();
+	result = prime
+			* result
+			+ ((definitionStatusId == null) ? 0 : definitionStatusId.hashCode());
+	return result;
+}
+
+@Override
 public boolean equals(Object obj) {
 	if (this == obj)
 		return true;
+	if (!super.equals(obj))
+		return false;
 	if (getClass() != obj.getClass())
 		return false;
 	ConceptJpa other = (ConceptJpa) obj;
-	if (super.getLabel() == null) {
-		if (other.getLabel() != null)
-			return false;
-	} else if (!super.getLabel().equals(other.getLabel())) {
-		return false;
-	}
-	if (super.isActive() != other.isActive())
-		return false;
-	if (!super.getModuleId().equals(other.getModuleId()))
-		return false;
-	if (!super.getTerminology().equals(other.getTerminology()))
-		return false;
-	if (!super.getTerminologyId().equals(other.getTerminologyId()))
-		return false;
-	if (!super.getTerminologyVersion().equals(other.getTerminologyVersion()))
-		return false;
 	if (definitionStatusId == null) {
 		if (other.definitionStatusId != null)
 			return false;
 	} else if (!definitionStatusId.equals(other.definitionStatusId))
 		return false;
-/*	if (attributeValueRefSetMembers == null) {
-		if (other.attributeValueRefSetMembers != null)
-			return false;
-	} else if (!attributeValueRefSetMembers
-			.equals(other.attributeValueRefSetMembers))
-		return false;
-	if (complexMapRefSetMembers == null) {
-		if (other.complexMapRefSetMembers != null)
-			return false;
-	} else if (!complexMapRefSetMembers.equals(other.complexMapRefSetMembers))
-		return false;
-	if (definitionStatusId == null) {
-		if (other.definitionStatusId != null)
-			return false;
-	} else if (!definitionStatusId.equals(other.definitionStatusId))
-		return false;
-	if (descriptions == null) {
-		if (other.descriptions != null)
-			return false;
-	} else if (!descriptions.equals(other.descriptions))
-		return false;
-	if (inverseRelationships == null) {
-		if (other.inverseRelationships != null)
-			return false;
-	} else if (!inverseRelationships.equals(other.inverseRelationships))
-		return false;
-	if (relationships == null) {
-		if (other.relationships != null)
-			return false;
-	} else if (!relationships.equals(other.relationships))
-		return false;
-	if (simpleMapRefSetMembers == null) {
-		if (other.simpleMapRefSetMembers != null)
-			return false;
-	} else if (!simpleMapRefSetMembers.equals(other.simpleMapRefSetMembers))
-		return false;
-	if (simpleRefSetMembers == null) {
-		if (other.simpleRefSetMembers != null)
-			return false;
-	} else if (!simpleRefSetMembers.equals(other.simpleRefSetMembers))
-		return false;*/
 	return true;
 }
 
