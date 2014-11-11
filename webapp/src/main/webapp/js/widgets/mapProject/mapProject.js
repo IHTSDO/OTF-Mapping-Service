@@ -15,6 +15,7 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 	  
 	  // get the local storage variables
 	  $scope.project = localStorageService.get('focusProject');
+	  $scope.currentUser = localStorageService.get('currentUser');
 	  $scope.currentRole = localStorageService.get('currentRole');
 	  $scope.userToken = localStorageService.get('userToken');
 	  
@@ -227,7 +228,10 @@ angular.module('mapProjectApp.widgets.mapProject', ['adf.provider'])
 		
 
 	    $scope.openConceptBrowser = function() {
-	    	var myWindow = window.open("http://dailybuild.ihtsdotools.org/index.html?perspective=full&diagrammingMarkupEnabled=true&acceptLicense=true", "browserWindow");
+	    	if ($scope.currentUser.userName === 'guest') 
+	    		var myWindow = window.open("http://browser.ihtsdotools.org/index.html?perspective=full&diagrammingMarkupEnabled=true&acceptLicense=true", "browserWindow");
+	    	else
+	    		var myWindow = window.open("http://dailybuild.ihtsdotools.org/index.html?perspective=full&diagrammingMarkupEnabled=true&acceptLicense=true", "browserWindow");
 	    	myWindow.focus();
 	    };
   });

@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.services;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
