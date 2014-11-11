@@ -8,9 +8,10 @@ REM
 REM
 REM Set environment variables at system level
 REM
-REM set MVN_HOME=C:/apache-maven-3.0.5
-set OTF_MAPPING_HOME="C:/workspace-mapping-services-luna/OTF-Mapping-Service"
-set OTF_MAPPING_CONFIG="C:/data/config.luna.properties"
+REM NOTE: DO NOT UNCOMMENT THIS, to customize for your environment, set environment vars
+REM  MVN_HOME=C:/apache-maven-3.0.5
+REM  OTF_MAPPING_HOME="C:/workspace-mapping-services-luna/OTF-Mapping-Service"
+REM  OTF_MAPPING_CONFIG="C:/data/config.luna.properties"
 REM
 
 echo ------------------------------------------------

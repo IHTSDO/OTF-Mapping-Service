@@ -3069,7 +3069,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			if (errors.size() == 0) {
 
 				// count variables
-				int nConflictDetectedRecords, nRecordsInEditing;
+				int nConflictDetectedRecords;
+				@SuppressWarnings("unused")
+				int nRecordsInEditing;
 
 				switch (tr.getWorkflowPath()) {
 				case CONSENSUS_PATH:
@@ -3305,7 +3307,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 								+ mapRecords.size());
 						break;
 					}
-				default:
+                    break;
+                  default:
 					break;
 				}
 
@@ -3486,7 +3489,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		// Try query
 		query.setParameter("recordId", id);
-		List<FeedbackConversation> feedbackConversations = (List<FeedbackConversation>) query
+		List<FeedbackConversation> feedbackConversations = query
 				.getResultList();
 
 		if (feedbackConversations != null && feedbackConversations.size() > 0)

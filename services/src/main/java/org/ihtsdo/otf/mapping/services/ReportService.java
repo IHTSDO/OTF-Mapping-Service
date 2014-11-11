@@ -31,7 +31,8 @@ public interface ReportService extends RootService {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public void close() throws Exception;
+	@Override
+  public void close() throws Exception;
 
 	/**
 	 * Gets the reports.
@@ -277,15 +278,11 @@ public interface ReportService extends RootService {
 	ReportList getReportsForMapProject(MapProject mapProject, PfsParameter pfsParameter);
 	
 	/**
-	 * Helper function to generate reports for the current day
-	 * 
-	 * @param mapProject
-	 *            the map project
-	 * @param mapUser
-	 *            the map user
-	 * @param date
-	 *            the date
-	 * @throws Exception 
+	 * Helper function to generate reports for the current day.
+	 *
+	 * @param mapProject            the map project
+	 * @param mapUser            the map user
+	 * @throws Exception the exception
 	 */
 	public void generateDailyReports(MapProject mapProject, MapUser mapUser) throws Exception;
 
@@ -323,6 +320,14 @@ public interface ReportService extends RootService {
 	public ReportResultItemList getReportResultItemsForReportResult(Long reportResultId,
 			PfsParameter pfsParameter);
 
+	/**
+	 * Returns the reports for map project and report definition.
+	 *
+	 * @param mapProject the map project
+	 * @param reportDefinition the report definition
+	 * @param pfsParameter the pfs parameter
+	 * @return the reports for map project and report definition
+	 */
 	public ReportList getReportsForMapProjectAndReportDefinition(
 			MapProject mapProject, ReportDefinition reportDefinition,
 			PfsParameter pfsParameter);

@@ -48,7 +48,6 @@ import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
-import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
@@ -1788,9 +1787,9 @@ public class MappingServiceRest extends RootServiceRest {
 
 	/**
 	 * Removes a set of map records for a project and a set of terminology ids
+	 * @param terminologyIds the terminology ids
+	 * @param projectId  the project id
 	 * 
-	 * @param mapRecord
-	 *            the map record to delete
 	 * @param authToken
 	 * @return Response the response
 	 */
@@ -2019,6 +2018,7 @@ public class MappingServiceRest extends RootServiceRest {
 	 * 
 	 * @param conceptId
 	 *            the concept id
+	 * @param mapProjectId  the map project id
 	 * @param authToken
 	 *            the auth token
 	 * @return the map records for concept id historical
@@ -3219,7 +3219,7 @@ public class MappingServiceRest extends RootServiceRest {
 			Set<Class<? extends ProjectSpecificAlgorithmHandler>> implementingTypes = reflections
 					.getSubTypesOf(ProjectSpecificAlgorithmHandler.class);
 
-			Map<String, String> handlerMap = new HashMap<String, String>();
+			Map<String, String> handlerMap = new HashMap<>();
 			for (Class<? extends ProjectSpecificAlgorithmHandler> handler : implementingTypes) {
 				handlerMap.put(handler.getName(), handler.getSimpleName());
 			}
@@ -3262,25 +3262,29 @@ public class MappingServiceRest extends RootServiceRest {
 	 * @param serverLocation
 	 *            the server location
 	 */
-	private void saveFile(InputStream uploadedInputStream, String serverLocation) {
-		try {
-			OutputStream outputStream = new FileOutputStream(new File(
-					serverLocation));
-			int read = 0;
-			byte[] bytes = new byte[1024];
+  private void saveFile(InputStream uploadedInputStream, String serverLocation) {
+    OutputStream outputStream = null;
+    try {
+      outputStream = new FileOutputStream(new File(serverLocation));
+      int read = 0;
+      byte[] bytes = new byte[1024];
+      outputStream.close();
+      outputStream = new FileOutputStream(new File(serverLocation));
+      while ((read = uploadedInputStream.read(bytes)) != -1) {
+        outputStream.write(bytes, 0, read);
+      }
+      outputStream.flush();
+      outputStream.close();
+    } catch (IOException e) {
+      try {
+        outputStream.close();
+      } catch (IOException e1) {
+        // do nothing
+      }
+      e.printStackTrace();
+    }
 
-			outputStream = new FileOutputStream(new File(serverLocation));
-			while ((read = uploadedInputStream.read(bytes)) != -1) {
-				outputStream.write(bytes, 0, read);
-			}
-			outputStream.flush();
-			outputStream.close();
-		} catch (IOException e) {
-
-			e.printStackTrace();
-		}
-
-	}
+  }
 
 	/**
 	 * Copy file.
