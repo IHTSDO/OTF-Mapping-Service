@@ -560,7 +560,7 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 
 	$scope.setNullTarget = function() {
 		$scope.entry.targetId = null;
-		$scope.entry.targetName = null;
+		$scope.entry.targetName = 'No target';
 		$scope.computeParameters(true);
 	};
 	

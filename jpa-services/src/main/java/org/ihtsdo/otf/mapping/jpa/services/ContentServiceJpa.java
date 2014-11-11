@@ -101,6 +101,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 	 */
 	public ContentServiceJpa() throws Exception {
 		super();
+		initializeFieldNames();
 	}
 
 
@@ -1535,7 +1536,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		return descConceptIds;
 
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -1697,7 +1698,7 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 				}
 			}
 
-			if (ancestors[i].length() != 0 && ancestorFound == false) {
+			if (ancestors[i].length() != 0 && !ancestorFound) {
 				throw new Exception("Ancestor tree position " + ancestors[i]
 						+ " not found!");
 			}
@@ -2426,6 +2427,19 @@ public class ContentServiceJpa extends RootServiceJpa implements ContentService 
 		Set<String> terminologyIdSet = new HashSet<>(terminologyIds);
 		return terminologyIdSet;
 
+	}
+
+
+	@Override
+	public TreePositionList getTreePositionsWithChildren(String terminologyId,
+			String terminology, String terminologyVersion) throws Exception {
+		TreePositionList treePositionList = this.getTreePositions(terminologyId, terminology, terminologyVersion);
+		
+		for (TreePosition tp : treePositionList.getTreePositions()) {
+			tp.setChildren(this.getChildTreePositions(tp).getTreePositions());
+		}
+
+		return treePositionList;
 	}
 
 }

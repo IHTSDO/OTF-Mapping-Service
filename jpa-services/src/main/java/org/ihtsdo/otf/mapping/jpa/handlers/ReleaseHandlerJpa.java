@@ -370,7 +370,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 							}
 
 							// if not a duplicate entry, add it to the map
-							if (isDuplicateEntry == false) {
+							if (!isDuplicateEntry) {
 
 								// create new map entry to prevent
 								// hibernate-managed entity modification
