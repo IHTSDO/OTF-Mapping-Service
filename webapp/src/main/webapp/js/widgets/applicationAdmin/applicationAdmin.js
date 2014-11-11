@@ -54,14 +54,6 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				$scope.allowableWorkflowTypes = new Array(); 			
 				$scope.handlers = new Array();
 				
-				$scope.allowableMapRelationStyles = [{displayName: 'Map Category Style', name: 'MAP_CATEGORY_STYLE'},
-				                                {displayName: 'Relationship Style', name: 'RELATIONSHIP_STYLE'}];
-				$scope.newMapRelationStyle = $scope.allowableMapRelationStyles[0];
-				
-				$scope.allowableWorkflowTypes = [{displayName: 'Conflict Project', name: 'CONFLICT_PROJECT'},
-				                                 {displayName: 'Review Project', name: 'REVIEW_PROJECT'}];
-				$scope.newWorkflowType = $scope.allowableWorkflowTypes[0];
-				
 				$scope.definitionQueryTypes = ['SQL', 'HQL', 'LUCENE'];
 				$scope.definitionResultTypes = ['CONCEPT', 'MAP_RECORD'];
 				$scope.definitionRoles = ['VIEWER', 'SPECIALIST', 'LEAD', 'ADMIN'];

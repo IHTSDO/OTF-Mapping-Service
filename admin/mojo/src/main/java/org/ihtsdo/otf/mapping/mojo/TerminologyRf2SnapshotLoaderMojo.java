@@ -111,7 +111,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
   int objectCt; //
 
   /** the number of objects to create before committing. */
-  int commitCt = 200;
+  int commitCt = 1000;
 
   /**
    * Instantiates a {@link TerminologyRf2SnapshotLoaderMojo} from the specified
@@ -362,7 +362,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       }
 
       // Clean-up
-    } catch (Throwable e) {
+    } catch (Exception e) {
       e.printStackTrace();
       throw new MojoFailureException("Unexpected exception:", e);
     }
@@ -1083,6 +1083,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
         // regularly commit at intervals
         if (++objectCt % commitCt == 0) {
+          getLog().info("    commit = " + objectCt);
           contentService.commit();
           contentService.beginTransaction();
         }
@@ -1152,6 +1153,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
+            getLog().info("    commit = " + objectCt);
             contentService.commit();
             contentService.beginTransaction();
           }
@@ -1280,6 +1282,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
       // regularly commit at intervals
       if (descCt % commitCt == 0) {
+        getLog().info("    commit = " + descCt);
         contentService.commit();
         contentService.beginTransaction();
       }
@@ -1338,6 +1341,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
       }
 
       if (++objectCt % commitCt == 0) {
+        getLog().info("    commit = " + objectCt);
         contentService.commit();
         contentService.beginTransaction();
       }
@@ -1520,6 +1524,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
+            getLog().info("    commit = " + objectCt);
             contentService.commit();
             contentService.beginTransaction();
           }
@@ -1593,6 +1598,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
+            getLog().info("    commit = " + objectCt);
             contentService.commit();
             contentService.beginTransaction();
           }
@@ -1665,6 +1671,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
+            getLog().info("    commit = " + objectCt);
             contentService.commit();
             contentService.beginTransaction();
           }
@@ -1749,6 +1756,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
+            getLog().info("    commit = " + objectCt);
             contentService.commit();
             contentService.beginTransaction();
           }
@@ -1837,6 +1845,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
           // regularly commit at intervals
           if (++objectCt % commitCt == 0) {
+            getLog().info("    commit = " + objectCt);
             contentService.commit();
             contentService.beginTransaction();
           }

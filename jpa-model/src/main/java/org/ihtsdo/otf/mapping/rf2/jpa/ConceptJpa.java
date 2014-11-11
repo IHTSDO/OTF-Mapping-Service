@@ -492,21 +492,5 @@ public boolean equals(Object obj) {
 	return true;
 }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
- /* @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (!super.equals(obj))
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    return true;
-  }*/
-  
-  
+
 }

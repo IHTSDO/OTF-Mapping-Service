@@ -17,6 +17,7 @@
 
   <properties>
     <packageName>${project.parent.artifactId}-webapp</packageName>
+    <deploy.type></deploy.type>
   </properties>
 
   <!-- Declare Project Dependency Versions -->
@@ -41,13 +42,17 @@
             <resource>
               <directory>src/main/webapp</directory>
               <filtering>true</filtering>
-              <includes><include>partials/footer.html</include></includes>
+              <includes>
+                <include>partials/footer.html</include>
+                <include>partials/header.html</include>
+              </includes>
             </resource>
             <resource>
 				<directory>src/main/webapp</directory>
 				<filtering>false</filtering>
 				<excludes>
 					<exclude>partials/footer.html</exclude>
+					<exclude>partials/header.html</exclude>
 				</excludes>
 			</resource>
           </webResources>
