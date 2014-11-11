@@ -20,11 +20,8 @@ import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-// TODO: Auto-generated Javadoc
 /**
- * The interface for the content service.
- * 
- * @author ${author}
+ * Generically represents a service for accessing terminology content.
  */
 public interface ContentService extends RootService {
 

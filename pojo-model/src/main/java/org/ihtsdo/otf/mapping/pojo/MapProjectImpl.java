@@ -14,7 +14,6 @@ import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link MapProject}.
  * 
@@ -1522,6 +1521,22 @@ public class MapProjectImpl implements MapProject {
 	public void setReportDefinitions(Set<ReportDefinition> reportDefinitions) {
 		this.reportDefinitions = reportDefinitions;
 	}
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapProject#addReportDefinition(org.ihtsdo.otf.mapping.reports.ReportDefinition)
+   */
+  @Override
+  public void addReportDefinition(ReportDefinition reportDefinition) {
+    reportDefinitions.add(reportDefinition);
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapProject#removeReportDefinition(org.ihtsdo.otf.mapping.reports.ReportDefinition)
+   */
+  @Override
+  public void removeReportDefinition(ReportDefinition reportDefinition) {
+    reportDefinitions.add(reportDefinition);
+  }
 	
 	
 }
