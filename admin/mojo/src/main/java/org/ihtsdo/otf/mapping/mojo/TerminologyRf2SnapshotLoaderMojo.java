@@ -1282,7 +1282,7 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
       // regularly commit at intervals
       if (descCt % commitCt == 0) {
-        getLog().info("    commit = " + objectCt);
+        getLog().info("    commit = " + descCt);
         contentService.commit();
         contentService.beginTransaction();
       }
