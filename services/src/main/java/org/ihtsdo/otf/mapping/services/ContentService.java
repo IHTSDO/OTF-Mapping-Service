@@ -807,6 +807,15 @@ public interface ContentService extends RootService {
 	 */
 	public TreePosition getTreePositionWithDescendants(TreePosition tp) throws Exception;
 
+	/**
+	 * Returns the tree positions with children.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the tree positions with children
+	 * @throws Exception the exception
+	 */
 	public TreePositionList getTreePositionsWithChildren(String terminologyId,
 			String terminology, String terminologyVersion) throws Exception;
 

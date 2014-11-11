@@ -78,8 +78,18 @@ public interface WorkflowException {
 	 */
 	public void setFalseConflictMapRecordIds(Set<Long> falseConflictMapRecordIds);
 	
+	/**
+	 * Adds the false conflict map record id.
+	 *
+	 * @param id the id
+	 */
 	public void addFalseConflictMapRecordId(Long id);
 	
+	/**
+	 * Removes the false conflict map record id.
+	 *
+	 * @param id the id
+	 */
 	public void removeFalseConflictMapRecordId(Long id);
 
 	/**

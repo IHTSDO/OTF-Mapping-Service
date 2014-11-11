@@ -28,8 +28,6 @@ import com.sun.jersey.api.representation.Form;
 
 /**
  * Reference implementation of the {@link SecurityService}.
- * 
- * @author ${author}
  */
 public class SecurityServiceJpa extends RootServiceJpa implements
 		SecurityService {
@@ -40,7 +38,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 	/** The token login time map. */
 	private static Map<String, Date> tokenLoginMap = new HashMap<>();
 
-	private static Properties config = null;
+    /**  The config. */
+    private static Properties config = null;
 
 	/**
 	 * Instantiates an empty {@link SecurityServiceJpa}.
