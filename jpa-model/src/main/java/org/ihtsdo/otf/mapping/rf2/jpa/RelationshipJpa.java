@@ -258,91 +258,67 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#hashCode()
-   */
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = super.hashCode();
-    result =
-        prime
-            * result
-            + ((destinationConcept == null) ? 0 : destinationConcept.hashCode());
-    result =
-        prime * result
-            + ((relationshipGroup == null) ? 0 : relationshipGroup.hashCode());
-    result =
-        prime * result
-            + ((sourceConcept == null) ? 0 : sourceConcept.hashCode());
-    result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
-    return result;
-  }
+public int hashCode() {
+	final int prime = 31;
+	int result = super.hashCode();
+	result = prime
+			* result
+			+ ((characteristicTypeId == null) ? 0 : characteristicTypeId
+					.hashCode());
+	result = prime
+			* result
+			+ ((destinationConcept == null) ? 0 : destinationConcept.hashCode());
+	result = prime * result
+			+ ((modifierId == null) ? 0 : modifierId.hashCode());
+	result = prime * result
+			+ ((relationshipGroup == null) ? 0 : relationshipGroup.hashCode());
+	result = prime * result
+			+ ((sourceConcept == null) ? 0 : sourceConcept.hashCode());
+	result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
+	return result;
+}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#equals(java.lang.Object)
-   */
   @Override
-  public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (getClass() != obj.getClass())
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (!super.equals(obj))
+		return false;
+	if (getClass() != obj.getClass())
+		return false;
+	RelationshipJpa other = (RelationshipJpa) obj;
+	if (characteristicTypeId == null) {
+		if (other.characteristicTypeId != null)
 			return false;
-		RelationshipJpa other = (RelationshipJpa) obj;
-		if (super.getLabel() == null) {
-			if (other.getLabel() != null)
-				return false;
-		} else if (!super.getLabel().equals(other.getLabel())) {
+	} else if (!characteristicTypeId.equals(other.characteristicTypeId))
+		return false;
+	if (destinationConcept == null) {
+		if (other.destinationConcept != null)
 			return false;
-		}
-
-		if (super.isActive() != other.isActive())
+	} else if (!destinationConcept.equals(other.destinationConcept))
+		return false;
+	if (modifierId == null) {
+		if (other.modifierId != null)
 			return false;
-		if (!super.getModuleId().equals(other.getModuleId()))
+	} else if (!modifierId.equals(other.modifierId))
+		return false;
+	if (relationshipGroup == null) {
+		if (other.relationshipGroup != null)
 			return false;
-		if (!super.getTerminology().equals(other.getTerminology()))
+	} else if (!relationshipGroup.equals(other.relationshipGroup))
+		return false;
+	if (sourceConcept == null) {
+		if (other.sourceConcept != null)
 			return false;
-		if (!super.getTerminologyId().equals(other.getTerminologyId()))
+	} else if (!sourceConcept.equals(other.sourceConcept))
+		return false;
+	if (typeId == null) {
+		if (other.typeId != null)
 			return false;
-		if (!super.getTerminologyVersion()
-				.equals(other.getTerminologyVersion()))
-			return false;
-    if (destinationConcept == null) {
-      if (other.destinationConcept != null)
-        return false;
-    } else if (!destinationConcept.equals(other.destinationConcept))
-      return false;
-    if (relationshipGroup == null) {
-      if (other.relationshipGroup != null)
-        return false;
-    } else if (!relationshipGroup.equals(other.relationshipGroup))
-      return false;
-    if (sourceConcept == null) {
-      if (other.sourceConcept != null)
-        return false;
-    } else if (!sourceConcept.equals(other.sourceConcept))
-      return false;
-    if (typeId == null) {
-      if (other.typeId != null)
-        return false;
-    } else if (!typeId.equals(other.typeId))
-      return false;
-    if (characteristicTypeId == null) {
-        if (other.characteristicTypeId != null)
-          return false;
-      } else if (!characteristicTypeId.equals(other.characteristicTypeId))
-        return false;
-    if (modifierId == null) {
-        if (other.modifierId != null)
-          return false;
-      } else if (!modifierId.equals(other.modifierId))
-        return false;    
-    return true;
-  }
+	} else if (!typeId.equals(other.typeId))
+		return false;
+	return true;
+}
 
 }
