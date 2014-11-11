@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.apache.log4j.Logger;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
@@ -64,6 +65,7 @@ public class MapEntryJpa implements MapEntry {
 
 	/** The target name. */
 	@Column(nullable = true, length = 4000)
+	@Field @Analyzer(definition = "noStopWord")
 	private String targetName;
 
 	/** The rule. */
