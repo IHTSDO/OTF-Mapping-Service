@@ -707,7 +707,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 				//though not compared in equals
 				newConcept.setRelationships(new HashSet<Relationship>());
 
-				if (concept.getId() == null) { 
+				if (concept == null) { 
 					contentService.addConcept(newConcept); 
 				}
 
@@ -817,7 +817,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 					newDescription.setTerminology(terminology);
 					newDescription.setTerminologyVersion(terminologyVersion);
 
-					if (description.getId() == null) {
+					if (description == null) {
 						contentService.addDescription(newDescription);
 						cacheDescription(newDescription);
 						objectsAdded++;
@@ -986,7 +986,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 					newLanguageRefSetMember
 							.setTerminologyVersion(terminologyVersion);
 
-					if (languageRefSetMember.getId() == null) {
+					if (languageRefSetMember == null) {
 						contentService.addLanguageRefSetMember(newLanguageRefSetMember);
 						cacheLanguageRefSetMember(newLanguageRefSetMember);
 						objectsAdded++;
