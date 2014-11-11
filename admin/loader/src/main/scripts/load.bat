@@ -69,7 +69,7 @@ del /Q mvn.log
 
 echo     Import project data ...%date% %time%
 cd %OTF_MAPPING_HOME%/admin/import
-call %MVN_HOME%/bin/mvn -Drun.config=%OTF_MAPPING_CONFIG% install 1> mvn.log
+call %MVN_HOME%/bin/mvn -Dmini=true -Drun.config=%OTF_MAPPING_CONFIG% install 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log

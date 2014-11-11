@@ -3,11 +3,8 @@ package org.ihtsdo.otf.mapping.model;
 import java.util.Date;
 import java.util.List;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface FeedbackConversation.
- * 
- * @author ${author}
+ * Generically represents a conversation regarding feedback from leads to specialists.
  */
 public interface FeedbackConversation {
 

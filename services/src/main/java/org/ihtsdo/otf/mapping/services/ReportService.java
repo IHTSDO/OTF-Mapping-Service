@@ -19,9 +19,8 @@ import org.ihtsdo.otf.mapping.reports.ReportNote;
 import org.ihtsdo.otf.mapping.reports.ReportResult;
 import org.ihtsdo.otf.mapping.reports.ReportResultItem;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface ReportService.
+ * Generically represents a service for accessing and generating reports.
  */
 public interface ReportService extends RootService {
 

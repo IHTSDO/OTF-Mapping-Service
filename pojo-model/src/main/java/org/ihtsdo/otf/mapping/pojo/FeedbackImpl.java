@@ -8,11 +8,8 @@ import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
 
-// TODO: Auto-generated Javadoc
 /**
  * Reference implementation of {@link Feedback}.
- *
- * @author ${author}
  */
 public class FeedbackImpl implements Feedback {
 

@@ -30,10 +30,9 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
+
 /**
- * The Class ReportJpa. Not audited, but indexed for ease of searching
- * name/project
+ * JPA enabled implementation of {@link Report}.
  */
 @Entity
 @Table(name = "reports")
