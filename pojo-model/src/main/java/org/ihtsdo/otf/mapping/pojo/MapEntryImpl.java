@@ -10,10 +10,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 
 /**
- * Reference implementation of {@link MapEntry}. Includes hibernate tags for
- * MEME database.
- * 
- * @author ${author}
+ * Reference implementation of {@link MapEntry}.
  */
 public class MapEntryImpl implements MapEntry {
 
@@ -35,7 +32,7 @@ public class MapEntryImpl implements MapEntry {
   /** The index. */
   private int mapPriority;
 
-  /** The map relation */
+  /**  The map relation. */
   private MapRelation mapRelation;
 
   /** The map record. */
@@ -78,11 +75,15 @@ public class MapEntryImpl implements MapEntry {
     return id.toString();
   }
 
-
   /*
    * (non-Javadoc)
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getTarget()
+   */
+  /**
+   * Returns the target id.
+   *
+   * @return the target id
    */
   @Override
   public String getTargetId() {
@@ -94,6 +95,11 @@ public class MapEntryImpl implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setTarget(java.lang.String)
    */
+  /**
+   * Sets the target id.
+   *
+   * @param targetId the target id
+   */
   @Override
   public void setTargetId(String targetId) {
     this.targetId = targetId;
@@ -103,6 +109,11 @@ public class MapEntryImpl implements MapEntry {
    * (non-Javadoc)
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getTargetName()
+   */
+  /**
+   * Returns the target name.
+   *
+   * @return the target name
    */
   @Override
   public String getTargetName() {
@@ -114,17 +125,32 @@ public class MapEntryImpl implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setTargetName(java.lang.String)
    */
+  /**
+   * Sets the target name.
+   *
+   * @param targetName the target name
+   */
   @Override
   public void setTargetName(String targetName) {
     this.targetName = targetName;
 
   }
 
+  /**
+   * Returns the map relation.
+   *
+   * @return the map relation
+   */
   @Override
   public MapRelation getMapRelation() {
     return this.mapRelation;
   }
 
+  /**
+   * Sets the map relation.
+   *
+   * @param mapRelation the map relation
+   */
   @Override
   public void setMapRelation(MapRelation mapRelation) {
     this.mapRelation = mapRelation;
@@ -135,6 +161,11 @@ public class MapEntryImpl implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getAdvices()
    */
+  /**
+   * Returns the map advices.
+   *
+   * @return the map advices
+   */
   @Override
   public Set<MapAdvice> getMapAdvices() {
     return mapAdvices;
@@ -144,6 +175,11 @@ public class MapEntryImpl implements MapEntry {
    * (non-Javadoc)
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setAdvices(java.util.Set)
+   */
+  /**
+   * Sets the map advices.
+   *
+   * @param mapAdvices the map advices
    */
   @Override
   public void setMapAdvices(Set<MapAdvice> mapAdvices) {
@@ -157,6 +193,11 @@ public class MapEntryImpl implements MapEntry {
    * org.ihtsdo.otf.mapping.model.MapEntry#addAdvice(org.ihtsdo.otf.mapping.
    * model.MapAdvice)
    */
+  /**
+   * Adds the map advice.
+   *
+   * @param mapAdvice the map advice
+   */
   @Override
   public void addMapAdvice(MapAdvice mapAdvice) {
     mapAdvices.add(mapAdvice);
@@ -169,6 +210,11 @@ public class MapEntryImpl implements MapEntry {
    * org.ihtsdo.otf.mapping.model.MapEntry#removeAdvice(org.ihtsdo.otf.mapping
    * .model.MapAdvice)
    */
+  /**
+   * Removes the map advice.
+   *
+   * @param mapAdvice the map advice
+   */
   @Override
   public void removeMapAdvice(MapAdvice mapAdvice) {
     mapAdvices.remove(mapAdvice);
@@ -178,6 +224,11 @@ public class MapEntryImpl implements MapEntry {
    * (non-Javadoc)
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getRule()
+   */
+  /**
+   * Returns the rule.
+   *
+   * @return the rule
    */
   @Override
   public String getRule() {
@@ -189,6 +240,11 @@ public class MapEntryImpl implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setRule(java.lang.String)
    */
+  /**
+   * Sets the rule.
+   *
+   * @param rule the rule
+   */
   @Override
   public void setRule(String rule) {
     this.rule = rule;
@@ -198,6 +254,11 @@ public class MapEntryImpl implements MapEntry {
    * (non-Javadoc)
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapPriority()
+   */
+  /**
+   * Returns the map priority.
+   *
+   * @return the map priority
    */
   @Override
   public int getMapPriority() {
@@ -209,6 +270,11 @@ public class MapEntryImpl implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapPriority(java.lang.String)
    */
+  /**
+   * Sets the map priority.
+   *
+   * @param mapPriority the map priority
+   */
   @Override
   public void setMapPriority(int mapPriority) {
     this.mapPriority = mapPriority;
@@ -218,6 +284,11 @@ public class MapEntryImpl implements MapEntry {
    * (non-Javadoc)
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapRecord()
+   */
+  /**
+   * Returns the map record.
+   *
+   * @return the map record
    */
   @Override
   public MapRecord getMapRecord() {
@@ -231,6 +302,11 @@ public class MapEntryImpl implements MapEntry {
    * org.ihtsdo.otf.mapping.model.MapEntry#setMapRecord(org.ihtsdo.otf.mapping
    * .model.MapRecord)
    */
+  /**
+   * Sets the map record.
+   *
+   * @param mapRecord the map record
+   */
   @Override
   public void setMapRecord(MapRecord mapRecord) {
     this.mapRecord = mapRecord;
@@ -241,6 +317,11 @@ public class MapEntryImpl implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapGroup()
    */
+  /**
+   * Returns the map group.
+   *
+   * @return the map group
+   */
   @Override
   public int getMapGroup() {
     return this.mapGroup;
@@ -250,6 +331,11 @@ public class MapEntryImpl implements MapEntry {
    * (non-Javadoc)
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapGroup(int)
+   */
+  /**
+   * Sets the map group.
+   *
+   * @param mapGroup the map group
    */
   @Override
   public void setMapGroup(int mapGroup) {
@@ -262,6 +348,11 @@ public class MapEntryImpl implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#getMapBlock()
    */
+  /**
+   * Returns the map block.
+   *
+   * @return the map block
+   */
   @Override
   public int getMapBlock() {
     return this.mapBlock;
@@ -272,12 +363,22 @@ public class MapEntryImpl implements MapEntry {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapEntry#setMapBlock(int)
    */
+  /**
+   * Sets the map block.
+   *
+   * @param mapBlock the map block
+   */
   @Override
   public void setMapBlock(int mapBlock) {
     this.mapBlock = mapBlock;
 
   }
 
+  /**
+   * Hash code.
+   *
+   * @return the int
+   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -291,6 +392,12 @@ public class MapEntryImpl implements MapEntry {
     return result;
   }
 
+  /**
+   * Equals.
+   *
+   * @param obj the obj
+   * @return true, if successful
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -323,19 +430,29 @@ public class MapEntryImpl implements MapEntry {
     return true;
   }
 
+  /**
+   * To string.
+   *
+   * @return the string
+   */
   @Override
   public String toString() {
-    return "MapEntryImpl [id=" + id + ", targetId="
-        + targetId + ", targetName=" + targetName + ", mapAdvices="
-        + mapAdvices + ", rule=" + rule + ", mapPriority=" + mapPriority
-        + ", mapRelation=" + mapRelation + ", mapRecord=" + mapRecord
-        + ", mapGroup=" + mapGroup + ", mapBlock=" + mapBlock + "]";
+    return "MapEntryImpl [id=" + id + ", targetId=" + targetId
+        + ", targetName=" + targetName + ", mapAdvices=" + mapAdvices
+        + ", rule=" + rule + ", mapPriority=" + mapPriority + ", mapRelation="
+        + mapRelation + ", mapRecord=" + mapRecord + ", mapGroup=" + mapGroup
+        + ", mapBlock=" + mapBlock + "]";
   }
 
-@Override
-public boolean isEquivalent(MapEntry me) {
-	// TODO Auto-generated method stub
-	return false;
-}
+  /**
+   * Indicates whether or not equivalent is the case.
+   *
+   * @param me the me
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  @Override
+  public boolean isEquivalent(MapEntry me) {
+    return this.equals(me);
+  }
 
 }

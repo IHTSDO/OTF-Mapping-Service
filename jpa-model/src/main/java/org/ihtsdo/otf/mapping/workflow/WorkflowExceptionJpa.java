@@ -13,9 +13,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class WorkflowExceptionJpa.
+ * JPA enabled implementation of {@link WorkflowException}.
  */
 @Entity
 @Table(name = "workflow_exceptions", uniqueConstraints = @UniqueConstraint(columnNames = {

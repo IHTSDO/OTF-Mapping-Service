@@ -5,11 +5,8 @@ import java.util.Set;
 
 
 
-// TODO: Auto-generated Javadoc
 /**
  * Represents a single communication within a Feedback conversation.
- * 
- * @author ${author}
  */
 public interface Feedback {
 

@@ -17,9 +17,8 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.search.annotations.ContainedIn;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class ReportResultJpa.
+ * JPA enabled implementation of {@link ReportResultJpa}.
  */
 @Entity
 @Table(name = "report_results")

@@ -18,9 +18,8 @@ import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class ReportDefinitionJpa.
+ * JPA enabled implementation of {@link ReportDefinition}.
  */
 @Entity
 @Audited

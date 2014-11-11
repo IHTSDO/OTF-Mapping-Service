@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.rest;
 
 import org.ihtsdo.otf.mapping.services.helpers.OtfErrorHandler;
 
-// TODO: Auto-generated Javadoc
 /**
  * Top level class for all REST services.
  */
