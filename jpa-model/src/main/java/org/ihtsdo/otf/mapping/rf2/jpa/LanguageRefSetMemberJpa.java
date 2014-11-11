@@ -85,12 +85,6 @@ public class LanguageRefSetMemberJpa extends AbstractDescriptionRefSetMember
 						.getTerminologyId()) + "," + this.getAcceptabilityId();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.rf2.jpa.AbstractDescriptionRefSetMember#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -100,46 +94,19 @@ public class LanguageRefSetMemberJpa extends AbstractDescriptionRefSetMember
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.rf2.jpa.AbstractDescriptionRefSetMember#equals
-	 * (java .lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
+		if (!super.equals(obj))
+			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		LanguageRefSetMemberJpa other = (LanguageRefSetMemberJpa) obj;
-		if (super.getLabel() == null) {
-			if (other.getLabel() != null)
-				return false;
-		} else if (!super.getLabel().equals(other.getLabel())) {
-			return false;
-		}
-		if (super.isActive() != other.isActive())
-			return false;
-		if (!super.getModuleId().equals(other.getModuleId()))
-			return false;
-		if (!super.getTerminology().equals(other.getTerminology()))
-			return false;
-		if (!super.getTerminologyId().equals(other.getTerminologyId()))
-			return false;
-		if (!super.getTerminologyVersion()
-				.equals(other.getTerminologyVersion()))
-			return false;
 		if (acceptabilityId == null) {
 			if (other.acceptabilityId != null)
 				return false;
 		} else if (!acceptabilityId.equals(other.acceptabilityId))
-			return false;
-		if (refSetId == null) {
-			if (other.refSetId != null)
-				return false;
-		} else if (!refSetId.equals(other.refSetId))
 			return false;
 		return true;
 	}
