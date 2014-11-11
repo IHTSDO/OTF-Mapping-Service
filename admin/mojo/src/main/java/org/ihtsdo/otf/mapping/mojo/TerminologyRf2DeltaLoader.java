@@ -20,6 +20,7 @@ import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList;
 import org.ihtsdo.otf.mapping.helpers.RelationshipList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
@@ -30,6 +31,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.LanguageRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
@@ -185,12 +187,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
 			// load new data
 			loadDelta();
-
-			// check for objects that have changed
-			// TODO checkForUpdates()
-
-			// remove retired data
-			// TODO retireData();
 
 			// compute the number of modified objects of each type
 			getLog().info("Computing number of modified objects...");
@@ -411,11 +407,16 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 		terminologyVersion = fileName.substring(fileName.length() - 12,
 				fileName.length() - 4);
 
-		// TODO Override terminology version at this time, check with Brian
-		// the delta file uses terminologyVersion = "20150131", which does not
-		// match loaded data
-		terminologyVersion = "20140731";
-
+		// Previous computation of terminology version is based on file name
+		// but for delta/daily build files, this is not the current version
+		// look up the current version instead
+		MetadataService metadataService = new MetadataServiceJpa();
+		terminologyVersion = metadataService.getLatestVersion(terminology);
+		metadataService.close();
+		if (terminologyVersion == null) {
+		  throw new Exception("Unable to determine terminology version.");
+		}
+		  
 		// set the parameters for determining defaultPreferredNames
 		dpnTypeId = Long.valueOf(config
 				.getProperty("loader.defaultPreferredNames.typeId"));

@@ -53,9 +53,8 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class ReportServiceJpa.
+ * JPA enabled implementation of {@link ReportService}.
  */
 public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 

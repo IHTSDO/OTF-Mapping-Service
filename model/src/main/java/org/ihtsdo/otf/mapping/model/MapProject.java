@@ -8,9 +8,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 
 /**
- * Represents a map project.
- * 
- * @author ${author}
+ * Generically represents a map project.
  */
 public interface MapProject {
 
@@ -614,4 +612,17 @@ public interface MapProject {
 	 */
 	public void setReportDefinitions(Set<ReportDefinition> reportDefinitions);
 
+	/**
+	 * Adds the report definition.
+	 *
+	 * @param reportDefinition the report definition
+	 */
+	public void addReportDefinition(ReportDefinition reportDefinition);
+	
+	/**
+	 * Removes the report definition.
+	 *
+	 * @param reportDefinition the report definition
+	 */
+	public void removeReportDefinition(ReportDefinition reportDefinition);
 }
