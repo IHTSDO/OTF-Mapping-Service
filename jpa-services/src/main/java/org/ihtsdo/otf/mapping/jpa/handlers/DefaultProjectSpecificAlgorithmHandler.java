@@ -346,7 +346,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		ValidationResult validationResult = new ValidationResultJpa();
 
 		// if not rule based, return empty validation result
-		if (mapProject.isRuleBased() == false)
+		if (!mapProject.isRuleBased())
 			return validationResult;
 
 		// cycle over the groups
@@ -1476,11 +1476,11 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					reviewNeededRecordFound = true;
 			}
 
-			if (revisionRecordFound == false)
+			if (!revisionRecordFound)
 				throw new Exception(
 						"Publish called on FIX_ERROR_PATH, but no REVISION record found");
 
-			if (reviewNeededRecordFound == false)
+			if (!reviewNeededRecordFound)
 				throw new Exception(
 						"Publish called on FIX_ERROR_PATH, but no REVIEW_NEEDED record found");
 
@@ -1526,7 +1526,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				Iterator<MapRecord> iter = mapRecords.iterator();
 				MapRecord mapRecord1 = iter.next();
 				MapRecord mapRecord2 = iter.next();
-				if (compareMapRecords(mapRecord1, mapRecord2).isValid() == false) {
+				if (!compareMapRecords(mapRecord1, mapRecord2).isValid()) {
 					throw new Exception(
 							"Publish called for two matching specialist records, but the records did not pass comparator validation checks");
 				}

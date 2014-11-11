@@ -217,6 +217,9 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
 				// check timeout against current time minus time of last activity
 				if ((new Date()).getTime() - lastActivity.getTime() > new Long(timeout)) {
+					
+					Logger.getLogger(SecurityServiceJpa.class).info("Timeout expired for user " + username + ".  Last login at " + lastActivity.toString() + " (" + (new Date().getTime() - lastActivity.getTime()) + " ms difference)");
+					
 					throw new LocalException(
 							"Your session has expired.  Please log in again.",
 							"401");

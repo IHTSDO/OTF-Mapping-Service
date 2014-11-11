@@ -21,7 +21,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	/////////////////////////////////////
 
 	// this controller handles a potentially "dirty" page
-	$rootScope.currentPageDirty = true;
+	//$rootScope.currentPageDirty = true;
 	
 	// initialize scope variables
 	$scope.record = 	null;
@@ -284,8 +284,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				return;
 			};
 		}
-		
-		$rootScope.glassPane++;
 	
 		///////////////////////////
 		// Group and MapPriority //
@@ -332,6 +330,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 		console.debug("Validating the map record.");
 		// validate the record
+		$rootScope.glassPane++;
 		$http({
 			url: root_mapping + "validation/record/validate",
 			dataType: "json",
@@ -341,6 +340,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				"Content-Type": "application/json"
 			}
 		}).success(function(data) {
+			$rootScope.glassPane--;
 			console.debug("validation results:");
 			console.debug(data);
 			$scope.validationResult = data;
@@ -383,7 +383,8 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					
 					// assign the current user to the lastModifiedBy field
 					$scope.record.lastModifiedBy = $scope.user;
-	
+
+					$rootScope.glassPane++;
 					$http({
 						url: root_workflow + "finish",
 						dataType: "json",
@@ -397,7 +398,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 						$scope.recordError = "";
 						
 						// user has successfully finished record, page is no longer "dirty"
-						$rootScope.currentPageDirty = false;						
+						$rootScope.currentPageDirty = false;					
+						
+						$rootScope.glassPane--;
+						console.debug("Simple finish called, return to dashboard");
+						$location.path($scope.role + "/dash");
 					}).error(function(data, status, headers, config) {
 						$rootScope.glassPane--;
 						$scope.recordError = "Unexpected server error.  Try saving your work for later, and contact an admin.";
@@ -408,14 +413,12 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				
 				// if the warning checks were not passed, save the warnings
 				} else {
-					$rootScope.glassPane--;
 					$scope.savedValidationWarnings = $scope.validationResult.warnings;
 				}
 
 				
 			// if errors found, clear the recordSuccess field
 			}  else {
-				$rootScope.glassPane--;
 				$scope.recordSuccess = "";
 			}
 
@@ -463,6 +466,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					"queryRestriction": 'NEW'};  
 
 			// get the assigned work list
+			$rootScope.glassPane++;
 			$http({
 				url: root_workflow + "project/id/" + $scope.project.id 
 				+ "/user/id/" + $scope.user.userName
@@ -515,6 +519,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					"queryRestriction": 'CONFLICT_NEW'};  
 			
 			// get the assigned conflicts
+			$rootScope.glassPane++;
 			$http({
 				url: root_workflow + "project/id/" + $scope.project.id 
 				+ "/user/id/" + $scope.user.userName
@@ -567,6 +572,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 					"queryRestriction": 'REVIEW_NEW'}
 			;  
 			// get the assigned review work
+			$rootScope.glassPane++;
 			$http({
 				url: root_workflow + "project/id/" + $scope.project.id 
 				+ "/user/id/" + $scope.user.userName
@@ -605,17 +611,15 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			    $rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
-		} else {
-			$rootScope.glassPane--;
+		} /*else {
 			console.debug("MapRecord finish/next can't determine type of work, returning to dashboard");
 			$location.path($scope.role + "/dash");
-		}
+		}*/
 	}
 	
 	$scope.saveMapRecord = function(returnBack) {
 		
-		$rootScope.glassPane++;
-
+		
 		console.debug("saveMapRecord called with " + returnBack);
 		console.debug("Note content: ", $scope.tinymceContent);
 		
@@ -671,9 +675,11 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		$scope.record.lastModifiedBy = $scope.user;
 
 		// if only displaying record again, don't make rest call
-		if ($rootScope.currentPageDirty == false && !returnBack)
-			return;
-		
+		//if ($rootScope.currentPageDirty == false && !returnBack)
+		//	return;
+
+		$rootScope.glassPane++;
+
 		$http({
 			url: root_workflow + "save",
 			dataType: "json",
@@ -697,7 +703,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 				$scope.resolveNextConcept(false);
 
 			} else {
-				$rootScope.glassPane--;
 				console.debug("Simple save called, return to dashboard");
 				$location.path($scope.role + "/dash");
 			}
@@ -1456,7 +1461,10 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 
 
 	$scope.getBrowserUrl = function() {
-		return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+		if ($scope.user.userName === 'guest') 
+			return "http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
+		else
+			return "http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1=" + $scope.concept.terminologyId + "&diagrammingMarkupEnabled=true&acceptLicense=true";
 	};
 
     $scope.openConceptBrowser = function() {

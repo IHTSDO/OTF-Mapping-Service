@@ -157,8 +157,9 @@ angular
 											+ "report/generate/project/id/"
 											+ $scope.focusProject.id
 											+ "/user/id/"
-											+ $scope.currentUser.userName
-											+ "/type/" + definition,
+											+ $scope.currentUser.userName,
+									dataType : 'json',
+									data: definition,
 									method : "POST",
 									headers : {
 										"Content-Type" : "application/json"
@@ -358,6 +359,8 @@ angular
 					$scope.generateNewReport = function(reportDefinition) {
 						$rootScope.glassPane++;
 
+						console.debug("generateNewReport", reportDefinition);
+						
 						// obtain the record
 						$http(
 								{
@@ -392,7 +395,7 @@ angular
 
 						// obtain the record
 						$http({
-							url : root_reporting + "report/add/project/" + $scope.focusProject.id,
+							url : root_reporting + "report/add/project/id/" + $scope.focusProject.id,
 							method : "POST",
 							dataType : "json",
 							data : report,
