@@ -64,7 +64,6 @@ public class ReportServiceRest extends RootServiceRest {
 	/**
 	 * Adds the report definitions.
 	 *
-	 * @param reportDefinition the report definition
 	 * @param authToken the auth token
 	 * @return the report definition
 	 */
@@ -189,7 +188,6 @@ public class ReportServiceRest extends RootServiceRest {
 	 *
 	 * @param reportDefinition the report definition
 	 * @param authToken the auth token
-	 * @return the report definition
 	 */
 	@DELETE
 	@Path("/definition/delete")
@@ -225,6 +223,13 @@ public class ReportServiceRest extends RootServiceRest {
 
 	}
 	
+	/**
+	 * Update reports.
+	 *
+	 * @param mapProjectId the map project id
+	 * @param report the report
+	 * @param authToken the auth token
+	 */
 	@POST
 	@Path("/report/add/project/id/{projectId}")
 	@ApiOperation(value = "Adds a report", notes = "Adds a report", response = Response.class)
@@ -317,7 +322,7 @@ public class ReportServiceRest extends RootServiceRest {
 	 * Returns the reports for map project and report type.
 	 *
 	 * @param projectId the project id
-	 * @param reportType the report type
+	 * @param definitionId the definition id
 	 * @param pfsParameter the pfs parameter
 	 * @param authToken the auth token
 	 * @return the reports for map project and report type
@@ -372,8 +377,8 @@ public class ReportServiceRest extends RootServiceRest {
 	
 	/**
 	 * Generate report.
+	 * @param reportDefinition the report definition
 	 *
-	 * @param reportType the report type
 	 * @param projectId the project id
 	 * @param userName the user name
 	 * @param authToken the auth token
