@@ -618,7 +618,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			$rootScope.glassPane--;
 			console.debug("MapRecord finish/next can't determine type of work, returning to dashboard");
 			$location.path($scope.role + "/dash");*/
-		}*/
+		}
 	}
 	
 	$scope.saveMapRecord = function(returnBack) {
@@ -1199,6 +1199,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 	
 	$scope.deleteMapEntry = function(entry) {
+		
 		console.debug("deleteMapEntry: ", entry);
 		
 		var group;

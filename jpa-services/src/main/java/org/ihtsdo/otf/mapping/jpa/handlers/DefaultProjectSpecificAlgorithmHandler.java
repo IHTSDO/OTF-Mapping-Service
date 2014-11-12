@@ -1036,14 +1036,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				newRecord.addOrigins(mapRecord.getOriginIds());
 
 				// set other relevant fields
-				// get QA User MapUser
-				Set<MapUser> users = mapProject.getMapSpecialists();
-				users.addAll(mapProject.getMapLeads());
-				for (MapUser user : users) {
-					// TODO: change this to QA user and do this in rest layer
-					if (user.getUserName().equals("dsh"))
-						mapUser = user;
-				}
+				// get QA User MapUser				
 				newRecord.setOwner(mapUser);
 				newRecord.setLastModifiedBy(mapUser);
 				newRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
@@ -1243,8 +1236,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					throw new Exception("  Expected exactly two map records.");
 				}
 
-				// set origin id to the existing record
-				mapRecord.addOrigin(mapRecords.iterator().next().getId());
+				// set origin id and copy labels
+				for (MapRecord record : mapRecords) {
+					//if (record.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+						//mapRecord.addOrigin(record.getId());
+					if (record.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+						mapRecord.setLabels(record.getLabels());
+						mapRecord.addOrigin(record.getId());
+					}
+				}
 
 				// set workflow status to review new
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);

@@ -1,5 +1,15 @@
 <h4 ng-show="showTitle == true">{{record.conceptName}}<br>{{project.sourceTerminology}} concept {{record.conceptId}}</h4>
+      <!-- Labels -->
+    <div ng-repeat="label in record.labels" style="width:100%;margin-bottom:5px;">
+		<div style="vertical-align:top;width:7%;display:inline-block;padding:2px">
+			<span style="color:#99CCFF"><i class="glyphicon glyphicon-tasks blue" alt="label icon" tooltip-placement="top" tooltip="Label"></i></span>
+		</div>
+		<div class="alert alert-success" style="vertical-align:top;display:inline-block;padding:1px">
+			{{label}}
+		</div>
+    </div>
 Map Entries
+
 <div style="padding:0px;" ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
 	
 	<!-- Group/Priority, Target Id, Target Name -->
