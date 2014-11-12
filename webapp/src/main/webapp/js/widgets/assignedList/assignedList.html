@@ -592,7 +592,8 @@
               class="glyphicon glyphicon-check"></i>
           </a>
         </th>
-        <th style="width: 80%; padding: 5px;">Preferred Name</th>
+        <th style="width: 77%; padding: 5px;">Preferred Name</th>
+        <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
           ng-click="openUnassignModal(currentUser, 'review')"><i
             class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
@@ -618,7 +619,7 @@
               class="glyphicon glyphicon-pencil"></i>
           </a>
           <!-- Display a finished icon if this record has previously been edited -->
-          <a title='Continue working on this conflict'
+          <a title='Continue working on this QA work'
             ng-show="result.terminologyVersion === 'REVIEW_RESOLVED'">
               <i ng-click="goEditQAWork(result.id)"
               class="glyphicon glyphicon-saved"></i>
@@ -628,21 +629,26 @@
         
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark if this record has previously been edited -->
-          <a style:"display:inline" title='Finish this review work'
+          <a style:"display:inline" title='Finish this QA work'
           ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS' && assignedQAWorkType === 'REVIEW_IN_PROGRESS'">
             <i ng-click="finishOrPublish(result)"
             class="glyphicon glyphicon-ok"></i>
           </a>
           
           <!-- Display a checkmark if this record has previously resolved -->
-          <a style:"display:inline" title='Publish this resolved review work'
+          <a style:"display:inline" title='Publish this resolved QA work'
           ng-show="result.terminologyVersion === 'REVIEW_RESOLVED' && assignedQAWorkType === 'REVIEW_RESOLVED'">
             <i ng-click="finishOrPublish(result)"
             class="glyphicon glyphicon-ok"></i>
           </a>
         </td>
         
-        <td style="width: 80%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 77%; padding: 5px;">{{result.name}}</td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Labels"              
+          ng-show="result.labels.length > 0" tooltip-placement="top" tooltip="{{result.labels}}"
+          style="float: right; margin-right:5px;"><i
+          class="glyphicon glyphicon-tasks"></i></a></td>
         <td style="width: 3%; padding: 5px;"><a title="Return"
           ng-click="unassignWork(result, currentUser)"><i
             class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>

@@ -340,8 +340,8 @@
     <tr>
       <th style="width: 3%; padding: 5px;"></th>
       <th style="width: 17%; padding: 5px;">Id</th>
-      <th style="width: 80%; padding: 5px;">Preferred Name</th>
-
+      <th style="width: 77%; padding: 5px;">Preferred Name</th>
+      <th style="width: 3%; padding: 5px;"></th>
     </tr>
 
   </thead>
@@ -360,9 +360,16 @@
               ng-show="currentRole === 'Lead' || currentRole === 'Administrator'"
               ng-click="assignWork(concept, assignedMapUser, queryAvailable, 'qa', availableQAWorkPage)"><i
               class="glyphicon glyphicon-import"></i></a>
+              
       </td>
       <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
-      <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
+      <td style="width: 77%; padding: 5px;">{{concept.name}}</td>
+      <td style="width: 3%; padding: 5px;">
+        <a title="Labels"              
+          ng-show="concept.labels.length > 0" tooltip-placement="top" tooltip="{{concept.labels}}"
+          style="float: right; margin-right:5px;"><i
+          class="glyphicon glyphicon-tasks"></i></a>
+      </td>
   </tbody>
 
 </table>
