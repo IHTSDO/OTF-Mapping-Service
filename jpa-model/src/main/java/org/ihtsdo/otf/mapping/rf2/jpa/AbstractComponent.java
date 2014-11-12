@@ -123,38 +123,54 @@ public abstract class AbstractComponent implements Component {
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result =
-        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-    result =
-        prime * result
-            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-    return result;
-  }
+public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime * result + (active ? 1231 : 1237);
+	result = prime * result + ((moduleId == null) ? 0 : moduleId.hashCode());
+	result = prime * result
+			+ ((terminology == null) ? 0 : terminology.hashCode());
+	result = prime * result
+			+ ((terminologyId == null) ? 0 : terminologyId.hashCode());
+	result = prime
+			* result
+			+ ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+	return result;
+}
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    AbstractComponent other = (AbstractComponent) obj;
-    if (terminology == null) {
-      if (other.terminology != null)
-        return false;
-    } else if (!terminology.equals(other.terminology))
-      return false;
-    if (terminologyId == null) {
-      if (other.terminologyId != null)
-        return false;
-    } else if (!terminologyId.equals(other.terminologyId))
-      return false;
-    return true;
-  }
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (obj == null)
+		return false;
+	if (getClass() != obj.getClass())
+		return false;
+	AbstractComponent other = (AbstractComponent) obj;
+	if (active != other.active)
+		return false;
+	if (moduleId == null) {
+		if (other.moduleId != null)
+			return false;
+	} else if (!moduleId.equals(other.moduleId))
+		return false;
+	if (terminology == null) {
+		if (other.terminology != null)
+			return false;
+	} else if (!terminology.equals(other.terminology))
+		return false;
+	if (terminologyId == null) {
+		if (other.terminologyId != null)
+			return false;
+	} else if (!terminologyId.equals(other.terminologyId))
+		return false;
+	if (terminologyVersion == null) {
+		if (other.terminologyVersion != null)
+			return false;
+	} else if (!terminologyVersion.equals(other.terminologyVersion))
+		return false;
+	return true;
+}
 
   /**
    * {@inheritDoc}
