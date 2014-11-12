@@ -335,6 +335,18 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			console.debug(data.totalCount);
 			console.debug($scope.assignedQAWorkTitle);
 			
+			// set labels
+			for (var i = 0; i < $scope.assignedQAWork.length; i++) {
+				var concept = $scope.assignedQAWork[i];
+				
+				if (concept.value.indexOf(";") > 0) {		
+					var allLabels = concept.value.substring(concept.value.indexOf(";") + 1);
+				    $scope.assignedQAWork[i].name = concept.value.substring(0, concept.value.indexOf(";"));
+				    $scope.assignedQAWork[i].labels = allLabels;
+				}	else {
+					$scope.assignedQAWork[i].name = concept.value;
+				}		
+			}
 			
 		}).error(function(data, status, headers, config) {
 		  	$rootScope.glassPane--;
@@ -1068,15 +1080,18 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	  		function() {  	
 		  		console.debug("User closed finish/publish modal");
 		  		if (workflowStatus === 'CONFLICT_IN_PROGRESS'
-					|| workflowStatus === 'CONFLICT_RESOLVED')
+					|| workflowStatus === 'CONFLICT_RESOLVED') {
 		  			$scope.retrieveAssignedConflicts(1, null, workflowStatus); // called on Done
-				else if (workflowStatus === 'REVIEW_IN_PROGRESS'
-						|| workflowStatus === 'REVIEW_RESOLVED')
-					$scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
-				else if (workflowStatus === 'EDITING_IN_PROGRESS'
-						|| workflowStatus === 'EDITING_DONE')
+		  		} else if (workflowStatus === 'REVIEW_IN_PROGRESS'
+						|| workflowStatus === 'REVIEW_RESOLVED') {
+		  			if ($scope.currentRole === 'Lead') {
+					  $scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
+		  			}
+		  			$scope.retrieveAssignedQAWork(1, null, workflowStatus);
+		  		} else if (workflowStatus === 'EDITING_IN_PROGRESS'
+						|| workflowStatus === 'EDITING_DONE') {
 					$scope.retrieveAssignedWork(1, null, workflowStatus); // called on Done
-				else {
+		  		} else {
 					console.debug("Could not determine api call from workflow status");
 					return;
 				}
@@ -1085,15 +1100,18 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	  		}, function() {  	
 		  		console.debug("Finish/publish modal dismissed");
 		  		if (workflowStatus === 'CONFLICT_IN_PROGRESS'
-					|| workflowStatus === 'CONFLICT_RESOLVED')
+					|| workflowStatus === 'CONFLICT_RESOLVED') {
 		  			$scope.retrieveAssignedConflicts(1, null, workflowStatus); // called on Done
-				else if (workflowStatus === 'REVIEW_IN_PROGRESS'
-						|| workflowStatus === 'REVIEW_RESOLVED')
-					$scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
-				else if (workflowStatus === 'EDITING_IN_PROGRESS'
-						|| workflowStatus === 'EDITING_DONE')
+		  		} else if (workflowStatus === 'REVIEW_IN_PROGRESS'
+						|| workflowStatus === 'REVIEW_RESOLVED') {
+					if ($scope.currentRole === 'Lead') {
+						  $scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
+			  			}
+			  			$scope.retrieveAssignedQAWork(1, null, workflowStatus);
+				} else if (workflowStatus === 'EDITING_IN_PROGRESS'
+						|| workflowStatus === 'EDITING_DONE') {
 					$scope.retrieveAssignedWork(1, null, workflowStatus); // called on Done
-				else {
+				} else {
 					console.debug("Could not determine api call from workflow status");
 					return;
 				}
