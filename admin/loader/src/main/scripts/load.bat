@@ -27,7 +27,7 @@ set error=0
 pause
 echo     Run updatedb with hibernate.hbm2ddl.auto = create ...%date% %time%
 cd %OTF_MAPPING_HOME%/admin/updatedb
-call %MVN_HOME%/bin/mvn -Drun.config=%OTF_MAPPING_CONFIG% -Dhibernate.hbm2ddl.auto=update install 1> mvn.log
+call %MVN_HOME%/bin/mvn -Drun.config=%OTF_MAPPING_CONFIG% -Dhibernate.hbm2ddl.auto=create install 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
