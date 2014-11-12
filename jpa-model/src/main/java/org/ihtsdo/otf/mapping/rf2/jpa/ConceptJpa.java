@@ -41,7 +41,8 @@ import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 @XmlRootElement(name = "concept")
 public class ConceptJpa extends AbstractComponent implements Concept {
 
-  /** The definition status id. */
+
+/** The definition status id. */
   @Column(nullable = false)
   private Long definitionStatusId;
 
@@ -80,6 +81,38 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Column(nullable = false, length = 256)
   private String defaultPreferredName;
 
+  /**
+   * Instantiates a new concept jpa.
+   */
+  public ConceptJpa() {
+	  
+  }
+  
+  /**
+   * Instantiates a new concept jpa.
+   *
+   * @param concept the concept
+   */
+  public ConceptJpa(Concept concept) {
+	    super.setId(concept.getId());
+	    super.setActive(concept.isActive());
+	    super.setEffectiveTime(concept.getEffectiveTime());
+	    super.setLabel(concept.getLabel());
+	    super.setModuleId(concept.getModuleId());
+	    super.setTerminology(concept.getTerminology());
+	    super.setTerminologyId(concept.getTerminologyId());
+	    super.setTerminologyVersion(concept.getTerminologyVersion());
+		this.definitionStatusId = concept.getDefinitionStatusId();
+		this.descriptions = concept.getDescriptions();
+		this.relationships = concept.getRelationships();
+		this.inverseRelationships = concept.getInverseRelationships();
+		this.simpleRefSetMembers = concept.getSimpleRefSetMembers();
+		this.simpleMapRefSetMembers = concept.getSimpleMapRefSetMembers();
+		this.complexMapRefSetMembers = concept.getComplexMapRefSetMembers();
+		this.attributeValueRefSetMembers = concept.getAttributeValueRefSetMembers();
+		this.defaultPreferredName = concept.getDefaultPreferredName();
+	}
+  
   /**
    * Returns the definition status id.
    * 
@@ -430,28 +463,34 @@ public class ConceptJpa extends AbstractComponent implements Concept {
                                                                              // fields
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (!super.equals(obj))
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    return true;
-  }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#hashCode()
-   */
-  @Override
-  public int hashCode() {
-    return super.hashCode();
-  }
+
+@Override
+public int hashCode() {
+	final int prime = 31;
+	int result = super.hashCode();
+	result = prime
+			* result
+			+ ((definitionStatusId == null) ? 0 : definitionStatusId.hashCode());
+	return result;
+}
+
+@Override
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (!super.equals(obj))
+		return false;
+	if (getClass() != obj.getClass())
+		return false;
+	ConceptJpa other = (ConceptJpa) obj;
+	if (definitionStatusId == null) {
+		if (other.definitionStatusId != null)
+			return false;
+	} else if (!definitionStatusId.equals(other.definitionStatusId))
+		return false;
+	return true;
+}
+
 
 }
