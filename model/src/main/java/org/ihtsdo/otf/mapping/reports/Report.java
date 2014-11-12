@@ -6,9 +6,8 @@ import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.model.MapUser;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface Report.
+ * Generically represents a report.
  */
 public interface Report {
 

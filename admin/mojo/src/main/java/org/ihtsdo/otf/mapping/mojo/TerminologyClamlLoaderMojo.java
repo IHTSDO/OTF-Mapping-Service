@@ -121,7 +121,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
    * Executes the plugin.
    * @throws MojoExecutionException the mojo execution exception
    */
-  @SuppressWarnings("null")
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting loading " + terminology + " data ...");
@@ -129,7 +128,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
     FileInputStream fis = null;
     InputStream inputStream = null;
     Reader reader = null;
-    FileReader in = null;
     try {
 
       Properties config = ConfigUtility.getConfigProperties();
@@ -212,11 +210,6 @@ public class TerminologyClamlLoaderMojo extends AbstractMojo {
       }
       try {
         reader.close();
-      } catch (IOException e) {
-        // do nothing
-      }
-      try {
-        in.close();
       } catch (IOException e) {
         // do nothing
       }
