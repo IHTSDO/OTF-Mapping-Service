@@ -36,7 +36,8 @@ import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 @XmlRootElement(name = "description")
 public class DescriptionJpa extends AbstractComponent implements Description {
 
-  /** The language code. */
+
+/** The language code. */
   @Column(nullable = false, length = 10)
   private String languageCode;
 
@@ -78,6 +79,29 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     this.typeId = type;
   }
 
+  /**
+   * Instantiates a new description jpa.
+   *
+   * @param description the description
+   */
+  public DescriptionJpa(Description description) {
+
+	    super.setId(description.getId());
+	    super.setActive(description.isActive());
+	    super.setEffectiveTime(description.getEffectiveTime());
+	    super.setLabel(description.getLabel());
+	    super.setModuleId(description.getModuleId());
+	    super.setTerminology(description.getTerminology());
+	    super.setTerminologyId(description.getTerminologyId());
+	    super.setTerminologyVersion(description.getTerminologyVersion());
+		this.languageCode = description.getLanguageCode();
+		this.typeId = description.getTypeId();
+		this.term = description.getTerm();
+		this.caseSignificanceId = description.getCaseSignificanceId();
+		this.concept = description.getConcept();
+		this.languageRefSetMembers = description.getLanguageRefSetMembers();
+	}
+  
   /**
    * Returns the language code.
    * 
@@ -254,53 +278,56 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     // fields
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#hashCode()
-   */
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = super.hashCode();
-    result =
-        prime * result + ((languageCode == null) ? 0 : languageCode.hashCode());
-    result = prime * result + ((term == null) ? 0 : term.hashCode());
-    result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
-    return result;
-  }
+public int hashCode() {
+	final int prime = 31;
+	int result = super.hashCode();
+	result = prime
+			* result
+			+ ((caseSignificanceId == null) ? 0 : caseSignificanceId.hashCode());
+	result = prime * result + ((concept == null) ? 0 : concept.hashCode());
+	result = prime * result
+			+ ((languageCode == null) ? 0 : languageCode.hashCode());
+	result = prime * result + ((term == null) ? 0 : term.hashCode());
+	result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
+	return result;
+}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.rf2.jpa.AbstractComponent#equals(java.lang.Object)
-   */
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (!super.equals(obj))
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    DescriptionJpa other = (DescriptionJpa) obj;
-    if (languageCode == null) {
-      if (other.languageCode != null)
-        return false;
-    } else if (!languageCode.equals(other.languageCode))
-      return false;
-    if (term == null) {
-      if (other.term != null)
-        return false;
-    } else if (!term.equals(other.term))
-      return false;
-    if (typeId == null) {
-      if (other.typeId != null)
-        return false;
-    } else if (!typeId.equals(other.typeId))
-      return false;
-    return true;
-  }
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (!super.equals(obj))
+		return false;
+	if (getClass() != obj.getClass())
+		return false;
+	DescriptionJpa other = (DescriptionJpa) obj;
+	if (caseSignificanceId == null) {
+		if (other.caseSignificanceId != null)
+			return false;
+	} else if (!caseSignificanceId.equals(other.caseSignificanceId))
+		return false;
+	if (concept == null) {
+		if (other.concept != null)
+			return false;
+	} else if (!concept.equals(other.concept))
+		return false;
+	if (languageCode == null) {
+		if (other.languageCode != null)
+			return false;
+	} else if (!languageCode.equals(other.languageCode))
+		return false;
+	if (term == null) {
+		if (other.term != null)
+			return false;
+	} else if (!term.equals(other.term))
+		return false;
+	if (typeId == null) {
+		if (other.typeId != null)
+			return false;
+	} else if (!typeId.equals(other.typeId))
+		return false;
+	return true;
+}
 
 }
