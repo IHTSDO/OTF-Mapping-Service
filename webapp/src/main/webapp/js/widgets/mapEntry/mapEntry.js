@@ -559,9 +559,13 @@ angular.module('mapProjectApp.widgets.mapEntry', ['adf.provider'])
 	
 
 	$scope.setNullTarget = function() {
+		// open glass pane (setNullTarget1)
+		$rootScope.glassPane++;
 		$scope.entry.targetId = null;
 		$scope.entry.targetName = 'No target';
 		$scope.computeParameters(true);
+		// close glass pane (setNullTarget1)
+		$rootScope.glassPane--;
 	};
 	
 

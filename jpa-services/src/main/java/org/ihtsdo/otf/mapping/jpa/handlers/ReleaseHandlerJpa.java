@@ -36,15 +36,27 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 
+/**
+ * JPA enabled implementation of {@link ReleaseHandler}.
+ */
 public class ReleaseHandlerJpa implements ReleaseHandler {
 
 	// class-global services
+	/**  The mapping service. */
 	private MappingService mappingService;
+	
+	/**  The content service. */
 	private ContentService contentService;
 
+	/**
+	 * Instantiates an empty {@link ReleaseHandlerJpa}.
+	 */
 	public ReleaseHandlerJpa() {
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler#processRelease(org.ihtsdo.otf.mapping.model.MapProject, java.lang.String, java.lang.String, java.util.Set, java.lang.String, java.lang.String)
+	 */
 	@Override
 	public void processRelease(MapProject mapProject,
 			String machineReadableOutputFileName,
@@ -294,10 +306,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 															+ " on record");
 								}
 							}
-							// catch no result for error outputting
-							// does not interrupt the routine
 						} catch (NoResultException e) {
-
+                          // catch no result for error outputting
+                          // does not interrupt the routine
 						}
 					}
 
@@ -538,8 +549,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 	 *            the map entry
 	 * @return the map entry
 	 */
-	@SuppressWarnings("static-method")
-	public MapEntry setPropagatedRuleForMapEntry(MapEntry mapEntry) {
+	@Override
+  public MapEntry setPropagatedRuleForMapEntry(MapEntry mapEntry) {
 
 		MapRecord mapRecord = mapEntry.getMapRecord();
 
@@ -585,8 +596,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 	 *            the map entry
 	 * @return the human readable map advice
 	 */
-	@SuppressWarnings("static-method")
-	public String getHumanReadableMapAdvice(MapEntry mapEntry) {
+	@Override
+  public String getHumanReadableMapAdvice(MapEntry mapEntry) {
 
 		String advice = "";
 
@@ -713,16 +724,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
 	/**
 	 * Takes a tree position graph and converts it to a sorted list of tree
-	 * positions where order is based on depth in tree
-	 * 
-	 * @param tp
-	 *            the tp
+	 * positions where order is based on depth in tree.
+	 *
+	 * @param tp            the tp
 	 * @return the sorted tree position descendant list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception             the exception
 	 */
-	@SuppressWarnings("static-method")
-	public List<TreePosition> getSortedTreePositionDescendantList(
+	@Override
+  public List<TreePosition> getSortedTreePositionDescendantList(
 			TreePosition tp) throws Exception {
 
 		// construct list of unprocessed tree positions and initialize with root
@@ -779,8 +788,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 	 *            the map entry
 	 * @return the next map priority
 	 */
-	@SuppressWarnings("static-method")
-	public int getNextMapPriority(MapRecord mapRecord, MapEntry mapEntry) {
+	@Override
+  public int getNextMapPriority(MapRecord mapRecord, MapEntry mapEntry) {
 
 		int maxPriority = 0;
 		for (MapEntry me : mapRecord.getMapEntries()) {
@@ -815,7 +824,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 	 *            the uid
 	 * @return the raw bytes
 	 */
-	public byte[] getRawBytes(UUID uid) {
+	@Override
+  public byte[] getRawBytes(UUID uid) {
 		String id = uid.toString();
 		byte[] rawBytes = new byte[16];
 
@@ -862,7 +872,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 	 * @throws UnsupportedEncodingException
 	 *             the unsupported encoding exception
 	 */
-	public UUID getReleaseUuid(String name) throws NoSuchAlgorithmException,
+	@Override
+  public UUID getReleaseUuid(String name) throws NoSuchAlgorithmException,
 			UnsupportedEncodingException {
 		MessageDigest sha1Algorithm = MessageDigest.getInstance("SHA-1");
 
@@ -903,25 +914,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
 	/**
 	 * Write release entry.
-	 * 
-	 * @param writer
-	 *            the writer
-	 * @param mapEntry
-	 *            the map entry
-	 * @param mapRecord
-	 *            the map record
-	 * @param mapProject
-	 *            the map project
-	 * @param effectiveTime
-	 *            the effective time
-	 * @param moduleId
-	 *            the module id
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @throws NoSuchAlgorithmException
-	 *             the no such algorithm exception
+	 *
+	 * @param machineReadableWriter the machine readable writer
+	 * @param humanReadableWriter the human readable writer
+	 * @param mapEntry            the map entry
+	 * @param mapRecord            the map record
+	 * @param mapProject            the map project
+	 * @param effectiveTime            the effective time
+	 * @param moduleId            the module id
+	 * @throws IOException             Signals that an I/O exception has occurred.
+	 * @throws NoSuchAlgorithmException             the no such algorithm exception
 	 */
-	public void writeReleaseEntry(BufferedWriter machineReadableWriter,
+	@Override
+  public void writeReleaseEntry(BufferedWriter machineReadableWriter,
 			BufferedWriter humanReadableWriter, MapEntry mapEntry,
 			MapRecord mapRecord, MapProject mapProject, String effectiveTime,
 			String moduleId) throws IOException, NoSuchAlgorithmException {

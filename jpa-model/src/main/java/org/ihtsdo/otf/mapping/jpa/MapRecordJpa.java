@@ -27,13 +27,20 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.solr.analysis.LowerCaseFilterFactory;
+import org.apache.solr.analysis.StandardFilterFactory;
+import org.apache.solr.analysis.StandardTokenizerFactory;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.annotations.TokenFilterDef;
+import org.hibernate.search.annotations.TokenizerDef;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
@@ -60,6 +67,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 })
 @Audited
 @Indexed
+@AnalyzerDef(name = "noStopWord", tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class), filters = {
+  @TokenFilterDef(factory = StandardFilterFactory.class),
+  @TokenFilterDef(factory = LowerCaseFilterFactory.class)
+})
 @XmlRootElement(name = "mapRecord")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MapRecordJpa implements MapRecord {
@@ -95,6 +106,7 @@ public class MapRecordJpa implements MapRecord {
 
 	/** The concept name. */
 	@Column(nullable = false)
+	@Field @Analyzer(definition = "noStopWord")
 	private String conceptName;
 
 	/** The count descendant concepts. */

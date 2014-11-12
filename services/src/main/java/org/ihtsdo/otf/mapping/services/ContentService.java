@@ -20,11 +20,8 @@ import org.ihtsdo.otf.mapping.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
-// TODO: Auto-generated Javadoc
 /**
- * The interface for the content service.
- * 
- * @author ${author}
+ * Generically represents a service for accessing terminology content.
  */
 public interface ContentService extends RootService {
 
@@ -807,6 +804,15 @@ public interface ContentService extends RootService {
 	 */
 	public TreePosition getTreePositionWithDescendants(TreePosition tp) throws Exception;
 
+	/**
+	 * Returns the tree positions with children.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @return the tree positions with children
+	 * @throws Exception the exception
+	 */
 	public TreePositionList getTreePositionsWithChildren(String terminologyId,
 			String terminology, String terminologyVersion) throws Exception;
 

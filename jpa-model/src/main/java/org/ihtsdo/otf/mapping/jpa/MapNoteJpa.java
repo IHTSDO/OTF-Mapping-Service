@@ -192,9 +192,7 @@ public class MapNoteJpa implements MapNote {
         + ", timestamp=" + timestamp + "]";
   }
 
-  /*
-   * (non-Javadoc)
-   * 
+  /* (non-Javadoc)
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -202,14 +200,11 @@ public class MapNoteJpa implements MapNote {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((note == null) ? 0 : note.hashCode());
-    result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
     result = prime * result + ((user == null) ? 0 : user.hashCode());
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
+  /* (non-Javadoc)
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
@@ -225,11 +220,6 @@ public class MapNoteJpa implements MapNote {
       if (other.note != null)
         return false;
     } else if (!note.equals(other.note))
-      return false;
-    if (timestamp == null) {
-      if (other.timestamp != null)
-        return false;
-    } else if (!timestamp.equals(other.timestamp))
       return false;
     if (user == null) {
       if (other.user != null)
