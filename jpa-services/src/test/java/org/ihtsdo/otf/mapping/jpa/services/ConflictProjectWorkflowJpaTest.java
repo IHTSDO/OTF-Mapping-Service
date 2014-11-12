@@ -31,31 +31,36 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-;
-
+/**
+ * Test cases for conflict workflow.
+ */
 public class ConflictProjectWorkflowJpaTest {
 
-	/** The map project */
+	/**  The map project. */
 	private static MapProject mapProject;
 
-	/** The map users */
+	/**  The map users. */
 	private static MapUser specialist1, specialist2, lead;
 
-	/** The map records */
+	/**  The map records. */
 	private static MapRecord specialistRecord1, specialistRecord2, leadRecord;
 
-	/** The concept */
+	/**  The concept. */
 	private static Concept concept;
 
-	/** The services */
+	/**  The services. */
 	private static ContentService contentService;
+	
+	/**  The mapping service. */
 	private static MappingService mappingService;
+	
+	/**  The workflow service. */
 	private static WorkflowService workflowService;
 
 	/**
-	 * Initialize the required objects
-	 * 
-	 * @throws Exception
+	 * Initialize the required objects.
+	 *
+	 * @throws Exception the exception
 	 */
 	@BeforeClass
 	public static void init() throws Exception {
@@ -134,6 +139,11 @@ public class ConflictProjectWorkflowJpaTest {
 				"1");
 	}
 
+	/**
+	 * Test standard progression with conflict.
+	 *
+	 * @throws Exception the exception
+	 */
 	@Test
 	public void testStandardProgressionWithConflict() throws Exception {
 
@@ -300,6 +310,11 @@ public class ConflictProjectWorkflowJpaTest {
 		
 	}
 	
+	/**
+	 * Test standard progression without conflict.
+	 *
+	 * @throws Exception the exception
+	 */
 	@Test
 	public void testStandardProgressionWithoutConflict() throws Exception {
 
@@ -394,8 +409,8 @@ public class ConflictProjectWorkflowJpaTest {
 
 	/**
 	 * Cleanup.
-	 * 
-	 * @throws Exception
+	 *
+	 * @throws Exception the exception
 	 */
 	@AfterClass
 	public static void cleanup() throws Exception {
@@ -409,7 +424,13 @@ public class ConflictProjectWorkflowJpaTest {
 		contentService.close();
 	}
 
-	public void retrieveAssignedWork() throws Exception {
+	/**
+	 * Retrieve assigned work.
+	 *
+	 * @throws Exception the exception
+	 */
+	@SuppressWarnings("static-method")
+  public void retrieveAssignedWork() throws Exception {
 
 		// set all records to null
 		specialistRecord1 = null;
@@ -444,9 +465,9 @@ public class ConflictProjectWorkflowJpaTest {
 	}
 
 	/**
-	 * Helper function to remove all objects
-	 * 
-	 * @throws Exception
+	 * Helper function to remove all objects.
+	 *
+	 * @throws Exception the exception
 	 */
 	public static void destroyAll() throws Exception {
 
@@ -471,9 +492,9 @@ public class ConflictProjectWorkflowJpaTest {
 
 	/**
 	 * Helper function to remove all mapping and workflow objects and recompute
-	 * workflow
-	 * 
-	 * @throws Exception
+	 * workflow.
+	 *
+	 * @throws Exception the exception
 	 */
 	public static void revertWorkToCleanState() throws Exception {
 

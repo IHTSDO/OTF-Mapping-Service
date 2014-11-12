@@ -14,7 +14,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.search.annotations.ContainedIn;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class ReportResultItemJpa.
  */

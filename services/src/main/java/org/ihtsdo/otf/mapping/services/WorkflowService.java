@@ -19,12 +19,9 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 
-// TODO: Auto-generated Javadoc
 /**
- * Represents a service for answering questions and performing actions related
+ * Generically represents a service for answering questions and performing actions related
  * to workflow management.
- *
- * @author ${author}
  */
 public interface WorkflowService extends RootService {
 

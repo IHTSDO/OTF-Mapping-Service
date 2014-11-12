@@ -13,8 +13,22 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
+/**
+ * Generically represents a handler for performing a release.
+ */
 public interface ReleaseHandler {
 	
+	/**
+	 * Process release.
+	 *
+	 * @param mapProject the map project
+	 * @param machineReadableOutputFileName the machine readable output file name
+	 * @param humanReadableOutputFileName the human readable output file name
+	 * @param mapRecordsToPublish the map records to publish
+	 * @param effectiveTime the effective time
+	 * @param moduleId the module id
+	 * @throws Exception the exception
+	 */
 	public void processRelease(MapProject mapProject,
 			String machineReadableOutputFileName,
 			String humanReadableOutputFileName,
@@ -28,7 +42,6 @@ public interface ReleaseHandler {
 	 *            the map entry
 	 * @return the map entry
 	 */
-	@SuppressWarnings("static-method")
 	public MapEntry setPropagatedRuleForMapEntry(MapEntry mapEntry);
 
 	/**
@@ -38,20 +51,16 @@ public interface ReleaseHandler {
 	 *            the map entry
 	 * @return the human readable map advice
 	 */
-	@SuppressWarnings("static-method")
 	public String getHumanReadableMapAdvice(MapEntry mapEntry);
 
 	/**
 	 * Takes a tree position graph and converts it to a sorted list of tree
-	 * positions where order is based on depth in tree
-	 * 
-	 * @param tp
-	 *            the tp
+	 * positions where order is based on depth in tree.
+	 *
+	 * @param tp            the tp
 	 * @return the sorted tree position descendant list
-	 * @throws Exception
-	 *             the exception
+	 * @throws Exception             the exception
 	 */
-	@SuppressWarnings("static-method")
 	public List<TreePosition> getSortedTreePositionDescendantList(
 			TreePosition tp) throws Exception;
 
@@ -65,7 +74,6 @@ public interface ReleaseHandler {
 	 *            the map entry
 	 * @return the next map priority
 	 */
-	@SuppressWarnings("static-method")
 	public int getNextMapPriority(MapRecord mapRecord, MapEntry mapEntry);
 
 	/*
@@ -104,25 +112,19 @@ public interface ReleaseHandler {
 	 */
 	public UUID getReleaseUuid(String name)
 			throws NoSuchAlgorithmException, UnsupportedEncodingException;
+	
 	/**
 	 * Write release entry.
-	 * 
-	 * @param writer
-	 *            the writer
-	 * @param mapEntry
-	 *            the map entry
-	 * @param mapRecord
-	 *            the map record
-	 * @param mapProject
-	 *            the map project
-	 * @param effectiveTime
-	 *            the effective time
-	 * @param moduleId
-	 *            the module id
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @throws NoSuchAlgorithmException
-	 *             the no such algorithm exception
+	 *
+	 * @param machineReadableWriter the machine readable writer
+	 * @param humanReadableWriter the human readable writer
+	 * @param mapEntry            the map entry
+	 * @param mapRecord            the map record
+	 * @param mapProject            the map project
+	 * @param effectiveTime            the effective time
+	 * @param moduleId            the module id
+	 * @throws IOException             Signals that an I/O exception has occurred.
+	 * @throws NoSuchAlgorithmException             the no such algorithm exception
 	 */
 	public void writeReleaseEntry(BufferedWriter machineReadableWriter, BufferedWriter humanReadableWriter, MapEntry mapEntry,
 			MapRecord mapRecord, MapProject mapProject, String effectiveTime,

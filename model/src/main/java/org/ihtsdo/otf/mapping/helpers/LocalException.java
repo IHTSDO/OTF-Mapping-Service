@@ -2,9 +2,9 @@ package org.ihtsdo.otf.mapping.helpers;
 
 import java.lang.Exception;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class LocalException.
+ * Represents an exception for a known condition that can be simply handled
+ * and reported to the user.
  */
 @SuppressWarnings("serial")
 public class LocalException extends Exception {

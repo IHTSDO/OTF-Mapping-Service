@@ -4,10 +4,8 @@ import java.util.List;
 
 import org.ihtsdo.otf.mapping.helpers.TreePositionDescriptionGroup;
 
-// TODO: Auto-generated Javadoc
 /**
- * Represents a tree position.
- * 
+ * Generically represents a tree position.
  */
 public interface TreePosition {
 
