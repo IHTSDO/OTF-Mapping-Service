@@ -546,8 +546,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 		String project = "";
 		// all qa work will have user "qa"
-		// TODO: make QA user and use that instead of dsh
-		String user = "dsh";
+		String user = "qa";
 
 		try {
 			// authorize call
@@ -1342,7 +1341,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 			// authorize call
 			MapUserRole role = securityService.getMapProjectRoleForToken(
 					authToken, mapRecord.getMapProjectId());
-			if (!role.hasPrivilegesOf(MapUserRole.LEAD))
+			if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
 				throw new WebApplicationException(
 						Response.status(401)
 								.entity("User does not have permissions to set a record to published.")
@@ -1543,9 +1542,16 @@ public class WorkflowServiceRest extends RootServiceRest {
 					mapProject.getSourceTerminology(),
 					mapProject.getSourceTerminologyVersion());
 
+			// find the qa user
+			MapUser mapUser = null;
+			for (MapUser user : mappingService.getMapUsers().getMapUsers()) {
+				if (user.getUserName().equals("qa"))
+					mapUser = user;
+			}
+				
 			// process the workflow action
 			workflowService.processWorkflowAction(mapProject, concept,
-					mapRecord.getOwner(), mapRecord, WorkflowAction.CREATE_QA_RECORD);
+					mapUser, mapRecord, WorkflowAction.CREATE_QA_RECORD);
 		} catch (Exception e) {
 			handleException(e, "trying to create a qa map record",
 					userName, project, mapRecord.getId().toString());

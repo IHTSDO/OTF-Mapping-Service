@@ -738,7 +738,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			MapUser mapUser, String query, PfsParameter pfsParameter)
 			throws Exception {
 
-		SearchResultList availableReviewWork = new SearchResultListJpa();
+		SearchResultList availableQAWork = new SearchResultListJpa();
 
 		FullTextEntityManager fullTextEntityManager = Search
 				.getFullTextEntityManager(manager);
@@ -761,7 +761,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// must have a REVIEW_NEEDED tag with any user
 		full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*";
 		
-		// don't get  path
 		full_query += " AND workflowPath:QA_PATH";
 
 		// the record to review must not be owned by this user, unless
@@ -778,7 +777,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
 				+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*" + ")";
 
-		// System.out.println("FindAvailableReviewWork query: " + full_query);
+		System.out.println("FindAvailableQAWork query: " + full_query);
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
 				searchFactory.getAnalyzer(TrackingRecordJpa.class));
@@ -791,7 +790,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
 				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
 
-		availableReviewWork.setTotalCount(ftquery.getResultSize());
+		availableQAWork.setTotalCount(ftquery.getResultSize());
 
 		if (pfsParameter.getStartIndex() != -1
 				&& pfsParameter.getMaxResults() != -1) {
@@ -821,11 +820,18 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		for (TrackingRecord tr : results) {
 			SearchResult result = new SearchResultJpa();
 			result.setTerminologyId(tr.getTerminologyId());
-			result.setValue(tr.getDefaultPreferredName());
 			result.setId(tr.getId());
-			availableReviewWork.addSearchResult(result);
+			StringBuffer valueBuffer = new StringBuffer();
+			valueBuffer.append(tr.getDefaultPreferredName());
+			for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
+			  for (String label : record.getLabels()) {
+			  	valueBuffer.append(";").append(label);
+			  }
+			}
+			result.setValue(valueBuffer.toString());
+			availableQAWork.addSearchResult(result);
 		}
-		return availableReviewWork;
+		return availableQAWork;
 	}
 	
 	
@@ -1579,7 +1585,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 								+ tr.getTerminologyId());
 			}
 			result.setTerminologyId(mapRecord.getConceptId());
-			result.setValue(mapRecord.getConceptName());
+			StringBuffer valueBuffer = new StringBuffer();
+			valueBuffer.append(mapRecord.getConceptName());
+			for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
+			  for (String label : record.getLabels()) {
+			  	valueBuffer.append(";").append(label);
+			  }
+			}
+			result.setValue(valueBuffer.toString());
 			result.setTerminology(mapRecord.getLastModified().toString());
 			result.setTerminologyVersion(mapRecord.getWorkflowStatus()
 					.toString());

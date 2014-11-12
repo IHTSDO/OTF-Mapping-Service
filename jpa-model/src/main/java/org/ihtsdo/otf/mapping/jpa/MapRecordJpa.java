@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
@@ -36,7 +35,7 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
-import org.ihtsdo.otf.mapping.helpers.SetStringFieldBridge;
+import org.ihtsdo.otf.mapping.helpers.CollectionToCSVBridge;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapNote;
@@ -148,6 +147,8 @@ public class MapRecordJpa implements MapRecord {
 	@ElementCollection
 	@CollectionTable(name = "map_records_labels", joinColumns = @JoinColumn(name = "id"))
 	@Column(nullable = true)
+	// treat labels as a single field called labels
+	@Field(bridge = @FieldBridge(impl =CollectionToCSVBridge.class))
 	private Set<String> labels = new HashSet<>();
 
 	/**

@@ -58,6 +58,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	$scope.labelNames.push("TEST_LABEL");
 	$scope.labelNames.push("TEST_LABEL2");
 	$scope.labelNames.push("TEST_LABEL3");
+	
 
 	// watch for project change and modify the local variable if necessary
 	// coupled with $watch below, this avoids premature work fetching
@@ -329,6 +330,20 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			// set title
 			$scope.tabs[3].title = "QA (" + data.totalCount + ")";
 			console.debug($scope.numAvailableQAWorkPages);
+			
+			// set labels
+			for (var i = 0; i < $scope.availableQAWork.length; i++) {
+				var concept = $scope.availableQAWork[i];
+				
+				if (concept.value.indexOf(";") > 0) {		
+					var allLabels = concept.value.substring(concept.value.indexOf(";") + 1);
+				    $scope.availableQAWork[i].name = concept.value.substring(0, concept.value.indexOf(";"));
+				    $scope.availableQAWork[i].labels = allLabels;
+				}	else {
+					$scope.availableQAWork[i].name = concept.value;
+				}		
+			}
+			
 			//$scope.availableCount = data.totalCount;
 			//console.debug(data.totalCount);
 

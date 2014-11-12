@@ -1,5 +1,14 @@
 <h4 ng-show="showTitle == true">{{record.conceptName}}<br>{{project.sourceTerminology}} concept {{record.conceptId}}</h4>
 <div ng-show="record.flagForLeadReview == true" style="color:red">Flagged For Lead Review</div>
+      <!-- Labels -->
+    <div ng-repeat="label in record.labels" style="width:100%;margin-bottom:5px;">
+		<div style="vertical-align:top;width:7%;display:inline-block;padding:2px">
+			<span style="color:#99CCFF"><i class="glyphicon glyphicon-tasks blue" alt="label icon" tooltip-placement="top" tooltip="Label"></i></span>
+		</div>
+		<div class="alert alert-success" style="vertical-align:top;display:inline-block;padding:1px">
+			{{label}}
+		</div>
+    </div>
 <div ng-show="record.mapEntry.length == 0">No map entries available.</div>
 <div ng-show="record.mapEntry.length > 0">Map Entries</div>
 <div style="padding:0px; border-bottom:thin solid grey;">
@@ -17,7 +26,8 @@
 		<div style="vertical-align:top;width:85%;display:inline-block;padding:0px"> {{entry.rule}}</div>
 	</div>
 	<div style="vertical-align:top;display:inline-block;padding:0px;width:48%;">
-		<!-- Advices -->
+
+      <!-- Advices -->
 		<div ng-repeat="advice in entry.mapAdvice">
 			<div style="vertical-align:top;width:7%;display:inline-block;padding:0px">
 				<img src="img/dialog-question.png" alt="advice icon" tooltip-placement="top" tooltip="Map Advice">
