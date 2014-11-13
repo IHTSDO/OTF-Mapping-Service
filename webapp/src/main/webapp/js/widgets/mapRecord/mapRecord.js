@@ -565,7 +565,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			// TODO: figure out how to differentiate between QA_PATH and REVIEW_PROJECT_PATH so
 			// that we can provide a next concept of the correct type
 			// then we can comment this section back in
-		/*} else if ($scope.record.workflowStatus === 'REVIEW_NEW' || $scope.record.workflowStatus === 'REVIEW_IN_PROGRESS') {
+		} else if ($scope.record.workflowStatus === 'REVIEW_NEW' || $scope.record.workflowStatus === 'REVIEW_IN_PROGRESS') {
 			
 			// construct a paging/filtering/sorting object
 			var pfsParameterObj = 
@@ -613,7 +613,56 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			}).error(function(data, status, headers, config) {
 			    $rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);
-			});*/
+			});
+		} else if ($scope.record.workflowStatus === 'QA_NEW' || $scope.record.workflowStatus === 'QA_IN_PROGRESS') {
+			
+			// construct a paging/filtering/sorting object
+			var pfsParameterObj = 
+			{"startIndex": startIndex,
+					"maxResults": 1, 
+					"sortField": 'sortKey',
+					"queryRestriction": 'QA_NEW'}
+			;  
+			// get the assigned review work
+			$rootScope.glassPane++;
+			$http({
+				url: root_workflow + "project/id/" + $scope.project.id 
+				+ "/user/id/" + $scope.user.userName
+				+ "/query/null/assignedQAWork",
+				
+				dataType: "json",
+				data: pfsParameterObj,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+
+				var assignedWork = data.searchResult;
+				if (tooltipOnly == true) {
+					if (assignedWork.length == 0) {
+						$scope.dynamicTooltip = "";
+					} else {
+					    $scope.dynamicTooltip = assignedWork[0].terminologyId + " " 
+					     + assignedWork[0].value;
+					}
+				} else {
+				    // if there is no more assigned work, return to dashboard
+				    if (assignedWork.length == 0) {
+					    console.debug("No more assigned qa work, return to dashboard");
+					    $location.path($scope.role + "/dash");
+				
+				    // otherwise redirect to the next record to be edited
+				    } else {
+					    console.debug("More work, redirecting");
+					    $location.path("record/review/" + assignedWork[0].id);
+				    }
+				}
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
+			    $rootScope.handleHttpError(data, status, headers, config);
+			});
 		/*} else {
 			$rootScope.glassPane--;
 			console.debug("MapRecord finish/next can't determine type of work, returning to dashboard");

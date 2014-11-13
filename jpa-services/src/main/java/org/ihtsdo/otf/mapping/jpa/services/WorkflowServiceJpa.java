@@ -751,15 +751,15 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				mapProject.getId(), query);
 
 		// add the query terms specific to findAvailableReviewWork
-		// - a user (any) and workflowStatus pair of REVIEW_NEEDED~userName
+		// - a user (any) and workflowStatus pair of QA_NEEDED~userName
 		// exists
-		// - the REVIEW_NEEDED pair is not for this user (i.e. user can't review
+		// - the QA_NEEDED pair is not for this user (i.e. user can't review
 		// their own work, UNLESS there is only one lead on the project
 		// - user and workflowStatus pairs of
 		// CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
 
-		// must have a REVIEW_NEEDED tag with any user
-		full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*";
+		// must have a QA_NEEDED tag with any user
+		full_query += " AND userAndWorkflowStatusPairs:QA_NEEDED_*";
 		
 		full_query += " AND workflowPath:QA_PATH";
 
@@ -768,14 +768,14 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// TODO SEE MAP-617
 		/*
 		 * if (mapProject.getMapLeads().size() > 1) { full_query +=
-		 * " AND NOT userAndWorkflowStatusPairs:REVIEW_NEEDED_" +
+		 * " AND NOT userAndWorkflowStatusPairs:QA_NEEDED_" +
 		 * mapUser.getUserName(); }
 		 */
 
 		// there must not be an already claimed review record
-		full_query += " AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
-				+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
-				+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*" + ")";
+		full_query += " AND NOT (userAndWorkflowStatusPairs:QA_NEW_*"
+				+ " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_*"
+				+ " OR userAndWorkflowStatusPairs:QA_RESOLVED_*" + ")";
 
 		System.out.println("FindAvailableQAWork query: " + full_query);
 
@@ -1476,30 +1476,30 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				mapProject.getId(), query);
 
 		// add the query terms specific to findAssignedReviewWork
-		// - user and workflow status must exist in the form REVIEW_NEW_userName
-		// or REVIEW_IN_PROGRESS_userName
+		// - user and workflow status must exist in the form QA_NEW_userName
+		// or QA_IN_PROGRESS_userName
 
 		// add terms based on query restriction
 		switch (localPfsParameter.getQueryRestriction()) {
-		case "REVIEW_NEW":
-			full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEW_"
+		case "QA_NEW":
+			full_query += " AND userAndWorkflowStatusPairs:QA_NEW_"
 					+ mapUser.getUserName();
 
 			break;
-		case "REVIEW_IN_PROGRESS":
-			full_query += " AND userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_"
+		case "QA_IN_PROGRESS":
+			full_query += " AND userAndWorkflowStatusPairs:QA_IN_PROGRESS_"
 					+ mapUser.getUserName();
 			break;
-		case "REVIEW_RESOLVED":
-			full_query += " AND userAndWorkflowStatusPairs:REVIEW_RESOLVED_"
+		case "QA_RESOLVED":
+			full_query += " AND userAndWorkflowStatusPairs:QA_RESOLVED_"
 					+ mapUser.getUserName();
 			break;
 		default:
-			full_query += " AND (userAndWorkflowStatusPairs:REVIEW_NEW_"
+			full_query += " AND (userAndWorkflowStatusPairs:QA_NEW_"
 					+ mapUser.getUserName()
-					+ " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_"
+					+ " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_"
 					+ mapUser.getUserName()
-					+ " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_"
+					+ " OR userAndWorkflowStatusPairs:QA_RESOLVED_"
 					+ mapUser.getUserName() + ")";
 			break;
 		}
@@ -1560,11 +1560,11 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 				if (mr.getOwner().equals(mapUser)) {
 
 					// TODO See MAP-617
-					// check for the case where REVIEW work is both specialist
+					// check for the case where QA work is both specialist
 					// and
 					// lead level for same user
 					if (mr.getWorkflowStatus().compareTo(
-							WorkflowStatus.REVIEW_NEW) < 0) {
+							WorkflowStatus.QA_NEW) < 0) {
 						// do nothing, this is the specialist level work
 
 					} else if (mr.getWorkflowStatus().equals(
