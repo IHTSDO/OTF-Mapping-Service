@@ -690,7 +690,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
 				if (concept == null) { 
 					newConcept = new ConceptJpa(); 
-					objectsAdded++; 
 				} else { 
 					newConcept = new ConceptJpa(concept); // NEED COPY CONSTRUCTOR 
 				}
@@ -704,16 +703,16 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 				newConcept.setTerminology(terminology);
 				newConcept.setTerminologyVersion(terminologyVersion);
 				newConcept.setDefaultPreferredName("TBD");
-				// must set to avoid lazyInit error during cacheConcept, 
-				//though not compared in equals
-				newConcept.setRelationships(new HashSet<Relationship>());
+				
 
 				if (concept == null) { 
 					contentService.addConcept(newConcept); 
+					objectsAdded++; 
 				}
 
 				else if (!newConcept.equals(concept)) { 				
 					contentService.updateConcept(newConcept); 
+					objectsUpdated++; 
 				}
 
 				cacheConcept(newConcept);
@@ -1356,7 +1355,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
 			c.setEffectiveTime(this.deltaLoaderStartDate);
 
-			// relationships are NOT pre loaded, no need
 			for (Relationship r : c.getRelationships()) {
 				relationshipCache.put(r.getTerminologyId(), r);
 			}
