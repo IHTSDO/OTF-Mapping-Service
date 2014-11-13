@@ -263,6 +263,10 @@ angular.module('mapProjectApp.widgets.recordConcept', ['adf.provider'])
 				$location.path("/record/review/" + record.id);
 			}
 			
+			else if (record.workflowStatus === 'QA_NEW' || record.workflowStatus === 'QA_IN_PROGRESS') {
+				$location.path("/record/review/" + record.id);
+			}
+			
 			// otherwise go to the edit page
 			else $location.path("/record/recordId/" + record.id);
 		

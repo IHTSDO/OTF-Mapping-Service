@@ -1039,7 +1039,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				// get QA User MapUser				
 				newRecord.setOwner(mapUser);
 				newRecord.setLastModifiedBy(mapUser);
-				newRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
+				newRecord.setWorkflowStatus(WorkflowStatus.QA_NEEDED);
 				// TODO: remove label setting here
 				newRecord.addLabel("TEST_LABEL");
 
@@ -1229,7 +1229,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 					.info("Assigning concept along QA_PATH");
 
-			if (getLowestWorkflowStatus(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)) {
+			if (getLowestWorkflowStatus(mapRecords).equals(WorkflowStatus.QA_NEEDED)) {
 				if (mapRecords.size() == 2) {
 					
 				} else {
@@ -1240,14 +1240,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				for (MapRecord record : mapRecords) {
 					//if (record.getWorkflowStatus().equals(WorkflowStatus.REVISION))
 						//mapRecord.addOrigin(record.getId());
-					if (record.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+					if (record.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
 						mapRecord.setLabels(record.getLabels());
 						mapRecord.addOrigin(record.getId());
 					}
 				}
 
 				// set workflow status to review new
-				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
+				mapRecord.setWorkflowStatus(WorkflowStatus.QA_NEW);
 			} else {
 				throw new Exception(
 						"ASSIGN_FROM_SCRATCH on QA_PATH failed for concept "
@@ -1357,6 +1357,10 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			case REVIEW_NEW:
 			case REVIEW_IN_PROGRESS:
 			case REVIEW_RESOLVED:
+			case QA_NEEDED:
+			case QA_NEW:
+			case QA_IN_PROGRESS:
+			case QA_RESOLVED:
 
 				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
 						.info("Unassign: NON_LEGACY_PATH -- "
@@ -1495,16 +1499,16 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
 					revisionRecord = mr;
 				else if (mr.getWorkflowStatus().compareTo(
-						WorkflowStatus.REVIEW_NEEDED) <= 0)
+						WorkflowStatus.QA_NEEDED) <= 0)
 					editingRecord = mr;
 				else if (mr.getWorkflowStatus().equals(
-						WorkflowStatus.REVIEW_NEEDED)
+						WorkflowStatus.QA_NEEDED)
 						|| mr.getWorkflowStatus().equals(
-								WorkflowStatus.REVIEW_IN_PROGRESS)
+								WorkflowStatus.QA_IN_PROGRESS)
 						|| mr.getWorkflowStatus().equals(
-								WorkflowStatus.REVIEW_RESOLVED)
+								WorkflowStatus.QA_RESOLVED)
 						|| mr.getWorkflowStatus().equals(
-										WorkflowStatus.REVIEW_NEW))
+										WorkflowStatus.QA_NEW))
 					reviewRecord = mr;
 			}
 
@@ -1556,42 +1560,85 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		case DRIP_FEED_REVIEW_PATH:
 			// do nothing
 			break;
-		case FIX_ERROR_PATH:
+			case FIX_ERROR_PATH:
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+						"FIX_ERROR_PATH - Called Publish on resolved review");
+
+				// Requirements for FIX_ERROR_PATH publish action
+				// - 1 record marked REVISION
+				// - 1 record marked REVIEW_NEEDED
+				// - 1 record marked REVIEW_RESOLVED
+
+				// check assumption: owned record is REVIEW_RESOLVED
+				if (!mapRecord.getWorkflowStatus().equals(
+						WorkflowStatus.REVIEW_RESOLVED))
+					throw new Exception(
+							"Publish called on FIX_ERROR_PATH for map record not marked as REVIEW_RESOLVED");
+
+				// check assumption: REVISION and REVIEW_NEEDED records are present
+				boolean revisionRecordFound = false;
+				boolean reviewNeededRecordFound = false;
+
+				for (MapRecord mr : mapRecords) {
+					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
+						revisionRecordFound = true;
+					else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
+						reviewNeededRecordFound = true;
+				}
+
+				if (!revisionRecordFound)
+					throw new Exception(
+							"Publish called on FIX_ERROR_PATH, but no REVISION record found");
+
+				if (!reviewNeededRecordFound)
+					throw new Exception(
+							"Publish called on FIX_ERROR_PATH, but no REVIEW_NEEDED record found");
+
+				mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+
+				newRecords.clear();
+				newRecords.add(mapRecord);
+
+				Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class).info(
+						"publish - FIX_ERROR_PATH - Creating READY_FOR_PUBLICATION record "
+								+ mapRecord.toString());
+
+				break;
 		case QA_PATH:
 
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-					.info("FIX_ERROR_PATH/QA_PATH - Called Publish on resolved review");
+					.info("QA_PATH - Called Publish on resolved qa");
 
-			// Requirements for FIX_ERROR_PATH publish action
+			// Requirements for QA_PATH publish action
 			// - 1 record marked REVISION
-			// - 1 record marked REVIEW_NEEDED
-			// - 1 record marked REVIEW_RESOLVED
+			// - 1 record marked QA_NEEDED
+			// - 1 record marked QA_RESOLVED
 
-			// check assumption: owned record is REVIEW_RESOLVED
+			// check assumption: owned record is QA_RESOLVED
 			if (!mapRecord.getWorkflowStatus().equals(
-					WorkflowStatus.REVIEW_RESOLVED))
+					WorkflowStatus.QA_RESOLVED))
 				throw new Exception(
-						"Publish called on FIX_ERROR_PATH for map record not marked as REVIEW_RESOLVED");
+						"Publish called on QA_PATH for map record not marked as QA_RESOLVED");
 
-			// check assumption: REVISION and REVIEW_NEEDED records are present
-			boolean revisionRecordFound = false;
-			boolean reviewNeededRecordFound = false;
+			// check assumption: REVISION and QA_NEEDED records are present
+			boolean qaRecordFound = false;
+			boolean qaNeededRecordFound = false;
 
 			for (MapRecord mr : mapRecords) {
 				if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
-					revisionRecordFound = true;
+					qaRecordFound = true;
 				else if (mr.getWorkflowStatus().equals(
-						WorkflowStatus.REVIEW_NEEDED))
-					reviewNeededRecordFound = true;
+						WorkflowStatus.QA_NEEDED))
+					qaNeededRecordFound = true;
 			}
 
-			if (!revisionRecordFound)
+			if (!qaRecordFound)
 				throw new Exception(
-						"Publish called on FIX_ERROR_PATH/QA_PATH, but no REVISION record found");
+						"Publish called on QA_PATH, but no REVISION record found");
 
-			if (!reviewNeededRecordFound)
+			if (!qaNeededRecordFound)
 				throw new Exception(
-						"Publish called on FIX_ERROR_PATH/QA_PATH, but no REVIEW_NEEDED record found");
+						"Publish called on QA_PATH, but no QA_NEEDED record found");
 
 			mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 
@@ -1599,7 +1646,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 			newRecords.add(mapRecord);
 
 			Logger.getLogger(DefaultProjectSpecificAlgorithmHandler.class)
-					.info("publish - FIX_ERROR_PATH/QA_PATH - Creating READY_FOR_PUBLICATION record "
+					.info("publish - QA_PATH - Creating READY_FOR_PUBLICATION record "
 							+ mapRecord.toString());
 
 			break;
@@ -2057,8 +2104,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 
 				// assumption check: should be exactly three records
 				// 1) original published record, marked REVISION
-				// 2) specialist (QA) record, marked REVIEW_NEEDED
-				// 3) lead's record, marked REVIEW_NEW or REVIEW_IN_PROGRESS
+				// 2) specialist (QA) record, marked QA_NEEDED
+				// 3) lead's record, marked QA_NEW or QA_IN_PROGRESS
 
 				MapRecord originalRecord = null;
 				MapRecord modifiedRecord = null;
@@ -2068,14 +2115,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 					if (mr.getWorkflowStatus().equals(WorkflowStatus.REVISION))
 						originalRecord = mr;
 					if (mr.getWorkflowStatus().equals(
-							WorkflowStatus.REVIEW_NEEDED))
+							WorkflowStatus.QA_NEEDED))
 						modifiedRecord = mr;
 					if (mr.getWorkflowStatus()
-							.equals(WorkflowStatus.REVIEW_NEW)
+							.equals(WorkflowStatus.QA_NEW)
 							|| mr.getWorkflowStatus().equals(
-									WorkflowStatus.REVIEW_IN_PROGRESS)
+									WorkflowStatus.QA_IN_PROGRESS)
 							|| mr.getWorkflowStatus().equals(
-									WorkflowStatus.REVIEW_RESOLVED))
+									WorkflowStatus.QA_RESOLVED))
 						leadRecord = mr;
 				}
 
@@ -2092,7 +2139,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 							"QA_PATH: Lead finished reviewing work, but could not find their record.");
 
 				// mark the lead record as resolved
-				leadRecord.setWorkflowStatus(WorkflowStatus.REVIEW_RESOLVED);
+				leadRecord.setWorkflowStatus(WorkflowStatus.QA_RESOLVED);
 
 			} else {
 				throw new Exception(
@@ -2140,11 +2187,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		// review project and fix error paths behave identically
 		case REVIEW_PROJECT_PATH:
 		case FIX_ERROR_PATH:
-		case QA_PATH:
 			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW))
 				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
 			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW))
 				mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_IN_PROGRESS);
+
+			break;
+		case QA_PATH:
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.NEW))
+				mapRecord.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+			if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.QA_NEW))
+				mapRecord.setWorkflowStatus(WorkflowStatus.QA_IN_PROGRESS);
 
 			break;
 		case LEGACY_PATH:

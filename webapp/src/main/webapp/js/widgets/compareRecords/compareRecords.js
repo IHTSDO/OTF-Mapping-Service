@@ -195,13 +195,14 @@ angular.module('mapProjectApp.widgets.compareRecords', ['adf.provider'])
 					$scope.record2 = data.mapRecord[1];
 					$scope.record2.displayName = $scope.record2.owner.name;
 					
-				// otherwise a review record
+				// otherwise a review or qa record
 				} else {
 					
 					// assign the first record as the specialist's revised record
 					// assign the second record as the previously published record
 					for (var i = 0; i < 2; i++) {
-						if (data.mapRecord[i].workflowStatus === 'REVIEW_NEEDED') {
+						if (data.mapRecord[i].workflowStatus === 'REVIEW_NEEDED' ||
+								data.mapRecord[i].workflowStatus === 'QA_NEEDED') {
 							$scope.record1 = data.mapRecord[i];
 							$scope.record1.displayName = $scope.record1.owner.name;
 						} else if (data.mapRecord[i].workflowStatus === 'REVISION') {

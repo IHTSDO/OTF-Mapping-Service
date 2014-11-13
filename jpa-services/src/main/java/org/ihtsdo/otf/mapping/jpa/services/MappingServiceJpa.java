@@ -3190,7 +3190,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
 				|| mapRecord.getWorkflowStatus().equals(
 						WorkflowStatus.REVIEW_IN_PROGRESS) || mapRecord
-				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)))
+				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)
+				||		mapRecord
+						.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)
+						|| mapRecord.getWorkflowStatus().equals(
+								WorkflowStatus.QA_IN_PROGRESS) || mapRecord
+						.getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED)))
 
 				||
 
@@ -3212,7 +3217,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				try {
 
 					if (mr.getWorkflowStatus().equals(
-							WorkflowStatus.REVIEW_NEEDED)) {
+							WorkflowStatus.REVIEW_NEEDED) || mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
 						conflictRecords.addMapRecord(getMapRecord(originId));
 						foundReviewRecord = true;
 					} else if (mr.getWorkflowStatus().equals(
@@ -3246,7 +3251,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				|| mapRecord.getWorkflowStatus().equals(
 						WorkflowStatus.REVIEW_IN_PROGRESS)
 				|| mapRecord.getWorkflowStatus().equals(
-						WorkflowStatus.REVIEW_RESOLVED)) {
+						WorkflowStatus.REVIEW_RESOLVED)
+				|| mapRecord.getWorkflowStatus().equals(
+								WorkflowStatus.QA_NEW)
+				|| mapRecord.getWorkflowStatus().equals(
+										WorkflowStatus.QA_IN_PROGRESS)
+				|| mapRecord.getWorkflowStatus().equals(
+										WorkflowStatus.QA_RESOLVED)) {
 
 			System.out.println("Getting origin id for REVIEW_PROJECT record");
 
@@ -3267,9 +3278,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 						// check assumption
 						if (!mr.getWorkflowStatus().equals(
-								WorkflowStatus.REVIEW_NEEDED)) {
+								WorkflowStatus.REVIEW_NEEDED) && 
+								!mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
 							throw new Exception(
-									"Single origin record found for review, but was not REVIEW_NEEDED");
+									"Single origin record found for review, but was not REVIEW_NEEDED or QA_NEEDED");
 						}
 
 						// add and return this record

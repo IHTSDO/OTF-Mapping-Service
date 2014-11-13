@@ -49,7 +49,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.assignedConflictType = 'CONFLICT_NEW'; 	// initialize variable to track which type of conflict has been requested
 	$scope.assignedReviewWorkType = 'REVIEW_NEW';
 	$scope.assignedWorkForUserType = 'ALL';	// initialize variable to track which type of work (for another user) has been requested
-	$scope.assignedQAWorkType = 'REVIEW_NEW';
+	$scope.assignedQAWorkType = 'QA_NEW';
 	
 	// function to change tab
 	$scope.setTab = function(tabNumber) {
@@ -120,9 +120,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					$scope.setTab(2);
 					$scope.assignedReviewWorkType = 'REVIEW_NEW';
 				} else if (parameters.assignType === 'qa') {
-					$scope.retrieveAssignedQAWork($scope.assignedQAWorkPage, null, 'REVIEW_NEW');
+					$scope.retrieveAssignedQAWork($scope.assignedQAWorkPage, null, 'QA_NEW');
 					$scope.setTab(4);
-					$scope.assignedQAWorkType = 'REVIEW_NEW';
+					$scope.assignedQAWorkType = 'QA_NEW';
 				}
 			} else {
 				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser.userName, 'NEW');
@@ -519,6 +519,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		// NOTE:  workflow status is contained in terminologyVersion for a searchResult object
 		if (record.terminologyVersion === "EDITING_DONE" 
 				|| record.terminologyVersion === "REVIEW_RESOLVED"
+				|| record.terminologyVersion === "QA_RESOLVED"
 				|| record.terminologyVersion === "CONFLICT_RESOLVED") {
 			var response = confirm("Are you sure you want to return finished work?  You will lose any work done.");
 			if (response == false)
@@ -770,7 +771,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					"startIndex": -1,
 					"maxResults": -1,
 					"sortField": 'sortKey',
-					"queryRestriction": result.unassignEditedWork == true ? 'ALL' : 'REVIEW_NEW'};
+					"queryRestriction": result.unassignEditedWork == true ? 'ALL' : 'QA_NEW'};
 			
 			$rootScope.glassPane++;
 			
@@ -986,6 +987,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		else if (workflowStatus === 'REVIEW_IN_PROGRESS'
 				|| workflowStatus === 'REVIEW_RESOLVED')
 			apiWorkflowText = 'assignedReviewWork';
+		else if (workflowStatus === 'QA_IN_PROGRESS'
+			|| workflowStatus === 'QA_RESOLVED')
+		apiWorkflowText = 'assignedQAWork';
 		else if (workflowStatus === 'EDITING_IN_PROGRESS'
 				|| workflowStatus === 'EDITING_DONE')
 			apiWorkflowText = 'assignedConcepts';
@@ -1067,7 +1071,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					return $scope.currentUser;
 				},
 				action : function() {
-					return (workflowStatus === 'CONFLICT_RESOLVED' || workflowStatus === 'REVIEW_RESOLVED') ? 'publish'
+					return (workflowStatus === 'CONFLICT_RESOLVED' || workflowStatus === 'REVIEW_RESOLVED'
+						    || workflowStatus === 'QA_RESOLVED') ? 'publish'
 							: 'finish';
 				}
 			}
@@ -1087,7 +1092,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		  			if ($scope.currentRole === 'Lead') {
 					  $scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
 		  			}
-		  			$scope.retrieveAssignedQAWork(1, null, workflowStatus);
+		  		} else if (workflowStatus === 'QA_IN_PROGRESS'
+					|| workflowStatus === 'QA_RESOLVED') {
+				      $scope.retrieveAssignedQAWork(1, null, workflowStatus); // called on Done
 		  		} else if (workflowStatus === 'EDITING_IN_PROGRESS'
 						|| workflowStatus === 'EDITING_DONE') {
 					$scope.retrieveAssignedWork(1, null, workflowStatus); // called on Done
@@ -1105,9 +1112,11 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		  		} else if (workflowStatus === 'REVIEW_IN_PROGRESS'
 						|| workflowStatus === 'REVIEW_RESOLVED') {
 					if ($scope.currentRole === 'Lead') {
-						  $scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
-			  			}
-			  			$scope.retrieveAssignedQAWork(1, null, workflowStatus);
+						$scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
+			  		}
+		  		} else if (workflowStatus === 'QA_IN_PROGRESS'
+					|| workflowStatus === 'QA_RESOLVED') {
+		  			$scope.retrieveAssignedQAWork(1, null, workflowStatus);
 				} else if (workflowStatus === 'EDITING_IN_PROGRESS'
 						|| workflowStatus === 'EDITING_DONE') {
 					$scope.retrieveAssignedWork(1, null, workflowStatus); // called on Done
@@ -1185,7 +1194,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			  		// if an *_IN_PROGRESS record, not finished
 				  	if ($scope.currentRecord.workflowStatus === 'EDITING_IN_PROGRESS'
 				  		|| $scope.currentRecord.workflowStatus === 'CONFLICT_IN_PROGRESS'
-				  		|| $scope.currentRecord.workflowStatus === 'REVIEW_IN_PROGRESS')
+				  		|| $scope.currentRecord.workflowStatus === 'REVIEW_IN_PROGRESS'
+					  	|| $scope.currentRecord.workflowStatus === 'QA_IN_PROGRESS')
 				  		$scope.currentRecord.isFinished = false;
 				  	
 				  	// otherwise, this record has been finished/published via this modal
