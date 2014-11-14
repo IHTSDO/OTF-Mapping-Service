@@ -272,7 +272,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		for (MapProject mp : m) {
 			s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId()
-					.toString(), mp.getName()));
+					.toString(), mp.getName(), ""));
 		}
 
 		// Sort by ID
@@ -697,7 +697,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			for (MapRecord mapRecord : mapRecords) {
 				s.addSearchResult(new SearchResultJpa(mapRecord.getId(),
 						mapRecord.getConceptId().toString(), mapRecord
-								.getConceptName()));
+								.getConceptName(), ""));
 			}
 
 			// Sort by ID
