@@ -54,6 +54,7 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 	                {id: 2, title: 'Review', active:false},
 	                {id: 3, title: 'QA', active:false}];
 	
+	// labels for QA filtering
 	$scope.labelNames = [];
 	$scope.labelNames.push("TEST_LABEL");
 	$scope.labelNames.push("TEST_LABEL2");
@@ -283,7 +284,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 		$scope.error = null;
 
 		// if user not supplied, assume current user
-		if (user == null || user == undefined) user = $scope.currentUser;
+		if (user == null || user == undefined) 
+			user = $scope.currentUser;
 		
 		// clear the existing work
 		$scope.availableQAWork = null;
@@ -335,13 +337,8 @@ angular.module('mapProjectApp.widgets.workAvailable', ['adf.provider'])
 			for (var i = 0; i < $scope.availableQAWork.length; i++) {
 				var concept = $scope.availableQAWork[i];
 				
-				if (concept.value.indexOf(";") > 0) {		
-					var allLabels = concept.value.substring(concept.value.indexOf(";") + 1);
-				    $scope.availableQAWork[i].name = concept.value.substring(0, concept.value.indexOf(";"));
-				    $scope.availableQAWork[i].labels = allLabels;
-				}	else {
-					$scope.availableQAWork[i].name = concept.value;
-				}		
+				$scope.availableQAWork[i].name = concept.value;
+				$scope.availableQAWork[i].labels = concept.value2;					
 			}
 			
 			//$scope.availableCount = data.totalCount;

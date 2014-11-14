@@ -295,25 +295,15 @@
           ng-click="assignBatchQA(currentUser, batchSize, null)">Claim Batch</button></td>
     </tr>
     
-<!--      <tr>
-      <td style="padding: 5px;">Filter concepts:</td>
-      <td style="padding: 5px;">
-        <form>
-      <input id="availableSearch" ng-model="queryAvailable">
-      <button class="btn btn-sm btn-primary" ng-click="retrieveAvailableQAWork(1, queryAvailable, assignedMapUser); isConceptListOpen = true">Search</button>
-      <button class="btn btn-sm btn-primary" ng-click="retrieveAvailableQAWork(1, 'null', assignedMapUser); queryAvailable = null; isConceptListOpen = false">Reset</button>
-      </form>
-    </td>
-  </tr> -->
   <tr>
     <td style="padding: 5px;">Filter by label:</td>
-      <td style="padding: 5px;">
-    <form ng-submit="addAssignment(selected)"><div class="input-append">
-      <input type="text" ng-model="selected" typeahead="lbl for lbl in labelNames |  filter:$viewValue"/>
-      <button class="btn btn-sm btn-primary"  type="submit" ng-click="retrieveAvailableQAWork(1, selected, assignedMapUser);">Filter</button>
-   </div></form>
-   
-    </td>
+      <td style="padding: 5px;"><select ng-model="selected"
+        ng-options="lbl for lbl in labelNames">
+        </select>
+        <button class="btn btn-sm btn-primary"  type="submit" ng-click="retrieveAvailableQAWork(1, selected, null);">Filter</button>   
+        <button class="btn btn-sm btn-primary" 
+          ng-click="retrieveAvailableQAWork(1, 'null', 'null'); selected = null;">Reset</button>
+      </td>
   </tr>
     
   </tbody>
