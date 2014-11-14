@@ -28,8 +28,6 @@ import com.sun.jersey.api.representation.Form;
 
 /**
  * Reference implementation of the {@link SecurityService}.
- * 
- * @author ${author}
  */
 public class SecurityServiceJpa extends RootServiceJpa implements
 		SecurityService {
@@ -40,7 +38,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 	/** The token login time map. */
 	private static Map<String, Date> tokenLoginMap = new HashMap<>();
 
-	private static Properties config = null;
+    /**  The config. */
+    private static Properties config = null;
 
 	/**
 	 * Instantiates an empty {@link SecurityServiceJpa}.
@@ -217,6 +216,9 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
 				// check timeout against current time minus time of last activity
 				if ((new Date()).getTime() - lastActivity.getTime() > new Long(timeout)) {
+					
+					Logger.getLogger(SecurityServiceJpa.class).info("Timeout expired for user " + username + ".  Last login at " + lastActivity.toString() + " (" + (new Date().getTime() - lastActivity.getTime()) + " ms difference)");
+					
 					throw new LocalException(
 							"Your session has expired.  Please log in again.",
 							"401");

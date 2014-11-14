@@ -865,7 +865,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	public MapRecordList getMapRecordRevisionsForConcept(String conceptId, Long mapProjectId) {
 
 		AuditReader reader = AuditReaderFactory.get(manager);
-		List<MapRecord> revisions = reader.createQuery()
+		@SuppressWarnings("unchecked")
+        List<MapRecord> revisions = reader.createQuery()
 
 		// all revisions, returned as objects, not finding deleted entries
 				.forRevisionsOfEntity(MapRecordJpa.class, true, false)
@@ -3668,7 +3669,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 	public Map<String, Map<String, String>> getMapProjectMetadata() throws Exception {
 		Map<String, Map<String, String>> idNameMapList = new HashMap<>();
 		
-		Map<String, String> workflowNameMap = new HashMap<String, String>();
+		Map<String, String> workflowNameMap = new HashMap<>();
 		for (WorkflowType type : WorkflowType.values() ) {
 			workflowNameMap.put(type.name(), type.getDisplayName());
 		}
@@ -3676,7 +3677,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			idNameMapList.put("Workflow Types", workflowNameMap);
 		}
 		
-		Map<String, String> relationStyleNameMap = new HashMap<String, String>();
+		Map<String, String> relationStyleNameMap = new HashMap<>();
 		for (RelationStyle type : RelationStyle.values() ) {
 			relationStyleNameMap.put(type.name(), type.getDisplayName());
 		}
@@ -3684,7 +3685,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			idNameMapList.put("Relation Styles", relationStyleNameMap);
 		}		
 		
-		Map<String, String> mapRefsetPatternNameMap = new HashMap<String, String>();
+		Map<String, String> mapRefsetPatternNameMap = new HashMap<>();
 		for (MapRefsetPattern type : MapRefsetPattern.values() ) {
 			mapRefsetPatternNameMap.put(type.name(), type.getDisplayName());
 		}

@@ -3,92 +3,128 @@ package org.ihtsdo.otf.mapping.helpers;
 import java.util.Set;
 
 /**
- * The Interface ValidationResult.
+ * Generically represents the result of a validation check.
  */
 public interface ValidationResult {
 
-  /**
-   * Checks if is valid.
-   * 
-   * @return true, if is valid
-   */
-  public boolean isValid();
+	/**
+	 * Checks if is valid.
+	 * 
+	 * @return true, if is valid
+	 */
+	public boolean isValid();
 
-  /**
-   * Gets the errors.
-   * 
-   * @return the errors
-   */
-  public Set<String> getErrors();
+	/**
+	 * Gets the general messages.
+	 *
+	 * @return the messages
+	 */
+	public Set<String> getMessages();
 
-  /**
-   * Sets the errors.
-   * 
-   * @param errors the new errors
-   */
-  public void setErrors(Set<String> errors);
+	/**
+	 * Sets the messages.
+	 *
+	 * @param messages the new messages
+	 */
+	public void setMessages(Set<String> messages);
 
-  /**
-   * Gets the warnings.
-   * 
-   * @return the warnings
-   */
-  public Set<String> getWarnings();
+	/**
+	 * Gets the errors.
+	 * 
+	 * @return the errors
+	 */
+	public Set<String> getErrors();
 
-  /**
-   * Sets the warnings.
-   * 
-   * @param warnings the new warnings
-   */
-  public void setWarnings(Set<String> warnings);
+	/**
+	 * Sets the errors.
+	 * 
+	 * @param errors
+	 *            the new errors
+	 */
+	public void setErrors(Set<String> errors);
 
-  /**
-   * Removewarning.
-   * 
-   * @param warning the warning
-   */
-  public void removeWarning(String warning);
+	/**
+	 * Gets the warnings.
+	 * 
+	 * @return the warnings
+	 */
+	public Set<String> getWarnings();
 
-  /**
-   * Addwarning.
-   * 
-   * @param warning the warning
-   */
-  public void addWarning(String warning);
+	/**
+	 * Sets the warnings.
+	 * 
+	 * @param warnings
+	 *            the new warnings
+	 */
+	public void setWarnings(Set<String> warnings);
 
-  /**
-   * Removes the error.
-   * 
-   * @param error the error
-   */
-  public void removeError(String error);
+	/**
+	 * Removewarning.
+	 * 
+	 * @param warning
+	 *            the warning
+	 */
+	public void removeWarning(String warning);
 
-  /**
-   * Adds the error.
-   * 
-   * @param error the error
-   */
-  public void addError(String error);
+	/**
+	 * Addwarning.
+	 * 
+	 * @param warning
+	 *            the warning
+	 */
+	public void addWarning(String warning);
 
-  /**
-   * Adds the warnings.
-   * 
-   * @param warnings the warnings
-   */
-  public void addWarnings(Set<String> warnings);
+	/**
+	 * Removes the error.
+	 * 
+	 * @param error
+	 *            the error
+	 */
+	public void removeError(String error);
 
-  /**
-   * Adds the errors.
-   * 
-   * @param errors the errors
-   */
-  public void addErrors(Set<String> errors);
+	/**
+	 * Adds the error.
+	 * 
+	 * @param error
+	 *            the error
+	 */
+	public void addError(String error);
 
-  /**
-   * Merge a second validation result into this validation result
-   * 
-   * @param validationResult the validation result
-   */
-  public void merge(ValidationResult validationResult);
+	/**
+	 * Adds the warnings.
+	 * 
+	 * @param warnings
+	 *            the warnings
+	 */
+	public void addWarnings(Set<String> warnings);
+
+	/**
+	 * Adds the errors.
+	 * 
+	 * @param errors
+	 *            the errors
+	 */
+	public void addErrors(Set<String> errors);
+
+	/**
+	 * Merge a second validation result into this validation result.
+	 *
+	 * @param validationResult the validation result
+	 */
+	public void merge(ValidationResult validationResult);
+
+	/**
+	 * Adds the messages.
+	 *
+	 * @param messageSet the message set
+	 */
+	public void addMessages(Set<String> messageSet);
+
+	/**
+	 * Adds the message.
+	 *
+	 * @param message the message
+	 */
+	public void addMessage(String message);
 
 }
