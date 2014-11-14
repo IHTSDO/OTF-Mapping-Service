@@ -1,8 +1,6 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -129,8 +127,6 @@ public class ReleaseProcessingMojo extends AbstractMojo {
 					}
 				}
 			}
-
-			DateFormat df = new SimpleDateFormat("yyyyMMdd");
 
 			// Perform the release processing
 			for (MapProject mapProject : mapProjects) {

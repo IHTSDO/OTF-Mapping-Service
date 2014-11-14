@@ -288,74 +288,70 @@ public class MapAgeRangeJpa implements MapAgeRange {
 		return this.upperValue == -1 ? false : true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (lowerInclusive ? 1231 : 1237);
-		result =
-				prime * result + ((lowerUnits == null) ? 0 : lowerUnits.hashCode());
-		result =
-				prime * result + ((lowerValue == null) ? 0 : lowerValue.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + (upperInclusive ? 1231 : 1237);
-		result =
-				prime * result + ((upperUnits == null) ? 0 : upperUnits.hashCode());
-		result =
-				prime * result + ((upperValue == null) ? 0 : upperValue.hashCode());
-		return result;
-	}
+	/* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (lowerInclusive ? 1231 : 1237);
+    result =
+        prime * result + ((lowerUnits == null) ? 0 : lowerUnits.hashCode());
+    result =
+        prime * result + ((lowerValue == null) ? 0 : lowerValue.hashCode());
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + (upperInclusive ? 1231 : 1237);
+    result =
+        prime * result + ((upperUnits == null) ? 0 : upperUnits.hashCode());
+    result =
+        prime * result + ((upperValue == null) ? 0 : upperValue.hashCode());
+    return result;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MapAgeRangeJpa other = (MapAgeRangeJpa) obj;
-		if (lowerInclusive != other.lowerInclusive)
-			return false;
-		if (lowerUnits == null) {
-			if (other.lowerUnits != null)
-				return false;
-		} else if (!lowerUnits.equals(other.lowerUnits))
-			return false;
-		if (lowerValue == null) {
-			if (other.lowerValue != null)
-				return false;
-		} else if (!lowerValue.equals(other.lowerValue))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (upperInclusive != other.upperInclusive)
-			return false;
-		if (upperUnits == null) {
-			if (other.upperUnits != null)
-				return false;
-		} else if (!upperUnits.equals(other.upperUnits))
-			return false;
-		if (upperValue == null) {
-			if (other.upperValue != null)
-				return false;
-		} else if (!upperValue.equals(other.upperValue))
-			return false;
-		return true;
-	}
+	/* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    MapAgeRangeJpa other = (MapAgeRangeJpa) obj;
+    if (lowerInclusive != other.lowerInclusive)
+      return false;
+    if (lowerUnits == null) {
+      if (other.lowerUnits != null)
+        return false;
+    } else if (!lowerUnits.equals(other.lowerUnits))
+      return false;
+    if (lowerValue == null) {
+      if (other.lowerValue != null)
+        return false;
+    } else if (!lowerValue.equals(other.lowerValue))
+      return false;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    if (upperInclusive != other.upperInclusive)
+      return false;
+    if (upperUnits == null) {
+      if (other.upperUnits != null)
+        return false;
+    } else if (!upperUnits.equals(other.upperUnits))
+      return false;
+    if (upperValue == null) {
+      if (other.upperValue != null)
+        return false;
+    } else if (!upperValue.equals(other.upperValue))
+      return false;
+    return true;
+  }
 
 	/*
 	 * (non-Javadoc)

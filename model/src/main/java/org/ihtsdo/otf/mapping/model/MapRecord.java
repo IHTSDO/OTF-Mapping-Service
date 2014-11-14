@@ -5,11 +5,9 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface MapRecord.
- * 
- * @author ${author}
+ * Generically represents a map record, or a complete mapping of a source
+ * concept in a map project.
  */
 public interface MapRecord {
 

@@ -8,9 +8,10 @@ REM
 REM
 REM Set environment variables at system level
 REM
-REM set MVN_HOME=C:/apache-maven-3.0.5
-set OTF_MAPPING_HOME="C:/workspace-mapping-services-luna/OTF-Mapping-Service"
-set OTF_MAPPING_CONFIG="C:/data/config.luna.properties"
+REM NOTE: DO NOT UNCOMMENT THIS, to customize for your environment, set environment vars
+REM  MVN_HOME=C:/apache-maven-3.0.5
+REM  OTF_MAPPING_HOME="C:/workspace-mapping-services-luna/OTF-Mapping-Service"
+REM  OTF_MAPPING_CONFIG="C:/data/config.luna.properties"
 REM
 
 echo ------------------------------------------------
@@ -26,7 +27,7 @@ set error=0
 pause
 echo     Run updatedb with hibernate.hbm2ddl.auto = create ...%date% %time%
 cd %OTF_MAPPING_HOME%/admin/updatedb
-call %MVN_HOME%/bin/mvn -Drun.config=%OTF_MAPPING_CONFIG% -Dhibernate.hbm2ddl.auto=update install 1> mvn.log
+call %MVN_HOME%/bin/mvn -Drun.config=%OTF_MAPPING_CONFIG% -Dhibernate.hbm2ddl.auto=create install 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
@@ -68,7 +69,7 @@ del /Q mvn.log
 
 echo     Import project data ...%date% %time%
 cd %OTF_MAPPING_HOME%/admin/import
-call %MVN_HOME%/bin/mvn -Drun.config=%OTF_MAPPING_CONFIG% install 1> mvn.log
+call %MVN_HOME%/bin/mvn -Dmini=true -Drun.config=%OTF_MAPPING_CONFIG% install 1> mvn.log
 IF %ERRORLEVEL% NEQ 0 (set error=1
 goto trailer)
 del /Q mvn.log
