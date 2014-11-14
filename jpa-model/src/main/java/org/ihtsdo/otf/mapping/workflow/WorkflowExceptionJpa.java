@@ -13,9 +13,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class WorkflowExceptionJpa.
+ * JPA enabled implementation of {@link WorkflowException}.
  */
 @Entity
 @Table(name = "workflow_exceptions", uniqueConstraints = @UniqueConstraint(columnNames = {
@@ -175,6 +174,73 @@ public class WorkflowExceptionJpa implements WorkflowException {
 		if (this.falseConflictMapRecordIds.size() == 0) return true;
 		else return false;
 	}
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result =
+        prime
+            * result
+            + ((falseConflictMapRecordIds == null) ? 0
+                : falseConflictMapRecordIds.hashCode());
+    result =
+        prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
+    result =
+        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+    result =
+        prime * result
+            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result =
+        prime
+            * result
+            + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+    return result;
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    WorkflowExceptionJpa other = (WorkflowExceptionJpa) obj;
+    if (falseConflictMapRecordIds == null) {
+      if (other.falseConflictMapRecordIds != null)
+        return false;
+    } else if (!falseConflictMapRecordIds
+        .equals(other.falseConflictMapRecordIds))
+      return false;
+    if (mapProjectId == null) {
+      if (other.mapProjectId != null)
+        return false;
+    } else if (!mapProjectId.equals(other.mapProjectId))
+      return false;
+    if (terminology == null) {
+      if (other.terminology != null)
+        return false;
+    } else if (!terminology.equals(other.terminology))
+      return false;
+    if (terminologyId == null) {
+      if (other.terminologyId != null)
+        return false;
+    } else if (!terminologyId.equals(other.terminologyId))
+      return false;
+    if (terminologyVersion == null) {
+      if (other.terminologyVersion != null)
+        return false;
+    } else if (!terminologyVersion.equals(other.terminologyVersion))
+      return false;
+    return true;
+  }
 	
 	
 	

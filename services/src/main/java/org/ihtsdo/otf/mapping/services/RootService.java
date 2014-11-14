@@ -1,8 +1,7 @@
 package org.ihtsdo.otf.mapping.services;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface RootService. Manages Factory and lucene field names
+ * Generically represents a service, with common functionality.
  */
 public interface RootService {
 

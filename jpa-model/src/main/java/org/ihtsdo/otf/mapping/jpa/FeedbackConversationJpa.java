@@ -31,9 +31,7 @@ import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * The Class FeedbackConversationJpa.
- *
- * @author ${author}
+ * JPA enabled implementatin of {@link FeedbackConversation}.
  */
 @Entity
 @Table(name = "feedback_conversations", uniqueConstraints = {
@@ -387,4 +385,91 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 	public void setMapProjectId(Long mapProjectId) {
 		this.mapProjectId = mapProjectId;
 	}
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((feedbacks == null) ? 0 : feedbacks.hashCode());
+    result = prime * result + (isDiscrepancyReview ? 1231 : 1237);
+    result = prime * result + (isResolved ? 1231 : 1237);
+    result =
+        prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
+    result =
+        prime * result + ((mapRecordId == null) ? 0 : mapRecordId.hashCode());
+    result =
+        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+    result =
+        prime * result
+            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result =
+        prime
+            * result
+            + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+    result = prime * result + ((title == null) ? 0 : title.hashCode());
+    result = prime * result + ((userName == null) ? 0 : userName.hashCode());
+    return result;
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    FeedbackConversationJpa other = (FeedbackConversationJpa) obj;
+    if (feedbacks == null) {
+      if (other.feedbacks != null)
+        return false;
+    } else if (!feedbacks.equals(other.feedbacks))
+      return false;
+    if (isDiscrepancyReview != other.isDiscrepancyReview)
+      return false;
+    if (isResolved != other.isResolved)
+      return false;
+    if (mapProjectId == null) {
+      if (other.mapProjectId != null)
+        return false;
+    } else if (!mapProjectId.equals(other.mapProjectId))
+      return false;
+    if (mapRecordId == null) {
+      if (other.mapRecordId != null)
+        return false;
+    } else if (!mapRecordId.equals(other.mapRecordId))
+      return false;
+    if (terminology == null) {
+      if (other.terminology != null)
+        return false;
+    } else if (!terminology.equals(other.terminology))
+      return false;
+    if (terminologyId == null) {
+      if (other.terminologyId != null)
+        return false;
+    } else if (!terminologyId.equals(other.terminologyId))
+      return false;
+    if (terminologyVersion == null) {
+      if (other.terminologyVersion != null)
+        return false;
+    } else if (!terminologyVersion.equals(other.terminologyVersion))
+      return false;
+    if (title == null) {
+      if (other.title != null)
+        return false;
+    } else if (!title.equals(other.title))
+      return false;
+    if (userName == null) {
+      if (other.userName != null)
+        return false;
+    } else if (!userName.equals(other.userName))
+      return false;
+    return true;
+  }
 }

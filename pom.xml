@@ -19,7 +19,6 @@
     <module>parent</module>
     <module>config</module>
     <module>model</module>
-    <module>pojo-model</module>
     <module>jpa-model</module>
     <module>services</module>
     <module>jpa-services</module>

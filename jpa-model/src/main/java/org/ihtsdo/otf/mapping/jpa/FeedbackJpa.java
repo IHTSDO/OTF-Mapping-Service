@@ -32,12 +32,8 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
-// TODO: Auto-generated Javadoc
 /**
- * The Class FeedbackJpa.
- *
- * @author ${author}
+ * JPA enabled implementation of {@link Feedback}.
  */
 @Entity
 @Table(name = "feedbacks")
@@ -276,6 +272,62 @@ public class FeedbackJpa implements Feedback {
 	public void removeViewedBy(MapUser user) {
 		viewedBy.remove(user);
 	}
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result =
+        prime
+            * result
+            + ((feedbackConversation == null) ? 0 : feedbackConversation
+                .hashCode());
+    result = prime * result + (isError ? 1231 : 1237);
+    result = prime * result + ((mapError == null) ? 0 : mapError.hashCode());
+    result = prime * result + ((message == null) ? 0 : message.hashCode());
+    result = prime * result + ((sender == null) ? 0 : sender.hashCode());
+    return result;
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    FeedbackJpa other = (FeedbackJpa) obj;
+    if (feedbackConversation == null) {
+      if (other.feedbackConversation != null)
+        return false;
+    } else if (!feedbackConversation.equals(other.feedbackConversation))
+      return false;
+    if (isError != other.isError)
+      return false;
+    if (mapError == null) {
+      if (other.mapError != null)
+        return false;
+    } else if (!mapError.equals(other.mapError))
+      return false;
+    if (message == null) {
+      if (other.message != null)
+        return false;
+    } else if (!message.equals(other.message))
+      return false;
+    if (sender == null) {
+      if (other.sender != null)
+        return false;
+    } else if (!sender.equals(other.sender))
+      return false;
+    return true;
+  }
 
 /*	// space separated list
 	@Field..

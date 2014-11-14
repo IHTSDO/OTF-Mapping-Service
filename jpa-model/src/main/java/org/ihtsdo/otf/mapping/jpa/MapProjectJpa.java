@@ -44,9 +44,7 @@ import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * The Class MapProjectJpa.
- * 
- * @author ${author}
+ * JPA enabled implementation of {@link MapProject}.
  */
 @Entity
 @Table(name = "map_projects")
@@ -220,9 +218,8 @@ public class MapProjectJpa implements MapProject {
 	 */
 	public MapProjectJpa() {
 	}
-	
-	
 
+	
 	/**
 	 * Instantiates a new map project jpa.
 	 *
@@ -353,7 +350,6 @@ public class MapProjectJpa implements MapProject {
 		this.propagationDescendantThreshold = project.getPropagationDescendantThreshold();
 		this.workflowType = project.getWorkflowType();
 	}
-
 
 	/**
 	 * Return the id.
@@ -1513,6 +1509,24 @@ public class MapProjectJpa implements MapProject {
 	public void setReportDefinitions(Set<ReportDefinition> reportDefinitions) {
 		this.reportDefinitions = reportDefinitions;
 	}
+
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapProject#addReportDefinition(org.ihtsdo.otf.mapping.reports.ReportDefinition)
+   */
+  @Override
+  public void addReportDefinition(ReportDefinition reportDefinition) {
+    reportDefinitions.add(reportDefinition);
+  }
+
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.model.MapProject#removeReportDefinition(org.ihtsdo.otf.mapping.reports.ReportDefinition)
+   */
+  @Override
+  public void removeReportDefinition(ReportDefinition reportDefinition) {
+    reportDefinitions.remove(reportDefinition);
+  }
 	
 
 }

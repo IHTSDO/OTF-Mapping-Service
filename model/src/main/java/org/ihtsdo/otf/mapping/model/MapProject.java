@@ -8,9 +8,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 
 /**
- * Represents a map project.
- * 
- * @author ${author}
+ * Generically represents a map project.
  */
 public interface MapProject {
 
@@ -600,8 +598,31 @@ public interface MapProject {
 	 */
 	public void setPropagatedFlag(boolean propagatedFlag);
 	
+	/**
+	 * Returns the report definitions.
+	 *
+	 * @return the report definitions
+	 */
 	public Set<ReportDefinition> getReportDefinitions();
 	
+	/**
+	 * Sets the report definitions.
+	 *
+	 * @param reportDefinitions the report definitions
+	 */
 	public void setReportDefinitions(Set<ReportDefinition> reportDefinitions);
 
+	/**
+	 * Adds the report definition.
+	 *
+	 * @param reportDefinition the report definition
+	 */
+	public void addReportDefinition(ReportDefinition reportDefinition);
+	
+	/**
+	 * Removes the report definition.
+	 *
+	 * @param reportDefinition the report definition
+	 */
+	public void removeReportDefinition(ReportDefinition reportDefinition);
 }

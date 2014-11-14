@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 
 /**
@@ -21,6 +22,23 @@ public class LanguageRefSetMemberJpa extends AbstractDescriptionRefSetMember
 	@Column(nullable = false)
 	private Long acceptabilityId;
 
+	public LanguageRefSetMemberJpa() {
+		
+	}
+	
+	  public LanguageRefSetMemberJpa(LanguageRefSetMember member) {
+
+		    super.setId(member.getId());
+		    super.setActive(member.isActive());
+		    super.setEffectiveTime(member.getEffectiveTime());
+		    super.setLabel(member.getLabel());
+		    super.setModuleId(member.getModuleId());
+		    super.setTerminology(member.getTerminology());
+		    super.setTerminologyId(member.getTerminologyId());
+		    super.setTerminologyVersion(member.getTerminologyVersion());
+		    this.setAcceptabilityId(member.getAcceptabilityId());
+		}
+	
 	/**
 	 * returns the acceptability id
 	 * 
@@ -67,12 +85,6 @@ public class LanguageRefSetMemberJpa extends AbstractDescriptionRefSetMember
 						.getTerminologyId()) + "," + this.getAcceptabilityId();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.rf2.jpa.AbstractDescriptionRefSetMember#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -82,13 +94,6 @@ public class LanguageRefSetMemberJpa extends AbstractDescriptionRefSetMember
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.rf2.jpa.AbstractDescriptionRefSetMember#equals
-	 * (java .lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

@@ -5,9 +5,8 @@ import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
 import org.ihtsdo.otf.mapping.helpers.ReportTimePeriod;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface ReportDefinition.
+ * Generically represents a report definition.
  */
 public interface ReportDefinition {
 	
@@ -111,6 +110,19 @@ public interface ReportDefinition {
 	 */
 	public void setTimePeriod(ReportTimePeriod timePeriod);
 
+	/**
+	 * Gets the frequency.
+	 *
+	 * @return the frequency
+	 */
+	public ReportTimePeriod getFrequency();
+	
+	/**
+	 * Sets the frequency.
+	 *
+	 * @param timePeriod the new frequency
+	 */
+	public void setFrequency(ReportTimePeriod timePeriod);
 	/**
 	 * Checks if is diff report.
 	 *
