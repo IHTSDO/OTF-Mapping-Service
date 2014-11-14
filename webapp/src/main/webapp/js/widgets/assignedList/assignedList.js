@@ -28,7 +28,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.currentUserToken = localStorageService.get('userToken');
 	$scope.assignedTab = localStorageService.get('assignedTab');
 
-	
 	// tab variables
 	$scope.tabs = [ {id: 0, title: 'Concepts', active:false}, 
 	                {id: 1, title: 'Conflicts', active:false},
@@ -36,6 +35,11 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	                {id: 3, title: 'By User', active:false},
 	                {id: 4, title: 'QA', active:false}];
 	
+	// labels for QA filtering
+	$scope.labelNames = [];
+	$scope.labelNames.push("TEST_LABEL");
+	$scope.labelNames.push("TEST_LABEL2");
+	$scope.labelNames.push("TEST_LABEL3");
 	
 	// table sort fields - currently unused
 	$scope.tableFields = [ {id: 0, title: 'id', sortDir: 'asc', sortOn: false}];
@@ -66,7 +70,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		
 		// add the tab to the loocal storage service for the next visit
 		localStorageService.add('assignedTab', tabNumber);
-	
 	};
 	
 	
@@ -338,14 +341,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			// set labels
 			for (var i = 0; i < $scope.assignedQAWork.length; i++) {
 				var concept = $scope.assignedQAWork[i];
-				
-				if (concept.value.indexOf(";") > 0) {		
-					var allLabels = concept.value.substring(concept.value.indexOf(";") + 1);
-				    $scope.assignedQAWork[i].name = concept.value.substring(0, concept.value.indexOf(";"));
-				    $scope.assignedQAWork[i].labels = allLabels;
-				}	else {
-					$scope.assignedQAWork[i].name = concept.value;
-				}		
+					
+			    $scope.assignedQAWork[i].name = concept.value;
+			    $scope.assignedQAWork[i].labels = concept.value2;					
 			}
 			
 		}).error(function(data, status, headers, config) {
