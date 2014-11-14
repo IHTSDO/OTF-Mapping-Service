@@ -2899,8 +2899,6 @@ public class MappingServiceRest extends RootServiceRest {
 		
 		  MapRecordList records = new MapRecordListJpa();
 
-			MapRecordList records = new MapRecordListJpa();
-
 			records = mappingService
 					.getOriginMapRecordsForConflict(mapRecordId);
 			mappingService.close();
@@ -3190,7 +3188,7 @@ public class MappingServiceRest extends RootServiceRest {
 	public KeyValuePairLists getMapProjectMetadata(
 			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
-		Logger.getLogger(MetadataServiceRest.class).info(
+		Logger.getLogger(MappingServiceRest.class).info(
 				"RESTful call (Mapping): /mapProject/metadata");
 
 		String user = "";
