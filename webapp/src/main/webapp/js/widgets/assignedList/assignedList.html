@@ -529,6 +529,16 @@
 
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tr>
+    <td style="padding: 5px;">Filter by label:</td>
+      <td style="padding: 5px;"><select ng-model="selected"
+        ng-options="lbl for lbl in labelNames">
+        </select>
+        <button class="btn btn-sm btn-primary"  type="submit" ng-click="retrieveAssignedQAWork(1, selected, assignedQAWorkType);">Filter</button>   
+        <button class="btn btn-sm btn-primary" 
+          ng-click="retrieveAssignedQAWork(1, 'null', assignedQAWorkType); selected = null;">Reset</button>
+      </td>
+  </tr>
+  <!-- <tr>
     <td style="padding: 5px";>Filter concepts:</td>
     <td style="padding: 5px;">
       <form>
@@ -539,7 +549,7 @@
           ng-click="retrieveAssignedQAWork(1, 'null', assignedReviewWorkType); queryReviewWork = null">Reset</button>
       </form>
     </td>
-  </tr>
+  </tr> -->
   <tr>
     <td></td>
     <td>

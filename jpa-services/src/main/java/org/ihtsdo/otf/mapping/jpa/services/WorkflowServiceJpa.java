@@ -1,6 +1,9 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -747,8 +750,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Query luceneQuery;
 
 		// construct basic query
-		String full_query = constructMapProjectIdQuery(
-				mapProject.getId(), query);
+		String full_query =  "mapProjectId:" + mapProject.getId();
+		
 
 		// add the query terms specific to findAvailableReviewWork
 		// - a user (any) and workflowStatus pair of QA_NEEDED~userName
@@ -762,15 +765,6 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		full_query += " AND userAndWorkflowStatusPairs:QA_NEEDED_*";
 		
 		full_query += " AND workflowPath:QA_PATH";
-
-		// the record to review must not be owned by this user, unless
-		// this user is the only lead on the project
-		// TODO SEE MAP-617
-		/*
-		 * if (mapProject.getMapLeads().size() > 1) { full_query +=
-		 * " AND NOT userAndWorkflowStatusPairs:QA_NEEDED_" +
-		 * mapUser.getUserName(); }
-		 */
 
 		// there must not be an already claimed review record
 		full_query += " AND NOT (userAndWorkflowStatusPairs:QA_NEW_*"
@@ -792,43 +786,83 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		availableQAWork.setTotalCount(ftquery.getResultSize());
 
-		if (pfsParameter.getStartIndex() != -1
-				&& pfsParameter.getMaxResults() != -1) {
-			ftquery.setFirstResult(pfsParameter.getStartIndex());
-			ftquery.setMaxResults(pfsParameter.getMaxResults());
-
+		List<TrackingRecord> allResults = ftquery.getResultList();
+		List<TrackingRecord> results = new ArrayList<TrackingRecord>();
+		
+		if (query == null || query.equals("") || query.equals("null") || query.equals("undefined")) {
+			results = allResults;
+		} else {
+		  // remove tracking records that don't have a map record with a label matching the query
+		  for (TrackingRecord tr : allResults) {
+		  	boolean labelFound = false;
+			  for(MapRecord record : getMapRecordsForTrackingRecord(tr)) {
+			  	for (String label : record.getLabels()) {
+					  if (label.equals(query)) {
+						  labelFound = true;
+					  }
+				  }
+			  }
+			  if (labelFound) {
+			  	results.add(tr);
+			  }
+		  }
 		}
-
-		// if sort field is specified, set sort key
-		if (pfsParameter.getSortField() != null
-				&& !pfsParameter.getSortField().isEmpty()) {
-
+		
+		// apply paging, and sorting if appropriate
+		if (pfsParameter != null
+				&& (pfsParameter.getSortField() != null && !pfsParameter
+						.getSortField().isEmpty())) {
 			// check that specified sort field exists on Concept and is
 			// a string
-			if (TrackingRecordJpa.class
-					.getDeclaredField(pfsParameter.getSortField()).getType()
-					.equals(String.class)) {
-				ftquery.setSort(new Sort(new SortField(pfsParameter
-						.getSortField(), SortField.STRING)));
-			} else {
-				throw new Exception(
-						"Concept query specified a field that does not exist or is not a string");
-			}
-		}
-		List<TrackingRecord> results = ftquery.getResultList();
+			final Field sortField = TrackingRecordJpa.class
+					.getDeclaredField(pfsParameter.getSortField());
+			if (!sortField.getType().equals(String.class)) {
 
-		for (TrackingRecord tr : results) {
+				throw new Exception(
+						"findAvailableQAWork error:  Referenced sort field is not of type String");
+			}
+
+			// allow the field to access the Concept values
+			sortField.setAccessible(true);
+
+			// sort the list - UNTESTED
+			Collections.sort(results, new Comparator<TrackingRecord>() {
+				@Override
+				public int compare(TrackingRecord c1, TrackingRecord c2) {
+
+					// if an exception is returned, simply pass equality
+					try {
+						return ((String) sortField.get(c1))
+								.compareTo((String) sortField.get(c2));
+					} catch (Exception e) {
+						return 0;
+					}
+				}
+			});
+		}
+
+		// get the start and end indexes based on paging parameters
+		int startIndex = 0;
+		int toIndex = results.size();
+		if (pfsParameter != null) {
+			startIndex = pfsParameter.getStartIndex();
+			toIndex = Math.min(results.size(),
+					startIndex + pfsParameter.getMaxResults());
+		}
+		
+		for (TrackingRecord tr : results.subList(startIndex, toIndex)) {
 			SearchResult result = new SearchResultJpa();
 			result.setTerminologyId(tr.getTerminologyId());
 			result.setId(tr.getId());
-			StringBuffer valueBuffer = new StringBuffer();
-			valueBuffer.append(tr.getDefaultPreferredName());
+			result.setValue(tr.getDefaultPreferredName());
+
+			StringBuffer labelBuffer = new StringBuffer();
 			for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
 			  for (String label : record.getLabels()) {
-			  	valueBuffer.append(";").append(label);
+			  	labelBuffer.append(";").append(label);
 			  }
 			}
-			result.setValue(valueBuffer.toString());
+			result.setValue2(labelBuffer.toString());
 			availableQAWork.addSearchResult(result);
 		}
 		return availableQAWork;
@@ -1472,8 +1506,8 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		Query luceneQuery;
 
 		// construct basic query
-		String full_query = constructMapProjectIdQuery(
-				mapProject.getId(), query);
+		String full_query =  "mapProjectId:" + mapProject.getId();
+		
 
 		// add the query terms specific to findAssignedReviewWork
 		// - user and workflow status must exist in the form QA_NEW_userName
@@ -1522,33 +1556,72 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		assignedReviewWork.setTotalCount(ftquery.getResultSize());
 
-		if (localPfsParameter.getStartIndex() != -1
-				&& localPfsParameter.getMaxResults() != -1) {
-			ftquery.setFirstResult(localPfsParameter.getStartIndex());
-			ftquery.setMaxResults(localPfsParameter.getMaxResults());
-
+		List<TrackingRecord> allResults = ftquery.getResultList();
+		List<TrackingRecord> results = new ArrayList<TrackingRecord>();
+		
+		if (query == null || query.equals("") || query.equals("null") || query.equals("undefined")) {
+			results = allResults;
+		} else {
+		  // remove tracking records that don't have a map record with a label matching the query
+		  for (TrackingRecord tr : allResults) {
+		  	boolean labelFound = false;
+			  for(MapRecord record : getMapRecordsForTrackingRecord(tr)) {
+			  	for (String label : record.getLabels()) {
+					  if (label.equals(query)) {
+						  labelFound = true;
+					  }
+				  }
+			  }
+			  if (labelFound) {
+			  	results.add(tr);
+			  }
+		  }
 		}
-
-		// if sort field is specified, set sort key
-		if (localPfsParameter.getSortField() != null
-				&& !localPfsParameter.getSortField().isEmpty()) {
-
+		
+		// apply paging, and sorting if appropriate
+		if (pfsParameter != null
+				&& (pfsParameter.getSortField() != null && !pfsParameter
+						.getSortField().isEmpty())) {
 			// check that specified sort field exists on Concept and is
 			// a string
-			if (TrackingRecordJpa.class
-					.getDeclaredField(localPfsParameter.getSortField())
-					.getType().equals(String.class)) {
-				ftquery.setSort(new Sort(new SortField(localPfsParameter
-						.getSortField(), SortField.STRING)));
-			} else {
+			final Field sortField = TrackingRecordJpa.class
+					.getDeclaredField(pfsParameter.getSortField());
+			if (!sortField.getType().equals(String.class)) {
+
 				throw new Exception(
-						"Concept query specified a field that does not exist or is not a string");
+						"findAssignedQAWork error:  Referenced sort field is not of type String");
 			}
+
+			// allow the field to access the Concept values
+			sortField.setAccessible(true);
+
+			// sort the list - UNTESTED
+			Collections.sort(results, new Comparator<TrackingRecord>() {
+				@Override
+				public int compare(TrackingRecord c1, TrackingRecord c2) {
+
+					// if an exception is returned, simply pass equality
+					try {
+						return ((String) sortField.get(c1))
+								.compareTo((String) sortField.get(c2));
+					} catch (Exception e) {
+						return 0;
+					}
+				}
+			});
 		}
 
-		List<TrackingRecord> results = ftquery.getResultList();
-		MappingService mappingService = new MappingServiceJpa();
-		for (TrackingRecord tr : results) {
+		// get the start and end indexes based on paging parameters
+		int startIndex = 0;
+		int toIndex = results.size();
+		if (pfsParameter != null) {
+			startIndex = pfsParameter.getStartIndex();
+			toIndex = Math.min(results.size(),
+					startIndex + pfsParameter.getMaxResults());
+		}
+		
+		for (TrackingRecord tr : results.subList(startIndex, toIndex)) {
+
 			SearchResult result = new SearchResultJpa();
 
 			Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
@@ -1585,21 +1658,20 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 								+ tr.getTerminologyId());
 			}
 			result.setTerminologyId(mapRecord.getConceptId());
-			StringBuffer valueBuffer = new StringBuffer();
-			valueBuffer.append(mapRecord.getConceptName());
+			result.setValue(mapRecord.getConceptName());
+			StringBuffer labelBuffer = new StringBuffer();
 			for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
 			  for (String label : record.getLabels()) {
-			  	valueBuffer.append(";").append(label);
+			  	labelBuffer.append(";").append(label);
 			  }
 			}
-			result.setValue(valueBuffer.toString());
+			result.setValue2(labelBuffer.toString());
 			result.setTerminology(mapRecord.getLastModified().toString());
 			result.setTerminologyVersion(mapRecord.getWorkflowStatus()
 					.toString());
 			result.setId(mapRecord.getId());
 			assignedReviewWork.addSearchResult(result);
 		}
-		mappingService.close();
 		return assignedReviewWork;
 	}
 	

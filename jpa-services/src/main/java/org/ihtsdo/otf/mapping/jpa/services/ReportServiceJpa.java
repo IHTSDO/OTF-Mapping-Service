@@ -162,7 +162,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
 		for (Report report : reports) {
 			s.addSearchResult(new SearchResultJpa(report.getId(), null, report
-					.getName()));
+					.getName(), ""));
+			
 		}
 
 		// Sort by ID
