@@ -99,9 +99,6 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
       // errors
       float samplingRate;
       try {
-
-        // TODO: Add loader....owner parameter
-
         samplingRate =
             Float.parseFloat(config
                 .getProperty("loader.complexmap.rf2.sample.percentage"));
@@ -214,7 +211,6 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractMojo {
             "Could not retrieve user object for name " + loaderUserName);
 
       // load complexMapRefSetMembers from extendedMap file
-      // TODO All non-sampled ones should be PUBLISHED
       Map<String, List<ComplexMapRefSetMember>> complexMapRefSetMemberMap =
           loadExtendedMapRefSets(outputFile, mapProjectMap);
 

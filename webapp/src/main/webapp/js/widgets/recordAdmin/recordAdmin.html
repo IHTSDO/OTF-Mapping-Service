@@ -37,11 +37,20 @@ MapRecord Id: <input type="text" id="mapRecordId" ng-model="mapRecordId">
 	<textarea style="width:100%; height:250px" ng-model="conceptIdsToRemove"></textarea>
 	<button class="btn btn-sm btn-primary" ng-click="removeRecordBatch(conceptIdsToRemove)">Delete Records</button>
 	<button class="btn btn-sm btn-danger" ng-click="conceptIdsToRemove = ''">Clear</button>
-		<br>
+		
+	<!--  Display results of batch operation -->
+	<div ng-show = "validationResult != null">
 		<p></p>
-		<span style="color:green">{{removeRecordBatchSuccess}}	</span>
-		<hr>
-		<span style="color:red">{{removeRecordBatchError}}</span>
-	
-	
+		<div ng-show="validationResult.messages.length > 0" style="color:green">Messages:<br>
+			<ul><li ng-repeat = "message in validationResult.messages">{{message}}</li></ul>
+		</div>
+		
+		<div ng-show="validationResult.warnings.length > 0" style="color:orange">Warnings:<br>
+			<ul><li ng-repeat = "warning in validationResult.warnings">{{warning}}</li></ul>
+		</div>
+		
+		<div ng-show="validationResult.errors.length > 0" style="color:red">Errors:<br>
+			<ul><li ng-repeat = "error in validationResult.errors">{{error}}</li></ul>
+		</div>
+	</div>
 	</div>

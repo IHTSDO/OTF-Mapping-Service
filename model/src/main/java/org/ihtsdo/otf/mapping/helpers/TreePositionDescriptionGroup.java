@@ -3,10 +3,8 @@ package org.ihtsdo.otf.mapping.helpers;
 import java.util.List;
 
 
-// TODO: Auto-generated Javadoc
 /**
- * The Interface TreePositionDescriptionGroup.
- * A group of TreePosition format-ready escriptions
+ * Generically represents agroup of TreePosition format-ready descriptions.
  */
 public interface TreePositionDescriptionGroup {
 	
