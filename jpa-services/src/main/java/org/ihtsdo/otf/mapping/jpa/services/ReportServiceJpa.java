@@ -578,7 +578,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     // get all definitions
     List<ReportDefinition> definitions =
-        manager.createQuery("select d from ReportDefinitionJpa d")
+        manager.createQuery("select d from ReportDefinitionJpa d where isQACheck = false")
             .getResultList();
 
     // cycle over definitions and check if role has required privileges
@@ -604,7 +604,7 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
     // construct query
     javax.persistence.Query query =
-        manager.createQuery("select m from ReportDefinitionJpa m");
+        manager.createQuery("select m from ReportDefinitionJpa m where isQACheck = false");
 
     ReportDefinitions = query.getResultList();
 
@@ -1228,7 +1228,6 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
    * @return the result set
    * @throws Exception the exception
    */
-  @SuppressWarnings("resource")
   private ResultSet executeSqlQuery(String query) throws Exception {
 
     // System.out.println("Executing query: ");
@@ -1342,4 +1341,167 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     return reportResultItemList;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.ReportService#getQACheckDefinitionsForRole
+   * (org.ihtsdo.otf.mapping.helpers.MapUserRole)
+   */
+  @SuppressWarnings("unchecked")
+  @Override
+  public ReportDefinitionList getQACheckDefinitionsForRole(MapUserRole role) {
+    ReportDefinitionList definitionList = new ReportDefinitionListJpa();
+
+    // System.out.println("Getting report definitions for role: "
+    // + role.toString());
+
+    // get all definitions
+    List<ReportDefinition> definitions =
+        manager.createQuery("select d from ReportDefinitionJpa d where isQACheck = true")
+            .getResultList();
+
+    // cycle over definitions and check if role has required privileges
+    for (ReportDefinition definition : definitions) {
+      if (role.hasPrivilegesOf(definition.getRoleRequired()))
+        definitionList.addReportDefinition(definition);
+    }
+
+    // return the definition list
+    return definitionList;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.ReportService#getQACheckDefinitions()
+   */
+  @Override
+  @SuppressWarnings("unchecked")
+  public ReportDefinitionList getQACheckDefinitions() {
+
+    List<ReportDefinition> qaCheckDefinitions = null;
+
+    // construct query
+    javax.persistence.Query query =
+        manager.createQuery("select m from ReportDefinitionJpa m where isQACheck = true");
+
+    qaCheckDefinitions = query.getResultList();
+
+    ReportDefinitionListJpa qaCheckDefinitionList =
+        new ReportDefinitionListJpa();
+    qaCheckDefinitionList.setReportDefinitions(qaCheckDefinitions);
+    qaCheckDefinitionList.setTotalCount(qaCheckDefinitions.size());
+    return qaCheckDefinitionList;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.ReportDefinitionService#getQACheckDefinition
+   * (java.lang.Long)
+   */
+  @Override
+  public ReportDefinition getQACheckDefinition(Long qaCheckDefinitionId) {
+    ReportDefinition r = null;
+
+    javax.persistence.Query query =
+        manager
+            .createQuery("select r from ReportDefinitionJpa r where id = :id");
+    query.setParameter("id", qaCheckDefinitionId);
+
+    r = (ReportDefinition) query.getSingleResult();
+
+    return r;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.ReportDefinitionService#addQACheckDefinition
+   * (org.ihtsdo.otf .mapping.reportDefinitions.ReportDefinition)
+   */
+  @Override
+  public ReportDefinition addQACheckDefinition(ReportDefinition qaCheckDefinition) {
+  	
+  	// ensure isQACheck is set to true
+  	qaCheckDefinition.setQACheck(true);
+  	
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      manager.persist(qaCheckDefinition);
+      tx.commit();
+
+      return qaCheckDefinition;
+    } else {
+      if (!tx.isActive()) {
+        throw new IllegalStateException(
+            "Error attempting to change data without an active transaction");
+      }
+      manager.persist(qaCheckDefinition);
+      return qaCheckDefinition;
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.ReportDefinitionService#
+   * updateReportDefinition(org.ihtsdo
+   * .otf.mapping.reportDefinitions.ReportDefinition)
+   */
+  @Override
+  public void updateQACheckDefinition(ReportDefinition qaCheckDefinition) {
+  	// ensure isQACheck flag is set to true
+  	qaCheckDefinition.setQACheck(true);
+  	
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      manager.merge(qaCheckDefinition);
+      tx.commit();
+    } else {
+      manager.merge(qaCheckDefinition);
+    }
+
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.services.ReportDefinitionService#
+   * removeQACheckDefinition(java.lang. Long)
+   */
+  @Override
+  public void removeQACheckDefinition(Long qaCheckDefinitionId) throws Exception {
+
+    ReportDefinition qaCheckDefinition =
+        manager.find(ReportDefinitionJpa.class, qaCheckDefinitionId);
+
+    // check if this definition is used by map projects
+    MappingService mappingService = new MappingServiceJpa();
+    MapProjectList mapProjects = mappingService.getMapProjects();
+    mappingService.close();
+
+    for (MapProject mapProject : mapProjects.getIterable()) {
+      if (mapProject.getReportDefinitions().contains(qaCheckDefinition)) {
+        throw new LocalException(
+            "QA Check definition is currently in use by project "
+                + mapProject.getName() + " and cannot be deleted");
+      }
+    }
+
+    // now remove the entry
+    tx.begin();
+    if (manager.contains(qaCheckDefinition)) {
+      manager.remove(qaCheckDefinition);
+    } else {
+      manager.remove(manager.merge(qaCheckDefinition));
+    }
+    tx.commit();
+
+  }
 }

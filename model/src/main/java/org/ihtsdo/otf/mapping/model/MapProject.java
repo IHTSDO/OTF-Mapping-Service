@@ -625,4 +625,6 @@ public interface MapProject {
 	 * @param reportDefinition the report definition
 	 */
 	public void removeReportDefinition(ReportDefinition reportDefinition);
+
+
 }

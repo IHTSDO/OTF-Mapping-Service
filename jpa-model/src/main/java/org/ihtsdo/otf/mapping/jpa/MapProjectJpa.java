@@ -168,10 +168,12 @@ public class MapProjectJpa implements MapProject {
 	@IndexedEmbedded(targetElement = MapRelationJpa.class)
 	private Set<MapRelation> mapRelations = new HashSet<>();
 	
-	/** The allowable map relations for this MapProject. */
+	/** The allowable report definitions for this MapProject. */
 	@ManyToMany(targetEntity = ReportDefinitionJpa.class, fetch = FetchType.LAZY)
 	@IndexedEmbedded(targetElement = ReportDefinitionJpa.class)
 	private Set<ReportDefinition> reportDefinitions = new HashSet<>();
+	
+
 
 	/** The concepts in scope for this project. */
 	@ElementCollection
@@ -1528,5 +1530,7 @@ public class MapProjectJpa implements MapProject {
     reportDefinitions.remove(reportDefinition);
   }
 	
+
+
 
 }

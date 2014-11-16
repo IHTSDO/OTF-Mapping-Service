@@ -128,13 +128,27 @@ public interface ReportDefinition {
 	 *
 	 * @return true, if is diff report
 	 */
-	boolean isDiffReport();
+	public boolean isDiffReport();
 
 	/**
 	 * Sets the diff report.
 	 *
 	 * @param isDiffReport the new diff report
 	 */
-	void setDiffReport(boolean isDiffReport);
+	public void setDiffReport(boolean isDiffReport);
+
+	/**
+	 * Indicates whether or not QA check is the case.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 */
+	public boolean isQACheck();
+
+	/**
+	 * Sets the QA check.
+	 *
+	 * @param isQACheck the QA check
+	 */
+	public void setQACheck(boolean isQACheck);
 	
 }

@@ -48,6 +48,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				var previousPrinciplePage = 1;
 				var previousRelationPage = 1;
 				var previousReportDefinitionPage = 1;
+				var previousQACheckDefinitionPage = 1;
 				
 				$scope.allowableMapTypes = new Array();				
 				$scope.allowableMapRelationStyles = new Array();				
@@ -194,6 +195,23 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 						 $rootScope.handleHttpError(data, status, headers, config);
 					});
 					
+					$http({
+						url: root_reporting + "qaCheckDefinition/qaCheckDefinitions",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.qaCheckDefinitions = data.reportDefinition;
+						localStorageService.add('qaCheckDefinitions', data.reportDefinition);
+						$rootScope.$broadcast('localStorageModule.notification.setQACheckDefinitions',{key: 'qaCheckDefinitions', qaCheckDefinitions: data.qaCheckDefinitions});  
+						$scope.allowableQACheckDefinitions = localStorageService.get('qaCheckDefinitions');
+						$scope.getPagedQACheckDefinitions(1, "");
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+					
 					// set pagination variables
 					$scope.pageSize = 5;
 					$scope.maxSize = 5;
@@ -287,7 +305,23 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					previousReportDefinitionPage = page;
 				};
 
-
+				$scope.getPagedQACheckDefinitions = function (page, filter) {
+					console.debug('getPagedQACheckDefinitions', filter);
+					if ($scope.qaCheckDefinitionInEditingPerformed() == true) {
+					  if(confirm("You have unsaved changes.\n\n Are you sure that you want to switch pages?") == false) {
+						  $scope.pageQACheckDefinition = previousQACheckDefinitionPage;
+						  return;
+					  }
+					}
+					$scope.qaCheckDefinitionFilter = filter;
+					$scope.pagedQACheckDefinition = $scope.sortByKey($scope.qaCheckDefinitions, 'id')
+					.filter(containsQACheckDefinitionFilter);
+					$scope.pagedQACheckDefinitionCount = $scope.pagedQACheckDefinition.length;
+					$scope.pagedQACheckDefinition = $scope.pagedQACheckDefinition
+					.slice((page-1)*$scope.pageSize,
+							page*$scope.pageSize);
+					previousQACheckDefinitionPage = page;
+				};
 
 				// functions to reset the filter and retrieve unfiltered results
 
@@ -311,7 +345,11 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					$scope.getPagedReportDefinitions(1);
 				};
 	
-
+				$scope.resetQACheckDefinitionFilter = function() {
+					$scope.qaCheckDefinitionFilter = "";
+					$scope.getPagedQACheckDefinitions(1);
+				};
+	
 				// element-specific functions for filtering
 				// don't want to search id or objectId
 
@@ -340,6 +378,23 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					console.debug('checking name against filter', element.name)
 					// otherwise check if upper-case report definition filter matches upper-case element name or detail
 					if ( element.name.toString().toUpperCase().indexOf( $scope.reportDefinitionFilter.toString().toUpperCase()) != -1) return true;
+					
+					console.debug('not found');
+					
+					// otherwise return false
+					return false;
+				};
+				
+				function containsQACheckDefinitionFilter(element) {
+					
+					console.debug("Checking definitions: ", $scope.qaCheckDefinitionFilter);
+
+					// check if advice filter is empty
+					if ($scope.qaCheckDefinitionFilter === "" || $scope.qaCheckDefinitionFilter == null) return true;
+
+					console.debug('checking name against filter', element.name)
+					// otherwise check if upper-case report definition filter matches upper-case element name or detail
+					if ( element.name.toString().toUpperCase().indexOf( $scope.qaCheckDefinitionFilter.toString().toUpperCase()) != -1) return true;
 					
 					console.debug('not found');
 					
@@ -635,7 +690,17 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 				// indicates if any unsaved reportDefinition
 				$scope.reportDefinitionInEditingPerformed = function() {
 					for(var i = editingPerformed.length; i--;) {
-		        		if(editingPerformed[i].resultType != null) {
+		        		if(editingPerformed[i].qacheck == false) {
+		        			return true;
+		        		}
+		        	}
+					return false;
+				};
+				
+				// indicates if any unsaved qaCheckDefinition
+				$scope.qaCheckDefinitionInEditingPerformed = function() {
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].qacheck == true) {
 		        			return true;
 		        		}
 		        	}
@@ -648,7 +713,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					
 					// clear reportDefinition from editingPerformed
 					for(var i = editingPerformed.length; i--;) {
-		        		if(editingPerformed[i].reportDefinitionId != null) {
+		        		if(editingPerformed[i].qacheck == false) {
 		        			editingPerformed.splice(i, 1);
 		        		}
 		        	}
@@ -666,6 +731,35 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 						$rootScope.$broadcast('localStorageModule.notification.setReportDefinitions',{key: 'reportDefinitions', reportDefinitions: data.reportDefinitions});  
 						$scope.allowableMapReportDefinitions = localStorageService.get('reportDefinitions');
 						$scope.getPagedReportDefinitions(1, "");
+					}).error(function(data, status, headers, config) {
+						 $rootScope.handleHttpError(data, status, headers, config);
+					});
+				};
+				
+				// reverts qaCheckDefinition to last saved state
+				$scope.revertUnsavedQACheckDefinitions = function() {
+					console.log("in resetQACheckDefinition");
+					
+					// clear qaCheckDefinition from editingPerformed
+					for(var i = editingPerformed.length; i--;) {
+		        		if(editingPerformed[i].qacheck == true) {
+		        			editingPerformed.splice(i, 1);
+		        		}
+		        	}
+					// get last saved state of reportDefinitions
+					$http({
+						url: root_reporting + "qaCheckDefinition/qaCheckDefinitions",
+						dataType: "json",
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						$scope.qaCheckDefinitions = data.reportDefinition;
+						localStorageService.add('qaCheckDefinitions', data.qaCheckDefinition);
+						$rootScope.$broadcast('localStorageModule.notification.setQACheckDefinitions',{key: 'qaCheckDefinitions', qaCheckDefinitions: data.qaCheckDefinitions});  
+						$scope.allowableMapQACheckDefinitions = localStorageService.get('qaCheckDefinitions');
+						$scope.getPagedQACheckDefinitions(1, "");
 					}).error(function(data, status, headers, config) {
 						 $rootScope.handleHttpError(data, status, headers, config);
 					});
@@ -1390,6 +1484,7 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 							"queryType":queryType,
 							"diffReport":diffReport,
 							"timePeriod":timePeriod,
+							"qaCheck":"false",
 							"query":query };
 					
 					$http({						
@@ -1426,6 +1521,157 @@ angular.module('mapProjectApp.widgets.applicationAdmin', ['adf.provider'])
 					});
 				};
 
+				
+				$scope.deleteQACheckDefinition = function(qaCheckDefinition) {
+					console.debug("in deleteQACheckDefinition from application");
+					
+					if (confirm("Are you sure that you want to delete a map qaCheckDefinition?") == false)
+						return;
+					
+					$http({						
+						url: root_reporting + "qaCheckDefinition/delete",
+						dataType: "json",
+						data: qaCheckDefinition,
+						method: "DELETE",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to deleteQACheckDefinition from application");
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error deleting map qaCheckDefinition from application.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_reporting + "qaCheckDefinition/qaCheckDefinitions",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {				
+							$scope.qaCheckDefinitions = data.reportDefinition;
+							$scope.resetQACheckDefinitionFilter();
+							for (var j = 0; j < $scope.focusProject.qaCheckDefinition.length; j++) {
+								if (qaCheckDefinition.id === $scope.focusProject.qaCheckDefinition[j].id) {
+									$scope.focusProject.qaCheckDefinition[j] = qaCheckDefinition;
+								}
+							}
+							localStorageService.add('qaCheckDefinitions', data.qaCheckDefinition);
+							$rootScope.$broadcast('localStorageModule.notification.setQACheckDefinitions',{key: 'reportDefinitions', qaCheckDefinitions: data.qaCheckDefinitions});  
+							$scope.allowableQACheckDefinitions = localStorageService.get('qaCheckDefinitions');
+							
+							// update and broadcast the updated focus project
+							localStorageService.add('focusProject', $scope.focusProject);
+							$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+							$scope.updateMapProject($scope.focusProject);
+							
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});				
+				};
+
+				$scope.updateQACheckDefinition = function(qaCheckDefinition) {
+					
+					console.debug("in updateQACheckDefinition");
+					$http({						
+						url: root_reporting + "qaCheckDefinition/update",
+						dataType: "json",
+						data: qaCheckDefinition,
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to updateQACheckDefinition");
+						removeComponentFromArray(editingPerformed, qaCheckDefinition);
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error updating map qaCheckDefinition.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_reporting + "qaCheckDefinition/qaCheckDefinitions",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {				
+							$scope.qaCheckDefinitions = data.reportDefinition;
+							for (var j = 0; j < $scope.focusProject.qaCheckDefinition.length; j++) {
+								if (qaCheckDefinition.id === $scope.focusProject.qaCheckDefinition[j].id) {
+									$scope.focusProject.qaCheckDefinition[j] = qaCheckDefinition;
+								}
+							}
+							localStorageService.add('qaCheckDefinitions', data.qaCheckDefinition);
+							$rootScope.$broadcast('localStorageModule.notification.setQACheckDefinitions',{key: 'qaCheckDefinitions', qaCheckDefinitions: data.qaCheckDefinitions});  
+							$scope.allowableQACheckDefinitions = localStorageService.get('qaCheckDefinitions');
+							
+							// update and broadcast the updated focus project
+							localStorageService.add('focusProject', $scope.focusProject);
+							$rootScope.$broadcast('localStorageModule.notification.setFocusProject',{key: 'focusProject', focusProject: $scope.focusProject});  
+
+							$scope.updateMapProject($scope.focusProject);
+							
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});				
+				}; 
+				
+				$scope.submitNewQACheckDefinition = function(name, roleRequired, resultType, queryType,  query) {
+
+					
+					console.debug("in submitNewQACheckDefinition");
+					var obj = 			  
+					{		"name":name,
+							"roleRequired":roleRequired,
+							"resultType":resultType,
+							"queryType":queryType,
+							"diffReport":"false",
+							"qaCheck":"true",
+							"timePeriod":null,
+							"query":query };
+					
+					$http({						
+						url: root_reporting + "qaCheckDefinition/add",
+						dataType: "json",
+						data: obj,
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).success(function(data) {
+						console.debug("success to addQACheckDefinition");
+					}).error(function(data, status, headers, config) {
+						$scope.recordError = "Error adding new map qa check Definition.";
+						$rootScope.handleHttpError(data, status, headers, config);
+					}).then(function(data) {
+						$http({
+							url: root_reporting + "qaCheckDefinition/qaCheckDefinitions",
+							dataType: "json",
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).success(function(data) {
+							$scope.qaCheckDefinitions = data.reportDefinition;
+							$scope.resetQACheckDefinitionFilter();
+							localStorageService.add('qaCheckDefinitions', data.qaCheckDefinition);
+							$rootScope.$broadcast('localStorageModule.notification.setQACheckDefinitions',{key: 'qaCheckDefinitions', qaCheckDefinitions: data.qaCheckDefinitions});  
+							$scope.allowableQACheckDefinitions = localStorageService.get('qaCheckDefinitions');
+						}).error(function(data, status, headers, config) {
+							 $rootScope.handleHttpError(data, status, headers, config);
+						});
+
+					});
+				};
+
+				
 				
 				$scope.updateMapProject = function(project) {				
 					$http({
