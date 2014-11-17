@@ -522,4 +522,154 @@
 
 
 </table>
-</tab> </tabset>
+</tab><tab heading="{{tabs[4].title}}" active="tabs[4].active"
+  select="setTab(4)">
+
+
+
+<table style="margin-top: 10px; margin-bottom: 10px;">
+  <tr>
+    <td style="padding: 5px;">Filter by label:</td>
+      <td style="padding: 5px;"><select ng-model="selected"
+        ng-options="lbl for lbl in labelNames">
+        </select>
+        <button class="btn btn-sm btn-primary"  type="submit" ng-click="retrieveAssignedQAWork(1, selected, assignedQAWorkType);">Filter</button>   
+        <button class="btn btn-sm btn-primary" 
+          ng-click="retrieveAssignedQAWork(1, 'null', assignedQAWorkType); selected = null;">Reset</button>
+      </td>
+  </tr>
+  <!-- <tr>
+    <td style="padding: 5px";>Filter concepts:</td>
+    <td style="padding: 5px;">
+      <form>
+        <input id="reviewSearch" ng-model="queryReviewWork">
+        <button class="btn btn-sm btn-primary"
+          ng-click="retrieveAssignedQAWork(1, queryReviewWork, assignedReviewWorkType)">Search</button>
+        <button class="btn btn-sm btn-primary"
+          ng-click="retrieveAssignedQAWork(1, 'null', assignedReviewWorkType); queryReviewWork = null">Reset</button>
+      </form>
+    </td>
+  </tr> -->
+  <tr>
+    <td></td>
+    <td>
+      <form>
+        <input type="radio" ng-model="assignedQAWorkType" value="ALL"
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">All</input>
+        <input type="radio" ng-model="assignedQAWorkType"
+          value="QA_NEW"
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">New</input>
+        <input type="radio" ng-model="assignedQAWorkType"
+          value="QA_IN_PROGRESS"
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Editing</input>
+        <input type="radio" ng-model="assignedQAWorkType"
+          value="QA_RESOLVED"
+          ng-change="retrieveAssignedQAWork(1, queryAssigned, assignedQAWorkType)">Resolved</input>
+      </form>
+    </td>
+  </tr>
+</table>
+
+<!--  do not display controls if no records are assigned and the query term is null -->
+<div style="padding: 10px;" ng-show="nAssignedQAWork == 0">
+  <p></p>
+  <div class="alert alert-warning" disabled>No qa work found.</div>
+</div>
+
+<div ng-show="nAssignedQAWork > 0">
+
+  <pagination total-items="nAssignedQAWork"
+    ng-show="numAssignedQAWorkPages > 1" page="assignedQAWorkPage"
+    class="pagination-sm" boundary-links="true" rotate="true"
+    num-pages="numAssignedQAWorkPages" max-size="5"
+    on-select-page="retrieveAssignedQAWork(page, queryQAWork, assignedQAWorkType)"></pagination>
+
+  <table class="table">
+
+    <thead>
+      <tr>
+        <th style="width: 3%; padding: 5px;"></th>
+        <th style="width: 14%; padding: 5px;">Id</th>
+        
+        <!--  Extra column if on editing in progress page for dashboard finish commands -->
+        <th style="width: 3%; padding: 5px;">
+          <a ng-show="assignedQAWorkType === 'QA_IN_PROGRESS'" title='Finish Editing All QA Work'
+            ng-click="finishOrPublishBatch(assignedQAWorkType)"> <i
+              class="glyphicon glyphicon-check"></i>
+          </a>
+          <a ng-show="assignedQAWorkType === 'QA_RESOLVED'" title='Publish All Resolved QA Work'
+            ng-click="finishOrPublishBatch(assignedQAWorkType)"> <i
+              class="glyphicon glyphicon-check"></i>
+          </a>
+        </th>
+        <th style="width: 77%; padding: 5px;">Preferred Name</th>
+        <th style="width: 3%; padding: 5px;"></th>
+        <th style="width: 3%; padding: 5px;"><a title="Return All Work"
+          ng-click="openUnassignModal(currentUser, 'review')"><i
+            class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
+        </a></th>
+
+      </tr>
+
+    </thead>
+
+    <tbody>
+
+      <tr ng-repeat="result in assignedQAWork">
+
+        <td style="width: 3%; padding: 5px;"> <!-- Display a pushpin if this record has previously been edited -->
+            <a title='Continue reviewing work.'
+            ng-show="result.terminologyVersion === 'QA_IN_PROGRESS'">
+              <i ng-click="goEditQAWork(result.id)"
+              class="glyphicon glyphicon-pushpin"></i>
+          </a> <!-- Display a pencil if this record has not yet been edited --> <a
+            title='Start reviewing this work'
+            ng-show="result.terminologyVersion === 'QA_NEW'"> <i
+              ng-click="goEditQAWork(result.id)"
+              class="glyphicon glyphicon-pencil"></i>
+          </a>
+          <!-- Display a finished icon if this record has previously been edited -->
+          <a title='Continue working on this QA work'
+            ng-show="result.terminologyVersion === 'QA_RESOLVED'">
+              <i ng-click="goEditQAWork(result.id)"
+              class="glyphicon glyphicon-saved"></i>
+          </a></td>
+
+        <td style="width: 14%; padding: 5px;">{{result.terminologyId}}</td>
+        
+        <td style="width: 3%; padding: 5px;">
+          <!-- Display a checkmark if this record has previously been edited -->
+          <a style:"display:inline" title='Finish this QA work'
+          ng-show="result.terminologyVersion === 'QA_IN_PROGRESS' && assignedQAWorkType === 'QA_IN_PROGRESS'">
+            <i ng-click="finishOrPublish(result)"
+            class="glyphicon glyphicon-ok"></i>
+          </a>
+          
+          <!-- Display a checkmark if this record has previously resolved -->
+          <a style:"display:inline" title='Publish this resolved QA work'
+          ng-show="result.terminologyVersion === 'QA_RESOLVED' && assignedQAWorkType === 'QA_RESOLVED'">
+            <i ng-click="finishOrPublish(result)"
+            class="glyphicon glyphicon-ok"></i>
+          </a>
+        </td>
+        
+        <td style="width: 77%; padding: 5px;">{{result.name}}</td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Labels"              
+          ng-show="result.labels.length > 0" tooltip-placement="top" tooltip="{{result.labels}}"
+          style="float: right; margin-right:5px;"><i
+          class="glyphicon glyphicon-tasks"></i></a></td>
+        <td style="width: 3%; padding: 5px;"><a title="Return"
+          ng-click="unassignWork(result, currentUser)"><i
+            class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i></a></td>
+      </tr>
+    </tbody>
+
+
+
+  </table>
+
+</div>
+
+
+</tab>  </tabset>

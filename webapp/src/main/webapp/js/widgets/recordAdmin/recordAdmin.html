@@ -1,8 +1,11 @@
 <tabset>
 <tab heading="Single Record Administration">
 <form>
-MapRecord Id: <input type="text" id="mapRecordId" ng-model="mapRecordId"><button type="submit" ng-click="getRecord(mapRecordId)">Retrieve</button>
+MapRecord Id: <input type="text" id="mapRecordId" ng-model="mapRecordId">
+<button type="submit" ng-click="getRecord(mapRecordId, false)">Retrieve</button>
+<button type="submit" ng-click="getRecord(mapRecordId, true)">Create QA Record</button>
 </form>
+
 <div ng-show = "record != null">
 	<hr>
 	<div otf-map-record-wide record="record" project="project" show-title="true"></div>

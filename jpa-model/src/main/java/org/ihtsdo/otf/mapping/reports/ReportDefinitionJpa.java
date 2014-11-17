@@ -49,6 +49,9 @@ public class ReportDefinitionJpa implements ReportDefinition {
 	@Column(nullable = false)
 	private boolean isRateReport = false;
 	
+	/**  The is qa check. */
+	private boolean isQACheck = false;
+
 	/** The time period (in days) for diff and rate reports */
 	@Enumerated(EnumType.STRING)
 	private ReportTimePeriod timePeriod;
@@ -270,20 +273,45 @@ public class ReportDefinitionJpa implements ReportDefinition {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#isQACheck()
+	 */
+	@Override
+	public boolean isQACheck() {
+		return isQACheck;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setQACheck(boolean)
+	 */
+	@Override
+	public void setQACheck(boolean isQACheck) {
+		this.isQACheck = isQACheck;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "ReportDefinitionJpa [name=" + name + ", isDiffReport="
-				+ isDiffReport + ", isRateReport=" + isRateReport
+				+ isDiffReport + ", isRateReport=" + isRateReport + ", isQACheck=" + isQACheck
 				+ ", timePeriod=" + timePeriod + ", resultType=" + resultType
 				+ ", queryType=" + queryType + ", query=" + query
 				+ ", roleRequired=" + roleRequired + "]";
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#getFrequency()
+	 */
 	@Override
 	public ReportTimePeriod getFrequency() {
 		return this.frequency;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.reports.ReportDefinition#setFrequency(org.ihtsdo.otf.mapping.helpers.ReportTimePeriod)
+	 */
 	@Override
 	public void setFrequency(ReportTimePeriod timePeriod) {
 		this.frequency = timePeriod;
@@ -299,6 +327,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     result = prime * result + ((frequency == null) ? 0 : frequency.hashCode());
     result = prime * result + (isDiffReport ? 1231 : 1237);
     result = prime * result + (isRateReport ? 1231 : 1237);
+    result = prime * result + (isQACheck ? 1231 : 1237);
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((query == null) ? 0 : query.hashCode());
     result = prime * result + ((queryType == null) ? 0 : queryType.hashCode());
@@ -328,6 +357,8 @@ public class ReportDefinitionJpa implements ReportDefinition {
     if (isDiffReport != other.isDiffReport)
       return false;
     if (isRateReport != other.isRateReport)
+      return false;
+    if (isQACheck != other.isQACheck)
       return false;
     if (name == null) {
       if (other.name != null)
