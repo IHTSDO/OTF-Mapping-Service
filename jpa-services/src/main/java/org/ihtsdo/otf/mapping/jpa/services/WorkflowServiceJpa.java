@@ -1,6 +1,9 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -729,6 +732,143 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		return availableConflicts;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.services.WorkflowService#findAvailableQAWork(org.ihtsdo.otf.mapping.model.MapProject, org.ihtsdo.otf.mapping.model.MapUser, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameter)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public SearchResultList findAvailableQAWork(MapProject mapProject,
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception {
+
+		SearchResultList availableQAWork = new SearchResultListJpa();
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
+		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+		Query luceneQuery;
+
+		// construct basic query
+		String full_query =  "mapProjectId:" + mapProject.getId();
+		
+
+		// add the query terms specific to findAvailableReviewWork
+		// - a user (any) and workflowStatus pair of QA_NEEDED~userName
+		// exists
+		// - the QA_NEEDED pair is not for this user (i.e. user can't review
+		// their own work, UNLESS there is only one lead on the project
+		// - user and workflowStatus pairs of
+		// CONFLICT_NEW/CONFLICT_IN_PROGRESS~userName does not exist
+
+		// must have a QA_NEEDED tag with any user
+		full_query += " AND userAndWorkflowStatusPairs:QA_NEEDED_*";
+		
+		full_query += " AND workflowPath:QA_PATH";
+
+		// there must not be an already claimed review record
+		full_query += " AND NOT (userAndWorkflowStatusPairs:QA_NEW_*"
+				+ " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_*"
+				+ " OR userAndWorkflowStatusPairs:QA_RESOLVED_*" + ")";
+
+		System.out.println("FindAvailableQAWork query: " + full_query);
+
+		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+				searchFactory.getAnalyzer(TrackingRecordJpa.class));
+		try {
+			luceneQuery = queryParser.parse(full_query);
+		} catch (ParseException e) {
+			throw new LocalException(
+					"The specified search terms cannot be parsed.  Please check syntax and try again.");
+		}
+		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
+				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
+
+		availableQAWork.setTotalCount(ftquery.getResultSize());
+
+		List<TrackingRecord> allResults = ftquery.getResultList();
+		List<TrackingRecord> results = new ArrayList<TrackingRecord>();
+		
+		if (query == null || query.equals("") || query.equals("null") || query.equals("undefined")) {
+			results = allResults;
+		} else {
+		  // remove tracking records that don't have a map record with a label matching the query
+		  for (TrackingRecord tr : allResults) {
+		  	boolean labelFound = false;
+			  for(MapRecord record : getMapRecordsForTrackingRecord(tr)) {
+			  	for (String label : record.getLabels()) {
+					  if (label.equals(query)) {
+						  labelFound = true;
+					  }
+				  }
+			  }
+			  if (labelFound) {
+			  	results.add(tr);
+			  }
+		  }
+		}
+		
+		// apply paging, and sorting if appropriate
+		if (pfsParameter != null
+				&& (pfsParameter.getSortField() != null && !pfsParameter
+						.getSortField().isEmpty())) {
+			// check that specified sort field exists on Concept and is
+			// a string
+			final Field sortField = TrackingRecordJpa.class
+					.getDeclaredField(pfsParameter.getSortField());
+			if (!sortField.getType().equals(String.class)) {
+
+				throw new Exception(
+						"findAvailableQAWork error:  Referenced sort field is not of type String");
+			}
+
+			// allow the field to access the Concept values
+			sortField.setAccessible(true);
+
+			// sort the list - UNTESTED
+			Collections.sort(results, new Comparator<TrackingRecord>() {
+				@Override
+				public int compare(TrackingRecord c1, TrackingRecord c2) {
+
+					// if an exception is returned, simply pass equality
+					try {
+						return ((String) sortField.get(c1))
+								.compareTo((String) sortField.get(c2));
+					} catch (Exception e) {
+						return 0;
+					}
+				}
+			});
+		}
+
+		// get the start and end indexes based on paging parameters
+		int startIndex = 0;
+		int toIndex = results.size();
+		if (pfsParameter != null) {
+			startIndex = pfsParameter.getStartIndex();
+			toIndex = Math.min(results.size(),
+					startIndex + pfsParameter.getMaxResults());
+		}
+		
+		for (TrackingRecord tr : results.subList(startIndex, toIndex)) {
+			SearchResult result = new SearchResultJpa();
+			result.setTerminologyId(tr.getTerminologyId());
+			result.setId(tr.getId());
+			result.setValue(tr.getDefaultPreferredName());
+
+			StringBuffer labelBuffer = new StringBuffer();
+			for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
+			  for (String label : record.getLabels()) {
+			  	labelBuffer.append(";").append(label);
+			  }
+			}
+			result.setValue2(labelBuffer.toString());
+			availableQAWork.addSearchResult(result);
+		}
+		return availableQAWork;
+	}
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -765,6 +905,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		// must have a REVIEW_NEEDED tag with any user
 		full_query += " AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*";
+		
+		// don't get qa path
+		full_query += " AND workflowPath:REVIEW_PROJECT_PATH";
 
 		// the record to review must not be owned by this user, unless
 		// this user is the only lead on the project
@@ -1246,6 +1389,9 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 			break;
 		}
 
+		// don't get qa path
+				full_query += " AND workflowPath:REVIEW_PROJECT_PATH";
+
 		// System.out.println("FindAssignedReviewWork query: " + full_query);
 
 		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
@@ -1334,6 +1480,201 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		mappingService.close();
 		return assignedReviewWork;
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public SearchResultList findAssignedQAWork(MapProject mapProject,
+			MapUser mapUser, String query, PfsParameter pfsParameter)
+			throws Exception {
+
+
+		SearchResultList assignedReviewWork = new SearchResultListJpa();
+		PfsParameter localPfsParameter = pfsParameter;
+
+		// create a blank pfs parameter object if one not passed in
+		if (localPfsParameter == null)
+			localPfsParameter = new PfsParameterJpa();
+
+		// create a blank query restriction if none provided
+		if (localPfsParameter.getQueryRestriction() == null)
+			localPfsParameter.setQueryRestriction("");
+
+		FullTextEntityManager fullTextEntityManager = Search
+				.getFullTextEntityManager(manager);
+
+		SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
+		Query luceneQuery;
+
+		// construct basic query
+		String full_query =  "mapProjectId:" + mapProject.getId();
+		
+
+		// add the query terms specific to findAssignedReviewWork
+		// - user and workflow status must exist in the form QA_NEW_userName
+		// or QA_IN_PROGRESS_userName
+
+		// add terms based on query restriction
+		switch (localPfsParameter.getQueryRestriction()) {
+		case "QA_NEW":
+			full_query += " AND userAndWorkflowStatusPairs:QA_NEW_"
+					+ mapUser.getUserName();
+
+			break;
+		case "QA_IN_PROGRESS":
+			full_query += " AND userAndWorkflowStatusPairs:QA_IN_PROGRESS_"
+					+ mapUser.getUserName();
+			break;
+		case "QA_RESOLVED":
+			full_query += " AND userAndWorkflowStatusPairs:QA_RESOLVED_"
+					+ mapUser.getUserName();
+			break;
+		default:
+			full_query += " AND (userAndWorkflowStatusPairs:QA_NEW_"
+					+ mapUser.getUserName()
+					+ " OR userAndWorkflowStatusPairs:QA_IN_PROGRESS_"
+					+ mapUser.getUserName()
+					+ " OR userAndWorkflowStatusPairs:QA_RESOLVED_"
+					+ mapUser.getUserName() + ")";
+			break;
+		}
+
+		// don't get  path
+			full_query += " AND workflowPath:QA_PATH";
+
+		// System.out.println("FindAssignedReviewWork query: " + full_query);
+
+		QueryParser queryParser = new QueryParser(Version.LUCENE_36, "summary",
+				searchFactory.getAnalyzer(TrackingRecordJpa.class));
+		try {
+			luceneQuery = queryParser.parse(full_query);
+		} catch (ParseException e) {
+			throw new LocalException(
+					"The specified search terms cannot be parsed.  Please check syntax and try again.");
+		}
+		org.hibernate.search.jpa.FullTextQuery ftquery = fullTextEntityManager
+				.createFullTextQuery(luceneQuery, TrackingRecordJpa.class);
+
+		assignedReviewWork.setTotalCount(ftquery.getResultSize());
+
+		List<TrackingRecord> allResults = ftquery.getResultList();
+		List<TrackingRecord> results = new ArrayList<TrackingRecord>();
+		
+		if (query == null || query.equals("") || query.equals("null") || query.equals("undefined")) {
+			results = allResults;
+		} else {
+		  // remove tracking records that don't have a map record with a label matching the query
+		  for (TrackingRecord tr : allResults) {
+		  	boolean labelFound = false;
+			  for(MapRecord record : getMapRecordsForTrackingRecord(tr)) {
+			  	for (String label : record.getLabels()) {
+					  if (label.equals(query)) {
+						  labelFound = true;
+					  }
+				  }
+			  }
+			  if (labelFound) {
+			  	results.add(tr);
+			  }
+		  }
+		}
+		
+		// apply paging, and sorting if appropriate
+		if (pfsParameter != null
+				&& (pfsParameter.getSortField() != null && !pfsParameter
+						.getSortField().isEmpty())) {
+			// check that specified sort field exists on Concept and is
+			// a string
+			final Field sortField = TrackingRecordJpa.class
+					.getDeclaredField(pfsParameter.getSortField());
+			if (!sortField.getType().equals(String.class)) {
+
+				throw new Exception(
+						"findAssignedQAWork error:  Referenced sort field is not of type String");
+			}
+
+			// allow the field to access the Concept values
+			sortField.setAccessible(true);
+
+			// sort the list - UNTESTED
+			Collections.sort(results, new Comparator<TrackingRecord>() {
+				@Override
+				public int compare(TrackingRecord c1, TrackingRecord c2) {
+
+					// if an exception is returned, simply pass equality
+					try {
+						return ((String) sortField.get(c1))
+								.compareTo((String) sortField.get(c2));
+					} catch (Exception e) {
+						return 0;
+					}
+				}
+			});
+		}
+
+		// get the start and end indexes based on paging parameters
+		int startIndex = 0;
+		int toIndex = results.size();
+		if (pfsParameter != null) {
+			startIndex = pfsParameter.getStartIndex();
+			toIndex = Math.min(results.size(),
+					startIndex + pfsParameter.getMaxResults());
+		}
+		
+		for (TrackingRecord tr : results.subList(startIndex, toIndex)) {
+
+			SearchResult result = new SearchResultJpa();
+
+			Set<MapRecord> mapRecords = this.getMapRecordsForTrackingRecord(tr);
+
+			// get the map record assigned to this user
+			MapRecord mapRecord = null;
+			for (MapRecord mr : mapRecords) {
+
+				if (mr.getOwner().equals(mapUser)) {
+
+					// TODO See MAP-617
+					// check for the case where QA work is both specialist
+					// and
+					// lead level for same user
+					if (mr.getWorkflowStatus().compareTo(
+							WorkflowStatus.QA_NEW) < 0) {
+						// do nothing, this is the specialist level work
+
+					} else if (mr.getWorkflowStatus().equals(
+							WorkflowStatus.REVISION)) {
+						// do nothing
+
+					} else {
+						// add the record
+						mapRecord = mr;
+					}
+				}
+			}
+
+			if (mapRecord == null) {
+				throw new Exception(
+						"Failed to retrieve assigned work:  no map record found for user "
+								+ mapUser.getUserName() + " and concept "
+								+ tr.getTerminologyId());
+			}
+			result.setTerminologyId(mapRecord.getConceptId());
+			result.setValue(mapRecord.getConceptName());
+			StringBuffer labelBuffer = new StringBuffer();
+			for (MapRecord record : getMapRecordsForTrackingRecord(tr)) {
+			  for (String label : record.getLabels()) {
+			  	labelBuffer.append(";").append(label);
+			  }
+			}
+			result.setValue2(labelBuffer.toString());
+			result.setTerminology(mapRecord.getLastModified().toString());
+			result.setTerminologyVersion(mapRecord.getWorkflowStatus()
+					.toString());
+			result.setId(mapRecord.getId());
+			assignedReviewWork.addSearchResult(result);
+		}
+		return assignedReviewWork;
+	}
+	
 
 	/**
 	 * Perform workflow actions based on a specified action.
@@ -1408,6 +1749,64 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 
 		// switch on workflow action
 		switch (workflowAction) {
+		case CREATE_QA_RECORD:
+
+			Logger.getLogger(WorkflowServiceJpa.class).info(
+					"CREATE_QA_RECORD");
+
+			// if a tracking record is found, perform no action (this record is
+			// already assigned)
+			if (trackingRecord == null) {
+
+				// expect a map record to be passed in
+				if (mapRecord == null) {
+					throw new Exception(
+							"ProcessWorkflowAction: CREATE_QA_RECORD - Call to assign from intial record must include an existing map record");
+				}
+
+				// create a new tracking record for QA_PATH
+				trackingRecord = new TrackingRecordJpa();
+				trackingRecord.setMapProjectId(mapProject.getId());
+				trackingRecord.setTerminology(concept.getTerminology());
+				trackingRecord.setTerminologyVersion(concept
+						.getTerminologyVersion());
+				trackingRecord.setTerminologyId(concept.getTerminologyId());
+				trackingRecord.setDefaultPreferredName(concept
+						.getDefaultPreferredName());
+				trackingRecord.addMapRecordId(mapRecord.getId());
+
+				// get the tree positions for this concept and set the sort key
+				// to
+				// the first retrieved
+				ContentService contentService = new ContentServiceJpa();
+				TreePositionList treePositionsList = contentService
+						.getTreePositionsWithDescendants(
+								concept.getTerminologyId(),
+								concept.getTerminology(),
+								concept.getTerminologyVersion());
+
+				// handle inactive concepts - which don't have tree positions
+				if (treePositionsList.getCount() == 0) {
+					trackingRecord.setSortKey("");
+				} else {
+					trackingRecord.setSortKey(treePositionsList
+							.getTreePositions().get(0).getAncestorPath());
+				}
+
+				trackingRecord.setWorkflowPath(WorkflowPath.QA_PATH);
+
+				// perform the assign action via the algorithm handler
+				// TODO: user fake QA user from service - don't look it up in assignFromInitialRecord
+				mapRecords = algorithmHandler.assignFromInitialRecord(
+						trackingRecord, mapRecords, mapRecord, mapUser);
+			} else {
+
+				throw new Exception(
+						"Assignment from published record failed -- concept already in workflow");
+
+			}
+
+			break;
 		case ASSIGN_FROM_INITIAL_RECORD:
 
 			Logger.getLogger(WorkflowServiceJpa.class).info(
@@ -3819,7 +4218,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// cycle over feedbacks
 		for (FeedbackConversation conversation : conversations.getIterable()) {
 			for (Feedback feedback : conversation.getFeedbacks()) {
-				if (feedback.isError()) {
+				if (feedback.getIsError()) {
 					feedbacksWithError.add(feedback);
 
 				}

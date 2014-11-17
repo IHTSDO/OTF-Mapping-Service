@@ -579,7 +579,7 @@
       </accordion-group> <accordion-group> <accordion-heading>
 <h5>
 	<span tooltip-placement="right"
-		tooltip="List of the map relations for the application.">
+		tooltip="List of the report definitions for the application.">
 		Report Definitions</span>
 </h5>
 </accordion-heading> <pagination ng-show="reportDefinitions.length > pageSize"
@@ -741,6 +741,149 @@
 			<tr>
 				<td><button class="btn btn-sm btn-primary"
 						ng-click="submitNewReportDefinition(newReportDefinitionName, newReportDefinitionRoleRequired, newReportDefinitionResultType, newReportDefinitionQueryType, newReportDefinitionDiffReport, newReportDefinitionDiffReportTimePeriod, newReportDefinitionQuery)">Submit</button></td>
+				<td></td>
+			</tr>
+		</tbody></table>
+      </form>
+      
+      </accordion-group> <accordion-group> <accordion-heading>
+<h5>
+	<span tooltip-placement="right"
+		tooltip="List of the QA check definitions for the application.">
+		QA Check Definitions</span>
+</h5>
+</accordion-heading> <pagination ng-show="qaCheckDefinitions.length > pageSize"
+	direction-links="false" boundary-links="true"
+	total-items="pagedQACheckDefinitionCount" items-per-page="pageSize"
+	page="pageQACheckDefinition"
+	on-select-page="getPagedQACheckDefinitions(page, qaCheckDefinitionFilter)"></pagination>
+
+<form>
+	<input type="text" ng-model="qaCheckDefinitionFilter"
+		ng-change="getPagedQACheckDefinitions(1, qaCheckDefinitionFilter)">
+	<input type="submit" value="Reset Filter"
+		ng-click="resetQACheckDefinitionFilter()">
+</form>
+
+<table width="100%" class="table pure-table" style="margin-bottom: 5px;">
+	<thead>
+		<th style="width: 40%">Parameters</th>
+		<th style="width: 54%">QA Check Query</th>
+		<th style="width: 3%;"></th>
+		<th style="width: 3%;"></th>
+	</thead>
+
+
+	<tbody ng-repeat="definition in pagedQACheckDefinition | orderBy: 'name'"
+		style="border: 2px solid #ccc;">
+
+		<tr>
+
+			<td style="width: 40%;">
+
+
+
+				<table style="width: 100%;" class="table pure-table">
+
+					<thead>
+						<tr>
+							<th style="width: 40%;">Parameter</th>
+							<th style="width: 60%;">Value</th>
+						</tr>
+					</thead>
+					Name
+					</td>
+								<td style="width:60%;"><input style="width:100%;"
+						ng-model="definition.name"
+						ng-change="setEditingPerformed(definition)" style="width: 100%;">
+								</td>
+							</tr>
+							<tr>
+								<td style="width:40%;" tooltip-placement="top"
+							tooltip="Project role required to view qa check results">Role Required</td>
+								<td style="width:60%;">
+								<select style="width:100%;" ng-model="definition.roleRequired"
+							ng-options="role as role for role in definitionRoles"
+							ng-change="setEditingPerformed(definition)"
+							style="width: 100%; padding:5px;"></select>
+								</td>
+							</tr>
+							<tr>
+								<td style="width:40%;" tooltip-placement="top"
+							tooltip="Type of object this qa check counts">Result Type</td>
+								<td style="width:60%;">
+								<select style="width:100%;" ng-model="definition.resultType"
+							ng-options="resultType as resultType for resultType in definitionResultTypes"
+							ng-change="setEditingPerformed(definition)" style="width: 100%;"></select>
+								</td>
+							</tr>
+							<tr>
+								<td style="width:40%;" tooltip-placement="top"
+							tooltip="Query type/engine used to retrieve qa check results">Query Type</td>
+								<td style="width:60%;">
+								<select style="width:100%;" ng-model="definition.queryType"
+							ng-options="queryType as queryType for queryType in definitionQueryTypes"
+							ng-change="setEditingPerformed(definition)" style="width: 100%;"></select>
+								</td>
+							</tr>
+						</tbody>
+						</table>
+					</td>	
+					<td style="width:60%;">
+						<textarea style="width:100%; height:100%" 	tooltip-placement="top"
+						tooltip="Query executed to retrieve qa check results"
+						ng-model="definition.query"
+						ng-change="setEditingPerformed(definition)"></textarea>
+					</td>
+					 <td><button class="btn btn-sm btn-primary" ng-click="updateQACheckDefinition(definition)" ng-show="isComponentChanged(definition) == true" >Save</button></td>
+ 
+		            <td><div tooltip-placement="top"
+		                tooltip="Delete qa check definition">
+		              <i class="glyphicon glyphicon-remove"
+		                ng-click="deleteQACheckDefinition(definition)"></i></div>
+		            </td>           
+				</tr>
+			</tbody>	
+		</table>
+		<button class="btn btn-sm btn-primary" ng-click="revertUnsavedQACheckDefinitions()"  ng-show="qaCheckDefinitionInEditingPerformed() == true" >Revert Unsaved</button>
+
+	 <form name="qaCheckDefinitionForm" >
+      <div style="margin-top:15px;"><b>Create New QA Check Definition</b></div><hr>
+      <table class="table pure-table" >
+      <thead>
+          <tr>
+            <th style="width: 25%;"></th>           
+            <th style="width: 75%;"></th>
+          </tr>
+      </thead>
+      <tbody>
+      <tr><td>QA Check Definition Name</td><td>
+        <input id="newQACheckDefinitionName" type="text" ng-model="newQACheckDefinitionName">  </td></tr>
+         <tr><td>QA Check Definition Role Required</td><td> 
+        <select  
+								ng-model="newQACheckDefinitionRoleRequired"
+								ng-options="role as role for role in definitionRoles"
+								></select>
+      </td></tr>
+      <tr><td>QA Check Definition Result Type</td><td>
+        <select 
+								ng-model="newQACheckDefinitionResultType"
+								ng-options="resultType as resultType for resultType in definitionResultTypes"
+								></select>   </td></tr>
+      <tr><td>QA Check Definition Query Type</td><td> 
+        <select 
+								ng-model="newQACheckDefinitionQueryType"
+								ng-options="queryType as queryType for queryType in definitionQueryTypes"
+								></select>   </td></tr>    
+                               
+      <tr><td>QA Check Definition Query</td><td>
+        <textarea
+						ng-model="newQACheckDefinitionQuery"
+						></textarea>    </td></tr>
+
+			<tr>
+				<td><button class="btn btn-sm btn-primary"
+						ng-click="submitNewQACheckDefinition(newQACheckDefinitionName, newQACheckDefinitionRoleRequired, newQACheckDefinitionResultType, newQACheckDefinitionQueryType, newQACheckDefinitionQuery)">Submit</button></td>
 				<td></td>
 			</tr>
 		</tbody></table>

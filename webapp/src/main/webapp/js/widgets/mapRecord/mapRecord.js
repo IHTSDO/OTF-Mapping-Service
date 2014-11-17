@@ -562,6 +562,9 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			});
 			
 		// otherwise, if a review record, query available review work
+			// TODO: figure out how to differentiate between QA_PATH and REVIEW_PROJECT_PATH so
+			// that we can provide a next concept of the correct type
+			// then we can comment this section back in
 		} else if ($scope.record.workflowStatus === 'REVIEW_NEW' || $scope.record.workflowStatus === 'REVIEW_IN_PROGRESS') {
 			
 			// construct a paging/filtering/sorting object
@@ -611,10 +614,60 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 			    $rootScope.glassPane--;
 			    $rootScope.handleHttpError(data, status, headers, config);
 			});
-		} /*else {
+		} else if ($scope.record.workflowStatus === 'QA_NEW' || $scope.record.workflowStatus === 'QA_IN_PROGRESS') {
+			
+			// construct a paging/filtering/sorting object
+			var pfsParameterObj = 
+			{"startIndex": startIndex,
+					"maxResults": 1, 
+					"sortField": 'sortKey',
+					"queryRestriction": 'QA_NEW'}
+			;  
+			// get the assigned review work
+			$rootScope.glassPane++;
+			$http({
+				url: root_workflow + "project/id/" + $scope.project.id 
+				+ "/user/id/" + $scope.user.userName
+				+ "/query/null/assignedQAWork",
+				
+				dataType: "json",
+				data: pfsParameterObj,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+
+				var assignedWork = data.searchResult;
+				if (tooltipOnly == true) {
+					if (assignedWork.length == 0) {
+						$scope.dynamicTooltip = "";
+					} else {
+					    $scope.dynamicTooltip = assignedWork[0].terminologyId + " " 
+					     + assignedWork[0].value;
+					}
+				} else {
+				    // if there is no more assigned work, return to dashboard
+				    if (assignedWork.length == 0) {
+					    console.debug("No more assigned qa work, return to dashboard");
+					    $location.path($scope.role + "/dash");
+				
+				    // otherwise redirect to the next record to be edited
+				    } else {
+					    console.debug("More work, redirecting");
+					    $location.path("record/review/" + assignedWork[0].id);
+				    }
+				}
+			}).error(function(data, status, headers, config) {
+			    $rootScope.glassPane--;
+			    $rootScope.handleHttpError(data, status, headers, config);
+			});
+		/*} else {
+			$rootScope.glassPane--;
 			console.debug("MapRecord finish/next can't determine type of work, returning to dashboard");
-			$location.path($scope.role + "/dash");
-		}*/
+			$location.path($scope.role + "/dash");*/
+		}
 	}
 	
 	$scope.saveMapRecord = function(returnBack) {
@@ -1195,6 +1248,7 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 	};
 	
 	$scope.deleteMapEntry = function(entry) {
+		
 		console.debug("deleteMapEntry: ", entry);
 		
 		var group;
@@ -1336,46 +1390,6 @@ angular.module('mapProjectApp.widgets.mapRecord', ['adf.provider'])
 		
 	};
 
-	///////////////////////
-	// Modal Functions //
-	///////////////////////
-	
-	// HACKISH:  Variable passed in is the currently viewed map user in the lead's View Other Work tab
-	$scope.displayMapRecord = function() {
-		
-		console.debug("displayMapRecord with ");
-		console.debug($scope.project);
-		
-		
-		console.debug($scope.record);
-
-		var modalInstance = $modal.open({
-			templateUrl: 'js/widgets/mapRecord/displayMapRecord.html',
-			controller: DisplayMapRecordCtrl,
-		    size: 'lg',
-			resolve: {				
-				record: function() {
-					return $scope.record;
-				},
-	            project: function() {
-	                return $scope.project;
-	            }
-			}
-		});
-
-	};
-	
-	var DisplayMapRecordCtrl = function($scope, $modalInstance, record, project) { 
-		
-		console.debug("Entered display map record modal control");
-		$scope.mapRecord = record;
-		$scope.project = project;
-	
-
-		$scope.cancel = function() {
-			$modalInstance.dismiss('cancel');
-		};
-	}
 	
 	
 	///////////////////////
