@@ -476,11 +476,11 @@
 	direction-links="false" boundary-links="true"
 	total-items="pagedDefinitionCount" items-per-page="pageSize"
 	page="pageDefinition"
-	on-select-page="getPagedDefinitions(page, definitionFilter)"></pagination>
+	on-select-page="getPagedReportDefinitions(page, definitionFilter)"></pagination>
 <form>
-	<input type="text" ng-model="definitionFilter"
-		ng-change="getPagedDefinitions(1, definitionFilter)"> <input
-		type="submit" value="Reset Filter" ng-click="resetDefinitionFilter()">
+	<input type="text" ng-model="reportDefinitionFilter"
+		ng-change="getPagedReportDefinitions(1, reportDefinitionFilter)"> <input
+		type="submit" value="Reset Filter" ng-click="resetReportDefinitionFilter(); reportDefinitionFilter = '';">
 </form>
 
 
@@ -549,11 +549,11 @@
   direction-links="false" boundary-links="true"
   total-items="pagedDefinitionCount" items-per-page="pageSize"
   page="pageDefinition"
-  on-select-page="getPagedDefinitions(page, definitionFilter)"></pagination>
+  on-select-page="getPagedReportDefinitions(page, definitionFilter)"></pagination>
 <form>
   <input type="text" ng-model="definitionFilter"
-    ng-change="getPagedDefinitions(1, definitionFilter)"> <input
-    type="submit" value="Reset Filter" ng-click="resetDefinitionFilter()">
+    ng-change="getPagedReportDefinitions(1, definitionFilter)"> <input
+    type="submit" value="Reset Filter" ng-click="resetReportDefinitionFilter(); definitionFilter = '';">
 </form>
 
 
