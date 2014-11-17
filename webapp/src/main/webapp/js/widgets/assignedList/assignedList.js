@@ -28,13 +28,18 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.currentUserToken = localStorageService.get('userToken');
 	$scope.assignedTab = localStorageService.get('assignedTab');
 
-	
 	// tab variables
 	$scope.tabs = [ {id: 0, title: 'Concepts', active:false}, 
 	                {id: 1, title: 'Conflicts', active:false},
 	                {id: 2, title: 'Review', active:false},
-	                {id: 3, title: 'By User', active:false}];
+	                {id: 3, title: 'By User', active:false},
+	                {id: 4, title: 'QA', active:false}];
 	
+	// labels for QA filtering
+	$scope.labelNames = [];
+	$scope.labelNames.push("TEST_LABEL");
+	$scope.labelNames.push("TEST_LABEL2");
+	$scope.labelNames.push("TEST_LABEL3");
 	
 	// table sort fields - currently unused
 	$scope.tableFields = [ {id: 0, title: 'id', sortDir: 'asc', sortOn: false}];
@@ -48,6 +53,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	$scope.assignedConflictType = 'CONFLICT_NEW'; 	// initialize variable to track which type of conflict has been requested
 	$scope.assignedReviewWorkType = 'REVIEW_NEW';
 	$scope.assignedWorkForUserType = 'ALL';	// initialize variable to track which type of work (for another user) has been requested
+	$scope.assignedQAWorkType = 'QA_NEW';
 	
 	// function to change tab
 	$scope.setTab = function(tabNumber) {
@@ -64,7 +70,6 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		
 		// add the tab to the loocal storage service for the next visit
 		localStorageService.add('assignedTab', tabNumber);
-	
 	};
 	
 	
@@ -99,7 +104,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		// perform action based on notification parameters
 		// Expect:
 		// - assignUser: String, IHTSDO username (e.g. dmo, kli)
-		// - assignType: String, either 'concept' or 'conflict'
+		// - assignType: String, either 'concept' or 'conflict' or 'review' or 'qa'
 		if ($scope.currentRole === 'Lead') {
 			
 			// if user name matches current user's user name, reload work
@@ -108,8 +113,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				if (parameters.assignType === 'concept') {
 					$scope.retrieveAssignedWork($scope.assignedWorkPage, null, 'NEW');
 					$scope.setTab(0);
-					$scope.assignedWorkType = 'NEW';
-				
+					$scope.assignedWorkType = 'NEW';				
 				} else if (parameters.assignType === 'conflict') {
 					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, null, 'CONFLICT_NEW');
 					$scope.setTab(1);
@@ -118,6 +122,10 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					$scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage, null, 'REVIEW_NEW');
 					$scope.setTab(2);
 					$scope.assignedReviewWorkType = 'REVIEW_NEW';
+				} else if (parameters.assignType === 'qa') {
+					$scope.retrieveAssignedQAWork($scope.assignedQAWorkPage, null, 'QA_NEW');
+					$scope.setTab(4);
+					$scope.assignedQAWorkType = 'QA_NEW';
 				}
 			} else {
 				$scope.retrieveAssignedWorkForUser($scope.assignedWorkForUserPage, parameters.assignUser.userName, 'NEW');
@@ -146,6 +154,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
 			
 			$scope.retrieveAssignedWork($scope.assignedWorkPage, null, $scope.assignedWorkType);
+			$scope.retrieveAssignedQAWork(1, null, $scope.assignedQAWorkType);
 			if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 				$scope.retrieveAssignedConflicts(1, null, $scope.assignedConflictType);
 				$scope.retrieveAssignedReviewWork(1, null, $scope.assignedReviewWorkType);
@@ -268,6 +277,74 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			console.debug(data.totalCount);
 			console.debug($scope.assignedWorkTitle);
 			
+			
+		}).error(function(data, status, headers, config) {
+		  	$rootScope.glassPane--;
+		    $rootScope.handleHttpError(data, status, headers, config);
+		});
+	};
+	
+	$scope.retrieveAssignedQAWork = function(page, query, assignedWorkType) {
+		
+		console.debug('Retrieving Assigned QA Work: ', page, query, assignedWorkType);
+
+		// ensure query is set to null if undefined
+		if (query == undefined) query = null;
+		
+		// reset the search input box if null
+		if (query == null) {
+			$scope.searchPerformed = false;
+		} else {
+			$scope.searchPerformed = true;
+		
+		}
+		
+		// construct a paging/filtering/sorting object
+		var pfsParameterObj = 
+					{"startIndex": page == -1 ? -1 : (page-1)*$scope.itemsPerPage,
+			 	 	 "maxResults": page == -1 ? -1 : $scope.itemsPerPage, 
+			 	 	 "sortField": 'sortKey',
+			 	 	 "queryRestriction": assignedWorkType};
+
+	  	$rootScope.glassPane++;
+
+		$http({
+			url: root_workflow + "project/id/" 
+			+ $scope.focusProject.id 
+			+ "/user/id/" 
+			+ $scope.currentUser.userName 
+			+ "/query/" + (query == null ? null : query)
+			+ "/assignedQAWork",
+			dataType: "json",
+			data: pfsParameterObj,
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).success(function(data) {
+		  	$rootScope.glassPane--;
+
+			$scope.assignedQAWorkPage = page;
+			$scope.assignedQAWork = data.searchResult;
+			console.debug($scope.assignedQAWork);
+		
+			// set pagination
+			$scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
+			$scope.nAssignedQAWork = data.totalCount;
+			
+			// set title
+			$scope.tabs[4].title = "QA (" + $scope.nAssignedQAWork + ")";
+			console.debug($scope.nAssignedQAWork);
+			console.debug(data.totalCount);
+			console.debug($scope.assignedQAWorkTitle);
+			
+			// set labels
+			for (var i = 0; i < $scope.assignedQAWork.length; i++) {
+				var concept = $scope.assignedQAWork[i];
+					
+			    $scope.assignedQAWork[i].name = concept.value;
+			    $scope.assignedQAWork[i].labels = concept.value2;					
+			}
 			
 		}).error(function(data, status, headers, config) {
 		  	$rootScope.glassPane--;
@@ -440,6 +517,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		// NOTE:  workflow status is contained in terminologyVersion for a searchResult object
 		if (record.terminologyVersion === "EDITING_DONE" 
 				|| record.terminologyVersion === "REVIEW_RESOLVED"
+				|| record.terminologyVersion === "QA_RESOLVED"
 				|| record.terminologyVersion === "CONFLICT_RESOLVED") {
 			var response = confirm("Are you sure you want to return finished work?  You will lose any work done.");
 			if (response == false)
@@ -463,6 +541,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 				$rootScope.$broadcast('assignedListWidget.notification.unassignWork');
 
 				$scope.retrieveAssignedWork($scope.assignedWorkPage, $scope.queryAssigned);
+				$scope.retrieveAssignedQAWork($scope.assignedQAWorkPage, $scope.queryQAWork);
 				if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
 					$scope.retrieveAssignedConflicts($scope.assignedConflictsPage, $scope.queryConflict);
 					$scope.retrieveAssignedReviewWork($scope.assignedReviewWorkPage, $scope.queryReviewWork);
@@ -636,8 +715,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			if (result.unassignReviewWork == true) {
 				
 				var terminologyIdsReview = [];
-				
-				
+								
 				console.debug("Retrieving review work to unassign...");
 				var pfsParameterObj = {
 						"startIndex": -1,
@@ -679,6 +757,54 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			
 			}
 			
+
+		
+		if (result.unassignQAWork == true) {
+			
+			var terminologyIdsQA = [];
+			
+			
+			console.debug("Retrieving qa work to unassign...");
+			var pfsParameterObj = {
+					"startIndex": -1,
+					"maxResults": -1,
+					"sortField": 'sortKey',
+					"queryRestriction": result.unassignEditedWork == true ? 'ALL' : 'QA_NEW'};
+			
+			$rootScope.glassPane++;
+			
+			$http({
+				url: root_workflow + "project/id/" 
+				+ $scope.focusProject.id 
+				+ "/user/id/" 
+				+ mapUser.userName 
+				+ "/query/null"
+				+ "/assignedQAWork",
+				dataType: "json",
+				data: pfsParameterObj,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).success(function(data) {
+				$rootScope.glassPane--;
+				for (var i = 0; i < data.searchResult.length; i++) {
+					terminologyIdsQA.push(data.searchResult[i].terminologyId);
+				}
+				// call the batch unassign API
+				console.debug("Unassigning qa work (" + terminologyIdsQA.length + ")", terminologyIdsQA);
+				unassignBatch(mapUser, terminologyIdsQA, 'qa');
+				
+				$rootScope.glassPane--;
+				
+				
+			}).error(function(data, status, headers, config) {
+			  	$rootScope.glassPane--;
+			    $rootScope.handleHttpError(data, status, headers, config);
+			});
+		
+		}
+		
 		});
 	};
 	
@@ -729,6 +855,7 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		$scope.unassignConcepts = false;
 		$scope.unassignConflicts = false;
 		$scope.unassignReviewWork = false;
+		$scope.unassignQAWork = false;
 		
 		if ($scope.unassignWorkType == 'concepts' || isMapLead == false) 
 			$scope.unassignConcepts = true;
@@ -736,17 +863,21 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$scope.unassignConflicts = true;
 		else if ($scope.unassignWorkType == 'review') 
 			$scope.unassignReviewWork = true;
+		else if ($scope.unassignWorkType == 'qa') 
+			$scope.unassignQAWork = true;
 		
 		$scope.selectAll = function(isSelected) {
 			$scope.unassignConcepts = isSelected;
 			$scope.unassignConflicts = isSelected;
 			$scope.unassignReviewWork = isSelected;
+			$scope.unassignQAWork = isSelected;
 		};
 	
-		$scope.ok = function(unassignEditedWork, unassignConcepts, unassignConflicts, unassignReviewWork) {
+		$scope.ok = function(unassignEditedWork, unassignConcepts, unassignConflicts, unassignReviewWork, unassignQAWork) {
 			
 			if (unassignEditedWork == null) alert("You must select whether to delete edited work.");
-			if (unassignConcepts == false && unassignConflicts == false && unassignReviewWork == false) {
+			if (unassignConcepts == false && unassignConflicts == false && unassignReviewWork == false 
+					&& unassignQAWork == false) {
 				alert("You must select a type of work to return");
 			}
 			else {
@@ -754,7 +885,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 						'unassignEditedWork':	unassignEditedWork === 'Unedited' ? false : true,
 						'unassignConcepts':		unassignConcepts,
 						'unassignConflicts':	unassignConflicts,
-						'unassignReviewWork':	unassignReviewWork
+						'unassignReviewWork':	unassignReviewWork,
+						'unassignQAWork':	unassignQAWork
 				};				
 				$modalInstance.close(result);
 			}
@@ -807,6 +939,12 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			$location.path(path);
 	};
 	
+	$scope.goEditQAWork = function (id) {
+		var path = "/record/review/" + id;
+			// redirect page
+			$location.path(path);
+	};
+	
 	/**
 	 * Helper function to open Finish Or Publish modal
 	 * (record in form of search result from assigned list
@@ -847,6 +985,9 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 		else if (workflowStatus === 'REVIEW_IN_PROGRESS'
 				|| workflowStatus === 'REVIEW_RESOLVED')
 			apiWorkflowText = 'assignedReviewWork';
+		else if (workflowStatus === 'QA_IN_PROGRESS'
+			|| workflowStatus === 'QA_RESOLVED')
+		apiWorkflowText = 'assignedQAWork';
 		else if (workflowStatus === 'EDITING_IN_PROGRESS'
 				|| workflowStatus === 'EDITING_DONE')
 			apiWorkflowText = 'assignedConcepts';
@@ -928,7 +1069,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 					return $scope.currentUser;
 				},
 				action : function() {
-					return (workflowStatus === 'CONFLICT_RESOLVED' || workflowStatus === 'REVIEW_RESOLVED') ? 'publish'
+					return (workflowStatus === 'CONFLICT_RESOLVED' || workflowStatus === 'REVIEW_RESOLVED'
+						    || workflowStatus === 'QA_RESOLVED') ? 'publish'
 							: 'finish';
 				}
 			}
@@ -941,15 +1083,20 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	  		function() {  	
 		  		console.debug("User closed finish/publish modal");
 		  		if (workflowStatus === 'CONFLICT_IN_PROGRESS'
-					|| workflowStatus === 'CONFLICT_RESOLVED')
+					|| workflowStatus === 'CONFLICT_RESOLVED') {
 		  			$scope.retrieveAssignedConflicts(1, null, workflowStatus); // called on Done
-				else if (workflowStatus === 'REVIEW_IN_PROGRESS'
-						|| workflowStatus === 'REVIEW_RESOLVED')
-					$scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
-				else if (workflowStatus === 'EDITING_IN_PROGRESS'
-						|| workflowStatus === 'EDITING_DONE')
+		  		} else if (workflowStatus === 'REVIEW_IN_PROGRESS'
+						|| workflowStatus === 'REVIEW_RESOLVED') {
+		  			if ($scope.currentRole === 'Lead') {
+					  $scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
+		  			}
+		  		} else if (workflowStatus === 'QA_IN_PROGRESS'
+					|| workflowStatus === 'QA_RESOLVED') {
+				      $scope.retrieveAssignedQAWork(1, null, workflowStatus); // called on Done
+		  		} else if (workflowStatus === 'EDITING_IN_PROGRESS'
+						|| workflowStatus === 'EDITING_DONE') {
 					$scope.retrieveAssignedWork(1, null, workflowStatus); // called on Done
-				else {
+		  		} else {
 					console.debug("Could not determine api call from workflow status");
 					return;
 				}
@@ -958,15 +1105,20 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 	  		}, function() {  	
 		  		console.debug("Finish/publish modal dismissed");
 		  		if (workflowStatus === 'CONFLICT_IN_PROGRESS'
-					|| workflowStatus === 'CONFLICT_RESOLVED')
+					|| workflowStatus === 'CONFLICT_RESOLVED') {
 		  			$scope.retrieveAssignedConflicts(1, null, workflowStatus); // called on Done
-				else if (workflowStatus === 'REVIEW_IN_PROGRESS'
-						|| workflowStatus === 'REVIEW_RESOLVED')
-					$scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
-				else if (workflowStatus === 'EDITING_IN_PROGRESS'
-						|| workflowStatus === 'EDITING_DONE')
+		  		} else if (workflowStatus === 'REVIEW_IN_PROGRESS'
+						|| workflowStatus === 'REVIEW_RESOLVED') {
+					if ($scope.currentRole === 'Lead') {
+						$scope.retrieveAssignedReviewWork(1, null, workflowStatus); // called on Done
+			  		}
+		  		} else if (workflowStatus === 'QA_IN_PROGRESS'
+					|| workflowStatus === 'QA_RESOLVED') {
+		  			$scope.retrieveAssignedQAWork(1, null, workflowStatus);
+				} else if (workflowStatus === 'EDITING_IN_PROGRESS'
+						|| workflowStatus === 'EDITING_DONE') {
 					$scope.retrieveAssignedWork(1, null, workflowStatus); // called on Done
-				else {
+				} else {
 					console.debug("Could not determine api call from workflow status");
 					return;
 				}
@@ -1040,7 +1192,8 @@ angular.module('mapProjectApp.widgets.assignedList', ['adf.provider'])
 			  		// if an *_IN_PROGRESS record, not finished
 				  	if ($scope.currentRecord.workflowStatus === 'EDITING_IN_PROGRESS'
 				  		|| $scope.currentRecord.workflowStatus === 'CONFLICT_IN_PROGRESS'
-				  		|| $scope.currentRecord.workflowStatus === 'REVIEW_IN_PROGRESS')
+				  		|| $scope.currentRecord.workflowStatus === 'REVIEW_IN_PROGRESS'
+					  	|| $scope.currentRecord.workflowStatus === 'QA_IN_PROGRESS')
 				  		$scope.currentRecord.isFinished = false;
 				  	
 				  	// otherwise, this record has been finished/published via this modal

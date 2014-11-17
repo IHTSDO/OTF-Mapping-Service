@@ -331,6 +331,52 @@ public interface ReportService extends RootService {
 			MapProject mapProject, ReportDefinition reportDefinition,
 			PfsParameter pfsParameter);
 
+	/**
+	 * Returns the QA check definitions for role.
+	 *
+	 * @param role the role
+	 * @return the QA check definitions for role
+	 */
+	public ReportDefinitionList getQACheckDefinitionsForRole(MapUserRole role);
+
+	/**
+	 * Returns the QA check definitions.
+	 *
+	 * @return the QA check definitions
+	 */
+	public ReportDefinitionList getQACheckDefinitions();
+
+	/**
+	 * Returns the QA check definition.
+	 *
+	 * @param qaCheckDefinitionId the qa check definition id
+	 * @return the QA check definition
+	 */
+	public ReportDefinition getQACheckDefinition(Long qaCheckDefinitionId);
+
+	/**
+	 * Adds the qa check definition.
+	 *
+	 * @param qaCheckDefinition the qa check definition
+	 * @return the report definition
+	 */
+	public ReportDefinition addQACheckDefinition(ReportDefinition qaCheckDefinition);
+
+	/**
+	 * Update qa check definition.
+	 *
+	 * @param qaCheckDefinition the qa check definition
+	 */
+	public void updateQACheckDefinition(ReportDefinition qaCheckDefinition);
+
+	/**
+	 * Removes the qa check definition.
+	 *
+	 * @param qaCheckDefinitionId the qa check definition id
+	 * @throws Exception the exception
+	 */
+	public void removeQACheckDefinition(Long qaCheckDefinitionId) throws Exception;
+
 
 
 }

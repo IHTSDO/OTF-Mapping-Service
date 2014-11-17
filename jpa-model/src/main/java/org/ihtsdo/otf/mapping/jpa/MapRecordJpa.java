@@ -35,10 +35,12 @@ import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.mapping.helpers.CollectionToCSVBridge;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
@@ -152,6 +154,14 @@ public class MapRecordJpa implements MapRecord {
 	/** Whether this record has discrepancy review */
 	@Transient
 	private boolean isDiscrepancyReview = false;
+	
+	/** The labels for this map record. */
+	@ElementCollection
+	@CollectionTable(name = "map_records_labels", joinColumns = @JoinColumn(name = "id"))
+	@Column(nullable = true)
+	// treat labels as a single field called labels
+	@Field(bridge = @FieldBridge(impl =CollectionToCSVBridge.class))
+	private Set<String> labels = new HashSet<>();
 
 	/**
 	 * Default constructor.
@@ -200,6 +210,9 @@ public class MapRecordJpa implements MapRecord {
 		}
 		for (MapNote mapNote : mapRecord.getMapNotes()) {
 			addMapNote(new MapNoteJpa(mapNote, keepIds));
+		}
+		for (String label : mapRecord.getLabels()) {
+			addLabel(label);
 		}
 	}
 
@@ -784,14 +797,57 @@ public class MapRecordJpa implements MapRecord {
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#isDiscrepancyReview()
+	 */
 	@Override
 	public boolean isDiscrepancyReview() {
 		return isDiscrepancyReview;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#setDiscrepancyReview(boolean)
+	 */
 	@Override
 	public void setDiscrepancyReview(boolean isDiscrepancyReview) {
 		this.isDiscrepancyReview = isDiscrepancyReview;
+	}
+
+	
+	/**
+	 * Gets the labels.
+	 *
+	 * @return the labels
+	 */
+	@Override
+	public Set<String> getLabels() {
+		return labels;
+	}
+
+	/**
+	 * Sets the labels.
+	 *
+	 * @param labels the new labels
+	 */
+	@Override
+	public void setLabels(Set<String> labels) {
+		this.labels = labels;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#addLabel(java.lang.String)
+	 */
+	@Override
+	public void addLabel(String label) {
+		labels.add(label);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.ihtsdo.otf.mapping.model.MapRecord#removeLabel(java.lang.String)
+	 */
+	@Override
+	public void removeLabel(String label) {
+		labels.remove(label);
 	}
 
 	/* (non-Javadoc)
@@ -827,6 +883,9 @@ public class MapRecordJpa implements MapRecord {
 		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
 		result = prime * result
 				+ ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
+		result =
+				prime * result
+						+ ((labels == null) ? 0 : labels.hashCode());
 		return result;
 	}
 
@@ -908,6 +967,11 @@ public class MapRecordJpa implements MapRecord {
 				return false;
 		} else if (!timestamp.equals(other.timestamp))
 			return false;
+		if (labels == null) {
+			if (other.labels != null)
+				return false;
+		} else if (!labels.equals(other.labels))
+			return false;
 		if (workflowStatus != other.workflowStatus)
 			return false;
 		return true;
@@ -929,8 +993,11 @@ public class MapRecordJpa implements MapRecord {
 				+ flagForMapLeadReview + ", flagForEditorialReview="
 				+ flagForEditorialReview + ", flagForConsensusReview="
 				+ flagForConsensusReview + ", workflowStatus=" + workflowStatus
+				+ ", labels=" + labels
 				+ "]";
 	}
+
+
 
 
 	
