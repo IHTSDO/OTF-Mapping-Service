@@ -7,12 +7,12 @@
 <div ng-show="isMapLead == true">
 
 	Select type of work you wish to return:
-	
 	<form>
 	<input type="checkbox" ng-model="unassignAll" ng-change="selectAll(unassignAll)"> All
 	<input type="checkbox" ng-model="unassignConcepts" ng-change="unassignAll = false"> Concepts
 	<input type="checkbox" ng-model="unassignConflicts" ng-change="unassignAll = false"> Conflicts
 	<input type="checkbox" ng-model="unassignReviewWork" ng-change="unassignAll = false"> Review Work
+    <input type="checkbox" ng-model="unassignQAWork" ng-change="unassignAll = false"> QA Work
 	</form>
 	<hr>
 </div>
@@ -26,6 +26,6 @@ Select what stage of work you wish to return:
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-click="ok(unassignEditedWork, unassignConcepts, unassignConflicts, unassignReviewWork)">Unassign</button>
+  <button class="btn btn-primary" ng-click="ok(unassignEditedWork, unassignConcepts, unassignConflicts, unassignReviewWork, unassignQAWork)">Unassign</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>
