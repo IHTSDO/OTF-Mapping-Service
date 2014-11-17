@@ -141,6 +141,30 @@
   <build>
     <finalName>${project.artifactId}</finalName>
     <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <webResources>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>true</filtering>
+              <includes>
+                <include>index.html</include>
+              </includes>
+            </resource>
+            <resource>
+				<directory>src/main/webapp</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>index.html</exclude>
+				</excludes>
+			</resource>
+          </webResources>
+        </configuration>
+      </plugin>
+      
       <plugin>
         <groupId>org.apache.tomcat.maven</groupId>
         <artifactId>tomcat7-maven-plugin</artifactId>
