@@ -272,7 +272,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 		for (MapProject mp : m) {
 			s.addSearchResult(new SearchResultJpa(mp.getId(), mp.getRefSetId()
-					.toString(), mp.getName()));
+					.toString(), mp.getName(), ""));
 		}
 
 		// Sort by ID
@@ -697,7 +697,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 			for (MapRecord mapRecord : mapRecords) {
 				s.addSearchResult(new SearchResultJpa(mapRecord.getId(),
 						mapRecord.getConceptId().toString(), mapRecord
-								.getConceptName()));
+								.getConceptName(), ""));
 			}
 
 			// Sort by ID
@@ -3191,7 +3191,12 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
 				|| mapRecord.getWorkflowStatus().equals(
 						WorkflowStatus.REVIEW_IN_PROGRESS) || mapRecord
-				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)))
+				.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)
+				||		mapRecord
+						.getWorkflowStatus().equals(WorkflowStatus.QA_NEW)
+						|| mapRecord.getWorkflowStatus().equals(
+								WorkflowStatus.QA_IN_PROGRESS) || mapRecord
+						.getWorkflowStatus().equals(WorkflowStatus.QA_RESOLVED)))
 
 				||
 
@@ -3207,13 +3212,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				System.out.println("Getting origin id:  " + originId);
 				MapRecord mr = getMapRecord(originId);
 
-				// This try/cactch block is here to prevent problems
+				// This try/catch block is here to prevent problems
 				// with the origin ids being an unordered set
 				// Only records currently in the database are returned
 				try {
 
 					if (mr.getWorkflowStatus().equals(
-							WorkflowStatus.REVIEW_NEEDED)) {
+							WorkflowStatus.REVIEW_NEEDED) || mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
 						conflictRecords.addMapRecord(getMapRecord(originId));
 						foundReviewRecord = true;
 					} else if (mr.getWorkflowStatus().equals(
@@ -3233,7 +3238,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				}
 
 			}
-
+			
+			// this is the case on the QA_PATH
+			if (foundReviewRecord || foundRevisionRecord) {
+				conflictRecords.setTotalCount(conflictRecords.getCount());
+				return conflictRecords;
+			}
+			
 		} else if (mapProject.getWorkflowType().equals(
 				WorkflowType.REVIEW_PROJECT)
 				&& mapRecord.getWorkflowStatus().equals(
@@ -3241,7 +3252,13 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 				|| mapRecord.getWorkflowStatus().equals(
 						WorkflowStatus.REVIEW_IN_PROGRESS)
 				|| mapRecord.getWorkflowStatus().equals(
-						WorkflowStatus.REVIEW_RESOLVED)) {
+						WorkflowStatus.REVIEW_RESOLVED)
+				|| mapRecord.getWorkflowStatus().equals(
+								WorkflowStatus.QA_NEW)
+				|| mapRecord.getWorkflowStatus().equals(
+										WorkflowStatus.QA_IN_PROGRESS)
+				|| mapRecord.getWorkflowStatus().equals(
+										WorkflowStatus.QA_RESOLVED)) {
 
 			System.out.println("Getting origin id for REVIEW_PROJECT record");
 
@@ -3251,7 +3268,8 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 					.getTrackingRecordForMapProjectAndConcept(mapProject,
 							mapRecord.getConceptId());
 
-			if (tr.getWorkflowPath().equals(WorkflowPath.REVIEW_PROJECT_PATH)) {
+			if (tr.getWorkflowPath().equals(WorkflowPath.REVIEW_PROJECT_PATH) ||
+					tr.getWorkflowPath().equals(WorkflowPath.QA_PATH)) {
 
 				for (Long originId : mapRecord.getOriginIds()) {
 
@@ -3261,9 +3279,10 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 
 						// check assumption
 						if (!mr.getWorkflowStatus().equals(
-								WorkflowStatus.REVIEW_NEEDED)) {
+								WorkflowStatus.REVIEW_NEEDED) && 
+								!mr.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
 							throw new Exception(
-									"Single origin record found for review, but was not REVIEW_NEEDED");
+									"Single origin record found for review, but was not REVIEW_NEEDED or QA_NEEDED");
 						}
 
 						// add and return this record
@@ -3386,6 +3405,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
 		mapRecord.getMapNotes().size();
 		mapRecord.getMapPrinciples().size();
 		mapRecord.getOriginIds().size();
+		mapRecord.getLabels().size();
 		for (MapEntry mapEntry : mapRecord.getMapEntries()) {
 			if (mapEntry.getMapRelation() != null)
 				mapEntry.getMapRelation().getName();

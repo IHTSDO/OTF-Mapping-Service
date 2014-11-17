@@ -168,10 +168,12 @@ public class MapProjectJpa implements MapProject {
 	@IndexedEmbedded(targetElement = MapRelationJpa.class)
 	private Set<MapRelation> mapRelations = new HashSet<>();
 	
-	/** The allowable map relations for this MapProject. */
+	/** The allowable report definitions for this MapProject. */
 	@ManyToMany(targetEntity = ReportDefinitionJpa.class, fetch = FetchType.LAZY)
 	@IndexedEmbedded(targetElement = ReportDefinitionJpa.class)
 	private Set<ReportDefinition> reportDefinitions = new HashSet<>();
+	
+
 
 	/** The concepts in scope for this project. */
 	@ElementCollection
@@ -220,6 +222,95 @@ public class MapProjectJpa implements MapProject {
 	}
 
 	
+	/**
+	 * Instantiates a new map project jpa.
+	 *
+	 * @param id the id
+	 * @param name the name
+	 * @param isPublic the is public
+	 * @param groupStructure the group structure
+	 * @param published the published
+	 * @param refSetId the ref set id
+	 * @param refSetName the ref set name
+	 * @param sourceTerminology the source terminology
+	 * @param sourceTerminologyVersion the source terminology version
+	 * @param destinationTerminology the destination terminology
+	 * @param destinationTerminologyVersion the destination terminology version
+	 * @param mapRefsetPattern the map refset pattern
+	 * @param mapRelationStyle the map relation style
+	 * @param mapPrincipleSourceDocument the map principle source document
+	 * @param mapPrincipleSourceDocumentName the map principle source document
+	 * @param ruleBased the rule based
+	 * @param projectSpecificAlgorithmHandlerClass the project specific algorithm handler class
+	 * @param algorithmHandler the algorithm handler
+	 * @param presetAgeRanges the preset age ranges
+	 * @param mapLeads the map leads
+	 * @param mapSpecialists the map specialists
+	 * @param mapAdministrators the map administrators
+	 * @param mapPrinciples the map principles
+	 * @param mapAdvices the map advices
+	 * @param mapRelations the map relations
+	 * @param scopeConcepts the scope concepts
+	 * @param scopeExcludedConcepts the scope excluded concepts
+	 * @param scopeDescendantsFlag the scope descendants flag
+	 * @param scopeExcludedDescendantsFlag the scope excluded descendants flag
+	 * @param errorMessages the error messages
+	 * @param propagatedFlag indicates if propagated to descendants
+	 * @param propagationDescendantThreshold indicates the propagation threshold
+	 * @param workflowType the workflow type
+	 */
+	public MapProjectJpa(Long id, String name, boolean isPublic,
+			boolean groupStructure, boolean published,
+			String refSetId, String refSetName, String sourceTerminology,
+			String sourceTerminologyVersion, String destinationTerminology,
+			String destinationTerminologyVersion, MapRefsetPattern mapRefsetPattern,
+			RelationStyle mapRelationStyle, String mapPrincipleSourceDocument,
+			String mapPrincipleSourceDocumentName,
+			boolean ruleBased, String projectSpecificAlgorithmHandlerClass,
+			ProjectSpecificAlgorithmHandler algorithmHandler,
+			Set<MapAgeRange> presetAgeRanges, Set<MapUser> mapLeads,
+			Set<MapUser> mapSpecialists, Set<MapUser> mapAdministrators, Set<MapPrinciple> mapPrinciples,
+			Set<MapAdvice> mapAdvices, Set<MapRelation> mapRelations,
+			Set<String> scopeConcepts, Set<String> scopeExcludedConcepts,
+			boolean scopeDescendantsFlag, boolean scopeExcludedDescendantsFlag,
+			boolean propagatedFlag, Integer propagationDescendantThreshold, 
+			Set<String> errorMessages, WorkflowType workflowType) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.isPublic = isPublic;
+		this.groupStructure = groupStructure;
+		this.published = published;
+		this.refSetId = refSetId;
+		this.refSetName = refSetName;
+		this.sourceTerminology = sourceTerminology;
+		this.sourceTerminologyVersion = sourceTerminologyVersion;
+		this.destinationTerminology = destinationTerminology;
+		this.destinationTerminologyVersion = destinationTerminologyVersion;
+		this.mapRefsetPattern = mapRefsetPattern;
+		this.mapRelationStyle = mapRelationStyle;
+		this.mapPrincipleSourceDocument = mapPrincipleSourceDocument;
+		this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
+		this.ruleBased = ruleBased;
+		this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
+		this.algorithmHandler = algorithmHandler;
+		this.presetAgeRanges = presetAgeRanges;
+		this.mapLeads = mapLeads;
+		this.mapSpecialists = mapSpecialists;
+		this.mapAdministrators = mapAdministrators;
+		this.mapPrinciples = mapPrinciples;
+		this.mapAdvices = mapAdvices;
+		this.mapRelations = mapRelations;
+		this.scopeConcepts = scopeConcepts;
+		this.scopeExcludedConcepts = scopeExcludedConcepts;
+		this.scopeDescendantsFlag = scopeDescendantsFlag;
+		this.scopeExcludedDescendantsFlag = scopeExcludedDescendantsFlag;
+		this.errorMessages = errorMessages;
+		this.propagatedFlag = propagatedFlag;
+		this.propagationDescendantThreshold = propagationDescendantThreshold;
+		this.workflowType = workflowType;
+	}
+
 	/**
 	 * Instantiates a {@link MapProjectJpa} from the specified parameters.
 	 *
@@ -1439,5 +1530,7 @@ public class MapProjectJpa implements MapProject {
     reportDefinitions.remove(reportDefinition);
   }
 	
+
+
 
 }
