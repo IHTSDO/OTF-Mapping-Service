@@ -235,9 +235,12 @@ lead review<br>
 	ng-show="record.workflowStatus != 'CONFLICT_NEW' 
 	&& record.workflowStatus != 'CONFLICT_IN_PROGRESS' 
 	&& record.workflowStatus != 'CONFLICT_RESOLVED'
-	&& record.workflowStatus != 'REVIEW_NEW'
-	&& record.workflowStatus != 'REVIEW_IN_PROGRESS'
-	&& record.workflowStatus != 'REVIEW_RESOLVED'">
+    && record.workflowStatus != 'REVIEW_NEW'
+    && record.workflowStatus != 'REVIEW_IN_PROGRESS'
+    && record.workflowStatus != 'REVIEW_RESOLVED'
+	&& record.workflowStatus != 'QA_NEW'
+	&& record.workflowStatus != 'QA_IN_PROGRESS'
+	&& record.workflowStatus != 'QA_RESOLVED'">
 	<accordion> <accordion-group is-open="isFeedbackOpen">
 	<accordion-heading> <span ng-click="markViewed()">
 		Feedback <span ng-show="conversation.feedback.length > 0">({{conversation.feedback.length}})</span><i

@@ -107,6 +107,7 @@ angular
 									.copy($scope.focusProject);
 
 							$scope.editModeEnabled = false;
+							$scope.reportDefinitions = new Array();
 
 							$scope.allowableMapTypes = [ {
 								displayName : 'Extended Map',
@@ -300,17 +301,20 @@ angular
 										})
 										.success(
 												function(data) {
-													$scope.reportDefinitions = data.reportDefinition;
+													//$scope.reportDefinitions = data.reportDefinition;
+													for (var i=0; i<data.reportDefinition.length; i++) {
+														$scope.reportDefinitions.push(data.reportDefinition[i]);
+													}
 													localStorageService
 															.add(
 																	'reportDefinitions',
-																	data.reportDefinition);
+																	$scope.reportDefinitions);
 													$rootScope
 															.$broadcast(
 																	'localStorageModule.notification.setMapRelations',
 																	{
 																		key : 'reportDefinitions',
-																		reportDefinitions : data.reportDefinitions
+																		reportDefinitions : $scope.reportDefinitions
 																	});
 													$scope.allowableReportDefinitions = localStorageService
 															.get('reportDefinitions');
@@ -322,6 +326,43 @@ angular
 															headers, config);
 												});
 
+								$http(
+										{
+											url : root_reporting
+													+ "qaCheckDefinition/qaCheckDefinitions",
+											dataType : "json",
+											method : "GET",
+											headers : {
+												"Content-Type" : "application/json"
+											}
+										})
+										.success(
+												function(data) {
+													$scope.qaCheckDefinitions = data.reportDefinition;
+													for (var i=0; i<$scope.qaCheckDefinitions.length; i++) {
+														$scope.reportDefinitions.push($scope.qaCheckDefinitions[i]);
+													}
+													localStorageService
+															.add(
+																	'reportDefinitions',
+																	$scope.reportDefinitions);
+													$rootScope
+															.$broadcast(
+																	'localStorageModule.notification.setMapRelations',
+																	{
+																		key : 'reportDefinitions',
+																		reportDefinitions : $scope.reportDefinitions
+																	});
+													$scope.allowableReportDefinitions = localStorageService
+															.get('reportDefinitions');
+												}).error(
+												function(data, status, headers,
+														config) {
+													$rootScope.handleHttpError(
+															data, status,
+															headers, config);
+												});
+								
 								// find selected elements from the allowable
 								// lists
 								$scope.selectedMapType = $scope
@@ -758,11 +799,6 @@ angular
 
 								// otherwise check if upper-case reportDefinition filter
 								// matches upper-case element name or detail
-								if (element.detail.toString().toUpperCase()
-										.indexOf(
-												$scope.reportDefinitionFilter.toString()
-														.toUpperCase()) != -1)
-									return true;
 								if (element.name.toString().toUpperCase()
 										.indexOf(
 												$scope.reportDefinitionFilter.toString()
@@ -840,7 +876,6 @@ angular
 								if ($scope.editModeEnabled == true) {
 									$scope.editModeEnabled = false;
 									$scope.updateMapProject();
-
 								} else {
 									$scope.editModeEnabled = true;
 								}

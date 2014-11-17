@@ -39,6 +39,18 @@ public enum WorkflowStatus {
   /** Review resolved, but not released (can transition to READY_FOR_PUBLICATION) */
   REVIEW_RESOLVED,
   
+  /** Pre-publication state for qa  */
+  QA_NEEDED, // (can transition to QA_NEW, QA_IN_PROGRESS)
+ 
+  /** QA has been claimed, but has not been edited */
+  QA_NEW, // (can transition to QA_IN_PROGRESS, READY_FOR_PUBLICATION)
+  
+  /** QA claimed */
+  QA_IN_PROGRESS, // (can transition to QA_RESOLVED)
+  
+  /** QA resolved, but not released (can transition to READY_FOR_PUBLICATION) */
+  QA_RESOLVED,
+  
   /** The consensus needed. */
   CONSENSUS_NEEDED, // (can transition to CONSENSUS_IN_PROGRESS)
   
