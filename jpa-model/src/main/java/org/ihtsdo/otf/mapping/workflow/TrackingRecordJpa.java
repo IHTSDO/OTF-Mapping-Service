@@ -17,6 +17,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
@@ -56,6 +57,7 @@ public class TrackingRecordJpa implements TrackingRecord {
 
 	/** The default preferred name. */
 	@Column(nullable = false)
+	@Analyzer(definition = "noStopWord")
 	private String defaultPreferredName;
 
 	/** The sort key. */
