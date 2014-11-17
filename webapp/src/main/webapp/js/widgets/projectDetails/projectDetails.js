@@ -799,11 +799,6 @@ angular
 
 								// otherwise check if upper-case reportDefinition filter
 								// matches upper-case element name or detail
-								if (element.detail.toString().toUpperCase()
-										.indexOf(
-												$scope.reportDefinitionFilter.toString()
-														.toUpperCase()) != -1)
-									return true;
 								if (element.name.toString().toUpperCase()
 										.indexOf(
 												$scope.reportDefinitionFilter.toString()
