@@ -889,6 +889,23 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 				}
 				return 0;
 			}
+
+      /**
+       * Returns the lowest workflow status.
+       * 
+       * @param mapRecords
+       *            the map records
+       * @return the lowest workflow status
+       */
+      @SuppressWarnings("static-method")
+      public WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
+      	WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
+      	for (MapRecord mr : mapRecords) {
+      		if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
+      			workflowStatus = mr.getWorkflowStatus();
+      	}
+      	return workflowStatus;
+      }
 		};
 
 		List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
@@ -2198,23 +2215,6 @@ public class DefaultProjectSpecificAlgorithmHandler implements
 		for (MapRecord mr : mapRecords) {
 			// System.out.println(mr.getWorkflowStatus());
 			if (mr.getWorkflowStatus().compareTo(workflowStatus) > 0)
-				workflowStatus = mr.getWorkflowStatus();
-		}
-		return workflowStatus;
-	}
-
-	/**
-	 * Returns the lowest workflow status.
-	 * 
-	 * @param mapRecords
-	 *            the map records
-	 * @return the lowest workflow status
-	 */
-	@SuppressWarnings("static-method")
-	public WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
-		WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
-		for (MapRecord mr : mapRecords) {
-			if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
 				workflowStatus = mr.getWorkflowStatus();
 		}
 		return workflowStatus;
