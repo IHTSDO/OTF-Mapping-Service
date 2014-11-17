@@ -227,7 +227,7 @@ public class FeedbackJpa implements Feedback {
 	 * @see org.ihtsdo.otf.mapping.model.Feedback#isError()
 	 */
 	@Override
-	public boolean isError() {
+	public boolean getIsError() {
 		return isError;
 	}
 
