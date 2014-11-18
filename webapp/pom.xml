@@ -106,6 +106,7 @@
         </executions>
       </plugin>
 
+      <!-- Configure .war build -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -136,6 +137,7 @@
         </configuration>
       </plugin>
 
+      <!-- Configure debian package -->
       <plugin>
         <groupId>org.vafer</groupId>
         <artifactId>jdeb</artifactId>
@@ -181,6 +183,5 @@
 
     </plugins>
   </build>
-
 
 </project>
