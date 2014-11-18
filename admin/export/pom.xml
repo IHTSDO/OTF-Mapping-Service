@@ -11,11 +11,12 @@
   </parent>
 
   <artifactId>mapping-admin-export</artifactId>
-  <name>OTF Admin Export Metadata</name>
-  <description>OTF Administrator Tool to Export Metadata</description>
+  <name>OTF Admin Export</name>
+  <description>OTF Administrator Tool to Export</description>
   <packaging>pom</packaging>
 
   <profiles>
+    <!-- Activated by run.config setting -->
     <profile>
       <id>run</id>
       <activation>
