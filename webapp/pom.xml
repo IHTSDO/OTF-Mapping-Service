@@ -48,8 +48,8 @@
 
     <plugins>
 
-      <!-- Configure environment-specific build time information through
-      a build.config file settings -->
+      <!-- Configure environment-specific build time information through a build.config 
+        file settings -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
@@ -67,13 +67,14 @@
           </execution>
         </executions>
       </plugin>
-      
-      <!-- Copy the favicon file -->
+
+      <!-- Copy files -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
         <executions>
+
+          <!-- Copy the favicon file -->
           <execution>
             <id>copy-favicon</id>
             <phase>process-sources</phase>
@@ -82,19 +83,13 @@
             </goals>
             <configuration>
               <target name="copy favicon">
-                <copy file="${deploy.favicon}" tofile="${project.build.directory}/custom/img/favicon.png" />
+                <copy file="${deploy.favicon}"
+                  tofile="${project.build.directory}/custom/images/favicon.png" />
               </target>
             </configuration>
           </execution>
-        </executions>
-      </plugin>
 
-      <!-- Copy the logo file -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
+          <!-- Copy the logo file -->
           <execution>
             <id>copy-logo</id>
             <phase>process-sources</phase>
@@ -103,13 +98,14 @@
             </goals>
             <configuration>
               <target name="copy logo">
-                <copy file="${deploy.favicon}" tofile="${project.build.directory}/custom/img/logo.png" />
+                <copy file="${deploy.favicon}"
+                  tofile="${project.build.directory}/custom/images/logo.png" />
               </target>
             </configuration>
           </execution>
         </executions>
       </plugin>
-            
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
