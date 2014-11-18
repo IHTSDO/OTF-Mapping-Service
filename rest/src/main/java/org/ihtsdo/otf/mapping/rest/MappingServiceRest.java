@@ -187,7 +187,59 @@ public class MappingServiceRest extends RootServiceRest {
 			return null;
 		}
 	}
+	
+	/**
+	 * Returns the project for a given id (auto-generated) in JSON format
+	 * 
+	 * @param mapProjectId
+	 *            the mapProjectId
+	 * @param authToken
+	 * @return the mapProject
+	 */
+	@GET
+	@Path("/project/id/{id:[0-9][0-9]*}")
+	@ApiOperation(value = "Get map project by id.", notes = "Gets a map project for the specified parameters.", response = MapProject.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapProject getMapProject(
+			@ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /project/id/"
+						+ mapProjectId.toString());
+
+		String user = "";
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to retrieve the map project.")
+								.build());
+
+			MappingService mappingService = new MappingServiceJpa();
+			MapProject mapProject = mappingService.getMapProject(mapProjectId);
+			mapProject.getScopeConcepts().size();
+			mapProject.getScopeExcludedConcepts().size();
+			mapProject.getMapAdvices().size();
+			mapProject.getMapRelations().size();
+			mapProject.getMapAdministrators().size();
+			mapProject.getMapLeads().size();
+			mapProject.getMapSpecialists().size();
+			mapProject.getMapPrinciples().size();
+			mapProject.getPresetAgeRanges().size();
+			mappingService.close();
+			return mapProject;
+
+		} catch (Exception e) {
+			handleException(e, "trying to retrieve the map project", user, "",
+					"");
+			return null;
+		}
+	}
 
 	/**
 	 * Adds a map project
@@ -367,7 +419,69 @@ public class MappingServiceRest extends RootServiceRest {
 		}
 	}
 
+	/**
+	 * Returns all map projects for a map user
+	 * 
+	 * @param mapUserName
+	 *            the map user name
+	 * @param authToken
+	 * @return the map projects
+	 */
+	@GET
+	@Path("/project/user/id/{username}")
+	@ApiOperation(value = "Get all map projects for a user.", notes = "Gets a list of map projects for the specified user.", response = MapProjectListJpa.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public MapProjectListJpa getMapProjectsForUser(
+			@ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String mapUserName,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken) {
 
+		Logger.getLogger(MappingServiceRest.class).info(
+				"RESTful call (Mapping): /project/user/id/" + mapUserName);
+		String user = "";
+
+		try {
+			// authorize call
+			MapUserRole role = securityService
+					.getApplicationRoleForToken(authToken);
+			user = securityService.getUsernameForToken(authToken);
+			if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+				throw new WebApplicationException(
+						Response.status(401)
+								.entity("User does not have permissions to get the map projects for given user.")
+								.build());
+
+			MappingService mappingService = new MappingServiceJpa();
+			MapUser mapLead = mappingService.getMapUser(mapUserName);
+			MapProjectListJpa mapProjects = (MapProjectListJpa) mappingService
+					.getMapProjectsForMapUser(mapLead);
+
+			for (MapProject mapProject : mapProjects.getMapProjects()) {
+				mapProject.getScopeConcepts().size();
+				mapProject.getScopeExcludedConcepts().size();
+				mapProject.getMapAdvices().size();
+				mapProject.getMapRelations().size();
+				mapProject.getMapAdministrators().size();
+				mapProject.getMapLeads().size();
+				mapProject.getMapSpecialists().size();
+				mapProject.getMapPrinciples().size();
+				mapProject.getPresetAgeRanges().size();
+			}
+			mapProjects.sortBy(new Comparator<MapProject>() {
+				@Override
+				public int compare(MapProject o1, MapProject o2) {
+					return o1.getName().compareTo(o2.getName());
+				}
+			});
+			mappingService.close();
+			return mapProjects;
+
+		} catch (Exception e) {
+			handleException(e,
+					"trying to get the map projects for a given user", user,
+					"", "");
+			return null;
+		}
+	}
 	// ///////////////////////////////////////////////////
 	// SCRUD functions: Map Users
 	// ///////////////////////////////////////////////////
