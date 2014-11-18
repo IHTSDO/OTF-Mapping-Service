@@ -21,7 +21,6 @@
     <skipTests>true</skipTests>
 
     <!-- Set maven plugin versions -->
-    <jgitflow.maven.version>1.0-m4.3</jgitflow.maven.version>
     <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
     <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
     <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
@@ -221,11 +220,11 @@
       <plugins>
 
         <plugin>
-          <groupId>external.atlassian.jgitflow</groupId>
-          <artifactId>jgitflow-maven-plugin</artifactId>
-          <version>${jgitflow.maven.version}</version>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.7</version>
         </plugin>
-        
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>

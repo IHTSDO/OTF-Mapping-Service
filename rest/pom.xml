@@ -167,49 +167,42 @@
         </executions>
       </plugin>
 
+  <!-- Copy files -->
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-antrun-plugin</artifactId>
+    <executions>
+
       <!-- Copy the favicon file -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <id>copy-favicon</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target name="copy favicon">
-                <copy file="${deploy.favicon}"
-                  tofile="${project.build.directory}/custom/images/favicon.png" />
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+      <execution>
+        <id>copy-favicon</id>
+        <phase>process-sources</phase>
+        <goals>
+          <goal>run</goal>
+        </goals>
+        <configuration>
+          <target name="copy favicon">
+            <copy file="${deploy.favicon}"
+              tofile="${project.build.directory}/custom/images/favicon.png" />
+          </target>
+        </configuration>
+      </execution>
 
       <!-- Copy the logo file -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <id>copy-logo</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target name="copy logo">
-                <copy file="${deploy.favicon}"
-                  tofile="${project.build.directory}/custom/images/logo.png" />
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+      <execution>
+        <id>copy-logo</id>
+        <phase>process-sources</phase>
+        <goals>
+          <goal>run</goal>
+        </goals>
+        <configuration>
+          <target name="copy logo">
+            <copy file="${deploy.favicon}" tofile="${project.build.directory}/custom/images/logo.png" />
+          </target>
+        </configuration>
+      </execution>
+    </executions>
+  </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
