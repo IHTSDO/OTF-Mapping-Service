@@ -81,6 +81,8 @@ export.output.dir=C:/data/ihtsdo-project-data
 # Webapp base URL (currently unused)
 #
 base.url=
+deploy.title=IHTSDO Mapping Tool - DEV
+deploy.favicon=c:/data/images/favicon.png
 
 #
 # Directory for mapping personnel handbooks and other documents

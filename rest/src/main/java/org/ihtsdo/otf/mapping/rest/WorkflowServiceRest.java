@@ -1501,6 +1501,13 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 	}
 
+	/**
+	 * Creates the qa record.
+	 *
+	 * @param mapRecord the map record
+	 * @param authToken the auth token
+	 * @throws Exception the exception
+	 */
 	@POST
 	@Path("/createQARecord")
 	@ApiOperation(value = "Creates a qa record.", notes = "Creates a qa record given a map record.")
