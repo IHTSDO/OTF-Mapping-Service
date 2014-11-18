@@ -17,6 +17,10 @@
 
   <properties>
     <packageName>${project.parent.artifactId}-webapp</packageName>
+    <!-- Specify default build.config - references config project -->
+    <!-- This requires some images to be in c:/data/images -->
+    <!-- Used -->
+    <build.config>${basedir}/../config/src/main/resources/config.properties.dev</build.config>
   </properties>
 
   <!-- Declare Project Dependency Versions -->
