@@ -14,7 +14,7 @@
   <name>IHTSDO RF2 Data Model</name>
   <description>Aggregator and parent for interfaces and default implementations of RF2 data model for OTF services</description>
 
-  
+
   <!-- Sub-modules -->
   <modules>
     <module>parent</module>
@@ -33,6 +33,7 @@
       <plugin>
         <groupId>external.atlassian.jgitflow</groupId>
         <artifactId>jgitflow-maven-plugin</artifactId>
+        <version>1.0-m4.3</version>
         <configuration>
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <enableSshAgent>true</enableSshAgent>
