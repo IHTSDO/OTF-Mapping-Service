@@ -57,15 +57,13 @@ public class MappingServiceRestTest {
 		Logger.getLogger(MappingServiceRestTest.class).info(Integer.toString(projects.getCount()) + " projects found");
 		Logger.getLogger(MappingServiceRestTest.class).info(Integer.toString(users.getCount()) + " users found");
 		
-		// retrieve individual projects
-		for (MapProject m : projects.getMapProjects()) {
-			service.getMapProject(m.getId(), "adm");
-		}
-		
+		// retrieve all projects
+		service.getMapProjects("adm");
+		/*
 		// retrieve projects by specialist
 		for (MapUser m : users.getMapUsers()) {
 			service.getMapProjectsForUser(m.getId().toString(), "adm");
-		}
+		}*/
 		
 	}
 	

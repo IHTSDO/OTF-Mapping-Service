@@ -6,6 +6,9 @@ package org.ihtsdo.otf.mapping.helpers;
  */
 public enum MapUserRole {
   
+  /** No role. */
+  NONE ("None"),
+	
   /**  The viewer. */
   VIEWER ("Viewer"),
   
