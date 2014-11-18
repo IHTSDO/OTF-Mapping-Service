@@ -15,8 +15,14 @@
   <description>OTF RF2 Administrator Tool to Make Lucene indexes</description>
   <packaging>pom</packaging>
 
+  <properties>
+    <!-- Comma separated list of objects to reindex, leave blank for all -->
+    <indexedObjects></indexedObjects>
+  </properties>
 
   <profiles>
+
+    <!-- Activated by run.config setting -->
     <profile>
       <id>run</id>
       <activation>
