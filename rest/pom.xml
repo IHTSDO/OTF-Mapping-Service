@@ -131,22 +131,67 @@
       <groupId>com.wordnik</groupId>
       <artifactId>swagger-jersey-jaxrs_2.10</artifactId>
     </dependency>
-      <dependency>
-        <groupId>com.sun.mail</groupId>
-        <artifactId>javax.mail</artifactId>
-      </dependency>
+    <dependency>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>javax.mail</artifactId>
+    </dependency>
   </dependencies>
 
   <!-- Always build, use dev configuration by default -->
   <build>
     <finalName>${project.artifactId}</finalName>
+
     <plugins>
+
+      <!-- Configure environment-specific build time information through a build.config 
+        file settings -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>read-project-properties</goal>
+            </goals>
+            <configuration>
+              <files>
+                <file>${build.config}</file>
+              </files>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Copy the favicon file -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>copy-swf-files</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target name="copy favicon">
+                <copy file="${deploy.favicon}" tofile="${project.build.directory}/custom/images/favicon.png" />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
           <webResources>
+            <resource>
+              <directory>${project.build.directory}/custom</directory>
+            </resource>
             <resource>
               <directory>src/main/webapp</directory>
               <filtering>true</filtering>
@@ -155,16 +200,16 @@
               </includes>
             </resource>
             <resource>
-				<directory>src/main/webapp</directory>
-				<filtering>false</filtering>
-				<excludes>
-					<exclude>index.html</exclude>
-				</excludes>
-			</resource>
+              <directory>src/main/webapp</directory>
+              <filtering>false</filtering>
+              <excludes>
+                <exclude>index.html</exclude>
+              </excludes>
+            </resource>
           </webResources>
         </configuration>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.tomcat.maven</groupId>
         <artifactId>tomcat7-maven-plugin</artifactId>
@@ -257,26 +302,12 @@
                   <linkTarget>/var/opt/${packageName}/log</linkTarget>
                   <symlink>true</symlink>
                 </data>
- <!-- Moved to ansible, kept for reference
-               <data>
-                  <src>${basedir}/..</src>
-                  <type>directory</type>
-                  <mapper>
-                    <type>perm</type>
-                    <prefix>/opt/${packageName}/lib/admin</prefix>
-                  </mapper>
-                </data>-->
- <!--               <data>
-                  <src>${basedir}/src/deb/log4j.xml</src>
-                  <dst>/etc/opt/${packageName}/log4j.xml</dst>
-                  <type>file</type>
-                  <conffile>true</conffile>
-                  <mapper>
-                    <type>perm</type>
-                    <group>${packageName}</group>
-                    <filemode>0640</filemode>
-                  </mapper>
-                </data> -->
+                <!-- Moved to ansible, kept for reference <data> <src>${basedir}/..</src> 
+                  <type>directory</type> <mapper> <type>perm</type> <prefix>/opt/${packageName}/lib/admin</prefix> 
+                  </mapper> </data> -->
+                <!-- <data> <src>${basedir}/src/deb/log4j.xml</src> <dst>/etc/opt/${packageName}/log4j.xml</dst> 
+                  <type>file</type> <conffile>true</conffile> <mapper> <type>perm</type> <group>${packageName}</group> 
+                  <filemode>0640</filemode> </mapper> </data> -->
               </dataSet>
             </configuration>
           </execution>

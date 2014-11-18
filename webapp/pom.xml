@@ -17,7 +17,6 @@
 
   <properties>
     <packageName>${project.parent.artifactId}-webapp</packageName>
-    <deploy.type></deploy.type>
   </properties>
 
   <!-- Declare Project Dependency Versions -->
@@ -33,12 +32,67 @@
 
   <!-- Standard build profile, no special configuration needed -->
   <build>
+
+    <!-- Add target images folder to the resources list -->
+    <resources>
+      <resource>
+        <directory>
+        ${project.build.dir}/custom
+        </directory>
+      </resource>
+    </resources>
+
     <plugins>
+
+      <!-- Configure environment-specific build time information through
+      a build.config file settings -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>read-project-properties</goal>
+            </goals>
+            <configuration>
+              <files>
+                <file>${build.config}</file>
+              </files>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!-- Copy the favicon file -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>copy-swf-files</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target name="copy favicon">
+                <copy file="${deploy.favicon}" tofile="${project.build.directory}/custom/img/favicon.png" />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+            
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
           <webResources>
+            <resource>
+              <directory>${project.build.directory}/custom</directory>
+            </resource>
             <resource>
               <directory>src/main/webapp</directory>
               <filtering>true</filtering>
@@ -49,14 +103,14 @@
               </includes>
             </resource>
             <resource>
-				<directory>src/main/webapp</directory>
-				<filtering>false</filtering>
-				<excludes>
-					<exclude>index.html</exclude>
-					<exclude>partials/footer.html</exclude>
-					<exclude>partials/header.html</exclude>
-				</excludes>
-			</resource>
+              <directory>src/main/webapp</directory>
+              <filtering>false</filtering>
+              <excludes>
+                <exclude>index.html</exclude>
+                <exclude>partials/footer.html</exclude>
+                <exclude>partials/header.html</exclude>
+              </excludes>
+            </resource>
           </webResources>
         </configuration>
       </plugin>
