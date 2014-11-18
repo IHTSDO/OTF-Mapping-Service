@@ -18,6 +18,10 @@
   <properties>
     <execFinalName>exec-${project.build.finalName}.jar</execFinalName>
     <packageName>${project.parent.artifactId}-rest</packageName>
+    <!-- Specify default build.config - references config project -->
+    <!-- This requires some images to be in c:/data/images -->
+    <!-- Used -->
+    <build.config>${basedir}/../config/src/main/resources/config.properties.dev</build.config>
   </properties>
 
   <dependencies>
@@ -177,7 +181,8 @@
             </goals>
             <configuration>
               <target name="copy favicon">
-                <copy file="${deploy.favicon}" tofile="${project.build.directory}/custom/images/favicon.png" />
+                <copy file="${deploy.favicon}"
+                  tofile="${project.build.directory}/custom/images/favicon.png" />
               </target>
             </configuration>
           </execution>
@@ -198,7 +203,8 @@
             </goals>
             <configuration>
               <target name="copy logo">
-                <copy file="${deploy.favicon}" tofile="${project.build.directory}/custom/images/logo.png" />
+                <copy file="${deploy.favicon}"
+                  tofile="${project.build.directory}/custom/images/logo.png" />
               </target>
             </configuration>
           </execution>
