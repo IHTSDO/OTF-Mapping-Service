@@ -27,7 +27,8 @@ var mapProjectApp = angular.module('mapProjectApp', ['ngRoute',
                                                      'ngCookies',
                                                      'ui.tinymce',
                                                      'angularjs-dropdown-multiselect',
-                                                     'angularFileUpload'
+                                                     'angularFileUpload',
+                                                     'ui.tree'
                                                      ])
                                                      .value('prefix', '')
                                                      .config(function(dashboardProvider){

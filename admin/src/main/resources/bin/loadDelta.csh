@@ -88,7 +88,7 @@ endif
 
 echo "    Compute workflow ...`/bin/date`"
 cd $OTF_MAPPING_HOME/admin/loader
-mvn -PComputeWorkflow -Drun.config=$OTF_MAPPING_CONFIG -Drefset.id=447563008,447562003,450993002 install >&! mvn.log
+mvn -PComputeWorkflow -Drun.config=$OTF_MAPPING_CONFIG -Drefset.id=447563008,447562003,450993002 install -Dsend.notification=true >&! mvn.log
 if ($status != 0) then
     echo "ERROR computing workflow"
     cat mvn.log

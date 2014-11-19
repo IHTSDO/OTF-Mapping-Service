@@ -36,90 +36,62 @@
 </table>
 </accordion-group> </accordion>
 
-<!--  ENTRIES PANEL -->
 <accordion> <accordion-group is-open="isEntriesOpen">
-<accordion-heading> Entries <i
+<accordion-heading> Entries (New) <i
 	class="pull-right glyphicon"
 	ng-class="{'glyphicon-chevron-down': isEntriesOpen, 'glyphicon-chevron-right': !isEntriesOpen}"></i>
 </accordion-heading>
 
-<div ng-show="project.groupStructure == true">
+<div ui-tree="options">
+	<ol ui-tree-nodes="" ng-model="groupsTree">
+		<li ng-repeat="group in groupsTree" ui-tree-node>
+			<div class="angular-ui-tree-handle">
+				<div style="display: inline; float: left; width: 3%;">
+							<i class="glyphicon glyphicon-move"></i>
+						</div> Map Group {{group.mapGroup}}
 
-	<accordion close-others="false">
-
-	<div ng-model="entries">
-		<!--  ui-sortable -->
-
-		<!--  first-level accordion groups -->
-		<accordion-group ng-repeat="entryGroup in entries" is-open="true"
-			ng-show="entryGroup.length > 0"> <accordion-heading>
-		<span style="text-align: left;">Map Group &nbsp&nbsp<!--  <i class="glyphicon glyphicon-move"></i> -->
-		</span> <span class="pull-right"><i class="glyphicon glyphicon-remove"
-			ng-click="removeMapGroup(entryGroup)"></i></span> </accordion-heading>
-
-
-
-		<div ui-sortable ng-model="entryGroup">
-			<!--ui-sortable   -->
-			<div ng-repeat="entry in entryGroup track by entry.localId"
-				ng-class="{'alert alert-info-select': !entry.isSelected, 'alert alert-success': entry.isSelected}"
-				disabled>
-
-				<a ng-click="selectMapEntry(entry)">{{getEntrySummary(entry)}}</a>
-
-				<div style="display: inline; float: right; width: 3%;">
+				<div data-nodrag style="display: inline; float: right; width: 3%;">
 					<i class="glyphicon glyphicon-remove"
-						ng-click="deleteMapEntry(entry)"></i>
+						ng-click="deleteMapGroup(group)"></i>
 				</div>
-
-				</p>
 			</div>
-			<!--  end sortable entries -->
-			<br> <input class="pull-right" type="submit"
-				value="Add Map Entry" ng-click="entry = addMapEntry(entryGroup)">
-		</div>
+			<ol ui-tree-nodes="" ng-model="group.entry">
+				<li ng-repeat="entry in group.entry" ui-tree-node>
+					
+					<div
+						ng-class="{'alert alert-info-select': !entry.isSelected, 'alert alert-success': entry.isSelected}"
+						disabled>
+						
+						<div style="display: inline; float: left; width: 3%;">
+							<i class="glyphicon glyphicon-move"></i>
+						</div>
+	
+						<a data-nodrag ng-click="selectMapEntry(entry)">{{getEntrySummary(entry)}}</a>
 
-		</accordion-group>
-		<!--  end Group accordion group -->
+						<div data-nodrag style="display: inline; float: right; width: 3%;">
+							<i class="glyphicon glyphicon-remove"
+								ng-click="deleteMapEntry(entry)"></i>
+						</div>
 
-	</div>
-	<!--  end sortable groups -->
+						</p>
+					</div>
 
-	<p></p>
-
-
-	</accordion>
-	<!--  end group accordion -->
-
-	<input type="submit" value="Add Map Group" ng-click="addMapGroup()">
-
-	<!-- Temporary key for use in testing -->
-	<div class="pull-right">
-		Entry Legend: <span style="padding: 3px; background-color: #dff0d8;"><span
-			style="color: #428bca;">Currently Editing</span></span>
-	</div>
+				</li>
+				
+				<li data-nodrag><button ng-click="addMapEntry(group)">Add Entry</button></li>
+							
+			</ol>
+			<hr>
+				
+		</li>
+		
+		
+		
+	</ol>
+	<button data-nodrag ng-click="addMapGroup()">Add Group</button>
+	<div>&nbsp</div>
 </div>
 
-<!--  for no group structure in project -->
-<div ng-show="project.groupStructure == false"">
-
-	<div ui-sortable ng-model="entries[1]">
-		<p ng-repeat="entry in entries[1]" ng-click="selectMapEntry(entry)">
-			<a ng-show="entry.targetId != null && entry.targetId != ''"> <span
-				ng-show="project.ruleBased == 'true'">[{{entry.ruleSummary}}]</span>
-				{{entry.targetId}} {{entry.targetName}}
-			</a> <a ng-show="entry.targetId == null || entry.targetId === ''">[Empty
-				Entry]</a>
-
-
-		</p>
-	</div>
-	<br> <input class="pull-right" type="submit" value="Add Map Entry"
-		ng-click="addMapEntry(entries[1])">
-</div>
-
-</accordion-group> <!--  end entries accordion group --> </accordion>
-<!--  end entries accordion -->
 
 <!--  NOTES PANEL -->
 <accordion> <accordion-group is-open="isNotesOpen">
@@ -292,10 +264,12 @@ lead review<br>
 <button class="btn btn-sm btn-warning" ng-click="cancelMapRecord()">Cancel</button>
 <button class="btn btn-sm btn-danger" ng-click="clearMapRecord()">Clear</button>
 
-<button class="btn btn-sm btn-primary" style="float: right;" 
+<button class="btn btn-sm btn-primary" style="float: right;"
 	ng-click="saveMapRecord(true)">Save For Later</button>
-<button class="btn btn-sm btn-primary" tooltip-placement="top" tooltip="{{dynamicTooltip}}"
-	ng-show="page != 'resolveConflictsDashboard'" style="float: right; margin-right:5px;"
+<button class="btn btn-sm btn-primary" tooltip-placement="top"
+	tooltip="{{dynamicTooltip}}"
+	ng-show="page != 'resolveConflictsDashboard'"
+	style="float: right; margin-right: 5px;"
 	ng-click="saveMapRecord(false)">Save/Next</button>
 
 
