@@ -289,6 +289,7 @@
 								</goals>
 								<configuration>
 									<refSetId>${refset.id}</refSetId>
+									<sendNotification>${send.notification}</sendNotification>
 								</configuration>
 							</execution>
 						</executions>

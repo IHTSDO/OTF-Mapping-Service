@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.services;
 import java.util.Date;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.DescriptionList;
 import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList;
@@ -815,6 +816,16 @@ public interface ContentService extends RootService {
 	 */
 	public TreePositionList getTreePositionsWithChildren(String terminologyId,
 			String terminology, String terminologyVersion) throws Exception;
+
+	/**
+	 * Returns all complex map ref set members for a given refset id
+	 * @param refSetId
+	 * @return
+	 * @throws Exception
+	 */
+	public ComplexMapRefSetMemberList getComplexMapRefSetMembersForRefSetId(
+			String refSetId) throws Exception;
+
 
 
 }

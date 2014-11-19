@@ -157,7 +157,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 				existingConceptCache.put(c.getTerminologyId(), c);
 			}
 
-		
 			getLog().info(
 					"Constructing terminology id sets for quality assurance");
 
@@ -283,73 +282,64 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 			computeDefaultPreferredNames();
 			contentService.commit();
 			getLog().info("  Done.");
-/*
-
-			PG 07/26 THIS SECTION COMMENTED OUT
-					 UNTIL TREE POSITION DELETION CAN BE PROPERLY MANAGED
-					 WITH INDEX ISSUES.  SEE MAP-373
-			
-			// recreating tree positions -- first instantiate new service
-			contentService.close();
-			ContentService contentService = new ContentServiceJpa();
-			
-			getLog().info("Remove tree positions for " + terminology + ", " + terminologyVersion);
-			contentService.clearTreePositions(terminology, terminologyVersion);
-			
-			getLog().info("Start creating tree positions.");
-			
-			MetadataServiceJpa metadataService = new MetadataServiceJpa();
-
-			
-			// first get isaRelType from metadata
-			Map<String, String> hierRelTypeMap = metadataService
-					.getHierarchicalRelationshipTypes(terminology, terminologyVersion);
-			String isaRelType = hierRelTypeMap.keySet().iterator().next()
-					.toString();
-			metadataService.close();
-
-			// Walk up tree to the root
-			// ASSUMPTION: single root
-			String conceptId = isaRelType;
-			String rootId = null;
-			OUTER: while (true) {
-				getLog().info("  Walk up tree from " + conceptId);
-				Concept c = contentService.getConcept(conceptId, terminology,
-						terminologyVersion);
-				for (Relationship r : c.getRelationships()) {
-					if (r.isActive()
-							&& r.getTypeId().equals(Long.valueOf(isaRelType))) {
-						conceptId = r.getDestinationConcept()
-								.getTerminologyId();
-						continue OUTER;
-					}
-				}
-				rootId = conceptId;
-				break;
-			}
-			getLog().info("  Compute tree from rootId " + conceptId);
-			contentService.computeTreePositions(terminology, terminologyVersion,
-					isaRelType, rootId);
-
-			contentService.close();
-
-			getLog().info("done ...");
-			
-			// recompute workflow for any projects with this as source terminology
-			MappingService mappingService = new MappingServiceJpa();
-			WorkflowService workflowService = new WorkflowServiceJpa();
-			
-			// cycle over projects
-			for (MapProject mp : mappingService.getMapProjects().getIterable()) {
-				if (mp.getSourceTerminology().equals(terminology)
-						&& mp.getSourceTerminologyVersion().equals(terminologyVersion)) {
-					
-					getLog().info("Clearing workflow for map project " + mp.getName());
-					workflowService.clearWorkflowForMapProject(mp);
-					getLog().info("Computing workflow for map project " + mp.getName());
-					workflowService.computeWorkflow(mp);
-				}
-			}*/
+			/*
+			 * 
+			 * PG 07/26 THIS SECTION COMMENTED OUT UNTIL TREE POSITION DELETION
+			 * CAN BE PROPERLY MANAGED WITH INDEX ISSUES. SEE MAP-373
+			 * 
+			 * // recreating tree positions -- first instantiate new service
+			 * contentService.close(); ContentService contentService = new
+			 * ContentServiceJpa();
+			 * 
+			 * getLog().info("Remove tree positions for " + terminology + ", " +
+			 * terminologyVersion);
+			 * contentService.clearTreePositions(terminology,
+			 * terminologyVersion);
+			 * 
+			 * getLog().info("Start creating tree positions.");
+			 * 
+			 * MetadataServiceJpa metadataService = new MetadataServiceJpa();
+			 * 
+			 * 
+			 * // first get isaRelType from metadata Map<String, String>
+			 * hierRelTypeMap = metadataService
+			 * .getHierarchicalRelationshipTypes(terminology,
+			 * terminologyVersion); String isaRelType =
+			 * hierRelTypeMap.keySet().iterator().next() .toString();
+			 * metadataService.close();
+			 * 
+			 * // Walk up tree to the root // ASSUMPTION: single root String
+			 * conceptId = isaRelType; String rootId = null; OUTER: while (true)
+			 * { getLog().info("  Walk up tree from " + conceptId); Concept c =
+			 * contentService.getConcept(conceptId, terminology,
+			 * terminologyVersion); for (Relationship r : c.getRelationships())
+			 * { if (r.isActive() &&
+			 * r.getTypeId().equals(Long.valueOf(isaRelType))) { conceptId =
+			 * r.getDestinationConcept() .getTerminologyId(); continue OUTER; }
+			 * } rootId = conceptId; break; }
+			 * getLog().info("  Compute tree from rootId " + conceptId);
+			 * contentService.computeTreePositions(terminology,
+			 * terminologyVersion, isaRelType, rootId);
+			 * 
+			 * contentService.close();
+			 * 
+			 * getLog().info("done ...");
+			 * 
+			 * // recompute workflow for any projects with this as source
+			 * terminology MappingService mappingService = new
+			 * MappingServiceJpa(); WorkflowService workflowService = new
+			 * WorkflowServiceJpa();
+			 * 
+			 * // cycle over projects for (MapProject mp :
+			 * mappingService.getMapProjects().getIterable()) { if
+			 * (mp.getSourceTerminology().equals(terminology) &&
+			 * mp.getSourceTerminologyVersion().equals(terminologyVersion)) {
+			 * 
+			 * getLog().info("Clearing workflow for map project " +
+			 * mp.getName()); workflowService.clearWorkflowForMapProject(mp);
+			 * getLog().info("Computing workflow for map project " +
+			 * mp.getName()); workflowService.computeWorkflow(mp); } }
+			 */
 			getLog().info("");
 			getLog().info("==================================");
 			getLog().info("Delta load completed successfully!");
@@ -369,7 +359,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 	 */
 	private void instantiateGlobalVars() throws Exception {
 
-        Properties config = ConfigUtility.getConfigProperties();
+		Properties config = ConfigUtility.getConfigProperties();
 
 		// instantiate the services
 		contentService = new ContentServiceJpa();
@@ -415,9 +405,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 		terminologyVersion = metadataService.getLatestVersion(terminology);
 		metadataService.close();
 		if (terminologyVersion == null) {
-		  throw new Exception("Unable to determine terminology version.");
+			throw new Exception("Unable to determine terminology version.");
 		}
-		  
+
 		// set the parameters for determining defaultPreferredNames
 		dpnTypeId = Long.valueOf(config
 				.getProperty("loader.defaultPreferredNames.typeId"));
@@ -454,10 +444,13 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 				getLog().info("  Relationship file: " + f.getName());
 				relationshipReader = new BufferedReader(new FileReader(f));
 
-			/* Removed due to invalid relationship loading
-			   } else if (f.getName().contains("_StatedRelationship_")) {
-				getLog().info("  Stated Relationship file: " + f.getName());
-				statedRelationshipReader = new BufferedReader(new FileReader(f));*/
+				/*
+				 * Removed due to invalid relationship loading } else if
+				 * (f.getName().contains("_StatedRelationship_")) {
+				 * getLog().info("  Stated Relationship file: " + f.getName());
+				 * statedRelationshipReader = new BufferedReader(new
+				 * FileReader(f));
+				 */
 			} else if (f.getName().contains("_Description_")) {
 				getLog().info("  Description file: " + f.getName());
 				descriptionReader = new BufferedReader(new FileReader(f));
@@ -491,7 +484,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 			startTime = System.nanoTime();
 			loadConcepts(conceptReader);
 			getLog().info(
-					"  " + Integer.toString(objectCt) + " Concepts evaluated/loaded in "
+					"  " + Integer.toString(objectCt)
+							+ " Concepts evaluated/loaded in "
 							+ getElapsedTime(startTime) + "s" + " (Ended at "
 							+ ft.format(new Date()) + ")");
 		}
@@ -563,7 +557,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unused")
-  private void retireData() throws Exception {
+	private void retireData() throws Exception {
 
 		// //////////////
 		// Concepts
@@ -688,12 +682,12 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 				Concept concept = existingConceptCache.get(fields[0]);
 				Concept newConcept = null;
 
-				if (concept == null) { 
-					newConcept = new ConceptJpa(); 
-				} else { 
-					newConcept = new ConceptJpa(concept); // NEED COPY CONSTRUCTOR 
+				if (concept == null) {
+					newConcept = new ConceptJpa();
+				} else {
+					newConcept = new ConceptJpa(concept); // NEED COPY
+															// CONSTRUCTOR
 				}
-			
 
 				newConcept.setTerminologyId(fields[0]);
 				newConcept.setEffectiveTime(deltaLoaderStartDate);
@@ -703,20 +697,18 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 				newConcept.setTerminology(terminology);
 				newConcept.setTerminologyVersion(terminologyVersion);
 				newConcept.setDefaultPreferredName("TBD");
-				
 
-				if (concept == null) { 
-					contentService.addConcept(newConcept); 
-					objectsAdded++; 
+				if (concept == null) {
+					contentService.addConcept(newConcept);
+					objectsAdded++;
 				}
 
-				else if (!newConcept.equals(concept)) { 				
-					contentService.updateConcept(newConcept); 
-					objectsUpdated++; 
+				else if (!newConcept.equals(concept)) {
+					contentService.updateConcept(newConcept);
+					objectsUpdated++;
 				}
 
 				cacheConcept(newConcept);
-
 
 				if (++objectCt % logCt == 0) {
 					Long objPerMinute = (logCt * 1000 * 60)
@@ -750,7 +742,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
 			if (!fields[0].equals("id")) { // header
 
-				
 				// set concept from cache if possible, otherwise retrieve
 				Concept concept = null;
 				if (conceptCache.containsKey(fields[4])) {
@@ -821,7 +812,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 						contentService.addDescription(newDescription);
 						cacheDescription(newDescription);
 						objectsAdded++;
-					} else if (!newDescription.equals(description)) { 
+					} else if (!newDescription.equals(description)) {
 						contentService.updateDescription(newDescription);
 						cacheDescription(newDescription);
 						objectsUpdated++;
@@ -941,40 +932,45 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 						languageRefSetMember = languageRefSetMemberCache
 								.get(fields[0]);
 						// to investigate if there will be an update
-					} else if (existingLanguageRefSetMemberIds.contains(fields[0])) {
+					} else if (existingLanguageRefSetMemberIds
+							.contains(fields[0])) {
 						// retrieve languageRefSetMember
-						languageRefSetMember = contentService.getLanguageRefSetMember(fields[0],
-								terminology, terminologyVersion);
+						languageRefSetMember = contentService
+								.getLanguageRefSetMember(fields[0],
+										terminology, terminologyVersion);
 					}
 					if (languageRefSetMember == null
-							&& existingLanguageRefSetMemberIds.contains(fields[0])) {
-							getLog().warn(
-									"** LanguageRefSetMember "
-											+ fields[0]
-											+ " is in existing id cache, but was not precached via description "
-											+ description.getTerminologyId());
+							&& existingLanguageRefSetMemberIds
+									.contains(fields[0])) {
+						getLog().warn(
+								"** LanguageRefSetMember "
+										+ fields[0]
+										+ " is in existing id cache, but was not precached via description "
+										+ description.getTerminologyId());
 
-						
 					}
-					
+
 					LanguageRefSetMember newLanguageRefSetMember = null;
 
 					if (languageRefSetMember == null) {
 						newLanguageRefSetMember = new LanguageRefSetMemberJpa();
 					} else {
-						newLanguageRefSetMember = new LanguageRefSetMemberJpa(languageRefSetMember); // NEED
-																			// COPY
-																			// CONSTRUCTOR
-																			// }
+						newLanguageRefSetMember = new LanguageRefSetMemberJpa(
+								languageRefSetMember); // NEED
+						// COPY
+						// CONSTRUCTOR
+						// }
 					}
 					newLanguageRefSetMember.setDescription(description);
 
 					// Universal RefSet attributes
 					newLanguageRefSetMember.setTerminologyId(fields[0]);
-					newLanguageRefSetMember.setEffectiveTime(deltaLoaderStartDate);
-					newLanguageRefSetMember.setActive(fields[2].equals("1") ? true
-							: false);
-					newLanguageRefSetMember.setModuleId(Long.valueOf(fields[3]));
+					newLanguageRefSetMember
+							.setEffectiveTime(deltaLoaderStartDate);
+					newLanguageRefSetMember
+							.setActive(fields[2].equals("1") ? true : false);
+					newLanguageRefSetMember
+							.setModuleId(Long.valueOf(fields[3]));
 					newLanguageRefSetMember.setRefSetId(fields[4]);
 
 					// Language unique attributes
@@ -987,51 +983,52 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 							.setTerminologyVersion(terminologyVersion);
 
 					if (languageRefSetMember == null) {
-						contentService.addLanguageRefSetMember(newLanguageRefSetMember);
+						contentService
+								.addLanguageRefSetMember(newLanguageRefSetMember);
 						cacheLanguageRefSetMember(newLanguageRefSetMember);
 						objectsAdded++;
-					} else if (!newLanguageRefSetMember.equals(languageRefSetMember)) { 
-						contentService.updateLanguageRefSetMember(newLanguageRefSetMember);
+					} else if (!newLanguageRefSetMember
+							.equals(languageRefSetMember)) {
+						contentService
+								.updateLanguageRefSetMember(newLanguageRefSetMember);
 						cacheLanguageRefSetMember(newLanguageRefSetMember);
 						objectsUpdated++;
 					}
 
-/*					if (languageRefSetMember == null) {
-						objectsAdded++;
-						languageRefSetMember = new LanguageRefSetMemberJpa();
-					} else {
-						objectsUpdated++;
-					}
-
-					languageRefSetMember.setDescription(description);
-
-					// Universal RefSet attributes
-					languageRefSetMember.setTerminologyId(fields[0]);
-					languageRefSetMember.setEffectiveTime(deltaLoaderStartDate);
-					languageRefSetMember.setActive(fields[2].equals("1") ? true
-							: false);
-					languageRefSetMember.setModuleId(Long.valueOf(fields[3]));
-					languageRefSetMember.setRefSetId(fields[4]);
-
-					// Language unique attributes
-					languageRefSetMember.setAcceptabilityId(Long
-							.valueOf(fields[6]));
-
-					// Terminology attributes
-					languageRefSetMember.setTerminology(terminology);
-					languageRefSetMember
-							.setTerminologyVersion(terminologyVersion);
-
-					cacheLanguageRefSetMember(languageRefSetMember);
-
-					if (languageRefSetMember.getId() == null) {
-						contentService
-								.addLanguageRefSetMember(languageRefSetMember);
-					} else {
-						contentService
-								.updateLanguageRefSetMember(languageRefSetMember);
-					}
-*/
+					/*
+					 * if (languageRefSetMember == null) { objectsAdded++;
+					 * languageRefSetMember = new LanguageRefSetMemberJpa(); }
+					 * else { objectsUpdated++; }
+					 * 
+					 * languageRefSetMember.setDescription(description);
+					 * 
+					 * // Universal RefSet attributes
+					 * languageRefSetMember.setTerminologyId(fields[0]);
+					 * languageRefSetMember
+					 * .setEffectiveTime(deltaLoaderStartDate);
+					 * languageRefSetMember.setActive(fields[2].equals("1") ?
+					 * true : false);
+					 * languageRefSetMember.setModuleId(Long.valueOf
+					 * (fields[3]));
+					 * languageRefSetMember.setRefSetId(fields[4]);
+					 * 
+					 * // Language unique attributes
+					 * languageRefSetMember.setAcceptabilityId(Long
+					 * .valueOf(fields[6]));
+					 * 
+					 * // Terminology attributes
+					 * languageRefSetMember.setTerminology(terminology);
+					 * languageRefSetMember
+					 * .setTerminologyVersion(terminologyVersion);
+					 * 
+					 * cacheLanguageRefSetMember(languageRefSetMember);
+					 * 
+					 * if (languageRefSetMember.getId() == null) {
+					 * contentService
+					 * .addLanguageRefSetMember(languageRefSetMember); } else {
+					 * contentService
+					 * .updateLanguageRefSetMember(languageRefSetMember); }
+					 */
 				} else {
 					if (concept == null) {
 						getLog().warn(
@@ -1069,7 +1066,6 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 	}
 
 	private void loadRelationships(BufferedReader reader) throws Exception {
-
 
 		String line = "";
 		objectCt = 0;
@@ -1118,39 +1114,42 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
 					if (relationshipCache.containsKey(fields[0])) {
 						relationship = relationshipCache.get(fields[0]);
-					// if matches existing relationship id, retrieve relationship in order
-					// to investigate if there will be an update
-					} else if (existingRelationshipIds.contains(fields[0])){
-							// retrieve relationship
-							relationship = contentService.getRelationship(fields[0], terminology,
-									terminologyVersion);
-							
-					} 
-						if (relationship == null && existingRelationshipIds.contains(fields[0])) {
-							getLog().warn(
-									"** Relationship "
-											+ fields[0]
-											+ " is in existing id cache, but was not precached via concepts "
-											+ sourceConcept.getTerminologyId()
-											+ " or "
-											+ destinationConcept
-													.getTerminologyId());
-						}
+						// if matches existing relationship id, retrieve
+						// relationship in order
+						// to investigate if there will be an update
+					} else if (existingRelationshipIds.contains(fields[0])) {
+						// retrieve relationship
+						relationship = contentService.getRelationship(
+								fields[0], terminology, terminologyVersion);
 
+					}
+					if (relationship == null
+							&& existingRelationshipIds.contains(fields[0])) {
+						getLog().warn(
+								"** Relationship "
+										+ fields[0]
+										+ " is in existing id cache, but was not precached via concepts "
+										+ sourceConcept.getTerminologyId()
+										+ " or "
+										+ destinationConcept.getTerminologyId());
+					}
 
 					Relationship newRelationship = null;
 
 					if (relationship == null) {
-					  newRelationship = new RelationshipJpa(); 
+						newRelationship = new RelationshipJpa();
 					}
 
 					else {
-						newRelationship = new RelationshipJpa(relationship); // NEED COPY CONSTRUCTOR }
+						newRelationship = new RelationshipJpa(relationship); // NEED
+																				// COPY
+																				// CONSTRUCTOR
+																				// }
 					}
 					newRelationship.setTerminologyId(fields[0]);
 					newRelationship.setEffectiveTime(deltaLoaderStartDate);
-					newRelationship
-							.setActive(fields[2].equals("1") ? true : false); // active
+					newRelationship.setActive(fields[2].equals("1") ? true
+							: false); // active
 					newRelationship.setModuleId(Long.valueOf(fields[3])); // moduleId
 
 					newRelationship.setRelationshipGroup(Integer
@@ -1165,17 +1164,16 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 					newRelationship.setSourceConcept(sourceConcept);
 					newRelationship.setDestinationConcept(destinationConcept);
 
-					if (!existingRelationshipIds.contains(fields[0])) { 
-					  contentService.addRelationship(newRelationship);
-					  cacheRelationship(newRelationship);						
-					  objectsAdded++;
-					} else if (relationship != null && !newRelationship.equals(relationship)) {  
-						contentService.updateRelationship(newRelationship); 
-					  cacheRelationship(newRelationship);				
-					  objectsUpdated++;
+					if (!existingRelationshipIds.contains(fields[0])) {
+						contentService.addRelationship(newRelationship);
+						cacheRelationship(newRelationship);
+						objectsAdded++;
+					} else if (relationship != null
+							&& !newRelationship.equals(relationship)) {
+						contentService.updateRelationship(newRelationship);
+						cacheRelationship(newRelationship);
+						objectsUpdated++;
 					}
-
-					
 
 				} else {
 					if (sourceConcept == null)
@@ -1194,8 +1192,8 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 				Long objPerMinute = (logCt * 1000 * 60)
 						/ (System.currentTimeMillis() - localTime);
 				getLog().info(
-						"  " + objectCt + " evaluated/loaded (" + objPerMinute.toString()
-								+ " per minute)");
+						"  " + objectCt + " evaluated/loaded ("
+								+ objPerMinute.toString() + " per minute)");
 				localTime = System.currentTimeMillis();
 			}
 		}
@@ -1235,20 +1233,18 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 				dpnSkippedCt++;
 			} else {
 
-				getLog().info("Checking concept " +
-				concept.getTerminologyId());
+				getLog().info("Checking concept " + concept.getTerminologyId());
 
 				boolean dpnFound = false;
 
 				// cycle over this concept's descriptions
 				for (Description description : concept.getDescriptions()) {
 
-					
-					 getLog().info( "  Checking description " +
-					 description.getTerminologyId() + ", active = " +
-					 description.isActive() + ", typeId = " +
-					 description.getTypeId());
-					 
+					getLog().info(
+							"  Checking description "
+									+ description.getTerminologyId()
+									+ ", active = " + description.isActive()
+									+ ", typeId = " + description.getTypeId());
 
 					// if description is active and type id matches parameter,
 					// check
@@ -1260,13 +1256,15 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 						for (LanguageRefSetMember language : description
 								.getLanguageRefSetMembers()) {
 
-							
-							 getLog().info( "    Checking language " +
-							 language.getTerminologyId() + ", active = " +
-							 language.isActive() + ", refSetId = " +
-							 language.getRefSetId() + ", acceptabilityId = " +
-							 language.getAcceptabilityId());
-							 
+							getLog().info(
+									"    Checking language "
+											+ language.getTerminologyId()
+											+ ", active = "
+											+ language.isActive()
+											+ ", refSetId = "
+											+ language.getRefSetId()
+											+ ", acceptabilityId = "
+											+ language.getAcceptabilityId());
 
 							// if language ref set is active and matches
 							// parameters,
@@ -1277,10 +1275,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 									&& language.getAcceptabilityId().equals(
 											dpnAcceptabilityId)) {
 
-								
-								 getLog().info( "      MATCH FOUND: " +
-								 description.getTerm());
-								 
+								getLog().info(
+										"      MATCH FOUND: "
+												+ description.getTerm());
 
 								// print warning for multiple names found
 								if (dpnFound == true) {
@@ -1391,11 +1388,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
 	/**
 	 * Cache relationship.
-	 *
-	 * @param r the r
+	 * 
+	 * @param r
+	 *            the relationship
 	 */
-	@SuppressWarnings("unused")
-  private void cacheRelationship(Relationship r) {
+	private void cacheRelationship(Relationship r) {
 
 		r.setEffectiveTime(this.deltaLoaderStartDate);
 

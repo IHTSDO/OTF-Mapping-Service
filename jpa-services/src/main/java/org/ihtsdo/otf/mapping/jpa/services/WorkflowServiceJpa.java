@@ -4218,7 +4218,7 @@ public class WorkflowServiceJpa extends RootServiceJpa implements
 		// cycle over feedbacks
 		for (FeedbackConversation conversation : conversations.getIterable()) {
 			for (Feedback feedback : conversation.getFeedbacks()) {
-				if (feedback.isError()) {
+				if (feedback.getIsError()) {
 					feedbacksWithError.add(feedback);
 
 				}
