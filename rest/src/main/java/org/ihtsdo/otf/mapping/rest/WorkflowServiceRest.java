@@ -574,7 +574,7 @@ public class WorkflowServiceRest extends RootServiceRest {
 
 			return results;
 		} catch (Exception e) {
-			handleException(e, "trying to find available review work", user,
+			handleException(e, "trying to find available qa work", user,
 					project, "");
 			return null;
 		}

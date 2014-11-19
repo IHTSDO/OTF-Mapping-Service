@@ -32,25 +32,6 @@
 
       <!-- Advices -->
 		<div ng-repeat="advice in entry.mapAdvice">
-			<div style="vertical-align:top;width:7%;display:inline-block;padding:0px">
-				<img src="img/dialog-question.png" alt="advice icon" tooltip-placement="top" tooltip="Map Advice">
-			</div>
-			<div ng-show="entry.targetId == null || entry.targetId.length == 0"
-				style="vertical-align: top; width: 90%; display: inline-block; padding: 2px">
-				<em>No target</em>
-
-			</div>
-			{{entry.targetId.length}}
-			<div
-				style="vertical-align: top; width: 7%; display: inline-block; padding: 0px"></div>
-			<div
-				style="vertical-align: top; width: 85%; display: inline-block; padding: 0px">
-				{{entry.rule}}</div>
-		</div>
-		<div
-			style="vertical-align: top; display: inline-block; padding: 0px; width: 48%;">
-			<!-- Advices -->
-			<div ng-repeat="advice in entry.mapAdvice">
 				<div
 					style="vertical-align: top; width: 7%; display: inline-block; padding: 0px">
 					<img src="img/dialog-question.png" alt="advice icon"
@@ -59,7 +40,8 @@
 				<div class="alert alert-warning"
 					style="vertical-align: top; width: 85%; display: inline-block; padding: 0px">
 					{{advice.name}}</div>
-			</div>
+
+		</div>
 			<!-- Relations -->
 			<div ng-show="entry.mapRelation != null">
 				<div
