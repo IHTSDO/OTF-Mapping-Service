@@ -84,7 +84,7 @@
             <configuration>
               <target name="copy favicon">
                 <copy file="${deploy.favicon}"
-                  tofile="${project.build.directory}/custom/images/favicon.png" />
+                  tofile="${project.build.directory}/custom/img/favicon.png" />
               </target>
             </configuration>
           </execution>
@@ -99,7 +99,7 @@
             <configuration>
               <target name="copy logo">
                 <copy file="${deploy.favicon}"
-                  tofile="${project.build.directory}/custom/images/logo.png" />
+                  tofile="${project.build.directory}/img/images/logo.png" />
               </target>
             </configuration>
           </execution>
