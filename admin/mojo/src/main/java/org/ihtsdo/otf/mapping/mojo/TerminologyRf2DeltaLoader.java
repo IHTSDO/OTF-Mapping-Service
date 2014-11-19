@@ -515,7 +515,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
         if (concept == null) {
           newConcept = new ConceptJpa();
         } else {
-          newConcept = new ConceptJpa(concept, false);
+          newConcept = new ConceptJpa(concept, true);
         }
 
         // Set fields
